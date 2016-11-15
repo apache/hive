@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.hive.ql.exec.tez;
+package org.apache.hadoop.hive.ql.exec;
 
 import static org.fusesource.jansi.Ansi.ansi;
 import static org.fusesource.jansi.internal.CLibrary.STDERR_FILENO;
@@ -63,11 +63,18 @@ public class InPlaceUpdates {
   }
 
   public static boolean inPlaceEligible(HiveConf conf) {
-    boolean inPlaceUpdates = HiveConf.getBoolVar(conf, HiveConf.ConfVars.TEZ_EXEC_INPLACE_PROGRESS);
+    String engine = HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_EXECUTION_ENGINE);
+    boolean inPlaceUpdates = false;
+    if (engine.equals("tez")) {
+      inPlaceUpdates = HiveConf.getBoolVar(conf, HiveConf.ConfVars.TEZ_EXEC_INPLACE_PROGRESS);
+    }
+    if (engine.equals("spark")) {
+      inPlaceUpdates = HiveConf.getBoolVar(conf, HiveConf.ConfVars.SPARK_EXEC_INPLACE_PROGRESS);
+    }
 
     // we need at least 80 chars wide terminal to display in-place updates properly
     return inPlaceUpdates && !SessionState.getConsole().getIsSilent() && isUnixTerminal()
-      && TerminalFactory.get().getWidth() >= MIN_TERMINAL_WIDTH;
+        && TerminalFactory.get().getWidth() >= MIN_TERMINAL_WIDTH;
   }
 
   public static void reprintLine(PrintStream out, String line) {

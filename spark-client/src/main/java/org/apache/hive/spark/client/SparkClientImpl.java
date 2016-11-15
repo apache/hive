@@ -45,6 +45,7 @@ import java.io.Writer;
 import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -137,7 +138,12 @@ class SparkClientImpl implements SparkClient {
 
   @Override
   public <T extends Serializable> JobHandle<T> submit(Job<T> job) {
-    return protocol.submit(job);
+    return protocol.submit(job, Collections.<JobHandle.Listener<T>>emptyList());
+  }
+
+  @Override
+  public <T extends Serializable> JobHandle<T> submit(Job<T> job, List<JobHandle.Listener<T>> listeners) {
+    return protocol.submit(job, listeners);
   }
 
   @Override
@@ -510,10 +516,11 @@ class SparkClientImpl implements SparkClient {
 
   private class ClientProtocol extends BaseProtocol {
 
-    <T extends Serializable> JobHandleImpl<T> submit(Job<T> job) {
+    <T extends Serializable> JobHandleImpl<T> submit(Job<T> job, List<JobHandle.Listener<T>> listeners) {
       final String jobId = UUID.randomUUID().toString();
       final Promise<T> promise = driverRpc.createPromise();
-      final JobHandleImpl<T> handle = new JobHandleImpl<T>(SparkClientImpl.this, promise, jobId);
+      final JobHandleImpl<T> handle =
+          new JobHandleImpl<T>(SparkClientImpl.this, promise, jobId, listeners);
       jobs.put(jobId, handle);
 
       final io.netty.util.concurrent.Future<Void> rpc = driverRpc.call(new JobRequest(jobId, job));

@@ -61,14 +61,6 @@ public interface JobHandle<T extends Serializable> extends Future<T> {
   State getState();
 
   /**
-   * Add a listener to the job handle. If the job's state is not SENT, a callback for the
-   * corresponding state will be invoked immediately.
-   *
-   * @param l The listener to add.
-   */
-  void addListener(Listener<T> l);
-
-  /**
    * The current state of the submitted job.
    */
   static enum State {

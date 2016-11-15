@@ -91,7 +91,7 @@
     <!-- Plugin and Plugin Dependency Versions -->
     <ant.contrib.version>1.0b3</ant.contrib.version>
     <datanucleus.maven.plugin.version>3.3.0-release</datanucleus.maven.plugin.version>
-    <maven.test.jvm.args>-Xmx2048m</maven.test.jvm.args>
+    <maven.test.jvm.args>-Xmx2048m -XX:MaxPermSize=256M</maven.test.jvm.args>
     <maven.antrun.plugin.version>1.7</maven.antrun.plugin.version>
     <maven.assembly.plugin.version>2.3</maven.assembly.plugin.version>
     <maven.checkstyle.plugin.version>2.12.1</maven.checkstyle.plugin.version>
@@ -111,7 +111,7 @@
     <accumulo.version>1.6.0</accumulo.version>
     <activemq.version>5.5.0</activemq.version>
     <ant.version>1.9.1</ant.version>
-    <antlr.version>3.4</antlr.version>
+    <antlr.version>3.5.2</antlr.version>
     <apache-directory-server.version>1.5.6</apache-directory-server.version>
     <apache-directory-clientapi.version>0.1</apache-directory-clientapi.version>
     <avatica.version>1.8.0</avatica.version>

@@ -19,6 +19,7 @@ package org.apache.hive.spark.client;
 
 import java.io.Serializable;
 
+import com.google.common.collect.Lists;
 import io.netty.util.concurrent.Promise;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -38,8 +39,8 @@ public class TestJobHandle {
 
   @Test
   public void testStateChanges() throws Exception {
-    JobHandleImpl<Serializable> handle = new JobHandleImpl<Serializable>(client, promise, "job");
-    handle.addListener(listener);
+    JobHandleImpl<Serializable> handle =
+        new JobHandleImpl<Serializable>(client, promise, "job", Lists.newArrayList(listener));
 
     assertTrue(handle.changeState(JobHandle.State.QUEUED));
     verify(listener).onJobQueued(handle);
@@ -60,8 +61,8 @@ public class TestJobHandle {
 
   @Test
   public void testFailedJob() throws Exception {
-    JobHandleImpl<Serializable> handle = new JobHandleImpl<Serializable>(client, promise, "job");
-    handle.addListener(listener);
+    JobHandleImpl<Serializable> handle =
+        new JobHandleImpl<Serializable>(client, promise, "job", Lists.newArrayList(listener));
 
     Throwable cause = new Exception();
     when(promise.cause()).thenReturn(cause);
@@ -73,8 +74,8 @@ public class TestJobHandle {
 
   @Test
   public void testSucceededJob() throws Exception {
-    JobHandleImpl<Serializable> handle = new JobHandleImpl<Serializable>(client, promise, "job");
-    handle.addListener(listener);
+    JobHandleImpl<Serializable> handle =
+        new JobHandleImpl<Serializable>(client, promise, "job", Lists.newArrayList(listener));
 
     Serializable result = new Exception();
     when(promise.get()).thenReturn(result);
@@ -86,16 +87,15 @@ public class TestJobHandle {
 
   @Test
   public void testImmediateCallback() throws Exception {
-    JobHandleImpl<Serializable> handle = new JobHandleImpl<Serializable>(client, promise, "job");
+    JobHandleImpl<Serializable> handle =
+        new JobHandleImpl<Serializable>(client, promise, "job", Lists.newArrayList(listener, listener2));
     assertTrue(handle.changeState(JobHandle.State.QUEUED));
-    handle.addListener(listener);
     verify(listener).onJobQueued(handle);
 
     handle.changeState(JobHandle.State.STARTED);
     handle.addSparkJobId(1);
     handle.changeState(JobHandle.State.CANCELLED);
 
-    handle.addListener(listener2);
     InOrder inOrder = inOrder(listener2);
     inOrder.verify(listener2).onSparkJobStarted(same(handle), eq(1));
     inOrder.verify(listener2).onJobCancelled(same(handle));

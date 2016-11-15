@@ -157,3 +157,536 @@ POSTHOOK: query: drop database dummydb
 POSTHOOK: type: DROPDATABASE
 POSTHOOK: Input: database:dummydb
 POSTHOOK: Output: database:dummydb
+PREHOOK: query: create table datatype_stats(
+        t TINYINT,
+        s SMALLINT,
+        i INT,
+        b BIGINT,
+        f FLOAT,
+        d DOUBLE,
+        dem DECIMAL, --default decimal (10,0)
+        ts TIMESTAMP,
+        dt DATE,
+        str STRING,
+        v VARCHAR(12),
+        c CHAR(5),
+        bl BOOLEAN,
+        bin BINARY)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@datatype_stats
+POSTHOOK: query: create table datatype_stats(
+        t TINYINT,
+        s SMALLINT,
+        i INT,
+        b BIGINT,
+        f FLOAT,
+        d DOUBLE,
+        dem DECIMAL, --default decimal (10,0)
+        ts TIMESTAMP,
+        dt DATE,
+        str STRING,
+        v VARCHAR(12),
+        c CHAR(5),
+        bl BOOLEAN,
+        bin BINARY)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@datatype_stats
+PREHOOK: query: INSERT INTO datatype_stats values(2, 3, 45, 456, 45454.4, 454.6565, 2355, '2012-01-01 01:02:03', '2012-01-01', 'update_statistics', 'stats', 'hive', 'true', 'bin')
+PREHOOK: type: QUERY
+PREHOOK: Input: default@values__tmp__table__1
+PREHOOK: Output: default@datatype_stats
+POSTHOOK: query: INSERT INTO datatype_stats values(2, 3, 45, 456, 45454.4, 454.6565, 2355, '2012-01-01 01:02:03', '2012-01-01', 'update_statistics', 'stats', 'hive', 'true', 'bin')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@values__tmp__table__1
+POSTHOOK: Output: default@datatype_stats
+POSTHOOK: Lineage: datatype_stats.b EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col4, type:string, comment:), ]
+POSTHOOK: Lineage: datatype_stats.bin EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col14, type:string, comment:), ]
+POSTHOOK: Lineage: datatype_stats.bl EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col13, type:string, comment:), ]
+POSTHOOK: Lineage: datatype_stats.c EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col12, type:string, comment:), ]
+POSTHOOK: Lineage: datatype_stats.d EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col6, type:string, comment:), ]
+POSTHOOK: Lineage: datatype_stats.dem EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col7, type:string, comment:), ]
+POSTHOOK: Lineage: datatype_stats.dt EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col9, type:string, comment:), ]
+POSTHOOK: Lineage: datatype_stats.f EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col5, type:string, comment:), ]
+POSTHOOK: Lineage: datatype_stats.i EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
+POSTHOOK: Lineage: datatype_stats.s EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+POSTHOOK: Lineage: datatype_stats.str SIMPLE [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col10, type:string, comment:), ]
+POSTHOOK: Lineage: datatype_stats.t EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: datatype_stats.ts EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col8, type:string, comment:), ]
+POSTHOOK: Lineage: datatype_stats.v EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col11, type:string, comment:), ]
+PREHOOK: query: INSERT INTO datatype_stats values(NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@values__tmp__table__2
+PREHOOK: Output: default@datatype_stats
+POSTHOOK: query: INSERT INTO datatype_stats values(NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@values__tmp__table__2
+POSTHOOK: Output: default@datatype_stats
+POSTHOOK: Lineage: datatype_stats.b EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col4, type:string, comment:), ]
+POSTHOOK: Lineage: datatype_stats.bin EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col14, type:string, comment:), ]
+POSTHOOK: Lineage: datatype_stats.bl EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col13, type:string, comment:), ]
+POSTHOOK: Lineage: datatype_stats.c EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col12, type:string, comment:), ]
+POSTHOOK: Lineage: datatype_stats.d EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col6, type:string, comment:), ]
+POSTHOOK: Lineage: datatype_stats.dem EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col7, type:string, comment:), ]
+POSTHOOK: Lineage: datatype_stats.dt EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col9, type:string, comment:), ]
+POSTHOOK: Lineage: datatype_stats.f EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col5, type:string, comment:), ]
+POSTHOOK: Lineage: datatype_stats.i EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
+POSTHOOK: Lineage: datatype_stats.s EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+POSTHOOK: Lineage: datatype_stats.str SIMPLE [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col10, type:string, comment:), ]
+POSTHOOK: Lineage: datatype_stats.t EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: datatype_stats.ts EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col8, type:string, comment:), ]
+POSTHOOK: Lineage: datatype_stats.v EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col11, type:string, comment:), ]
+PREHOOK: query: DESC FORMATTED datatype_stats s
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@datatype_stats
+POSTHOOK: query: DESC FORMATTED datatype_stats s
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@datatype_stats
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
+	 	 	 	 	 	 	 	 	 	 
+s                   	smallint            	                    	                    	                    	                    	                    	                    	                    	                    	from deserializer   
+PREHOOK: query: DESC FORMATTED datatype_stats i
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@datatype_stats
+POSTHOOK: query: DESC FORMATTED datatype_stats i
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@datatype_stats
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
+	 	 	 	 	 	 	 	 	 	 
+i                   	int                 	                    	                    	                    	                    	                    	                    	                    	                    	from deserializer   
+PREHOOK: query: DESC FORMATTED datatype_stats b
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@datatype_stats
+POSTHOOK: query: DESC FORMATTED datatype_stats b
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@datatype_stats
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
+	 	 	 	 	 	 	 	 	 	 
+b                   	bigint              	                    	                    	                    	                    	                    	                    	                    	                    	from deserializer   
+PREHOOK: query: DESC FORMATTED datatype_stats f
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@datatype_stats
+POSTHOOK: query: DESC FORMATTED datatype_stats f
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@datatype_stats
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
+	 	 	 	 	 	 	 	 	 	 
+f                   	float               	                    	                    	                    	                    	                    	                    	                    	                    	from deserializer   
+PREHOOK: query: DESC FORMATTED datatype_stats d
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@datatype_stats
+POSTHOOK: query: DESC FORMATTED datatype_stats d
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@datatype_stats
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
+	 	 	 	 	 	 	 	 	 	 
+d                   	double              	                    	                    	                    	                    	                    	                    	                    	                    	from deserializer   
+PREHOOK: query: DESC FORMATTED datatype_stats dem
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@datatype_stats
+POSTHOOK: query: DESC FORMATTED datatype_stats dem
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@datatype_stats
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
+	 	 	 	 	 	 	 	 	 	 
+dem                 	decimal(10,0)       	                    	                    	                    	                    	                    	                    	                    	                    	from deserializer   
+PREHOOK: query: DESC FORMATTED datatype_stats ts
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@datatype_stats
+POSTHOOK: query: DESC FORMATTED datatype_stats ts
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@datatype_stats
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
+	 	 	 	 	 	 	 	 	 	 
+ts                  	timestamp           	                    	                    	                    	                    	                    	                    	                    	                    	from deserializer   
+PREHOOK: query: DESC FORMATTED datatype_stats dt
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@datatype_stats
+POSTHOOK: query: DESC FORMATTED datatype_stats dt
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@datatype_stats
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
+	 	 	 	 	 	 	 	 	 	 
+dt                  	date                	                    	                    	                    	                    	                    	                    	                    	                    	from deserializer   
+PREHOOK: query: DESC FORMATTED datatype_stats str
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@datatype_stats
+POSTHOOK: query: DESC FORMATTED datatype_stats str
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@datatype_stats
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
+	 	 	 	 	 	 	 	 	 	 
+str                 	string              	                    	                    	                    	                    	                    	                    	                    	                    	from deserializer   
+PREHOOK: query: DESC FORMATTED datatype_stats v
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@datatype_stats
+POSTHOOK: query: DESC FORMATTED datatype_stats v
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@datatype_stats
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
+	 	 	 	 	 	 	 	 	 	 
+v                   	varchar(12)         	                    	                    	                    	                    	                    	                    	                    	                    	from deserializer   
+PREHOOK: query: DESC FORMATTED datatype_stats c
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@datatype_stats
+POSTHOOK: query: DESC FORMATTED datatype_stats c
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@datatype_stats
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
+	 	 	 	 	 	 	 	 	 	 
+c                   	char(5)             	                    	                    	                    	                    	                    	                    	                    	                    	from deserializer   
+PREHOOK: query: DESC FORMATTED datatype_stats bl
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@datatype_stats
+POSTHOOK: query: DESC FORMATTED datatype_stats bl
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@datatype_stats
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
+	 	 	 	 	 	 	 	 	 	 
+bl                  	boolean             	                    	                    	                    	                    	                    	                    	                    	                    	from deserializer   
+PREHOOK: query: DESC FORMATTED datatype_stats bin
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@datatype_stats
+POSTHOOK: query: DESC FORMATTED datatype_stats bin
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@datatype_stats
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
+	 	 	 	 	 	 	 	 	 	 
+bin                 	binary              	                    	                    	                    	                    	                    	                    	                    	                    	from deserializer   
+PREHOOK: query: --tinyint
+DESC FORMATTED datatype_stats t
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@datatype_stats
+POSTHOOK: query: --tinyint
+DESC FORMATTED datatype_stats t
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@datatype_stats
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
+	 	 	 	 	 	 	 	 	 	 
+t                   	tinyint             	                    	                    	                    	                    	                    	                    	                    	                    	from deserializer   
+PREHOOK: query: ALTER TABLE default.datatype_stats UPDATE STATISTICS for column t SET ('numDVs'='232','numNulls'='233','highValue'='234','lowValue'='35')
+PREHOOK: type: ALTERTABLE_UPDATETABLESTATS
+POSTHOOK: query: ALTER TABLE default.datatype_stats UPDATE STATISTICS for column t SET ('numDVs'='232','numNulls'='233','highValue'='234','lowValue'='35')
+POSTHOOK: type: ALTERTABLE_UPDATETABLESTATS
+PREHOOK: query: DESC FORMATTED datatype_stats t
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@datatype_stats
+POSTHOOK: query: DESC FORMATTED datatype_stats t
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@datatype_stats
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
+	 	 	 	 	 	 	 	 	 	 
+t                   	tinyint             	35                  	234                 	233                 	232                 	                    	                    	                    	                    	from deserializer   
+PREHOOK: query: --smallint
+DESC FORMATTED datatype_stats s
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@datatype_stats
+POSTHOOK: query: --smallint
+DESC FORMATTED datatype_stats s
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@datatype_stats
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
+	 	 	 	 	 	 	 	 	 	 
+s                   	smallint            	                    	                    	                    	                    	                    	                    	                    	                    	from deserializer   
+PREHOOK: query: ALTER TABLE default.datatype_stats UPDATE STATISTICS for column s SET ('numDVs'='56','numNulls'='56','highValue'='489','lowValue'='25')
+PREHOOK: type: ALTERTABLE_UPDATETABLESTATS
+POSTHOOK: query: ALTER TABLE default.datatype_stats UPDATE STATISTICS for column s SET ('numDVs'='56','numNulls'='56','highValue'='489','lowValue'='25')
+POSTHOOK: type: ALTERTABLE_UPDATETABLESTATS
+PREHOOK: query: DESC FORMATTED datatype_stats s
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@datatype_stats
+POSTHOOK: query: DESC FORMATTED datatype_stats s
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@datatype_stats
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
+	 	 	 	 	 	 	 	 	 	 
+s                   	smallint            	25                  	489                 	56                  	56                  	                    	                    	                    	                    	from deserializer   
+PREHOOK: query: --int
+DESC FORMATTED datatype_stats i
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@datatype_stats
+POSTHOOK: query: --int
+DESC FORMATTED datatype_stats i
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@datatype_stats
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
+	 	 	 	 	 	 	 	 	 	 
+i                   	int                 	                    	                    	                    	                    	                    	                    	                    	                    	from deserializer   
+PREHOOK: query: ALTER TABLE default.datatype_stats UPDATE STATISTICS for column i SET ('numDVs'='59','numNulls'='1','highValue'='889','lowValue'='5')
+PREHOOK: type: ALTERTABLE_UPDATETABLESTATS
+POSTHOOK: query: ALTER TABLE default.datatype_stats UPDATE STATISTICS for column i SET ('numDVs'='59','numNulls'='1','highValue'='889','lowValue'='5')
+POSTHOOK: type: ALTERTABLE_UPDATETABLESTATS
+PREHOOK: query: DESC FORMATTED datatype_stats i
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@datatype_stats
+POSTHOOK: query: DESC FORMATTED datatype_stats i
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@datatype_stats
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
+	 	 	 	 	 	 	 	 	 	 
+i                   	int                 	5                   	889                 	1                   	59                  	                    	                    	                    	                    	from deserializer   
+PREHOOK: query: --bigint
+DESC FORMATTED datatype_stats b
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@datatype_stats
+POSTHOOK: query: --bigint
+DESC FORMATTED datatype_stats b
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@datatype_stats
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
+	 	 	 	 	 	 	 	 	 	 
+b                   	bigint              	                    	                    	                    	                    	                    	                    	                    	                    	from deserializer   
+PREHOOK: query: ALTER TABLE default.datatype_stats UPDATE STATISTICS for column b SET ('numDVs'='9','numNulls'='14','highValue'='89','lowValue'='8')
+PREHOOK: type: ALTERTABLE_UPDATETABLESTATS
+POSTHOOK: query: ALTER TABLE default.datatype_stats UPDATE STATISTICS for column b SET ('numDVs'='9','numNulls'='14','highValue'='89','lowValue'='8')
+POSTHOOK: type: ALTERTABLE_UPDATETABLESTATS
+PREHOOK: query: DESC FORMATTED datatype_stats b
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@datatype_stats
+POSTHOOK: query: DESC FORMATTED datatype_stats b
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@datatype_stats
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
+	 	 	 	 	 	 	 	 	 	 
+b                   	bigint              	8                   	89                  	14                  	9                   	                    	                    	                    	                    	from deserializer   
+PREHOOK: query: --float
+DESC FORMATTED datatype_stats f
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@datatype_stats
+POSTHOOK: query: --float
+DESC FORMATTED datatype_stats f
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@datatype_stats
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
+	 	 	 	 	 	 	 	 	 	 
+f                   	float               	                    	                    	                    	                    	                    	                    	                    	                    	from deserializer   
+PREHOOK: query: ALTER TABLE default.datatype_stats UPDATE STATISTICS for column f SET ('numDVs'='563','numNulls'='45','highValue'='2345.656','lowValue'='8.00')
+PREHOOK: type: ALTERTABLE_UPDATETABLESTATS
+POSTHOOK: query: ALTER TABLE default.datatype_stats UPDATE STATISTICS for column f SET ('numDVs'='563','numNulls'='45','highValue'='2345.656','lowValue'='8.00')
+POSTHOOK: type: ALTERTABLE_UPDATETABLESTATS
+PREHOOK: query: DESC FORMATTED datatype_stats f
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@datatype_stats
+POSTHOOK: query: DESC FORMATTED datatype_stats f
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@datatype_stats
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
+	 	 	 	 	 	 	 	 	 	 
+f                   	float               	8.0                 	2345.656            	45                  	563                 	                    	                    	                    	                    	from deserializer   
+PREHOOK: query: --double
+DESC FORMATTED datatype_stats d
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@datatype_stats
+POSTHOOK: query: --double
+DESC FORMATTED datatype_stats d
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@datatype_stats
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
+	 	 	 	 	 	 	 	 	 	 
+d                   	double              	                    	                    	                    	                    	                    	                    	                    	                    	from deserializer   
+PREHOOK: query: ALTER TABLE default.datatype_stats UPDATE STATISTICS for column d SET ('numDVs'='5677','numNulls'='12','highValue'='560.3367','lowValue'='0.00455')
+PREHOOK: type: ALTERTABLE_UPDATETABLESTATS
+POSTHOOK: query: ALTER TABLE default.datatype_stats UPDATE STATISTICS for column d SET ('numDVs'='5677','numNulls'='12','highValue'='560.3367','lowValue'='0.00455')
+POSTHOOK: type: ALTERTABLE_UPDATETABLESTATS
+PREHOOK: query: DESC FORMATTED datatype_stats d
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@datatype_stats
+POSTHOOK: query: DESC FORMATTED datatype_stats d
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@datatype_stats
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
+	 	 	 	 	 	 	 	 	 	 
+d                   	double              	0.00455             	560.3367            	12                  	5677                	                    	                    	                    	                    	from deserializer   
+PREHOOK: query: --decimal
+DESC FORMATTED datatype_stats dem
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@datatype_stats
+POSTHOOK: query: --decimal
+DESC FORMATTED datatype_stats dem
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@datatype_stats
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
+	 	 	 	 	 	 	 	 	 	 
+dem                 	decimal(10,0)       	                    	                    	                    	                    	                    	                    	                    	                    	from deserializer   
+PREHOOK: query: ALTER TABLE default.datatype_stats UPDATE STATISTICS for column dem SET ('numDVs'='57','numNulls'='912','highValue'='560','lowValue'='0')
+PREHOOK: type: ALTERTABLE_UPDATETABLESTATS
+POSTHOOK: query: ALTER TABLE default.datatype_stats UPDATE STATISTICS for column dem SET ('numDVs'='57','numNulls'='912','highValue'='560','lowValue'='0')
+POSTHOOK: type: ALTERTABLE_UPDATETABLESTATS
+PREHOOK: query: DESC FORMATTED datatype_stats dem
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@datatype_stats
+POSTHOOK: query: DESC FORMATTED datatype_stats dem
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@datatype_stats
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
+	 	 	 	 	 	 	 	 	 	 
+dem                 	decimal(10,0)       	0                   	560                 	912                 	57                  	                    	                    	                    	                    	from deserializer   
+PREHOOK: query: --timestamp
+DESC FORMATTED datatype_stats ts
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@datatype_stats
+POSTHOOK: query: --timestamp
+DESC FORMATTED datatype_stats ts
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@datatype_stats
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
+	 	 	 	 	 	 	 	 	 	 
+ts                  	timestamp           	                    	                    	                    	                    	                    	                    	                    	                    	from deserializer   
+PREHOOK: query: ALTER TABLE default.datatype_stats UPDATE STATISTICS for column ts SET ('numDVs'='7','numNulls'='12','highValue'='1357030923','lowValue'='1357030924')
+PREHOOK: type: ALTERTABLE_UPDATETABLESTATS
+POSTHOOK: query: ALTER TABLE default.datatype_stats UPDATE STATISTICS for column ts SET ('numDVs'='7','numNulls'='12','highValue'='1357030923','lowValue'='1357030924')
+POSTHOOK: type: ALTERTABLE_UPDATETABLESTATS
+PREHOOK: query: DESC FORMATTED datatype_stats ts
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@datatype_stats
+POSTHOOK: query: DESC FORMATTED datatype_stats ts
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@datatype_stats
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
+	 	 	 	 	 	 	 	 	 	 
+ts                  	timestamp           	1357030924          	1357030923          	12                  	7                   	                    	                    	                    	                    	from deserializer   
+PREHOOK: query: --decimal
+DESC FORMATTED datatype_stats dt
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@datatype_stats
+POSTHOOK: query: --decimal
+DESC FORMATTED datatype_stats dt
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@datatype_stats
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
+	 	 	 	 	 	 	 	 	 	 
+dt                  	date                	                    	                    	                    	                    	                    	                    	                    	                    	from deserializer   
+PREHOOK: query: ALTER TABLE default.datatype_stats UPDATE STATISTICS for column dt SET ('numDVs'='57','numNulls'='912','highValue'='2012-01-01','lowValue'='2001-02-04')
+PREHOOK: type: ALTERTABLE_UPDATETABLESTATS
+POSTHOOK: query: ALTER TABLE default.datatype_stats UPDATE STATISTICS for column dt SET ('numDVs'='57','numNulls'='912','highValue'='2012-01-01','lowValue'='2001-02-04')
+POSTHOOK: type: ALTERTABLE_UPDATETABLESTATS
+PREHOOK: query: DESC FORMATTED datatype_stats dt
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@datatype_stats
+POSTHOOK: query: DESC FORMATTED datatype_stats dt
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@datatype_stats
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
+	 	 	 	 	 	 	 	 	 	 
+dt                  	date                	2001-02-04          	2012-01-01          	912                 	57                  	                    	                    	                    	                    	from deserializer   
+PREHOOK: query: --string
+DESC FORMATTED datatype_stats str
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@datatype_stats
+POSTHOOK: query: --string
+DESC FORMATTED datatype_stats str
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@datatype_stats
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
+	 	 	 	 	 	 	 	 	 	 
+str                 	string              	                    	                    	                    	                    	                    	                    	                    	                    	from deserializer   
+PREHOOK: query: ALTER TABLE default.datatype_stats UPDATE STATISTICS for column str SET ('numDVs'='232','numNulls'='233','avgColLen'='2.34','maxColLen'='235')
+PREHOOK: type: ALTERTABLE_UPDATETABLESTATS
+POSTHOOK: query: ALTER TABLE default.datatype_stats UPDATE STATISTICS for column str SET ('numDVs'='232','numNulls'='233','avgColLen'='2.34','maxColLen'='235')
+POSTHOOK: type: ALTERTABLE_UPDATETABLESTATS
+PREHOOK: query: DESC FORMATTED datatype_stats str
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@datatype_stats
+POSTHOOK: query: DESC FORMATTED datatype_stats str
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@datatype_stats
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
+	 	 	 	 	 	 	 	 	 	 
+str                 	string              	                    	                    	233                 	232                 	2.34                	235                 	                    	                    	from deserializer   
+PREHOOK: query: --varchar
+DESC FORMATTED datatype_stats v
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@datatype_stats
+POSTHOOK: query: --varchar
+DESC FORMATTED datatype_stats v
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@datatype_stats
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
+	 	 	 	 	 	 	 	 	 	 
+v                   	varchar(12)         	                    	                    	                    	                    	                    	                    	                    	                    	from deserializer   
+PREHOOK: query: ALTER TABLE default.datatype_stats UPDATE STATISTICS for column v SET ('numDVs'='22','numNulls'='33','avgColLen'='4.40','maxColLen'='25')
+PREHOOK: type: ALTERTABLE_UPDATETABLESTATS
+POSTHOOK: query: ALTER TABLE default.datatype_stats UPDATE STATISTICS for column v SET ('numDVs'='22','numNulls'='33','avgColLen'='4.40','maxColLen'='25')
+POSTHOOK: type: ALTERTABLE_UPDATETABLESTATS
+PREHOOK: query: DESC FORMATTED datatype_stats v
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@datatype_stats
+POSTHOOK: query: DESC FORMATTED datatype_stats v
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@datatype_stats
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
+	 	 	 	 	 	 	 	 	 	 
+v                   	varchar(12)         	                    	                    	33                  	22                  	4.4                 	25                  	                    	                    	from deserializer   
+PREHOOK: query: --char
+DESC FORMATTED datatype_stats c
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@datatype_stats
+POSTHOOK: query: --char
+DESC FORMATTED datatype_stats c
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@datatype_stats
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
+	 	 	 	 	 	 	 	 	 	 
+c                   	char(5)             	                    	                    	                    	                    	                    	                    	                    	                    	from deserializer   
+PREHOOK: query: ALTER TABLE default.datatype_stats UPDATE STATISTICS for column c SET ('numDVs'='2','numNulls'='03','avgColLen'='9.00','maxColLen'='58')
+PREHOOK: type: ALTERTABLE_UPDATETABLESTATS
+POSTHOOK: query: ALTER TABLE default.datatype_stats UPDATE STATISTICS for column c SET ('numDVs'='2','numNulls'='03','avgColLen'='9.00','maxColLen'='58')
+POSTHOOK: type: ALTERTABLE_UPDATETABLESTATS
+PREHOOK: query: DESC FORMATTED datatype_stats c
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@datatype_stats
+POSTHOOK: query: DESC FORMATTED datatype_stats c
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@datatype_stats
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
+	 	 	 	 	 	 	 	 	 	 
+c                   	char(5)             	                    	                    	3                   	2                   	9.0                 	58                  	                    	                    	from deserializer   
+PREHOOK: query: --boolean
+DESC FORMATTED datatype_stats bl
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@datatype_stats
+POSTHOOK: query: --boolean
+DESC FORMATTED datatype_stats bl
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@datatype_stats
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
+	 	 	 	 	 	 	 	 	 	 
+bl                  	boolean             	                    	                    	                    	                    	                    	                    	                    	                    	from deserializer   
+PREHOOK: query: ALTER TABLE default.datatype_stats UPDATE STATISTICS for column bl SET ('numNulls'='1','numTrues'='9','numFalses'='8')
+PREHOOK: type: ALTERTABLE_UPDATETABLESTATS
+POSTHOOK: query: ALTER TABLE default.datatype_stats UPDATE STATISTICS for column bl SET ('numNulls'='1','numTrues'='9','numFalses'='8')
+POSTHOOK: type: ALTERTABLE_UPDATETABLESTATS
+PREHOOK: query: DESC FORMATTED datatype_stats bl
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@datatype_stats
+POSTHOOK: query: DESC FORMATTED datatype_stats bl
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@datatype_stats
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
+	 	 	 	 	 	 	 	 	 	 
+bl                  	boolean             	                    	                    	1                   	                    	                    	                    	9                   	8                   	from deserializer   
+PREHOOK: query: --binary
+DESC FORMATTED datatype_stats bin
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@datatype_stats
+POSTHOOK: query: --binary
+DESC FORMATTED datatype_stats bin
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@datatype_stats
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
+	 	 	 	 	 	 	 	 	 	 
+bin                 	binary              	                    	                    	                    	                    	                    	                    	                    	                    	from deserializer   
+PREHOOK: query: ALTER TABLE default.datatype_stats UPDATE STATISTICS for column bin SET ('numNulls'='8','avgColLen'='2.0','maxColLen'='8')
+PREHOOK: type: ALTERTABLE_UPDATETABLESTATS
+POSTHOOK: query: ALTER TABLE default.datatype_stats UPDATE STATISTICS for column bin SET ('numNulls'='8','avgColLen'='2.0','maxColLen'='8')
+POSTHOOK: type: ALTERTABLE_UPDATETABLESTATS
+PREHOOK: query: DESC FORMATTED datatype_stats bin
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@datatype_stats
+POSTHOOK: query: DESC FORMATTED datatype_stats bin
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@datatype_stats
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
+	 	 	 	 	 	 	 	 	 	 
+bin                 	binary              	                    	                    	8                   	                    	2.0                 	8                   	                    	                    	from deserializer   

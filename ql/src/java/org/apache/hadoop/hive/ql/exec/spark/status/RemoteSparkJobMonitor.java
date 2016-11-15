@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.exec.spark.status;
 
+import java.util.Arrays;
 import java.util.Map;
 
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -52,20 +53,17 @@ public class RemoteSparkJobMonitor extends SparkJobMonitor {
     perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.SPARK_RUN_JOB);
     perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.SPARK_SUBMIT_TO_RUNNING);
 
-    long startTime = System.currentTimeMillis();
+    startTime = System.currentTimeMillis();
 
     while (true) {
       try {
         JobHandle.State state = sparkJobStatus.getRemoteJobState();
-        if (LOG.isDebugEnabled()) {
-          console.printInfo("state = " + state);
-        }
 
         switch (state) {
         case SENT:
         case QUEUED:
           long timeCount = (System.currentTimeMillis() - startTime) / 1000;
-          if ((timeCount > monitorTimeoutInteval)) {
+          if ((timeCount > monitorTimeoutInterval)) {
             console.printError("Job hasn't been submitted after " + timeCount + "s." +
                 " Aborting it.\nPossible reasons include network issues, " +
                 "errors in remote driver or the cluster has no available resources, etc.\n" +
@@ -74,6 +72,9 @@ public class RemoteSparkJobMonitor extends SparkJobMonitor {
             running = false;
             done = true;
             rc = 2;
+          }
+          if (LOG.isDebugEnabled()) {
+            console.printInfo("state = " + state);
           }
           break;
         case STARTED:
@@ -84,18 +85,20 @@ public class RemoteSparkJobMonitor extends SparkJobMonitor {
               perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.SPARK_SUBMIT_TO_RUNNING);
               printAppInfo();
               // print job stages.
-              console.printInfo("\nQuery Hive on Spark job["
-                + sparkJobStatus.getJobId() + "] stages:");
-              for (int stageId : sparkJobStatus.getStageIds()) {
-                console.printInfo(Integer.toString(stageId));
-              }
+              console.printInfo("\nQuery Hive on Spark job[" + sparkJobStatus.getJobId() +
+                  "] stages: " + Arrays.toString(sparkJobStatus.getStageIds()));
 
               console.printInfo("\nStatus: Running (Hive on Spark job["
                 + sparkJobStatus.getJobId() + "])");
               running = true;
 
-              console.printInfo("Job Progress Format\nCurrentTime StageId_StageAttemptId: "
-                + "SucceededTasksCount(+RunningTasksCount-FailedTasksCount)/TotalTasksCount [StageCost]");
+              String format = "Job Progress Format\nCurrentTime StageId_StageAttemptId: "
+                  + "SucceededTasksCount(+RunningTasksCount-FailedTasksCount)/TotalTasksCount";
+              if (!inPlaceUpdate) {
+                console.printInfo(format);
+              } else {
+                console.logInfo(format);
+              }
             }
 
             printStatus(progressMap, lastProgressMap);
