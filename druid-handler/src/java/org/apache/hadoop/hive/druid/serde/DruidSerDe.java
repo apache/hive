@@ -232,15 +232,19 @@ public class DruidSerDe extends AbstractSerDe {
   /* Submits the request and returns */
   protected SegmentAnalysis submitMetadataRequest(String address, SegmentMetadataQuery query)
           throws SerDeException, IOException {
+    final Lifecycle lifecycle = new Lifecycle();
     HttpClient client = HttpClientInit.createClient(
             HttpClientConfig.builder().withNumConnections(numConnection)
-                    .withReadTimeout(readTimeout.toStandardDuration()).build(), new Lifecycle());
+                    .withReadTimeout(readTimeout.toStandardDuration()).build(), lifecycle);
     InputStream response;
     try {
+      lifecycle.start();
       response = DruidStorageHandlerUtils.submitRequest(client,
               DruidStorageHandlerUtils.createRequest(address, query));
     } catch (Exception e) {
       throw new SerDeException(StringUtils.stringifyException(e));
+    } finally {
+      lifecycle.stop();
     }
 
     // Retrieve results

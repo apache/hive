@@ -22,6 +22,9 @@ import com.fasterxml.jackson.databind.jsontype.NamedType;
 import com.fasterxml.jackson.dataformat.smile.SmileFactory;
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Interner;
+import com.google.common.collect.Interners;
+import com.google.common.collect.Lists;
 import com.metamx.emitter.EmittingLogger;
 import com.metamx.emitter.core.NoopEmitter;
 import com.metamx.emitter.service.ServiceEmitter;
@@ -29,9 +32,12 @@ import com.metamx.http.client.HttpClient;
 import com.metamx.http.client.Request;
 import com.metamx.http.client.response.InputStreamResponseHandler;
 import io.druid.jackson.DefaultObjectMapper;
+import io.druid.java.util.common.MapUtils;
+import io.druid.metadata.MetadataStorageTablesConfig;
+import io.druid.metadata.SQLMetadataConnector;
+import io.druid.metadata.storage.mysql.MySQLConnector;
 import io.druid.query.BaseQuery;
 import io.druid.segment.IndexIO;
-import io.druid.segment.IndexMerger;
 import io.druid.segment.IndexMergerV9;
 import io.druid.segment.column.ColumnConfig;
 import io.druid.timeline.DataSegment;
@@ -44,6 +50,14 @@ import org.apache.hadoop.io.retry.RetryPolicies;
 import org.apache.hadoop.io.retry.RetryProxy;
 import org.jboss.netty.handler.codec.http.HttpHeaders;
 import org.jboss.netty.handler.codec.http.HttpMethod;
+import org.skife.jdbi.v2.FoldController;
+import org.skife.jdbi.v2.Folder3;
+import org.skife.jdbi.v2.Handle;
+import org.skife.jdbi.v2.StatementContext;
+import org.skife.jdbi.v2.TransactionCallback;
+import org.skife.jdbi.v2.TransactionStatus;
+import org.skife.jdbi.v2.tweak.HandleCallback;
+import org.skife.jdbi.v2.util.ByteArrayMapper;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -51,7 +65,12 @@ import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.URL;
 import java.net.UnknownHostException;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
+import java.util.TimeZone;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
@@ -59,9 +78,6 @@ import java.util.concurrent.TimeUnit;
  * Utils class for Druid storage handler.
  */
 public final class DruidStorageHandlerUtils {
-
-
-
 
   private static final String SMILE_CONTENT_TYPE = "application/x-jackson-smile";
 
@@ -81,6 +97,8 @@ public final class DruidStorageHandlerUtils {
 
   private static final int DEFAULT_FS_BUFFER_SIZE = 1 << 18; // 256KB
 
+  private static final int DEFAULT_STREAMING_RESULT_SIZE = 100;
+
   public static final IndexIO INDEX_IO = new IndexIO(JSON_MAPPER, new ColumnConfig()
   {
     @Override
@@ -89,12 +107,13 @@ public final class DruidStorageHandlerUtils {
       return 0;
     }
   });
-
-  public static final IndexMerger INDEX_MERGER = new IndexMerger(JSON_MAPPER, DruidStorageHandlerUtils.INDEX_IO);
   public static final IndexMergerV9 INDEX_MERGER_V9 = new IndexMergerV9(JSON_MAPPER, DruidStorageHandlerUtils.INDEX_IO);
+
+  public static final Interner<DataSegment> DATA_SEGMENT_INTERNER = Interners.newWeakInterner();
 
   static {
     JSON_MAPPER.registerSubtypes(new NamedType(LinearShardSpec.class, "linear"));
+    JSON_MAPPER.setTimeZone(TimeZone.getTimeZone("UTC"));
     try {
       EmittingLogger.registerEmitter(
               new ServiceEmitter("druid-hive-indexer", InetAddress.getLocalHost().getHostName(),
@@ -205,6 +224,140 @@ public final class DruidStorageHandlerUtils {
         RetryPolicies.exponentialBackoffRetry(NUM_RETRIES, SECONDS_BETWEEN_RETRIES, TimeUnit.SECONDS)
     );
     descriptorPusher.push();
+  }
+
+  public static Collection<String> getAllDataSourceNames(SQLMetadataConnector connector,
+          final MetadataStorageTablesConfig metadataStorageTablesConfig
+  )
+  {
+      return connector.getDBI().withHandle(
+              new HandleCallback<List<String>>()
+              {
+                @Override
+                public List<String> withHandle(Handle handle) throws Exception
+                {
+                  return handle.createQuery(
+                          String.format("SELECT DISTINCT(datasource) FROM %s WHERE used = true", metadataStorageTablesConfig.getSegmentsTable())
+                  )
+                          .fold(
+                                  Lists.<String>newArrayList(),
+                                  new Folder3<ArrayList<String>, Map<String, Object>>()
+                                  {
+                                    @Override
+                                    public ArrayList<String> fold(
+                                            ArrayList<String> druidDataSources,
+                                            Map<String, Object> stringObjectMap,
+                                            FoldController foldController,
+                                            StatementContext statementContext
+                                    ) throws SQLException
+                                    {
+                                      druidDataSources.add(
+                                              MapUtils.getString(stringObjectMap, "datasource")
+                                      );
+                                      return druidDataSources;
+                                    }
+                                  }
+                          );
+
+                }
+              }
+      );
+
+  }
+
+  public static boolean disableDataSource(SQLMetadataConnector connector,
+          final MetadataStorageTablesConfig metadataStorageTablesConfig, final String dataSource
+  )
+  {
+    try {
+      if (!getAllDataSourceNames(connector, metadataStorageTablesConfig).contains(dataSource)) {
+        DruidStorageHandler.LOG.warn(String.format("Cannot delete data source [%s], does not exist", dataSource));
+        return false;
+      }
+
+      connector.getDBI().withHandle(
+              new HandleCallback<Void>()
+              {
+                @Override
+                public Void withHandle(Handle handle) throws Exception
+                {
+                  handle.createStatement(
+                          String.format("UPDATE %s SET used=false WHERE dataSource = :dataSource", metadataStorageTablesConfig.getSegmentsTable())
+                  )
+                          .bind("dataSource", dataSource)
+                          .execute();
+
+                  return null;
+                }
+              }
+      );
+
+    }
+    catch (Exception e) {
+      DruidStorageHandler.LOG.error(String.format("Error removing dataSource %s", dataSource), e);
+      return false;
+    }
+    return true;
+  }
+
+  public static List<DataSegment> getDataSegment(final SQLMetadataConnector connector,
+          final MetadataStorageTablesConfig metadataStorageTablesConfig, final String dataSource
+  )
+  {
+    List<DataSegment> segmentList = connector.retryTransaction(
+            new TransactionCallback<List<DataSegment>>()
+            {
+              @Override
+              public List<DataSegment> inTransaction(
+                      Handle handle, TransactionStatus status
+              ) throws Exception
+              {
+                return handle
+                        .createQuery(String.format(
+                                "SELECT payload FROM %s WHERE dataSource = :dataSource",
+                                metadataStorageTablesConfig.getSegmentsTable()
+                        ))
+                        .setFetchSize(getStreamingFetchSize(connector))
+                        .bind("dataSource", dataSource)
+                        .map(ByteArrayMapper.FIRST)
+                        .fold(
+                                new ArrayList<DataSegment>(),
+                                new Folder3<List<DataSegment>, byte[]>()
+                                {
+                                  @Override
+                                  public List<DataSegment> fold(List<DataSegment> accumulator,
+                                          byte[] payload, FoldController control,
+                                          StatementContext ctx
+                                  ) throws SQLException
+                                  {
+                                    try {
+                                      final DataSegment segment = DATA_SEGMENT_INTERNER.intern(
+                                              JSON_MAPPER.readValue(
+                                              payload,
+                                              DataSegment.class
+                                      ));
+
+                                      accumulator.add(segment);
+                                      return accumulator;
+                                    }
+                                    catch (Exception e) {
+                                      throw new SQLException(e.toString());
+                                    }
+                                  }
+                                }
+                        );
+              }
+            }
+    , 3, SQLMetadataConnector.DEFAULT_MAX_TRIES);
+    return segmentList;
+  }
+
+  private static int getStreamingFetchSize(SQLMetadataConnector connector) {
+    if (connector instanceof MySQLConnector) {
+      return Integer.MIN_VALUE;
+    }
+    return DEFAULT_STREAMING_RESULT_SIZE;
+
   }
 
   /**

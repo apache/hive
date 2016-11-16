@@ -3,13 +3,11 @@ package org.apache.hadoop.hive.druid.io;
 import com.google.common.base.Function;
 import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
-import com.google.common.base.Predicate;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 import com.google.common.base.Throwables;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import io.druid.data.input.Committer;
 import io.druid.data.input.InputRow;
 import io.druid.data.input.MapBasedInputRow;
@@ -45,7 +43,6 @@ import javax.annotation.Nullable;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
 
@@ -73,30 +70,30 @@ public class DruidRecordWriter implements RecordWriter<NullWritable, DruidWritab
           DataSchema dataSchema,
           RealtimeTuningConfig realtimeTuningConfig,
           DataSegmentPusher dataSegmentPusher,
-          Integer maxPartitionSize,
+          int maxPartitionSize,
           final Path segmentsDescriptorsDir,
           final FileSystem fileSystem
   ) {
     DefaultOfflineAppenderatorFactory defaultOfflineAppenderatorFactory = new DefaultOfflineAppenderatorFactory(
-            Preconditions.checkNotNull(dataSegmentPusher),
+            Preconditions.checkNotNull(dataSegmentPusher, "dataSegmentPusher is null"),
             DruidStorageHandlerUtils.JSON_MAPPER,
             DruidStorageHandlerUtils.INDEX_IO,
-            DruidStorageHandlerUtils.INDEX_MERGER
+            DruidStorageHandlerUtils.INDEX_MERGER_V9
     );
-    this.tuningConfig = realtimeTuningConfig;
-    this.dataSchema = dataSchema;
+    this.tuningConfig = Preconditions.checkNotNull(realtimeTuningConfig, "realtimeTuningConfig is null");
+    this.dataSchema = Preconditions.checkNotNull(dataSchema, "data schema is null");
     appenderator = defaultOfflineAppenderatorFactory.build(
             this.dataSchema,
             tuningConfig,
             new FireDepartmentMetrics()
     );
+    Preconditions.checkArgument(maxPartitionSize > 0, "maxPartitionSize need to be greater than 0");
     this.maxPartitionSize = maxPartitionSize;
     appenderator.startJob(); // maybe we need to move this out of the constructor
-    this.segmentsDescriptorDir = segmentsDescriptorsDir;
-    this.fileSystem = Preconditions.checkNotNull(fileSystem);
+    this.segmentsDescriptorDir = Preconditions.checkNotNull(segmentsDescriptorsDir, "segmentsDescriptorsDir is null");
+    this.fileSystem = Preconditions.checkNotNull(fileSystem, "file system is null");
     committerSupplier = Suppliers.ofInstance(Committers.nil());
-    LOG.info(String.format("Tuning config [%s]", this.tuningConfig));
-    LOG.info(String.format("Dataschema is [%s]", this.dataSchema));
+    LOG.debug(String.format("Data schema is [%s]", this.dataSchema));
   }
 
   /**
@@ -219,16 +216,6 @@ public class DruidRecordWriter implements RecordWriter<NullWritable, DruidWritab
     final long timestamp = (long) record.getValue().get(DruidTable.DEFAULT_TIMESTAMP_COLUMN);
     final long truncatedTime = (long) record.getValue()
             .get(Constants.DRUID_TIMESTAMP_GRANULARITY_COL_NAME);
-    // We drop the time granularity column, since we do not need to store it
-    Map event = Maps.filterKeys(record.getValue(), new Predicate<String>() {
-      @Override
-      public boolean apply(@Nullable String input) {
-        if (input.equals(Constants.DRUID_TIMESTAMP_GRANULARITY_COL_NAME)) {
-          return false;
-        }
-        return true;
-      }
-    });
 
     InputRow inputRow = new MapBasedInputRow(
             timestamp,
@@ -236,7 +223,7 @@ public class DruidRecordWriter implements RecordWriter<NullWritable, DruidWritab
                     .getParseSpec()
                     .getDimensionsSpec()
                     .getDimensionNames(),
-            event
+            record.getValue()
     );
 
     try {

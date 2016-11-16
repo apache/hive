@@ -17,14 +17,24 @@
  */
 package org.apache.hadoop.hive.druid.io;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.metamx.common.lifecycle.Lifecycle;
+import com.metamx.http.client.HttpClient;
+import com.metamx.http.client.HttpClientConfig;
+import com.metamx.http.client.HttpClientInit;
+import io.druid.query.Druids;
+import io.druid.query.Druids.SegmentMetadataQueryBuilder;
+import io.druid.query.Druids.SelectQueryBuilder;
+import io.druid.query.Druids.TimeBoundaryQueryBuilder;
+import io.druid.query.Query;
+import io.druid.query.Result;
+import io.druid.query.metadata.metadata.SegmentAnalysis;
+import io.druid.query.metadata.metadata.SegmentMetadataQuery;
+import io.druid.query.select.PagingSpec;
+import io.druid.query.select.SelectQuery;
+import io.druid.query.spec.MultipleIntervalSegmentSpec;
+import io.druid.query.timeboundary.TimeBoundaryQuery;
+import io.druid.query.timeboundary.TimeBoundaryResultValue;
 import org.apache.calcite.adapter.druid.DruidDateTimeUtils;
 import org.apache.calcite.adapter.druid.DruidTable;
 import org.apache.commons.lang3.StringEscapeUtils;
@@ -57,29 +67,17 @@ import org.joda.time.chrono.ISOChronology;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.metamx.common.lifecycle.Lifecycle;
-import com.metamx.http.client.HttpClient;
-import com.metamx.http.client.HttpClientConfig;
-import com.metamx.http.client.HttpClientInit;
-
-import io.druid.query.Druids;
-import io.druid.query.Druids.SegmentMetadataQueryBuilder;
-import io.druid.query.Druids.SelectQueryBuilder;
-import io.druid.query.Druids.TimeBoundaryQueryBuilder;
-import io.druid.query.Query;
-import io.druid.query.Result;
-import io.druid.query.metadata.metadata.SegmentAnalysis;
-import io.druid.query.metadata.metadata.SegmentMetadataQuery;
-import io.druid.query.select.PagingSpec;
-import io.druid.query.select.SelectQuery;
-import io.druid.query.spec.MultipleIntervalSegmentSpec;
-import io.druid.query.timeboundary.TimeBoundaryQuery;
-import io.druid.query.timeboundary.TimeBoundaryResultValue;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Druid query based input format.
- * 
+ *
  * Given a query and the Druid broker address, it will send it, and retrieve
  * and parse the results.
  */
@@ -118,7 +116,7 @@ public class DruidQueryBasedInputFormat extends InputFormat<NullWritable, DruidW
       if (dataSource == null) {
         throw new IOException("Druid data source cannot be empty");
       }
-      druidQuery = createSelectStarQuery(address, dataSource);
+      druidQuery = createSelectStarQuery(dataSource);
       druidQueryType = Query.SELECT;
     } else {
       druidQueryType = conf.get(Constants.DRUID_QUERY_TYPE);
@@ -144,7 +142,7 @@ public class DruidQueryBasedInputFormat extends InputFormat<NullWritable, DruidW
     }
   }
 
-  private static String createSelectStarQuery(String address, String dataSource) throws IOException {
+  private static String createSelectStarQuery(String dataSource) throws IOException {
     // Create Select query
     SelectQueryBuilder builder = new Druids.SelectQueryBuilder();
     builder.dataSource(dataSource);
@@ -188,16 +186,23 @@ public class DruidQueryBasedInputFormat extends InputFormat<NullWritable, DruidW
     metadataBuilder.merge(true);
     metadataBuilder.analysisTypes();
     SegmentMetadataQuery metadataQuery = metadataBuilder.build();
-
+    final Lifecycle lifecycle = new Lifecycle();
     HttpClient client = HttpClientInit.createClient(
             HttpClientConfig.builder().withNumConnections(numConnection)
-                    .withReadTimeout(readTimeout.toStandardDuration()).build(), new Lifecycle());
+                    .withReadTimeout(readTimeout.toStandardDuration()).build(), lifecycle);
+    try {
+      lifecycle.start();
+    } catch (Exception e) {
+      LOG.error("Lifecycle start issue",e);
+    }
     InputStream response;
     try {
       response = DruidStorageHandlerUtils.submitRequest(client,
               DruidStorageHandlerUtils.createRequest(address, metadataQuery));
     } catch (Exception e) {
       throw new IOException(org.apache.hadoop.util.StringUtils.stringifyException(e));
+    } finally {
+      lifecycle.stop();
     }
 
     // Retrieve results

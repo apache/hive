@@ -17,6 +17,9 @@
  */
 package org.apache.hadoop.hive.druid;
 
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Preconditions;
+import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 import com.google.common.base.Throwables;
 import io.druid.indexer.SQLMetadataStorageUpdaterJobHandler;
@@ -24,6 +27,7 @@ import io.druid.metadata.MetadataStorageConnectorConfig;
 import io.druid.metadata.MetadataStorageTablesConfig;
 import io.druid.metadata.SQLMetadataConnector;
 import io.druid.metadata.storage.mysql.MySQLConnector;
+import io.druid.metadata.storage.postgresql.PostgreSQLConnector;
 import io.druid.segment.loading.SegmentLoadingException;
 import io.druid.timeline.DataSegment;
 import org.apache.commons.lang3.StringUtils;
@@ -39,13 +43,14 @@ import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.ql.metadata.DefaultStorageHandler;
 import org.apache.hadoop.hive.ql.session.SessionState;
-import org.apache.hadoop.hive.serde2.SerDe;
+import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.OutputFormat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -61,37 +66,60 @@ public class DruidStorageHandler extends DefaultStorageHandler implements HiveMe
 
   private final SQLMetadataConnector connector;
   private final SQLMetadataStorageUpdaterJobHandler druidSqlMetadataStorageUpdaterJobHandler;
-  private final MetadataStorageTablesConfig druidMetadataStorageTablesConfig = MetadataStorageTablesConfig.fromBase("druid");
+  private final MetadataStorageTablesConfig druidMetadataStorageTablesConfig;
 
   public DruidStorageHandler()
   {
+    //this is the default value in druid
+    final String base = SessionState.getSessionConf().get("hive.druid.metadata.base", "druid");
+    // default to mysql to avoid issue with creating of connector.
     final String dbType = SessionState.getSessionConf().get("hive.druid.metadata.db.type", "mysql");
-    final String username = SessionState.getSessionConf().get("hive.druid.metadata.username", "druid");
+    final String username = SessionState.getSessionConf().get("hive.druid.metadata.username", "");
     final String password = SessionState.getSessionConf().get("hive.druid.metadata.password", "");
-    final String uri = SessionState.getSessionConf().get("hive.druid.metadata.uri", "jdbc:mysql://cn105-10.l42scl.hortonworks.com/druid_db");
+    final String uri = SessionState.getSessionConf().get("hive.druid.metadata.uri", "jdbc:mysql://localhost/druid");
 
-    connector = new MySQLConnector(Suppliers.<MetadataStorageConnectorConfig>ofInstance(new MetadataStorageConnectorConfig()
-    {
-      @Override
-      public String getConnectURI()
-      {
-        return uri;
-      }
+    druidMetadataStorageTablesConfig = MetadataStorageTablesConfig.fromBase(base);
 
-      @Override
-      public String getUser()
-      {
-        return username;
-      }
+    final Supplier<MetadataStorageConnectorConfig> storageConnectorConfigSupplier = Suppliers.<MetadataStorageConnectorConfig>ofInstance(
+            new MetadataStorageConnectorConfig() {
+              @Override
+              public String getConnectURI() {
+                return uri;
+              }
 
-      @Override
-      public String getPassword()
-      {
-        return password;
-      }
-    }), Suppliers.ofInstance(druidMetadataStorageTablesConfig));
+              @Override
+              public String getUser() {
+                return username;
+              }
 
+              @Override
+              public String getPassword() {
+                return password;
+              }
+            });
+
+    if (dbType.equals("mysql")) {
+      connector = new MySQLConnector(storageConnectorConfigSupplier,
+              Suppliers.ofInstance(druidMetadataStorageTablesConfig)
+      );
+    } else if (dbType.equals("postgres")) {
+      connector = new PostgreSQLConnector(storageConnectorConfigSupplier,
+              Suppliers.ofInstance(druidMetadataStorageTablesConfig)
+      );
+    } else {
+      throw new IllegalStateException(String.format("Unknown metadata storage type [%s]", dbType));
+    }
     druidSqlMetadataStorageUpdaterJobHandler = new SQLMetadataStorageUpdaterJobHandler(connector);
+  }
+
+  @VisibleForTesting
+  public DruidStorageHandler(SQLMetadataConnector connector,
+          SQLMetadataStorageUpdaterJobHandler druidSqlMetadataStorageUpdaterJobHandler,
+          MetadataStorageTablesConfig druidMetadataStorageTablesConfig
+  ) {
+    this.connector = connector;
+    this.druidSqlMetadataStorageUpdaterJobHandler = druidSqlMetadataStorageUpdaterJobHandler;
+    this.druidMetadataStorageTablesConfig = druidMetadataStorageTablesConfig;
   }
 
   @Override
@@ -107,8 +135,7 @@ public class DruidStorageHandler extends DefaultStorageHandler implements HiveMe
   }
 
   @Override
-  public Class<? extends SerDe> getSerDeClass()
-  {
+  public Class<? extends AbstractSerDe> getSerDeClass() {
     return DruidSerDe.class;
   }
 
@@ -130,6 +157,20 @@ public class DruidStorageHandler extends DefaultStorageHandler implements HiveMe
     }
     if (table.getSd().getBucketColsSize() != 0) {
       throw new MetaException("CLUSTERED BY may not be specified for Druid");
+    }
+    String dataSourceName = Preconditions.checkNotNull(table.getParameters().get(Constants.DRUID_DATA_SOURCE), "WTF dataSource name is null !");
+    try {
+      connector.createSegmentTable();
+    } catch (Exception e)
+    {
+      LOG.error("Exception while trying to create druid segments table", e);
+      throw new MetaException(e.getMessage());
+    }
+    Collection<String> existingDataSources = DruidStorageHandlerUtils
+            .getAllDataSourceNames(connector, druidMetadataStorageTablesConfig);
+    LOG.debug(String.format("pre-create data source with name [%s]", dataSourceName));
+    if (existingDataSources.contains(dataSourceName)) {
+      throw new IllegalStateException(String.format("Data source [%s] already existing", dataSourceName));
     }
   }
 
@@ -159,9 +200,14 @@ public class DruidStorageHandler extends DefaultStorageHandler implements HiveMe
   @Override
   public void commitCreateTable(Table table) throws MetaException
   {
-    final Path segmentDescriptorDir = new Path(table.getSd().getLocation());
+    LOG.info(String.format("Committing table [%s] to the druid metastore", table.getDbName()));
+    final Path tableDir = new Path(table.getSd().getLocation());
     try {
-      publishSegments(DruidStorageHandlerUtils.getPublishedSegments(segmentDescriptorDir, getConf()));
+      druidSqlMetadataStorageUpdaterJobHandler.publishSegments(
+              druidMetadataStorageTablesConfig.getSegmentsTable(),
+              DruidStorageHandlerUtils.getPublishedSegments(tableDir, getConf()),
+              DruidStorageHandlerUtils.JSON_MAPPER
+      );
     }
     catch (IOException e) {
       LOG.error("Exception while commit", e);
@@ -169,11 +215,12 @@ public class DruidStorageHandler extends DefaultStorageHandler implements HiveMe
     }
   }
 
-  public void deleteSegment(DataSegment segment) throws SegmentLoadingException
+  @VisibleForTesting
+  protected void deleteSegment(DataSegment segment) throws SegmentLoadingException
   {
 
     final Path path = getPath(segment);
-    LOG.info("removing segment[%s] mapped to path[%s]", segment.getIdentifier(), path);
+    LOG.info(String.format("removing segment[%s], located at path[%s]", segment.getIdentifier(), path));
 
     try {
       if (path.getName().endsWith(".zip")) {
@@ -181,7 +228,7 @@ public class DruidStorageHandler extends DefaultStorageHandler implements HiveMe
         final FileSystem fs = path.getFileSystem(getConf());
 
         if (!fs.exists(path)) {
-          LOG.warn("Segment Path [%s] does not exist. It appears to have been deleted already.", path);
+          LOG.warn(String.format("Segment Path [%s] does not exist. It appears to have been deleted already.", path));
           return;
         }
 
@@ -212,12 +259,12 @@ public class DruidStorageHandler extends DefaultStorageHandler implements HiveMe
     }
   }
 
-  private Path getPath(DataSegment dataSegment)
+  private static Path getPath(DataSegment dataSegment)
   {
     return new Path(String.valueOf(dataSegment.getLoadSpec().get("path")));
   }
 
-  private boolean safeNonRecursiveDelete(FileSystem fs, Path path)
+  private static boolean safeNonRecursiveDelete(FileSystem fs, Path path)
   {
     try {
       return fs.delete(path, false);
@@ -225,17 +272,6 @@ public class DruidStorageHandler extends DefaultStorageHandler implements HiveMe
     catch (Exception ex) {
       return false;
     }
-  }
-
-  private void publishSegments(List<DataSegment> publishedSegments)
-  {
-
-    druidSqlMetadataStorageUpdaterJobHandler.publishSegments(
-        druidMetadataStorageTablesConfig.getSegmentsTable(),
-        publishedSegments,
-        DruidStorageHandlerUtils.JSON_MAPPER
-    );
-    return;
   }
 
   @Override
@@ -251,9 +287,37 @@ public class DruidStorageHandler extends DefaultStorageHandler implements HiveMe
   }
 
   @Override
-  public void commitDropTable(Table table, boolean deleteData) throws MetaException
-  {
-    // Nothing to do
+  public void commitDropTable(Table table, boolean deleteData) throws MetaException {
+    String dataSourceName = Preconditions
+            .checkNotNull(table.getParameters().get(Constants.DRUID_DATA_SOURCE),
+                    "WTF dataSource name is null !"
+            );
+
+    if (deleteData == true) {
+      LOG.info(String.format("Dropping with purge all the data for data source [%s]",
+              dataSourceName
+      ));
+      List<DataSegment> dataSegmentList = DruidStorageHandlerUtils
+              .getDataSegment(connector, druidMetadataStorageTablesConfig, dataSourceName);
+      if (dataSegmentList.isEmpty()) {
+        LOG.info(String.format("Nothing to delete for data source [%s]", dataSourceName));
+        return;
+      }
+      for (DataSegment dataSegment :
+              dataSegmentList) {
+        try {
+          deleteSegment(dataSegment);
+        } catch (SegmentLoadingException e) {
+          LOG.error(String.format("Error while deleting segment [%s]", dataSegment.getIdentifier()),
+                  e
+          );
+        }
+      }
+    }
+    if (DruidStorageHandlerUtils
+            .disableDataSource(connector, druidMetadataStorageTablesConfig, dataSourceName)) {
+      LOG.info(String.format("Successfully dropped druid data source [%s]", dataSourceName));
+    }
   }
 
   @Override
