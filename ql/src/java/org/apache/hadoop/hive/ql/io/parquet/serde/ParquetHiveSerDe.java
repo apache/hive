@@ -16,9 +16,11 @@ package org.apache.hadoop.hive.ql.io.parquet.serde;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 
 import com.google.common.base.Preconditions;
 import org.apache.hadoop.conf.Configuration;
@@ -188,19 +190,18 @@ public class ParquetHiveSerDe extends AbstractSerDe {
    * @param prunedPaths a string representing the pruned paths, separated by ','
    * @return the pruned struct type info
    */
-  private StructTypeInfo pruneFromPaths(
+  private static StructTypeInfo pruneFromPaths(
       StructTypeInfo originalTypeInfo, String prunedPaths) {
     PrunedStructTypeInfo prunedTypeInfo = new PrunedStructTypeInfo(originalTypeInfo);
-
-    String[] prunedPathList = prunedPaths.split(",");
-    for (String path : prunedPathList) {
+    Set<String> prunedPathSet = new HashSet<>(Arrays.asList(prunedPaths.split(",")));
+    for (String path : prunedPathSet) {
       pruneFromSinglePath(prunedTypeInfo, path);
     }
 
     return prunedTypeInfo.prune();
   }
 
-  private void pruneFromSinglePath(PrunedStructTypeInfo prunedInfo, String path) {
+  private static void pruneFromSinglePath(PrunedStructTypeInfo prunedInfo, String path) {
     Preconditions.checkArgument(prunedInfo != null,
       "PrunedStructTypeInfo for path " + path + " should not be null");
 
@@ -212,7 +213,7 @@ public class ParquetHiveSerDe extends AbstractSerDe {
     String fieldName = path.substring(0, index);
     prunedInfo.markSelected(fieldName);
     if (index < path.length()) {
-      pruneFromSinglePath(prunedInfo.children.get(fieldName), path.substring(index + 1));
+      pruneFromSinglePath(prunedInfo.getChild(fieldName), path.substring(index + 1));
     }
   }
 
@@ -228,16 +229,22 @@ public class ParquetHiveSerDe extends AbstractSerDe {
       for (int i = 0; i < typeInfo.getAllStructFieldTypeInfos().size(); ++i) {
         TypeInfo ti = typeInfo.getAllStructFieldTypeInfos().get(i);
         if (ti.getCategory() == Category.STRUCT) {
-          this.children.put(typeInfo.getAllStructFieldNames().get(i),
+          this.children.put(typeInfo.getAllStructFieldNames().get(i).toLowerCase(),
               new PrunedStructTypeInfo((StructTypeInfo) ti));
         }
       }
     }
 
+    PrunedStructTypeInfo getChild(String fieldName) {
+      return children.get(fieldName.toLowerCase());
+    }
+
     void markSelected(String fieldName) {
-      int index = typeInfo.getAllStructFieldNames().indexOf(fieldName);
-      if (index >= 0) {
-        selected[index] = true;
+      for (int i = 0; i < typeInfo.getAllStructFieldNames().size(); ++i) {
+        if (typeInfo.getAllStructFieldNames().get(i).equalsIgnoreCase(fieldName)) {
+          selected[i] = true;
+          break;
+        }
       }
     }
 
@@ -250,8 +257,8 @@ public class ParquetHiveSerDe extends AbstractSerDe {
         String fn = oldNames.get(i);
         if (selected[i]) {
           newNames.add(fn);
-          if (children.containsKey(fn)) {
-            newTypes.add(children.get(fn).prune());
+          if (children.containsKey(fn.toLowerCase())) {
+            newTypes.add(children.get(fn.toLowerCase()).prune());
           } else {
             newTypes.add(oldTypes.get(i));
           }

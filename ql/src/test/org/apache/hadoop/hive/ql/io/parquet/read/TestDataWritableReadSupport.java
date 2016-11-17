@@ -18,6 +18,7 @@ import org.apache.parquet.schema.MessageTypeParser;
 import org.junit.Test;
 
 import java.util.Arrays;
+import java.util.HashSet;
 
 import static org.apache.hadoop.hive.ql.io.parquet.HiveParquetSchemaTestUtils.testConversion;
 
@@ -36,7 +37,7 @@ public class TestDataWritableReadSupport {
 
     testConversion("structCol", "struct<a:int>", DataWritableReadSupport
       .getProjectedSchema(originalMsg, Arrays.asList("structCol"), Arrays.asList(0),
-        Arrays.asList("structCol.a")).toString());
+        new HashSet<>(Arrays.asList("structCol.a"))).toString());
   }
 
   @Test
@@ -51,7 +52,7 @@ public class TestDataWritableReadSupport {
 
     testConversion("structCol", "struct<a:int,b:double>", DataWritableReadSupport
       .getProjectedSchema(originalMsg, Arrays.asList("structCol"), Arrays.asList(0),
-        Arrays.asList("structCol.a", "structCol.b")).toString());
+        new HashSet<>(Arrays.asList("structCol.a", "structCol.b"))).toString());
   }
 
   @Test
@@ -67,7 +68,7 @@ public class TestDataWritableReadSupport {
 
     testConversion("structCol,c", "struct<b:double>,boolean", DataWritableReadSupport
       .getProjectedSchema(originalMsg, Arrays.asList("structCol", "c"), Arrays.asList(0, 1),
-        Arrays.asList("structCol.b", "c")).toString());
+        new HashSet<>(Arrays.asList("structCol.b", "c"))).toString());
   }
 
   @Test
@@ -86,7 +87,7 @@ public class TestDataWritableReadSupport {
 
     testConversion("structCol", "struct<subStructCol:struct<b:bigint>>", DataWritableReadSupport
       .getProjectedSchema(originalMsg, Arrays.asList("structCol"), Arrays.asList(0),
-        Arrays.asList("structCol.subStructCol.b")).toString());
+        new HashSet<>(Arrays.asList("structCol.subStructCol.b"))).toString());
   }
 
   @Test
@@ -105,8 +106,8 @@ public class TestDataWritableReadSupport {
 
     testConversion("structCol", "struct<subStructCol:struct<b:bigint,c:boolean>>",
       DataWritableReadSupport
-        .getProjectedSchema(originalMsg, Arrays.asList("structCol"), Arrays.asList(0), Arrays
-            .asList("structCol.subStructCol", "structCol.subStructCol.b",
-              "structCol.subStructCol.c")).toString());
+        .getProjectedSchema(originalMsg, Arrays.asList("structCol"), Arrays.asList(0),
+            new HashSet<>(Arrays.asList("structCol.subStructCol", "structCol.subStructCol.b",
+                "structCol.subStructCol.c"))).toString());
   }
 }
