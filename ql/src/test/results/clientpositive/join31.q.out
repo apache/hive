@@ -30,16 +30,10 @@ group by subq1.key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-8 depends on stages: Stage-1, Stage-5 , consists of Stage-9, Stage-10, Stage-2
-  Stage-9 has a backup stage: Stage-2
-  Stage-6 depends on stages: Stage-9
-  Stage-3 depends on stages: Stage-2, Stage-6, Stage-7
+  Stage-7 depends on stages: Stage-1
+  Stage-3 depends on stages: Stage-7
   Stage-0 depends on stages: Stage-3
   Stage-4 depends on stages: Stage-0
-  Stage-10 has a backup stage: Stage-2
-  Stage-7 depends on stages: Stage-10
-  Stage-2
-  Stage-5 is a root stage
 
 STAGE PLANS:
   Stage: Stage-1
@@ -74,74 +68,74 @@ STAGE PLANS:
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                 serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
 
-  Stage: Stage-8
-    Conditional Operator
-
-  Stage: Stage-9
+  Stage: Stage-7
     Map Reduce Local Work
       Alias -> Map Local Tables:
-        $hdt$_0:$INTNAME1 
+        $hdt$_0:$hdt$_1:y 
           Fetch Operator
             limit: -1
       Alias -> Map Local Operator Tree:
-        $hdt$_0:$INTNAME1 
+        $hdt$_0:$hdt$_1:y 
           TableScan
-            HashTable Sink Operator
-              keys:
-                0 _col0 (type: string)
-                1 _col0 (type: string)
-
-  Stage: Stage-6
-    Map Reduce
-      Map Operator Tree:
-          TableScan
-            Map Join Operator
-              condition map:
-                   Inner Join 0 to 1
-              keys:
-                0 _col0 (type: string)
-                1 _col0 (type: string)
-              outputColumnNames: _col0
-              Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
-              Group By Operator
-                aggregations: count(1)
-                keys: _col0 (type: string)
-                mode: hash
-                outputColumnNames: _col0, _col1
-                Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
-                File Output Operator
-                  compressed: false
-                  table:
-                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
-      Local Work:
-        Map Reduce Local Work
+            alias: y
+            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: key is not null (type: boolean)
+              Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+              Select Operator
+                expressions: key (type: string)
+                outputColumnNames: _col0
+                Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                Group By Operator
+                  keys: _col0 (type: string)
+                  mode: hash
+                  outputColumnNames: _col0
+                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                  HashTable Sink Operator
+                    keys:
+                      0 _col0 (type: string)
+                      1 _col0 (type: string)
 
   Stage: Stage-3
     Map Reduce
       Map Operator Tree:
           TableScan
-            Reduce Output Operator
-              key expressions: _col0 (type: string)
-              sort order: +
-              Map-reduce partition columns: _col0 (type: string)
-              Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
-              value expressions: _col1 (type: bigint)
+            Map Join Operator
+              condition map:
+                   Left Semi Join 0 to 1
+              keys:
+                0 _col0 (type: string)
+                1 _col0 (type: string)
+              outputColumnNames: _col0
+              Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
+              Group By Operator
+                aggregations: count(1)
+                keys: _col0 (type: string)
+                mode: hash
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col0 (type: string)
+                  sort order: +
+                  Map-reduce partition columns: _col0 (type: string)
+                  Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col1 (type: bigint)
+      Local Work:
+        Map Reduce Local Work
       Reduce Operator Tree:
         Group By Operator
           aggregations: count(VALUE._col0)
           keys: KEY._col0 (type: string)
           mode: mergepartial
           outputColumnNames: _col0, _col1
-          Statistics: Num rows: 137 Data size: 1455 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
           Select Operator
             expressions: _col0 (type: string), UDFToInteger(_col1) (type: int)
             outputColumnNames: _col0, _col1
-            Statistics: Num rows: 137 Data size: 1455 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
             File Output Operator
               compressed: false
-              Statistics: Num rows: 137 Data size: 1455 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
               table:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -160,116 +154,6 @@ STAGE PLANS:
 
   Stage: Stage-4
     Stats-Aggr Operator
-
-  Stage: Stage-10
-    Map Reduce Local Work
-      Alias -> Map Local Tables:
-        $hdt$_0:$INTNAME 
-          Fetch Operator
-            limit: -1
-      Alias -> Map Local Operator Tree:
-        $hdt$_0:$INTNAME 
-          TableScan
-            HashTable Sink Operator
-              keys:
-                0 _col0 (type: string)
-                1 _col0 (type: string)
-
-  Stage: Stage-7
-    Map Reduce
-      Map Operator Tree:
-          TableScan
-            Map Join Operator
-              condition map:
-                   Inner Join 0 to 1
-              keys:
-                0 _col0 (type: string)
-                1 _col0 (type: string)
-              outputColumnNames: _col0
-              Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
-              Group By Operator
-                aggregations: count(1)
-                keys: _col0 (type: string)
-                mode: hash
-                outputColumnNames: _col0, _col1
-                Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
-                File Output Operator
-                  compressed: false
-                  table:
-                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
-      Local Work:
-        Map Reduce Local Work
-
-  Stage: Stage-2
-    Map Reduce
-      Map Operator Tree:
-          TableScan
-            Reduce Output Operator
-              key expressions: _col0 (type: string)
-              sort order: +
-              Map-reduce partition columns: _col0 (type: string)
-              Statistics: Num rows: 12 Data size: 91 Basic stats: COMPLETE Column stats: NONE
-          TableScan
-            Reduce Output Operator
-              key expressions: _col0 (type: string)
-              sort order: +
-              Map-reduce partition columns: _col0 (type: string)
-              Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
-      Reduce Operator Tree:
-        Join Operator
-          condition map:
-               Inner Join 0 to 1
-          keys:
-            0 _col0 (type: string)
-            1 _col0 (type: string)
-          outputColumnNames: _col0
-          Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
-          Group By Operator
-            aggregations: count(1)
-            keys: _col0 (type: string)
-            mode: hash
-            outputColumnNames: _col0, _col1
-            Statistics: Num rows: 275 Data size: 2921 Basic stats: COMPLETE Column stats: NONE
-            File Output Operator
-              compressed: false
-              table:
-                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                  serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
-
-  Stage: Stage-5
-    Map Reduce
-      Map Operator Tree:
-          TableScan
-            alias: y
-            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-            Filter Operator
-              predicate: key is not null (type: boolean)
-              Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-              Group By Operator
-                keys: key (type: string)
-                mode: hash
-                outputColumnNames: _col0
-                Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-                Reduce Output Operator
-                  key expressions: _col0 (type: string)
-                  sort order: +
-                  Map-reduce partition columns: _col0 (type: string)
-                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-      Reduce Operator Tree:
-        Group By Operator
-          keys: KEY._col0 (type: string)
-          mode: mergepartial
-          outputColumnNames: _col0
-          Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
-          File Output Operator
-            compressed: false
-            table:
-                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
 
 PREHOOK: query: INSERT OVERWRITE TABLE dest_j1 
 SELECT subq1.key, count(1) as cnt
