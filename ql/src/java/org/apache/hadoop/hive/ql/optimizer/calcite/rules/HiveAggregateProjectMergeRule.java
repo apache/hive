@@ -31,6 +31,7 @@ import org.apache.calcite.util.ImmutableBitSet;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelFactories;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelOptUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAggregate;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveGroupingID;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject;
 
 import com.google.common.collect.ImmutableList;
@@ -56,6 +57,19 @@ public class HiveAggregateProjectMergeRule extends RelOptRule {
     super(
         operand(HiveAggregate.class,
             operand(HiveProject.class, any())));
+  }
+
+  @Override
+  public boolean matches(RelOptRuleCall call) {
+    final Aggregate aggregate = call.rel(0);
+    // Rule cannot be applied if there are GroupingId because it will change the
+    // value as the position will be changed.
+    for (AggregateCall aggCall : aggregate.getAggCallList()) {
+      if (aggCall.getAggregation().equals(HiveGroupingID.INSTANCE)) {
+        return false;
+      }
+    }
+    return super.matches(call);
   }
 
   @Override
