@@ -29,6 +29,7 @@ import org.apache.commons.cli.ParseException;
 import org.apache.commons.io.output.NullOutputStream;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.HiveMetaException;
@@ -48,8 +49,10 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.net.URI;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -175,6 +178,274 @@ public class HiveSchemaTool {
         e.printStackTrace(System.err);
       }
     }
+  }
+
+  boolean validateLocations(String defaultLocPrefix) throws HiveMetaException {
+    boolean rtn;
+    rtn = checkMetaStoreDBLocation(defaultLocPrefix);
+    rtn = checkMetaStoreTableLocation(defaultLocPrefix) && rtn;
+    rtn = checkMetaStorePartitionLocation(defaultLocPrefix) && rtn;
+    return rtn;
+  }
+
+  private String getNameOrID(ResultSet res, int nameInx, int idInx) throws SQLException {
+    String itemName = res.getString(nameInx);
+    return  (itemName == null || itemName.isEmpty()) ? "ID: " + res.getString(idInx) : "Name: " + itemName;
+  }
+
+  // read schema version from metastore
+  private boolean checkMetaStoreDBLocation(String locHeader)
+      throws HiveMetaException {
+    String defaultPrefix = locHeader;
+    String dbLoc;
+    boolean isValid = true;
+    int numOfInvalid = 0;
+    Connection metastoreConn = getConnectionToMetastore(true);
+    if (getDbCommandParser(dbType).needsQuotedIdentifier()) {
+      dbLoc = "select dbt.\"DB_ID\", dbt.\"NAME\", dbt.\"DB_LOCATION_URI\" from \"DBS\" dbt";
+    } else {
+      dbLoc = "select dbt.DB_ID, dbt.NAME, dbt.DB_LOCATION_URI from DBS dbt";
+    }
+    String locValue;
+    String dbName;
+    try(Statement stmt = metastoreConn.createStatement();
+        ResultSet res = stmt.executeQuery(dbLoc)) {
+      while (res.next()) {
+        locValue = res.getString(3);
+        if (locValue == null) {
+          System.err.println("NULL Location for DB with " + getNameOrID(res,2,1));
+          numOfInvalid++;
+        } else {
+          URI currentUri = null;
+          try {
+            currentUri = new Path(locValue).toUri();
+          } catch (Exception pe) {
+            System.err.println("Invalid Location for DB with " + getNameOrID(res,2,1));
+            System.err.println(pe.getMessage());
+            numOfInvalid++;
+            continue;
+          }
+          
+          if (currentUri.getScheme() == null || currentUri.getScheme().isEmpty()) {
+            System.err.println("Missing Location scheme for DB with " + getNameOrID(res,2,1));
+            System.err.println("The Location is: " + locValue);
+            numOfInvalid++;
+          } else if (defaultPrefix != null && !defaultPrefix.isEmpty() && locValue.substring(0,defaultPrefix.length())
+              .compareToIgnoreCase(defaultPrefix) != 0) {
+            System.err.println("Mismatch root Location for DB with " + getNameOrID(res,2,1));
+            System.err.println("The Location is: " + locValue);
+            numOfInvalid++;
+          }
+        }
+      }
+
+    } catch (SQLException e) {
+      throw new HiveMetaException("Failed to get DB Location Info.", e);
+    }
+    finally {
+      try {
+        metastoreConn.close();
+      } catch (SQLException e) {
+        System.err.println("Failed to close the metastore connection");
+        e.printStackTrace(System.err);
+      }
+    }
+    if (numOfInvalid > 0) {
+      isValid = false;
+      System.err.println("Total number of invalid DB locations is: "+ numOfInvalid);
+    }
+    return isValid;
+  }
+
+  private boolean checkMetaStoreTableLocation(String locHeader)
+      throws HiveMetaException {
+    String defaultPrefix = locHeader;
+    String tabLoc, tabIDRange;
+    boolean isValid = true;
+    Connection metastoreConn = getConnectionToMetastore(true);
+    int numOfInvalid = 0;
+    if (getDbCommandParser(dbType).needsQuotedIdentifier()) {
+      tabIDRange = "select max(\"TBL_ID\"), min(\"TBL_ID\") from \"TBLS\" ";
+    } else {
+      tabIDRange = "select max(TBL_ID), min(TBL_ID) from TBLS";
+    }
+
+    if (getDbCommandParser(dbType).needsQuotedIdentifier()) {
+      tabLoc = "select tbl.\"TBL_ID\", tbl.\"TBL_NAME\", sd.\"LOCATION\", dbt.\"DB_ID\", dbt.\"NAME\" from \"TBLS\" tbl inner join " +
+    "\"SDS\" sd on tbl.\"SD_ID\" = sd.\"SD_ID\" and tbl.\"TBL_ID\" >= ? and tbl.\"TBL_ID\"<= ? " +
+    "inner join \"DBS\" dbt on tbl.\"DB_ID\" = dbt.\"DB_ID\" ";
+    } else {
+      tabLoc = "select tbl.TBL_ID, tbl.TBL_NAME, sd.LOCATION, dbt.DB_ID, dbt.NAME from TBLS tbl join SDS sd on tbl.SD_ID = sd.SD_ID and tbl.TBL_ID >= ? and tbl.TBL_ID <= ?  inner join DBS dbt on tbl.DB_ID = dbt.DB_ID";
+    }
+    String locValue;
+    String tabName;
+    long maxID = 0, minID = 0, curID;
+    long rtnSize = 2000;
+
+    try {
+      Statement stmt = metastoreConn.createStatement();
+      ResultSet res = stmt.executeQuery(tabIDRange);
+      if (res.next()) {
+        maxID = res.getLong(1);
+        minID = res.getLong(2);
+      }
+      res.close();
+      stmt.close();
+      curID = minID;
+      PreparedStatement pStmt = metastoreConn.prepareStatement(tabLoc);
+      while (minID <= maxID) {
+        pStmt.setLong(1, minID);
+        pStmt.setLong(2, minID + rtnSize);
+        res = pStmt.executeQuery();
+        while (res.next()) {
+          locValue = res.getString(3);
+          if (locValue == null) {
+            System.err.println("In DB with " + getNameOrID(res,5,4));
+            System.err.println("NULL Location for TABLE with " + getNameOrID(res,2,1));
+            numOfInvalid++;
+          } else {
+            URI currentUri = null;
+            try {
+              currentUri = new Path(locValue).toUri();
+            } catch (Exception pe) {
+              System.err.println("In DB with " + getNameOrID(res,5,4));
+              System.err.println("Invalid location for Table with " + getNameOrID(res,2,1));
+              System.err.println(pe.getMessage());
+              numOfInvalid++;
+              continue;
+            }
+            if (currentUri.getScheme() == null || currentUri.getScheme().isEmpty()) {
+              System.err.println("In DB with " + getNameOrID(res,5,4));
+              System.err.println("Missing Location scheme for Table with " + getNameOrID(res,2,1));
+              System.err.println("The Location is: " + locValue);
+              numOfInvalid++;
+            } else if(defaultPrefix != null && !defaultPrefix.isEmpty() && locValue.substring(0,defaultPrefix.length())
+                .compareToIgnoreCase(defaultPrefix) != 0) {
+              System.err.println("In DB with " + getNameOrID(res,5,4));
+              System.err.println("Mismatch root Location for Table with " + getNameOrID(res,2,1));
+              System.err.println("The Location is: " + locValue);
+              numOfInvalid++;
+            }
+          }
+        }
+        res.close();
+        minID += rtnSize + 1;
+
+      }
+      pStmt.close();
+
+    } catch (SQLException e) {
+      throw new HiveMetaException("Failed to get Table Location Info.", e);
+    }
+    finally {
+      try {
+        metastoreConn.close();
+      } catch (SQLException e) {
+        System.err.println("Failed to close the metastore connection");
+        e.printStackTrace(System.err);
+      }
+    }
+    if (numOfInvalid > 0) {
+      isValid = false;
+      System.err.println("Total number of invalid TABLE locations is: "+ numOfInvalid);
+    }
+    return isValid;
+  }
+
+  private boolean checkMetaStorePartitionLocation(String locHeader)
+      throws HiveMetaException {
+    String defaultPrefix = locHeader;
+    String partLoc, partIDRange;
+    boolean isValid = true;
+    int numOfInvalid = 0;
+    Connection metastoreConn = getConnectionToMetastore(true);
+    if (getDbCommandParser(dbType).needsQuotedIdentifier()) {
+      partIDRange = "select max(\"PART_ID\"), min(\"PART_ID\") from \"PARTITIONS\" ";
+    } else {
+      partIDRange = "select max(PART_ID), min(PART_ID) from PARTITIONS";
+    }
+
+    if (getDbCommandParser(dbType).needsQuotedIdentifier()) {
+      partLoc = "select pt.\"PART_ID\", pt.\"PART_NAME\", sd.\"LOCATION\", tbl.\"TBL_ID\", tbl.\"TBL_NAME\",dbt.\"DB_ID\", dbt.\"NAME\" from \"PARTITIONS\" pt "
+           + "inner join \"SDS\" sd on pt.\"SD_ID\" = sd.\"SD_ID\" and pt.\"PART_ID\" >= ? and pt.\"PART_ID\"<= ? "
+           + " inner join \"TBLS\" tbl on pt.\"TBL_ID\" = tbl.\"TBL_ID\" inner join "
+           + "\"DBS\" dbt on tbl.\"DB_ID\" = dbt.\"DB_ID\" ";
+    } else {
+      partLoc = "select pt.PART_ID, pt.PART_NAME, sd.LOCATION, tbl.TBL_ID, tbl.TBL_NAME, dbt.DB_ID, dbt.NAME from PARTITIONS pt "
+          + "inner join SDS sd on pt.SD_ID = sd.SD_ID and pt.PART_ID >= ? and pt.PART_ID <= ?  "
+          + "inner join TBLS tbl on tbl.TBL_ID = pt.TBL_ID inner join DBS dbt on tbl.DB_ID = dbt.DB_ID ";
+    }
+    String locValue;
+    String tabName;
+    long maxID = 0, minID = 0, curID;
+    long rtnSize = 2000;
+
+    try {
+      Statement stmt = metastoreConn.createStatement();
+      ResultSet res = stmt.executeQuery(partIDRange);
+      if (res.next()) {
+        maxID = res.getLong(1);
+        minID = res.getLong(2);
+      }
+      res.close();
+      stmt.close();
+      curID = minID;
+      PreparedStatement pStmt = metastoreConn.prepareStatement(partLoc);
+      while (minID <= maxID) {
+        pStmt.setLong(1, minID);
+        pStmt.setLong(2, minID + rtnSize);
+        res = pStmt.executeQuery();
+        while (res.next()) {
+          locValue = res.getString(3);
+          if (locValue == null) {
+            System.err.println("In DB with " + getNameOrID(res,7,6) + ", TABLE with " + getNameOrID(res,5,4));
+            System.err.println("NULL Location for PARTITION with " + getNameOrID(res,2,1));
+            numOfInvalid++;
+          } else {
+            URI currentUri = null;
+            try {
+              currentUri = new Path(locValue).toUri();
+            } catch (Exception pe) {
+              System.err.println("In DB with " + getNameOrID(res,7,6) + ", TABLE with " + getNameOrID(res,5,4));
+              System.err.println("Invalid location for PARTITON with " + getNameOrID(res,2,1));
+              System.err.println(pe.getMessage());
+              numOfInvalid++;
+              continue;
+            }
+            if (currentUri.getScheme() == null || currentUri.getScheme().isEmpty()) {
+              System.err.println("In DB with " + getNameOrID(res,7,6) + ", TABLE with " + getNameOrID(res,5,4));
+              System.err.println("Missing Location scheme for PARTITON with " + getNameOrID(res,2,1));
+              System.err.println("The Location is: " + locValue);
+              numOfInvalid++;
+            } else if (defaultPrefix != null && !defaultPrefix.isEmpty() && locValue.substring(0,defaultPrefix.length())
+                .compareToIgnoreCase(defaultPrefix) != 0) {
+              System.err.println("In DB with " + getNameOrID(res,7,6) + ", TABLE with " + getNameOrID(res,5,4));
+              System.err.println("Mismatch root Location for PARTITON with " + getNameOrID(res,2,1));
+              System.err.println("The Location is: " + locValue);
+              numOfInvalid++;
+            }
+          }
+        }
+        res.close();
+        minID += rtnSize + 1;
+      }
+      pStmt.close();
+    } catch (SQLException e) {
+      throw new HiveMetaException("Failed to get Partiton Location Info.", e);
+    }
+    finally {
+      try {
+        metastoreConn.close();
+      } catch (SQLException e) {
+        System.err.println("Failed to close the metastore connection");
+        e.printStackTrace(System.err);
+      }
+    }
+    if (numOfInvalid > 0) {
+      isValid = false;
+      System.err.println("Total number of invalid PARTITION locations is: "+ numOfInvalid);
+    }
+    return isValid;
   }
 
   // test the connection metastore using the config property
@@ -305,7 +576,7 @@ public class HiveSchemaTool {
     System.out.print("Starting metastore validation");
     validateSequences();
     validateSchemaTables();
-
+    validateLocations(null);
     System.out.print("Done with metastore validation");
   }
 
