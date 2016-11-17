@@ -14,24 +14,19 @@
 package org.apache.hadoop.hive.ql.io.parquet.read;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
+import org.apache.hadoop.hive.ql.io.parquet.ParquetRecordReaderBase;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.io.IOConstants;
 import org.apache.hadoop.hive.ql.io.StatsProvidingRecordReader;
 import org.apache.hadoop.hive.ql.io.parquet.ProjectionPusher;
-import org.apache.hadoop.hive.ql.io.sarg.ConvertAstToSearchArg;
-import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 import org.apache.hadoop.hive.serde2.SerDeStats;
 import org.apache.hadoop.io.ArrayWritable;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Writable;
-import org.apache.hadoop.mapred.FileSplit;
 import org.apache.hadoop.mapred.InputSplit;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.RecordReader;
@@ -39,25 +34,12 @@ import org.apache.hadoop.mapred.Reporter;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
 import org.apache.hadoop.mapreduce.TaskAttemptID;
 
-import org.apache.parquet.filter2.compat.FilterCompat;
-import org.apache.parquet.filter2.compat.RowGroupFilter;
-import org.apache.parquet.filter2.predicate.FilterPredicate;
-import org.apache.parquet.hadoop.ParquetFileReader;
 import org.apache.parquet.hadoop.ParquetInputFormat;
 import org.apache.parquet.hadoop.ParquetInputSplit;
-import org.apache.parquet.hadoop.api.InitContext;
-import org.apache.parquet.hadoop.api.ReadSupport.ReadContext;
-import org.apache.parquet.hadoop.metadata.BlockMetaData;
-import org.apache.parquet.hadoop.metadata.FileMetaData;
-import org.apache.parquet.hadoop.metadata.ParquetMetadata;
 import org.apache.parquet.hadoop.util.ContextUtil;
-import org.apache.parquet.schema.MessageType;
-import org.apache.parquet.schema.MessageTypeParser;
 
-import com.google.common.base.Strings;
-
-public class ParquetRecordReaderWrapper implements RecordReader<NullWritable, ArrayWritable>,
-        StatsProvidingRecordReader {
+public class ParquetRecordReaderWrapper extends ParquetRecordReaderBase
+  implements RecordReader<NullWritable, ArrayWritable>, StatsProvidingRecordReader {
   public static final Logger LOG = LoggerFactory.getLogger(ParquetRecordReaderWrapper.class);
 
   private final long splitLen; // for getPos()
@@ -68,12 +50,6 @@ public class ParquetRecordReaderWrapper implements RecordReader<NullWritable, Ar
   private ArrayWritable valueObj = null;
   private boolean firstRecord = false;
   private boolean eof = false;
-  private int schemaSize;
-  private boolean skipTimestampConversion = false;
-  private JobConf jobConf;
-  private final ProjectionPusher projectionPusher;
-  private List<BlockMetaData> filtedBlocks;
-  private final SerDeStats serDeStats;
 
   public ParquetRecordReaderWrapper(
       final ParquetInputFormat<ArrayWritable> newInputFormat,
@@ -134,27 +110,6 @@ public class ParquetRecordReaderWrapper implements RecordReader<NullWritable, Ar
     }
     if (valueObj == null) { // Should initialize the value for createValue
       valueObj = new ArrayWritable(Writable.class, new Writable[schemaSize]);
-    }
-  }
-
-  public FilterCompat.Filter setFilter(final JobConf conf, MessageType schema) {
-    SearchArgument sarg = ConvertAstToSearchArg.createFromConf(conf);
-    if (sarg == null) {
-      return null;
-    }
-
-    // Create the Parquet FilterPredicate without including columns that do not exist
-    // on the shema (such as partition columns).
-    FilterPredicate p = ParquetFilterPredicateConverter.toFilterPredicate(sarg, schema);
-    if (p != null) {
-      // Filter may have sensitive information. Do not send to debug.
-      LOG.debug("PARQUET predicate push down generated.");
-      ParquetInputFormat.setFilterPredicate(conf, p);
-      return FilterCompat.get(p);
-    } else {
-      // Filter may have sensitive information. Do not send to debug.
-      LOG.debug("No PARQUET predicate push down is generated.");
-      return null;
     }
   }
 
@@ -227,94 +182,4 @@ public class ParquetRecordReaderWrapper implements RecordReader<NullWritable, Ar
       throw new IOException(e);
     }
   }
-
-  /**
-   * gets a ParquetInputSplit corresponding to a split given by Hive
-   *
-   * @param oldSplit The split given by Hive
-   * @param conf The JobConf of the Hive job
-   * @return a ParquetInputSplit corresponding to the oldSplit
-   * @throws IOException if the config cannot be enhanced or if the footer cannot be read from the file
-   */
-  @SuppressWarnings("deprecation")
-  protected ParquetInputSplit getSplit(
-      final InputSplit oldSplit,
-      final JobConf conf
-      ) throws IOException {
-    ParquetInputSplit split;
-    if (oldSplit instanceof FileSplit) {
-      final Path finalPath = ((FileSplit) oldSplit).getPath();
-      jobConf = projectionPusher.pushProjectionsAndFilters(conf, finalPath.getParent());
-
-      final ParquetMetadata parquetMetadata = ParquetFileReader.readFooter(jobConf, finalPath);
-      final List<BlockMetaData> blocks = parquetMetadata.getBlocks();
-      final FileMetaData fileMetaData = parquetMetadata.getFileMetaData();
-
-      final ReadContext readContext = new DataWritableReadSupport().init(new InitContext(jobConf,
-          null, fileMetaData.getSchema()));
-
-      // Compute stats
-      for (BlockMetaData bmd : blocks) {
-        serDeStats.setRowCount(serDeStats.getRowCount() + bmd.getRowCount());
-        serDeStats.setRawDataSize(serDeStats.getRawDataSize() + bmd.getTotalByteSize());
-      }
-
-      schemaSize = MessageTypeParser.parseMessageType(readContext.getReadSupportMetadata()
-          .get(DataWritableReadSupport.HIVE_TABLE_AS_PARQUET_SCHEMA)).getFieldCount();
-      final List<BlockMetaData> splitGroup = new ArrayList<BlockMetaData>();
-      final long splitStart = ((FileSplit) oldSplit).getStart();
-      final long splitLength = ((FileSplit) oldSplit).getLength();
-      for (final BlockMetaData block : blocks) {
-        final long firstDataPage = block.getColumns().get(0).getFirstDataPageOffset();
-        if (firstDataPage >= splitStart && firstDataPage < splitStart + splitLength) {
-          splitGroup.add(block);
-        }
-      }
-      if (splitGroup.isEmpty()) {
-        LOG.warn("Skipping split, could not find row group in: " + (FileSplit) oldSplit);
-        return null;
-      }
-
-      FilterCompat.Filter filter = setFilter(jobConf, fileMetaData.getSchema());
-      if (filter != null) {
-        filtedBlocks = RowGroupFilter.filterRowGroups(filter, splitGroup, fileMetaData.getSchema());
-        if (filtedBlocks.isEmpty()) {
-          LOG.debug("All row groups are dropped due to filter predicates");
-          return null;
-        }
-
-        long droppedBlocks = splitGroup.size() - filtedBlocks.size();
-        if (droppedBlocks > 0) {
-          LOG.debug("Dropping " + droppedBlocks + " row groups that do not pass filter predicate");
-        }
-      } else {
-        filtedBlocks = splitGroup;
-      }
-
-      if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_PARQUET_TIMESTAMP_SKIP_CONVERSION)) {
-        skipTimestampConversion = !Strings.nullToEmpty(fileMetaData.getCreatedBy()).startsWith("parquet-mr");
-      }
-      split = new ParquetInputSplit(finalPath,
-          splitStart,
-          splitLength,
-          ((FileSplit) oldSplit).getLocations(),
-          filtedBlocks,
-          readContext.getRequestedSchema().toString(),
-          fileMetaData.getSchema().toString(),
-          fileMetaData.getKeyValueMetaData(),
-          readContext.getReadSupportMetadata());
-      return split;
-    } else {
-      throw new IllegalArgumentException("Unknown split type: " + oldSplit);
-    }
-  }
-
-  public List<BlockMetaData> getFiltedBlocks() {
-    return filtedBlocks;
-  }
-
-    @Override
-    public SerDeStats getStats() {
-      return serDeStats;
-    }
 }
