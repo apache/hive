@@ -232,6 +232,52 @@ POSTHOOK: query: drop view v
 POSTHOOK: type: DROPVIEW
 POSTHOOK: Input: default@v
 POSTHOOK: Output: default@v
+PREHOOK: query: create view v as with src1 as (select key from src order by key limit 5)
+select * from src1 a where a.key is not null
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: default@src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@v
+POSTHOOK: query: create view v as with src1 as (select key from src order by key limit 5)
+select * from src1 a where a.key is not null
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: default@src
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@v
+PREHOOK: query: describe extended v
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@v
+POSTHOOK: query: describe extended v
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@v
+key                 	string              	                    
+	 	 
+#### A masked pattern was here ####
+select * from src1 a where a.key is not null, viewExpandedText:with src1 as (select `src`.`key` from `default`.`src` order by key limit 5)	 	 
+select `a`.`key` from src1 a where `a`.`key` is not null, tableType:VIRTUAL_VIEW)		 
+PREHOOK: query: select * from v
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Input: default@v
+#### A masked pattern was here ####
+POSTHOOK: query: select * from v
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@v
+#### A masked pattern was here ####
+0
+0
+0
+10
+100
+PREHOOK: query: drop view v
+PREHOOK: type: DROPVIEW
+PREHOOK: Input: default@v
+PREHOOK: Output: default@v
+POSTHOOK: query: drop view v
+POSTHOOK: type: DROPVIEW
+POSTHOOK: Input: default@v
+POSTHOOK: Output: default@v
 PREHOOK: query: drop database bug
 PREHOOK: type: DROPDATABASE
 PREHOOK: Input: database:bug
