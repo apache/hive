@@ -825,9 +825,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     qb.getParseInfo().setSrcForAlias(alias, tableTree);
 
-    // if alias to CTE contains the alias, we do not do the translation because
+    // if alias to CTE contains the table name, we do not do the translation because
     // cte is actually a subquery.
-    if (!this.aliasToCTEs.containsKey(alias)) {
+    if (!this.aliasToCTEs.containsKey(tabIdName)) {
       unparseTranslator.addTableNameTranslation(tableTree, SessionState.get().getCurrentDatabase());
       if (aliasIndex != 0) {
         unparseTranslator.addIdentifierTranslation((ASTNode) tabref.getChild(aliasIndex));
