@@ -162,5 +162,7 @@ public abstract class AbstractCoreBlobstoreCliDriver extends CliAdapter {
     String uid = new SimpleDateFormat("yyyyMMdd.HHmmss.SSS").format(Calendar.getInstance().getTime())
         + "-" + String.format("%03d", (int)(Math.random() * 999));
     testBlobstorePathUnique = testBlobstorePath + uid;
+
+    qt.addPatternWithMaskComment(testBlobstorePathUnique, String.format("### %s ###", HCONF_TEST_BLOBSTORE_PATH));
   }
 }

@@ -4,12 +4,12 @@ POSTHOOK: query: DROP TABLE qtest
 POSTHOOK: type: DROPTABLE
 #### A masked pattern was here ####
 PREHOOK: type: CREATETABLE
-PREHOOK: Input: #### A masked pattern was here ####
+PREHOOK: Input: ### test.blobstore.path ###/qtest
 PREHOOK: Output: database:default
 PREHOOK: Output: default@qtest
 #### A masked pattern was here ####
 POSTHOOK: type: CREATETABLE
-POSTHOOK: Input: #### A masked pattern was here ####
+POSTHOOK: Input: ### test.blobstore.path ###/qtest
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@qtest
 PREHOOK: query: INSERT INTO qtest VALUES (1), (10), (100), (1000)

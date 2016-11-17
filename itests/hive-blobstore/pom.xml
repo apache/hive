@@ -62,6 +62,17 @@
         <maven.test.skip>false</maven.test.skip>
       </properties>
     </profile>
+    <profile>
+      <id>hadoop-2</id>
+      <dependencies>
+        <dependency>
+          <groupId>org.apache.hbase</groupId>
+          <artifactId>hbase-server</artifactId>
+          <version>${hbase.hadoop2.version}</version>
+          <scope>test</scope>
+        </dependency>
+      </dependencies>
+    </profile>
   </profiles>
 
   <dependencies>
