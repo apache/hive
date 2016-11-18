@@ -675,7 +675,6 @@ public final class ColumnPrunerProcFactory {
         // colExprMap.size() == size of cols from SEL(*) branch
         if (index >= 0 && index < numSelColumns) {
           ExprNodeDesc transformed = colExprMap.get(col.getFieldName());
-          // TODO: is this a vertical merge?
           colsAfterReplacement = mergeFieldNodes(colsAfterReplacement, transformed);
           newCols.add(col);
         }
