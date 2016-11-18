@@ -6990,7 +6990,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       dpCtx,
       dest_path);
 
-    fileSinkDesc.setHiveServerQuery(SessionState.get().isHiveServerQuery());
+    boolean isHiveServerQuery = SessionState.get().isHiveServerQuery();
+    fileSinkDesc.setHiveServerQuery(isHiveServerQuery);
     // If this is an insert, update, or delete on an ACID table then mark that so the
     // FileSinkOperator knows how to properly write to it.
     if (destTableIsAcid) {
@@ -7031,6 +7032,15 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       }
     } else if (dpCtx != null) {
       fileSinkDesc.setStaticSpec(dpCtx.getSPPath());
+    }
+
+    if (isHiveServerQuery &&
+      null != table_desc &&
+      table_desc.getSerdeClassName().equalsIgnoreCase(ThriftJDBCBinarySerDe.class.getName()) &&
+      HiveConf.getBoolVar(conf,HiveConf.ConfVars.HIVE_SERVER2_THRIFT_RESULTSET_SERIALIZE_IN_TASKS)) {
+        fileSinkDesc.setIsUsingThriftJDBCBinarySerDe(true);
+    } else {
+        fileSinkDesc.setIsUsingThriftJDBCBinarySerDe(false);
     }
 
     Operator output = putOpInsertMap(OperatorFactory.getAndMakeChild(

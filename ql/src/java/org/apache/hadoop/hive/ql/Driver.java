@@ -2184,10 +2184,7 @@ public class Driver implements CommandProcessor {
        * indeed written using ThriftJDBCBinarySerDe, read one row from the output sequence file,
        * since it is a blob of row batches.
        */
-      if (fetchTask.getWork().isHiveServerQuery() && HiveConf.getBoolVar(conf,
-          HiveConf.ConfVars.HIVE_SERVER2_THRIFT_RESULTSET_SERIALIZE_IN_TASKS)
-          && (fetchTask.getTblDesc().getSerdeClassName()
-              .equalsIgnoreCase(ThriftJDBCBinarySerDe.class.getName()))) {
+      if (fetchTask.getWork().isUsingThriftJDBCBinarySerDe()) {
         maxRows = 1;
       }
       fetchTask.setMaxRows(maxRows);
