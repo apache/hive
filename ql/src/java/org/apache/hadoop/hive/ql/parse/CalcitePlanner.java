@@ -1187,7 +1187,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
       // TODO: Decorelation of subquery should be done before attempting
       // Partition Pruning; otherwise Expression evaluation may try to execute
       // corelated sub query.
-      
+
       PerfLogger perfLogger = SessionState.getPerfLogger();
 
       final int maxCNFNodeCount = conf.getIntVar(HiveConf.ConfVars.HIVE_CBO_CNF_NODES_LIMIT);
@@ -1650,8 +1650,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
           LOG.warn("Duplicates detected when adding columns to RR: see previous message");
         }
       } else {
-        topRel = HiveJoin.getJoin(cluster, leftRel, rightRel, calciteJoinCond, calciteJoinType,
-            leftSemiJoin);
+        topRel = HiveJoin.getJoin(cluster, leftRel, rightRel, calciteJoinCond, calciteJoinType);
         topRR = RowResolver.getCombinedRR(leftRR, rightRR);
       }
 
@@ -3393,7 +3392,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
       for (ColumnInfo ci : rs.getSignature()) {
         argTypeBldr.add(TypeConverter.convert(ci.getType(), dtFactory));
       }
- 
+
       SqlOperator calciteOp = SqlFunctionConverter.getCalciteOperator(genericUDTFName, genericUDTF,
              argTypeBldr.build(), retType);
 

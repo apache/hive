@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.optimizer.calcite.stats;
 import java.util.List;
 
 import org.apache.calcite.rel.RelNode;
+import org.apache.calcite.rel.core.SemiJoin;
 import org.apache.calcite.rel.metadata.ReflectiveRelMetadataProvider;
 import org.apache.calcite.rel.metadata.RelMdSize;
 import org.apache.calcite.rel.metadata.RelMetadataProvider;
@@ -77,15 +78,28 @@ public class HiveRelMdSize extends RelMdSize {
     return list.build();
   }
 
+  @Override
+  public List<Double> averageColumnSizes(SemiJoin rel, RelMetadataQuery mq) {
+    final RelNode left = rel.getLeft();
+    final List<Double> lefts =
+        mq.getAverageColumnSizes(left);
+    if (lefts == null) {
+      return null;
+    }
+    final int fieldCount = rel.getRowType().getFieldCount();
+    Double[] sizes = new Double[fieldCount];
+    if (lefts != null) {
+      lefts.toArray(sizes);
+    }
+    return ImmutableNullableList.copyOf(sizes);
+  }
+
   public List<Double> averageColumnSizes(HiveJoin rel, RelMetadataQuery mq) {
     final RelNode left = rel.getLeft();
     final RelNode right = rel.getRight();
     final List<Double> lefts =
         mq.getAverageColumnSizes(left);
-    List<Double> rights = null;
-    if (!rel.isLeftSemiJoin()) {
-        rights = mq.getAverageColumnSizes(right);
-    }
+    List<Double> rights = mq.getAverageColumnSizes(right);
     if (lefts == null && rights == null) {
       return null;
     }
@@ -105,6 +119,7 @@ public class HiveRelMdSize extends RelMdSize {
 
   // TODO: remove when averageTypeValueSize method RelMdSize
   //       supports all types
+  @Override
   public Double averageTypeValueSize(RelDataType type) {
     switch (type.getSqlTypeName()) {
     case BOOLEAN:
@@ -139,7 +154,7 @@ public class HiveRelMdSize extends RelMdSize {
     case BINARY:
       return (double) type.getPrecision();
     case VARBINARY:
-      return Math.min((double) type.getPrecision(), 100d);
+      return Math.min(type.getPrecision(), 100d);
     case CHAR:
       return (double) type.getPrecision() * BYTES_PER_CHARACTER;
     case VARCHAR:
