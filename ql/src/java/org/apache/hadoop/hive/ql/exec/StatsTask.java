@@ -24,6 +24,11 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -49,6 +54,9 @@ import org.apache.hadoop.hive.ql.stats.StatsCollectionTaskIndependent;
 import org.apache.hadoop.hive.ql.stats.StatsFactory;
 import org.apache.hadoop.hive.ql.stats.StatsPublisher;
 import org.apache.hadoop.util.StringUtils;
+
+import com.google.common.collect.Lists;
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
 /**
  * StatsTask implementation. StatsTask mainly deals with "collectable" stats. These are
@@ -136,7 +144,7 @@ public class StatsTask extends Task<StatsWork> implements Serializable {
 
     try {
       // Stats setup:
-      Warehouse wh = new Warehouse(conf);
+      final Warehouse wh = new Warehouse(conf);
       if (!getWork().getNoStatsAggregator() && !getWork().isNoScanAnalyzeCommand()) {
         try {
           statsAggregator = createStatsAggregator(conf);
@@ -189,13 +197,65 @@ public class StatsTask extends Task<StatsWork> implements Serializable {
         // Need to get the old stats of the partition
         // and update the table stats based on the old and new stats.
         List<Partition> updates = new ArrayList<Partition>();
+
+        //Get the file status up-front for all partitions. Beneficial in cases of blob storage systems
+        final Map<String, FileStatus[]> fileStatusMap = new ConcurrentHashMap<String, FileStatus[]>();
+        int poolSize = conf.getInt(HiveConf.ConfVars.HIVE_MOVE_FILES_THREAD_COUNT.varname, 1);
+        // In case thread count is set to 0, use single thread.
+        poolSize = Math.max(poolSize, 1);
+        final ExecutorService pool = Executors.newFixedThreadPool(poolSize,
+          new ThreadFactoryBuilder().setDaemon(true)
+            .setNameFormat("stats-updater-thread-%d")
+            .build());
+        final List<Future<Void>> futures = Lists.newLinkedList();
+        LOG.debug("Getting file stats of all partitions. threadpool size:" + poolSize);
+        try {
+          for(final Partition partn : partitions) {
+            final String partitionName = partn.getName();
+            final org.apache.hadoop.hive.metastore.api.Partition tPart = partn.getTPartition();
+            Map<String, String> parameters = tPart.getParameters();
+
+            if (!existStats(parameters) && atomic) {
+              continue;
+            }
+            futures.add(pool.submit(new Callable<Void>() {
+              @Override
+              public Void call() throws Exception {
+                FileStatus[] partfileStatus = wh.getFileStatusesForSD(tPart.getSd());
+                fileStatusMap.put(partitionName,  partfileStatus);
+                return null;
+              }
+            }));
+          }
+          pool.shutdown();
+          for(Future<Void> future : futures) {
+            future.get();
+          }
+        } catch (InterruptedException e) {
+          LOG.debug("Cancelling " + futures.size() + " file stats lookup tasks");
+          //cancel other futures
+          for (Future future : futures) {
+            future.cancel(true);
+          }
+          // Fail the query if the stats are supposed to be reliable
+          if (work.isStatsReliable()) {
+            ret = 1;
+          }
+        } finally {
+          if (pool != null) {
+            pool.shutdownNow();
+          }
+          LOG.debug("Finished getting file stats of all partitions");
+        }
+
         for (Partition partn : partitions) {
           //
           // get the old partition stats
           //
           org.apache.hadoop.hive.metastore.api.Partition tPart = partn.getTPartition();
           Map<String, String> parameters = tPart.getParameters();
-          if (!existStats(parameters) && atomic) {
+          //only when the stats exist, it is added to fileStatusMap
+          if (!fileStatusMap.containsKey(partn.getName())) {
             continue;
           }
 
@@ -210,7 +270,7 @@ public class StatsTask extends Task<StatsWork> implements Serializable {
             updateStats(statsAggregator, parameters, prefix, maxPrefixLength, atomic);
           }
 
-          updateQuickStats(wh, parameters, tPart.getSd());
+          updateQuickStats(parameters, fileStatusMap.get(partn.getName()));
 
           parameters.put(StatsSetupConst.STATS_GENERATED_VIA_STATS_TASK, StatsSetupConst.TRUE);
           updates.add(new Partition(table, tPart));
@@ -327,6 +387,11 @@ public class StatsTask extends Task<StatsWork> implements Serializable {
      * calculate fast statistics
      */
     FileStatus[] partfileStatus = wh.getFileStatusesForSD(desc);
+    updateQuickStats(parameters, partfileStatus);
+  }
+
+  private void updateQuickStats(Map<String, String> parameters,
+      FileStatus[] partfileStatus) throws MetaException {
     MetaStoreUtils.populateQuickStats(partfileStatus, parameters);
   }
 
