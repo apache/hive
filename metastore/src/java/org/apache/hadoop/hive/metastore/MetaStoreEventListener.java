@@ -28,8 +28,10 @@ import org.apache.hadoop.hive.metastore.events.AlterPartitionEvent;
 import org.apache.hadoop.hive.metastore.events.AlterTableEvent;
 import org.apache.hadoop.hive.metastore.events.ConfigChangeEvent;
 import org.apache.hadoop.hive.metastore.events.CreateDatabaseEvent;
+import org.apache.hadoop.hive.metastore.events.CreateFunctionEvent;
 import org.apache.hadoop.hive.metastore.events.CreateTableEvent;
 import org.apache.hadoop.hive.metastore.events.DropDatabaseEvent;
+import org.apache.hadoop.hive.metastore.events.DropFunctionEvent;
 import org.apache.hadoop.hive.metastore.events.DropIndexEvent;
 import org.apache.hadoop.hive.metastore.events.DropPartitionEvent;
 import org.apache.hadoop.hive.metastore.events.DropTableEvent;
@@ -142,6 +144,20 @@ public abstract class MetaStoreEventListener implements Configurable {
    * @throws MetaException
    */
   public void onAlterIndex(AlterIndexEvent indexEvent) throws MetaException {
+  }
+
+  /**
+   * @param fnEvent function event
+   * @throws MetaException
+   */
+  public void onCreateFunction (CreateFunctionEvent fnEvent) throws MetaException {
+  }
+
+  /**
+   * @param fnEvent function event
+   * @throws MetaException
+   */
+  public void onDropFunction (DropFunctionEvent fnEvent) throws MetaException {
   }
 
   /**

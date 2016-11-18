@@ -162,6 +162,11 @@ public final class HCatConstants {
   public static final String HCAT_DROP_TABLE_EVENT = "DROP_TABLE";
   public static final String HCAT_CREATE_DATABASE_EVENT = "CREATE_DATABASE";
   public static final String HCAT_DROP_DATABASE_EVENT = "DROP_DATABASE";
+  public static final String HCAT_CREATE_FUNCTION_EVENT = "CREATE_FUNCTION";
+  public static final String HCAT_DROP_FUNCTION_EVENT = "DROP_FUNCTION";
+  public static final String HCAT_CREATE_INDEX_EVENT = "CREATE_INDEX";
+  public static final String HCAT_DROP_INDEX_EVENT = "DROP_INDEX";
+  public static final String HCAT_ALTER_INDEX_EVENT = "ALTER_INDEX";
   public static final String HCAT_INSERT_EVENT = "INSERT";
   public static final String HCAT_MESSAGE_VERSION = "HCAT_MESSAGE_VERSION";
   public static final String HCAT_MESSAGE_FORMAT = "HCAT_MESSAGE_FORMAT";
