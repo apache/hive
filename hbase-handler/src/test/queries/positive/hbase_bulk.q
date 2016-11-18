@@ -32,7 +32,7 @@ from src
 where value='val_100' or value='val_200';
 
 dfs -count /tmp/data/hbpartition;
-dfs -cp /tmp/data/hbpartition/* /tmp/hbpartition.lst;
+dfs -cp -f /tmp/data/hbpartition/* /tmp/hbpartition.lst;
 
 set mapred.reduce.tasks=3;
 set hive.mapred.partitioner=org.apache.hadoop.mapred.lib.TotalOrderPartitioner;
