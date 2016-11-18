@@ -19,6 +19,13 @@ package org.apache.hive.hcatalog.listener;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.hive.metastore.api.Function;
+import org.apache.hadoop.hive.metastore.api.Index;
+import org.apache.hadoop.hive.metastore.events.AddIndexEvent;
+import org.apache.hadoop.hive.metastore.events.AlterIndexEvent;
+import org.apache.hadoop.hive.metastore.events.CreateFunctionEvent;
+import org.apache.hadoop.hive.metastore.events.DropFunctionEvent;
+import org.apache.hadoop.hive.metastore.events.DropIndexEvent;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.MetaStoreEventListener;
@@ -29,7 +36,6 @@ import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NotificationEvent;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.Table;
-import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.events.AddPartitionEvent;
 import org.apache.hadoop.hive.metastore.events.AlterPartitionEvent;
 import org.apache.hadoop.hive.metastore.events.AlterTableEvent;
@@ -44,7 +50,6 @@ import org.apache.hadoop.hive.metastore.events.LoadPartitionDoneEvent;
 import org.apache.hive.hcatalog.common.HCatConstants;
 import org.apache.hive.hcatalog.messaging.MessageFactory;
 
-import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -224,6 +229,72 @@ public class DbNotificationListener extends MetaStoreEventListener {
         HCatConstants.HCAT_DROP_DATABASE_EVENT,
         msgFactory.buildDropDatabaseMessage(db).toString());
     event.setDbName(db.getName());
+    enqueue(event);
+  }
+
+  /**
+   * @param fnEvent function event
+   * @throws MetaException
+   */
+  public void onCreateFunction (CreateFunctionEvent fnEvent) throws MetaException {
+    Function fn = fnEvent.getFunction();
+    NotificationEvent event = new NotificationEvent(0, now(),
+        HCatConstants.HCAT_CREATE_FUNCTION_EVENT,
+        msgFactory.buildCreateFunctionMessage(fn).toString());
+    event.setDbName(fn.getDbName());
+    enqueue(event);
+  }
+
+  /**
+   * @param fnEvent function event
+   * @throws MetaException
+   */
+  public void onDropFunction (DropFunctionEvent fnEvent) throws MetaException {
+    Function fn = fnEvent.getFunction();
+    NotificationEvent event = new NotificationEvent(0, now(),
+        HCatConstants.HCAT_DROP_FUNCTION_EVENT,
+        msgFactory.buildDropFunctionMessage(fn).toString());
+    event.setDbName(fn.getDbName());
+    enqueue(event);
+  }
+
+  /**
+   * @param indexEvent index event
+   * @throws MetaException
+   */
+  public void onAddIndex (AddIndexEvent indexEvent) throws MetaException {
+    Index index = indexEvent.getIndex();
+    NotificationEvent event = new NotificationEvent(0, now(),
+        HCatConstants.HCAT_CREATE_INDEX_EVENT,
+        msgFactory.buildCreateIndexMessage(index).toString());
+    event.setDbName(index.getDbName());
+    enqueue(event);
+  }
+
+  /**
+   * @param indexEvent index event
+   * @throws MetaException
+   */
+  public void onDropIndex (DropIndexEvent indexEvent) throws MetaException {
+    Index index = indexEvent.getIndex();
+    NotificationEvent event = new NotificationEvent(0, now(),
+        HCatConstants.HCAT_DROP_INDEX_EVENT,
+        msgFactory.buildDropIndexMessage(index).toString());
+    event.setDbName(index.getDbName());
+    enqueue(event);
+  }
+
+  /**
+   * @param indexEvent index event
+   * @throws MetaException
+   */
+  public void onAlterIndex (AlterIndexEvent indexEvent)  throws MetaException {
+    Index before = indexEvent.getOldIndex();
+    Index after = indexEvent.getNewIndex();
+    NotificationEvent event = new NotificationEvent(0, now(),
+        HCatConstants.HCAT_ALTER_INDEX_EVENT,
+        msgFactory.buildAlterIndexMessage(before, after).toString());
+    event.setDbName(before.getDbName());
     enqueue(event);
   }
 

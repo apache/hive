@@ -23,6 +23,8 @@ import org.apache.hadoop.hive.common.classification.InterfaceAudience;
 import org.apache.hadoop.hive.common.classification.InterfaceStability;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.Database;
+import org.apache.hadoop.hive.metastore.api.Function;
+import org.apache.hadoop.hive.metastore.api.Index;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
@@ -172,6 +174,42 @@ public abstract class MessageFactory {
    * @return DropPartitionMessage instance.
    */
   public abstract DropPartitionMessage buildDropPartitionMessage(Table table, Partition partition);
+
+  /**
+   * Factory method for CreateFunctionMessage.
+   * @param fn The Function being added.
+   * @return CreateFunctionMessage instance.
+   */
+  public abstract CreateFunctionMessage buildCreateFunctionMessage(Function fn);
+
+  /**
+   * Factory method for DropFunctionMessage.
+   * @param fn The Function being dropped.
+   * @return DropFunctionMessage instance.
+   */
+  public abstract DropFunctionMessage buildDropFunctionMessage(Function fn);
+
+  /**
+   * Factory method for CreateIndexMessage.
+   * @param idx The Index being added.
+   * @return CreateIndexMessage instance.
+   */
+  public abstract CreateIndexMessage buildCreateIndexMessage(Index idx);
+
+  /**
+   * Factory method for DropIndexMessage.
+   * @param idx The Index being dropped.
+   * @return DropIndexMessage instance.
+   */
+  public abstract DropIndexMessage buildDropIndexMessage(Index idx);
+
+  /**
+   * Factory method for AlterIndexMessage.
+   * @param before The index before the alter
+   * @param after The index after the alter
+   * @return AlterIndexMessage
+   */
+  public abstract AlterIndexMessage buildAlterIndexMessage(Index before, Index after);
 
   /**
    * Factory method for building insert message

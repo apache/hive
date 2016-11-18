@@ -145,8 +145,10 @@ import org.apache.hadoop.hive.metastore.events.AlterPartitionEvent;
 import org.apache.hadoop.hive.metastore.events.AlterTableEvent;
 import org.apache.hadoop.hive.metastore.events.ConfigChangeEvent;
 import org.apache.hadoop.hive.metastore.events.CreateDatabaseEvent;
+import org.apache.hadoop.hive.metastore.events.CreateFunctionEvent;
 import org.apache.hadoop.hive.metastore.events.CreateTableEvent;
 import org.apache.hadoop.hive.metastore.events.DropDatabaseEvent;
+import org.apache.hadoop.hive.metastore.events.DropFunctionEvent;
 import org.apache.hadoop.hive.metastore.events.DropIndexEvent;
 import org.apache.hadoop.hive.metastore.events.DropPartitionEvent;
 import org.apache.hadoop.hive.metastore.events.DropTableEvent;
@@ -3571,7 +3573,6 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           + " idx=" + index_name + " newidx=" + newIndex.getIndexName());
       newIndex.putToParameters(hive_metastoreConstants.DDL_TIME, Long.toString(System
           .currentTimeMillis() / 1000));
-
       boolean success = false;
       Exception ex = null;
       Index oldIndex = null;
@@ -3579,9 +3580,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       try {
         ms.openTransaction();
         oldIndex = get_index_by_name(dbname, base_table_name, index_name);
-
         firePreEvent(new PreAlterIndexEvent(oldIndex, newIndex, this));
-
         ms.alterIndex(dbname, base_table_name, index_name, newIndex);
         if (transactionalListeners.size() > 0) {
           AlterIndexEvent alterIndexEvent = new AlterIndexEvent(oldIndex, newIndex, true, this);
@@ -4218,16 +4217,12 @@ public class HiveMetaStore extends ThriftHiveMetastore {
 
     private Index add_index_core(final RawStore ms, final Index index, final Table indexTable)
         throws InvalidObjectException, AlreadyExistsException, MetaException {
-
       boolean success = false, indexTableCreated = false;
-
       String[] qualified =
           MetaStoreUtils.getQualifiedName(index.getDbName(), index.getIndexTableName());
-
       try {
         ms.openTransaction();
         firePreEvent(new PreAddIndexEvent(index, this));
-
         Index old_index = null;
         try {
           old_index = get_index_by_name(index.getDbName(), index
@@ -4261,7 +4256,6 @@ public class HiveMetaStore extends ThriftHiveMetastore {
 
         index.setCreateTime((int) time);
         index.putToParameters(hive_metastoreConstants.DDL_TIME, Long.toString(time));
-
         if (ms.addIndex(index)) {
           if (transactionalListeners.size() > 0) {
             AddIndexEvent addIndexEvent = new AddIndexEvent(index, true, this);
@@ -4320,21 +4314,16 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         final String dbName, final String tblName,
         final String indexName, final boolean deleteData) throws NoSuchObjectException,
         MetaException, TException, IOException, InvalidObjectException, InvalidInputException {
-
       boolean success = false;
       Index index = null;
       Path tblPath = null;
       List<Path> partPaths = null;
       try {
         ms.openTransaction();
-
         // drop the underlying index table
         index = get_index_by_name(dbName, tblName, indexName);  // throws exception if not exists
-
         firePreEvent(new PreDropIndexEvent(index, this));
-
         ms.dropIndex(dbName, tblName, indexName);
-
         String idxTblName = index.getIndexTableName();
         if (idxTblName != null) {
           String[] qualified = MetaStoreUtils.getQualifiedName(index.getDbName(), idxTblName);
@@ -4355,7 +4344,6 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           // Drop the partitions and get a list of partition locations which need to be deleted
           partPaths = dropPartitionsAndGetLocations(ms, qualified[0], qualified[1], tblPath,
               tbl.getPartitionKeys(), deleteData);
-
           if (!ms.dropTable(qualified[0], qualified[1])) {
             throw new MetaException("Unable to drop underlying data table "
                 + qualified[0] + "." + qualified[1] + " for index " + indexName);
@@ -5751,30 +5739,42 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         InvalidObjectException, MetaException, NoSuchObjectException,
         TException {
       validateFunctionInfo(func);
-
       boolean success = false;
       RawStore ms = getMS();
       try {
         ms.openTransaction();
-
         Database db = ms.getDatabase(func.getDbName());
         if (db == null) {
           throw new NoSuchObjectException("The database " + func.getDbName() + " does not exist");
         }
+
         Function existingFunc = ms.getFunction(func.getDbName(), func.getFunctionName());
         if (existingFunc != null) {
           throw new AlreadyExistsException(
               "Function " + func.getFunctionName() + " already exists");
         }
 
-        // set create time
         long time = System.currentTimeMillis() / 1000;
         func.setCreateTime((int) time);
         ms.createFunction(func);
+        if (transactionalListeners.size() > 0) {
+          CreateFunctionEvent createFunctionEvent = new CreateFunctionEvent(func, true, this);
+          for (MetaStoreEventListener transactionalListener : transactionalListeners) {
+            transactionalListener.onCreateFunction(createFunctionEvent);
+          }
+        }
+
         success = ms.commitTransaction();
       } finally {
         if (!success) {
           ms.rollbackTransaction();
+        }
+
+        if (listeners.size() > 0) {
+          CreateFunctionEvent createFunctionEvent = new CreateFunctionEvent(func, success, this);
+          for (MetaStoreEventListener listener : listeners) {
+            listener.onCreateFunction(createFunctionEvent);
+          }
         }
       }
     }
@@ -5786,19 +5786,32 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       boolean success = false;
       Function func = null;
       RawStore ms = getMS();
-
       try {
         ms.openTransaction();
-
         func = ms.getFunction(dbName, funcName);
         if (func == null) {
           throw new NoSuchObjectException("Function " + funcName + " does not exist");
         }
+
         ms.dropFunction(dbName, funcName);
+        if (transactionalListeners.size() > 0) {
+          DropFunctionEvent dropFunctionEvent = new DropFunctionEvent(func, true, this);
+          for (MetaStoreEventListener transactionalListener : transactionalListeners) {
+            transactionalListener.onDropFunction(dropFunctionEvent);
+          }
+        }
+
         success = ms.commitTransaction();
       } finally {
         if (!success) {
           ms.rollbackTransaction();
+        }
+
+        if (listeners.size() > 0) {
+          DropFunctionEvent dropFunctionEvent = new DropFunctionEvent(func, success, this);
+          for (MetaStoreEventListener listener : listeners) {
+            listener.onDropFunction(dropFunctionEvent);
+          }
         }
       }
     }

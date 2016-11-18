@@ -30,8 +30,10 @@ import org.apache.hadoop.hive.metastore.events.AlterPartitionEvent;
 import org.apache.hadoop.hive.metastore.events.AlterTableEvent;
 import org.apache.hadoop.hive.metastore.events.ConfigChangeEvent;
 import org.apache.hadoop.hive.metastore.events.CreateDatabaseEvent;
+import org.apache.hadoop.hive.metastore.events.CreateFunctionEvent;
 import org.apache.hadoop.hive.metastore.events.CreateTableEvent;
 import org.apache.hadoop.hive.metastore.events.DropDatabaseEvent;
+import org.apache.hadoop.hive.metastore.events.DropFunctionEvent;
 import org.apache.hadoop.hive.metastore.events.DropIndexEvent;
 import org.apache.hadoop.hive.metastore.events.DropPartitionEvent;
 import org.apache.hadoop.hive.metastore.events.DropTableEvent;
@@ -124,6 +126,16 @@ public class DummyListener extends MetaStoreEventListener{
   @Override
   public void onAlterIndex(AlterIndexEvent indexEvent) throws MetaException {
     addEvent(indexEvent);
+  }
+
+  @Override
+  public void onCreateFunction (CreateFunctionEvent fnEvent) throws MetaException {
+    addEvent(fnEvent);
+  }
+
+  @Override
+  public void onDropFunction (DropFunctionEvent fnEvent) throws MetaException {
+    addEvent(fnEvent);
   }
 
   private void addEvent(ListenerEvent event) {
