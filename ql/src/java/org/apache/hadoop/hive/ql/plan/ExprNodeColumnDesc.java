@@ -101,13 +101,13 @@ public class ExprNodeColumnDesc extends ExprNodeDesc implements Serializable {
   }
 
   public ExprNodeColumnDesc(TypeInfo typeInfo, String column, String tabAlias,
-      boolean isPartitionColOrVirtualCol, boolean isSkewedCol, boolean isFake) {
+      boolean isPartitionColOrVirtualCol, boolean isSkewedCol, boolean isGenerated) {
     super(typeInfo);
     this.column = column;
     this.tabAlias = tabAlias;
     this.isPartitionColOrVirtualCol = isPartitionColOrVirtualCol;
     this.isSkewedCol = isSkewedCol;
-    this.isGenerated = isFake;
+    this.isGenerated = isGenerated;
   }
 
   public String getColumn() {

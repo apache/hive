@@ -270,7 +270,7 @@ public class DataWritableReadSupport extends ReadSupport<ArrayWritable> {
    * who contains the attribute x
    *
    * @param nestedColPaths the paths for required nested attribute
-   * @return column list contains required nested attribute
+   * @return a map from the column to its selected nested column paths
    */
   private static Map<String, FieldNode> getPrunedNestedColumns(Set<String> nestedColPaths) {
     Map<String, FieldNode> resMap = new HashMap<>();

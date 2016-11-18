@@ -330,6 +330,12 @@ public class MapOperator extends AbstractMapOperator {
     return tableDescOI;
   }
 
+  /**
+   * For each source table, combine the nested column pruning information from all its
+   * table scan descriptors and set it in a configuration copy. This is necessary since
+   * the configuration property "READ_NESTED_COLUMN_PATH_CONF_STR" is set on a per-table
+   * basis, so we can't just use a single configuration for all the tables.
+   */
   private Map<String, Configuration> cloneConfsForNestedColPruning(Configuration hconf) {
     Map<String, Configuration> tableNameToConf = new HashMap<>();
 
@@ -340,7 +346,6 @@ public class MapOperator extends AbstractMapOperator {
       }
 
       String tableName = conf.getPathToPartitionInfo().get(e.getKey()).getTableName();
-
       for (String alias: aliases) {
         Operator<?> rootOp = conf.getAliasToWork().get(alias);
         if (!(rootOp instanceof TableScanOperator)) {
@@ -351,13 +356,11 @@ public class MapOperator extends AbstractMapOperator {
         if (nestedColumnPaths == null || nestedColumnPaths.isEmpty()) {
           continue;
         }
-
         if (!tableNameToConf.containsKey(tableName)) {
           Configuration clonedConf = new Configuration(hconf);
           clonedConf.unset(ColumnProjectionUtils.READ_NESTED_COLUMN_PATH_CONF_STR);
           tableNameToConf.put(tableName, clonedConf);
         }
-
         Configuration newConf = tableNameToConf.get(tableName);
         ColumnProjectionUtils.appendNestedColumnPaths(newConf, nestedColumnPaths);
       }

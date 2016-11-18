@@ -75,17 +75,17 @@ public class FieldNode {
     return result;
   }
 
-  public static FieldNode fromString(String path) {
+  public static FieldNode fromPath(String path) {
     String[] parts = path.split("\\.");
-    return fromString(parts, 0);
+    return fromPath(parts, 0);
   }
 
-  private static FieldNode fromString(String[] parts, int index) {
+  private static FieldNode fromPath(String[] parts, int index) {
     if (index == parts.length) {
       return null;
     }
     FieldNode fn = new FieldNode(parts[index]);
-    fn.addFieldNodes(fromString(parts, index + 1));
+    fn.addFieldNodes(fromPath(parts, index + 1));
     return fn;
   }
 

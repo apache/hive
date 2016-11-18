@@ -52,7 +52,7 @@ public class ColumnPrunerProcCtx implements NodeProcessorCtx {
   /**
    * A mapping from operators to nested column paths being used in them.
    * Note: paths are of format "s.a.b" which represents field "b" of
-   *   struct "b" is being used, while "b" itself is a field of struct "s".
+   *   struct "a" is being used, while "a" itself is a field of struct "s".
    */
   private final Map<Operator<? extends OperatorDesc>, List<FieldNode>> prunedColLists;
   private final Map<CommonJoinOperator, Map<Byte, List<FieldNode>>> joinPrunedColLists;
@@ -80,15 +80,13 @@ public class ColumnPrunerProcCtx implements NodeProcessorCtx {
   }
 
   /**
-   * Creates the list of internal column names(these names are used in the
-   * RowResolver and are different from the external column names) that are
-   * needed in the subtree. These columns eventually have to be selected from
-   * the table scan.
+   * Creates the list of internal column names(represented by field nodes,
+   * these names are used in the RowResolver and are different from the
+   * external column names) that are needed in the subtree. These columns
+   * eventually have to be selected from the table scan.
    *
-   * @param curOp
-   *          The root of the operator subtree.
-   * @return List<String> of the internal column names.
-   * @throws SemanticException
+   * @param curOp The root of the operator subtree.
+   * @return a list of field nodes representing the internal column names.
    */
   public List<FieldNode> genColLists(Operator<? extends OperatorDesc> curOp)
       throws SemanticException {
@@ -123,17 +121,14 @@ public class ColumnPrunerProcCtx implements NodeProcessorCtx {
   }
 
   /**
-   * Creates the list of internal column names(these names are used in the
-   * RowResolver and are different from the external column names) that are
-   * needed in the subtree. These columns eventually have to be selected from
-   * the table scan.
+   * Creates the list of internal column names (represented by field nodes,
+   * these names are used in the RowResolver and are different from the
+   * external column names) that are needed in the subtree. These columns
+   * eventually have to be selected from the table scan.
    *
-   * @param curOp
-   *          The root of the operator subtree.
-   * @param child
-   *          The consumer.
-   * @return List<String> of the internal column names.
-   * @throws SemanticException
+   * @param curOp The root of the operator subtree.
+   * @param child The consumer.
+   * @return a list of field nodes representing the internal column names.
    */
   public List<FieldNode> genColLists(Operator<? extends OperatorDesc> curOp,
           Operator<? extends OperatorDesc> child)
@@ -150,13 +145,13 @@ public class ColumnPrunerProcCtx implements NodeProcessorCtx {
   }
 
   /**
-   * Creates the list of internal column names from select expressions in a
-   * select operator. This function is used for the select operator instead of
-   * the genColLists function (which is used by the rest of the operators).
+   * Creates the list of internal column names (represented by field nodes)
+   * from select expressions in a select operator. This function is used for the
+   * select operator instead of the genColLists function (which is used by
+   * the rest of the operators).
    *
-   * @param op
-   *          The select operator.
-   * @return List<String> of the internal column names.
+   * @param op The select operator.
+   * @return a list of field nodes representing the internal column names.
    */
   public List<FieldNode> getColsFromSelectExpr(SelectOperator op) {
     List<FieldNode> cols = new ArrayList<>();
@@ -177,12 +172,10 @@ public class ColumnPrunerProcCtx implements NodeProcessorCtx {
   /**
    * Creates the list of internal column names for select * expressions.
    *
-   * @param op
-   *          The select operator.
-   * @param colList
-   *          The list of internal column names returned by the children of the
-   *          select operator.
-   * @return List<String> of the internal column names.
+   * @param op The select operator.
+   * @param colList The list of internal column names (represented by field nodes)
+   *                returned by the children of the select operator.
+   * @return a list of field nodes representing the internal column names.
    */
   public List<FieldNode> getSelectColsFromChildren(SelectOperator op,
       List<FieldNode> colList) {
@@ -224,8 +217,13 @@ public class ColumnPrunerProcCtx implements NodeProcessorCtx {
     return cols;
   }
 
-  // Entry method
-  static List<FieldNode> getNestedColPathByDesc(ExprNodeDesc desc) {
+  /**
+   * Given the 'desc', construct a list of field nodes representing the
+   * nested columns paths referenced by this 'desc'.
+   * @param desc the node descriptor
+   * @return a list of nested column paths referenced in the 'desc'
+   */
+  private static List<FieldNode> getNestedColPathByDesc(ExprNodeDesc desc) {
     List<FieldNode> res = new ArrayList<>();
     getNestedColsFromExprNodeDesc(desc, null, res);
     return mergeFieldNodes(new ArrayList<FieldNode>(), res);
