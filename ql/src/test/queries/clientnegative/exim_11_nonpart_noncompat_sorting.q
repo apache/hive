@@ -1,3 +1,5 @@
+set hive.strict.checks.bucketing=false; 
+
 set hive.test.mode=true;
 set hive.test.mode.prefix=;
 

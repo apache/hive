@@ -1,3 +1,5 @@
+set hive.strict.checks.bucketing=false;
+
 create table src_rc_merge_test_stat(key int, value string) stored as rcfile;
 
 load data local inpath '../../data/files/smbbucket_1.rc' into table src_rc_merge_test_stat;

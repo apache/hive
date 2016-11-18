@@ -1,3 +1,5 @@
+set hive.strict.checks.bucketing=false;
+
 set hive.exec.dynamic.partition=true;
 set hive.exec.dynamic.partition.mode=nonstrict;
 

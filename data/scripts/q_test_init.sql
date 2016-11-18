@@ -70,14 +70,18 @@ ANALYZE TABLE src_thrift COMPUTE STATISTICS;
 --
 -- Table srcbucket
 --
+DROP TABLE IF EXISTS srcbucket_tmp;
 DROP TABLE IF EXISTS srcbucket;
 
+CREATE TABLE srcbucket_tmp (key INT, value STRING) STORED AS TEXTFILE;
 CREATE TABLE srcbucket (key INT, value STRING)
 CLUSTERED BY (key) INTO 2 BUCKETS
 STORED AS TEXTFILE;
 
-LOAD DATA LOCAL INPATH "${hiveconf:test.data.dir}/srcbucket0.txt" INTO TABLE srcbucket;
-LOAD DATA LOCAL INPATH "${hiveconf:test.data.dir}/srcbucket1.txt" INTO TABLE srcbucket;
+LOAD DATA LOCAL INPATH "${hiveconf:test.data.dir}/srcbucket0.txt" INTO TABLE srcbucket_tmp;
+LOAD DATA LOCAL INPATH "${hiveconf:test.data.dir}/srcbucket1.txt" INTO TABLE srcbucket_tmp;
+INSERT INTO srcbucket SELECT * FROM srcbucket_tmp;
+DROP TABLE srcbucket_tmp;
  
 ANALYZE TABLE srcbucket COMPUTE STATISTICS;
 
@@ -86,16 +90,20 @@ ANALYZE TABLE srcbucket COMPUTE STATISTICS FOR COLUMNS key,value;
 --
 -- Table srcbucket2
 --
+DROP TABLE IF EXISTS srcbucket_tmp;
 DROP TABLE IF EXISTS srcbucket2;
 
+CREATE TABLE srcbucket_tmp (key INT, value STRING);
 CREATE TABLE srcbucket2 (key INT, value STRING)
 CLUSTERED BY (key) INTO 4 BUCKETS
 STORED AS TEXTFILE;
 
-LOAD DATA LOCAL INPATH "${hiveconf:test.data.dir}/srcbucket20.txt" INTO TABLE srcbucket2;
-LOAD DATA LOCAL INPATH "${hiveconf:test.data.dir}/srcbucket21.txt" INTO TABLE srcbucket2;
-LOAD DATA LOCAL INPATH "${hiveconf:test.data.dir}/srcbucket22.txt" INTO TABLE srcbucket2;
-LOAD DATA LOCAL INPATH "${hiveconf:test.data.dir}/srcbucket23.txt" INTO TABLE srcbucket2;
+LOAD DATA LOCAL INPATH "${hiveconf:test.data.dir}/srcbucket20.txt" INTO TABLE srcbucket_tmp;
+LOAD DATA LOCAL INPATH "${hiveconf:test.data.dir}/srcbucket21.txt" INTO TABLE srcbucket_tmp;
+LOAD DATA LOCAL INPATH "${hiveconf:test.data.dir}/srcbucket22.txt" INTO TABLE srcbucket_tmp;
+LOAD DATA LOCAL INPATH "${hiveconf:test.data.dir}/srcbucket23.txt" INTO TABLE srcbucket_tmp;
+INSERT INTO srcbucket2 SELECT * FROM srcbucket_tmp;
+DROP TABLE srcbucket_tmp;
 
 ANALYZE TABLE srcbucket2 COMPUTE STATISTICS;
 

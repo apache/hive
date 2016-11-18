@@ -1,3 +1,5 @@
+set hive.strict.checks.bucketing=false;
+
 create table src_rc_merge_test_part(key int, value string) partitioned by (ds string, ts string) stored as rcfile;
 
 alter table src_rc_merge_test_part add partition (ds='2012-01-03', ts='2012-01-03+14:46:31');

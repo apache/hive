@@ -1,3 +1,5 @@
+set hive.strict.checks.bucketing=false;
+
 set hive.mapred.mode=nonstrict;
 -- this test verifies that the block merge task that can follow a query to generate dynamic
 -- partitions does not produce incorrect results by dropping partitions

@@ -1,3 +1,5 @@
+set hive.strict.checks.bucketing=false;
+
 set hive.exec.dynamic.partition=true;
 
 create table srcpart_dp like srcpart;

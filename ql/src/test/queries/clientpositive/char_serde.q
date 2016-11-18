@@ -1,3 +1,5 @@
+set hive.strict.checks.bucketing=false;
+
 drop table if exists char_serde_regex;
 drop table if exists char_serde_lb;
 drop table if exists char_serde_ls;

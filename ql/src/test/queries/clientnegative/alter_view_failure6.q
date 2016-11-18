@@ -1,3 +1,5 @@
+set hive.strict.checks.bucketing=false; 
+
 DROP VIEW xxx7;
 CREATE VIEW xxx7
 PARTITIONED ON (key)

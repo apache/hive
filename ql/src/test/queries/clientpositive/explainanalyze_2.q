@@ -1,3 +1,5 @@
+set hive.strict.checks.bucketing=false;
+
 set hive.explain.user=true;
 
 explain analyze

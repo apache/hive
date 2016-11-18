@@ -1,3 +1,5 @@
+set hive.strict.checks.bucketing=false;
+
 -- INCLUDE_HADOOP_MAJOR_VERSIONS( 0.20S)
 
 CREATE TABLE bucket (key double, value string) CLUSTERED BY (key) SORTED BY (key DESC)  INTO 4 BUCKETS STORED AS TEXTFILE;

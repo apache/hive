@@ -1,3 +1,5 @@
+set hive.strict.checks.bucketing=false;
+
 -- SORT_QUERY_RESULTS
 
 drop table char1;

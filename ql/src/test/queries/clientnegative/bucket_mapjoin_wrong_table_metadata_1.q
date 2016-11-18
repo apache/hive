@@ -1,3 +1,5 @@
+set hive.strict.checks.bucketing=false; 
+
 -- Although the user has specified a bucketed map-join, the number of buckets in the table
 -- do not match the number of files
 drop table table1;

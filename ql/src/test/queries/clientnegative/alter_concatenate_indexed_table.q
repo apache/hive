@@ -1,3 +1,5 @@
+set hive.strict.checks.bucketing=false;
+
 set hive.exec.concatenate.check.index=true;
 create table src_rc_concatenate_test(key int, value string) stored as rcfile;
 

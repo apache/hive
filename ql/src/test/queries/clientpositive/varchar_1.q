@@ -1,3 +1,5 @@
+set hive.strict.checks.bucketing=false;
+
 set hive.mapred.mode=nonstrict;
 drop table varchar1;
 drop table varchar1_1;

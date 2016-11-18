@@ -1,3 +1,5 @@
+set hive.strict.checks.bucketing=false;
+
 set hive.mapred.mode=nonstrict;
 CREATE TABLE srcbucket_mapjoin_part (key int, value string) partitioned by (ds string) CLUSTERED BY (key) INTO 4 BUCKETS STORED AS TEXTFILE;
 load data local inpath '../../data/files/srcbucket20.txt' INTO TABLE srcbucket_mapjoin_part partition(ds='2008-04-08');
