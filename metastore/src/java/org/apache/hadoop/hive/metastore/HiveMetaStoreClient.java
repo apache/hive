@@ -319,6 +319,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
     alter_table_with_environmentContext(dbname, tbl_name, new_tbl, null);
   }
 
+  @Override
   public void alter_table_with_environmentContext(String dbname, String tbl_name, Table new_tbl,
       EnvironmentContext envContext) throws InvalidOperationException, MetaException, TException {
     client.alter_table_with_environment_context(dbname, tbl_name, new_tbl, envContext);
@@ -490,6 +491,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
     }
   }
 
+  @Override
   public String getTokenStrForm() throws IOException {
     return tokenStrForm;
    }
@@ -1037,7 +1039,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
     try {
       drop_table_with_environment_context(dbname, name, deleteData, envContext);
       if (hook != null) {
-        hook.commitDropTable(tbl, deleteData);
+        hook.commitDropTable(tbl, deleteData || (envContext != null && "TRUE".equals(envContext.getProperties().get("ifPurge"))));
       }
       success=true;
     } catch (NoSuchObjectException e) {
@@ -1439,6 +1441,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
    * @throws NoSuchObjectException
    * @throws TException
    */
+  @Override
   public int getNumPartitionsByFilter(String db_name, String tbl_name,
                                       String filter) throws MetaException,
           NoSuchObjectException, TException {
@@ -2163,7 +2166,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
   public void addDynamicPartitions(long txnId, String dbName, String tableName,
                                    List<String> partNames) throws TException {
     client.add_dynamic_partitions(new AddDynamicPartitions(txnId, dbName, tableName, partNames));
-  }  
+  }
   @Override
   public void addDynamicPartitions(long txnId, String dbName, String tableName,
                                    List<String> partNames, DataOperationType operationType) throws TException {
