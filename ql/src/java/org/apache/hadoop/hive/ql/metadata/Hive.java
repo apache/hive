@@ -1601,7 +1601,8 @@ public class Hive {
         Utilities.LOG14535.info("maybe deleting stuff from " + oldPartPath + " (new " + newPartPath + ") for replace");
         if (replace && oldPartPath != null) {
           deleteOldPathForReplace(newPartPath, oldPartPath, getConf(),
-              new ValidWriteIds.IdPathFilter(mmWriteId, false, true), mmWriteId != null);
+              new ValidWriteIds.IdPathFilter(mmWriteId, false, true), mmWriteId != null,
+              tbl.isStoredAsSubDirectories() ? tbl.getSkewedColNames().size() : 0);
         }
       } else {
         // Either a non-MM query, or a load into MM table from an external source.
@@ -2080,7 +2081,8 @@ private void constructOneLBLocationMap(FileStatus fSta,
       if (replace) {
         Path tableDest = tbl.getPath();
         deleteOldPathForReplace(tableDest, tableDest, sessionConf,
-            new ValidWriteIds.IdPathFilter(mmWriteId, false, true), mmWriteId != null);
+            new ValidWriteIds.IdPathFilter(mmWriteId, false, true), mmWriteId != null,
+            tbl.isStoredAsSubDirectories() ? tbl.getSkewedColNames().size() : 0);
       }
       newFiles = listFilesCreatedByQuery(loadPath, mmWriteId);
     } else {
@@ -3490,7 +3492,9 @@ private void constructOneLBLocationMap(FileStatus fSta,
       }
 
       if (oldPath != null) {
-        deleteOldPathForReplace(destf, oldPath, conf, deletePathFilter, isMmTable);
+        // TODO: we assume lbLevels is 0 here. Same as old code for non-MM.
+        //       For MM tables, this can only be a LOAD command. Does LOAD even support LB?
+        deleteOldPathForReplace(destf, oldPath, conf, deletePathFilter, isMmTable, 0);
       }
 
       // first call FileUtils.mkdir to make sure that destf directory exists, if not, it creates
@@ -3526,7 +3530,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
   }
 
   private void deleteOldPathForReplace(Path destPath, Path oldPath, HiveConf conf,
-      PathFilter pathFilter, boolean isMmTable) throws HiveException {
+      PathFilter pathFilter, boolean isMmTable, int lbLevels) throws HiveException {
     Utilities.LOG14535.info("Deleting old paths for replace in " + destPath + " and old path " + oldPath);
     boolean isOldPathUnderDestf = false;
     try {
@@ -3538,16 +3542,27 @@ private void constructOneLBLocationMap(FileStatus fSta,
       // not the destf or its subdir?
       isOldPathUnderDestf = isSubDir(oldPath, destPath, oldFs, destFs, false);
       if (isOldPathUnderDestf || isMmTable) {
-        FileStatus[] statuses = oldFs.listStatus(oldPath, pathFilter);
-        if (statuses == null || statuses.length == 0) return;
-        String s = "Deleting files under " + oldPath + " for replace: ";
-        for (FileStatus file : statuses) {
-          s += file.getPath().getName() + ", ";
-        }
-        Utilities.LOG14535.info(s);
-        if (!trashFiles(oldFs, statuses, conf)) {
-          throw new HiveException("Destination directory " + destPath
-              + " has not been cleaned up.");
+        if (lbLevels == 0 || !isMmTable) {
+          cleanUpOneDirectoryForReplace(oldPath, oldFs, pathFilter, conf);
+        } else {
+          // We need to clean up different MM IDs from each LB directory separately.
+          // Avoid temporary directories in the immediate table/part dir.
+          // TODO: we could just find directories with any MM directories inside?
+          //       the rest doesn't have to be cleaned up.
+          String mask = "[^._]*";
+          for (int i = 0; i < lbLevels - 1; ++i) {
+            mask += Path.SEPARATOR + "*";
+          }
+          Path glob = new Path(oldPath, mask);
+          FileStatus[] lbDirs = oldFs.globStatus(glob);
+          for (FileStatus lbDir : lbDirs) {
+            Path lbPath = lbDir.getPath();
+            if (!lbDir.isDirectory()) {
+              throw new HiveException("Unexpected path during overwrite: " + lbPath);
+            }
+            Utilities.LOG14535.info("Cleaning up LB directory " + lbPath);
+            cleanUpOneDirectoryForReplace(lbPath, oldFs, pathFilter, conf);
+          }
         }
       }
     } catch (IOException e) {
@@ -3559,6 +3574,21 @@ private void constructOneLBLocationMap(FileStatus fSta,
         //swallow the exception since it won't affect the final result
         LOG.warn("Directory " + oldPath.toString() + " cannot be cleaned: " + e, e);
       }
+    }
+  }
+
+
+  private void cleanUpOneDirectoryForReplace(Path path, FileSystem fs,
+      PathFilter pathFilter, HiveConf conf) throws IOException, HiveException {
+    FileStatus[] statuses = fs.listStatus(path, pathFilter);
+    if (statuses == null || statuses.length == 0) return;
+    String s = "Deleting files under " + path + " for replace: ";
+    for (FileStatus file : statuses) {
+      s += file.getPath().getName() + ", ";
+    }
+    Utilities.LOG14535.info(s);
+    if (!trashFiles(fs, statuses, conf)) {
+      throw new HiveException("Old path " + path + " has not been cleaned up.");
     }
   }
 

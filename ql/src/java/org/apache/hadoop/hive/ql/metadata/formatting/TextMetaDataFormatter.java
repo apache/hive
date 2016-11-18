@@ -318,10 +318,10 @@ class TextMetaDataFormatter implements MetaDataFormatter {
     if (!unknown) {
       for (Path loc : locations) {
         try {
-          FileStatus status = fs.getFileStatus(tblPath);
+          FileStatus status = fs.getFileStatus(loc);
           // no matter loc is the table location or part location, it must be a
           // directory.
-          if (!status.isDir()) {
+          if (!status.isDirectory()) {
             continue;
           }
           processDir(status, fs, fd);
@@ -381,6 +381,7 @@ class TextMetaDataFormatter implements MetaDataFormatter {
   }
 
   private void processDir(FileStatus status, FileSystem fs, FileData fd) throws IOException {
+    Utilities.LOG14535.info("Processing dir for status: " + status.getPath());
     long accessTime = status.getAccessTime();
     long updateTime = status.getModificationTime();
     if (accessTime > fd.lastAccessTime) {
@@ -391,7 +392,7 @@ class TextMetaDataFormatter implements MetaDataFormatter {
     }
     FileStatus[] files = fs.listStatus(status.getPath());
     for (FileStatus currentStatus : files) {
-      if (currentStatus.isDir()) {
+      if (currentStatus.isDirectory()) {
         processDir(currentStatus, fs, fd);
         continue;
       }
