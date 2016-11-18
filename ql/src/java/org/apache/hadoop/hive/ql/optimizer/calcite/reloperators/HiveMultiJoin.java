@@ -62,7 +62,7 @@ public final class HiveMultiJoin extends AbstractRelNode {
    * @param inputs                inputs into this multi-join
    * @param condition             join filter applicable to this join node
    * @param rowType               row type of the join result of this node
-   * @param joinInputs            
+   * @param joinInputs
    * @param joinTypes             the join type corresponding to each input; if
    *                              an input is null-generating in a left or right
    *                              outer join, the entry indicates the type of

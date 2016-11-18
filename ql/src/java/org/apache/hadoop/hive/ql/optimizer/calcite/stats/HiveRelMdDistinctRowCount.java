@@ -22,6 +22,7 @@ import java.util.List;
 import org.apache.calcite.plan.RelOptCost;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.core.Join;
+import org.apache.calcite.rel.core.SemiJoin;
 import org.apache.calcite.rel.metadata.ChainedRelMetadataProvider;
 import org.apache.calcite.rel.metadata.ReflectiveRelMetadataProvider;
 import org.apache.calcite.rel.metadata.RelMdDistinctRowCount;
@@ -95,7 +96,7 @@ public class HiveRelMdDistinctRowCount extends RelMdDistinctRowCount {
     if (rel instanceof HiveJoin) {
       HiveJoin hjRel = (HiveJoin) rel;
       //TODO: Improve this
-      if (hjRel.isLeftSemiJoin()) {
+      if (rel instanceof SemiJoin) {
         return mq.getDistinctRowCount(hjRel.getLeft(), groupKey,
             rel.getCluster().getRexBuilder().makeLiteral(true));
       } else {
