@@ -138,7 +138,7 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
   private final BufferUsageManager bufferManager;
   private final Configuration conf;
   private final FileSplit split;
-  private List<Integer> columnIds;
+  private List<Integer> includedColumnIds;
   private final SearchArgument sarg;
   private final String[] columnNames;
   private final OrcEncodedDataConsumer consumer;
@@ -174,9 +174,9 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
     this.bufferManager = bufferManager;
     this.conf = conf;
     this.split = split;
-    this.columnIds = columnIds;
-    if (this.columnIds != null) {
-      Collections.sort(this.columnIds);
+    this.includedColumnIds = columnIds;
+    if (this.includedColumnIds != null) {
+      Collections.sort(this.includedColumnIds);
     }
     this.sarg = sarg;
     this.columnNames = columnNames;
@@ -197,7 +197,7 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
     fileKey = determineFileId(fs, split,
         HiveConf.getBoolVar(conf, ConfVars.LLAP_CACHE_ALLOW_SYNTHETIC_FILEID));
     fileMetadata = getOrReadFileMetadata();
-    globalIncludes = OrcInputFormat.genIncludedColumns(fileMetadata.getTypes(), columnIds, true);
+    globalIncludes = OrcInputFormat.genIncludedColumns(fileMetadata.getTypes(), includedColumnIds, true);
     consumer.setFileMetadata(fileMetadata);
     consumer.setIncludedColumns(globalIncludes);
   }
@@ -242,8 +242,8 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
         + (fileKey == null ? "" : " (" + fileKey + ")"));
     try {
       validateFileMetadata();
-      if (columnIds == null) {
-        columnIds = createColumnIds(fileMetadata);
+      if (includedColumnIds == null) {
+        includedColumnIds = getAllColumnIds(fileMetadata);
       }
 
       // 2. Determine which stripes to read based on the split.
@@ -303,13 +303,7 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
       return null;
     }
 
-    // 4. Get data from high-level cache.
-    //    If some cols are fully in cache, this will also give us the modified list of columns to
-    //    read for every stripe (null means read all of them - the usual path). In any case,
-    //    readState will be modified for column x rgs that were fetched from high-level cache.
-    List<Integer>[] stripeColsToRead = null;
-
-    // 5. Create encoded data reader.
+    // 4. Create encoded data reader.
     try {
       ensureOrcReader();
       // Reader creating updates HDFS counters, don't do it here.
@@ -335,34 +329,23 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
       }
       int stripeIx = stripeIxFrom + stripeIxMod;
       boolean[][] colRgs = null;
-      boolean[] stripeIncludes = null;
       OrcStripeMetadata stripeMetadata = null;
       StripeInformation stripe;
       try {
-        List<Integer> cols = stripeColsToRead == null ? null : stripeColsToRead[stripeIxMod];
-        if (cols != null && cols.isEmpty()) continue; // No need to read this stripe.
         stripe = fileMetadata.getStripes().get(stripeIx);
 
         LlapIoImpl.ORC_LOGGER.trace("Reading stripe {}: {}, {}", stripeIx, stripe.getOffset(),
             stripe.getLength());
         colRgs = readState[stripeIxMod];
+        if (LlapIoImpl.ORC_LOGGER.isTraceEnabled()) {
+          LlapIoImpl.ORC_LOGGER.trace("readState[{}]: {}", stripeIxMod, Arrays.toString(colRgs));
+        }
         // We assume that NO_RGS value is only set from SARG filter and for all columns;
         // intermediate changes for individual columns will unset values in the array.
         // Skip this case for 0-column read. We could probably special-case it just like we do
         // in EncodedReaderImpl, but for now it's not that important.
         if (colRgs.length > 0 && colRgs[0] ==
             RecordReaderImpl.SargApplier.READ_NO_RGS) continue;
-
-        // 6.1. Determine the columns to read (usually the same as requested).
-        if (cols == null || cols.size() == colRgs.length) {
-          cols = columnIds;
-          stripeIncludes = globalIncludes;
-        } else {
-          // We are reading subset of the original columns, remove unnecessary bitmasks/etc.
-          // This will never happen w/o high-level cache.
-          stripeIncludes = OrcInputFormat.genIncludedColumns(fileMetadata.getTypes(), cols, true);
-          colRgs = genStripeColRgs(cols, colRgs);
-        }
 
         // 6.2. Ensure we have stripe metadata. We might have read it before for RG filtering.
         boolean isFoundInCache = false;
@@ -379,27 +362,27 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
             ensureMetadataReader();
             long startTimeHdfs = counters.startTimeCounter();
             stripeMetadata = new OrcStripeMetadata(new OrcBatchKey(fileKey, stripeIx, 0),
-                metadataReader, stripe, stripeIncludes, sargColumns);
+                metadataReader, stripe, globalIncludes, sargColumns);
             counters.incrTimeCounter(LlapIOCounters.HDFS_TIME_NS, startTimeHdfs);
             if (hasFileId && metadataCache != null) {
               stripeMetadata = metadataCache.putStripeMetadata(stripeMetadata);
               if (LlapIoImpl.ORC_LOGGER.isTraceEnabled()) {
                 LlapIoImpl.ORC_LOGGER.trace("Caching stripe {} metadata with includes: {}",
-                    stripeKey.stripeIx, DebugUtils.toString(stripeIncludes));
+                    stripeKey.stripeIx, DebugUtils.toString(globalIncludes));
               }
             }
           }
           consumer.setStripeMetadata(stripeMetadata);
         }
-        if (!stripeMetadata.hasAllIndexes(stripeIncludes)) {
+        if (!stripeMetadata.hasAllIndexes(globalIncludes)) {
           if (LlapIoImpl.ORC_LOGGER.isTraceEnabled()) {
             LlapIoImpl.ORC_LOGGER.trace("Updating indexes in stripe {} metadata for includes: {}",
-                stripeKey.stripeIx, DebugUtils.toString(stripeIncludes));
+                stripeKey.stripeIx, DebugUtils.toString(globalIncludes));
           }
           assert isFoundInCache;
           counters.incrCounter(LlapIOCounters.METADATA_CACHE_MISS);
           ensureMetadataReader();
-          updateLoadedIndexes(stripeMetadata, stripe, stripeIncludes, sargColumns);
+          updateLoadedIndexes(stripeMetadata, stripe, globalIncludes, sargColumns);
         } else if (isFoundInCache) {
           counters.incrCounter(LlapIOCounters.METADATA_CACHE_HIT);
         }
@@ -415,7 +398,7 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
         return null;
       }
 
-      // 6.3. Finally, hand off to the stripe reader to produce the data.
+      // 5.2. Finally, hand off to the stripe reader to produce the data.
       //      This is a sync call that will feed data to the consumer.
       try {
         // TODO: readEncodedColumns is not supposed to throw; errors should be propagated thru
@@ -423,7 +406,7 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
         // Also, currently readEncodedColumns is not stoppable. The consumer will discard the
         // data it receives for one stripe. We could probably interrupt it, if it checked that.
         stripeReader.readEncodedColumns(stripeIx, stripe, stripeMetadata.getRowIndexes(),
-            stripeMetadata.getEncodings(), stripeMetadata.getStreams(), stripeIncludes,
+            stripeMetadata.getEncodings(), stripeMetadata.getStreams(), globalIncludes,
             colRgs, consumer);
       } catch (Throwable t) {
         consumer.setError(t);
@@ -521,22 +504,14 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
     return HdfsUtils.getFileId(fs, split.getPath(), allowSynthetic);
   }
 
-  private boolean[][] genStripeColRgs(List<Integer> stripeCols, boolean[][] globalColRgs) {
-    boolean[][] stripeColRgs = new boolean[stripeCols.size()][];
-    for (int i = 0, i2 = -1; i < globalColRgs.length; ++i) {
-      if (globalColRgs[i] == null) continue;
-      stripeColRgs[i2] = globalColRgs[i];
-      ++i2;
-    }
-    return stripeColRgs;
-  }
-
   /**
    * Puts all column indexes from metadata to make a column list to read all column.
    */
-  private static List<Integer> createColumnIds(OrcFileMetadata metadata) {
-    List<Integer> columnIds = new ArrayList<Integer>(metadata.getTypes().size());
-    for (int i = 1; i < metadata.getTypes().size(); ++i) {
+  private static List<Integer> getAllColumnIds(OrcFileMetadata metadata) {
+    int rootColumn = OrcInputFormat.getRootColumn(true);
+    List<Integer> types = metadata.getTypes().get(rootColumn).getSubtypesList();
+    List<Integer> columnIds = new ArrayList<Integer>(types.size());
+    for (int i = 0; i < types.size(); ++i) {
       columnIds.add(i);
     }
     return columnIds;
@@ -690,8 +665,9 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
 
   @Override
   public void returnData(OrcEncodedColumnBatch ecb) {
-    for (ColumnStreamData[] datas : ecb.getColumnData()) {
-      if (datas == null) continue;
+    for (int colIx = 0; colIx < ecb.getTotalColCount(); ++colIx) {
+      if (!ecb.hasData(colIx)) continue;
+      ColumnStreamData[] datas = ecb.getColumnData(colIx);
       for (ColumnStreamData data : datas) {
         if (data == null || data.decRef() != 0) continue;
         if (LlapIoImpl.LOCKING_LOGGER.isTraceEnabled()) {
@@ -749,12 +725,17 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
         }
       }
       assert isAll || isNone || rgsToRead.length == rgCount;
-      readState[stripeIxMod] = new boolean[columnIds.size()][];
-      for (int j = 0; j < columnIds.size(); ++j) {
-        readState[stripeIxMod][j] = (isAll || isNone) ? rgsToRead :
+      int fileIncludesCount = 0;
+      // TODO: hacky for now - skip the root 0-s column.
+      //        We don't need separate readState w/o HL cache, should get rid of that instead.
+      for (int includeIx = 1; includeIx < globalIncludes.length; ++includeIx) {
+        fileIncludesCount += (globalIncludes[includeIx] ? 1 : 0);
+      }
+      readState[stripeIxMod] = new boolean[fileIncludesCount][];
+      for (int includeIx = 0; includeIx < fileIncludesCount; ++includeIx) {
+        readState[stripeIxMod][includeIx] = (isAll || isNone) ? rgsToRead :
           Arrays.copyOf(rgsToRead, rgsToRead.length);
       }
-
       adjustRgMetric(rgCount, rgsToRead, isNone, isAll);
     }
     return hasAnyData;

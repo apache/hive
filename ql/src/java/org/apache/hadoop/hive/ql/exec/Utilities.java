@@ -3636,7 +3636,7 @@ public final class Utilities {
    * @param conf - configuration
    * @return false for types not supported by vectorization, true otherwise
    */
-  public static boolean checkLlapIOSupportedTypes(final Configuration conf) {
+  public static boolean checkVectorizerSupportedTypes(final Configuration conf) {
     final String[] readColumnNames = ColumnProjectionUtils.getReadColumnNames(conf);
     final String columnNames = conf.get(serdeConstants.LIST_COLUMNS);
     final String columnTypes = conf.get(serdeConstants.LIST_COLUMN_TYPES);
@@ -3649,7 +3649,7 @@ public final class Utilities {
     final List<String> allColumnNames = Lists.newArrayList(columnNames.split(","));
     final List<TypeInfo> typeInfos = TypeInfoUtils.getTypeInfosFromTypeString(columnTypes);
     final List<String> allColumnTypes = TypeInfoUtils.getTypeStringsFromTypeInfo(typeInfos);
-    return checkLlapIOSupportedTypes(Lists.newArrayList(readColumnNames), allColumnNames,
+    return checkVectorizerSupportedTypes(Lists.newArrayList(readColumnNames), allColumnNames,
         allColumnTypes);
   }
 
@@ -3660,7 +3660,7 @@ public final class Utilities {
    * @param allColumnTypes - all column types
    * @return false for types not supported by vectorization, true otherwise
    */
-  public static boolean checkLlapIOSupportedTypes(final List<String> readColumnNames,
+  public static boolean checkVectorizerSupportedTypes(final List<String> readColumnNames,
       final List<String> allColumnNames, final List<String> allColumnTypes) {
     final String[] readColumnTypes = getReadColumnTypes(readColumnNames, allColumnNames,
         allColumnTypes);

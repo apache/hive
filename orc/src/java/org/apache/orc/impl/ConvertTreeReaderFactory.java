@@ -292,7 +292,7 @@ public class ConvertTreeReaderFactory extends TreeReaderFactory {
     }
 
     @Override
-    void seek(PositionProvider[] index) throws IOException {
+    public void seek(PositionProvider[] index) throws IOException {
      // Pass-thru.
       convertTreeReader.seek(index);
     }
