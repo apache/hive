@@ -260,25 +260,7 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
       throw new RuntimeException(e.getMessage(), e);
     }
 
-    if (mWork.getNumMapTasks() != null) {
-      job.setNumMapTasks(mWork.getNumMapTasks().intValue());
-    }
-
-    if (mWork.getMaxSplitSize() != null) {
-      HiveConf.setLongVar(job, HiveConf.ConfVars.MAPREDMAXSPLITSIZE, mWork.getMaxSplitSize().longValue());
-    }
-
-    if (mWork.getMinSplitSize() != null) {
-      HiveConf.setLongVar(job, HiveConf.ConfVars.MAPREDMINSPLITSIZE, mWork.getMinSplitSize().longValue());
-    }
-
-    if (mWork.getMinSplitSizePerNode() != null) {
-      HiveConf.setLongVar(job, HiveConf.ConfVars.MAPREDMINSPLITSIZEPERNODE, mWork.getMinSplitSizePerNode().longValue());
-    }
-
-    if (mWork.getMinSplitSizePerRack() != null) {
-      HiveConf.setLongVar(job, HiveConf.ConfVars.MAPREDMINSPLITSIZEPERRACK, mWork.getMinSplitSizePerRack().longValue());
-    }
+    propagateSplitSettings(job, mWork);
 
     job.setNumReduceTasks(rWork != null ? rWork.getNumReduceTasks().intValue() : 0);
     job.setReducerClass(ExecReducer.class);
@@ -484,6 +466,28 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
     }
 
     return (returnVal);
+  }
+
+  public static void propagateSplitSettings(JobConf job, MapWork work) {
+    if (work.getNumMapTasks() != null) {
+      job.setNumMapTasks(work.getNumMapTasks().intValue());
+    }
+
+    if (work.getMaxSplitSize() != null) {
+      HiveConf.setLongVar(job, HiveConf.ConfVars.MAPREDMAXSPLITSIZE, work.getMaxSplitSize().longValue());
+    }
+
+    if (work.getMinSplitSize() != null) {
+      HiveConf.setLongVar(job, HiveConf.ConfVars.MAPREDMINSPLITSIZE, work.getMinSplitSize().longValue());
+    }
+
+    if (work.getMinSplitSizePerNode() != null) {
+      HiveConf.setLongVar(job, HiveConf.ConfVars.MAPREDMINSPLITSIZEPERNODE, work.getMinSplitSizePerNode().longValue());
+    }
+
+    if (work.getMinSplitSizePerRack() != null) {
+      HiveConf.setLongVar(job, HiveConf.ConfVars.MAPREDMINSPLITSIZEPERRACK, work.getMinSplitSizePerRack().longValue());
+    }
   }
 
   private void handleSampling(Context context, MapWork mWork, JobConf job)
