@@ -314,11 +314,9 @@ timeQualifiers
 constant
 @init { gParent.pushMsg("constant", state); }
 @after { gParent.popMsg(state); }
-    :
-    Number
+    : Number
     | dateLiteral
     | timestampLiteral
-    | intervalLiteral
     | StringLiteral
     | stringLiteralSequence
     | IntegralLiteral
@@ -361,12 +359,13 @@ timestampLiteral
     KW_CURRENT_TIMESTAMP -> ^(TOK_FUNCTION KW_CURRENT_TIMESTAMP)
     ;
 
-intervalLiteral
+intervalExpression
     :
-    KW_INTERVAL StringLiteral qualifiers=intervalQualifiers ->
-    {
-      adaptor.create(((CommonTree)qualifiers.getTree()).getType(), $StringLiteral.text)
-    }
+    KW_INTERVAL? k1=(StringLiteral|Number) q1=intervalQualifiers ->
+		^(TOK_FUNCTION Identifier["internal_interval"] NumberLiteral[Integer.toString(((CommonTree)q1.getTree()).token.getType())] $k1)
+    |
+    KW_INTERVAL? LPAREN k2=expression RPAREN q2=intervalQualifiers ->
+		^(TOK_FUNCTION Identifier["internal_interval"] NumberLiteral[Integer.toString(((CommonTree)q2.getTree()).token.getType())] $k2)
     ;
 
 intervalQualifiers
@@ -391,6 +390,7 @@ expression
 atomExpression
     :
     (KW_NULL) => KW_NULL -> TOK_NULL
+    | (intervalExpression)=>intervalExpression
     | (constant) => constant
     | castExpression
     | extractExpression
