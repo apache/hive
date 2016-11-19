@@ -30,7 +30,6 @@ import io.druid.metadata.storage.mysql.MySQLConnector;
 import io.druid.metadata.storage.postgresql.PostgreSQLConnector;
 import io.druid.segment.loading.SegmentLoadingException;
 import io.druid.timeline.DataSegment;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.Constants;
@@ -38,7 +37,6 @@ import org.apache.hadoop.hive.druid.io.DruidOutputFormat;
 import org.apache.hadoop.hive.druid.io.DruidQueryBasedInputFormat;
 import org.apache.hadoop.hive.druid.serde.DruidSerDe;
 import org.apache.hadoop.hive.metastore.HiveMetaHook;
-import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.ql.metadata.DefaultStorageHandler;
@@ -149,9 +147,11 @@ public class DruidStorageHandler extends DefaultStorageHandler implements HiveMe
   public void preCreateTable(Table table) throws MetaException
   {
     // Do safety checks
+    /*
+    @TODO ASK Jesus if this is needed, i think we don't needed anymore
     if (MetaStoreUtils.isExternalTable(table) && !StringUtils.isEmpty(table.getSd().getLocation())) {
       throw new MetaException("LOCATION may not be specified for Druid existing sources");
-    }
+    }*/
     if (table.getPartitionKeysSize() != 0) {
       throw new MetaException("PARTITIONED BY may not be specified for Druid");
     }
@@ -170,7 +170,7 @@ public class DruidStorageHandler extends DefaultStorageHandler implements HiveMe
             .getAllDataSourceNames(connector, druidMetadataStorageTablesConfig);
     LOG.debug(String.format("pre-create data source with name [%s]", dataSourceName));
     if (existingDataSources.contains(dataSourceName)) {
-      throw new IllegalStateException(String.format("Data source [%s] already existing", dataSourceName));
+      throw new MetaException(String.format("Data source [%s] already existing", dataSourceName));
     }
   }
 

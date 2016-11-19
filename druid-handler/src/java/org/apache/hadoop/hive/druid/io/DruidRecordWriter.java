@@ -97,10 +97,10 @@ public class DruidRecordWriter implements RecordWriter<NullWritable, DruidWritab
   }
 
   /**
-   * This function compute the segment identifier and push the current open segment if max size is reached or the event belongs to the next interval.
+   * This function computes the segment identifier and push the current open segment if max size is reached or the event belongs to the next interval.
    * Note that this function assumes that timestamps are pseudo sorted.
    * This function will close and move to the next segment granularity as soon as it we get an event from the next interval.
-   *
+   * The sorting is done by the previous stage.
    * @return segmentIdentifier with respect to the timestamp and maybe push the current open segment.
    */
   private SegmentIdentifier getSegmentIdentifierAndMaybePush(long truncatedTime) {
@@ -161,7 +161,8 @@ public class DruidRecordWriter implements RecordWriter<NullWritable, DruidWritab
       for (DataSegment pushedSegment : segmentsAndMetadata.getSegments()) {
         pushedSegmentIdentifierHashSet
                 .add(SegmentIdentifier.fromDataSegment(pushedSegment).getIdentifierAsString());
-        final Path segmentDescriptorOutputPath = makeSegmentDescriptorOutputPath(pushedSegment);
+        final Path segmentDescriptorOutputPath = DruidStorageHandlerUtils
+                .makeSegmentDescriptorOutputPath(pushedSegment, segmentsDescriptorDir);
         DruidStorageHandlerUtils
                 .writeSegmentDescriptor(fileSystem, pushedSegment, segmentDescriptorOutputPath);
 
@@ -258,13 +259,6 @@ public class DruidRecordWriter implements RecordWriter<NullWritable, DruidWritab
   @Override
   public void close(Reporter reporter) throws IOException {
     this.close(true);
-  }
-
-  private Path makeSegmentDescriptorOutputPath(DataSegment pushedSegment) {
-    return new Path(
-            segmentsDescriptorDir,
-            String.format("%s.json", pushedSegment.getIdentifier().replace(":", ""))
-    );
   }
 
 }

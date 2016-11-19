@@ -357,7 +357,15 @@ public final class DruidStorageHandlerUtils {
       return Integer.MIN_VALUE;
     }
     return DEFAULT_STREAMING_RESULT_SIZE;
+  }
 
+  public static Path makeSegmentDescriptorOutputPath(DataSegment pushedSegment,
+          Path segmentsDescriptorDir
+  ) {
+    return new Path(
+            segmentsDescriptorDir,
+            String.format("%s.json", pushedSegment.getIdentifier().replace(":", ""))
+    );
   }
 
   /**
