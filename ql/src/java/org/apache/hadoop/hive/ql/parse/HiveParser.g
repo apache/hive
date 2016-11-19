@@ -24,7 +24,7 @@ ASTLabelType=ASTNode;
 backtrack=false;
 k=3;
 }
-import SelectClauseParser, FromClauseParser, GroupByParser, IdentifiersParser;
+import SelectClauseParser, FromClauseParser, IdentifiersParser;
 
 tokens {
 TOK_INSERT;
@@ -2541,11 +2541,11 @@ body
    whereClause?
    groupByClause?
    havingClause?
+   window_clause?
    orderByClause?
    clusterByClause?
    distributeByClause?
    sortByClause?
-   window_clause?
    limitClause? -> ^(TOK_INSERT insertClause
                      selectClause lateralView? whereClause? groupByClause? havingClause? orderByClause? clusterByClause?
                      distributeByClause? sortByClause? window_clause? limitClause?)
@@ -2555,11 +2555,11 @@ body
    whereClause?
    groupByClause?
    havingClause?
+   window_clause?
    orderByClause?
    clusterByClause?
    distributeByClause?
    sortByClause?
-   window_clause?
    limitClause? -> ^(TOK_INSERT ^(TOK_DESTINATION ^(TOK_DIR TOK_TMP_FILE))
                      selectClause lateralView? whereClause? groupByClause? havingClause? orderByClause? clusterByClause?
                      distributeByClause? sortByClause? window_clause? limitClause?)

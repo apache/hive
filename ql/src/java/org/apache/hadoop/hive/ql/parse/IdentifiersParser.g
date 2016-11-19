@@ -47,15 +47,103 @@ catch (RecognitionException e) {
 }
 
 //-----------------------------------------------------------------------------------
+// group by a,b
+groupByClause
+@init { gParent.pushMsg("group by clause", state); }
+@after { gParent.popMsg(state); }
+    :
+    KW_GROUP KW_BY groupby_expression
+    -> groupby_expression
+    ;
+
+// support for new and old rollup/cube syntax
+groupby_expression :
+ rollupStandard |
+ rollupOldSyntax
+;
+
+// standard rollup syntax
+rollupStandard
+@init { gParent.pushMsg("standard rollup syntax", state); }
+@after { gParent.popMsg(state); }
+    :
+    (rollup=KW_ROLLUP | cube=KW_CUBE)
+    LPAREN expression ( COMMA expression)* RPAREN
+    -> {rollup != null}? ^(TOK_ROLLUP_GROUPBY expression+)
+    -> ^(TOK_CUBE_GROUPBY expression+)
+    ;
+
+// old hive rollup syntax
+rollupOldSyntax
+@init { gParent.pushMsg("rollup old syntax", state); }
+@after { gParent.popMsg(state); }
+    :
+    expressionsNotInParenthese
+    ((rollup=KW_WITH KW_ROLLUP) | (cube=KW_WITH KW_CUBE)) ?
+    (sets=KW_GROUPING KW_SETS
+    LPAREN groupingSetExpression ( COMMA groupingSetExpression)*  RPAREN ) ?
+    -> {rollup != null}? ^(TOK_ROLLUP_GROUPBY expressionsNotInParenthese)
+    -> {cube != null}? ^(TOK_CUBE_GROUPBY expressionsNotInParenthese)
+    -> {sets != null}? ^(TOK_GROUPING_SETS expressionsNotInParenthese groupingSetExpression+)
+    -> ^(TOK_GROUPBY expressionsNotInParenthese)
+    ;
+
+
+groupingSetExpression
+@init {gParent.pushMsg("grouping set expression", state); }
+@after {gParent.popMsg(state); }
+   :
+   (groupingSetExpressionMultiple) => groupingSetExpressionMultiple 
+   |
+   groupingExpressionSingle
+   ;
+
+groupingSetExpressionMultiple
+@init {gParent.pushMsg("grouping set part expression", state); }
+@after {gParent.popMsg(state); }
+   :
+   LPAREN 
+   expression? (COMMA expression)*
+   RPAREN
+   -> ^(TOK_GROUPING_SETS_EXPRESSION expression*)
+   ;
+
+groupingExpressionSingle
+@init { gParent.pushMsg("groupingExpression expression", state); }
+@after { gParent.popMsg(state); }
+    :
+    expression -> ^(TOK_GROUPING_SETS_EXPRESSION expression)
+    ;
+
+havingClause
+@init { gParent.pushMsg("having clause", state); }
+@after { gParent.popMsg(state); }
+    :
+    KW_HAVING havingCondition -> ^(TOK_HAVING havingCondition)
+    ;
+
+havingCondition
+@init { gParent.pushMsg("having condition", state); }
+@after { gParent.popMsg(state); }
+    :
+    expression
+    ;
 
 expressionsInParenthese
     :
-    LPAREN expression (COMMA expression)* RPAREN -> expression+
+    LPAREN! expressionsNotInParenthese RPAREN!
     ;
 
 expressionsNotInParenthese
     :
     expression (COMMA expression)* -> expression+
+    ;
+
+expressions
+    :
+    (expressionsInParenthese) => expressionsInParenthese
+    |
+    expressionsNotInParenthese
     ;
 
 columnRefOrderInParenthese
@@ -80,36 +168,21 @@ clusterByClause
 @init { gParent.pushMsg("cluster by clause", state); }
 @after { gParent.popMsg(state); }
     :
-    KW_CLUSTER KW_BY
-    (
-    (LPAREN) => expressionsInParenthese -> ^(TOK_CLUSTERBY expressionsInParenthese)
-    |
-    expressionsNotInParenthese -> ^(TOK_CLUSTERBY expressionsNotInParenthese)
-    )
+    KW_CLUSTER KW_BY expressions -> ^(TOK_CLUSTERBY expressions)
     ;
 
 partitionByClause
 @init  { gParent.pushMsg("partition by clause", state); }
 @after { gParent.popMsg(state); }
     :
-    KW_PARTITION KW_BY
-    (
-    (LPAREN) => expressionsInParenthese -> ^(TOK_DISTRIBUTEBY expressionsInParenthese)
-    |
-    expressionsNotInParenthese -> ^(TOK_DISTRIBUTEBY expressionsNotInParenthese)
-    )
+    KW_PARTITION KW_BY expressions -> ^(TOK_DISTRIBUTEBY expressions) 
     ;
 
 distributeByClause
 @init { gParent.pushMsg("distribute by clause", state); }
 @after { gParent.popMsg(state); }
     :
-    KW_DISTRIBUTE KW_BY
-    (
-    (LPAREN) => expressionsInParenthese -> ^(TOK_DISTRIBUTEBY expressionsInParenthese)
-    |
-    expressionsNotInParenthese -> ^(TOK_DISTRIBUTEBY expressionsNotInParenthese)
-    )
+    KW_DISTRIBUTE KW_BY expressions -> ^(TOK_DISTRIBUTEBY expressions) 
     ;
 
 sortByClause
@@ -283,12 +356,17 @@ timestampLiteral
     |
     KW_CURRENT_TIMESTAMP -> ^(TOK_FUNCTION KW_CURRENT_TIMESTAMP)
     ;
+    
+intervalValue
+    :
+    StringLiteral | Number
+    ;
 
 intervalLiteral
     :
-    KW_INTERVAL StringLiteral qualifiers=intervalQualifiers ->
+    KW_INTERVAL intervalValue qualifiers=intervalQualifiers ->
     {
-      adaptor.create(qualifiers.tree.token.getType(), $StringLiteral.text)
+      adaptor.create(qualifiers.tree.token.getType(), $intervalValue.text)
     }
     ;
 
@@ -313,22 +391,16 @@ expression
 
 atomExpression
     :
-    (function) => function
-    | specialFunctionExpression
-    | tableOrColumn
-    | LPAREN! expression RPAREN!
-    ;
-
-specialFunctionExpression
-    :
-    constant
+    (constant) => constant
     | castExpression
     | extractExpression
     | floorExpression
     | caseExpression
     | whenExpression
+    | (function) => function
+    | tableOrColumn
+    | LPAREN! expression RPAREN!
     ;
-
 
 precedenceFieldExpression
     :
@@ -444,39 +516,34 @@ subQueryExpression
     ;
 
 precedenceEqualExpression
-    :
-    (LPAREN precedenceBitwiseOrExpression COMMA) => precedenceEqualExpressionMutiple
+     :
+    (precedenceEqualExpressionSingle) => precedenceEqualExpressionSingle
     |
-    precedenceEqualExpressionSingle
+    precedenceEqualExpressionMutiple
     ;
 
 precedenceEqualExpressionSingle
     :
     (left=precedenceBitwiseOrExpression -> $left)
     (
-       (KW_NOT precedenceEqualNegatableOperator notExpr=precedenceBitwiseOrExpression)
+      (KW_NOT precedenceEqualNegatableOperator notExpr=precedenceBitwiseOrExpression)
        -> ^(KW_NOT ^(precedenceEqualNegatableOperator $precedenceEqualExpressionSingle $notExpr))
     | (precedenceEqualOperator equalExpr=precedenceBitwiseOrExpression)
        -> ^(precedenceEqualOperator $precedenceEqualExpressionSingle $equalExpr)
     | (KW_NOT KW_IN LPAREN KW_SELECT)=>  (KW_NOT KW_IN subQueryExpression) 
        -> ^(KW_NOT ^(TOK_SUBQUERY_EXPR ^(TOK_SUBQUERY_OP KW_IN) subQueryExpression $precedenceEqualExpressionSingle))
-    | (KW_NOT KW_IN expressions)
-       -> ^(KW_NOT ^(TOK_FUNCTION KW_IN $precedenceEqualExpressionSingle expressions))
+    | (KW_NOT KW_IN expressionsInParenthese)
+       -> ^(KW_NOT ^(TOK_FUNCTION KW_IN $precedenceEqualExpressionSingle expressionsInParenthese))
     | (KW_IN LPAREN KW_SELECT)=>  (KW_IN subQueryExpression) 
        -> ^(TOK_SUBQUERY_EXPR ^(TOK_SUBQUERY_OP KW_IN) subQueryExpression $precedenceEqualExpressionSingle)
-    | (KW_IN expressions)
-       -> ^(TOK_FUNCTION KW_IN $precedenceEqualExpressionSingle expressions)
+    | (KW_IN expressionsInParenthese)
+       -> ^(TOK_FUNCTION KW_IN $precedenceEqualExpressionSingle expressionsInParenthese)
     | ( KW_NOT KW_BETWEEN (min=precedenceBitwiseOrExpression) KW_AND (max=precedenceBitwiseOrExpression) )
-       -> ^(TOK_FUNCTION Identifier["between"] KW_TRUE $left $min $max)
+       -> ^(TOK_FUNCTION Identifier["between"] KW_TRUE $precedenceEqualExpressionSingle $min $max)
     | ( KW_BETWEEN (min=precedenceBitwiseOrExpression) KW_AND (max=precedenceBitwiseOrExpression) )
-       -> ^(TOK_FUNCTION Identifier["between"] KW_FALSE $left $min $max)
+       -> ^(TOK_FUNCTION Identifier["between"] KW_FALSE $precedenceEqualExpressionSingle $min $max)
     )*
-    | (KW_EXISTS LPAREN KW_SELECT)=> (KW_EXISTS subQueryExpression) -> ^(TOK_SUBQUERY_EXPR ^(TOK_SUBQUERY_OP KW_EXISTS) subQueryExpression)
-    ;
-
-expressions
-    :
-    LPAREN expression (COMMA expression)* RPAREN -> expression+
+    | KW_EXISTS subQueryExpression -> ^(TOK_SUBQUERY_EXPR ^(TOK_SUBQUERY_OP KW_EXISTS) subQueryExpression)
     ;
 
 //we transform the (col0, col1) in ((v00,v01),(v10,v11)) into struct(col0, col1) in (struct(v00,v01),struct(v10,v11))
