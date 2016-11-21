@@ -26,5 +26,6 @@ import org.apache.orc.TypeDescription;
 public interface ReadPipeline extends ConsumerFeedback<ColumnVectorBatch> {
   public Callable<Void> getReadCallable();
   TypeDescription getFileSchema();
+  TypeDescription getReaderSchema();
   boolean[] getIncludedColumns();
 }

@@ -97,7 +97,7 @@ public class VectorizedOrcInputFormat extends FileInputFormat<NullWritable, Vect
       this.offset = fileSplit.getStart();
       this.length = fileSplit.getLength();
       options.range(offset, length);
-      options.include(OrcInputFormat.genIncludedColumns(types, conf, true));
+      options.include(OrcInputFormat.genIncludedColumns(schema, conf));
       OrcInputFormat.setSearchArgument(options, types, conf, true);
 
       this.reader = file.rowsOptions(options);

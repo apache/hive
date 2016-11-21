@@ -70,6 +70,7 @@ public class OrcEncodedDataConsumer
   private final boolean skipCorrupt; // TODO: get rid of this
   private final QueryFragmentCounters counters;
   private boolean[] includedColumns;
+  private TypeDescription readerSchema;
 
   public OrcEncodedDataConsumer(
       Consumer<ColumnVectorBatch> consumer, int colCount, boolean skipCorrupt,
@@ -272,5 +273,13 @@ public class OrcEncodedDataConsumer
 
   public void setIncludedColumns(final boolean[] includedColumns) {
     this.includedColumns = includedColumns;
+  }
+
+  public void setReaderSchema(TypeDescription readerSchema) {
+    this.readerSchema = readerSchema;
+  }
+
+  public TypeDescription getReaderSchema() {
+    return readerSchema;
   }
 }

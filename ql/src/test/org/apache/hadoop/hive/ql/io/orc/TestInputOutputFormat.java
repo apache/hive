@@ -3816,7 +3816,6 @@ public class TestInputOutputFormat {
     long fileLength = fs.getFileStatus(testFilePath).getLen();
 
     // test with same schema with include
-    conf.set(ConfVars.HIVE_TXN_OPERATIONAL_PROPERTIES.toString(), "1");
     conf.set(ValidTxnList.VALID_TXNS_KEY, "100:99:");
     conf.set(IOConstants.SCHEMA_EVOLUTION_COLUMNS, "a,b,d");
     conf.set(IOConstants.SCHEMA_EVOLUTION_COLUMNS_TYPES, "int,struct<c:int>,string");
