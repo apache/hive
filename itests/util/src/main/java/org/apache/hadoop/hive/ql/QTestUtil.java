@@ -1562,10 +1562,16 @@ public class QTestUtil {
   });
 
   /* This list may be modified by specific cli drivers to mask strings that change on every test */
-  private final List<Pair<Pattern, String>> patternsWithMaskComments = new ArrayList<>();
+  private List<Pair<Pattern, String>> patternsWithMaskComments = new ArrayList<Pair<Pattern, String>>() {{
+    add(toPatternPair("(s3.?|swift|wasb.?).*hive-staging.*","### BLOBSTORE_STAGING_PATH ###"));
+  }};
+
+  private Pair<Pattern, String> toPatternPair(String patternStr, String maskComment) {
+    return ImmutablePair.of(Pattern.compile(patternStr), maskComment);
+  }
 
   public void addPatternWithMaskComment(String patternStr, String maskComment) {
-    patternsWithMaskComments.add(ImmutablePair.of(Pattern.compile(patternStr), maskComment));
+    patternsWithMaskComments.add(toPatternPair(patternStr, maskComment));
   }
 
   public int checkCliDriverResults(String tname) throws Exception {
