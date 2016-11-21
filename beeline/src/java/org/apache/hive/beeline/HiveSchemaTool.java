@@ -49,12 +49,16 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.sql.Connection;
+import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class HiveSchemaTool {
   private String userName = null;
@@ -300,6 +304,7 @@ public class HiveSchemaTool {
   public void doValidate() throws HiveMetaException {
     System.out.print("Starting metastore validation");
     validateSequences();
+    validateSchemaTables();
 
     System.out.print("Done with metastore validation");
   }
@@ -363,6 +368,111 @@ public class HiveSchemaTool {
         }
       }
     }
+  }
+
+  boolean validateSchemaTables() throws HiveMetaException {
+    ResultSet rs              = null;
+    DatabaseMetaData metadata = null;
+    List<String> dbTables     = new ArrayList<String>();
+    List<String> schemaTables = new ArrayList<String>();
+    List<String> subScripts   = new ArrayList<String>();
+    Connection hmsConn        = getConnectionToMetastore(false);
+    String version            = getMetaStoreSchemaVersion(hmsConn);
+    hmsConn                   = getConnectionToMetastore(false);
+
+    System.out.println("Validating tables in the schema for version " + version);
+    try {
+      metadata       = hmsConn.getMetaData();
+      String[] types = {"TABLE"};
+      rs             = metadata.getTables(null, null, "%", types);
+      String table   = null;
+
+      while (rs.next()) {
+        table = rs.getString("TABLE_NAME");
+        dbTables.add(table.toLowerCase());
+        LOG.debug("Found table " + table + " in HMS dbstore");
+      }
+    } catch (SQLException e) {
+      throw new HiveMetaException(e);
+    } finally {
+      if (rs != null) {
+        try {
+          rs.close();
+        } catch (SQLException e) {
+          throw new HiveMetaException("Failed to close resultset", e);
+        }
+      }
+
+      if (hmsConn != null) {
+        try {
+          hmsConn.close();
+        } catch (SQLException e) {
+          throw new HiveMetaException("Failed to close metastore connection", e);
+        }
+      }
+    }
+
+    // parse the schema file to determine the tables that are expected to exist
+    // we are using oracle schema because it is simpler to parse, no quotes or backticks etc
+    String baseDir    = new File(metaStoreSchemaInfo.getMetaStoreScriptDir()).getParent();
+    String schemaFile = baseDir + "/oracle/hive-schema-" + version + ".oracle.sql";
+
+    try {
+      LOG.info("Parsing schema script " + schemaFile);
+      subScripts.addAll(findCreateTable(schemaFile, schemaTables));
+      while (subScripts.size() > 0) {
+        schemaFile = baseDir + "/oracle/" + subScripts.remove(0);
+        LOG.info("Parsing subscript " + schemaFile);
+        subScripts.addAll(findCreateTable(schemaFile, schemaTables));
+      }
+    } catch (Exception e) {
+      return false;
+    }
+
+    System.out.println("Expected (from schema definition) " + schemaTables.size() +
+        " tables, Found (from HMS metastore) " + dbTables.size() + " tables");
+
+    // now diff the lists
+    schemaTables.removeAll(dbTables);
+    if (schemaTables.size() > 0) {
+      System.out.println(schemaTables.size() + " tables [ " + Arrays.toString(schemaTables.toArray())
+          + " ] are missing from the database schema.");
+      return false;
+    } else {
+      System.out.println("Schema table validation successful");
+      return true;
+    }
+  }
+
+  private List<String> findCreateTable(String path, List<String> tableList) {
+    Matcher matcher                       = null;
+    String line                           = null;
+    List<String> subs                     = new ArrayList<String>();
+    final String NESTED_SCRIPT_IDENTIFIER = "@";
+    Pattern regexp                        = Pattern.compile("(CREATE TABLE(IF NOT EXISTS)*) (\\S+).*");
+
+    try (
+      BufferedReader reader = new BufferedReader(new FileReader(path));
+    ){
+      while ((line = reader.readLine()) != null) {
+        if (line.startsWith(NESTED_SCRIPT_IDENTIFIER)) {
+          int endIndex = (line.indexOf(";") > -1 ) ? line.indexOf(";") : line.length();
+          // remove the trailing SEMI-COLON if any
+          subs.add(line.substring(NESTED_SCRIPT_IDENTIFIER.length(), endIndex));
+          continue;
+        }
+        matcher = regexp.matcher(line);
+        if (matcher.find()) {
+          String table = matcher.group(3);
+          tableList.add(table.toLowerCase());
+          LOG.debug("Found table " + table + " in the schema");
+        }
+      }
+    } catch (IOException ex){
+      ex.printStackTrace();
+    }
+
+    return subs;
   }
 
   /**

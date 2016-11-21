@@ -104,6 +104,44 @@ public class TestSchemaTool extends TestCase {
   }
 
   /**
+   * Test to validate that all tables exist in the HMS metastore.
+   * @throws Exception
+   */
+  public void testValidateSchemaTables() throws Exception {
+    schemaTool.doInit("2.0.0");
+
+    boolean isValid = (boolean)schemaTool.validateSchemaTables();
+    assertTrue(isValid);
+
+    // upgrade to 2.2.0 schema and re-validate
+    schemaTool.doUpgrade("2.2.0");
+    isValid = (boolean)schemaTool.validateSchemaTables();
+    assertTrue(isValid);
+
+    // Simulate a missing table scenario by renaming a couple of tables
+    String[] scripts = new String[] {
+        "RENAME TABLE SEQUENCE_TABLE to SEQUENCE_TABLE_RENAMED",
+        "RENAME TABLE NUCLEUS_TABLES to NUCLEUS_TABLES_RENAMED"
+    };
+
+    File scriptFile = generateTestScript(scripts);
+    schemaTool.runBeeLine(scriptFile.getPath());
+    isValid = schemaTool.validateSchemaTables();
+    assertFalse(isValid);
+
+    // Restored the renamed tables
+    scripts = new String[] {
+        "RENAME TABLE SEQUENCE_TABLE_RENAMED to SEQUENCE_TABLE",
+        "RENAME TABLE NUCLEUS_TABLES_RENAMED to NUCLEUS_TABLES"
+    };
+
+    scriptFile = generateTestScript(scripts);
+    schemaTool.runBeeLine(scriptFile.getPath());
+    isValid = schemaTool.validateSchemaTables();
+    assertTrue(isValid);
+   }
+
+  /**
    * Test dryrun of schema initialization
    * @throws Exception
    */
