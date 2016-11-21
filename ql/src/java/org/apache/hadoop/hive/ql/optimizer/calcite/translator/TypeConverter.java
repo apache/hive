@@ -76,31 +76,31 @@ public class TypeConverter {
     b.put(SqlTypeName.DATE.getName(), new HiveToken(HiveParser.TOK_DATE, "TOK_DATE"));
     b.put(SqlTypeName.TIMESTAMP.getName(), new HiveToken(HiveParser.TOK_TIMESTAMP, "TOK_TIMESTAMP"));
     b.put(SqlTypeName.INTERVAL_YEAR.getName(),
-            new HiveToken(HiveParser.TOK_INTERVAL_YEAR_MONTH_LITERAL, "TOK_INTERVAL_YEAR_MONTH_LITERAL"));
+            new HiveToken(HiveParser.Identifier, serdeConstants.INTERVAL_YEAR_MONTH_TYPE_NAME));
     b.put(SqlTypeName.INTERVAL_MONTH.getName(),
-            new HiveToken(HiveParser.TOK_INTERVAL_YEAR_MONTH_LITERAL, "TOK_INTERVAL_YEAR_MONTH_LITERAL"));
+            new HiveToken(HiveParser.Identifier, serdeConstants.INTERVAL_YEAR_MONTH_TYPE_NAME));
     b.put(SqlTypeName.INTERVAL_YEAR_MONTH.getName(),
-            new HiveToken(HiveParser.TOK_INTERVAL_YEAR_MONTH_LITERAL, "TOK_INTERVAL_YEAR_MONTH_LITERAL"));
+            new HiveToken(HiveParser.Identifier, serdeConstants.INTERVAL_YEAR_MONTH_TYPE_NAME));
     b.put(SqlTypeName.INTERVAL_DAY.getName(),
-            new HiveToken(HiveParser.TOK_INTERVAL_DAY_TIME_LITERAL, "TOK_INTERVAL_DAY_TIME_LITERAL"));
+            new HiveToken(HiveParser.Identifier, serdeConstants.INTERVAL_DAY_TIME_TYPE_NAME));
     b.put(SqlTypeName.INTERVAL_DAY_HOUR.getName(),
-            new HiveToken(HiveParser.TOK_INTERVAL_DAY_TIME_LITERAL, "TOK_INTERVAL_DAY_TIME_LITERAL"));
+            new HiveToken(HiveParser.Identifier, serdeConstants.INTERVAL_DAY_TIME_TYPE_NAME));
     b.put(SqlTypeName.INTERVAL_DAY_MINUTE.getName(),
-            new HiveToken(HiveParser.TOK_INTERVAL_DAY_TIME_LITERAL, "TOK_INTERVAL_DAY_TIME_LITERAL"));
+            new HiveToken(HiveParser.Identifier, serdeConstants.INTERVAL_DAY_TIME_TYPE_NAME));
     b.put(SqlTypeName.INTERVAL_DAY_SECOND.getName(),
-            new HiveToken(HiveParser.TOK_INTERVAL_DAY_TIME_LITERAL, "TOK_INTERVAL_DAY_TIME_LITERAL"));
+            new HiveToken(HiveParser.Identifier, serdeConstants.INTERVAL_DAY_TIME_TYPE_NAME));
     b.put(SqlTypeName.INTERVAL_HOUR.getName(),
-            new HiveToken(HiveParser.TOK_INTERVAL_DAY_TIME_LITERAL, "TOK_INTERVAL_DAY_TIME_LITERAL"));
+            new HiveToken(HiveParser.Identifier, serdeConstants.INTERVAL_DAY_TIME_TYPE_NAME));
     b.put(SqlTypeName.INTERVAL_HOUR_MINUTE.getName(),
-            new HiveToken(HiveParser.TOK_INTERVAL_DAY_TIME_LITERAL, "TOK_INTERVAL_DAY_TIME_LITERAL"));
+            new HiveToken(HiveParser.Identifier, serdeConstants.INTERVAL_DAY_TIME_TYPE_NAME));
     b.put(SqlTypeName.INTERVAL_HOUR_SECOND.getName(),
-            new HiveToken(HiveParser.TOK_INTERVAL_DAY_TIME_LITERAL, "TOK_INTERVAL_DAY_TIME_LITERAL"));
+            new HiveToken(HiveParser.Identifier, serdeConstants.INTERVAL_DAY_TIME_TYPE_NAME));
     b.put(SqlTypeName.INTERVAL_MINUTE.getName(),
-            new HiveToken(HiveParser.TOK_INTERVAL_DAY_TIME_LITERAL, "TOK_INTERVAL_DAY_TIME_LITERAL"));
+            new HiveToken(HiveParser.Identifier, serdeConstants.INTERVAL_DAY_TIME_TYPE_NAME));
     b.put(SqlTypeName.INTERVAL_MINUTE_SECOND.getName(),
-            new HiveToken(HiveParser.TOK_INTERVAL_DAY_TIME_LITERAL, "TOK_INTERVAL_DAY_TIME_LITERAL"));
+            new HiveToken(HiveParser.Identifier, serdeConstants.INTERVAL_DAY_TIME_TYPE_NAME));
     b.put(SqlTypeName.INTERVAL_SECOND.getName(),
-            new HiveToken(HiveParser.TOK_INTERVAL_DAY_TIME_LITERAL, "TOK_INTERVAL_DAY_TIME_LITERAL"));
+            new HiveToken(HiveParser.Identifier, serdeConstants.INTERVAL_DAY_TIME_TYPE_NAME));
     b.put(SqlTypeName.BINARY.getName(), new HiveToken(HiveParser.TOK_BINARY, "TOK_BINARY"));
     calciteToHiveTypeNameMap = b.build();
   };

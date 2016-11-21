@@ -191,6 +191,14 @@ public class TypeCheckProcFactory {
         + HiveParser.KW_FALSE + "%"), tf.getBoolExprProcessor());
     opRules.put(new RuleRegExp("R5", HiveParser.TOK_DATELITERAL + "%|"
         + HiveParser.TOK_TIMESTAMPLITERAL + "%"), tf.getDateTimeExprProcessor());
+    opRules.put(new RuleRegExp("R6", HiveParser.TOK_INTERVAL_YEAR_MONTH_LITERAL + "%|"
+        + HiveParser.TOK_INTERVAL_DAY_TIME_LITERAL + "%|"
+        + HiveParser.TOK_INTERVAL_YEAR_LITERAL + "%|"
+        + HiveParser.TOK_INTERVAL_MONTH_LITERAL + "%|"
+        + HiveParser.TOK_INTERVAL_DAY_LITERAL + "%|"
+        + HiveParser.TOK_INTERVAL_HOUR_LITERAL + "%|"
+        + HiveParser.TOK_INTERVAL_MINUTE_LITERAL + "%|"
+        + HiveParser.TOK_INTERVAL_SECOND_LITERAL + "%"), tf.getIntervalExprProcessor());
     opRules.put(new RuleRegExp("R7", HiveParser.TOK_TABLE_OR_COL + "%"),
         tf.getColumnExprProcessor());
     opRules.put(new RuleRegExp("R8", HiveParser.TOK_SUBQUERY_OP + "%"),
@@ -491,6 +499,79 @@ public class TypeCheckProcFactory {
             "Unable to convert time literal '" + timeString + "' to time value.", err);
       }
     }
+  }
+
+  /**
+   * Processor for interval constants.
+   */
+  public static class IntervalExprProcessor implements NodeProcessor {
+
+    private static final BigDecimal NANOS_PER_SEC_BD = new BigDecimal(DateUtils.NANOS_PER_SEC);
+    @Override
+    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
+        Object... nodeOutputs) throws SemanticException {
+
+      TypeCheckCtx ctx = (TypeCheckCtx) procCtx;
+      if (ctx.getError() != null) {
+        return null;
+      }
+
+      ExprNodeDesc desc = TypeCheckProcFactory.processGByExpr(nd, procCtx);
+      if (desc != null) {
+        return desc;
+      }
+
+      ASTNode expr = (ASTNode) nd;
+      String intervalString = BaseSemanticAnalyzer.stripQuotes(expr.getText());
+
+      // Get the string value and convert to a Interval value.
+      try {
+        switch (expr.getType()) {
+          case HiveParser.TOK_INTERVAL_YEAR_MONTH_LITERAL:
+            return new ExprNodeConstantDesc(TypeInfoFactory.intervalYearMonthTypeInfo,
+                HiveIntervalYearMonth.valueOf(intervalString));
+          case HiveParser.TOK_INTERVAL_DAY_TIME_LITERAL:
+            return new ExprNodeConstantDesc(TypeInfoFactory.intervalDayTimeTypeInfo,
+                HiveIntervalDayTime.valueOf(intervalString));
+          case HiveParser.TOK_INTERVAL_YEAR_LITERAL:
+            return new ExprNodeConstantDesc(TypeInfoFactory.intervalYearMonthTypeInfo,
+                new HiveIntervalYearMonth(Integer.parseInt(intervalString), 0));
+          case HiveParser.TOK_INTERVAL_MONTH_LITERAL:
+            return new ExprNodeConstantDesc(TypeInfoFactory.intervalYearMonthTypeInfo,
+                new HiveIntervalYearMonth(0, Integer.parseInt(intervalString)));
+          case HiveParser.TOK_INTERVAL_DAY_LITERAL:
+            return new ExprNodeConstantDesc(TypeInfoFactory.intervalDayTimeTypeInfo,
+                new HiveIntervalDayTime(Integer.parseInt(intervalString), 0, 0, 0, 0));
+          case HiveParser.TOK_INTERVAL_HOUR_LITERAL:
+            return new ExprNodeConstantDesc(TypeInfoFactory.intervalDayTimeTypeInfo,
+                new HiveIntervalDayTime(0, Integer.parseInt(intervalString), 0, 0, 0));
+          case HiveParser.TOK_INTERVAL_MINUTE_LITERAL:
+            return new ExprNodeConstantDesc(TypeInfoFactory.intervalDayTimeTypeInfo,
+                new HiveIntervalDayTime(0, 0, Integer.parseInt(intervalString), 0, 0));
+          case HiveParser.TOK_INTERVAL_SECOND_LITERAL:
+            BigDecimal bd = new BigDecimal(intervalString);
+            BigDecimal bdSeconds = new BigDecimal(bd.toBigInteger());
+            BigDecimal bdNanos = bd.subtract(bdSeconds);
+            return new ExprNodeConstantDesc(TypeInfoFactory.intervalDayTimeTypeInfo,
+                new HiveIntervalDayTime(0, 0, 0, bdSeconds.intValueExact(),
+                    bdNanos.multiply(NANOS_PER_SEC_BD).intValue()));
+          default:
+            throw new IllegalArgumentException("Invalid time literal type " + expr.getType());
+        }
+      } catch (Exception err) {
+        throw new SemanticException(
+            "Unable to convert interval literal '" + intervalString + "' to interval value.", err);
+      }
+    }
+  }
+
+  /**
+   * Factory method to get IntervalExprProcessor.
+   *
+   * @return IntervalExprProcessor.
+   */
+  public IntervalExprProcessor getIntervalExprProcessor() {
+    return new IntervalExprProcessor();
   }
 
   /**

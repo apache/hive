@@ -51,6 +51,7 @@ import org.apache.calcite.util.NlsString;
 import org.apache.hadoop.hive.common.type.Decimal128;
 import org.apache.hadoop.hive.common.type.HiveChar;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
+import org.apache.hadoop.hive.common.type.HiveIntervalDayTime;
 import org.apache.hadoop.hive.common.type.HiveIntervalYearMonth;
 import org.apache.hadoop.hive.common.type.HiveVarchar;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
@@ -574,22 +575,18 @@ public class RexNodeConverter {
           new SqlIntervalQualifier(TimeUnit.YEAR, TimeUnit.MONTH, new SqlParserPos(1,1)));
       break;
     case INTERVAL_DAY_TIME:
-      // Calcite RexBuilder L525 divides value by the multiplier.
-      // Need to get CAlCITE-1020 in.
-      throw new CalciteSemanticException("INTERVAL_DAY_TIME is not well supported",
-          UnsupportedFeature.Invalid_interval);
       // Calcite day-time interval is millis value as BigDecimal
       // Seconds converted to millis
-      // BigDecimal secsValueBd = BigDecimal
-      // .valueOf(((HiveIntervalDayTime) value).getTotalSeconds() * 1000);
-      // // Nanos converted to millis
-      // BigDecimal nanosValueBd = BigDecimal.valueOf(((HiveIntervalDayTime)
-      // value).getNanos(), 6);
-      // calciteLiteral =
-      // rexBuilder.makeIntervalLiteral(secsValueBd.add(nanosValueBd),
-      // new SqlIntervalQualifier(TimeUnit.MILLISECOND, null, new
-      // SqlParserPos(1, 1)));
-      // break;
+      BigDecimal secsValueBd = BigDecimal
+       .valueOf(((HiveIntervalDayTime) value).getTotalSeconds() * 1000);
+      // Nanos converted to millis
+       BigDecimal nanosValueBd = BigDecimal.valueOf(((HiveIntervalDayTime)
+       value).getNanos(), 6);
+       calciteLiteral =
+       rexBuilder.makeIntervalLiteral(secsValueBd.add(nanosValueBd),
+       new SqlIntervalQualifier(TimeUnit.MILLISECOND, null, new
+       SqlParserPos(1, 1)));
+       break;
     case VOID:
       calciteLiteral = cluster.getRexBuilder().makeLiteral(null,
           cluster.getTypeFactory().createSqlType(SqlTypeName.NULL), true);

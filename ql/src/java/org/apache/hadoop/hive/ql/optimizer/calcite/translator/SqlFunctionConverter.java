@@ -27,6 +27,7 @@ import org.apache.calcite.sql.SqlFunction;
 import org.apache.calcite.sql.SqlFunctionCategory;
 import org.apache.calcite.sql.SqlKind;
 import org.apache.calcite.sql.SqlOperator;
+import org.apache.calcite.sql.fun.SqlMonotonicBinaryOperator;
 import org.apache.calcite.sql.fun.SqlStdOperatorTable;
 import org.apache.calcite.sql.type.InferTypes;
 import org.apache.calcite.sql.type.OperandTypes;
@@ -61,6 +62,7 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPNegative;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPPositive;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDTF;
+import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.typeinfo.CharTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
@@ -186,6 +188,10 @@ public class SqlFunctionConverter {
             FunctionRegistry.getFunctionInfo("decimal"));
       } else if (castType.equals(TypeInfoFactory.binaryTypeInfo)) {
         castUDF = FunctionRegistry.getFunctionInfo("binary");
+      } else if (castType.equals(TypeInfoFactory.intervalDayTimeTypeInfo)) {
+        castUDF = FunctionRegistry.getFunctionInfo(serdeConstants.INTERVAL_DAY_TIME_TYPE_NAME);
+      } else if (castType.equals(TypeInfoFactory.intervalYearMonthTypeInfo)) {
+        castUDF = FunctionRegistry.getFunctionInfo(serdeConstants.INTERVAL_YEAR_MONTH_TYPE_NAME);
       } else
         throw new IllegalStateException("Unexpected type : " + castType.getQualifiedName());
     }
@@ -323,7 +329,6 @@ public class SqlFunctionConverter {
 
     StaticBlockBuilder() {
       registerFunction("+", SqlStdOperatorTable.PLUS, hToken(HiveParser.PLUS, "+"));
-      registerFunction("-", SqlStdOperatorTable.MINUS, hToken(HiveParser.MINUS, "-"));
       registerFunction("*", SqlStdOperatorTable.MULTIPLY, hToken(HiveParser.STAR, "*"));
       registerFunction("/", SqlStdOperatorTable.DIVIDE, hToken(HiveParser.DIVIDE, "/"));
       registerFunction("%", SqlStdOperatorTable.MOD, hToken(HiveParser.Identifier, "%"));
@@ -416,7 +421,7 @@ public class SqlFunctionConverter {
 
   // UDAF is assumed to be deterministic
   public static class CalciteUDAF extends SqlAggFunction implements CanAggregateDistinct {
-    private boolean isDistinct;
+    private final boolean isDistinct;
     public CalciteUDAF(boolean isDistinct, String opName, SqlReturnTypeInference returnTypeInference,
         SqlOperandTypeInference operandTypeInference, SqlOperandTypeChecker operandTypeChecker) {
       super(opName, SqlKind.OTHER_FUNCTION, returnTypeInference, operandTypeInference,
@@ -480,9 +485,16 @@ public class SqlFunctionConverter {
     SqlOperator calciteOp = hiveToCalcite.get(hiveUdfName);
     if (calciteOp == null) {
       CalciteUDFInfo uInf = getUDFInfo(hiveUdfName, calciteArgTypes, calciteRetType);
-      calciteOp = new CalciteSqlFn(uInf.udfName, SqlKind.OTHER_FUNCTION, uInf.returnTypeInference,
-          uInf.operandTypeInference, uInf.operandTypeChecker,
-          SqlFunctionCategory.USER_DEFINED_FUNCTION, deterministic);
+      if ("-".equals(hiveUdfName)) {
+        // Calcite native - has broken inference for return type, so we override it with explicit return type
+        // e.g. timestamp - timestamp is inferred as timestamp, where it really should be interval.
+        calciteOp = new SqlMonotonicBinaryOperator("-", SqlKind.MINUS, 40, true,
+            uInf.returnTypeInference, uInf.operandTypeInference, OperandTypes.MINUS_OPERATOR);
+      } else {
+        calciteOp = new CalciteSqlFn(uInf.udfName, SqlKind.OTHER_FUNCTION, uInf.returnTypeInference,
+            uInf.operandTypeInference, uInf.operandTypeChecker,
+            SqlFunctionCategory.USER_DEFINED_FUNCTION, deterministic);
+      }
     }
 
     return calciteOp;
