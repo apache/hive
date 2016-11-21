@@ -74,6 +74,11 @@ public final class CommandProcessorFactory {
     if (!availableCommands.contains(cmd[0].trim().toLowerCase())) {
       throw new SQLException("Insufficient privileges to execute " + cmd[0], "42000");
     }
+    if (cmd.length > 1 && "reload".equalsIgnoreCase(cmd[0])
+      && "function".equalsIgnoreCase(cmd[1])) {
+      // special handling for SQL "reload function"
+      return null;
+    }
     switch (hiveCommand) {
       case SET:
         return new SetProcessor();
