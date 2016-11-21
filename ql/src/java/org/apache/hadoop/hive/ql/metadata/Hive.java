@@ -1462,7 +1462,7 @@ public class Hive {
             isSrcLocal);
       } else {
         if (conf.getBoolVar(ConfVars.FIRE_EVENTS_FOR_DML) && !tbl.isTemporary() && oldPart != null) {
-          Collections.synchronizedList(new ArrayList<Path>());
+          newFiles = Collections.synchronizedList(new ArrayList<Path>());
         }
 
         FileSystem fs = tbl.getDataLocation().getFileSystem(conf);
