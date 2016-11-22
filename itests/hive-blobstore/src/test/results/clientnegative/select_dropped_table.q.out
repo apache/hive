@@ -1,13 +1,13 @@
 PREHOOK: query: CREATE TABLE qtest (key STRING, value STRING)
 #### A masked pattern was here ####
 PREHOOK: type: CREATETABLE
-PREHOOK: Input: #### A masked pattern was here ####
+PREHOOK: Input: ### test.blobstore.path ###/qtest
 PREHOOK: Output: database:default
 PREHOOK: Output: default@qtest
 POSTHOOK: query: CREATE TABLE qtest (key STRING, value STRING)
 #### A masked pattern was here ####
 POSTHOOK: type: CREATETABLE
-POSTHOOK: Input: #### A masked pattern was here ####
+POSTHOOK: Input: ### test.blobstore.path ###/qtest
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@qtest
 PREHOOK: query: DROP TABLE qtest
