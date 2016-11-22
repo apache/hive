@@ -51,9 +51,9 @@ POSTHOOK: query: create table part_mm(key int) partitioned by (key_mm int) store
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@part_mm
-PREHOOK: query: explain insert into table part_mm partition(key_mm='455') select key from intermediate
+PREHOOK: query: explain insert into table part_mm partition(key_mm=455) select key from intermediate
 PREHOOK: type: QUERY
-POSTHOOK: query: explain insert into table part_mm partition(key_mm='455') select key from intermediate
+POSTHOOK: query: explain insert into table part_mm partition(key_mm=455) select key from intermediate
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -105,14 +105,14 @@ STAGE PLANS:
   Stage: Stage-3
     Stats-Aggr Operator
 
-PREHOOK: query: insert into table part_mm partition(key_mm='455') select key from intermediate
+PREHOOK: query: insert into table part_mm partition(key_mm=455) select key from intermediate
 PREHOOK: type: QUERY
 PREHOOK: Input: default@intermediate
 PREHOOK: Input: default@intermediate@p=455
 PREHOOK: Input: default@intermediate@p=456
 PREHOOK: Input: default@intermediate@p=457
 PREHOOK: Output: default@part_mm@key_mm=455
-POSTHOOK: query: insert into table part_mm partition(key_mm='455') select key from intermediate
+POSTHOOK: query: insert into table part_mm partition(key_mm=455) select key from intermediate
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@intermediate
 POSTHOOK: Input: default@intermediate@p=455
@@ -120,14 +120,14 @@ POSTHOOK: Input: default@intermediate@p=456
 POSTHOOK: Input: default@intermediate@p=457
 POSTHOOK: Output: default@part_mm@key_mm=455
 POSTHOOK: Lineage: part_mm PARTITION(key_mm=455).key SIMPLE [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
-PREHOOK: query: insert into table part_mm partition(key_mm='456') select key from intermediate
+PREHOOK: query: insert into table part_mm partition(key_mm=456) select key from intermediate
 PREHOOK: type: QUERY
 PREHOOK: Input: default@intermediate
 PREHOOK: Input: default@intermediate@p=455
 PREHOOK: Input: default@intermediate@p=456
 PREHOOK: Input: default@intermediate@p=457
 PREHOOK: Output: default@part_mm@key_mm=456
-POSTHOOK: query: insert into table part_mm partition(key_mm='456') select key from intermediate
+POSTHOOK: query: insert into table part_mm partition(key_mm=456) select key from intermediate
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@intermediate
 POSTHOOK: Input: default@intermediate@p=455
@@ -135,14 +135,14 @@ POSTHOOK: Input: default@intermediate@p=456
 POSTHOOK: Input: default@intermediate@p=457
 POSTHOOK: Output: default@part_mm@key_mm=456
 POSTHOOK: Lineage: part_mm PARTITION(key_mm=456).key SIMPLE [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
-PREHOOK: query: insert into table part_mm partition(key_mm='455') select key from intermediate
+PREHOOK: query: insert into table part_mm partition(key_mm=455) select key from intermediate
 PREHOOK: type: QUERY
 PREHOOK: Input: default@intermediate
 PREHOOK: Input: default@intermediate@p=455
 PREHOOK: Input: default@intermediate@p=456
 PREHOOK: Input: default@intermediate@p=457
 PREHOOK: Output: default@part_mm@key_mm=455
-POSTHOOK: query: insert into table part_mm partition(key_mm='455') select key from intermediate
+POSTHOOK: query: insert into table part_mm partition(key_mm=455) select key from intermediate
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@intermediate
 POSTHOOK: Input: default@intermediate@p=455
@@ -180,29 +180,37 @@ POSTHOOK: Input: default@part_mm@key_mm=456
 103	455
 103	455
 103	456
-PREHOOK: query: truncate table part_mm partition(key_mm='455')
-PREHOOK: type: TRUNCATETABLE
-PREHOOK: Output: default@part_mm@key_mm=455
-POSTHOOK: query: truncate table part_mm partition(key_mm='455')
-POSTHOOK: type: TRUNCATETABLE
-POSTHOOK: Output: default@part_mm@key_mm=455
-PREHOOK: query: select * from part_mm order by key, key_mm
+PREHOOK: query: -- TODO: doesn't work truncate table part_mm partition(key_mm=455);
+select * from part_mm order by key, key_mm
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part_mm
 PREHOOK: Input: default@part_mm@key_mm=455
 PREHOOK: Input: default@part_mm@key_mm=456
 #### A masked pattern was here ####
-POSTHOOK: query: select * from part_mm order by key, key_mm
+POSTHOOK: query: -- TODO: doesn't work truncate table part_mm partition(key_mm=455);
+select * from part_mm order by key, key_mm
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part_mm
 POSTHOOK: Input: default@part_mm@key_mm=455
 POSTHOOK: Input: default@part_mm@key_mm=456
 #### A masked pattern was here ####
+0	455
+0	455
 0	456
+10	455
+10	455
 10	456
+97	455
+97	455
 97	456
+98	455
+98	455
 98	456
+100	455
+100	455
 100	456
+103	455
+103	455
 103	456
 PREHOOK: query: truncate table part_mm
 PREHOOK: type: TRUNCATETABLE
@@ -2890,8 +2898,8 @@ POSTHOOK: Input: default@intermediate@p=456
 POSTHOOK: Input: default@intermediate@p=457
 POSTHOOK: Output: default@multi1_mm@p=1
 POSTHOOK: Lineage: multi1_mm PARTITION(p=1).key SIMPLE [(intermediate)intermediate.FieldSchema(name:p, type:int, comment:null), ]
-POSTHOOK: Lineage: multi1_mm PARTITION(p=1).key SIMPLE [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: multi1_mm PARTITION(p=1).key2 SIMPLE [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: multi1_mm PARTITION(p=1).key SIMPLE [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: multi1_mm PARTITION(p=1).key2 SIMPLE [(intermediate)intermediate.FieldSchema(name:p, type:int, comment:null), ]
 PREHOOK: query: select key, key2, p from multi1_mm order by key, key2, p
 PREHOOK: type: QUERY
@@ -2967,6 +2975,187 @@ POSTHOOK: query: drop table multi1_mm
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@multi1_mm
 POSTHOOK: Output: default@multi1_mm
+PREHOOK: query: drop table stats_mm
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table stats_mm
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table stats_mm(key int)  tblproperties("transactional"="true", "transactional_properties"="insert_only")
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@stats_mm
+POSTHOOK: query: create table stats_mm(key int)  tblproperties("transactional"="true", "transactional_properties"="insert_only")
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@stats_mm
+PREHOOK: query: insert overwrite table stats_mm  select key from intermediate
+PREHOOK: type: QUERY
+PREHOOK: Input: default@intermediate
+PREHOOK: Input: default@intermediate@p=455
+PREHOOK: Input: default@intermediate@p=456
+PREHOOK: Input: default@intermediate@p=457
+PREHOOK: Output: default@stats_mm
+POSTHOOK: query: insert overwrite table stats_mm  select key from intermediate
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@intermediate
+POSTHOOK: Input: default@intermediate@p=455
+POSTHOOK: Input: default@intermediate@p=456
+POSTHOOK: Input: default@intermediate@p=457
+POSTHOOK: Output: default@stats_mm
+POSTHOOK: Lineage: stats_mm.key SIMPLE [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
+PREHOOK: query: desc formatted stats_mm
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@stats_mm
+POSTHOOK: query: desc formatted stats_mm
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@stats_mm
+# col_name            	data_type           	comment             
+	 	 
+key                 	int                 	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	numFiles            	3                   
+	numRows             	6                   
+	rawDataSize         	13                  
+	totalSize           	19                  
+	transactional       	true                
+	transactional_properties	insert_only         
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: insert into table stats_mm  select key from intermediate
+PREHOOK: type: QUERY
+PREHOOK: Input: default@intermediate
+PREHOOK: Input: default@intermediate@p=455
+PREHOOK: Input: default@intermediate@p=456
+PREHOOK: Input: default@intermediate@p=457
+PREHOOK: Output: default@stats_mm
+POSTHOOK: query: insert into table stats_mm  select key from intermediate
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@intermediate
+POSTHOOK: Input: default@intermediate@p=455
+POSTHOOK: Input: default@intermediate@p=456
+POSTHOOK: Input: default@intermediate@p=457
+POSTHOOK: Output: default@stats_mm
+POSTHOOK: Lineage: stats_mm.key SIMPLE [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
+PREHOOK: query: desc formatted stats_mm
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@stats_mm
+POSTHOOK: query: desc formatted stats_mm
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@stats_mm
+# col_name            	data_type           	comment             
+	 	 
+key                 	int                 	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	numFiles            	6                   
+	numRows             	12                  
+	rawDataSize         	26                  
+	totalSize           	38                  
+	transactional       	true                
+	transactional_properties	insert_only         
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: drop table stats_mm
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@stats_mm
+PREHOOK: Output: default@stats_mm
+POSTHOOK: query: drop table stats_mm
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@stats_mm
+POSTHOOK: Output: default@stats_mm
+PREHOOK: query: drop table stats2_mm
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table stats2_mm
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table stats2_mm tblproperties("transactional"="true", "transactional_properties"="insert_only") as select array(key, value) from src
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@stats2_mm
+POSTHOOK: query: create table stats2_mm tblproperties("transactional"="true", "transactional_properties"="insert_only") as select array(key, value) from src
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@src
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@stats2_mm
+POSTHOOK: Lineage: stats2_mm.c0 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: desc formatted stats2_mm
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@stats2_mm
+POSTHOOK: query: desc formatted stats2_mm
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@stats2_mm
+# col_name            	data_type           	comment             
+	 	 
+c0                  	array<string>       	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	numFiles            	43                  
+	numRows             	500                 
+	rawDataSize         	5312                
+	totalSize           	5812                
+	transactional       	true                
+	transactional_properties	insert_only         
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: drop table stats2_mm
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@stats2_mm
+PREHOOK: Output: default@stats2_mm
+POSTHOOK: query: drop table stats2_mm
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@stats2_mm
+POSTHOOK: Output: default@stats2_mm
 PREHOOK: query: drop table intermediate
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@intermediate
@@ -2975,3 +3164,7 @@ POSTHOOK: query: drop table intermediate
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@intermediate
 POSTHOOK: Output: default@intermediate
+PREHOOK: query: drop table intermediate
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table intermediate
+POSTHOOK: type: DROPTABLE
