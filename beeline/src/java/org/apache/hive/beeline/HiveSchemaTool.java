@@ -34,6 +34,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.HiveMetaException;
 import org.apache.hadoop.hive.metastore.MetaStoreSchemaInfo;
+import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hive.beeline.HiveSchemaHelper.NestedScriptParser;
@@ -577,6 +578,7 @@ public class HiveSchemaTool {
     validateSequences();
     validateSchemaTables();
     validateLocations(null);
+    validateColumnNullValues();
     System.out.print("Done with metastore validation");
   }
 
@@ -677,6 +679,7 @@ public class HiveSchemaTool {
       if (hmsConn != null) {
         try {
           hmsConn.close();
+
         } catch (SQLException e) {
           throw new HiveMetaException("Failed to close metastore connection", e);
         }
@@ -744,6 +747,37 @@ public class HiveSchemaTool {
     }
 
     return subs;
+  }
+
+  boolean validateColumnNullValues() throws HiveMetaException {
+    System.out.println("Validating columns for incorrect NULL values");
+    Connection conn = getConnectionToMetastore(true);
+    boolean isValid = true;
+    try {
+      Statement stmt = conn.createStatement();
+      String tblQuery = getDbCommandParser(dbType).needsQuotedIdentifier() ?
+          ("select t.* from \"TBLS\" t WHERE t.\"SD_ID\" IS NULL and (t.\"TBL_TYPE\"='" + TableType.EXTERNAL_TABLE + "' or t.\"TBL_TYPE\"='" + TableType.MANAGED_TABLE + "')")
+          : ("select t.* from TBLS t WHERE t.SD_ID IS NULL and (t.TBL_TYPE='" + TableType.EXTERNAL_TABLE + "' or t.TBL_TYPE='" + TableType.MANAGED_TABLE + "')");
+
+      ResultSet res = stmt.executeQuery(tblQuery);
+      while (res.next()) {
+         long tableId = res.getLong("TBL_ID");
+         String tableName = res.getString("TBL_NAME");
+         String tableType = res.getString("TBL_TYPE");
+         isValid = false;
+         System.err.println("Value of SD_ID in TBLS should not be NULL: hive table - " + tableName + " tableId - " + tableId + " tableType - " + tableType);
+      }
+
+      return isValid;
+    } catch(SQLException e) {
+        throw new HiveMetaException("Failed to validate columns for incorrect NULL values", e);
+    } finally {
+      try {
+        conn.close();
+      } catch (SQLException e) {
+        throw new HiveMetaException("Failed to close metastore connection", e);
+      }
+    }
   }
 
   /**
@@ -818,29 +852,38 @@ public class HiveSchemaTool {
 
     if (LOG.isDebugEnabled()) {
       LOG.debug("Going to invoke file that contains:");
-      FileReader fr = new FileReader(sqlScriptFile);
-      BufferedReader reader = new BufferedReader(fr);
-      String line;
-      while ((line = reader.readLine()) != null) {
-        LOG.debug("script: " + line);
+      BufferedReader reader = new BufferedReader(new FileReader(sqlScriptFile));
+      try {
+        String line;
+        while ((line = reader.readLine()) != null) {
+          LOG.debug("script: " + line);
+        }
+      } finally {
+        if (reader != null) {
+          reader.close();
+        }
       }
     }
 
     // run the script using Beeline
     BeeLine beeLine = new BeeLine();
-    if (!verbose) {
-      beeLine.setOutputStream(new PrintStream(new NullOutputStream()));
-      beeLine.getOpts().setSilent(true);
-    }
-    beeLine.getOpts().setAllowMultiLineCommand(false);
-    beeLine.getOpts().setIsolation("TRANSACTION_READ_COMMITTED");
-    // We can be pretty sure that an entire line can be processed as a single command since
-    // we always add a line separator at the end while calling dbCommandParser.buildCommand.
-    beeLine.getOpts().setEntireLineAsCommand(true);
-    LOG.debug("Going to run command <" + StringUtils.join(argList, " ") + ">");
-    int status = beeLine.begin(argList.toArray(new String[0]), null);
-    if (status != 0) {
-      throw new IOException("Schema script failed, errorcode " + status);
+    try {
+      if (!verbose) {
+        beeLine.setOutputStream(new PrintStream(new NullOutputStream()));
+        beeLine.getOpts().setSilent(true);
+      }
+      beeLine.getOpts().setAllowMultiLineCommand(false);
+      beeLine.getOpts().setIsolation("TRANSACTION_READ_COMMITTED");
+      // We can be pretty sure that an entire line can be processed as a single command since
+      // we always add a line separator at the end while calling dbCommandParser.buildCommand.
+      beeLine.getOpts().setEntireLineAsCommand(true);
+      LOG.debug("Going to run command <" + StringUtils.join(argList, " ") + ">");
+      int status = beeLine.begin(argList.toArray(new String[0]), null);
+      if (status != 0) {
+        throw new IOException("Schema script failed, errorcode " + status);
+      }
+    } finally {
+      beeLine.close();
     }
   }
 

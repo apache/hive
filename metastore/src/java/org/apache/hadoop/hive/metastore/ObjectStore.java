@@ -3615,7 +3615,7 @@ public class ObjectStore implements RawStore, Configurable {
       }
 
       MColumnDescriptor parentCD = retrieveCD ? nParentTable.mcd : parentTable.getSd().getCD();
-      List<MFieldSchema> parentCols = parentCD.getCols();
+      List<MFieldSchema> parentCols = parentCD == null ? null : parentCD.getCols();
       int parentIntegerIndex =
         getColumnIndexFromTableColumns(parentCols, fks.get(i).getPkcolumn_name());
       if (parentIntegerIndex == -1) {
@@ -3690,7 +3690,7 @@ public class ObjectStore implements RawStore, Configurable {
 
       MColumnDescriptor parentCD = retrieveCD ? nParentTable.mcd : parentTable.getSd().getCD();
       int parentIntegerIndex =
-        getColumnIndexFromTableColumns(parentCD.getCols(), pks.get(i).getColumn_name());
+        getColumnIndexFromTableColumns(parentCD == null ? null : parentCD.getCols(), pks.get(i).getColumn_name());
 
       if (parentIntegerIndex == -1) {
         throw new InvalidObjectException("Parent column not found: " + pks.get(i).getColumn_name());
