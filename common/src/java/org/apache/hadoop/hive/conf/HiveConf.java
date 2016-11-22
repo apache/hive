@@ -3190,8 +3190,13 @@ public class HiveConf extends Configuration {
             "Comma-separated list of supported blobstore schemes."),
 
     HIVE_BLOBSTORE_USE_BLOBSTORE_AS_SCRATCHDIR("hive.blobstore.use.blobstore.as.scratchdir", false,
-            "Enable the use of scratch directories directly on blob storage systems (it may cause performance penalties).");
+            "Enable the use of scratch directories directly on blob storage systems (it may cause performance penalties)."),
 
+    HIVE_BLOBSTORE_OPTIMIZATIONS_ENABLED("hive.blobstore.optimizations.enabled", true,
+            "This parameter enables a number of optimizations when running on blobstores:\n" +
+            "(1) If hive.blobstore.use.blobstore.as.scratchdir is false, force the last Hive job to write to the blobstore.\n" +
+            "This is a performance optimization that forces the final FileSinkOperator to write to the blobstore.\n" +
+            "See HIVE-15121 for details.");
 
     public final String varname;
     private final String altName;
