@@ -84,7 +84,8 @@ appConfig = """
     "internal.chaos.monkey.probability.amlaunchfailure": "0",
     "internal.chaos.monkey.probability.containerfailure": "%(monkey_percentage)d",
     "internal.chaos.monkey.interval.seconds": "%(monkey_interval)d",
-    "internal.chaos.monkey.enabled": "%(monkey_enabled)s"
+    "internal.chaos.monkey.enabled": "%(monkey_enabled)s"%(slider_appconfig_global_append)s
+
   },
   "components": {
     "slider-appmaster": {

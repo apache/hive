@@ -302,7 +302,11 @@ public class DummyRawStoreFailEvent implements RawStore, Configurable {
 
   @Override
   public boolean addIndex(Index index) throws InvalidObjectException, MetaException {
-    return objectStore.addIndex(index);
+    if (shouldEventSucceed) {
+      return objectStore.addIndex(index);
+    } else {
+      throw new RuntimeException("Event failed.");
+    }
   }
 
   @Override
@@ -314,7 +318,11 @@ public class DummyRawStoreFailEvent implements RawStore, Configurable {
   @Override
   public boolean dropIndex(String dbName, String origTableName, String indexName)
       throws MetaException {
-    return objectStore.dropIndex(dbName, origTableName, indexName);
+    if (shouldEventSucceed) {
+      return objectStore.dropIndex(dbName, origTableName, indexName);
+    } else {
+      throw new RuntimeException("Event failed.");
+    }
   }
 
   @Override
@@ -332,7 +340,11 @@ public class DummyRawStoreFailEvent implements RawStore, Configurable {
   @Override
   public void alterIndex(String dbName, String baseTblName, String name, Index newIndex)
       throws InvalidObjectException, MetaException {
-    objectStore.alterIndex(dbName, baseTblName, name, newIndex);
+    if (shouldEventSucceed) {
+      objectStore.alterIndex(dbName, baseTblName, name, newIndex);
+    } else {
+      throw new RuntimeException("Event failed.");
+    }
   }
 
   @Override
@@ -753,7 +765,11 @@ public class DummyRawStoreFailEvent implements RawStore, Configurable {
   @Override
   public void createFunction(Function func) throws InvalidObjectException,
       MetaException {
-    objectStore.createFunction(func);
+    if (shouldEventSucceed) {
+      objectStore.createFunction(func);
+    } else {
+      throw new RuntimeException("Event failed.");
+    }
   }
 
   @Override
@@ -766,7 +782,11 @@ public class DummyRawStoreFailEvent implements RawStore, Configurable {
   public void dropFunction(String dbName, String funcName)
       throws MetaException, NoSuchObjectException, InvalidObjectException,
       InvalidInputException {
-    objectStore.dropFunction(dbName, funcName);
+    if (shouldEventSucceed) {
+      objectStore.dropFunction(dbName, funcName);
+    } else {
+      throw new RuntimeException("Event failed.");
+    }
   }
 
   @Override

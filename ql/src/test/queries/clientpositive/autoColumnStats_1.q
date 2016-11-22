@@ -1,3 +1,5 @@
+set hive.strict.checks.bucketing=false;
+
 set hive.stats.column.autogather=true;
 set hive.stats.fetch.column.stats=true;
 set hive.exec.dynamic.partition=true;

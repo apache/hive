@@ -14,6 +14,8 @@
 package org.apache.hadoop.hive.ql.io.parquet;
 
 import java.io.IOException;
+
+import org.apache.hadoop.hive.ql.exec.vector.VectorizedInputFormatInterface;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.ql.exec.Utilities;
@@ -34,7 +36,8 @@ import org.apache.parquet.hadoop.ParquetInputFormat;
  * NOTE: With HIVE-9235 we removed "implements VectorizedParquetInputFormat" since all data types
  *       are not currently supported.  Removing the interface turns off vectorization.
  */
-public class MapredParquetInputFormat extends FileInputFormat<NullWritable, ArrayWritable> {
+public class MapredParquetInputFormat extends FileInputFormat<NullWritable, ArrayWritable>
+  implements VectorizedInputFormatInterface {
 
   private static final Logger LOG = LoggerFactory.getLogger(MapredParquetInputFormat.class);
 
@@ -48,7 +51,7 @@ public class MapredParquetInputFormat extends FileInputFormat<NullWritable, Arra
 
   protected MapredParquetInputFormat(final ParquetInputFormat<ArrayWritable> inputFormat) {
     this.realInput = inputFormat;
-    vectorizedSelf = new VectorizedParquetInputFormat(inputFormat);
+    vectorizedSelf = new VectorizedParquetInputFormat();
   }
 
   @SuppressWarnings({ "unchecked", "rawtypes" })
@@ -69,8 +72,7 @@ public class MapredParquetInputFormat extends FileInputFormat<NullWritable, Arra
         if (LOG.isDebugEnabled()) {
           LOG.debug("Using row-mode record reader");
         }
-        return (RecordReader<NullWritable, ArrayWritable>)
-          new ParquetRecordReaderWrapper(realInput, split, job, reporter);
+        return new ParquetRecordReaderWrapper(realInput, split, job, reporter);
       }
     } catch (final InterruptedException e) {
       throw new RuntimeException("Cannot create a RecordReaderWrapper", e);

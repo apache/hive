@@ -184,9 +184,18 @@ public abstract class TaskCompiler {
       }
 
       FetchWork fetch = new FetchWork(loadFileDesc.getSourcePath(), resultTab, outerQueryLimit);
-      fetch.setHiveServerQuery(SessionState.get().isHiveServerQuery());
+      boolean isHiveServerQuery = SessionState.get().isHiveServerQuery();
+      fetch.setHiveServerQuery(isHiveServerQuery);
       fetch.setSource(pCtx.getFetchSource());
       fetch.setSink(pCtx.getFetchSink());
+      if (isHiveServerQuery &&
+        null != resultTab &&
+        resultTab.getSerdeClassName().equalsIgnoreCase(ThriftJDBCBinarySerDe.class.getName()) &&
+        HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_SERVER2_THRIFT_RESULTSET_SERIALIZE_IN_TASKS)) {
+          fetch.setIsUsingThriftJDBCBinarySerDe(true);
+      } else {
+          fetch.setIsUsingThriftJDBCBinarySerDe(false);
+      }
 
       pCtx.setFetchTask((FetchTask) TaskFactory.get(fetch, conf));
 

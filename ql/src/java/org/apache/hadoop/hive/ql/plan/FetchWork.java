@@ -65,12 +65,26 @@ public class FetchWork implements Serializable {
 
   private boolean isHiveServerQuery;
 
+  /**
+   * Whether is a HiveServer query, and the destination table is
+   * indeed written using ThriftJDBCBinarySerDe
+   */
+  private boolean isUsingThriftJDBCBinarySerDe = false;
+
   public boolean isHiveServerQuery() {
 	return isHiveServerQuery;
   }
 
   public void setHiveServerQuery(boolean isHiveServerQuery) {
 	this.isHiveServerQuery = isHiveServerQuery;
+  }
+
+  public boolean isUsingThriftJDBCBinarySerDe() {
+	  return isUsingThriftJDBCBinarySerDe;
+  }
+
+  public void setIsUsingThriftJDBCBinarySerDe(boolean isUsingThriftJDBCBinarySerDe) {
+	  this.isUsingThriftJDBCBinarySerDe = isUsingThriftJDBCBinarySerDe;
   }
 
   public FetchWork() {

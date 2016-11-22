@@ -102,8 +102,17 @@ public class OrcStripeMetadata extends LlapCacheableBuffer {
 
   public void loadMissingIndexes(DataReader mr, StripeInformation stripe, boolean[] includes,
       boolean[] sargColumns) throws IOException {
+    // Do not loose the old indexes. Create a super set includes
+    OrcProto.RowIndex[] existing = getRowIndexes();
+    boolean superset[] = new boolean[Math.max(existing.length, includes.length)];
+    for (int i = 0; i < includes.length; i++) {
+      superset[i] = includes[i];
+    }
+    for (int i = 0; i < existing.length; i++) {
+      superset[i] = superset[i] || (existing[i] != null);
+    }
     // TODO: should we save footer to avoid a read here?
-    rowIndex = mr.readRowIndex(stripe, null, includes, rowIndex.getRowGroupIndex(),
+    rowIndex = mr.readRowIndex(stripe, null, superset, rowIndex.getRowGroupIndex(),
         sargColumns, rowIndex.getBloomFilterIndex());
     // TODO: theoretically, we should re-estimate memory usage here and update memory manager
   }

@@ -1,3 +1,5 @@
+set hive.strict.checks.bucketing=false;
+
 CREATE TABLE srcbucket_mapjoin(key int, value string) CLUSTERED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE;
 load data local inpath '../../data/files/srcbucket20.txt' INTO TABLE srcbucket_mapjoin;
 load data local inpath '../../data/files/srcbucket21.txt' INTO TABLE srcbucket_mapjoin;

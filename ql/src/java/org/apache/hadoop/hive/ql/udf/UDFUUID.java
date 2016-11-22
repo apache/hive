@@ -36,6 +36,7 @@ extended = "The value is returned as a canonical UUID 36-character string.\n"
 + "  '0baf1f52-53df-487f-8292-99a03716b688'\n"
 + "  > SELECT _FUNC_();\n"
 + "  '36718a53-84f5-45d6-8796-4f79983ad49d'")
+@UDFType(deterministic = false)
 public class UDFUUID extends UDF {
   private final Text result = new Text();
   /**

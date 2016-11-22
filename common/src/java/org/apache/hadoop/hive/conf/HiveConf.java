@@ -1027,8 +1027,12 @@ public class HiveConf extends Configuration {
         "  Comparing bigints and strings.\n" +
         "  Comparing bigints and doubles."),
     HIVE_STRICT_CHECKS_CARTESIAN("hive.strict.checks.cartesian.product", true,
-        "Enabling strict large query checks disallows the following:\n" +
+        "Enabling strict Cartesian join checks disallows the following:\n" +
         "  Cartesian product (cross join)."),
+    HIVE_STRICT_CHECKS_BUCKETING("hive.strict.checks.bucketing", true,
+        "Enabling strict bucketing checks disallows the following:\n" +
+        "  Load into bucketed tables."),
+
     @Deprecated
     HIVEMAPREDMODE("hive.mapred.mode", null,
         "Deprecated; use hive.strict.checks.* settings instead."),
@@ -4363,11 +4367,14 @@ public class HiveConf extends Configuration {
         "Unsafe compares between different types", ConfVars.HIVE_STRICT_CHECKS_TYPE_SAFETY);
     private static final String NO_CARTESIAN_MSG = makeMessage(
         "Cartesian products", ConfVars.HIVE_STRICT_CHECKS_CARTESIAN);
+    private static final String NO_BUCKETING_MSG = makeMessage(
+        "Load into bucketed tables", ConfVars.HIVE_STRICT_CHECKS_BUCKETING);
 
     private static String makeMessage(String what, ConfVars setting) {
-      return what + " are disabled for safety reasons. If you know what you are doing, please make"
-          + " sure that " + setting.varname + " is set to false and that "
-          + ConfVars.HIVEMAPREDMODE.varname + " is not set to 'strict' to enable them.";
+      return what + " are disabled for safety reasons. If you know what you are doing, please set"
+          + setting.varname + " to false and that " + ConfVars.HIVEMAPREDMODE.varname + " is not"
+          + " set to 'strict' to proceed. Note that if you may get errors or incorrect results if"
+          + " you make a mistake while using some of the unsafe features.";
     }
 
     public static String checkNoLimit(Configuration conf) {
@@ -4385,6 +4392,10 @@ public class HiveConf extends Configuration {
 
     public static String checkCartesian(Configuration conf) {
       return isAllowed(conf, ConfVars.HIVE_STRICT_CHECKS_CARTESIAN) ? null : NO_CARTESIAN_MSG;
+    }
+
+    public static String checkBucketing(Configuration conf) {
+      return isAllowed(conf, ConfVars.HIVE_STRICT_CHECKS_BUCKETING) ? null : NO_BUCKETING_MSG;
     }
 
     private static boolean isAllowed(Configuration conf, ConfVars setting) {

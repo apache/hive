@@ -1,3 +1,5 @@
+set hive.strict.checks.bucketing=false;
+
 set hive.input.format=org.apache.hadoop.hive.ql.io.HiveInputFormat;
 CREATE TABLE srcbucket_mapjoin(key int, value string) CLUSTERED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE;
 load data local inpath '../../data/files/srcbucket20.txt' INTO TABLE srcbucket_mapjoin;

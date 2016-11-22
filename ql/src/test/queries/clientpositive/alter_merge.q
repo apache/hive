@@ -1,3 +1,5 @@
+set hive.strict.checks.bucketing=false;
+
 set hive.mapred.mode=nonstrict;
 create table src_rc_merge_test(key int, value string) stored as rcfile;
 

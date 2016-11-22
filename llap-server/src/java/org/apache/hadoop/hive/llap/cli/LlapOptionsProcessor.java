@@ -52,6 +52,7 @@ public class LlapOptionsProcessor {
   public static final String OPTION_JAVA_HOME = "javaHome"; // forward via config.json
   public static final String OPTION_HIVECONF = "hiveconf"; // llap-daemon-site if relevant parameter
   public static final String OPTION_SLIDER_AM_CONTAINER_MB = "slider-am-container-mb"; // forward as arg
+  public static final String OPTION_SLIDER_APPCONFIG_GLOBAL = "slider-appconfig-global"; // forward as arg
   public static final String OPTION_LLAP_QUEUE = "queue"; // forward via config.json
   public static final String OPTION_IO_THREADS = "iothreads"; // llap-daemon-site
 
@@ -255,6 +256,11 @@ public class LlapOptionsProcessor {
     options.addOption(OptionBuilder.hasArg().withArgName("b")
         .withLongOpt(OPTION_SLIDER_AM_CONTAINER_MB)
         .withDescription("The size of the slider AppMaster container in MB").create('b'));
+
+    options.addOption(OptionBuilder.withValueSeparator().hasArgs(2).withArgName("property=value")
+        .withLongOpt(OPTION_SLIDER_APPCONFIG_GLOBAL)
+        .withDescription("Property (key=value) to be set in the global section of the Slider appConfig")
+        .create());
 
     options.addOption(OptionBuilder.hasArg().withArgName(OPTION_IO_THREADS)
         .withLongOpt(OPTION_IO_THREADS).withDescription("executor per instance").create('t'));

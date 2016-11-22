@@ -46,7 +46,7 @@ public interface Reader extends org.apache.hadoop.hive.ql.io.orc.Reader {
     public static final int ALL_RGS = -1;
     /**
      * All the previous streams are data streams, this and the next ones are index streams.
-     * We assume the sort will stay the same for backward compat.
+     * We assume the order will stay the same for backward compat.
      */
     public static final int MAX_DATA_STREAMS = OrcProto.Stream.Kind.ROW_INDEX.getNumber();
     public void init(Object fileKey, int stripeIx, int rgIx, int columnCount) {
@@ -56,6 +56,10 @@ public interface Reader extends org.apache.hadoop.hive.ql.io.orc.Reader {
         batchKey.set(fileKey, stripeIx, rgIx);
       }
       resetColumnArrays(columnCount);
+    }
+
+    public void initOrcColumn(int colIx) {
+      super.initColumn(colIx, MAX_DATA_STREAMS);
     }
   }
 

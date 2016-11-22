@@ -77,7 +77,7 @@ STAGE PLANS:
             Path -> Partition:
 #### A masked pattern was here ####
                 Partition
-                  base file name: srcbucket0.txt
+                  base file name: 000000_0
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   properties:
@@ -122,7 +122,7 @@ STAGE PLANS:
                     name: default.srcbucket
                   name: default.srcbucket
             Truncated Path -> Alias:
-              /srcbucket/srcbucket0.txt [s]
+              /srcbucket/000000_0 [s]
 
   Stage: Stage-0
     Move Operator
@@ -468,7 +468,7 @@ STAGE PLANS:
             Path -> Partition:
 #### A masked pattern was here ####
                 Partition
-                  base file name: srcbucket1.txt
+                  base file name: 000001_0
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   properties:
@@ -513,7 +513,7 @@ STAGE PLANS:
                     name: default.srcbucket
                   name: default.srcbucket
             Truncated Path -> Alias:
-              /srcbucket/srcbucket1.txt [s]
+              /srcbucket/000001_0 [s]
         Reducer 2 
             Needs Tagging: false
             Reduce Operator Tree:
@@ -843,7 +843,7 @@ STAGE PLANS:
             Path -> Partition:
 #### A masked pattern was here ####
                 Partition
-                  base file name: srcbucket0.txt
+                  base file name: 000000_0
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   properties:
@@ -888,7 +888,7 @@ STAGE PLANS:
                     name: default.srcbucket
                   name: default.srcbucket
             Truncated Path -> Alias:
-              /srcbucket/srcbucket0.txt [s]
+              /srcbucket/000000_0 [s]
         Reducer 2 
             Needs Tagging: false
             Reduce Operator Tree:
@@ -2400,7 +2400,7 @@ STAGE PLANS:
             Path -> Partition:
 #### A masked pattern was here ####
                 Partition
-                  base file name: srcbucket20.txt
+                  base file name: 000000_0
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   properties:
@@ -2446,7 +2446,7 @@ STAGE PLANS:
                   name: default.srcbucket2
 #### A masked pattern was here ####
                 Partition
-                  base file name: srcbucket22.txt
+                  base file name: 000002_0
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   properties:
@@ -2491,8 +2491,8 @@ STAGE PLANS:
                     name: default.srcbucket2
                   name: default.srcbucket2
             Truncated Path -> Alias:
-              /srcbucket2/srcbucket20.txt [s]
-              /srcbucket2/srcbucket22.txt [s]
+              /srcbucket2/000000_0 [s]
+              /srcbucket2/000002_0 [s]
         Reducer 2 
             Needs Tagging: false
             Reduce Operator Tree:
@@ -2545,26 +2545,62 @@ POSTHOOK: Input: default@srcbucket2
 2	val_2
 4	val_4
 8	val_8
+10	val_10
+12	val_12
+12	val_12
+18	val_18
+18	val_18
 20	val_20
 24	val_24
 24	val_24
 26	val_26
 26	val_26
 28	val_28
+30	val_30
+34	val_34
 42	val_42
 42	val_42
 44	val_44
+54	val_54
+58	val_58
+58	val_58
 64	val_64
 66	val_66
+70	val_70
+70	val_70
+70	val_70
+72	val_72
+72	val_72
+74	val_74
+76	val_76
+76	val_76
+78	val_78
 80	val_80
 82	val_82
 84	val_84
 84	val_84
 86	val_86
+90	val_90
+90	val_90
+90	val_90
+92	val_92
+96	val_96
+98	val_98
+98	val_98
+100	val_100
+100	val_100
+104	val_104
+104	val_104
 114	val_114
 116	val_116
 118	val_118
 118	val_118
+120	val_120
+120	val_120
+126	val_126
+128	val_128
+128	val_128
+128	val_128
 134	val_134
 134	val_134
 136	val_136
@@ -2572,11 +2608,19 @@ POSTHOOK: Input: default@srcbucket2
 138	val_138
 138	val_138
 138	val_138
+146	val_146
+146	val_146
 150	val_150
 152	val_152
 152	val_152
 156	val_156
 158	val_158
+160	val_160
+162	val_162
+164	val_164
+164	val_164
+166	val_166
+168	val_168
 170	val_170
 172	val_172
 172	val_172
@@ -2585,6 +2629,8 @@ POSTHOOK: Input: default@srcbucket2
 176	val_176
 176	val_176
 178	val_178
+180	val_180
+186	val_186
 190	val_190
 192	val_192
 194	val_194
@@ -2595,18 +2641,38 @@ POSTHOOK: Input: default@srcbucket2
 208	val_208
 208	val_208
 208	val_208
+214	val_214
+216	val_216
+216	val_216
+218	val_218
 222	val_222
 224	val_224
 224	val_224
 226	val_226
 228	val_228
+230	val_230
+230	val_230
+230	val_230
+230	val_230
+230	val_230
+238	val_238
+238	val_238
 242	val_242
 242	val_242
 244	val_244
 248	val_248
+252	val_252
+256	val_256
+256	val_256
+258	val_258
 260	val_260
 262	val_262
 266	val_266
+272	val_272
+272	val_272
+274	val_274
+278	val_278
+278	val_278
 280	val_280
 280	val_280
 282	val_282
@@ -2615,6 +2681,14 @@ POSTHOOK: Input: default@srcbucket2
 286	val_286
 288	val_288
 288	val_288
+292	val_292
+296	val_296
+298	val_298
+298	val_298
+298	val_298
+302	val_302
+306	val_306
+308	val_308
 310	val_310
 316	val_316
 316	val_316
@@ -2622,12 +2696,34 @@ POSTHOOK: Input: default@srcbucket2
 318	val_318
 318	val_318
 318	val_318
+322	val_322
+322	val_322
 332	val_332
 336	val_336
 338	val_338
+342	val_342
+342	val_342
+344	val_344
+344	val_344
+348	val_348
+348	val_348
+348	val_348
+348	val_348
+348	val_348
 356	val_356
+360	val_360
+362	val_362
+364	val_364
+366	val_366
+368	val_368
 374	val_374
 378	val_378
+382	val_382
+382	val_382
+384	val_384
+384	val_384
+384	val_384
+386	val_386
 392	val_392
 394	val_394
 396	val_396
@@ -2641,11 +2737,28 @@ POSTHOOK: Input: default@srcbucket2
 406	val_406
 406	val_406
 406	val_406
+414	val_414
+414	val_414
+418	val_418
 424	val_424
 424	val_424
+430	val_430
+430	val_430
+430	val_430
+432	val_432
+436	val_436
+438	val_438
+438	val_438
+438	val_438
 444	val_444
 446	val_446
 448	val_448
+452	val_452
+454	val_454
+454	val_454
+454	val_454
+458	val_458
+458	val_458
 460	val_460
 462	val_462
 462	val_462
@@ -2656,11 +2769,23 @@ POSTHOOK: Input: default@srcbucket2
 468	val_468
 468	val_468
 468	val_468
+470	val_470
+472	val_472
+478	val_478
+478	val_478
 480	val_480
 480	val_480
 480	val_480
 482	val_482
 484	val_484
+490	val_490
+492	val_492
+492	val_492
+494	val_494
+496	val_496
+498	val_498
+498	val_498
+498	val_498
 PREHOOK: query: EXPLAIN EXTENDED SELECT s.* FROM srcbucket2 TABLESAMPLE (BUCKET 2 OUT OF 4 on key) s
 ORDER BY key, value
 PREHOOK: type: QUERY
@@ -2705,7 +2830,7 @@ STAGE PLANS:
             Path -> Partition:
 #### A masked pattern was here ####
                 Partition
-                  base file name: srcbucket21.txt
+                  base file name: 000001_0
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   properties:
@@ -2750,7 +2875,7 @@ STAGE PLANS:
                     name: default.srcbucket2
                   name: default.srcbucket2
             Truncated Path -> Alias:
-              /srcbucket2/srcbucket21.txt [s]
+              /srcbucket2/000001_0 [s]
         Reducer 2 
             Needs Tagging: false
             Reduce Operator Tree:
@@ -2801,22 +2926,103 @@ POSTHOOK: Input: default@srcbucket2
 5	val_5
 5	val_5
 9	val_9
+17	val_17
+33	val_33
+37	val_37
+37	val_37
 41	val_41
+53	val_53
+57	val_57
+65	val_65
+69	val_69
+77	val_77
 85	val_85
+97	val_97
+97	val_97
+105	val_105
+113	val_113
+113	val_113
+125	val_125
+125	val_125
+129	val_129
+129	val_129
 133	val_133
 137	val_137
 137	val_137
+145	val_145
+149	val_149
+149	val_149
+153	val_153
+157	val_157
+165	val_165
+165	val_165
+169	val_169
+169	val_169
+169	val_169
+169	val_169
 177	val_177
+181	val_181
+189	val_189
+193	val_193
+193	val_193
+193	val_193
+197	val_197
+197	val_197
+201	val_201
+205	val_205
+205	val_205
+209	val_209
+209	val_209
+213	val_213
+213	val_213
+217	val_217
+217	val_217
 221	val_221
 221	val_221
 229	val_229
 229	val_229
+233	val_233
+233	val_233
+237	val_237
+237	val_237
+241	val_241
+249	val_249
+257	val_257
 265	val_265
 265	val_265
+273	val_273
+273	val_273
+273	val_273
+277	val_277
+277	val_277
+277	val_277
+277	val_277
+281	val_281
+281	val_281
+285	val_285
+289	val_289
+305	val_305
+309	val_309
+309	val_309
 317	val_317
 317	val_317
+321	val_321
+321	val_321
+325	val_325
+325	val_325
+333	val_333
+333	val_333
+341	val_341
+345	val_345
 353	val_353
 353	val_353
+365	val_365
+369	val_369
+369	val_369
+369	val_369
+373	val_373
+377	val_377
+389	val_389
 393	val_393
 397	val_397
 397	val_397
@@ -2828,13 +3034,32 @@ POSTHOOK: Input: default@srcbucket2
 409	val_409
 409	val_409
 409	val_409
+413	val_413
+413	val_413
+417	val_417
+417	val_417
+417	val_417
+421	val_421
+429	val_429
+429	val_429
+437	val_437
 449	val_449
+453	val_453
+457	val_457
+469	val_469
+469	val_469
+469	val_469
+469	val_469
+469	val_469
+477	val_477
 481	val_481
 485	val_485
 489	val_489
 489	val_489
 489	val_489
 489	val_489
+493	val_493
+497	val_497
 PREHOOK: query: CREATE TABLE empty_bucket (key int, value string) CLUSTERED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default

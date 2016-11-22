@@ -18,6 +18,10 @@
 
 package org.apache.hadoop.hive.ql.parse;
 
+import org.apache.hadoop.hive.conf.HiveConf.StrictChecks;
+
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+
 import java.io.IOException;
 import java.io.Serializable;
 import java.net.URI;
@@ -216,13 +220,13 @@ public class LoadSemanticAnalyzer extends BaseSemanticAnalyzer {
         && (ts.partSpec == null || ts.partSpec.size() == 0)) {
       throw new SemanticException(ErrorMsg.NEED_PARTITION_ERROR.getMsg());
     }
-    /* TODO# enable later - fails srcbucket creation in 14990
+
     List<String> bucketCols = ts.tableHandle.getBucketCols();
-    if (bucketCols != null && !bucketCols.isEmpty()
-        && MetaStoreUtils.isInsertOnlyTable(ts.tableHandle.getMetadata())) {
-      throw new SemanticException("Cannot load into a bucketed insert-only table. Please load into"
-          + " an intermediate table and use insert... select to allow Hive to enforce bucketing.");
-    }*/
+    if (bucketCols != null && !bucketCols.isEmpty()) {
+      String error = StrictChecks.checkBucketing(conf);
+      if (error != null) throw new SemanticException("Please load into an intermediate table"
+          + " and use 'insert... select' to allow Hive to enforce bucketing. " + error);
+    }
 
     // make sure the arguments make sense
     List<FileStatus> files = applyConstraintsAndGetFiles(fromURI, fromTree, isLocal);

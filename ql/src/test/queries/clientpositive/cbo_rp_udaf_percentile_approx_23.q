@@ -1,3 +1,5 @@
+set hive.strict.checks.bucketing=false;
+
 set hive.mapred.mode=nonstrict;
 set hive.cbo.returnpath.hiveop=true;
 -- INCLUDE_HADOOP_MAJOR_VERSIONS(0.23)

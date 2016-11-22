@@ -1415,7 +1415,6 @@ sub run
         my ($testResult, $benchmarkResult);
         eval {
           $testResult = $self->runTest(\%testHash, $log);
-          $endTime = time;
           $benchmarkResult = $self->generateBenchmark(\%testHash, $log);
           my $result =
             $self->compare($testResult, $benchmarkResult, $log, \%testHash);
@@ -1433,6 +1432,7 @@ sub run
             $testStatuses->{$testName} = $failedStr;
 
           }
+          $endTime = time;
           $msg .= "\nEnding test $testName at " . $endTime ."\n";
           #print $msg;
           print $log $msg;

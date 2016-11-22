@@ -1,3 +1,5 @@
+set hive.strict.checks.bucketing=false; 
+
 set hive.mapred.mode=strict;
 
 select * from srcpart a join

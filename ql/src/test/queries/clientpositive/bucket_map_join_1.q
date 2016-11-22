@@ -1,3 +1,5 @@
+set hive.strict.checks.bucketing=false;
+
 drop table table1;
 drop table table2;
 

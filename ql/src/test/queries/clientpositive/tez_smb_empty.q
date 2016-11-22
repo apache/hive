@@ -1,3 +1,5 @@
+set hive.strict.checks.bucketing=false;
+
 set hive.mapred.mode=nonstrict;
 set hive.explain.user=false;
 set hive.mapjoin.hybridgrace.hashtable=false;

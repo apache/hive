@@ -20,6 +20,8 @@ package org.apache.hadoop.hive.ql.udf;
 
 import junit.framework.TestCase;
 
+import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge;
 import org.junit.Test;
 
 public class TestUDFUUID extends TestCase {
@@ -34,5 +36,8 @@ public class TestUDFUUID extends TestCase {
     
     assertEquals(id1.length(), 36);
     assertEquals(id2.length(), 36);
+
+    GenericUDFBridge bridge = new GenericUDFBridge("uuid", false, UDFUUID.class.getName());
+    assertFalse(FunctionRegistry.isDeterministic(bridge));
   }
 }

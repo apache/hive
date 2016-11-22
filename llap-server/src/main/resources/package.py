@@ -3,6 +3,7 @@
 import sys,os,stat
 import argparse
 from json import loads as json_parse
+from json import dumps as json_print
 from os.path import exists, join, relpath
 from time import gmtime, strftime
 import shutil
@@ -57,6 +58,19 @@ def zipdir(path, zip, prefix="."):
 			src = join(root, file)
 			dst = src.replace(path, prefix)
 			zip.write(src, dst)
+
+def slider_appconfig_global_property(arg):
+	kv = arg.split("=")
+	if len(kv) != 2:
+		raise argparse.ArgumentTypeError("Value must be split into two parts separated by =")
+	return tuple(kv)
+
+def construct_slider_site_global_string(kvs):
+	if not kvs:
+		return ""
+	kvs = map(lambda a : a[0], kvs)
+	return ",\n" + ",\n".join(["    %s:%s" % (json_print(k), json_print(v)) for (k,v) in kvs])
+
 	
 def main(args):
 	version = os.getenv("HIVE_VERSION")
@@ -74,6 +88,7 @@ def main(args):
 	parser.add_argument("--logger", default="RFA")
 	parser.add_argument("--chaosmonkey", type=int, default=0)
 	parser.add_argument("--slider-am-container-mb", type=int, default=1024)
+	parser.add_argument("--slider-appconfig-global", nargs='*', type=slider_appconfig_global_property, action='append')
 	parser.add_argument("--slider-keytab-dir", default="")
 	parser.add_argument("--slider-keytab", default="")
 	parser.add_argument("--slider-principal", default="")
@@ -128,6 +143,7 @@ def main(args):
 		"monkey_percentage" : monkey_percentage,
 		"monkey_enabled" : args.chaosmonkey > 0,
 		"slider.am.container.mb" : args.slider_am_container_mb,
+		"slider_appconfig_global_append": construct_slider_site_global_string(args.slider_appconfig_global),
 		"slider_am_jvm_heapsize" : slider_am_jvm_heapsize,
 		"slider_keytab_dir" : slider_keytab_dir,
 		"slider_keytab" : slider_keytab,

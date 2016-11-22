@@ -466,10 +466,7 @@ public class SQLOperation extends ExecuteStatementOperation {
     FetchTask fetchTask = driver.getFetchTask();
     boolean isBlobBased = false;
 
-    if (fetchTask != null && fetchTask.getWork().isHiveServerQuery() && HiveConf.getBoolVar(queryState.getConf(),
-        HiveConf.ConfVars.HIVE_SERVER2_THRIFT_RESULTSET_SERIALIZE_IN_TASKS)
-        && (fetchTask.getTblDesc().getSerdeClassName().equalsIgnoreCase(ThriftJDBCBinarySerDe.class
-            .getName()))) {
+    if (fetchTask != null && fetchTask.getWork().isUsingThriftJDBCBinarySerDe()) {
       // Just fetch one blob if we've serialized thrift objects in final tasks
       maxRows = 1;
       isBlobBased = true;

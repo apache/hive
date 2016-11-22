@@ -1,3 +1,5 @@
+set hive.strict.checks.bucketing=false;
+
 
 
 

@@ -18,6 +18,8 @@
 
 package org.apache.hadoop.hive.ql.io.merge;
 
+import org.apache.hadoop.hive.ql.exec.mr.ExecDriver;
+
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -107,6 +109,8 @@ public class MergeFileTask extends Task<MergeFileWork> implements Serializable,
       if (!fs.exists(tempOutPath)) {
         fs.mkdirs(tempOutPath);
       }
+
+      ExecDriver.propagateSplitSettings(job, work);
 
       // set job name
       boolean noName = StringUtils.isEmpty(job.get(MRJobConfig.JOB_NAME));

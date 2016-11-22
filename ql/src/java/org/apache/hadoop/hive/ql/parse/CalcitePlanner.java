@@ -1543,12 +1543,11 @@ public class CalcitePlanner extends SemanticAnalyzer {
         JoinTypeCheckCtx jCtx = new JoinTypeCheckCtx(leftRR, rightRR, hiveJoinType);
         Map<ASTNode, ExprNodeDesc> exprNodes = JoinCondTypeCheckProcFactory.genExprNode(joinCond,
             jCtx);
-        if (jCtx.getError() != null)
+        if (jCtx.getError() != null) {
           throw new SemanticException(SemanticAnalyzer.generateErrorMessage(jCtx.getErrorSrcNode(),
               jCtx.getError()));
-
+        }
         ExprNodeDesc joinCondnExprNode = exprNodes.get(joinCond);
-
         List<RelNode> inputRels = new ArrayList<RelNode>();
         inputRels.add(leftRel);
         inputRels.add(rightRel);

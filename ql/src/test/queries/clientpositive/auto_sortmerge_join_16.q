@@ -1,3 +1,5 @@
+set hive.strict.checks.bucketing=false;
+
 set hive.auto.convert.join=true;
 
 set hive.exec.dynamic.partition.mode=nonstrict;
