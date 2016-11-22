@@ -1926,6 +1926,10 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       Exception ex = null;
       try {
         t = get_table_core(dbname, name);
+        if (MetaStoreUtils.isInsertOnlyTable(t.getParameters())) {
+          assertClientHasCapability(capabilities, ClientCapability.INSERT_ONLY_TABLES,
+              "insert-only tables", "get_table_req");
+        }
         firePreEvent(new PreReadTableEvent(t, this));
       } catch (MetaException e) {
         ex = e;
@@ -2028,8 +2032,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         if (dbName == null || dbName.isEmpty()) {
           throw new UnknownDBException("DB name is null or empty");
         }
-        if (tableNames == null)
-        {
+        if (tableNames == null) {
           throw new InvalidOperationException(dbName + " cannot find null tables");
         }
 
@@ -2053,6 +2056,12 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           int endIndex = Math.min(startIndex + tableBatchSize, distinctTableNames.size());
           tables.addAll(ms.getTableObjectsByName(dbName, distinctTableNames.subList(startIndex, endIndex)));
           startIndex = endIndex;
+        }
+        for (Table t : tables) {
+          if (MetaStoreUtils.isInsertOnlyTable(t.getParameters())) {
+            assertClientHasCapability(capabilities, ClientCapability.INSERT_ONLY_TABLES,
+                "insert-only tables", "get_table_req");
+          }
         }
       } catch (Exception e) {
         ex = e;

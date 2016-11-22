@@ -169,8 +169,10 @@ final class FileMetadataExprType {
 
 final class ClientCapability {
   const TEST_CAPABILITY = 1;
+  const INSERT_ONLY_TABLES = 2;
   static public $__names = array(
     1 => 'TEST_CAPABILITY',
+    2 => 'INSERT_ONLY_TABLES',
   );
 }
 

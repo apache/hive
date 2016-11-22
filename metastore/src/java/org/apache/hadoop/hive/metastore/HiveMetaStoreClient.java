@@ -99,9 +99,11 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
    * doesn't have (e.g. a getting a table of a new type), it will get back failures when the
    * capability checking is enabled (the default).
    */
-  public final static ClientCapabilities VERSION = null; // No capabilities.
+  public final static ClientCapabilities VERSION = new ClientCapabilities(
+      Lists.newArrayList(ClientCapability.INSERT_ONLY_TABLES));
+  // Test capability for tests.
   public final static ClientCapabilities TEST_VERSION = new ClientCapabilities(
-      Lists.newArrayList(ClientCapability.TEST_CAPABILITY)); // Test capability for tests.
+      Lists.newArrayList(ClientCapability.INSERT_ONLY_TABLES, ClientCapability.TEST_CAPABILITY));
 
   ThriftHiveMetastore.Iface client = null;
   private TTransport transport = null;

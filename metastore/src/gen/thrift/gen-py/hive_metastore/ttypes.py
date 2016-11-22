@@ -252,13 +252,16 @@ class FileMetadataExprType:
 
 class ClientCapability:
   TEST_CAPABILITY = 1
+  INSERT_ONLY_TABLES = 2
 
   _VALUES_TO_NAMES = {
     1: "TEST_CAPABILITY",
+    2: "INSERT_ONLY_TABLES",
   }
 
   _NAMES_TO_VALUES = {
     "TEST_CAPABILITY": 1,
+    "INSERT_ONLY_TABLES": 2,
   }
 
 

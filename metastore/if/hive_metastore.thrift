@@ -937,7 +937,8 @@ struct GetAllFunctionsResponse {
 }
 
 enum ClientCapability {
-  TEST_CAPABILITY = 1
+  TEST_CAPABILITY = 1,
+  INSERT_ONLY_TABLES = 2
 }
 
 
