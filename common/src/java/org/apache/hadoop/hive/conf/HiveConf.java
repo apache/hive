@@ -250,6 +250,7 @@ public class HiveConf extends Configuration {
       HiveConf.ConfVars.METASTORE_TRANSACTIONAL_EVENT_LISTENERS,
       HiveConf.ConfVars.METASTORE_EVENT_CLEAN_FREQ,
       HiveConf.ConfVars.METASTORE_EVENT_EXPIRY_DURATION,
+      HiveConf.ConfVars.METASTORE_EVENT_MESSAGE_FACTORY,
       HiveConf.ConfVars.METASTORE_FILTER_HOOK,
       HiveConf.ConfVars.METASTORE_RAW_STORE_IMPL,
       HiveConf.ConfVars.METASTORE_END_FUNCTION_LISTENERS,
@@ -794,6 +795,9 @@ public class HiveConf extends Configuration {
     METASTORE_EVENT_EXPIRY_DURATION("hive.metastore.event.expiry.duration", "0s",
         new TimeValidator(TimeUnit.SECONDS),
         "Duration after which events expire from events table"),
+    METASTORE_EVENT_MESSAGE_FACTORY("hive.metastore.event.message.factory",
+        "org.apache.hadoop.hive.metastore.messaging.json.JSONMessageFactory",
+        "Factory class for making encoding and decoding messages in the events generated."),
     METASTORE_EXECUTE_SET_UGI("hive.metastore.execute.setugi", true,
         "In unsecure mode, setting this property to true will cause the metastore to execute DFS operations using \n" +
         "the client's reported user and group permissions. Note that this property must be set on \n" +
