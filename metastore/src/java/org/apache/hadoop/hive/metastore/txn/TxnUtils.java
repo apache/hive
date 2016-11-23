@@ -144,6 +144,9 @@ public class TxnUtils {
   public static void buildQueryWithINClause(HiveConf conf, List<String> queries, StringBuilder prefix,
                                             StringBuilder suffix, List<Long> inList,
                                             String inColumn, boolean addParens, boolean notIn) {
+    if (inList == null || inList.size() == 0) {
+      throw new IllegalArgumentException("The IN list is empty!");
+    }
     int batchSize = conf.getIntVar(HiveConf.ConfVars.METASTORE_DIRECT_SQL_MAX_ELEMENTS_IN_CLAUSE);
     int numWholeBatches = inList.size() / batchSize;
     StringBuilder buf = new StringBuilder();
@@ -159,6 +162,11 @@ public class TxnUtils {
     }
 
     for (int i = 0; i <= numWholeBatches; i++) {
+      if (i * batchSize == inList.size()) {
+        // At this point we just realized we don't need another query
+        break;
+      }
+
       if (needNewQuery(conf, buf)) {
         // Wrap up current query string
         if (addParens) {
@@ -197,10 +205,6 @@ public class TxnUtils {
         }
       }
 
-      if (i * batchSize == inList.size()) {
-        // At this point we just realized we don't need another query
-        return;
-      }
       for (int j = i * batchSize; j < (i + 1) * batchSize && j < inList.size(); j++) {
         buf.append(inList.get(j)).append(",");
       }

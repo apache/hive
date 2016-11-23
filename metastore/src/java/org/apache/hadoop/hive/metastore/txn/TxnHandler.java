@@ -2895,11 +2895,11 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         List<Long> currentBatch = new ArrayList<>(TIMED_OUT_TXN_ABORT_BATCH_SIZE);
         timedOutTxns.add(currentBatch);
         do {
-          currentBatch.add(rs.getLong(1));
           if(currentBatch.size() == TIMED_OUT_TXN_ABORT_BATCH_SIZE) {
             currentBatch = new ArrayList<>(TIMED_OUT_TXN_ABORT_BATCH_SIZE);
             timedOutTxns.add(currentBatch);
           }
+          currentBatch.add(rs.getLong(1));
         } while(rs.next());
         dbConn.commit();
         close(rs, stmt, null);
