@@ -1938,6 +1938,8 @@ public class HiveConf extends Configuration {
         "number of records of the query results is larger than this threshold, we split the query in\n" +
         "total number of rows/threshold parts across the time dimension. Note that we assume the\n" +
         "records to be split uniformly across the time dimension"),
+    HIVE_DRUID_NUM_HTTP_CONNECTION("hive.druid.http.numConnection", 20, "Number of connections used by the HTTP client"),
+    HIVE_DRUID_HTTP_READ_TIMEOUT("hive.druid.http.read.timeout", "PT1M", "Read timeout period for the HTTP client in ISO8601 format, eg (P2W, P3M, PT1H30M, PT0.750S), default is period of 1 minute"),
 
     // For HBase storage handler
     HIVE_HBASE_WAL_ENABLED("hive.hbase.wal.enabled", true,

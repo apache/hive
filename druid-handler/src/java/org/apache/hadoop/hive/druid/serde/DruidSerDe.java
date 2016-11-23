@@ -46,6 +46,7 @@ import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.util.StringUtils;
+import org.joda.time.Period;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -82,6 +83,9 @@ public class DruidSerDe extends AbstractSerDe {
   private PrimitiveTypeInfo[] types;
   private ObjectInspector inspector;
 
+  private int numConnection;
+
+  private Period readTimeout;
 
   @Override
   public void initialize(Configuration configuration, Properties properties) throws SerDeException {
@@ -113,6 +117,10 @@ public class DruidSerDe extends AbstractSerDe {
         throw new SerDeException("Druid broker address not specified in configuration");
       }
 
+      numConnection = HiveConf
+              .getIntVar(configuration, HiveConf.ConfVars.HIVE_DRUID_NUM_HTTP_CONNECTION);
+      readTimeout = new Period(
+              HiveConf.getVar(configuration, HiveConf.ConfVars.HIVE_DRUID_HTTP_READ_TIMEOUT));
       // Infer schema
       SegmentAnalysis schemaInfo;
       try {
@@ -184,7 +192,9 @@ public class DruidSerDe extends AbstractSerDe {
   /* Submits the request and returns */
   protected SegmentAnalysis submitMetadataRequest(String address, SegmentMetadataQuery query)
           throws SerDeException, IOException {
-    HttpClient client = HttpClientInit.createClient(HttpClientConfig.builder().build(), new Lifecycle());
+    HttpClient client = HttpClientInit.createClient(
+            HttpClientConfig.builder().withNumConnections(numConnection)
+                    .withReadTimeout(readTimeout.toStandardDuration()).build(), new Lifecycle());
     InputStream response;
     try {
       response = DruidStorageHandlerUtils.submitRequest(client,
