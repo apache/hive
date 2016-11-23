@@ -726,6 +726,10 @@ class CompactionTxnHandler extends TxnHandler {
         }
         close(rs);
 
+        if (deleteSet.size() <= 0) {
+          return;
+        }
+
         List<String> queries = new ArrayList<String>();
 
         StringBuilder prefix = new StringBuilder();
