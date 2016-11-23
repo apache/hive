@@ -357,7 +357,7 @@ public class TestDruidSerDe {
           + "    \"segmentId\" : \"wikipedia_2012-12-29T00:00:00.000Z_2013-01-10T08:00:00.000Z_2013-01-10T08:13:47.830Z_v9\",  "
           + "    \"offset\" : 2,  "
           + "    \"event\" : {   "
-          + "     \"timestamp\" : \"2013-01-01T00:00:00.000Z\",   "
+          + "     \"timestamp\" : \"2013-01-01T00:00:12.000Z\",   "
           + "     \"robot\" : \"0\",   "
           + "     \"namespace\" : \"article\",   "
           + "     \"anonymous\" : \"0\",   "
@@ -376,7 +376,7 @@ public class TestDruidSerDe {
           + "    \"segmentId\" : \"wikipedia_2012-12-29T00:00:00.000Z_2013-01-10T08:00:00.000Z_2013-01-10T08:13:47.830Z_v9\",  "
           + "    \"offset\" : 3,  "
           + "    \"event\" : {   "
-          + "     \"timestamp\" : \"2013-01-01T00:00:00.000Z\",   "
+          + "     \"timestamp\" : \"2013-01-01T00:00:12.000Z\",   "
           + "     \"robot\" : \"0\",   "
           + "     \"namespace\" : \"article\",   "
           + "     \"anonymous\" : \"0\",   "
@@ -395,7 +395,7 @@ public class TestDruidSerDe {
           + "    \"segmentId\" : \"wikipedia_2012-12-29T00:00:00.000Z_2013-01-10T08:00:00.000Z_2013-01-10T08:13:47.830Z_v9\",  "
           + "    \"offset\" : 4,  "
           + "    \"event\" : {   "
-          + "     \"timestamp\" : \"2013-01-01T00:00:00.000Z\",   "
+          + "     \"timestamp\" : \"2013-01-01T00:00:12.000Z\",   "
           + "     \"robot\" : \"0\",   "
           + "     \"namespace\" : \"article\",   "
           + "     \"anonymous\" : \"0\",   "
@@ -419,13 +419,13 @@ public class TestDruidSerDe {
     new Object[] { new TimestampWritable(new Timestamp(1356998400000L)), new Text("0"), new Text("article"), new Text("0"), new Text("0"),
         new Text("112_U.S._580"), new Text("en"), new Text("1"), new Text("MZMcBride"),
         new FloatWritable(1.0F), new FloatWritable(70.0F), new FloatWritable(70.0F), new FloatWritable(70.0F), new FloatWritable(0.0F) } ,
-    new Object[] { new TimestampWritable(new Timestamp(1356998400000L)), new Text("0"), new Text("article"), new Text("0"), new Text("0"),
+    new Object[] { new TimestampWritable(new Timestamp(1356998412000L)), new Text("0"), new Text("article"), new Text("0"), new Text("0"),
         new Text("113_U.S._243"), new Text("en"), new Text("1"), new Text("MZMcBride"),
         new FloatWritable(1.0F), new FloatWritable(77.0F), new FloatWritable(77.0F), new FloatWritable(77.0F), new FloatWritable(0.0F) } ,
-    new Object[] { new TimestampWritable(new Timestamp(1356998400000L)), new Text("0"), new Text("article"), new Text("0"), new Text("0"),
+    new Object[] { new TimestampWritable(new Timestamp(1356998412000L)), new Text("0"), new Text("article"), new Text("0"), new Text("0"),
         new Text("113_U.S._73"), new Text("en"), new Text("1"), new Text("MZMcBride"),
         new FloatWritable(1.0F), new FloatWritable(70.0F), new FloatWritable(70.0F), new FloatWritable(70.0F), new FloatWritable(0.0F) } ,
-    new Object[] { new TimestampWritable(new Timestamp(1356998400000L)), new Text("0"), new Text("article"), new Text("0"), new Text("0"),
+    new Object[] { new TimestampWritable(new Timestamp(1356998412000L)), new Text("0"), new Text("article"), new Text("0"), new Text("0"),
         new Text("113_U.S._756"), new Text("en"), new Text("1"), new Text("MZMcBride"),
         new FloatWritable(1.0F), new FloatWritable(68.0F), new FloatWritable(68.0F), new FloatWritable(68.0F), new FloatWritable(0.0F) }
   };

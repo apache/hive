@@ -76,11 +76,9 @@ public class DruidSelectQueryRecordReader
   public DruidWritable getCurrentValue() throws IOException, InterruptedException {
     // Create new value
     DruidWritable value = new DruidWritable();
-    value.getValue().put(DruidTable.DEFAULT_TIMESTAMP_COLUMN, current.getTimestamp().getMillis());
-    if (values.hasNext()) {
-      value.getValue().putAll(values.next().getEvent());
-      return value;
-    }
+    EventHolder e = values.next();
+    value.getValue().put(DruidTable.DEFAULT_TIMESTAMP_COLUMN, e.getTimestamp().getMillis());
+    value.getValue().putAll(e.getEvent());
     return value;
   }
 
@@ -89,10 +87,9 @@ public class DruidSelectQueryRecordReader
     if (nextKeyValue()) {
       // Update value
       value.getValue().clear();
-      value.getValue().put(DruidTable.DEFAULT_TIMESTAMP_COLUMN, current.getTimestamp().getMillis());
-      if (values.hasNext()) {
-        value.getValue().putAll(values.next().getEvent());
-      }
+      EventHolder e = values.next();
+      value.getValue().put(DruidTable.DEFAULT_TIMESTAMP_COLUMN, e.getTimestamp().getMillis());
+      value.getValue().putAll(e.getEvent());
       return true;
     }
     return false;
