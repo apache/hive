@@ -21,10 +21,36 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@values__tmp__table__1
 POSTHOOK: Output: default@qtest
 POSTHOOK: Lineage: qtest.value EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+PREHOOK: query: INSERT INTO qtest VALUES (2), (20), (200), (2000)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@values__tmp__table__2
+PREHOOK: Output: default@qtest
+POSTHOOK: query: INSERT INTO qtest VALUES (2), (20), (200), (2000)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@values__tmp__table__2
+POSTHOOK: Output: default@qtest
+POSTHOOK: Lineage: qtest.value EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 PREHOOK: query: EXPLAIN EXTENDED INSERT INTO qtest VALUES (1), (10), (100), (1000)
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN EXTENDED INSERT INTO qtest VALUES (1), (10), (100), (1000)
 POSTHOOK: type: QUERY
+ABSTRACT SYNTAX TREE:
+  
+TOK_QUERY
+   TOK_FROM
+      null
+         null
+            Values__Tmp__Table__3
+   TOK_INSERT
+      TOK_INSERT_INTO
+         TOK_TAB
+            TOK_TABNAME
+               qtest
+      TOK_SELECT
+         TOK_SELEXPR
+            TOK_ALLCOLREF
+
+
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-7 depends on stages: Stage-1 , consists of Stage-4, Stage-3, Stage-5
@@ -40,7 +66,7 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: values__tmp__table__2
+            alias: values__tmp__table__3
             Statistics: Num rows: 1 Data size: 14 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Select Operator
@@ -58,6 +84,7 @@ STAGE PLANS:
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     properties:
+                      COLUMN_STATS_ACCURATE true
                       bucket_count -1
                       columns value
                       columns.comments 
@@ -65,11 +92,13 @@ STAGE PLANS:
 #### A masked pattern was here ####
                       location ### test.blobstore.path ###/qtest
                       name default.qtest
-                      numFiles 1
+                      numFiles 0
+                      numRows 8
+                      rawDataSize 20
                       serialization.ddl struct qtest { i32 value}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                      totalSize 14
+                      totalSize 0
 #### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     name: default.qtest
@@ -81,7 +110,7 @@ STAGE PLANS:
       Path -> Partition:
 #### A masked pattern was here ####
           Partition
-            base file name: Values__Tmp__Table__2
+            base file name: Values__Tmp__Table__3
             input format: org.apache.hadoop.mapred.TextInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
             properties:
@@ -90,8 +119,8 @@ STAGE PLANS:
               columns.comments 
               columns.types string
 #### A masked pattern was here ####
-              name default.values__tmp__table__2
-              serialization.ddl struct values__tmp__table__2 { string tmp_values_col1}
+              name default.values__tmp__table__3
+              serialization.ddl struct values__tmp__table__3 { string tmp_values_col1}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
@@ -104,13 +133,13 @@ STAGE PLANS:
                 columns.comments 
                 columns.types string
 #### A masked pattern was here ####
-                name default.values__tmp__table__2
-                serialization.ddl struct values__tmp__table__2 { string tmp_values_col1}
+                name default.values__tmp__table__3
+                serialization.ddl struct values__tmp__table__3 { string tmp_values_col1}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.values__tmp__table__2
-            name: default.values__tmp__table__2
+              name: default.values__tmp__table__3
+            name: default.values__tmp__table__3
       Truncated Path -> Alias:
 #### A masked pattern was here ####
 
@@ -133,6 +162,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
+                COLUMN_STATS_ACCURATE true
                 bucket_count -1
                 columns value
                 columns.comments 
@@ -140,11 +170,13 @@ STAGE PLANS:
 #### A masked pattern was here ####
                 location ### test.blobstore.path ###/qtest
                 name default.qtest
-                numFiles 1
+                numFiles 0
+                numRows 8
+                rawDataSize 20
                 serialization.ddl struct qtest { i32 value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                totalSize 14
+                totalSize 0
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.qtest
@@ -167,6 +199,7 @@ STAGE PLANS:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   properties:
+                    COLUMN_STATS_ACCURATE true
                     bucket_count -1
                     columns value
                     columns.comments 
@@ -174,11 +207,13 @@ STAGE PLANS:
 #### A masked pattern was here ####
                     location ### test.blobstore.path ###/qtest
                     name default.qtest
-                    numFiles 1
+                    numFiles 0
+                    numRows 8
+                    rawDataSize 20
                     serialization.ddl struct qtest { i32 value}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    totalSize 14
+                    totalSize 0
 #### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                   name: default.qtest
@@ -194,6 +229,7 @@ STAGE PLANS:
             input format: org.apache.hadoop.mapred.TextInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
             properties:
+              COLUMN_STATS_ACCURATE true
               bucket_count -1
               columns value
               columns.comments 
@@ -201,17 +237,20 @@ STAGE PLANS:
 #### A masked pattern was here ####
               location ### test.blobstore.path ###/qtest
               name default.qtest
-              numFiles 1
+              numFiles 0
+              numRows 8
+              rawDataSize 20
               serialization.ddl struct qtest { i32 value}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              totalSize 14
+              totalSize 0
 #### A masked pattern was here ####
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
+                COLUMN_STATS_ACCURATE true
                 bucket_count -1
                 columns value
                 columns.comments 
@@ -219,11 +258,13 @@ STAGE PLANS:
 #### A masked pattern was here ####
                 location ### test.blobstore.path ###/qtest
                 name default.qtest
-                numFiles 1
+                numFiles 0
+                numRows 8
+                rawDataSize 20
                 serialization.ddl struct qtest { i32 value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                totalSize 14
+                totalSize 0
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.qtest
@@ -245,6 +286,7 @@ STAGE PLANS:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   properties:
+                    COLUMN_STATS_ACCURATE true
                     bucket_count -1
                     columns value
                     columns.comments 
@@ -252,11 +294,13 @@ STAGE PLANS:
 #### A masked pattern was here ####
                     location ### test.blobstore.path ###/qtest
                     name default.qtest
-                    numFiles 1
+                    numFiles 0
+                    numRows 8
+                    rawDataSize 20
                     serialization.ddl struct qtest { i32 value}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    totalSize 14
+                    totalSize 0
 #### A masked pattern was here ####
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                   name: default.qtest
@@ -272,6 +316,7 @@ STAGE PLANS:
             input format: org.apache.hadoop.mapred.TextInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
             properties:
+              COLUMN_STATS_ACCURATE true
               bucket_count -1
               columns value
               columns.comments 
@@ -279,17 +324,20 @@ STAGE PLANS:
 #### A masked pattern was here ####
               location ### test.blobstore.path ###/qtest
               name default.qtest
-              numFiles 1
+              numFiles 0
+              numRows 8
+              rawDataSize 20
               serialization.ddl struct qtest { i32 value}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              totalSize 14
+              totalSize 0
 #### A masked pattern was here ####
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
+                COLUMN_STATS_ACCURATE true
                 bucket_count -1
                 columns value
                 columns.comments 
@@ -297,11 +345,13 @@ STAGE PLANS:
 #### A masked pattern was here ####
                 location ### test.blobstore.path ###/qtest
                 name default.qtest
-                numFiles 1
+                numFiles 0
+                numRows 8
+                rawDataSize 20
                 serialization.ddl struct qtest { i32 value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                totalSize 14
+                totalSize 0
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.qtest
@@ -328,3 +378,7 @@ POSTHOOK: Input: default@qtest
 10
 100
 1000
+2
+20
+200
+2000

@@ -36,6 +36,37 @@ PREHOOK: query: EXPLAIN EXTENDED FROM hdfs_table INSERT OVERWRITE TABLE blobstor
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN EXTENDED FROM hdfs_table INSERT OVERWRITE TABLE blobstore_table SELECT hdfs_table.key GROUP BY hdfs_table.key ORDER BY hdfs_table.key
 POSTHOOK: type: QUERY
+ABSTRACT SYNTAX TREE:
+  
+TOK_QUERY
+   TOK_FROM
+      TOK_TABREF
+         TOK_TABNAME
+            hdfs_table
+   TOK_INSERT
+      TOK_DESTINATION
+         TOK_TAB
+            TOK_TABNAME
+               blobstore_table
+      TOK_SELECT
+         TOK_SELEXPR
+            .
+               TOK_TABLE_OR_COL
+                  hdfs_table
+               key
+      TOK_GROUPBY
+         .
+            TOK_TABLE_OR_COL
+               hdfs_table
+            key
+      TOK_ORDERBY
+         TOK_TABSORTCOLNAMEASC
+            .
+               TOK_TABLE_OR_COL
+                  hdfs_table
+               key
+
+
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -52,16 +83,15 @@ STAGE PLANS:
             GatherStats: false
             Select Operator
               expressions: key (type: int)
-              outputColumnNames: key
+              outputColumnNames: _col0
               Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
               Group By Operator
-                keys: key (type: int)
+                keys: _col0 (type: int)
                 mode: hash
                 outputColumnNames: _col0
                 Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col0 (type: int)
-                  null sort order: a
                   sort order: +
                   Map-reduce partition columns: _col0 (type: int)
                   Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
@@ -76,46 +106,36 @@ STAGE PLANS:
             input format: org.apache.hadoop.mapred.TextInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
             properties:
-              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
               bucket_count -1
               columns key
               columns.comments 
               columns.types int
 #### A masked pattern was here ####
               name default.hdfs_table
-              numFiles 0
-              numRows 0
-              rawDataSize 0
               serialization.ddl struct hdfs_table { i32 key}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              totalSize 0
 #### A masked pattern was here ####
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
-                COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                 bucket_count -1
                 columns key
                 columns.comments 
                 columns.types int
 #### A masked pattern was here ####
                 name default.hdfs_table
-                numFiles 0
-                numRows 0
-                rawDataSize 0
                 serialization.ddl struct hdfs_table { i32 key}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                totalSize 0
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.hdfs_table
             name: default.hdfs_table
       Truncated Path -> Alias:
-        /hdfs_table [hdfs_table]
+        /hdfs_table [$hdt$_0:$hdt$_0:hdfs_table]
       Needs Tagging: false
       Reduce Operator Tree:
         Group By Operator
@@ -148,7 +168,6 @@ STAGE PLANS:
             GatherStats: false
             Reduce Output Operator
               key expressions: _col0 (type: int)
-              null sort order: a
               sort order: +
               Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
               tag: -1
@@ -243,6 +262,37 @@ PREHOOK: query: EXPLAIN EXTENDED FROM hdfs_table INSERT OVERWRITE TABLE blobstor
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN EXTENDED FROM hdfs_table INSERT OVERWRITE TABLE blobstore_table SELECT hdfs_table.key GROUP BY hdfs_table.key ORDER BY hdfs_table.key
 POSTHOOK: type: QUERY
+ABSTRACT SYNTAX TREE:
+  
+TOK_QUERY
+   TOK_FROM
+      TOK_TABREF
+         TOK_TABNAME
+            hdfs_table
+   TOK_INSERT
+      TOK_DESTINATION
+         TOK_TAB
+            TOK_TABNAME
+               blobstore_table
+      TOK_SELECT
+         TOK_SELEXPR
+            .
+               TOK_TABLE_OR_COL
+                  hdfs_table
+               key
+      TOK_GROUPBY
+         .
+            TOK_TABLE_OR_COL
+               hdfs_table
+            key
+      TOK_ORDERBY
+         TOK_TABSORTCOLNAMEASC
+            .
+               TOK_TABLE_OR_COL
+                  hdfs_table
+               key
+
+
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -259,16 +309,15 @@ STAGE PLANS:
             GatherStats: false
             Select Operator
               expressions: key (type: int)
-              outputColumnNames: key
+              outputColumnNames: _col0
               Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
               Group By Operator
-                keys: key (type: int)
+                keys: _col0 (type: int)
                 mode: hash
                 outputColumnNames: _col0
                 Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col0 (type: int)
-                  null sort order: a
                   sort order: +
                   Map-reduce partition columns: _col0 (type: int)
                   Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
@@ -283,46 +332,36 @@ STAGE PLANS:
             input format: org.apache.hadoop.mapred.TextInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
             properties:
-              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
               bucket_count -1
               columns key
               columns.comments 
               columns.types int
 #### A masked pattern was here ####
               name default.hdfs_table
-              numFiles 0
-              numRows 0
-              rawDataSize 0
               serialization.ddl struct hdfs_table { i32 key}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              totalSize 0
 #### A masked pattern was here ####
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
-                COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                 bucket_count -1
                 columns key
                 columns.comments 
                 columns.types int
 #### A masked pattern was here ####
                 name default.hdfs_table
-                numFiles 0
-                numRows 0
-                rawDataSize 0
                 serialization.ddl struct hdfs_table { i32 key}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                totalSize 0
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.hdfs_table
             name: default.hdfs_table
       Truncated Path -> Alias:
-        /hdfs_table [hdfs_table]
+        /hdfs_table [$hdt$_0:$hdt$_0:hdfs_table]
       Needs Tagging: false
       Reduce Operator Tree:
         Group By Operator
@@ -355,7 +394,6 @@ STAGE PLANS:
             GatherStats: false
             Reduce Output Operator
               key expressions: _col0 (type: int)
-              null sort order: a
               sort order: +
               Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
               tag: -1
