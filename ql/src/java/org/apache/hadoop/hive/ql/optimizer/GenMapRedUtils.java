@@ -72,8 +72,10 @@ import org.apache.hadoop.hive.ql.io.merge.MergeFileWork;
 import org.apache.hadoop.hive.ql.io.orc.OrcFileStripeMergeInputFormat;
 import org.apache.hadoop.hive.ql.io.orc.OrcInputFormat;
 import org.apache.hadoop.hive.ql.io.rcfile.merge.RCFileBlockMergeInputFormat;
+import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
+import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.optimizer.GenMRProcContext.GenMRUnionCtx;
 import org.apache.hadoop.hive.ql.optimizer.GenMRProcContext.GenMapRedCtx;
 import org.apache.hadoop.hive.ql.optimizer.listbucketingpruner.ListBucketingPruner;
@@ -94,6 +96,7 @@ import org.apache.hadoop.hive.ql.plan.FileMergeDesc;
 import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
 import org.apache.hadoop.hive.ql.plan.FilterDesc.sampleDesc;
 import org.apache.hadoop.hive.ql.plan.LoadFileDesc;
+import org.apache.hadoop.hive.ql.plan.LoadTableDesc;
 import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.MapredLocalWork;
 import org.apache.hadoop.hive.ql.plan.MapredWork;
@@ -1385,11 +1388,138 @@ public final class GenMapRedUtils {
           parentTask.addDependentTask(mvTask);
         }
       } else {
-        parentTask.addDependentTask(mvTask);
+        if (BlobStorageUtils.areOptimizationsEnabled(hconf) && parentTask instanceof MoveTask && areMoveTasksOnSameBlobStorage(hconf, (Task<MoveWork>)parentTask, mvTask)) {
+          mergeMoveTasks((Task<MoveWork>)parentTask, mvTask);
+        } else {
+          parentTask.addDependentTask(mvTask);
+        }
       }
     }
   }
 
+  /**
+   * Compare if moveTask1 source path is on the same filesystem as moveTask2 destination path.
+   *
+   * @param hconf Configuration object
+   * @param moveTask1 First MoveTask where the source will be compared.
+   * @param moveTask2 Second MoveTask where the destination will be compared.
+   * @return True if source/destination are on the same filesystem; False otherwise.
+   */
+  private static boolean areMoveTasksOnSameBlobStorage(HiveConf hconf, Task<MoveWork> moveTask1, Task<MoveWork> moveTask2) {
+    Path sourcePath1, targetPath2;
+
+    MoveWork moveWork1 = moveTask1.getWork();
+    MoveWork moveWork2 = moveTask2.getWork();
+
+    // Let's not merge the tasks in case both file and table work are present. This should not
+    // be configured this way, but the API allows you to do that.
+    if (moveWork1.getLoadFileWork() != null && moveWork1.getLoadTableWork() != null) { return false; }
+    if (moveWork2.getLoadFileWork() != null && moveWork2.getLoadTableWork() != null) { return false; }
+
+    if (moveWork1.getLoadFileWork() != null) {
+      sourcePath1 = moveWork1.getLoadFileWork().getSourcePath();
+    } else if (moveWork1.getLoadTableWork() != null) {
+      sourcePath1 = moveWork1.getLoadTableWork().getSourcePath();
+    } else {
+      // Multi-files is not supported on this optimization
+      return false;
+    }
+
+    if (moveWork2.getLoadFileWork() != null) {
+      targetPath2 = moveWork2.getLoadFileWork().getTargetDir();
+    } else if (moveWork2.getLoadTableWork() != null) {
+      targetPath2 = getTableLocationPath(hconf, moveWork2.getLoadTableWork().getTable());
+    } else {
+      // Multi-files is not supported on this optimization
+      return false;
+    }
+
+    if (sourcePath1 != null && targetPath2 != null && BlobStorageUtils.isBlobStoragePath(hconf, sourcePath1)) {
+      return sourcePath1.toUri().getScheme().equals(targetPath2.toUri().getScheme());
+    } else {
+      return false;
+    }
+  }
+
+  /**
+   * Returns the table location path from a TableDesc object.
+   *
+   * @param hconf Configuration object.
+   * @param tableDesc Table description from where to get the table name.
+   * @return The path where the table is located.
+   */
+  private static Path getTableLocationPath(final HiveConf hconf, final TableDesc tableDesc) {
+    Table table = null;
+    try {
+      Hive hive = Hive.get(hconf);
+      table = hive.getTable(tableDesc.getTableName());
+    } catch (HiveException e) {
+      LOG.warn("Unable to get the table location path for: " + tableDesc.getTableName(), e);
+    }
+
+    return (table != null) ? table.getPath() : null;
+  }
+
+  /**
+   * Creates a new MoveTask that uses the moveTask1 source and moveTask2 destination as new
+   * source/destination paths. This function is useful when two MoveTask are found on the
+   * execution plan, and they are join each other.
+   *
+   * @param moveTask1 First MoveTask where the source path will be used.
+   * @param moveTask2 Second MoveTask where the destination path will be used.
+   */
+  private static void mergeMoveTasks(Task<MoveWork> moveTask1, Task<MoveWork> moveTask2) {
+    Path sourcePath1;
+    LoadTableDesc loadTableDesc = null;
+    LoadFileDesc loadFileDesc = null;
+
+    MoveWork moveWork1 = moveTask1.getWork();
+    MoveWork moveWork2 = moveTask2.getWork();
+
+    // Let's not merge the tasks in case both file and table work are present. This should not
+    // be configured this way, but the API allows you to do that.
+    if (moveWork1.getLoadFileWork() != null && moveWork1.getLoadTableWork() != null) { return; }
+    if (moveWork2.getLoadFileWork() != null && moveWork2.getLoadTableWork() != null) { return; }
+
+    if (moveWork1.getLoadFileWork() != null) {
+      sourcePath1 = moveTask1.getWork().getLoadFileWork().getSourcePath();
+    } else if (moveWork1.getLoadTableWork() != null) {
+      sourcePath1 = moveTask1.getWork().getLoadTableWork().getSourcePath();
+    } else {
+      // Multi-files is not supported on this optimization
+      return;
+    }
+
+    if (moveTask2.getWork().getLoadFileWork() != null) {
+      loadFileDesc = new LoadFileDesc(
+          sourcePath1,
+          moveWork2.getLoadFileWork().getTargetDir(),
+          moveWork2.getLoadFileWork().getIsDfsDir(),
+          moveWork2.getLoadFileWork().getColumns(),
+          moveWork2.getLoadFileWork().getColumnTypes()
+      );
+    } else if (moveTask2.getWork().getLoadTableWork() != null) {
+      loadTableDesc = new LoadTableDesc(
+          sourcePath1,
+          moveWork2.getLoadTableWork().getTable(),
+          moveWork2.getLoadTableWork().getPartitionSpec(),
+          moveWork2.getLoadTableWork().getReplace(),
+          moveWork2.getLoadTableWork().getWriteType()
+      );
+    } else {
+      // Multi-files is not supported on this optimization
+      return;
+    }
+
+    moveWork1.setLoadTableWork(loadTableDesc);
+    moveWork1.setLoadFileWork(loadFileDesc);
+    moveWork1.setCheckFileFormat(moveWork2.getCheckFileFormat());
+
+    // Link task2 dependent tasks to MoveTask1
+    for (Task dependentTask : moveTask2.getDependentTasks()) {
+      moveTask1.addDependentTask(dependentTask);
+    }
+  }
 
   /**
    * Add the StatsTask as a dependent task of the MoveTask

@@ -20,7 +20,6 @@ POSTHOOK: query: INSERT INTO qtest VALUES (1), (10), (100), (1000)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@values__tmp__table__1
 POSTHOOK: Output: default@qtest
-POSTHOOK: Lineage: qtest.value EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 PREHOOK: query: INSERT INTO qtest VALUES (2), (20), (200), (2000)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@values__tmp__table__2
@@ -29,7 +28,6 @@ POSTHOOK: query: INSERT INTO qtest VALUES (2), (20), (200), (2000)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@values__tmp__table__2
 POSTHOOK: Output: default@qtest
-POSTHOOK: Lineage: qtest.value EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 PREHOOK: query: EXPLAIN EXTENDED INSERT INTO qtest VALUES (1), (10), (100), (1000)
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN EXTENDED INSERT INTO qtest VALUES (1), (10), (100), (1000)
@@ -55,9 +53,9 @@ STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-7 depends on stages: Stage-1 , consists of Stage-4, Stage-3, Stage-5
   Stage-4
-  Stage-0 depends on stages: Stage-4, Stage-3, Stage-6
-  Stage-2 depends on stages: Stage-0
+  Stage-2 depends on stages: Stage-0, Stage-4, Stage-6
   Stage-3
+  Stage-0 depends on stages: Stage-3
   Stage-5
   Stage-6 depends on stages: Stage-5
 
@@ -147,13 +145,6 @@ STAGE PLANS:
     Conditional Operator
 
   Stage: Stage-4
-    Move Operator
-      files:
-          hdfs directory: true
-          source: ### BLOBSTORE_STAGING_PATH ###
-          destination: ### BLOBSTORE_STAGING_PATH ###
-
-  Stage: Stage-0
     Move Operator
       tables:
           replace: false
@@ -272,6 +263,34 @@ STAGE PLANS:
       Truncated Path -> Alias:
         ### BLOBSTORE_STAGING_PATH ###
 
+  Stage: Stage-0
+    Move Operator
+      tables:
+          replace: false
+          source: ### BLOBSTORE_STAGING_PATH ###
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              properties:
+                COLUMN_STATS_ACCURATE true
+                bucket_count -1
+                columns value
+                columns.comments 
+                columns.types int
+#### A masked pattern was here ####
+                location ### test.blobstore.path ###/qtest
+                name default.qtest
+                numFiles 0
+                numRows 8
+                rawDataSize 20
+                serialization.ddl struct qtest { i32 value}
+                serialization.format 1
+                serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                totalSize 0
+#### A masked pattern was here ####
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.qtest
+
   Stage: Stage-5
     Map Reduce
       Map Operator Tree:
@@ -361,10 +380,31 @@ STAGE PLANS:
 
   Stage: Stage-6
     Move Operator
-      files:
-          hdfs directory: true
+      tables:
+          replace: false
           source: ### BLOBSTORE_STAGING_PATH ###
-          destination: ### BLOBSTORE_STAGING_PATH ###
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              properties:
+                COLUMN_STATS_ACCURATE true
+                bucket_count -1
+                columns value
+                columns.comments 
+                columns.types int
+#### A masked pattern was here ####
+                location ### test.blobstore.path ###/qtest
+                name default.qtest
+                numFiles 0
+                numRows 8
+                rawDataSize 20
+                serialization.ddl struct qtest { i32 value}
+                serialization.format 1
+                serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                totalSize 0
+#### A masked pattern was here ####
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.qtest
 
 PREHOOK: query: SELECT * FROM qtest
 PREHOOK: type: QUERY

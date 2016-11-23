@@ -1,0 +1,453 @@
+PREHOOK: query: DROP TABLE conditional
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE conditional
+POSTHOOK: type: DROPTABLE
+#### A masked pattern was here ####
+PREHOOK: type: CREATETABLE
+PREHOOK: Input: ### test.blobstore.path ###/conditional
+PREHOOK: Output: database:default
+PREHOOK: Output: default@conditional
+#### A masked pattern was here ####
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Input: ### test.blobstore.path ###/conditional
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@conditional
+PREHOOK: query: EXPLAIN INSERT INTO TABLE conditional VALUES (1)
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN INSERT INTO TABLE conditional VALUES (1)
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-7 depends on stages: Stage-1 , consists of Stage-4, Stage-3, Stage-5
+  Stage-4
+  Stage-0 depends on stages: Stage-4, Stage-3, Stage-6
+  Stage-2 depends on stages: Stage-0
+  Stage-3
+  Stage-5
+  Stage-6 depends on stages: Stage-5
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: values__tmp__table__1
+            Statistics: Num rows: 1 Data size: 2 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: UDFToInteger(tmp_values_col1) (type: int)
+              outputColumnNames: _col0
+              Statistics: Num rows: 1 Data size: 2 Basic stats: COMPLETE Column stats: NONE
+              File Output Operator
+                compressed: false
+                Statistics: Num rows: 1 Data size: 2 Basic stats: COMPLETE Column stats: NONE
+                table:
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    name: default.conditional
+
+  Stage: Stage-7
+    Conditional Operator
+
+  Stage: Stage-4
+    Move Operator
+      files:
+          hdfs directory: true
+          destination: ### BLOBSTORE_STAGING_PATH ###
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          replace: false
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.conditional
+
+  Stage: Stage-2
+    Stats-Aggr Operator
+
+  Stage: Stage-3
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            File Output Operator
+              compressed: false
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  name: default.conditional
+
+  Stage: Stage-5
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            File Output Operator
+              compressed: false
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  name: default.conditional
+
+  Stage: Stage-6
+    Move Operator
+      files:
+          hdfs directory: true
+          destination: ### BLOBSTORE_STAGING_PATH ###
+
+PREHOOK: query: INSERT INTO TABLE conditional VALUES (1)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@values__tmp__table__2
+PREHOOK: Output: default@conditional
+POSTHOOK: query: INSERT INTO TABLE conditional VALUES (1)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@values__tmp__table__2
+POSTHOOK: Output: default@conditional
+POSTHOOK: Lineage: conditional.id EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+PREHOOK: query: SELECT * FROM conditional
+PREHOOK: type: QUERY
+PREHOOK: Input: default@conditional
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM conditional
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@conditional
+#### A masked pattern was here ####
+1
+PREHOOK: query: EXPLAIN INSERT OVERWRITE TABLE conditional VALUES (11)
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN INSERT OVERWRITE TABLE conditional VALUES (11)
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-7 depends on stages: Stage-1 , consists of Stage-4, Stage-3, Stage-5
+  Stage-4
+  Stage-0 depends on stages: Stage-4, Stage-3, Stage-6
+  Stage-2 depends on stages: Stage-0
+  Stage-3
+  Stage-5
+  Stage-6 depends on stages: Stage-5
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: values__tmp__table__3
+            Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: UDFToInteger(tmp_values_col1) (type: int)
+              outputColumnNames: _col0
+              Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
+              File Output Operator
+                compressed: false
+                Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
+                table:
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    name: default.conditional
+
+  Stage: Stage-7
+    Conditional Operator
+
+  Stage: Stage-4
+    Move Operator
+      files:
+          hdfs directory: true
+          destination: ### BLOBSTORE_STAGING_PATH ###
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          replace: true
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.conditional
+
+  Stage: Stage-2
+    Stats-Aggr Operator
+
+  Stage: Stage-3
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            File Output Operator
+              compressed: false
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  name: default.conditional
+
+  Stage: Stage-5
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            File Output Operator
+              compressed: false
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  name: default.conditional
+
+  Stage: Stage-6
+    Move Operator
+      files:
+          hdfs directory: true
+          destination: ### BLOBSTORE_STAGING_PATH ###
+
+PREHOOK: query: INSERT OVERWRITE TABLE conditional VALUES (11)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@values__tmp__table__4
+PREHOOK: Output: default@conditional
+POSTHOOK: query: INSERT OVERWRITE TABLE conditional VALUES (11)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@values__tmp__table__4
+POSTHOOK: Output: default@conditional
+POSTHOOK: Lineage: conditional.id EXPRESSION [(values__tmp__table__4)values__tmp__table__4.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+PREHOOK: query: SELECT * FROM conditional
+PREHOOK: type: QUERY
+PREHOOK: Input: default@conditional
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM conditional
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@conditional
+#### A masked pattern was here ####
+11
+PREHOOK: query: EXPLAIN INSERT INTO TABLE conditional VALUES (2)
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN INSERT INTO TABLE conditional VALUES (2)
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-7 depends on stages: Stage-1 , consists of Stage-4, Stage-3, Stage-5
+  Stage-4
+  Stage-2 depends on stages: Stage-0, Stage-4, Stage-6
+  Stage-3
+  Stage-0 depends on stages: Stage-3
+  Stage-5
+  Stage-6 depends on stages: Stage-5
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: values__tmp__table__5
+            Statistics: Num rows: 1 Data size: 2 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: UDFToInteger(tmp_values_col1) (type: int)
+              outputColumnNames: _col0
+              Statistics: Num rows: 1 Data size: 2 Basic stats: COMPLETE Column stats: NONE
+              File Output Operator
+                compressed: false
+                Statistics: Num rows: 1 Data size: 2 Basic stats: COMPLETE Column stats: NONE
+                table:
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    name: default.conditional
+
+  Stage: Stage-7
+    Conditional Operator
+
+  Stage: Stage-4
+    Move Operator
+      tables:
+          replace: false
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.conditional
+
+  Stage: Stage-2
+    Stats-Aggr Operator
+
+  Stage: Stage-3
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            File Output Operator
+              compressed: false
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  name: default.conditional
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          replace: false
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.conditional
+
+  Stage: Stage-5
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            File Output Operator
+              compressed: false
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  name: default.conditional
+
+  Stage: Stage-6
+    Move Operator
+      tables:
+          replace: false
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.conditional
+
+PREHOOK: query: INSERT INTO TABLE conditional VALUES (2)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@values__tmp__table__6
+PREHOOK: Output: default@conditional
+POSTHOOK: query: INSERT INTO TABLE conditional VALUES (2)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@values__tmp__table__6
+POSTHOOK: Output: default@conditional
+PREHOOK: query: SELECT * FROM conditional
+PREHOOK: type: QUERY
+PREHOOK: Input: default@conditional
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM conditional
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@conditional
+#### A masked pattern was here ####
+11
+2
+PREHOOK: query: EXPLAIN INSERT OVERWRITE TABLE conditional VALUES (22)
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN INSERT OVERWRITE TABLE conditional VALUES (22)
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-7 depends on stages: Stage-1 , consists of Stage-4, Stage-3, Stage-5
+  Stage-4
+  Stage-2 depends on stages: Stage-0, Stage-4, Stage-6
+  Stage-3
+  Stage-0 depends on stages: Stage-3
+  Stage-5
+  Stage-6 depends on stages: Stage-5
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: values__tmp__table__7
+            Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: UDFToInteger(tmp_values_col1) (type: int)
+              outputColumnNames: _col0
+              Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
+              File Output Operator
+                compressed: false
+                Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
+                table:
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    name: default.conditional
+
+  Stage: Stage-7
+    Conditional Operator
+
+  Stage: Stage-4
+    Move Operator
+      tables:
+          replace: true
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.conditional
+
+  Stage: Stage-2
+    Stats-Aggr Operator
+
+  Stage: Stage-3
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            File Output Operator
+              compressed: false
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  name: default.conditional
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          replace: true
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.conditional
+
+  Stage: Stage-5
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            File Output Operator
+              compressed: false
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  name: default.conditional
+
+  Stage: Stage-6
+    Move Operator
+      tables:
+          replace: true
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.conditional
+
+PREHOOK: query: INSERT OVERWRITE TABLE conditional VALUES (22)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@values__tmp__table__8
+PREHOOK: Output: default@conditional
+POSTHOOK: query: INSERT OVERWRITE TABLE conditional VALUES (22)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@values__tmp__table__8
+POSTHOOK: Output: default@conditional
+PREHOOK: query: SELECT * FROM conditional
+PREHOOK: type: QUERY
+PREHOOK: Input: default@conditional
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM conditional
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@conditional
+#### A masked pattern was here ####
+22
+PREHOOK: query: DROP TABLE conditional
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@conditional
+PREHOOK: Output: default@conditional
+POSTHOOK: query: DROP TABLE conditional
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@conditional
+POSTHOOK: Output: default@conditional

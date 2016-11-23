@@ -20,7 +20,6 @@ POSTHOOK: query: INSERT INTO parallel_directory_rename VALUES (1), (10), (100), 
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@values__tmp__table__1
 POSTHOOK: Output: default@parallel_directory_rename
-POSTHOOK: Lineage: parallel_directory_rename.value EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 PREHOOK: query: SELECT * FROM parallel_directory_rename
 PREHOOK: type: QUERY
 PREHOOK: Input: default@parallel_directory_rename
