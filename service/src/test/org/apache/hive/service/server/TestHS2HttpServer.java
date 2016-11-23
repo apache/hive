@@ -19,6 +19,7 @@
 package org.apache.hive.service.server;
 
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.StringWriter;
 import java.net.HttpURLConnection;
@@ -90,20 +91,10 @@ public class TestHS2HttpServer {
   @Test
   public void testContextRootUrlRewrite() throws Exception {
     String baseURL = "http://localhost:" + webUIPort + "/";
-    URL url = new URL(baseURL);
-    HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-    Assert.assertEquals(HttpURLConnection.HTTP_OK, conn.getResponseCode());
-    StringWriter writer = new StringWriter();
-    IOUtils.copy(conn.getInputStream(), writer, "UTF-8");
-    String contextRootContent = writer.toString();
+    String contextRootContent = getURLResponseAsString(baseURL);
 
     String jspUrl = "http://localhost:" + webUIPort + "/hiveserver2.jsp";
-    url = new URL(jspUrl);
-    conn = (HttpURLConnection) url.openConnection();
-    Assert.assertEquals(HttpURLConnection.HTTP_OK, conn.getResponseCode());
-    writer = new StringWriter();
-    IOUtils.copy(conn.getInputStream(), writer, "UTF-8");
-    String jspContent = writer.toString();
+    String jspContent = getURLResponseAsString(jspUrl);
 
     Assert.assertEquals(contextRootContent, jspContent);
   }
@@ -143,6 +134,15 @@ public class TestHS2HttpServer {
 
     assertNotNull(pwdKeyFound);
     assertNull(pwdValFound);
+  }
+
+  private String getURLResponseAsString(String baseURL) throws IOException {
+    URL url = new URL(baseURL);
+    HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+    Assert.assertEquals(HttpURLConnection.HTTP_OK, conn.getResponseCode());
+    StringWriter writer = new StringWriter();
+    IOUtils.copy(conn.getInputStream(), writer, "UTF-8");
+    return writer.toString();
   }
 
 

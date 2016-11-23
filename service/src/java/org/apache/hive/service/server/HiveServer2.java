@@ -204,6 +204,7 @@ public class HiveServer2 extends CompositeService {
             builder.setUseSPNEGO(true);
           }
           builder.addServlet("llap", LlapServlet.class);
+          builder.setContextRootRewriteTarget("/hiveserver2.jsp");
           webServer = builder.build();
           webServer.addServlet("query_page", "/query_page", QueryProfileServlet.class);
         }
