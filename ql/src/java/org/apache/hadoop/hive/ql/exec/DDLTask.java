@@ -850,9 +850,20 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
           }
           if (baseParts != null) {
             for (Partition p : baseParts) {
-              FileSystem fs = p.getDataLocation().getFileSystem(db.getConf());
-              FileStatus fss = fs.getFileStatus(p.getDataLocation());
-              basePartTs.put(p.getSpec(), fss.getModificationTime());
+              Path dataLocation = p.getDataLocation();
+              FileSystem fs = dataLocation.getFileSystem(db.getConf());
+              FileStatus fss = fs.getFileStatus(dataLocation);
+              long lastModificationTime = fss.getModificationTime();
+
+              FileStatus[] parts = fs.listStatus(dataLocation, FileUtils.HIDDEN_FILES_PATH_FILTER);
+              if (parts != null && parts.length > 0) {
+                for (FileStatus status : parts) {
+                  if (status.getModificationTime() > lastModificationTime) {
+                    lastModificationTime = status.getModificationTime();
+                  }
+                }
+              }
+              basePartTs.put(p.getSpec(), lastModificationTime);
             }
           }
         } else {
