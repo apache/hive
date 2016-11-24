@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.llap.cli;
 
+import java.util.Arrays;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
@@ -27,17 +28,15 @@ import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class LlapStatusOptionsProcessor {
-
-  private static final Logger LOG = LoggerFactory.getLogger(LlapStatusOptionsProcessor.class);
 
   private static final String LLAPSTATUS_CONSTANT = "llapstatus";
 
   private static final long FIND_YARN_APP_TIMEOUT_MS = 20 * 1000l; // 20seconds to wait for app to be visible
 
+  private static final long DEFAULT_STATUS_REFRESH_INTERVAL_MS = 1 * 1000l; // 1 seconds wait until subsequent status
+  private static final long DEFAULT_WATCH_MODE_TIMEOUT_MS = 5 * 60 * 1000l; // 5 minutes timeout for watch mode
   enum OptionConstants {
 
     NAME("name", 'n', "LLAP cluster name", true),
@@ -45,6 +44,14 @@ public class LlapStatusOptionsProcessor {
         "Amount of time(s) that the tool will sleep to wait for the YARN application to start. negative values=wait forever, 0=Do not wait. default=" +
             TimeUnit.SECONDS.convert(FIND_YARN_APP_TIMEOUT_MS, TimeUnit.MILLISECONDS) + "s", true),
     OUTPUT_FILE("outputFile", 'o', "File to which output should be written (Default stdout)", true),
+    WATCH_UNTIL_STATUS_CHANGE("watchUntil", 'w', "Watch until LLAP application status changes to the specified " +
+      "desired state before printing to console. Accepted values are " + Arrays.toString(LlapStatusServiceDriver.State
+      .values()), true),
+    STATUS_REFRESH_INTERVAL("refreshInterval", 'i', "Amount of time in seconds to wait until subsequent status checks" +
+      " in watch mode. Valid only for watch mode. (Default " +
+      TimeUnit.SECONDS.convert(DEFAULT_STATUS_REFRESH_INTERVAL_MS, TimeUnit.MILLISECONDS) + "s)", true),
+    WATCH_MODE_TIMEOUT("watchTimeout", 't', "Exit watch mode if the desired state is not attained until the specified" +
+      " timeout. (Default " + TimeUnit.SECONDS.convert(DEFAULT_WATCH_MODE_TIMEOUT_MS, TimeUnit.MILLISECONDS) +"s)", true),
     HIVECONF("hiveconf", null, "Use value for given property. Overridden by explicit parameters", "property=value", 2),
     HELP("help", 'H', "Print help information", false);
 
@@ -94,17 +101,26 @@ public class LlapStatusOptionsProcessor {
     private final Properties conf;
     private final long findAppTimeoutMs;
     private final String outputFile;
+    private final long refreshIntervalMs;
+    private final LlapStatusServiceDriver.State watchUntil;
+    private final long watchTimeout;
+
+    public LlapStatusOptions(String name) {
+      this(name, new Properties(), FIND_YARN_APP_TIMEOUT_MS, null, DEFAULT_STATUS_REFRESH_INTERVAL_MS, null,
+        DEFAULT_WATCH_MODE_TIMEOUT_MS);
+    }
 
     public LlapStatusOptions(String name, Properties hiveProperties, long findAppTimeoutMs,
-                             String outputFile) {
+                             String outputFile, long refreshIntervalMs,
+                             final LlapStatusServiceDriver.State watchUntil,
+                             final long watchTimeoutMs) {
       this.name = name;
       this.conf = hiveProperties;
       this.findAppTimeoutMs = findAppTimeoutMs;
       this.outputFile = outputFile;
-    }
-
-    public LlapStatusOptions(String name) {
-      this(name, new Properties(), FIND_YARN_APP_TIMEOUT_MS, null);
+      this.refreshIntervalMs = refreshIntervalMs;
+      this.watchUntil = watchUntil;
+      this.watchTimeout = watchTimeoutMs;
     }
 
     public String getName() {
@@ -121,6 +137,18 @@ public class LlapStatusOptionsProcessor {
 
     public String getOutputFile() {
       return outputFile;
+    }
+
+    public long getRefreshIntervalMs() {
+      return refreshIntervalMs;
+    }
+
+    public LlapStatusServiceDriver.State getWatchUntilState() {
+      return watchUntil;
+    }
+
+    public long getWatchTimeoutMs() {
+      return watchTimeout;
     }
   }
 
@@ -170,7 +198,31 @@ public class LlapStatusOptionsProcessor {
       outputFile = commandLine.getOptionValue(OptionConstants.OUTPUT_FILE.getLongOpt());
     }
 
-    return new LlapStatusOptions(name, hiveConf, findAppTimeoutMs, outputFile);
+    long refreshIntervalMs = DEFAULT_STATUS_REFRESH_INTERVAL_MS;
+    if (commandLine.hasOption(OptionConstants.STATUS_REFRESH_INTERVAL.getLongOpt())) {
+      long refreshIntervalSec = Long.parseLong(commandLine.getOptionValue(OptionConstants.STATUS_REFRESH_INTERVAL
+        .getLongOpt()));
+      if (refreshIntervalSec <= 0) {
+        throw new IllegalArgumentException("Refresh interval should be >0");
+      }
+      refreshIntervalMs = TimeUnit.MILLISECONDS.convert(refreshIntervalSec, TimeUnit.SECONDS);
+    }
+
+    LlapStatusServiceDriver.State watchUntil = null;
+    if (commandLine.hasOption(OptionConstants.WATCH_UNTIL_STATUS_CHANGE.getLongOpt())) {
+      String watchUntilStr = commandLine.getOptionValue(OptionConstants.WATCH_UNTIL_STATUS_CHANGE.getLongOpt());
+      watchUntil = LlapStatusServiceDriver.State.valueOf(watchUntilStr);
+    }
+
+    long watchTimeoutMs = DEFAULT_WATCH_MODE_TIMEOUT_MS;
+    if (commandLine.hasOption(OptionConstants.WATCH_MODE_TIMEOUT.getLongOpt())) {
+      long watchTimeoutSec = Long.parseLong(commandLine.getOptionValue(OptionConstants.WATCH_MODE_TIMEOUT.getLongOpt()));
+      if (watchTimeoutSec <= 0) {
+        throw new IllegalArgumentException("Watch timeout should be >0");
+      }
+      watchTimeoutMs = TimeUnit.MILLISECONDS.convert(watchTimeoutSec, TimeUnit.SECONDS);
+    }
+    return new LlapStatusOptions(name, hiveConf, findAppTimeoutMs, outputFile, refreshIntervalMs, watchUntil, watchTimeoutMs);
   }
 
 
