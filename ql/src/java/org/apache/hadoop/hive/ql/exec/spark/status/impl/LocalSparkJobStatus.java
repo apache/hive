@@ -159,6 +159,18 @@ public class LocalSparkJobStatus implements SparkJobStatus {
     }
   }
 
+  @Override
+  public Throwable getError() {
+    if (future.isDone()) {
+      try {
+        future.get();
+      } catch (Throwable e) {
+        return e;
+      }
+    }
+    return null;
+  }
+
   private SparkJobInfo getJobInfo() {
     return sparkContext.statusTracker().getJobInfo(jobId);
   }

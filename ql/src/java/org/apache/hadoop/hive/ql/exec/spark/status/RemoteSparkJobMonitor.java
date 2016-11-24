@@ -116,7 +116,29 @@ public class RemoteSparkJobMonitor extends SparkJobMonitor {
           done = true;
           break;
         case FAILED:
-          console.printError("Status: Failed");
+          String detail = sparkJobStatus.getError().getMessage();
+          StringBuilder errBuilder = new StringBuilder();
+          errBuilder.append("Job failed with ");
+          if (detail == null) {
+            errBuilder.append("UNKNOWN reason");
+          } else {
+            // We SerDe the Throwable as String, parse it for the root cause
+            final String CAUSE_CAPTION = "Caused by: ";
+            int index = detail.lastIndexOf(CAUSE_CAPTION);
+            if (index != -1) {
+              String rootCause = detail.substring(index + CAUSE_CAPTION.length());
+              index = rootCause.indexOf(System.getProperty("line.separator"));
+              if (index != -1) {
+                errBuilder.append(rootCause.substring(0, index));
+              } else {
+                errBuilder.append(rootCause);
+              }
+            } else {
+              errBuilder.append(detail);
+            }
+            detail = System.getProperty("line.separator") + detail;
+          }
+          console.printError(errBuilder.toString(), detail);
           running = false;
           done = true;
           rc = 3;

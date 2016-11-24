@@ -61,6 +61,11 @@ public interface JobHandle<T extends Serializable> extends Future<T> {
   State getState();
 
   /**
+   * Return the error if the job has failed.
+   */
+  Throwable getError();
+
+  /**
    * The current state of the submitted job.
    */
   static enum State {
