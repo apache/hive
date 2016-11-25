@@ -103,7 +103,6 @@ public class TestSparkClient {
         // state changes.
         assertFalse(((JobHandleImpl<String>)handle).changeState(JobHandle.State.SENT));
 
-        verify(listener).onJobQueued(handle);
         verify(listener).onJobStarted(handle);
         verify(listener).onJobSucceeded(same(handle), eq(handle.get()));
       }

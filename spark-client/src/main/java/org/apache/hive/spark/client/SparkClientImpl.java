@@ -532,6 +532,7 @@ class SparkClientImpl implements SparkClient {
         @Override
         public void operationComplete(io.netty.util.concurrent.Future<Void> f) {
           if (f.isSuccess()) {
+            // If the spark job finishes before this listener is called, the QUEUED status will not be set
             handle.changeState(JobHandle.State.QUEUED);
           } else if (!promise.isDone()) {
             promise.setFailure(f.cause());
