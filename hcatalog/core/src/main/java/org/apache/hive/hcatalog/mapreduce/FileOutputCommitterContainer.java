@@ -891,7 +891,9 @@ class FileOutputCommitterContainer extends OutputCommitterContainer {
               if (src.toString().matches(".*" + Path.SEPARATOR + SCRATCH_DIR_NAME + "\\d\\.?\\d+.*")){
                 // src is scratch directory, need to trim the part key value pairs from path
                 String diff = StringUtils.difference(src.toString(), dest.toString());
-                fs.delete(new Path(StringUtils.substringBefore(src.toString(), diff)), true);
+                if (StringUtils.isNotBlank(diff)) {
+                  fs.delete(new Path(StringUtils.substringBefore(src.toString(), diff)), true);
+                }
               } else {
                 fs.delete(src, true);
               }
