@@ -260,13 +260,13 @@ public class OutStream extends PositionedOutputStream {
   public long getBufferSize() {
     long result = 0;
     if (current != null) {
-      result += current.capacity();
+      result += current.position();
     }
     if (compressed != null) {
-      result += compressed.capacity();
+      result += compressed.position();
     }
     if (overflow != null) {
-      result += overflow.capacity();
+      result += overflow.position();
     }
     return result;
   }
