@@ -74,6 +74,7 @@ public class VectorizedParquetRecordReader extends ParquetRecordReaderBase
   private List<String> columnNamesList;
   private List<TypeInfo> columnTypesList;
   private VectorizedRowBatchCtx rbCtx;
+  private List<Integer> indexColumnsWanted;
 
   /**
    * For each request column, the reader to read this column. This is NULL if this column
@@ -204,7 +205,7 @@ public class VectorizedParquetRecordReader extends ParquetRecordReaderBase
         columnTypesList);
     }
 
-    List<Integer> indexColumnsWanted = ColumnProjectionUtils.getReadColumnIDs(configuration);
+    indexColumnsWanted = ColumnProjectionUtils.getReadColumnIDs(configuration);
     if (!ColumnProjectionUtils.isReadAllColumns(configuration) && !indexColumnsWanted.isEmpty()) {
       requestedSchema =
         DataWritableReadSupport.getSchemaByIndex(tableSchema, columnNamesList, indexColumnsWanted);
@@ -285,9 +286,10 @@ public class VectorizedParquetRecordReader extends ParquetRecordReaderBase
     List<ColumnDescriptor> columns = requestedSchema.getColumns();
     List<Type> types = requestedSchema.getFields();
     columnReaders = new VectorizedParquetColumnReader[columns.size()];
-    for (int i = 0; i < columnTypesList.size(); ++i) {
-      columnReaders[i] = buildVectorizedParquetReader(columnTypesList.get(i), types.get(i), pages,
-        requestedSchema, skipTimestampConversion);
+    for (int i = 0; i < types.size(); ++i) {
+      columnReaders[i] =
+        buildVectorizedParquetReader(columnTypesList.get(indexColumnsWanted.get(i)), types.get(i),
+          pages, requestedSchema, skipTimestampConversion);
     }
     totalCountLoadedSoFar += pages.getRowCount();
   }

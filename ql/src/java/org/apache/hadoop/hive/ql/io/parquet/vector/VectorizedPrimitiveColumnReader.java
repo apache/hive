@@ -13,18 +13,15 @@
  */
 package org.apache.hadoop.hive.ql.io.parquet.vector;
 
-import org.apache.commons.lang.ArrayUtils;
 import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.DecimalColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.DoubleColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
-import org.apache.hadoop.hive.ql.exec.vector.MapColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.StructColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.TimestampColumnVector;
 import org.apache.hadoop.hive.ql.io.parquet.timestamp.NanoTime;
 import org.apache.hadoop.hive.ql.io.parquet.timestamp.NanoTimeUtils;
-import org.apache.hadoop.hive.serde2.typeinfo.MapTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
@@ -41,7 +38,6 @@ import org.apache.parquet.column.page.PageReader;
 import org.apache.parquet.column.values.ValuesReader;
 import org.apache.parquet.column.values.rle.RunLengthBitPackingHybridDecoder;
 import org.apache.parquet.io.ParquetDecodingException;
-import org.apache.parquet.io.api.Binary;
 import org.apache.parquet.schema.Type;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -51,7 +47,6 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.sql.Timestamp;
-import java.util.Arrays;
 import java.util.List;
 
 import static org.apache.parquet.column.ValuesType.DEFINITION_LEVEL;
@@ -176,24 +171,6 @@ public class VectorizedPrimitiveColumnReader implements VectorizedParquetColumnR
       PrimitiveTypeInfo primitiveColumnType = (PrimitiveTypeInfo) columnType;
       readBatchForPrimitiveType(num, column, primitiveColumnType, rowId);
       break;
-    case LIST:
-//      ListTypeInfo listColumnType = (ListTypeInfo) columnType;
-//      ListColumnVector listColumn = (ListColumnVector) column;
-//      int offset = listColumn.childCount;
-//      listColumn.offsets[rowId] = offset;
-//      listColumn.lengths[]
-//      TypeInfo listTypeInfos = listColumnType.getListElementTypeInfo();
-//      listColumn.childCount = ;
-      break;
-    case MAP:
-      MapTypeInfo mapColumnType = (MapTypeInfo) columnType;
-      MapColumnVector mapColumn = (MapColumnVector) column;
-//      for(){
-//
-//      }
-      readBatchHelper(num, mapColumn.keys, mapColumnType.getMapKeyTypeInfo(), rowId);
-      readBatchHelper(num, mapColumn.values, mapColumnType.getMapKeyTypeInfo(), rowId);
-      break;
     case STRUCT:
       StructTypeInfo structTypeInfo = (StructTypeInfo) columnType;
       StructColumnVector structColumn = (StructColumnVector) column;
@@ -202,8 +179,9 @@ public class VectorizedPrimitiveColumnReader implements VectorizedParquetColumnR
         readBatch(num, structColumn.fields[i], typeInfos.get(i));
       }
       break;
+    case LIST:
+    case MAP:
     case UNION:
-      break;
     default:
       throw new IOException("Unsupported category " + columnType.getCategory().name());
     }
