@@ -145,7 +145,8 @@ public class DruidOutputFormat<K, V> implements HiveOutputFormat<K, DruidWritabl
         default:
           // Dimension or timestamp
           String columnName = columnNames.get(i);
-          if (!columnName.equals(DruidTable.DEFAULT_TIMESTAMP_COLUMN) && !columnName.equals(Constants.DRUID_TIMESTAMP_GRANULARITY_COL_NAME)) {
+          if (!columnName.equals(DruidTable.DEFAULT_TIMESTAMP_COLUMN) && !columnName
+                  .equals(Constants.DRUID_TIMESTAMP_GRANULARITY_COL_NAME)) {
             dimensions.add(new StringDimensionSchema(columnName));
           }
           continue;
@@ -155,7 +156,9 @@ public class DruidOutputFormat<K, V> implements HiveOutputFormat<K, DruidWritabl
     List<AggregatorFactory> aggregatorFactories = aggregatorFactoryBuilder.build();
     final InputRowParser inputRowParser = new MapInputRowParser(new TimeAndDimsParseSpec(
             new TimestampSpec(DruidTable.DEFAULT_TIMESTAMP_COLUMN, "auto", null),
-            new DimensionsSpec(dimensions, Lists.newArrayList(Constants.DRUID_TIMESTAMP_GRANULARITY_COL_NAME), null)
+            new DimensionsSpec(dimensions,
+                    Lists.newArrayList(Constants.DRUID_TIMESTAMP_GRANULARITY_COL_NAME), null
+            )
     ));
 
     Map<String, Object> inputParser = DruidStorageHandlerUtils.JSON_MAPPER

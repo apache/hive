@@ -49,7 +49,7 @@ import java.util.List;
  * DruidWritable containing the timestamp as well as all values resulting from
  * the query.
  */
-public abstract class DruidQueryRecordReader<T extends BaseQuery<R>,R extends Comparable<R>>
+public abstract class DruidQueryRecordReader<T extends BaseQuery<R>, R extends Comparable<R>>
         extends RecordReader<NullWritable, DruidWritable>
         implements org.apache.hadoop.mapred.RecordReader<NullWritable, DruidWritable> {
 
@@ -97,7 +97,8 @@ public abstract class DruidQueryRecordReader<T extends BaseQuery<R>,R extends Co
       LOG.error("Issues with lifecycle start", e);
     }
     InputStream response = DruidStorageHandlerUtils.submitRequest(client,
-            DruidStorageHandlerUtils.createRequest(hiveDruidSplit.getAddress(), query));
+            DruidStorageHandlerUtils.createRequest(hiveDruidSplit.getAddress(), query)
+    );
     lifecycle.stop();
     // Retrieve results
     List<R> resultsList;

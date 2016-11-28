@@ -45,7 +45,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
-
 public class DruidRecordWriter implements RecordWriter<NullWritable, DruidWritable>,
         org.apache.hadoop.hive.ql.exec.FileSinkOperator.RecordWriter {
   protected static final Logger LOG = LoggerFactory.getLogger(DruidRecordWriter.class);
@@ -80,7 +79,8 @@ public class DruidRecordWriter implements RecordWriter<NullWritable, DruidWritab
             DruidStorageHandlerUtils.INDEX_IO,
             DruidStorageHandlerUtils.INDEX_MERGER_V9
     );
-    this.tuningConfig = Preconditions.checkNotNull(realtimeTuningConfig, "realtimeTuningConfig is null");
+    this.tuningConfig = Preconditions
+            .checkNotNull(realtimeTuningConfig, "realtimeTuningConfig is null");
     this.dataSchema = Preconditions.checkNotNull(dataSchema, "data schema is null");
     appenderator = defaultOfflineAppenderatorFactory.build(
             this.dataSchema,
@@ -90,7 +90,8 @@ public class DruidRecordWriter implements RecordWriter<NullWritable, DruidWritab
     Preconditions.checkArgument(maxPartitionSize > 0, "maxPartitionSize need to be greater than 0");
     this.maxPartitionSize = maxPartitionSize;
     appenderator.startJob(); // maybe we need to move this out of the constructor
-    this.segmentsDescriptorDir = Preconditions.checkNotNull(segmentsDescriptorsDir, "segmentsDescriptorsDir is null");
+    this.segmentsDescriptorDir = Preconditions
+            .checkNotNull(segmentsDescriptorsDir, "segmentsDescriptorsDir is null");
     this.fileSystem = Preconditions.checkNotNull(fileSystem, "file system is null");
     committerSupplier = Suppliers.ofInstance(Committers.nil());
     LOG.debug(String.format("Data schema is [%s]", this.dataSchema));
@@ -101,6 +102,7 @@ public class DruidRecordWriter implements RecordWriter<NullWritable, DruidWritab
    * Note that this function assumes that timestamps are pseudo sorted.
    * This function will close and move to the next segment granularity as soon as it we get an event from the next interval.
    * The sorting is done by the previous stage.
+   *
    * @return segmentIdentifier with respect to the timestamp and maybe push the current open segment.
    */
   private SegmentIdentifier getSegmentIdentifierAndMaybePush(long truncatedTime) {

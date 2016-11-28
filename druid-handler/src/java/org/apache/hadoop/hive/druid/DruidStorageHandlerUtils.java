@@ -99,15 +99,16 @@ public final class DruidStorageHandlerUtils {
 
   private static final int DEFAULT_STREAMING_RESULT_SIZE = 100;
 
-  public static final IndexIO INDEX_IO = new IndexIO(JSON_MAPPER, new ColumnConfig()
-  {
+  public static final IndexIO INDEX_IO = new IndexIO(JSON_MAPPER, new ColumnConfig() {
     @Override
-    public int columnCacheSizeBytes()
-    {
+    public int columnCacheSizeBytes() {
       return 0;
     }
   });
-  public static final IndexMergerV9 INDEX_MERGER_V9 = new IndexMergerV9(JSON_MAPPER, DruidStorageHandlerUtils.INDEX_IO);
+
+  public static final IndexMergerV9 INDEX_MERGER_V9 = new IndexMergerV9(JSON_MAPPER,
+          DruidStorageHandlerUtils.INDEX_IO
+  );
 
   public static final Interner<DataSegment> DATA_SEGMENT_INTERNER = Interners.newWeakInterner();
 
@@ -123,6 +124,7 @@ public final class DruidStorageHandlerUtils {
       Throwables.propagate(e);
     }
   }
+
   /**
    * Method that creates a request for Druid JSON query (using SMILE).
    * @param address
@@ -168,8 +170,8 @@ public final class DruidStorageHandlerUtils {
    * @throws IOException can be for the case we did not produce data.
    */
 
-  public static List<DataSegment> getPublishedSegments(Path tableDir, Configuration conf) throws IOException
-  {
+  public static List<DataSegment> getPublishedSegments(Path tableDir, Configuration conf)
+          throws IOException {
     ImmutableList.Builder<DataSegment> publishedSegmentsBuilder = ImmutableList.builder();
     FileSystem fs = tableDir.getFileSystem(conf);
     for (FileStatus status : fs.listStatus(tableDir)) {
@@ -177,9 +179,9 @@ public final class DruidStorageHandlerUtils {
       if (!fs.isDirectory(taskDir)) {
         continue;
       }
-      for (FileStatus fileStatus : fs.listStatus(taskDir))
-      {
-        final DataSegment segment = JSON_MAPPER.readValue(fs.open(fileStatus.getPath()), DataSegment.class);
+      for (FileStatus fileStatus : fs.listStatus(taskDir)) {
+        final DataSegment segment = JSON_MAPPER
+                .readValue(fs.open(fileStatus.getPath()), DataSegment.class);
         publishedSegmentsBuilder.add(segment);
       }
     }
@@ -188,101 +190,96 @@ public final class DruidStorageHandlerUtils {
   }
 
   public static void writeSegmentDescriptor(
-      final FileSystem outputFS,
-      final DataSegment segment,
-      final Path descriptorPath
+          final FileSystem outputFS,
+          final DataSegment segment,
+          final Path descriptorPath
   )
-      throws IOException
-  {
+          throws IOException {
     final DataPusher descriptorPusher = (DataPusher) RetryProxy.create(
-        DataPusher.class, new DataPusher()
-        {
-          @Override
-          public long push() throws IOException
-          {
-            try {
-              if (outputFS.exists(descriptorPath)) {
-                if (!outputFS.delete(descriptorPath, false)) {
-                  throw new IOException(String.format("Failed to delete descriptor at [%s]", descriptorPath));
+            DataPusher.class, new DataPusher() {
+              @Override
+              public long push() throws IOException {
+                try {
+                  if (outputFS.exists(descriptorPath)) {
+                    if (!outputFS.delete(descriptorPath, false)) {
+                      throw new IOException(
+                              String.format("Failed to delete descriptor at [%s]", descriptorPath));
+                    }
+                  }
+                  try (final OutputStream descriptorOut = outputFS.create(
+                          descriptorPath,
+                          true,
+                          DEFAULT_FS_BUFFER_SIZE
+                  )) {
+                    JSON_MAPPER.writeValue(descriptorOut, segment);
+                    descriptorOut.flush();
+                  }
+                } catch (RuntimeException | IOException ex) {
+                  throw ex;
                 }
+                return -1;
               }
-              try (final OutputStream descriptorOut = outputFS.create(
-                  descriptorPath,
-                  true,
-                  DEFAULT_FS_BUFFER_SIZE
-              )) {
-                JSON_MAPPER.writeValue(descriptorOut, segment);
-                descriptorOut.flush();
-              }
-            }
-            catch (RuntimeException | IOException ex) {
-              throw ex;
-            }
-            return -1;
-          }
-        },
-        RetryPolicies.exponentialBackoffRetry(NUM_RETRIES, SECONDS_BETWEEN_RETRIES, TimeUnit.SECONDS)
+            },
+            RetryPolicies
+                    .exponentialBackoffRetry(NUM_RETRIES, SECONDS_BETWEEN_RETRIES, TimeUnit.SECONDS)
     );
     descriptorPusher.push();
   }
 
   public static Collection<String> getAllDataSourceNames(SQLMetadataConnector connector,
           final MetadataStorageTablesConfig metadataStorageTablesConfig
-  )
-  {
-      return connector.getDBI().withHandle(
-              new HandleCallback<List<String>>()
-              {
-                @Override
-                public List<String> withHandle(Handle handle) throws Exception
-                {
-                  return handle.createQuery(
-                          String.format("SELECT DISTINCT(datasource) FROM %s WHERE used = true", metadataStorageTablesConfig.getSegmentsTable())
-                  )
-                          .fold(
-                                  Lists.<String>newArrayList(),
-                                  new Folder3<ArrayList<String>, Map<String, Object>>()
-                                  {
-                                    @Override
-                                    public ArrayList<String> fold(
-                                            ArrayList<String> druidDataSources,
-                                            Map<String, Object> stringObjectMap,
-                                            FoldController foldController,
-                                            StatementContext statementContext
-                                    ) throws SQLException
-                                    {
-                                      druidDataSources.add(
-                                              MapUtils.getString(stringObjectMap, "datasource")
-                                      );
-                                      return druidDataSources;
-                                    }
+  ) {
+    return connector.getDBI().withHandle(
+            new HandleCallback<List<String>>() {
+              @Override
+              public List<String> withHandle(Handle handle) throws Exception {
+                return handle.createQuery(
+                        String.format("SELECT DISTINCT(datasource) FROM %s WHERE used = true",
+                                metadataStorageTablesConfig.getSegmentsTable()
+                        )
+                )
+                        .fold(
+                                Lists.<String>newArrayList(),
+                                new Folder3<ArrayList<String>, Map<String, Object>>() {
+                                  @Override
+                                  public ArrayList<String> fold(
+                                          ArrayList<String> druidDataSources,
+                                          Map<String, Object> stringObjectMap,
+                                          FoldController foldController,
+                                          StatementContext statementContext
+                                  ) throws SQLException {
+                                    druidDataSources.add(
+                                            MapUtils.getString(stringObjectMap, "datasource")
+                                    );
+                                    return druidDataSources;
                                   }
-                          );
+                                }
+                        );
 
-                }
               }
-      );
+            }
+    );
 
   }
 
   public static boolean disableDataSource(SQLMetadataConnector connector,
           final MetadataStorageTablesConfig metadataStorageTablesConfig, final String dataSource
-  )
-  {
+  ) {
     try {
       if (!getAllDataSourceNames(connector, metadataStorageTablesConfig).contains(dataSource)) {
-        DruidStorageHandler.LOG.warn(String.format("Cannot delete data source [%s], does not exist", dataSource));
+        DruidStorageHandler.LOG
+                .warn(String.format("Cannot delete data source [%s], does not exist", dataSource));
         return false;
       }
 
       connector.getDBI().withHandle(
-              new HandleCallback<Void>()
-              {
+              new HandleCallback<Void>() {
                 @Override
-                public Void withHandle(Handle handle) throws Exception
-                {
+                public Void withHandle(Handle handle) throws Exception {
                   handle.createStatement(
-                          String.format("UPDATE %s SET used=false WHERE dataSource = :dataSource", metadataStorageTablesConfig.getSegmentsTable())
+                          String.format("UPDATE %s SET used=false WHERE dataSource = :dataSource",
+                                  metadataStorageTablesConfig.getSegmentsTable()
+                          )
                   )
                           .bind("dataSource", dataSource)
                           .execute();
@@ -292,8 +289,7 @@ public final class DruidStorageHandlerUtils {
               }
       );
 
-    }
-    catch (Exception e) {
+    } catch (Exception e) {
       DruidStorageHandler.LOG.error(String.format("Error removing dataSource %s", dataSource), e);
       return false;
     }
@@ -302,16 +298,13 @@ public final class DruidStorageHandlerUtils {
 
   public static List<DataSegment> getDataSegment(final SQLMetadataConnector connector,
           final MetadataStorageTablesConfig metadataStorageTablesConfig, final String dataSource
-  )
-  {
+  ) {
     List<DataSegment> segmentList = connector.retryTransaction(
-            new TransactionCallback<List<DataSegment>>()
-            {
+            new TransactionCallback<List<DataSegment>>() {
               @Override
               public List<DataSegment> inTransaction(
                       Handle handle, TransactionStatus status
-              ) throws Exception
-              {
+              ) throws Exception {
                 return handle
                         .createQuery(String.format(
                                 "SELECT payload FROM %s WHERE dataSource = :dataSource",
@@ -322,25 +315,22 @@ public final class DruidStorageHandlerUtils {
                         .map(ByteArrayMapper.FIRST)
                         .fold(
                                 new ArrayList<DataSegment>(),
-                                new Folder3<List<DataSegment>, byte[]>()
-                                {
+                                new Folder3<List<DataSegment>, byte[]>() {
                                   @Override
                                   public List<DataSegment> fold(List<DataSegment> accumulator,
                                           byte[] payload, FoldController control,
                                           StatementContext ctx
-                                  ) throws SQLException
-                                  {
+                                  ) throws SQLException {
                                     try {
                                       final DataSegment segment = DATA_SEGMENT_INTERNER.intern(
                                               JSON_MAPPER.readValue(
-                                              payload,
-                                              DataSegment.class
-                                      ));
+                                                      payload,
+                                                      DataSegment.class
+                                              ));
 
                                       accumulator.add(segment);
                                       return accumulator;
-                                    }
-                                    catch (Exception e) {
+                                    } catch (Exception e) {
                                       throw new SQLException(e.toString());
                                     }
                                   }
@@ -348,7 +338,7 @@ public final class DruidStorageHandlerUtils {
                         );
               }
             }
-    , 3, SQLMetadataConnector.DEFAULT_MAX_TRIES);
+            , 3, SQLMetadataConnector.DEFAULT_MAX_TRIES);
     return segmentList;
   }
 
@@ -371,8 +361,7 @@ public final class DruidStorageHandlerUtils {
   /**
    * Simple interface for retry operations
    */
-  public interface DataPusher
-  {
+  public interface DataPusher {
     long push() throws IOException;
   }
 }

@@ -68,19 +68,22 @@ public class DruidRecordWriterTest {
 
   final List<ImmutableMap<String, Object>> expectedRows = ImmutableList.of(
           ImmutableMap.<String, Object>of(
-                  DruidTable.DEFAULT_TIMESTAMP_COLUMN, DateTime.parse("2014-10-22T00:00:00.000Z").getMillis(),
+                  DruidTable.DEFAULT_TIMESTAMP_COLUMN,
+                  DateTime.parse("2014-10-22T00:00:00.000Z").getMillis(),
                   "host", ImmutableList.of("a.example.com"),
                   "visited_sum", 190L,
                   "unique_hosts", 1.0d
           ),
           ImmutableMap.<String, Object>of(
-                  DruidTable.DEFAULT_TIMESTAMP_COLUMN, DateTime.parse("2014-10-22T01:00:00.000Z").getMillis(),
+                  DruidTable.DEFAULT_TIMESTAMP_COLUMN,
+                  DateTime.parse("2014-10-22T01:00:00.000Z").getMillis(),
                   "host", ImmutableList.of("b.example.com"),
                   "visited_sum", 175L,
                   "unique_hosts", 1.0d
           ),
           ImmutableMap.<String, Object>of(
-                  DruidTable.DEFAULT_TIMESTAMP_COLUMN, DateTime.parse("2014-10-22T02:00:00.000Z").getMillis(),
+                  DruidTable.DEFAULT_TIMESTAMP_COLUMN,
+                  DateTime.parse("2014-10-22T02:00:00.000Z").getMillis(),
                   "host", ImmutableList.of("c.example.com"),
                   "visited_sum", 270L,
                   "unique_hosts", 1.0d
@@ -142,13 +145,14 @@ public class DruidRecordWriterTest {
                 return new DruidWritable(ImmutableMap.<String, Object>builder().putAll(input)
                         .put(Constants.DRUID_TIMESTAMP_GRANULARITY_COL_NAME,
                                 Granularity.DAY.truncate(
-                                        new DateTime((long) input.get(DruidTable.DEFAULT_TIMESTAMP_COLUMN)))
+                                        new DateTime((long) input
+                                                .get(DruidTable.DEFAULT_TIMESTAMP_COLUMN)))
                                         .getMillis()
                         ).build());
               }
             }
     );
-    for (DruidWritable druidWritable: druidWritables) {
+    for (DruidWritable druidWritable : druidWritables) {
       druidRecordWriter.write(druidWritable);
     }
     druidRecordWriter.close(false);
@@ -179,8 +183,9 @@ public class DruidRecordWriterTest {
 
   }
 
-  private void verifyRows(List<ImmutableMap<String, Object>> expectedRows, List<InputRow> actualRows)
-  {
+  private void verifyRows(List<ImmutableMap<String, Object>> expectedRows,
+          List<InputRow> actualRows
+  ) {
     System.out.println("actualRows = " + actualRows);
     Assert.assertEquals(expectedRows.size(), actualRows.size());
 
@@ -190,17 +195,19 @@ public class DruidRecordWriterTest {
 
       Assert.assertEquals(ImmutableList.of("host"), actual.getDimensions());
 
-      Assert.assertEquals(expected.get(DruidTable.DEFAULT_TIMESTAMP_COLUMN), actual.getTimestamp().getMillis());
+      Assert.assertEquals(expected.get(DruidTable.DEFAULT_TIMESTAMP_COLUMN),
+              actual.getTimestamp().getMillis()
+      );
       Assert.assertEquals(expected.get("host"), actual.getDimension("host"));
       Assert.assertEquals(expected.get("visited_sum"), actual.getLongMetric("visited_sum"));
       Assert.assertEquals(
               (Double) expected.get("unique_hosts"),
-              (Double) HyperUniquesAggregatorFactory.estimateCardinality(actual.getRaw("unique_hosts")),
+              (Double) HyperUniquesAggregatorFactory
+                      .estimateCardinality(actual.getRaw("unique_hosts")),
               0.001
       );
     }
   }
-
 
   @Test
   public void testSerDesr() throws IOException {

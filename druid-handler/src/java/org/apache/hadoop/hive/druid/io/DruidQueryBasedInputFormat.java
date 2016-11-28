@@ -94,13 +94,14 @@ public class DruidQueryBasedInputFormat extends InputFormat<NullWritable, DruidW
 
   @Override
   public List<InputSplit> getSplits(JobContext context) throws IOException, InterruptedException {
-    return Arrays.<InputSplit> asList(getInputSplits(context.getConfiguration()));
+    return Arrays.<InputSplit>asList(getInputSplits(context.getConfiguration()));
   }
 
   @SuppressWarnings("deprecation")
   private HiveDruidSplit[] getInputSplits(Configuration conf) throws IOException {
     String address = HiveConf.getVar(conf,
-            HiveConf.ConfVars.HIVE_DRUID_BROKER_DEFAULT_ADDRESS);
+            HiveConf.ConfVars.HIVE_DRUID_BROKER_DEFAULT_ADDRESS
+    );
     if (StringUtils.isEmpty(address)) {
       throw new IOException("Druid broker address not specified in configuration");
     }
@@ -128,7 +129,7 @@ public class DruidQueryBasedInputFormat extends InputFormat<NullWritable, DruidW
     // hive depends on FileSplits
     Job job = new Job(conf);
     JobContext jobContext = ShimLoader.getHadoopShims().newJobContext(job);
-    Path [] paths = FileInputFormat.getInputPaths(jobContext);
+    Path[] paths = FileInputFormat.getInputPaths(jobContext);
 
     switch (druidQueryType) {
       case Query.TIMESERIES:
@@ -157,7 +158,8 @@ public class DruidQueryBasedInputFormat extends InputFormat<NullWritable, DruidW
   /* Method that splits Select query depending on the threshold so read can be
    * parallelized */
   private static HiveDruidSplit[] splitSelectQuery(Configuration conf, String address,
-          String druidQuery, Path dummyPath) throws IOException {
+          String druidQuery, Path dummyPath
+  ) throws IOException {
     final int selectThreshold = (int) HiveConf.getIntVar(
             conf, HiveConf.ConfVars.HIVE_DRUID_SELECT_THRESHOLD);
     final int numConnection = HiveConf
@@ -193,12 +195,13 @@ public class DruidQueryBasedInputFormat extends InputFormat<NullWritable, DruidW
     try {
       lifecycle.start();
     } catch (Exception e) {
-      LOG.error("Lifecycle start issue",e);
+      LOG.error("Lifecycle start issue", e);
     }
     InputStream response;
     try {
       response = DruidStorageHandlerUtils.submitRequest(client,
-              DruidStorageHandlerUtils.createRequest(address, metadataQuery));
+              DruidStorageHandlerUtils.createRequest(address, metadataQuery)
+      );
     } catch (Exception e) {
       throw new IOException(org.apache.hadoop.util.StringUtils.stringifyException(e));
     } finally {
@@ -209,7 +212,9 @@ public class DruidQueryBasedInputFormat extends InputFormat<NullWritable, DruidW
     List<SegmentAnalysis> metadataList;
     try {
       metadataList = DruidStorageHandlerUtils.SMILE_MAPPER.readValue(response,
-            new TypeReference<List<SegmentAnalysis>>() {});
+              new TypeReference<List<SegmentAnalysis>>() {
+              }
+      );
     } catch (Exception e) {
       response.close();
       throw new IOException(org.apache.hadoop.util.StringUtils.stringifyException(e));
@@ -227,7 +232,8 @@ public class DruidQueryBasedInputFormat extends InputFormat<NullWritable, DruidW
     if (numRows <= selectThreshold) {
       // We are not going to split it
       return new HiveDruidSplit[] { new HiveDruidSplit(address,
-              DruidStorageHandlerUtils.JSON_MAPPER.writeValueAsString(query), dummyPath) };
+              DruidStorageHandlerUtils.JSON_MAPPER.writeValueAsString(query), dummyPath
+      ) };
     }
 
     // If the query does not specify a timestamp, we obtain the total time using
@@ -244,7 +250,8 @@ public class DruidQueryBasedInputFormat extends InputFormat<NullWritable, DruidW
 
       try {
         response = DruidStorageHandlerUtils.submitRequest(client,
-                DruidStorageHandlerUtils.createRequest(address, timeQuery));
+                DruidStorageHandlerUtils.createRequest(address, timeQuery)
+        );
       } catch (Exception e) {
         throw new IOException(org.apache.hadoop.util.StringUtils.stringifyException(e));
       }
@@ -253,20 +260,24 @@ public class DruidQueryBasedInputFormat extends InputFormat<NullWritable, DruidW
       List<Result<TimeBoundaryResultValue>> timeList;
       try {
         timeList = DruidStorageHandlerUtils.SMILE_MAPPER.readValue(response,
-              new TypeReference<List<Result<TimeBoundaryResultValue>>>() {});
+                new TypeReference<List<Result<TimeBoundaryResultValue>>>() {
+                }
+        );
       } catch (Exception e) {
         response.close();
         throw new IOException(org.apache.hadoop.util.StringUtils.stringifyException(e));
       }
       if (timeList == null || timeList.isEmpty()) {
-        throw new IOException("Connected to Druid but could not retrieve time boundary information");
+        throw new IOException(
+                "Connected to Druid but could not retrieve time boundary information");
       }
       if (timeList.size() != 1) {
         throw new IOException("We should obtain a single time boundary");
       }
 
       intervals.add(new Interval(timeList.get(0).getValue().getMinTime().getMillis(),
-              timeList.get(0).getValue().getMaxTime().getMillis(), ISOChronology.getInstanceUTC()));
+              timeList.get(0).getValue().getMaxTime().getMillis(), ISOChronology.getInstanceUTC()
+      ));
     } else {
       intervals.addAll(query.getIntervals());
     }
@@ -280,20 +291,22 @@ public class DruidQueryBasedInputFormat extends InputFormat<NullWritable, DruidW
       final SelectQuery partialQuery = query.withQuerySegmentSpec(
               new MultipleIntervalSegmentSpec(newIntervals.get(i)));
       splits[i] = new HiveDruidSplit(address,
-              DruidStorageHandlerUtils.JSON_MAPPER.writeValueAsString(partialQuery), dummyPath);
+              DruidStorageHandlerUtils.JSON_MAPPER.writeValueAsString(partialQuery), dummyPath
+      );
     }
     return splits;
   }
 
-  private static List<List<Interval>> createSplitsIntervals(List<Interval> intervals, int numSplits) {
+  private static List<List<Interval>> createSplitsIntervals(List<Interval> intervals, int numSplits
+  ) {
     final long totalTime = DruidDateTimeUtils.extractTotalTime(intervals);
     long startTime = intervals.get(0).getStartMillis();
     long endTime = startTime;
     long currTime = 0;
     List<List<Interval>> newIntervals = new ArrayList<>();
     for (int i = 0, posIntervals = 0; i < numSplits; i++) {
-      final long rangeSize = Math.round( (double) (totalTime * (i + 1)) / numSplits) -
-              Math.round( (double) (totalTime * i) / numSplits);
+      final long rangeSize = Math.round((double) (totalTime * (i + 1)) / numSplits) -
+              Math.round((double) (totalTime * i) / numSplits);
       // Create the new interval(s)
       List<Interval> currentIntervals = new ArrayList<>();
       while (posIntervals < intervals.size()) {
@@ -313,21 +326,22 @@ public class DruidQueryBasedInputFormat extends InputFormat<NullWritable, DruidW
       }
       newIntervals.add(currentIntervals);
     }
-    assert endTime == intervals.get(intervals.size()-1).getEndMillis();
+    assert endTime == intervals.get(intervals.size() - 1).getEndMillis();
     return newIntervals;
   }
 
   @Override
   public org.apache.hadoop.mapred.RecordReader<NullWritable, DruidWritable> getRecordReader(
-          org.apache.hadoop.mapred.InputSplit split, JobConf job, Reporter reporter)
-                  throws IOException {
+          org.apache.hadoop.mapred.InputSplit split, JobConf job, Reporter reporter
+  )
+          throws IOException {
     // We need to provide a different record reader for every type of Druid query.
     // The reason is that Druid results format is different for each type.
-    final DruidQueryRecordReader<?,?> reader;
+    final DruidQueryRecordReader<?, ?> reader;
     final String druidQueryType = job.get(Constants.DRUID_QUERY_TYPE);
     if (druidQueryType == null) {
       reader = new DruidSelectQueryRecordReader(); // By default
-      reader.initialize((HiveDruidSplit)split, job);
+      reader.initialize((HiveDruidSplit) split, job);
       return reader;
     }
     switch (druidQueryType) {
@@ -346,20 +360,21 @@ public class DruidQueryBasedInputFormat extends InputFormat<NullWritable, DruidW
       default:
         throw new IOException("Druid query type not recognized");
     }
-    reader.initialize((HiveDruidSplit)split, job);
+    reader.initialize((HiveDruidSplit) split, job);
     return reader;
   }
 
   @Override
   public RecordReader<NullWritable, DruidWritable> createRecordReader(InputSplit split,
-          TaskAttemptContext context) throws IOException, InterruptedException {
+          TaskAttemptContext context
+  ) throws IOException, InterruptedException {
     // We need to provide a different record reader for every type of Druid query.
     // The reason is that Druid results format is different for each type.
     final String druidQueryType = context.getConfiguration().get(Constants.DRUID_QUERY_TYPE);
     if (druidQueryType == null) {
       return new DruidSelectQueryRecordReader(); // By default
     }
-    final DruidQueryRecordReader<?,?> reader;
+    final DruidQueryRecordReader<?, ?> reader;
     switch (druidQueryType) {
       case Query.TIMESERIES:
         reader = new DruidTimeseriesQueryRecordReader();

@@ -54,27 +54,28 @@ import java.util.List;
 /**
  * DruidStorageHandler provides a HiveStorageHandler implementation for Druid.
  */
-@SuppressWarnings({"deprecation", "rawtypes"})
-public class DruidStorageHandler extends DefaultStorageHandler implements HiveMetaHook
-{
+@SuppressWarnings({ "deprecation", "rawtypes" })
+public class DruidStorageHandler extends DefaultStorageHandler implements HiveMetaHook {
 
   protected static final Logger LOG = LoggerFactory.getLogger(DruidStorageHandler.class);
 
   public static final String SEGMENTS_DESCRIPTOR_DIR_NAME = "segmentsDescriptorDir";
 
   private final SQLMetadataConnector connector;
+
   private final SQLMetadataStorageUpdaterJobHandler druidSqlMetadataStorageUpdaterJobHandler;
+
   private final MetadataStorageTablesConfig druidMetadataStorageTablesConfig;
 
-  public DruidStorageHandler()
-  {
+  public DruidStorageHandler() {
     //this is the default value in druid
     final String base = SessionState.getSessionConf().get("hive.druid.metadata.base", "druid");
     // default to mysql to avoid issue with creating of connector.
     final String dbType = SessionState.getSessionConf().get("hive.druid.metadata.db.type", "mysql");
     final String username = SessionState.getSessionConf().get("hive.druid.metadata.username", "");
     final String password = SessionState.getSessionConf().get("hive.druid.metadata.password", "");
-    final String uri = SessionState.getSessionConf().get("hive.druid.metadata.uri", "jdbc:mysql://localhost/druid");
+    final String uri = SessionState.getSessionConf()
+            .get("hive.druid.metadata.uri", "jdbc:mysql://localhost/druid");
 
     druidMetadataStorageTablesConfig = MetadataStorageTablesConfig.fromBase(base);
 
@@ -121,14 +122,12 @@ public class DruidStorageHandler extends DefaultStorageHandler implements HiveMe
   }
 
   @Override
-  public Class<? extends InputFormat> getInputFormatClass()
-  {
+  public Class<? extends InputFormat> getInputFormatClass() {
     return DruidQueryBasedInputFormat.class;
   }
 
   @Override
-  public Class<? extends OutputFormat> getOutputFormatClass()
-  {
+  public Class<? extends OutputFormat> getOutputFormatClass() {
     return DruidOutputFormat.class;
   }
 
@@ -138,14 +137,12 @@ public class DruidStorageHandler extends DefaultStorageHandler implements HiveMe
   }
 
   @Override
-  public HiveMetaHook getMetaHook()
-  {
+  public HiveMetaHook getMetaHook() {
     return this;
   }
 
   @Override
-  public void preCreateTable(Table table) throws MetaException
-  {
+  public void preCreateTable(Table table) throws MetaException {
     // Do safety checks
     /*
     @TODO ASK Jesus if this is needed, i think we don't needed anymore
@@ -158,11 +155,13 @@ public class DruidStorageHandler extends DefaultStorageHandler implements HiveMe
     if (table.getSd().getBucketColsSize() != 0) {
       throw new MetaException("CLUSTERED BY may not be specified for Druid");
     }
-    String dataSourceName = Preconditions.checkNotNull(table.getParameters().get(Constants.DRUID_DATA_SOURCE), "WTF dataSource name is null !");
+    String dataSourceName = Preconditions
+            .checkNotNull(table.getParameters().get(Constants.DRUID_DATA_SOURCE),
+                    "WTF dataSource name is null !"
+            );
     try {
       connector.createSegmentTable();
-    } catch (Exception e)
-    {
+    } catch (Exception e) {
       LOG.error("Exception while trying to create druid segments table", e);
       throw new MetaException(e.getMessage());
     }
@@ -175,31 +174,27 @@ public class DruidStorageHandler extends DefaultStorageHandler implements HiveMe
   }
 
   @Override
-  public void rollbackCreateTable(Table table) throws MetaException
-  {
+  public void rollbackCreateTable(Table table) throws MetaException {
     final Path segmentDescriptorDir = new Path(table.getSd().getLocation());
     try {
       List<DataSegment> dataSegmentList = DruidStorageHandlerUtils
-          .getPublishedSegments(segmentDescriptorDir, getConf());
+              .getPublishedSegments(segmentDescriptorDir, getConf());
       for (DataSegment dataSegment :
-          dataSegmentList) {
+              dataSegmentList) {
         try {
           deleteSegment(dataSegment);
-        }
-        catch (SegmentLoadingException e) {
+        } catch (SegmentLoadingException e) {
           LOG.error(String.format("Error while trying to clean the segment [%s]", dataSegment), e);
         }
       }
-    }
-    catch (IOException e) {
+    } catch (IOException e) {
       LOG.error("Exception while rollback", e);
       Throwables.propagate(e);
     }
   }
 
   @Override
-  public void commitCreateTable(Table table) throws MetaException
-  {
+  public void commitCreateTable(Table table) throws MetaException {
     LOG.info(String.format("Committing table [%s] to the druid metastore", table.getDbName()));
     final Path tableDir = new Path(table.getSd().getLocation());
     try {
@@ -208,19 +203,19 @@ public class DruidStorageHandler extends DefaultStorageHandler implements HiveMe
               DruidStorageHandlerUtils.getPublishedSegments(tableDir, getConf()),
               DruidStorageHandlerUtils.JSON_MAPPER
       );
-    }
-    catch (IOException e) {
+    } catch (IOException e) {
       LOG.error("Exception while commit", e);
       Throwables.propagate(e);
     }
   }
 
   @VisibleForTesting
-  protected void deleteSegment(DataSegment segment) throws SegmentLoadingException
-  {
+  protected void deleteSegment(DataSegment segment) throws SegmentLoadingException {
 
     final Path path = getPath(segment);
-    LOG.info(String.format("removing segment[%s], located at path[%s]", segment.getIdentifier(), path));
+    LOG.info(String.format("removing segment[%s], located at path[%s]", segment.getIdentifier(),
+            path
+    ));
 
     try {
       if (path.getName().endsWith(".zip")) {
@@ -228,7 +223,10 @@ public class DruidStorageHandler extends DefaultStorageHandler implements HiveMe
         final FileSystem fs = path.getFileSystem(getConf());
 
         if (!fs.exists(path)) {
-          LOG.warn(String.format("Segment Path [%s] does not exist. It appears to have been deleted already.", path));
+          LOG.warn(String.format(
+                  "Segment Path [%s] does not exist. It appears to have been deleted already.",
+                  path
+          ));
           return;
         }
 
@@ -236,8 +234,8 @@ public class DruidStorageHandler extends DefaultStorageHandler implements HiveMe
         Path partitionNumDir = path.getParent();
         if (!fs.delete(partitionNumDir, true)) {
           throw new SegmentLoadingException(
-              "Unable to kill segment, failed to delete dir [%s]",
-              partitionNumDir.toString()
+                  "Unable to kill segment, failed to delete dir [%s]",
+                  partitionNumDir.toString()
           );
         }
 
@@ -253,36 +251,30 @@ public class DruidStorageHandler extends DefaultStorageHandler implements HiveMe
       } else {
         throw new SegmentLoadingException("Unknown file type[%s]", path);
       }
-    }
-    catch (IOException e) {
+    } catch (IOException e) {
       throw new SegmentLoadingException(e, "Unable to kill segment");
     }
   }
 
-  private static Path getPath(DataSegment dataSegment)
-  {
+  private static Path getPath(DataSegment dataSegment) {
     return new Path(String.valueOf(dataSegment.getLoadSpec().get("path")));
   }
 
-  private static boolean safeNonRecursiveDelete(FileSystem fs, Path path)
-  {
+  private static boolean safeNonRecursiveDelete(FileSystem fs, Path path) {
     try {
       return fs.delete(path, false);
-    }
-    catch (Exception ex) {
+    } catch (Exception ex) {
       return false;
     }
   }
 
   @Override
-  public void preDropTable(Table table) throws MetaException
-  {
+  public void preDropTable(Table table) throws MetaException {
     // Nothing to do
   }
 
   @Override
-  public void rollbackDropTable(Table table) throws MetaException
-  {
+  public void rollbackDropTable(Table table) throws MetaException {
     // Nothing to do
   }
 
@@ -321,8 +313,7 @@ public class DruidStorageHandler extends DefaultStorageHandler implements HiveMe
   }
 
   @Override
-  public String toString()
-  {
+  public String toString() {
     return Constants.DRUID_HIVE_STORAGE_HANDLER_ID;
   }
 
