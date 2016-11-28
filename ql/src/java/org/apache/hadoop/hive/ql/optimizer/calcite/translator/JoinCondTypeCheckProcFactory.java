@@ -18,17 +18,12 @@
 package org.apache.hadoop.hive.ql.optimizer.calcite.translator;
 
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.Stack;
 
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
-import org.apache.hadoop.hive.ql.exec.FunctionInfo;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
@@ -41,11 +36,6 @@ import org.apache.hadoop.hive.ql.parse.TypeCheckProcFactory;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
-import org.apache.hadoop.hive.ql.plan.ExprNodeDescUtils;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBaseCompare;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPAnd;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPOr;
 
 /**
  * JoinCondTypeCheckProcFactory is used by Calcite planner(CBO) to generate Join Conditions from Join Condition AST.
@@ -117,7 +107,7 @@ public class JoinCondTypeCheckProcFactory extends TypeCheckProcFactory {
       }
 
       if (tblAliasCnt > 1) {
-        throw new SemanticException(ErrorMsg.INVALID_JOIN_CONDITION_1.getMsg(expr));
+        throw new SemanticException(ErrorMsg.AMBIGUOUS_TABLE_OR_COLUMN.getMsg(expr));
       }
 
       return (tblAliasCnt == 1) ? true : false;
@@ -132,7 +122,7 @@ public class JoinCondTypeCheckProcFactory extends TypeCheckProcFactory {
         tmp = rr.get(tabName, colAlias);
         if (tmp != null) {
           if (cInfoToRet != null) {
-            throw new SemanticException(ErrorMsg.INVALID_JOIN_CONDITION_1.getMsg(expr));
+            throw new SemanticException(ErrorMsg.AMBIGUOUS_TABLE_OR_COLUMN.getMsg(expr));
           }
           cInfoToRet = tmp;
         }
@@ -194,113 +184,13 @@ public class JoinCondTypeCheckProcFactory extends TypeCheckProcFactory {
         tmp = rr.get(tabName, colAlias);
         if (tmp != null) {
           if (cInfoToRet != null) {
-            throw new SemanticException(ErrorMsg.INVALID_JOIN_CONDITION_1.getMsg(expr));
+            throw new SemanticException(ErrorMsg.AMBIGUOUS_TABLE_OR_COLUMN.getMsg(expr));
           }
           cInfoToRet = tmp;
         }
       }
 
       return cInfoToRet;
-    }
-
-    @Override
-    protected void validateUDF(ASTNode expr, boolean isFunction, TypeCheckCtx ctx, FunctionInfo fi,
-        List<ExprNodeDesc> children, GenericUDF genericUDF) throws SemanticException {
-      super.validateUDF(expr, isFunction, ctx, fi, children, genericUDF);
-
-      JoinTypeCheckCtx jCtx = (JoinTypeCheckCtx) ctx;
-
-      // Join Condition can not contain disjunctions
-      if (genericUDF instanceof GenericUDFOPOr) {
-        throw new SemanticException(ErrorMsg.INVALID_JOIN_CONDITION_3.getMsg(expr));
-      }
-
-      // Non Conjunctive elements have further limitations in Join conditions
-      if (!(genericUDF instanceof GenericUDFOPAnd)) {
-        // Non Comparison UDF other than 'and' can not use inputs from both side
-        if (!(genericUDF instanceof GenericUDFBaseCompare)) {
-          if (genericUDFargsRefersToBothInput(genericUDF, children, jCtx.getInputRRList())) {
-            throw new SemanticException(ErrorMsg.INVALID_JOIN_CONDITION_1.getMsg(expr));
-          }
-        } else if (genericUDF instanceof GenericUDFBaseCompare) {
-          // Comparisons of non literals LHS/RHS can not refer to inputs from
-          // both sides
-          if (children.size() == 2 && !(children.get(0) instanceof ExprNodeConstantDesc)
-              && !(children.get(1) instanceof ExprNodeConstantDesc)) {
-            if (comparisonUDFargsRefersToBothInput((GenericUDFBaseCompare) genericUDF, children,
-                jCtx.getInputRRList())) {
-              throw new SemanticException(ErrorMsg.INVALID_JOIN_CONDITION_1.getMsg(expr));
-            }
-          }
-        }
-      }
-    }
-
-    private static boolean genericUDFargsRefersToBothInput(GenericUDF udf,
-        List<ExprNodeDesc> children, List<RowResolver> inputRRList) {
-      boolean argsRefersToBothInput = false;
-
-      Map<Integer, ExprNodeDesc> hasCodeToColDescMap = new HashMap<Integer, ExprNodeDesc>();
-      for (ExprNodeDesc child : children) {
-        ExprNodeDescUtils.getExprNodeColumnDesc(child, hasCodeToColDescMap);
-      }
-      Set<Integer> inputRef = getInputRef(hasCodeToColDescMap.values(), inputRRList);
-
-      if (inputRef.size() > 1)
-        argsRefersToBothInput = true;
-
-      return argsRefersToBothInput;
-    }
-
-    private static boolean comparisonUDFargsRefersToBothInput(GenericUDFBaseCompare comparisonUDF,
-        List<ExprNodeDesc> children, List<RowResolver> inputRRList) {
-      boolean argsRefersToBothInput = false;
-
-      Map<Integer, ExprNodeDesc> lhsHashCodeToColDescMap = new HashMap<Integer, ExprNodeDesc>();
-      Map<Integer, ExprNodeDesc> rhsHashCodeToColDescMap = new HashMap<Integer, ExprNodeDesc>();
-      ExprNodeDescUtils.getExprNodeColumnDesc(children.get(0), lhsHashCodeToColDescMap);
-      ExprNodeDescUtils.getExprNodeColumnDesc(children.get(1), rhsHashCodeToColDescMap);
-      Set<Integer> lhsInputRef = getInputRef(lhsHashCodeToColDescMap.values(), inputRRList);
-      Set<Integer> rhsInputRef = getInputRef(rhsHashCodeToColDescMap.values(), inputRRList);
-
-      if (lhsInputRef.size() > 1 || rhsInputRef.size() > 1)
-        argsRefersToBothInput = true;
-
-      return argsRefersToBothInput;
-    }
-
-    private static Set<Integer> getInputRef(Collection<ExprNodeDesc> colDescSet,
-        List<RowResolver> inputRRList) {
-      String tableAlias;
-      RowResolver inputRR;
-      Set<Integer> inputLineage = new HashSet<Integer>();
-
-      for (ExprNodeDesc col : colDescSet) {
-        ExprNodeColumnDesc colDesc = (ExprNodeColumnDesc) col;
-        tableAlias = colDesc.getTabAlias();
-
-        for (int i = 0; i < inputRRList.size(); i++) {
-          inputRR = inputRRList.get(i);
-
-          // If table Alias is present check if InputRR has that table and then
-          // check for internal name
-          // else if table alias is null then check with internal name in all
-          // inputRR.
-          if (tableAlias != null) {
-            if (inputRR.hasTableAlias(tableAlias)) {
-              if (inputRR.doesInvRslvMapContain(colDesc.getColumn())) {
-                inputLineage.add(i);
-              }
-            }
-          } else {
-            if (inputRR.doesInvRslvMapContain(colDesc.getColumn())) {
-              inputLineage.add(i);
-            }
-          }
-        }
-      }
-
-      return inputLineage;
     }
   }
 
