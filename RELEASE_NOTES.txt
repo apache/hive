@@ -207,6 +207,7 @@ Release Notes - Hive - Version 2.1.1
     * [HIVE-15123] - LLAP UI: The UI should work even if the cache is disabled
     * [HIVE-15137] - metastore add partitions background thread should use current username
     * [HIVE-15181] - buildQueryWithINClause didn't properly handle multiples of ConfVars.METASTORE_DIRECT_SQL_MAX_ELEMENTS_IN_CLAUSE
+    * [HIVE-15295] - Fix HCatalog javadoc generation with Java 8
 
 
 
