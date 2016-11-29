@@ -298,7 +298,6 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
     }
 
     if (processStop()) {
-      cleanupReaders();
       recordReaderTime(startTime);
       return null;
     }
@@ -323,7 +322,6 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
     OrcBatchKey stripeKey = hasFileId ? new OrcBatchKey(fileKey, -1, 0) : null;
     for (int stripeIxMod = 0; stripeIxMod < readState.length; ++stripeIxMod) {
       if (processStop()) {
-        cleanupReaders();
         recordReaderTime(startTime);
         return null;
       }
@@ -393,7 +391,6 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
         return null;
       }
       if (processStop()) {
-        cleanupReaders();
         recordReaderTime(startTime);
         return null;
       }
