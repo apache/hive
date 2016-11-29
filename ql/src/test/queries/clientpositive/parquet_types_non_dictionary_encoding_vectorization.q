@@ -92,6 +92,3 @@ SELECT cstring1, count(*) FROM parquet_types GROUP BY cstring1 ORDER BY cstring1
 
 EXPLAIN SELECT hex(cbinary), count(*) FROM parquet_types GROUP BY cbinary;
 SELECT hex(cbinary), count(*) FROM parquet_types GROUP BY cbinary;
-
-EXPLAIN SELECT st1.c1 FROM parquet_types GROUP BY st1.c1;
-SELECT st1.c1 FROM parquet_types GROUP BY st1.c1;

@@ -22,6 +22,7 @@ import org.apache.hadoop.hive.ql.exec.vector.StructColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.TimestampColumnVector;
 import org.apache.hadoop.hive.ql.io.parquet.timestamp.NanoTime;
 import org.apache.hadoop.hive.ql.io.parquet.timestamp.NanoTimeUtils;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
@@ -57,7 +58,7 @@ import static org.apache.parquet.column.ValuesType.VALUES;
  * It's column level Parquet reader which is used to read a batch of records for a column,
  * part of the code is referred from Apache Spark and Apache Parquet.
  */
-public class VectorizedPrimitiveColumnReader implements VectorizedParquetColumnReader{
+public class VectorizedPrimitiveColumnReader implements VectorizedColumnReader {
 
   private static final Logger LOG = LoggerFactory.getLogger(VectorizedPrimitiveColumnReader.class);
 
@@ -166,32 +167,7 @@ public class VectorizedPrimitiveColumnReader implements VectorizedParquetColumnR
     ColumnVector column,
     TypeInfo columnType,
     int rowId) throws IOException {
-    switch (columnType.getCategory()) {
-    case PRIMITIVE:
-      PrimitiveTypeInfo primitiveColumnType = (PrimitiveTypeInfo) columnType;
-      readBatchForPrimitiveType(num, column, primitiveColumnType, rowId);
-      break;
-    case STRUCT:
-      StructTypeInfo structTypeInfo = (StructTypeInfo) columnType;
-      StructColumnVector structColumn = (StructColumnVector) column;
-      List<TypeInfo> typeInfos = structTypeInfo.getAllStructFieldTypeInfos();
-      for (int i = 0; i < typeInfos.size(); i++) {
-        readBatch(num, structColumn.fields[i], typeInfos.get(i));
-      }
-      break;
-    case LIST:
-    case MAP:
-    case UNION:
-    default:
-      throw new IOException("Unsupported category " + columnType.getCategory().name());
-    }
-  }
-
-  private void readBatchForPrimitiveType(
-    int num,
-    ColumnVector column,
-    PrimitiveTypeInfo primitiveColumnType,
-    int rowId) throws IOException {
+    PrimitiveTypeInfo primitiveColumnType = (PrimitiveTypeInfo) columnType;
     switch (primitiveColumnType.getPrimitiveCategory()) {
     case INT:
     case BYTE:

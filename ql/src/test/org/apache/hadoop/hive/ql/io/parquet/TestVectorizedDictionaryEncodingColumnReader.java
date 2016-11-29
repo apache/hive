@@ -72,4 +72,9 @@ public class TestVectorizedDictionaryEncodingColumnReader extends TestVectorized
   public void testStructRead() throws Exception {
     structRead(isDictionaryEncoding);
   }
+
+  @Test
+  public void testNestedStructRead() throws Exception {
+    structRead(isDictionaryEncoding);
+  }
 }

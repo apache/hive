@@ -23,13 +23,13 @@ import org.apache.hadoop.hive.ql.io.parquet.ProjectionPusher;
 import org.apache.hadoop.hive.ql.io.parquet.read.DataWritableReadSupport;
 import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
 import org.apache.hadoop.hive.serde2.SerDeStats;
-import org.apache.hadoop.hive.serde2.typeinfo.ListTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.RecordReader;
 import org.apache.hadoop.mapreduce.InputSplit;
+import org.apache.parquet.ParquetRuntimeException;
 import org.apache.parquet.column.ColumnDescriptor;
 import org.apache.parquet.column.page.PageReadStore;
 import org.apache.parquet.filter2.compat.FilterCompat;
@@ -37,9 +37,8 @@ import org.apache.parquet.hadoop.ParquetFileReader;
 import org.apache.parquet.hadoop.ParquetInputSplit;
 import org.apache.parquet.hadoop.metadata.BlockMetaData;
 import org.apache.parquet.hadoop.metadata.ParquetMetadata;
-import org.apache.parquet.schema.GroupType;
+import org.apache.parquet.schema.InvalidSchemaException;
 import org.apache.parquet.schema.MessageType;
-import org.apache.parquet.schema.PrimitiveType;
 import org.apache.parquet.schema.Type;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,10 +46,8 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import static org.apache.parquet.filter2.compat.RowGroupFilter.filterRowGroups;
@@ -80,7 +77,7 @@ public class VectorizedParquetRecordReader extends ParquetRecordReaderBase
    * For each request column, the reader to read this column. This is NULL if this column
    * is missing from the file, in which case we populate the attribute with NULL.
    */
-  private VectorizedParquetColumnReader[] columnReaders;
+  private VectorizedColumnReader[] columnReaders;
 
   /**
    * The number of rows that have been returned.
@@ -285,7 +282,7 @@ public class VectorizedParquetRecordReader extends ParquetRecordReaderBase
     }
     List<ColumnDescriptor> columns = requestedSchema.getColumns();
     List<Type> types = requestedSchema.getFields();
-    columnReaders = new VectorizedParquetColumnReader[columns.size()];
+    columnReaders = new VectorizedColumnReader[columns.size()];
     for (int i = 0; i < types.size(); ++i) {
       columnReaders[i] =
         buildVectorizedParquetReader(columnTypesList.get(indexColumnsWanted.get(i)), types.get(i),
@@ -297,9 +294,12 @@ public class VectorizedParquetRecordReader extends ParquetRecordReaderBase
   private List<ColumnDescriptor> getAllColumnDescriptorByType(
     int depth,
     Type type,
-    List<ColumnDescriptor> columns) {
+    List<ColumnDescriptor> columns) throws ParquetRuntimeException {
     List<ColumnDescriptor> res = new ArrayList<>();
     for (ColumnDescriptor descriptor : columns) {
+      if (depth > descriptor.getPath().length) {
+        throw new InvalidSchemaException("Corrupted Parquet schema");
+      }
       if (type.getName().equals(descriptor.getPath()[depth])) {
         res.add(descriptor);
       }
@@ -308,7 +308,7 @@ public class VectorizedParquetRecordReader extends ParquetRecordReaderBase
   }
 
   // Build VectorizedParquetColumnReader via Hive typeInfo and Parquet schema
-  private VectorizedParquetColumnReader buildVectorizedParquetReader(
+  private VectorizedColumnReader buildVectorizedParquetReader(
     TypeInfo typeInfo,
     Type type,
     PageReadStore pages,
@@ -318,40 +318,42 @@ public class VectorizedParquetRecordReader extends ParquetRecordReaderBase
       0);
   }
 
-  private VectorizedParquetColumnReader buildVectorizedParquetReader(
+  private VectorizedColumnReader buildVectorizedParquetReader(
     TypeInfo typeInfo,
     Type type,
     PageReadStore pages,
     List<ColumnDescriptor> columnDescriptors,
     boolean skipTimestampConversion,
     int depth) throws IOException {
-    List<ColumnDescriptor> descriptors = getAllColumnDescriptorByType(depth, type, columnDescriptors);
+    List<ColumnDescriptor> descriptors =
+      getAllColumnDescriptorByType(depth, type, columnDescriptors);
     switch (typeInfo.getCategory()) {
     case PRIMITIVE:
       if (columnDescriptors == null || columnDescriptors.isEmpty()) {
-        return null;
+        throw new RuntimeException(
+          "Failed to find related Parquet column descriptor with type " + type);
       } else {
         return new VectorizedPrimitiveColumnReader(descriptors.get(0),
           pages.getPageReader(descriptors.get(0)), skipTimestampConversion, type);
       }
     case STRUCT:
       StructTypeInfo structTypeInfo = (StructTypeInfo) typeInfo;
-      List<VectorizedParquetColumnReader> fieldReaders = new ArrayList<>();
+      List<VectorizedColumnReader> fieldReaders = new ArrayList<>();
       List<TypeInfo> fieldTypes = structTypeInfo.getAllStructFieldTypeInfos();
       List<Type> types = type.asGroupType().getFields();
       for (int i = 0; i < fieldTypes.size(); i++) {
-        VectorizedParquetColumnReader r =
+        VectorizedColumnReader r =
           buildVectorizedParquetReader(fieldTypes.get(i), types.get(i), pages, descriptors,
             skipTimestampConversion, depth + 1);
         if (r != null) {
           fieldReaders.add(r);
+        } else {
+          throw new RuntimeException(
+            "Fail to build Parquet vectorized reader based on Hive type " + fieldTypes.get(i)
+              .getTypeName() + " and Parquet type" + types.get(i).toString());
         }
       }
-      if (fieldReaders.size() > 0) {
-        return new VectorizedStructReader(fieldReaders);
-      } else {
-        return null;
-      }
+      return new VectorizedStructReader(fieldReaders);
     case LIST:
     case MAP:
     case UNION:

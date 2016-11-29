@@ -23,7 +23,15 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 
 import java.io.IOException;
 
-public interface VectorizedParquetColumnReader {
+public interface VectorizedColumnReader {
+  /**
+   * read records with specified size and type into the columnVector
+   *
+   * @param total      number of records to read into the column vector
+   * @param column     column vector where the reader will read data into
+   * @param columnType the type of column vector
+   * @throws IOException
+   */
   void readBatch(
     int total,
     ColumnVector column,

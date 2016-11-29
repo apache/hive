@@ -8,11 +8,11 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import java.io.IOException;
 import java.util.List;
 
-public class VectorizedStructReader implements VectorizedParquetColumnReader{
+public class VectorizedStructReader implements VectorizedColumnReader {
 
-  List<VectorizedParquetColumnReader> fieldReaders;
+  List<VectorizedColumnReader> fieldReaders;
 
-  public VectorizedStructReader(List<VectorizedParquetColumnReader> fieldReaders) {
+  public VectorizedStructReader(List<VectorizedColumnReader> fieldReaders) {
     this.fieldReaders = fieldReaders;
   }
 

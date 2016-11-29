@@ -95,6 +95,13 @@ public class TestVectorizedColumnReaderBase {
       + "  optional int32 a;\n"
       + "  optional double b;\n"
       + "}\n"
+      + "optional group nested_struct_field {"
+      + "  optional group nsf {"
+      + "    optional int32 c;\n"
+      + "    optional int32 d;\n"
+      + "  }\n"
+      + "  optional double e;\n"
+      + "}\n"
       + "optional group map_field (MAP) {\n"
       + "  repeated group map (MAP_KEY_VALUE) {\n"
       + "    required binary key;\n"
@@ -239,6 +246,11 @@ public class TestVectorizedColumnReaderBase {
       group.addGroup("struct_field")
         .append("a", intVal)
         .append("b", doubleVal);
+
+      Group g = group.addGroup("nested_struct_field");
+
+      g.addGroup("nsf").append("c", intVal).append("d", intVal);
+      g.append("e", doubleVal);
 
       Group mapGroup = group.addGroup("map_field");
       if (i % 13 != 1) {
@@ -467,8 +479,12 @@ public class TestVectorizedColumnReaderBase {
     conf.set(IOConstants.COLUMNS_TYPES, "struct<a:int,b:double>");
     conf.setBoolean(ColumnProjectionUtils.READ_ALL_COLUMNS, false);
     conf.set(ColumnProjectionUtils.READ_COLUMN_IDS_CONF_STR, "0");
-    String schema = "message hive_schema {\n" + "group struct_field {\n" + "  optional int32 a;\n"
-      + "  optional double b;\n" + "}\n" + "}\n";
+    String schema = "message hive_schema {\n"
+      + "group struct_field {\n"
+      + "  optional int32 a;\n"
+      + "  optional double b;\n"
+      + "}\n"
+      + "}\n";
     VectorizedParquetRecordReader reader = createParquetReader(schema, conf);
     VectorizedRowBatch previous = reader.createValue();
     int c = 0;
@@ -484,6 +500,87 @@ public class TestVectorizedColumnReaderBase {
           }
           assertEquals(getIntValue(isDictionaryEncoding, c), cv.vector[i]);
           assertEquals(getDoubleValue(isDictionaryEncoding, c), dv.vector[i], 0);
+          assertFalse(vector.isNull[i]);
+          assertFalse(vector.isRepeating);
+          c++;
+        }
+      }
+      assertEquals("It doesn't exit at expected position", nElements, c);
+    } finally {
+      reader.close();
+    }
+  }
+
+  protected void nestedStructRead0(boolean isDictionaryEncoding) throws Exception {
+    Configuration conf = new Configuration();
+    conf.set(IOConstants.COLUMNS, "nested_struct_field");
+    conf.set(IOConstants.COLUMNS_TYPES, "struct<nsf:struct<c:int,d:int>,e:double>");
+    conf.setBoolean(ColumnProjectionUtils.READ_ALL_COLUMNS, false);
+    conf.set(ColumnProjectionUtils.READ_COLUMN_IDS_CONF_STR, "0");
+    String schema = "message hive_schema {\n"
+      + "group nested_struct_field {\n"
+      + "  optional group nsf {\n"
+      + "    optional int32 c;\n"
+      + "    optional int32 d;\n"
+      + "  }"
+      + "optional double e;\n"
+      + "}\n";
+    VectorizedParquetRecordReader reader = createParquetReader(schema, conf);
+    VectorizedRowBatch previous = reader.createValue();
+    int c = 0;
+    try {
+      while (reader.next(NullWritable.get(), previous)) {
+        StructColumnVector vector = (StructColumnVector) previous.cols[0];
+        StructColumnVector sv = (StructColumnVector) vector.fields[0];
+        LongColumnVector cv = (LongColumnVector) sv.fields[0];
+        LongColumnVector dv = (LongColumnVector) sv.fields[1];
+        DoubleColumnVector ev = (DoubleColumnVector) vector.fields[1];
+
+        for (int i = 0; i < cv.vector.length; i++) {
+          if (c == nElements) {
+            break;
+          }
+          assertEquals(getIntValue(isDictionaryEncoding, c), cv.vector[i]);
+          assertEquals(getIntValue(isDictionaryEncoding, c), dv.vector[i]);
+          assertEquals(getDoubleValue(isDictionaryEncoding, c), ev.vector[i], 0);
+          assertFalse(vector.isNull[i]);
+          assertFalse(vector.isRepeating);
+          c++;
+        }
+      }
+      assertEquals("It doesn't exit at expected position", nElements, c);
+    } finally {
+      reader.close();
+    }
+  }
+
+
+  protected void nestedStructRead1(boolean isDictionaryEncoding) throws Exception {
+    Configuration conf = new Configuration();
+    conf.set(IOConstants.COLUMNS, "nested_struct_field");
+    conf.set(IOConstants.COLUMNS_TYPES, "struct<nsf:struct<c:int>>");
+    conf.setBoolean(ColumnProjectionUtils.READ_ALL_COLUMNS, false);
+    conf.set(ColumnProjectionUtils.READ_COLUMN_IDS_CONF_STR, "0");
+    String schema = "message hive_schema {\n"
+      + "group nested_struct_field {\n"
+      + "  optional group nsf {\n"
+      + "    optional int32 c;\n"
+      + "  }"
+      + "}\n";
+    VectorizedParquetRecordReader reader = createParquetReader(schema, conf);
+    VectorizedRowBatch previous = reader.createValue();
+    int c = 0;
+    try {
+      while (reader.next(NullWritable.get(), previous)) {
+        StructColumnVector vector = (StructColumnVector) previous.cols[0];
+        StructColumnVector sv = (StructColumnVector) vector.fields[0];
+        LongColumnVector cv = (LongColumnVector) sv.fields[0];
+
+        for (int i = 0; i < cv.vector.length; i++) {
+          if (c == nElements) {
+            break;
+          }
+          assertEquals(getIntValue(isDictionaryEncoding, c), cv.vector[i]);
           assertFalse(vector.isNull[i]);
           assertFalse(vector.isRepeating);
           c++;
