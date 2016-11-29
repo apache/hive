@@ -19,6 +19,8 @@
 package org.apache.hadoop.hive.ql.exec;
 
 import static org.apache.hadoop.hive.ql.exec.Utilities.getFileExtension;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -27,7 +29,6 @@ import java.io.File;
 import java.io.IOException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Properties;
@@ -35,38 +36,37 @@ import java.util.UUID;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
-import com.google.common.io.Files;
 
-import junit.framework.Assert;
-import junit.framework.TestCase;
-
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat;
 import org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
-import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
-import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
-import org.apache.hadoop.hive.ql.plan.MapWork;
-import org.apache.hadoop.hive.ql.plan.OperatorDesc;
-import org.apache.hadoop.hive.ql.plan.PartitionDesc;
-import org.apache.hadoop.hive.ql.plan.TableDesc;
+import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.hive.ql.plan.*;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFFromUtcTimestamp;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.mapred.JobConf;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 
 
-public class TestUtilities extends TestCase {
+public class TestUtilities {
+  @Rule
+  public TemporaryFolder temporaryFolder = new TemporaryFolder();
+
+  private static final int NUM_BUCKETS = 3;
+
   public static final Log LOG = LogFactory.getLog(TestUtilities.class);
 
+  @Test
   public void testGetFileExtension() {
     JobConf jc = new JobConf();
     assertEquals("No extension for uncompressed unknown format", "",
@@ -94,6 +94,7 @@ public class TestUtilities extends TestCase {
         getFileExtension(jc, true, new HiveIgnoreKeyTextOutputFormat()));
   }
 
+  @Test
   public void testSerializeTimestamp() {
     Timestamp ts = new Timestamp(1374554702000L);
     ts.setNanos(123456);
@@ -106,6 +107,7 @@ public class TestUtilities extends TestCase {
         Utilities.serializeExpression(desc)).getExprString());
   }
 
+  @Test
   public void testgetDbTableName() throws HiveException{
     String tablename;
     String [] dbtab;
@@ -192,5 +194,69 @@ public class TestUtilities extends TestCase {
         }
       }
     }
+  }
+
+  @Test
+  public void testRemoveTempOrDuplicateFilesOnTezNoDp() throws Exception {
+    List<Path> paths = runRemoveTempOrDuplicateFilesTestCase("tez", false);
+    assertEquals(0, paths.size());
+  }
+
+  @Test
+  public void testRemoveTempOrDuplicateFilesOnMrWithDp() throws Exception {
+    List<Path> paths = runRemoveTempOrDuplicateFilesTestCase("mr", true);
+    assertEquals(NUM_BUCKETS, paths.size());
+  }
+
+  private List<Path> runRemoveTempOrDuplicateFilesTestCase(String executionEngine, boolean dPEnabled)
+      throws Exception {
+    Configuration hconf = new HiveConf(this.getClass());
+    // do this to verify that Utilities.removeTempOrDuplicateFiles does not revert to default scheme information
+    hconf.set("fs.defaultFS", "hdfs://should-not-be-used/");
+    hconf.set(HiveConf.ConfVars.HIVE_EXECUTION_ENGINE.varname, executionEngine);
+    FileSystem localFs = FileSystem.getLocal(hconf);
+    DynamicPartitionCtx dpCtx = getDynamicPartitionCtx(dPEnabled);
+    Path tempDirPath = setupTempDirWithSingleOutputFile(hconf);
+    FileSinkDesc conf = getFileSinkDesc(tempDirPath);
+
+    List<Path> paths = Utilities.removeTempOrDuplicateFiles(localFs, tempDirPath, dpCtx);
+
+    String expectedScheme = tempDirPath.toUri().getScheme();
+    String expectedAuthority = tempDirPath.toUri().getAuthority();
+    assertPathsMatchSchemeAndAuthority(expectedScheme, expectedAuthority, paths);
+
+    return paths;
+  }
+
+  private void assertPathsMatchSchemeAndAuthority(String expectedScheme, String expectedAuthority, List<Path> paths) {
+    for (Path path : paths) {
+      assertEquals(path.toUri().getScheme().toLowerCase(), expectedScheme.toLowerCase());
+      assertEquals(path.toUri().getAuthority(), expectedAuthority);
+    }
+  }
+
+  private DynamicPartitionCtx getDynamicPartitionCtx(boolean dPEnabled) {
+    DynamicPartitionCtx dpCtx = null;
+    if (dPEnabled) {
+      dpCtx = mock(DynamicPartitionCtx.class);
+      when(dpCtx.getNumDPCols()).thenReturn(0);
+      when(dpCtx.getNumBuckets()).thenReturn(NUM_BUCKETS);
+    }
+    return dpCtx;
+  }
+
+  private FileSinkDesc getFileSinkDesc(Path tempDirPath) {
+    Table table = mock(Table.class);
+    when(table.getNumBuckets()).thenReturn(NUM_BUCKETS);
+    FileSinkDesc conf = new FileSinkDesc(tempDirPath, null, false);
+    conf.setTable(table);
+    return conf;
+  }
+
+  private Path setupTempDirWithSingleOutputFile(Configuration hconf) throws IOException {
+    Path tempDirPath = new Path("file://" + temporaryFolder.newFolder().getAbsolutePath());
+    Path taskOutputPath = new Path(tempDirPath, Utilities.getTaskId(hconf));
+    FileSystem.getLocal(hconf).create(taskOutputPath).close();
+    return tempDirPath;
   }
 }
