@@ -55,12 +55,12 @@ public class CliOptionsProcessor {
 
     // Substitution option -d, --define
     options.addOption(OptionBuilder.withValueSeparator().hasArgs(2).withArgName("key=value")
-        .withLongOpt("define").withDescription("Variable subsitution to apply to hive commands. e" +
+        .withLongOpt("define").withDescription("Variable substitution to apply to Hive commands. e" +
             ".g. -d A=B or --define A=B").create('d'));
 
     // Substitution option --hivevar
     options.addOption(OptionBuilder.withValueSeparator().hasArgs(2).withArgName("key=value")
-        .withLongOpt("hivevar").withDescription("Variable subsitution to apply to hive commands. " +
+        .withLongOpt("hivevar").withDescription("Variable substitution to apply to Hive commands. " +
             "e.g. --hivevar A=B").create());
 
     // [-S|--silent]

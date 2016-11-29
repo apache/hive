@@ -18,7 +18,7 @@
   echo "Usage ./hive <parameters> --service serviceName <service parameters>"
   echo "Service List: $SERVICE_LIST"
   echo "Parameters parsed:"
-  echo "  --auxpath : Auxillary jars "
+  echo "  --auxpath : Auxiliary jars "
   echo "  --config : Hive configuration directory"
   echo "  --service : Starts specific service/component. cli is default"
   echo "Parameters used:"
