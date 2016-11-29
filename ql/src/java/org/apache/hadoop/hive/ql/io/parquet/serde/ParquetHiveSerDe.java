@@ -16,14 +16,13 @@ package org.apache.hadoop.hive.ql.io.parquet.serde;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.Set;
 
 import com.google.common.base.Preconditions;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.ql.optimizer.FieldNode;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
@@ -118,8 +117,9 @@ public class ParquetHiveSerDe extends AbstractSerDe {
         (StructTypeInfo) TypeInfoFactory.getStructTypeInfo(columnNames, columnTypes);
     StructTypeInfo prunedTypeInfo = null;
     if (conf != null) {
-      String prunedColumnPaths = conf.get(ColumnProjectionUtils.READ_NESTED_COLUMN_PATH_CONF_STR);
-      if (prunedColumnPaths != null) {
+      String rawPrunedColumnPaths = conf.get(ColumnProjectionUtils.READ_NESTED_COLUMN_PATH_CONF_STR);
+      if (rawPrunedColumnPaths != null) {
+        List<String> prunedColumnPaths = processRawPrunedPaths(rawPrunedColumnPaths);
         prunedTypeInfo = pruneFromPaths(completeTypeInfo, prunedColumnPaths);
       }
     }
@@ -179,11 +179,27 @@ public class ParquetHiveSerDe extends AbstractSerDe {
   }
 
   /**
+   * Given a list of raw pruned paths separated by ',', return a list of merged pruned paths.
+   * For instance, if the 'prunedPaths' is "s.a, s, s", this returns ["s"].
+   */
+  private static List<String> processRawPrunedPaths(String prunedPaths) {
+    List<FieldNode> fieldNodes = new ArrayList<>();
+    for (String p : prunedPaths.split(",")) {
+      fieldNodes = FieldNode.mergeFieldNodes(fieldNodes, FieldNode.fromPath(p));
+    }
+    List<String> prunedPathList = new ArrayList<>();
+    for (FieldNode fn : fieldNodes) {
+      prunedPathList.addAll(fn.toPaths());
+    }
+    return prunedPathList;
+  }
+
+  /**
    * Given a complete struct type info and pruned paths containing selected fields
    * from the type info, return a pruned struct type info only with the selected fields.
    *
    * For instance, if 'originalTypeInfo' is: s:struct<a:struct<b:int, c:boolean>, d:string>
-   *   and 'prunedPaths' is "s.a.b,s.d", then the result will be:
+   *   and 'prunedPaths' is ["s.a.b,s.d"], then the result will be:
    *   s:struct<a:struct<b:int>, d:string>
    *
    * @param originalTypeInfo the complete struct type info
@@ -191,13 +207,11 @@ public class ParquetHiveSerDe extends AbstractSerDe {
    * @return the pruned struct type info
    */
   private static StructTypeInfo pruneFromPaths(
-      StructTypeInfo originalTypeInfo, String prunedPaths) {
+      StructTypeInfo originalTypeInfo, List<String> prunedPaths) {
     PrunedStructTypeInfo prunedTypeInfo = new PrunedStructTypeInfo(originalTypeInfo);
-    Set<String> prunedPathSet = new HashSet<>(Arrays.asList(prunedPaths.split(",")));
-    for (String path : prunedPathSet) {
+    for (String path : prunedPaths) {
       pruneFromSinglePath(prunedTypeInfo, path);
     }
-
     return prunedTypeInfo.prune();
   }
 

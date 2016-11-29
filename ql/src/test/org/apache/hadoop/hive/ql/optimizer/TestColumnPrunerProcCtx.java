@@ -218,16 +218,16 @@ public class TestColumnPrunerProcCtx {
   public void testMergeFieldNode() {
     FieldNode fn1 = FieldNode.fromPath("s.a.b");
     FieldNode fn2 = FieldNode.fromPath("s.a");
-    assertEquals(fn2, ColumnPrunerProcCtx.mergeFieldNode(fn1, fn2));
-    assertEquals(fn2, ColumnPrunerProcCtx.mergeFieldNode(fn2, fn1));
+    assertEquals(fn2, FieldNode.mergeFieldNode(fn1, fn2));
+    assertEquals(fn2, FieldNode.mergeFieldNode(fn2, fn1));
 
     fn1 = FieldNode.fromPath("s.a");
     fn2 = FieldNode.fromPath("p.b");
-    assertNull(ColumnPrunerProcCtx.mergeFieldNode(fn1, fn2));
+    assertNull(FieldNode.mergeFieldNode(fn1, fn2));
 
     fn1 = FieldNode.fromPath("s.a.b");
     fn2 = FieldNode.fromPath("s.a.c");
-    FieldNode fn = ColumnPrunerProcCtx.mergeFieldNode(fn1, fn2);
+    FieldNode fn = FieldNode.mergeFieldNode(fn1, fn2);
     assertEquals("s", fn.getFieldName());
     FieldNode childFn = fn.getNodes().get(0);
     assertEquals("a", childFn.getFieldName());

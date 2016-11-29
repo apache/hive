@@ -82,8 +82,9 @@ import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 
 import static org.apache.hadoop.hive.ql.optimizer.ColumnPrunerProcCtx.fromColumnNames;
 import static org.apache.hadoop.hive.ql.optimizer.ColumnPrunerProcCtx.lookupColumn;
-import static org.apache.hadoop.hive.ql.optimizer.ColumnPrunerProcCtx.mergeFieldNodes;
+import static org.apache.hadoop.hive.ql.optimizer.ColumnPrunerProcCtx.mergeFieldNodesWithDesc;
 import static org.apache.hadoop.hive.ql.optimizer.ColumnPrunerProcCtx.toColumnNames;
+import static org.apache.hadoop.hive.ql.optimizer.FieldNode.mergeFieldNodes;
 
 /**
  * Factory for generating the different node processors used by ColumnPruner.
@@ -104,7 +105,7 @@ public final class ColumnPrunerProcFactory {
       FilterOperator op = (FilterOperator) nd;
       ColumnPrunerProcCtx cppCtx = (ColumnPrunerProcCtx) ctx;
       ExprNodeDesc condn = op.getConf().getPredicate();
-      List<FieldNode> filterOpPrunedColLists = mergeFieldNodes(cppCtx.genColLists(op), condn);
+      List<FieldNode> filterOpPrunedColLists = mergeFieldNodesWithDesc(cppCtx.genColLists(op), condn);
       List<FieldNode> filterOpPrunedColListsOrderPreserved = preserveColumnOrder(op,
           filterOpPrunedColLists);
       cppCtx.getPrunedColLists().put(op,
@@ -139,14 +140,14 @@ public final class ColumnPrunerProcFactory {
 
       ArrayList<ExprNodeDesc> keys = conf.getKeys();
       for (ExprNodeDesc key : keys) {
-        colLists = mergeFieldNodes(colLists, key);
+        colLists = mergeFieldNodesWithDesc(colLists, key);
       }
 
       ArrayList<AggregationDesc> aggrs = conf.getAggregators();
       for (AggregationDesc aggr : aggrs) {
         ArrayList<ExprNodeDesc> params = aggr.getParameters();
         for (ExprNodeDesc param : params) {
-          colLists = mergeFieldNodes(colLists, param);
+          colLists = mergeFieldNodesWithDesc(colLists, param);
         }
       }
 
@@ -388,20 +389,20 @@ public final class ColumnPrunerProcFactory {
             }
             for (PTFExpressionDef arg : wDef.getArgs()) {
               ExprNodeDesc exprNode = arg.getExprNode();
-              prunedCols = mergeFieldNodes(prunedCols, exprNode);
+              prunedCols = mergeFieldNodesWithDesc(prunedCols, exprNode);
             }
           }
         }
         if (tDef.getPartition() != null) {
           for (PTFExpressionDef col : tDef.getPartition().getExpressions()) {
             ExprNodeDesc exprNode = col.getExprNode();
-            prunedCols = mergeFieldNodes(prunedCols, exprNode);
+            prunedCols = mergeFieldNodesWithDesc(prunedCols, exprNode);
           }
         }
         if (tDef.getOrder() != null) {
           for (PTFExpressionDef col : tDef.getOrder().getExpressions()) {
             ExprNodeDesc exprNode = col.getExprNode();
-            prunedCols = mergeFieldNodes(prunedCols, exprNode);
+            prunedCols = mergeFieldNodesWithDesc(prunedCols, exprNode);
           }
         }
       } else {
@@ -576,10 +577,10 @@ public final class ColumnPrunerProcFactory {
       ArrayList<ExprNodeDesc> keys = conf.getKeyCols();
       LOG.debug("Reduce Sink Operator " + op.getIdentifier() + " key:" + keys);
       for (ExprNodeDesc key : keys) {
-        colLists = mergeFieldNodes(colLists, key);
+        colLists = mergeFieldNodesWithDesc(colLists, key);
       }
       for (ExprNodeDesc key : conf.getPartitionCols()) {
-        colLists = mergeFieldNodes(colLists, key);
+        colLists = mergeFieldNodesWithDesc(colLists, key);
       }
 
       assert op.getNumChild() == 1;
@@ -607,7 +608,7 @@ public final class ColumnPrunerProcFactory {
             continue;
           }
           flags[index] = true;
-          colLists = mergeFieldNodes(colLists, valCols.get(index));
+          colLists = mergeFieldNodesWithDesc(colLists, valCols.get(index));
         }
 
         Collections.sort(colLists, new Comparator<FieldNode>() {
@@ -624,7 +625,7 @@ public final class ColumnPrunerProcFactory {
       // Reduce Sink contains the columns needed - no need to aggregate from
       // children
       for (ExprNodeDesc val : valCols) {
-        colLists = mergeFieldNodes(colLists, val);
+        colLists = mergeFieldNodesWithDesc(colLists, val);
       }
 
       cppCtx.getPrunedColLists().put(op, colLists);
@@ -675,7 +676,7 @@ public final class ColumnPrunerProcFactory {
         // colExprMap.size() == size of cols from SEL(*) branch
         if (index >= 0 && index < numSelColumns) {
           ExprNodeDesc transformed = colExprMap.get(col.getFieldName());
-          colsAfterReplacement = mergeFieldNodes(colsAfterReplacement, transformed);
+          colsAfterReplacement = mergeFieldNodesWithDesc(colsAfterReplacement, transformed);
           newCols.add(col);
         }
       }
@@ -1101,7 +1102,7 @@ public final class ColumnPrunerProcFactory {
       Byte tag = entry.getKey();
       for (ExprNodeDesc desc : entry.getValue()) {
         List<FieldNode> cols = prunedColLists.get(tag);
-        cols = mergeFieldNodes(cols, desc);
+        cols = mergeFieldNodesWithDesc(cols, desc);
         prunedColLists.put(tag, cols);
      }
     }
@@ -1130,7 +1131,7 @@ public final class ColumnPrunerProcFactory {
           prunedRSList = new ArrayList<>();
           prunedColLists.put(tag, prunedRSList);
         }
-        prunedColLists.put(tag, mergeFieldNodes(prunedRSList, desc));
+        prunedColLists.put(tag, mergeFieldNodesWithDesc(prunedRSList, desc));
         outputCols.add(internalName);
         newColExprMap.put(internalName, desc);
       }
@@ -1164,7 +1165,7 @@ public final class ColumnPrunerProcFactory {
           ExprNodeDesc desc = lists.get(j);
           Byte tag = entry.getKey();
           List<FieldNode> cols = prunedColLists.get(tag);
-          cols = mergeFieldNodes(cols, desc);
+          cols = mergeFieldNodesWithDesc(cols, desc);
           prunedColLists.put(tag, cols);
         }
       }

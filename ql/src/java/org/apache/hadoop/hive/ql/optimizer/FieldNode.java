@@ -18,6 +18,8 @@
 
 package org.apache.hadoop.hive.ql.optimizer;
 
+import com.google.common.base.Preconditions;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -87,6 +89,63 @@ public class FieldNode {
     FieldNode fn = new FieldNode(parts[index]);
     fn.addFieldNodes(fromPath(parts, index + 1));
     return fn;
+  }
+
+  /**
+   * Merge the field node 'fn' into list 'nodes', and return the result list.
+   */
+  public static List<FieldNode> mergeFieldNodes(List<FieldNode> nodes, FieldNode fn) {
+    List<FieldNode> result = new ArrayList<>(nodes);
+    for (int i = 0; i < nodes.size(); ++i) {
+      FieldNode mfn = mergeFieldNode(nodes.get(i), fn);
+      if (mfn != null) {
+        result.set(i, mfn);
+        return result;
+      }
+    }
+    result.add(fn);
+    return result;
+  }
+
+  public static List<FieldNode> mergeFieldNodes(List<FieldNode> left, List<FieldNode> right) {
+    List<FieldNode> result = new ArrayList<>(left);
+    for (FieldNode fn : right) {
+      result = mergeFieldNodes(result, fn);
+    }
+    return result;
+  }
+
+  /**
+   * Merge the field nodes 'left' and 'right' and return the merged node.
+   * Return null if the two nodes cannot be merged.
+   *
+   * There are basically 3 cases here:
+   * 1. 'left' and 'right' have the same depth, e.g., 'left' is s[b[c]] and
+   *   'right' is s[b[d]]. In this case, the merged node is s[b[c,d]]
+   * 2. 'left' has larger depth than 'right', e.g., 'left' is s[b] while
+   *   'right' is s[b[d]]. In this case, the merged node is s[b]
+   * 3. 'left' has smaller depth than 'right', e.g., 'left' is s[b[c]] while
+   *   'right' is s[b]. This is the opposite case of 2), and similarly,
+   *   the merged node is s[b].
+   *
+   * A example where the two inputs cannot be merged is, 'left' is s[b] while
+   *   'right' is p[c].
+   */
+  public static FieldNode mergeFieldNode(FieldNode left, FieldNode right) {
+    Preconditions.checkArgument(left.getFieldName() != null && right.getFieldName() != null);
+    if (!left.getFieldName().equals(right.getFieldName())) {
+      return null;
+    }
+    if (left.getNodes().isEmpty()) {
+      return left;
+    } else if (right.getNodes().isEmpty()) {
+      return right;
+    } else {
+      // Both are not empty. Merge two lists.
+      FieldNode result = new FieldNode(left.getFieldName());
+      result.setNodes(mergeFieldNodes(left.getNodes(), right.getNodes()));
+      return result;
+    }
   }
 
   @Override

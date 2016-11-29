@@ -24,7 +24,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.google.common.base.Preconditions;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.CommonJoinOperator;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
@@ -42,6 +41,8 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeFieldDesc;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.SelectDesc;
+
+import static org.apache.hadoop.hive.ql.optimizer.FieldNode.mergeFieldNodes;
 
 /**
  * This class implements the processor context for Column Pruner.
@@ -163,7 +164,7 @@ public class ColumnPrunerProcCtx implements NodeProcessorCtx {
     } else {
       List<ExprNodeDesc> exprList = conf.getColList();
         for (ExprNodeDesc expr : exprList) {
-          cols = mergeFieldNodes(cols, expr);
+          cols = mergeFieldNodesWithDesc(cols, expr);
         }
     }
     return cols;
@@ -196,7 +197,7 @@ public class ColumnPrunerProcCtx implements NodeProcessorCtx {
     List<String> outputColumnNames = conf.getOutputColumnNames();
     for (int i = 0; i < outputColumnNames.size(); i++) {
       if (colList == null) {
-        cols = mergeFieldNodes(cols, selectExprs.get(i));
+        cols = mergeFieldNodesWithDesc(cols, selectExprs.get(i));
       } else if (lookupColumn(colList, outputColumnNames.get(i)) != null) {
         // In SemanticAnalyzer we inject SEL op before aggregation. The columns
         // in this SEL are derived from the table schema, and do not reflect the
@@ -209,7 +210,7 @@ public class ColumnPrunerProcCtx implements NodeProcessorCtx {
           fn.setNodes(childFn.getNodes());
           cols = mergeFieldNodes(cols, fn);
         } else {
-          cols = mergeFieldNodes(cols, selectExprs.get(i));
+          cols = mergeFieldNodesWithDesc(cols, selectExprs.get(i));
         }
       }
     }
@@ -349,64 +350,7 @@ public class ColumnPrunerProcCtx implements NodeProcessorCtx {
     return null;
   }
 
-  /**
-   * Merge the field node 'fn' into list 'nodes', and return the result list.
-   */
-  static List<FieldNode> mergeFieldNodes(List<FieldNode> nodes, FieldNode fn) {
-    List<FieldNode> result = new ArrayList<>(nodes);
-    for (int i = 0; i < nodes.size(); ++i) {
-      FieldNode mfn = mergeFieldNode(nodes.get(i), fn);
-      if (mfn != null) {
-        result.set(i, mfn);
-        return result;
-      }
-    }
-    result.add(fn);
-    return result;
-  }
-
-  static List<FieldNode> mergeFieldNodes(List<FieldNode> left, ExprNodeDesc desc) {
-    return mergeFieldNodes(left, getNestedColPathByDesc(desc));
-  }
-
-  static List<FieldNode> mergeFieldNodes(List<FieldNode> left, List<FieldNode> right) {
-    List<FieldNode> result = new ArrayList<>(left);
-    for (FieldNode fn : right) {
-      result = mergeFieldNodes(result, fn);
-    }
-    return result;
-  }
-
-  /**
-   * Merge the field nodes 'left' and 'right' and return the merged node.
-   * Return null if the two nodes cannot be merged.
-   *
-   * There are basically 3 cases here:
-   * 1. 'left' and 'right' have the same depth, e.g., 'left' is s[b[c]] and
-   *   'right' is s[b[d]]. In this case, the merged node is s[b[c,d]]
-   * 2. 'left' has larger depth than 'right', e.g., 'left' is s[b] while
-   *   'right' is s[b[d]]. In this case, the merged node is s[b]
-   * 3. 'left' has smaller depth than 'right', e.g., 'left' is s[b[c]] while
-   *   'right' is s[b]. This is the opposite case of 2), and similarly,
-   *   the merged node is s[b].
-   *
-   * A example where the two inputs cannot be merged is, 'left' is s[b] while
-   *   'right' is p[c].
-   */
-  static FieldNode mergeFieldNode(FieldNode left, FieldNode right) {
-    Preconditions.checkArgument(left.getFieldName() != null && right.getFieldName() != null);
-    if (!left.getFieldName().equals(right.getFieldName())) {
-      return null;
-    }
-    if (left.getNodes().isEmpty()) {
-      return left;
-    } else if (right.getNodes().isEmpty()) {
-      return right;
-    } else {
-      // Both are not empty. Merge two lists.
-      FieldNode result = new FieldNode(left.getFieldName());
-      result.setNodes(mergeFieldNodes(left.getNodes(), right.getNodes()));
-      return result;
-    }
+  static List<FieldNode> mergeFieldNodesWithDesc(List<FieldNode> left, ExprNodeDesc desc) {
+    return FieldNode.mergeFieldNodes(left, getNestedColPathByDesc(desc));
   }
 }
