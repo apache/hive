@@ -2934,14 +2934,14 @@ private void constructOneLBLocationMap(FileStatus fSta,
     int counter = 1;
     if (!isRenameAllowed || isBlobStoragePath) {
       while (destFs.exists(destFilePath)) {
-        destFilePath =  new Path(destDirPath, name + ("_copy_" + counter) + type);
+        destFilePath =  new Path(destDirPath, name + ("_copy_" + counter) + (!type.isEmpty() ? "." + type : ""));
         counter++;
       }
     }
 
     if (isRenameAllowed) {
       while (!destFs.rename(sourcePath, destFilePath)) {
-        destFilePath =  new Path(destDirPath, name + ("_copy_" + counter) + type);
+        destFilePath =  new Path(destDirPath, name + ("_copy_" + counter) + (!type.isEmpty() ? "." + type : ""));
         counter++;
       }
     } else if (isSrcLocal) {
