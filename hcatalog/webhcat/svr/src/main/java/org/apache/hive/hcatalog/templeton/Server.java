@@ -923,16 +923,16 @@ public class Server {
    * 1. curl -s 'http://localhost:50111/templeton/v1/jobs?user.name=hsubramaniyan'
    * Return all the Job IDs submitted by hsubramaniyan
    * 2. curl -s
-   * 'http://localhost:50111/templeton/v1/jobs?user.name=hsubramaniyan&showall=true'
+   * 'http://localhost:50111/templeton/v1/jobs?user.name=hsubramaniyan%26showall=true'
    * Return all the Job IDs that are visible to hsubramaniyan
    * 3. curl -s
-   * 'http://localhost:50111/templeton/v1/jobs?user.name=hsubramaniyan&jobid=job_201312091733_0003'
+   * 'http://localhost:50111/templeton/v1/jobs?user.name=hsubramaniyan%26jobid=job_201312091733_0003'
    * Return all the Job IDs for hsubramaniyan after job_201312091733_0003.
    * 4. curl -s 'http://localhost:50111/templeton/v1/jobs?
-   * user.name=hsubramaniyan&jobid=job_201312091733_0003&numrecords=5'
+   * user.name=hsubramaniyan%26jobid=job_201312091733_0003%26numrecords=5'
    * Return the first 5(atmost) Job IDs submitted by hsubramaniyan after job_201312091733_0003.
    * 5.  curl -s
-   * 'http://localhost:50111/templeton/v1/jobs?user.name=hsubramaniyan&numrecords=5'
+   * 'http://localhost:50111/templeton/v1/jobs?user.name=hsubramaniyan%26numrecords=5'
    * Return the first 5(atmost) Job IDs submitted by hsubramaniyan after sorting the Job ID list
    * lexicographically.
    * </p>
