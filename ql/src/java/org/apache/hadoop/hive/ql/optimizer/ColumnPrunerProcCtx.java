@@ -198,19 +198,21 @@ public class ColumnPrunerProcCtx implements NodeProcessorCtx {
     for (int i = 0; i < outputColumnNames.size(); i++) {
       if (colList == null) {
         cols = mergeFieldNodesWithDesc(cols, selectExprs.get(i));
-      } else if (lookupColumn(colList, outputColumnNames.get(i)) != null) {
-        // In SemanticAnalyzer we inject SEL op before aggregation. The columns
-        // in this SEL are derived from the table schema, and do not reflect the
-        // actual columns being selected in the current query.
-        // In this case, we skip the merge and just use the path from the child ops.
+      } else {
         FieldNode childFn = lookupColumn(colList, outputColumnNames.get(i));
-        ExprNodeDesc desc = selectExprs.get(i);
-        if (desc instanceof ExprNodeColumnDesc && ((ExprNodeColumnDesc) desc).getIsGenerated()) {
-          FieldNode fn = new FieldNode(((ExprNodeColumnDesc) desc).getColumn());
-          fn.setNodes(childFn.getNodes());
-          cols = mergeFieldNodes(cols, fn);
-        } else {
-          cols = mergeFieldNodesWithDesc(cols, selectExprs.get(i));
+        if (childFn != null) {
+          // In SemanticAnalyzer we inject SEL op before aggregation. The columns
+          // in this SEL are derived from the table schema, and do not reflect the
+          // actual columns being selected in the current query.
+          // In this case, we skip the merge and just use the path from the child ops.
+          ExprNodeDesc desc = selectExprs.get(i);
+          if (desc instanceof ExprNodeColumnDesc && ((ExprNodeColumnDesc) desc).getIsGenerated()) {
+            FieldNode fn = new FieldNode(((ExprNodeColumnDesc) desc).getColumn());
+            fn.setNodes(childFn.getNodes());
+            cols = mergeFieldNodes(cols, fn);
+          } else {
+            cols = mergeFieldNodesWithDesc(cols, selectExprs.get(i));
+          }
         }
       }
     }

@@ -265,12 +265,11 @@ public class DataWritableReadSupport extends ReadSupport<ArrayWritable> {
 
   /**
    * Return the columns which contains required nested attribute level
-   * e.g.
-   * Given struct a <x:int, y:int> and a is required while y is not, so the method will return a
-   * who contains the attribute x
+   * E.g., given struct a:<x:int, y:int> while 'x' is required and 'y' is not, the method will return
+   * a pruned struct for 'a' which only contains the attribute 'x'
    *
    * @param nestedColPaths the paths for required nested attribute
-   * @return a map from the column to its selected nested column paths
+   * @return a map from the column to its selected nested column paths, of which the keys are all lower-cased.
    */
   private static Map<String, FieldNode> getPrunedNestedColumns(Set<String> nestedColPaths) {
     Map<String, FieldNode> resMap = new HashMap<>();
