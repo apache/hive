@@ -1516,8 +1516,10 @@ public final class GenMapRedUtils {
     moveWork1.setCheckFileFormat(moveWork2.getCheckFileFormat());
 
     // Link task2 dependent tasks to MoveTask1
-    for (Task dependentTask : moveTask2.getDependentTasks()) {
-      moveTask1.addDependentTask(dependentTask);
+    if (moveTask2.getDependentTasks() != null) {
+      for (Task dependentTask : moveTask2.getDependentTasks()) {
+        moveTask1.addDependentTask(dependentTask);
+      }
     }
   }
 
