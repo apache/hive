@@ -51,6 +51,7 @@ import org.apache.hadoop.mapreduce.RecordReader;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.joda.time.Interval;
+import org.joda.time.Period;
 import org.joda.time.chrono.ISOChronology;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -160,7 +161,10 @@ public class HiveDruidQueryBasedInputFormat extends InputFormat<NullWritable, Dr
           String druidQuery, Path dummyPath) throws IOException {
     final int selectThreshold = (int) HiveConf.getIntVar(
             conf, HiveConf.ConfVars.HIVE_DRUID_SELECT_THRESHOLD);
-
+    final int numConnection = HiveConf
+            .getIntVar(conf, HiveConf.ConfVars.HIVE_DRUID_NUM_HTTP_CONNECTION);
+    final Period readTimeout = new Period(
+            HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_DRUID_HTTP_READ_TIMEOUT));
     SelectQuery query;
     try {
       query = DruidStorageHandlerUtils.JSON_MAPPER.readValue(druidQuery, SelectQuery.class);
@@ -184,7 +188,9 @@ public class HiveDruidQueryBasedInputFormat extends InputFormat<NullWritable, Dr
     metadataBuilder.analysisTypes();
     SegmentMetadataQuery metadataQuery = metadataBuilder.build();
 
-    HttpClient client = HttpClientInit.createClient(HttpClientConfig.builder().build(), new Lifecycle());
+    HttpClient client = HttpClientInit.createClient(
+            HttpClientConfig.builder().withNumConnections(numConnection)
+                    .withReadTimeout(readTimeout.toStandardDuration()).build(), new Lifecycle());
     InputStream response;
     try {
       response = DruidStorageHandlerUtils.submitRequest(client,
