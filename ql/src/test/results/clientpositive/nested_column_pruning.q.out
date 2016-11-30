@@ -113,7 +113,6 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: nested_tbl_1
-            NestedColumnPaths: a
             Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: a (type: int)
@@ -156,7 +155,6 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: nested_tbl_1
-            NestedColumnPaths: s1.f1
             Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: s1.f1 (type: boolean)
@@ -199,7 +197,6 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: nested_tbl_1
-            NestedColumnPaths: s1.f1, s1.f2
             Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: s1.f1 (type: boolean), s1.f2 (type: string)
@@ -244,7 +241,6 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: nested_tbl_1
-            NestedColumnPaths: s1.f3
             Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: s1.f3 (type: struct<f4:int,f5:double>), s1.f3.f4 (type: int)
@@ -289,7 +285,6 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: nested_tbl_1
-            NestedColumnPaths: s1.f3.f5
             Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: s1.f3.f5 (type: double)
@@ -334,7 +329,6 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: nested_tbl_1
-            NestedColumnPaths: s1.f3.f4, s2.f8.f9
             Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: s1.f3.f4 (type: int), s2.f8.f9 (type: boolean)
@@ -381,7 +375,6 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: nested_tbl_1
-            NestedColumnPaths: s1.f2, s1.f1
             Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (s1.f1 = false) (type: boolean)
@@ -427,7 +420,6 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: nested_tbl_1
-            NestedColumnPaths: s1.f3.f5, s1.f3.f4
             Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (s1.f3.f4 = 4) (type: boolean)
@@ -473,7 +465,6 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: nested_tbl_1
-            NestedColumnPaths: s1.f2, s2.f8
             Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: ((s1.f2 = 'foo') and (size(s2.f8.f10) > 1) and (s2.f8.f11['key1'] = true)) (type: boolean)
@@ -527,7 +518,6 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: nested_tbl_1
-            NestedColumnPaths: s3, s2.f8.f10
             Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
             Lateral View Forward
               Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
@@ -669,7 +659,6 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: nested_tbl_1
-            NestedColumnPaths: s2.f8.f10, s1.f3.f4
             Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: (s2.f8.f10[1] pmod s1.f3.f4) (type: int)
@@ -716,7 +705,6 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: nested_tbl_1
-            NestedColumnPaths: s1.f3.f5, s1.f3.f4
             Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: s1 (type: struct<f1:boolean,f2:string,f3:struct<f4:int,f5:double>,f6:int>)
@@ -778,7 +766,6 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: nested_tbl_1
-            NestedColumnPaths: s1.f3
             Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: s1 (type: struct<f1:boolean,f2:string,f3:struct<f4:int,f5:double>,f6:int>)
@@ -841,7 +828,6 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: nested_tbl_1
-            NestedColumnPaths: s1.f3
             Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: s1 (type: struct<f1:boolean,f2:string,f3:struct<f4:int,f5:double>,f6:int>)
@@ -934,7 +920,6 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: t1
-            NestedColumnPaths: s1
             Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: s1.f3.f4 is not null (type: boolean)
@@ -947,7 +932,6 @@ STAGE PLANS:
                 value expressions: s1 (type: struct<f1:boolean,f2:string,f3:struct<f4:int,f5:double>,f6:int>)
           TableScan
             alias: t2
-            NestedColumnPaths: s1.f6, s2
             Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (s1.f6 is not null and (s2.f8.f9 = false)) (type: boolean)
@@ -1022,7 +1006,6 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: t1
-            NestedColumnPaths: s1
             Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: s1.f3.f4 is not null (type: boolean)
@@ -1035,7 +1018,6 @@ STAGE PLANS:
                 value expressions: s1 (type: struct<f1:boolean,f2:string,f3:struct<f4:int,f5:double>,f6:int>)
           TableScan
             alias: t2
-            NestedColumnPaths: s1.f6, s2
             Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (s1.f6 is not null and (s2.f8.f9 = true)) (type: boolean)

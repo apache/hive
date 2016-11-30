@@ -306,7 +306,7 @@ public class DataWritableReadSupport extends ReadSupport<ArrayWritable> {
     }
     Map<String, FieldNode> fieldMap = new HashMap<>();
     for (FieldNode n : nodes) {
-      fieldMap.put(n.getFieldName(), n);
+      fieldMap.put(n.getFieldName().toLowerCase(), n);
     }
     for (Type type : types) {
       String tn = type.getName().toLowerCase();
