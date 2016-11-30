@@ -210,8 +210,9 @@ public interface HiveTxnManager {
   long getCurrentTxnId();
 
   /**
-   * 0..N Id of current statement within currently opened transaction
+   * Should be though of more as a unique write operation ID in a given txn (at QueryPlan level).
+   * Each statement writing data within a multi statement txn should have a unique WriteId.
+   * Even a single statement, (e.g. Merge, multi-insert may generates several writes).
    */
-  int getStatementId();
-
+  int getWriteIdAndIncrement();
 }

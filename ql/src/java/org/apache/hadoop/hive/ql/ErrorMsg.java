@@ -399,7 +399,7 @@ public enum ErrorMsg {
   DISTINCT_NOT_SUPPORTED(10285, "Distinct keyword is not support in current context"),
   NONACID_COMPACTION_NOT_SUPPORTED(10286, "Compaction is not allowed on non-ACID table {0}.{1}", true),
 
-  UPDATEDELETE_PARSE_ERROR(10290, "Encountered parse error while parsing rewritten update or " +
+  UPDATEDELETE_PARSE_ERROR(10290, "Encountered parse error while parsing rewritten merge/update or " +
       "delete query"),
   UPDATEDELETE_IO_ERROR(10291, "Encountered I/O error while parsing rewritten update or " +
       "delete query"),
@@ -451,6 +451,11 @@ public enum ErrorMsg {
   INVALID_PK_SYNTAX(10326, "Invalid Primary Key syntax"),
   ACID_NOT_ENOUGH_HISTORY(10327, "Not enough history available for ({0},{1}).  " +
     "Oldest available base: {2}", true),
+  UPDATE_DELETE_VIEW(10402, "You cannot update or delete records in a view"),
+  MERGE_PREDIACTE_REQUIRED(10404, "MERGE statement with both UPDATE and DELETE clauses " +
+    "requires \"AND <boolean>\" on the 1st WHEN MATCHED clause of <{0}>", true),
+  MERGE_TOO_MANY_DELETE(10405, "MERGE statment can have at most 1 WHEN MATCHED ... DELETE clause: <{0}>", true),
+  MERGE_TOO_MANY_UPDATE(10406, "MERGE statment can have at most 1 WHEN MATCHED ... UPDATE clause: <{0}>", true),
   //========================== 20000 range starts here ========================//
   SCRIPT_INIT_ERROR(20000, "Unable to initialize custom script."),
   SCRIPT_IO_ERROR(20001, "An error occurred while reading or writing to your custom script. "
@@ -716,6 +721,11 @@ public enum ErrorMsg {
     sb.append(getLine(tree));
     sb.append(":");
     sb.append(getCharPositionInLine(tree));
+  }
+  public static String renderPosition(ASTNode n) {
+    StringBuilder sb = new StringBuilder();
+    ErrorMsg.renderPosition(sb, n);
+    return sb.toString();
   }
 
   public String getMsg(Tree tree) {

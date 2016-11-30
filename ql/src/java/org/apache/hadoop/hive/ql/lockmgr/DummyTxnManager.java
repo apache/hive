@@ -63,7 +63,7 @@ class DummyTxnManager extends HiveTxnManagerImpl {
   }
 
   @Override
-  public int getStatementId() {
+  public int getWriteIdAndIncrement() {
     return 0;
   }
   @Override

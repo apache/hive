@@ -42,6 +42,7 @@ public class ASTNode extends CommonTree implements Node,Serializable {
   private transient ASTNode rootNode;
   private transient boolean isValidASTStr;
   private transient boolean visited = false;
+  transient String matchedText;
 
   public ASTNode() {
   }
@@ -347,4 +348,11 @@ public class ASTNode extends CommonTree implements Node,Serializable {
     return rootNode.getMemoizedSubString(startIndx, endIndx);
   }
 
+  /**
+   * The string that generated this node.
+   * Only set for a node if parser grammar sets it for a particular rule
+   */
+  public String getMatchedText() {
+    return matchedText;
+  }
 }

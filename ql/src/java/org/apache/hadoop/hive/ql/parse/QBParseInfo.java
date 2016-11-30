@@ -181,6 +181,9 @@ public class QBParseInfo {
     insertIntoTables.put(fullName.toLowerCase(), ast);
   }
 
+  /**
+   * See also {@link #getInsertOverwriteTables()}
+   */
   public boolean isInsertIntoTable(String dbName, String table) {
     String fullName = dbName + "." + table;
     return insertIntoTables.containsKey(fullName.toLowerCase());
@@ -188,6 +191,7 @@ public class QBParseInfo {
 
   /**
    * Check if a table is in the list to be inserted into
+   * See also {@link #getInsertOverwriteTables()}
    * @param fullTableName table name in dbname.tablename format
    * @return
    */
@@ -640,6 +644,9 @@ public class QBParseInfo {
     this.isPartialScanAnalyzeCommand = isPartialScanAnalyzeCommand;
   }
 
+  /**
+   * See also {@link #isInsertIntoTable(String)}
+   */
   public Map<String, ASTNode> getInsertOverwriteTables() {
     return insertOverwriteTables;
   }

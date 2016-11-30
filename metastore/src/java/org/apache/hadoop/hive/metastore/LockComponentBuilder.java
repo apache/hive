@@ -102,6 +102,10 @@ public class LockComponentBuilder {
     partNameSet = true;
     return this;
   }
+  public LockComponentBuilder setIsDynamicPartitionWrite(boolean t) {
+    component.setIsDynamicPartitionWrite(t);
+    return this;
+  }
 
  /**
    * Get the constructed lock component.

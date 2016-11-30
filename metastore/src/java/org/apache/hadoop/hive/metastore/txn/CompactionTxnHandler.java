@@ -43,9 +43,6 @@ class CompactionTxnHandler extends TxnHandler {
   static final private String CLASS_NAME = CompactionTxnHandler.class.getName();
   static final private Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
 
-  // Always access COMPACTION_QUEUE before COMPLETED_TXN_COMPONENTS
-  // See TxnHandler for notes on how to deal with deadlocks.  Follow those notes.
-
   public CompactionTxnHandler() {
   }
 
@@ -428,7 +425,7 @@ class CompactionTxnHandler extends TxnHandler {
   }
 
   /**
-   * Clean up aborted transactions from txns that have no components in txn_components.  The reson such
+   * Clean up aborted transactions from txns that have no components in txn_components.  The reason such
    * txns exist can be that now work was done in this txn (e.g. Streaming opened TransactionBatch and
    * abandoned it w/o doing any work) or due to {@link #markCleaned(CompactionInfo)} being called.
    */
