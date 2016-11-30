@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.exec;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -78,7 +79,7 @@ public class StatsTask extends Task<StatsWork> implements Serializable {
   private static transient final Logger LOG = LoggerFactory.getLogger(StatsTask.class);
 
   private Table table;
-  private List<LinkedHashMap<String, String>> dpPartSpecs;
+  private Collection<Partition> dpPartSpecs;
 
   public StatsTask() {
     super();
@@ -89,8 +90,7 @@ public class StatsTask extends Task<StatsWork> implements Serializable {
   protected void receiveFeed(FeedType feedType, Object feedValue) {
     // this method should be called by MoveTask when there are dynamic partitions generated
     if (feedType == FeedType.DYNAMIC_PARTITIONS) {
-      assert feedValue instanceof List<?>;
-      dpPartSpecs = (List<LinkedHashMap<String, String>>) feedValue;
+      dpPartSpecs = (Collection<Partition>) feedValue;
     }
   }
 
@@ -496,10 +496,7 @@ public class StatsTask extends Task<StatsWork> implements Serializable {
         // If no dynamic partitions are generated, dpPartSpecs may not be initialized
         if (dpPartSpecs != null) {
           // load the list of DP partitions and return the list of partition specs
-          for (LinkedHashMap<String, String> partSpec : dpPartSpecs) {
-            Partition partn = db.getPartition(table, partSpec, false);
-            list.add(partn);
-          }
+          list.addAll(dpPartSpecs);
         }
       } else { // static partition
         Partition partn = db.getPartition(table, tbd.getPartitionSpec(), false);
