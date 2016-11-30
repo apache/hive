@@ -232,23 +232,15 @@ public class ArrayWritableObjectInspector extends SettableStructObjectInspector 
 
     ArrayWritableObjectInspector that = (ArrayWritableObjectInspector) o;
 
-    if (isRoot != that.isRoot) {
+    if (isRoot != that.isRoot ||
+      (typeInfo != null ? !typeInfo.equals(that.typeInfo) : that.typeInfo != null) ||
+      (fieldInfos != null ? !fieldInfos.equals(that.fieldInfos) : that.fieldInfos != null) ||
+      (fieldNames != null ? !fieldNames.equals(that.fieldNames) : that.fieldNames != null) ||
+      (fields != null ? !fields.equals(that.fields) : that.fields != null)) {
       return false;
     }
-    if (typeInfo != null ? !typeInfo.equals(that.typeInfo) : that.typeInfo != null) {
-      return false;
-    }
-    if (fieldInfos != null ? !fieldInfos.equals(that.fieldInfos) : that.fieldInfos != null) {
-      return false;
-    }
-    if (fieldNames != null ? !fieldNames.equals(that.fieldNames) : that.fieldNames != null) {
-      return false;
-    }
-    if (fields != null ? !fields.equals(that.fields) : that.fields != null) {
-      return false;
-    }
-    return fieldsByName != null ? fieldsByName.equals(that.fieldsByName) : that.fieldsByName == null;
 
+    return fieldsByName != null ? fieldsByName.equals(that.fieldsByName) : that.fieldsByName == null;
   }
 
   @Override
