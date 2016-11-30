@@ -45,6 +45,8 @@ public class TxnInfo implements org.apache.thrift.TBase<TxnInfo, TxnInfo._Fields
   private static final org.apache.thrift.protocol.TField AGENT_INFO_FIELD_DESC = new org.apache.thrift.protocol.TField("agentInfo", org.apache.thrift.protocol.TType.STRING, (short)5);
   private static final org.apache.thrift.protocol.TField HEARTBEAT_COUNT_FIELD_DESC = new org.apache.thrift.protocol.TField("heartbeatCount", org.apache.thrift.protocol.TType.I32, (short)6);
   private static final org.apache.thrift.protocol.TField META_INFO_FIELD_DESC = new org.apache.thrift.protocol.TField("metaInfo", org.apache.thrift.protocol.TType.STRING, (short)7);
+  private static final org.apache.thrift.protocol.TField STARTED_TIME_FIELD_DESC = new org.apache.thrift.protocol.TField("startedTime", org.apache.thrift.protocol.TType.I64, (short)8);
+  private static final org.apache.thrift.protocol.TField LAST_HEARTBEAT_TIME_FIELD_DESC = new org.apache.thrift.protocol.TField("lastHeartbeatTime", org.apache.thrift.protocol.TType.I64, (short)9);
 
   private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
   static {
@@ -59,6 +61,8 @@ public class TxnInfo implements org.apache.thrift.TBase<TxnInfo, TxnInfo._Fields
   private String agentInfo; // optional
   private int heartbeatCount; // optional
   private String metaInfo; // optional
+  private long startedTime; // optional
+  private long lastHeartbeatTime; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
@@ -72,7 +76,9 @@ public class TxnInfo implements org.apache.thrift.TBase<TxnInfo, TxnInfo._Fields
     HOSTNAME((short)4, "hostname"),
     AGENT_INFO((short)5, "agentInfo"),
     HEARTBEAT_COUNT((short)6, "heartbeatCount"),
-    META_INFO((short)7, "metaInfo");
+    META_INFO((short)7, "metaInfo"),
+    STARTED_TIME((short)8, "startedTime"),
+    LAST_HEARTBEAT_TIME((short)9, "lastHeartbeatTime");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -101,6 +107,10 @@ public class TxnInfo implements org.apache.thrift.TBase<TxnInfo, TxnInfo._Fields
           return HEARTBEAT_COUNT;
         case 7: // META_INFO
           return META_INFO;
+        case 8: // STARTED_TIME
+          return STARTED_TIME;
+        case 9: // LAST_HEARTBEAT_TIME
+          return LAST_HEARTBEAT_TIME;
         default:
           return null;
       }
@@ -143,8 +153,10 @@ public class TxnInfo implements org.apache.thrift.TBase<TxnInfo, TxnInfo._Fields
   // isset id assignments
   private static final int __ID_ISSET_ID = 0;
   private static final int __HEARTBEATCOUNT_ISSET_ID = 1;
+  private static final int __STARTEDTIME_ISSET_ID = 2;
+  private static final int __LASTHEARTBEATTIME_ISSET_ID = 3;
   private byte __isset_bitfield = 0;
-  private static final _Fields optionals[] = {_Fields.AGENT_INFO,_Fields.HEARTBEAT_COUNT,_Fields.META_INFO};
+  private static final _Fields optionals[] = {_Fields.AGENT_INFO,_Fields.HEARTBEAT_COUNT,_Fields.META_INFO,_Fields.STARTED_TIME,_Fields.LAST_HEARTBEAT_TIME};
   public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
@@ -162,6 +174,10 @@ public class TxnInfo implements org.apache.thrift.TBase<TxnInfo, TxnInfo._Fields
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I32)));
     tmpMap.put(_Fields.META_INFO, new org.apache.thrift.meta_data.FieldMetaData("metaInfo", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+    tmpMap.put(_Fields.STARTED_TIME, new org.apache.thrift.meta_data.FieldMetaData("startedTime", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64)));
+    tmpMap.put(_Fields.LAST_HEARTBEAT_TIME, new org.apache.thrift.meta_data.FieldMetaData("lastHeartbeatTime", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(TxnInfo.class, metaDataMap);
   }
@@ -209,6 +225,8 @@ public class TxnInfo implements org.apache.thrift.TBase<TxnInfo, TxnInfo._Fields
     if (other.isSetMetaInfo()) {
       this.metaInfo = other.metaInfo;
     }
+    this.startedTime = other.startedTime;
+    this.lastHeartbeatTime = other.lastHeartbeatTime;
   }
 
   public TxnInfo deepCopy() {
@@ -227,6 +245,10 @@ public class TxnInfo implements org.apache.thrift.TBase<TxnInfo, TxnInfo._Fields
     this.heartbeatCount = 0;
 
     this.metaInfo = null;
+    setStartedTimeIsSet(false);
+    this.startedTime = 0;
+    setLastHeartbeatTimeIsSet(false);
+    this.lastHeartbeatTime = 0;
   }
 
   public long getId() {
@@ -396,6 +418,50 @@ public class TxnInfo implements org.apache.thrift.TBase<TxnInfo, TxnInfo._Fields
     }
   }
 
+  public long getStartedTime() {
+    return this.startedTime;
+  }
+
+  public void setStartedTime(long startedTime) {
+    this.startedTime = startedTime;
+    setStartedTimeIsSet(true);
+  }
+
+  public void unsetStartedTime() {
+    __isset_bitfield = EncodingUtils.clearBit(__isset_bitfield, __STARTEDTIME_ISSET_ID);
+  }
+
+  /** Returns true if field startedTime is set (has been assigned a value) and false otherwise */
+  public boolean isSetStartedTime() {
+    return EncodingUtils.testBit(__isset_bitfield, __STARTEDTIME_ISSET_ID);
+  }
+
+  public void setStartedTimeIsSet(boolean value) {
+    __isset_bitfield = EncodingUtils.setBit(__isset_bitfield, __STARTEDTIME_ISSET_ID, value);
+  }
+
+  public long getLastHeartbeatTime() {
+    return this.lastHeartbeatTime;
+  }
+
+  public void setLastHeartbeatTime(long lastHeartbeatTime) {
+    this.lastHeartbeatTime = lastHeartbeatTime;
+    setLastHeartbeatTimeIsSet(true);
+  }
+
+  public void unsetLastHeartbeatTime() {
+    __isset_bitfield = EncodingUtils.clearBit(__isset_bitfield, __LASTHEARTBEATTIME_ISSET_ID);
+  }
+
+  /** Returns true if field lastHeartbeatTime is set (has been assigned a value) and false otherwise */
+  public boolean isSetLastHeartbeatTime() {
+    return EncodingUtils.testBit(__isset_bitfield, __LASTHEARTBEATTIME_ISSET_ID);
+  }
+
+  public void setLastHeartbeatTimeIsSet(boolean value) {
+    __isset_bitfield = EncodingUtils.setBit(__isset_bitfield, __LASTHEARTBEATTIME_ISSET_ID, value);
+  }
+
   public void setFieldValue(_Fields field, Object value) {
     switch (field) {
     case ID:
@@ -454,6 +520,22 @@ public class TxnInfo implements org.apache.thrift.TBase<TxnInfo, TxnInfo._Fields
       }
       break;
 
+    case STARTED_TIME:
+      if (value == null) {
+        unsetStartedTime();
+      } else {
+        setStartedTime((Long)value);
+      }
+      break;
+
+    case LAST_HEARTBEAT_TIME:
+      if (value == null) {
+        unsetLastHeartbeatTime();
+      } else {
+        setLastHeartbeatTime((Long)value);
+      }
+      break;
+
     }
   }
 
@@ -480,6 +562,12 @@ public class TxnInfo implements org.apache.thrift.TBase<TxnInfo, TxnInfo._Fields
     case META_INFO:
       return getMetaInfo();
 
+    case STARTED_TIME:
+      return getStartedTime();
+
+    case LAST_HEARTBEAT_TIME:
+      return getLastHeartbeatTime();
+
     }
     throw new IllegalStateException();
   }
@@ -505,6 +593,10 @@ public class TxnInfo implements org.apache.thrift.TBase<TxnInfo, TxnInfo._Fields
       return isSetHeartbeatCount();
     case META_INFO:
       return isSetMetaInfo();
+    case STARTED_TIME:
+      return isSetStartedTime();
+    case LAST_HEARTBEAT_TIME:
+      return isSetLastHeartbeatTime();
     }
     throw new IllegalStateException();
   }
@@ -585,6 +677,24 @@ public class TxnInfo implements org.apache.thrift.TBase<TxnInfo, TxnInfo._Fields
         return false;
     }
 
+    boolean this_present_startedTime = true && this.isSetStartedTime();
+    boolean that_present_startedTime = true && that.isSetStartedTime();
+    if (this_present_startedTime || that_present_startedTime) {
+      if (!(this_present_startedTime && that_present_startedTime))
+        return false;
+      if (this.startedTime != that.startedTime)
+        return false;
+    }
+
+    boolean this_present_lastHeartbeatTime = true && this.isSetLastHeartbeatTime();
+    boolean that_present_lastHeartbeatTime = true && that.isSetLastHeartbeatTime();
+    if (this_present_lastHeartbeatTime || that_present_lastHeartbeatTime) {
+      if (!(this_present_lastHeartbeatTime && that_present_lastHeartbeatTime))
+        return false;
+      if (this.lastHeartbeatTime != that.lastHeartbeatTime)
+        return false;
+    }
+
     return true;
   }
 
@@ -626,6 +736,16 @@ public class TxnInfo implements org.apache.thrift.TBase<TxnInfo, TxnInfo._Fields
     list.add(present_metaInfo);
     if (present_metaInfo)
       list.add(metaInfo);
+
+    boolean present_startedTime = true && (isSetStartedTime());
+    list.add(present_startedTime);
+    if (present_startedTime)
+      list.add(startedTime);
+
+    boolean present_lastHeartbeatTime = true && (isSetLastHeartbeatTime());
+    list.add(present_lastHeartbeatTime);
+    if (present_lastHeartbeatTime)
+      list.add(lastHeartbeatTime);
 
     return list.hashCode();
   }
@@ -708,6 +828,26 @@ public class TxnInfo implements org.apache.thrift.TBase<TxnInfo, TxnInfo._Fields
         return lastComparison;
       }
     }
+    lastComparison = Boolean.valueOf(isSetStartedTime()).compareTo(other.isSetStartedTime());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetStartedTime()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.startedTime, other.startedTime);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = Boolean.valueOf(isSetLastHeartbeatTime()).compareTo(other.isSetLastHeartbeatTime());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetLastHeartbeatTime()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.lastHeartbeatTime, other.lastHeartbeatTime);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
     return 0;
   }
 
@@ -779,6 +919,18 @@ public class TxnInfo implements org.apache.thrift.TBase<TxnInfo, TxnInfo._Fields
       } else {
         sb.append(this.metaInfo);
       }
+      first = false;
+    }
+    if (isSetStartedTime()) {
+      if (!first) sb.append(", ");
+      sb.append("startedTime:");
+      sb.append(this.startedTime);
+      first = false;
+    }
+    if (isSetLastHeartbeatTime()) {
+      if (!first) sb.append(", ");
+      sb.append("lastHeartbeatTime:");
+      sb.append(this.lastHeartbeatTime);
       first = false;
     }
     sb.append(")");
@@ -898,6 +1050,22 @@ public class TxnInfo implements org.apache.thrift.TBase<TxnInfo, TxnInfo._Fields
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
+          case 8: // STARTED_TIME
+            if (schemeField.type == org.apache.thrift.protocol.TType.I64) {
+              struct.startedTime = iprot.readI64();
+              struct.setStartedTimeIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
+          case 9: // LAST_HEARTBEAT_TIME
+            if (schemeField.type == org.apache.thrift.protocol.TType.I64) {
+              struct.lastHeartbeatTime = iprot.readI64();
+              struct.setLastHeartbeatTimeIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
           default:
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
         }
@@ -948,6 +1116,16 @@ public class TxnInfo implements org.apache.thrift.TBase<TxnInfo, TxnInfo._Fields
           oprot.writeFieldEnd();
         }
       }
+      if (struct.isSetStartedTime()) {
+        oprot.writeFieldBegin(STARTED_TIME_FIELD_DESC);
+        oprot.writeI64(struct.startedTime);
+        oprot.writeFieldEnd();
+      }
+      if (struct.isSetLastHeartbeatTime()) {
+        oprot.writeFieldBegin(LAST_HEARTBEAT_TIME_FIELD_DESC);
+        oprot.writeI64(struct.lastHeartbeatTime);
+        oprot.writeFieldEnd();
+      }
       oprot.writeFieldStop();
       oprot.writeStructEnd();
     }
@@ -979,7 +1157,13 @@ public class TxnInfo implements org.apache.thrift.TBase<TxnInfo, TxnInfo._Fields
       if (struct.isSetMetaInfo()) {
         optionals.set(2);
       }
-      oprot.writeBitSet(optionals, 3);
+      if (struct.isSetStartedTime()) {
+        optionals.set(3);
+      }
+      if (struct.isSetLastHeartbeatTime()) {
+        optionals.set(4);
+      }
+      oprot.writeBitSet(optionals, 5);
       if (struct.isSetAgentInfo()) {
         oprot.writeString(struct.agentInfo);
       }
@@ -988,6 +1172,12 @@ public class TxnInfo implements org.apache.thrift.TBase<TxnInfo, TxnInfo._Fields
       }
       if (struct.isSetMetaInfo()) {
         oprot.writeString(struct.metaInfo);
+      }
+      if (struct.isSetStartedTime()) {
+        oprot.writeI64(struct.startedTime);
+      }
+      if (struct.isSetLastHeartbeatTime()) {
+        oprot.writeI64(struct.lastHeartbeatTime);
       }
     }
 
@@ -1002,7 +1192,7 @@ public class TxnInfo implements org.apache.thrift.TBase<TxnInfo, TxnInfo._Fields
       struct.setUserIsSet(true);
       struct.hostname = iprot.readString();
       struct.setHostnameIsSet(true);
-      BitSet incoming = iprot.readBitSet(3);
+      BitSet incoming = iprot.readBitSet(5);
       if (incoming.get(0)) {
         struct.agentInfo = iprot.readString();
         struct.setAgentInfoIsSet(true);
@@ -1014,6 +1204,14 @@ public class TxnInfo implements org.apache.thrift.TBase<TxnInfo, TxnInfo._Fields
       if (incoming.get(2)) {
         struct.metaInfo = iprot.readString();
         struct.setMetaInfoIsSet(true);
+      }
+      if (incoming.get(3)) {
+        struct.startedTime = iprot.readI64();
+        struct.setStartedTimeIsSet(true);
+      }
+      if (incoming.get(4)) {
+        struct.lastHeartbeatTime = iprot.readI64();
+        struct.setLastHeartbeatTimeIsSet(true);
       }
     }
   }

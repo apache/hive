@@ -17,7 +17,7 @@ PREHOOK: query: show transactions
 PREHOOK: type: SHOW TRANSACTIONS
 POSTHOOK: query: show transactions
 POSTHOOK: type: SHOW TRANSACTIONS
-Transaction ID	Transaction State	User	Hostname
+Transaction ID	Transaction State	Started Time	Last Heartbeat Time	User	Hostname
 PREHOOK: query: create table partitioned_acid_table (a int, b int) partitioned by (p string) clustered by (a) into 2 buckets stored as orc tblproperties ('transactional'='true')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default

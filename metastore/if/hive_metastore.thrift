@@ -625,6 +625,8 @@ struct TxnInfo {
     5: optional string agentInfo = "Unknown",
     6: optional i32 heartbeatCount=0,
     7: optional string metaInfo,
+    8: optional i64 startedTime,
+    9: optional i64 lastHeartbeatTime,
 }
 
 struct GetOpenTxnsInfoResponse {
