@@ -300,16 +300,24 @@ public class MetaStoreUtils {
     }
 
     // requires to calculate stats if new and old have different fast stats
+    return !isFastStatsSame(oldPart, newPart);
+  }
+
+  static boolean isFastStatsSame(Partition oldPart, Partition newPart) {
+    // requires to calculate stats if new and old have different fast stats
     if ((oldPart != null) && (oldPart.getParameters() != null)) {
       for (String stat : StatsSetupConst.fastStats) {
         if (oldPart.getParameters().containsKey(stat)) {
           Long oldStat = Long.parseLong(oldPart.getParameters().get(stat));
           Long newStat = Long.parseLong(newPart.getParameters().get(stat));
           if (!oldStat.equals(newStat)) {
-            return true;
+            return false;
           }
+        } else {
+          return false;
         }
       }
+      return true;
     }
     return false;
   }
@@ -367,19 +375,26 @@ public class MetaStoreUtils {
         FileStatus[] fileStatus = wh.getFileStatusesForLocation(part.getLocation());
         populateQuickStats(fileStatus, params);
         LOG.warn("Updated size to " + params.get(StatsSetupConst.TOTAL_SIZE));
-        if (environmentContext != null
-            && environmentContext.isSetProperties()
-            && StatsSetupConst.TASK.equals(environmentContext.getProperties().get(
-                StatsSetupConst.STATS_GENERATED))) {
-          StatsSetupConst.setBasicStatsState(params, StatsSetupConst.TRUE);
-        } else {
-          StatsSetupConst.setBasicStatsState(params, StatsSetupConst.FALSE);
-        }
+        updateBasicState(environmentContext, params);
       }
       part.setParameters(params);
       updated = true;
     }
     return updated;
+  }
+
+  static void updateBasicState(EnvironmentContext environmentContext, Map<String,String> params) {
+    if (params == null) {
+      return;
+    }
+    if (environmentContext != null
+        && environmentContext.isSetProperties()
+        && StatsSetupConst.TASK.equals(environmentContext.getProperties().get(
+        StatsSetupConst.STATS_GENERATED))) {
+      StatsSetupConst.setBasicStatsState(params, StatsSetupConst.TRUE);
+    } else {
+      StatsSetupConst.setBasicStatsState(params, StatsSetupConst.FALSE);
+    }
   }
 
   /**

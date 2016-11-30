@@ -399,7 +399,12 @@ public class HiveAlterHandler implements AlterHandler {
         msdb.openTransaction();
         oldPart = msdb.getPartition(dbname, name, new_part.getValues());
         if (MetaStoreUtils.requireCalStats(hiveConf, oldPart, new_part, tbl, environmentContext)) {
-          MetaStoreUtils.updatePartitionStatsFast(new_part, wh, false, true, environmentContext);
+          // if stats are same, no need to update
+          if (MetaStoreUtils.isFastStatsSame(oldPart, new_part)) {
+            MetaStoreUtils.updateBasicState(environmentContext, new_part.getParameters());
+          } else {
+            MetaStoreUtils.updatePartitionStatsFast(new_part, wh, false, true, environmentContext);
+          }
         }
 
         updatePartColumnStats(msdb, dbname, name, new_part.getValues(), new_part);
@@ -627,7 +632,12 @@ public class HiveAlterHandler implements AlterHandler {
         partValsList.add(tmpPart.getValues());
 
         if (MetaStoreUtils.requireCalStats(hiveConf, oldTmpPart, tmpPart, tbl, environmentContext)) {
-          MetaStoreUtils.updatePartitionStatsFast(tmpPart, wh, false, true, environmentContext);
+          // Check if stats are same, no need to update
+          if (MetaStoreUtils.isFastStatsSame(oldTmpPart, tmpPart)) {
+            MetaStoreUtils.updateBasicState(environmentContext, tmpPart.getParameters());
+          } else {
+            MetaStoreUtils.updatePartitionStatsFast(tmpPart, wh, false, true, environmentContext);
+          }
         }
         updatePartColumnStats(msdb, dbname, name, oldTmpPart.getValues(), tmpPart);
       }
