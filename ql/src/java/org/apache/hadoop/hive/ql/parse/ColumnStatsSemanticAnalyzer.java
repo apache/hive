@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.parse;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -36,8 +37,14 @@ import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.hive.ql.session.OperationLog;
+import org.apache.hadoop.hive.ql.session.OperationLog.LoggingLevel;
 import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
 import org.apache.hadoop.hive.serde.serdeConstants;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 
 /**
  * ColumnStatsSemanticAnalyzer.
@@ -48,6 +55,7 @@ import org.apache.hadoop.hive.serde.serdeConstants;
 public class ColumnStatsSemanticAnalyzer extends SemanticAnalyzer {
   private static final Logger LOG = LoggerFactory
       .getLogger(ColumnStatsSemanticAnalyzer.class);
+  static final private LogHelper console = new LogHelper(LOG);
 
   private ASTNode originalTree;
   private ASTNode rewrittenTree;
@@ -211,16 +219,26 @@ public class ColumnStatsSemanticAnalyzer extends SemanticAnalyzer {
 
   private List<String> getColumnTypes(List<String> colNames)
       throws SemanticException{
-    List<String> colTypes = new LinkedList<String>();
+    List<String> colTypes = new ArrayList<String>();
     List<FieldSchema> cols = tbl.getCols();
+    List<String> copyColNames = new ArrayList<>();
+    copyColNames.addAll(colNames);
 
-    for (String colName : colNames) {
-      for (FieldSchema col: cols) {
+    for (String colName : copyColNames) {
+      for (FieldSchema col : cols) {
         if (colName.equalsIgnoreCase(col.getName())) {
-          colTypes.add(new String(col.getType()));
+          String type = col.getType();
+          TypeInfo typeInfo = TypeInfoUtils.getTypeInfoFromTypeString(type);
+          if (typeInfo.getCategory() != ObjectInspector.Category.PRIMITIVE) {
+            logTypeWarning(colName, type);
+            colNames.remove(colName);
+          } else {
+            colTypes.add(type);
+          }
         }
       }
     }
+    
     return colTypes;
   }
 
@@ -309,6 +327,18 @@ public class ColumnStatsSemanticAnalyzer extends SemanticAnalyzer {
               + " [Try removing column '" + sc + "' from column list]");
         }
       }
+    }
+  }
+
+  private void logTypeWarning(String colName, String colType) {
+    String warning = "Only primitive type arguments are accepted but " + colType
+        + " is passed for " + colName + ".";
+    warning = "WARNING: " + warning;
+    console.printInfo(warning);
+    // Propagate warning to beeline via operation log.
+    OperationLog ol = OperationLog.getCurrentOperationLog();
+    if (ol != null) {
+      ol.writeOperationLog(LoggingLevel.EXECUTION, warning + "\n");
     }
   }
 

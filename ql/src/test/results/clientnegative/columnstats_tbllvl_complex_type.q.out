@@ -28,4 +28,4 @@ POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/create_nested_type.txt
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@table_complex_type
-FAILED: UDFArgumentTypeException Only primitive type arguments are accepted but map<string,array<string>> is passed.
+FAILED: SemanticException [Error 30009]: Encountered parse error while parsing rewritten query
