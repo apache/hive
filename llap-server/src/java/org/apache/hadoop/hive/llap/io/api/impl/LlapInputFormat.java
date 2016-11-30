@@ -116,6 +116,7 @@ public class LlapInputFormat implements InputFormat<NullWritable, VectorizedRowB
       useLlapIo = ((LlapAwareSplit) split).canUseLlapIo();
     }
     boolean isVectorized = Utilities.getUseVectorizedInputFileFormat(job);
+
     if (!useLlapIo) {
       LlapIoImpl.LOG.warn("Not using LLAP IO for an unsupported split: " + split);
       return sourceInputFormat.getRecordReader(split, job, reporter);

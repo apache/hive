@@ -32,7 +32,9 @@ import org.apache.hadoop.hive.ql.io.orc.Reader;
 import org.apache.orc.CompressionKind;
 import org.apache.orc.FileMetadata;
 import org.apache.orc.OrcProto;
+import org.apache.orc.OrcUtils;
 import org.apache.orc.StripeInformation;
+import org.apache.orc.TypeDescription;
 import org.apache.orc.impl.ReaderImpl;
 
 /** ORC file metadata. Currently contains some duplicate info due to how different parts
@@ -221,5 +223,9 @@ public final class OrcFileMetadata extends LlapCacheableBuffer implements FileMe
   @Override
   public List<OrcProto.ColumnStatistics> getFileStats() {
     return fileStats;
+  }
+
+  public TypeDescription getSchema() {
+    return OrcUtils.convertTypeFromProtobuf(this.types, 0);
   }
 }

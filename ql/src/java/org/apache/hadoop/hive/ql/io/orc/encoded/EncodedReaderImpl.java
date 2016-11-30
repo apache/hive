@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.io.orc.encoded;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -42,6 +43,7 @@ import org.apache.orc.impl.RecordReaderUtils;
 import org.apache.orc.impl.StreamName;
 import org.apache.orc.StripeInformation;
 import org.apache.orc.impl.BufferChunk;
+import org.apache.hadoop.hive.llap.DebugUtils;
 import org.apache.hadoop.hive.ql.io.orc.encoded.Reader.OrcEncodedColumnBatch;
 import org.apache.hadoop.hive.ql.io.orc.encoded.Reader.PoolFactory;
 import org.apache.orc.OrcProto;
@@ -127,11 +129,13 @@ class EncodedReaderImpl implements EncodedReader {
 
   /** Helper context for each column being read */
   private static final class ColumnReadContext {
+
     public ColumnReadContext(int colIx, OrcProto.ColumnEncoding encoding,
-                             OrcProto.RowIndex rowIndex) {
+                             OrcProto.RowIndex rowIndex, int colRgIx) {
       this.encoding = encoding;
       this.rowIndex = rowIndex;
       this.colIx = colIx;
+      this.includedIx = colRgIx;
       streamCount = 0;
     }
 
@@ -145,6 +149,8 @@ class EncodedReaderImpl implements EncodedReader {
     OrcProto.RowIndex rowIndex;
     /** Column index in the file. */
     int colIx;
+    /** Column index in the included columns only (for RG masks). */
+    int includedIx;
 
     public void addStream(long offset, OrcProto.Stream stream, int indexIx) {
       streams[streamCount++] = new StreamContext(stream, offset, indexIx);
@@ -154,6 +160,7 @@ class EncodedReaderImpl implements EncodedReader {
     public String toString() {
       StringBuilder sb = new StringBuilder();
       sb.append(" column_index: ").append(colIx);
+      sb.append(" included_index: ").append(includedIx);
       sb.append(" encoding: ").append(encoding);
       sb.append(" stream_count: ").append(streamCount);
       int i = 0;
@@ -200,6 +207,7 @@ class EncodedReaderImpl implements EncodedReader {
       OrcProto.RowIndex[] indexes, List<OrcProto.ColumnEncoding> encodings, List<OrcProto.Stream> streamList,
       boolean[] included, boolean[][] colRgs,
       Consumer<OrcEncodedColumnBatch> consumer) throws IOException {
+    isTracingEnabled = true;
     // Note: for now we don't have to setError here, caller will setError if we throw.
     // We are also not supposed to call setDone, since we are only part of the operation.
     long stripeOffset = stripe.getOffset();
@@ -208,18 +216,26 @@ class EncodedReaderImpl implements EncodedReader {
     // 1.1. Figure out which columns have a present stream
     boolean[] hasNull = RecordReaderUtils.findPresentStreamsByColumn(streamList, types);
     if (isTracingEnabled) {
-      LOG.trace("The following columns have PRESENT streams: " + arrayToString(hasNull));
+      LOG.error("The following columns have PRESENT streams: " + arrayToString(hasNull));
     }
 
     // We assume stream list is sorted by column and that non-data
     // streams do not interleave data streams for the same column.
     // 1.2. With that in mind, determine disk ranges to read/get from cache (not by stream).
-    int colRgIx = -1, lastColIx = -1;
-    ColumnReadContext[] colCtxs = new ColumnReadContext[colRgs.length];
-    boolean[] includedRgs = null;
+    ColumnReadContext[] colCtxs = new ColumnReadContext[included.length];
+    int colRgIx = -1;
+    // Don't create context for the 0-s column.
+    for (int i = 1; i < included.length; ++i) {
+      if (!included[i]) continue;
+      colCtxs[i] = new ColumnReadContext(i, encodings.get(i), indexes[i], ++colRgIx);
+      if (isTracingEnabled) {
+        LOG.error("Creating context: " + colCtxs[i].toString());
+      }
+    }
     boolean isCompressed = (codec != null);
     CreateHelper listToRead = new CreateHelper();
     boolean hasIndexOnlyCols = false;
+    boolean[] includedRgs = null; // Will always be the same for all cols at the moment.
     for (OrcProto.Stream stream : streamList) {
       long length = stream.getLength();
       int colIx = stream.getColumn();
@@ -227,28 +243,17 @@ class EncodedReaderImpl implements EncodedReader {
       if (!included[colIx] || StreamName.getArea(streamKind) != StreamName.Area.DATA) {
         // We have a stream for included column, but in future it might have no data streams.
         // It's more like "has at least one column included that has an index stream".
-        hasIndexOnlyCols = hasIndexOnlyCols | included[colIx];
+        hasIndexOnlyCols = hasIndexOnlyCols || included[colIx];
         if (isTracingEnabled) {
-          LOG.trace("Skipping stream: " + streamKind + " at " + offset + ", " + length);
+          LOG.trace("Skipping stream for column " + colIx + ": "
+              + streamKind + " at " + offset + ", " + length);
         }
         offset += length;
         continue;
       }
-      ColumnReadContext ctx = null;
-      if (lastColIx != colIx) {
-        ++colRgIx;
-        assert colCtxs[colRgIx] == null;
-        lastColIx = colIx;
-        includedRgs = colRgs[colRgIx];
-        ctx = colCtxs[colRgIx] = new ColumnReadContext(
-            colIx, encodings.get(colIx), indexes[colIx]);
-        if (isTracingEnabled) {
-          LOG.trace("Creating context " + colRgIx + " for column " + colIx + ":" + ctx.toString());
-        }
-      } else {
-        ctx = colCtxs[colRgIx];
-        assert ctx != null;
-      }
+      ColumnReadContext ctx = colCtxs[colIx];
+      assert ctx != null;
+      includedRgs = colRgs[ctx.includedIx];
       int indexIx = RecordReaderUtils.getIndexPosition(ctx.encoding.getKind(),
           types.get(colIx).getKind(), streamKind, isCompressed, hasNull[colIx]);
       ctx.addStream(offset, stream, indexIx);
@@ -275,7 +280,7 @@ class EncodedReaderImpl implements EncodedReader {
       // TODO: there may be a bug here. Could there be partial RG filtering on index-only column?
       if (hasIndexOnlyCols && (includedRgs == null)) {
         OrcEncodedColumnBatch ecb = POOLS.ecbPool.take();
-        ecb.init(fileKey, stripeIx, OrcEncodedColumnBatch.ALL_RGS, colRgs.length);
+        ecb.init(fileKey, stripeIx, OrcEncodedColumnBatch.ALL_RGS, included.length);
         consumer.consumeData(ecb);
       } else {
         LOG.warn("Nothing to read for stripe [" + stripe + "]");
@@ -309,8 +314,9 @@ class EncodedReaderImpl implements EncodedReader {
     // 3. For uncompressed case, we need some special processing before read.
     DiskRangeList iter = toRead.next;  // Keep "toRead" list for future use, don't extract().
     if (codec == null) {
-      for (int colIxMod = 0; colIxMod < colRgs.length; ++colIxMod) {
-        ColumnReadContext ctx = colCtxs[colIxMod];
+      for (int colIx = 0; colIx < colCtxs.length; ++colIx) {
+        ColumnReadContext ctx = colCtxs[colIx];
+        if (ctx == null) continue; // This column is not included.
         for (int streamIx = 0; streamIx < ctx.streamCount; ++streamIx) {
           StreamContext sctx = ctx.streams[streamIx];
           DiskRangeList newIter = preReadUncompressedStream(
@@ -334,19 +340,27 @@ class EncodedReaderImpl implements EncodedReader {
       boolean isLastRg = rgIx == rgCount - 1;
       // Create the batch we will use to return data for this RG.
       OrcEncodedColumnBatch ecb = POOLS.ecbPool.take();
-      ecb.init(fileKey, stripeIx, rgIx, colRgs.length);
+      ecb.init(fileKey, stripeIx, rgIx, included.length);
       boolean isRGSelected = true;
-      for (int colIxMod = 0; colIxMod < colRgs.length; ++colIxMod) {
-        // TODO: simplify this now that high-level cache has been removed.
-        if (colRgs[colIxMod] != null && !colRgs[colIxMod][rgIx]) {
+      for (int colIx = 0; colIx < colCtxs.length; ++colIx) {
+        ColumnReadContext ctx = colCtxs[colIx];
+        if (ctx == null) continue; // This column is not included.
+        if (isTracingEnabled) {
+          LOG.trace("ctx: {} rgIx: {} isLastRg: {} rgCount: {}", ctx, rgIx, isLastRg, rgCount);
+        }
+        // TODO: simplify this now that high-level cache has been removed. Same RGs for all cols.
+        if (colRgs[ctx.includedIx] != null && !colRgs[ctx.includedIx][rgIx]) {
           // RG x col filtered.
           isRGSelected = false;
-          continue;
+          if (isTracingEnabled) {
+            LOG.trace("colIxMod: {} rgIx: {} colRgs[{}]: {} colRgs[{}][{}]: {}", ctx.includedIx, rgIx, ctx.includedIx,
+              Arrays.toString(colRgs[ctx.includedIx]), ctx.includedIx, rgIx, colRgs[ctx.includedIx][rgIx]);
+          }
+           continue;
         }
-        ColumnReadContext ctx = colCtxs[colIxMod];
         OrcProto.RowIndexEntry index = ctx.rowIndex.getEntry(rgIx),
             nextIndex = isLastRg ? null : ctx.rowIndex.getEntry(rgIx + 1);
-        ecb.initColumn(colIxMod, ctx.colIx, OrcEncodedColumnBatch.MAX_DATA_STREAMS);
+        ecb.initOrcColumn(ctx.colIx);
         for (int streamIx = 0; streamIx < ctx.streamCount; ++streamIx) {
           StreamContext sctx = ctx.streams[streamIx];
           ColumnStreamData cb = null;
@@ -402,7 +416,7 @@ class EncodedReaderImpl implements EncodedReader {
                 sctx.bufferIter = iter = lastCached;
               }
             }
-            ecb.setStreamData(colIxMod, sctx.kind.getNumber(), cb);
+            ecb.setStreamData(ctx.colIx, sctx.kind.getNumber(), cb);
           } catch (Exception ex) {
             DiskRangeList drl = toRead == null ? null : toRead.next;
             LOG.error("Error getting stream [" + sctx.kind + ", " + ctx.encoding + "] for"
