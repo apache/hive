@@ -79,7 +79,7 @@ public class Entity implements Serializable {
    * This is derived from t and p, but we need to serialize this field to make
    * sure Entity.hashCode() does not need to recursively read into t and p.
    */
-  private String name;
+  private final String name;
 
   /**
    * Whether the output is complete or not. For eg, for dynamic partitions, the
@@ -97,10 +97,6 @@ public class Entity implements Serializable {
 
   public String getName() {
     return name;
-  }
-
-  public void setName(String name) {
-    this.name = name;
   }
 
   public Database getDatabase() {
@@ -162,6 +158,7 @@ public class Entity implements Serializable {
    * Only used by serialization.
    */
   public Entity() {
+    name = null;
   }
 
   /**
@@ -326,7 +323,7 @@ public class Entity implements Serializable {
    */
   @Override
   public String toString() {
-    return name;
+    return getName();
   }
 
   private String computeName() {
@@ -360,7 +357,7 @@ public class Entity implements Serializable {
 
     if (o instanceof Entity) {
       Entity ore = (Entity) o;
-      return (toString().equalsIgnoreCase(ore.toString()));
+      return (getName().equalsIgnoreCase(ore.getName()));
     } else {
       return false;
     }
@@ -371,7 +368,7 @@ public class Entity implements Serializable {
    */
   @Override
   public int hashCode() {
-    return toString().hashCode();
+    return getName().hashCode();
   }
 
 }
