@@ -24,6 +24,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+/**
+ * A field node records nested column paths in a struct type.
+ * For instance, if a struct type is "s:struct<a:int, b:<struct<c:boolean, d: string>>, e:double>"
+ * Then a field node "s[a, b[d]]" represents two nested column paths for this struct: s.a, and s.b.d
+ */
 public class FieldNode {
   private String fieldName;
   private List<FieldNode> nodes;
