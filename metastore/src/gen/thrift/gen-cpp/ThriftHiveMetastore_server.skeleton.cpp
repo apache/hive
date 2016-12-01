@@ -727,6 +727,11 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
     printf("compact\n");
   }
 
+  void compact2(CompactionResponse& _return, const CompactionRequest& rqst) {
+    // Your implementation goes here
+    printf("compact2\n");
+  }
+
   void show_compact(ShowCompactResponse& _return, const ShowCompactRequest& rqst) {
     // Your implementation goes here
     printf("show_compact\n");

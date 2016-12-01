@@ -2281,6 +2281,29 @@ class CompactionRequest
   ::Thrift::Struct.generate_accessors self
 end
 
+class CompactionResponse
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  ID = 1
+  STATE = 2
+  ACCEPTED = 3
+
+  FIELDS = {
+    ID => {:type => ::Thrift::Types::I64, :name => 'id'},
+    STATE => {:type => ::Thrift::Types::STRING, :name => 'state'},
+    ACCEPTED => {:type => ::Thrift::Types::BOOL, :name => 'accepted'}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field id is unset!') unless @id
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field state is unset!') unless @state
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field accepted is unset!') if @accepted.nil?
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
 class ShowCompactRequest
   include ::Thrift::Struct, ::Thrift::Struct_Union
 
@@ -2310,6 +2333,7 @@ class ShowCompactResponseElement
   METAINFO = 10
   ENDTIME = 11
   HADOOPJOBID = 12
+  ID = 13
 
   FIELDS = {
     DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbname'},
@@ -2323,7 +2347,8 @@ class ShowCompactResponseElement
     HIGHTESTTXNID => {:type => ::Thrift::Types::I64, :name => 'hightestTxnId', :optional => true},
     METAINFO => {:type => ::Thrift::Types::STRING, :name => 'metaInfo', :optional => true},
     ENDTIME => {:type => ::Thrift::Types::I64, :name => 'endTime', :optional => true},
-    HADOOPJOBID => {:type => ::Thrift::Types::STRING, :name => 'hadoopJobId', :default => %q"None", :optional => true}
+    HADOOPJOBID => {:type => ::Thrift::Types::STRING, :name => 'hadoopJobId', :default => %q"None", :optional => true},
+    ID => {:type => ::Thrift::Types::I64, :name => 'id', :optional => true}
   }
 
   def struct_fields; FIELDS; end

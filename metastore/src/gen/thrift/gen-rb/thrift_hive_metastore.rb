@@ -2367,6 +2367,21 @@ module ThriftHiveMetastore
       return
     end
 
+    def compact2(rqst)
+      send_compact2(rqst)
+      return recv_compact2()
+    end
+
+    def send_compact2(rqst)
+      send_message('compact2', Compact2_args, :rqst => rqst)
+    end
+
+    def recv_compact2()
+      result = receive_message(Compact2_result)
+      return result.success unless result.success.nil?
+      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'compact2 failed: unknown result')
+    end
+
     def show_compact(rqst)
       send_show_compact(rqst)
       return recv_show_compact()
@@ -4324,6 +4339,13 @@ module ThriftHiveMetastore
       result = Compact_result.new()
       @handler.compact(args.rqst)
       write_result(result, oprot, 'compact', seqid)
+    end
+
+    def process_compact2(seqid, iprot, oprot)
+      args = read_args(iprot, Compact2_args)
+      result = Compact2_result.new()
+      result.success = @handler.compact2(args.rqst)
+      write_result(result, oprot, 'compact2', seqid)
     end
 
     def process_show_compact(seqid, iprot, oprot)
@@ -9754,6 +9776,38 @@ module ThriftHiveMetastore
 
     FIELDS = {
 
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Compact2_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    RQST = 1
+
+    FIELDS = {
+      RQST => {:type => ::Thrift::Types::STRUCT, :name => 'rqst', :class => ::CompactionRequest}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Compact2_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SUCCESS = 0
+
+    FIELDS = {
+      SUCCESS => {:type => ::Thrift::Types::STRUCT, :name => 'success', :class => ::CompactionResponse}
     }
 
     def struct_fields; FIELDS; end

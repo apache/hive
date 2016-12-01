@@ -47,7 +47,8 @@ import java.util.Set;
 @InterfaceStability.Evolving
 public interface TxnStore {
 
-  public static enum MUTEX_KEY {Initiator, Cleaner, HouseKeeper, CompactionHistory, CheckLock, WriteSetCleaner}
+  public static enum MUTEX_KEY {Initiator, Cleaner, HouseKeeper, CompactionHistory, CheckLock,
+    WriteSetCleaner, CompactionScheduler}
   // Compactor states (Should really be enum)
   static final public String INITIATED_RESPONSE = "initiated";
   static final public String WORKING_RESPONSE = "working";
@@ -185,10 +186,10 @@ public interface TxnStore {
    * Submit a compaction request into the queue.  This is called when a user manually requests a
    * compaction.
    * @param rqst information on what to compact
-   * @return id of the compaction that has been started
+   * @return id of the compaction that has been started or existing id if this resource is already scheduled
    * @throws MetaException
    */
-  public long compact(CompactionRequest rqst) throws MetaException;
+  public CompactionResponse compact(CompactionRequest rqst) throws MetaException;
 
   /**
    * Show list of current compactions

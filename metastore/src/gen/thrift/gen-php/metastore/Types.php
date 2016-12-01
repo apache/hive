@@ -14673,6 +14673,127 @@ class CompactionRequest {
 
 }
 
+class CompactionResponse {
+  static $_TSPEC;
+
+  /**
+   * @var int
+   */
+  public $id = null;
+  /**
+   * @var string
+   */
+  public $state = null;
+  /**
+   * @var bool
+   */
+  public $accepted = null;
+
+  public function __construct($vals=null) {
+    if (!isset(self::$_TSPEC)) {
+      self::$_TSPEC = array(
+        1 => array(
+          'var' => 'id',
+          'type' => TType::I64,
+          ),
+        2 => array(
+          'var' => 'state',
+          'type' => TType::STRING,
+          ),
+        3 => array(
+          'var' => 'accepted',
+          'type' => TType::BOOL,
+          ),
+        );
+    }
+    if (is_array($vals)) {
+      if (isset($vals['id'])) {
+        $this->id = $vals['id'];
+      }
+      if (isset($vals['state'])) {
+        $this->state = $vals['state'];
+      }
+      if (isset($vals['accepted'])) {
+        $this->accepted = $vals['accepted'];
+      }
+    }
+  }
+
+  public function getName() {
+    return 'CompactionResponse';
+  }
+
+  public function read($input)
+  {
+    $xfer = 0;
+    $fname = null;
+    $ftype = 0;
+    $fid = 0;
+    $xfer += $input->readStructBegin($fname);
+    while (true)
+    {
+      $xfer += $input->readFieldBegin($fname, $ftype, $fid);
+      if ($ftype == TType::STOP) {
+        break;
+      }
+      switch ($fid)
+      {
+        case 1:
+          if ($ftype == TType::I64) {
+            $xfer += $input->readI64($this->id);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 2:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->state);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 3:
+          if ($ftype == TType::BOOL) {
+            $xfer += $input->readBool($this->accepted);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        default:
+          $xfer += $input->skip($ftype);
+          break;
+      }
+      $xfer += $input->readFieldEnd();
+    }
+    $xfer += $input->readStructEnd();
+    return $xfer;
+  }
+
+  public function write($output) {
+    $xfer = 0;
+    $xfer += $output->writeStructBegin('CompactionResponse');
+    if ($this->id !== null) {
+      $xfer += $output->writeFieldBegin('id', TType::I64, 1);
+      $xfer += $output->writeI64($this->id);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->state !== null) {
+      $xfer += $output->writeFieldBegin('state', TType::STRING, 2);
+      $xfer += $output->writeString($this->state);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->accepted !== null) {
+      $xfer += $output->writeFieldBegin('accepted', TType::BOOL, 3);
+      $xfer += $output->writeBool($this->accepted);
+      $xfer += $output->writeFieldEnd();
+    }
+    $xfer += $output->writeFieldStop();
+    $xfer += $output->writeStructEnd();
+    return $xfer;
+  }
+
+}
+
 class ShowCompactRequest {
   static $_TSPEC;
 
@@ -14774,6 +14895,10 @@ class ShowCompactResponseElement {
    * @var string
    */
   public $hadoopJobId = "None";
+  /**
+   * @var int
+   */
+  public $id = null;
 
   public function __construct($vals=null) {
     if (!isset(self::$_TSPEC)) {
@@ -14826,6 +14951,10 @@ class ShowCompactResponseElement {
           'var' => 'hadoopJobId',
           'type' => TType::STRING,
           ),
+        13 => array(
+          'var' => 'id',
+          'type' => TType::I64,
+          ),
         );
     }
     if (is_array($vals)) {
@@ -14864,6 +14993,9 @@ class ShowCompactResponseElement {
       }
       if (isset($vals['hadoopJobId'])) {
         $this->hadoopJobId = $vals['hadoopJobId'];
+      }
+      if (isset($vals['id'])) {
+        $this->id = $vals['id'];
       }
     }
   }
@@ -14971,6 +15103,13 @@ class ShowCompactResponseElement {
             $xfer += $input->skip($ftype);
           }
           break;
+        case 13:
+          if ($ftype == TType::I64) {
+            $xfer += $input->readI64($this->id);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
         default:
           $xfer += $input->skip($ftype);
           break;
@@ -15042,6 +15181,11 @@ class ShowCompactResponseElement {
     if ($this->hadoopJobId !== null) {
       $xfer += $output->writeFieldBegin('hadoopJobId', TType::STRING, 12);
       $xfer += $output->writeString($this->hadoopJobId);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->id !== null) {
+      $xfer += $output->writeFieldBegin('id', TType::I64, 13);
+      $xfer += $output->writeI64($this->id);
       $xfer += $output->writeFieldEnd();
     }
     $xfer += $output->writeFieldStop();

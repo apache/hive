@@ -86,6 +86,7 @@ import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.AggrStats;
 import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
+import org.apache.hadoop.hive.metastore.api.CompactionResponse;
 import org.apache.hadoop.hive.metastore.api.CompactionType;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
@@ -3694,30 +3695,38 @@ private void constructOneLBLocationMap(FileStatus fSta,
   }
 
   /**
-   * Enqueue a compaction request.
+   * @deprecated use {@link #compact2(String, String, String, String, Map)}
+   */
+  public void compact(String dbname, String tableName, String partName, String compactType,
+                      Map<String, String> tblproperties) throws HiveException {
+    compact2(dbname, tableName, partName, compactType, tblproperties);
+  }
+  /**
+   * Enqueue a compaction request.  Only 1 compaction for a given resource (db/table/partSpec) can
+   * be scheduled/running at any given time.
    * @param dbname name of the database, if null default will be used.
    * @param tableName name of the table, cannot be null
    * @param partName name of the partition, if null table will be compacted (valid only for
    *                 non-partitioned tables).
    * @param compactType major or minor
    * @param tblproperties the list of tblproperties to overwrite for this compaction
+   * @return id of new request or id already existing request for specified resource
    * @throws HiveException
    */
-  public void compact(String dbname, String tableName, String partName, String compactType,
-                      Map<String, String> tblproperties)
+  public CompactionResponse compact2(String dbname, String tableName, String partName, String compactType,
+                                     Map<String, String> tblproperties)
       throws HiveException {
     try {
       CompactionType cr = null;
       if ("major".equals(compactType)) cr = CompactionType.MAJOR;
       else if ("minor".equals(compactType)) cr = CompactionType.MINOR;
       else throw new RuntimeException("Unknown compaction type " + compactType);
-      getMSC().compact(dbname, tableName, partName, cr, tblproperties);
+      return getMSC().compact2(dbname, tableName, partName, cr, tblproperties);
     } catch (Exception e) {
       LOG.error(StringUtils.stringifyException(e));
       throw new HiveException(e);
     }
   }
-
   public ShowCompactResponse showCompactions() throws HiveException {
     try {
       return getMSC().showCompactions();

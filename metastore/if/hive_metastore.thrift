@@ -750,6 +750,12 @@ struct CompactionRequest {
     6: optional map<string, string> properties
 }
 
+struct CompactionResponse {
+    1: required i64 id,
+    2: required string state,
+    3: required bool accepted
+}
+
 struct ShowCompactRequest {
 }
 
@@ -766,6 +772,7 @@ struct ShowCompactResponseElement {
     10: optional string metaInfo,
     11: optional i64 endTime,
     12: optional string hadoopJobId = "None",
+    13: optional i64 id,
 }
 
 struct ShowCompactResponse {
@@ -1460,6 +1467,7 @@ service ThriftHiveMetastore extends fb303.FacebookService
   void heartbeat(1:HeartbeatRequest ids) throws (1:NoSuchLockException o1, 2:NoSuchTxnException o2, 3:TxnAbortedException o3)
   HeartbeatTxnRangeResponse heartbeat_txn_range(1:HeartbeatTxnRangeRequest txns)
   void compact(1:CompactionRequest rqst) 
+  CompactionResponse compact2(1:CompactionRequest rqst) 
   ShowCompactResponse show_compact(1:ShowCompactRequest rqst)
   void add_dynamic_partitions(1:AddDynamicPartitions rqst) throws (1:NoSuchTxnException o1, 2:TxnAbortedException o2)
 

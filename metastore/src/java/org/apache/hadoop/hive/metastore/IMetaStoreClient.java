@@ -31,6 +31,7 @@ import org.apache.hadoop.hive.metastore.api.AggrStats;
 import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
+import org.apache.hadoop.hive.metastore.api.CompactionResponse;
 import org.apache.hadoop.hive.metastore.api.CompactionType;
 import org.apache.hadoop.hive.metastore.api.ConfigValSecurityException;
 import org.apache.hadoop.hive.metastore.api.CurrentNotificationEventId;
@@ -1456,12 +1457,15 @@ public interface IMetaStoreClient {
   @Deprecated
   void compact(String dbname, String tableName, String partitionName,  CompactionType type)
       throws TException;
-
+  @Deprecated
+  void compact(String dbname, String tableName, String partitionName, CompactionType type,
+               Map<String, String> tblproperties) throws TException;
   /**
    * Send a request to compact a table or partition.  This will not block until the compaction is
    * complete.  It will instead put a request on the queue for that table or partition to be
    * compacted.  No checking is done on the dbname, tableName, or partitionName to make sure they
-   * refer to valid objects.  It is assumed this has already been done by the caller.
+   * refer to valid objects.  It is assumed this has already been done by the caller.  At most one
+   * Compaction can be scheduled/running for any given resource at a time.
    * @param dbname Name of the database the table is in.  If null, this will be assumed to be
    *               'default'.
    * @param tableName Name of the table to be compacted.  This cannot be null.  If partitionName
@@ -1469,10 +1473,11 @@ public interface IMetaStoreClient {
    * @param partitionName Name of the partition to be compacted
    * @param type Whether this is a major or minor compaction.
    * @param tblproperties the list of tblproperties to override for this compact. Can be null.
+   * @return id of newly scheduled compaction or id/state of one which is already scheduled/running
    * @throws TException
    */
-  void compact(String dbname, String tableName, String partitionName, CompactionType type,
-               Map<String, String> tblproperties) throws TException;
+  CompactionResponse compact2(String dbname, String tableName, String partitionName, CompactionType type,
+                              Map<String, String> tblproperties) throws TException;
 
   /**
    * Get a list of all current compactions.

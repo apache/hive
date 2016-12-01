@@ -10185,6 +10185,103 @@ class CompactionRequest:
   def __ne__(self, other):
     return not (self == other)
 
+class CompactionResponse:
+  """
+  Attributes:
+   - id
+   - state
+   - accepted
+  """
+
+  thrift_spec = (
+    None, # 0
+    (1, TType.I64, 'id', None, None, ), # 1
+    (2, TType.STRING, 'state', None, None, ), # 2
+    (3, TType.BOOL, 'accepted', None, None, ), # 3
+  )
+
+  def __init__(self, id=None, state=None, accepted=None,):
+    self.id = id
+    self.state = state
+    self.accepted = accepted
+
+  def read(self, iprot):
+    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
+      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
+      return
+    iprot.readStructBegin()
+    while True:
+      (fname, ftype, fid) = iprot.readFieldBegin()
+      if ftype == TType.STOP:
+        break
+      if fid == 1:
+        if ftype == TType.I64:
+          self.id = iprot.readI64()
+        else:
+          iprot.skip(ftype)
+      elif fid == 2:
+        if ftype == TType.STRING:
+          self.state = iprot.readString()
+        else:
+          iprot.skip(ftype)
+      elif fid == 3:
+        if ftype == TType.BOOL:
+          self.accepted = iprot.readBool()
+        else:
+          iprot.skip(ftype)
+      else:
+        iprot.skip(ftype)
+      iprot.readFieldEnd()
+    iprot.readStructEnd()
+
+  def write(self, oprot):
+    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
+      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
+      return
+    oprot.writeStructBegin('CompactionResponse')
+    if self.id is not None:
+      oprot.writeFieldBegin('id', TType.I64, 1)
+      oprot.writeI64(self.id)
+      oprot.writeFieldEnd()
+    if self.state is not None:
+      oprot.writeFieldBegin('state', TType.STRING, 2)
+      oprot.writeString(self.state)
+      oprot.writeFieldEnd()
+    if self.accepted is not None:
+      oprot.writeFieldBegin('accepted', TType.BOOL, 3)
+      oprot.writeBool(self.accepted)
+      oprot.writeFieldEnd()
+    oprot.writeFieldStop()
+    oprot.writeStructEnd()
+
+  def validate(self):
+    if self.id is None:
+      raise TProtocol.TProtocolException(message='Required field id is unset!')
+    if self.state is None:
+      raise TProtocol.TProtocolException(message='Required field state is unset!')
+    if self.accepted is None:
+      raise TProtocol.TProtocolException(message='Required field accepted is unset!')
+    return
+
+
+  def __hash__(self):
+    value = 17
+    value = (value * 31) ^ hash(self.id)
+    value = (value * 31) ^ hash(self.state)
+    value = (value * 31) ^ hash(self.accepted)
+    return value
+
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+  def __eq__(self, other):
+    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+  def __ne__(self, other):
+    return not (self == other)
+
 class ShowCompactRequest:
 
   thrift_spec = (
@@ -10246,6 +10343,7 @@ class ShowCompactResponseElement:
    - metaInfo
    - endTime
    - hadoopJobId
+   - id
   """
 
   thrift_spec = (
@@ -10262,9 +10360,10 @@ class ShowCompactResponseElement:
     (10, TType.STRING, 'metaInfo', None, None, ), # 10
     (11, TType.I64, 'endTime', None, None, ), # 11
     (12, TType.STRING, 'hadoopJobId', None, "None", ), # 12
+    (13, TType.I64, 'id', None, None, ), # 13
   )
 
-  def __init__(self, dbname=None, tablename=None, partitionname=None, type=None, state=None, workerid=None, start=None, runAs=None, hightestTxnId=None, metaInfo=None, endTime=None, hadoopJobId=thrift_spec[12][4],):
+  def __init__(self, dbname=None, tablename=None, partitionname=None, type=None, state=None, workerid=None, start=None, runAs=None, hightestTxnId=None, metaInfo=None, endTime=None, hadoopJobId=thrift_spec[12][4], id=None,):
     self.dbname = dbname
     self.tablename = tablename
     self.partitionname = partitionname
@@ -10277,6 +10376,7 @@ class ShowCompactResponseElement:
     self.metaInfo = metaInfo
     self.endTime = endTime
     self.hadoopJobId = hadoopJobId
+    self.id = id
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -10347,6 +10447,11 @@ class ShowCompactResponseElement:
           self.hadoopJobId = iprot.readString()
         else:
           iprot.skip(ftype)
+      elif fid == 13:
+        if ftype == TType.I64:
+          self.id = iprot.readI64()
+        else:
+          iprot.skip(ftype)
       else:
         iprot.skip(ftype)
       iprot.readFieldEnd()
@@ -10405,6 +10510,10 @@ class ShowCompactResponseElement:
       oprot.writeFieldBegin('hadoopJobId', TType.STRING, 12)
       oprot.writeString(self.hadoopJobId)
       oprot.writeFieldEnd()
+    if self.id is not None:
+      oprot.writeFieldBegin('id', TType.I64, 13)
+      oprot.writeI64(self.id)
+      oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
@@ -10434,6 +10543,7 @@ class ShowCompactResponseElement:
     value = (value * 31) ^ hash(self.metaInfo)
     value = (value * 31) ^ hash(self.endTime)
     value = (value * 31) ^ hash(self.hadoopJobId)
+    value = (value * 31) ^ hash(self.id)
     return value
 
   def __repr__(self):

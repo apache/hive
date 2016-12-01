@@ -163,6 +163,7 @@ class ThriftHiveMetastoreIf : virtual public  ::facebook::fb303::FacebookService
   virtual void heartbeat(const HeartbeatRequest& ids) = 0;
   virtual void heartbeat_txn_range(HeartbeatTxnRangeResponse& _return, const HeartbeatTxnRangeRequest& txns) = 0;
   virtual void compact(const CompactionRequest& rqst) = 0;
+  virtual void compact2(CompactionResponse& _return, const CompactionRequest& rqst) = 0;
   virtual void show_compact(ShowCompactResponse& _return, const ShowCompactRequest& rqst) = 0;
   virtual void add_dynamic_partitions(const AddDynamicPartitions& rqst) = 0;
   virtual void get_next_notification(NotificationEventResponse& _return, const NotificationEventRequest& rqst) = 0;
@@ -652,6 +653,9 @@ class ThriftHiveMetastoreNull : virtual public ThriftHiveMetastoreIf , virtual p
     return;
   }
   void compact(const CompactionRequest& /* rqst */) {
+    return;
+  }
+  void compact2(CompactionResponse& /* _return */, const CompactionRequest& /* rqst */) {
     return;
   }
   void show_compact(ShowCompactResponse& /* _return */, const ShowCompactRequest& /* rqst */) {
@@ -18383,6 +18387,110 @@ class ThriftHiveMetastore_compact_presult {
 
 };
 
+typedef struct _ThriftHiveMetastore_compact2_args__isset {
+  _ThriftHiveMetastore_compact2_args__isset() : rqst(false) {}
+  bool rqst :1;
+} _ThriftHiveMetastore_compact2_args__isset;
+
+class ThriftHiveMetastore_compact2_args {
+ public:
+
+  ThriftHiveMetastore_compact2_args(const ThriftHiveMetastore_compact2_args&);
+  ThriftHiveMetastore_compact2_args& operator=(const ThriftHiveMetastore_compact2_args&);
+  ThriftHiveMetastore_compact2_args() {
+  }
+
+  virtual ~ThriftHiveMetastore_compact2_args() throw();
+  CompactionRequest rqst;
+
+  _ThriftHiveMetastore_compact2_args__isset __isset;
+
+  void __set_rqst(const CompactionRequest& val);
+
+  bool operator == (const ThriftHiveMetastore_compact2_args & rhs) const
+  {
+    if (!(rqst == rhs.rqst))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_compact2_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_compact2_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class ThriftHiveMetastore_compact2_pargs {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_compact2_pargs() throw();
+  const CompactionRequest* rqst;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_compact2_result__isset {
+  _ThriftHiveMetastore_compact2_result__isset() : success(false) {}
+  bool success :1;
+} _ThriftHiveMetastore_compact2_result__isset;
+
+class ThriftHiveMetastore_compact2_result {
+ public:
+
+  ThriftHiveMetastore_compact2_result(const ThriftHiveMetastore_compact2_result&);
+  ThriftHiveMetastore_compact2_result& operator=(const ThriftHiveMetastore_compact2_result&);
+  ThriftHiveMetastore_compact2_result() {
+  }
+
+  virtual ~ThriftHiveMetastore_compact2_result() throw();
+  CompactionResponse success;
+
+  _ThriftHiveMetastore_compact2_result__isset __isset;
+
+  void __set_success(const CompactionResponse& val);
+
+  bool operator == (const ThriftHiveMetastore_compact2_result & rhs) const
+  {
+    if (!(success == rhs.success))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_compact2_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_compact2_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_compact2_presult__isset {
+  _ThriftHiveMetastore_compact2_presult__isset() : success(false) {}
+  bool success :1;
+} _ThriftHiveMetastore_compact2_presult__isset;
+
+class ThriftHiveMetastore_compact2_presult {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_compact2_presult() throw();
+  CompactionResponse* success;
+
+  _ThriftHiveMetastore_compact2_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
 typedef struct _ThriftHiveMetastore_show_compact_args__isset {
   _ThriftHiveMetastore_show_compact_args__isset() : rqst(false) {}
   bool rqst :1;
@@ -19927,6 +20035,9 @@ class ThriftHiveMetastoreClient : virtual public ThriftHiveMetastoreIf, public  
   void compact(const CompactionRequest& rqst);
   void send_compact(const CompactionRequest& rqst);
   void recv_compact();
+  void compact2(CompactionResponse& _return, const CompactionRequest& rqst);
+  void send_compact2(const CompactionRequest& rqst);
+  void recv_compact2(CompactionResponse& _return);
   void show_compact(ShowCompactResponse& _return, const ShowCompactRequest& rqst);
   void send_show_compact(const ShowCompactRequest& rqst);
   void recv_show_compact(ShowCompactResponse& _return);
@@ -20111,6 +20222,7 @@ class ThriftHiveMetastoreProcessor : public  ::facebook::fb303::FacebookServiceP
   void process_heartbeat(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_heartbeat_txn_range(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_compact(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_compact2(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_show_compact(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_add_dynamic_partitions(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_get_next_notification(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
@@ -20267,6 +20379,7 @@ class ThriftHiveMetastoreProcessor : public  ::facebook::fb303::FacebookServiceP
     processMap_["heartbeat"] = &ThriftHiveMetastoreProcessor::process_heartbeat;
     processMap_["heartbeat_txn_range"] = &ThriftHiveMetastoreProcessor::process_heartbeat_txn_range;
     processMap_["compact"] = &ThriftHiveMetastoreProcessor::process_compact;
+    processMap_["compact2"] = &ThriftHiveMetastoreProcessor::process_compact2;
     processMap_["show_compact"] = &ThriftHiveMetastoreProcessor::process_show_compact;
     processMap_["add_dynamic_partitions"] = &ThriftHiveMetastoreProcessor::process_add_dynamic_partitions;
     processMap_["get_next_notification"] = &ThriftHiveMetastoreProcessor::process_get_next_notification;
@@ -21660,6 +21773,16 @@ class ThriftHiveMetastoreMultiface : virtual public ThriftHiveMetastoreIf, publi
     ifaces_[i]->compact(rqst);
   }
 
+  void compact2(CompactionResponse& _return, const CompactionRequest& rqst) {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->compact2(_return, rqst);
+    }
+    ifaces_[i]->compact2(_return, rqst);
+    return;
+  }
+
   void show_compact(ShowCompactResponse& _return, const ShowCompactRequest& rqst) {
     size_t sz = ifaces_.size();
     size_t i = 0;
@@ -22207,6 +22330,9 @@ class ThriftHiveMetastoreConcurrentClient : virtual public ThriftHiveMetastoreIf
   void compact(const CompactionRequest& rqst);
   int32_t send_compact(const CompactionRequest& rqst);
   void recv_compact(const int32_t seqid);
+  void compact2(CompactionResponse& _return, const CompactionRequest& rqst);
+  int32_t send_compact2(const CompactionRequest& rqst);
+  void recv_compact2(CompactionResponse& _return, const int32_t seqid);
   void show_compact(ShowCompactResponse& _return, const ShowCompactRequest& rqst);
   int32_t send_show_compact(const ShowCompactRequest& rqst);
   void recv_show_compact(ShowCompactResponse& _return, const int32_t seqid);

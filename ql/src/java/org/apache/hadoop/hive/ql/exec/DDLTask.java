@@ -69,6 +69,7 @@ import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
+import org.apache.hadoop.hive.metastore.api.CompactionResponse;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
@@ -1809,8 +1810,15 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       }
       partName = partitions.get(0).getName();
     }
-    db.compact(tbl.getDbName(), tbl.getTableName(), partName, desc.getCompactionType(), desc.getProps());
-    console.printInfo("Compaction enqueued.");
+    CompactionResponse resp = db.compact2(tbl.getDbName(), tbl.getTableName(), partName,
+      desc.getCompactionType(), desc.getProps());
+    if(resp.isAccepted()) {
+      console.printInfo("Compaction enqueued with id " + resp.getId());
+    }
+    else {
+      console.printInfo("Compaction already enqueued with id " + resp.getId() +
+        "; State is " + resp.getState());
+    }
     return 0;
   }
 

@@ -1375,18 +1375,49 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     stmt.executeUpdate(s);
     return id;
   }
-  public long compact(CompactionRequest rqst) throws MetaException {
+  @Override
+  public CompactionResponse compact(CompactionRequest rqst) throws MetaException {
     // Put a compaction request in the queue.
     try {
       Connection dbConn = null;
       Statement stmt = null;
+      TxnStore.MutexAPI.LockHandle handle = null;
       try {
         lockInternal();
+        /**
+         * MUTEX_KEY.CompactionScheduler lock ensures that there is only 1 entry in
+         * Initiated/Working state for any resource.  This ensures that we don't run concurrent
+         * compactions for any resource.
+         */
+        handle = getMutexAPI().acquireLock(MUTEX_KEY.CompactionScheduler.name());
         dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
         stmt = dbConn.createStatement();
-        
+
         long id = generateCompactionQueueId(stmt);
 
+        StringBuilder sb = new StringBuilder("select cq_id, cq_state from COMPACTION_QUEUE where").
+          append(" cq_state IN(").append(quoteChar(INITIATED_STATE)).
+            append(",").append(quoteChar(WORKING_STATE)).
+          append(") AND cq_database=").append(quoteString(rqst.getDbname())).
+          append(" AND cq_table=").append(quoteString(rqst.getTablename())).append(" AND ");
+        if(rqst.getPartitionname() == null) {
+          sb.append("cq_partition is null");
+        }
+        else {
+          sb.append("cq_partition=").append(quoteString(rqst.getPartitionname()));
+        }
+
+        LOG.debug("Going to execute query <" + sb.toString() + ">");
+        ResultSet rs = stmt.executeQuery(sb.toString());
+        if(rs.next()) {
+          long enqueuedId = rs.getLong(1);
+          String state = compactorStateToResponse(rs.getString(2).charAt(0));
+          LOG.info("Ignoring request to compact " + rqst.getDbname() + "/" + rqst.getTablename() +
+            "/" + rqst.getPartitionname() + " since it is already " + quoteString(state) +
+            " with id=" + enqueuedId);
+          return new CompactionResponse(enqueuedId, state, false);
+        }
+        close(rs);
         StringBuilder buf = new StringBuilder("insert into COMPACTION_QUEUE (cq_id, cq_database, " +
           "cq_table, ");
         String partName = rqst.getPartitionname();
@@ -1437,7 +1468,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         stmt.executeUpdate(s);
         LOG.debug("Going to commit");
         dbConn.commit();
-        return id;
+        return new CompactionResponse(id, INITIATED_RESPONSE, true);
       } catch (SQLException e) {
         LOG.debug("Going to rollback");
         rollbackDBConn(dbConn);
@@ -1447,6 +1478,9 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       } finally {
         closeStmt(stmt);
         closeDbConn(dbConn);
+        if(handle != null) {
+          handle.releaseLocks();
+        }
         unlockInternal();
       }
     } catch (RetryException e) {
@@ -1454,6 +1488,18 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     }
   }
 
+  private static String compactorStateToResponse(char s) {
+    switch (s) {
+      case INITIATED_STATE: return INITIATED_RESPONSE;
+      case WORKING_STATE: return WORKING_RESPONSE;
+      case READY_FOR_CLEANING: return CLEANING_RESPONSE;
+      case FAILED_STATE: return FAILED_RESPONSE;
+      case SUCCEEDED_STATE: return SUCCEEDED_RESPONSE;
+      case ATTEMPTED_STATE: return ATTEMPTED_RESPONSE;
+      default:
+        return Character.toString(s);
+    }
+  }
   public ShowCompactResponse showCompact(ShowCompactRequest rqst) throws MetaException {
     ShowCompactResponse response = new ShowCompactResponse(new ArrayList<ShowCompactResponseElement>());
     Connection dbConn = null;
@@ -1477,16 +1523,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
           e.setDbname(rs.getString(1));
           e.setTablename(rs.getString(2));
           e.setPartitionname(rs.getString(3));
-          switch (rs.getString(4).charAt(0)) {
-            case INITIATED_STATE: e.setState(INITIATED_RESPONSE); break;
-            case WORKING_STATE: e.setState(WORKING_RESPONSE); break;
-            case READY_FOR_CLEANING: e.setState(CLEANING_RESPONSE); break;
-            case FAILED_STATE: e.setState(FAILED_RESPONSE); break;
-            case SUCCEEDED_STATE: e.setState(SUCCEEDED_RESPONSE); break;
-            case ATTEMPTED_STATE: e.setState(ATTEMPTED_RESPONSE); break;
-            default:
-              //do nothing to handle RU/D if we add another status
-          }
+          e.setState(compactorStateToResponse(rs.getString(4).charAt(0)));
           switch (rs.getString(5).charAt(0)) {
             case MAJOR_TYPE: e.setType(CompactionType.MAJOR); break;
             case MINOR_TYPE: e.setType(CompactionType.MINOR); break;

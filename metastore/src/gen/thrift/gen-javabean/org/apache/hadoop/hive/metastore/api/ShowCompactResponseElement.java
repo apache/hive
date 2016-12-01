@@ -50,6 +50,7 @@ public class ShowCompactResponseElement implements org.apache.thrift.TBase<ShowC
   private static final org.apache.thrift.protocol.TField META_INFO_FIELD_DESC = new org.apache.thrift.protocol.TField("metaInfo", org.apache.thrift.protocol.TType.STRING, (short)10);
   private static final org.apache.thrift.protocol.TField END_TIME_FIELD_DESC = new org.apache.thrift.protocol.TField("endTime", org.apache.thrift.protocol.TType.I64, (short)11);
   private static final org.apache.thrift.protocol.TField HADOOP_JOB_ID_FIELD_DESC = new org.apache.thrift.protocol.TField("hadoopJobId", org.apache.thrift.protocol.TType.STRING, (short)12);
+  private static final org.apache.thrift.protocol.TField ID_FIELD_DESC = new org.apache.thrift.protocol.TField("id", org.apache.thrift.protocol.TType.I64, (short)13);
 
   private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
   static {
@@ -69,6 +70,7 @@ public class ShowCompactResponseElement implements org.apache.thrift.TBase<ShowC
   private String metaInfo; // optional
   private long endTime; // optional
   private String hadoopJobId; // optional
+  private long id; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
@@ -87,7 +89,8 @@ public class ShowCompactResponseElement implements org.apache.thrift.TBase<ShowC
     HIGHTEST_TXN_ID((short)9, "hightestTxnId"),
     META_INFO((short)10, "metaInfo"),
     END_TIME((short)11, "endTime"),
-    HADOOP_JOB_ID((short)12, "hadoopJobId");
+    HADOOP_JOB_ID((short)12, "hadoopJobId"),
+    ID((short)13, "id");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -126,6 +129,8 @@ public class ShowCompactResponseElement implements org.apache.thrift.TBase<ShowC
           return END_TIME;
         case 12: // HADOOP_JOB_ID
           return HADOOP_JOB_ID;
+        case 13: // ID
+          return ID;
         default:
           return null;
       }
@@ -169,8 +174,9 @@ public class ShowCompactResponseElement implements org.apache.thrift.TBase<ShowC
   private static final int __START_ISSET_ID = 0;
   private static final int __HIGHTESTTXNID_ISSET_ID = 1;
   private static final int __ENDTIME_ISSET_ID = 2;
+  private static final int __ID_ISSET_ID = 3;
   private byte __isset_bitfield = 0;
-  private static final _Fields optionals[] = {_Fields.PARTITIONNAME,_Fields.WORKERID,_Fields.START,_Fields.RUN_AS,_Fields.HIGHTEST_TXN_ID,_Fields.META_INFO,_Fields.END_TIME,_Fields.HADOOP_JOB_ID};
+  private static final _Fields optionals[] = {_Fields.PARTITIONNAME,_Fields.WORKERID,_Fields.START,_Fields.RUN_AS,_Fields.HIGHTEST_TXN_ID,_Fields.META_INFO,_Fields.END_TIME,_Fields.HADOOP_JOB_ID,_Fields.ID};
   public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
@@ -198,6 +204,8 @@ public class ShowCompactResponseElement implements org.apache.thrift.TBase<ShowC
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64)));
     tmpMap.put(_Fields.HADOOP_JOB_ID, new org.apache.thrift.meta_data.FieldMetaData("hadoopJobId", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+    tmpMap.put(_Fields.ID, new org.apache.thrift.meta_data.FieldMetaData("id", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(ShowCompactResponseElement.class, metaDataMap);
   }
@@ -255,6 +263,7 @@ public class ShowCompactResponseElement implements org.apache.thrift.TBase<ShowC
     if (other.isSetHadoopJobId()) {
       this.hadoopJobId = other.hadoopJobId;
     }
+    this.id = other.id;
   }
 
   public ShowCompactResponseElement deepCopy() {
@@ -279,6 +288,8 @@ public class ShowCompactResponseElement implements org.apache.thrift.TBase<ShowC
     this.endTime = 0;
     this.hadoopJobId = "None";
 
+    setIdIsSet(false);
+    this.id = 0;
   }
 
   public String getDbname() {
@@ -562,6 +573,28 @@ public class ShowCompactResponseElement implements org.apache.thrift.TBase<ShowC
     }
   }
 
+  public long getId() {
+    return this.id;
+  }
+
+  public void setId(long id) {
+    this.id = id;
+    setIdIsSet(true);
+  }
+
+  public void unsetId() {
+    __isset_bitfield = EncodingUtils.clearBit(__isset_bitfield, __ID_ISSET_ID);
+  }
+
+  /** Returns true if field id is set (has been assigned a value) and false otherwise */
+  public boolean isSetId() {
+    return EncodingUtils.testBit(__isset_bitfield, __ID_ISSET_ID);
+  }
+
+  public void setIdIsSet(boolean value) {
+    __isset_bitfield = EncodingUtils.setBit(__isset_bitfield, __ID_ISSET_ID, value);
+  }
+
   public void setFieldValue(_Fields field, Object value) {
     switch (field) {
     case DBNAME:
@@ -660,6 +693,14 @@ public class ShowCompactResponseElement implements org.apache.thrift.TBase<ShowC
       }
       break;
 
+    case ID:
+      if (value == null) {
+        unsetId();
+      } else {
+        setId((Long)value);
+      }
+      break;
+
     }
   }
 
@@ -701,6 +742,9 @@ public class ShowCompactResponseElement implements org.apache.thrift.TBase<ShowC
     case HADOOP_JOB_ID:
       return getHadoopJobId();
 
+    case ID:
+      return getId();
+
     }
     throw new IllegalStateException();
   }
@@ -736,6 +780,8 @@ public class ShowCompactResponseElement implements org.apache.thrift.TBase<ShowC
       return isSetEndTime();
     case HADOOP_JOB_ID:
       return isSetHadoopJobId();
+    case ID:
+      return isSetId();
     }
     throw new IllegalStateException();
   }
@@ -861,6 +907,15 @@ public class ShowCompactResponseElement implements org.apache.thrift.TBase<ShowC
         return false;
     }
 
+    boolean this_present_id = true && this.isSetId();
+    boolean that_present_id = true && that.isSetId();
+    if (this_present_id || that_present_id) {
+      if (!(this_present_id && that_present_id))
+        return false;
+      if (this.id != that.id)
+        return false;
+    }
+
     return true;
   }
 
@@ -927,6 +982,11 @@ public class ShowCompactResponseElement implements org.apache.thrift.TBase<ShowC
     list.add(present_hadoopJobId);
     if (present_hadoopJobId)
       list.add(hadoopJobId);
+
+    boolean present_id = true && (isSetId());
+    list.add(present_id);
+    if (present_id)
+      list.add(id);
 
     return list.hashCode();
   }
@@ -1059,6 +1119,16 @@ public class ShowCompactResponseElement implements org.apache.thrift.TBase<ShowC
         return lastComparison;
       }
     }
+    lastComparison = Boolean.valueOf(isSetId()).compareTo(other.isSetId());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetId()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.id, other.id);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
     return 0;
   }
 
@@ -1176,6 +1246,12 @@ public class ShowCompactResponseElement implements org.apache.thrift.TBase<ShowC
       } else {
         sb.append(this.hadoopJobId);
       }
+      first = false;
+    }
+    if (isSetId()) {
+      if (!first) sb.append(", ");
+      sb.append("id:");
+      sb.append(this.id);
       first = false;
     }
     sb.append(")");
@@ -1335,6 +1411,14 @@ public class ShowCompactResponseElement implements org.apache.thrift.TBase<ShowC
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
+          case 13: // ID
+            if (schemeField.type == org.apache.thrift.protocol.TType.I64) {
+              struct.id = iprot.readI64();
+              struct.setIdIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
           default:
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
         }
@@ -1418,6 +1502,11 @@ public class ShowCompactResponseElement implements org.apache.thrift.TBase<ShowC
           oprot.writeFieldEnd();
         }
       }
+      if (struct.isSetId()) {
+        oprot.writeFieldBegin(ID_FIELD_DESC);
+        oprot.writeI64(struct.id);
+        oprot.writeFieldEnd();
+      }
       oprot.writeFieldStop();
       oprot.writeStructEnd();
     }
@@ -1464,7 +1553,10 @@ public class ShowCompactResponseElement implements org.apache.thrift.TBase<ShowC
       if (struct.isSetHadoopJobId()) {
         optionals.set(7);
       }
-      oprot.writeBitSet(optionals, 8);
+      if (struct.isSetId()) {
+        optionals.set(8);
+      }
+      oprot.writeBitSet(optionals, 9);
       if (struct.isSetPartitionname()) {
         oprot.writeString(struct.partitionname);
       }
@@ -1489,6 +1581,9 @@ public class ShowCompactResponseElement implements org.apache.thrift.TBase<ShowC
       if (struct.isSetHadoopJobId()) {
         oprot.writeString(struct.hadoopJobId);
       }
+      if (struct.isSetId()) {
+        oprot.writeI64(struct.id);
+      }
     }
 
     @Override
@@ -1502,7 +1597,7 @@ public class ShowCompactResponseElement implements org.apache.thrift.TBase<ShowC
       struct.setTypeIsSet(true);
       struct.state = iprot.readString();
       struct.setStateIsSet(true);
-      BitSet incoming = iprot.readBitSet(8);
+      BitSet incoming = iprot.readBitSet(9);
       if (incoming.get(0)) {
         struct.partitionname = iprot.readString();
         struct.setPartitionnameIsSet(true);
@@ -1534,6 +1629,10 @@ public class ShowCompactResponseElement implements org.apache.thrift.TBase<ShowC
       if (incoming.get(7)) {
         struct.hadoopJobId = iprot.readString();
         struct.setHadoopJobIdIsSet(true);
+      }
+      if (incoming.get(8)) {
+        struct.id = iprot.readI64();
+        struct.setIdIsSet(true);
       }
     }
   }
