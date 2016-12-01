@@ -55,4 +55,10 @@ public class OpTraits {
   public List<List<String>> getSortCols() {
     return sortColNames;
   }
+  
+  @Override
+  public String toString() {
+    return "{ bucket column names: " + bucketColNames + "; sort column names: "
+        + sortColNames + "; bucket count: " + numBuckets + " }";
+  }
 }
