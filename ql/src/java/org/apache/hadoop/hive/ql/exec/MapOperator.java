@@ -279,7 +279,7 @@ public class MapOperator extends AbstractMapOperator {
    * and P1's schema is same as T, whereas P2's scheme is different from T, conversion
    * might be needed for both P1 and P2, since SettableOI might be needed for T
    */
-  private Map<TableDesc, StructObjectInspector> getConvertedOI(Map<String, Configuration> tableToConf)
+  private Map<TableDesc, StructObjectInspector> getConvertedOI(Map<String, Configuration> tableNameToConf)
       throws HiveException {
     Map<TableDesc, StructObjectInspector> tableDescOI =
         new HashMap<TableDesc, StructObjectInspector>();
@@ -291,7 +291,7 @@ public class MapOperator extends AbstractMapOperator {
       for (Path onefile : conf.getPathToAliases().keySet()) {
         PartitionDesc pd = conf.getPathToPartitionInfo().get(onefile);
         TableDesc tableDesc = pd.getTableDesc();
-        Configuration hconf = tableToConf.get(tableDesc.getTableName());
+        Configuration hconf = tableNameToConf.get(tableDesc.getTableName());
         Deserializer partDeserializer = pd.getDeserializer(hconf);
         StructObjectInspector partRawRowObjectInspector;
         boolean isAcid = AcidUtils.isTablePropertyTransactional(tableDesc.getProperties());
