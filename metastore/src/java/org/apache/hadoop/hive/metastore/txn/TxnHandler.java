@@ -2824,9 +2824,9 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         deletedLocks += stmt.executeUpdate(query);
       }
       if(deletedLocks > 0) {
-        Collections.sort(extLockIDs);////easier to read logs
-        LOG.info("Deleted " + deletedLocks + " ext locks from HIVE_LOCKS due to timeout (vs. " +
-            extLockIDs.size() + " found. List: " + extLockIDs + ") maxHeartbeatTime=" + maxHeartbeatTime);
+        Collections.sort(extLockIDs);//easier to read logs
+        LOG.info("Deleted " + deletedLocks + " int locks from HIVE_LOCKS due to timeout (" +
+          "HL_LOCK_EXT_ID list:  " + extLockIDs + ") maxHeartbeatTime=" + maxHeartbeatTime);
       }
       LOG.debug("Going to commit");
       dbConn.commit();
@@ -3236,7 +3236,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
      * production code as possible.
      * In particular, with Derby we always run in a single process with a single metastore and
      * the absence of For Update is handled via a Semaphore.  The later would strictly speaking
-     * make the SQL statments below unnecessary (for Derby), but then they would not be tested.
+     * make the SQL statements below unnecessary (for Derby), but then they would not be tested.
      */
     Connection dbConn = null;
     Statement stmt = null;
@@ -3277,7 +3277,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
           derbySemaphore =  derbyKey2Lock.get(key);
           derbySemaphore.acquire();
         }
-        LOG.info(quoteString(key) + " locked by " + quoteString(TxnHandler.hostname));
+        LOG.debug(quoteString(key) + " locked by " + quoteString(TxnHandler.hostname));
         //OK, so now we have a lock
         return new LockHandleImpl(dbConn, stmt, rs, key, derbySemaphore);
       } catch (SQLException ex) {
@@ -3334,7 +3334,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         derbySemaphore.release();
       }
       for(String key : keys) {
-        LOG.info(quoteString(key) + " unlocked by " + quoteString(TxnHandler.hostname));
+        LOG.debug(quoteString(key) + " unlocked by " + quoteString(TxnHandler.hostname));
       }
     }
   }
