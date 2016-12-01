@@ -1,0 +1,27 @@
+PREHOOK: query: select cast("2016-12-29 23:59:59" as timestamp) < "2016-12-30"
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select cast("2016-12-29 23:59:59" as timestamp) < "2016-12-30"
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+true
+PREHOOK: query: select cast("2016-12-30 00:00:00" as timestamp) = "2016-12-30"
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select cast("2016-12-30 00:00:00" as timestamp) = "2016-12-30"
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+true
+PREHOOK: query: select cast("2016-12-30 00:00:01" as timestamp) > "2016-12-30"
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select cast("2016-12-30 00:00:01" as timestamp) > "2016-12-30"
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+true
