@@ -1095,6 +1095,9 @@ public final class PrimitiveObjectInspectorUtils {
         s = s.substring(0, periodIdx + 10);
       }
     }
+    if (s.indexOf(' ') < 0) {
+      s = s.concat(" 00:00:00");
+    }
     try {
       result = Timestamp.valueOf(s);
     } catch (IllegalArgumentException e) {

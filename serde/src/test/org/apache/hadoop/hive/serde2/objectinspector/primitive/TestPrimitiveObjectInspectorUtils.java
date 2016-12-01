@@ -18,6 +18,8 @@
 
 package org.apache.hadoop.hive.serde2.objectinspector.primitive;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils.PrimitiveGrouping;
 
@@ -59,5 +61,10 @@ public class TestPrimitiveObjectInspectorUtils extends TestCase {
         PrimitiveObjectInspectorUtils.getPrimitiveGrouping(PrimitiveCategory.UNKNOWN));
     assertEquals(PrimitiveGrouping.VOID_GROUP,
         PrimitiveObjectInspectorUtils.getPrimitiveGrouping(PrimitiveCategory.VOID));
+  }
+
+  public void testGetTimestampFromString() {
+    DateFormat localDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
+    assertEquals("2015-02-07 00:00:00.000", localDateFormat.format(PrimitiveObjectInspectorUtils.getTimestampFromString("2015-02-07")));
   }
 }
