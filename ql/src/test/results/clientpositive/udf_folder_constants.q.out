@@ -24,21 +24,17 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@udf_tb2
 PREHOOK: query: insert into udf_tb1 values(2001, 11)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__1
 PREHOOK: Output: default@udf_tb1
 POSTHOOK: query: insert into udf_tb1 values(2001, 11)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__1
 POSTHOOK: Output: default@udf_tb1
 POSTHOOK: Lineage: udf_tb1.month EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
 POSTHOOK: Lineage: udf_tb1.year EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 PREHOOK: query: insert into udf_tb2 values(11)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__2
 PREHOOK: Output: default@udf_tb2
 POSTHOOK: query: insert into udf_tb2 values(11)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__2
 POSTHOOK: Output: default@udf_tb2
 POSTHOOK: Lineage: udf_tb2.month EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 PREHOOK: query: explain

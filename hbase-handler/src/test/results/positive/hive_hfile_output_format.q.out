@@ -12,11 +12,9 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@source
 PREHOOK: query: INSERT INTO TABLE source VALUES (1, 23.54, -54.99)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__1
 PREHOOK: Output: default@source
 POSTHOOK: query: INSERT INTO TABLE source VALUES (1, 23.54, -54.99)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__1
 POSTHOOK: Output: default@source
 POSTHOOK: Lineage: source.id EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 POSTHOOK: Lineage: source.latitude EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col3, type:string, comment:), ]

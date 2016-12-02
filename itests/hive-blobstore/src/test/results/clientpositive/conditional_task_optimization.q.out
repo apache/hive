@@ -100,11 +100,9 @@ STAGE PLANS:
 
 PREHOOK: query: INSERT INTO TABLE conditional VALUES (1)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__2
 PREHOOK: Output: default@conditional
 POSTHOOK: query: INSERT INTO TABLE conditional VALUES (1)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__2
 POSTHOOK: Output: default@conditional
 POSTHOOK: Lineage: conditional.id EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 PREHOOK: query: SELECT * FROM conditional
@@ -204,11 +202,9 @@ STAGE PLANS:
 
 PREHOOK: query: INSERT OVERWRITE TABLE conditional VALUES (11)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__4
 PREHOOK: Output: default@conditional
 POSTHOOK: query: INSERT OVERWRITE TABLE conditional VALUES (11)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__4
 POSTHOOK: Output: default@conditional
 POSTHOOK: Lineage: conditional.id EXPRESSION [(values__tmp__table__4)values__tmp__table__4.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 PREHOOK: query: SELECT * FROM conditional
@@ -312,11 +308,9 @@ STAGE PLANS:
 
 PREHOOK: query: INSERT INTO TABLE conditional VALUES (2)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__6
 PREHOOK: Output: default@conditional
 POSTHOOK: query: INSERT INTO TABLE conditional VALUES (2)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__6
 POSTHOOK: Output: default@conditional
 PREHOOK: query: SELECT * FROM conditional
 PREHOOK: type: QUERY
@@ -420,11 +414,9 @@ STAGE PLANS:
 
 PREHOOK: query: INSERT OVERWRITE TABLE conditional VALUES (22)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__8
 PREHOOK: Output: default@conditional
 POSTHOOK: query: INSERT OVERWRITE TABLE conditional VALUES (22)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__8
 POSTHOOK: Output: default@conditional
 PREHOOK: query: SELECT * FROM conditional
 PREHOOK: type: QUERY

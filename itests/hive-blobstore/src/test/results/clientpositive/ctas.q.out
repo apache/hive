@@ -14,11 +14,9 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@ctas_blobstore_table_src
 PREHOOK: query: INSERT INTO TABLE ctas_blobstore_table_src VALUES (1), (2), (3)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__1
 PREHOOK: Output: default@ctas_blobstore_table_src
 POSTHOOK: query: INSERT INTO TABLE ctas_blobstore_table_src VALUES (1), (2), (3)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__1
 POSTHOOK: Output: default@ctas_blobstore_table_src
 PREHOOK: query: DROP TABLE IF EXISTS ctas_hdfs_table_src
 PREHOOK: type: DROPTABLE
@@ -34,11 +32,9 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@ctas_hdfs_table_src
 PREHOOK: query: INSERT INTO TABLE ctas_hdfs_table_src VALUES (1), (2), (3)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__2
 PREHOOK: Output: default@ctas_hdfs_table_src
 POSTHOOK: query: INSERT INTO TABLE ctas_hdfs_table_src VALUES (1), (2), (3)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__2
 POSTHOOK: Output: default@ctas_hdfs_table_src
 POSTHOOK: Lineage: ctas_hdfs_table_src.col EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 PREHOOK: query: -- Test select from a Blobstore and write to HDFS

@@ -234,7 +234,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   // Max characters when auto generating the column name with func name
   private static final int AUTOGEN_COLALIAS_PRFX_MAXLENGTH = 20;
 
-  private static final String VALUES_TMP_TABLE_NAME_PREFIX = "Values__Tmp__Table__";
+  public static final String VALUES_TMP_TABLE_NAME_PREFIX = "Values__Tmp__Table__";
 
   private HashMap<TableScanOperator, ExprNodeDesc> opToPartPruner;
   private HashMap<TableScanOperator, PrunedPartitionList> opToPartList;
@@ -1717,8 +1717,12 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         }
 
         ReadEntity parentViewInfo = PlanUtils.getParentViewInfo(getAliasId(alias, qb), viewAliasToInput);
-        PlanUtils.addInput(inputs,
-            new ReadEntity(tab, parentViewInfo, parentViewInfo == null),mergeIsDirect);
+
+        // Temporary tables created during the execution are not the input sources
+        if (!PlanUtils.isValuesTempTable(alias)) {
+          PlanUtils.addInput(inputs,
+                  new ReadEntity(tab, parentViewInfo, parentViewInfo == null),mergeIsDirect);
+        }
       }
 
       LOG.info("Get metadata for subqueries");
@@ -9715,7 +9719,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         if (partitions != null) {
           for (Partition partn : partitions) {
             // inputs.add(new ReadEntity(partn)); // is this needed at all?
-	      LOG.info("XXX: adding part: "+partn);
             outputs.add(new WriteEntity(partn, WriteEntity.WriteType.DDL_NO_LOCK));
           }
         }

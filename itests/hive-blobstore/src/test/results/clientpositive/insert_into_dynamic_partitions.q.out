@@ -16,11 +16,9 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@table1
 PREHOOK: query: INSERT INTO TABLE table1 PARTITION (key) VALUES (1, '101'), (2, '202'), (3, '303'), (4, '404'), (5, '505')
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__1
 PREHOOK: Output: default@table1
 POSTHOOK: query: INSERT INTO TABLE table1 PARTITION (key) VALUES (1, '101'), (2, '202'), (3, '303'), (4, '404'), (5, '505')
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__1
 POSTHOOK: Output: default@table1@key=101
 POSTHOOK: Output: default@table1@key=202
 POSTHOOK: Output: default@table1@key=303
@@ -33,11 +31,9 @@ POSTHOOK: Lineage: table1 PARTITION(key=404).id EXPRESSION [(values__tmp__table_
 POSTHOOK: Lineage: table1 PARTITION(key=505).id EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 PREHOOK: query: INSERT INTO TABLE table1 PARTITION (key) VALUES (1, '101'), (2, '202'), (3, '303'), (4, '404'), (5, '505')
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__2
 PREHOOK: Output: default@table1
 POSTHOOK: query: INSERT INTO TABLE table1 PARTITION (key) VALUES (1, '101'), (2, '202'), (3, '303'), (4, '404'), (5, '505')
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__2
 POSTHOOK: Output: default@table1@key=101
 POSTHOOK: Output: default@table1@key=202
 POSTHOOK: Output: default@table1@key=303
@@ -251,31 +247,25 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@table1
 PREHOOK: query: INSERT INTO table1 PARTITION (country='USA', state='CA') values ('John Doe', 23), ('Jane Doe', 22)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__4
 PREHOOK: Output: default@table1@country=USA/state=CA
 POSTHOOK: query: INSERT INTO table1 PARTITION (country='USA', state='CA') values ('John Doe', 23), ('Jane Doe', 22)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__4
 POSTHOOK: Output: default@table1@country=USA/state=CA
 POSTHOOK: Lineage: table1 PARTITION(country=USA,state=CA).age EXPRESSION [(values__tmp__table__4)values__tmp__table__4.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
 POSTHOOK: Lineage: table1 PARTITION(country=USA,state=CA).name SIMPLE [(values__tmp__table__4)values__tmp__table__4.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 PREHOOK: query: INSERT INTO table1 PARTITION (country='USA', state='CA') values ('Mark Cage', 38), ('Mirna Cage', 37)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__5
 PREHOOK: Output: default@table1@country=USA/state=CA
 POSTHOOK: query: INSERT INTO table1 PARTITION (country='USA', state='CA') values ('Mark Cage', 38), ('Mirna Cage', 37)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__5
 POSTHOOK: Output: default@table1@country=USA/state=CA
 POSTHOOK: Lineage: table1 PARTITION(country=USA,state=CA).age EXPRESSION [(values__tmp__table__5)values__tmp__table__5.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
 POSTHOOK: Lineage: table1 PARTITION(country=USA,state=CA).name SIMPLE [(values__tmp__table__5)values__tmp__table__5.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 PREHOOK: query: INSERT INTO table1 PARTITION (country='USA', state='TX') values ('Bill Rose', 52), ('Maria Full', 50)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__6
 PREHOOK: Output: default@table1@country=USA/state=TX
 POSTHOOK: query: INSERT INTO table1 PARTITION (country='USA', state='TX') values ('Bill Rose', 52), ('Maria Full', 50)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__6
 POSTHOOK: Output: default@table1@country=USA/state=TX
 POSTHOOK: Lineage: table1 PARTITION(country=USA,state=TX).age EXPRESSION [(values__tmp__table__6)values__tmp__table__6.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
 POSTHOOK: Lineage: table1 PARTITION(country=USA,state=TX).name SIMPLE [(values__tmp__table__6)values__tmp__table__6.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
@@ -308,11 +298,9 @@ POSTHOOK: Lineage: table2 PARTITION(country=USA,state=TX).age SIMPLE [(table1)ta
 POSTHOOK: Lineage: table2 PARTITION(country=USA,state=TX).name SIMPLE [(table1)table1.FieldSchema(name:name, type:string, comment:null), ]
 PREHOOK: query: INSERT INTO TABLE table2 PARTITION (country='MEX', state) VALUES ('Peter Mo', 87, 'SON')
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__7
 PREHOOK: Output: default@table2@country=MEX
 POSTHOOK: query: INSERT INTO TABLE table2 PARTITION (country='MEX', state) VALUES ('Peter Mo', 87, 'SON')
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__7
 POSTHOOK: Output: default@table2@country=MEX/state=SON
 POSTHOOK: Lineage: table2 PARTITION(country=MEX,state=SON).age EXPRESSION [(values__tmp__table__7)values__tmp__table__7.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
 POSTHOOK: Lineage: table2 PARTITION(country=MEX,state=SON).name SIMPLE [(values__tmp__table__7)values__tmp__table__7.FieldSchema(name:tmp_values_col1, type:string, comment:), ]

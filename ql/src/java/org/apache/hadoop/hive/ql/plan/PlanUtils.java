@@ -952,7 +952,16 @@ public final class PlanUtils {
     sb.append(expr.getTypeString());
     sb.append(")");
   }
-  
+
+  /**
+   * Check if the table is the temporary table created by VALUES() syntax
+   * @param tableName table name
+   * @return
+   */
+  public static boolean isValuesTempTable(String tableName) {
+    return tableName.toLowerCase().startsWith(SemanticAnalyzer.VALUES_TMP_TABLE_NAME_PREFIX.toLowerCase());
+  }
+
   public static void addPartitionInputs(Collection<Partition> parts, Collection<ReadEntity> inputs,
       ReadEntity parentViewInfo, boolean isDirectRead) {
     // Store the inputs in a HashMap since we can't get a ReadEntity from inputs since it is
@@ -965,6 +974,11 @@ public final class PlanUtils {
     }
 
     for (Partition part : parts) {
+      // Don't add the partition or table created during the execution as the input source
+      if (isValuesTempTable(part.getTable().getTableName())) {
+        continue;
+      }
+
       ReadEntity newInput = null;
       if (part.getTable().isPartitioned()) {
         newInput = new ReadEntity(part, parentViewInfo, isDirectRead);

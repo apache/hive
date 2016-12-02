@@ -18,11 +18,9 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@rtable
 PREHOOK: query: insert into ltable values (1, null, 'CD5415192314304', '00071'), (2, null, 'CD5415192225530', '00071')
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__1
 PREHOOK: Output: default@ltable
 POSTHOOK: query: insert into ltable values (1, null, 'CD5415192314304', '00071'), (2, null, 'CD5415192225530', '00071')
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__1
 POSTHOOK: Output: default@ltable
 POSTHOOK: Lineage: ltable.index EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 POSTHOOK: Lineage: ltable.la EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
@@ -30,11 +28,9 @@ POSTHOOK: Lineage: ltable.lk1 SIMPLE [(values__tmp__table__1)values__tmp__table_
 POSTHOOK: Lineage: ltable.lk2 SIMPLE [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col4, type:string, comment:), ]
 PREHOOK: query: insert into rtable values (1, 'CD5415192314304', '00071'), (45, 'CD5415192314304', '00072')
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__2
 PREHOOK: Output: default@rtable
 POSTHOOK: query: insert into rtable values (1, 'CD5415192314304', '00071'), (45, 'CD5415192314304', '00072')
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__2
 POSTHOOK: Output: default@rtable
 POSTHOOK: Lineage: rtable.ra EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 POSTHOOK: Lineage: rtable.rk1 SIMPLE [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
