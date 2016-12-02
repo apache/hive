@@ -2520,7 +2520,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
 
           String msg = "Aborting " + JavaUtils.txnIdToString(writeSet.get(0).txnId) +
             " since a concurrent committed transaction [" + JavaUtils.txnIdToString(rs.getLong(4)) + "," + rs.getLong(5) +
-            "] has already updated resouce '" + resourceName + "'";
+            "] has already updated resource '" + resourceName + "'";
           LOG.info(msg);
           if(abortTxns(dbConn, Collections.singletonList(writeSet.get(0).txnId), true) != 1) {
             throw new IllegalStateException(msg + " FAILED!");

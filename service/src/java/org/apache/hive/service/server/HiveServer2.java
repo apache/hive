@@ -171,7 +171,7 @@ public class HiveServer2 extends CompositeService {
     try {
       hiveConf.set(HiveConf.ConfVars.HIVE_SERVER2_THRIFT_BIND_HOST.varname, getServerHost());
     } catch (Throwable t) {
-      throw new Error("Unable to intitialize HiveServer2", t);
+      throw new Error("Unable to initialize HiveServer2", t);
     }
     if (HiveConf.getBoolVar(hiveConf, ConfVars.LLAP_HS2_ENABLE_COORDINATOR)) {
       // See method comment.
@@ -503,7 +503,7 @@ public class HiveServer2 extends CompositeService {
           try {
             znode.close();
             LOG.warn("This HiveServer2 instance is now de-registered from ZooKeeper. "
-                + "The server will be shut down after the last client sesssion completes.");
+                + "The server will be shut down after the last client session completes.");
           } catch (IOException e) {
             LOG.error("Failed to close the persistent ephemeral znode", e);
           } finally {
