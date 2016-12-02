@@ -604,7 +604,7 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
         try {
           Thread.sleep(sleepTime);
         } catch (InterruptedException e) {
-          LOG.info("Cleaner thread sleep interupted", e);
+          LOG.info("Cleaner thread sleep interrupted", e);
         }
       }
     }

@@ -256,7 +256,7 @@ public class LlapProtocolServerImpl extends AbstractService
     if (isRestrictedToClusterUser && !clusterUser.equals(callingUser.getShortUserName())) {
       throw new ServiceException("Management protocol ACL is too permissive. The access has been"
           + " automatically restricted to " + clusterUser + "; " + callingUser.getShortUserName()
-          + " is denied acccess. Please set " + ConfVars.LLAP_VALIDATE_ACLS.varname + " to false,"
+          + " is denied access. Please set " + ConfVars.LLAP_VALIDATE_ACLS.varname + " to false,"
           + " or adjust " + ConfVars.LLAP_MANAGEMENT_ACL.varname + " and "
           + ConfVars.LLAP_MANAGEMENT_ACL_DENY.varname + " to a more restrictive ACL.");
     }

@@ -135,7 +135,7 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
     Preconditions.checkArgument(localDirs != null && localDirs.length > 0,
         "Work dirs must be specified");
     Preconditions.checkArgument(shufflePort == 0 || (shufflePort > 1024 && shufflePort < 65536),
-        "Shuffle Port must be betwee 1024 and 65535, or 0 for automatic selection");
+        "Shuffle Port must be between 1024 and 65535, or 0 for automatic selection");
     int outputFormatServicePort = HiveConf.getIntVar(daemonConf, HiveConf.ConfVars.LLAP_DAEMON_OUTPUT_SERVICE_PORT);
     Preconditions.checkArgument(outputFormatServicePort == 0
         || (outputFormatServicePort > 1024 && outputFormatServicePort < 65536),

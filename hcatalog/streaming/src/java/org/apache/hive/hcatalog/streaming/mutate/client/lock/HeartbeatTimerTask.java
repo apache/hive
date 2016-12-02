@@ -69,7 +69,7 @@ class HeartbeatTimerTask extends TimerTask {
   }
 
   private void failLock(Exception e) {
-    LOG.debug("Lock " + lockId + " failed, cancelling heartbeat and notifiying listener: " + listener, e);
+    LOG.debug("Lock " + lockId + " failed, cancelling heartbeat and notifying listener: " + listener, e);
     // Cancel the heartbeat
     cancel();
     listener.lockFailed(lockId, transactionId, Lock.asStrings(tableDescriptors), e);
