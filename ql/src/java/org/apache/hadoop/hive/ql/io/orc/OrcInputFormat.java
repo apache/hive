@@ -114,6 +114,8 @@ import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.Reporter;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.StringUtils;
+import org.apache.hive.common.util.Ref;
+import org.apache.orc.ColumnStatistics;
 import org.apache.orc.OrcProto;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -1002,10 +1004,15 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
     private final Context context;
     private final FileSystem fs;
     private final Path dir;
-    private final boolean useFileIds;
+    private final Ref<Boolean> useFileIds;
     private final UserGroupInformation ugi;
 
     FileGenerator(Context context, FileSystem fs, Path dir, boolean useFileIds,
+        UserGroupInformation ugi) {
+      this(context, fs, dir, Ref.from(useFileIds), ugi);
+    }
+
+    FileGenerator(Context context, FileSystem fs, Path dir, Ref<Boolean> useFileIds,
         UserGroupInformation ugi) {
       this.context = context;
       this.fs = fs;
@@ -1042,12 +1049,21 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
     }
 
     private List<HdfsFileStatusWithId> findBaseFiles(
-        Path base, boolean useFileIds) throws IOException {
-      if (useFileIds) {
+        Path base, Ref<Boolean> useFileIds) throws IOException {
+      Boolean val = useFileIds.value;
+      if (val == null || val) {
         try {
-          return SHIMS.listLocatedHdfsStatus(fs, base, AcidUtils.hiddenFileFilter);
+          List<HdfsFileStatusWithId> result = SHIMS.listLocatedHdfsStatus(
+              fs, base, AcidUtils.hiddenFileFilter);
+          if (val == null) {
+            useFileIds.value = true; // The call succeeded, so presumably the API is there.
+          }
+          return result;
         } catch (Throwable t) {
           LOG.error("Failed to get files with ID; using regular API: " + t.getMessage());
+          if (val == null && t instanceof UnsupportedOperationException) {
+            useFileIds.value = false;
+          }
         }
       }
 
@@ -1481,8 +1497,13 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
     if (LOG.isInfoEnabled()) {
       LOG.info("ORC pushdown predicate: " + context.sarg);
     }
-    boolean useFileIds = HiveConf.getBoolVar(conf, ConfVars.HIVE_ORC_INCLUDE_FILE_ID_IN_SPLITS);
-    boolean allowSyntheticFileIds = useFileIds && HiveConf.getBoolVar(
+    boolean useFileIdsConfig = HiveConf.getBoolVar(
+        conf, ConfVars.HIVE_ORC_INCLUDE_FILE_ID_IN_SPLITS);
+    // Sharing this state assumes splits will succeed or fail to get it together (same FS).
+    // We also start with null and only set it to true on the first call, so we would only do
+    // the global-disable thing on the first failure w/the API error, not any random failure.
+    Ref<Boolean> useFileIds = Ref.from(useFileIdsConfig ? null : false);
+    boolean allowSyntheticFileIds = useFileIdsConfig && HiveConf.getBoolVar(
         conf, ConfVars.HIVE_ORC_ALLOW_SYNTHETIC_FILE_ID_IN_SPLITS);
     List<OrcSplit> splits = Lists.newArrayList();
     List<Future<AcidDirInfo>> pathFutures = Lists.newArrayList();
