@@ -240,7 +240,7 @@ public class ShuffleHandler implements AttemptRegistrationListener {
     MutableCounterLong shuffleOutputBytes;
     @Metric("# of failed shuffle outputs")
     MutableCounterInt shuffleOutputsFailed;
-    @Metric("# of succeeeded shuffle outputs")
+    @Metric("# of succeeded shuffle outputs")
     MutableCounterInt shuffleOutputsOK;
     @Metric("# of current shuffle connections")
     MutableGaugeInt shuffleConnections;
@@ -961,7 +961,7 @@ public class ShuffleHandler implements AttemptRegistrationListener {
           ShuffleHeader.DEFAULT_HTTP_HEADER_VERSION);
       if (LOG.isDebugEnabled()) {
         int len = reply.length();
-        LOG.debug("Fetcher request verfied. enc_str=" + enc_str + ";reply=" +
+        LOG.debug("Fetcher request verified. enc_str=" + enc_str + ";reply=" +
             reply.substring(len-len/2, len-1));
       }
     }

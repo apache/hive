@@ -274,7 +274,7 @@ public class HiveHBaseTableInputFormat extends TableInputFormatBase
         objInspector = (PrimitiveObjectInspector)eval.initialize(null);
         writable = eval.evaluate(null);
       } catch (ClassCastException cce) {
-        throw new IOException("Currently only primitve types are supported. Found: " +
+        throw new IOException("Currently only primitive types are supported. Found: " +
             sc.getConstantDesc().getTypeString());
       } catch (HiveException e) {
         throw new IOException(e);

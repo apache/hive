@@ -196,7 +196,7 @@ public class ProxyAuthTest {
     try {
       url = "jdbc:hive2://" + host + ":" + port + "/default;auth=delegationToken";
       con = DriverManager.getConnection(url);
-      throw new Exception ("connection should have failed after token cancelation");
+      throw new Exception ("connection should have failed after token cancellation");
     } catch (SQLException e) {
       // Expected to fail due to canceled token
     }

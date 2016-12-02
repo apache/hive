@@ -64,7 +64,7 @@ public class HiveInterruptUtils {
       } catch (InterruptedException e) {
         interrupt = e;
       }
-      throw new RuntimeException("Interuppted", interrupt);
+      throw new RuntimeException("Interrupted", interrupt);
     }
   }
 }

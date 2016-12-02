@@ -1075,7 +1075,7 @@ public class HiveConf extends Configuration {
     HIVESCRIPT_ENV_BLACKLIST("hive.script.operator.env.blacklist",
         "hive.txn.valid.txns,hive.script.operator.env.blacklist",
         "Comma separated list of keys from the configuration file not to convert to environment " +
-        "variables when envoking the script operator"),
+        "variables when invoking the script operator"),
     HIVE_STRICT_CHECKS_LARGE_QUERY("hive.strict.checks.large.query", false,
         "Enabling strict large query checks disallows the following:\n" +
         "  Orderby without limit.\n" +
@@ -1117,7 +1117,7 @@ public class HiveConf extends Configuration {
     HIVE_CBO_EXTENDED_COST_MODEL("hive.cbo.costmodel.extended", false, "Flag to control enabling the extended cost model based on"
                                  + "CPU, IO and cardinality. Otherwise, the cost model is based on cardinality."),
     HIVE_CBO_COST_MODEL_CPU("hive.cbo.costmodel.cpu", "0.000001", "Default cost of a comparison"),
-    HIVE_CBO_COST_MODEL_NET("hive.cbo.costmodel.network", "150.0", "Default cost of a transfering a byte over network;"
+    HIVE_CBO_COST_MODEL_NET("hive.cbo.costmodel.network", "150.0", "Default cost of a transferring a byte over network;"
                                                                   + " expressed as multiple of CPU cost"),
     HIVE_CBO_COST_MODEL_LFS_WRITE("hive.cbo.costmodel.local.fs.write", "4.0", "Default cost of writing a byte to local FS;"
                                                                              + " expressed as multiple of NETWORK cost"),
@@ -1326,9 +1326,9 @@ public class HiveConf extends Configuration {
     HIVEEXIMTESTMODE("hive.exim.test.mode", false,
         "The subset of test mode that only enables custom path handling for ExIm.", false),
     HIVETESTMODEPREFIX("hive.test.mode.prefix", "test_",
-        "In test mode, specfies prefixes for the output table", false),
+        "In test mode, specifies prefixes for the output table", false),
     HIVETESTMODESAMPLEFREQ("hive.test.mode.samplefreq", 32,
-        "In test mode, specfies sampling frequency for table, which is not bucketed,\n" +
+        "In test mode, specifies sampling frequency for table, which is not bucketed,\n" +
         "For example, the following query:\n" +
         "  INSERT OVERWRITE TABLE dest SELECT col1 from src\n" +
         "would be converted to\n" +
@@ -1428,7 +1428,7 @@ public class HiveConf extends Configuration {
 
     HIVE_LAZYSIMPLE_EXTENDED_BOOLEAN_LITERAL("hive.lazysimple.extended_boolean_literal", false,
         "LazySimpleSerde uses this property to determine if it treats 'T', 't', 'F', 'f',\n" +
-        "'1', and '0' as extened, legal boolean literal, in addition to 'TRUE' and 'FALSE'.\n" +
+        "'1', and '0' as extended, legal boolean literal, in addition to 'TRUE' and 'FALSE'.\n" +
         "The default is false, which means only 'TRUE' and 'FALSE' are treated as legal\n" +
         "boolean literal."),
 
@@ -2631,7 +2631,7 @@ public class HiveConf extends Configuration {
         "This needs to be set only if SPNEGO is to be used in authentication."),
     HIVE_SERVER2_PLAIN_LDAP_URL("hive.server2.authentication.ldap.url", null,
         "LDAP connection URL(s),\n" +
-         "this value could contain URLs to mutiple LDAP servers instances for HA,\n" +
+         "this value could contain URLs to multiple LDAP servers instances for HA,\n" +
          "each LDAP URL is separated by a SPACE character. URLs are used in the \n" +
          " order specified until a connection is successful."),
     HIVE_SERVER2_PLAIN_LDAP_BASEDN("hive.server2.authentication.ldap.baseDN", null, "LDAP base DN"),
@@ -2900,9 +2900,9 @@ public class HiveConf extends Configuration {
         "org.apache.parquet.hadoop.ParquetInputFormat,org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat",
         "The input formats not supported by row deserialize vectorization."),
     HIVE_VECTOR_ADAPTOR_USAGE_MODE("hive.vectorized.adaptor.usage.mode", "all", new StringSet("none", "chosen", "all"),
-        "Specifies the extent to which the VectorUDFAdaptor will be used for UDFs that do not have a cooresponding vectorized class.\n" +
+        "Specifies the extent to which the VectorUDFAdaptor will be used for UDFs that do not have a corresponding vectorized class.\n" +
         "0. none   : disable any usage of VectorUDFAdaptor\n" +
-        "1. chosen : use VectorUDFAdaptor for a small set of UDFs that were choosen for good performance\n" +
+        "1. chosen : use VectorUDFAdaptor for a small set of UDFs that were chosen for good performance\n" +
         "2. all    : use VectorUDFAdaptor for all UDFs"
     ),
     HIVE_VECTORIZATION_PTF_ENABLED("hive.vectorized.execution.ptf.enabled", true,
@@ -3416,7 +3416,7 @@ public class HiveConf extends Configuration {
     LLAP_DAEMON_WAIT_QUEUE_COMPARATOR_CLASS_NAME(
       "hive.llap.daemon.wait.queue.comparator.class.name",
       "org.apache.hadoop.hive.llap.daemon.impl.comparator.ShortestJobFirstComparator",
-      "The priority comparator to use for LLAP scheduler prioroty queue. The built-in options\n" +
+      "The priority comparator to use for LLAP scheduler priority queue. The built-in options\n" +
       "are org.apache.hadoop.hive.llap.daemon.impl.comparator.ShortestJobFirstComparator and\n" +
       ".....FirstInFirstOutComparator", "llap.daemon.wait.queue.comparator.class.name"),
     LLAP_DAEMON_TASK_SCHEDULER_ENABLE_PREEMPTION(
@@ -3518,7 +3518,7 @@ public class HiveConf extends Configuration {
     SPARK_RPC_SERVER_ADDRESS("hive.spark.client.rpc.server.address", "",
       "The server address of HiverServer2 host to be used for communication between Hive client and remote Spark driver. " +
       "Default is empty, which means the address will be determined in the same way as for hive.server2.thrift.bind.host." +
-      "This is only necessary if the host has mutiple network addresses and if a different network address other than " +
+      "This is only necessary if the host has multiple network addresses and if a different network address other than " +
       "hive.server2.thrift.bind.host is to be used."),
     SPARK_RPC_SERVER_PORT("hive.spark.client.rpc.server.port", "", "A list of port ranges which can be used by RPC server " +
         "with the format of 49152-49222,49228 and a random one is selected from the list. Default is empty, which randomly " +

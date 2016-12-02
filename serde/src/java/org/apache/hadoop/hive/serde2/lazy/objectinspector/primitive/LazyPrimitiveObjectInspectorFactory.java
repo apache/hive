@@ -177,7 +177,7 @@ public final class LazyPrimitiveObjectInspectorFactory {
       break;
     default:
       throw new RuntimeException(
-          "Primitve type " + typeInfo.getPrimitiveCategory() + " should not take parameters");
+          "Primitive type " + typeInfo.getPrimitiveCategory() + " should not take parameters");
     }
 
     AbstractPrimitiveLazyObjectInspector<?> prev =

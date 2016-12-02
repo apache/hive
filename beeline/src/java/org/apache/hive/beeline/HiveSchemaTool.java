@@ -337,7 +337,7 @@ public class HiveSchemaTool {
       }
       pStmt.close();
     } catch (SQLException e) {
-      throw new HiveMetaException("Failed to get Partiton Location Info.", e);
+      throw new HiveMetaException("Failed to get Partition Location Info.", e);
     }
     if (numOfInvalid > 0) {
       isValid = false;

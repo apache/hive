@@ -118,7 +118,7 @@ public class TokenStoreDelegationTokenSecretManager extends DelegationTokenSecre
   public DelegationTokenIdentifier cancelToken(Token<DelegationTokenIdentifier> token,
       String canceller) throws IOException {
     DelegationTokenIdentifier id = getTokenIdentifier(token);
-    LOGGER.info("Token cancelation requested for identifier: "+id);
+    LOGGER.info("Token cancellation requested for identifier: "+id);
     this.tokenStore.removeToken(id);
     return id;
   }
