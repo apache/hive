@@ -8369,7 +8369,7 @@ public class ObjectStore implements RawStore, Configurable {
               " Metastore is not upgraded or corrupt");
         } else {
           LOG.error("Version information found in metastore differs {} " +
-              "from expected schema version {}. Schema verififcation is disabled {}", 
+              "from expected schema version {}. Schema verification is disabled {}",
               dbSchemaVer, hiveSchemaVer, ConfVars.SCHEMA_VERIFICATION);
           setMetaStoreSchemaVersion(hiveSchemaVer,
             "Set by MetaStore " + USER + "@" + HOSTNAME);
