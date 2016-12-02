@@ -210,7 +210,7 @@ public class TestLlapTaskSchedulerService {
       assertEquals(3, tsWrapper.ts.instanceToNodeMap.size());
       LlapTaskSchedulerService.NodeInfo disabledNodeInfo = tsWrapper.ts.disabledNodesQueue.peek();
       assertNotNull(disabledNodeInfo);
-      assertEquals(HOST1, disabledNodeInfo.serviceInstance.getHost());
+      assertEquals(HOST1, disabledNodeInfo.getHost());
       assertEquals((10000l), disabledNodeInfo.getDelay(TimeUnit.MILLISECONDS));
       assertEquals((10000l + 10000l), disabledNodeInfo.expireTimeMillis);
 

@@ -184,11 +184,6 @@ public class LlapFixedRegistryImpl implements ServiceRegistry {
     }
 
     @Override
-    public boolean isAlive() {
-      return true;
-    }
-
-    @Override
     public Map<String, String> getProperties() {
       Map<String, String> properties = new HashMap<>(srv);
       // no worker identity

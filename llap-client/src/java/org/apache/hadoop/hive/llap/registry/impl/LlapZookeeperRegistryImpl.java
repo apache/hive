@@ -22,12 +22,9 @@ import java.net.URL;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -60,7 +57,6 @@ import org.apache.hadoop.hive.llap.registry.ServiceInstance;
 import org.apache.hadoop.hive.llap.registry.ServiceInstanceSet;
 import org.apache.hadoop.hive.llap.registry.ServiceInstanceStateChangeListener;
 import org.apache.hadoop.hive.llap.registry.ServiceRegistry;
-import org.apache.hadoop.registry.client.binding.RegistryPathUtils;
 import org.apache.hadoop.registry.client.binding.RegistryTypeUtils;
 import org.apache.hadoop.registry.client.binding.RegistryUtils;
 import org.apache.hadoop.registry.client.binding.RegistryUtils.ServiceRecordMarshal;
@@ -404,7 +400,6 @@ public class LlapZookeeperRegistryImpl implements ServiceRegistry {
   private class DynamicServiceInstance implements ServiceInstance {
 
     private final ServiceRecord srv;
-    private boolean alive = true;
     private final String host;
     private final int rpcPort;
     private final int mngPort;
@@ -470,17 +465,6 @@ public class LlapZookeeperRegistryImpl implements ServiceRegistry {
     }
 
     @Override
-    public boolean isAlive() {
-      return alive;
-    }
-
-    public void kill() {
-      // May be possible to generate a notification back to the scheduler from here.
-      LOG.info("Killing service instance: " + this);
-      this.alive = false;
-    }
-
-    @Override
     public Map<String, String> getProperties() {
       return srv.attributes();
     }
@@ -494,7 +478,7 @@ public class LlapZookeeperRegistryImpl implements ServiceRegistry {
 
     @Override
     public String toString() {
-      return "DynamicServiceInstance [alive=" + alive + ", host=" + host + ":" + rpcPort +
+      return "DynamicServiceInstance [id=" + getWorkerIdentity() + ", host=" + host + ":" + rpcPort +
           " with resources=" + getResource() + ", shufflePort=" + getShufflePort() +
           ", servicesAddress=" + getServicesAddress() +  ", mgmtPort=" + getManagementPort() + "]";
     }
@@ -509,8 +493,8 @@ public class LlapZookeeperRegistryImpl implements ServiceRegistry {
       return outputFormatPort;
     }
 
-    // Relying on the identity hashCode and equality, since refreshing instances retains the old copy
-    // of an already known instance.
+    // TODO: This needs a hashCode/equality implementation if used as a key in various structures.
+    // A new ServiceInstance is created each time.
   }
 
   private class DynamicServiceInstanceSet implements ServiceInstanceSet {

@@ -16,6 +16,11 @@ package org.apache.hadoop.hive.llap.registry;
 import java.util.Collection;
 import java.util.Set;
 
+/**
+ * Note: For most of the implementations, there's no guarantee that the ServiceInstance returned by
+ * one invocation is the same as the instance returned by another invocation. e.g. the ZK registry
+ * returns a new ServiceInstance object each time a getInstance call is made.
+ */
 public interface ServiceInstanceSet {
 
   /**

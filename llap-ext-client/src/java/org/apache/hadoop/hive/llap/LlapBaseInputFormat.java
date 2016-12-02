@@ -279,9 +279,7 @@ public class LlapBaseInputFormat<V extends WritableComparable<?>>
 
     // Get the first live service instance
     for (ServiceInstance serviceInstance : serviceInstances) {
-      if (serviceInstance.isAlive()) {
-        return serviceInstance;
-      }
+      return serviceInstance;
     }
 
     LOG.info("No live service instances were found");
