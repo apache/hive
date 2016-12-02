@@ -84,11 +84,9 @@ POSTHOOK: Input: default@non_orc_table
 #### A masked pattern was here ####
 PREHOOK: query: insert into table non_orc_table values(1, 'one'),(1, 'one'), (2, 'two'),(3, 'three')
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__2
 PREHOOK: Output: default@non_orc_table
 POSTHOOK: query: insert into table non_orc_table values(1, 'one'),(1, 'one'), (2, 'two'),(3, 'three')
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__2
 POSTHOOK: Output: default@non_orc_table
 POSTHOOK: Lineage: non_orc_table.a EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 POSTHOOK: Lineage: non_orc_table.b SIMPLE [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col2, type:string, comment:), ]

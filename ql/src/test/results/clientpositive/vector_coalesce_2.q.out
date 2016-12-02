@@ -8,11 +8,9 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@str_str_orc
 PREHOOK: query: insert into table str_str_orc values (null, "X"), ("0", "X"), ("1", "X"), (null, "y")
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__1
 PREHOOK: Output: default@str_str_orc
 POSTHOOK: query: insert into table str_str_orc values (null, "X"), ("0", "X"), ("1", "X"), (null, "y")
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__1
 POSTHOOK: Output: default@str_str_orc
 POSTHOOK: Lineage: str_str_orc.str1 SIMPLE [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 POSTHOOK: Lineage: str_str_orc.str2 SIMPLE [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]

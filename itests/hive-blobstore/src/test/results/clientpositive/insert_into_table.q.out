@@ -16,19 +16,15 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@table1
 PREHOOK: query: INSERT INTO TABLE table1 VALUES (1)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__1
 PREHOOK: Output: default@table1
 POSTHOOK: query: INSERT INTO TABLE table1 VALUES (1)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__1
 POSTHOOK: Output: default@table1
 PREHOOK: query: INSERT INTO TABLE table1 VALUES (2)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__2
 PREHOOK: Output: default@table1
 POSTHOOK: query: INSERT INTO TABLE table1 VALUES (2)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__2
 POSTHOOK: Output: default@table1
 PREHOOK: query: SELECT * FROM table1
 PREHOOK: type: QUERY
@@ -393,11 +389,9 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@table1
 PREHOOK: query: INSERT INTO TABLE table1 PARTITION (key) VALUES (1, '101'), (2, '202'), (3, '303'), (4, '404'), (5, '505')
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__4
 PREHOOK: Output: default@table1
 POSTHOOK: query: INSERT INTO TABLE table1 PARTITION (key) VALUES (1, '101'), (2, '202'), (3, '303'), (4, '404'), (5, '505')
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__4
 POSTHOOK: Output: default@table1@key=101
 POSTHOOK: Output: default@table1@key=202
 POSTHOOK: Output: default@table1@key=303
@@ -410,11 +404,9 @@ POSTHOOK: Lineage: table1 PARTITION(key=404).id EXPRESSION [(values__tmp__table_
 POSTHOOK: Lineage: table1 PARTITION(key=505).id EXPRESSION [(values__tmp__table__4)values__tmp__table__4.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 PREHOOK: query: INSERT INTO TABLE table1 PARTITION (key) VALUES (1, '101'), (2, '202'), (3, '303'), (4, '404'), (5, '505')
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__5
 PREHOOK: Output: default@table1
 POSTHOOK: query: INSERT INTO TABLE table1 PARTITION (key) VALUES (1, '101'), (2, '202'), (3, '303'), (4, '404'), (5, '505')
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__5
 POSTHOOK: Output: default@table1@key=101
 POSTHOOK: Output: default@table1@key=202
 POSTHOOK: Output: default@table1@key=303

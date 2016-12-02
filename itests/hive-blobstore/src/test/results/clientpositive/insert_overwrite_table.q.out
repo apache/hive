@@ -16,11 +16,9 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@table1
 PREHOOK: query: INSERT OVERWRITE TABLE table1 VALUES (1)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__1
 PREHOOK: Output: default@table1
 POSTHOOK: query: INSERT OVERWRITE TABLE table1 VALUES (1)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__1
 POSTHOOK: Output: default@table1
 PREHOOK: query: SELECT * FROM table1
 PREHOOK: type: QUERY
@@ -33,11 +31,9 @@ POSTHOOK: Input: default@table1
 1
 PREHOOK: query: INSERT OVERWRITE TABLE table1 VALUES (2)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__2
 PREHOOK: Output: default@table1
 POSTHOOK: query: INSERT OVERWRITE TABLE table1 VALUES (2)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__2
 POSTHOOK: Output: default@table1
 PREHOOK: query: SELECT * FROM table1
 PREHOOK: type: QUERY
@@ -431,11 +427,9 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@table1
 PREHOOK: query: INSERT OVERWRITE TABLE table1 PARTITION (key) VALUES (1, '101'), (2, '202'), (3, '303'), (4, '404'), (5, '505')
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__4
 PREHOOK: Output: default@table1
 POSTHOOK: query: INSERT OVERWRITE TABLE table1 PARTITION (key) VALUES (1, '101'), (2, '202'), (3, '303'), (4, '404'), (5, '505')
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__4
 POSTHOOK: Output: default@table1@key=101
 POSTHOOK: Output: default@table1@key=202
 POSTHOOK: Output: default@table1@key=303
@@ -471,11 +465,9 @@ POSTHOOK: Input: default@table1@key=505
 5	505
 PREHOOK: query: INSERT OVERWRITE TABLE table1 PARTITION (key) VALUES (1, '101'), (2, '202'), (3, '303'), (4, '404'), (5, '505')
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__5
 PREHOOK: Output: default@table1
 POSTHOOK: query: INSERT OVERWRITE TABLE table1 PARTITION (key) VALUES (1, '101'), (2, '202'), (3, '303'), (4, '404'), (5, '505')
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__5
 POSTHOOK: Output: default@table1@key=101
 POSTHOOK: Output: default@table1@key=202
 POSTHOOK: Output: default@table1@key=303

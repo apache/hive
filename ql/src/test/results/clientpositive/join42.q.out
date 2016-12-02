@@ -70,22 +70,18 @@ POSTHOOK: Lineage: acct.aid SIMPLE []
 POSTHOOK: Lineage: acct.brn SIMPLE []
 PREHOOK: query: insert into table acct values(4748, null, null)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__1
 PREHOOK: Output: default@acct
 POSTHOOK: query: insert into table acct values(4748, null, null)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__1
 POSTHOOK: Output: default@acct
 POSTHOOK: Lineage: acct.acc_n EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
 POSTHOOK: Lineage: acct.aid EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 POSTHOOK: Lineage: acct.brn EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
 PREHOOK: query: insert into table acct values(4748, null, null)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__2
 PREHOOK: Output: default@acct
 POSTHOOK: query: insert into table acct values(4748, null, null)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__2
 POSTHOOK: Output: default@acct
 POSTHOOK: Lineage: acct.acc_n EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
 POSTHOOK: Lineage: acct.aid EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col1, type:string, comment:), ]

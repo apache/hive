@@ -44,7 +44,6 @@ insert into table encryptedTable partition
     ('501', 'val_501'),
     ('502', 'val_502')
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__1
 PREHOOK: Output: default@encryptedtable@ds=today
 POSTHOOK: query: -- insert encrypted table from values
 insert into table encryptedTable partition
@@ -52,7 +51,6 @@ insert into table encryptedTable partition
     ('501', 'val_501'),
     ('502', 'val_502')
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__1
 POSTHOOK: Output: default@encryptedtable@ds=today
 POSTHOOK: Lineage: encryptedtable PARTITION(ds=today).key SIMPLE [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 POSTHOOK: Lineage: encryptedtable PARTITION(ds=today).value SIMPLE [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]

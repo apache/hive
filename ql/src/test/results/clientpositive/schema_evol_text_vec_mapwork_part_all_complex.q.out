@@ -234,13 +234,11 @@ PREHOOK: query: insert into table part_add_various_various_struct2 partition(par
     values(1, 'original'),
           (2, 'original')
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__1
 PREHOOK: Output: default@part_add_various_various_struct2@part=1
 POSTHOOK: query: insert into table part_add_various_various_struct2 partition(part=1)
     values(1, 'original'),
           (2, 'original')
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__1
 POSTHOOK: Output: default@part_add_various_various_struct2@part=1
 POSTHOOK: Lineage: part_add_various_various_struct2 PARTITION(part=1).b SIMPLE [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
 POSTHOOK: Lineage: part_add_various_various_struct2 PARTITION(part=1).insert_num EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]

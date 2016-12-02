@@ -16,11 +16,9 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@studenttab
 PREHOOK: query: insert into table studenttab values ('calvin garcia',56,2.50), ('oscar miller',66,3.00), ('(yuri xylophone',30,2.74),('alice underhill',46,3.50)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__1
 PREHOOK: Output: default@studenttab
 POSTHOOK: query: insert into table studenttab values ('calvin garcia',56,2.50), ('oscar miller',66,3.00), ('(yuri xylophone',30,2.74),('alice underhill',46,3.50)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__1
 POSTHOOK: Output: default@studenttab
 POSTHOOK: Lineage: studenttab.age EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
 POSTHOOK: Lineage: studenttab.gpa EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col3, type:string, comment:), ]

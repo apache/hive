@@ -14,11 +14,9 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_acid
 PREHOOK: query: insert into table test_acid values (1, '2014-09-14 12:34:30')
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__1
 PREHOOK: Output: default@test_acid
 POSTHOOK: query: insert into table test_acid values (1, '2014-09-14 12:34:30')
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__1
 POSTHOOK: Output: default@test_acid
 POSTHOOK: Lineage: test_acid.i EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 POSTHOOK: Lineage: test_acid.ts EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]

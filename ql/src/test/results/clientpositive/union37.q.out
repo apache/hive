@@ -8,11 +8,9 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@l_test1
 PREHOOK: query: insert into l_test1 values (1, "table_1", "2016-08-11")
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__1
 PREHOOK: Output: default@l_test1
 POSTHOOK: query: insert into l_test1 values (1, "table_1", "2016-08-11")
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__1
 POSTHOOK: Output: default@l_test1
 POSTHOOK: Lineage: l_test1.id EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 POSTHOOK: Lineage: l_test1.trans_date SIMPLE [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
@@ -27,11 +25,9 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@l_test2
 PREHOOK: query: insert into l_test2 values (2, "table_2", "2016-08-11")
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__2
 PREHOOK: Output: default@l_test2
 POSTHOOK: query: insert into l_test2 values (2, "table_2", "2016-08-11")
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__2
 POSTHOOK: Output: default@l_test2
 POSTHOOK: Lineage: l_test2.id EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 POSTHOOK: Lineage: l_test2.trans_date SIMPLE [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col3, type:string, comment:), ]

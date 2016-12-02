@@ -14,11 +14,9 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_1
 PREHOOK: query: insert into table test_1 values ('one','1'), ('seven','1')
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__1
 PREHOOK: Output: default@test_1
 POSTHOOK: query: insert into table test_1 values ('one','1'), ('seven','1')
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__1
 POSTHOOK: Output: default@test_1
 POSTHOOK: Lineage: test_1.id SIMPLE [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 POSTHOOK: Lineage: test_1.lineid SIMPLE [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
@@ -217,11 +215,9 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_2
 PREHOOK: query: insert into table test_2 values (1,1), (7,1)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__2
 PREHOOK: Output: default@test_2
 POSTHOOK: query: insert into table test_2 values (1,1), (7,1)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__2
 POSTHOOK: Output: default@test_2
 POSTHOOK: Lineage: test_2.id EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 POSTHOOK: Lineage: test_2.lineid EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
@@ -420,11 +416,9 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_3
 PREHOOK: query: insert into table test_3 values ('one',1), ('seven',1)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__3
 PREHOOK: Output: default@test_3
 POSTHOOK: query: insert into table test_3 values ('one',1), ('seven',1)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__3
 POSTHOOK: Output: default@test_3
 POSTHOOK: Lineage: test_3.id SIMPLE [(values__tmp__table__3)values__tmp__table__3.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 POSTHOOK: Lineage: test_3.lineid EXPRESSION [(values__tmp__table__3)values__tmp__table__3.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
@@ -623,11 +617,9 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_4
 PREHOOK: query: insert into table test_4 values (1, "b", 1.5), (1, "a", 0.5), (2, "b", 1.5)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__4
 PREHOOK: Output: default@test_4
 POSTHOOK: query: insert into table test_4 values (1, "b", 1.5), (1, "a", 0.5), (2, "b", 1.5)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__4
 POSTHOOK: Output: default@test_4
 POSTHOOK: Lineage: test_4.my_bigint EXPRESSION [(values__tmp__table__4)values__tmp__table__4.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 POSTHOOK: Lineage: test_4.my_double EXPRESSION [(values__tmp__table__4)values__tmp__table__4.FieldSchema(name:tmp_values_col3, type:string, comment:), ]

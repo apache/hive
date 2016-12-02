@@ -1346,13 +1346,11 @@ PREHOOK: query: insert into table tmp_orcppd
                     values(null, null, null, null, null,
                            null, null, null, null, null)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__1
 PREHOOK: Output: default@tmp_orcppd
 POSTHOOK: query: insert into table tmp_orcppd
                     values(null, null, null, null, null,
                            null, null, null, null, null)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__1
 POSTHOOK: Output: default@tmp_orcppd
 POSTHOOK: Lineage: tmp_orcppd.cbigint EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col4, type:string, comment:), ]
 POSTHOOK: Lineage: tmp_orcppd.cdouble EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col6, type:string, comment:), ]
@@ -1416,12 +1414,10 @@ POSTHOOK: Output: default@tmp_orcppd
 PREHOOK: query: insert into table tmp_orcppd
                     values(null,  null)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__2
 PREHOOK: Output: default@tmp_orcppd
 POSTHOOK: query: insert into table tmp_orcppd
                     values(null,  null)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__2
 POSTHOOK: Output: default@tmp_orcppd
 POSTHOOK: Lineage: tmp_orcppd.ctimestamp1 EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 POSTHOOK: Lineage: tmp_orcppd.ctimestamp2 EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
@@ -1471,12 +1467,10 @@ POSTHOOK: Output: default@tmp_orcppd
 PREHOOK: query: insert into table tmp_orcppd
                     values(null, null)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__3
 PREHOOK: Output: default@tmp_orcppd
 POSTHOOK: query: insert into table tmp_orcppd
                     values(null, null)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__3
 POSTHOOK: Output: default@tmp_orcppd
 POSTHOOK: Lineage: tmp_orcppd.da EXPRESSION [(values__tmp__table__3)values__tmp__table__3.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
 POSTHOOK: Lineage: tmp_orcppd.ts EXPRESSION [(values__tmp__table__3)values__tmp__table__3.FieldSchema(name:tmp_values_col1, type:string, comment:), ]

@@ -64,40 +64,32 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@union_all_bug_test_2
 PREHOOK: query: insert into table union_all_bug_test_1 values (1,1)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__1
 PREHOOK: Output: default@union_all_bug_test_1
 POSTHOOK: query: insert into table union_all_bug_test_1 values (1,1)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__1
 POSTHOOK: Output: default@union_all_bug_test_1
 POSTHOOK: Lineage: union_all_bug_test_1.f1 EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 POSTHOOK: Lineage: union_all_bug_test_1.f2 EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
 PREHOOK: query: insert into table union_all_bug_test_2 values (1)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__2
 PREHOOK: Output: default@union_all_bug_test_2
 POSTHOOK: query: insert into table union_all_bug_test_2 values (1)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__2
 POSTHOOK: Output: default@union_all_bug_test_2
 POSTHOOK: Lineage: union_all_bug_test_2.f1 EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 PREHOOK: query: insert into table union_all_bug_test_1 values (0,0)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__3
 PREHOOK: Output: default@union_all_bug_test_1
 POSTHOOK: query: insert into table union_all_bug_test_1 values (0,0)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__3
 POSTHOOK: Output: default@union_all_bug_test_1
 POSTHOOK: Lineage: union_all_bug_test_1.f1 EXPRESSION [(values__tmp__table__3)values__tmp__table__3.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 POSTHOOK: Lineage: union_all_bug_test_1.f2 EXPRESSION [(values__tmp__table__3)values__tmp__table__3.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
 PREHOOK: query: insert into table union_all_bug_test_2 values (0)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__4
 PREHOOK: Output: default@union_all_bug_test_2
 POSTHOOK: query: insert into table union_all_bug_test_2 values (0)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__4
 POSTHOOK: Output: default@union_all_bug_test_2
 POSTHOOK: Lineage: union_all_bug_test_2.f1 EXPRESSION [(values__tmp__table__4)values__tmp__table__4.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 PREHOOK: query: SELECT f1

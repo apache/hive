@@ -18,13 +18,11 @@ PREHOOK: query: insert into table `aci/d_u/ami` values
     (1, 109.23, 'mary had a little lamb'),
     (6553, 923.19, 'its fleece was white as snow')
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__1
 PREHOOK: Output: default@aci/d_u/ami
 POSTHOOK: query: insert into table `aci/d_u/ami` values 
     (1, 109.23, 'mary had a little lamb'),
     (6553, 923.19, 'its fleece was white as snow')
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__1
 POSTHOOK: Output: default@aci/d_u/ami
 POSTHOOK: Lineage: aci/d_u/ami.d?*de e EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
 POSTHOOK: Lineage: aci/d_u/ami.i EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
@@ -33,13 +31,11 @@ PREHOOK: query: insert into table `aci/d_u/ami` values
     (10, 119.23, 'and everywhere that mary went'),
     (65530, 823.19, 'the lamb was sure to go')
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__2
 PREHOOK: Output: default@aci/d_u/ami
 POSTHOOK: query: insert into table `aci/d_u/ami` values 
     (10, 119.23, 'and everywhere that mary went'),
     (65530, 823.19, 'the lamb was sure to go')
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__2
 POSTHOOK: Output: default@aci/d_u/ami
 POSTHOOK: Lineage: aci/d_u/ami.d?*de e EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
 POSTHOOK: Lineage: aci/d_u/ami.i EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col1, type:string, comment:), ]

@@ -20,11 +20,9 @@ Encryption key created: 'key_128'
 Encryption zone created: '/build/ql/test/data/warehouse/default/encrypted_table' using key: 'key_128'
 PREHOOK: query: INSERT INTO encrypted_table values(1,'foo'),(2,'bar')
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__1
 PREHOOK: Output: default@encrypted_table
 POSTHOOK: query: INSERT INTO encrypted_table values(1,'foo'),(2,'bar')
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__1
 POSTHOOK: Output: default@encrypted_table
 POSTHOOK: Lineage: encrypted_table.key EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 POSTHOOK: Lineage: encrypted_table.value SIMPLE [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]

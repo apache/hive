@@ -20,11 +20,9 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@smalltable_windowing
 PREHOOK: query: insert into smalltable_windowing values(3, 'a'), (1, 'a'), (2, 'a')
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__1
 PREHOOK: Output: default@smalltable_windowing
 POSTHOOK: query: insert into smalltable_windowing values(3, 'a'), (1, 'a'), (2, 'a')
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__1
 POSTHOOK: Output: default@smalltable_windowing
 POSTHOOK: Lineage: smalltable_windowing.i EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 POSTHOOK: Lineage: smalltable_windowing.type SIMPLE [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]

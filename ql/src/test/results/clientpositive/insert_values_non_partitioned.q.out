@@ -35,14 +35,12 @@ PREHOOK: query: insert into table acid_ivnp values
     (null, null, null, null, null, null, null, null, null, null, null, null, null),
     (3, 25, 6553, null, 0.14, 1923.141592654, 1.2301, '2014-08-24 17:21:30.0', '2014-08-26', false, 'its fleece was white as snow', 'a pocket full of posies', 'blue' )
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__1
 PREHOOK: Output: default@acid_ivnp
 POSTHOOK: query: insert into table acid_ivnp values 
     (1, 257, 65537, 4294967297, 3.14, 3.141592654, 109.23, '2014-08-25 17:21:30.0', '2014-08-25', true, 'mary had a little lamb', 'ring around the rosie', 'red'),
     (null, null, null, null, null, null, null, null, null, null, null, null, null),
     (3, 25, 6553, null, 0.14, 1923.141592654, 1.2301, '2014-08-24 17:21:30.0', '2014-08-26', false, 'its fleece was white as snow', 'a pocket full of posies', 'blue' )
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__1
 POSTHOOK: Output: default@acid_ivnp
 POSTHOOK: Lineage: acid_ivnp.b EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col10, type:string, comment:), ]
 POSTHOOK: Lineage: acid_ivnp.bi EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col4, type:string, comment:), ]

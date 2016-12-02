@@ -188,13 +188,11 @@ PREHOOK: query: insert into table acid_ivot values
         (1, 2, 3, 4, 3.14, 2.34, 'fred', 'bob', '2014-09-01 10:34:23.111', '1944-06-06 06:00:00', true, true),
         (111, 222, 3333, 444, 13.14, 10239302.34239320, 'fred', 'bob', '2014-09-01 10:34:23.111', '1944-06-06 06:00:00', true, true)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__1
 PREHOOK: Output: default@acid_ivot
 POSTHOOK: query: insert into table acid_ivot values
         (1, 2, 3, 4, 3.14, 2.34, 'fred', 'bob', '2014-09-01 10:34:23.111', '1944-06-06 06:00:00', true, true),
         (111, 222, 3333, 444, 13.14, 10239302.34239320, 'fred', 'bob', '2014-09-01 10:34:23.111', '1944-06-06 06:00:00', true, true)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__1
 POSTHOOK: Output: default@acid_ivot
 POSTHOOK: Lineage: acid_ivot.cbigint EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col4, type:string, comment:), ]
 POSTHOOK: Lineage: acid_ivot.cboolean1 EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col11, type:string, comment:), ]
@@ -261,13 +259,11 @@ PREHOOK: query: insert into table acid_ivot values
         (1, 2, 3, 4, 3.14, 2.34, 'fred', 'bob', '2014-09-01 10:34:23.111', '1944-06-06 06:00:00', true, true),
         (111, 222, 3333, 444, 13.14, 10239302.34239320, 'fred', 'bob', '2014-09-01 10:34:23.111', '1944-06-06 06:00:00', true, true)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__2
 PREHOOK: Output: default@acid_ivot
 POSTHOOK: query: insert into table acid_ivot values
         (1, 2, 3, 4, 3.14, 2.34, 'fred', 'bob', '2014-09-01 10:34:23.111', '1944-06-06 06:00:00', true, true),
         (111, 222, 3333, 444, 13.14, 10239302.34239320, 'fred', 'bob', '2014-09-01 10:34:23.111', '1944-06-06 06:00:00', true, true)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__2
 POSTHOOK: Output: default@acid_ivot
 POSTHOOK: Lineage: acid_ivot.cbigint EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col4, type:string, comment:), ]
 POSTHOOK: Lineage: acid_ivot.cboolean1 EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col11, type:string, comment:), ]
@@ -385,13 +381,11 @@ PREHOOK: query: insert into table acid_ivot values
         (1, 2, 3, 4, 3.14, 2.34, 'fred', 'bob', '2014-09-01 10:34:23.111', '1944-06-06 06:00:00', true, true),
         (111, 222, 3333, 444, 13.14, 10239302.34239320, 'fred', 'bob', '2014-09-01 10:34:23.111', '1944-06-06 06:00:00', true, true)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__3
 PREHOOK: Output: default@acid_ivot
 POSTHOOK: query: insert into table acid_ivot values
         (1, 2, 3, 4, 3.14, 2.34, 'fred', 'bob', '2014-09-01 10:34:23.111', '1944-06-06 06:00:00', true, true),
         (111, 222, 3333, 444, 13.14, 10239302.34239320, 'fred', 'bob', '2014-09-01 10:34:23.111', '1944-06-06 06:00:00', true, true)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__3
 POSTHOOK: Output: default@acid_ivot
 POSTHOOK: Lineage: acid_ivot.cbigint EXPRESSION [(values__tmp__table__3)values__tmp__table__3.FieldSchema(name:tmp_values_col4, type:string, comment:), ]
 POSTHOOK: Lineage: acid_ivot.cboolean1 EXPRESSION [(values__tmp__table__3)values__tmp__table__3.FieldSchema(name:tmp_values_col11, type:string, comment:), ]
@@ -845,12 +839,10 @@ POSTHOOK: Input: default@sp@ds=2008-04-08/hr=11
 PREHOOK: query: insert into table sp PARTITION (ds="2008-04-08", hr="11") values
         ('1', '2'), ('3', '4')
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__4
 PREHOOK: Output: default@sp@ds=2008-04-08/hr=11
 POSTHOOK: query: insert into table sp PARTITION (ds="2008-04-08", hr="11") values
         ('1', '2'), ('3', '4')
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__4
 POSTHOOK: Output: default@sp@ds=2008-04-08/hr=11
 POSTHOOK: Lineage: sp PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(values__tmp__table__4)values__tmp__table__4.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 POSTHOOK: Lineage: sp PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(values__tmp__table__4)values__tmp__table__4.FieldSchema(name:tmp_values_col2, type:string, comment:), ]

@@ -8,29 +8,23 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@date_dim
 PREHOOK: query: insert into date_dim partition(d_date_sk=2416945) values('1905-04-09')
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__1
 PREHOOK: Output: default@date_dim@d_date_sk=2416945
 POSTHOOK: query: insert into date_dim partition(d_date_sk=2416945) values('1905-04-09')
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__1
 POSTHOOK: Output: default@date_dim@d_date_sk=2416945
 POSTHOOK: Lineage: date_dim PARTITION(d_date_sk=2416945).d_date EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 PREHOOK: query: insert into date_dim partition(d_date_sk=2416946) values('1905-04-10')
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__2
 PREHOOK: Output: default@date_dim@d_date_sk=2416946
 POSTHOOK: query: insert into date_dim partition(d_date_sk=2416946) values('1905-04-10')
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__2
 POSTHOOK: Output: default@date_dim@d_date_sk=2416946
 POSTHOOK: Lineage: date_dim PARTITION(d_date_sk=2416946).d_date EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 PREHOOK: query: insert into date_dim partition(d_date_sk=2416947) values('1905-04-11')
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__3
 PREHOOK: Output: default@date_dim@d_date_sk=2416947
 POSTHOOK: query: insert into date_dim partition(d_date_sk=2416947) values('1905-04-11')
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__3
 POSTHOOK: Output: default@date_dim@d_date_sk=2416947
 POSTHOOK: Lineage: date_dim PARTITION(d_date_sk=2416947).d_date EXPRESSION [(values__tmp__table__3)values__tmp__table__3.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 PREHOOK: query: analyze table date_dim partition(d_date_sk) compute statistics for columns
@@ -98,11 +92,9 @@ STAGE PLANS:
 
 PREHOOK: query: insert into date_dim partition(d_date_sk=2416948) values('1905-04-12')
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__4
 PREHOOK: Output: default@date_dim@d_date_sk=2416948
 POSTHOOK: query: insert into date_dim partition(d_date_sk=2416948) values('1905-04-12')
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__4
 POSTHOOK: Output: default@date_dim@d_date_sk=2416948
 POSTHOOK: Lineage: date_dim PARTITION(d_date_sk=2416948).d_date EXPRESSION [(values__tmp__table__4)values__tmp__table__4.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 PREHOOK: query: explain extended select d_date from date_dim

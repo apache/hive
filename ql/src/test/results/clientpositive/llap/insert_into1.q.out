@@ -565,11 +565,9 @@ STAGE PLANS:
 
 PREHOOK: query: insert into table insert_into1 values(1, 'abc')
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__2
 PREHOOK: Output: default@insert_into1
 POSTHOOK: query: insert into table insert_into1 values(1, 'abc')
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__2
 POSTHOOK: Output: default@insert_into1
 POSTHOOK: Lineage: insert_into1.key EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 POSTHOOK: Lineage: insert_into1.value SIMPLE [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col2, type:string, comment:), ]

@@ -76,11 +76,9 @@ POSTHOOK: Input: default@table_add_int_permute_select
 POSTHOOK: Output: default@table_add_int_permute_select
 PREHOOK: query: insert into table table_add_int_permute_select VALUES (111, 80000, 'new', 80000)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__1
 PREHOOK: Output: default@table_add_int_permute_select
 POSTHOOK: query: insert into table table_add_int_permute_select VALUES (111, 80000, 'new', 80000)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__1
 POSTHOOK: Output: default@table_add_int_permute_select
 POSTHOOK: Lineage: table_add_int_permute_select.a EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
 POSTHOOK: Lineage: table_add_int_permute_select.b SIMPLE [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
@@ -200,11 +198,9 @@ POSTHOOK: Input: default@table_add_int_string_permute_select
 POSTHOOK: Output: default@table_add_int_string_permute_select
 PREHOOK: query: insert into table table_add_int_string_permute_select VALUES (111, 80000, 'new', 80000, 'filler')
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__2
 PREHOOK: Output: default@table_add_int_string_permute_select
 POSTHOOK: query: insert into table table_add_int_string_permute_select VALUES (111, 80000, 'new', 80000, 'filler')
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__2
 POSTHOOK: Output: default@table_add_int_string_permute_select
 POSTHOOK: Lineage: table_add_int_string_permute_select.a EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
 POSTHOOK: Lineage: table_add_int_string_permute_select.b SIMPLE [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
@@ -395,11 +391,9 @@ POSTHOOK: Input: default@table_change_string_group_double
 POSTHOOK: Output: default@table_change_string_group_double
 PREHOOK: query: insert into table table_change_string_group_double VALUES (111, 789.321, 789.321, 789.321, 'new')
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__3
 PREHOOK: Output: default@table_change_string_group_double
 POSTHOOK: query: insert into table table_change_string_group_double VALUES (111, 789.321, 789.321, 789.321, 'new')
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__3
 POSTHOOK: Output: default@table_change_string_group_double
 POSTHOOK: Lineage: table_change_string_group_double.b SIMPLE [(values__tmp__table__3)values__tmp__table__3.FieldSchema(name:tmp_values_col5, type:string, comment:), ]
 POSTHOOK: Lineage: table_change_string_group_double.c1 EXPRESSION [(values__tmp__table__3)values__tmp__table__3.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
@@ -505,11 +499,9 @@ POSTHOOK: Input: default@table_change_date_group_string_group_date_group
 POSTHOOK: Output: default@table_change_date_group_string_group_date_group
 PREHOOK: query: insert into table table_change_date_group_string_group_date_group VALUES (111, 'filler', 'filler', 'filler', 'filler', 'filler', 'filler', 'filler', 'filler', 'filler', 'filler', 'new')
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__4
 PREHOOK: Output: default@table_change_date_group_string_group_date_group
 POSTHOOK: query: insert into table table_change_date_group_string_group_date_group VALUES (111, 'filler', 'filler', 'filler', 'filler', 'filler', 'filler', 'filler', 'filler', 'filler', 'filler', 'new')
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__4
 POSTHOOK: Output: default@table_change_date_group_string_group_date_group
 POSTHOOK: Lineage: table_change_date_group_string_group_date_group.b SIMPLE [(values__tmp__table__4)values__tmp__table__4.FieldSchema(name:tmp_values_col12, type:string, comment:), ]
 POSTHOOK: Lineage: table_change_date_group_string_group_date_group.c1 SIMPLE [(values__tmp__table__4)values__tmp__table__4.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
@@ -662,7 +654,6 @@ PREHOOK: query: insert into table table_change_numeric_group_string_group_multi_
             'filler', 'filler', 'filler', 'filler', 'filler', 'filler', 'filler', 'filler',
             'new')
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__5
 PREHOOK: Output: default@table_change_numeric_group_string_group_multi_ints_string_group
 POSTHOOK: query: insert into table table_change_numeric_group_string_group_multi_ints_string_group VALUES (111,
             'filler', 'filler', 'filler', 'filler',
@@ -670,7 +661,6 @@ POSTHOOK: query: insert into table table_change_numeric_group_string_group_multi
             'filler', 'filler', 'filler', 'filler', 'filler', 'filler', 'filler', 'filler',
             'new')
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__5
 POSTHOOK: Output: default@table_change_numeric_group_string_group_multi_ints_string_group
 POSTHOOK: Lineage: table_change_numeric_group_string_group_multi_ints_string_group.b SIMPLE [(values__tmp__table__5)values__tmp__table__5.FieldSchema(name:tmp_values_col22, type:string, comment:), ]
 POSTHOOK: Lineage: table_change_numeric_group_string_group_multi_ints_string_group.c1 SIMPLE [(values__tmp__table__5)values__tmp__table__5.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
@@ -840,7 +830,6 @@ PREHOOK: query: insert into table table_change_numeric_group_string_group_floati
              'filler', 'filler', 'filler', 'filler', 'filler', 'filler',
              'new')
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__6
 PREHOOK: Output: default@table_change_numeric_group_string_group_floating_string_group
 POSTHOOK: query: insert into table table_change_numeric_group_string_group_floating_string_group VALUES (111,
              'filler', 'filler', 'filler',
@@ -848,7 +837,6 @@ POSTHOOK: query: insert into table table_change_numeric_group_string_group_float
              'filler', 'filler', 'filler', 'filler', 'filler', 'filler',
              'new')
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__6
 POSTHOOK: Output: default@table_change_numeric_group_string_group_floating_string_group
 POSTHOOK: Lineage: table_change_numeric_group_string_group_floating_string_group.b SIMPLE [(values__tmp__table__6)values__tmp__table__6.FieldSchema(name:tmp_values_col17, type:string, comment:), ]
 POSTHOOK: Lineage: table_change_numeric_group_string_group_floating_string_group.c1 SIMPLE [(values__tmp__table__6)values__tmp__table__6.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
@@ -1006,7 +994,6 @@ PREHOOK: query: insert into table table_change_string_group_string_group_string 
           'filler', 'filler', 'filler',
           'new')
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__7
 PREHOOK: Output: default@table_change_string_group_string_group_string
 POSTHOOK: query: insert into table table_change_string_group_string_group_string VALUES (111,
           'filler', 'filler', 'filler', 'filler',
@@ -1014,7 +1001,6 @@ POSTHOOK: query: insert into table table_change_string_group_string_group_string
           'filler', 'filler', 'filler',
           'new')
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__7
 POSTHOOK: Output: default@table_change_string_group_string_group_string
 POSTHOOK: Lineage: table_change_string_group_string_group_string.b SIMPLE [(values__tmp__table__7)values__tmp__table__7.FieldSchema(name:tmp_values_col12, type:string, comment:), ]
 POSTHOOK: Lineage: table_change_string_group_string_group_string.c1 EXPRESSION [(values__tmp__table__7)values__tmp__table__7.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
@@ -1172,7 +1158,6 @@ PREHOOK: query: insert into table table_change_lower_to_higher_numeric_group_tin
             1234.5678, 9876.543, 789.321,
            'new')
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__8
 PREHOOK: Output: default@table_change_lower_to_higher_numeric_group_tinyint_to_bigint
 POSTHOOK: query: insert into table table_change_lower_to_higher_numeric_group_tinyint_to_bigint VALUES (111,
             7000, 80000, 90000000, 1234.5678, 9876.543, 789.321,
@@ -1181,7 +1166,6 @@ POSTHOOK: query: insert into table table_change_lower_to_higher_numeric_group_ti
             1234.5678, 9876.543, 789.321,
            'new')
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__8
 POSTHOOK: Output: default@table_change_lower_to_higher_numeric_group_tinyint_to_bigint
 POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_tinyint_to_bigint.b SIMPLE [(values__tmp__table__8)values__tmp__table__8.FieldSchema(name:tmp_values_col20, type:string, comment:), ]
 POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_tinyint_to_bigint.c1 EXPRESSION [(values__tmp__table__8)values__tmp__table__8.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
@@ -1297,11 +1281,9 @@ POSTHOOK: Input: default@table_change_lower_to_higher_numeric_group_decimal_to_f
 POSTHOOK: Output: default@table_change_lower_to_higher_numeric_group_decimal_to_float
 PREHOOK: query: insert into table table_change_lower_to_higher_numeric_group_decimal_to_float VALUES (111, 1234.5678, 9876.543, 1234.5678, 'new')
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__9
 PREHOOK: Output: default@table_change_lower_to_higher_numeric_group_decimal_to_float
 POSTHOOK: query: insert into table table_change_lower_to_higher_numeric_group_decimal_to_float VALUES (111, 1234.5678, 9876.543, 1234.5678, 'new')
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__9
 POSTHOOK: Output: default@table_change_lower_to_higher_numeric_group_decimal_to_float
 POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_decimal_to_float.b SIMPLE [(values__tmp__table__9)values__tmp__table__9.FieldSchema(name:tmp_values_col5, type:string, comment:), ]
 POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_decimal_to_float.c1 EXPRESSION [(values__tmp__table__9)values__tmp__table__9.FieldSchema(name:tmp_values_col2, type:string, comment:), ]

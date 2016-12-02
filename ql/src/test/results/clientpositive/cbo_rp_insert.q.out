@@ -32,11 +32,9 @@ POSTHOOK: Output: database:x314
 POSTHOOK: Output: x314@target1
 PREHOOK: query: insert into source(s2,s1) values(2,1)
 PREHOOK: type: QUERY
-PREHOOK: Input: x314@values__tmp__table__1
 PREHOOK: Output: x314@source
 POSTHOOK: query: insert into source(s2,s1) values(2,1)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: x314@values__tmp__table__1
 POSTHOOK: Output: x314@source
 POSTHOOK: Lineage: source.s1 EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
 POSTHOOK: Lineage: source.s2 EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]

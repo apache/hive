@@ -14,11 +14,9 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@dummy
 PREHOOK: query: INSERT INTO TABLE dummy VALUES (42)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__1
 PREHOOK: Output: default@dummy
 POSTHOOK: query: INSERT INTO TABLE dummy VALUES (42)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__1
 POSTHOOK: Output: default@dummy
 POSTHOOK: Lineage: dummy.i EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 PREHOOK: query: DROP TABLE IF EXISTS nested_tbl_1

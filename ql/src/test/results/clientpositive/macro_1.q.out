@@ -26,11 +26,9 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@macro_test
 PREHOOK: query: insert into table macro_test values ("bb"), ("a"), ("ccc")
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__1
 PREHOOK: Output: default@macro_test
 POSTHOOK: query: insert into table macro_test values ("bb"), ("a"), ("ccc")
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__1
 POSTHOOK: Output: default@macro_test
 POSTHOOK: Lineage: macro_test.x SIMPLE [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 PREHOOK: query: SELECT

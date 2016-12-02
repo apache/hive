@@ -8,11 +8,9 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@a
 PREHOOK: query: insert into table a values (1,2),(1,2),(1,3),(2,3)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__1
 PREHOOK: Output: default@a
 POSTHOOK: query: insert into table a values (1,2),(1,2),(1,3),(2,3)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__1
 POSTHOOK: Output: default@a
 POSTHOOK: Lineage: a.key EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 POSTHOOK: Lineage: a.value EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
@@ -26,11 +24,9 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@b
 PREHOOK: query: insert into table b values (1,2),(2,3)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__2
 PREHOOK: Output: default@b
 POSTHOOK: query: insert into table b values (1,2),(2,3)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__2
 POSTHOOK: Output: default@b
 POSTHOOK: Lineage: b.key EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 POSTHOOK: Lineage: b.value EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col2, type:string, comment:), ]

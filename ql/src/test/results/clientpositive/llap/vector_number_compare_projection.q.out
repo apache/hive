@@ -68,11 +68,9 @@ POSTHOOK: Lineage: scratch.t SIMPLE [(vectortab2k)vectortab2k.FieldSchema(name:t
 t	si	i	b	f	d	dc
 PREHOOK: query: INSERT INTO TABLE scratch VALUES (NULL, NULL, NULL, NULL, NULL, NULL, NULL)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__1
 PREHOOK: Output: default@scratch
 POSTHOOK: query: INSERT INTO TABLE scratch VALUES (NULL, NULL, NULL, NULL, NULL, NULL, NULL)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__1
 POSTHOOK: Output: default@scratch
 POSTHOOK: Lineage: scratch.b EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col4, type:string, comment:), ]
 POSTHOOK: Lineage: scratch.d EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col6, type:string, comment:), ]

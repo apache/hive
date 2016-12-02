@@ -16,7 +16,6 @@ values
 (6,20150314, '2015-03-14'),
 (7,20150404, '2015-04-04')
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__1
 PREHOOK: Output: default@testvec
 POSTHOOK: query: insert into table testvec
 values 
@@ -28,7 +27,6 @@ values
 (6,20150314, '2015-03-14'),
 (7,20150404, '2015-04-04')
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__1
 POSTHOOK: Output: default@testvec
 POSTHOOK: Lineage: testvec.dt EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
 POSTHOOK: Lineage: testvec.greg_dt SIMPLE [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col3, type:string, comment:), ]

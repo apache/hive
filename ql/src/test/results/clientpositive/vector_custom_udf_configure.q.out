@@ -14,11 +14,9 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@testorc1
 PREHOOK: query: insert into table testorc1 values(1, 'a1'), (2,'a2')
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__1
 PREHOOK: Output: default@testorc1
 POSTHOOK: query: insert into table testorc1 values(1, 'a1'), (2,'a2')
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__1
 POSTHOOK: Output: default@testorc1
 POSTHOOK: Lineage: testorc1.id EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 POSTHOOK: Lineage: testorc1.name SIMPLE [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]

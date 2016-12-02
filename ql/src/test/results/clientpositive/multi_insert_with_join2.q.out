@@ -33,24 +33,20 @@ POSTHOOK: Output: default@join_result_3
 PREHOOK: query: INSERT INTO TABLE T_A 
 VALUES ('Id_1', 'val_101'), ('Id_2', 'val_102'), ('Id_3', 'val_103')
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__1
 PREHOOK: Output: default@t_a
 POSTHOOK: query: INSERT INTO TABLE T_A 
 VALUES ('Id_1', 'val_101'), ('Id_2', 'val_102'), ('Id_3', 'val_103')
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__1
 POSTHOOK: Output: default@t_a
 POSTHOOK: Lineage: t_a.id SIMPLE [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 POSTHOOK: Lineage: t_a.val SIMPLE [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
 PREHOOK: query: INSERT INTO TABLE T_B 
 VALUES ('Id_1', 'val_103'), ('Id_2', 'val_104')
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__2
 PREHOOK: Output: default@t_b
 POSTHOOK: query: INSERT INTO TABLE T_B 
 VALUES ('Id_1', 'val_103'), ('Id_2', 'val_104')
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__2
 POSTHOOK: Output: default@t_b
 POSTHOOK: Lineage: t_b.id SIMPLE [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 POSTHOOK: Lineage: t_b.val SIMPLE [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col2, type:string, comment:), ]

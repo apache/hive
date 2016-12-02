@@ -57,11 +57,9 @@ POSTHOOK: Input: default@acid@ds=2008-04-08
 1000
 PREHOOK: query: insert into table acid partition(ds='2008-04-08') values("foo", "bar")
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__1
 PREHOOK: Output: default@acid@ds=2008-04-08
 POSTHOOK: query: insert into table acid partition(ds='2008-04-08') values("foo", "bar")
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__1
 POSTHOOK: Output: default@acid@ds=2008-04-08
 POSTHOOK: Lineage: acid PARTITION(ds=2008-04-08).key SIMPLE [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 POSTHOOK: Lineage: acid PARTITION(ds=2008-04-08).value SIMPLE [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
@@ -343,11 +341,9 @@ POSTHOOK: Input: default@acid@ds=2008-04-08
 1000
 PREHOOK: query: insert into table acid partition(ds='2008-04-08') values("foo", "bar")
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__2
 PREHOOK: Output: default@acid@ds=2008-04-08
 POSTHOOK: query: insert into table acid partition(ds='2008-04-08') values("foo", "bar")
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__2
 POSTHOOK: Output: default@acid@ds=2008-04-08
 POSTHOOK: Lineage: acid PARTITION(ds=2008-04-08).key SIMPLE [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 POSTHOOK: Lineage: acid PARTITION(ds=2008-04-08).value SIMPLE [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
@@ -637,11 +633,9 @@ POSTHOOK: Input: default@acid@ds=2008-04-08/hr=11
 500
 PREHOOK: query: insert into table acid partition(ds='2008-04-08',hr=11) values("foo", "bar")
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__3
 PREHOOK: Output: default@acid@ds=2008-04-08/hr=11
 POSTHOOK: query: insert into table acid partition(ds='2008-04-08',hr=11) values("foo", "bar")
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__3
 POSTHOOK: Output: default@acid@ds=2008-04-08/hr=11
 POSTHOOK: Lineage: acid PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(values__tmp__table__3)values__tmp__table__3.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 POSTHOOK: Lineage: acid PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(values__tmp__table__3)values__tmp__table__3.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
@@ -1056,11 +1050,9 @@ POSTHOOK: Input: default@acid@ds=2008-04-08/hr=11
 500
 PREHOOK: query: insert into table acid partition(ds='2008-04-08',hr=11) values("foo", "bar")
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__4
 PREHOOK: Output: default@acid@ds=2008-04-08/hr=11
 POSTHOOK: query: insert into table acid partition(ds='2008-04-08',hr=11) values("foo", "bar")
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__4
 POSTHOOK: Output: default@acid@ds=2008-04-08/hr=11
 POSTHOOK: Lineage: acid PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(values__tmp__table__4)values__tmp__table__4.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 POSTHOOK: Lineage: acid PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(values__tmp__table__4)values__tmp__table__4.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
@@ -1473,11 +1465,9 @@ POSTHOOK: Input: default@acid@ds=2008-04-08/hr=11
 500
 PREHOOK: query: insert into table acid partition(ds='2008-04-08',hr=11) values("foo", "bar")
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__5
 PREHOOK: Output: default@acid@ds=2008-04-08/hr=11
 POSTHOOK: query: insert into table acid partition(ds='2008-04-08',hr=11) values("foo", "bar")
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__5
 POSTHOOK: Output: default@acid@ds=2008-04-08/hr=11
 POSTHOOK: Lineage: acid PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(values__tmp__table__5)values__tmp__table__5.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 POSTHOOK: Lineage: acid PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(values__tmp__table__5)values__tmp__table__5.FieldSchema(name:tmp_values_col2, type:string, comment:), ]

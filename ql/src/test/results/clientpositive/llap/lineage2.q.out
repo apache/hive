@@ -602,7 +602,6 @@ PREHOOK: Output: database:default
 PREHOOK: Output: default@dest_l2
 PREHOOK: query: insert into dest_l2 values(0, 1, 100, 10000)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__1
 PREHOOK: Output: default@dest_l2
 {"version":"1.0","engine":"tez","database":"default","hash":"e001334e3f8384806b0f25a7c303045f","queryText":"insert into dest_l2 values(0, 1, 100, 10000)","edges":[{"sources":[],"targets":[0],"expression":"UDFToInteger(values__tmp__table__1.tmp_values_col1)","edgeType":"PROJECTION"},{"sources":[],"targets":[1],"expression":"UDFToByte(values__tmp__table__1.tmp_values_col2)","edgeType":"PROJECTION"},{"sources":[],"targets":[2],"expression":"UDFToInteger(values__tmp__table__1.tmp_values_col3)","edgeType":"PROJECTION"},{"sources":[],"targets":[3],"expression":"UDFToLong(values__tmp__table__1.tmp_values_col4)","edgeType":"PROJECTION"}],"vertices":[{"id":0,"vertexType":"COLUMN","vertexId":"default.dest_l2.id"},{"id":1,"vertexType":"COLUMN","vertexId":"default.dest_l2.c1"},{"id":2,"vertexType":"COLUMN","vertexId":"default.dest_l2.c2"},{"id":3,"vertexType":"COLUMN","vertexId":"default.dest_l2.c3"}]}
 PREHOOK: query: select * from (
@@ -623,7 +622,6 @@ PREHOOK: Output: database:default
 PREHOOK: Output: default@dest_l3
 PREHOOK: query: insert into dest_l3 values(0, "s1", "s2", 15)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__2
 PREHOOK: Output: default@dest_l3
 {"version":"1.0","engine":"tez","database":"default","hash":"09df51ba6ba2d07f2304523ee505f094","queryText":"insert into dest_l3 values(0, \"s1\", \"s2\", 15)","edges":[{"sources":[],"targets":[0],"expression":"UDFToInteger(values__tmp__table__2.tmp_values_col1)","edgeType":"PROJECTION"},{"sources":[],"targets":[1,2],"edgeType":"PROJECTION"},{"sources":[],"targets":[3],"expression":"UDFToInteger(values__tmp__table__2.tmp_values_col4)","edgeType":"PROJECTION"}],"vertices":[{"id":0,"vertexType":"COLUMN","vertexId":"default.dest_l3.id"},{"id":1,"vertexType":"COLUMN","vertexId":"default.dest_l3.c1"},{"id":2,"vertexType":"COLUMN","vertexId":"default.dest_l3.c2"},{"id":3,"vertexType":"COLUMN","vertexId":"default.dest_l3.c3"}]}
 PREHOOK: query: select sum(a.c1) over (partition by a.c1 order by a.id)

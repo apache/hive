@@ -25,11 +25,9 @@ POSTHOOK: Output: default@acidtbldefault
 POSTHOOK: Lineage: acidtbldefault.a SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
 PREHOOK: query: INSERT INTO TABLE acidTblDefault VALUES (1)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__1
 PREHOOK: Output: default@acidtbldefault
 POSTHOOK: query: INSERT INTO TABLE acidTblDefault VALUES (1)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__1
 POSTHOOK: Output: default@acidtbldefault
 POSTHOOK: Lineage: acidtbldefault.a EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 PREHOOK: query: -- Exactly one of the buckets should be selected out of the 16 buckets
