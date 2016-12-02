@@ -7888,6 +7888,16 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         join.getNoOuterJoin(), joinCondns, filterMap, joinKeys);
     desc.setReversedExprs(reversedExprs);
     desc.setFilterMap(join.getFilterMap());
+    // For outer joins, add filters that apply to more than one input
+    if (!join.getNoOuterJoin() && join.getPostJoinFilters().size() != 0) {
+      List<ExprNodeDesc> residualFilterExprs = new ArrayList<ExprNodeDesc>();
+      for (ASTNode cond : join.getPostJoinFilters()) {
+        residualFilterExprs.add(genExprNodeDesc(cond, outputRR));
+      }
+      desc.setResidualFilterExprs(residualFilterExprs);
+      // Clean post-conditions
+      join.getPostJoinFilters().clear();
+    }
 
     JoinOperator joinOp = (JoinOperator) OperatorFactory.getAndMakeChild(getOpContext(), desc,
         new RowSchema(outputRR.getColumnInfos()), rightOps);
@@ -8102,18 +8112,20 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     joinOp.getConf().setQBJoinTreeProps(joinTree);
     joinContext.put(joinOp, joinTree);
 
-    // Safety check for postconditions; currently we do not support them for outer join
-    if (joinTree.getPostJoinFilters().size() != 0 && !joinTree.getNoOuterJoin()) {
-      throw new SemanticException(ErrorMsg.INVALID_JOIN_CONDITION.getMsg());
-    }
-    Operator op = joinOp;
-    for(ASTNode condn : joinTree.getPostJoinFilters()) {
-      op = genFilterPlan(qb, condn, op, false);
-      if (LOG.isDebugEnabled()) {
-        LOG.debug("Generated " + op + " with post-filtering conditions after JOIN operator");
+    if (joinTree.getPostJoinFilters().size() != 0) {
+      // Safety check for postconditions
+      assert joinTree.getNoOuterJoin();
+      Operator op = joinOp;
+      for(ASTNode condn : joinTree.getPostJoinFilters()) {
+        op = genFilterPlan(qb, condn, op, false);
+        if (LOG.isDebugEnabled()) {
+          LOG.debug("Generated " + op + " with post-filtering conditions after JOIN operator");
+        }
       }
+      return op;
     }
-    return op;
+
+    return joinOp;
   }
 
   /**

@@ -1561,6 +1561,10 @@ public class Vectorizer implements PhysicalPlanResolver {
       LOG.info("Cannot vectorize map work small table expression");
       return false;
     }
+    if (desc.getResidualFilterExprs() != null && !desc.getResidualFilterExprs().isEmpty()) {
+      LOG.info("Cannot vectorize outer join with complex ON clause");
+      return false;
+    }
     return true;
   }
 

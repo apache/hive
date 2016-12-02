@@ -233,6 +233,23 @@ public class JoinUtil {
   /**
    * Returns true if the row does not pass through filters.
    */
+  protected static boolean isFiltered(Object row, List<ExprNodeEvaluator> filters,
+          List<ObjectInspector> filtersOIs) throws HiveException {
+    for (int i = 0; i < filters.size(); i++) {
+      ExprNodeEvaluator evaluator = filters.get(i);
+      Object condition = evaluator.evaluate(row);
+      Boolean result = (Boolean) ((PrimitiveObjectInspector) filtersOIs.get(i)).
+              getPrimitiveJavaObject(condition);
+      if (result == null || !result) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /**
+   * Returns true if the row does not pass through filters.
+   */
   protected static short isFiltered(Object row, List<ExprNodeEvaluator> filters,
       List<ObjectInspector> ois, int[] filterMap) throws HiveException {
     // apply join filters on the row.

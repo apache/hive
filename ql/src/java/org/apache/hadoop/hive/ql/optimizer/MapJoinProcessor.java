@@ -1192,6 +1192,7 @@ public class MapJoinProcessor extends Transform {
     mapJoinDescriptor.setTagOrder(tagOrder);
     mapJoinDescriptor.setNullSafes(desc.getNullSafes());
     mapJoinDescriptor.setFilterMap(desc.getFilterMap());
+    mapJoinDescriptor.setResidualFilterExprs(desc.getResidualFilterExprs());
     if (!valueIndices.isEmpty()) {
       mapJoinDescriptor.setValueIndices(valueIndices);
     }

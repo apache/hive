@@ -99,6 +99,7 @@ public class ConvertJoinMapJoin implements NodeProcessor {
         return retval;
       } else {
         fallbackToReduceSideJoin(joinOp, context);
+        return null;
       }
     }
 
@@ -232,6 +233,7 @@ public class ConvertJoinMapJoin implements NodeProcessor {
                   joinDesc.getFilters(), joinDesc.getNoOuterJoin(), null);
       mapJoinDesc.setNullSafes(joinDesc.getNullSafes());
       mapJoinDesc.setFilterMap(joinDesc.getFilterMap());
+      mapJoinDesc.setResidualFilterExprs(joinDesc.getResidualFilterExprs());
       mapJoinDesc.resetOrder();
     }
 
