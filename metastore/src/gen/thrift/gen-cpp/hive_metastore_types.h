@@ -338,6 +338,8 @@ class HeartbeatTxnRangeResponse;
 
 class CompactionRequest;
 
+class CompactionResponse;
+
 class ShowCompactRequest;
 
 class ShowCompactResponseElement;
@@ -5983,6 +5985,56 @@ inline std::ostream& operator<<(std::ostream& out, const CompactionRequest& obj)
 }
 
 
+class CompactionResponse {
+ public:
+
+  CompactionResponse(const CompactionResponse&);
+  CompactionResponse& operator=(const CompactionResponse&);
+  CompactionResponse() : id(0), state(), accepted(0) {
+  }
+
+  virtual ~CompactionResponse() throw();
+  int64_t id;
+  std::string state;
+  bool accepted;
+
+  void __set_id(const int64_t val);
+
+  void __set_state(const std::string& val);
+
+  void __set_accepted(const bool val);
+
+  bool operator == (const CompactionResponse & rhs) const
+  {
+    if (!(id == rhs.id))
+      return false;
+    if (!(state == rhs.state))
+      return false;
+    if (!(accepted == rhs.accepted))
+      return false;
+    return true;
+  }
+  bool operator != (const CompactionResponse &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const CompactionResponse & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(CompactionResponse &a, CompactionResponse &b);
+
+inline std::ostream& operator<<(std::ostream& out, const CompactionResponse& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+
 class ShowCompactRequest {
  public:
 
@@ -6018,7 +6070,7 @@ inline std::ostream& operator<<(std::ostream& out, const ShowCompactRequest& obj
 }
 
 typedef struct _ShowCompactResponseElement__isset {
-  _ShowCompactResponseElement__isset() : partitionname(false), workerid(false), start(false), runAs(false), hightestTxnId(false), metaInfo(false), endTime(false), hadoopJobId(true) {}
+  _ShowCompactResponseElement__isset() : partitionname(false), workerid(false), start(false), runAs(false), hightestTxnId(false), metaInfo(false), endTime(false), hadoopJobId(true), id(false) {}
   bool partitionname :1;
   bool workerid :1;
   bool start :1;
@@ -6027,6 +6079,7 @@ typedef struct _ShowCompactResponseElement__isset {
   bool metaInfo :1;
   bool endTime :1;
   bool hadoopJobId :1;
+  bool id :1;
 } _ShowCompactResponseElement__isset;
 
 class ShowCompactResponseElement {
@@ -6034,7 +6087,7 @@ class ShowCompactResponseElement {
 
   ShowCompactResponseElement(const ShowCompactResponseElement&);
   ShowCompactResponseElement& operator=(const ShowCompactResponseElement&);
-  ShowCompactResponseElement() : dbname(), tablename(), partitionname(), type((CompactionType::type)0), state(), workerid(), start(0), runAs(), hightestTxnId(0), metaInfo(), endTime(0), hadoopJobId("None") {
+  ShowCompactResponseElement() : dbname(), tablename(), partitionname(), type((CompactionType::type)0), state(), workerid(), start(0), runAs(), hightestTxnId(0), metaInfo(), endTime(0), hadoopJobId("None"), id(0) {
   }
 
   virtual ~ShowCompactResponseElement() throw();
@@ -6050,6 +6103,7 @@ class ShowCompactResponseElement {
   std::string metaInfo;
   int64_t endTime;
   std::string hadoopJobId;
+  int64_t id;
 
   _ShowCompactResponseElement__isset __isset;
 
@@ -6076,6 +6130,8 @@ class ShowCompactResponseElement {
   void __set_endTime(const int64_t val);
 
   void __set_hadoopJobId(const std::string& val);
+
+  void __set_id(const int64_t val);
 
   bool operator == (const ShowCompactResponseElement & rhs) const
   {
@@ -6118,6 +6174,10 @@ class ShowCompactResponseElement {
     if (__isset.hadoopJobId != rhs.__isset.hadoopJobId)
       return false;
     else if (__isset.hadoopJobId && !(hadoopJobId == rhs.hadoopJobId))
+      return false;
+    if (__isset.id != rhs.__isset.id)
+      return false;
+    else if (__isset.id && !(id == rhs.id))
       return false;
     return true;
   }

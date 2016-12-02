@@ -22,6 +22,7 @@ import org.apache.hadoop.hive.metastore.api.AbortTxnRequest;
 import org.apache.hadoop.hive.metastore.api.CheckLockRequest;
 import org.apache.hadoop.hive.metastore.api.CommitTxnRequest;
 import org.apache.hadoop.hive.metastore.api.CompactionRequest;
+import org.apache.hadoop.hive.metastore.api.CompactionResponse;
 import org.apache.hadoop.hive.metastore.api.CompactionType;
 import org.apache.hadoop.hive.metastore.api.DataOperationType;
 import org.apache.hadoop.hive.metastore.api.GetOpenTxnsInfoResponse;
@@ -1132,6 +1133,38 @@ public class TestTxnHandler {
     txnHandler.compact(rqst);
     ShowCompactResponse rsp = txnHandler.showCompact(new ShowCompactRequest());
     List<ShowCompactResponseElement> compacts = rsp.getCompacts();
+    assertEquals(1, compacts.size());
+    ShowCompactResponseElement c = compacts.get(0);
+    assertEquals("foo", c.getDbname());
+    assertEquals("bar", c.getTablename());
+    assertEquals("ds=today", c.getPartitionname());
+    assertEquals(CompactionType.MAJOR, c.getType());
+    assertEquals("initiated", c.getState());
+    assertEquals(0L, c.getStart());
+  }
+
+  /**
+   * Once a Compaction for a given resource is scheduled/working, we should not
+   * schedule another one to prevent concurrent compactions for the same resource.
+   * @throws Exception
+   */
+  @Test
+  public void testCompactWhenAlreadyCompacting() throws Exception {
+    CompactionRequest rqst = new CompactionRequest("foo", "bar", CompactionType.MAJOR);
+    rqst.setPartitionname("ds=today");
+    CompactionResponse resp = txnHandler.compact(rqst);
+    Assert.assertEquals(resp, new CompactionResponse(1, TxnStore.INITIATED_RESPONSE, true));
+
+    ShowCompactResponse rsp = txnHandler.showCompact(new ShowCompactRequest());
+    List<ShowCompactResponseElement> compacts = rsp.getCompacts();
+    assertEquals(1, compacts.size());
+
+    rqst.setType(CompactionType.MINOR);
+    resp = txnHandler.compact(rqst);
+    Assert.assertEquals(resp, new CompactionResponse(1, TxnStore.INITIATED_RESPONSE, false));
+
+    rsp = txnHandler.showCompact(new ShowCompactRequest());
+    compacts = rsp.getCompacts();
     assertEquals(1, compacts.size());
     ShowCompactResponseElement c = compacts.get(0);
     assertEquals("foo", c.getDbname());
