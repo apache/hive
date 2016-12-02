@@ -66,13 +66,6 @@ public interface ServiceInstance {
    */
   public int getOutputFormatPort();
 
-  /**
-   * Return the last known state (without refreshing)
-   * 
-   * @return
-   */
-
-  public boolean isAlive();
 
   /**
    * Config properties of the Service Instance (llap.daemon.*)
