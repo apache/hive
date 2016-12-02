@@ -1211,7 +1211,7 @@ public class LlapTaskSchedulerService extends TaskScheduler {
           }
         } else {
           // No tasks qualify as preemptable
-          LOG.info("No tasks qualify as killable to schedule tasks at priority {}", forPriority);
+          LOG.debug("No tasks qualify as killable to schedule tasks at priority {}", forPriority);
           break;
         }
       }
@@ -1602,8 +1602,8 @@ public class LlapTaskSchedulerService extends TaskScheduler {
     boolean canAcceptTask() {
       boolean result = !hadCommFailure && !disabled
           &&(numSchedulableTasks == -1 || ((numSchedulableTasks - numScheduledTasks) > 0));
-      if (LOG.isInfoEnabled()) {
-        LOG.info("Node[" + serviceInstance.getHost() + ":" + serviceInstance.getRpcPort() + ", " +
+      if (LOG.isDebugEnabled()) {
+        LOG.debug("Node[" + serviceInstance.getHost() + ":" + serviceInstance.getRpcPort() + ", " +
                 serviceInstance.getWorkerIdentity() + "]: " +
                 "canAcceptTask={}, numScheduledTasks={}, numSchedulableTasks={}, hadCommFailure={}, disabled={}",
             result, numScheduledTasks, numSchedulableTasks, hadCommFailure, disabled);

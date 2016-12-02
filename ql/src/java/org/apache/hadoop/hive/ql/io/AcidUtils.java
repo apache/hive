@@ -42,6 +42,7 @@ import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.shims.HadoopShims;
 import org.apache.hadoop.hive.shims.HadoopShims.HdfsFileStatusWithId;
 import org.apache.hadoop.hive.shims.ShimLoader;
+import org.apache.hive.common.util.Ref;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -763,6 +764,15 @@ public class AcidUtils {
                                        boolean useFileIds,
                                        boolean ignoreEmptyFiles
                                        ) throws IOException {
+    return getAcidState(directory, conf, txnList, Ref.from(useFileIds), ignoreEmptyFiles);
+  }
+
+  public static Directory getAcidState(Path directory,
+                                       Configuration conf,
+                                       ValidTxnList txnList,
+                                       Ref<Boolean> useFileIds,
+                                       boolean ignoreEmptyFiles
+                                       ) throws IOException {
     FileSystem fs = directory.getFileSystem(conf);
     // The following 'deltas' includes all kinds of delta files including insert & delete deltas.
     final List<ParsedDelta> deltas = new ArrayList<ParsedDelta>();
@@ -770,12 +780,18 @@ public class AcidUtils {
     List<FileStatus> originalDirectories = new ArrayList<FileStatus>();
     final List<FileStatus> obsolete = new ArrayList<FileStatus>();
     List<HdfsFileStatusWithId> childrenWithId = null;
-    if (useFileIds) {
+    Boolean val = useFileIds.value;
+    if (val == null || val) {
       try {
         childrenWithId = SHIMS.listLocatedHdfsStatus(fs, directory, hiddenFileFilter);
+        if (val == null) {
+          useFileIds.value = true;
+        }
       } catch (Throwable t) {
         LOG.error("Failed to get files with ID; using regular API: " + t.getMessage());
-        useFileIds = false;
+        if (val == null && t instanceof UnsupportedOperationException) {
+          useFileIds.value = false;
+        }
       }
     }
     TxnBase bestBase = new TxnBase();
@@ -995,15 +1011,21 @@ public class AcidUtils {
    * @throws IOException
    */
   private static void findOriginals(FileSystem fs, FileStatus stat,
-      List<HdfsFileStatusWithId> original, boolean useFileIds) throws IOException {
+      List<HdfsFileStatusWithId> original, Ref<Boolean> useFileIds) throws IOException {
     assert stat.isDir();
     List<HdfsFileStatusWithId> childrenWithId = null;
-    if (useFileIds) {
+    Boolean val = useFileIds.value;
+    if (val == null || val) {
       try {
         childrenWithId = SHIMS.listLocatedHdfsStatus(fs, stat.getPath(), hiddenFileFilter);
+        if (val == null) {
+          useFileIds.value = true;
+        }
       } catch (Throwable t) {
         LOG.error("Failed to get files with ID; using regular API: " + t.getMessage());
-        useFileIds = false;
+        if (val == null && t instanceof UnsupportedOperationException) {
+          useFileIds.value = false;
+        }
       }
     }
     if (childrenWithId != null) {

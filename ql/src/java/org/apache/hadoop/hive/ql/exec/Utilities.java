@@ -2974,6 +2974,8 @@ public final class Utilities {
 
       // The alias may not have any path
       Path path = null;
+      boolean hasLogged = false;
+      // Note: this copies the list because createDummyFileForEmptyPartition may modify the map.
       for (Path file : new LinkedList<Path>(work.getPathToAliases().keySet())) {
         List<String> aliases = work.getPathToAliases().get(file);
         if (aliases.contains(alias)) {
@@ -2986,13 +2988,15 @@ public final class Utilities {
           }
 
           pathsProcessed.add(path);
-
-          LOG.info("Adding input file " + path);
-          if (!skipDummy
-              && isEmptyPath(job, path, ctx)) {
-            path = createDummyFileForEmptyPartition(path, job, work,
-                 hiveScratchDir);
-
+          if (LOG.isDebugEnabled()) {
+            LOG.debug("Adding input file " + path);
+          } else if (!hasLogged) {
+            hasLogged = true;
+            LOG.info("Adding " + work.getPathToAliases().size()
+                + " inputs; the first input is " + path);
+          }
+          if (!skipDummy && isEmptyPath(job, path, ctx)) {
+            path = createDummyFileForEmptyPartition(path, job, work, hiveScratchDir);
           }
           pathsToAdd.add(path);
         }

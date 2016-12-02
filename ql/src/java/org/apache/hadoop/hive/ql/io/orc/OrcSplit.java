@@ -98,8 +98,10 @@ public class OrcSplit extends FileSplit implements ColumnarSplit, LlapAwareSplit
     int additional = bos.size() - required;
 
     out.write(bos.toByteArray());
-    LOG.info("Writing additional {} bytes to OrcSplit as payload. Required {} bytes.", additional,
-        required);
+    if (LOG.isTraceEnabled()) {
+      LOG.trace("Writing additional {} bytes to OrcSplit as payload. Required {} bytes.",
+          additional, required);
+    }
   }
 
   private void writeAdditionalPayload(final DataOutputStream out) throws IOException {
