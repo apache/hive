@@ -1506,6 +1506,8 @@ public class HiveConf extends Configuration {
 
     HIVE_AUTO_SORTMERGE_JOIN("hive.auto.convert.sortmerge.join", false,
         "Will the join be automatically converted to a sort-merge join, if the joined tables pass the criteria for sort-merge join."),
+    HIVE_AUTO_SORTMERGE_JOIN_REDUCE("hive.auto.convert.sortmerge.join.reduce.side", true,
+        "Whether hive.auto.convert.sortmerge.join (if enabled) should be applied to reduce side."),
     HIVE_AUTO_SORTMERGE_JOIN_BIGTABLE_SELECTOR(
         "hive.auto.convert.sortmerge.join.bigtable.selection.policy",
         "org.apache.hadoop.hive.ql.optimizer.AvgPartitionSizeBasedBigTableSelectorForAutoSMJ",

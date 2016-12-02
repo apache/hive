@@ -87,3 +87,23 @@ join
 (select rt2.id from
 (select t2.key as id, t2.value as od from tab_part t2 order by id, od) rt2) vt2
 where vt1.id=vt2.id;
+
+set hive.auto.convert.sortmerge.join.reduce.side=false;
+
+explain
+select count(*) from
+(select rt1.id from
+(select t1.key as id, t1.value as od from tab t1 order by id, od) rt1) vt1
+join
+(select rt2.id from
+(select t2.key as id, t2.value as od from tab_part t2 order by id, od) rt2) vt2
+where vt1.id=vt2.id;
+
+select count(*) from
+(select rt1.id from
+(select t1.key as id, t1.value as od from tab t1 order by id, od) rt1) vt1
+join
+(select rt2.id from
+(select t2.key as id, t2.value as od from tab_part t2 order by id, od) rt2) vt2
+where vt1.id=vt2.id;
+

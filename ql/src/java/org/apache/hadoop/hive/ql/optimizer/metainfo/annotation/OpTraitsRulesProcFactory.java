@@ -106,11 +106,13 @@ public class OpTraitsRulesProcFactory {
       List<List<String>> listBucketCols = new ArrayList<List<String>>();
       listBucketCols.add(bucketCols);
       int numBuckets = -1;
+      int numReduceSinks = 1;
       OpTraits parentOpTraits = rs.getParentOperators().get(0).getConf().getTraits();
       if (parentOpTraits != null) {
         numBuckets = parentOpTraits.getNumBuckets();
+        numReduceSinks += parentOpTraits.getNumReduceSinks();
       }
-      OpTraits opTraits = new OpTraits(listBucketCols, numBuckets, listBucketCols);
+      OpTraits opTraits = new OpTraits(listBucketCols, numBuckets, listBucketCols, numReduceSinks);
       rs.setOpTraits(opTraits);
       return null;
     }
@@ -135,8 +137,8 @@ public class OpTraitsRulesProcFactory {
         // construct a mapping of (Partition->bucket file names) and (Partition -> bucket number)
         if (!partitions.isEmpty()) {
           for (Partition p : partitions) {
-            List<String> fileNames =
-                AbstractBucketJoinProc.getBucketFilePathsOfPartition(p.getDataLocation(),
+            List<String> fileNames = 
+                AbstractBucketJoinProc.getBucketFilePathsOfPartition(p.getDataLocation(), 
                     pGraphContext);
             // The number of files for the table should be same as number of
             // buckets.
@@ -187,7 +189,7 @@ public class OpTraitsRulesProcFactory {
         sortedColsList.add(sortCols);
       }
       // num reduce sinks hardcoded to 0 because TS has no parents
-      OpTraits opTraits = new OpTraits(bucketColsList, numBuckets, sortedColsList);
+      OpTraits opTraits = new OpTraits(bucketColsList, numBuckets, sortedColsList, 0);
       ts.setOpTraits(opTraits);
       return null;
     }
@@ -212,8 +214,13 @@ public class OpTraitsRulesProcFactory {
       }
 
       List<List<String>> listBucketCols = new ArrayList<List<String>>();
+      int numReduceSinks = 0;
+      OpTraits parentOpTraits = gbyOp.getParentOperators().get(0).getOpTraits();
+      if (parentOpTraits != null) {
+        numReduceSinks = parentOpTraits.getNumReduceSinks();
+      }
       listBucketCols.add(gbyKeys);
-      OpTraits opTraits = new OpTraits(listBucketCols, -1, listBucketCols);
+      OpTraits opTraits = new OpTraits(listBucketCols, -1, listBucketCols, numReduceSinks);
       gbyOp.setOpTraits(opTraits);
       return null;
     }
@@ -266,11 +273,13 @@ public class OpTraitsRulesProcFactory {
       }
 
       int numBuckets = -1;
+      int numReduceSinks = 0;
       OpTraits parentOpTraits = selOp.getParentOperators().get(0).getOpTraits();
       if (parentOpTraits != null) {
         numBuckets = parentOpTraits.getNumBuckets();
+        numReduceSinks = parentOpTraits.getNumReduceSinks();
       }
-      OpTraits opTraits = new OpTraits(listBucketCols, numBuckets, listSortCols);
+      OpTraits opTraits = new OpTraits(listBucketCols, numBuckets, listSortCols, numReduceSinks);
       selOp.setOpTraits(opTraits);
       return null;
     }
@@ -299,10 +308,13 @@ public class OpTraitsRulesProcFactory {
         OpTraits parentOpTraits = rsOp.getOpTraits();
         bucketColsList.add(getOutputColNames(joinOp, parentOpTraits.getBucketColNames(), pos));
         sortColsList.add(getOutputColNames(joinOp, parentOpTraits.getSortCols(), pos));
+        if (parentOpTraits.getNumReduceSinks() > numReduceSinks) {
+          numReduceSinks = parentOpTraits.getNumReduceSinks();
+        }
         pos++;
       }
 
-      joinOp.setOpTraits(new OpTraits(bucketColsList, -1, bucketColsList));
+      joinOp.setOpTraits(new OpTraits(bucketColsList, -1, bucketColsList, numReduceSinks));
       return null;
     }
 
@@ -355,7 +367,17 @@ public class OpTraitsRulesProcFactory {
         Object... nodeOutputs) throws SemanticException {
       @SuppressWarnings("unchecked")
       Operator<? extends OperatorDesc> operator = (Operator<? extends OperatorDesc>) nd;
-      OpTraits opTraits = new OpTraits(null, -1, null);
+
+      int numReduceSinks = 0;
+      for (Operator<?> parentOp : operator.getParentOperators()) {
+        if (parentOp.getOpTraits() == null) {
+          continue;
+        }
+        if (parentOp.getOpTraits().getNumReduceSinks() > numReduceSinks) {
+          numReduceSinks = parentOp.getOpTraits().getNumReduceSinks();
+        }
+      }
+      OpTraits opTraits = new OpTraits(null, -1, null, numReduceSinks);
       operator.setOpTraits(opTraits);
       return null;
     }
