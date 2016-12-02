@@ -384,11 +384,15 @@ public class CommonMergeJoinOperator extends AbstractMapJoinOperator<CommonMerge
       this.nextKeyWritables[t] = null;
     }
   }
+  
+  @Override
+  public void close(boolean abort) throws HiveException {
+    joinFinalLeftData(); // Do this WITHOUT checking for parents
+    super.close(abort);
+  }
 
   @Override
   public void closeOp(boolean abort) throws HiveException {
-    joinFinalLeftData();
-
     super.closeOp(abort);
 
     // clean up
