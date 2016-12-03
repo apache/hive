@@ -38,6 +38,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -80,11 +81,11 @@ public class TestColumnPrunerProcCtx {
     ExprNodeDesc colDesc = new ExprNodeColumnDesc(col3Type, "root", "test", false);
     ExprNodeDesc col1 = new ExprNodeFieldDesc(col1Type, colDesc, "col1", false);
     ExprNodeDesc fieldDesc = new ExprNodeFieldDesc(TypeInfoFactory.booleanTypeInfo, col1, "a", false);
-    final List<String> paths = Arrays.asList("_col0");
+    final List<FieldNode> paths = Arrays.asList(new FieldNode("_col0"));
 
     SelectOperator selectOperator = buildSelectOperator(Arrays.asList(fieldDesc), paths);
-    List<String> groups = ctx.getSelectNestedColPathsFromChildren(selectOperator, paths);
-    assertEquals(new String[] { "root.col1.a" }, groups.toArray(new String[groups.size()]));
+    List<FieldNode> groups = ctx.getSelectColsFromChildren(selectOperator, paths);
+    compareTestResults(groups, "root.col1.a");
   }
 
   // Test select root.col1 from root:struct<col1:struct<a:boolean,b:double>,col2:double>
@@ -94,11 +95,11 @@ public class TestColumnPrunerProcCtx {
 
     ExprNodeDesc colDesc = new ExprNodeColumnDesc(col3Type, "root", "test", false);
     ExprNodeDesc fieldDesc = new ExprNodeFieldDesc(col1Type, colDesc, "col1", false);
-    final List<String> paths = Arrays.asList("_col0");
+    final List<FieldNode> paths = Arrays.asList(new FieldNode("_col0"));
 
     SelectOperator selectOperator = buildSelectOperator(Arrays.asList(fieldDesc), paths);
-    List<String> groups = ctx.getSelectNestedColPathsFromChildren(selectOperator, paths);
-    assertEquals(new String[] { "root.col1" }, groups.toArray(new String[groups.size()]));
+    List<FieldNode> groups = ctx.getSelectColsFromChildren(selectOperator, paths);
+    compareTestResults(groups, "root.col1");
   }
 
   // Test select root.col2 from root:struct<col1:struct<a:boolean,b:double>,col2:double>
@@ -108,11 +109,11 @@ public class TestColumnPrunerProcCtx {
 
     ExprNodeDesc colDesc = new ExprNodeColumnDesc(col3Type, "root", "test", false);
     ExprNodeDesc fieldDesc = new ExprNodeFieldDesc(col1Type, colDesc, "col2", false);
-    final List<String> paths = Arrays.asList("_col0");
+    final List<FieldNode> paths = Arrays.asList(new FieldNode("_col0"));
 
     SelectOperator selectOperator = buildSelectOperator(Arrays.asList(fieldDesc), paths);
-    List<String> groups = ctx.getSelectNestedColPathsFromChildren(selectOperator, paths);
-    assertEquals(new String[] { "root.col2" }, groups.toArray(new String[groups.size()]));
+    List<FieldNode> groups = ctx.getSelectColsFromChildren(selectOperator, paths);
+    compareTestResults(groups, "root.col2");
   }
 
   // Test select root from root:struct<col1:struct<a:boolean,b:double>,col2:double>
@@ -121,11 +122,11 @@ public class TestColumnPrunerProcCtx {
     ColumnPrunerProcCtx ctx = new ColumnPrunerProcCtx(null);
 
     ExprNodeDesc colDesc = new ExprNodeColumnDesc(col3Type, "root", "test", false);
-    final List<String> paths = Arrays.asList("_col0");
+    final List<FieldNode> paths = Arrays.asList(new FieldNode("_col0"));
 
     SelectOperator selectOperator = buildSelectOperator(Arrays.asList(colDesc), paths);
-    List<String> groups = ctx.getSelectNestedColPathsFromChildren(selectOperator, paths);
-    assertEquals(new String[] { "root" }, groups.toArray(new String[groups.size()]));
+    List<FieldNode> groups = ctx.getSelectColsFromChildren(selectOperator, paths);
+    compareTestResults(groups, "root");
   }
 
   // Test select named_struct from named_struct:struct<a:boolean,b:double>
@@ -143,9 +144,9 @@ public class TestColumnPrunerProcCtx {
     ExprNodeDesc fieldDesc = new ExprNodeFieldDesc(TypeInfoFactory.doubleTypeInfo, funcDesc, "foo",
       false);
 
-    final List<String> paths = Arrays.asList("_col0");
+    final List<FieldNode> paths = Arrays.asList(new FieldNode("_col0"));
     SelectOperator selectOperator = buildSelectOperator(Arrays.asList(fieldDesc), paths);
-    List<String> groups = ctx.getSelectNestedColPathsFromChildren(selectOperator, paths);
+    List<FieldNode> groups = ctx.getSelectColsFromChildren(selectOperator, paths);
     // Return empty result since only constant Desc exists
     assertEquals(0, groups.size());
   }
@@ -160,7 +161,7 @@ public class TestColumnPrunerProcCtx {
     ExprNodeDesc col1 = new ExprNodeFieldDesc(col1Type, colDesc, "col1", false);
     ExprNodeDesc fieldDesc = new ExprNodeFieldDesc(TypeInfoFactory.doubleTypeInfo, col1, "b",
       false);
-    final List<String> paths = Arrays.asList("_col0");
+    final List<FieldNode> paths = Arrays.asList(new FieldNode("_col0"));
 
     GenericUDF udf = mock(GenericUDFBridge.class);
 
@@ -170,8 +171,8 @@ public class TestColumnPrunerProcCtx {
       list);
 
     SelectOperator selectOperator = buildSelectOperator(Arrays.asList(funcDesc), paths);
-    List<String> groups = ctx.getSelectNestedColPathsFromChildren(selectOperator, paths);
-    assertEquals(new String[] { "root.col1.b" }, groups.toArray(new String[groups.size()]));
+    List<FieldNode> groups = ctx.getSelectColsFromChildren(selectOperator, paths);
+    compareTestResults(groups, "root.col1.b");
   }
 
   // Test select pow(root.col1.b, root.col2) from table test(root
@@ -187,7 +188,7 @@ public class TestColumnPrunerProcCtx {
 
     colDesc = new ExprNodeColumnDesc(col3Type, "root", "test", false);
     ExprNodeDesc col2 = new ExprNodeFieldDesc(col2Type, colDesc, "col2", false);
-    final List<String> paths = Arrays.asList("_col0");
+    final List<FieldNode> paths = Arrays.asList(new FieldNode("_col0"));
 
     GenericUDF udf = mock(GenericUDFPower.class);
 
@@ -198,16 +199,60 @@ public class TestColumnPrunerProcCtx {
       list);
 
     SelectOperator selectOperator = buildSelectOperator(Arrays.asList(funcDesc), paths);
-    List<String> groups = ctx.getSelectNestedColPathsFromChildren(selectOperator, paths);
-    assertEquals(new String[] { "root.col1.b", "root.col2" }, groups.toArray(new String[groups
-      .size()]));
+    List<FieldNode> groups = ctx.getSelectColsFromChildren(selectOperator, paths);
+    compareTestResults(groups, "root.col1.b", "root.col2");
+  }
+
+  @Test
+  public void testFieldNodeFromString() {
+    FieldNode fn = FieldNode.fromPath("s.a.b");
+    assertEquals("s", fn.getFieldName());
+    assertEquals(1, fn.getNodes().size());
+    FieldNode childFn = fn.getNodes().get(0);
+    assertEquals("a", childFn.getFieldName());
+    assertEquals(1, childFn.getNodes().size());
+    assertEquals("b", childFn.getNodes().get(0).getFieldName());
+  }
+
+  @Test
+  public void testMergeFieldNode() {
+    FieldNode fn1 = FieldNode.fromPath("s.a.b");
+    FieldNode fn2 = FieldNode.fromPath("s.a");
+    assertEquals(fn2, FieldNode.mergeFieldNode(fn1, fn2));
+    assertEquals(fn2, FieldNode.mergeFieldNode(fn2, fn1));
+
+    fn1 = FieldNode.fromPath("s.a");
+    fn2 = FieldNode.fromPath("p.b");
+    assertNull(FieldNode.mergeFieldNode(fn1, fn2));
+
+    fn1 = FieldNode.fromPath("s.a.b");
+    fn2 = FieldNode.fromPath("s.a.c");
+    FieldNode fn = FieldNode.mergeFieldNode(fn1, fn2);
+    assertEquals("s", fn.getFieldName());
+    FieldNode childFn = fn.getNodes().get(0);
+    assertEquals("a", childFn.getFieldName());
+    assertEquals(2, childFn.getNodes().size());
+    assertEquals("b", childFn.getNodes().get(0).getFieldName());
+    assertEquals("c", childFn.getNodes().get(1).getFieldName());
+  }
+
+  private void compareTestResults(List<FieldNode> fieldNodes, String... paths) {
+    List<String> expectedPaths = new ArrayList<>();
+    for (FieldNode fn : fieldNodes) {
+      expectedPaths.addAll(fn.toPaths());
+    }
+    assertEquals("Expected paths to have length " + expectedPaths + ", but got "
+        + paths.length, expectedPaths.size(), paths.length);
+    for (int i = 0; i < expectedPaths.size(); ++i) {
+      assertEquals("Element at index " + i + " doesn't match", expectedPaths.get(i), paths[i]);
+    }
   }
 
   private SelectOperator buildSelectOperator(
     List<ExprNodeDesc> colList,
-    List<String> outputColumnNames) {
+    List<FieldNode> outputCols) {
     SelectOperator selectOperator = mock(SelectOperator.class);
-    SelectDesc selectDesc = new SelectDesc(colList, outputColumnNames);
+    SelectDesc selectDesc = new SelectDesc(colList, ColumnPrunerProcCtx.toColumnNames(outputCols));
     selectDesc.setSelStarNoCompute(false);
     when(selectOperator.getConf()).thenReturn(selectDesc);
     return selectOperator;

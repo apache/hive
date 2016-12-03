@@ -9135,9 +9135,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         new HashMap<String, ExprNodeDesc>();
     for (int i = 0; i < columns.size(); i++) {
       ColumnInfo col = columns.get(i);
-      colList.add(new ExprNodeColumnDesc(col));
+      colList.add(new ExprNodeColumnDesc(col, true));
       columnNames.add(col.getInternalName());
-      columnExprMap.put(col.getInternalName(), new ExprNodeColumnDesc(col));
+      columnExprMap.put(col.getInternalName(), new ExprNodeColumnDesc(col, true));
     }
     RowResolver outputRR = inputRR.duplicate();
     Operator output = putOpInsertMap(OperatorFactory.getAndMakeChild(

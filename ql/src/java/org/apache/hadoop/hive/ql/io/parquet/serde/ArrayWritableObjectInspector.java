@@ -72,14 +72,20 @@ public class ArrayWritableObjectInspector extends SettableStructObjectInspector 
       final String name = fieldNames.get(i);
       final TypeInfo fieldInfo = fieldInfos.get(i);
 
-      StructFieldImpl field;
-      if (prunedTypeInfo != null && prunedTypeInfo.getAllStructFieldNames().indexOf(name) >= 0) {
-        int adjustedIndex = prunedTypeInfo.getAllStructFieldNames().indexOf(name);
-        TypeInfo prunedFieldInfo = prunedTypeInfo.getAllStructFieldTypeInfos().get(adjustedIndex);
-        field = new StructFieldImpl(name, getObjectInspector(fieldInfo, prunedFieldInfo), i, adjustedIndex);
-      } else {
+      StructFieldImpl field = null;
+      if (prunedTypeInfo != null) {
+        for (int idx = 0; idx < prunedTypeInfo.getAllStructFieldNames().size(); ++idx) {
+          if (prunedTypeInfo.getAllStructFieldNames().get(idx).equalsIgnoreCase(name)) {
+            TypeInfo prunedFieldInfo = prunedTypeInfo.getAllStructFieldTypeInfos().get(idx);
+            field = new StructFieldImpl(name, getObjectInspector(fieldInfo, prunedFieldInfo), i, idx);
+            break;
+          }
+        }
+      }
+      if (field == null) {
         field = new StructFieldImpl(name, getObjectInspector(fieldInfo, null), i, i);
       }
+
       fields.add(field);
       fieldsByName.put(name.toLowerCase(), field);
     }
