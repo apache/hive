@@ -16,7 +16,7 @@ STAGE PLANS:
             alias: src
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Select Operator
-              expressions: (CAST( UDFToInteger(key) AS decimal(10,0)) / CAST( UDFToInteger(key) AS decimal(10,0))) (type: decimal(28,18))
+              expressions: (CAST( UDFToInteger(key) AS decimal(10,0)) / CAST( UDFToInteger(key) AS decimal(10,0))) (type: decimal(21,11))
               outputColumnNames: _col0
               Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
               Limit
@@ -44,7 +44,7 @@ POSTHOOK: query: select cast(key as int) / cast(key as int) from src limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
-1.000000000000000000
+1.00000000000
 PREHOOK: query: -- With ansi sql arithmetic disabled, int / int => double
 explain select cast(key as int) / cast(key as int) from src limit 1
 PREHOOK: type: QUERY

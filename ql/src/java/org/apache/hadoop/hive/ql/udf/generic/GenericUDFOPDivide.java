@@ -110,24 +110,19 @@ public class GenericUDFOPDivide extends GenericUDFBaseNumeric {
     return decimalWritable;
   }
 
-  private final static int MIN_START_DEC_DIGITS = 6;
-  private final static int DEFAULT_DEC_DIGITS = 18;
   /**
    * A balanced way to determine the precision/scale of decimal division result. Integer digits and
    * decimal digits are computed independently. However, when the precision from above reaches above
-   * HiveDecimal.MAX_PRECISION, integer digit and decimal digits are shrunk equally to fit.
+   * HiveDecimal.MAX_PRECISION, interger digit and decimal digits are shrunk equally to fit.
    */
   @Override
   protected DecimalTypeInfo deriveResultDecimalTypeInfo(int prec1, int scale1, int prec2, int scale2) {
     int intDig = Math.min(HiveDecimal.MAX_SCALE, prec1 - scale1 + scale2);
-    int decDig = Math.min(HiveDecimal.MAX_SCALE,
-        Math.max(MIN_START_DEC_DIGITS, scale1 + prec2 + 1));
+    int decDig = Math.min(HiveDecimal.MAX_SCALE, Math.max(6, scale1 + prec2 + 1));
     int diff = intDig + decDig -  HiveDecimal.MAX_SCALE;
     if (diff > 0) {
       decDig -= diff/2 + 1; // Slight negative bias.
       intDig = HiveDecimal.MAX_SCALE - decDig;
-    } else if (diff < 0 && decDig < DEFAULT_DEC_DIGITS) {
-      decDig += Math.min(-diff, DEFAULT_DEC_DIGITS - decDig);
     }
     return TypeInfoFactory.getDecimalTypeInfo(intDig + decDig, decDig);
   }
