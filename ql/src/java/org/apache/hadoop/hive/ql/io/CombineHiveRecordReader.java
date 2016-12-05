@@ -31,6 +31,7 @@ import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.InputSplit;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.Reporter;
+import org.apache.hadoop.mapred.RecordReader;
 import org.apache.hadoop.mapred.lib.CombineFileSplit;
 
 /**
@@ -43,7 +44,7 @@ public class CombineHiveRecordReader<K extends WritableComparable, V extends Wri
     extends HiveContextAwareRecordReader<K, V> {
 
   public CombineHiveRecordReader(InputSplit split, Configuration conf,
-      Reporter reporter, Integer partition) throws IOException {
+      Reporter reporter, Integer partition, RecordReader preReader) throws IOException {
     super((JobConf)conf);
     CombineHiveInputSplit hsplit = split instanceof CombineHiveInputSplit ?
         (CombineHiveInputSplit) split :
@@ -67,6 +68,15 @@ public class CombineHiveRecordReader<K extends WritableComparable, V extends Wri
     this.setRecordReader(inputFormat.getRecordReader(fsplit, jobConf, reporter));
 
     this.initIOContext(fsplit, jobConf, inputFormatClass, this.recordReader);
+
+    //If current split is from the same file as preceding split and the preceding split has footerbuffer,
+    //the current split should use the preceding split's footerbuffer in order to skip footer correctly.
+    if (preReader != null && preReader instanceof CombineHiveRecordReader
+        && ((CombineHiveRecordReader)preReader).getFooterBuffer() != null) {
+      if (partition != 0 && hsplit.getPaths()[partition -1].equals(hsplit.getPaths()[partition]))
+        this.setFooterBuffer(((CombineHiveRecordReader)preReader).getFooterBuffer());
+    }
+
   }
 
   @Override
