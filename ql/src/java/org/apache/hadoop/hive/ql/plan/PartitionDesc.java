@@ -298,6 +298,74 @@ public class PartitionDesc implements Serializable, Cloneable {
     return ret;
   }
 
+  @Override
+  public boolean equals(Object o) {
+    boolean cond = o instanceof PartitionDesc;
+    if (!cond) {
+      return false;
+    }
+
+    PartitionDesc other = (PartitionDesc) o;
+    Class<? extends InputFormat> input1 = getInputFileFormatClass();
+    Class<? extends InputFormat> input2 = other.getInputFileFormatClass();
+    cond = (input1 == null && input2 == null) || (input1 != null && input1.equals(input2));
+    if (!cond) {
+      return false;
+    }
+
+    Class<? extends OutputFormat> output1 = getOutputFileFormatClass();
+    Class<? extends OutputFormat> output2 = other.getOutputFileFormatClass();
+    cond = (output1 == null && output2 == null) || (output1 != null && output1.equals(output2));
+    if (!cond) {
+      return false;
+    }
+
+    Properties properties1 = getProperties();
+    Properties properties2 = other.getProperties();
+    cond = (properties1 == null && properties2 == null) ||
+        (properties1 != null && properties1.equals(properties2));
+    if (!cond) {
+      return false;
+    }
+
+    TableDesc tableDesc1 = getTableDesc();
+    TableDesc tableDesc2 = other.getTableDesc();
+    cond = (tableDesc1 == null && tableDesc2 == null) ||
+        (tableDesc1 != null && tableDesc1.equals(tableDesc2));
+    if (!cond) {
+      return false;
+    }
+
+    Map<String, String> partSpec1 = getPartSpec();
+    Map<String, String> partSpec2 = other.getPartSpec();
+    cond = (partSpec1 == null && partSpec2 == null) ||
+        (partSpec1 != null && partSpec1.equals(partSpec2));
+    if (!cond) {
+      return false;
+    }
+
+    VectorPartitionDesc vecPartDesc1 = getVectorPartitionDesc();
+    VectorPartitionDesc vecPartDesc2 = other.getVectorPartitionDesc();
+    return (vecPartDesc1 == null && vecPartDesc2 == null) ||
+        (vecPartDesc1 != null && vecPartDesc1.equals(vecPartDesc2));
+  }
+
+  @Override
+  public int hashCode() {
+    final int prime = 31;
+    int result = 1;
+    result = result * prime +
+        (getInputFileFormatClass() == null ? 0 : getInputFileFormatClass().hashCode());
+    result = result * prime +
+        (getOutputFileFormatClass() == null ? 0 : getOutputFileFormatClass().hashCode());
+    result = result * prime + (getProperties() == null ? 0 : getProperties().hashCode());
+    result = result * prime + (getTableDesc() == null ? 0 : getTableDesc().hashCode());
+    result = result * prime + (getPartSpec() == null ? 0 : getPartSpec().hashCode());
+    result = result * prime +
+        (getVectorPartitionDesc() == null ? 0 : getVectorPartitionDesc().hashCode());
+    return result;
+  }
+
   /**
    * Attempt to derive a virtual <code>base file name</code> property from the
    * path. If path format is unrecognized, just use the full path.

@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.plan;
 import java.util.Arrays;
 import java.util.List;
 
+import com.google.common.base.Strings;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 
 /**
@@ -153,6 +154,39 @@ public class VectorPartitionDesc  {
     }
     result.dataTypeInfos = Arrays.copyOf(dataTypeInfos, dataTypeInfos.length);
 
+    return result;
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (o instanceof VectorPartitionDesc) {
+      VectorPartitionDesc other = (VectorPartitionDesc) o;
+      return Strings.nullToEmpty(getInputFileFormatClassName()).equals(
+          Strings.nullToEmpty(other.getInputFileFormatClassName())) &&
+          Strings.nullToEmpty(getRowDeserializerClassName()).equals(
+              Strings.nullToEmpty(other.getRowDeserializerClassName())) &&
+          getVectorDeserializeType() == other.getVectorDeserializeType() &&
+          getVectorMapOperatorReadType() == other.getVectorMapOperatorReadType() &&
+          getIsInputFileFormatSelfDescribing() == other.getIsInputFileFormatSelfDescribing() &&
+          Arrays.equals(getDataTypeInfos(), other.getDataTypeInfos());
+    }
+    return false;
+  }
+
+  @Override
+  public int hashCode() {
+    final int prime = 31;
+    int result = 1;
+    result = result * prime +
+        (getInputFileFormatClassName() == null ? 0 : getInputFileFormatClassName().hashCode());
+    result = result * prime +
+        (getRowDeserializerClassName() == null ? 0 : getRowDeserializerClassName().hashCode());
+    result = result * prime +
+        (getVectorDeserializeType() == null ? 0 : getVectorDeserializeType().hashCode());
+    result = result * prime +
+        (getVectorMapOperatorReadType() == null ? 0 : getVectorMapOperatorReadType().hashCode());
+    result = result * prime + Boolean.valueOf(getIsInputFileFormatSelfDescribing()).hashCode();
+    result = result * prime + Arrays.hashCode(getDataTypeInfos());
     return result;
   }
 

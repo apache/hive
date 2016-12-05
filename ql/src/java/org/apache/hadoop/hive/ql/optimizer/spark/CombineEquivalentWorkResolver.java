@@ -29,6 +29,9 @@ import java.util.Stack;
 
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.ql.plan.MapWork;
+import org.apache.hadoop.hive.ql.plan.PartitionDesc;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
@@ -210,6 +213,11 @@ public class CombineEquivalentWorkResolver implements PhysicalPlanResolver {
         return false;
       }
 
+      // need to check paths and partition desc for MapWorks
+      if (first instanceof MapWork && !compareMapWork((MapWork) first, (MapWork) second)) {
+        return false;
+      }
+
       Set<Operator<?>> firstRootOperators = first.getAllRootOperators();
       Set<Operator<?>> secondRootOperators = second.getAllRootOperators();
       if (firstRootOperators.size() != secondRootOperators.size()) {
@@ -226,6 +234,23 @@ public class CombineEquivalentWorkResolver implements PhysicalPlanResolver {
       }
 
       return true;
+    }
+
+    private boolean compareMapWork(MapWork first, MapWork second) {
+      Map<Path, PartitionDesc> pathToPartition1 = first.getPathToPartitionInfo();
+      Map<Path, PartitionDesc> pathToPartition2 = second.getPathToPartitionInfo();
+      if (pathToPartition1.size() == pathToPartition2.size()) {
+        for (Map.Entry<Path, PartitionDesc> entry : pathToPartition1.entrySet()) {
+          Path path1 = entry.getKey();
+          PartitionDesc partitionDesc1 = entry.getValue();
+          PartitionDesc partitionDesc2 = pathToPartition2.get(path1);
+          if (!partitionDesc1.equals(partitionDesc2)) {
+            return false;
+          }
+        }
+        return true;
+      }
+      return false;
     }
 
     private boolean hasSameParent(BaseWork first, BaseWork second, SparkWork sparkWork) {
