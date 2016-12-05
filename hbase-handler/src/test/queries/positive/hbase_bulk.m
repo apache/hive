@@ -35,6 +35,7 @@ dfs -count /tmp/data/hbpartition;
 dfs -cp -f /tmp/data/hbpartition/* /tmp/hbpartition.lst;
 
 set mapred.reduce.tasks=3;
+set hive.mapred.supports.subdirectories=true;
 set hive.mapred.partitioner=org.apache.hadoop.mapred.lib.TotalOrderPartitioner;
 set total.order.partitioner.natural.order=false;
 set total.order.partitioner.path=/tmp/hbpartition.lst;

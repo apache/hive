@@ -116,7 +116,7 @@ public class HiveHFileOutputFormat extends
           job.getConfiguration(), progressable);
 
     final Path outputdir = FileOutputFormat.getOutputPath(tac);
-    final Path taskAttemptOutputdir = FileOutputCommitter.getTaskAttemptPath(tac, outputdir);
+    final Path taskAttemptOutputdir = new FileOutputCommitter(outputdir, tac).getWorkPath();
     final org.apache.hadoop.mapreduce.RecordWriter<
       ImmutableBytesWritable, KeyValue> fileWriter = getFileWriter(tac);
 
