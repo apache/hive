@@ -72,6 +72,8 @@ public class SparkTask extends Task<SparkWork> {
   private static final LogHelper console = new LogHelper(LOG);
   private final PerfLogger perfLogger = SessionState.getPerfLogger();
   private static final long serialVersionUID = 1L;
+  private transient String sparkJobID;
+  private transient SparkStatistics sparkStatistics;
 
   @Override
   public void initialize(QueryState queryState, QueryPlan queryPlan, DriverContext driverContext,
@@ -98,11 +100,12 @@ public class SparkTask extends Task<SparkWork> {
       perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.SPARK_SUBMIT_JOB);
 
       addToHistory(jobRef);
+      sparkJobID = jobRef.getJobId();
       this.jobID = jobRef.getSparkJobStatus().getAppID();
       rc = jobRef.monitorJob();
       SparkJobStatus sparkJobStatus = jobRef.getSparkJobStatus();
       if (rc == 0) {
-        SparkStatistics sparkStatistics = sparkJobStatus.getSparkStatistics();
+        sparkStatistics = sparkJobStatus.getSparkStatistics();
         if (LOG.isInfoEnabled() && sparkStatistics != null) {
           LOG.info(String.format("=====Spark Job[%s] statistics=====", jobRef.getJobId()));
           logSparkStatistic(sparkStatistics);
@@ -226,6 +229,14 @@ public class SparkTask extends Task<SparkWork> {
     }
 
     return ((ReduceWork) children.get(0)).getReducer();
+  }
+
+  public String getSparkJobID() {
+    return sparkJobID;
+  }
+
+  public SparkStatistics getSparkStatistics() {
+    return sparkStatistics;
   }
 
   /**
