@@ -215,3 +215,19 @@ POSTHOOK: query: drop table tstsrcpart
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@tstsrcpart
 POSTHOOK: Output: default@tstsrcpart
+PREHOOK: query: ANALYZE TABLE src COMPUTE STATISTICS
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@src
+POSTHOOK: query: ANALYZE TABLE src COMPUTE STATISTICS
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@src
+PREHOOK: query: ANALYZE TABLE src COMPUTE STATISTICS FOR COLUMNS key,value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: ANALYZE TABLE src COMPUTE STATISTICS FOR COLUMNS key,value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
