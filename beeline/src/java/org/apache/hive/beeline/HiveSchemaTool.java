@@ -152,9 +152,14 @@ public class HiveSchemaTool {
 
   }
 
-  // read schema version from metastore
   private String getMetaStoreSchemaVersion(Connection metastoreConn)
       throws HiveMetaException {
+    return getMetaStoreSchemaVersion(metastoreConn, false);
+  }
+
+  // read schema version from metastore
+  private String getMetaStoreSchemaVersion(Connection metastoreConn,
+      boolean checkDuplicatedVersion) throws HiveMetaException {
     String versionQuery;
     if (getDbCommandParser(dbType).needsQuotedIdentifier()) {
       versionQuery = "select t.\"SCHEMA_VERSION\" from \"VERSION\" t";
@@ -167,6 +172,9 @@ public class HiveSchemaTool {
         throw new HiveMetaException("Didn't find version data in metastore");
       }
       String currentSchemaVersion = res.getString(1);
+      if (checkDuplicatedVersion && res.next()) {
+        throw new HiveMetaException("Multiple versions were found in metastore.");
+      }
       return currentSchemaVersion;
     } catch (SQLException e) {
       throw new HiveMetaException("Failed to get schema version.", e);
@@ -575,6 +583,7 @@ public class HiveSchemaTool {
 
   public void doValidate() throws HiveMetaException {
     System.out.print("Starting metastore validation");
+    validateSchemaVersions();
     validateSequences();
     validateSchemaTables();
     validateLocations(null);
@@ -641,6 +650,26 @@ public class HiveSchemaTool {
         }
       }
     }
+  }
+
+  boolean validateSchemaVersions() throws HiveMetaException {
+    System.out.println("Validating schema version");
+    try {
+      String newSchemaVersion = getMetaStoreSchemaVersion(
+          getConnectionToMetastore(false), true);
+      assertCompatibleVersion(MetaStoreSchemaInfo.getHiveSchemaVersion(), newSchemaVersion);
+    } catch (HiveMetaException hme) {
+      if (hme.getMessage().contains("Metastore schema version is not compatible")
+        || hme.getMessage().contains("Multiple versions were found in metastore")
+        || hme.getMessage().contains("Didn't find version data in metastore")) {
+        System.out.println("Failed in schema version validation: " + hme.getMessage());
+          return false;
+        } else {
+          throw hme;
+        }
+    }
+    System.out.println("Succeeded in schema version validation.");
+    return true;
   }
 
   boolean validateSchemaTables() throws HiveMetaException {

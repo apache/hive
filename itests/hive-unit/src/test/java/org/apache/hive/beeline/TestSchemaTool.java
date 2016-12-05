@@ -209,7 +209,41 @@ public class TestSchemaTool extends TestCase {
   public void testSchemaInit() throws Exception {
     schemaTool.doInit(MetaStoreSchemaInfo.getHiveSchemaVersion());
     schemaTool.verifySchemaVersion();
-    }
+  }
+
+  /**
+  * Test validation for schema versions
+  * @throws Exception
+  */
+ public void testValidateSchemaVersions() throws Exception {
+   schemaTool.doInit();
+   boolean isValid = schemaTool.validateSchemaVersions();
+   // Test an invalid case with multiple versions
+   String[] scripts = new String[] {
+       "insert into VERSION values(100, '2.2.0', 'Hive release version 2.2.0')"
+   };
+   File scriptFile = generateTestScript(scripts);
+   schemaTool.runBeeLine(scriptFile.getPath());
+   isValid = schemaTool.validateSchemaVersions();
+   assertFalse(isValid);
+
+   scripts = new String[] {
+       "delete from VERSION where VER_ID = 100"
+   };
+   scriptFile = generateTestScript(scripts);
+   schemaTool.runBeeLine(scriptFile.getPath());
+   isValid = schemaTool.validateSchemaVersions();
+   assertTrue(isValid);
+
+   // Test an invalid case without version
+   scripts = new String[] {
+       "delete from VERSION"
+   };
+   scriptFile = generateTestScript(scripts);
+   schemaTool.runBeeLine(scriptFile.getPath());
+   isValid = schemaTool.validateSchemaVersions();
+   assertFalse(isValid);
+ }
 
   /**
    * Test schema upgrade
