@@ -118,7 +118,8 @@ public abstract class HadoopShimsSecure implements HadoopShims {
         InputSplit.class,
         Configuration.class,
         Reporter.class,
-        Integer.class
+        Integer.class,
+        RecordReader.class
         };
 
     protected CombineFileSplit split;
@@ -237,6 +238,7 @@ public abstract class HadoopShimsSecure implements HadoopShims {
      */
     protected boolean initNextRecordReader(K key) throws IOException {
 
+      RecordReader preReader = curReader; //it is OK, curReader is closed, for we only need footer buffer info from preReader.
       if (curReader != null) {
         curReader.close();
         curReader = null;
@@ -253,7 +255,7 @@ public abstract class HadoopShimsSecure implements HadoopShims {
       // get a record reader for the idx-th chunk
       try {
         curReader = rrConstructor.newInstance(new Object[]
-            {split, jc, reporter, Integer.valueOf(idx)});
+            {split, jc, reporter, Integer.valueOf(idx), preReader});
 
         // change the key if need be
         if (key != null) {
