@@ -747,13 +747,12 @@ public class Hadoop23Shims extends HadoopShimsSecure {
     //use FsShell to change group, permissions, and extended ACL's recursively
 
     boolean aclEnabled = isExtendedAclEnabled(conf);
-    AclStatus aclStatus = null;
     List<AclEntry> aclEntries = null;
     FsPermission sourcePerm = sourceStatus.getFileStatus().getPermission();
     if (aclEnabled) {
-      aclStatus = ((Hadoop23FileStatus) sourceStatus).getAclStatus();
-      if (aclStatus != null) {
-        aclEntries = aclStatus.getEntries();
+      Hadoop23FileStatus status = (Hadoop23FileStatus) sourceStatus;
+      if (status.getAclEntries() != null) {
+        aclEntries = new ArrayList<>(status.getAclEntries());
         removeBaseAclEntries(aclEntries);
 
         //the ACL api's also expect the tradition user/group/other permission in the form of ACL
@@ -774,10 +773,10 @@ public class Hadoop23Shims extends HadoopShimsSecure {
 
         if (aclEnabled) {
           //Attempt extended Acl operations only if its enabled, 8791but don't fail the operation regardless.
-          if (aclStatus != null) {
+          if (aclEntries != null) {
             try {
               //construct the -setfacl command
-              String aclEntry = Joiner.on(",").join(aclStatus.getEntries());
+              String aclEntry = Joiner.on(",").join(aclEntries);
               run(fsShell, new String[]{"-setfacl", "-R", "--set", aclEntry, target.toString()});
             } catch (Exception e) {
               LOG.info("Skipping ACL inheritance: File system for path " + target + " " +
@@ -826,9 +825,11 @@ public class Hadoop23Shims extends HadoopShimsSecure {
     public FileStatus getFileStatus() {
       return fileStatus;
     }
-    public AclStatus getAclStatus() {
-      return aclStatus;
+
+    public List<AclEntry> getAclEntries() {
+      return aclStatus == null ? null : Collections.unmodifiableList(aclStatus.getEntries());
     }
+
     @Override
     public void debugLog() {
       if (fileStatus != null) {
