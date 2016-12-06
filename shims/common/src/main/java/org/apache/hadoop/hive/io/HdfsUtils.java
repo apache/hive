@@ -19,6 +19,8 @@
 package org.apache.hadoop.hive.io;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.apache.commons.lang.ArrayUtils;
@@ -68,12 +70,10 @@ public class HdfsUtils {
     boolean aclEnabled = Objects.equal(conf.get("dfs.namenode.acls.enabled"), "true");
     FsPermission sourcePerm = fStatus.getPermission();
     List<AclEntry> aclEntries = null;
-    AclStatus aclStatus;
     if (aclEnabled) {
-      aclStatus =  sourceStatus.getAclStatus();
-      if (aclStatus != null) {
-        LOG.trace(aclStatus.toString());
-        aclEntries = aclStatus.getEntries();
+      if (sourceStatus.getAclEntries() != null) {
+        LOG.trace(sourceStatus.aclStatus.toString());
+        aclEntries = new ArrayList<>(sourceStatus.getAclEntries());
         removeBaseAclEntries(aclEntries);
 
         //the ACL api's also expect the tradition user/group/other permission in the form of ACL
@@ -193,8 +193,9 @@ public static class HadoopFileStatus {
   public FileStatus getFileStatus() {
     return fileStatus;
   }
-  public AclStatus getAclStatus() {
-    return aclStatus;
+
+  public List<AclEntry> getAclEntries() {
+    return aclStatus == null ? null : Collections.unmodifiableList(aclStatus.getEntries());
   }
 }
 }
