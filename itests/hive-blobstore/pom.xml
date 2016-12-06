@@ -41,28 +41,6 @@
 
   <profiles>
     <profile>
-      <id>tests-off</id>
-      <activation>
-        <file>
-          <missing>src/test/resources/blobstore-conf.xml</missing>
-        </file>
-      </activation>
-      <properties>
-        <maven.test.skip>true</maven.test.skip>
-      </properties>
-    </profile>
-    <profile>
-      <id>tests-on</id>
-      <activation>
-        <file>
-          <exists>src/test/resources/blobstore-conf.xml</exists>
-        </file>
-      </activation>
-      <properties>
-        <maven.test.skip>false</maven.test.skip>
-      </properties>
-    </profile>
-    <profile>
       <id>hadoop-2</id>
       <dependencies>
         <dependency>
