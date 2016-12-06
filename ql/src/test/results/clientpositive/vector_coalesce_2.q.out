@@ -186,7 +186,6 @@ STAGE PLANS:
                   Map-reduce partition columns: _col0 (type: string)
                   Statistics: Num rows: 4 Data size: 510 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col1 (type: bigint)
-      Execution mode: vectorized
       Reduce Operator Tree:
         Group By Operator
           aggregations: sum(VALUE._col0)
