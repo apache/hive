@@ -4084,6 +4084,22 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     LOG.info("creating table " + tbl.getDbName() + "." + tbl.getTableName() + " on " +
             tbl.getDataLocation());
 
+    if (crtTbl.getReplicationSpec().isInReplicationScope() && (!crtTbl.getReplaceMode())){
+      // if this is a replication spec, then replace-mode semantics might apply.
+      // if we're already asking for a table replacement, then we can skip this check.
+      // however, otherwise, if in replication scope, and we've not been explicitly asked
+      // to replace, we should check if the object we're looking at exists, and if so,
+      // trigger replace-mode semantics.
+      Table existingTable = db.getTable(tbl.getDbName(), tbl.getTableName(), false);
+      if (existingTable != null){
+        if (!crtTbl.getReplicationSpec().allowEventReplacementInto(existingTable)){
+          return 0; // no replacement, the existing table state is newer than our update.
+        } else {
+          crtTbl.setReplaceMode(true); // we replace existing table.
+        }
+      }
+    }
+
     // create the table
     if (crtTbl.getReplaceMode()){
       // replace-mode creates are really alters using CreateTableDesc.

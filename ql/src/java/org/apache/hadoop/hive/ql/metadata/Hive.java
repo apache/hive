@@ -2016,18 +2016,40 @@ private void constructOneLBLocationMap(FileStatus fSta,
     }
     List<Partition> out = new ArrayList<Partition>();
     try {
-      if (!addPartitionDesc.getReplaceMode()){
+      if (!addPartitionDesc.getReplicationSpec().isInReplicationScope()){
         // TODO: normally, the result is not necessary; might make sense to pass false
         for (org.apache.hadoop.hive.metastore.api.Partition outPart
             : getMSC().add_partitions(in, addPartitionDesc.isIfNotExists(), true)) {
           out.add(new Partition(tbl, outPart));
         }
       } else {
-        getMSC().alter_partitions(addPartitionDesc.getDbName(), addPartitionDesc.getTableName(), in, null);
-        List<String> part_names = new ArrayList<String>();
+
+        // For replication add-ptns, we need to follow a insert-if-not-exist, alter-if-exists scenario.
+        // TODO : ideally, we should push this mechanism to the metastore, because, otherwise, we have
+        // no choice but to iterate over the partitions here.
+
+        List<org.apache.hadoop.hive.metastore.api.Partition> partsToAdd = new ArrayList<>();
+        List<org.apache.hadoop.hive.metastore.api.Partition> partsToAlter = new ArrayList<>();
+        List<String> part_names = new ArrayList<>();
         for (org.apache.hadoop.hive.metastore.api.Partition p: in){
           part_names.add(Warehouse.makePartName(tbl.getPartitionKeys(), p.getValues()));
+          try {
+            org.apache.hadoop.hive.metastore.api.Partition ptn =
+                getMSC().getPartition(addPartitionDesc.getDbName(), addPartitionDesc.getTableName(), p.getValues());
+            if (addPartitionDesc.getReplicationSpec().allowReplacementInto(ptn)){
+              partsToAlter.add(p);
+            } // else ptn already exists, but we do nothing with it.
+          } catch (NoSuchObjectException nsoe){
+            // if the object does not exist, we want to add it.
+            partsToAdd.add(p);
+          }
         }
+        for (org.apache.hadoop.hive.metastore.api.Partition outPart
+            : getMSC().add_partitions(partsToAdd, addPartitionDesc.isIfNotExists(), true)) {
+          out.add(new Partition(tbl, outPart));
+        }
+        getMSC().alter_partitions(addPartitionDesc.getDbName(), addPartitionDesc.getTableName(), partsToAlter, null);
+
         for ( org.apache.hadoop.hive.metastore.api.Partition outPart :
         getMSC().getPartitionsByNames(addPartitionDesc.getDbName(), addPartitionDesc.getTableName(),part_names)){
           out.add(new Partition(tbl,outPart));
