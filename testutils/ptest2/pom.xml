@@ -28,7 +28,7 @@ limitations under the License.
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <log4j2.version>2.6.2</log4j2.version>
     <spring.framework.version>3.2.16.RELEASE</spring.framework.version>
-    <jclouds.version>1.9.2</jclouds.version>
+    <jclouds.version>2.0.0</jclouds.version>
   </properties>
 
   <repositories>
@@ -88,27 +88,7 @@ limitations under the License.
     </dependency>
     <dependency>
       <groupId>org.apache.jclouds</groupId>
-      <artifactId>jclouds-core</artifactId>
-      <version>${jclouds.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.jclouds</groupId>
-      <artifactId>jclouds-compute</artifactId>
-      <version>${jclouds.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.jclouds.provider</groupId>
-      <artifactId>aws-ec2</artifactId>
-      <version>${jclouds.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.jclouds.api</groupId>
-      <artifactId>ec2</artifactId>
-      <version>${jclouds.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.jclouds.labs</groupId>
-      <artifactId>google-compute-engine</artifactId>
+      <artifactId>jclouds-all</artifactId>
       <version>${jclouds.version}</version>
     </dependency>
     <dependency>
@@ -142,11 +122,6 @@ limitations under the License.
       <artifactId>slf4j-api</artifactId>
       <version>1.7.10</version>
     </dependency>
-    <!--dependency>
-      <groupId>org.slf4j</groupId>
-      <artifactId>slf4j-log4j12</artifactId>
-      <version>1.7.10</version>
-    </dependency-->
     <dependency>
       <groupId>org.springframework</groupId>
       <artifactId>spring-web</artifactId>
