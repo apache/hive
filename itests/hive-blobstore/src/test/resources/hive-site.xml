@@ -261,6 +261,25 @@
   </property>
 
   <!--
+    The following 3 properties are used for testing blobstore changes on the local filesystem.
+    If tests are required to run on an real Blobstore system, then create the blobstore-conf.xml.
+  -->
+  <property>
+    <name>fs.pblob.impl</name>
+    <value>org.apache.hadoop.fs.ProxyLocalFileSystem</value>
+  </property>
+
+  <property>
+    <name>hive.blobstore.supported.schemes</name>
+    <value>pblob,s3a,s3c,s3</value>
+  </property>
+
+  <property>
+    <name>test.blobstore.path</name>
+    <value>pblob:${system:test.tmp.dir}/bucket</value>
+  </property>
+
+  <!--
   To run these tests:
   # Create a file blobstore-conf.xml  - DO NOT ADD TO REVISION CONTROL
   # Add the credentials for the service you are testing against

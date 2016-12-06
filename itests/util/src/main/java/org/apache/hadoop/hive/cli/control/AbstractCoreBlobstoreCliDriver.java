@@ -23,7 +23,12 @@ import static org.junit.Assert.fail;
 import com.google.common.base.Strings;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Map;
+
 import org.apache.hadoop.hive.cli.control.AbstractCliConfig.MetastoreType;
+import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveVariableSource;
+import org.apache.hadoop.hive.conf.VariableSubstitution;
 import org.apache.hadoop.hive.ql.QTestUtil;
 import org.apache.hadoop.hive.ql.QTestUtil.MiniClusterType;
 import org.junit.After;
@@ -157,7 +162,13 @@ public abstract class AbstractCoreBlobstoreCliDriver extends CliAdapter {
    *  the same ${test.blobstore.path} (possible if test runs are controlled by an automated system)
    */
   private void setupUniqueTestPath() {
-    String testBlobstorePath = qt.getConf().get(HCONF_TEST_BLOBSTORE_PATH);
+    String testBlobstorePath = new VariableSubstitution(new HiveVariableSource() {
+      @Override
+      public Map<String, String> getHiveVariable() {
+        return null;
+      }
+    }).substitute(new HiveConf(), qt.getConf().get(HCONF_TEST_BLOBSTORE_PATH));
+
     testBlobstorePath = QTestUtil.ensurePathEndsInSlash(testBlobstorePath);
     testBlobstorePath += QTestUtil.ensurePathEndsInSlash(this.getClass().getSimpleName()); // name of child class
     String uid = new SimpleDateFormat("yyyyMMdd.HHmmss.SSS").format(Calendar.getInstance().getTime())
