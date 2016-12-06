@@ -297,7 +297,7 @@ public class JoinDesc extends AbstractOperatorDesc {
     this.filters = filters;
   }
 
-  @Explain(displayName = "residual filter predicates")
+  @Explain(displayName = "residual filter predicates", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public String getResidualFilterExprsString() {
     if (getResidualFilterExprs() == null || getResidualFilterExprs().size() == 0) {
       return null;
