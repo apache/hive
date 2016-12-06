@@ -118,6 +118,18 @@ ON (test1.value=test2.value
   AND (test1.key between 100 and 102
     OR test2.key between 100 and 102));
 
+-- Complex condition, projecting columns
+EXPLAIN
+SELECT col_1, col_2
+FROM test1 LEFT OUTER JOIN test2
+ON (test1.value=test2.value
+      OR test1.key=test2.key);
+
+SELECT col_1, col_2
+FROM test1 LEFT OUTER JOIN test2
+ON (test1.value=test2.value
+      OR test1.key=test2.key);
+
 -- Disjunction with pred on multiple inputs and single inputs (right outer join)
 EXPLAIN
 SELECT *

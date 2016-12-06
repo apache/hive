@@ -1071,10 +1071,11 @@ public final class ColumnPrunerProcFactory {
 
     LOG.info("JOIN " + op.getIdentifier() + " oldExprs: " + conf.getExprs());
 
-    List<String> childColLists = cppCtx.genColLists(op);
-    if (childColLists == null) {
+    if (cppCtx.genColLists(op) == null) {
       return;
     }
+
+    List<String> neededColList = new ArrayList<>(cppCtx.genColLists(op));
 
     Map<Byte, List<String>> prunedColLists = new HashMap<Byte, List<String>>();
     for (byte tag : conf.getTagOrder()) {
@@ -1095,6 +1096,13 @@ public final class ColumnPrunerProcFactory {
      }
     }
 
+    //add the columns in residual filters
+    if (conf.getResidualFilterExprs() != null) {
+      for (ExprNodeDesc desc : conf.getResidualFilterExprs()) {
+        neededColList = Utilities.mergeUniqElems(neededColList, desc.getCols());
+      }
+    }
+
     RowSchema joinRS = op.getSchema();
     ArrayList<String> outputCols = new ArrayList<String>();
     ArrayList<ColumnInfo> rs = new ArrayList<ColumnInfo>();
@@ -1104,7 +1112,7 @@ public final class ColumnPrunerProcFactory {
       String internalName = conf.getOutputColumnNames().get(i);
       ExprNodeDesc desc = columnExprMap.get(internalName);
       Byte tag = conf.getReversedExprs().get(internalName);
-      if (!childColLists.contains(internalName)) {
+      if (!neededColList.contains(internalName)) {
         int index = conf.getExprs().get(tag).indexOf(desc);
         if (index < 0) {
           continue;
@@ -1162,7 +1170,7 @@ public final class ColumnPrunerProcFactory {
 
     for (Operator<? extends OperatorDesc> child : childOperators) {
       if (child instanceof ReduceSinkOperator) {
-        boolean[] flags = getPruneReduceSinkOpRetainFlags(childColLists,
+        boolean[] flags = getPruneReduceSinkOpRetainFlags(neededColList,
             (ReduceSinkOperator) child);
         pruneReduceSinkOperator(flags, (ReduceSinkOperator) child, cppCtx);
       }
