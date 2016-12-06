@@ -283,11 +283,20 @@ public class VectorizedParquetRecordReader extends ParquetRecordReaderBase
     List<ColumnDescriptor> columns = requestedSchema.getColumns();
     List<Type> types = requestedSchema.getFields();
     columnReaders = new VectorizedColumnReader[columns.size()];
-    for (int i = 0; i < types.size(); ++i) {
-      columnReaders[i] =
-        buildVectorizedParquetReader(columnTypesList.get(indexColumnsWanted.get(i)), types.get(i),
-          pages, requestedSchema, skipTimestampConversion);
+
+    if (!ColumnProjectionUtils.isReadAllColumns(jobConf) && !indexColumnsWanted.isEmpty()) {
+      for (int i = 0; i < types.size(); ++i) {
+        columnReaders[i] =
+          buildVectorizedParquetReader(columnTypesList.get(indexColumnsWanted.get(i)), types.get(i),
+            pages, requestedSchema.getColumns(), skipTimestampConversion, 0);
+      }
+    } else {
+      for (int i = 0; i < types.size(); ++i) {
+        columnReaders[i] = buildVectorizedParquetReader(columnTypesList.get(i), types.get(i), pages,
+          requestedSchema.getColumns(), skipTimestampConversion, 0);
+      }
     }
+
     totalCountLoadedSoFar += pages.getRowCount();
   }
 
@@ -297,7 +306,7 @@ public class VectorizedParquetRecordReader extends ParquetRecordReaderBase
     List<ColumnDescriptor> columns) throws ParquetRuntimeException {
     List<ColumnDescriptor> res = new ArrayList<>();
     for (ColumnDescriptor descriptor : columns) {
-      if (depth > descriptor.getPath().length) {
+      if (depth >= descriptor.getPath().length) {
         throw new InvalidSchemaException("Corrupted Parquet schema");
       }
       if (type.getName().equals(descriptor.getPath()[depth])) {
@@ -308,16 +317,6 @@ public class VectorizedParquetRecordReader extends ParquetRecordReaderBase
   }
 
   // Build VectorizedParquetColumnReader via Hive typeInfo and Parquet schema
-  private VectorizedColumnReader buildVectorizedParquetReader(
-    TypeInfo typeInfo,
-    Type type,
-    PageReadStore pages,
-    MessageType schema,
-    boolean skipTimestampConversion) throws IOException {
-    return buildVectorizedParquetReader(typeInfo, type, pages, schema.getColumns(), skipTimestampConversion,
-      0);
-  }
-
   private VectorizedColumnReader buildVectorizedParquetReader(
     TypeInfo typeInfo,
     Type type,

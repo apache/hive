@@ -18,9 +18,11 @@ import org.apache.commons.lang.ArrayUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.DecimalColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.DoubleColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.StructColumnVector;
@@ -33,6 +35,7 @@ import org.apache.hadoop.hive.ql.io.parquet.vector.VectorizedParquetRecordReader
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
+import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
@@ -48,18 +51,9 @@ import org.apache.parquet.hadoop.ParquetWriter;
 import org.apache.parquet.hadoop.example.GroupReadSupport;
 import org.apache.parquet.hadoop.example.GroupWriteSupport;
 import org.apache.parquet.io.api.Binary;
-import org.apache.parquet.schema.GroupType;
 import org.apache.parquet.schema.MessageType;
-import org.apache.parquet.schema.PrimitiveType;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
 import java.io.IOException;
-import java.sql.Timestamp;
-import java.util.Calendar;
 import java.util.List;
-import java.util.Random;
 
 import static junit.framework.Assert.assertTrue;
 import static junit.framework.TestCase.assertFalse;
@@ -91,9 +85,10 @@ public class TestVectorizedColumnReaderBase {
       + "optional fixed_len_byte_array(1) all_null_field; "
       + "required binary binary_field; "
       + "optional binary binary_field_some_null; "
-      + "optional group struct_field {"
-      + "  optional int32 a;\n"
-      + "  optional double b;\n"
+      + "required binary value (DECIMAL(5,2)); "
+      + "required group struct_field {"
+      + "  required int32 a;\n"
+      + "  required double b;\n"
       + "}\n"
       + "optional group nested_struct_field {"
       + "  optional group nsf {"
@@ -101,6 +96,10 @@ public class TestVectorizedColumnReaderBase {
       + "    optional int32 d;\n"
       + "  }\n"
       + "  optional double e;\n"
+      + "}\n"
+      + "optional group struct_field_some_null {"
+      + "  optional int32 f;\n"
+      + "  optional double g;\n"
       + "}\n"
       + "optional group map_field (MAP) {\n"
       + "  repeated group map (MAP_KEY_VALUE) {\n"
@@ -169,6 +168,13 @@ public class TestVectorizedColumnReaderBase {
     return "99999999" + s;
   }
 
+  protected static HiveDecimal getDecimal(
+    boolean isDictionaryEncoding,
+    int index) {
+    double d = (isDictionaryEncoding) ? (index % UNIQUE_NUM * 0.01) : (index * 0.01);
+    return HiveDecimal.create(String.valueOf(d));
+  }
+
   protected static Binary getTimestamp(
     boolean isDictionaryEncoding,
     int index) {
@@ -220,6 +226,7 @@ public class TestVectorizedColumnReaderBase {
       int intVal = getIntValue(isDictionaryEncoding, i);
       long longVal = getLongValue(isDictionaryEncoding, i);
       Binary timeStamp = getTimestamp(isDictionaryEncoding, i);
+      HiveDecimal decimalVal = getDecimal(isDictionaryEncoding, i);
       double doubleVal = getDoubleValue(isDictionaryEncoding, i);
       float floatVal = getFloatValue(isDictionaryEncoding, i);
       boolean booleanVal = getBooleanValue(i);
@@ -243,6 +250,9 @@ public class TestVectorizedColumnReaderBase {
         group.append("binary_field_some_null", binary);
       }
 
+      HiveDecimalWritable w = new HiveDecimalWritable(decimalVal);
+      group.append("value", Binary.fromConstantByteArray(w.getInternalStorage()));
+
       group.addGroup("struct_field")
         .append("a", intVal)
         .append("b", doubleVal);
@@ -251,6 +261,14 @@ public class TestVectorizedColumnReaderBase {
 
       g.addGroup("nsf").append("c", intVal).append("d", intVal);
       g.append("e", doubleVal);
+
+      Group some_null_g = group.addGroup("struct_field_some_null");
+      if (i % 2 != 0) {
+        some_null_g.append("f", intVal);
+      }
+      if (i % 3 != 0) {
+        some_null_g.append("g", doubleVal);
+      }
 
       Group mapGroup = group.addGroup("map_field");
       if (i % 13 != 1) {
@@ -406,7 +424,7 @@ public class TestVectorizedColumnReaderBase {
     }
   }
 
-  protected void booleanRead(boolean isDictionaryEncoding) throws Exception {
+  protected void booleanRead() throws Exception {
     Configuration conf = new Configuration();
     conf.set(IOConstants.COLUMNS, "boolean_field");
     conf.set(IOConstants.COLUMNS_TYPES, "boolean");
@@ -554,7 +572,6 @@ public class TestVectorizedColumnReaderBase {
     }
   }
 
-
   protected void nestedStructRead1(boolean isDictionaryEncoding) throws Exception {
     Configuration conf = new Configuration();
     conf.set(IOConstants.COLUMNS, "nested_struct_field");
@@ -587,6 +604,81 @@ public class TestVectorizedColumnReaderBase {
         }
       }
       assertEquals("It doesn't exit at expected position", nElements, c);
+    } finally {
+      reader.close();
+    }
+  }
+
+  protected void structReadSomeNull(boolean isDictionaryEncoding) throws Exception {
+    Configuration conf = new Configuration();
+    conf.set(IOConstants.COLUMNS, "struct_field_some_null");
+    conf.set(IOConstants.COLUMNS_TYPES, "struct<f:int,g:double>");
+    conf.setBoolean(ColumnProjectionUtils.READ_ALL_COLUMNS, false);
+    conf.set(ColumnProjectionUtils.READ_COLUMN_IDS_CONF_STR, "0");
+    String schema = "message hive_schema {\n"
+      + "group struct_field_some_null {\n"
+      + "  optional int32 f;\n"
+      + "  optional double g;\n"
+      + "}\n";
+    VectorizedParquetRecordReader reader = createParquetReader(schema, conf);
+    VectorizedRowBatch previous = reader.createValue();
+    int c = 0;
+    try {
+      while (reader.next(NullWritable.get(), previous)) {
+        StructColumnVector sv = (StructColumnVector) previous.cols[0];
+        LongColumnVector fv = (LongColumnVector) sv.fields[0];
+        DoubleColumnVector gv = (DoubleColumnVector) sv.fields[1];
+
+        for (int i = 0; i < fv.vector.length; i++) {
+          if (c == nElements) {
+            break;
+          }
+          assertEquals(c % 2 == 0, fv.isNull[i]);
+          assertEquals(c % 3 == 0, gv.isNull[i]);
+          assertEquals(c % /* 2*3 = */6 == 0, sv.isNull[i]);
+          if (!sv.isNull[i]) {
+            if (!fv.isNull[i]) {
+              assertEquals(getIntValue(isDictionaryEncoding, c), fv.vector[i]);
+            }
+            if (!gv.isNull[i]) {
+              assertEquals(getDoubleValue(isDictionaryEncoding, c), gv.vector[i], 0);
+            }
+          }
+          assertFalse(fv.isRepeating);
+          c++;
+        }
+      }
+      assertEquals("It doesn't exit at expected position", nElements, c);
+    } finally {
+      reader.close();
+    }
+  }
+
+  protected void decimalRead(boolean isDictionaryEncoding) throws Exception {
+    Configuration conf = new Configuration();
+    conf.set(IOConstants.COLUMNS, "value");
+    conf.set(IOConstants.COLUMNS_TYPES, "decimal(5,2)");
+    conf.setBoolean(ColumnProjectionUtils.READ_ALL_COLUMNS, false);
+    conf.set(ColumnProjectionUtils.READ_COLUMN_IDS_CONF_STR, "0");
+    VectorizedParquetRecordReader reader =
+      createParquetReader("message hive_schema { required value (DECIMAL(5,2));}", conf);
+    VectorizedRowBatch previous = reader.createValue();
+    try {
+      int c = 0;
+      while (reader.next(NullWritable.get(), previous)) {
+        DecimalColumnVector vector = (DecimalColumnVector) previous.cols[0];
+        assertTrue(vector.noNulls);
+        for (int i = 0; i < vector.vector.length; i++) {
+          if (c == nElements) {
+            break;
+          }
+          assertEquals(getDecimal(isDictionaryEncoding, c),
+            vector.vector[i].getHiveDecimal());
+          assertFalse(vector.isNull[i]);
+          c++;
+        }
+      }
+      assertEquals(nElements, c);
     } finally {
       reader.close();
     }

@@ -59,11 +59,6 @@ public class TestVectorizedDictionaryEncodingColumnReader extends TestVectorized
   }
 
   @Test
-  public void testBooleanRead() throws Exception {
-    booleanRead(isDictionaryEncoding);
-  }
-
-  @Test
   public void testBinaryRead() throws Exception {
     binaryRead(isDictionaryEncoding);
   }
@@ -76,5 +71,15 @@ public class TestVectorizedDictionaryEncodingColumnReader extends TestVectorized
   @Test
   public void testNestedStructRead() throws Exception {
     structRead(isDictionaryEncoding);
+  }
+
+  @Test
+  public void structReadSomeNull() throws Exception {
+    structReadSomeNull(isDictionaryEncoding);
+  }
+
+  @Test
+  public void decimalRead() throws Exception {
+    decimalRead(isDictionaryEncoding);
   }
 }

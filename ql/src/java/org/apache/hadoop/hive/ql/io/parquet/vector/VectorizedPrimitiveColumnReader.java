@@ -18,13 +18,10 @@ import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.DecimalColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.DoubleColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
-import org.apache.hadoop.hive.ql.exec.vector.StructColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.TimestampColumnVector;
 import org.apache.hadoop.hive.ql.io.parquet.timestamp.NanoTime;
 import org.apache.hadoop.hive.ql.io.parquet.timestamp.NanoTimeUtils;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
-import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.parquet.bytes.BytesInput;
 import org.apache.parquet.bytes.BytesUtils;
@@ -48,7 +45,6 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.sql.Timestamp;
-import java.util.List;
 
 import static org.apache.parquet.column.ValuesType.DEFINITION_LEVEL;
 import static org.apache.parquet.column.ValuesType.REPETITION_LEVEL;
@@ -196,10 +192,11 @@ public class VectorizedPrimitiveColumnReader implements VectorizedColumnReader {
       break;
     case DECIMAL:
       readDecimal(num, (DecimalColumnVector) column, rowId);
+      break;
     case INTERVAL_DAY_TIME:
     case TIMESTAMP:
     default:
-      throw new IOException("Unsupported");
+      throw new IOException("Unsupported type: " + type);
     }
   }
 
@@ -377,8 +374,11 @@ public class VectorizedPrimitiveColumnReader implements VectorizedColumnReader {
   /**
    * Reads `num` values into column, decoding the values from `dictionaryIds` and `dictionary`.
    */
-  private void decodeDictionaryIds(int rowId, int num, ColumnVector column,
-                                   LongColumnVector dictionaryIds) {
+  private void decodeDictionaryIds(
+    int rowId,
+    int num,
+    ColumnVector column,
+    LongColumnVector dictionaryIds) {
     System.arraycopy(dictionaryIds.isNull, rowId, column.isNull, rowId, num);
     if (column.noNulls) {
       column.noNulls = dictionaryIds.noNulls;
@@ -423,9 +423,21 @@ public class VectorizedPrimitiveColumnReader implements VectorizedColumnReader {
       break;
     case BINARY:
     case FIXED_LEN_BYTE_ARRAY:
-      for (int i = rowId; i < rowId + num; ++i) {
-        ((BytesColumnVector) column)
-          .setVal(i, dictionary.decodeToBinary((int) dictionaryIds.vector[i]).getBytesUnsafe());
+      if (column instanceof BytesColumnVector) {
+        for (int i = rowId; i < rowId + num; ++i) {
+          ((BytesColumnVector) column)
+            .setVal(i, dictionary.decodeToBinary((int) dictionaryIds.vector[i]).getBytesUnsafe());
+        }
+      } else {
+        DecimalColumnVector decimalColumnVector = ((DecimalColumnVector) column);
+        decimalColumnVector.precision =
+          (short) type.asPrimitiveType().getDecimalMetadata().getPrecision();
+        decimalColumnVector.scale = (short) type.asPrimitiveType().getDecimalMetadata().getScale();
+        for (int i = rowId; i < rowId + num; ++i) {
+          decimalColumnVector.vector[i]
+            .set(dictionary.decodeToBinary((int) dictionaryIds.vector[i]).getBytesUnsafe(),
+              decimalColumnVector.scale);
+        }
       }
       break;
     default:
