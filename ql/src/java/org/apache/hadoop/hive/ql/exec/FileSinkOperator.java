@@ -18,20 +18,7 @@
 
 package org.apache.hadoop.hive.ql.exec;
 
-import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVE_TEMPORARY_TABLE_STORAGE;
-
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.Serializable;
-import java.io.StringWriter;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
-
+import com.google.common.collect.Lists;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
@@ -83,7 +70,19 @@ import org.apache.hive.common.util.HiveStringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.collect.Lists;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.Serializable;
+import java.io.StringWriter;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
+
+import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVE_TEMPORARY_TABLE_STORAGE;
 
 /**
  * File Sink operator implementation.
@@ -265,7 +264,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
   protected transient FileSystem fs;
   protected transient Serializer serializer;
   protected final transient LongWritable row_count = new LongWritable();
-  private transient boolean needsNativeStorage = true;
+  private transient boolean isNativeTable = true;
 
   /**
    * The evaluators for the multiFile sprayer. If the table under consideration has 1000 buckets,
@@ -334,7 +333,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
     try {
       this.hconf = hconf;
       filesCreated = false;
-      needsNativeStorage = conf.getTableInfo().needsNativeStorage();
+      isNativeTable = !conf.getTableInfo().isNonNative();
       isTemporary = conf.isTemporary();
       multiFileSpray = conf.isMultiFileSpray();
       totalFiles = conf.getTotalFiles();
@@ -556,7 +555,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
       assert filesIdx == numFiles;
 
       // in recent hadoop versions, use deleteOnExit to clean tmp files.
-      if (needsNativeStorage && fs != null && fsp != null) {
+      if (isNativeTable && fs != null && fsp != null) {
         autoDelete = fs.deleteOnExit(fsp.outPaths[0]);
       }
     } catch (Exception e) {
@@ -570,7 +569,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
   protected void createBucketForFileIdx(FSPaths fsp, int filesIdx)
       throws HiveException {
     try {
-      if (needsNativeStorage) {
+      if (isNativeTable) {
         fsp.finalPaths[filesIdx] = fsp.getFinalPath(taskId, fsp.tmpPath, null);
         if (isInfoEnabled) {
           LOG.info("Final Path: FS " + fsp.finalPaths[filesIdx]);
@@ -597,7 +596,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
         LOG.info("New Final Path: FS " + fsp.finalPaths[filesIdx]);
       }
 
-      if (needsNativeStorage) {
+      if (isNativeTable) {
         // in recent hadoop versions, use deleteOnExit to clean tmp files.
         autoDelete = fs.deleteOnExit(fsp.outPaths[filesIdx]);
       }
@@ -1067,7 +1066,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
           }
         }
 
-        if (needsNativeStorage) {
+        if (isNativeTable) {
           fsp.commit(fs);
         }
       }
@@ -1080,7 +1079,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
       // Hadoop always call close() even if an Exception was thrown in map() or
       // reduce().
       for (FSPaths fsp : valToPaths.values()) {
-        fsp.abortWriters(fs, abort, !autoDelete && needsNativeStorage);
+        fsp.abortWriters(fs, abort, !autoDelete && isNativeTable);
       }
     }
     fsp = prevFsp = null;
@@ -1103,7 +1102,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
   public void jobCloseOp(Configuration hconf, boolean success)
       throws HiveException {
     try {
-      if ((conf != null) && needsNativeStorage) {
+      if ((conf != null) && isNativeTable) {
         Path specPath = conf.getDirName();
         DynamicPartitionCtx dpCtx = conf.getDynPartCtx();
         if (conf.isLinkedFileSink() && (dpCtx != null)) {
