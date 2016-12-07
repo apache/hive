@@ -837,13 +837,15 @@ public class CompactorMR {
     @Override
     public void commitJob(JobContext context) throws IOException {
       JobConf conf = ShimLoader.getHadoopShims().getJobConf(context);
-      Path tmpLocation = new Path(conf.get(TMP_LOCATION));
+      Path tmpLocation = new Path(conf.get(TMP_LOCATION));//this contains base_xxx or delta_xxx_yyy
       Path finalLocation = new Path(conf.get(FINAL_LOCATION));
       FileSystem fs = tmpLocation.getFileSystem(conf);
       LOG.debug("Moving contents of " + tmpLocation.toString() + " to " +
           finalLocation.toString());
 
-      FileStatus[] contents = fs.listStatus(tmpLocation);
+      FileStatus[] contents = fs.listStatus(tmpLocation);//expect 1 base or delta dir in this list
+      //we have MIN_TXN, MAX_TXN and IS_MAJOR in JobConf so we could figure out exactly what the dir
+      //name is that we want to rename; leave it for another day
       for (int i = 0; i < contents.length; i++) {
         Path newPath = new Path(finalLocation, contents[i].getPath().getName());
         fs.rename(contents[i].getPath(), newPath);
