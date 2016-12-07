@@ -15,6 +15,8 @@ POSTHOOK: query: describe function extended qtest_get_java_boolean
 POSTHOOK: type: DESCFUNCTION
 qtest_get_java_boolean(str) - GenericUDF to return native Java's boolean type
 Synonyms: default.qtest_get_java_boolean
+Function class:org.apache.hadoop.hive.ql.udf.generic.GenericUDFTestGetJavaBoolean
+Function type:PERSISTENT
 PREHOOK: query: create database mydb
 PREHOOK: type: CREATEDATABASE
 PREHOOK: Output: database:mydb
@@ -43,6 +45,8 @@ Synonyms: upper, ucase
 Example:
   > SELECT mydb.func1('Facebook') FROM src LIMIT 1;
   'FACEBOOK'
+Function class:org.apache.hadoop.hive.ql.udf.generic.GenericUDFUpper
+Function type:PERSISTENT
 PREHOOK: query: select mydb.func1('abc') from src limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src

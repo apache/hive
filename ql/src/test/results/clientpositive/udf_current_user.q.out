@@ -9,6 +9,8 @@ POSTHOOK: query: DESCRIBE FUNCTION EXTENDED current_user
 POSTHOOK: type: DESCFUNCTION
 current_user() - Returns current user name
 SessionState UserFromAuthenticator
+Function class:org.apache.hadoop.hive.ql.udf.generic.GenericUDFCurrentUser
+Function type:BUILTIN
 PREHOOK: query: select current_user()
 FROM src tablesample (1 rows)
 PREHOOK: type: QUERY

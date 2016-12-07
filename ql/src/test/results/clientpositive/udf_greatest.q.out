@@ -11,6 +11,8 @@ greatest(v1, v2, ...) - Returns the greatest value in a list of values
 Example:
   > SELECT greatest(2, 3, 1) FROM src LIMIT 1;
   3
+Function class:org.apache.hadoop.hive.ql.udf.generic.GenericUDFGreatest
+Function type:BUILTIN
 PREHOOK: query: EXPLAIN
 SELECT GREATEST('a', 'b', 'c'),
        GREATEST('C', 'a', 'B'),

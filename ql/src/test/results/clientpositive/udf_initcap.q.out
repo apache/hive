@@ -11,3 +11,5 @@ initcap(str) - Returns str, with the first letter of each word in uppercase, all
 Example:
  > SELECT initcap('tHe soap') FROM src LIMIT 1;
  'The Soap'
+Function class:org.apache.hadoop.hive.ql.udf.generic.GenericUDFInitCap
+Function type:BUILTIN

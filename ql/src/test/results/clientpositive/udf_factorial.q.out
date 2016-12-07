@@ -12,6 +12,8 @@ Returns null if n is out of [0..20] range.
 Example:
  > SELECT factorial(5);
  120
+Function class:org.apache.hadoop.hive.ql.udf.generic.GenericUDFFactorial
+Function type:BUILTIN
 PREHOOK: query: explain select factorial(5)
 PREHOOK: type: QUERY
 POSTHOOK: query: explain select factorial(5)

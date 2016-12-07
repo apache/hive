@@ -11,6 +11,8 @@ space(n) - returns n spaces
 Example:
    > SELECT space(2) FROM src LIMIT 1;
   '  '
+Function class:org.apache.hadoop.hive.ql.udf.UDFSpace
+Function type:BUILTIN
 PREHOOK: query: EXPLAIN SELECT
   space(10),
   space(0),

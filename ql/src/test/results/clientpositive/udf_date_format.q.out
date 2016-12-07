@@ -11,6 +11,8 @@ date_format(date/timestamp/string, fmt) - converts a date/timestamp/string to a 
 Supported formats are SimpleDateFormat formats - https://docs.oracle.com/javase/7/docs/api/java/text/SimpleDateFormat.html. Second argument fmt should be constant.
 Example: > SELECT date_format('2015-04-08', 'y');
  '2015'
+Function class:org.apache.hadoop.hive.ql.udf.generic.GenericUDFDateFormat
+Function type:BUILTIN
 PREHOOK: query: explain select date_format('2015-04-08', 'EEEE')
 PREHOOK: type: QUERY
 POSTHOOK: query: explain select date_format('2015-04-08', 'EEEE')

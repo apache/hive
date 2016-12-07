@@ -13,6 +13,8 @@ Example:
   > SELECT ascii('222') FROM src LIMIT 1;  50
   > SELECT ascii(2) FROM src LIMIT 1;
   50
+Function class:org.apache.hadoop.hive.ql.udf.UDFAscii
+Function type:BUILTIN
 PREHOOK: query: EXPLAIN SELECT
   ascii('Facebook'),
   ascii(''),

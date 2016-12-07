@@ -11,6 +11,8 @@ length(str | binary) - Returns the length of str or number of bytes in binary da
 Example:
   > SELECT length('Facebook') FROM src LIMIT 1;
   8
+Function class:org.apache.hadoop.hive.ql.udf.UDFLength
+Function type:BUILTIN
 PREHOOK: query: CREATE TABLE dest1(len INT)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default

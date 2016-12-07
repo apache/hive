@@ -10,6 +10,8 @@ POSTHOOK: type: DESCFUNCTION
 nullif(a1, a2) - shorthand for: case when a1 = a2 then null else a1
 Example:
  SELECT nullif(1,1),nullif(1,2)
+Function class:org.apache.hadoop.hive.ql.udf.generic.GenericUDFNullif
+Function type:BUILTIN
 PREHOOK: query: explain select nullif(1,2)
 PREHOOK: type: QUERY
 POSTHOOK: query: explain select nullif(1,2)

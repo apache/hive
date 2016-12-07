@@ -9,6 +9,8 @@ PREHOOK: type: DESCFUNCTION
 POSTHOOK: query: DESCRIBE FUNCTION EXTENDED example_max
 POSTHOOK: type: DESCFUNCTION
 example_max(expr) - Returns the maximum value of expr
+Function class:org.apache.hadoop.hive.contrib.udaf.example.UDAFExampleMax
+Function type:TEMPORARY
 PREHOOK: query: EXPLAIN
 SELECT example_max(substr(value,5)),
        example_max(IF(substr(value,5) > 250, NULL, substr(value,5)))

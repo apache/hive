@@ -21,6 +21,8 @@ sort_array_by(array(obj1, obj2,...),'f1','f2',...,['ASC','DESC']) - Sorts the in
 Example:
   > SELECT sort_array_by(array(struct('g',100),struct('b',200)),'col1','ASC') FROM src LIMIT 1;
  array(struct('b',200),struct('g',100)) 
+Function class:org.apache.hadoop.hive.ql.udf.generic.GenericUDFSortArrayByField
+Function type:BUILTIN
 PREHOOK: query: DROP TABLE IF EXISTS sort_array_by_table
 PREHOOK: type: DROPTABLE
 POSTHOOK: query: DROP TABLE IF EXISTS sort_array_by_table

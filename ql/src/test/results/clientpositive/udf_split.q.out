@@ -11,6 +11,8 @@ split(str, regex) - Splits str around occurances that match regex
 Example:
   > SELECT split('oneAtwoBthreeC', '[ABC]') FROM src LIMIT 1;
   ["one", "two", "three"]
+Function class:org.apache.hadoop.hive.ql.udf.generic.GenericUDFSplit
+Function type:BUILTIN
 PREHOOK: query: EXPLAIN SELECT 
   split('a b c', ' '),
   split('oneAtwoBthreeC', '[ABC]'),

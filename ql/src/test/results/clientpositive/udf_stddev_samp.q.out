@@ -8,6 +8,8 @@ PREHOOK: type: DESCFUNCTION
 POSTHOOK: query: DESCRIBE FUNCTION EXTENDED stddev_samp
 POSTHOOK: type: DESCFUNCTION
 stddev_samp(x) - Returns the sample standard deviation of a set of numbers
+Function class:org.apache.hadoop.hive.ql.udf.generic.GenericUDAFStdSample
+Function type:BUILTIN
 PREHOOK: query: DESCRIBE FUNCTION stddev_samp
 PREHOOK: type: DESCFUNCTION
 POSTHOOK: query: DESCRIBE FUNCTION stddev_samp
@@ -18,3 +20,5 @@ PREHOOK: type: DESCFUNCTION
 POSTHOOK: query: DESCRIBE FUNCTION EXTENDED stddev_samp
 POSTHOOK: type: DESCFUNCTION
 stddev_samp(x) - Returns the sample standard deviation of a set of numbers
+Function class:org.apache.hadoop.hive.ql.udf.generic.GenericUDAFStdSample
+Function type:BUILTIN

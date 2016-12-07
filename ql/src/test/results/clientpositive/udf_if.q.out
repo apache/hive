@@ -8,6 +8,8 @@ PREHOOK: type: DESCFUNCTION
 POSTHOOK: query: DESCRIBE FUNCTION EXTENDED if
 POSTHOOK: type: DESCFUNCTION
 IF(expr1,expr2,expr3) - If expr1 is TRUE (expr1 <> 0 and expr1 <> NULL) then IF() returns expr2; otherwise it returns expr3. IF() returns a numeric or string value, depending on the context in which it is used.
+Function class:org.apache.hadoop.hive.ql.udf.generic.GenericUDFIf
+Function type:BUILTIN
 PREHOOK: query: EXPLAIN
 SELECT IF(TRUE, 1, 2) AS COL1,
        IF(FALSE, CAST(NULL AS STRING), CAST(1 AS STRING)) AS COL2,

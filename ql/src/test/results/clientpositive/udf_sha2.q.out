@@ -11,6 +11,8 @@ sha2(string/binary, len) - Calculates the SHA-2 family of hash functions (SHA-22
 The first argument is the string or binary to be hashed. The second argument indicates the desired bit length of the result, which must have a value of 224, 256, 384, 512, or 0 (which is equivalent to 256). SHA-224 is supported starting from Java 8. If either argument is NULL or the hash length is not one of the permitted values, the return value is NULL.
 Example: > SELECT sha2('ABC', 256);
  'b5d4045c3f466fa91fe2cc6abe79232a1a57cdf104f7a26e716e0a1e2789df78'
+Function class:org.apache.hadoop.hive.ql.udf.generic.GenericUDFSha2
+Function type:BUILTIN
 PREHOOK: query: explain select sha2('ABC', 256)
 PREHOOK: type: QUERY
 POSTHOOK: query: explain select sha2('ABC', 256)

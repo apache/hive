@@ -11,6 +11,8 @@ cos(x) - returns the cosine of x (x is in radians)
 Example:
    > SELECT cos(0) FROM src LIMIT 1;
   1
+Function class:org.apache.hadoop.hive.ql.udf.UDFCos
+Function type:BUILTIN
 PREHOOK: query: SELECT cos(null)
 FROM src tablesample (1 rows)
 PREHOOK: type: QUERY

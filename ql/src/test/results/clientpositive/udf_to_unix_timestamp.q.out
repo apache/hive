@@ -9,6 +9,8 @@ POSTHOOK: query: DESCRIBE FUNCTION EXTENDED to_unix_timestamp
 POSTHOOK: type: DESCFUNCTION
 to_unix_timestamp(date[, pattern]) - Returns the UNIX timestamp
 Converts the specified time to number of seconds since 1970-01-01.
+Function class:org.apache.hadoop.hive.ql.udf.generic.GenericUDFToUnixTimeStamp
+Function type:BUILTIN
 PREHOOK: query: create table oneline(key int, value string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default

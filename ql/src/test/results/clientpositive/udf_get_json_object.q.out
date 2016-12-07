@@ -23,6 +23,8 @@ Syntax not supported that's worth noticing:
   [,] : Union operator
   [start:end:step] : array slice operator
 
+Function class:org.apache.hadoop.hive.ql.udf.UDFJson
+Function type:BUILTIN
 PREHOOK: query: CREATE TABLE dest1(c1 STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default

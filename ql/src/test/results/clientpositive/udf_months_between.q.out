@@ -13,6 +13,8 @@ date1 and date2 type can be date, timestamp or string in the format 'yyyy-MM-dd'
  Example:
   > SELECT months_between('1997-02-28 10:30:00', '1996-10-30');
  3.94959677
+Function class:org.apache.hadoop.hive.ql.udf.generic.GenericUDFMonthsBetween
+Function type:BUILTIN
 PREHOOK: query: --test string format
 explain select months_between('1995-02-02', '1995-01-01')
 PREHOOK: type: QUERY

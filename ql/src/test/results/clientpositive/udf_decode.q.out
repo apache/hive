@@ -11,6 +11,8 @@ decode(bin, str) - Decode the first argument using the second argument character
 Possible options for the character set are 'US-ASCII', 'ISO-8859-1',
 'UTF-8', 'UTF-16BE', 'UTF-16LE', and 'UTF-16'. If either argument
 is null, the result will also be null
+Function class:org.apache.hadoop.hive.ql.udf.generic.GenericUDFDecode
+Function type:BUILTIN
 PREHOOK: query: explain select decode(binary('TestDecode1'), 'UTF-8')
 PREHOOK: type: QUERY
 POSTHOOK: query: explain select decode(binary('TestDecode1'), 'UTF-8')

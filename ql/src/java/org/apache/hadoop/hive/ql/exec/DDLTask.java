@@ -99,6 +99,7 @@ import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.QueryPlan;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.exec.ArchiveUtils.PartSpecInfo;
+import org.apache.hadoop.hive.ql.exec.FunctionInfo.FunctionResource;
 import org.apache.hadoop.hive.ql.exec.tez.TezTask;
 import org.apache.hadoop.hive.ql.hooks.LineageInfo.DataContainer;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
@@ -2954,6 +2955,20 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       }
 
       outStream.write(terminator);
+      if (descFunc.isExtended()) {
+        if (funcClass != null) {
+          outStream.writeBytes("Function class:" + funcClass.getName() + "\n");
+        }
+        if (functionInfo != null) {
+          outStream.writeBytes("Function type:" + functionInfo.getFunctionType() + "\n");
+          FunctionResource[] resources = functionInfo.getResources();
+          if (resources != null) {
+            for (FunctionResource resource : resources) {
+              outStream.writeBytes("Resource:" + resource.getResourceURI() + "\n");
+            }
+          }
+        }
+      }
     } catch (FileNotFoundException e) {
       LOG.warn("describe function: " + stringifyException(e));
       return 1;

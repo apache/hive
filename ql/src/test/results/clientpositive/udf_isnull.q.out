@@ -8,3 +8,5 @@ PREHOOK: type: DESCFUNCTION
 POSTHOOK: query: DESCRIBE FUNCTION EXTENDED isnull
 POSTHOOK: type: DESCFUNCTION
 isnull a - Returns true if a is NULL and false otherwise
+Function class:org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPNull
+Function type:BUILTIN

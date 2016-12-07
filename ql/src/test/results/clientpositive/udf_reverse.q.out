@@ -11,6 +11,8 @@ reverse(str) - reverse str
 Example:
   > SELECT reverse('Facebook') FROM src LIMIT 1;
   'koobecaF'
+Function class:org.apache.hadoop.hive.ql.udf.UDFReverse
+Function type:BUILTIN
 PREHOOK: query: CREATE TABLE dest1(len STRING)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default

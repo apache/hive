@@ -45,6 +45,8 @@ Synonyms: e
 Example:
  > SELECT E() FROM src LIMIT 1;
  2.718281828459045
+Function class:org.apache.hadoop.hive.ql.udf.UDFE
+Function type:BUILTIN
 PREHOOK: query: explain 
 select E() FROM src tablesample (1 rows)
 PREHOOK: type: QUERY
@@ -92,3 +94,5 @@ Synonyms: e
 Example:
  > SELECT E() FROM src LIMIT 1;
  2.718281828459045
+Function class:org.apache.hadoop.hive.ql.udf.UDFE
+Function type:BUILTIN

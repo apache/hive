@@ -19,3 +19,5 @@ Example:
   'ebook'
   > SELECT substring('Facebook', 5, 1) FROM src LIMIT 1;
   'b'
+Function class:org.apache.hadoop.hive.ql.udf.UDFSubstr
+Function type:BUILTIN

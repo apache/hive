@@ -12,3 +12,5 @@ Synonyms: regexp
 Example:
   > SELECT 'fb' rlike '.*' FROM src LIMIT 1;
   true
+Function class:org.apache.hadoop.hive.ql.udf.generic.GenericUDFRegExp
+Function type:BUILTIN

@@ -8,6 +8,8 @@ PREHOOK: type: DESCFUNCTION
 POSTHOOK: query: DESCRIBE FUNCTION EXTENDED replicate_rows
 POSTHOOK: type: DESCFUNCTION
 replicate_rows(n, cols...) - turns 1 row into n rows
+Function class:org.apache.hadoop.hive.ql.udf.generic.GenericUDTFReplicateRows
+Function type:BUILTIN
 PREHOOK: query: create table t (x bigint, y string, z int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default

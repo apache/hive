@@ -8,6 +8,8 @@ PREHOOK: type: DESCFUNCTION
 POSTHOOK: query: DESCRIBE FUNCTION EXTENDED pmod
 POSTHOOK: type: DESCFUNCTION
 a pmod b - Compute the positive modulo
+Function class:org.apache.hadoop.hive.ql.udf.generic.GenericUDFPosMod
+Function type:BUILTIN
 PREHOOK: query: SELECT pmod(null, null)
 FROM src tablesample (1 rows)
 PREHOOK: type: QUERY

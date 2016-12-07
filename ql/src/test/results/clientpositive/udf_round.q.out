@@ -11,6 +11,8 @@ round(x[, d]) - round x to d decimal places
 Example:
   > SELECT round(12.3456, 1) FROM src LIMIT 1;
   12.3'
+Function class:org.apache.hadoop.hive.ql.udf.generic.GenericUDFRound
+Function type:BUILTIN
 PREHOOK: query: SELECT round(null), round(null, 0), round(125, null), 
 round(1.0/0.0, 0), round(power(-1.0,0.5), 0)
 FROM src tablesample (1 rows)

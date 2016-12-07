@@ -8,6 +8,8 @@ PREHOOK: type: DESCFUNCTION
 POSTHOOK: query: DESCRIBE FUNCTION EXTENDED min
 POSTHOOK: type: DESCFUNCTION
 min(expr) - Returns the minimum value of expr
+Function class:org.apache.hadoop.hive.ql.udf.generic.GenericUDAFMin
+Function type:BUILTIN
 PREHOOK: query: SELECT min(struct(CAST(key as INT), value)),
        min(struct(key, value))
 FROM src

@@ -18,6 +18,8 @@ PREHOOK: type: DESCFUNCTION
 POSTHOOK: query: DESCRIBE FUNCTION EXTENDED map_values
 POSTHOOK: type: DESCFUNCTION
 map_values(map) - Returns an unordered array containing the values of the input map.
+Function class:org.apache.hadoop.hive.ql.udf.generic.GenericUDFMapValues
+Function type:BUILTIN
 PREHOOK: query: -- Evaluate function against STRING valued values
 SELECT map_values(map(1, "a", 2, "b", 3, "c")) FROM src tablesample (1 rows)
 PREHOOK: type: QUERY

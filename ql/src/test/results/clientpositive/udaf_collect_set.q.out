@@ -8,6 +8,8 @@ PREHOOK: type: DESCFUNCTION
 POSTHOOK: query: DESCRIBE FUNCTION EXTENDED collect_set
 POSTHOOK: type: DESCFUNCTION
 collect_set(x) - Returns a set of objects with duplicate elements eliminated
+Function class:org.apache.hadoop.hive.ql.udf.generic.GenericUDAFCollectSet
+Function type:BUILTIN
 PREHOOK: query: DESCRIBE FUNCTION collect_list
 PREHOOK: type: DESCFUNCTION
 POSTHOOK: query: DESCRIBE FUNCTION collect_list
@@ -18,6 +20,8 @@ PREHOOK: type: DESCFUNCTION
 POSTHOOK: query: DESCRIBE FUNCTION EXTENDED collect_list
 POSTHOOK: type: DESCFUNCTION
 collect_list(x) - Returns a list of objects with duplicates
+Function class:org.apache.hadoop.hive.ql.udf.generic.GenericUDAFCollectList
+Function type:BUILTIN
 PREHOOK: query: SELECT key, collect_set(value)
 FROM src
 GROUP BY key ORDER BY key limit 20

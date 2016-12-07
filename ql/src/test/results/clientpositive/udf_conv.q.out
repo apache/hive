@@ -14,6 +14,8 @@ Example:
   '4'
   > SELECT conv(-10, 16, -10) FROM src LIMIT 1;
   '16'
+Function class:org.apache.hadoop.hive.ql.udf.UDFConv
+Function type:BUILTIN
 PREHOOK: query: -- conv must work on both strings and integers up to 64-bit precision
 
 -- Some simple conversions to test different bases

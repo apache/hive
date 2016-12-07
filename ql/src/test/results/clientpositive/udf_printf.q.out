@@ -21,6 +21,8 @@ printf(String format, Obj... args) - function that can format strings according 
 Example:
   > SELECT printf("Hello World %d %s", 100, "days")FROM src LIMIT 1;
   "Hello World 100 days"
+Function class:org.apache.hadoop.hive.ql.udf.generic.GenericUDFPrintf
+Function type:BUILTIN
 PREHOOK: query: EXPLAIN
 SELECT printf("Hello World %d %s", 100, "days") FROM src tablesample (1 rows)
 PREHOOK: type: QUERY

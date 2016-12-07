@@ -59,6 +59,8 @@ Note: Partnames are case-sensitive, and should not contain unnecessary white spa
 Example:
   > SELECT b.* FROM src LATERAL VIEW parse_url_tuple(fullurl, 'HOST', 'PATH', 'QUERY', 'QUERY:id') b as host, path, query, query_id LIMIT 1;
   > SELECT parse_url_tuple(a.fullurl, 'HOST', 'PATH', 'QUERY', 'REF', 'PROTOCOL', 'FILE',  'AUTHORITY', 'USERINFO', 'QUERY:k1') as (ho, pa, qu, re, pr, fi, au, us, qk1) from src a;
+Function class:org.apache.hadoop.hive.ql.udf.generic.GenericUDTFParseUrlTuple
+Function type:BUILTIN
 PREHOOK: query: explain 
 select a.key, b.* from url_t a lateral view parse_url_tuple(a.fullurl, 'HOST', 'PATH', 'QUERY', 'REF', 'PROTOCOL', 'FILE', 'AUTHORITY', 'USERINFO', 'QUERY:k1') b as ho, pa, qu, re, pr, fi, au, us, qk1 order by a.key
 PREHOOK: type: QUERY

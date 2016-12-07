@@ -21,6 +21,8 @@ Examples:
      otherChar  - character to replace all other characters with. Specify -1 to retain original character. Default value: -1
      numberChar - character to replace digits in a number with. Valid values: 0-9. Default value: '1'
  
+Function class:org.apache.hadoop.hive.ql.udf.generic.GenericUDFMaskShowLastN
+Function type:BUILTIN
 PREHOOK: query: explain select mask_show_last_n('TestString-123', 4, 'X', 'x', '0', '1')
 PREHOOK: type: QUERY
 POSTHOOK: query: explain select mask_show_last_n('TestString-123', 4, 'X', 'x', '0', '1')

@@ -12,6 +12,8 @@ Returns NULL if any argument is NULL.
 Example:
   > SELECT concat('abc', 'def') FROM src LIMIT 1;
   'abcdef'
+Function class:org.apache.hadoop.hive.ql.udf.generic.GenericUDFConcat
+Function type:BUILTIN
 PREHOOK: query: SELECT
   concat('a', 'b'),
   concat('a', 'b', 'c'),

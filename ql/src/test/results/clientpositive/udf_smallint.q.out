@@ -8,3 +8,5 @@ PREHOOK: type: DESCFUNCTION
 POSTHOOK: query: DESCRIBE FUNCTION EXTENDED smallint
 POSTHOOK: type: DESCFUNCTION
 There is no documentation for function 'smallint'
+Function class:org.apache.hadoop.hive.ql.udf.UDFToShort
+Function type:BUILTIN

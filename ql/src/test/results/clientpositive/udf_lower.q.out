@@ -12,6 +12,8 @@ Synonyms: lcase
 Example:
   > SELECT lower('Facebook') FROM src LIMIT 1;
   'facebook'
+Function class:org.apache.hadoop.hive.ql.udf.generic.GenericUDFLower
+Function type:BUILTIN
 PREHOOK: query: EXPLAIN
 SELECT lower('AbC 123'), upper('AbC 123') FROM src WHERE key = 86
 PREHOOK: type: QUERY

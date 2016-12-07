@@ -20,6 +20,8 @@ If the same character is present multiple times in the input string, the first o
 For example,
 
 translate('abcdef', 'ada', '192') returns '1bc9ef' replaces 'a' with '1' and 'd' with '9' ignoring the second occurence of 'a' in the from string mapping it to '2'
+Function class:org.apache.hadoop.hive.ql.udf.generic.GenericUDFTranslate
+Function type:BUILTIN
 PREHOOK: query: -- Create some tables to serve some input data
 CREATE TABLE table_input(input STRING)
 PREHOOK: type: CREATETABLE

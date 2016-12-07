@@ -20,6 +20,8 @@ Example:
    ELSE Asia-Pac
  END
  FROM emp_details
+Function class:org.apache.hadoop.hive.ql.udf.generic.GenericUDFWhen
+Function type:BUILTIN
 PREHOOK: query: EXPLAIN
 SELECT CASE
         WHEN 1=1 THEN 2

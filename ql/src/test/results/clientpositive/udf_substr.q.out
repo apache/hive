@@ -17,6 +17,8 @@ Example:
   'ebook'
   > SELECT substr('Facebook', 5, 1) FROM src LIMIT 1;
   'b'
+Function class:org.apache.hadoop.hive.ql.udf.UDFSubstr
+Function type:BUILTIN
 PREHOOK: query: SELECT
   substr(null, 1), substr(null, 1, 1),
   substr('ABC', null), substr('ABC', null, 1),

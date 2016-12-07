@@ -10,6 +10,8 @@ POSTHOOK: type: DESCFUNCTION
 reflect2(arg0,method[,arg1[,arg2..]]) calls method of arg0 with reflection
 Use this UDF to call Java methods by matching the argument signature
 
+Function class:org.apache.hadoop.hive.ql.udf.generic.GenericUDFReflect2
+Function type:BUILTIN
 PREHOOK: query: EXPLAIN EXTENDED
 SELECT key,
        reflect2(key,   "byteValue"),

@@ -11,6 +11,8 @@ replace(str, search, rep) - replace all substrings of 'str' that match 'search' 
 Example:
   > SELECT replace('Hack and Hue', 'H', 'BL') FROM src LIMIT 1;
   'BLack and BLue'
+Function class:org.apache.hadoop.hive.ql.udf.UDFReplace
+Function type:BUILTIN
 PREHOOK: query: select replace('', '', ''),
 replace(null, '', ''),
 replace('', null, ''),

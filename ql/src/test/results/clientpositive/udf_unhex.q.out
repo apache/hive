@@ -21,6 +21,8 @@ The characters in the argument string must be legal hexadecimal
 digits: '0' .. '9', 'A' .. 'F', 'a' .. 'f'. If UNHEX() encounters
 any nonhexadecimal digits in the argument, it returns NULL. Also,
 if there are an odd number of characters a leading 0 is appended.
+Function class:org.apache.hadoop.hive.ql.udf.UDFUnhex
+Function type:BUILTIN
 PREHOOK: query: -- Good inputs
 
 SELECT

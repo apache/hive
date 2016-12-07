@@ -11,6 +11,8 @@ nvl(value,default_value) - Returns default value if value is null else returns v
 Example:
   > SELECT nvl(null,'bla') FROM src LIMIT 1;
   bla
+Function class:org.apache.hadoop.hive.ql.udf.generic.GenericUDFNvl
+Function type:BUILTIN
 PREHOOK: query: EXPLAIN
 SELECT NVL( 1 , 2 ) AS COL1,
        NVL( NULL, 5 ) AS COL2

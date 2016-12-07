@@ -11,3 +11,5 @@ a & b - Bitwise and
 Example:
   > SELECT 3 & 5 FROM src LIMIT 1;
   1
+Function class:org.apache.hadoop.hive.ql.udf.UDFOPBitAnd
+Function type:BUILTIN

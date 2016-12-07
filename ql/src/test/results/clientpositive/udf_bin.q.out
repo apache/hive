@@ -12,6 +12,8 @@ n is a BIGINT. Returns NULL if n is NULL.
 Example:
   > SELECT bin(13) FROM src LIMIT 1
   '1101'
+Function class:org.apache.hadoop.hive.ql.udf.UDFBin
+Function type:BUILTIN
 PREHOOK: query: SELECT
   bin(1),
   bin(0),

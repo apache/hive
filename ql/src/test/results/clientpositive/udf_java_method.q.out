@@ -11,6 +11,8 @@ java_method(class,method[,arg1[,arg2..]]) calls method with reflection
 Synonyms: reflect
 Use this UDF to call Java methods by matching the argument signature
 
+Function class:org.apache.hadoop.hive.ql.udf.generic.GenericUDFReflect
+Function type:BUILTIN
 PREHOOK: query: -- java_method() is a synonym for reflect()
 
 EXPLAIN EXTENDED

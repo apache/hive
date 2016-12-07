@@ -8,3 +8,5 @@ PREHOOK: type: DESCFUNCTION
 POSTHOOK: query: DESCRIBE FUNCTION EXTENDED or
 POSTHOOK: type: DESCFUNCTION
 a1 or a2 or ... or an - Logical or
+Function class:org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPOr
+Function type:BUILTIN

@@ -17,6 +17,8 @@ Example:
   'b2'
   > SELECT xpath_string('<a><b>b1</b><b>b2</b></a>','a') FROM src LIMIT 1;
   'b1b2'
+Function class:org.apache.hadoop.hive.ql.udf.xml.UDFXPathString
+Function type:BUILTIN
 PREHOOK: query: SELECT xpath_string ('<a><b>bb</b><c>cc</c></a>', 'a') FROM src tablesample (1 rows)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src

@@ -23,6 +23,8 @@ Example:
   '12,332.1235'
   > SELECT format_number(12332.123456, '##################.###') FROM src LIMIT 1;
   '12332.123'
+Function class:org.apache.hadoop.hive.ql.udf.generic.GenericUDFFormatNumber
+Function type:BUILTIN
 PREHOOK: query: EXPLAIN
 SELECT format_number(12332.123456, 4),
     format_number(12332.1,4),

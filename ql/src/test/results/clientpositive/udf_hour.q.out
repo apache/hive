@@ -16,6 +16,8 @@ param can be one of:
   12
   > SELECT hour('12:58:59') FROM src LIMIT 1;
   12
+Function class:org.apache.hadoop.hive.ql.udf.UDFHour
+Function type:BUILTIN
 PREHOOK: query: EXPLAIN
 SELECT hour('2009-08-07 13:14:15'), hour('13:14:15'), hour('2009-08-07')
 FROM src WHERE key = 86

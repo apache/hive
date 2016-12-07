@@ -14,6 +14,8 @@ Example:
   '902fbdd2b1df0c4f70b4a5d23525e932'
   > SELECT md5(binary('ABC'));
   '902fbdd2b1df0c4f70b4a5d23525e932'
+Function class:org.apache.hadoop.hive.ql.udf.UDFMd5
+Function type:BUILTIN
 PREHOOK: query: explain select md5('ABC')
 PREHOOK: type: QUERY
 POSTHOOK: query: explain select md5('ABC')

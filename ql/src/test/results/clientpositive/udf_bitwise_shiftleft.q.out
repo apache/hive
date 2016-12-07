@@ -12,6 +12,8 @@ Returns int for tinyint, smallint and int a. Returns bigint for bigint a.
 Example:
   > SELECT shiftleft(2, 1);
   4
+Function class:org.apache.hadoop.hive.ql.udf.UDFOPBitShiftLeft
+Function type:BUILTIN
 PREHOOK: query: explain select shiftleft(4, 1)
 PREHOOK: type: QUERY
 POSTHOOK: query: explain select shiftleft(4, 1)

@@ -15,6 +15,8 @@ Example:
   'H1'
   > SELECT hex('Facebook') FROM src LIMIT 1;
   '46616365626F6F6B'
+Function class:org.apache.hadoop.hive.ql.udf.UDFHex
+Function type:BUILTIN
 PREHOOK: query: -- If the argument is a string, hex should return a string containing two hex
 -- digits for every character in the input.
 SELECT

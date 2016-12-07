@@ -11,6 +11,8 @@ next_day(start_date, day_of_week) - Returns the first date which is later than s
 start_date is a string in the format 'yyyy-MM-dd HH:mm:ss' or 'yyyy-MM-dd'. day_of_week is day of the week (e.g. Mo, tue, FRIDAY).Example:
   > SELECT next_day('2015-01-14', 'TU') FROM src LIMIT 1;
  '2015-01-20'
+Function class:org.apache.hadoop.hive.ql.udf.generic.GenericUDFNextDay
+Function type:BUILTIN
 PREHOOK: query: EXPLAIN SELECT next_day('2014-01-14', 'MO')
 FROM src tablesample (1 rows)
 PREHOOK: type: QUERY

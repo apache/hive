@@ -8,6 +8,8 @@ PREHOOK: type: DESCFUNCTION
 POSTHOOK: query: DESCRIBE FUNCTION EXTENDED size
 POSTHOOK: type: DESCFUNCTION
 size(a) - Returns the size of a
+Function class:org.apache.hadoop.hive.ql.udf.generic.GenericUDFSize
+Function type:BUILTIN
 PREHOOK: query: EXPLAIN
 FROM src_thrift
 SELECT size(src_thrift.lint), 

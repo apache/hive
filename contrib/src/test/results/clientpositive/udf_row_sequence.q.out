@@ -23,6 +23,8 @@ PREHOOK: type: DESCFUNCTION
 POSTHOOK: query: DESCRIBE FUNCTION EXTENDED row_sequence
 POSTHOOK: type: DESCFUNCTION
 row_sequence() - Returns a generated row sequence number starting from 1
+Function class:org.apache.hadoop.hive.contrib.udf.UDFRowSequence
+Function type:TEMPORARY
 PREHOOK: query: explain
 select key, row_sequence() as r
 from (select key from src order by key) x

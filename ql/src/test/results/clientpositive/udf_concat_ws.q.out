@@ -11,6 +11,8 @@ concat_ws(separator, [string | array(string)]+) - returns the concatenation of t
 Example:
   > SELECT concat_ws('.', 'www', array('facebook', 'com')) FROM src LIMIT 1;
   'www.facebook.com'
+Function class:org.apache.hadoop.hive.ql.udf.generic.GenericUDFConcatWS
+Function type:BUILTIN
 PREHOOK: query: CREATE TABLE dest1(c1 STRING, c2 STRING, c3 STRING)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default

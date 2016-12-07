@@ -8,6 +8,8 @@ PREHOOK: type: DESCFUNCTION
 POSTHOOK: query: DESCRIBE FUNCTION EXTENDED >=
 POSTHOOK: type: DESCFUNCTION
 a >= b - Returns TRUE if a is not smaller than b
+Function class:org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqualOrGreaterThan
+Function type:BUILTIN
 PREHOOK: query: SELECT true>=false, false>=true, false>=false, true>=true FROM src tablesample (1 rows)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src

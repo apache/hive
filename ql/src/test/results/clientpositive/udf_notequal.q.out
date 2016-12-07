@@ -9,6 +9,8 @@ POSTHOOK: query: DESCRIBE FUNCTION EXTENDED <>
 POSTHOOK: type: DESCFUNCTION
 a <> b - Returns TRUE if a is not equal to b
 Synonyms: !=
+Function class:org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPNotEqual
+Function type:BUILTIN
 PREHOOK: query: DESCRIBE FUNCTION !=
 PREHOOK: type: DESCFUNCTION
 POSTHOOK: query: DESCRIBE FUNCTION !=
@@ -20,6 +22,8 @@ POSTHOOK: query: DESCRIBE FUNCTION EXTENDED !=
 POSTHOOK: type: DESCFUNCTION
 a != b - Returns TRUE if a is not equal to b
 Synonyms: <>
+Function class:org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPNotEqual
+Function type:BUILTIN
 PREHOOK: query: EXPLAIN
 SELECT key, value
 FROM src

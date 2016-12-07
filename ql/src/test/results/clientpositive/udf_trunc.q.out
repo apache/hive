@@ -26,6 +26,8 @@ OK
  > SELECT trunc(1234567891.1234567891);
 OK
  1234567891
+Function class:org.apache.hadoop.hive.ql.udf.generic.GenericUDFTrunc
+Function type:BUILTIN
 PREHOOK: query: --test string with 'MM' as format
 EXPLAIN
 SELECT

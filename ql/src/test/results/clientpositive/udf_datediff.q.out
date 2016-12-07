@@ -12,3 +12,5 @@ date1 and date2 are strings in the format 'yyyy-MM-dd HH:mm:ss' or 'yyyy-MM-dd'.
 Example:
    > SELECT datediff('2009-07-30', '2009-07-31') FROM src LIMIT 1;
   1
+Function class:org.apache.hadoop.hive.ql.udf.generic.GenericUDFDateDiff
+Function type:BUILTIN

@@ -24,6 +24,8 @@ Examples:
      monthValue - value to replace month field in a date with. Specify -1 to retain original value. Valid values: 0-11. Default value: 0
      yearValue  - value to replace year field in a date with. Specify -1 to retain original value. Default value: 0
  
+Function class:org.apache.hadoop.hive.ql.udf.generic.GenericUDFMask
+Function type:BUILTIN
 PREHOOK: query: explain select mask('TestString-123', 'X', 'x', '0', '1')
 PREHOOK: type: QUERY
 POSTHOOK: query: explain select mask('TestString-123', 'X', 'x', '0', '1')

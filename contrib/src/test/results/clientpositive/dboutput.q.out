@@ -20,6 +20,8 @@ argument 2 is the password
 argument 3 is an SQL query to be used in the PreparedStatement
 argument (4-n) The remaining arguments must be primitive and are passed to the PreparedStatement object
 
+Function class:org.apache.hadoop.hive.contrib.genericudf.example.GenericUDFDBOutput
+Function type:TEMPORARY
 PREHOOK: query: EXPLAIN FROM src
 
 SELECT dboutput ( 'jdbc:derby:../build/test_dboutput_db;create=true','','',

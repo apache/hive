@@ -8,6 +8,8 @@ PREHOOK: type: DESCFUNCTION
 POSTHOOK: query: DESCRIBE FUNCTION EXTENDED array
 POSTHOOK: type: DESCFUNCTION
 array(n0, n1...) - Creates an array with the given elements 
+Function class:org.apache.hadoop.hive.ql.udf.generic.GenericUDFArray
+Function type:BUILTIN
 PREHOOK: query: EXPLAIN SELECT array(), array()[1], array(1, 2, 3), array(1, 2, 3)[2], array(1,"a", 2, 3), array(1,"a", 2, 3)[2],
 array(array(1), array(2), array(3), array(4))[1][0] FROM src tablesample (1 rows)
 PREHOOK: type: QUERY

@@ -14,3 +14,5 @@ Example:
   0
   > SELECT ceiling(5) FROM src LIMIT 1;
   5
+Function class:org.apache.hadoop.hive.ql.udf.generic.GenericUDFCeil
+Function type:BUILTIN

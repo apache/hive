@@ -10,6 +10,8 @@ POSTHOOK: type: DESCFUNCTION
 quarter(date/timestamp/string) - Returns the quarter of the year for date, in the range 1 to 4.
 Example: > SELECT quarter('2015-04-08');
  2
+Function class:org.apache.hadoop.hive.ql.udf.generic.GenericUDFQuarter
+Function type:BUILTIN
 PREHOOK: query: explain select quarter('2015-04-24')
 PREHOOK: type: QUERY
 POSTHOOK: query: explain select quarter('2015-04-24')

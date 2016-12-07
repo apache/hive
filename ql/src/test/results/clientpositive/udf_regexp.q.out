@@ -12,6 +12,8 @@ Synonyms: rlike
 Example:
   > SELECT 'fb' regexp '.*' FROM src LIMIT 1;
   true
+Function class:org.apache.hadoop.hive.ql.udf.generic.GenericUDFRegExp
+Function type:BUILTIN
 PREHOOK: query: SELECT 'fofo' REGEXP '^fo', 'fo\no' REGEXP '^fo\no$', 'Bn' REGEXP '^Ba*n', 'afofo' REGEXP 'fo',
 'afofo' REGEXP '^fo', 'Baan' REGEXP '^Ba?n', 'axe' REGEXP 'pi|apa', 'pip' REGEXP '^(pi)*$'
 FROM src tablesample (1 rows)

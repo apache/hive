@@ -8,3 +8,5 @@ PREHOOK: type: DESCFUNCTION
 POSTHOOK: query: DESCRIBE FUNCTION EXTENDED +
 POSTHOOK: type: DESCFUNCTION
 a + b - Returns a+b
+Function class:org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPPlus
+Function type:BUILTIN

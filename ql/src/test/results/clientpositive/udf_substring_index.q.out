@@ -12,6 +12,8 @@ If count is positive, everything to the left of the final delimiter (counting fr
 Example:
  > SELECT substring_index('www.apache.org', '.', 2);
  'www.apache'
+Function class:org.apache.hadoop.hive.ql.udf.generic.GenericUDFSubstringIndex
+Function type:BUILTIN
 PREHOOK: query: explain select substring_index('www.apache.org', '.', 2)
 PREHOOK: type: QUERY
 POSTHOOK: query: explain select substring_index('www.apache.org', '.', 2)
