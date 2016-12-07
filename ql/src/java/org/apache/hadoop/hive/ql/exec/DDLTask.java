@@ -2740,6 +2740,8 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     ShowCompactResponse rsp = db.showCompactions();
 
     // Write the results into the file
+    final String noVal = " --- ";
+
     DataOutputStream os = getOutputStream(desc.getResFile());
     try {
       // Write a header
@@ -2756,6 +2758,10 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       os.writeBytes("Worker");
       os.write(separator);
       os.writeBytes("Start Time");
+      os.write(separator);
+      os.writeBytes("Duration(ms)");
+      os.write(separator);
+      os.writeBytes("HadoopJobId");
       os.write(terminator);
 
       if (rsp.getCompacts() != null) {
@@ -2765,16 +2771,20 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
           os.writeBytes(e.getTablename());
           os.write(separator);
           String part = e.getPartitionname();
-          os.writeBytes(part == null ? "NULL" : part);
+          os.writeBytes(part == null ? noVal : part);
           os.write(separator);
           os.writeBytes(e.getType().toString());
           os.write(separator);
           os.writeBytes(e.getState());
           os.write(separator);
           String wid = e.getWorkerid();
-          os.writeBytes(wid == null ? "NULL" : wid);
+          os.writeBytes(wid == null ? noVal : wid);
           os.write(separator);
-          os.writeBytes(Long.toString(e.getStart()));
+          os.writeBytes(e.isSetStart() ? Long.toString(e.getStart()) : noVal);
+          os.write(separator);
+          os.writeBytes(e.isSetEndTime() ? Long.toString(e.getEndTime() - e.getStart()) : noVal);
+          os.write(separator);
+          os.writeBytes(e.isSetHadoopJobId() ?  e.getHadoopJobId() : noVal);
           os.write(terminator);
         }
       }

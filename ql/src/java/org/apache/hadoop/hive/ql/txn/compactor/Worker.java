@@ -163,14 +163,14 @@ public class Worker extends CompactorThread {
         launchedJob = true;
         try {
           if (runJobAsSelf(runAs)) {
-            mr.run(conf, jobName.toString(), t, sd, txns, ci, su);
+            mr.run(conf, jobName.toString(), t, sd, txns, ci, su, txnHandler);
           } else {
             UserGroupInformation ugi = UserGroupInformation.createProxyUser(t.getOwner(),
               UserGroupInformation.getLoginUser());
             ugi.doAs(new PrivilegedExceptionAction<Object>() {
               @Override
               public Object run() throws Exception {
-                mr.run(conf, jobName.toString(), t, sd, txns, ci, su);
+                mr.run(conf, jobName.toString(), t, sd, txns, ci, su, txnHandler);
                 return null;
               }
             });

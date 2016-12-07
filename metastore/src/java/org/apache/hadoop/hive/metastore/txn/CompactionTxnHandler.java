@@ -860,7 +860,8 @@ class CompactionTxnHandler extends TxnHandler {
           //compactions are not happening.
           ci.state = ATTEMPTED_STATE;
           //this is not strictly accurate, but 'type' cannot be null.
-          ci.type = CompactionType.MINOR;
+          if(ci.type == null) { ci.type = CompactionType.MINOR; }
+          ci.start = getDbTime(dbConn);
         }
         else {
           ci.state = FAILED_STATE;
@@ -874,7 +875,7 @@ class CompactionTxnHandler extends TxnHandler {
         closeStmt(pStmt);
         dbConn.commit();
       } catch (SQLException e) {
-        LOG.error("Unable to delete from compaction queue " + e.getMessage());
+        LOG.warn("markFailed(" + ci.id + "):" + e.getMessage());
         LOG.debug("Going to rollback");
         rollbackDBConn(dbConn);
         try {
@@ -883,7 +884,7 @@ class CompactionTxnHandler extends TxnHandler {
         catch(MetaException ex) {
           LOG.error("Unable to connect to transaction database " + StringUtils.stringifyException(ex));
         }
-        LOG.error("Unable to connect to transaction database " + StringUtils.stringifyException(e));
+        LOG.error("markFailed(" + ci + ") failed: " + e.getMessage(), e);
       } finally {
         close(rs, stmt, null);
         close(null, pStmt, dbConn);
@@ -892,7 +893,38 @@ class CompactionTxnHandler extends TxnHandler {
       markFailed(ci);
     }
   }
-
+  @Override
+  public void setHadoopJobId(String hadoopJobId, long id) {
+    try {
+      Connection dbConn = null;
+      Statement stmt = null;
+      try {
+        dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
+        stmt = dbConn.createStatement();
+        String s = "update COMPACTION_QUEUE set CQ_HADOOP_JOB_ID = " + quoteString(hadoopJobId) + " WHERE CQ_ID = " + id;
+        LOG.debug("Going to execute <" + s + ">");
+        int updateCount = stmt.executeUpdate(s);
+        LOG.debug("Going to commit");
+        closeStmt(stmt);
+        dbConn.commit();
+      } catch (SQLException e) {
+        LOG.warn("setHadoopJobId(" + hadoopJobId + "," + id + "):" + e.getMessage());
+        LOG.debug("Going to rollback");
+        rollbackDBConn(dbConn);
+        try {
+          checkRetryable(dbConn, e, "setHadoopJobId(" + hadoopJobId + "," + id + ")");
+        }
+        catch(MetaException ex) {
+          LOG.error("Unable to connect to transaction database " + StringUtils.stringifyException(ex));
+        }
+        LOG.error("setHadoopJobId(" + hadoopJobId + "," + id + ") failed: " + e.getMessage(), e);
+      } finally {
+        close(null, stmt, dbConn);
+      }
+    } catch (RetryException e) {
+      setHadoopJobId(hadoopJobId, id);
+    }
+  }
 }
 
 

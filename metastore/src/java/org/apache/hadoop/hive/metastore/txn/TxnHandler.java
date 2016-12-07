@@ -1509,6 +1509,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
         stmt = dbConn.createStatement();
         String s = "select cq_database, cq_table, cq_partition, cq_state, cq_type, cq_worker_id, " +
+          //-1 because 'null' literal doesn't work for all DBs...
           "cq_start, -1 cc_end, cq_run_as, cq_hadoop_job_id, cq_id from COMPACTION_QUEUE union all " +
           "select cc_database, cc_table, cc_partition, cc_state, cc_type, cc_worker_id, " +
           "cc_start, cc_end, cc_run_as, cc_hadoop_job_id, cc_id from COMPLETED_COMPACTIONS";
@@ -1531,14 +1532,17 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
               //do nothing to handle RU/D if we add another status
           }
           e.setWorkerid(rs.getString(6));
-          e.setStart(rs.getLong(7));
+          long start = rs.getLong(7);
+          if(!rs.wasNull()) {
+            e.setStart(start);
+          }
           long endTime = rs.getLong(8);
           if(endTime != -1) {
             e.setEndTime(endTime);
           }
           e.setRunAs(rs.getString(9));
           e.setHadoopJobId(rs.getString(10));
-          long id = rs.getLong(11);//for debugging
+          e.setId(rs.getLong(11));
           response.addToCompacts(e);
         }
         LOG.debug("Going to rollback");
@@ -1943,12 +1947,12 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
           }
           sendRetrySignal = true;
         } else {
-          LOG.error("Fatal error. Retry limit (" + retryLimit + ") reached. Last error: " + getMessage(e));
+          LOG.error("Fatal error in " + caller + ". Retry limit (" + retryLimit + ") reached. Last error: " + getMessage(e));
         }
       }
       else {
         //make sure we know we saw an error that we don't recognize
-        LOG.info("Non-retryable error: " + getMessage(e));
+        LOG.info("Non-retryable error in " + caller + " : " + getMessage(e));
       }
     }
     finally {

@@ -387,4 +387,11 @@ public interface TxnStore {
       public void releaseLocks();
     }
   }
+
+  /**
+   * Once a {@link java.util.concurrent.ThreadPoolExecutor.Worker} submits a job to the cluster,
+   * it calls this to update the metadata.
+   * @param id {@link CompactionInfo#id}
+   */
+  public void setHadoopJobId(String hadoopJobId, long id);
 }
