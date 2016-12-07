@@ -81,6 +81,7 @@ public class LlapTaskUmbilicalExternalClient extends AbstractService implements 
   private static class TaskHeartbeatInfo {
     final String taskAttemptId;
     final String hostname;
+    String uniqueNodeId;
     final int port;
     final AtomicLong lastHeartbeat = new AtomicLong();
 
@@ -161,8 +162,9 @@ public class LlapTaskUmbilicalExternalClient extends AbstractService implements 
         vertex.getVertexIndex(), request.getFragmentNumber(), request.getAttemptNumber());
     final String fragmentId = attemptId.toString();
 
-    pendingEvents.putIfAbsent(fragmentId, new PendingEventData(
-        new TaskHeartbeatInfo(fragmentId, llapHost, llapPort), Lists.<TezEvent>newArrayList()));
+    final TaskHeartbeatInfo thi = new TaskHeartbeatInfo(fragmentId, llapHost, llapPort);
+    pendingEvents.putIfAbsent(
+        fragmentId, new PendingEventData(thi, Lists.<TezEvent>newArrayList()));
 
     // Setup timer task to check for hearbeat timeouts
     timer.scheduleAtFixedRate(new HeartbeatCheckTask(),
@@ -184,6 +186,9 @@ public class LlapTaskUmbilicalExternalClient extends AbstractService implements 
                 }
                 return;
               }
+            }
+            if (response.hasUniqueNodeId()) {
+              thi.uniqueNodeId = response.getUniqueNodeId();
             }
           }
 
@@ -217,26 +222,29 @@ public class LlapTaskUmbilicalExternalClient extends AbstractService implements 
     }
   }
 
-  private void updateHeartbeatInfo(String hostname, int port) {
+  private void updateHeartbeatInfo(String hostname, String uniqueId, int port) {
     int updateCount = 0;
 
     for (String key : pendingEvents.keySet()) {
       PendingEventData pendingEventData = pendingEvents.get(key);
       if (pendingEventData != null) {
-        if (pendingEventData.heartbeatInfo.hostname.equals(hostname)
-            && pendingEventData.heartbeatInfo.port == port) {
-          pendingEventData.heartbeatInfo.lastHeartbeat.set(System.currentTimeMillis());
+        TaskHeartbeatInfo thi = pendingEventData.heartbeatInfo;
+        String thiUniqueId = thi.uniqueNodeId;
+        if (thi.hostname.equals(hostname) && thi.port == port
+            && (thiUniqueId != null && thiUniqueId.equals(uniqueId))) {
+          thi.lastHeartbeat.set(System.currentTimeMillis());
           updateCount++;
         }
       }
     }
 
     for (String key : registeredTasks.keySet()) {
-      TaskHeartbeatInfo heartbeatInfo = registeredTasks.get(key);
-      if (heartbeatInfo != null) {
-        if (heartbeatInfo.hostname.equals(hostname)
-            && heartbeatInfo.port == port) {
-          heartbeatInfo.lastHeartbeat.set(System.currentTimeMillis());
+      TaskHeartbeatInfo thi = registeredTasks.get(key);
+      if (thi != null) {
+        String thiUniqueId = thi.uniqueNodeId;
+        if (thi.hostname.equals(hostname) && thi.port == port
+            && (thiUniqueId != null && thiUniqueId.equals(uniqueId))) {
+          thi.lastHeartbeat.set(System.currentTimeMillis());
           updateCount++;
         }
       }
@@ -387,8 +395,8 @@ public class LlapTaskUmbilicalExternalClient extends AbstractService implements 
     }
 
     @Override
-    public void nodeHeartbeat(Text hostname, int port) throws IOException {
-      updateHeartbeatInfo(hostname.toString(), port);
+    public void nodeHeartbeat(Text hostname, Text uniqueId, int port) throws IOException {
+      updateHeartbeatInfo(hostname.toString(), uniqueId.toString(), port);
       // No need to propagate to this to the responder
     }
 

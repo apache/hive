@@ -14,21 +14,24 @@
 
 package org.apache.hadoop.hive.llap;
 
+import java.util.UUID;
+
 public class DaemonId {
   private final String userName;
   private final String clusterName;
   private final String appId;
   private final String hostName;
-  private final long startTime;
+  private final long startTimeMs;
+  private final String uuidString;
 
-  public DaemonId(String userName, String clusterName, String hostName, String appId,
-      long startTime) {
+  public DaemonId(
+      String userName, String clusterName, String hostName, String appId, long startTime) {
     this.userName = userName;
     this.clusterName = clusterName;
     this.appId = appId;
     this.hostName = hostName;
-    this.startTime = startTime;
-    // TODO: we could also get an unique number per daemon.
+    this.startTimeMs = startTime;
+    this.uuidString = UUID.randomUUID().toString();
   }
 
   public String getClusterString() {
@@ -44,5 +47,9 @@ public class DaemonId {
 
   public String getApplicationId() {
     return appId;
+  }
+
+  public String getUniqueNodeIdInCluster() {
+    return hostName + "_" + startTimeMs + "_" + uuidString;
   }
 }

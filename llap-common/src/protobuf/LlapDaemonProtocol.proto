@@ -140,6 +140,7 @@ enum SubmissionStateProto {
 
 message SubmitWorkResponseProto {
   optional SubmissionStateProto submission_state = 1;
+  optional string unique_node_id = 2;
 }
 
 message SourceStateUpdatedRequestProto {
