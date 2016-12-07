@@ -46,6 +46,18 @@ public class LoadTableDesc extends org.apache.hadoop.hive.ql.plan.LoadDesc
   private org.apache.hadoop.hive.ql.plan.TableDesc table;
   private Map<String, String> partitionSpec; // NOTE: this partitionSpec has to be ordered map
 
+  public LoadTableDesc(final LoadTableDesc o) {
+    super(o.getSourcePath());
+
+    this.replace = o.replace;
+    this.dpCtx = o.dpCtx;
+    this.lbCtx = o.lbCtx;
+    this.inheritTableSpecs = o.inheritTableSpecs;
+    this.writeType = o.writeType;
+    this.table = o.table;
+    this.partitionSpec = o.partitionSpec;
+  }
+
   public LoadTableDesc(final Path sourcePath,
       final org.apache.hadoop.hive.ql.plan.TableDesc table,
       final Map<String, String> partitionSpec,

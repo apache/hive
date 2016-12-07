@@ -71,7 +71,7 @@ STAGE DEPENDENCIES:
   Stage-6 depends on stages: Stage-1 , consists of Stage-3, Stage-2, Stage-4
   Stage-3
   Stage-2
-  Stage-0 depends on stages: Stage-2
+  Stage-0 depends on stages: Stage-2, Stage-5
   Stage-4
   Stage-5 depends on stages: Stage-4
 
@@ -276,7 +276,7 @@ STAGE PLANS:
       files:
           hdfs directory: true
           source: ### BLOBSTORE_STAGING_PATH ###
-          destination: ### test.blobstore.path ###/table1.dir
+          destination: ### BLOBSTORE_STAGING_PATH ###
 
 PREHOOK: query: EXPLAIN EXTENDED FROM table1
                  INSERT OVERWRITE DIRECTORY '### test.blobstore.path ###/table1.dir/' SELECT id
@@ -291,13 +291,13 @@ STAGE DEPENDENCIES:
   Stage-7 depends on stages: Stage-2 , consists of Stage-4, Stage-3, Stage-5
   Stage-4
   Stage-3
-  Stage-0 depends on stages: Stage-3
+  Stage-0 depends on stages: Stage-3, Stage-6
   Stage-5
   Stage-6 depends on stages: Stage-5
   Stage-12 depends on stages: Stage-2 , consists of Stage-9, Stage-8, Stage-10
   Stage-9
   Stage-8
-  Stage-1 depends on stages: Stage-8
+  Stage-1 depends on stages: Stage-8, Stage-11
   Stage-10
   Stage-11 depends on stages: Stage-10
 
@@ -525,7 +525,7 @@ STAGE PLANS:
       files:
           hdfs directory: true
           source: ### BLOBSTORE_STAGING_PATH ###
-          destination: ### test.blobstore.path ###/table1.dir
+          destination: ### BLOBSTORE_STAGING_PATH ###
 
   Stage: Stage-12
     Conditional Operator
@@ -645,5 +645,5 @@ STAGE PLANS:
       files:
           hdfs directory: true
           source: ### BLOBSTORE_STAGING_PATH ###
-          destination: ### test.blobstore.path ###/table2.dir
+          destination: ### BLOBSTORE_STAGING_PATH ###
 

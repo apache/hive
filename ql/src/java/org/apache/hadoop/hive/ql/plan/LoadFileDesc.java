@@ -39,6 +39,16 @@ public class LoadFileDesc extends LoadDesc implements Serializable {
   public LoadFileDesc() {
   }
 
+  public LoadFileDesc(final LoadFileDesc o) {
+    super(o.getSourcePath());
+
+    this.targetDir = o.targetDir;
+    this.isDfsDir = o.isDfsDir;
+    this.columns = o.columns;
+    this.columnTypes = o.columnTypes;
+    this.destinationCreateTable = o.destinationCreateTable;
+  }
+
   public LoadFileDesc(final CreateTableDesc createTableDesc, final CreateViewDesc  createViewDesc,
                       final Path sourcePath, final Path targetDir, final boolean isDfsDir,
                       final String columns, final String columnTypes) {
