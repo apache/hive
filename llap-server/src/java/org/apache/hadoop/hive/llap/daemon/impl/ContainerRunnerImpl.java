@@ -102,6 +102,7 @@ public class ContainerRunnerImpl extends CompositeService implements ContainerRu
   private final HadoopShim tezHadoopShim;
   private final LlapSignerImpl signer;
   private final String clusterId;
+  private final DaemonId daemonId;
   private final UgiFactory fsUgiFactory;
 
   public ContainerRunnerImpl(Configuration conf, int numExecutors, int waitQueueSize,
@@ -120,6 +121,7 @@ public class ContainerRunnerImpl extends CompositeService implements ContainerRu
     this.fsUgiFactory = fsUgiFactory;
 
     this.clusterId = daemonId.getClusterString();
+    this.daemonId = daemonId;
     this.queryTracker = new QueryTracker(conf, localDirsBase, clusterId);
     addIfService(queryTracker);
     String waitQueueSchedulerClassName = HiveConf.getVar(
@@ -262,8 +264,9 @@ public class ContainerRunnerImpl extends CompositeService implements ContainerRu
       NDC.clear();
     }
 
-    responseBuilder.setSubmissionState(SubmissionStateProto.valueOf(submissionState.name()));
-    return responseBuilder.build();
+    return responseBuilder.setUniqueNodeId(daemonId.getUniqueNodeIdInCluster())
+        .setSubmissionState(SubmissionStateProto.valueOf(submissionState.name()))
+        .build();
   }
 
   private SignableVertexSpec extractVertexSpec(SubmitWorkRequestProto request,

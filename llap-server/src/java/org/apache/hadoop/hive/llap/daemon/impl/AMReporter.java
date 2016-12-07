@@ -41,6 +41,7 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.hive.llap.DaemonId;
 import org.apache.hadoop.hive.llap.LlapNodeId;
 import org.apache.hadoop.hive.llap.daemon.QueryFailedHandler;
 import org.apache.hadoop.hive.llap.protocol.LlapTaskUmbilicalProtocol;
@@ -85,7 +86,7 @@ public class AMReporter extends AbstractService {
 
   private static final Logger LOG = LoggerFactory.getLogger(AMReporter.class);
 
-  private volatile LlapNodeId nodeId;
+  private LlapNodeId nodeId;
   private final QueryFailedHandler queryFailedHandler;
   private final Configuration conf;
   private final ListeningExecutorService queueLookupExecutor;
@@ -101,13 +102,15 @@ public class AMReporter extends AbstractService {
   // messages like taskKilled, etc.
   private final Map<LlapNodeId, AMNodeInfo> knownAppMasters = new HashMap<>();
   volatile ListenableFuture<Void> queueLookupFuture;
+  private final DaemonId daemonId;
 
   public AMReporter(AtomicReference<InetSocketAddress> localAddress,
-                    QueryFailedHandler queryFailedHandler, Configuration conf) {
+      QueryFailedHandler queryFailedHandler, Configuration conf, DaemonId daemonId) {
     super(AMReporter.class.getName());
     this.localAddress = localAddress;
     this.queryFailedHandler = queryFailedHandler;
     this.conf = conf;
+    this.daemonId = daemonId;
     ExecutorService rawExecutor = Executors.newCachedThreadPool(
         new ThreadFactoryBuilder().setDaemon(true).setNameFormat("AMReporter %d").build());
     this.executor = MoreExecutors.listeningDecorator(rawExecutor);
@@ -154,8 +157,9 @@ public class AMReporter extends AbstractService {
         }
       }
     });
+    // TODO: why is this needed? we could just save the host and port?
     nodeId = LlapNodeId.getInstance(localAddress.get().getHostName(), localAddress.get().getPort());
-    LOG.info("AMReporter running with NodeId: {}", nodeId);
+    LOG.info("AMReporter running with DaemonId: {}, NodeId: {}", daemonId, nodeId);
   }
 
   @Override
@@ -336,7 +340,7 @@ public class AMReporter extends AbstractService {
             LOG.trace("NodeHeartbeat to: " + amNodeInfo);
           }
           amNodeInfo.getUmbilical().nodeHeartbeat(new Text(nodeId.getHostname()),
-              nodeId.getPort());
+              new Text(daemonId.getUniqueNodeIdInCluster()), nodeId.getPort());
         } catch (IOException e) {
           QueryIdentifier currentQueryIdentifier = amNodeInfo.getCurrentQueryIdentifier();
           amNodeInfo.setAmFailed(true);
