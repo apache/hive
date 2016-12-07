@@ -97,7 +97,7 @@ public interface TxnStore {
    * @throws NoSuchTxnException
    * @throws MetaException
    */
-  public void abortTxn(AbortTxnRequest rqst) throws NoSuchTxnException, MetaException;
+  public void abortTxn(AbortTxnRequest rqst) throws NoSuchTxnException, MetaException, TxnAbortedException;
 
   /**
    * Abort (rollback) a list of transactions in one request.

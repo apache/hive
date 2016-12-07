@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.metastore.txn;
 
+import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.AbortTxnRequest;
 import org.apache.hadoop.hive.metastore.api.CheckLockRequest;
@@ -162,6 +163,36 @@ public class TestTxnHandler {
       saw[tid.intValue()] = true;
     }
     for (int i = 1; i < saw.length; i++) assertTrue(saw[i]);
+    txnHandler.commitTxn(new CommitTxnRequest(2));
+    boolean gotException = false;
+    try {
+      txnHandler.abortTxn(new AbortTxnRequest(1));
+    }
+    catch(TxnAbortedException ex) {
+      gotException = true;
+      Assert.assertEquals("Transaction " + JavaUtils.txnIdToString(1) + " already aborted", ex.getMessage());
+    }
+    Assert.assertTrue(gotException);
+    gotException = false;
+    try {
+      txnHandler.abortTxn(new AbortTxnRequest(2));
+    }
+    catch(NoSuchTxnException ex) {
+      gotException = true;
+      //if this wasn't an empty txn, we'd get a better msg
+      //Assert.assertEquals("Transaction " + JavaUtils.txnIdToString(2) + " already committed.", ex.getMessage());
+      Assert.assertEquals("No such transaction " + JavaUtils.txnIdToString(2), ex.getMessage());
+    }
+    Assert.assertTrue(gotException);
+    gotException = false;
+    try {
+      txnHandler.abortTxn(new AbortTxnRequest(3));
+    }
+    catch(NoSuchTxnException ex) {
+      gotException = true;
+      Assert.assertEquals("No such transaction " + JavaUtils.txnIdToString(3), ex.getMessage());
+    }
+    Assert.assertTrue(gotException);
   }
 
   @Test

@@ -33,6 +33,7 @@ import org.apache.hadoop.hive.common.classification.InterfaceStability;
 import org.apache.hadoop.hive.metastore.DatabaseProduct;
 import org.apache.hadoop.hive.metastore.HouseKeeperService;
 import org.apache.hadoop.hive.metastore.Warehouse;
+import org.apache.thrift.TException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.commons.dbcp.PoolingDataSource;
@@ -515,17 +516,19 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     }
   }
 
-  public void abortTxn(AbortTxnRequest rqst) throws NoSuchTxnException, MetaException {
+  public void abortTxn(AbortTxnRequest rqst) throws NoSuchTxnException, MetaException, TxnAbortedException {
     long txnid = rqst.getTxnid();
     try {
       Connection dbConn = null;
+      Statement stmt = null;
       try {
         lockInternal();
         dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
         if (abortTxns(dbConn, Collections.singletonList(txnid), true) != 1) {
           LOG.debug("Going to rollback");
           dbConn.rollback();
-          throw new NoSuchTxnException("No such transaction " + JavaUtils.txnIdToString(txnid));
+          stmt = dbConn.createStatement();
+          ensureValidTxn(dbConn, txnid, stmt);
         }
 
         LOG.debug("Going to commit");
@@ -537,7 +540,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         throw new MetaException("Unable to update transaction database "
           + StringUtils.stringifyException(e));
       } finally {
-        closeDbConn(dbConn);
+        close(null, stmt, dbConn);
         unlockInternal();
       }
     } catch (RetryException e) {
