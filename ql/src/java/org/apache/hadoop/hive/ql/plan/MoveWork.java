@@ -57,6 +57,16 @@ public class MoveWork implements Serializable {
   public MoveWork() {
   }
 
+  public MoveWork(final MoveWork o) {
+    loadTableWork = o.getLoadTableWork();
+    loadFileWork = o.getLoadFileWork();
+    loadMultiFilesWork = o.getLoadMultiFilesWork();
+    checkFileFormat = o.getCheckFileFormat();
+    srcLocal = o.isSrcLocal();
+    inputs = o.getInputs();
+    outputs = o.getOutputs();
+  }
+
   public MoveWork(HashSet<ReadEntity> inputs, HashSet<WriteEntity> outputs) {
     this.inputs = inputs;
     this.outputs = outputs;

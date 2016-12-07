@@ -50,6 +50,18 @@ public class LoadTableDesc extends org.apache.hadoop.hive.ql.plan.LoadDesc
     this.holdDDLTime = false;
   }
 
+  public LoadTableDesc(final LoadTableDesc o) {
+    super(o.getSourcePath());
+
+    this.replace = o.getReplace();
+    this.dpCtx = o.getDPCtx();
+    this.lbCtx = o.getLbCtx();
+    this.inheritTableSpecs = o.getInheritTableSpecs();
+    this.writeType = o.getWriteType();
+    this.table = o.getTable();
+    this.partitionSpec = o.getPartitionSpec();
+  }
+
   public LoadTableDesc(final Path sourcePath,
       final org.apache.hadoop.hive.ql.plan.TableDesc table,
       final Map<String, String> partitionSpec,
