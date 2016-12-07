@@ -352,7 +352,7 @@ public class VectorizedParquetRecordReader extends ParquetRecordReaderBase
               .getTypeName() + " and Parquet type" + types.get(i).toString());
         }
       }
-      return new VectorizedStructReader(fieldReaders);
+      return new VectorizedStructColumnReader(fieldReaders);
     case LIST:
     case MAP:
     case UNION:

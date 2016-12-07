@@ -26,11 +26,11 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import java.io.IOException;
 import java.util.List;
 
-public class VectorizedStructReader implements VectorizedColumnReader {
+public class VectorizedStructColumnReader implements VectorizedColumnReader {
 
-  private List<VectorizedColumnReader> fieldReaders;
+  private final List<VectorizedColumnReader> fieldReaders;
 
-  public VectorizedStructReader(List<VectorizedColumnReader> fieldReaders) {
+  public VectorizedStructColumnReader(List<VectorizedColumnReader> fieldReaders) {
     this.fieldReaders = fieldReaders;
   }
 
@@ -50,6 +50,8 @@ public class VectorizedStructReader implements VectorizedColumnReader {
       for (int j = 0; j < vectors[i].isNull.length; j++) {
         structColumnVector.isNull[j] =
           (i == 0) ? vectors[i].isNull[j] : structColumnVector.isNull[j] && vectors[i].isNull[j];
+        structColumnVector.noNulls = (i == 0) ? structColumnVector.isNull[j] :
+          structColumnVector.noNulls && vectors[i].isNull[j];
       }
     }
   }
