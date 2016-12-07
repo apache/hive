@@ -370,6 +370,7 @@ public class ReduceSinkMapJoinProc implements NodeProcessor {
     // at task startup
     if (mapJoinWork != null) {
       for (BaseWork myWork: mapJoinWork) {
+        LOG.debug("adding dummy op to work " + myWork.getName() + " from MJ work: " + dummyOp);
         myWork.addDummyOp(dummyOp);
       }
     }

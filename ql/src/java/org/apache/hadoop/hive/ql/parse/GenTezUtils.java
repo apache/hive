@@ -348,6 +348,7 @@ public class GenTezUtils {
         operators.addAll(current.getChildOperators());
       }
     }
+    LOG.debug("Setting dummy ops for work " + work.getName() + ": " + dummyOps);
     work.setDummyOps(dummyOps);
     work.replaceRoots(replacementMap);
   }

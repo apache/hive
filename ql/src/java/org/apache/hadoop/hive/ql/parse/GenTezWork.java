@@ -269,7 +269,11 @@ public class GenTezWork implements NodeProcessor {
         if (context.linkOpWithWorkMap.containsKey(mj)) {
           Map<BaseWork,TezEdgeProperty> linkWorkMap = context.linkOpWithWorkMap.get(mj);
           if (linkWorkMap != null) {
+             // Note: it's not quite clear why this is done inside this if. Seems like it should be on the top level.
             if (context.linkChildOpWithDummyOp.containsKey(mj)) {
+               if (LOG.isDebugEnabled()) {
+                LOG.debug("Adding dummy ops to work: " + work.getName() + ": " + context.linkChildOpWithDummyOp.get(mj));
+               }
               for (Operator<?> dummy: context.linkChildOpWithDummyOp.get(mj)) {
                 work.addDummyOp((HashTableDummyOperator) dummy);
               }
