@@ -50,9 +50,10 @@ public class VectorizedStructColumnReader implements VectorizedColumnReader {
       for (int j = 0; j < vectors[i].isNull.length; j++) {
         structColumnVector.isNull[j] =
           (i == 0) ? vectors[i].isNull[j] : structColumnVector.isNull[j] && vectors[i].isNull[j];
-        structColumnVector.noNulls = (i == 0) ? structColumnVector.isNull[j] :
-          structColumnVector.noNulls && vectors[i].isNull[j];
       }
+      structColumnVector.noNulls =
+        (i == 0) ? vectors[i].noNulls : structColumnVector.noNulls && vectors[i].noNulls;
     }
+
   }
 }

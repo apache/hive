@@ -53,6 +53,8 @@ import org.apache.parquet.hadoop.example.GroupWriteSupport;
 import org.apache.parquet.io.api.Binary;
 import org.apache.parquet.schema.MessageType;
 import java.io.IOException;
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.List;
 
 import static junit.framework.Assert.assertTrue;
@@ -171,8 +173,14 @@ public class TestVectorizedColumnReaderBase {
   protected static HiveDecimal getDecimal(
     boolean isDictionaryEncoding,
     int index) {
-    double d = (isDictionaryEncoding) ? (index % UNIQUE_NUM * 0.01) : (index * 0.01);
-    return HiveDecimal.create(String.valueOf(d));
+    int decimalVal = index % 100;
+    String decimalStr = (decimalVal < 10) ? "0" + String.valueOf(decimalVal) : String.valueOf
+      (decimalVal);
+    int intVal = (isDictionaryEncoding) ? index % UNIQUE_NUM : index / 100;
+    String d = String.valueOf(intVal) + decimalStr;
+    BigInteger bi = new BigInteger(d);
+    BigDecimal bd = new BigDecimal(bi);
+    return HiveDecimal.create(bd);
   }
 
   protected static Binary getTimestamp(
@@ -226,7 +234,7 @@ public class TestVectorizedColumnReaderBase {
       int intVal = getIntValue(isDictionaryEncoding, i);
       long longVal = getLongValue(isDictionaryEncoding, i);
       Binary timeStamp = getTimestamp(isDictionaryEncoding, i);
-      HiveDecimal decimalVal = getDecimal(isDictionaryEncoding, i);
+      HiveDecimal decimalVal = getDecimal(isDictionaryEncoding, i).setScale(2);
       double doubleVal = getDoubleValue(isDictionaryEncoding, i);
       float floatVal = getFloatValue(isDictionaryEncoding, i);
       boolean booleanVal = getBooleanValue(i);
@@ -672,7 +680,7 @@ public class TestVectorizedColumnReaderBase {
           if (c == nElements) {
             break;
           }
-          assertEquals(getDecimal(isDictionaryEncoding, c),
+          assertEquals("Check failed at pos " + c, getDecimal(isDictionaryEncoding, c),
             vector.vector[i].getHiveDecimal());
           assertFalse(vector.isNull[i]);
           c++;
