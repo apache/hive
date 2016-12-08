@@ -461,7 +461,7 @@ public final class Utilities {
       return gWork;
     } catch (FileNotFoundException fnf) {
       // happens. e.g.: no reduce work.
-      LOG.debug("No plan file found: " + path, fnf);
+      LOG.debug("No plan file found: " + path + "; " + fnf.getMessage());
       return null;
     } catch (Exception e) {
       String msg = "Failed to load plan: " + path;
