@@ -87,7 +87,7 @@ public final class OrcTail {
   }
 
   public CompressionCodec getCompressionCodec() {
-    return WriterImpl.createCodec(getCompressionKind());
+    return PhysicalFsWriter.createCodec(getCompressionKind());
   }
 
   public int getCompressionBufferSize() {
