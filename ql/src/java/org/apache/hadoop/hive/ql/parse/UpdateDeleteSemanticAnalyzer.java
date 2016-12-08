@@ -146,21 +146,29 @@ public class UpdateDeleteSemanticAnalyzer extends SemanticAnalyzer {
    * Assert that we are not asked to update a bucketing column or partition column
    * @param colName it's the A in "SET A = B"
    */
-  private void checkValidSetClauseTarget(ASTNode colName, List<FieldSchema> partCols,
-                                         List<String> bucketingCols) throws SemanticException {
+  private void checkValidSetClauseTarget(ASTNode colName, Table targetTable) throws SemanticException {
     String columnName = normalizeColName(colName.getText());
 
     // Make sure this isn't one of the partitioning columns, that's not supported.
-    if (partCols != null) {
-      for (FieldSchema fschema : partCols) {
-        if (fschema.getName().equalsIgnoreCase(columnName)) {
-          throw new SemanticException(ErrorMsg.UPDATE_CANNOT_UPDATE_PART_VALUE.getMsg());
-        }
+    for (FieldSchema fschema : targetTable.getPartCols()) {
+      if (fschema.getName().equalsIgnoreCase(columnName)) {
+        throw new SemanticException(ErrorMsg.UPDATE_CANNOT_UPDATE_PART_VALUE.getMsg());
       }
     }
     //updating bucket column should move row from one file to another - not supported
-    if(bucketingCols != null && bucketingCols.contains(columnName)) {
+    if(targetTable.getBucketCols() != null && targetTable.getBucketCols().contains(columnName)) {
       throw new SemanticException(ErrorMsg.UPDATE_CANNOT_UPDATE_BUCKET_VALUE,columnName);
+    }
+    boolean foundColumnInTargetTable = false;
+    for(FieldSchema col : targetTable.getCols()) {
+      if(columnName.equalsIgnoreCase(col.getName())) {
+        foundColumnInTargetTable = true;
+        break;
+      }
+    }
+    if(!foundColumnInTargetTable) {
+      throw new SemanticException(ErrorMsg.INVALID_TARGET_COLUMN_IN_SET_CLAUSE, colName.getText(),
+        getDotName(new String[] {targetTable.getDbName(), targetTable.getTableName()}));
     }
   }
   private ASTNode findLHSofAssignment(ASTNode assignment) {
@@ -174,9 +182,8 @@ public class UpdateDeleteSemanticAnalyzer extends SemanticAnalyzer {
       "Expected column name";
     return colName;
   }
-  private Map<String, ASTNode> collectSetColumnsAndExpressions(
-    ASTNode setClause,List<FieldSchema> partCols, List<String> bucketingCols, Set<String> setRCols)
-    throws SemanticException {
+  private Map<String, ASTNode> collectSetColumnsAndExpressions(ASTNode setClause,
+                         Set<String> setRCols, Table targetTable) throws SemanticException {
     // An update needs to select all of the columns, as we rewrite the entire row.  Also,
     // we need to figure out which columns we are going to replace.
     assert setClause.getToken().getType() == HiveParser.TOK_SET_COLUMNS_CLAUSE :
@@ -192,7 +199,7 @@ public class UpdateDeleteSemanticAnalyzer extends SemanticAnalyzer {
       if(setRCols != null) {
         addSetRCols((ASTNode) assignment.getChildren().get(1), setRCols);
       }
-      checkValidSetClauseTarget(colName, partCols, bucketingCols);
+      checkValidSetClauseTarget(colName, targetTable);
 
       String columnName = normalizeColName(colName.getText());
       // This means that in UPDATE T SET x = _something_
@@ -338,13 +345,10 @@ public class UpdateDeleteSemanticAnalyzer extends SemanticAnalyzer {
     Table mTable = getTargetTable(tabName);
     validateTargetTable(mTable);
 
-    List<FieldSchema> partCols = mTable.getPartCols();
-    List<String> bucketingCols = mTable.getBucketCols();
-
     rewrittenQueryStr.append("insert into table ");
     rewrittenQueryStr.append(getFullTableNameForSQL(tabName));
 
-    addPartitionColsToInsert(partCols, rewrittenQueryStr);
+    addPartitionColsToInsert(mTable.getPartCols(), rewrittenQueryStr);
 
     rewrittenQueryStr.append(" select ROW__ID");
 
@@ -358,8 +362,8 @@ public class UpdateDeleteSemanticAnalyzer extends SemanticAnalyzer {
       // The set list from update should be the second child (index 1)
       assert children.size() >= 2 : "Expected update token to have at least two children";
       ASTNode setClause = (ASTNode)children.get(1);
-      setCols = collectSetColumnsAndExpressions(setClause, partCols, bucketingCols, setRCols);
-      setColExprs = new HashMap<Integer, ASTNode>(setClause.getChildCount());
+      setCols = collectSetColumnsAndExpressions(setClause, setRCols, mTable);
+      setColExprs = new HashMap<>(setClause.getChildCount());
 
       List<FieldSchema> nonPartCols = mTable.getCols();
       for (int i = 0; i < nonPartCols.size(); i++) {
@@ -376,7 +380,7 @@ public class UpdateDeleteSemanticAnalyzer extends SemanticAnalyzer {
       }
     }
 
-    addPartitionColsToSelect(partCols, rewrittenQueryStr, null);
+    addPartitionColsToSelect(mTable.getPartCols(), rewrittenQueryStr, null);
     rewrittenQueryStr.append(" from ");
     rewrittenQueryStr.append(getFullTableNameForSQL(tabName));
 
@@ -786,17 +790,15 @@ public class UpdateDeleteSemanticAnalyzer extends SemanticAnalyzer {
                               String deleteExtraPredicate) throws SemanticException {
     assert whenMatchedUpdateClause.getType() == HiveParser.TOK_MATCHED;
     assert getWhenClauseOperation(whenMatchedUpdateClause).getType() == HiveParser.TOK_UPDATE;
-    List<FieldSchema> partCols = targetTable.getPartCols();
-    List<String> bucketingCols = targetTable.getBucketCols();
     String targetName = getSimpleTableName(target);
     rewrittenQueryStr.append("INSERT INTO ").append(getFullTableNameForSQL(target));
-    addPartitionColsToInsert(partCols, rewrittenQueryStr);
+    addPartitionColsToInsert(targetTable.getPartCols(), rewrittenQueryStr);
     rewrittenQueryStr.append("\n select ").append(targetName).append(".ROW__ID");
 
     ASTNode setClause = (ASTNode)getWhenClauseOperation(whenMatchedUpdateClause).getChild(0);
     //columns being updated -> update expressions; "setRCols" (last param) is null because we use actual expressions
     //before reparsing, i.e. they are known to SemanticAnalyzer logic
-    Map<String, ASTNode> setColsExprs = collectSetColumnsAndExpressions(setClause, partCols, bucketingCols, null);
+    Map<String, ASTNode> setColsExprs = collectSetColumnsAndExpressions(setClause, null, targetTable);
     //if target table has cols c1,c2,c3 and p1 partition col and we had "SET c2 = 5, c1 = current_date()" we want to end up with
     //insert into target (p1) select current_date(), 5, c3, p1 where ....
     //since we take the RHS of set exactly as it was in Input, we don't need to deal with quoting/escaping column/table names
@@ -812,7 +814,7 @@ public class UpdateDeleteSemanticAnalyzer extends SemanticAnalyzer {
         rewrittenQueryStr.append(getSimpleTableName(target)).append(".").append(HiveUtils.unparseIdentifier(name, this.conf));
       }
     }
-    addPartitionColsToSelect(partCols, rewrittenQueryStr, targetName);
+    addPartitionColsToSelect(targetTable.getPartCols(), rewrittenQueryStr, targetName);
     rewrittenQueryStr.append("\n   WHERE ").append(onClauseAsString);
     String extraPredicate = getWhenClausePredicate(whenMatchedUpdateClause);
     if(extraPredicate != null) {

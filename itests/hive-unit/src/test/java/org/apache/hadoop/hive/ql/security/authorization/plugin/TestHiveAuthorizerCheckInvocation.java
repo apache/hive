@@ -329,7 +329,7 @@ public class TestHiveAuthorizerCheckInvocation {
   public void testUpdateSomeColumnsUsedExprInSet() throws HiveAuthzPluginException,
       HiveAccessControlException, CommandNeedRetryException {
     reset(mockedAuthorizer);
-    int status = driver.compile("update " + acidTableName + " set i = 5, l = k where j = 3");
+    int status = driver.compile("update " + acidTableName + " set i = 5, j = k where j = 3");
     assertEquals(0, status);
 
     Pair<List<HivePrivilegeObject>, List<HivePrivilegeObject>> io = getHivePrivilegeObjectInputs();
@@ -337,7 +337,7 @@ public class TestHiveAuthorizerCheckInvocation {
     HivePrivilegeObject tableObj = outputs.get(0);
     LOG.debug("Got privilege object " + tableObj);
     assertEquals("no of columns used", 2, tableObj.getColumns().size());
-    assertEquals("Columns used", Arrays.asList("i", "l"),
+    assertEquals("Columns used", Arrays.asList("i", "j"),
         getSortedList(tableObj.getColumns()));
     List<HivePrivilegeObject> inputs = io.getLeft();
     assertEquals(1, inputs.size());

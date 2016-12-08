@@ -460,6 +460,7 @@ public enum ErrorMsg {
   MERGE_TOO_MANY_DELETE(10405, "MERGE statment can have at most 1 WHEN MATCHED ... DELETE clause: <{0}>", true),
   MERGE_TOO_MANY_UPDATE(10406, "MERGE statment can have at most 1 WHEN MATCHED ... UPDATE clause: <{0}>", true),
   INVALID_JOIN_CONDITION(10407, "Error parsing condition in outer join"),
+  INVALID_TARGET_COLUMN_IN_SET_CLAUSE(10408, "Target column \"{0}\" of set clause is not found in table \"{1}\".", true),
   //========================== 20000 range starts here ========================//
   SCRIPT_INIT_ERROR(20000, "Unable to initialize custom script."),
   SCRIPT_IO_ERROR(20001, "An error occurred while reading or writing to your custom script. "

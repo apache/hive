@@ -58,6 +58,9 @@ import java.util.concurrent.TimeUnit;
  * test AC=true, and AC=false with commit/rollback/exception and test resulting data.
  *
  * Can also test, calling commit in AC=true mode, etc, toggling AC...
+ * 
+ * Tests here are for multi-statement transactions (WIP) and those that don't need to
+ * run with Acid 2.0 (see subclasses of TestTxnCommands2)
  */
 public class TestTxnCommands {
   private static final String TEST_DATA_DIR = new File(System.getProperty("java.io.tmpdir") +
@@ -595,7 +598,7 @@ public class TestTxnCommands {
   public void testMergeNegative2() throws Exception {
     CommandProcessorResponse cpr = runStatementOnDriverNegative("MERGE INTO "+ Table.ACIDTBL +
       " target USING " + Table.NONACIDORCTBL + "\n source ON target.pk = source.pk " +
-      "\nWHEN MATCHED THEN UPDATE set t = 1 " +
+      "\nWHEN MATCHED THEN UPDATE set b = 1 " +
       "\nWHEN MATCHED THEN UPDATE set b=a");
     Assert.assertEquals(ErrorMsg.MERGE_TOO_MANY_UPDATE, ((HiveException)cpr.getException()).getCanonicalErrorMsg());
   }
@@ -614,5 +617,17 @@ public class TestTxnCommands {
       "\nwhen matched and i > 5 then delete " +
       "\nwhen matched then update set vc=`∆∋` " +
       "\nwhen not matched then insert values(`a/b`.`g/h`,`a/b`.j,`a/b`.k)");
+  }
+  @Test
+  public void testSetClauseFakeColumn() throws Exception {
+    CommandProcessorResponse cpr = runStatementOnDriverNegative("MERGE INTO "+ Table.ACIDTBL +
+      " target USING " + Table.NONACIDORCTBL +
+      "\n source ON target.a = source.a " +
+      "\nWHEN MATCHED THEN UPDATE set t = 1");
+    Assert.assertEquals(ErrorMsg.INVALID_TARGET_COLUMN_IN_SET_CLAUSE,
+      ((HiveException)cpr.getException()).getCanonicalErrorMsg());
+    cpr = runStatementOnDriverNegative("update " + Table.ACIDTBL + " set t = 1");
+    Assert.assertEquals(ErrorMsg.INVALID_TARGET_COLUMN_IN_SET_CLAUSE,
+      ((HiveException)cpr.getException()).getCanonicalErrorMsg());
   }
 }
