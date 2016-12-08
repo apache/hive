@@ -1706,20 +1706,25 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
               ctx.setResDir(null);
               ctx.setResFile(null);
 
-              // allocate a temporary output dir on the location of the table
-              String tableName = getUnescapedName((ASTNode) ast.getChild(0));
-              String[] names = Utilities.getDbTableName(tableName);
               Path location;
-              try {
-                Warehouse wh = new Warehouse(conf);
-                //Use destination table's db location.
-                String destTableDb = qb.getTableDesc() != null? qb.getTableDesc().getDatabaseName(): null;
-                if (destTableDb == null) {
-                  destTableDb = names[0];
+              // If the CTAS query does specify a location, use the table location, else use the db location
+              if (qb.getTableDesc() != null && qb.getTableDesc().getLocation() != null) {
+                location = new Path(qb.getTableDesc().getLocation());
+              } else {
+                // allocate a temporary output dir on the location of the table
+                String tableName = getUnescapedName((ASTNode) ast.getChild(0));
+                String[] names = Utilities.getDbTableName(tableName);
+                try {
+                  Warehouse wh = new Warehouse(conf);
+                  //Use destination table's db location.
+                  String destTableDb = qb.getTableDesc() != null ? qb.getTableDesc().getDatabaseName() : null;
+                  if (destTableDb == null) {
+                    destTableDb = names[0];
+                  }
+                  location = wh.getDatabasePath(db.getDatabase(destTableDb));
+                } catch (MetaException e) {
+                  throw new SemanticException(e);
                 }
-                location = wh.getDatabasePath(db.getDatabase(destTableDb));
-              } catch (MetaException e) {
-                throw new SemanticException(e);
               }
               try {
                 fname = ctx.getExtTmpPathRelTo(
@@ -1748,6 +1753,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           if (ast.getChildCount() >= 2 && ast.getChild(1).getText().toLowerCase().equals("local")) {
             isDfsFile = false;
           }
+          // Set the destination for the SELECT query inside the CTAS
           qb.getMetaData().setDestForAlias(name, fname, isDfsFile);
 
           CreateTableDesc directoryDesc = new CreateTableDesc();

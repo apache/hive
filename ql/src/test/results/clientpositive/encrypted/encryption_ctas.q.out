@@ -31,11 +31,11 @@ POSTHOOK: Output: testCT@encrypted_tablectas
 PREHOOK: query: select * from testCT.encrypted_tablectas
 PREHOOK: type: QUERY
 PREHOOK: Input: testct@encrypted_tablectas
-#### A masked pattern was here ####
+#### A PARTIAL masked pattern was here #### data/warehouse/default/encrypted_tablectas/.hive-staging
 POSTHOOK: query: select * from testCT.encrypted_tablectas
 POSTHOOK: type: QUERY
 POSTHOOK: Input: testct@encrypted_tablectas
-#### A masked pattern was here ####
+#### A PARTIAL masked pattern was here #### data/warehouse/default/encrypted_tablectas/.hive-staging
 100	val_100
 PREHOOK: query: DROP TABLE testCT.encrypted_tablectas PURGE
 PREHOOK: type: DROPTABLE
