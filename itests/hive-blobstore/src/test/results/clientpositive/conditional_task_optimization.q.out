@@ -228,9 +228,9 @@ STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-7 depends on stages: Stage-1 , consists of Stage-4, Stage-3, Stage-5
   Stage-4
-  Stage-2 depends on stages: Stage-0, Stage-4, Stage-6
+  Stage-2 depends on stages: Stage-0, Stage-4
   Stage-3
-  Stage-0 depends on stages: Stage-3
+  Stage-0 depends on stages: Stage-3, Stage-6
   Stage-5
   Stage-6 depends on stages: Stage-5
 
@@ -306,13 +306,9 @@ STAGE PLANS:
 
   Stage: Stage-6
     Move Operator
-      tables:
-          replace: false
-          table:
-              input format: org.apache.hadoop.mapred.TextInputFormat
-              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.conditional
+      files:
+          hdfs directory: true
+          destination: ### BLOBSTORE_STAGING_PATH ###
 
 PREHOOK: query: INSERT INTO TABLE conditional VALUES (2)
 PREHOOK: type: QUERY
@@ -340,9 +336,9 @@ STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-7 depends on stages: Stage-1 , consists of Stage-4, Stage-3, Stage-5
   Stage-4
-  Stage-2 depends on stages: Stage-0, Stage-4, Stage-6
+  Stage-2 depends on stages: Stage-0, Stage-4
   Stage-3
-  Stage-0 depends on stages: Stage-3
+  Stage-0 depends on stages: Stage-3, Stage-6
   Stage-5
   Stage-6 depends on stages: Stage-5
 
@@ -418,13 +414,9 @@ STAGE PLANS:
 
   Stage: Stage-6
     Move Operator
-      tables:
-          replace: true
-          table:
-              input format: org.apache.hadoop.mapred.TextInputFormat
-              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.conditional
+      files:
+          hdfs directory: true
+          destination: ### BLOBSTORE_STAGING_PATH ###
 
 PREHOOK: query: INSERT OVERWRITE TABLE conditional VALUES (22)
 PREHOOK: type: QUERY

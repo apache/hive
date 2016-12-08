@@ -400,31 +400,10 @@ STAGE PLANS:
 
   Stage: Stage-6
     Move Operator
-      tables:
-          replace: true
+      files:
+          hdfs directory: true
           source: ### BLOBSTORE_STAGING_PATH ###
-          table:
-              input format: org.apache.hadoop.mapred.TextInputFormat
-              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-              properties:
-                COLUMN_STATS_ACCURATE true
-                bucket_count -1
-                columns id
-                columns.comments 
-                columns.types int
-#### A masked pattern was here ####
-                location ### test.blobstore.path ###/table1
-                name default.table1
-                numFiles 0
-                numRows 1
-                rawDataSize 1
-                serialization.ddl struct table1 { i32 id}
-                serialization.format 1
-                serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                totalSize 0
-#### A masked pattern was here ####
-              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.table1
+          destination: ### BLOBSTORE_STAGING_PATH ###
 
 PREHOOK: query: DROP TABLE table1
 PREHOOK: type: DROPTABLE
