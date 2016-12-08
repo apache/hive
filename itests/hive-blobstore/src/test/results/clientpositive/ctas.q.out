@@ -1,0 +1,879 @@
+PREHOOK: query: DROP TABLE IF EXISTS ctas_blobstore_table_src
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE IF EXISTS ctas_blobstore_table_src
+POSTHOOK: type: DROPTABLE
+#### A masked pattern was here ####
+PREHOOK: type: CREATETABLE
+PREHOOK: Input: ### test.blobstore.path ###/ctas_blobstore_table_src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ctas_blobstore_table_src
+#### A masked pattern was here ####
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Input: ### test.blobstore.path ###/ctas_blobstore_table_src
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ctas_blobstore_table_src
+PREHOOK: query: INSERT INTO TABLE ctas_blobstore_table_src VALUES (1), (2), (3)
+PREHOOK: type: QUERY
+PREHOOK: Output: default@ctas_blobstore_table_src
+POSTHOOK: query: INSERT INTO TABLE ctas_blobstore_table_src VALUES (1), (2), (3)
+POSTHOOK: type: QUERY
+POSTHOOK: Output: default@ctas_blobstore_table_src
+PREHOOK: query: DROP TABLE IF EXISTS ctas_hdfs_table_src
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE IF EXISTS ctas_hdfs_table_src
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: CREATE TABLE ctas_hdfs_table_src (col int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ctas_hdfs_table_src
+POSTHOOK: query: CREATE TABLE ctas_hdfs_table_src (col int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ctas_hdfs_table_src
+PREHOOK: query: INSERT INTO TABLE ctas_hdfs_table_src VALUES (1), (2), (3)
+PREHOOK: type: QUERY
+PREHOOK: Output: default@ctas_hdfs_table_src
+POSTHOOK: query: INSERT INTO TABLE ctas_hdfs_table_src VALUES (1), (2), (3)
+POSTHOOK: type: QUERY
+POSTHOOK: Output: default@ctas_hdfs_table_src
+POSTHOOK: Lineage: ctas_hdfs_table_src.col EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+PREHOOK: query: -- Test select from a Blobstore and write to HDFS
+DROP TABLE IF EXISTS ctas_hdfs_table_dst
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: -- Test select from a Blobstore and write to HDFS
+DROP TABLE IF EXISTS ctas_hdfs_table_dst
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: EXPLAIN EXTENDED CREATE TABLE ctas_hdfs_table_dst AS SELECT * FROM ctas_blobstore_table_src
+PREHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: query: EXPLAIN EXTENDED CREATE TABLE ctas_hdfs_table_dst AS SELECT * FROM ctas_blobstore_table_src
+POSTHOOK: type: CREATETABLE_AS_SELECT
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-7 depends on stages: Stage-1 , consists of Stage-4, Stage-3, Stage-5
+  Stage-4
+  Stage-0 depends on stages: Stage-4, Stage-3, Stage-6
+  Stage-8 depends on stages: Stage-0
+  Stage-2 depends on stages: Stage-8
+  Stage-3
+  Stage-5
+  Stage-6 depends on stages: Stage-5
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: ctas_blobstore_table_src
+            Statistics: Num rows: 1 Data size: 6 Basic stats: COMPLETE Column stats: NONE
+            GatherStats: false
+            Select Operator
+              expressions: col (type: int)
+              outputColumnNames: _col0
+              Statistics: Num rows: 1 Data size: 6 Basic stats: COMPLETE Column stats: NONE
+              File Output Operator
+                compressed: false
+                GlobalTableId: 1
+#### A masked pattern was here ####
+                NumFilesPerFileSink: 1
+                Statistics: Num rows: 1 Data size: 6 Basic stats: COMPLETE Column stats: NONE
+#### A masked pattern was here ####
+                table:
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    properties:
+                      columns col
+                      columns.types int
+                      name default.ctas_hdfs_table_dst
+                      serialization.format 1
+                      serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    name: default.ctas_hdfs_table_dst
+                TotalFiles: 1
+                GatherStats: true
+                MultiFileSpray: false
+      Path -> Alias:
+        ### test.blobstore.path ###/ctas_blobstore_table_src [ctas_blobstore_table_src]
+      Path -> Partition:
+        ### test.blobstore.path ###/ctas_blobstore_table_src 
+          Partition
+            base file name: ctas_blobstore_table_src
+            input format: org.apache.hadoop.mapred.TextInputFormat
+            output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+            properties:
+              bucket_count -1
+              columns col
+              columns.comments 
+              columns.types int
+#### A masked pattern was here ####
+              location ### test.blobstore.path ###/ctas_blobstore_table_src
+              name default.ctas_blobstore_table_src
+              numFiles 1
+              serialization.ddl struct ctas_blobstore_table_src { i32 col}
+              serialization.format 1
+              serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              totalSize 6
+#### A masked pattern was here ####
+            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+          
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              properties:
+                bucket_count -1
+                columns col
+                columns.comments 
+                columns.types int
+#### A masked pattern was here ####
+                location ### test.blobstore.path ###/ctas_blobstore_table_src
+                name default.ctas_blobstore_table_src
+                numFiles 1
+                serialization.ddl struct ctas_blobstore_table_src { i32 col}
+                serialization.format 1
+                serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                totalSize 6
+#### A masked pattern was here ####
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.ctas_blobstore_table_src
+            name: default.ctas_blobstore_table_src
+      Truncated Path -> Alias:
+        ### test.blobstore.path ###/ctas_blobstore_table_src [ctas_blobstore_table_src]
+
+  Stage: Stage-7
+    Conditional Operator
+
+  Stage: Stage-4
+    Move Operator
+      files:
+          hdfs directory: true
+#### A masked pattern was here ####
+
+  Stage: Stage-0
+    Move Operator
+      files:
+          hdfs directory: true
+#### A masked pattern was here ####
+
+  Stage: Stage-8
+      Create Table Operator:
+        Create Table
+          columns: col int
+          input format: org.apache.hadoop.mapred.TextInputFormat
+          output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
+          serde name: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+          name: default.ctas_hdfs_table_dst
+
+  Stage: Stage-2
+    Stats-Aggr Operator
+#### A masked pattern was here ####
+
+  Stage: Stage-3
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            GatherStats: false
+            File Output Operator
+              compressed: false
+              GlobalTableId: 0
+#### A masked pattern was here ####
+              NumFilesPerFileSink: 1
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  properties:
+                    columns col
+                    columns.types int
+                    name default.ctas_hdfs_table_dst
+                    serialization.format 1
+                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  name: default.ctas_hdfs_table_dst
+              TotalFiles: 1
+              GatherStats: false
+              MultiFileSpray: false
+      Path -> Alias:
+#### A masked pattern was here ####
+      Path -> Partition:
+#### A masked pattern was here ####
+          Partition
+            base file name: -ext-10004
+            input format: org.apache.hadoop.mapred.TextInputFormat
+            output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+            properties:
+              columns col
+              columns.types int
+              name default.ctas_hdfs_table_dst
+              serialization.format 1
+              serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+          
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              properties:
+                columns col
+                columns.types int
+                name default.ctas_hdfs_table_dst
+                serialization.format 1
+                serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.ctas_hdfs_table_dst
+            name: default.ctas_hdfs_table_dst
+      Truncated Path -> Alias:
+#### A masked pattern was here ####
+
+  Stage: Stage-5
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            GatherStats: false
+            File Output Operator
+              compressed: false
+              GlobalTableId: 0
+#### A masked pattern was here ####
+              NumFilesPerFileSink: 1
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  properties:
+                    columns col
+                    columns.types int
+                    name default.ctas_hdfs_table_dst
+                    serialization.format 1
+                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  name: default.ctas_hdfs_table_dst
+              TotalFiles: 1
+              GatherStats: false
+              MultiFileSpray: false
+      Path -> Alias:
+#### A masked pattern was here ####
+      Path -> Partition:
+#### A masked pattern was here ####
+          Partition
+            base file name: -ext-10004
+            input format: org.apache.hadoop.mapred.TextInputFormat
+            output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+            properties:
+              columns col
+              columns.types int
+              name default.ctas_hdfs_table_dst
+              serialization.format 1
+              serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+          
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              properties:
+                columns col
+                columns.types int
+                name default.ctas_hdfs_table_dst
+                serialization.format 1
+                serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.ctas_hdfs_table_dst
+            name: default.ctas_hdfs_table_dst
+      Truncated Path -> Alias:
+#### A masked pattern was here ####
+
+  Stage: Stage-6
+    Move Operator
+      files:
+          hdfs directory: true
+#### A masked pattern was here ####
+
+PREHOOK: query: CREATE TABLE ctas_hdfs_table_dst AS SELECT * FROM ctas_blobstore_table_src
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@ctas_blobstore_table_src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ctas_hdfs_table_dst
+POSTHOOK: query: CREATE TABLE ctas_hdfs_table_dst AS SELECT * FROM ctas_blobstore_table_src
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@ctas_blobstore_table_src
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ctas_hdfs_table_dst
+POSTHOOK: Lineage: ctas_hdfs_table_dst.col SIMPLE [(ctas_blobstore_table_src)ctas_blobstore_table_src.FieldSchema(name:col, type:int, comment:null), ]
+PREHOOK: query: SELECT * FROM ctas_hdfs_table_dst
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ctas_hdfs_table_dst
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM ctas_hdfs_table_dst
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ctas_hdfs_table_dst
+#### A masked pattern was here ####
+1
+2
+3
+PREHOOK: query: -- Test select from HDFS and write to a Blobstore
+DROP TABLE IF EXISTS ctas_blobstore_table_dst
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: -- Test select from HDFS and write to a Blobstore
+DROP TABLE IF EXISTS ctas_blobstore_table_dst
+POSTHOOK: type: DROPTABLE
+#### A masked pattern was here ####
+PREHOOK: type: CREATETABLE_AS_SELECT
+#### A masked pattern was here ####
+POSTHOOK: type: CREATETABLE_AS_SELECT
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-7 depends on stages: Stage-1 , consists of Stage-4, Stage-3, Stage-5
+  Stage-4
+  Stage-8 depends on stages: Stage-0, Stage-4
+  Stage-2 depends on stages: Stage-8
+  Stage-3
+  Stage-0 depends on stages: Stage-3, Stage-6
+  Stage-5
+  Stage-6 depends on stages: Stage-5
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: ctas_hdfs_table_src
+            Statistics: Num rows: 3 Data size: 3 Basic stats: COMPLETE Column stats: NONE
+            GatherStats: false
+            Select Operator
+              expressions: col (type: int)
+              outputColumnNames: _col0
+              Statistics: Num rows: 3 Data size: 3 Basic stats: COMPLETE Column stats: NONE
+              File Output Operator
+                compressed: false
+                GlobalTableId: 1
+                directory: ### BLOBSTORE_STAGING_PATH ###
+                NumFilesPerFileSink: 1
+                Statistics: Num rows: 3 Data size: 3 Basic stats: COMPLETE Column stats: NONE
+                Stats Publishing Key Prefix: ### BLOBSTORE_STAGING_PATH ###
+                table:
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    properties:
+                      columns col
+                      columns.types int
+                      name default.ctas_blobstore_table_dst
+                      serialization.format 1
+                      serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    name: default.ctas_blobstore_table_dst
+                TotalFiles: 1
+                GatherStats: true
+                MultiFileSpray: false
+      Path -> Alias:
+#### A masked pattern was here ####
+      Path -> Partition:
+#### A masked pattern was here ####
+          Partition
+            base file name: ctas_hdfs_table_src
+            input format: org.apache.hadoop.mapred.TextInputFormat
+            output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+            properties:
+              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
+              bucket_count -1
+              columns col
+              columns.comments 
+              columns.types int
+#### A masked pattern was here ####
+              name default.ctas_hdfs_table_src
+              numFiles 1
+              numRows 3
+              rawDataSize 3
+              serialization.ddl struct ctas_hdfs_table_src { i32 col}
+              serialization.format 1
+              serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              totalSize 6
+#### A masked pattern was here ####
+            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+          
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              properties:
+                COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
+                bucket_count -1
+                columns col
+                columns.comments 
+                columns.types int
+#### A masked pattern was here ####
+                name default.ctas_hdfs_table_src
+                numFiles 1
+                numRows 3
+                rawDataSize 3
+                serialization.ddl struct ctas_hdfs_table_src { i32 col}
+                serialization.format 1
+                serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                totalSize 6
+#### A masked pattern was here ####
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.ctas_hdfs_table_src
+            name: default.ctas_hdfs_table_src
+      Truncated Path -> Alias:
+        /ctas_hdfs_table_src [ctas_hdfs_table_src]
+
+  Stage: Stage-7
+    Conditional Operator
+
+  Stage: Stage-4
+    Move Operator
+      files:
+          hdfs directory: true
+          source: ### BLOBSTORE_STAGING_PATH ###
+          destination: ### test.blobstore.path ###/ctas_blobstore_table_dst
+
+  Stage: Stage-8
+      Create Table Operator:
+        Create Table
+          columns: col int
+          input format: org.apache.hadoop.mapred.TextInputFormat
+          location: ### test.blobstore.path ###/ctas_blobstore_table_dst/
+          output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
+          serde name: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+          name: default.ctas_blobstore_table_dst
+
+  Stage: Stage-2
+    Stats-Aggr Operator
+      Stats Aggregation Key Prefix: ### BLOBSTORE_STAGING_PATH ###
+
+  Stage: Stage-3
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            GatherStats: false
+            File Output Operator
+              compressed: false
+              GlobalTableId: 0
+              directory: ### BLOBSTORE_STAGING_PATH ###
+              NumFilesPerFileSink: 1
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  properties:
+                    columns col
+                    columns.types int
+                    name default.ctas_blobstore_table_dst
+                    serialization.format 1
+                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  name: default.ctas_blobstore_table_dst
+              TotalFiles: 1
+              GatherStats: false
+              MultiFileSpray: false
+      Path -> Alias:
+        ### BLOBSTORE_STAGING_PATH ###
+      Path -> Partition:
+        ### BLOBSTORE_STAGING_PATH ###
+          Partition
+            base file name: -ext-10004
+            input format: org.apache.hadoop.mapred.TextInputFormat
+            output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+            properties:
+              columns col
+              columns.types int
+              name default.ctas_blobstore_table_dst
+              serialization.format 1
+              serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+          
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              properties:
+                columns col
+                columns.types int
+                name default.ctas_blobstore_table_dst
+                serialization.format 1
+                serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.ctas_blobstore_table_dst
+            name: default.ctas_blobstore_table_dst
+      Truncated Path -> Alias:
+        ### BLOBSTORE_STAGING_PATH ###
+
+  Stage: Stage-0
+    Move Operator
+      files:
+          hdfs directory: true
+          source: ### BLOBSTORE_STAGING_PATH ###
+          destination: ### test.blobstore.path ###/ctas_blobstore_table_dst
+
+  Stage: Stage-5
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            GatherStats: false
+            File Output Operator
+              compressed: false
+              GlobalTableId: 0
+              directory: ### BLOBSTORE_STAGING_PATH ###
+              NumFilesPerFileSink: 1
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  properties:
+                    columns col
+                    columns.types int
+                    name default.ctas_blobstore_table_dst
+                    serialization.format 1
+                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  name: default.ctas_blobstore_table_dst
+              TotalFiles: 1
+              GatherStats: false
+              MultiFileSpray: false
+      Path -> Alias:
+        ### BLOBSTORE_STAGING_PATH ###
+      Path -> Partition:
+        ### BLOBSTORE_STAGING_PATH ###
+          Partition
+            base file name: -ext-10004
+            input format: org.apache.hadoop.mapred.TextInputFormat
+            output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+            properties:
+              columns col
+              columns.types int
+              name default.ctas_blobstore_table_dst
+              serialization.format 1
+              serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+          
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              properties:
+                columns col
+                columns.types int
+                name default.ctas_blobstore_table_dst
+                serialization.format 1
+                serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.ctas_blobstore_table_dst
+            name: default.ctas_blobstore_table_dst
+      Truncated Path -> Alias:
+        ### BLOBSTORE_STAGING_PATH ###
+
+  Stage: Stage-6
+    Move Operator
+      files:
+          hdfs directory: true
+          source: ### BLOBSTORE_STAGING_PATH ###
+          destination: ### BLOBSTORE_STAGING_PATH ###
+
+PREHOOK: query: CREATE TABLE ctas_blobstore_table_dst AS SELECT * FROM ctas_hdfs_table_src
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@ctas_hdfs_table_src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ctas_blobstore_table_dst
+POSTHOOK: query: CREATE TABLE ctas_blobstore_table_dst AS SELECT * FROM ctas_hdfs_table_src
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@ctas_hdfs_table_src
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ctas_blobstore_table_dst
+POSTHOOK: Lineage: ctas_blobstore_table_dst.col SIMPLE [(ctas_hdfs_table_src)ctas_hdfs_table_src.FieldSchema(name:col, type:int, comment:null), ]
+PREHOOK: query: SELECT * FROM ctas_blobstore_table_dst
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ctas_blobstore_table_dst
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM ctas_blobstore_table_dst
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ctas_blobstore_table_dst
+#### A masked pattern was here ####
+1
+2
+3
+PREHOOK: query: -- Test select from a Blobstore and write to a Blobstore
+DROP TABLE IF EXISTS ctas_blobstore_table_dst
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@ctas_blobstore_table_dst
+PREHOOK: Output: default@ctas_blobstore_table_dst
+POSTHOOK: query: -- Test select from a Blobstore and write to a Blobstore
+DROP TABLE IF EXISTS ctas_blobstore_table_dst
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@ctas_blobstore_table_dst
+POSTHOOK: Output: default@ctas_blobstore_table_dst
+#### A masked pattern was here ####
+PREHOOK: type: CREATETABLE_AS_SELECT
+#### A masked pattern was here ####
+POSTHOOK: type: CREATETABLE_AS_SELECT
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-7 depends on stages: Stage-1 , consists of Stage-4, Stage-3, Stage-5
+  Stage-4
+  Stage-8 depends on stages: Stage-0, Stage-4
+  Stage-2 depends on stages: Stage-8
+  Stage-3
+  Stage-0 depends on stages: Stage-3, Stage-6
+  Stage-5
+  Stage-6 depends on stages: Stage-5
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: ctas_blobstore_table_src
+            Statistics: Num rows: 1 Data size: 6 Basic stats: COMPLETE Column stats: NONE
+            GatherStats: false
+            Select Operator
+              expressions: col (type: int)
+              outputColumnNames: _col0
+              Statistics: Num rows: 1 Data size: 6 Basic stats: COMPLETE Column stats: NONE
+              File Output Operator
+                compressed: false
+                GlobalTableId: 1
+                directory: ### BLOBSTORE_STAGING_PATH ###
+                NumFilesPerFileSink: 1
+                Statistics: Num rows: 1 Data size: 6 Basic stats: COMPLETE Column stats: NONE
+                Stats Publishing Key Prefix: ### BLOBSTORE_STAGING_PATH ###
+                table:
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    properties:
+                      columns col
+                      columns.types int
+                      name default.ctas_blobstore_table_dst
+                      serialization.format 1
+                      serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    name: default.ctas_blobstore_table_dst
+                TotalFiles: 1
+                GatherStats: true
+                MultiFileSpray: false
+      Path -> Alias:
+        ### test.blobstore.path ###/ctas_blobstore_table_src [ctas_blobstore_table_src]
+      Path -> Partition:
+        ### test.blobstore.path ###/ctas_blobstore_table_src 
+          Partition
+            base file name: ctas_blobstore_table_src
+            input format: org.apache.hadoop.mapred.TextInputFormat
+            output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+            properties:
+              bucket_count -1
+              columns col
+              columns.comments 
+              columns.types int
+#### A masked pattern was here ####
+              location ### test.blobstore.path ###/ctas_blobstore_table_src
+              name default.ctas_blobstore_table_src
+              numFiles 1
+              serialization.ddl struct ctas_blobstore_table_src { i32 col}
+              serialization.format 1
+              serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              totalSize 6
+#### A masked pattern was here ####
+            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+          
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              properties:
+                bucket_count -1
+                columns col
+                columns.comments 
+                columns.types int
+#### A masked pattern was here ####
+                location ### test.blobstore.path ###/ctas_blobstore_table_src
+                name default.ctas_blobstore_table_src
+                numFiles 1
+                serialization.ddl struct ctas_blobstore_table_src { i32 col}
+                serialization.format 1
+                serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                totalSize 6
+#### A masked pattern was here ####
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.ctas_blobstore_table_src
+            name: default.ctas_blobstore_table_src
+      Truncated Path -> Alias:
+        ### test.blobstore.path ###/ctas_blobstore_table_src [ctas_blobstore_table_src]
+
+  Stage: Stage-7
+    Conditional Operator
+
+  Stage: Stage-4
+    Move Operator
+      files:
+          hdfs directory: true
+          source: ### BLOBSTORE_STAGING_PATH ###
+          destination: ### test.blobstore.path ###/ctas_blobstore_table_dst
+
+  Stage: Stage-8
+      Create Table Operator:
+        Create Table
+          columns: col int
+          input format: org.apache.hadoop.mapred.TextInputFormat
+          location: ### test.blobstore.path ###/ctas_blobstore_table_dst/
+          output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
+          serde name: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+          name: default.ctas_blobstore_table_dst
+
+  Stage: Stage-2
+    Stats-Aggr Operator
+      Stats Aggregation Key Prefix: ### BLOBSTORE_STAGING_PATH ###
+
+  Stage: Stage-3
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            GatherStats: false
+            File Output Operator
+              compressed: false
+              GlobalTableId: 0
+              directory: ### BLOBSTORE_STAGING_PATH ###
+              NumFilesPerFileSink: 1
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  properties:
+                    columns col
+                    columns.types int
+                    name default.ctas_blobstore_table_dst
+                    serialization.format 1
+                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  name: default.ctas_blobstore_table_dst
+              TotalFiles: 1
+              GatherStats: false
+              MultiFileSpray: false
+      Path -> Alias:
+        ### BLOBSTORE_STAGING_PATH ###
+      Path -> Partition:
+        ### BLOBSTORE_STAGING_PATH ###
+          Partition
+            base file name: -ext-10004
+            input format: org.apache.hadoop.mapred.TextInputFormat
+            output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+            properties:
+              columns col
+              columns.types int
+              name default.ctas_blobstore_table_dst
+              serialization.format 1
+              serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+          
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              properties:
+                columns col
+                columns.types int
+                name default.ctas_blobstore_table_dst
+                serialization.format 1
+                serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.ctas_blobstore_table_dst
+            name: default.ctas_blobstore_table_dst
+      Truncated Path -> Alias:
+        ### BLOBSTORE_STAGING_PATH ###
+
+  Stage: Stage-0
+    Move Operator
+      files:
+          hdfs directory: true
+          source: ### BLOBSTORE_STAGING_PATH ###
+          destination: ### test.blobstore.path ###/ctas_blobstore_table_dst
+
+  Stage: Stage-5
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            GatherStats: false
+            File Output Operator
+              compressed: false
+              GlobalTableId: 0
+              directory: ### BLOBSTORE_STAGING_PATH ###
+              NumFilesPerFileSink: 1
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  properties:
+                    columns col
+                    columns.types int
+                    name default.ctas_blobstore_table_dst
+                    serialization.format 1
+                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  name: default.ctas_blobstore_table_dst
+              TotalFiles: 1
+              GatherStats: false
+              MultiFileSpray: false
+      Path -> Alias:
+        ### BLOBSTORE_STAGING_PATH ###
+      Path -> Partition:
+        ### BLOBSTORE_STAGING_PATH ###
+          Partition
+            base file name: -ext-10004
+            input format: org.apache.hadoop.mapred.TextInputFormat
+            output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+            properties:
+              columns col
+              columns.types int
+              name default.ctas_blobstore_table_dst
+              serialization.format 1
+              serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+          
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              properties:
+                columns col
+                columns.types int
+                name default.ctas_blobstore_table_dst
+                serialization.format 1
+                serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.ctas_blobstore_table_dst
+            name: default.ctas_blobstore_table_dst
+      Truncated Path -> Alias:
+        ### BLOBSTORE_STAGING_PATH ###
+
+  Stage: Stage-6
+    Move Operator
+      files:
+          hdfs directory: true
+          source: ### BLOBSTORE_STAGING_PATH ###
+          destination: ### BLOBSTORE_STAGING_PATH ###
+
+PREHOOK: query: CREATE TABLE ctas_blobstore_table_dst AS SELECT * FROM ctas_blobstore_table_src
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@ctas_blobstore_table_src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ctas_blobstore_table_dst
+POSTHOOK: query: CREATE TABLE ctas_blobstore_table_dst AS SELECT * FROM ctas_blobstore_table_src
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@ctas_blobstore_table_src
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ctas_blobstore_table_dst
+POSTHOOK: Lineage: ctas_blobstore_table_dst.col SIMPLE [(ctas_blobstore_table_src)ctas_blobstore_table_src.FieldSchema(name:col, type:int, comment:null), ]
+PREHOOK: query: SELECT * FROM ctas_blobstore_table_dst
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ctas_blobstore_table_dst
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM ctas_blobstore_table_dst
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ctas_blobstore_table_dst
+#### A masked pattern was here ####
+1
+2
+3
+PREHOOK: query: DROP TABLE ctas_blobstore_table_dst
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@ctas_blobstore_table_dst
+PREHOOK: Output: default@ctas_blobstore_table_dst
+POSTHOOK: query: DROP TABLE ctas_blobstore_table_dst
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@ctas_blobstore_table_dst
+POSTHOOK: Output: default@ctas_blobstore_table_dst
+PREHOOK: query: DROP TABLE ctas_hdfs_table_dst
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@ctas_hdfs_table_dst
+PREHOOK: Output: default@ctas_hdfs_table_dst
+POSTHOOK: query: DROP TABLE ctas_hdfs_table_dst
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@ctas_hdfs_table_dst
+POSTHOOK: Output: default@ctas_hdfs_table_dst
+PREHOOK: query: DROP TABLE ctas_blobstore_table_src
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@ctas_blobstore_table_src
+PREHOOK: Output: default@ctas_blobstore_table_src
+POSTHOOK: query: DROP TABLE ctas_blobstore_table_src
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@ctas_blobstore_table_src
+POSTHOOK: Output: default@ctas_blobstore_table_src
+PREHOOK: query: DROP TABLE ctas_hdfs_table_src
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@ctas_hdfs_table_src
+PREHOOK: Output: default@ctas_hdfs_table_src
+POSTHOOK: query: DROP TABLE ctas_hdfs_table_src
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@ctas_hdfs_table_src
+POSTHOOK: Output: default@ctas_hdfs_table_src
