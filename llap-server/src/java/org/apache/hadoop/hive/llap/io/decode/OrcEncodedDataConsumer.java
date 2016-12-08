@@ -49,6 +49,7 @@ import org.apache.hadoop.hive.ql.io.orc.encoded.Reader.OrcEncodedColumnBatch;
 import org.apache.hadoop.hive.ql.io.orc.RecordReaderImpl;
 import org.apache.orc.OrcUtils;
 import org.apache.orc.TypeDescription;
+import org.apache.orc.impl.PhysicalFsWriter;
 import org.apache.orc.impl.TreeReaderFactory;
 import org.apache.orc.impl.TreeReaderFactory.StructTreeReader;
 import org.apache.orc.impl.TreeReaderFactory.TreeReader;
@@ -85,7 +86,7 @@ public class OrcEncodedDataConsumer
     assert fileMetadata == null;
     fileMetadata = f;
     stripes = new OrcStripeMetadata[f.getStripes().size()];
-    codec = WriterImpl.createCodec(fileMetadata.getCompressionKind());
+    codec = PhysicalFsWriter.createCodec(fileMetadata.getCompressionKind());
   }
 
   public void setStripeMetadata(OrcStripeMetadata m) {

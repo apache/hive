@@ -60,6 +60,9 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.StringObjectInspe
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.TimestampObjectInspector;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.Text;
+import org.apache.orc.impl.PhysicalWriter;
+
+import com.google.common.annotations.VisibleForTesting;
 
 /**
  * An ORC file writer. The file is divided into stripes, which is the natural
@@ -311,5 +314,10 @@ public class WriterImpl extends org.apache.orc.impl.WriterImpl implements Writer
   public void close() throws IOException {
     flushInternalBatch();
     super.close();
+  }
+
+  @VisibleForTesting
+  PhysicalWriter getPhysicalWriter() {
+    return physWriter;
   }
 }

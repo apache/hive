@@ -71,7 +71,7 @@ public class RecordReaderUtils {
       this.fs = properties.getFileSystem();
       this.path = properties.getPath();
       this.useZeroCopy = properties.getZeroCopy();
-      this.codec = WriterImpl.createCodec(properties.getCompression());
+      this.codec = PhysicalFsWriter.createCodec(properties.getCompression());
       this.bufferSize = properties.getBufferSize();
       this.typeCount = properties.getTypeCount();
       if (useZeroCopy) {

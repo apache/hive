@@ -21,12 +21,10 @@ package org.apache.orc.impl;
 import static com.google.common.base.Preconditions.checkArgument;
 
 import java.io.IOException;
-import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
 import java.util.TimeZone;
@@ -35,11 +33,12 @@ import java.util.TreeMap;
 import org.apache.hadoop.hive.ql.util.JavaDataModel;
 import org.apache.orc.BinaryColumnStatistics;
 import org.apache.orc.BloomFilterIO;
-import org.apache.orc.CompressionCodec;
-import org.apache.orc.CompressionKind;
 import org.apache.orc.OrcConf;
 import org.apache.orc.OrcFile;
 import org.apache.orc.OrcProto;
+import org.apache.orc.OrcProto.BloomFilterIndex;
+import org.apache.orc.OrcProto.RowIndex;
+import org.apache.orc.OrcProto.Stream;
 import org.apache.orc.OrcUtils;
 import org.apache.orc.StringColumnStatistics;
 import org.apache.orc.StripeInformation;
@@ -48,7 +47,6 @@ import org.apache.orc.Writer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
@@ -69,7 +67,6 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Lists;
 import com.google.common.primitives.Longs;
 import com.google.protobuf.ByteString;
-import com.google.protobuf.CodedOutputStream;
 
 /**
  * An ORC file writer. The file is divided into stripes, which is the natural
@@ -94,35 +91,14 @@ public class WriterImpl implements Writer, MemoryManager.Callback {
 
   private static final Logger LOG = LoggerFactory.getLogger(WriterImpl.class);
 
-  private static final int HDFS_BUFFER_SIZE = 256 * 1024;
   private static final int MIN_ROW_INDEX_STRIDE = 1000;
 
-  // threshold above which buffer size will be automatically resized
-  private static final int COLUMN_COUNT_THRESHOLD = 1000;
-
-  private final FileSystem fs;
   private final Path path;
-  private final long defaultStripeSize;
-  private long adjustedStripeSize;
   private final int rowIndexStride;
-  private final CompressionKind compress;
-  private final CompressionCodec codec;
-  private final boolean addBlockPadding;
-  private final int bufferSize;
-  private final long blockSize;
-  private final double paddingTolerance;
   private final TypeDescription schema;
 
-  // the streams that make up the current stripe
-  private final Map<StreamName, BufferedStream> streams =
-    new TreeMap<StreamName, BufferedStream>();
-
-  private FSDataOutputStream rawWriter = null;
-  // the compressed metadata information outStream
-  private OutStream writer = null;
-  // a protobuf outStream around streamFactory
-  private CodedOutputStream protobufWriter = null;
-  private long headerLength;
+  @VisibleForTesting
+  protected final PhysicalWriter physWriter;
   private int columnCount;
   private long rowCount = 0;
   private long rowsInStripe = 0;
@@ -142,7 +118,6 @@ public class WriterImpl implements Writer, MemoryManager.Callback {
   private final OrcFile.WriterCallback callback;
   private final OrcFile.WriterContext callbackContext;
   private final OrcFile.EncodingStrategy encodingStrategy;
-  private final OrcFile.CompressionStrategy compressionStrategy;
   private final boolean[] bloomFilterColumns;
   private final double bloomFilterFpp;
   private boolean writeTimeZone;
@@ -150,7 +125,6 @@ public class WriterImpl implements Writer, MemoryManager.Callback {
   public WriterImpl(FileSystem fs,
                     Path path,
                     OrcFile.WriterOptions opts) throws IOException {
-    this.fs = fs;
     this.path = path;
     this.conf = opts.getConfiguration();
     this.callback = opts.getCallback();
@@ -166,26 +140,11 @@ public class WriterImpl implements Writer, MemoryManager.Callback {
     } else {
       callbackContext = null;
     }
-    this.adjustedStripeSize = opts.getStripeSize();
-    this.defaultStripeSize = opts.getStripeSize();
     this.version = opts.getVersion();
     this.encodingStrategy = opts.getEncodingStrategy();
-    this.compressionStrategy = opts.getCompressionStrategy();
-    this.addBlockPadding = opts.getBlockPadding();
-    this.blockSize = opts.getBlockSize();
-    this.paddingTolerance = opts.getPaddingTolerance();
-    this.compress = opts.getCompress();
     this.rowIndexStride = opts.getRowIndexStride();
     this.memoryManager = opts.getMemoryManager();
     buildIndex = rowIndexStride > 0;
-    codec = createCodec(compress);
-    int numColumns = schema.getMaximumId() + 1;
-    if (opts.isEnforceBufferSize()) {
-      this.bufferSize = opts.getBufferSize();
-    } else {
-      this.bufferSize = getEstimatedBufferSize(defaultStripeSize,
-          numColumns, opts.getBufferSize());
-    }
     if (version == OrcFile.Version.V_0_11) {
       /* do not write bloom filters for ORC v11 */
       this.bloomFilterColumns = new boolean[schema.getMaximumId() + 1];
@@ -194,6 +153,8 @@ public class WriterImpl implements Writer, MemoryManager.Callback {
           OrcUtils.includeColumns(opts.getBloomFilterColumns(), schema);
     }
     this.bloomFilterFpp = opts.getBloomFilterFpp();
+    int numColumns = schema.getMaximumId() + 1;
+    physWriter = new PhysicalFsWriter(fs, path, numColumns, opts);
     treeWriter = createTreeWriter(schema, streamFactory, false);
     if (buildIndex && rowIndexStride < MIN_ROW_INDEX_STRIDE) {
       throw new IllegalArgumentException("Row stride must be at least " +
@@ -202,83 +163,11 @@ public class WriterImpl implements Writer, MemoryManager.Callback {
 
     // ensure that we are able to handle callbacks before we register ourselves
     memoryManager.addWriter(path, opts.getStripeSize(), this);
-    LOG.info("ORC writer created for path: {} with stripeSize: {} blockSize: {}" +
-        " compression: {} bufferSize: {}", path, defaultStripeSize, blockSize,
-        compress, bufferSize);
-  }
-
-  @VisibleForTesting
-  public static int getEstimatedBufferSize(long stripeSize, int numColumns,
-                                           int bs) {
-    // The worst case is that there are 2 big streams per a column and
-    // we want to guarantee that each stream gets ~10 buffers.
-    // This keeps buffers small enough that we don't get really small stripe
-    // sizes.
-    int estBufferSize = (int) (stripeSize / (20 * numColumns));
-    estBufferSize = getClosestBufferSize(estBufferSize);
-    return estBufferSize > bs ? bs : estBufferSize;
-  }
-
-  private static int getClosestBufferSize(int estBufferSize) {
-    final int kb4 = 4 * 1024;
-    final int kb8 = 8 * 1024;
-    final int kb16 = 16 * 1024;
-    final int kb32 = 32 * 1024;
-    final int kb64 = 64 * 1024;
-    final int kb128 = 128 * 1024;
-    final int kb256 = 256 * 1024;
-    if (estBufferSize <= kb4) {
-      return kb4;
-    } else if (estBufferSize > kb4 && estBufferSize <= kb8) {
-      return kb8;
-    } else if (estBufferSize > kb8 && estBufferSize <= kb16) {
-      return kb16;
-    } else if (estBufferSize > kb16 && estBufferSize <= kb32) {
-      return kb32;
-    } else if (estBufferSize > kb32 && estBufferSize <= kb64) {
-      return kb64;
-    } else if (estBufferSize > kb64 && estBufferSize <= kb128) {
-      return kb128;
-    } else {
-      return kb256;
-    }
-  }
-
-  public static CompressionCodec createCodec(CompressionKind kind) {
-    switch (kind) {
-      case NONE:
-        return null;
-      case ZLIB:
-        return new ZlibCodec();
-      case SNAPPY:
-        return new SnappyCodec();
-      case LZO:
-        try {
-          ClassLoader loader = Thread.currentThread().getContextClassLoader();
-          if (loader == null) {
-            loader = WriterImpl.class.getClassLoader();
-          }
-          @SuppressWarnings("unchecked")
-          Class<? extends CompressionCodec> lzo =
-              (Class<? extends CompressionCodec>)
-              loader.loadClass("org.apache.hadoop.hive.ql.io.orc.LzoCodec");
-          return lzo.newInstance();
-        } catch (ClassNotFoundException e) {
-          throw new IllegalArgumentException("LZO is not available.", e);
-        } catch (InstantiationException e) {
-          throw new IllegalArgumentException("Problem initializing LZO", e);
-        } catch (IllegalAccessException e) {
-          throw new IllegalArgumentException("Insufficient access to LZO", e);
-        }
-      default:
-        throw new IllegalArgumentException("Unknown compression codec: " +
-            kind);
-    }
   }
 
   @Override
   public boolean checkMemory(double newScale) throws IOException {
-    long limit = (long) Math.round(adjustedStripeSize * newScale);
+    long limit = (long) Math.round(physWriter.getPhysicalStripeSize() * newScale);
     long size = estimateStripeSize();
     if (LOG.isDebugEnabled()) {
       LOG.debug("ORC writer " + path + " size = " + size + " limit = " +
@@ -289,116 +178,6 @@ public class WriterImpl implements Writer, MemoryManager.Callback {
       return true;
     }
     return false;
-  }
-
-  /**
-   * This class is used to hold the contents of streams as they are buffered.
-   * The TreeWriters write to the outStream and the codec compresses the
-   * data as buffers fill up and stores them in the output list. When the
-   * stripe is being written, the whole stream is written to the file.
-   */
-  private class BufferedStream implements OutStream.OutputReceiver {
-    private final OutStream outStream;
-    private final List<ByteBuffer> output = new ArrayList<ByteBuffer>();
-
-    BufferedStream(String name, int bufferSize,
-                   CompressionCodec codec) throws IOException {
-      outStream = new OutStream(name, bufferSize, codec, this);
-    }
-
-    /**
-     * Receive a buffer from the compression codec.
-     * @param buffer the buffer to save
-     */
-    @Override
-    public void output(ByteBuffer buffer) {
-      output.add(buffer);
-    }
-
-    /**
-     * Get the number of bytes in buffers that are allocated to this stream.
-     * @return number of bytes in buffers
-     */
-    public long getBufferSize() {
-      long result = 0;
-      for(ByteBuffer buf: output) {
-        result += buf.capacity();
-      }
-      return outStream.getBufferSize() + result;
-    }
-
-    /**
-     * Flush the stream to the codec.
-     * @throws IOException
-     */
-    public void flush() throws IOException {
-      outStream.flush();
-    }
-
-    /**
-     * Clear all of the buffers.
-     * @throws IOException
-     */
-    public void clear() throws IOException {
-      outStream.clear();
-      output.clear();
-    }
-
-    /**
-     * Check the state of suppress flag in output stream
-     * @return value of suppress flag
-     */
-    public boolean isSuppressed() {
-      return outStream.isSuppressed();
-    }
-
-    /**
-     * Get the number of bytes that will be written to the output. Assumes
-     * the stream has already been flushed.
-     * @return the number of bytes
-     */
-    public long getOutputSize() {
-      long result = 0;
-      for(ByteBuffer buffer: output) {
-        result += buffer.remaining();
-      }
-      return result;
-    }
-
-    /**
-     * Write the saved compressed buffers to the OutputStream.
-     * @param out the stream to write to
-     * @throws IOException
-     */
-    void spillTo(OutputStream out) throws IOException {
-      for(ByteBuffer buffer: output) {
-        out.write(buffer.array(), buffer.arrayOffset() + buffer.position(),
-          buffer.remaining());
-      }
-    }
-
-    @Override
-    public String toString() {
-      return outStream.toString();
-    }
-  }
-
-  /**
-   * An output receiver that writes the ByteBuffers to the output stream
-   * as they are received.
-   */
-  private class DirectStream implements OutStream.OutputReceiver {
-    private final FSDataOutputStream output;
-
-    DirectStream(FSDataOutputStream output) {
-      this.output = output;
-    }
-
-    @Override
-    public void output(ByteBuffer buffer) throws IOException {
-      output.write(buffer.array(), buffer.arrayOffset() + buffer.position(),
-        buffer.remaining());
-    }
   }
 
   private static class RowIndexPositionRecorder implements PositionRecorder {
@@ -430,44 +209,18 @@ public class WriterImpl implements Writer, MemoryManager.Callback {
                                   OrcProto.Stream.Kind kind
                                   ) throws IOException {
       final StreamName name = new StreamName(column, kind);
-      final EnumSet<CompressionCodec.Modifier> modifiers;
-
-      switch (kind) {
-        case BLOOM_FILTER:
-        case DATA:
-        case DICTIONARY_DATA:
-          if (getCompressionStrategy() == OrcFile.CompressionStrategy.SPEED) {
-            modifiers = EnumSet.of(CompressionCodec.Modifier.FAST,
-                CompressionCodec.Modifier.TEXT);
-          } else {
-            modifiers = EnumSet.of(CompressionCodec.Modifier.DEFAULT,
-                CompressionCodec.Modifier.TEXT);
-          }
-          break;
-        case LENGTH:
-        case DICTIONARY_COUNT:
-        case PRESENT:
-        case ROW_INDEX:
-        case SECONDARY:
-          // easily compressed using the fastest modes
-          modifiers = EnumSet.of(CompressionCodec.Modifier.FASTEST,
-              CompressionCodec.Modifier.BINARY);
-          break;
-        default:
-          LOG.warn("Missing ORC compression modifiers for " + kind);
-          modifiers = null;
-          break;
-      }
-
-      BufferedStream result = streams.get(name);
-      if (result == null) {
-        result = new BufferedStream(name.toString(), bufferSize,
-            codec == null ? codec : codec.modify(modifiers));
-        streams.put(name, result);
-      }
-      return result.outStream;
+      return physWriter.getOrCreatePhysicalStream(name);
     }
 
+    public void writeIndex(int column, RowIndex.Builder rowIndex) throws IOException {
+      physWriter.writeIndexStream(new StreamName(column, Stream.Kind.ROW_INDEX), rowIndex);
+    }
+
+    public void writeBloomFilter(
+        int column, BloomFilterIndex.Builder bloomFilterIndex) throws IOException {
+      physWriter.writeBloomFilterStream(
+          new StreamName(column, Stream.Kind.BLOOM_FILTER), bloomFilterIndex);
+    }
     /**
      * Get the next column id.
      * @return a number from 0 to the number of columns - 1
@@ -496,7 +249,7 @@ public class WriterImpl implements Writer, MemoryManager.Callback {
      * @return are the streams compressed
      */
     public boolean isCompressed() {
-      return codec != null;
+      return physWriter.isCompressed();
     }
 
     /**
@@ -505,14 +258,6 @@ public class WriterImpl implements Writer, MemoryManager.Callback {
      */
     public OrcFile.EncodingStrategy getEncodingStrategy() {
       return encodingStrategy;
-    }
-
-    /**
-     * Get the compression strategy to use.
-     * @return compression strategy
-     */
-    public OrcFile.CompressionStrategy getCompressionStrategy() {
-      return compressionStrategy;
     }
 
     /**
@@ -572,8 +317,6 @@ public class WriterImpl implements Writer, MemoryManager.Callback {
     protected final RowIndexPositionRecorder rowIndexPosition;
     private final OrcProto.RowIndex.Builder rowIndex;
     private final OrcProto.RowIndexEntry.Builder rowIndexEntry;
-    private final PositionedOutputStream rowIndexStream;
-    private final PositionedOutputStream bloomFilterStream;
     protected final BloomFilterIO bloomFilter;
     protected final boolean createBloomFilter;
     private final OrcProto.BloomFilterIndex.Builder bloomFilterIndex;
@@ -615,21 +358,14 @@ public class WriterImpl implements Writer, MemoryManager.Callback {
       rowIndexEntry = OrcProto.RowIndexEntry.newBuilder();
       rowIndexPosition = new RowIndexPositionRecorder(rowIndexEntry);
       stripeStatsBuilders = Lists.newArrayList();
-      if (streamFactory.buildIndex()) {
-        rowIndexStream = streamFactory.createStream(id, OrcProto.Stream.Kind.ROW_INDEX);
-      } else {
-        rowIndexStream = null;
-      }
       if (createBloomFilter) {
         bloomFilterEntry = OrcProto.BloomFilter.newBuilder();
         bloomFilterIndex = OrcProto.BloomFilterIndex.newBuilder();
-        bloomFilterStream = streamFactory.createStream(id, OrcProto.Stream.Kind.BLOOM_FILTER);
         bloomFilter = new BloomFilterIO(streamFactory.getRowIndexStride(),
             streamFactory.getBloomFilterFPP());
       } else {
         bloomFilterEntry = null;
         bloomFilterIndex = null;
-        bloomFilterStream = null;
         bloomFilter = null;
       }
     }
@@ -758,11 +494,11 @@ public class WriterImpl implements Writer, MemoryManager.Callback {
         isPresent.flush();
 
         // if no nulls are found in a stream, then suppress the stream
-        if(!foundNulls) {
+        if (!foundNulls) {
           isPresentOutStream.suppress();
           // since isPresent bitstream is suppressed, update the index to
           // remove the positions of the isPresent stream
-          if (rowIndexStream != null) {
+          if (streamFactory.buildIndex()) {
             removeIsPresentPositions();
           }
         }
@@ -781,22 +517,21 @@ public class WriterImpl implements Writer, MemoryManager.Callback {
       if (streamFactory.hasWriterTimeZone()) {
         builder.setWriterTimezone(TimeZone.getDefault().getID());
       }
-      if (rowIndexStream != null) {
+      if (streamFactory.buildIndex()) {
         if (rowIndex.getEntryCount() != requiredIndexEntries) {
           throw new IllegalArgumentException("Column has wrong number of " +
                "index entries found: " + rowIndex.getEntryCount() + " expected: " +
                requiredIndexEntries);
         }
-        rowIndex.build().writeTo(rowIndexStream);
-        rowIndexStream.flush();
+        streamFactory.writeIndex(id, rowIndex);
       }
+
       rowIndex.clear();
       rowIndexEntry.clear();
 
       // write the bloom filter to out stream
-      if (bloomFilterStream != null) {
-        bloomFilterIndex.build().writeTo(bloomFilterStream);
-        bloomFilterStream.flush();
+      if (createBloomFilter) {
+        streamFactory.writeBloomFilter(id, bloomFilterIndex);
         bloomFilterIndex.clear();
         bloomFilterEntry.clear();
       }
@@ -2463,17 +2198,8 @@ public class WriterImpl implements Writer, MemoryManager.Callback {
   }
 
   @VisibleForTesting
-  public FSDataOutputStream getStream() throws IOException {
-    if (rawWriter == null) {
-      rawWriter = fs.create(path, false, HDFS_BUFFER_SIZE,
-                            fs.getDefaultReplication(path), blockSize);
-      rawWriter.writeBytes(OrcFile.MAGIC);
-      headerLength = rawWriter.getPos();
-      writer = new OutStream("metadata", bufferSize, codec,
-                             new DirectStream(rawWriter));
-      protobufWriter = CodedOutputStream.newInstance(writer);
-    }
-    return rawWriter;
+  public void ensureStream() throws IOException {
+    physWriter.initialize();
   }
 
   private void createRowIndexEntry() throws IOException {
@@ -2482,7 +2208,7 @@ public class WriterImpl implements Writer, MemoryManager.Callback {
   }
 
   private void flushStripe() throws IOException {
-    getStream();
+    ensureStream();
     if (buildIndex && rowsInIndex != 0) {
       createRowIndexEntry();
     }
@@ -2493,98 +2219,12 @@ public class WriterImpl implements Writer, MemoryManager.Callback {
       // finalize the data for the stripe
       int requiredIndexEntries = rowIndexStride == 0 ? 0 :
           (int) ((rowsInStripe + rowIndexStride - 1) / rowIndexStride);
-      OrcProto.StripeFooter.Builder builder =
-          OrcProto.StripeFooter.newBuilder();
+      OrcProto.StripeFooter.Builder builder = OrcProto.StripeFooter.newBuilder();
+      OrcProto.StripeInformation.Builder dirEntry = OrcProto.StripeInformation
+          .newBuilder().setNumberOfRows(rowsInStripe);
       treeWriter.writeStripe(builder, requiredIndexEntries);
-      long indexSize = 0;
-      long dataSize = 0;
-      for(Map.Entry<StreamName, BufferedStream> pair: streams.entrySet()) {
-        BufferedStream stream = pair.getValue();
-        if (!stream.isSuppressed()) {
-          stream.flush();
-          StreamName name = pair.getKey();
-          long streamSize = pair.getValue().getOutputSize();
-          builder.addStreams(OrcProto.Stream.newBuilder()
-                             .setColumn(name.getColumn())
-                             .setKind(name.getKind())
-                             .setLength(streamSize));
-          if (StreamName.Area.INDEX == name.getArea()) {
-            indexSize += streamSize;
-          } else {
-            dataSize += streamSize;
-          }
-        }
-      }
-      OrcProto.StripeFooter footer = builder.build();
-
-      // Do we need to pad the file so the stripe doesn't straddle a block
-      // boundary?
-      long start = rawWriter.getPos();
-      final long currentStripeSize = indexSize + dataSize + footer.getSerializedSize();
-      final long available = blockSize - (start % blockSize);
-      final long overflow = currentStripeSize - adjustedStripeSize;
-      final float availRatio = (float) available / (float) defaultStripeSize;
-
-      if (availRatio > 0.0f && availRatio < 1.0f
-          && availRatio > paddingTolerance) {
-        // adjust default stripe size to fit into remaining space, also adjust
-        // the next stripe for correction based on the current stripe size
-        // and user specified padding tolerance. Since stripe size can overflow
-        // the default stripe size we should apply this correction to avoid
-        // writing portion of last stripe to next hdfs block.
-        double correction = overflow > 0 ? (double) overflow
-            / (double) adjustedStripeSize : 0.0;
-
-        // correction should not be greater than user specified padding
-        // tolerance
-        correction = correction > paddingTolerance ? paddingTolerance
-            : correction;
-
-        // adjust next stripe size based on current stripe estimate correction
-        adjustedStripeSize = (long) ((1.0f - correction) * (availRatio * defaultStripeSize));
-      } else if (availRatio >= 1.0) {
-        adjustedStripeSize = defaultStripeSize;
-      }
-
-      if (availRatio < paddingTolerance && addBlockPadding) {
-        long padding = blockSize - (start % blockSize);
-        byte[] pad = new byte[(int) Math.min(HDFS_BUFFER_SIZE, padding)];
-        LOG.info(String.format("Padding ORC by %d bytes (<=  %.2f * %d)", 
-            padding, availRatio, defaultStripeSize));
-        start += padding;
-        while (padding > 0) {
-          int writeLen = (int) Math.min(padding, pad.length);
-          rawWriter.write(pad, 0, writeLen);
-          padding -= writeLen;
-        }
-        adjustedStripeSize = defaultStripeSize;
-      } else if (currentStripeSize < blockSize
-          && (start % blockSize) + currentStripeSize > blockSize) {
-        // even if you don't pad, reset the default stripe size when crossing a
-        // block boundary
-        adjustedStripeSize = defaultStripeSize;
-      }
-
-      // write out the data streams
-      for(Map.Entry<StreamName, BufferedStream> pair: streams.entrySet()) {
-        BufferedStream stream = pair.getValue();
-        if (!stream.isSuppressed()) {
-          stream.spillTo(rawWriter);
-        }
-        stream.clear();
-      }
-      footer.writeTo(protobufWriter);
-      protobufWriter.flush();
-      writer.flush();
-      long footerLength = rawWriter.getPos() - start - dataSize - indexSize;
-      OrcProto.StripeInformation dirEntry =
-          OrcProto.StripeInformation.newBuilder()
-              .setOffset(start)
-              .setNumberOfRows(rowsInStripe)
-              .setIndexLength(indexSize)
-              .setDataLength(dataSize)
-              .setFooterLength(footerLength).build();
-      stripes.add(dirEntry);
+      physWriter.finalizeStripe(builder, dirEntry);
+      stripes.add(dirEntry.build());
       rowCount += rowsInStripe;
       rowsInStripe = 0;
     }
@@ -2645,17 +2285,6 @@ public class WriterImpl implements Writer, MemoryManager.Callback {
     return total;
   }
 
-  private OrcProto.CompressionKind writeCompressionKind(CompressionKind kind) {
-    switch (kind) {
-      case NONE: return OrcProto.CompressionKind.NONE;
-      case ZLIB: return OrcProto.CompressionKind.ZLIB;
-      case SNAPPY: return OrcProto.CompressionKind.SNAPPY;
-      case LZO: return OrcProto.CompressionKind.LZO;
-      default:
-        throw new IllegalArgumentException("Unknown compression " + kind);
-    }
-  }
-
   private void writeFileStatistics(OrcProto.Footer.Builder builder,
                                    TreeWriter writer) throws IOException {
     builder.addStatistics(writer.fileStatistics.serialize());
@@ -2664,26 +2293,19 @@ public class WriterImpl implements Writer, MemoryManager.Callback {
     }
   }
 
-  private int writeMetadata() throws IOException {
-    getStream();
+  private void writeMetadata() throws IOException {
+    ensureStream();
     OrcProto.Metadata.Builder builder = OrcProto.Metadata.newBuilder();
     for(OrcProto.StripeStatistics.Builder ssb : treeWriter.stripeStatsBuilders) {
       builder.addStripeStats(ssb.build());
     }
 
-    long startPosn = rawWriter.getPos();
-    OrcProto.Metadata metadata = builder.build();
-    metadata.writeTo(protobufWriter);
-    protobufWriter.flush();
-    writer.flush();
-    return (int) (rawWriter.getPos() - startPosn);
+    physWriter.writeFileMetadata(builder);
   }
 
-  private int writeFooter(long bodyLength) throws IOException {
-    getStream();
+  private void writeFooter() throws IOException {
+    ensureStream();
     OrcProto.Footer.Builder builder = OrcProto.Footer.newBuilder();
-    builder.setContentLength(bodyLength);
-    builder.setHeaderLength(headerLength);
     builder.setNumberOfRows(rowCount);
     builder.setRowIndexStride(rowIndexStride);
     // populate raw data size
@@ -2701,45 +2323,21 @@ public class WriterImpl implements Writer, MemoryManager.Callback {
       builder.addMetadata(OrcProto.UserMetadataItem.newBuilder()
         .setName(entry.getKey()).setValue(entry.getValue()));
     }
-    long startPosn = rawWriter.getPos();
-    OrcProto.Footer footer = builder.build();
-    footer.writeTo(protobufWriter);
-    protobufWriter.flush();
-    writer.flush();
-    return (int) (rawWriter.getPos() - startPosn);
+    physWriter.writeFileFooter(builder);
   }
 
-  private int writePostScript(int footerLength, int metadataLength) throws IOException {
+  private void writePostScript() throws IOException {
     OrcProto.PostScript.Builder builder =
       OrcProto.PostScript.newBuilder()
-        .setCompression(writeCompressionKind(compress))
-        .setFooterLength(footerLength)
-        .setMetadataLength(metadataLength)
         .setMagic(OrcFile.MAGIC)
         .addVersion(version.getMajor())
         .addVersion(version.getMinor())
         .setWriterVersion(OrcFile.CURRENT_WRITER.getId());
-    if (compress != CompressionKind.NONE) {
-      builder.setCompressionBlockSize(bufferSize);
-    }
-    OrcProto.PostScript ps = builder.build();
-    // need to write this uncompressed
-    long startPosn = rawWriter.getPos();
-    ps.writeTo(rawWriter);
-    long length = rawWriter.getPos() - startPosn;
-    if (length > 255) {
-      throw new IllegalArgumentException("PostScript too large at " + length);
-    }
-    return (int) length;
+    physWriter.writePostScript(builder);
   }
 
   private long estimateStripeSize() {
-    long result = 0;
-    for(BufferedStream stream: streams.values()) {
-      result += stream.getBufferSize();
-    }
-    result += treeWriter.estimateMemory();
-    return result;
+    return physWriter.estimateMemory() + treeWriter.estimateMemory();
   }
 
   @Override
@@ -2785,11 +2383,10 @@ public class WriterImpl implements Writer, MemoryManager.Callback {
     memoryManager.removeWriter(path);
     // actually close the file
     flushStripe();
-    int metadataLength = writeMetadata();
-    int footerLength = writeFooter(rawWriter.getPos() - metadataLength);
-    rawWriter.writeByte(writePostScript(footerLength, metadataLength));
-    rawWriter.close();
-
+    writeMetadata();
+    writeFooter();
+    writePostScript();
+    physWriter.close();
   }
 
   /**
@@ -2819,13 +2416,13 @@ public class WriterImpl implements Writer, MemoryManager.Callback {
       if (callback != null) {
         callback.preFooterWrite(callbackContext);
       }
-      int metaLength = writeMetadata();
-      int footLength = writeFooter(rawWriter.getPos() - metaLength);
-      rawWriter.writeByte(writePostScript(footLength, metaLength));
+      writeMetadata();
+      writeFooter();
+      writePostScript();
       stripesAtLastFlush = stripes.size();
-      rawWriter.hflush();
+      physWriter.flush();
     }
-    return rawWriter.getPos();
+    return physWriter.getRawWriterPosition();
   }
 
   @Override
@@ -2839,26 +2436,10 @@ public class WriterImpl implements Writer, MemoryManager.Callback {
     checkArgument(stripeStatistics != null,
         "Stripe statistics must not be null");
 
-    getStream();
-    long start = rawWriter.getPos();
-    long availBlockSpace = blockSize - (start % blockSize);
+    ensureStream();
+    OrcProto.StripeInformation.Builder dirEntry = OrcProto.StripeInformation.newBuilder();
+    physWriter.appendRawStripe(stripe, offset, length, dirEntry);
 
-    // see if stripe can fit in the current hdfs block, else pad the remaining
-    // space in the block
-    if (length < blockSize && length > availBlockSpace &&
-        addBlockPadding) {
-      byte[] pad = new byte[(int) Math.min(HDFS_BUFFER_SIZE, availBlockSpace)];
-      LOG.info(String.format("Padding ORC by %d bytes while merging..",
-          availBlockSpace));
-      start += availBlockSpace;
-      while (availBlockSpace > 0) {
-        int writeLen = (int) Math.min(availBlockSpace, pad.length);
-        rawWriter.write(pad, 0, writeLen);
-        availBlockSpace -= writeLen;
-      }
-    }
-
-    rawWriter.write(stripe);
     rowsInStripe = stripeStatistics.getColStats(0).getNumberOfValues();
     rowCount += rowsInStripe;
 
@@ -2869,15 +2450,11 @@ public class WriterImpl implements Writer, MemoryManager.Callback {
     updateFileStatistics(stripeStatistics);
 
     // update stripe information
-    OrcProto.StripeInformation dirEntry = OrcProto.StripeInformation
-        .newBuilder()
-        .setOffset(start)
-        .setNumberOfRows(rowsInStripe)
+    stripes.add(dirEntry.setNumberOfRows(rowsInStripe)
         .setIndexLength(stripeInfo.getIndexLength())
         .setDataLength(stripeInfo.getDataLength())
         .setFooterLength(stripeInfo.getFooterLength())
-        .build();
-    stripes.add(dirEntry);
+        .build());
 
     // reset it after writing the stripe
     rowsInStripe = 0;

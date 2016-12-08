@@ -122,6 +122,7 @@ import org.apache.hadoop.mapred.Reporter;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.Progressable;
 import org.apache.orc.*;
+import org.apache.orc.impl.PhysicalFsWriter;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -2138,8 +2139,7 @@ public class TestInputOutputFormat {
       writer.addRow(new MyRow(i, 2*i));
     }
     writer.close();
-    ((MockOutputStream) ((WriterImpl) writer).getStream())
-        .setBlocks(new MockBlock("host0", "host1"));
+    getStreamFromWriter(writer).setBlocks(new MockBlock("host0", "host1"));
 
     // call getsplits
     HiveInputFormat<?,?> inputFormat =
@@ -2158,6 +2158,11 @@ public class TestInputOutputFormat {
       assertEquals("checking " + i, i, col0.vector[i]);
     }
     assertEquals(false, reader.next(key, value));
+  }
+
+  private MockOutputStream getStreamFromWriter(Writer writer) throws IOException {
+    PhysicalFsWriter pfr = (PhysicalFsWriter)((WriterImpl) writer).getPhysicalWriter();
+    return (MockOutputStream)pfr.getStream();
   }
 
   /**
@@ -2185,8 +2190,7 @@ public class TestInputOutputFormat {
       writer.addRow(new MyRow(i, 2*i));
     }
     writer.close();
-    ((MockOutputStream) ((WriterImpl) writer).getStream())
-        .setBlocks(new MockBlock("host0", "host1"));
+    getStreamFromWriter(writer).setBlocks(new MockBlock("host0", "host1"));
 
     // call getsplits
     conf.setInt(hive_metastoreConstants.BUCKET_COUNT, 3);
@@ -2226,8 +2230,7 @@ public class TestInputOutputFormat {
     }
     WriterImpl baseWriter = (WriterImpl) writer.getWriter();
     writer.close(false);
-    ((MockOutputStream) baseWriter.getStream())
-        .setBlocks(new MockBlock("host0", "host1"));
+    getStreamFromWriter(baseWriter).setBlocks(new MockBlock("host0", "host1"));
 
     // call getsplits
     HiveInputFormat<?, ?> inputFormat =
@@ -2305,7 +2308,7 @@ public class TestInputOutputFormat {
       writer.addRow(new MyRow(i, 2*i));
     }
     writer.close();
-    MockOutputStream outputStream = (MockOutputStream) ((WriterImpl) writer).getStream();
+    MockOutputStream outputStream = getStreamFromWriter(writer);
     outputStream.setBlocks(new MockBlock("host0", "host1"));
     int length0 = outputStream.file.length;
     writer =
@@ -2316,7 +2319,7 @@ public class TestInputOutputFormat {
       writer.addRow(new MyRow(i, 2*i));
     }
     writer.close();
-    outputStream = (MockOutputStream) ((WriterImpl) writer).getStream();
+    outputStream = getStreamFromWriter(writer);
     outputStream.setBlocks(new MockBlock("host1", "host2"));
 
     // call getsplits
@@ -2383,7 +2386,7 @@ public class TestInputOutputFormat {
     WriterImpl baseWriter = (WriterImpl) writer.getWriter();
     writer.close(false);
 
-    MockOutputStream outputStream = (MockOutputStream) baseWriter.getStream();
+    MockOutputStream outputStream = getStreamFromWriter(baseWriter);
     outputStream.setBlocks(new MockBlock("host1", "host2"));
 
     // write a delta file in partition 0
@@ -2394,7 +2397,7 @@ public class TestInputOutputFormat {
       writer.insert(10, new MyRow(i, 2*i));
     }
     WriterImpl deltaWriter = (WriterImpl) writer.getWriter();
-    outputStream = (MockOutputStream) deltaWriter.getStream();
+    outputStream = getStreamFromWriter(deltaWriter);
     writer.close(false);
     outputStream.setBlocks(new MockBlock("host1", "host2"));
 
@@ -2407,7 +2410,7 @@ public class TestInputOutputFormat {
               .bufferSize(1024)
               .inspector(inspector));
       orc.addRow(new MyRow(1, 2));
-      outputStream = (MockOutputStream) ((WriterImpl) orc).getStream();
+      outputStream = getStreamFromWriter(orc);
       orc.close();
       outputStream.setBlocks(new MockBlock("host3", "host4"));
     }

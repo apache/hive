@@ -28,37 +28,37 @@ public class TestOrcWideTable {
 
   @Test
   public void testBufferSizeFor1Col() throws IOException {
-    assertEquals(128 * 1024, WriterImpl.getEstimatedBufferSize(512 * 1024 * 1024,
+    assertEquals(128 * 1024, PhysicalFsWriter.getEstimatedBufferSize(512 * 1024 * 1024,
         1, 128*1024));
   }
 
   @Test
   public void testBufferSizeFor50Col() throws IOException {
-    assertEquals(256 * 1024, WriterImpl.getEstimatedBufferSize(256 * 1024 * 1024,
+    assertEquals(256 * 1024, PhysicalFsWriter.getEstimatedBufferSize(256 * 1024 * 1024,
         50, 256*1024));
   }
 
   @Test
   public void testBufferSizeFor1000Col() throws IOException {
-    assertEquals(32 * 1024, WriterImpl.getEstimatedBufferSize(512 * 1024 * 1024,
+    assertEquals(32 * 1024, PhysicalFsWriter.getEstimatedBufferSize(512 * 1024 * 1024,
         1000, 128*1024));
   }
 
   @Test
   public void testBufferSizeFor2000Col() throws IOException {
-    assertEquals(16 * 1024, WriterImpl.getEstimatedBufferSize(512 * 1024 * 1024,
+    assertEquals(16 * 1024, PhysicalFsWriter.getEstimatedBufferSize(512 * 1024 * 1024,
         2000, 256*1024));
   }
 
   @Test
   public void testBufferSizeFor4000Col() throws IOException {
-    assertEquals(8 * 1024, WriterImpl.getEstimatedBufferSize(512 * 1024 * 1024,
+    assertEquals(8 * 1024, PhysicalFsWriter.getEstimatedBufferSize(512 * 1024 * 1024,
         4000, 256*1024));
   }
 
   @Test
   public void testBufferSizeFor25000Col() throws IOException {
-    assertEquals(4 * 1024, WriterImpl.getEstimatedBufferSize(512 * 1024 * 1024,
+    assertEquals(4 * 1024, PhysicalFsWriter.getEstimatedBufferSize(512 * 1024 * 1024,
         25000, 256*1024));
   }
 }
