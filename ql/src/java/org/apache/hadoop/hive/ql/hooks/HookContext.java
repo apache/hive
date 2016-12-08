@@ -29,6 +29,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.QueryPlan;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.exec.TaskRunner;
+import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.optimizer.lineage.LineageCtx.Index;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.shims.Utils;
@@ -57,15 +58,19 @@ public class HookContext {
   private Throwable exception;
   final private Map<String, ContentSummary> inputPathToContentSummary;
   private final String ipAddress;
+  private final String hiveInstanceAddress;
   private final String userName;
   // unique id set for operation when run from HS2, base64 encoded value of
   // TExecuteStatementResp.TOperationHandle.THandleIdentifier.guid
   private final String operationId;
   private final String sessionId;
+  private final String threadId;
+  private boolean isHiveServerQuery;
+  private PerfLogger perfLogger;
 
   public HookContext(QueryPlan queryPlan, QueryState queryState,
-      Map<String, ContentSummary> inputPathToContentSummary, String userName, String ipAddress,
-      String operationId, String sessionId) throws Exception {
+      Map<String, ContentSummary> inputPathToContentSummary, String userName, String ipAddress, String hiveInstanceAddress,
+      String operationId, String sessionId, String threadId, boolean isHiveServerQuery, PerfLogger perfLogger) throws Exception {
     this.queryPlan = queryPlan;
     this.queryState = queryState;
     this.conf = queryState.getConf();
@@ -82,8 +87,12 @@ public class HookContext {
     }
     this.userName = userName;
     this.ipAddress = ipAddress;
+    this.hiveInstanceAddress = hiveInstanceAddress;
     this.operationId = operationId;
     this.sessionId = sessionId;
+    this.threadId = threadId;
+    this.isHiveServerQuery = isHiveServerQuery;
+    this.perfLogger = perfLogger;
   }
 
   public QueryPlan getQueryPlan() {
@@ -170,6 +179,10 @@ public class HookContext {
     return this.ipAddress;
   }
 
+  public String getHiveInstanceAddress() {
+    return hiveInstanceAddress;
+  }
+
   public void setErrorMessage(String errorMessage) {
     this.errorMessage = errorMessage;
   }
@@ -205,4 +218,25 @@ public class HookContext {
   public String getSessionId() {
     return sessionId;
   }
+
+  public String getThreadId() {
+    return threadId;
+  }
+
+  public boolean isHiveServerQuery() {
+    return isHiveServerQuery;
+  }
+
+  public void setHiveServerQuery(boolean isHiveServerQuery) {
+    this.isHiveServerQuery = isHiveServerQuery;
+  }
+
+  public PerfLogger getPerfLogger() {
+    return perfLogger;
+  }
+
+  public void setPerfLogger(PerfLogger perfLogger) {
+    this.perfLogger = perfLogger;
+  }
+
 }
