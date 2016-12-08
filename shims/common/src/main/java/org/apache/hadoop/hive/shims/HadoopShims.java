@@ -41,6 +41,7 @@ import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.FsShell;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.fs.permission.FsAction;
@@ -294,15 +295,22 @@ public interface HadoopShims {
   public HdfsFileStatus getFullFileStatus(Configuration conf, FileSystem fs, Path file) throws IOException;
 
   /**
-   * For a given file, set a given file status.
-   * @param conf
-   * @param sourceStatus
-   * @param fs
-   * @param target
-   * @throws IOException
+   * Copy the permissions and group from a source {@link HdfsFileStatus} to a target {@link Path}. This method
+   * will only log a warning if permissions cannot be set, no exception will be thrown.
+   *
+   * @param conf the {@link Configuration} used when setting permissions
+   * @param sourceStatus the source {@link HdfsFileStatus} to copy permissions from
+   * @param targetGroup the group of the target {@link Path}, if this is set and it is equal to the source group, an
+   *                    extra set group operation is avoided
+   * @param fs the {@link FileSystem} that contains the target {@link Path}
+   * @param target the {@link Path} to copy permissions and group to
+   * @param recursive recursively set permissions on the target {@link Path}
    */
   public void setFullFileStatus(Configuration conf, HdfsFileStatus sourceStatus, String targetGroup,
-    FileSystem fs, Path target, boolean recursive) throws IOException;
+    FileSystem fs, Path target, boolean recursive);
+
+  public void setFullFileStatus(Configuration conf, HdfsFileStatus sourceStatus, String targetGroup,
+    FileSystem fs, Path target, boolean recursive, FsShell fsShell);
 
   /**
    * Includes the vanilla FileStatus, and AclStatus if it applies to this version of hadoop.

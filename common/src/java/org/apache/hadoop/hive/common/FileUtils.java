@@ -528,12 +528,8 @@ public final class FileUtils {
       } else {
         HadoopShims shim = ShimLoader.getHadoopShims();
         HdfsFileStatus fullFileStatus = shim.getFullFileStatus(conf, fs, lastExistingParent);
-        try {
-          //set on the entire subtree
-          shim.setFullFileStatus(conf, fullFileStatus, null, fs, firstNonExistentParent, true);
-        } catch (Exception e) {
-          LOG.warn("Error setting permissions of " + firstNonExistentParent, e);
-        }
+        //set on the entire subtree
+        shim.setFullFileStatus(conf, fullFileStatus, null, fs, firstNonExistentParent, true);
         return true;
       }
     }
@@ -576,11 +572,7 @@ public final class FileUtils {
     boolean inheritPerms = conf.getBoolVar(HiveConf.ConfVars.HIVE_WAREHOUSE_SUBDIR_INHERIT_PERMS);
     if (copied && inheritPerms) {
       HdfsFileStatus fullFileStatus = shims.getFullFileStatus(conf, dstFS, dst);
-      try {
-        shims.setFullFileStatus(conf, fullFileStatus, null, dstFS, dst, true);
-      } catch (Exception e) {
-        LOG.warn("Error setting permissions or group of " + dst, e);
-      }
+      shims.setFullFileStatus(conf, fullFileStatus, null, dstFS, dst, true);
     }
     return copied;
   }
@@ -698,11 +690,7 @@ public final class FileUtils {
       if (fs.rename(sourcePath, destPath)) {
         HadoopShims shims = ShimLoader.getHadoopShims();
         HdfsFileStatus fullFileStatus = shims.getFullFileStatus(conf, fs, destPath.getParent());
-        try {
-          shims.setFullFileStatus(conf, fullFileStatus, null, fs, destPath, true);
-        } catch (Exception e) {
-          LOG.warn("Error setting permissions or group of " + destPath, e);
-        }
+        shims.setFullFileStatus(conf, fullFileStatus, null, fs, destPath, true);
 
         return true;
       }

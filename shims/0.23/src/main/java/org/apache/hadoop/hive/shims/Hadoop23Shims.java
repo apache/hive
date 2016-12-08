@@ -35,6 +35,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
+import com.google.common.annotations.VisibleForTesting;
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.crypto.key.KeyProvider;
@@ -742,29 +743,34 @@ public class Hadoop23Shims extends HadoopShimsSecure {
 
   @Override
   public void setFullFileStatus(Configuration conf, HdfsFileStatus sourceStatus, String targetGroup,
-    FileSystem fs, Path target, boolean recursive) throws IOException {
-    String group = sourceStatus.getFileStatus().getGroup();
-    //use FsShell to change group, permissions, and extended ACL's recursively
+    FileSystem fs, Path target, boolean recursive) {
+    setFullFileStatus(conf, sourceStatus, targetGroup, fs, target, recursive, recursive ? new FsShell() : null);
+  }
 
-    boolean aclEnabled = isExtendedAclEnabled(conf);
-    List<AclEntry> aclEntries = null;
-    FsPermission sourcePerm = sourceStatus.getFileStatus().getPermission();
-    if (aclEnabled) {
-      Hadoop23FileStatus status = (Hadoop23FileStatus) sourceStatus;
-      if (status.getAclEntries() != null) {
-        aclEntries = new ArrayList<>(status.getAclEntries());
-        removeBaseAclEntries(aclEntries);
+  @Override
+  public void setFullFileStatus(Configuration conf, HdfsFileStatus sourceStatus, String targetGroup, FileSystem fs,
+    Path target, boolean recursive, FsShell fsShell) {
+    try {
+      String group = sourceStatus.getFileStatus().getGroup();
+      //use FsShell to change group, permissions, and extended ACL's recursively
 
-        //the ACL api's also expect the tradition user/group/other permission in the form of ACL
-        aclEntries.add(newAclEntry(AclEntryScope.ACCESS, AclEntryType.USER, sourcePerm.getUserAction()));
-        aclEntries.add(newAclEntry(AclEntryScope.ACCESS, AclEntryType.GROUP, sourcePerm.getGroupAction()));
-        aclEntries.add(newAclEntry(AclEntryScope.ACCESS, AclEntryType.OTHER, sourcePerm.getOtherAction()));
+      boolean aclEnabled = isExtendedAclEnabled(conf);
+      List<AclEntry> aclEntries = null;
+      FsPermission sourcePerm = sourceStatus.getFileStatus().getPermission();
+      if (aclEnabled) {
+        Hadoop23FileStatus status = (Hadoop23FileStatus) sourceStatus;
+        if (status.getAclEntries() != null) {
+          aclEntries = new ArrayList<>(status.getAclEntries());
+          removeBaseAclEntries(aclEntries);
+
+          //the ACL api's also expect the tradition user/group/other permission in the form of ACL
+          aclEntries.add(newAclEntry(AclEntryScope.ACCESS, AclEntryType.USER, sourcePerm.getUserAction()));
+          aclEntries.add(newAclEntry(AclEntryScope.ACCESS, AclEntryType.GROUP, sourcePerm.getGroupAction()));
+          aclEntries.add(newAclEntry(AclEntryScope.ACCESS, AclEntryType.OTHER, sourcePerm.getOtherAction()));
+        }
       }
-    }
 
-    if (recursive) {
-      try {
-        FsShell fsShell = new FsShell();
+      if (recursive) {
         fsShell.setConf(conf);
         //If there is no group of a file, no need to call chgrp
         if (group != null && !group.isEmpty()) {
@@ -788,29 +794,32 @@ public class Hadoop23Shims extends HadoopShimsSecure {
           String permission = Integer.toString(sourceStatus.getFileStatus().getPermission().toShort(), 8);
           run(fsShell, new String[]{"-chmod", "-R", permission, target.toString()});
         }
-      } catch (Exception e) {
-        throw new IOException("Unable to set permissions of " + target, e);
-      }
-    } else {
-      if (group != null && !group.isEmpty()) {
-        if (targetGroup == null || !group.equals(targetGroup)) {
-          fs.setOwner(target, null, group);
-        }
-      }
-      if (aclEnabled) {
-        if (null != aclEntries) {
-          fs.setAcl(target, aclEntries);
-        }
       } else {
-        fs.setPermission(target, sourcePerm);
+        if (group != null && !group.isEmpty()) {
+          if (targetGroup == null || !group.equals(targetGroup)) {
+            fs.setOwner(target, null, group);
+          }
+        }
+        if (aclEnabled) {
+          if (null != aclEntries) {
+            fs.setAcl(target, aclEntries);
+          }
+        } else {
+          fs.setPermission(target, sourcePerm);
+        }
       }
-    }
-    try {
-      if (LOG.isDebugEnabled()) {  //some trace logging
-        getFullFileStatus(conf, fs, target).debugLog();
+      try {
+        if (LOG.isDebugEnabled()) {  //some trace logging
+          getFullFileStatus(conf, fs, target).debugLog();
+        }
+      } catch (Exception e) {
+        //ignore.
       }
     } catch (Exception e) {
-      //ignore.
+      LOG.warn(
+              "Unable to inherit permissions for file " + target + " from file " + sourceStatus.getFileStatus().getPath() + " " +
+                      e.getMessage());
+      LOG.debug("Exception while inheriting permissions", e);
     }
   }
 
@@ -828,6 +837,11 @@ public class Hadoop23Shims extends HadoopShimsSecure {
 
     public List<AclEntry> getAclEntries() {
       return aclStatus == null ? null : Collections.unmodifiableList(aclStatus.getEntries());
+    }
+
+    @VisibleForTesting
+    AclStatus getAclStatus() {
+      return this.aclStatus;
     }
 
     @Override

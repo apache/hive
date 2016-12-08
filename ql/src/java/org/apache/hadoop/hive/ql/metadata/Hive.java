@@ -2562,12 +2562,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     }
     if (null == pool) {
       if (inheritPerms) {
-        try {
-          ShimLoader.getHadoopShims().setFullFileStatus(conf, fullDestStatus, null, destFs, destf, true);
-        } catch (IOException e) {
-          LOG.error(String.format("Failed to move: {}", e.getMessage()));
-          throw new HiveException(e.getCause());
-        }
+        ShimLoader.getHadoopShims().setFullFileStatus(conf, fullDestStatus, null, destFs, destf, true);
       }
     } else {
       pool.shutdown();
@@ -2792,11 +2787,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
         // For local src file, copy to hdfs
         destFs.copyFromLocalFile(srcf, destf);
         if (inheritPerms) {
-          try {
-            ShimLoader.getHadoopShims().setFullFileStatus(conf, destStatus, null, destFs, destf, true);
-          } catch (IOException e) {
-            LOG.warn("Error setting permission of file " + destf + ": "+ e.getMessage(), e);
-          }
+          ShimLoader.getHadoopShims().setFullFileStatus(conf, destStatus, null, destFs, destf, true);
         }
         return true;
       } else {

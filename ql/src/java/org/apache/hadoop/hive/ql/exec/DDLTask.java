@@ -4381,11 +4381,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         HdfsFileStatus fullFileStatus = shim.getFullFileStatus(conf, fs, location);
         fs.delete(location, true);
         fs.mkdirs(location);
-        try {
-          shim.setFullFileStatus(conf, fullFileStatus, null, fs, location, true);
-        } catch (Exception e) {
-          LOG.warn("Error setting permissions of " + location, e);
-        }
+        shim.setFullFileStatus(conf, fullFileStatus, null, fs, location, true);
       }
     } catch (Exception e) {
       throw new HiveException(e, ErrorMsg.GENERIC_ERROR);

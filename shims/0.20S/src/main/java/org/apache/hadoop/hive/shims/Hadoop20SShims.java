@@ -481,34 +481,47 @@ public class Hadoop20SShims extends HadoopShimsSecure {
   }
 
   @Override
+  public void setFullFileStatus(Configuration conf, HdfsFileStatus sourceStatus, String targetGroup,
+    FileSystem fs, Path target, boolean recursive) {
+    setFullFileStatus(conf, sourceStatus, targetGroup, fs, target, recursive, recursive ? new FsShell() : null);
+  }
+
+  @Override
   public void setFullFileStatus(Configuration conf, HdfsFileStatus sourceStatus,
-    FileSystem fs, String targetGroup, Path target, boolean recursive) throws IOException {
-    String group = sourceStatus.getFileStatus().getGroup();
-    String permission = Integer.toString(sourceStatus.getFileStatus().getPermission().toShort(), 8);
-    //use FsShell to change group and permissions recursively
-    if (recursive) {
-      try {
-        FsShell fshell = new FsShell();
-        fshell.setConf(conf);
-        run(fshell, new String[]{"-chgrp", "-R", group, target.toString()});
-        run(fshell, new String[]{"-chmod", "-R", permission, target.toString()});
-      } catch (Exception e) {
-        throw new IOException("Unable to set permissions of " + target, e);
-      }
-    } else {
-      if (group != null && !group.isEmpty()) {
-        if (targetGroup == null || !group.equals(targetGroup)) {
-          fs.setOwner(target, null, group);
-        }
-      }
-      fs.setPermission(target, sourcePerm);
-    }
+    FileSystem fs, String targetGroup, Path target, boolean recursive, FsShell fsShell) throws IOException {
     try {
-      if (LOG.isDebugEnabled()) {  //some trace logging
-        getFullFileStatus(conf, fs, target).debugLog();
+      String group = sourceStatus.getFileStatus().getGroup();
+      String permission = Integer.toString(sourceStatus.getFileStatus().getPermission().toShort(), 8);
+      //use FsShell to change group and permissions recursively
+      if (recursive) {
+        try {
+          FsShell fshell = new FsShell();
+          fshell.setConf(conf);
+          run(fshell, new String[]{"-chgrp", "-R", group, target.toString()});
+          run(fshell, new String[]{"-chmod", "-R", permission, target.toString()});
+        } catch (Exception e) {
+          throw new IOException("Unable to set permissions of " + target, e);
+        }
+      } else {
+        if (group != null && !group.isEmpty()) {
+          if (targetGroup == null || !group.equals(targetGroup)) {
+            fs.setOwner(target, null, group);
+          }
+        }
+        fs.setPermission(target, sourcePerm);
+      }
+      try {
+        if (LOG.isDebugEnabled()) {  //some trace logging
+          getFullFileStatus(conf, fs, target).debugLog();
+        }
+      } catch (Exception e) {
+        //ignore.
       }
     } catch (Exception e) {
-      //ignore.
+      LOG.warn(
+              "Unable to inherit permissions for file " + target + " from file " + sourceStatus.getFileStatus().getPath() + " " +
+                      e.getMessage());
+      LOG.debug("Exception while inheriting permissions", e);
     }
   }
 

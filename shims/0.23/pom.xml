@@ -151,4 +151,10 @@
      <scope>provided</scope>
    </dependency>
    </dependencies>
+
+  <build>
+    <sourceDirectory>${basedir}/src/main/java</sourceDirectory>
+    <testSourceDirectory>${basedir}/src/main/test</testSourceDirectory>
+  </build>
+
 </project>
