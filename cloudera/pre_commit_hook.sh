@@ -72,19 +72,13 @@ mvn clean install -Phadoop-2 -Dmaven.repo.local="$MVN_REPO_LOCAL" -DskipTests
 # Execute .q tests that were modified in the patch
 tests_modified=`get_qtests_to_execute`
 if [ -n "$tests_modified" ]; then
-  declare -a QTEST_POM_PATHS=(
-    "../itests/qtest/pom.xml"
-    "../itests/qtest-spark/pom.xml"
-  )
+  driver_classes=`find .. -name Test*Driver.java | paste -s -d"," -`
+  tests=`python ../cloudera/qtest-driver-info.py --hadoopVersion "hadoop-23" --properties ../itests/src/test/resources/testconfiguration.properties --cliConfigsPath ../itests/util/src/main/java/org/apache/hadoop/hive/cli/control/CliConfigs.java --paths $tests_modified --driverClassPaths $driver_classes`
+  for t in $tests
+  do
+    driver=`echo $t | cut -d: -f1`
+    files=`echo $t | cut -d: -f2`
 
-  for pom in ${QTEST_POM_PATHS[@]}; do
-    tests=`python ../cloudera/qtest-driver-info.py --hadoopVersion "hadoop-23" --pom $pom --properties ../itests/src/test/resources/testconfiguration.properties --paths $tests_modified`
-    for t in $tests
-    do
-      driver=`echo $t | cut -d: -f1`
-      files=`echo $t | cut -d: -f2`
-
-      mvn test -Phadoop-2 -Dmaven.repo.local="$MVN_REPO_LOCAL" -Dtest=$driver -Dqfile=$files
-    done
+    mvn test -Phadoop-2 -Dmaven.repo.local="$MVN_REPO_LOCAL" -Dtest=$driver -Dqfile=$files
   done
 fi

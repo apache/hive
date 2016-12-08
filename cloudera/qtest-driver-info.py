@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
 #
-# This script will search the required Test drivers into the '--pom' parameter file
+# This script will search the required Test drivers from the CliConfigs class
 # that need to be used to run the tests for the specified q-tests passed on '--paths'.
 #
 
@@ -9,12 +9,52 @@ import argparse
 import os
 import re
 import sys
-import xml.etree.ElementTree as ET
 
 PREFIX_XMLNS = "{http://maven.apache.org/POM/4.0.0}"
 
 POM_HADOOP_VERSION_NAME = "active.hadoop.version"
 POM_HADOOP2_VERSION_VALUE = "hadoop-23.version"
+
+# Config classes which need to be ignored in the CliConfigs class
+CLASS_NAMES_TO_IGNORE = ["PerfCliConfig", "BeeLineConfig", "DummyConfig"]
+
+# A dictionary which contains the name of the test driver class for each config class
+DRIVER_FOR_CONFIG_CLASS = {}
+
+# After parsing CliConfigs, an instance of ConfigClass will be created for each config class which
+# is defined in CliConfigs. These instances will contain the information, like query and result
+# directory and include/exclude list.
+class ConfigClass:
+    def __init__(self, full_code):
+        self.classname = re.findall(r"(\w+)\s+extends\s+AbstractCliConfig\s*{.*", full_code)[0]
+        self.includes = re.findall(r"includesFrom\s*\(\s*\w+\s*,\s*\"([\w./]+)", full_code)
+        self.excludes= re.findall(r"excludesFrom\s*\(\s*\w+\s*,\s*\"([\w./]+)", full_code)
+        self.query_directory = re.findall(r"setQueryDir\s*\(\s*\"([\w./-]+)", full_code)[0]
+        self.result_directory = re.findall(r"setResultsDir\s*\(\s*\"([\w./-]+)", full_code)[0]
+        self.override_query_file = re.findall(r"overrideUserQueryFile\s*\(\s*\"([\w./-]+)", full_code)
+
+def get_classes(config_file_path):
+    all_classes = []
+    content = read_java(config_file_path)
+    for part in re.split(" class ", content):
+        if re.search(r"(\w+) extends AbstractCliConfig", part):
+            all_classes.append(ConfigClass(part))
+
+    return all_classes
+
+def read_java(config_file_path):
+    with open(config_file_path, "r") as f:
+        content = f.read()
+        return content
+    raise IOError
+
+# Get the driver class - config class mapping from the driver classes
+def get_config_class_for_driver(driver_file_path):
+    config_class_name = ""
+    content = read_java(driver_file_path)
+    if re.search(r"(\s+)static\s*CliAdapter\s*adapter", content):
+        config_class_name = re.findall(r"\s+CliConfigs\.(\w+)\(\)\.getCliAdapter", content)[0]
+    return config_class_name
 
 def load_properties(filepath, sep='=', comment_char='#'):
     """
@@ -40,162 +80,103 @@ def load_properties(filepath, sep='=', comment_char='#'):
 
     return props
 
-def replace_vars(line, propsVars):
-    for var in propsVars:
-        line = line.replace("${" + var + "}", propsVars[var])
-    return line
+def replace_vars(config_keys, props_vars):
+    replaced_vars = []
+    for key in config_keys:
+        if key in props_vars:
+            replaced_vars.append(props_vars[key])
+        else:
+            replaced_vars.append(key)
 
-def get_tag(name):
-    return "%s%s" % (PREFIX_XMLNS, name)
+    return ",".join(replaced_vars)
 
-#
-# Find all <qtestgen ... /> sections from the pom.xml file.
-#
-def find_qtestgen(pomtree, properties):
-    '''
-    Example of a XML structure to find:
-
-    <build>
-     <plugins>
-       <plugin>
-         <groupId>org.apache.maven.plugins</groupId>
-         ...
-         <executions>
-           <execution>
-             <id>generate-tests-sources</id>
-             ...
-             <configuration>
-               <target>
-                 <qtestgen ... />
-                 <qtestgen ... />
-               </target>
-             </configuration>
-           </execution>
-         </executions>
-       </plugin>
-     </plugins>
-    </build>
-    '''
-
-    plugins = pomtree.getroot() \
-        .find(get_tag("build")) \
-        .find(get_tag("plugins"))
-
-    qtestgen = None
-
-    for plugin in plugins.findall(get_tag("plugin")):
-        groupId = plugin.find(get_tag("groupId")).text
-        artifactId = plugin.find(get_tag("artifactId")).text
-        if groupId == "org.apache.maven.plugins" and artifactId == "maven-antrun-plugin":
-            executions = plugin.find(get_tag("executions"))
-            for execution in executions.findall(get_tag("execution")):
-                if execution.find("%sid" % PREFIX_XMLNS).text == "generate-tests-sources":
-                    target = execution.find(get_tag("configuration")) \
-                        .find(get_tag("target"))
-
-                    # Get the list of all <qtestgen>. This is excluding the ones inside <if> tags.
-                    qtestgen = target.findall(get_tag("qtestgen"))
-
-                    # Get the list of all <qtestgen> found inside <if> tags
-                    for iftag in target.findall(get_tag("if")):
-                        equals = iftag.find(get_tag("equals"))
-                        arg1 = equals.get("arg1")
-                        arg2 = equals.get("arg2")
-
-                        thentag = iftag.find(get_tag("then"))
-                        if POM_HADOOP_VERSION_NAME in arg1:
-                            if properties[POM_HADOOP_VERSION_NAME] in arg2:
-                                for qtest in thentag.findall(get_tag("qtestgen")):
-                                    qtestgen.append(qtest)
-
-    return qtestgen
-
-# Check if a qfile is included in the <qtestgen> tag by looking into the following
+# Check if a qfile is included in the config class defined in CliConfigs by looking into the following
 # attributes:
-#   includeQueryFile=    List of .q files that are run if the driver is executed without using -Dqfile=
-#   excludeQueryFile=    List of .q files that should be excluded from the driver
-#   queryFile=           List of .q files that are executed by the driver
-def is_qfile_include(qtestgen, qfile, testproperties):
+#   includesFrom:    List of .q files that are run if the driver is executed without using -Dqfile=
+#   excludesFrom:    List of .q files that should be excluded from the driver
+def is_qfile_include(excludes, includes, qfile, testproperties, override_qfile):
 
     '''
-    Example of a <qtestgen ... /> XML tag
+    Example of a config class in CliConfigs:
 
-    <qtestgen  ...
-               queryDirectory="${basedir}/${hive.path.to.root}/ql/src/test/queries/clientpositive/"
-               queryFile="${qfile}"
-               excludeQueryFile="${minimr.query.files},${minitez.query.files},${encrypted.query.files}"
-               includeQueryFile=""
-               ...
-               resultsDirectory="${basedir}/${hive.path.to.root}/ql/src/test/results/clientpositive/" className="TestCliDriver"
-    ... />
+    public static class MinimrCliConfig extends AbstractCliConfig {
+        public MinimrCliConfig() {
+            super(CoreCliDriver.class);
+                try {
+                    setQueryDir("ql/src/test/queries/clientpositive");
+                    includesFrom(testConfigProps, "minimr.query.files");
+	                excludesFrom(testConfigProps, "minillap.query.files");
+                    setResultsDir("ql/src/test/results/clientpositive");
+	...
+    }
     '''
 
     testproperties["qfile"] = qfile
 
     # Checks if the qfile is not excluded from qtestgen
-    if qtestgen.get("excludeQueryFile") is not None:
-        excludedFiles = replace_vars(qtestgen.get("excludeQueryFile"), testproperties)
-        if re.compile(qfile).search(excludedFiles) is not None:
+    if excludes is not None and len(excludes) > 0:
+        excluded_files = replace_vars(excludes, testproperties)
+        if re.compile(qfile).search(excluded_files) is not None:
             return False
 
-    # If includeQueryFile exists, then check if the qfile is included, otherwise return False
-    if qtestgen.get("includeQueryFile") is not None:
-        includedFiles = replace_vars(qtestgen.get("includeQueryFile"), testproperties)
-        return re.compile(qfile).search(includedFiles) is not None
+    # If includesFrom exists, then check if the qfile is included, otherwise return False
+    if includes is not None and len(includes) > 0:
+        included_files = replace_vars(includes, testproperties)
+        return re.compile(qfile).search(included_files) is not None
 
     # There are some drivers that has queryFile set to a file.
     # i.e. queryFile="hbase_bulk.m"
     # If it is set like the above line, then we should not use such driver if qfile is different
-    if qtestgen.get("queryFile") is not None:
-        queryFile = replace_vars(qtestgen.get("queryFile"), testproperties)
-        return re.compile(qfile).search(queryFile) is not None
+    if override_qfile is not None and len(override_qfile) > 0:
+        override_query_file = replace_vars(override_qfile, testproperties)
+        return re.compile(qfile).search(override_query_file) is not None
 
     return True
 
-# Search for drivers that can run the specified qfile (.q) by looking into the 'queryDirectory' attribute
-def get_drivers_for_qfile(pomtree, testproperties, qdir, qfile):
+# Search for drivers that can run the specified qfile (.q) by looking into the 'query_directory' attribute
+def get_drivers_for_qfile(config_classes, testproperties, qdir, qfile):
     drivers = []
-
-    for qtestgen in find_qtestgen(pomtree, testproperties):
-        # Search for the <qtestgen> that matches the desired 'queryDirectory'
-        if re.compile(qdir).search(qtestgen.get("queryDirectory")) is not None:
-            if is_qfile_include(qtestgen, qfile, testproperties):
-                drivers.append(qtestgen.get("className"))
+    for config_class in config_classes:
+        driver = get_driver_from_config_class(config_class, testproperties, qfile, qdir, config_class.query_directory)
+	if driver is not None and len(driver) > 0:
+	    drivers.append(driver)
 
     return drivers
 
-# Search for drivers that can run the specified qfile result (.q.out) by looking into the 'resultsDirectory' attribute
-def get_drivers_for_qresults(pomtree, testproperties, qresults, qfile):
+# Search for drivers that can run the specified qfile result (.q.out) by looking into the 'result_directory' attribute
+def get_drivers_for_qresults(config_classes, testproperties, qresults, qfile):
     drivers = []
-
-    for qtestgen in find_qtestgen(pomtree, testproperties):
-        if qtestgen.get("resultsDirectory"):
-            # Search for the <qtestgen> that matches the desired 'resultsDirectory'
-            if re.compile(qresults).search(qtestgen.get("resultsDirectory")) is not None:
-                if is_qfile_include(qtestgen, qfile, testproperties):
-                    drivers.append(qtestgen.get("className"))
+    for config_class in config_classes:
+        driver = get_driver_from_config_class(config_class, testproperties, qfile, qresults, config_class.result_directory)
+	if driver is not None and len(driver) > 0:
+	    drivers.append(driver)
 
     return drivers
+
+# Get the name of the driver class
+def get_driver_from_config_class(config_class, testproperties, qfile, qfile_dir, class_dir):
+    driver_name = ""
+    if config_class.classname not in CLASS_NAMES_TO_IGNORE and config_class.classname in DRIVER_FOR_CONFIG_CLASS and re.compile(qfile_dir).search(class_dir) is not None:
+        if is_qfile_include(config_class.excludes, config_class.includes, qfile, testproperties, config_class.override_query_file):
+            driver_name = DRIVER_FOR_CONFIG_CLASS[config_class.classname]
+
+    return driver_name
 
 #
 # This command accepts a list of paths (.q or .q.out paths), and displays the
 # Test drivers that should be used for testing such q-test files.
 #
-# The command needs the path to itests/qtest/pom.xml to look for the drivers.
+# The command needs the path to CliConfigs.java to look for the drivers.
 #
 if __name__ == "__main__":
     # Parse command line arguments
     parser = argparse.ArgumentParser()
     parser.add_argument("--paths")
-    parser.add_argument("--pom")
     parser.add_argument("--properties")
     parser.add_argument("--hadoopVersion")
+    parser.add_argument("--cliConfigsPath")
+    parser.add_argument("--driverClassPaths")
     args = parser.parse_args()
-
-    if args.pom is None:
-        print "The parameter '--pom' was not found."
-        print "Please specify the pom.xml path by using '--pom <pom-file>'"
-        sys.exit(1)
 
     if args.properties is None:
         print "The parameter '--properties' was not found."
@@ -207,7 +188,16 @@ if __name__ == "__main__":
         print "Please specify a list of comma separated .q paths (or .q.out paths)"
         sys.exit(1)
 
-    pomtree = ET.parse(args.pom)
+    if args.cliConfigsPath is None:
+        print "The parameter '--cliConfigsPath' was not found"
+        print "Please specify the CliConfig.java file by using '--cliConfigsPath <file>'"
+        sys.exit(1)
+
+    if args.driverClassPaths is None:
+        print "The parameter '--driverClassPaths' was not found"
+        print "Please specify the path of the driver classes by using '--driverClassPaths <file>'"
+        sys.exit(1)
+
     testproperties = load_properties(args.properties)
 
     testproperties[POM_HADOOP_VERSION_NAME] = POM_HADOOP2_VERSION_VALUE
@@ -218,7 +208,15 @@ if __name__ == "__main__":
     if args.paths:
         tests = {}
 
-        # --paths has a list of paths comma separated
+        for driver_path in args.driverClassPaths.split(","):
+            config_class_name = get_config_class_for_driver(driver_path)
+            driver_class_name = os.path.basename(driver_path)
+            if config_class_name is not None and len(config_class_name) > 0:
+                DRIVER_FOR_CONFIG_CLASS[config_class_name] = driver_class_name[:-5]
+            
+        config_classes = get_classes(args.cliConfigsPath)
+
+	    # --paths has a list of paths comma separated
         for p in args.paths.split(","):
             dirname = os.path.dirname(p)
             basename = os.path.basename(p)
@@ -226,10 +224,10 @@ if __name__ == "__main__":
             # Use a different method to look for .q.out files
             if re.compile("results").search(dirname):
                 qfile = basename[0:basename.index(".out")]
-                drivers = get_drivers_for_qresults(pomtree, testproperties, dirname, qfile)
+                drivers = get_drivers_for_qresults(config_classes, testproperties, dirname, qfile)
             else:
                 qfile = basename
-                drivers = get_drivers_for_qfile(pomtree, testproperties, dirname, qfile)
+                drivers = get_drivers_for_qfile(config_classes, testproperties, dirname, qfile)
 
             # We make sure to not repeat tests if for some reason we passed something
             # like a.q and a.q.out
