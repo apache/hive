@@ -136,6 +136,11 @@ public class HiveStringUtils {
     if(map == null) {
       return null;
     }
+
+    if (map.isEmpty()) {
+      // nothing to intern
+      return map;
+    }
     Map<String, String> newMap = new HashMap<String, String>(map.size());
     for(Map.Entry<String, String> entry : map.entrySet()) {
       newMap.put(intern(entry.getKey()), intern(entry.getValue()));
