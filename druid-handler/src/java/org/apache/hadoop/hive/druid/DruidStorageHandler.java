@@ -149,7 +149,8 @@ public class DruidStorageHandler extends DefaultStorageHandler implements HiveMe
   @Override
   public void preCreateTable(Table table) throws MetaException {
     // Do safety checks
-    if (MetaStoreUtils.isExternalTable(table) && !StringUtils.isEmpty(table.getSd().getLocation())) {
+    if (MetaStoreUtils.isExternalTable(table) && !StringUtils
+            .isEmpty(table.getSd().getLocation())) {
       throw new MetaException("LOCATION may not be specified for Druid existing sources");
     }
 
@@ -160,6 +161,10 @@ public class DruidStorageHandler extends DefaultStorageHandler implements HiveMe
       throw new MetaException("CLUSTERED BY may not be specified for Druid");
     }
     String dataSourceName = table.getParameters().get(Constants.DRUID_DATA_SOURCE);
+    if (MetaStoreUtils.isExternalTable(table)) {
+      return;
+    }
+    // If it is not an external table we need to check the metadata
     try {
       connector.createSegmentTable();
     } catch (Exception e) {
@@ -176,12 +181,14 @@ public class DruidStorageHandler extends DefaultStorageHandler implements HiveMe
 
   @Override
   public void rollbackCreateTable(Table table) throws MetaException {
+    if (MetaStoreUtils.isExternalTable(table)) {
+      return;
+    }
     final Path segmentDescriptorDir = new Path(table.getSd().getLocation());
     try {
       List<DataSegment> dataSegmentList = DruidStorageHandlerUtils
               .getPublishedSegments(segmentDescriptorDir, getConf());
-      for (DataSegment dataSegment :
-              dataSegmentList) {
+      for (DataSegment dataSegment : dataSegmentList) {
         try {
           deleteSegment(dataSegment);
         } catch (SegmentLoadingException e) {
@@ -196,6 +203,9 @@ public class DruidStorageHandler extends DefaultStorageHandler implements HiveMe
 
   @Override
   public void commitCreateTable(Table table) throws MetaException {
+    if (MetaStoreUtils.isExternalTable(table)) {
+      return;
+    }
     LOG.info(String.format("Committing table [%s] to the druid metastore", table.getDbName()));
     final Path tableDir = new Path(table.getSd().getLocation());
     try {
@@ -281,6 +291,9 @@ public class DruidStorageHandler extends DefaultStorageHandler implements HiveMe
 
   @Override
   public void commitDropTable(Table table, boolean deleteData) throws MetaException {
+    if (MetaStoreUtils.isExternalTable(table)) {
+      return;
+    }
     String dataSourceName = Preconditions
             .checkNotNull(table.getParameters().get(Constants.DRUID_DATA_SOURCE),
                     "WTF dataSource name is null !"
