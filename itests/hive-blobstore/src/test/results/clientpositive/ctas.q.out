@@ -14,9 +14,11 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@ctas_blobstore_table_src
 PREHOOK: query: INSERT INTO TABLE ctas_blobstore_table_src VALUES (1), (2), (3)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@values__tmp__table__1
 PREHOOK: Output: default@ctas_blobstore_table_src
 POSTHOOK: query: INSERT INTO TABLE ctas_blobstore_table_src VALUES (1), (2), (3)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@values__tmp__table__1
 POSTHOOK: Output: default@ctas_blobstore_table_src
 PREHOOK: query: DROP TABLE IF EXISTS ctas_hdfs_table_src
 PREHOOK: type: DROPTABLE
@@ -32,9 +34,11 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@ctas_hdfs_table_src
 PREHOOK: query: INSERT INTO TABLE ctas_hdfs_table_src VALUES (1), (2), (3)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@values__tmp__table__2
 PREHOOK: Output: default@ctas_hdfs_table_src
 POSTHOOK: query: INSERT INTO TABLE ctas_hdfs_table_src VALUES (1), (2), (3)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@values__tmp__table__2
 POSTHOOK: Output: default@ctas_hdfs_table_src
 POSTHOOK: Lineage: ctas_hdfs_table_src.col EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 PREHOOK: query: -- Test select from a Blobstore and write to HDFS
@@ -47,6 +51,32 @@ PREHOOK: query: EXPLAIN EXTENDED CREATE TABLE ctas_hdfs_table_dst AS SELECT * FR
 PREHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: query: EXPLAIN EXTENDED CREATE TABLE ctas_hdfs_table_dst AS SELECT * FROM ctas_blobstore_table_src
 POSTHOOK: type: CREATETABLE_AS_SELECT
+ABSTRACT SYNTAX TREE:
+  
+TOK_CREATETABLE
+   TOK_TABNAME
+      ctas_hdfs_table_dst
+   TOK_LIKETABLE
+   TOK_QUERY
+      TOK_FROM
+         TOK_TABREF
+            TOK_TABNAME
+               default
+               ctas_blobstore_table_src
+            ctas_blobstore_table_src
+      TOK_INSERT
+         TOK_DESTINATION
+            TOK_DIR
+               TOK_TMP_FILE
+         TOK_SELECT
+            TOK_SELEXPR
+               .
+                  TOK_TABLE_OR_COL
+                     ctas_blobstore_table_src
+                  col
+               ctas_blobstore_table_src.col
+
+
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-7 depends on stages: Stage-1 , consists of Stage-4, Stage-3, Stage-5
@@ -64,18 +94,18 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: ctas_blobstore_table_src
-            Statistics: Num rows: 1 Data size: 6 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 3 Data size: 3 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Select Operator
               expressions: col (type: int)
               outputColumnNames: _col0
-              Statistics: Num rows: 1 Data size: 6 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 3 Data size: 3 Basic stats: COMPLETE Column stats: NONE
               File Output Operator
                 compressed: false
                 GlobalTableId: 1
 #### A masked pattern was here ####
                 NumFilesPerFileSink: 1
-                Statistics: Num rows: 1 Data size: 6 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 3 Data size: 3 Basic stats: COMPLETE Column stats: NONE
 #### A masked pattern was here ####
                 table:
                     input format: org.apache.hadoop.mapred.TextInputFormat
@@ -100,6 +130,7 @@ STAGE PLANS:
             input format: org.apache.hadoop.mapred.TextInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
             properties:
+              COLUMN_STATS_ACCURATE true
               bucket_count -1
               columns col
               columns.comments 
@@ -107,17 +138,20 @@ STAGE PLANS:
 #### A masked pattern was here ####
               location ### test.blobstore.path ###/ctas_blobstore_table_src
               name default.ctas_blobstore_table_src
-              numFiles 1
+              numFiles 0
+              numRows 3
+              rawDataSize 3
               serialization.ddl struct ctas_blobstore_table_src { i32 col}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              totalSize 6
+              totalSize 0
 #### A masked pattern was here ####
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
+                COLUMN_STATS_ACCURATE true
                 bucket_count -1
                 columns col
                 columns.comments 
@@ -125,11 +159,13 @@ STAGE PLANS:
 #### A masked pattern was here ####
                 location ### test.blobstore.path ###/ctas_blobstore_table_src
                 name default.ctas_blobstore_table_src
-                numFiles 1
+                numFiles 0
+                numRows 3
+                rawDataSize 3
                 serialization.ddl struct ctas_blobstore_table_src { i32 col}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                totalSize 6
+                totalSize 0
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.ctas_blobstore_table_src
@@ -289,7 +325,6 @@ POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@ctas_blobstore_table_src
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@ctas_hdfs_table_dst
-POSTHOOK: Lineage: ctas_hdfs_table_dst.col SIMPLE [(ctas_blobstore_table_src)ctas_blobstore_table_src.FieldSchema(name:col, type:int, comment:null), ]
 PREHOOK: query: SELECT * FROM ctas_hdfs_table_dst
 PREHOOK: type: QUERY
 PREHOOK: Input: default@ctas_hdfs_table_dst
@@ -311,6 +346,34 @@ POSTHOOK: type: DROPTABLE
 PREHOOK: type: CREATETABLE_AS_SELECT
 #### A masked pattern was here ####
 POSTHOOK: type: CREATETABLE_AS_SELECT
+ABSTRACT SYNTAX TREE:
+  
+TOK_CREATETABLE
+   TOK_TABNAME
+      ctas_blobstore_table_dst
+   TOK_LIKETABLE
+   TOK_TABLELOCATION
+      '### test.blobstore.path ###/ctas_blobstore_table_dst/'
+   TOK_QUERY
+      TOK_FROM
+         TOK_TABREF
+            TOK_TABNAME
+               default
+               ctas_hdfs_table_src
+            ctas_hdfs_table_src
+      TOK_INSERT
+         TOK_DESTINATION
+            TOK_DIR
+               TOK_TMP_FILE
+         TOK_SELECT
+            TOK_SELEXPR
+               .
+                  TOK_TABLE_OR_COL
+                     ctas_hdfs_table_src
+                  col
+               ctas_hdfs_table_src.col
+
+
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-7 depends on stages: Stage-1 , consists of Stage-4, Stage-3, Stage-5
@@ -364,7 +427,7 @@ STAGE PLANS:
             input format: org.apache.hadoop.mapred.TextInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
             properties:
-              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
+              COLUMN_STATS_ACCURATE true
               bucket_count -1
               columns col
               columns.comments 
@@ -384,7 +447,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
-                COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
+                COLUMN_STATS_ACCURATE true
                 bucket_count -1
                 columns col
                 columns.comments 
@@ -561,7 +624,6 @@ POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@ctas_hdfs_table_src
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@ctas_blobstore_table_dst
-POSTHOOK: Lineage: ctas_blobstore_table_dst.col SIMPLE [(ctas_hdfs_table_src)ctas_hdfs_table_src.FieldSchema(name:col, type:int, comment:null), ]
 PREHOOK: query: SELECT * FROM ctas_blobstore_table_dst
 PREHOOK: type: QUERY
 PREHOOK: Input: default@ctas_blobstore_table_dst
@@ -587,6 +649,34 @@ POSTHOOK: Output: default@ctas_blobstore_table_dst
 PREHOOK: type: CREATETABLE_AS_SELECT
 #### A masked pattern was here ####
 POSTHOOK: type: CREATETABLE_AS_SELECT
+ABSTRACT SYNTAX TREE:
+  
+TOK_CREATETABLE
+   TOK_TABNAME
+      ctas_blobstore_table_dst
+   TOK_LIKETABLE
+   TOK_TABLELOCATION
+      '### test.blobstore.path ###/ctas_blobstore_table_dst/'
+   TOK_QUERY
+      TOK_FROM
+         TOK_TABREF
+            TOK_TABNAME
+               default
+               ctas_blobstore_table_src
+            ctas_blobstore_table_src
+      TOK_INSERT
+         TOK_DESTINATION
+            TOK_DIR
+               TOK_TMP_FILE
+         TOK_SELECT
+            TOK_SELEXPR
+               .
+                  TOK_TABLE_OR_COL
+                     ctas_blobstore_table_src
+                  col
+               ctas_blobstore_table_src.col
+
+
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-7 depends on stages: Stage-1 , consists of Stage-4, Stage-3, Stage-5
@@ -604,18 +694,18 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: ctas_blobstore_table_src
-            Statistics: Num rows: 1 Data size: 6 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 3 Data size: 3 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Select Operator
               expressions: col (type: int)
               outputColumnNames: _col0
-              Statistics: Num rows: 1 Data size: 6 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 3 Data size: 3 Basic stats: COMPLETE Column stats: NONE
               File Output Operator
                 compressed: false
                 GlobalTableId: 1
                 directory: ### BLOBSTORE_STAGING_PATH ###
                 NumFilesPerFileSink: 1
-                Statistics: Num rows: 1 Data size: 6 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 3 Data size: 3 Basic stats: COMPLETE Column stats: NONE
                 Stats Publishing Key Prefix: ### BLOBSTORE_STAGING_PATH ###
                 table:
                     input format: org.apache.hadoop.mapred.TextInputFormat
@@ -640,6 +730,7 @@ STAGE PLANS:
             input format: org.apache.hadoop.mapred.TextInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
             properties:
+              COLUMN_STATS_ACCURATE true
               bucket_count -1
               columns col
               columns.comments 
@@ -647,17 +738,20 @@ STAGE PLANS:
 #### A masked pattern was here ####
               location ### test.blobstore.path ###/ctas_blobstore_table_src
               name default.ctas_blobstore_table_src
-              numFiles 1
+              numFiles 0
+              numRows 3
+              rawDataSize 3
               serialization.ddl struct ctas_blobstore_table_src { i32 col}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              totalSize 6
+              totalSize 0
 #### A masked pattern was here ####
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
+                COLUMN_STATS_ACCURATE true
                 bucket_count -1
                 columns col
                 columns.comments 
@@ -665,11 +759,13 @@ STAGE PLANS:
 #### A masked pattern was here ####
                 location ### test.blobstore.path ###/ctas_blobstore_table_src
                 name default.ctas_blobstore_table_src
-                numFiles 1
+                numFiles 0
+                numRows 3
+                rawDataSize 3
                 serialization.ddl struct ctas_blobstore_table_src { i32 col}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                totalSize 6
+                totalSize 0
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.ctas_blobstore_table_src
@@ -833,7 +929,6 @@ POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@ctas_blobstore_table_src
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@ctas_blobstore_table_dst
-POSTHOOK: Lineage: ctas_blobstore_table_dst.col SIMPLE [(ctas_blobstore_table_src)ctas_blobstore_table_src.FieldSchema(name:col, type:int, comment:null), ]
 PREHOOK: query: SELECT * FROM ctas_blobstore_table_dst
 PREHOOK: type: QUERY
 PREHOOK: Input: default@ctas_blobstore_table_dst
