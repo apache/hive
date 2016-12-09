@@ -304,7 +304,7 @@ public class DruidStorageHandler extends DefaultStorageHandler implements HiveMe
               dataSourceName
       ));
       List<DataSegment> dataSegmentList = DruidStorageHandlerUtils
-              .getDataSegment(connector, druidMetadataStorageTablesConfig, dataSourceName);
+              .getDataSegmentList(connector, druidMetadataStorageTablesConfig, dataSourceName);
       if (dataSegmentList.isEmpty()) {
         LOG.info(String.format("Nothing to delete for data source [%s]", dataSourceName));
         return;

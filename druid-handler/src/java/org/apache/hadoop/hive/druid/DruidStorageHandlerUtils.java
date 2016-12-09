@@ -99,6 +99,9 @@ public final class DruidStorageHandlerUtils {
 
   private static final int DEFAULT_STREAMING_RESULT_SIZE = 100;
 
+  /**
+   * Used by druid to perform IO on indexes
+   */
   public static final IndexIO INDEX_IO = new IndexIO(JSON_MAPPER, new ColumnConfig() {
     @Override
     public int columnCacheSizeBytes() {
@@ -106,22 +109,32 @@ public final class DruidStorageHandlerUtils {
     }
   });
 
+  /**
+   * Used by druid to merge indexes
+   */
   public static final IndexMergerV9 INDEX_MERGER_V9 = new IndexMergerV9(JSON_MAPPER,
           DruidStorageHandlerUtils.INDEX_IO
   );
 
+  /**
+   * Generic Interner implementation used to read segments object from metadata storage
+   */
   public static final Interner<DataSegment> DATA_SEGMENT_INTERNER = Interners.newWeakInterner();
 
   static {
+    // Register the shard sub type to be used by the mapper
     JSON_MAPPER.registerSubtypes(new NamedType(LinearShardSpec.class, "linear"));
+    // set the timezone of the object mapper
+    // THIS IS NOT WORKING workaround is to set it as part of java opts -Duser.timezone="UTC"
     JSON_MAPPER.setTimeZone(TimeZone.getTimeZone("UTC"));
     try {
+      // No operation emitter will be used by some internal druid classes.
       EmittingLogger.registerEmitter(
               new ServiceEmitter("druid-hive-indexer", InetAddress.getLocalHost().getHostName(),
                       new NoopEmitter()
               ));
     } catch (UnknownHostException e) {
-      Throwables.propagate(e);
+      throw Throwables.propagate(e);
     }
   }
 
@@ -169,7 +182,6 @@ public final class DruidStorageHandlerUtils {
    *
    * @throws IOException can be for the case we did not produce data.
    */
-
   public static List<DataSegment> getPublishedSegments(Path tableDir, Configuration conf)
           throws IOException {
     ImmutableList.Builder<DataSegment> publishedSegmentsBuilder = ImmutableList.builder();
@@ -189,6 +201,15 @@ public final class DruidStorageHandlerUtils {
     return publishedSegments;
   }
 
+  /**
+   * This function will write to filesystem serialized from of segment descriptor
+   * if an existing file exists it will try to replace it.
+   * @param outputFS filesystem
+   * @param segment DataSegment object
+   * @param descriptorPath path
+   *
+   * @throws IOException
+   */
   public static void writeSegmentDescriptor(
           final FileSystem outputFS,
           final DataSegment segment,
@@ -226,6 +247,12 @@ public final class DruidStorageHandlerUtils {
     descriptorPusher.push();
   }
 
+  /**
+   * @param connector SQL metadata connector to the metadata storage
+   * @param metadataStorageTablesConfig Table config
+   *
+   * @return all the active data sources in the metadata storage
+   */
   public static Collection<String> getAllDataSourceNames(SQLMetadataConnector connector,
           final MetadataStorageTablesConfig metadataStorageTablesConfig
   ) {
@@ -262,6 +289,13 @@ public final class DruidStorageHandlerUtils {
 
   }
 
+  /**
+   * @param connector SQL connector to metadata
+   * @param metadataStorageTablesConfig Tables configuration
+   * @param dataSource Name of data source
+   *
+   * @return true if the data source was successfully disabled false otherwise
+   */
   public static boolean disableDataSource(SQLMetadataConnector connector,
           final MetadataStorageTablesConfig metadataStorageTablesConfig, final String dataSource
   ) {
@@ -296,7 +330,14 @@ public final class DruidStorageHandlerUtils {
     return true;
   }
 
-  public static List<DataSegment> getDataSegment(final SQLMetadataConnector connector,
+  /**
+   * @param connector SQL connector to metadata
+   * @param metadataStorageTablesConfig Tables configuration
+   * @param dataSource Name of data source
+   *
+   * @return List of all data segments part of the given data source
+   */
+  public static List<DataSegment> getDataSegmentList(final SQLMetadataConnector connector,
           final MetadataStorageTablesConfig metadataStorageTablesConfig, final String dataSource
   ) {
     List<DataSegment> segmentList = connector.retryTransaction(
@@ -342,6 +383,11 @@ public final class DruidStorageHandlerUtils {
     return segmentList;
   }
 
+  /**
+   * @param connector
+   *
+   * @return streaming fetch size.
+   */
   private static int getStreamingFetchSize(SQLMetadataConnector connector) {
     if (connector instanceof MySQLConnector) {
       return Integer.MIN_VALUE;
@@ -349,6 +395,12 @@ public final class DruidStorageHandlerUtils {
     return DEFAULT_STREAMING_RESULT_SIZE;
   }
 
+  /**
+   * @param pushedSegment
+   * @param segmentsDescriptorDir
+   *
+   * @return a sanitize file name
+   */
   public static Path makeSegmentDescriptorOutputPath(DataSegment pushedSegment,
           Path segmentsDescriptorDir
   ) {
