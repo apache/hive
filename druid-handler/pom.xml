@@ -137,9 +137,9 @@
       </exclusions>
     </dependency>
     <dependency>
-      <groupId>io.druid</groupId>
+      <groupId>com.metamx</groupId>
       <artifactId>java-util</artifactId>
-      <version>${druid.version}</version>
+      <version>0.27.10</version>
       <exclusions>
         <exclusion>
           <groupId>com.fasterxml.jackson.core</groupId>

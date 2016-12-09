@@ -8,16 +8,16 @@ import com.google.common.base.Suppliers;
 import com.google.common.base.Throwables;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.Lists;
+import com.metamx.common.Granularity;
 import io.druid.data.input.Committer;
 import io.druid.data.input.InputRow;
 import io.druid.data.input.MapBasedInputRow;
-import io.druid.java.util.common.Granularity;
 import io.druid.segment.indexing.DataSchema;
 import io.druid.segment.indexing.RealtimeTuningConfig;
 import io.druid.segment.loading.DataSegmentPusher;
 import io.druid.segment.realtime.FireDepartmentMetrics;
 import io.druid.segment.realtime.appenderator.Appenderator;
-import io.druid.segment.realtime.appenderator.DefaultOfflineAppenderatorFactory;
+import io.druid.segment.realtime.appenderator.Appenderators;
 import io.druid.segment.realtime.appenderator.SegmentIdentifier;
 import io.druid.segment.realtime.appenderator.SegmentNotWritableException;
 import io.druid.segment.realtime.appenderator.SegmentsAndMetadata;
@@ -73,20 +73,17 @@ public class DruidRecordWriter implements RecordWriter<NullWritable, DruidWritab
           final Path segmentsDescriptorsDir,
           final FileSystem fileSystem
   ) {
-    DefaultOfflineAppenderatorFactory defaultOfflineAppenderatorFactory = new DefaultOfflineAppenderatorFactory(
-            Preconditions.checkNotNull(dataSegmentPusher, "dataSegmentPusher is null"),
-            DruidStorageHandlerUtils.JSON_MAPPER,
-            DruidStorageHandlerUtils.INDEX_IO,
-            DruidStorageHandlerUtils.INDEX_MERGER_V9
-    );
     this.tuningConfig = Preconditions
             .checkNotNull(realtimeTuningConfig, "realtimeTuningConfig is null");
     this.dataSchema = Preconditions.checkNotNull(dataSchema, "data schema is null");
-    appenderator = defaultOfflineAppenderatorFactory.build(
-            this.dataSchema,
-            tuningConfig,
-            new FireDepartmentMetrics()
-    );
+    appenderator = Appenderators
+            .createOffline(this.dataSchema,
+                    tuningConfig,
+                    new FireDepartmentMetrics(), dataSegmentPusher,
+                    DruidStorageHandlerUtils.JSON_MAPPER,
+                    DruidStorageHandlerUtils.INDEX_IO,
+                    DruidStorageHandlerUtils.INDEX_MERGER_V9
+            );
     Preconditions.checkArgument(maxPartitionSize > 0, "maxPartitionSize need to be greater than 0");
     this.maxPartitionSize = maxPartitionSize;
     appenderator.startJob(); // maybe we need to move this out of the constructor
