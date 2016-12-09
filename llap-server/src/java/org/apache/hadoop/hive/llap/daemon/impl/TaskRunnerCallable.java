@@ -107,8 +107,8 @@ public class TaskRunnerCallable extends CallableWithNdc<TaskRunner2Result> {
   private final String queryId;
   private final HadoopShim tezHadoopShim;
   private boolean shouldRunTask = true;
-  final Stopwatch runtimeWatch = Stopwatch.createStarted();
-  final Stopwatch killtimerWatch = Stopwatch.createStarted();
+  final Stopwatch runtimeWatch = new Stopwatch();
+  final Stopwatch killtimerWatch = new Stopwatch();
   private final AtomicBoolean isStarted = new AtomicBoolean(false);
   private final AtomicBoolean isCompleted = new AtomicBoolean(false);
   private final AtomicBoolean killInvoked = new AtomicBoolean(false);
@@ -256,7 +256,7 @@ public class TaskRunnerCallable extends CallableWithNdc<TaskRunner2Result> {
         } finally {
           FileSystem.closeAllForUGI(taskUgi);
           LOG.info("ExecutionTime for Container: " + request.getContainerIdString() + "=" +
-              runtimeWatch.stop().elapsed(TimeUnit.MILLISECONDS));
+                  runtimeWatch.stop().elapsedMillis());
           if (LOG.isDebugEnabled()) {
             LOG.debug(
                 "canFinish post completion: " + taskSpec.getTaskAttemptID() + ": " + canFinish());
@@ -449,14 +449,14 @@ public class TaskRunnerCallable extends CallableWithNdc<TaskRunner2Result> {
           LOG.info("Killed task {}", requestId);
           if (killtimerWatch.isRunning()) {
             killtimerWatch.stop();
-            long elapsed = killtimerWatch.elapsed(TimeUnit.MILLISECONDS);
+            long elapsed = killtimerWatch.elapsedMillis();
             LOG.info("Time to die for task {}", elapsed);
             if (metrics != null) {
               metrics.addMetricsPreemptionTimeToKill(elapsed);
             }
           }
           if (metrics != null) {
-            metrics.addMetricsPreemptionTimeLost(runtimeWatch.elapsed(TimeUnit.MILLISECONDS));
+            metrics.addMetricsPreemptionTimeLost(runtimeWatch.elapsedMillis());
             metrics.incrExecutorTotalKilled();
           }
           break;
