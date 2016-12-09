@@ -295,3 +295,39 @@ message PartitionKeyComparator {
   repeated Operator op = 3;
   repeated Range range = 4;
 }
+
+message PrimaryKey {
+  message PrimaryKeyColumn {
+    required string column_name = 1;
+    required sint32 key_seq = 2;
+  }
+
+  required string pk_name = 1;
+  repeated PrimaryKeyColumn cols = 2;
+  optional bool enable_constraint = 3;
+  optional bool validate_constraint = 4;
+  optional bool rely_constraint = 5;
+}
+
+message ForeignKeys {
+  message ForeignKey {
+    message ForeignKeyColumn {
+      required string column_name = 1;
+      required string referenced_column_name = 2;
+      required sint32 key_seq = 3;
+    }
+
+    required string fk_name = 1;
+    required string referenced_db_name = 2;
+    required string referenced_table_name = 3;
+    optional string referenced_pk_name = 4;
+    optional int32 update_rule = 5;
+    optional int32 delete_rule = 6;
+    repeated ForeignKeyColumn cols = 7;
+    optional bool enable_constraint = 8;
+    optional bool validate_constraint = 9;
+    optional bool rely_constraint = 10;
+  }
+
+  repeated ForeignKey fks = 1;
+}

@@ -22,6 +22,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.cache.CacheLoader;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.hadoop.hive.common.ObjectPair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -2690,42 +2691,143 @@ public class HBaseStore implements RawStore {
   }
 
   @Override
-  public List<SQLPrimaryKey> getPrimaryKeys(String db_name, String tbl_name)
-    throws MetaException {
-    // TODO: WTF?
-    return null;
+  public List<SQLPrimaryKey> getPrimaryKeys(String db_name, String tbl_name) throws MetaException {
+    boolean commit = false;
+    openTransaction();
+    try {
+      List<SQLPrimaryKey> pk = getHBase().getPrimaryKey(db_name, tbl_name);
+      commit = true;
+      return pk;
+    } catch (IOException e) {
+      LOG.error("Unable to get primary key", e);
+      throw new MetaException("Error reading db " + e.getMessage());
+    } finally {
+      commitOrRoleBack(commit);
+    }
   }
 
   @Override
-  public List<SQLForeignKey> getForeignKeys(String parent_db_name,
-    String parent_tbl_name, String foreign_db_name, String foreign_tbl_name)
-    throws MetaException {
-    // TODO: WTF?
-    return null;
+  public List<SQLForeignKey> getForeignKeys(String parent_db_name, String parent_tbl_name,
+                                            String foreign_db_name, String foreign_tbl_name)
+      throws MetaException {
+    boolean commit = false;
+    openTransaction();
+    try {
+      List<SQLForeignKey> fks = getHBase().getForeignKeys(parent_db_name, parent_tbl_name);
+      if (fks == null || fks.size() == 0) return null;
+      List<SQLForeignKey> result = new ArrayList<>(fks.size());
+      for (SQLForeignKey fkcol : fks) {
+        if (fkcol.getFktable_db().equals(parent_db_name) &&
+            fkcol.getFktable_name().equals(parent_tbl_name)) {
+          result.add(fkcol);
+        }
+      }
+      commit = true;
+      return result;
+    } catch (IOException e) {
+      LOG.error("Unable to get foreign key", e);
+      throw new MetaException("Error reading db " + e.getMessage());
+    } finally {
+      commitOrRoleBack(commit);
+    }
   }
 
   @Override
-  public void createTableWithConstraints(Table tbl,
-    List<SQLPrimaryKey> primaryKeys, List<SQLForeignKey> foreignKeys)
-    throws InvalidObjectException, MetaException {
-    // TODO: WTF?
+  public void createTableWithConstraints(Table tbl, List<SQLPrimaryKey> primaryKeys,
+                                         List<SQLForeignKey> foreignKeys)
+      throws InvalidObjectException, MetaException {
+    boolean commit = false;
+    openTransaction();
+    try {
+      createTable(tbl);
+      if (primaryKeys != null) addPrimaryKeys(primaryKeys);
+      if (foreignKeys != null) addForeignKeys(foreignKeys);
+      commit = true;
+    } finally {
+      commitOrRoleBack(commit);
+    }
   }
 
   @Override
-  public void dropConstraint(String dbName, String tableName,
-    String constraintName) throws NoSuchObjectException {
-    // TODO: WTF?
+  public void dropConstraint(String dbName, String tableName, String constraintName)
+      throws NoSuchObjectException {
+    // This is something of pain, since we have to search both primary key and foreign key to see
+    // which they want to drop.
+    boolean commit = false;
+    openTransaction();
+    try {
+      List<SQLPrimaryKey> pk = getHBase().getPrimaryKey(dbName, tableName);
+      if (pk != null && pk.size() > 0 && pk.get(0).getPk_name().equals(constraintName)) {
+        getHBase().deletePrimaryKey(dbName, tableName);
+        commit = true;
+        return;
+      }
+
+      List<SQLForeignKey> fks = getHBase().getForeignKeys(dbName, tableName);
+      if (fks != null && fks.size() > 0) {
+        List<SQLForeignKey> newKeyList = new ArrayList<>(fks.size());
+        // Make a new list of keys that excludes all columns from the constraint we're dropping.
+        for (SQLForeignKey fkcol : fks) {
+          if (!fkcol.getFk_name().equals(constraintName)) newKeyList.add(fkcol);
+        }
+        // If we've dropped only one foreign key out of many keys, than update so that we still
+        // have the existing keys.  Otherwise drop the foreign keys all together.
+        if (newKeyList.size() > 0) getHBase().putForeignKeys(newKeyList);
+        else getHBase().deleteForeignKeys(dbName, tableName);
+        commit = true;
+        return;
+      }
+
+      commit = true;
+      throw new NoSuchObjectException("Unable to find constraint named " + constraintName +
+        " on table " + tableNameForErrorMsg(dbName, tableName));
+    } catch (IOException e) {
+      LOG.error("Error fetching primary key for table " + tableNameForErrorMsg(dbName, tableName), e);
+      throw new NoSuchObjectException("Error fetching primary key for table " +
+          tableNameForErrorMsg(dbName, tableName) + " : " + e.getMessage());
+    } finally {
+      commitOrRoleBack(commit);
+    }
   }
 
   @Override
-  public void addPrimaryKeys(List<SQLPrimaryKey> pks)
-    throws InvalidObjectException, MetaException {
-    // TODO: WTF?
+  public void addPrimaryKeys(List<SQLPrimaryKey> pks) throws InvalidObjectException, MetaException {
+    boolean commit = false;
+    openTransaction();
+    try {
+      List<SQLPrimaryKey> currentPk =
+          getHBase().getPrimaryKey(pks.get(0).getTable_db(), pks.get(0).getTable_name());
+      if (currentPk != null) {
+        throw new MetaException(" Primary key already exists for: " +
+            tableNameForErrorMsg(pks.get(0).getTable_db(), pks.get(0).getTable_name()));
+      }
+      getHBase().putPrimaryKey(pks);
+      commit = true;
+    } catch (IOException e) {
+      LOG.error("Error writing primary key", e);
+      throw new MetaException("Error writing primary key: " + e.getMessage());
+    } finally {
+      commitOrRoleBack(commit);
+    }
   }
 
   @Override
-  public void addForeignKeys(List<SQLForeignKey> fks)
-    throws InvalidObjectException, MetaException {
-    // TODO: WTF?
+  public void addForeignKeys(List<SQLForeignKey> fks) throws InvalidObjectException, MetaException {
+    boolean commit = false;
+    openTransaction();
+    try {
+      // Fetch the existing keys (if any) and add in these new ones
+      List<SQLForeignKey> existing =
+          getHBase().getForeignKeys(fks.get(0).getFktable_db(), fks.get(0).getFktable_name());
+      if (existing == null) existing = new ArrayList<>(fks.size());
+      existing.addAll(fks);
+      getHBase().putForeignKeys(existing);
+      commit = true;
+    } catch (IOException e) {
+      LOG.error("Error writing foreign keys", e);
+      throw new MetaException("Error writing foreign keys: " + e.getMessage());
+    } finally {
+      commitOrRoleBack(commit);
+    }
   }
 }

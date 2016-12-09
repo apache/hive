@@ -36396,6 +36396,4830 @@ public final class HbaseMetastoreProto {
     // @@protoc_insertion_point(class_scope:org.apache.hadoop.hive.metastore.hbase.PartitionKeyComparator)
   }
 
+  public interface PrimaryKeyOrBuilder
+      extends com.google.protobuf.MessageOrBuilder {
+
+    // required string pk_name = 1;
+    /**
+     * <code>required string pk_name = 1;</code>
+     */
+    boolean hasPkName();
+    /**
+     * <code>required string pk_name = 1;</code>
+     */
+    java.lang.String getPkName();
+    /**
+     * <code>required string pk_name = 1;</code>
+     */
+    com.google.protobuf.ByteString
+        getPkNameBytes();
+
+    // repeated .org.apache.hadoop.hive.metastore.hbase.PrimaryKey.PrimaryKeyColumn cols = 2;
+    /**
+     * <code>repeated .org.apache.hadoop.hive.metastore.hbase.PrimaryKey.PrimaryKeyColumn cols = 2;</code>
+     */
+    java.util.List<org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PrimaryKey.PrimaryKeyColumn> 
+        getColsList();
+    /**
+     * <code>repeated .org.apache.hadoop.hive.metastore.hbase.PrimaryKey.PrimaryKeyColumn cols = 2;</code>
+     */
+    org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PrimaryKey.PrimaryKeyColumn getCols(int index);
+    /**
+     * <code>repeated .org.apache.hadoop.hive.metastore.hbase.PrimaryKey.PrimaryKeyColumn cols = 2;</code>
+     */
+    int getColsCount();
+    /**
+     * <code>repeated .org.apache.hadoop.hive.metastore.hbase.PrimaryKey.PrimaryKeyColumn cols = 2;</code>
+     */
+    java.util.List<? extends org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PrimaryKey.PrimaryKeyColumnOrBuilder> 
+        getColsOrBuilderList();
+    /**
+     * <code>repeated .org.apache.hadoop.hive.metastore.hbase.PrimaryKey.PrimaryKeyColumn cols = 2;</code>
+     */
+    org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PrimaryKey.PrimaryKeyColumnOrBuilder getColsOrBuilder(
+        int index);
+
+    // optional bool enable_constraint = 3;
+    /**
+     * <code>optional bool enable_constraint = 3;</code>
+     */
+    boolean hasEnableConstraint();
+    /**
+     * <code>optional bool enable_constraint = 3;</code>
+     */
+    boolean getEnableConstraint();
+
+    // optional bool validate_constraint = 4;
+    /**
+     * <code>optional bool validate_constraint = 4;</code>
+     */
+    boolean hasValidateConstraint();
+    /**
+     * <code>optional bool validate_constraint = 4;</code>
+     */
+    boolean getValidateConstraint();
+
+    // optional bool rely_constraint = 5;
+    /**
+     * <code>optional bool rely_constraint = 5;</code>
+     */
+    boolean hasRelyConstraint();
+    /**
+     * <code>optional bool rely_constraint = 5;</code>
+     */
+    boolean getRelyConstraint();
+  }
+  /**
+   * Protobuf type {@code org.apache.hadoop.hive.metastore.hbase.PrimaryKey}
+   */
+  public static final class PrimaryKey extends
+      com.google.protobuf.GeneratedMessage
+      implements PrimaryKeyOrBuilder {
+    // Use PrimaryKey.newBuilder() to construct.
+    private PrimaryKey(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
+      super(builder);
+      this.unknownFields = builder.getUnknownFields();
+    }
+    private PrimaryKey(boolean noInit) { this.unknownFields = com.google.protobuf.UnknownFieldSet.getDefaultInstance(); }
+
+    private static final PrimaryKey defaultInstance;
+    public static PrimaryKey getDefaultInstance() {
+      return defaultInstance;
+    }
+
+    public PrimaryKey getDefaultInstanceForType() {
+      return defaultInstance;
+    }
+
+    private final com.google.protobuf.UnknownFieldSet unknownFields;
+    @java.lang.Override
+    public final com.google.protobuf.UnknownFieldSet
+        getUnknownFields() {
+      return this.unknownFields;
+    }
+    private PrimaryKey(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      initFields();
+      int mutable_bitField0_ = 0;
+      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+          com.google.protobuf.UnknownFieldSet.newBuilder();
+      try {
+        boolean done = false;
+        while (!done) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              done = true;
+              break;
+            default: {
+              if (!parseUnknownField(input, unknownFields,
+                                     extensionRegistry, tag)) {
+                done = true;
+              }
+              break;
+            }
+            case 10: {
+              bitField0_ |= 0x00000001;
+              pkName_ = input.readBytes();
+              break;
+            }
+            case 18: {
+              if (!((mutable_bitField0_ & 0x00000002) == 0x00000002)) {
+                cols_ = new java.util.ArrayList<org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PrimaryKey.PrimaryKeyColumn>();
+                mutable_bitField0_ |= 0x00000002;
+              }
+              cols_.add(input.readMessage(org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PrimaryKey.PrimaryKeyColumn.PARSER, extensionRegistry));
+              break;
+            }
+            case 24: {
+              bitField0_ |= 0x00000002;
+              enableConstraint_ = input.readBool();
+              break;
+            }
+            case 32: {
+              bitField0_ |= 0x00000004;
+              validateConstraint_ = input.readBool();
+              break;
+            }
+            case 40: {
+              bitField0_ |= 0x00000008;
+              relyConstraint_ = input.readBool();
+              break;
+            }
+          }
+        }
+      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+        throw e.setUnfinishedMessage(this);
+      } catch (java.io.IOException e) {
+        throw new com.google.protobuf.InvalidProtocolBufferException(
+            e.getMessage()).setUnfinishedMessage(this);
+      } finally {
+        if (((mutable_bitField0_ & 0x00000002) == 0x00000002)) {
+          cols_ = java.util.Collections.unmodifiableList(cols_);
+        }
+        this.unknownFields = unknownFields.build();
+        makeExtensionsImmutable();
+      }
+    }
+    public static final com.google.protobuf.Descriptors.Descriptor
+        getDescriptor() {
+      return org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.internal_static_org_apache_hadoop_hive_metastore_hbase_PrimaryKey_descriptor;
+    }
+
+    protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.internal_static_org_apache_hadoop_hive_metastore_hbase_PrimaryKey_fieldAccessorTable
+          .ensureFieldAccessorsInitialized(
+              org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PrimaryKey.class, org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PrimaryKey.Builder.class);
+    }
+
+    public static com.google.protobuf.Parser<PrimaryKey> PARSER =
+        new com.google.protobuf.AbstractParser<PrimaryKey>() {
+      public PrimaryKey parsePartialFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return new PrimaryKey(input, extensionRegistry);
+      }
+    };
+
+    @java.lang.Override
+    public com.google.protobuf.Parser<PrimaryKey> getParserForType() {
+      return PARSER;
+    }
+
+    public interface PrimaryKeyColumnOrBuilder
+        extends com.google.protobuf.MessageOrBuilder {
+
+      // required string column_name = 1;
+      /**
+       * <code>required string column_name = 1;</code>
+       */
+      boolean hasColumnName();
+      /**
+       * <code>required string column_name = 1;</code>
+       */
+      java.lang.String getColumnName();
+      /**
+       * <code>required string column_name = 1;</code>
+       */
+      com.google.protobuf.ByteString
+          getColumnNameBytes();
+
+      // required sint32 key_seq = 2;
+      /**
+       * <code>required sint32 key_seq = 2;</code>
+       */
+      boolean hasKeySeq();
+      /**
+       * <code>required sint32 key_seq = 2;</code>
+       */
+      int getKeySeq();
+    }
+    /**
+     * Protobuf type {@code org.apache.hadoop.hive.metastore.hbase.PrimaryKey.PrimaryKeyColumn}
+     */
+    public static final class PrimaryKeyColumn extends
+        com.google.protobuf.GeneratedMessage
+        implements PrimaryKeyColumnOrBuilder {
+      // Use PrimaryKeyColumn.newBuilder() to construct.
+      private PrimaryKeyColumn(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
+        super(builder);
+        this.unknownFields = builder.getUnknownFields();
+      }
+      private PrimaryKeyColumn(boolean noInit) { this.unknownFields = com.google.protobuf.UnknownFieldSet.getDefaultInstance(); }
+
+      private static final PrimaryKeyColumn defaultInstance;
+      public static PrimaryKeyColumn getDefaultInstance() {
+        return defaultInstance;
+      }
+
+      public PrimaryKeyColumn getDefaultInstanceForType() {
+        return defaultInstance;
+      }
+
+      private final com.google.protobuf.UnknownFieldSet unknownFields;
+      @java.lang.Override
+      public final com.google.protobuf.UnknownFieldSet
+          getUnknownFields() {
+        return this.unknownFields;
+      }
+      private PrimaryKeyColumn(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        initFields();
+        int mutable_bitField0_ = 0;
+        com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+            com.google.protobuf.UnknownFieldSet.newBuilder();
+        try {
+          boolean done = false;
+          while (!done) {
+            int tag = input.readTag();
+            switch (tag) {
+              case 0:
+                done = true;
+                break;
+              default: {
+                if (!parseUnknownField(input, unknownFields,
+                                       extensionRegistry, tag)) {
+                  done = true;
+                }
+                break;
+              }
+              case 10: {
+                bitField0_ |= 0x00000001;
+                columnName_ = input.readBytes();
+                break;
+              }
+              case 16: {
+                bitField0_ |= 0x00000002;
+                keySeq_ = input.readSInt32();
+                break;
+              }
+            }
+          }
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          throw e.setUnfinishedMessage(this);
+        } catch (java.io.IOException e) {
+          throw new com.google.protobuf.InvalidProtocolBufferException(
+              e.getMessage()).setUnfinishedMessage(this);
+        } finally {
+          this.unknownFields = unknownFields.build();
+          makeExtensionsImmutable();
+        }
+      }
+      public static final com.google.protobuf.Descriptors.Descriptor
+          getDescriptor() {
+        return org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.internal_static_org_apache_hadoop_hive_metastore_hbase_PrimaryKey_PrimaryKeyColumn_descriptor;
+      }
+
+      protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.internal_static_org_apache_hadoop_hive_metastore_hbase_PrimaryKey_PrimaryKeyColumn_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PrimaryKey.PrimaryKeyColumn.class, org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PrimaryKey.PrimaryKeyColumn.Builder.class);
+      }
+
+      public static com.google.protobuf.Parser<PrimaryKeyColumn> PARSER =
+          new com.google.protobuf.AbstractParser<PrimaryKeyColumn>() {
+        public PrimaryKeyColumn parsePartialFrom(
+            com.google.protobuf.CodedInputStream input,
+            com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+            throws com.google.protobuf.InvalidProtocolBufferException {
+          return new PrimaryKeyColumn(input, extensionRegistry);
+        }
+      };
+
+      @java.lang.Override
+      public com.google.protobuf.Parser<PrimaryKeyColumn> getParserForType() {
+        return PARSER;
+      }
+
+      private int bitField0_;
+      // required string column_name = 1;
+      public static final int COLUMN_NAME_FIELD_NUMBER = 1;
+      private java.lang.Object columnName_;
+      /**
+       * <code>required string column_name = 1;</code>
+       */
+      public boolean hasColumnName() {
+        return ((bitField0_ & 0x00000001) == 0x00000001);
+      }
+      /**
+       * <code>required string column_name = 1;</code>
+       */
+      public java.lang.String getColumnName() {
+        java.lang.Object ref = columnName_;
+        if (ref instanceof java.lang.String) {
+          return (java.lang.String) ref;
+        } else {
+          com.google.protobuf.ByteString bs = 
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          if (bs.isValidUtf8()) {
+            columnName_ = s;
+          }
+          return s;
+        }
+      }
+      /**
+       * <code>required string column_name = 1;</code>
+       */
+      public com.google.protobuf.ByteString
+          getColumnNameBytes() {
+        java.lang.Object ref = columnName_;
+        if (ref instanceof java.lang.String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          columnName_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+
+      // required sint32 key_seq = 2;
+      public static final int KEY_SEQ_FIELD_NUMBER = 2;
+      private int keySeq_;
+      /**
+       * <code>required sint32 key_seq = 2;</code>
+       */
+      public boolean hasKeySeq() {
+        return ((bitField0_ & 0x00000002) == 0x00000002);
+      }
+      /**
+       * <code>required sint32 key_seq = 2;</code>
+       */
+      public int getKeySeq() {
+        return keySeq_;
+      }
+
+      private void initFields() {
+        columnName_ = "";
+        keySeq_ = 0;
+      }
+      private byte memoizedIsInitialized = -1;
+      public final boolean isInitialized() {
+        byte isInitialized = memoizedIsInitialized;
+        if (isInitialized != -1) return isInitialized == 1;
+
+        if (!hasColumnName()) {
+          memoizedIsInitialized = 0;
+          return false;
+        }
+        if (!hasKeySeq()) {
+          memoizedIsInitialized = 0;
+          return false;
+        }
+        memoizedIsInitialized = 1;
+        return true;
+      }
+
+      public void writeTo(com.google.protobuf.CodedOutputStream output)
+                          throws java.io.IOException {
+        getSerializedSize();
+        if (((bitField0_ & 0x00000001) == 0x00000001)) {
+          output.writeBytes(1, getColumnNameBytes());
+        }
+        if (((bitField0_ & 0x00000002) == 0x00000002)) {
+          output.writeSInt32(2, keySeq_);
+        }
+        getUnknownFields().writeTo(output);
+      }
+
+      private int memoizedSerializedSize = -1;
+      public int getSerializedSize() {
+        int size = memoizedSerializedSize;
+        if (size != -1) return size;
+
+        size = 0;
+        if (((bitField0_ & 0x00000001) == 0x00000001)) {
+          size += com.google.protobuf.CodedOutputStream
+            .computeBytesSize(1, getColumnNameBytes());
+        }
+        if (((bitField0_ & 0x00000002) == 0x00000002)) {
+          size += com.google.protobuf.CodedOutputStream
+            .computeSInt32Size(2, keySeq_);
+        }
+        size += getUnknownFields().getSerializedSize();
+        memoizedSerializedSize = size;
+        return size;
+      }
+
+      private static final long serialVersionUID = 0L;
+      @java.lang.Override
+      protected java.lang.Object writeReplace()
+          throws java.io.ObjectStreamException {
+        return super.writeReplace();
+      }
+
+      public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PrimaryKey.PrimaryKeyColumn parseFrom(
+          com.google.protobuf.ByteString data)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return PARSER.parseFrom(data);
+      }
+      public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PrimaryKey.PrimaryKeyColumn parseFrom(
+          com.google.protobuf.ByteString data,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return PARSER.parseFrom(data, extensionRegistry);
+      }
+      public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PrimaryKey.PrimaryKeyColumn parseFrom(byte[] data)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return PARSER.parseFrom(data);
+      }
+      public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PrimaryKey.PrimaryKeyColumn parseFrom(
+          byte[] data,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return PARSER.parseFrom(data, extensionRegistry);
+      }
+      public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PrimaryKey.PrimaryKeyColumn parseFrom(java.io.InputStream input)
+          throws java.io.IOException {
+        return PARSER.parseFrom(input);
+      }
+      public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PrimaryKey.PrimaryKeyColumn parseFrom(
+          java.io.InputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        return PARSER.parseFrom(input, extensionRegistry);
+      }
+      public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PrimaryKey.PrimaryKeyColumn parseDelimitedFrom(java.io.InputStream input)
+          throws java.io.IOException {
+        return PARSER.parseDelimitedFrom(input);
+      }
+      public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PrimaryKey.PrimaryKeyColumn parseDelimitedFrom(
+          java.io.InputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        return PARSER.parseDelimitedFrom(input, extensionRegistry);
+      }
+      public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PrimaryKey.PrimaryKeyColumn parseFrom(
+          com.google.protobuf.CodedInputStream input)
+          throws java.io.IOException {
+        return PARSER.parseFrom(input);
+      }
+      public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PrimaryKey.PrimaryKeyColumn parseFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        return PARSER.parseFrom(input, extensionRegistry);
+      }
+
+      public static Builder newBuilder() { return Builder.create(); }
+      public Builder newBuilderForType() { return newBuilder(); }
+      public static Builder newBuilder(org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PrimaryKey.PrimaryKeyColumn prototype) {
+        return newBuilder().mergeFrom(prototype);
+      }
+      public Builder toBuilder() { return newBuilder(this); }
+
+      @java.lang.Override
+      protected Builder newBuilderForType(
+          com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+        Builder builder = new Builder(parent);
+        return builder;
+      }
+      /**
+       * Protobuf type {@code org.apache.hadoop.hive.metastore.hbase.PrimaryKey.PrimaryKeyColumn}
+       */
+      public static final class Builder extends
+          com.google.protobuf.GeneratedMessage.Builder<Builder>
+         implements org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PrimaryKey.PrimaryKeyColumnOrBuilder {
+        public static final com.google.protobuf.Descriptors.Descriptor
+            getDescriptor() {
+          return org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.internal_static_org_apache_hadoop_hive_metastore_hbase_PrimaryKey_PrimaryKeyColumn_descriptor;
+        }
+
+        protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+            internalGetFieldAccessorTable() {
+          return org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.internal_static_org_apache_hadoop_hive_metastore_hbase_PrimaryKey_PrimaryKeyColumn_fieldAccessorTable
+              .ensureFieldAccessorsInitialized(
+                  org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PrimaryKey.PrimaryKeyColumn.class, org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PrimaryKey.PrimaryKeyColumn.Builder.class);
+        }
+
+        // Construct using org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PrimaryKey.PrimaryKeyColumn.newBuilder()
+        private Builder() {
+          maybeForceBuilderInitialization();
+        }
+
+        private Builder(
+            com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+          super(parent);
+          maybeForceBuilderInitialization();
+        }
+        private void maybeForceBuilderInitialization() {
+          if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
+          }
+        }
+        private static Builder create() {
+          return new Builder();
+        }
+
+        public Builder clear() {
+          super.clear();
+          columnName_ = "";
+          bitField0_ = (bitField0_ & ~0x00000001);
+          keySeq_ = 0;
+          bitField0_ = (bitField0_ & ~0x00000002);
+          return this;
+        }
+
+        public Builder clone() {
+          return create().mergeFrom(buildPartial());
+        }
+
+        public com.google.protobuf.Descriptors.Descriptor
+            getDescriptorForType() {
+          return org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.internal_static_org_apache_hadoop_hive_metastore_hbase_PrimaryKey_PrimaryKeyColumn_descriptor;
+        }
+
+        public org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PrimaryKey.PrimaryKeyColumn getDefaultInstanceForType() {
+          return org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PrimaryKey.PrimaryKeyColumn.getDefaultInstance();
+        }
+
+        public org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PrimaryKey.PrimaryKeyColumn build() {
+          org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PrimaryKey.PrimaryKeyColumn result = buildPartial();
+          if (!result.isInitialized()) {
+            throw newUninitializedMessageException(result);
+          }
+          return result;
+        }
+
+        public org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PrimaryKey.PrimaryKeyColumn buildPartial() {
+          org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PrimaryKey.PrimaryKeyColumn result = new org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PrimaryKey.PrimaryKeyColumn(this);
+          int from_bitField0_ = bitField0_;
+          int to_bitField0_ = 0;
+          if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
+            to_bitField0_ |= 0x00000001;
+          }
+          result.columnName_ = columnName_;
+          if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
+            to_bitField0_ |= 0x00000002;
+          }
+          result.keySeq_ = keySeq_;
+          result.bitField0_ = to_bitField0_;
+          onBuilt();
+          return result;
+        }
+
+        public Builder mergeFrom(com.google.protobuf.Message other) {
+          if (other instanceof org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PrimaryKey.PrimaryKeyColumn) {
+            return mergeFrom((org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PrimaryKey.PrimaryKeyColumn)other);
+          } else {
+            super.mergeFrom(other);
+            return this;
+          }
+        }
+
+        public Builder mergeFrom(org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PrimaryKey.PrimaryKeyColumn other) {
+          if (other == org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PrimaryKey.PrimaryKeyColumn.getDefaultInstance()) return this;
+          if (other.hasColumnName()) {
+            bitField0_ |= 0x00000001;
+            columnName_ = other.columnName_;
+            onChanged();
+          }
+          if (other.hasKeySeq()) {
+            setKeySeq(other.getKeySeq());
+          }
+          this.mergeUnknownFields(other.getUnknownFields());
+          return this;
+        }
+
+        public final boolean isInitialized() {
+          if (!hasColumnName()) {
+            
+            return false;
+          }
+          if (!hasKeySeq()) {
+            
+            return false;
+          }
+          return true;
+        }
+
+        public Builder mergeFrom(
+            com.google.protobuf.CodedInputStream input,
+            com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+            throws java.io.IOException {
+          org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PrimaryKey.PrimaryKeyColumn parsedMessage = null;
+          try {
+            parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+          } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+            parsedMessage = (org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PrimaryKey.PrimaryKeyColumn) e.getUnfinishedMessage();
+            throw e;
+          } finally {
+            if (parsedMessage != null) {
+              mergeFrom(parsedMessage);
+            }
+          }
+          return this;
+        }
+        private int bitField0_;
+
+        // required string column_name = 1;
+        private java.lang.Object columnName_ = "";
+        /**
+         * <code>required string column_name = 1;</code>
+         */
+        public boolean hasColumnName() {
+          return ((bitField0_ & 0x00000001) == 0x00000001);
+        }
+        /**
+         * <code>required string column_name = 1;</code>
+         */
+        public java.lang.String getColumnName() {
+          java.lang.Object ref = columnName_;
+          if (!(ref instanceof java.lang.String)) {
+            java.lang.String s = ((com.google.protobuf.ByteString) ref)
+                .toStringUtf8();
+            columnName_ = s;
+            return s;
+          } else {
+            return (java.lang.String) ref;
+          }
+        }
+        /**
+         * <code>required string column_name = 1;</code>
+         */
+        public com.google.protobuf.ByteString
+            getColumnNameBytes() {
+          java.lang.Object ref = columnName_;
+          if (ref instanceof String) {
+            com.google.protobuf.ByteString b = 
+                com.google.protobuf.ByteString.copyFromUtf8(
+                    (java.lang.String) ref);
+            columnName_ = b;
+            return b;
+          } else {
+            return (com.google.protobuf.ByteString) ref;
+          }
+        }
+        /**
+         * <code>required string column_name = 1;</code>
+         */
+        public Builder setColumnName(
+            java.lang.String value) {
+          if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000001;
+          columnName_ = value;
+          onChanged();
+          return this;
+        }
+        /**
+         * <code>required string column_name = 1;</code>
+         */
+        public Builder clearColumnName() {
+          bitField0_ = (bitField0_ & ~0x00000001);
+          columnName_ = getDefaultInstance().getColumnName();
+          onChanged();
+          return this;
+        }
+        /**
+         * <code>required string column_name = 1;</code>
+         */
+        public Builder setColumnNameBytes(
+            com.google.protobuf.ByteString value) {
+          if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000001;
+          columnName_ = value;
+          onChanged();
+          return this;
+        }
+
+        // required sint32 key_seq = 2;
+        private int keySeq_ ;
+        /**
+         * <code>required sint32 key_seq = 2;</code>
+         */
+        public boolean hasKeySeq() {
+          return ((bitField0_ & 0x00000002) == 0x00000002);
+        }
+        /**
+         * <code>required sint32 key_seq = 2;</code>
+         */
+        public int getKeySeq() {
+          return keySeq_;
+        }
+        /**
+         * <code>required sint32 key_seq = 2;</code>
+         */
+        public Builder setKeySeq(int value) {
+          bitField0_ |= 0x00000002;
+          keySeq_ = value;
+          onChanged();
+          return this;
+        }
+        /**
+         * <code>required sint32 key_seq = 2;</code>
+         */
+        public Builder clearKeySeq() {
+          bitField0_ = (bitField0_ & ~0x00000002);
+          keySeq_ = 0;
+          onChanged();
+          return this;
+        }
+
+        // @@protoc_insertion_point(builder_scope:org.apache.hadoop.hive.metastore.hbase.PrimaryKey.PrimaryKeyColumn)
+      }
+
+      static {
+        defaultInstance = new PrimaryKeyColumn(true);
+        defaultInstance.initFields();
+      }
+
+      // @@protoc_insertion_point(class_scope:org.apache.hadoop.hive.metastore.hbase.PrimaryKey.PrimaryKeyColumn)
+    }
+
+    private int bitField0_;
+    // required string pk_name = 1;
+    public static final int PK_NAME_FIELD_NUMBER = 1;
+    private java.lang.Object pkName_;
+    /**
+     * <code>required string pk_name = 1;</code>
+     */
+    public boolean hasPkName() {
+      return ((bitField0_ & 0x00000001) == 0x00000001);
+    }
+    /**
+     * <code>required string pk_name = 1;</code>
+     */
+    public java.lang.String getPkName() {
+      java.lang.Object ref = pkName_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        if (bs.isValidUtf8()) {
+          pkName_ = s;
+        }
+        return s;
+      }
+    }
+    /**
+     * <code>required string pk_name = 1;</code>
+     */
+    public com.google.protobuf.ByteString
+        getPkNameBytes() {
+      java.lang.Object ref = pkName_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        pkName_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
+    // repeated .org.apache.hadoop.hive.metastore.hbase.PrimaryKey.PrimaryKeyColumn cols = 2;
+    public static final int COLS_FIELD_NUMBER = 2;
+    private java.util.List<org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PrimaryKey.PrimaryKeyColumn> cols_;
+    /**
+     * <code>repeated .org.apache.hadoop.hive.metastore.hbase.PrimaryKey.PrimaryKeyColumn cols = 2;</code>
+     */
+    public java.util.List<org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PrimaryKey.PrimaryKeyColumn> getColsList() {
+      return cols_;
+    }
+    /**
+     * <code>repeated .org.apache.hadoop.hive.metastore.hbase.PrimaryKey.PrimaryKeyColumn cols = 2;</code>
+     */
+    public java.util.List<? extends org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PrimaryKey.PrimaryKeyColumnOrBuilder> 
+        getColsOrBuilderList() {
+      return cols_;
+    }
+    /**
+     * <code>repeated .org.apache.hadoop.hive.metastore.hbase.PrimaryKey.PrimaryKeyColumn cols = 2;</code>
+     */
+    public int getColsCount() {
+      return cols_.size();
+    }
+    /**
+     * <code>repeated .org.apache.hadoop.hive.metastore.hbase.PrimaryKey.PrimaryKeyColumn cols = 2;</code>
+     */
+    public org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PrimaryKey.PrimaryKeyColumn getCols(int index) {
+      return cols_.get(index);
+    }
+    /**
+     * <code>repeated .org.apache.hadoop.hive.metastore.hbase.PrimaryKey.PrimaryKeyColumn cols = 2;</code>
+     */
+    public org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PrimaryKey.PrimaryKeyColumnOrBuilder getColsOrBuilder(
+        int index) {
+      return cols_.get(index);
+    }
+
+    // optional bool enable_constraint = 3;
+    public static final int ENABLE_CONSTRAINT_FIELD_NUMBER = 3;
+    private boolean enableConstraint_;
+    /**
+     * <code>optional bool enable_constraint = 3;</code>
+     */
+    public boolean hasEnableConstraint() {
+      return ((bitField0_ & 0x00000002) == 0x00000002);
+    }
+    /**
+     * <code>optional bool enable_constraint = 3;</code>
+     */
+    public boolean getEnableConstraint() {
+      return enableConstraint_;
+    }
+
+    // optional bool validate_constraint = 4;
+    public static final int VALIDATE_CONSTRAINT_FIELD_NUMBER = 4;
+    private boolean validateConstraint_;
+    /**
+     * <code>optional bool validate_constraint = 4;</code>
+     */
+    public boolean hasValidateConstraint() {
+      return ((bitField0_ & 0x00000004) == 0x00000004);
+    }
+    /**
+     * <code>optional bool validate_constraint = 4;</code>
+     */
+    public boolean getValidateConstraint() {
+      return validateConstraint_;
+    }
+
+    // optional bool rely_constraint = 5;
+    public static final int RELY_CONSTRAINT_FIELD_NUMBER = 5;
+    private boolean relyConstraint_;
+    /**
+     * <code>optional bool rely_constraint = 5;</code>
+     */
+    public boolean hasRelyConstraint() {
+      return ((bitField0_ & 0x00000008) == 0x00000008);
+    }
+    /**
+     * <code>optional bool rely_constraint = 5;</code>
+     */
+    public boolean getRelyConstraint() {
+      return relyConstraint_;
+    }
+
+    private void initFields() {
+      pkName_ = "";
+      cols_ = java.util.Collections.emptyList();
+      enableConstraint_ = false;
+      validateConstraint_ = false;
+      relyConstraint_ = false;
+    }
+    private byte memoizedIsInitialized = -1;
+    public final boolean isInitialized() {
+      byte isInitialized = memoizedIsInitialized;
+      if (isInitialized != -1) return isInitialized == 1;
+
+      if (!hasPkName()) {
+        memoizedIsInitialized = 0;
+        return false;
+      }
+      for (int i = 0; i < getColsCount(); i++) {
+        if (!getCols(i).isInitialized()) {
+          memoizedIsInitialized = 0;
+          return false;
+        }
+      }
+      memoizedIsInitialized = 1;
+      return true;
+    }
+
+    public void writeTo(com.google.protobuf.CodedOutputStream output)
+                        throws java.io.IOException {
+      getSerializedSize();
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        output.writeBytes(1, getPkNameBytes());
+      }
+      for (int i = 0; i < cols_.size(); i++) {
+        output.writeMessage(2, cols_.get(i));
+      }
+      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+        output.writeBool(3, enableConstraint_);
+      }
+      if (((bitField0_ & 0x00000004) == 0x00000004)) {
+        output.writeBool(4, validateConstraint_);
+      }
+      if (((bitField0_ & 0x00000008) == 0x00000008)) {
+        output.writeBool(5, relyConstraint_);
+      }
+      getUnknownFields().writeTo(output);
+    }
+
+    private int memoizedSerializedSize = -1;
+    public int getSerializedSize() {
+      int size = memoizedSerializedSize;
+      if (size != -1) return size;
+
+      size = 0;
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBytesSize(1, getPkNameBytes());
+      }
+      for (int i = 0; i < cols_.size(); i++) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(2, cols_.get(i));
+      }
+      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBoolSize(3, enableConstraint_);
+      }
+      if (((bitField0_ & 0x00000004) == 0x00000004)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBoolSize(4, validateConstraint_);
+      }
+      if (((bitField0_ & 0x00000008) == 0x00000008)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBoolSize(5, relyConstraint_);
+      }
+      size += getUnknownFields().getSerializedSize();
+      memoizedSerializedSize = size;
+      return size;
+    }
+
+    private static final long serialVersionUID = 0L;
+    @java.lang.Override
+    protected java.lang.Object writeReplace()
+        throws java.io.ObjectStreamException {
+      return super.writeReplace();
+    }
+
+    public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PrimaryKey parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PrimaryKey parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PrimaryKey parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PrimaryKey parseFrom(
+        byte[] data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PrimaryKey parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input);
+    }
+    public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PrimaryKey parseFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input, extensionRegistry);
+    }
+    public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PrimaryKey parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return PARSER.parseDelimitedFrom(input);
+    }
+    public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PrimaryKey parseDelimitedFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseDelimitedFrom(input, extensionRegistry);
+    }
+    public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PrimaryKey parseFrom(
+        com.google.protobuf.CodedInputStream input)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input);
+    }
+    public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PrimaryKey parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input, extensionRegistry);
+    }
+
+    public static Builder newBuilder() { return Builder.create(); }
+    public Builder newBuilderForType() { return newBuilder(); }
+    public static Builder newBuilder(org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PrimaryKey prototype) {
+      return newBuilder().mergeFrom(prototype);
+    }
+    public Builder toBuilder() { return newBuilder(this); }
+
+    @java.lang.Override
+    protected Builder newBuilderForType(
+        com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+      Builder builder = new Builder(parent);
+      return builder;
+    }
+    /**
+     * Protobuf type {@code org.apache.hadoop.hive.metastore.hbase.PrimaryKey}
+     */
+    public static final class Builder extends
+        com.google.protobuf.GeneratedMessage.Builder<Builder>
+       implements org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PrimaryKeyOrBuilder {
+      public static final com.google.protobuf.Descriptors.Descriptor
+          getDescriptor() {
+        return org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.internal_static_org_apache_hadoop_hive_metastore_hbase_PrimaryKey_descriptor;
+      }
+
+      protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.internal_static_org_apache_hadoop_hive_metastore_hbase_PrimaryKey_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PrimaryKey.class, org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PrimaryKey.Builder.class);
+      }
+
+      // Construct using org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PrimaryKey.newBuilder()
+      private Builder() {
+        maybeForceBuilderInitialization();
+      }
+
+      private Builder(
+          com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+        super(parent);
+        maybeForceBuilderInitialization();
+      }
+      private void maybeForceBuilderInitialization() {
+        if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
+          getColsFieldBuilder();
+        }
+      }
+      private static Builder create() {
+        return new Builder();
+      }
+
+      public Builder clear() {
+        super.clear();
+        pkName_ = "";
+        bitField0_ = (bitField0_ & ~0x00000001);
+        if (colsBuilder_ == null) {
+          cols_ = java.util.Collections.emptyList();
+          bitField0_ = (bitField0_ & ~0x00000002);
+        } else {
+          colsBuilder_.clear();
+        }
+        enableConstraint_ = false;
+        bitField0_ = (bitField0_ & ~0x00000004);
+        validateConstraint_ = false;
+        bitField0_ = (bitField0_ & ~0x00000008);
+        relyConstraint_ = false;
+        bitField0_ = (bitField0_ & ~0x00000010);
+        return this;
+      }
+
+      public Builder clone() {
+        return create().mergeFrom(buildPartial());
+      }
+
+      public com.google.protobuf.Descriptors.Descriptor
+          getDescriptorForType() {
+        return org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.internal_static_org_apache_hadoop_hive_metastore_hbase_PrimaryKey_descriptor;
+      }
+
+      public org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PrimaryKey getDefaultInstanceForType() {
+        return org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PrimaryKey.getDefaultInstance();
+      }
+
+      public org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PrimaryKey build() {
+        org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PrimaryKey result = buildPartial();
+        if (!result.isInitialized()) {
+          throw newUninitializedMessageException(result);
+        }
+        return result;
+      }
+
+      public org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PrimaryKey buildPartial() {
+        org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PrimaryKey result = new org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PrimaryKey(this);
+        int from_bitField0_ = bitField0_;
+        int to_bitField0_ = 0;
+        if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
+          to_bitField0_ |= 0x00000001;
+        }
+        result.pkName_ = pkName_;
+        if (colsBuilder_ == null) {
+          if (((bitField0_ & 0x00000002) == 0x00000002)) {
+            cols_ = java.util.Collections.unmodifiableList(cols_);
+            bitField0_ = (bitField0_ & ~0x00000002);
+          }
+          result.cols_ = cols_;
+        } else {
+          result.cols_ = colsBuilder_.build();
+        }
+        if (((from_bitField0_ & 0x00000004) == 0x00000004)) {
+          to_bitField0_ |= 0x00000002;
+        }
+        result.enableConstraint_ = enableConstraint_;
+        if (((from_bitField0_ & 0x00000008) == 0x00000008)) {
+          to_bitField0_ |= 0x00000004;
+        }
+        result.validateConstraint_ = validateConstraint_;
+        if (((from_bitField0_ & 0x00000010) == 0x00000010)) {
+          to_bitField0_ |= 0x00000008;
+        }
+        result.relyConstraint_ = relyConstraint_;
+        result.bitField0_ = to_bitField0_;
+        onBuilt();
+        return result;
+      }
+
+      public Builder mergeFrom(com.google.protobuf.Message other) {
+        if (other instanceof org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PrimaryKey) {
+          return mergeFrom((org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PrimaryKey)other);
+        } else {
+          super.mergeFrom(other);
+          return this;
+        }
+      }
+
+      public Builder mergeFrom(org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PrimaryKey other) {
+        if (other == org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PrimaryKey.getDefaultInstance()) return this;
+        if (other.hasPkName()) {
+          bitField0_ |= 0x00000001;
+          pkName_ = other.pkName_;
+          onChanged();
+        }
+        if (colsBuilder_ == null) {
+          if (!other.cols_.isEmpty()) {
+            if (cols_.isEmpty()) {
+              cols_ = other.cols_;
+              bitField0_ = (bitField0_ & ~0x00000002);
+            } else {
+              ensureColsIsMutable();
+              cols_.addAll(other.cols_);
+            }
+            onChanged();
+          }
+        } else {
+          if (!other.cols_.isEmpty()) {
+            if (colsBuilder_.isEmpty()) {
+              colsBuilder_.dispose();
+              colsBuilder_ = null;
+              cols_ = other.cols_;
+              bitField0_ = (bitField0_ & ~0x00000002);
+              colsBuilder_ = 
+                com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders ?
+                   getColsFieldBuilder() : null;
+            } else {
+              colsBuilder_.addAllMessages(other.cols_);
+            }
+          }
+        }
+        if (other.hasEnableConstraint()) {
+          setEnableConstraint(other.getEnableConstraint());
+        }
+        if (other.hasValidateConstraint()) {
+          setValidateConstraint(other.getValidateConstraint());
+        }
+        if (other.hasRelyConstraint()) {
+          setRelyConstraint(other.getRelyConstraint());
+        }
+        this.mergeUnknownFields(other.getUnknownFields());
+        return this;
+      }
+
+      public final boolean isInitialized() {
+        if (!hasPkName()) {
+          
+          return false;
+        }
+        for (int i = 0; i < getColsCount(); i++) {
+          if (!getCols(i).isInitialized()) {
+            
+            return false;
+          }
+        }
+        return true;
+      }
+
+      public Builder mergeFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PrimaryKey parsedMessage = null;
+        try {
+          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          parsedMessage = (org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PrimaryKey) e.getUnfinishedMessage();
+          throw e;
+        } finally {
+          if (parsedMessage != null) {
+            mergeFrom(parsedMessage);
+          }
+        }
+        return this;
+      }
+      private int bitField0_;
+
+      // required string pk_name = 1;
+      private java.lang.Object pkName_ = "";
+      /**
+       * <code>required string pk_name = 1;</code>
+       */
+      public boolean hasPkName() {
+        return ((bitField0_ & 0x00000001) == 0x00000001);
+      }
+      /**
+       * <code>required string pk_name = 1;</code>
+       */
+      public java.lang.String getPkName() {
+        java.lang.Object ref = pkName_;
+        if (!(ref instanceof java.lang.String)) {
+          java.lang.String s = ((com.google.protobuf.ByteString) ref)
+              .toStringUtf8();
+          pkName_ = s;
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <code>required string pk_name = 1;</code>
+       */
+      public com.google.protobuf.ByteString
+          getPkNameBytes() {
+        java.lang.Object ref = pkName_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          pkName_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>required string pk_name = 1;</code>
+       */
+      public Builder setPkName(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000001;
+        pkName_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>required string pk_name = 1;</code>
+       */
+      public Builder clearPkName() {
+        bitField0_ = (bitField0_ & ~0x00000001);
+        pkName_ = getDefaultInstance().getPkName();
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>required string pk_name = 1;</code>
+       */
+      public Builder setPkNameBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000001;
+        pkName_ = value;
+        onChanged();
+        return this;
+      }
+
+      // repeated .org.apache.hadoop.hive.metastore.hbase.PrimaryKey.PrimaryKeyColumn cols = 2;
+      private java.util.List<org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PrimaryKey.PrimaryKeyColumn> cols_ =
+        java.util.Collections.emptyList();
+      private void ensureColsIsMutable() {
+        if (!((bitField0_ & 0x00000002) == 0x00000002)) {
+          cols_ = new java.util.ArrayList<org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PrimaryKey.PrimaryKeyColumn>(cols_);
+          bitField0_ |= 0x00000002;
+         }
+      }
+
+      private com.google.protobuf.RepeatedFieldBuilder<
+          org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PrimaryKey.PrimaryKeyColumn, org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PrimaryKey.PrimaryKeyColumn.Builder, org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PrimaryKey.PrimaryKeyColumnOrBuilder> colsBuilder_;
+
+      /**
+       * <code>repeated .org.apache.hadoop.hive.metastore.hbase.PrimaryKey.PrimaryKeyColumn cols = 2;</code>
+       */
+      public java.util.List<org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PrimaryKey.PrimaryKeyColumn> getColsList() {
+        if (colsBuilder_ == null) {
+          return java.util.Collections.unmodifiableList(cols_);
+        } else {
+          return colsBuilder_.getMessageList();
+        }
+      }
+      /**
+       * <code>repeated .org.apache.hadoop.hive.metastore.hbase.PrimaryKey.PrimaryKeyColumn cols = 2;</code>
+       */
+      public int getColsCount() {
+        if (colsBuilder_ == null) {
+          return cols_.size();
+        } else {
+          return colsBuilder_.getCount();
+        }
+      }
+      /**
+       * <code>repeated .org.apache.hadoop.hive.metastore.hbase.PrimaryKey.PrimaryKeyColumn cols = 2;</code>
+       */
+      public org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PrimaryKey.PrimaryKeyColumn getCols(int index) {
+        if (colsBuilder_ == null) {
+          return cols_.get(index);
+        } else {
+          return colsBuilder_.getMessage(index);
+        }
+      }
+      /**
+       * <code>repeated .org.apache.hadoop.hive.metastore.hbase.PrimaryKey.PrimaryKeyColumn cols = 2;</code>
+       */
+      public Builder setCols(
+          int index, org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PrimaryKey.PrimaryKeyColumn value) {
+        if (colsBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureColsIsMutable();
+          cols_.set(index, value);
+          onChanged();
+        } else {
+          colsBuilder_.setMessage(index, value);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .org.apache.hadoop.hive.metastore.hbase.PrimaryKey.PrimaryKeyColumn cols = 2;</code>
+       */
+      public Builder setCols(
+          int index, org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PrimaryKey.PrimaryKeyColumn.Builder builderForValue) {
+        if (colsBuilder_ == null) {
+          ensureColsIsMutable();
+          cols_.set(index, builderForValue.build());
+          onChanged();
+        } else {
+          colsBuilder_.setMessage(index, builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .org.apache.hadoop.hive.metastore.hbase.PrimaryKey.PrimaryKeyColumn cols = 2;</code>
+       */
+      public Builder addCols(org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PrimaryKey.PrimaryKeyColumn value) {
+        if (colsBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureColsIsMutable();
+          cols_.add(value);
+          onChanged();
+        } else {
+          colsBuilder_.addMessage(value);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .org.apache.hadoop.hive.metastore.hbase.PrimaryKey.PrimaryKeyColumn cols = 2;</code>
+       */
+      public Builder addCols(
+          int index, org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PrimaryKey.PrimaryKeyColumn value) {
+        if (colsBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureColsIsMutable();
+          cols_.add(index, value);
+          onChanged();
+        } else {
+          colsBuilder_.addMessage(index, value);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .org.apache.hadoop.hive.metastore.hbase.PrimaryKey.PrimaryKeyColumn cols = 2;</code>
+       */
+      public Builder addCols(
+          org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PrimaryKey.PrimaryKeyColumn.Builder builderForValue) {
+        if (colsBuilder_ == null) {
+          ensureColsIsMutable();
+          cols_.add(builderForValue.build());
+          onChanged();
+        } else {
+          colsBuilder_.addMessage(builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .org.apache.hadoop.hive.metastore.hbase.PrimaryKey.PrimaryKeyColumn cols = 2;</code>
+       */
+      public Builder addCols(
+          int index, org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PrimaryKey.PrimaryKeyColumn.Builder builderForValue) {
+        if (colsBuilder_ == null) {
+          ensureColsIsMutable();
+          cols_.add(index, builderForValue.build());
+          onChanged();
+        } else {
+          colsBuilder_.addMessage(index, builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .org.apache.hadoop.hive.metastore.hbase.PrimaryKey.PrimaryKeyColumn cols = 2;</code>
+       */
+      public Builder addAllCols(
+          java.lang.Iterable<? extends org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PrimaryKey.PrimaryKeyColumn> values) {
+        if (colsBuilder_ == null) {
+          ensureColsIsMutable();
+          super.addAll(values, cols_);
+          onChanged();
+        } else {
+          colsBuilder_.addAllMessages(values);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .org.apache.hadoop.hive.metastore.hbase.PrimaryKey.PrimaryKeyColumn cols = 2;</code>
+       */
+      public Builder clearCols() {
+        if (colsBuilder_ == null) {
+          cols_ = java.util.Collections.emptyList();
+          bitField0_ = (bitField0_ & ~0x00000002);
+          onChanged();
+        } else {
+          colsBuilder_.clear();
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .org.apache.hadoop.hive.metastore.hbase.PrimaryKey.PrimaryKeyColumn cols = 2;</code>
+       */
+      public Builder removeCols(int index) {
+        if (colsBuilder_ == null) {
+          ensureColsIsMutable();
+          cols_.remove(index);
+          onChanged();
+        } else {
+          colsBuilder_.remove(index);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .org.apache.hadoop.hive.metastore.hbase.PrimaryKey.PrimaryKeyColumn cols = 2;</code>
+       */
+      public org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PrimaryKey.PrimaryKeyColumn.Builder getColsBuilder(
+          int index) {
+        return getColsFieldBuilder().getBuilder(index);
+      }
+      /**
+       * <code>repeated .org.apache.hadoop.hive.metastore.hbase.PrimaryKey.PrimaryKeyColumn cols = 2;</code>
+       */
+      public org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PrimaryKey.PrimaryKeyColumnOrBuilder getColsOrBuilder(
+          int index) {
+        if (colsBuilder_ == null) {
+          return cols_.get(index);  } else {
+          return colsBuilder_.getMessageOrBuilder(index);
+        }
+      }
+      /**
+       * <code>repeated .org.apache.hadoop.hive.metastore.hbase.PrimaryKey.PrimaryKeyColumn cols = 2;</code>
+       */
+      public java.util.List<? extends org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PrimaryKey.PrimaryKeyColumnOrBuilder> 
+           getColsOrBuilderList() {
+        if (colsBuilder_ != null) {
+          return colsBuilder_.getMessageOrBuilderList();
+        } else {
+          return java.util.Collections.unmodifiableList(cols_);
+        }
+      }
+      /**
+       * <code>repeated .org.apache.hadoop.hive.metastore.hbase.PrimaryKey.PrimaryKeyColumn cols = 2;</code>
+       */
+      public org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PrimaryKey.PrimaryKeyColumn.Builder addColsBuilder() {
+        return getColsFieldBuilder().addBuilder(
+            org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PrimaryKey.PrimaryKeyColumn.getDefaultInstance());
+      }
+      /**
+       * <code>repeated .org.apache.hadoop.hive.metastore.hbase.PrimaryKey.PrimaryKeyColumn cols = 2;</code>
+       */
+      public org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PrimaryKey.PrimaryKeyColumn.Builder addColsBuilder(
+          int index) {
+        return getColsFieldBuilder().addBuilder(
+            index, org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PrimaryKey.PrimaryKeyColumn.getDefaultInstance());
+      }
+      /**
+       * <code>repeated .org.apache.hadoop.hive.metastore.hbase.PrimaryKey.PrimaryKeyColumn cols = 2;</code>
+       */
+      public java.util.List<org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PrimaryKey.PrimaryKeyColumn.Builder> 
+           getColsBuilderList() {
+        return getColsFieldBuilder().getBuilderList();
+      }
+      private com.google.protobuf.RepeatedFieldBuilder<
+          org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PrimaryKey.PrimaryKeyColumn, org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PrimaryKey.PrimaryKeyColumn.Builder, org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PrimaryKey.PrimaryKeyColumnOrBuilder> 
+          getColsFieldBuilder() {
+        if (colsBuilder_ == null) {
+          colsBuilder_ = new com.google.protobuf.RepeatedFieldBuilder<
+              org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PrimaryKey.PrimaryKeyColumn, org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PrimaryKey.PrimaryKeyColumn.Builder, org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PrimaryKey.PrimaryKeyColumnOrBuilder>(
+                  cols_,
+                  ((bitField0_ & 0x00000002) == 0x00000002),
+                  getParentForChildren(),
+                  isClean());
+          cols_ = null;
+        }
+        return colsBuilder_;
+      }
+
+      // optional bool enable_constraint = 3;
+      private boolean enableConstraint_ ;
+      /**
+       * <code>optional bool enable_constraint = 3;</code>
+       */
+      public boolean hasEnableConstraint() {
+        return ((bitField0_ & 0x00000004) == 0x00000004);
+      }
+      /**
+       * <code>optional bool enable_constraint = 3;</code>
+       */
+      public boolean getEnableConstraint() {
+        return enableConstraint_;
+      }
+      /**
+       * <code>optional bool enable_constraint = 3;</code>
+       */
+      public Builder setEnableConstraint(boolean value) {
+        bitField0_ |= 0x00000004;
+        enableConstraint_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional bool enable_constraint = 3;</code>
+       */
+      public Builder clearEnableConstraint() {
+        bitField0_ = (bitField0_ & ~0x00000004);
+        enableConstraint_ = false;
+        onChanged();
+        return this;
+      }
+
+      // optional bool validate_constraint = 4;
+      private boolean validateConstraint_ ;
+      /**
+       * <code>optional bool validate_constraint = 4;</code>
+       */
+      public boolean hasValidateConstraint() {
+        return ((bitField0_ & 0x00000008) == 0x00000008);
+      }
+      /**
+       * <code>optional bool validate_constraint = 4;</code>
+       */
+      public boolean getValidateConstraint() {
+        return validateConstraint_;
+      }
+      /**
+       * <code>optional bool validate_constraint = 4;</code>
+       */
+      public Builder setValidateConstraint(boolean value) {
+        bitField0_ |= 0x00000008;
+        validateConstraint_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional bool validate_constraint = 4;</code>
+       */
+      public Builder clearValidateConstraint() {
+        bitField0_ = (bitField0_ & ~0x00000008);
+        validateConstraint_ = false;
+        onChanged();
+        return this;
+      }
+
+      // optional bool rely_constraint = 5;
+      private boolean relyConstraint_ ;
+      /**
+       * <code>optional bool rely_constraint = 5;</code>
+       */
+      public boolean hasRelyConstraint() {
+        return ((bitField0_ & 0x00000010) == 0x00000010);
+      }
+      /**
+       * <code>optional bool rely_constraint = 5;</code>
+       */
+      public boolean getRelyConstraint() {
+        return relyConstraint_;
+      }
+      /**
+       * <code>optional bool rely_constraint = 5;</code>
+       */
+      public Builder setRelyConstraint(boolean value) {
+        bitField0_ |= 0x00000010;
+        relyConstraint_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional bool rely_constraint = 5;</code>
+       */
+      public Builder clearRelyConstraint() {
+        bitField0_ = (bitField0_ & ~0x00000010);
+        relyConstraint_ = false;
+        onChanged();
+        return this;
+      }
+
+      // @@protoc_insertion_point(builder_scope:org.apache.hadoop.hive.metastore.hbase.PrimaryKey)
+    }
+
+    static {
+      defaultInstance = new PrimaryKey(true);
+      defaultInstance.initFields();
+    }
+
+    // @@protoc_insertion_point(class_scope:org.apache.hadoop.hive.metastore.hbase.PrimaryKey)
+  }
+
+  public interface ForeignKeysOrBuilder
+      extends com.google.protobuf.MessageOrBuilder {
+
+    // repeated .org.apache.hadoop.hive.metastore.hbase.ForeignKeys.ForeignKey fks = 1;
+    /**
+     * <code>repeated .org.apache.hadoop.hive.metastore.hbase.ForeignKeys.ForeignKey fks = 1;</code>
+     */
+    java.util.List<org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ForeignKeys.ForeignKey> 
+        getFksList();
+    /**
+     * <code>repeated .org.apache.hadoop.hive.metastore.hbase.ForeignKeys.ForeignKey fks = 1;</code>
+     */
+    org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ForeignKeys.ForeignKey getFks(int index);
+    /**
+     * <code>repeated .org.apache.hadoop.hive.metastore.hbase.ForeignKeys.ForeignKey fks = 1;</code>
+     */
+    int getFksCount();
+    /**
+     * <code>repeated .org.apache.hadoop.hive.metastore.hbase.ForeignKeys.ForeignKey fks = 1;</code>
+     */
+    java.util.List<? extends org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ForeignKeys.ForeignKeyOrBuilder> 
+        getFksOrBuilderList();
+    /**
+     * <code>repeated .org.apache.hadoop.hive.metastore.hbase.ForeignKeys.ForeignKey fks = 1;</code>
+     */
+    org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ForeignKeys.ForeignKeyOrBuilder getFksOrBuilder(
+        int index);
+  }
+  /**
+   * Protobuf type {@code org.apache.hadoop.hive.metastore.hbase.ForeignKeys}
+   */
+  public static final class ForeignKeys extends
+      com.google.protobuf.GeneratedMessage
+      implements ForeignKeysOrBuilder {
+    // Use ForeignKeys.newBuilder() to construct.
+    private ForeignKeys(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
+      super(builder);
+      this.unknownFields = builder.getUnknownFields();
+    }
+    private ForeignKeys(boolean noInit) { this.unknownFields = com.google.protobuf.UnknownFieldSet.getDefaultInstance(); }
+
+    private static final ForeignKeys defaultInstance;
+    public static ForeignKeys getDefaultInstance() {
+      return defaultInstance;
+    }
+
+    public ForeignKeys getDefaultInstanceForType() {
+      return defaultInstance;
+    }
+
+    private final com.google.protobuf.UnknownFieldSet unknownFields;
+    @java.lang.Override
+    public final com.google.protobuf.UnknownFieldSet
+        getUnknownFields() {
+      return this.unknownFields;
+    }
+    private ForeignKeys(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      initFields();
+      int mutable_bitField0_ = 0;
+      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+          com.google.protobuf.UnknownFieldSet.newBuilder();
+      try {
+        boolean done = false;
+        while (!done) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              done = true;
+              break;
+            default: {
+              if (!parseUnknownField(input, unknownFields,
+                                     extensionRegistry, tag)) {
+                done = true;
+              }
+              break;
+            }
+            case 10: {
+              if (!((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
+                fks_ = new java.util.ArrayList<org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ForeignKeys.ForeignKey>();
+                mutable_bitField0_ |= 0x00000001;
+              }
+              fks_.add(input.readMessage(org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ForeignKeys.ForeignKey.PARSER, extensionRegistry));
+              break;
+            }
+          }
+        }
+      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+        throw e.setUnfinishedMessage(this);
+      } catch (java.io.IOException e) {
+        throw new com.google.protobuf.InvalidProtocolBufferException(
+            e.getMessage()).setUnfinishedMessage(this);
+      } finally {
+        if (((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
+          fks_ = java.util.Collections.unmodifiableList(fks_);
+        }
+        this.unknownFields = unknownFields.build();
+        makeExtensionsImmutable();
+      }
+    }
+    public static final com.google.protobuf.Descriptors.Descriptor
+        getDescriptor() {
+      return org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.internal_static_org_apache_hadoop_hive_metastore_hbase_ForeignKeys_descriptor;
+    }
+
+    protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.internal_static_org_apache_hadoop_hive_metastore_hbase_ForeignKeys_fieldAccessorTable
+          .ensureFieldAccessorsInitialized(
+              org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ForeignKeys.class, org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ForeignKeys.Builder.class);
+    }
+
+    public static com.google.protobuf.Parser<ForeignKeys> PARSER =
+        new com.google.protobuf.AbstractParser<ForeignKeys>() {
+      public ForeignKeys parsePartialFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return new ForeignKeys(input, extensionRegistry);
+      }
+    };
+
+    @java.lang.Override
+    public com.google.protobuf.Parser<ForeignKeys> getParserForType() {
+      return PARSER;
+    }
+
+    public interface ForeignKeyOrBuilder
+        extends com.google.protobuf.MessageOrBuilder {
+
+      // required string fk_name = 1;
+      /**
+       * <code>required string fk_name = 1;</code>
+       */
+      boolean hasFkName();
+      /**
+       * <code>required string fk_name = 1;</code>
+       */
+      java.lang.String getFkName();
+      /**
+       * <code>required string fk_name = 1;</code>
+       */
+      com.google.protobuf.ByteString
+          getFkNameBytes();
+
+      // required string referenced_db_name = 2;
+      /**
+       * <code>required string referenced_db_name = 2;</code>
+       */
+      boolean hasReferencedDbName();
+      /**
+       * <code>required string referenced_db_name = 2;</code>
+       */
+      java.lang.String getReferencedDbName();
+      /**
+       * <code>required string referenced_db_name = 2;</code>
+       */
+      com.google.protobuf.ByteString
+          getReferencedDbNameBytes();
+
+      // required string referenced_table_name = 3;
+      /**
+       * <code>required string referenced_table_name = 3;</code>
+       */
+      boolean hasReferencedTableName();
+      /**
+       * <code>required string referenced_table_name = 3;</code>
+       */
+      java.lang.String getReferencedTableName();
+      /**
+       * <code>required string referenced_table_name = 3;</code>
+       */
+      com.google.protobuf.ByteString
+          getReferencedTableNameBytes();
+
+      // optional string referenced_pk_name = 4;
+      /**
+       * <code>optional string referenced_pk_name = 4;</code>
+       */
+      boolean hasReferencedPkName();
+      /**
+       * <code>optional string referenced_pk_name = 4;</code>
+       */
+      java.lang.String getReferencedPkName();
+      /**
+       * <code>optional string referenced_pk_name = 4;</code>
+       */
+      com.google.protobuf.ByteString
+          getReferencedPkNameBytes();
+
+      // optional int32 update_rule = 5;
+      /**
+       * <code>optional int32 update_rule = 5;</code>
+       */
+      boolean hasUpdateRule();
+      /**
+       * <code>optional int32 update_rule = 5;</code>
+       */
+      int getUpdateRule();
+
+      // optional int32 delete_rule = 6;
+      /**
+       * <code>optional int32 delete_rule = 6;</code>
+       */
+      boolean hasDeleteRule();
+      /**
+       * <code>optional int32 delete_rule = 6;</code>
+       */
+      int getDeleteRule();
+
+      // repeated .org.apache.hadoop.hive.metastore.hbase.ForeignKeys.ForeignKey.ForeignKeyColumn cols = 7;
+      /**
+       * <code>repeated .org.apache.hadoop.hive.metastore.hbase.ForeignKeys.ForeignKey.ForeignKeyColumn cols = 7;</code>
+       */
+      java.util.List<org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ForeignKeys.ForeignKey.ForeignKeyColumn> 
+          getColsList();
+      /**
+       * <code>repeated .org.apache.hadoop.hive.metastore.hbase.ForeignKeys.ForeignKey.ForeignKeyColumn cols = 7;</code>
+       */
+      org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ForeignKeys.ForeignKey.ForeignKeyColumn getCols(int index);
+      /**
+       * <code>repeated .org.apache.hadoop.hive.metastore.hbase.ForeignKeys.ForeignKey.ForeignKeyColumn cols = 7;</code>
+       */
+      int getColsCount();
+      /**
+       * <code>repeated .org.apache.hadoop.hive.metastore.hbase.ForeignKeys.ForeignKey.ForeignKeyColumn cols = 7;</code>
+       */
+      java.util.List<? extends org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ForeignKeys.ForeignKey.ForeignKeyColumnOrBuilder> 
+          getColsOrBuilderList();
+      /**
+       * <code>repeated .org.apache.hadoop.hive.metastore.hbase.ForeignKeys.ForeignKey.ForeignKeyColumn cols = 7;</code>
+       */
+      org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ForeignKeys.ForeignKey.ForeignKeyColumnOrBuilder getColsOrBuilder(
+          int index);
+
+      // optional bool enable_constraint = 8;
+      /**
+       * <code>optional bool enable_constraint = 8;</code>
+       */
+      boolean hasEnableConstraint();
+      /**
+       * <code>optional bool enable_constraint = 8;</code>
+       */
+      boolean getEnableConstraint();
+
+      // optional bool validate_constraint = 9;
+      /**
+       * <code>optional bool validate_constraint = 9;</code>
+       */
+      boolean hasValidateConstraint();
+      /**
+       * <code>optional bool validate_constraint = 9;</code>
+       */
+      boolean getValidateConstraint();
+
+      // optional bool rely_constraint = 10;
+      /**
+       * <code>optional bool rely_constraint = 10;</code>
+       */
+      boolean hasRelyConstraint();
+      /**
+       * <code>optional bool rely_constraint = 10;</code>
+       */
+      boolean getRelyConstraint();
+    }
+    /**
+     * Protobuf type {@code org.apache.hadoop.hive.metastore.hbase.ForeignKeys.ForeignKey}
+     */
+    public static final class ForeignKey extends
+        com.google.protobuf.GeneratedMessage
+        implements ForeignKeyOrBuilder {
+      // Use ForeignKey.newBuilder() to construct.
+      private ForeignKey(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
+        super(builder);
+        this.unknownFields = builder.getUnknownFields();
+      }
+      private ForeignKey(boolean noInit) { this.unknownFields = com.google.protobuf.UnknownFieldSet.getDefaultInstance(); }
+
+      private static final ForeignKey defaultInstance;
+      public static ForeignKey getDefaultInstance() {
+        return defaultInstance;
+      }
+
+      public ForeignKey getDefaultInstanceForType() {
+        return defaultInstance;
+      }
+
+      private final com.google.protobuf.UnknownFieldSet unknownFields;
+      @java.lang.Override
+      public final com.google.protobuf.UnknownFieldSet
+          getUnknownFields() {
+        return this.unknownFields;
+      }
+      private ForeignKey(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        initFields();
+        int mutable_bitField0_ = 0;
+        com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+            com.google.protobuf.UnknownFieldSet.newBuilder();
+        try {
+          boolean done = false;
+          while (!done) {
+            int tag = input.readTag();
+            switch (tag) {
+              case 0:
+                done = true;
+                break;
+              default: {
+                if (!parseUnknownField(input, unknownFields,
+                                       extensionRegistry, tag)) {
+                  done = true;
+                }
+                break;
+              }
+              case 10: {
+                bitField0_ |= 0x00000001;
+                fkName_ = input.readBytes();
+                break;
+              }
+              case 18: {
+                bitField0_ |= 0x00000002;
+                referencedDbName_ = input.readBytes();
+                break;
+              }
+              case 26: {
+                bitField0_ |= 0x00000004;
+                referencedTableName_ = input.readBytes();
+                break;
+              }
+              case 34: {
+                bitField0_ |= 0x00000008;
+                referencedPkName_ = input.readBytes();
+                break;
+              }
+              case 40: {
+                bitField0_ |= 0x00000010;
+                updateRule_ = input.readInt32();
+                break;
+              }
+              case 48: {
+                bitField0_ |= 0x00000020;
+                deleteRule_ = input.readInt32();
+                break;
+              }
+              case 58: {
+                if (!((mutable_bitField0_ & 0x00000040) == 0x00000040)) {
+                  cols_ = new java.util.ArrayList<org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ForeignKeys.ForeignKey.ForeignKeyColumn>();
+                  mutable_bitField0_ |= 0x00000040;
+                }
+                cols_.add(input.readMessage(org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ForeignKeys.ForeignKey.ForeignKeyColumn.PARSER, extensionRegistry));
+                break;
+              }
+              case 64: {
+                bitField0_ |= 0x00000040;
+                enableConstraint_ = input.readBool();
+                break;
+              }
+              case 72: {
+                bitField0_ |= 0x00000080;
+                validateConstraint_ = input.readBool();
+                break;
+              }
+              case 80: {
+                bitField0_ |= 0x00000100;
+                relyConstraint_ = input.readBool();
+                break;
+              }
+            }
+          }
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          throw e.setUnfinishedMessage(this);
+        } catch (java.io.IOException e) {
+          throw new com.google.protobuf.InvalidProtocolBufferException(
+              e.getMessage()).setUnfinishedMessage(this);
+        } finally {
+          if (((mutable_bitField0_ & 0x00000040) == 0x00000040)) {
+            cols_ = java.util.Collections.unmodifiableList(cols_);
+          }
+          this.unknownFields = unknownFields.build();
+          makeExtensionsImmutable();
+        }
+      }
+      public static final com.google.protobuf.Descriptors.Descriptor
+          getDescriptor() {
+        return org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.internal_static_org_apache_hadoop_hive_metastore_hbase_ForeignKeys_ForeignKey_descriptor;
+      }
+
+      protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.internal_static_org_apache_hadoop_hive_metastore_hbase_ForeignKeys_ForeignKey_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ForeignKeys.ForeignKey.class, org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ForeignKeys.ForeignKey.Builder.class);
+      }
+
+      public static com.google.protobuf.Parser<ForeignKey> PARSER =
+          new com.google.protobuf.AbstractParser<ForeignKey>() {
+        public ForeignKey parsePartialFrom(
+            com.google.protobuf.CodedInputStream input,
+            com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+            throws com.google.protobuf.InvalidProtocolBufferException {
+          return new ForeignKey(input, extensionRegistry);
+        }
+      };
+
+      @java.lang.Override
+      public com.google.protobuf.Parser<ForeignKey> getParserForType() {
+        return PARSER;
+      }
+
+      public interface ForeignKeyColumnOrBuilder
+          extends com.google.protobuf.MessageOrBuilder {
+
+        // required string column_name = 1;
+        /**
+         * <code>required string column_name = 1;</code>
+         */
+        boolean hasColumnName();
+        /**
+         * <code>required string column_name = 1;</code>
+         */
+        java.lang.String getColumnName();
+        /**
+         * <code>required string column_name = 1;</code>
+         */
+        com.google.protobuf.ByteString
+            getColumnNameBytes();
+
+        // required string referenced_column_name = 2;
+        /**
+         * <code>required string referenced_column_name = 2;</code>
+         */
+        boolean hasReferencedColumnName();
+        /**
+         * <code>required string referenced_column_name = 2;</code>
+         */
+        java.lang.String getReferencedColumnName();
+        /**
+         * <code>required string referenced_column_name = 2;</code>
+         */
+        com.google.protobuf.ByteString
+            getReferencedColumnNameBytes();
+
+        // required sint32 key_seq = 3;
+        /**
+         * <code>required sint32 key_seq = 3;</code>
+         */
+        boolean hasKeySeq();
+        /**
+         * <code>required sint32 key_seq = 3;</code>
+         */
+        int getKeySeq();
+      }
+      /**
+       * Protobuf type {@code org.apache.hadoop.hive.metastore.hbase.ForeignKeys.ForeignKey.ForeignKeyColumn}
+       */
+      public static final class ForeignKeyColumn extends
+          com.google.protobuf.GeneratedMessage
+          implements ForeignKeyColumnOrBuilder {
+        // Use ForeignKeyColumn.newBuilder() to construct.
+        private ForeignKeyColumn(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
+          super(builder);
+          this.unknownFields = builder.getUnknownFields();
+        }
+        private ForeignKeyColumn(boolean noInit) { this.unknownFields = com.google.protobuf.UnknownFieldSet.getDefaultInstance(); }
+
+        private static final ForeignKeyColumn defaultInstance;
+        public static ForeignKeyColumn getDefaultInstance() {
+          return defaultInstance;
+        }
+
+        public ForeignKeyColumn getDefaultInstanceForType() {
+          return defaultInstance;
+        }
+
+        private final com.google.protobuf.UnknownFieldSet unknownFields;
+        @java.lang.Override
+        public final com.google.protobuf.UnknownFieldSet
+            getUnknownFields() {
+          return this.unknownFields;
+        }
+        private ForeignKeyColumn(
+            com.google.protobuf.CodedInputStream input,
+            com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+            throws com.google.protobuf.InvalidProtocolBufferException {
+          initFields();
+          int mutable_bitField0_ = 0;
+          com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+              com.google.protobuf.UnknownFieldSet.newBuilder();
+          try {
+            boolean done = false;
+            while (!done) {
+              int tag = input.readTag();
+              switch (tag) {
+                case 0:
+                  done = true;
+                  break;
+                default: {
+                  if (!parseUnknownField(input, unknownFields,
+                                         extensionRegistry, tag)) {
+                    done = true;
+                  }
+                  break;
+                }
+                case 10: {
+                  bitField0_ |= 0x00000001;
+                  columnName_ = input.readBytes();
+                  break;
+                }
+                case 18: {
+                  bitField0_ |= 0x00000002;
+                  referencedColumnName_ = input.readBytes();
+                  break;
+                }
+                case 24: {
+                  bitField0_ |= 0x00000004;
+                  keySeq_ = input.readSInt32();
+                  break;
+                }
+              }
+            }
+          } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+            throw e.setUnfinishedMessage(this);
+          } catch (java.io.IOException e) {
+            throw new com.google.protobuf.InvalidProtocolBufferException(
+                e.getMessage()).setUnfinishedMessage(this);
+          } finally {
+            this.unknownFields = unknownFields.build();
+            makeExtensionsImmutable();
+          }
+        }
+        public static final com.google.protobuf.Descriptors.Descriptor
+            getDescriptor() {
+          return org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.internal_static_org_apache_hadoop_hive_metastore_hbase_ForeignKeys_ForeignKey_ForeignKeyColumn_descriptor;
+        }
+
+        protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+            internalGetFieldAccessorTable() {
+          return org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.internal_static_org_apache_hadoop_hive_metastore_hbase_ForeignKeys_ForeignKey_ForeignKeyColumn_fieldAccessorTable
+              .ensureFieldAccessorsInitialized(
+                  org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ForeignKeys.ForeignKey.ForeignKeyColumn.class, org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ForeignKeys.ForeignKey.ForeignKeyColumn.Builder.class);
+        }
+
+        public static com.google.protobuf.Parser<ForeignKeyColumn> PARSER =
+            new com.google.protobuf.AbstractParser<ForeignKeyColumn>() {
+          public ForeignKeyColumn parsePartialFrom(
+              com.google.protobuf.CodedInputStream input,
+              com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+              throws com.google.protobuf.InvalidProtocolBufferException {
+            return new ForeignKeyColumn(input, extensionRegistry);
+          }
+        };
+
+        @java.lang.Override
+        public com.google.protobuf.Parser<ForeignKeyColumn> getParserForType() {
+          return PARSER;
+        }
+
+        private int bitField0_;
+        // required string column_name = 1;
+        public static final int COLUMN_NAME_FIELD_NUMBER = 1;
+        private java.lang.Object columnName_;
+        /**
+         * <code>required string column_name = 1;</code>
+         */
+        public boolean hasColumnName() {
+          return ((bitField0_ & 0x00000001) == 0x00000001);
+        }
+        /**
+         * <code>required string column_name = 1;</code>
+         */
+        public java.lang.String getColumnName() {
+          java.lang.Object ref = columnName_;
+          if (ref instanceof java.lang.String) {
+            return (java.lang.String) ref;
+          } else {
+            com.google.protobuf.ByteString bs = 
+                (com.google.protobuf.ByteString) ref;
+            java.lang.String s = bs.toStringUtf8();
+            if (bs.isValidUtf8()) {
+              columnName_ = s;
+            }
+            return s;
+          }
+        }
+        /**
+         * <code>required string column_name = 1;</code>
+         */
+        public com.google.protobuf.ByteString
+            getColumnNameBytes() {
+          java.lang.Object ref = columnName_;
+          if (ref instanceof java.lang.String) {
+            com.google.protobuf.ByteString b = 
+                com.google.protobuf.ByteString.copyFromUtf8(
+                    (java.lang.String) ref);
+            columnName_ = b;
+            return b;
+          } else {
+            return (com.google.protobuf.ByteString) ref;
+          }
+        }
+
+        // required string referenced_column_name = 2;
+        public static final int REFERENCED_COLUMN_NAME_FIELD_NUMBER = 2;
+        private java.lang.Object referencedColumnName_;
+        /**
+         * <code>required string referenced_column_name = 2;</code>
+         */
+        public boolean hasReferencedColumnName() {
+          return ((bitField0_ & 0x00000002) == 0x00000002);
+        }
+        /**
+         * <code>required string referenced_column_name = 2;</code>
+         */
+        public java.lang.String getReferencedColumnName() {
+          java.lang.Object ref = referencedColumnName_;
+          if (ref instanceof java.lang.String) {
+            return (java.lang.String) ref;
+          } else {
+            com.google.protobuf.ByteString bs = 
+                (com.google.protobuf.ByteString) ref;
+            java.lang.String s = bs.toStringUtf8();
+            if (bs.isValidUtf8()) {
+              referencedColumnName_ = s;
+            }
+            return s;
+          }
+        }
+        /**
+         * <code>required string referenced_column_name = 2;</code>
+         */
+        public com.google.protobuf.ByteString
+            getReferencedColumnNameBytes() {
+          java.lang.Object ref = referencedColumnName_;
+          if (ref instanceof java.lang.String) {
+            com.google.protobuf.ByteString b = 
+                com.google.protobuf.ByteString.copyFromUtf8(
+                    (java.lang.String) ref);
+            referencedColumnName_ = b;
+            return b;
+          } else {
+            return (com.google.protobuf.ByteString) ref;
+          }
+        }
+
+        // required sint32 key_seq = 3;
+        public static final int KEY_SEQ_FIELD_NUMBER = 3;
+        private int keySeq_;
+        /**
+         * <code>required sint32 key_seq = 3;</code>
+         */
+        public boolean hasKeySeq() {
+          return ((bitField0_ & 0x00000004) == 0x00000004);
+        }
+        /**
+         * <code>required sint32 key_seq = 3;</code>
+         */
+        public int getKeySeq() {
+          return keySeq_;
+        }
+
+        private void initFields() {
+          columnName_ = "";
+          referencedColumnName_ = "";
+          keySeq_ = 0;
+        }
+        private byte memoizedIsInitialized = -1;
+        public final boolean isInitialized() {
+          byte isInitialized = memoizedIsInitialized;
+          if (isInitialized != -1) return isInitialized == 1;
+
+          if (!hasColumnName()) {
+            memoizedIsInitialized = 0;
+            return false;
+          }
+          if (!hasReferencedColumnName()) {
+            memoizedIsInitialized = 0;
+            return false;
+          }
+          if (!hasKeySeq()) {
+            memoizedIsInitialized = 0;
+            return false;
+          }
+          memoizedIsInitialized = 1;
+          return true;
+        }
+
+        public void writeTo(com.google.protobuf.CodedOutputStream output)
+                            throws java.io.IOException {
+          getSerializedSize();
+          if (((bitField0_ & 0x00000001) == 0x00000001)) {
+            output.writeBytes(1, getColumnNameBytes());
+          }
+          if (((bitField0_ & 0x00000002) == 0x00000002)) {
+            output.writeBytes(2, getReferencedColumnNameBytes());
+          }
+          if (((bitField0_ & 0x00000004) == 0x00000004)) {
+            output.writeSInt32(3, keySeq_);
+          }
+          getUnknownFields().writeTo(output);
+        }
+
+        private int memoizedSerializedSize = -1;
+        public int getSerializedSize() {
+          int size = memoizedSerializedSize;
+          if (size != -1) return size;
+
+          size = 0;
+          if (((bitField0_ & 0x00000001) == 0x00000001)) {
+            size += com.google.protobuf.CodedOutputStream
+              .computeBytesSize(1, getColumnNameBytes());
+          }
+          if (((bitField0_ & 0x00000002) == 0x00000002)) {
+            size += com.google.protobuf.CodedOutputStream
+              .computeBytesSize(2, getReferencedColumnNameBytes());
+          }
+          if (((bitField0_ & 0x00000004) == 0x00000004)) {
+            size += com.google.protobuf.CodedOutputStream
+              .computeSInt32Size(3, keySeq_);
+          }
+          size += getUnknownFields().getSerializedSize();
+          memoizedSerializedSize = size;
+          return size;
+        }
+
+        private static final long serialVersionUID = 0L;
+        @java.lang.Override
+        protected java.lang.Object writeReplace()
+            throws java.io.ObjectStreamException {
+          return super.writeReplace();
+        }
+
+        public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ForeignKeys.ForeignKey.ForeignKeyColumn parseFrom(
+            com.google.protobuf.ByteString data)
+            throws com.google.protobuf.InvalidProtocolBufferException {
+          return PARSER.parseFrom(data);
+        }
+        public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ForeignKeys.ForeignKey.ForeignKeyColumn parseFrom(
+            com.google.protobuf.ByteString data,
+            com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+            throws com.google.protobuf.InvalidProtocolBufferException {
+          return PARSER.parseFrom(data, extensionRegistry);
+        }
+        public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ForeignKeys.ForeignKey.ForeignKeyColumn parseFrom(byte[] data)
+            throws com.google.protobuf.InvalidProtocolBufferException {
+          return PARSER.parseFrom(data);
+        }
+        public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ForeignKeys.ForeignKey.ForeignKeyColumn parseFrom(
+            byte[] data,
+            com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+            throws com.google.protobuf.InvalidProtocolBufferException {
+          return PARSER.parseFrom(data, extensionRegistry);
+        }
+        public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ForeignKeys.ForeignKey.ForeignKeyColumn parseFrom(java.io.InputStream input)
+            throws java.io.IOException {
+          return PARSER.parseFrom(input);
+        }
+        public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ForeignKeys.ForeignKey.ForeignKeyColumn parseFrom(
+            java.io.InputStream input,
+            com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+            throws java.io.IOException {
+          return PARSER.parseFrom(input, extensionRegistry);
+        }
+        public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ForeignKeys.ForeignKey.ForeignKeyColumn parseDelimitedFrom(java.io.InputStream input)
+            throws java.io.IOException {
+          return PARSER.parseDelimitedFrom(input);
+        }
+        public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ForeignKeys.ForeignKey.ForeignKeyColumn parseDelimitedFrom(
+            java.io.InputStream input,
+            com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+            throws java.io.IOException {
+          return PARSER.parseDelimitedFrom(input, extensionRegistry);
+        }
+        public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ForeignKeys.ForeignKey.ForeignKeyColumn parseFrom(
+            com.google.protobuf.CodedInputStream input)
+            throws java.io.IOException {
+          return PARSER.parseFrom(input);
+        }
+        public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ForeignKeys.ForeignKey.ForeignKeyColumn parseFrom(
+            com.google.protobuf.CodedInputStream input,
+            com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+            throws java.io.IOException {
+          return PARSER.parseFrom(input, extensionRegistry);
+        }
+
+        public static Builder newBuilder() { return Builder.create(); }
+        public Builder newBuilderForType() { return newBuilder(); }
+        public static Builder newBuilder(org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ForeignKeys.ForeignKey.ForeignKeyColumn prototype) {
+          return newBuilder().mergeFrom(prototype);
+        }
+        public Builder toBuilder() { return newBuilder(this); }
+
+        @java.lang.Override
+        protected Builder newBuilderForType(
+            com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+          Builder builder = new Builder(parent);
+          return builder;
+        }
+        /**
+         * Protobuf type {@code org.apache.hadoop.hive.metastore.hbase.ForeignKeys.ForeignKey.ForeignKeyColumn}
+         */
+        public static final class Builder extends
+            com.google.protobuf.GeneratedMessage.Builder<Builder>
+           implements org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ForeignKeys.ForeignKey.ForeignKeyColumnOrBuilder {
+          public static final com.google.protobuf.Descriptors.Descriptor
+              getDescriptor() {
+            return org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.internal_static_org_apache_hadoop_hive_metastore_hbase_ForeignKeys_ForeignKey_ForeignKeyColumn_descriptor;
+          }
+
+          protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+              internalGetFieldAccessorTable() {
+            return org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.internal_static_org_apache_hadoop_hive_metastore_hbase_ForeignKeys_ForeignKey_ForeignKeyColumn_fieldAccessorTable
+                .ensureFieldAccessorsInitialized(
+                    org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ForeignKeys.ForeignKey.ForeignKeyColumn.class, org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ForeignKeys.ForeignKey.ForeignKeyColumn.Builder.class);
+          }
+
+          // Construct using org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ForeignKeys.ForeignKey.ForeignKeyColumn.newBuilder()
+          private Builder() {
+            maybeForceBuilderInitialization();
+          }
+
+          private Builder(
+              com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+            super(parent);
+            maybeForceBuilderInitialization();
+          }
+          private void maybeForceBuilderInitialization() {
+            if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
+            }
+          }
+          private static Builder create() {
+            return new Builder();
+          }
+
+          public Builder clear() {
+            super.clear();
+            columnName_ = "";
+            bitField0_ = (bitField0_ & ~0x00000001);
+            referencedColumnName_ = "";
+            bitField0_ = (bitField0_ & ~0x00000002);
+            keySeq_ = 0;
+            bitField0_ = (bitField0_ & ~0x00000004);
+            return this;
+          }
+
+          public Builder clone() {
+            return create().mergeFrom(buildPartial());
+          }
+
+          public com.google.protobuf.Descriptors.Descriptor
+              getDescriptorForType() {
+            return org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.internal_static_org_apache_hadoop_hive_metastore_hbase_ForeignKeys_ForeignKey_ForeignKeyColumn_descriptor;
+          }
+
+          public org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ForeignKeys.ForeignKey.ForeignKeyColumn getDefaultInstanceForType() {
+            return org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ForeignKeys.ForeignKey.ForeignKeyColumn.getDefaultInstance();
+          }
+
+          public org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ForeignKeys.ForeignKey.ForeignKeyColumn build() {
+            org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ForeignKeys.ForeignKey.ForeignKeyColumn result = buildPartial();
+            if (!result.isInitialized()) {
+              throw newUninitializedMessageException(result);
+            }
+            return result;
+          }
+
+          public org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ForeignKeys.ForeignKey.ForeignKeyColumn buildPartial() {
+            org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ForeignKeys.ForeignKey.ForeignKeyColumn result = new org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ForeignKeys.ForeignKey.ForeignKeyColumn(this);
+            int from_bitField0_ = bitField0_;
+            int to_bitField0_ = 0;
+            if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
+              to_bitField0_ |= 0x00000001;
+            }
+            result.columnName_ = columnName_;
+            if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
+              to_bitField0_ |= 0x00000002;
+            }
+            result.referencedColumnName_ = referencedColumnName_;
+            if (((from_bitField0_ & 0x00000004) == 0x00000004)) {
+              to_bitField0_ |= 0x00000004;
+            }
+            result.keySeq_ = keySeq_;
+            result.bitField0_ = to_bitField0_;
+            onBuilt();
+            return result;
+          }
+
+          public Builder mergeFrom(com.google.protobuf.Message other) {
+            if (other instanceof org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ForeignKeys.ForeignKey.ForeignKeyColumn) {
+              return mergeFrom((org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ForeignKeys.ForeignKey.ForeignKeyColumn)other);
+            } else {
+              super.mergeFrom(other);
+              return this;
+            }
+          }
+
+          public Builder mergeFrom(org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ForeignKeys.ForeignKey.ForeignKeyColumn other) {
+            if (other == org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ForeignKeys.ForeignKey.ForeignKeyColumn.getDefaultInstance()) return this;
+            if (other.hasColumnName()) {
+              bitField0_ |= 0x00000001;
+              columnName_ = other.columnName_;
+              onChanged();
+            }
+            if (other.hasReferencedColumnName()) {
+              bitField0_ |= 0x00000002;
+              referencedColumnName_ = other.referencedColumnName_;
+              onChanged();
+            }
+            if (other.hasKeySeq()) {
+              setKeySeq(other.getKeySeq());
+            }
+            this.mergeUnknownFields(other.getUnknownFields());
+            return this;
+          }
+
+          public final boolean isInitialized() {
+            if (!hasColumnName()) {
+              
+              return false;
+            }
+            if (!hasReferencedColumnName()) {
+              
+              return false;
+            }
+            if (!hasKeySeq()) {
+              
+              return false;
+            }
+            return true;
+          }
+
+          public Builder mergeFrom(
+              com.google.protobuf.CodedInputStream input,
+              com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+              throws java.io.IOException {
+            org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ForeignKeys.ForeignKey.ForeignKeyColumn parsedMessage = null;
+            try {
+              parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+            } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+              parsedMessage = (org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ForeignKeys.ForeignKey.ForeignKeyColumn) e.getUnfinishedMessage();
+              throw e;
+            } finally {
+              if (parsedMessage != null) {
+                mergeFrom(parsedMessage);
+              }
+            }
+            return this;
+          }
+          private int bitField0_;
+
+          // required string column_name = 1;
+          private java.lang.Object columnName_ = "";
+          /**
+           * <code>required string column_name = 1;</code>
+           */
+          public boolean hasColumnName() {
+            return ((bitField0_ & 0x00000001) == 0x00000001);
+          }
+          /**
+           * <code>required string column_name = 1;</code>
+           */
+          public java.lang.String getColumnName() {
+            java.lang.Object ref = columnName_;
+            if (!(ref instanceof java.lang.String)) {
+              java.lang.String s = ((com.google.protobuf.ByteString) ref)
+                  .toStringUtf8();
+              columnName_ = s;
+              return s;
+            } else {
+              return (java.lang.String) ref;
+            }
+          }
+          /**
+           * <code>required string column_name = 1;</code>
+           */
+          public com.google.protobuf.ByteString
+              getColumnNameBytes() {
+            java.lang.Object ref = columnName_;
+            if (ref instanceof String) {
+              com.google.protobuf.ByteString b = 
+                  com.google.protobuf.ByteString.copyFromUtf8(
+                      (java.lang.String) ref);
+              columnName_ = b;
+              return b;
+            } else {
+              return (com.google.protobuf.ByteString) ref;
+            }
+          }
+          /**
+           * <code>required string column_name = 1;</code>
+           */
+          public Builder setColumnName(
+              java.lang.String value) {
+            if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000001;
+            columnName_ = value;
+            onChanged();
+            return this;
+          }
+          /**
+           * <code>required string column_name = 1;</code>
+           */
+          public Builder clearColumnName() {
+            bitField0_ = (bitField0_ & ~0x00000001);
+            columnName_ = getDefaultInstance().getColumnName();
+            onChanged();
+            return this;
+          }
+          /**
+           * <code>required string column_name = 1;</code>
+           */
+          public Builder setColumnNameBytes(
+              com.google.protobuf.ByteString value) {
+            if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000001;
+            columnName_ = value;
+            onChanged();
+            return this;
+          }
+
+          // required string referenced_column_name = 2;
+          private java.lang.Object referencedColumnName_ = "";
+          /**
+           * <code>required string referenced_column_name = 2;</code>
+           */
+          public boolean hasReferencedColumnName() {
+            return ((bitField0_ & 0x00000002) == 0x00000002);
+          }
+          /**
+           * <code>required string referenced_column_name = 2;</code>
+           */
+          public java.lang.String getReferencedColumnName() {
+            java.lang.Object ref = referencedColumnName_;
+            if (!(ref instanceof java.lang.String)) {
+              java.lang.String s = ((com.google.protobuf.ByteString) ref)
+                  .toStringUtf8();
+              referencedColumnName_ = s;
+              return s;
+            } else {
+              return (java.lang.String) ref;
+            }
+          }
+          /**
+           * <code>required string referenced_column_name = 2;</code>
+           */
+          public com.google.protobuf.ByteString
+              getReferencedColumnNameBytes() {
+            java.lang.Object ref = referencedColumnName_;
+            if (ref instanceof String) {
+              com.google.protobuf.ByteString b = 
+                  com.google.protobuf.ByteString.copyFromUtf8(
+                      (java.lang.String) ref);
+              referencedColumnName_ = b;
+              return b;
+            } else {
+              return (com.google.protobuf.ByteString) ref;
+            }
+          }
+          /**
+           * <code>required string referenced_column_name = 2;</code>
+           */
+          public Builder setReferencedColumnName(
+              java.lang.String value) {
+            if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000002;
+            referencedColumnName_ = value;
+            onChanged();
+            return this;
+          }
+          /**
+           * <code>required string referenced_column_name = 2;</code>
+           */
+          public Builder clearReferencedColumnName() {
+            bitField0_ = (bitField0_ & ~0x00000002);
+            referencedColumnName_ = getDefaultInstance().getReferencedColumnName();
+            onChanged();
+            return this;
+          }
+          /**
+           * <code>required string referenced_column_name = 2;</code>
+           */
+          public Builder setReferencedColumnNameBytes(
+              com.google.protobuf.ByteString value) {
+            if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000002;
+            referencedColumnName_ = value;
+            onChanged();
+            return this;
+          }
+
+          // required sint32 key_seq = 3;
+          private int keySeq_ ;
+          /**
+           * <code>required sint32 key_seq = 3;</code>
+           */
+          public boolean hasKeySeq() {
+            return ((bitField0_ & 0x00000004) == 0x00000004);
+          }
+          /**
+           * <code>required sint32 key_seq = 3;</code>
+           */
+          public int getKeySeq() {
+            return keySeq_;
+          }
+          /**
+           * <code>required sint32 key_seq = 3;</code>
+           */
+          public Builder setKeySeq(int value) {
+            bitField0_ |= 0x00000004;
+            keySeq_ = value;
+            onChanged();
+            return this;
+          }
+          /**
+           * <code>required sint32 key_seq = 3;</code>
+           */
+          public Builder clearKeySeq() {
+            bitField0_ = (bitField0_ & ~0x00000004);
+            keySeq_ = 0;
+            onChanged();
+            return this;
+          }
+
+          // @@protoc_insertion_point(builder_scope:org.apache.hadoop.hive.metastore.hbase.ForeignKeys.ForeignKey.ForeignKeyColumn)
+        }
+
+        static {
+          defaultInstance = new ForeignKeyColumn(true);
+          defaultInstance.initFields();
+        }
+
+        // @@protoc_insertion_point(class_scope:org.apache.hadoop.hive.metastore.hbase.ForeignKeys.ForeignKey.ForeignKeyColumn)
+      }
+
+      private int bitField0_;
+      // required string fk_name = 1;
+      public static final int FK_NAME_FIELD_NUMBER = 1;
+      private java.lang.Object fkName_;
+      /**
+       * <code>required string fk_name = 1;</code>
+       */
+      public boolean hasFkName() {
+        return ((bitField0_ & 0x00000001) == 0x00000001);
+      }
+      /**
+       * <code>required string fk_name = 1;</code>
+       */
+      public java.lang.String getFkName() {
+        java.lang.Object ref = fkName_;
+        if (ref instanceof java.lang.String) {
+          return (java.lang.String) ref;
+        } else {
+          com.google.protobuf.ByteString bs = 
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          if (bs.isValidUtf8()) {
+            fkName_ = s;
+          }
+          return s;
+        }
+      }
+      /**
+       * <code>required string fk_name = 1;</code>
+       */
+      public com.google.protobuf.ByteString
+          getFkNameBytes() {
+        java.lang.Object ref = fkName_;
+        if (ref instanceof java.lang.String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          fkName_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+
+      // required string referenced_db_name = 2;
+      public static final int REFERENCED_DB_NAME_FIELD_NUMBER = 2;
+      private java.lang.Object referencedDbName_;
+      /**
+       * <code>required string referenced_db_name = 2;</code>
+       */
+      public boolean hasReferencedDbName() {
+        return ((bitField0_ & 0x00000002) == 0x00000002);
+      }
+      /**
+       * <code>required string referenced_db_name = 2;</code>
+       */
+      public java.lang.String getReferencedDbName() {
+        java.lang.Object ref = referencedDbName_;
+        if (ref instanceof java.lang.String) {
+          return (java.lang.String) ref;
+        } else {
+          com.google.protobuf.ByteString bs = 
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          if (bs.isValidUtf8()) {
+            referencedDbName_ = s;
+          }
+          return s;
+        }
+      }
+      /**
+       * <code>required string referenced_db_name = 2;</code>
+       */
+      public com.google.protobuf.ByteString
+          getReferencedDbNameBytes() {
+        java.lang.Object ref = referencedDbName_;
+        if (ref instanceof java.lang.String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          referencedDbName_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+
+      // required string referenced_table_name = 3;
+      public static final int REFERENCED_TABLE_NAME_FIELD_NUMBER = 3;
+      private java.lang.Object referencedTableName_;
+      /**
+       * <code>required string referenced_table_name = 3;</code>
+       */
+      public boolean hasReferencedTableName() {
+        return ((bitField0_ & 0x00000004) == 0x00000004);
+      }
+      /**
+       * <code>required string referenced_table_name = 3;</code>
+       */
+      public java.lang.String getReferencedTableName() {
+        java.lang.Object ref = referencedTableName_;
+        if (ref instanceof java.lang.String) {
+          return (java.lang.String) ref;
+        } else {
+          com.google.protobuf.ByteString bs = 
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          if (bs.isValidUtf8()) {
+            referencedTableName_ = s;
+          }
+          return s;
+        }
+      }
+      /**
+       * <code>required string referenced_table_name = 3;</code>
+       */
+      public com.google.protobuf.ByteString
+          getReferencedTableNameBytes() {
+        java.lang.Object ref = referencedTableName_;
+        if (ref instanceof java.lang.String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          referencedTableName_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+
+      // optional string referenced_pk_name = 4;
+      public static final int REFERENCED_PK_NAME_FIELD_NUMBER = 4;
+      private java.lang.Object referencedPkName_;
+      /**
+       * <code>optional string referenced_pk_name = 4;</code>
+       */
+      public boolean hasReferencedPkName() {
+        return ((bitField0_ & 0x00000008) == 0x00000008);
+      }
+      /**
+       * <code>optional string referenced_pk_name = 4;</code>
+       */
+      public java.lang.String getReferencedPkName() {
+        java.lang.Object ref = referencedPkName_;
+        if (ref instanceof java.lang.String) {
+          return (java.lang.String) ref;
+        } else {
+          com.google.protobuf.ByteString bs = 
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          if (bs.isValidUtf8()) {
+            referencedPkName_ = s;
+          }
+          return s;
+        }
+      }
+      /**
+       * <code>optional string referenced_pk_name = 4;</code>
+       */
+      public com.google.protobuf.ByteString
+          getReferencedPkNameBytes() {
+        java.lang.Object ref = referencedPkName_;
+        if (ref instanceof java.lang.String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          referencedPkName_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+
+      // optional int32 update_rule = 5;
+      public static final int UPDATE_RULE_FIELD_NUMBER = 5;
+      private int updateRule_;
+      /**
+       * <code>optional int32 update_rule = 5;</code>
+       */
+      public boolean hasUpdateRule() {
+        return ((bitField0_ & 0x00000010) == 0x00000010);
+      }
+      /**
+       * <code>optional int32 update_rule = 5;</code>
+       */
+      public int getUpdateRule() {
+        return updateRule_;
+      }
+
+      // optional int32 delete_rule = 6;
+      public static final int DELETE_RULE_FIELD_NUMBER = 6;
+      private int deleteRule_;
+      /**
+       * <code>optional int32 delete_rule = 6;</code>
+       */
+      public boolean hasDeleteRule() {
+        return ((bitField0_ & 0x00000020) == 0x00000020);
+      }
+      /**
+       * <code>optional int32 delete_rule = 6;</code>
+       */
+      public int getDeleteRule() {
+        return deleteRule_;
+      }
+
+      // repeated .org.apache.hadoop.hive.metastore.hbase.ForeignKeys.ForeignKey.ForeignKeyColumn cols = 7;
+      public static final int COLS_FIELD_NUMBER = 7;
+      private java.util.List<org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ForeignKeys.ForeignKey.ForeignKeyColumn> cols_;
+      /**
+       * <code>repeated .org.apache.hadoop.hive.metastore.hbase.ForeignKeys.ForeignKey.ForeignKeyColumn cols = 7;</code>
+       */
+      public java.util.List<org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ForeignKeys.ForeignKey.ForeignKeyColumn> getColsList() {
+        return cols_;
+      }
+      /**
+       * <code>repeated .org.apache.hadoop.hive.metastore.hbase.ForeignKeys.ForeignKey.ForeignKeyColumn cols = 7;</code>
+       */
+      public java.util.List<? extends org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ForeignKeys.ForeignKey.ForeignKeyColumnOrBuilder> 
+          getColsOrBuilderList() {
+        return cols_;
+      }
+      /**
+       * <code>repeated .org.apache.hadoop.hive.metastore.hbase.ForeignKeys.ForeignKey.ForeignKeyColumn cols = 7;</code>
+       */
+      public int getColsCount() {
+        return cols_.size();
+      }
+      /**
+       * <code>repeated .org.apache.hadoop.hive.metastore.hbase.ForeignKeys.ForeignKey.ForeignKeyColumn cols = 7;</code>
+       */
+      public org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ForeignKeys.ForeignKey.ForeignKeyColumn getCols(int index) {
+        return cols_.get(index);
+      }
+      /**
+       * <code>repeated .org.apache.hadoop.hive.metastore.hbase.ForeignKeys.ForeignKey.ForeignKeyColumn cols = 7;</code>
+       */
+      public org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ForeignKeys.ForeignKey.ForeignKeyColumnOrBuilder getColsOrBuilder(
+          int index) {
+        return cols_.get(index);
+      }
+
+      // optional bool enable_constraint = 8;
+      public static final int ENABLE_CONSTRAINT_FIELD_NUMBER = 8;
+      private boolean enableConstraint_;
+      /**
+       * <code>optional bool enable_constraint = 8;</code>
+       */
+      public boolean hasEnableConstraint() {
+        return ((bitField0_ & 0x00000040) == 0x00000040);
+      }
+      /**
+       * <code>optional bool enable_constraint = 8;</code>
+       */
+      public boolean getEnableConstraint() {
+        return enableConstraint_;
+      }
+
+      // optional bool validate_constraint = 9;
+      public static final int VALIDATE_CONSTRAINT_FIELD_NUMBER = 9;
+      private boolean validateConstraint_;
+      /**
+       * <code>optional bool validate_constraint = 9;</code>
+       */
+      public boolean hasValidateConstraint() {
+        return ((bitField0_ & 0x00000080) == 0x00000080);
+      }
+      /**
+       * <code>optional bool validate_constraint = 9;</code>
+       */
+      public boolean getValidateConstraint() {
+        return validateConstraint_;
+      }
+
+      // optional bool rely_constraint = 10;
+      public static final int RELY_CONSTRAINT_FIELD_NUMBER = 10;
+      private boolean relyConstraint_;
+      /**
+       * <code>optional bool rely_constraint = 10;</code>
+       */
+      public boolean hasRelyConstraint() {
+        return ((bitField0_ & 0x00000100) == 0x00000100);
+      }
+      /**
+       * <code>optional bool rely_constraint = 10;</code>
+       */
+      public boolean getRelyConstraint() {
+        return relyConstraint_;
+      }
+
+      private void initFields() {
+        fkName_ = "";
+        referencedDbName_ = "";
+        referencedTableName_ = "";
+        referencedPkName_ = "";
+        updateRule_ = 0;
+        deleteRule_ = 0;
+        cols_ = java.util.Collections.emptyList();
+        enableConstraint_ = false;
+        validateConstraint_ = false;
+        relyConstraint_ = false;
+      }
+      private byte memoizedIsInitialized = -1;
+      public final boolean isInitialized() {
+        byte isInitialized = memoizedIsInitialized;
+        if (isInitialized != -1) return isInitialized == 1;
+
+        if (!hasFkName()) {
+          memoizedIsInitialized = 0;
+          return false;
+        }
+        if (!hasReferencedDbName()) {
+          memoizedIsInitialized = 0;
+          return false;
+        }
+        if (!hasReferencedTableName()) {
+          memoizedIsInitialized = 0;
+          return false;
+        }
+        for (int i = 0; i < getColsCount(); i++) {
+          if (!getCols(i).isInitialized()) {
+            memoizedIsInitialized = 0;
+            return false;
+          }
+        }
+        memoizedIsInitialized = 1;
+        return true;
+      }
+
+      public void writeTo(com.google.protobuf.CodedOutputStream output)
+                          throws java.io.IOException {
+        getSerializedSize();
+        if (((bitField0_ & 0x00000001) == 0x00000001)) {
+          output.writeBytes(1, getFkNameBytes());
+        }
+        if (((bitField0_ & 0x00000002) == 0x00000002)) {
+          output.writeBytes(2, getReferencedDbNameBytes());
+        }
+        if (((bitField0_ & 0x00000004) == 0x00000004)) {
+          output.writeBytes(3, getReferencedTableNameBytes());
+        }
+        if (((bitField0_ & 0x00000008) == 0x00000008)) {
+          output.writeBytes(4, getReferencedPkNameBytes());
+        }
+        if (((bitField0_ & 0x00000010) == 0x00000010)) {
+          output.writeInt32(5, updateRule_);
+        }
+        if (((bitField0_ & 0x00000020) == 0x00000020)) {
+          output.writeInt32(6, deleteRule_);
+        }
+        for (int i = 0; i < cols_.size(); i++) {
+          output.writeMessage(7, cols_.get(i));
+        }
+        if (((bitField0_ & 0x00000040) == 0x00000040)) {
+          output.writeBool(8, enableConstraint_);
+        }
+        if (((bitField0_ & 0x00000080) == 0x00000080)) {
+          output.writeBool(9, validateConstraint_);
+        }
+        if (((bitField0_ & 0x00000100) == 0x00000100)) {
+          output.writeBool(10, relyConstraint_);
+        }
+        getUnknownFields().writeTo(output);
+      }
+
+      private int memoizedSerializedSize = -1;
+      public int getSerializedSize() {
+        int size = memoizedSerializedSize;
+        if (size != -1) return size;
+
+        size = 0;
+        if (((bitField0_ & 0x00000001) == 0x00000001)) {
+          size += com.google.protobuf.CodedOutputStream
+            .computeBytesSize(1, getFkNameBytes());
+        }
+        if (((bitField0_ & 0x00000002) == 0x00000002)) {
+          size += com.google.protobuf.CodedOutputStream
+            .computeBytesSize(2, getReferencedDbNameBytes());
+        }
+        if (((bitField0_ & 0x00000004) == 0x00000004)) {
+          size += com.google.protobuf.CodedOutputStream
+            .computeBytesSize(3, getReferencedTableNameBytes());
+        }
+        if (((bitField0_ & 0x00000008) == 0x00000008)) {
+          size += com.google.protobuf.CodedOutputStream
+            .computeBytesSize(4, getReferencedPkNameBytes());
+        }
+        if (((bitField0_ & 0x00000010) == 0x00000010)) {
+          size += com.google.protobuf.CodedOutputStream
+            .computeInt32Size(5, updateRule_);
+        }
+        if (((bitField0_ & 0x00000020) == 0x00000020)) {
+          size += com.google.protobuf.CodedOutputStream
+            .computeInt32Size(6, deleteRule_);
+        }
+        for (int i = 0; i < cols_.size(); i++) {
+          size += com.google.protobuf.CodedOutputStream
+            .computeMessageSize(7, cols_.get(i));
+        }
+        if (((bitField0_ & 0x00000040) == 0x00000040)) {
+          size += com.google.protobuf.CodedOutputStream
+            .computeBoolSize(8, enableConstraint_);
+        }
+        if (((bitField0_ & 0x00000080) == 0x00000080)) {
+          size += com.google.protobuf.CodedOutputStream
+            .computeBoolSize(9, validateConstraint_);
+        }
+        if (((bitField0_ & 0x00000100) == 0x00000100)) {
+          size += com.google.protobuf.CodedOutputStream
+            .computeBoolSize(10, relyConstraint_);
+        }
+        size += getUnknownFields().getSerializedSize();
+        memoizedSerializedSize = size;
+        return size;
+      }
+
+      private static final long serialVersionUID = 0L;
+      @java.lang.Override
+      protected java.lang.Object writeReplace()
+          throws java.io.ObjectStreamException {
+        return super.writeReplace();
+      }
+
+      public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ForeignKeys.ForeignKey parseFrom(
+          com.google.protobuf.ByteString data)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return PARSER.parseFrom(data);
+      }
+      public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ForeignKeys.ForeignKey parseFrom(
+          com.google.protobuf.ByteString data,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return PARSER.parseFrom(data, extensionRegistry);
+      }
+      public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ForeignKeys.ForeignKey parseFrom(byte[] data)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return PARSER.parseFrom(data);
+      }
+      public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ForeignKeys.ForeignKey parseFrom(
+          byte[] data,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return PARSER.parseFrom(data, extensionRegistry);
+      }
+      public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ForeignKeys.ForeignKey parseFrom(java.io.InputStream input)
+          throws java.io.IOException {
+        return PARSER.parseFrom(input);
+      }
+      public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ForeignKeys.ForeignKey parseFrom(
+          java.io.InputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        return PARSER.parseFrom(input, extensionRegistry);
+      }
+      public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ForeignKeys.ForeignKey parseDelimitedFrom(java.io.InputStream input)
+          throws java.io.IOException {
+        return PARSER.parseDelimitedFrom(input);
+      }
+      public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ForeignKeys.ForeignKey parseDelimitedFrom(
+          java.io.InputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        return PARSER.parseDelimitedFrom(input, extensionRegistry);
+      }
+      public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ForeignKeys.ForeignKey parseFrom(
+          com.google.protobuf.CodedInputStream input)
+          throws java.io.IOException {
+        return PARSER.parseFrom(input);
+      }
+      public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ForeignKeys.ForeignKey parseFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        return PARSER.parseFrom(input, extensionRegistry);
+      }
+
+      public static Builder newBuilder() { return Builder.create(); }
+      public Builder newBuilderForType() { return newBuilder(); }
+      public static Builder newBuilder(org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ForeignKeys.ForeignKey prototype) {
+        return newBuilder().mergeFrom(prototype);
+      }
+      public Builder toBuilder() { return newBuilder(this); }
+
+      @java.lang.Override
+      protected Builder newBuilderForType(
+          com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+        Builder builder = new Builder(parent);
+        return builder;
+      }
+      /**
+       * Protobuf type {@code org.apache.hadoop.hive.metastore.hbase.ForeignKeys.ForeignKey}
+       */
+      public static final class Builder extends
+          com.google.protobuf.GeneratedMessage.Builder<Builder>
+         implements org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ForeignKeys.ForeignKeyOrBuilder {
+        public static final com.google.protobuf.Descriptors.Descriptor
+            getDescriptor() {
+          return org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.internal_static_org_apache_hadoop_hive_metastore_hbase_ForeignKeys_ForeignKey_descriptor;
+        }
+
+        protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+            internalGetFieldAccessorTable() {
+          return org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.internal_static_org_apache_hadoop_hive_metastore_hbase_ForeignKeys_ForeignKey_fieldAccessorTable
+              .ensureFieldAccessorsInitialized(
+                  org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ForeignKeys.ForeignKey.class, org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ForeignKeys.ForeignKey.Builder.class);
+        }
+
+        // Construct using org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ForeignKeys.ForeignKey.newBuilder()
+        private Builder() {
+          maybeForceBuilderInitialization();
+        }
+
+        private Builder(
+            com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+          super(parent);
+          maybeForceBuilderInitialization();
+        }
+        private void maybeForceBuilderInitialization() {
+          if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
+            getColsFieldBuilder();
+          }
+        }
+        private static Builder create() {
+          return new Builder();
+        }
+
+        public Builder clear() {
+          super.clear();
+          fkName_ = "";
+          bitField0_ = (bitField0_ & ~0x00000001);
+          referencedDbName_ = "";
+          bitField0_ = (bitField0_ & ~0x00000002);
+          referencedTableName_ = "";
+          bitField0_ = (bitField0_ & ~0x00000004);
+          referencedPkName_ = "";
+          bitField0_ = (bitField0_ & ~0x00000008);
+          updateRule_ = 0;
+          bitField0_ = (bitField0_ & ~0x00000010);
+          deleteRule_ = 0;
+          bitField0_ = (bitField0_ & ~0x00000020);
+          if (colsBuilder_ == null) {
+            cols_ = java.util.Collections.emptyList();
+            bitField0_ = (bitField0_ & ~0x00000040);
+          } else {
+            colsBuilder_.clear();
+          }
+          enableConstraint_ = false;
+          bitField0_ = (bitField0_ & ~0x00000080);
+          validateConstraint_ = false;
+          bitField0_ = (bitField0_ & ~0x00000100);
+          relyConstraint_ = false;
+          bitField0_ = (bitField0_ & ~0x00000200);
+          return this;
+        }
+
+        public Builder clone() {
+          return create().mergeFrom(buildPartial());
+        }
+
+        public com.google.protobuf.Descriptors.Descriptor
+            getDescriptorForType() {
+          return org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.internal_static_org_apache_hadoop_hive_metastore_hbase_ForeignKeys_ForeignKey_descriptor;
+        }
+
+        public org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ForeignKeys.ForeignKey getDefaultInstanceForType() {
+          return org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ForeignKeys.ForeignKey.getDefaultInstance();
+        }
+
+        public org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ForeignKeys.ForeignKey build() {
+          org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ForeignKeys.ForeignKey result = buildPartial();
+          if (!result.isInitialized()) {
+            throw newUninitializedMessageException(result);
+          }
+          return result;
+        }
+
+        public org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ForeignKeys.ForeignKey buildPartial() {
+          org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ForeignKeys.ForeignKey result = new org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ForeignKeys.ForeignKey(this);
+          int from_bitField0_ = bitField0_;
+          int to_bitField0_ = 0;
+          if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
+            to_bitField0_ |= 0x00000001;
+          }
+          result.fkName_ = fkName_;
+          if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
+            to_bitField0_ |= 0x00000002;
+          }
+          result.referencedDbName_ = referencedDbName_;
+          if (((from_bitField0_ & 0x00000004) == 0x00000004)) {
+            to_bitField0_ |= 0x00000004;
+          }
+          result.referencedTableName_ = referencedTableName_;
+          if (((from_bitField0_ & 0x00000008) == 0x00000008)) {
+            to_bitField0_ |= 0x00000008;
+          }
+          result.referencedPkName_ = referencedPkName_;
+          if (((from_bitField0_ & 0x00000010) == 0x00000010)) {
+            to_bitField0_ |= 0x00000010;
+          }
+          result.updateRule_ = updateRule_;
+          if (((from_bitField0_ & 0x00000020) == 0x00000020)) {
+            to_bitField0_ |= 0x00000020;
+          }
+          result.deleteRule_ = deleteRule_;
+          if (colsBuilder_ == null) {
+            if (((bitField0_ & 0x00000040) == 0x00000040)) {
+              cols_ = java.util.Collections.unmodifiableList(cols_);
+              bitField0_ = (bitField0_ & ~0x00000040);
+            }
+            result.cols_ = cols_;
+          } else {
+            result.cols_ = colsBuilder_.build();
+          }
+          if (((from_bitField0_ & 0x00000080) == 0x00000080)) {
+            to_bitField0_ |= 0x00000040;
+          }
+          result.enableConstraint_ = enableConstraint_;
+          if (((from_bitField0_ & 0x00000100) == 0x00000100)) {
+            to_bitField0_ |= 0x00000080;
+          }
+          result.validateConstraint_ = validateConstraint_;
+          if (((from_bitField0_ & 0x00000200) == 0x00000200)) {
+            to_bitField0_ |= 0x00000100;
+          }
+          result.relyConstraint_ = relyConstraint_;
+          result.bitField0_ = to_bitField0_;
+          onBuilt();
+          return result;
+        }
+
+        public Builder mergeFrom(com.google.protobuf.Message other) {
+          if (other instanceof org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ForeignKeys.ForeignKey) {
+            return mergeFrom((org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ForeignKeys.ForeignKey)other);
+          } else {
+            super.mergeFrom(other);
+            return this;
+          }
+        }
+
+        public Builder mergeFrom(org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ForeignKeys.ForeignKey other) {
+          if (other == org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ForeignKeys.ForeignKey.getDefaultInstance()) return this;
+          if (other.hasFkName()) {
+            bitField0_ |= 0x00000001;
+            fkName_ = other.fkName_;
+            onChanged();
+          }
+          if (other.hasReferencedDbName()) {
+            bitField0_ |= 0x00000002;
+            referencedDbName_ = other.referencedDbName_;
+            onChanged();
+          }
+          if (other.hasReferencedTableName()) {
+            bitField0_ |= 0x00000004;
+            referencedTableName_ = other.referencedTableName_;
+            onChanged();
+          }
+          if (other.hasReferencedPkName()) {
+            bitField0_ |= 0x00000008;
+            referencedPkName_ = other.referencedPkName_;
+            onChanged();
+          }
+          if (other.hasUpdateRule()) {
+            setUpdateRule(other.getUpdateRule());
+          }
+          if (other.hasDeleteRule()) {
+            setDeleteRule(other.getDeleteRule());
+          }
+          if (colsBuilder_ == null) {
+            if (!other.cols_.isEmpty()) {
+              if (cols_.isEmpty()) {
+                cols_ = other.cols_;
+                bitField0_ = (bitField0_ & ~0x00000040);
+              } else {
+                ensureColsIsMutable();
+                cols_.addAll(other.cols_);
+              }
+              onChanged();
+            }
+          } else {
+            if (!other.cols_.isEmpty()) {
+              if (colsBuilder_.isEmpty()) {
+                colsBuilder_.dispose();
+                colsBuilder_ = null;
+                cols_ = other.cols_;
+                bitField0_ = (bitField0_ & ~0x00000040);
+                colsBuilder_ = 
+                  com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders ?
+                     getColsFieldBuilder() : null;
+              } else {
+                colsBuilder_.addAllMessages(other.cols_);
+              }
+            }
+          }
+          if (other.hasEnableConstraint()) {
+            setEnableConstraint(other.getEnableConstraint());
+          }
+          if (other.hasValidateConstraint()) {
+            setValidateConstraint(other.getValidateConstraint());
+          }
+          if (other.hasRelyConstraint()) {
+            setRelyConstraint(other.getRelyConstraint());
+          }
+          this.mergeUnknownFields(other.getUnknownFields());
+          return this;
+        }
+
+        public final boolean isInitialized() {
+          if (!hasFkName()) {
+            
+            return false;
+          }
+          if (!hasReferencedDbName()) {
+            
+            return false;
+          }
+          if (!hasReferencedTableName()) {
+            
+            return false;
+          }
+          for (int i = 0; i < getColsCount(); i++) {
+            if (!getCols(i).isInitialized()) {
+              
+              return false;
+            }
+          }
+          return true;
+        }
+
+        public Builder mergeFrom(
+            com.google.protobuf.CodedInputStream input,
+            com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+            throws java.io.IOException {
+          org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ForeignKeys.ForeignKey parsedMessage = null;
+          try {
+            parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+          } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+            parsedMessage = (org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ForeignKeys.ForeignKey) e.getUnfinishedMessage();
+            throw e;
+          } finally {
+            if (parsedMessage != null) {
+              mergeFrom(parsedMessage);
+            }
+          }
+          return this;
+        }
+        private int bitField0_;
+
+        // required string fk_name = 1;
+        private java.lang.Object fkName_ = "";
+        /**
+         * <code>required string fk_name = 1;</code>
+         */
+        public boolean hasFkName() {
+          return ((bitField0_ & 0x00000001) == 0x00000001);
+        }
+        /**
+         * <code>required string fk_name = 1;</code>
+         */
+        public java.lang.String getFkName() {
+          java.lang.Object ref = fkName_;
+          if (!(ref instanceof java.lang.String)) {
+            java.lang.String s = ((com.google.protobuf.ByteString) ref)
+                .toStringUtf8();
+            fkName_ = s;
+            return s;
+          } else {
+            return (java.lang.String) ref;
+          }
+        }
+        /**
+         * <code>required string fk_name = 1;</code>
+         */
+        public com.google.protobuf.ByteString
+            getFkNameBytes() {
+          java.lang.Object ref = fkName_;
+          if (ref instanceof String) {
+            com.google.protobuf.ByteString b = 
+                com.google.protobuf.ByteString.copyFromUtf8(
+                    (java.lang.String) ref);
+            fkName_ = b;
+            return b;
+          } else {
+            return (com.google.protobuf.ByteString) ref;
+          }
+        }
+        /**
+         * <code>required string fk_name = 1;</code>
+         */
+        public Builder setFkName(
+            java.lang.String value) {
+          if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000001;
+          fkName_ = value;
+          onChanged();
+          return this;
+        }
+        /**
+         * <code>required string fk_name = 1;</code>
+         */
+        public Builder clearFkName() {
+          bitField0_ = (bitField0_ & ~0x00000001);
+          fkName_ = getDefaultInstance().getFkName();
+          onChanged();
+          return this;
+        }
+        /**
+         * <code>required string fk_name = 1;</code>
+         */
+        public Builder setFkNameBytes(
+            com.google.protobuf.ByteString value) {
+          if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000001;
+          fkName_ = value;
+          onChanged();
+          return this;
+        }
+
+        // required string referenced_db_name = 2;
+        private java.lang.Object referencedDbName_ = "";
+        /**
+         * <code>required string referenced_db_name = 2;</code>
+         */
+        public boolean hasReferencedDbName() {
+          return ((bitField0_ & 0x00000002) == 0x00000002);
+        }
+        /**
+         * <code>required string referenced_db_name = 2;</code>
+         */
+        public java.lang.String getReferencedDbName() {
+          java.lang.Object ref = referencedDbName_;
+          if (!(ref instanceof java.lang.String)) {
+            java.lang.String s = ((com.google.protobuf.ByteString) ref)
+                .toStringUtf8();
+            referencedDbName_ = s;
+            return s;
+          } else {
+            return (java.lang.String) ref;
+          }
+        }
+        /**
+         * <code>required string referenced_db_name = 2;</code>
+         */
+        public com.google.protobuf.ByteString
+            getReferencedDbNameBytes() {
+          java.lang.Object ref = referencedDbName_;
+          if (ref instanceof String) {
+            com.google.protobuf.ByteString b = 
+                com.google.protobuf.ByteString.copyFromUtf8(
+                    (java.lang.String) ref);
+            referencedDbName_ = b;
+            return b;
+          } else {
+            return (com.google.protobuf.ByteString) ref;
+          }
+        }
+        /**
+         * <code>required string referenced_db_name = 2;</code>
+         */
+        public Builder setReferencedDbName(
+            java.lang.String value) {
+          if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000002;
+          referencedDbName_ = value;
+          onChanged();
+          return this;
+        }
+        /**
+         * <code>required string referenced_db_name = 2;</code>
+         */
+        public Builder clearReferencedDbName() {
+          bitField0_ = (bitField0_ & ~0x00000002);
+          referencedDbName_ = getDefaultInstance().getReferencedDbName();
+          onChanged();
+          return this;
+        }
+        /**
+         * <code>required string referenced_db_name = 2;</code>
+         */
+        public Builder setReferencedDbNameBytes(
+            com.google.protobuf.ByteString value) {
+          if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000002;
+          referencedDbName_ = value;
+          onChanged();
+          return this;
+        }
+
+        // required string referenced_table_name = 3;
+        private java.lang.Object referencedTableName_ = "";
+        /**
+         * <code>required string referenced_table_name = 3;</code>
+         */
+        public boolean hasReferencedTableName() {
+          return ((bitField0_ & 0x00000004) == 0x00000004);
+        }
+        /**
+         * <code>required string referenced_table_name = 3;</code>
+         */
+        public java.lang.String getReferencedTableName() {
+          java.lang.Object ref = referencedTableName_;
+          if (!(ref instanceof java.lang.String)) {
+            java.lang.String s = ((com.google.protobuf.ByteString) ref)
+                .toStringUtf8();
+            referencedTableName_ = s;
+            return s;
+          } else {
+            return (java.lang.String) ref;
+          }
+        }
+        /**
+         * <code>required string referenced_table_name = 3;</code>
+         */
+        public com.google.protobuf.ByteString
+            getReferencedTableNameBytes() {
+          java.lang.Object ref = referencedTableName_;
+          if (ref instanceof String) {
+            com.google.protobuf.ByteString b = 
+                com.google.protobuf.ByteString.copyFromUtf8(
+                    (java.lang.String) ref);
+            referencedTableName_ = b;
+            return b;
+          } else {
+            return (com.google.protobuf.ByteString) ref;
+          }
+        }
+        /**
+         * <code>required string referenced_table_name = 3;</code>
+         */
+        public Builder setReferencedTableName(
+            java.lang.String value) {
+          if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000004;
+          referencedTableName_ = value;
+          onChanged();
+          return this;
+        }
+        /**
+         * <code>required string referenced_table_name = 3;</code>
+         */
+        public Builder clearReferencedTableName() {
+          bitField0_ = (bitField0_ & ~0x00000004);
+          referencedTableName_ = getDefaultInstance().getReferencedTableName();
+          onChanged();
+          return this;
+        }
+        /**
+         * <code>required string referenced_table_name = 3;</code>
+         */
+        public Builder setReferencedTableNameBytes(
+            com.google.protobuf.ByteString value) {
+          if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000004;
+          referencedTableName_ = value;
+          onChanged();
+          return this;
+        }
+
+        // optional string referenced_pk_name = 4;
+        private java.lang.Object referencedPkName_ = "";
+        /**
+         * <code>optional string referenced_pk_name = 4;</code>
+         */
+        public boolean hasReferencedPkName() {
+          return ((bitField0_ & 0x00000008) == 0x00000008);
+        }
+        /**
+         * <code>optional string referenced_pk_name = 4;</code>
+         */
+        public java.lang.String getReferencedPkName() {
+          java.lang.Object ref = referencedPkName_;
+          if (!(ref instanceof java.lang.String)) {
+            java.lang.String s = ((com.google.protobuf.ByteString) ref)
+                .toStringUtf8();
+            referencedPkName_ = s;
+            return s;
+          } else {
+            return (java.lang.String) ref;
+          }
+        }
+        /**
+         * <code>optional string referenced_pk_name = 4;</code>
+         */
+        public com.google.protobuf.ByteString
+            getReferencedPkNameBytes() {
+          java.lang.Object ref = referencedPkName_;
+          if (ref instanceof String) {
+            com.google.protobuf.ByteString b = 
+                com.google.protobuf.ByteString.copyFromUtf8(
+                    (java.lang.String) ref);
+            referencedPkName_ = b;
+            return b;
+          } else {
+            return (com.google.protobuf.ByteString) ref;
+          }
+        }
+        /**
+         * <code>optional string referenced_pk_name = 4;</code>
+         */
+        public Builder setReferencedPkName(
+            java.lang.String value) {
+          if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000008;
+          referencedPkName_ = value;
+          onChanged();
+          return this;
+        }
+        /**
+         * <code>optional string referenced_pk_name = 4;</code>
+         */
+        public Builder clearReferencedPkName() {
+          bitField0_ = (bitField0_ & ~0x00000008);
+          referencedPkName_ = getDefaultInstance().getReferencedPkName();
+          onChanged();
+          return this;
+        }
+        /**
+         * <code>optional string referenced_pk_name = 4;</code>
+         */
+        public Builder setReferencedPkNameBytes(
+            com.google.protobuf.ByteString value) {
+          if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000008;
+          referencedPkName_ = value;
+          onChanged();
+          return this;
+        }
+
+        // optional int32 update_rule = 5;
+        private int updateRule_ ;
+        /**
+         * <code>optional int32 update_rule = 5;</code>
+         */
+        public boolean hasUpdateRule() {
+          return ((bitField0_ & 0x00000010) == 0x00000010);
+        }
+        /**
+         * <code>optional int32 update_rule = 5;</code>
+         */
+        public int getUpdateRule() {
+          return updateRule_;
+        }
+        /**
+         * <code>optional int32 update_rule = 5;</code>
+         */
+        public Builder setUpdateRule(int value) {
+          bitField0_ |= 0x00000010;
+          updateRule_ = value;
+          onChanged();
+          return this;
+        }
+        /**
+         * <code>optional int32 update_rule = 5;</code>
+         */
+        public Builder clearUpdateRule() {
+          bitField0_ = (bitField0_ & ~0x00000010);
+          updateRule_ = 0;
+          onChanged();
+          return this;
+        }
+
+        // optional int32 delete_rule = 6;
+        private int deleteRule_ ;
+        /**
+         * <code>optional int32 delete_rule = 6;</code>
+         */
+        public boolean hasDeleteRule() {
+          return ((bitField0_ & 0x00000020) == 0x00000020);
+        }
+        /**
+         * <code>optional int32 delete_rule = 6;</code>
+         */
+        public int getDeleteRule() {
+          return deleteRule_;
+        }
+        /**
+         * <code>optional int32 delete_rule = 6;</code>
+         */
+        public Builder setDeleteRule(int value) {
+          bitField0_ |= 0x00000020;
+          deleteRule_ = value;
+          onChanged();
+          return this;
+        }
+        /**
+         * <code>optional int32 delete_rule = 6;</code>
+         */
+        public Builder clearDeleteRule() {
+          bitField0_ = (bitField0_ & ~0x00000020);
+          deleteRule_ = 0;
+          onChanged();
+          return this;
+        }
+
+        // repeated .org.apache.hadoop.hive.metastore.hbase.ForeignKeys.ForeignKey.ForeignKeyColumn cols = 7;
+        private java.util.List<org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ForeignKeys.ForeignKey.ForeignKeyColumn> cols_ =
+          java.util.Collections.emptyList();
+        private void ensureColsIsMutable() {
+          if (!((bitField0_ & 0x00000040) == 0x00000040)) {
+            cols_ = new java.util.ArrayList<org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ForeignKeys.ForeignKey.ForeignKeyColumn>(cols_);
+            bitField0_ |= 0x00000040;
+           }
+        }
+
+        private com.google.protobuf.RepeatedFieldBuilder<
+            org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ForeignKeys.ForeignKey.ForeignKeyColumn, org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ForeignKeys.ForeignKey.ForeignKeyColumn.Builder, org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ForeignKeys.ForeignKey.ForeignKeyColumnOrBuilder> colsBuilder_;
+
+        /**
+         * <code>repeated .org.apache.hadoop.hive.metastore.hbase.ForeignKeys.ForeignKey.ForeignKeyColumn cols = 7;</code>
+         */
+        public java.util.List<org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ForeignKeys.ForeignKey.ForeignKeyColumn> getColsList() {
+          if (colsBuilder_ == null) {
+            return java.util.Collections.unmodifiableList(cols_);
+          } else {
+            return colsBuilder_.getMessageList();
+          }
+        }
+        /**
+         * <code>repeated .org.apache.hadoop.hive.metastore.hbase.ForeignKeys.ForeignKey.ForeignKeyColumn cols = 7;</code>
+         */
+        public int getColsCount() {
+          if (colsBuilder_ == null) {
+            return cols_.size();
+          } else {
+            return colsBuilder_.getCount();
+          }
+        }
+        /**
+         * <code>repeated .org.apache.hadoop.hive.metastore.hbase.ForeignKeys.ForeignKey.ForeignKeyColumn cols = 7;</code>
+         */
+        public org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ForeignKeys.ForeignKey.ForeignKeyColumn getCols(int index) {
+          if (colsBuilder_ == null) {
+            return cols_.get(index);
+          } else {
+            return colsBuilder_.getMessage(index);
+          }
+        }
+        /**
+         * <code>repeated .org.apache.hadoop.hive.metastore.hbase.ForeignKeys.ForeignKey.ForeignKeyColumn cols = 7;</code>
+         */
+        public Builder setCols(
+            int index, org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ForeignKeys.ForeignKey.ForeignKeyColumn value) {
+          if (colsBuilder_ == null) {
+            if (value == null) {
+              throw new NullPointerException();
+            }
+            ensureColsIsMutable();
+            cols_.set(index, value);
+            onChanged();
+          } else {
+            colsBuilder_.setMessage(index, value);
+          }
+          return this;
+        }
+        /**
+         * <code>repeated .org.apache.hadoop.hive.metastore.hbase.ForeignKeys.ForeignKey.ForeignKeyColumn cols = 7;</code>
+         */
+        public Builder setCols(
+            int index, org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ForeignKeys.ForeignKey.ForeignKeyColumn.Builder builderForValue) {
+          if (colsBuilder_ == null) {
+            ensureColsIsMutable();
+            cols_.set(index, builderForValue.build());
+            onChanged();
+          } else {
+            colsBuilder_.setMessage(index, builderForValue.build());
+          }
+          return this;
+        }
+        /**
+         * <code>repeated .org.apache.hadoop.hive.metastore.hbase.ForeignKeys.ForeignKey.ForeignKeyColumn cols = 7;</code>
+         */
+        public Builder addCols(org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ForeignKeys.ForeignKey.ForeignKeyColumn value) {
+          if (colsBuilder_ == null) {
+            if (value == null) {
+              throw new NullPointerException();
+            }
+            ensureColsIsMutable();
+            cols_.add(value);
+            onChanged();
+          } else {
+            colsBuilder_.addMessage(value);
+          }
+          return this;
+        }
+        /**
+         * <code>repeated .org.apache.hadoop.hive.metastore.hbase.ForeignKeys.ForeignKey.ForeignKeyColumn cols = 7;</code>
+         */
+        public Builder addCols(
+            int index, org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ForeignKeys.ForeignKey.ForeignKeyColumn value) {
+          if (colsBuilder_ == null) {
+            if (value == null) {
+              throw new NullPointerException();
+            }
+            ensureColsIsMutable();
+            cols_.add(index, value);
+            onChanged();
+          } else {
+            colsBuilder_.addMessage(index, value);
+          }
+          return this;
+        }
+        /**
+         * <code>repeated .org.apache.hadoop.hive.metastore.hbase.ForeignKeys.ForeignKey.ForeignKeyColumn cols = 7;</code>
+         */
+        public Builder addCols(
+            org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ForeignKeys.ForeignKey.ForeignKeyColumn.Builder builderForValue) {
+          if (colsBuilder_ == null) {
+            ensureColsIsMutable();
+            cols_.add(builderForValue.build());
+            onChanged();
+          } else {
+            colsBuilder_.addMessage(builderForValue.build());
+          }
+          return this;
+        }
+        /**
+         * <code>repeated .org.apache.hadoop.hive.metastore.hbase.ForeignKeys.ForeignKey.ForeignKeyColumn cols = 7;</code>
+         */
+        public Builder addCols(
+            int index, org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ForeignKeys.ForeignKey.ForeignKeyColumn.Builder builderForValue) {
+          if (colsBuilder_ == null) {
+            ensureColsIsMutable();
+            cols_.add(index, builderForValue.build());
+            onChanged();
+          } else {
+            colsBuilder_.addMessage(index, builderForValue.build());
+          }
+          return this;
+        }
+        /**
+         * <code>repeated .org.apache.hadoop.hive.metastore.hbase.ForeignKeys.ForeignKey.ForeignKeyColumn cols = 7;</code>
+         */
+        public Builder addAllCols(
+            java.lang.Iterable<? extends org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ForeignKeys.ForeignKey.ForeignKeyColumn> values) {
+          if (colsBuilder_ == null) {
+            ensureColsIsMutable();
+            super.addAll(values, cols_);
+            onChanged();
+          } else {
+            colsBuilder_.addAllMessages(values);
+          }
+          return this;
+        }
+        /**
+         * <code>repeated .org.apache.hadoop.hive.metastore.hbase.ForeignKeys.ForeignKey.ForeignKeyColumn cols = 7;</code>
+         */
+        public Builder clearCols() {
+          if (colsBuilder_ == null) {
+            cols_ = java.util.Collections.emptyList();
+            bitField0_ = (bitField0_ & ~0x00000040);
+            onChanged();
+          } else {
+            colsBuilder_.clear();
+          }
+          return this;
+        }
+        /**
+         * <code>repeated .org.apache.hadoop.hive.metastore.hbase.ForeignKeys.ForeignKey.ForeignKeyColumn cols = 7;</code>
+         */
+        public Builder removeCols(int index) {
+          if (colsBuilder_ == null) {
+            ensureColsIsMutable();
+            cols_.remove(index);
+            onChanged();
+          } else {
+            colsBuilder_.remove(index);
+          }
+          return this;
+        }
+        /**
+         * <code>repeated .org.apache.hadoop.hive.metastore.hbase.ForeignKeys.ForeignKey.ForeignKeyColumn cols = 7;</code>
+         */
+        public org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ForeignKeys.ForeignKey.ForeignKeyColumn.Builder getColsBuilder(
+            int index) {
+          return getColsFieldBuilder().getBuilder(index);
+        }
+        /**
+         * <code>repeated .org.apache.hadoop.hive.metastore.hbase.ForeignKeys.ForeignKey.ForeignKeyColumn cols = 7;</code>
+         */
+        public org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ForeignKeys.ForeignKey.ForeignKeyColumnOrBuilder getColsOrBuilder(
+            int index) {
+          if (colsBuilder_ == null) {
+            return cols_.get(index);  } else {
+            return colsBuilder_.getMessageOrBuilder(index);
+          }
+        }
+        /**
+         * <code>repeated .org.apache.hadoop.hive.metastore.hbase.ForeignKeys.ForeignKey.ForeignKeyColumn cols = 7;</code>
+         */
+        public java.util.List<? extends org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ForeignKeys.ForeignKey.ForeignKeyColumnOrBuilder> 
+             getColsOrBuilderList() {
+          if (colsBuilder_ != null) {
+            return colsBuilder_.getMessageOrBuilderList();
+          } else {
+            return java.util.Collections.unmodifiableList(cols_);
+          }
+        }
+        /**
+         * <code>repeated .org.apache.hadoop.hive.metastore.hbase.ForeignKeys.ForeignKey.ForeignKeyColumn cols = 7;</code>
+         */
+        public org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ForeignKeys.ForeignKey.ForeignKeyColumn.Builder addColsBuilder() {
+          return getColsFieldBuilder().addBuilder(
+              org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ForeignKeys.ForeignKey.ForeignKeyColumn.getDefaultInstance());
+        }
+        /**
+         * <code>repeated .org.apache.hadoop.hive.metastore.hbase.ForeignKeys.ForeignKey.ForeignKeyColumn cols = 7;</code>
+         */
+        public org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ForeignKeys.ForeignKey.ForeignKeyColumn.Builder addColsBuilder(
+            int index) {
+          return getColsFieldBuilder().addBuilder(
+              index, org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ForeignKeys.ForeignKey.ForeignKeyColumn.getDefaultInstance());
+        }
+        /**
+         * <code>repeated .org.apache.hadoop.hive.metastore.hbase.ForeignKeys.ForeignKey.ForeignKeyColumn cols = 7;</code>
+         */
+        public java.util.List<org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ForeignKeys.ForeignKey.ForeignKeyColumn.Builder> 
+             getColsBuilderList() {
+          return getColsFieldBuilder().getBuilderList();
+        }
+        private com.google.protobuf.RepeatedFieldBuilder<
+            org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ForeignKeys.ForeignKey.ForeignKeyColumn, org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ForeignKeys.ForeignKey.ForeignKeyColumn.Builder, org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ForeignKeys.ForeignKey.ForeignKeyColumnOrBuilder> 
+            getColsFieldBuilder() {
+          if (colsBuilder_ == null) {
+            colsBuilder_ = new com.google.protobuf.RepeatedFieldBuilder<
+                org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ForeignKeys.ForeignKey.ForeignKeyColumn, org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ForeignKeys.ForeignKey.ForeignKeyColumn.Builder, org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ForeignKeys.ForeignKey.ForeignKeyColumnOrBuilder>(
+                    cols_,
+                    ((bitField0_ & 0x00000040) == 0x00000040),
+                    getParentForChildren(),
+                    isClean());
+            cols_ = null;
+          }
+          return colsBuilder_;
+        }
+
+        // optional bool enable_constraint = 8;
+        private boolean enableConstraint_ ;
+        /**
+         * <code>optional bool enable_constraint = 8;</code>
+         */
+        public boolean hasEnableConstraint() {
+          return ((bitField0_ & 0x00000080) == 0x00000080);
+        }
+        /**
+         * <code>optional bool enable_constraint = 8;</code>
+         */
+        public boolean getEnableConstraint() {
+          return enableConstraint_;
+        }
+        /**
+         * <code>optional bool enable_constraint = 8;</code>
+         */
+        public Builder setEnableConstraint(boolean value) {
+          bitField0_ |= 0x00000080;
+          enableConstraint_ = value;
+          onChanged();
+          return this;
+        }
+        /**
+         * <code>optional bool enable_constraint = 8;</code>
+         */
+        public Builder clearEnableConstraint() {
+          bitField0_ = (bitField0_ & ~0x00000080);
+          enableConstraint_ = false;
+          onChanged();
+          return this;
+        }
+
+        // optional bool validate_constraint = 9;
+        private boolean validateConstraint_ ;
+        /**
+         * <code>optional bool validate_constraint = 9;</code>
+         */
+        public boolean hasValidateConstraint() {
+          return ((bitField0_ & 0x00000100) == 0x00000100);
+        }
+        /**
+         * <code>optional bool validate_constraint = 9;</code>
+         */
+        public boolean getValidateConstraint() {
+          return validateConstraint_;
+        }
+        /**
+         * <code>optional bool validate_constraint = 9;</code>
+         */
+        public Builder setValidateConstraint(boolean value) {
+          bitField0_ |= 0x00000100;
+          validateConstraint_ = value;
+          onChanged();
+          return this;
+        }
+        /**
+         * <code>optional bool validate_constraint = 9;</code>
+         */
+        public Builder clearValidateConstraint() {
+          bitField0_ = (bitField0_ & ~0x00000100);
+          validateConstraint_ = false;
+          onChanged();
+          return this;
+        }
+
+        // optional bool rely_constraint = 10;
+        private boolean relyConstraint_ ;
+        /**
+         * <code>optional bool rely_constraint = 10;</code>
+         */
+        public boolean hasRelyConstraint() {
+          return ((bitField0_ & 0x00000200) == 0x00000200);
+        }
+        /**
+         * <code>optional bool rely_constraint = 10;</code>
+         */
+        public boolean getRelyConstraint() {
+          return relyConstraint_;
+        }
+        /**
+         * <code>optional bool rely_constraint = 10;</code>
+         */
+        public Builder setRelyConstraint(boolean value) {
+          bitField0_ |= 0x00000200;
+          relyConstraint_ = value;
+          onChanged();
+          return this;
+        }
+        /**
+         * <code>optional bool rely_constraint = 10;</code>
+         */
+        public Builder clearRelyConstraint() {
+          bitField0_ = (bitField0_ & ~0x00000200);
+          relyConstraint_ = false;
+          onChanged();
+          return this;
+        }
+
+        // @@protoc_insertion_point(builder_scope:org.apache.hadoop.hive.metastore.hbase.ForeignKeys.ForeignKey)
+      }
+
+      static {
+        defaultInstance = new ForeignKey(true);
+        defaultInstance.initFields();
+      }
+
+      // @@protoc_insertion_point(class_scope:org.apache.hadoop.hive.metastore.hbase.ForeignKeys.ForeignKey)
+    }
+
+    // repeated .org.apache.hadoop.hive.metastore.hbase.ForeignKeys.ForeignKey fks = 1;
+    public static final int FKS_FIELD_NUMBER = 1;
+    private java.util.List<org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ForeignKeys.ForeignKey> fks_;
+    /**
+     * <code>repeated .org.apache.hadoop.hive.metastore.hbase.ForeignKeys.ForeignKey fks = 1;</code>
+     */
+    public java.util.List<org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ForeignKeys.ForeignKey> getFksList() {
+      return fks_;
+    }
+    /**
+     * <code>repeated .org.apache.hadoop.hive.metastore.hbase.ForeignKeys.ForeignKey fks = 1;</code>
+     */
+    public java.util.List<? extends org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ForeignKeys.ForeignKeyOrBuilder> 
+        getFksOrBuilderList() {
+      return fks_;
+    }
+    /**
+     * <code>repeated .org.apache.hadoop.hive.metastore.hbase.ForeignKeys.ForeignKey fks = 1;</code>
+     */
+    public int getFksCount() {
+      return fks_.size();
+    }
+    /**
+     * <code>repeated .org.apache.hadoop.hive.metastore.hbase.ForeignKeys.ForeignKey fks = 1;</code>
+     */
+    public org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ForeignKeys.ForeignKey getFks(int index) {
+      return fks_.get(index);
+    }
+    /**
+     * <code>repeated .org.apache.hadoop.hive.metastore.hbase.ForeignKeys.ForeignKey fks = 1;</code>
+     */
+    public org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ForeignKeys.ForeignKeyOrBuilder getFksOrBuilder(
+        int index) {
+      return fks_.get(index);
+    }
+
+    private void initFields() {
+      fks_ = java.util.Collections.emptyList();
+    }
+    private byte memoizedIsInitialized = -1;
+    public final boolean isInitialized() {
+      byte isInitialized = memoizedIsInitialized;
+      if (isInitialized != -1) return isInitialized == 1;
+
+      for (int i = 0; i < getFksCount(); i++) {
+        if (!getFks(i).isInitialized()) {
+          memoizedIsInitialized = 0;
+          return false;
+        }
+      }
+      memoizedIsInitialized = 1;
+      return true;
+    }
+
+    public void writeTo(com.google.protobuf.CodedOutputStream output)
+                        throws java.io.IOException {
+      getSerializedSize();
+      for (int i = 0; i < fks_.size(); i++) {
+        output.writeMessage(1, fks_.get(i));
+      }
+      getUnknownFields().writeTo(output);
+    }
+
+    private int memoizedSerializedSize = -1;
+    public int getSerializedSize() {
+      int size = memoizedSerializedSize;
+      if (size != -1) return size;
+
+      size = 0;
+      for (int i = 0; i < fks_.size(); i++) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(1, fks_.get(i));
+      }
+      size += getUnknownFields().getSerializedSize();
+      memoizedSerializedSize = size;
+      return size;
+    }
+
+    private static final long serialVersionUID = 0L;
+    @java.lang.Override
+    protected java.lang.Object writeReplace()
+        throws java.io.ObjectStreamException {
+      return super.writeReplace();
+    }
+
+    public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ForeignKeys parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ForeignKeys parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ForeignKeys parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ForeignKeys parseFrom(
+        byte[] data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ForeignKeys parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input);
+    }
+    public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ForeignKeys parseFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input, extensionRegistry);
+    }
+    public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ForeignKeys parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return PARSER.parseDelimitedFrom(input);
+    }
+    public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ForeignKeys parseDelimitedFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseDelimitedFrom(input, extensionRegistry);
+    }
+    public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ForeignKeys parseFrom(
+        com.google.protobuf.CodedInputStream input)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input);
+    }
+    public static org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ForeignKeys parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input, extensionRegistry);
+    }
+
+    public static Builder newBuilder() { return Builder.create(); }
+    public Builder newBuilderForType() { return newBuilder(); }
+    public static Builder newBuilder(org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ForeignKeys prototype) {
+      return newBuilder().mergeFrom(prototype);
+    }
+    public Builder toBuilder() { return newBuilder(this); }
+
+    @java.lang.Override
+    protected Builder newBuilderForType(
+        com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+      Builder builder = new Builder(parent);
+      return builder;
+    }
+    /**
+     * Protobuf type {@code org.apache.hadoop.hive.metastore.hbase.ForeignKeys}
+     */
+    public static final class Builder extends
+        com.google.protobuf.GeneratedMessage.Builder<Builder>
+       implements org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ForeignKeysOrBuilder {
+      public static final com.google.protobuf.Descriptors.Descriptor
+          getDescriptor() {
+        return org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.internal_static_org_apache_hadoop_hive_metastore_hbase_ForeignKeys_descriptor;
+      }
+
+      protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.internal_static_org_apache_hadoop_hive_metastore_hbase_ForeignKeys_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ForeignKeys.class, org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ForeignKeys.Builder.class);
+      }
+
+      // Construct using org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ForeignKeys.newBuilder()
+      private Builder() {
+        maybeForceBuilderInitialization();
+      }
+
+      private Builder(
+          com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+        super(parent);
+        maybeForceBuilderInitialization();
+      }
+      private void maybeForceBuilderInitialization() {
+        if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
+          getFksFieldBuilder();
+        }
+      }
+      private static Builder create() {
+        return new Builder();
+      }
+
+      public Builder clear() {
+        super.clear();
+        if (fksBuilder_ == null) {
+          fks_ = java.util.Collections.emptyList();
+          bitField0_ = (bitField0_ & ~0x00000001);
+        } else {
+          fksBuilder_.clear();
+        }
+        return this;
+      }
+
+      public Builder clone() {
+        return create().mergeFrom(buildPartial());
+      }
+
+      public com.google.protobuf.Descriptors.Descriptor
+          getDescriptorForType() {
+        return org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.internal_static_org_apache_hadoop_hive_metastore_hbase_ForeignKeys_descriptor;
+      }
+
+      public org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ForeignKeys getDefaultInstanceForType() {
+        return org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ForeignKeys.getDefaultInstance();
+      }
+
+      public org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ForeignKeys build() {
+        org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ForeignKeys result = buildPartial();
+        if (!result.isInitialized()) {
+          throw newUninitializedMessageException(result);
+        }
+        return result;
+      }
+
+      public org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ForeignKeys buildPartial() {
+        org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ForeignKeys result = new org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ForeignKeys(this);
+        int from_bitField0_ = bitField0_;
+        if (fksBuilder_ == null) {
+          if (((bitField0_ & 0x00000001) == 0x00000001)) {
+            fks_ = java.util.Collections.unmodifiableList(fks_);
+            bitField0_ = (bitField0_ & ~0x00000001);
+          }
+          result.fks_ = fks_;
+        } else {
+          result.fks_ = fksBuilder_.build();
+        }
+        onBuilt();
+        return result;
+      }
+
+      public Builder mergeFrom(com.google.protobuf.Message other) {
+        if (other instanceof org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ForeignKeys) {
+          return mergeFrom((org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ForeignKeys)other);
+        } else {
+          super.mergeFrom(other);
+          return this;
+        }
+      }
+
+      public Builder mergeFrom(org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ForeignKeys other) {
+        if (other == org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ForeignKeys.getDefaultInstance()) return this;
+        if (fksBuilder_ == null) {
+          if (!other.fks_.isEmpty()) {
+            if (fks_.isEmpty()) {
+              fks_ = other.fks_;
+              bitField0_ = (bitField0_ & ~0x00000001);
+            } else {
+              ensureFksIsMutable();
+              fks_.addAll(other.fks_);
+            }
+            onChanged();
+          }
+        } else {
+          if (!other.fks_.isEmpty()) {
+            if (fksBuilder_.isEmpty()) {
+              fksBuilder_.dispose();
+              fksBuilder_ = null;
+              fks_ = other.fks_;
+              bitField0_ = (bitField0_ & ~0x00000001);
+              fksBuilder_ = 
+                com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders ?
+                   getFksFieldBuilder() : null;
+            } else {
+              fksBuilder_.addAllMessages(other.fks_);
+            }
+          }
+        }
+        this.mergeUnknownFields(other.getUnknownFields());
+        return this;
+      }
+
+      public final boolean isInitialized() {
+        for (int i = 0; i < getFksCount(); i++) {
+          if (!getFks(i).isInitialized()) {
+            
+            return false;
+          }
+        }
+        return true;
+      }
+
+      public Builder mergeFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ForeignKeys parsedMessage = null;
+        try {
+          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          parsedMessage = (org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ForeignKeys) e.getUnfinishedMessage();
+          throw e;
+        } finally {
+          if (parsedMessage != null) {
+            mergeFrom(parsedMessage);
+          }
+        }
+        return this;
+      }
+      private int bitField0_;
+
+      // repeated .org.apache.hadoop.hive.metastore.hbase.ForeignKeys.ForeignKey fks = 1;
+      private java.util.List<org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ForeignKeys.ForeignKey> fks_ =
+        java.util.Collections.emptyList();
+      private void ensureFksIsMutable() {
+        if (!((bitField0_ & 0x00000001) == 0x00000001)) {
+          fks_ = new java.util.ArrayList<org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ForeignKeys.ForeignKey>(fks_);
+          bitField0_ |= 0x00000001;
+         }
+      }
+
+      private com.google.protobuf.RepeatedFieldBuilder<
+          org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ForeignKeys.ForeignKey, org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ForeignKeys.ForeignKey.Builder, org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ForeignKeys.ForeignKeyOrBuilder> fksBuilder_;
+
+      /**
+       * <code>repeated .org.apache.hadoop.hive.metastore.hbase.ForeignKeys.ForeignKey fks = 1;</code>
+       */
+      public java.util.List<org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ForeignKeys.ForeignKey> getFksList() {
+        if (fksBuilder_ == null) {
+          return java.util.Collections.unmodifiableList(fks_);
+        } else {
+          return fksBuilder_.getMessageList();
+        }
+      }
+      /**
+       * <code>repeated .org.apache.hadoop.hive.metastore.hbase.ForeignKeys.ForeignKey fks = 1;</code>
+       */
+      public int getFksCount() {
+        if (fksBuilder_ == null) {
+          return fks_.size();
+        } else {
+          return fksBuilder_.getCount();
+        }
+      }
+      /**
+       * <code>repeated .org.apache.hadoop.hive.metastore.hbase.ForeignKeys.ForeignKey fks = 1;</code>
+       */
+      public org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ForeignKeys.ForeignKey getFks(int index) {
+        if (fksBuilder_ == null) {
+          return fks_.get(index);
+        } else {
+          return fksBuilder_.getMessage(index);
+        }
+      }
+      /**
+       * <code>repeated .org.apache.hadoop.hive.metastore.hbase.ForeignKeys.ForeignKey fks = 1;</code>
+       */
+      public Builder setFks(
+          int index, org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ForeignKeys.ForeignKey value) {
+        if (fksBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureFksIsMutable();
+          fks_.set(index, value);
+          onChanged();
+        } else {
+          fksBuilder_.setMessage(index, value);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .org.apache.hadoop.hive.metastore.hbase.ForeignKeys.ForeignKey fks = 1;</code>
+       */
+      public Builder setFks(
+          int index, org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ForeignKeys.ForeignKey.Builder builderForValue) {
+        if (fksBuilder_ == null) {
+          ensureFksIsMutable();
+          fks_.set(index, builderForValue.build());
+          onChanged();
+        } else {
+          fksBuilder_.setMessage(index, builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .org.apache.hadoop.hive.metastore.hbase.ForeignKeys.ForeignKey fks = 1;</code>
+       */
+      public Builder addFks(org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ForeignKeys.ForeignKey value) {
+        if (fksBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureFksIsMutable();
+          fks_.add(value);
+          onChanged();
+        } else {
+          fksBuilder_.addMessage(value);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .org.apache.hadoop.hive.metastore.hbase.ForeignKeys.ForeignKey fks = 1;</code>
+       */
+      public Builder addFks(
+          int index, org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ForeignKeys.ForeignKey value) {
+        if (fksBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureFksIsMutable();
+          fks_.add(index, value);
+          onChanged();
+        } else {
+          fksBuilder_.addMessage(index, value);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .org.apache.hadoop.hive.metastore.hbase.ForeignKeys.ForeignKey fks = 1;</code>
+       */
+      public Builder addFks(
+          org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ForeignKeys.ForeignKey.Builder builderForValue) {
+        if (fksBuilder_ == null) {
+          ensureFksIsMutable();
+          fks_.add(builderForValue.build());
+          onChanged();
+        } else {
+          fksBuilder_.addMessage(builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .org.apache.hadoop.hive.metastore.hbase.ForeignKeys.ForeignKey fks = 1;</code>
+       */
+      public Builder addFks(
+          int index, org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ForeignKeys.ForeignKey.Builder builderForValue) {
+        if (fksBuilder_ == null) {
+          ensureFksIsMutable();
+          fks_.add(index, builderForValue.build());
+          onChanged();
+        } else {
+          fksBuilder_.addMessage(index, builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .org.apache.hadoop.hive.metastore.hbase.ForeignKeys.ForeignKey fks = 1;</code>
+       */
+      public Builder addAllFks(
+          java.lang.Iterable<? extends org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ForeignKeys.ForeignKey> values) {
+        if (fksBuilder_ == null) {
+          ensureFksIsMutable();
+          super.addAll(values, fks_);
+          onChanged();
+        } else {
+          fksBuilder_.addAllMessages(values);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .org.apache.hadoop.hive.metastore.hbase.ForeignKeys.ForeignKey fks = 1;</code>
+       */
+      public Builder clearFks() {
+        if (fksBuilder_ == null) {
+          fks_ = java.util.Collections.emptyList();
+          bitField0_ = (bitField0_ & ~0x00000001);
+          onChanged();
+        } else {
+          fksBuilder_.clear();
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .org.apache.hadoop.hive.metastore.hbase.ForeignKeys.ForeignKey fks = 1;</code>
+       */
+      public Builder removeFks(int index) {
+        if (fksBuilder_ == null) {
+          ensureFksIsMutable();
+          fks_.remove(index);
+          onChanged();
+        } else {
+          fksBuilder_.remove(index);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .org.apache.hadoop.hive.metastore.hbase.ForeignKeys.ForeignKey fks = 1;</code>
+       */
+      public org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ForeignKeys.ForeignKey.Builder getFksBuilder(
+          int index) {
+        return getFksFieldBuilder().getBuilder(index);
+      }
+      /**
+       * <code>repeated .org.apache.hadoop.hive.metastore.hbase.ForeignKeys.ForeignKey fks = 1;</code>
+       */
+      public org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ForeignKeys.ForeignKeyOrBuilder getFksOrBuilder(
+          int index) {
+        if (fksBuilder_ == null) {
+          return fks_.get(index);  } else {
+          return fksBuilder_.getMessageOrBuilder(index);
+        }
+      }
+      /**
+       * <code>repeated .org.apache.hadoop.hive.metastore.hbase.ForeignKeys.ForeignKey fks = 1;</code>
+       */
+      public java.util.List<? extends org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ForeignKeys.ForeignKeyOrBuilder> 
+           getFksOrBuilderList() {
+        if (fksBuilder_ != null) {
+          return fksBuilder_.getMessageOrBuilderList();
+        } else {
+          return java.util.Collections.unmodifiableList(fks_);
+        }
+      }
+      /**
+       * <code>repeated .org.apache.hadoop.hive.metastore.hbase.ForeignKeys.ForeignKey fks = 1;</code>
+       */
+      public org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ForeignKeys.ForeignKey.Builder addFksBuilder() {
+        return getFksFieldBuilder().addBuilder(
+            org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ForeignKeys.ForeignKey.getDefaultInstance());
+      }
+      /**
+       * <code>repeated .org.apache.hadoop.hive.metastore.hbase.ForeignKeys.ForeignKey fks = 1;</code>
+       */
+      public org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ForeignKeys.ForeignKey.Builder addFksBuilder(
+          int index) {
+        return getFksFieldBuilder().addBuilder(
+            index, org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ForeignKeys.ForeignKey.getDefaultInstance());
+      }
+      /**
+       * <code>repeated .org.apache.hadoop.hive.metastore.hbase.ForeignKeys.ForeignKey fks = 1;</code>
+       */
+      public java.util.List<org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ForeignKeys.ForeignKey.Builder> 
+           getFksBuilderList() {
+        return getFksFieldBuilder().getBuilderList();
+      }
+      private com.google.protobuf.RepeatedFieldBuilder<
+          org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ForeignKeys.ForeignKey, org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ForeignKeys.ForeignKey.Builder, org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ForeignKeys.ForeignKeyOrBuilder> 
+          getFksFieldBuilder() {
+        if (fksBuilder_ == null) {
+          fksBuilder_ = new com.google.protobuf.RepeatedFieldBuilder<
+              org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ForeignKeys.ForeignKey, org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ForeignKeys.ForeignKey.Builder, org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.ForeignKeys.ForeignKeyOrBuilder>(
+                  fks_,
+                  ((bitField0_ & 0x00000001) == 0x00000001),
+                  getParentForChildren(),
+                  isClean());
+          fks_ = null;
+        }
+        return fksBuilder_;
+      }
+
+      // @@protoc_insertion_point(builder_scope:org.apache.hadoop.hive.metastore.hbase.ForeignKeys)
+    }
+
+    static {
+      defaultInstance = new ForeignKeys(true);
+      defaultInstance.initFields();
+    }
+
+    // @@protoc_insertion_point(class_scope:org.apache.hadoop.hive.metastore.hbase.ForeignKeys)
+  }
+
   private static com.google.protobuf.Descriptors.Descriptor
     internal_static_org_apache_hadoop_hive_metastore_hbase_AggrStats_descriptor;
   private static
@@ -36596,6 +41420,31 @@ public final class HbaseMetastoreProto {
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internal_static_org_apache_hadoop_hive_metastore_hbase_PartitionKeyComparator_Operator_fieldAccessorTable;
+  private static com.google.protobuf.Descriptors.Descriptor
+    internal_static_org_apache_hadoop_hive_metastore_hbase_PrimaryKey_descriptor;
+  private static
+    com.google.protobuf.GeneratedMessage.FieldAccessorTable
+      internal_static_org_apache_hadoop_hive_metastore_hbase_PrimaryKey_fieldAccessorTable;
+  private static com.google.protobuf.Descriptors.Descriptor
+    internal_static_org_apache_hadoop_hive_metastore_hbase_PrimaryKey_PrimaryKeyColumn_descriptor;
+  private static
+    com.google.protobuf.GeneratedMessage.FieldAccessorTable
+      internal_static_org_apache_hadoop_hive_metastore_hbase_PrimaryKey_PrimaryKeyColumn_fieldAccessorTable;
+  private static com.google.protobuf.Descriptors.Descriptor
+    internal_static_org_apache_hadoop_hive_metastore_hbase_ForeignKeys_descriptor;
+  private static
+    com.google.protobuf.GeneratedMessage.FieldAccessorTable
+      internal_static_org_apache_hadoop_hive_metastore_hbase_ForeignKeys_fieldAccessorTable;
+  private static com.google.protobuf.Descriptors.Descriptor
+    internal_static_org_apache_hadoop_hive_metastore_hbase_ForeignKeys_ForeignKey_descriptor;
+  private static
+    com.google.protobuf.GeneratedMessage.FieldAccessorTable
+      internal_static_org_apache_hadoop_hive_metastore_hbase_ForeignKeys_ForeignKey_fieldAccessorTable;
+  private static com.google.protobuf.Descriptors.Descriptor
+    internal_static_org_apache_hadoop_hive_metastore_hbase_ForeignKeys_ForeignKey_ForeignKeyColumn_descriptor;
+  private static
+    com.google.protobuf.GeneratedMessage.FieldAccessorTable
+      internal_static_org_apache_hadoop_hive_metastore_hbase_ForeignKeys_ForeignKey_ForeignKeyColumn_fieldAccessorTable;
 
   public static com.google.protobuf.Descriptors.FileDescriptor
       getDescriptor() {
@@ -36770,8 +41619,28 @@ public final class HbaseMetastoreProto {
       "Operator\022Z\n\004type\030\001 \002(\0162L.org.apache.hado" +
       "op.hive.metastore.hbase.PartitionKeyComp" +
       "arator.Operator.Type\022\013\n\003key\030\002 \002(\t\022\013\n\003val" +
-      "\030\003 \002(\t\"\037\n\004Type\022\010\n\004LIKE\020\000\022\r\n\tNOTEQUALS\020\001*" +
-      "#\n\rPrincipalType\022\010\n\004USER\020\000\022\010\n\004ROLE\020\001"
+      "\030\003 \002(\t\"\037\n\004Type\022\010\n\004LIKE\020\000\022\r\n\tNOTEQUALS\020\001\"" +
+      "\373\001\n\nPrimaryKey\022\017\n\007pk_name\030\001 \002(\t\022Q\n\004cols\030" +
+      "\002 \003(\0132C.org.apache.hadoop.hive.metastore" +
+      ".hbase.PrimaryKey.PrimaryKeyColumn\022\031\n\021en" +
+      "able_constraint\030\003 \001(\010\022\033\n\023validate_constr",
+      "aint\030\004 \001(\010\022\027\n\017rely_constraint\030\005 \001(\010\0328\n\020P" +
+      "rimaryKeyColumn\022\023\n\013column_name\030\001 \002(\t\022\017\n\007" +
+      "key_seq\030\002 \002(\021\"\205\004\n\013ForeignKeys\022K\n\003fks\030\001 \003" +
+      "(\0132>.org.apache.hadoop.hive.metastore.hb" +
+      "ase.ForeignKeys.ForeignKey\032\250\003\n\nForeignKe" +
+      "y\022\017\n\007fk_name\030\001 \002(\t\022\032\n\022referenced_db_name" +
+      "\030\002 \002(\t\022\035\n\025referenced_table_name\030\003 \002(\t\022\032\n" +
+      "\022referenced_pk_name\030\004 \001(\t\022\023\n\013update_rule" +
+      "\030\005 \001(\005\022\023\n\013delete_rule\030\006 \001(\005\022]\n\004cols\030\007 \003(" +
+      "\0132O.org.apache.hadoop.hive.metastore.hba",
+      "se.ForeignKeys.ForeignKey.ForeignKeyColu" +
+      "mn\022\031\n\021enable_constraint\030\010 \001(\010\022\033\n\023validat" +
+      "e_constraint\030\t \001(\010\022\027\n\017rely_constraint\030\n " +
+      "\001(\010\032X\n\020ForeignKeyColumn\022\023\n\013column_name\030\001" +
+      " \002(\t\022\036\n\026referenced_column_name\030\002 \002(\t\022\017\n\007" +
+      "key_seq\030\003 \002(\021*#\n\rPrincipalType\022\010\n\004USER\020\000" +
+      "\022\010\n\004ROLE\020\001"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
@@ -37018,6 +41887,36 @@ public final class HbaseMetastoreProto {
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_org_apache_hadoop_hive_metastore_hbase_PartitionKeyComparator_Operator_descriptor,
               new java.lang.String[] { "Type", "Key", "Val", });
+          internal_static_org_apache_hadoop_hive_metastore_hbase_PrimaryKey_descriptor =
+            getDescriptor().getMessageTypes().get(23);
+          internal_static_org_apache_hadoop_hive_metastore_hbase_PrimaryKey_fieldAccessorTable = new
+            com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+              internal_static_org_apache_hadoop_hive_metastore_hbase_PrimaryKey_descriptor,
+              new java.lang.String[] { "PkName", "Cols", "EnableConstraint", "ValidateConstraint", "RelyConstraint", });
+          internal_static_org_apache_hadoop_hive_metastore_hbase_PrimaryKey_PrimaryKeyColumn_descriptor =
+            internal_static_org_apache_hadoop_hive_metastore_hbase_PrimaryKey_descriptor.getNestedTypes().get(0);
+          internal_static_org_apache_hadoop_hive_metastore_hbase_PrimaryKey_PrimaryKeyColumn_fieldAccessorTable = new
+            com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+              internal_static_org_apache_hadoop_hive_metastore_hbase_PrimaryKey_PrimaryKeyColumn_descriptor,
+              new java.lang.String[] { "ColumnName", "KeySeq", });
+          internal_static_org_apache_hadoop_hive_metastore_hbase_ForeignKeys_descriptor =
+            getDescriptor().getMessageTypes().get(24);
+          internal_static_org_apache_hadoop_hive_metastore_hbase_ForeignKeys_fieldAccessorTable = new
+            com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+              internal_static_org_apache_hadoop_hive_metastore_hbase_ForeignKeys_descriptor,
+              new java.lang.String[] { "Fks", });
+          internal_static_org_apache_hadoop_hive_metastore_hbase_ForeignKeys_ForeignKey_descriptor =
+            internal_static_org_apache_hadoop_hive_metastore_hbase_ForeignKeys_descriptor.getNestedTypes().get(0);
+          internal_static_org_apache_hadoop_hive_metastore_hbase_ForeignKeys_ForeignKey_fieldAccessorTable = new
+            com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+              internal_static_org_apache_hadoop_hive_metastore_hbase_ForeignKeys_ForeignKey_descriptor,
+              new java.lang.String[] { "FkName", "ReferencedDbName", "ReferencedTableName", "ReferencedPkName", "UpdateRule", "DeleteRule", "Cols", "EnableConstraint", "ValidateConstraint", "RelyConstraint", });
+          internal_static_org_apache_hadoop_hive_metastore_hbase_ForeignKeys_ForeignKey_ForeignKeyColumn_descriptor =
+            internal_static_org_apache_hadoop_hive_metastore_hbase_ForeignKeys_ForeignKey_descriptor.getNestedTypes().get(0);
+          internal_static_org_apache_hadoop_hive_metastore_hbase_ForeignKeys_ForeignKey_ForeignKeyColumn_fieldAccessorTable = new
+            com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+              internal_static_org_apache_hadoop_hive_metastore_hbase_ForeignKeys_ForeignKey_ForeignKeyColumn_descriptor,
+              new java.lang.String[] { "ColumnName", "ReferencedColumnName", "KeySeq", });
           return null;
         }
       };
