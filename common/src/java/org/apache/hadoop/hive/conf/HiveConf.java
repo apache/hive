@@ -1936,14 +1936,21 @@ public class HiveConf extends Configuration {
       new TimeValidator(TimeUnit.MILLISECONDS), "Frequency of WriteSet reaper runs"),
 
     // For Druid storage handler
-    HIVE_DRUID_INDEXING_GRANULARITY("hive.druid.indexer.segments.granularity", "DAY", new PatternSet("YEAR", "MONTH", "WEEK", "DAY", "HOUR", "MINUTE", "SECOND"), "Granularity for the segments created by the Druid storage handler"),
+    HIVE_DRUID_INDEXING_GRANULARITY("hive.druid.indexer.segments.granularity", "DAY",
+            new PatternSet("YEAR", "MONTH", "WEEK", "DAY", "HOUR", "MINUTE", "SECOND"),
+            "Granularity for the segments created by the Druid storage handler"
+    ),
     HIVE_DRUID_MAX_PARTITION_SIZE("hive.druid.indexer.partition.size.max", 5000000,
-        "Maximum number of records per segment partition"),
+            "Maximum number of records per segment partition"
+    ),
     HIVE_DRUID_MAX_ROW_IN_MEMORY("hive.druid.indexer.memory.rownum.max", 75000,
-        "Maximum number of records in memory while storing data in Druid"),
+            "Maximum number of records in memory while storing data in Druid"
+    ),
     HIVE_DRUID_BROKER_DEFAULT_ADDRESS("hive.druid.broker.address.default", "localhost:8082",
-        "Address of the Druid broker. If we are querying Druid from Hive, this address needs to be\n" +
-        "declared"),
+            "Address of the Druid broker. If we are querying Druid from Hive, this address needs to be\n"
+                    +
+                    "declared"
+    ),
     HIVE_DRUID_SELECT_THRESHOLD("hive.druid.select.threshold", 10000,
         "When we can split a Select query, this is the maximum number of rows that we try to retrieve\n" +
         "per query. In order to do that, we obtain the estimated size for the complete result. If the\n" +
@@ -1954,9 +1961,22 @@ public class HiveConf extends Configuration {
         "the HTTP client."),
     HIVE_DRUID_HTTP_READ_TIMEOUT("hive.druid.http.read.timeout", "PT1M", "Read timeout period for the HTTP\n" +
         "client in ISO8601 format (for example P2W, P3M, PT1H30M, PT0.750S), default is period of 1 minute."),
-    HIVE_DRUID_BASE_PERSIST_DIRECTORY("hive.druid.basePersisitDirectory", "/tmp", "local base persist directory used while indexing  data"),
+    HIVE_DRUID_BASE_PERSIST_DIRECTORY("hive.druid.basePersisitDirectory", "/tmp",
+            "local base persist directory used while indexing  data"
+    ),
     DRUID_SEGMENT_DIRECTORY("hive.druid.storage.storageDirectory", "/druid/segments"
-            , "druid deep storage location"),
+            , "druid deep storage location."),
+    DRUID_METADATA_BASE("hive.druid.metadata.base", "druid", "Default prefix for metadata tables"),
+    DRUID_METADATA_DB_TYPE("hive.druid.metadata.db.type", "mysql",
+            "Type of the metadata DB eg mysql or postgres."
+    ),
+    DRUID_METADATA_DB_USERNAME("hive.druid.metadata.username", "",
+            "Username to connect to Type of the metadata DB."
+    ),
+    DRUID_METADATA_DB_PASSWORD("hive.druid.metadata.password", "",
+            "Password to connect to Type of the metadata DB."
+    ),
+    DRUID_METADATA_DB_URI("hive.druid.metadata.uri", "", "URI to connect to the DB eg jdbc:mysql://localhost/druid"),
     // For HBase storage handler
     HIVE_HBASE_WAL_ENABLED("hive.hbase.wal.enabled", true,
         "Whether writes to HBase should be forced to the write-ahead log. \n" +

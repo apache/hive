@@ -30,13 +30,16 @@ import io.druid.metadata.storage.mysql.MySQLConnector;
 import io.druid.metadata.storage.postgresql.PostgreSQLConnector;
 import io.druid.segment.loading.SegmentLoadingException;
 import io.druid.timeline.DataSegment;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.Constants;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.druid.io.DruidOutputFormat;
 import org.apache.hadoop.hive.druid.io.DruidQueryBasedInputFormat;
 import org.apache.hadoop.hive.druid.serde.DruidSerDe;
 import org.apache.hadoop.hive.metastore.HiveMetaHook;
+import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.ql.metadata.DefaultStorageHandler;
@@ -69,14 +72,16 @@ public class DruidStorageHandler extends DefaultStorageHandler implements HiveMe
 
   public DruidStorageHandler() {
     //this is the default value in druid
-    final String base = SessionState.getSessionConf().get("hive.druid.metadata.base", "druid");
-    // default to mysql to avoid issue with creating of connector.
-    final String dbType = SessionState.getSessionConf().get("hive.druid.metadata.db.type", "mysql");
-    final String username = SessionState.getSessionConf().get("hive.druid.metadata.username", "");
-    final String password = SessionState.getSessionConf().get("hive.druid.metadata.password", "");
-    final String uri = SessionState.getSessionConf()
-            .get("hive.druid.metadata.uri", "jdbc:mysql://localhost/druid");
-
+    final String base = HiveConf
+            .getVar(SessionState.getSessionConf(), HiveConf.ConfVars.DRUID_METADATA_BASE);
+    final String dbType = HiveConf
+            .getVar(SessionState.getSessionConf(), HiveConf.ConfVars.DRUID_METADATA_DB_TYPE);
+    final String username = HiveConf
+            .getVar(SessionState.getSessionConf(), HiveConf.ConfVars.DRUID_METADATA_DB_USERNAME);
+    final String password = HiveConf
+            .getVar(SessionState.getSessionConf(), HiveConf.ConfVars.DRUID_METADATA_DB_PASSWORD);
+    final String uri = HiveConf
+            .getVar(SessionState.getSessionConf(), HiveConf.ConfVars.DRUID_METADATA_DB_URI);
     druidMetadataStorageTablesConfig = MetadataStorageTablesConfig.fromBase(base);
 
     final Supplier<MetadataStorageConnectorConfig> storageConnectorConfigSupplier = Suppliers.<MetadataStorageConnectorConfig>ofInstance(
@@ -144,21 +149,17 @@ public class DruidStorageHandler extends DefaultStorageHandler implements HiveMe
   @Override
   public void preCreateTable(Table table) throws MetaException {
     // Do safety checks
-    /*
-    @TODO ASK Jesus if this is needed, i think we don't needed anymore
     if (MetaStoreUtils.isExternalTable(table) && !StringUtils.isEmpty(table.getSd().getLocation())) {
       throw new MetaException("LOCATION may not be specified for Druid existing sources");
-    }*/
+    }
+
     if (table.getPartitionKeysSize() != 0) {
       throw new MetaException("PARTITIONED BY may not be specified for Druid");
     }
     if (table.getSd().getBucketColsSize() != 0) {
       throw new MetaException("CLUSTERED BY may not be specified for Druid");
     }
-    String dataSourceName = Preconditions
-            .checkNotNull(table.getParameters().get(Constants.DRUID_DATA_SOURCE),
-                    "WTF dataSource name is null !"
-            );
+    String dataSourceName = table.getParameters().get(Constants.DRUID_DATA_SOURCE);
     try {
       connector.createSegmentTable();
     } catch (Exception e) {
