@@ -182,11 +182,7 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
       }
       fs.mkdirs(mkDirPath);
       if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_WAREHOUSE_SUBDIR_INHERIT_PERMS)) {
-        try {
-          HdfsUtils.setFullFileStatus(conf, new HdfsUtils.HadoopFileStatus(conf, fs, actualPath), fs, mkDirPath, true);
-        } catch (Exception e) {
-          LOG.warn("Error setting permissions or group of " + actualPath, e);
-        }
+        HdfsUtils.setFullFileStatus(conf, new HdfsUtils.HadoopFileStatus(conf, fs, actualPath), fs, mkDirPath, true);
       }
     }
     return deletePath;

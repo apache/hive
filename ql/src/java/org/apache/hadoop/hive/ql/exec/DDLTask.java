@@ -4415,11 +4415,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
           String targetGroup = targetStatus == null ? null : targetStatus.getGroup();
           FileUtils.moveToTrash(fs, location, conf);
           fs.mkdirs(location);
-          try {
-            HdfsUtils.setFullFileStatus(conf, status, targetGroup, fs, location, false);
-          } catch (Exception e) {
-            LOG.warn("Error setting permissions of " + location, e);
-          }
+          HdfsUtils.setFullFileStatus(conf, status, targetGroup, fs, location, false);
         } else {
           FileStatus[] statuses = fs.listStatus(location, FileUtils.HIDDEN_FILES_PATH_FILTER);
           if (statuses == null || statuses.length == 0) {
