@@ -74,6 +74,7 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
   private String path;
 
   private static String testInjectDumpDir = null; // unit tests can overwrite this to affect default dump behaviour
+  private static final String dumpSchema = "dump_dir,last_repl_id#string,string";
 
   public ReplicationSemanticAnalyzer(QueryState queryState) throws SemanticException {
     super(queryState);
@@ -154,6 +155,7 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
     String replRoot = conf.getVar(HiveConf.ConfVars.REPLDIR);
     Path dumpRoot = new Path(replRoot, getNextDumpDir());
     Path dumpMetadata = new Path(dumpRoot,"_dumpmetadata");
+    String lastReplId;
     try {
       if (eventFrom == null){
         // bootstrap case
@@ -192,8 +194,8 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
           // FIXME : implement consolidateEvent(..) similar to dumpEvent(ev,evRoot)
         }
         LOG.info("Consolidation done, preparing to return {},{}",dumpRoot.toUri(),bootDumpEndReplId);
-        prepareReturnValues(Arrays.asList(dumpRoot.toUri().toString(), bootDumpEndReplId),
-            "dump_dir,last_repl_id#string,string");
+        // Set the correct last repl id to return to the user
+        lastReplId = bootDumpEndReplId;
       } else {
         // get list of events matching dbPattern & tblPattern
         // go through each event, and dump out each event to a event-level dump dir inside dumproot
@@ -231,9 +233,11 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
         LOG.info("Done dumping events, preparing to return {},{}",dumpRoot.toUri(),eventTo);
         List<String> vals;
         writeOutput(Arrays.asList("event", String.valueOf(eventFrom), String.valueOf(eventTo)), dumpMetadata);
-        prepareReturnValues(Arrays.asList(dumpRoot.toUri().toString(), String.valueOf(eventTo)),
-            "dump_dir,last_repl_id#string,string");
+        // Set the correct last repl id to return to the user
+        lastReplId = String.valueOf(eventTo);
       }
+      prepareReturnValues(Arrays.asList(dumpRoot.toUri().toString(), lastReplId), dumpSchema);
+      setFetchTask(createFetchTask(dumpSchema));
     } catch (Exception e) {
       // TODO : simple wrap & rethrow for now, clean up with error codes
       LOG.warn("Error during analyzeReplDump",e);
@@ -681,14 +685,7 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
     for (String s : values) {
       LOG.debug("    > " + s);
     }
-
     ctx.setResFile(ctx.getLocalTmpPath());
-    // FIXME : this should not accessible by the user if we write to it from the frontend.
-    // Thus, we should Desc/Work this, otherwise there is a security issue here.
-    // Note: if we don't call ctx.setResFile, we get a NPE from the following code section
-    // If we do call it, then FetchWork thinks that the "table" here winds up thinking that
-    // this is a partitioned dir, which does not work. Thus, this does not work.
-
     writeOutput(values,ctx.getResFile());
   }
 
@@ -700,16 +697,14 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
       outStream = fs.create(outputFile);
       outStream.writeBytes((values.get(0) == null ? Utilities.nullStringOutput : values.get(0)));
       for (int i = 1; i < values.size(); i++) {
-        outStream.write(Utilities.ctrlaCode);
+        outStream.write(Utilities.tabCode);
         outStream.writeBytes((values.get(i) == null ? Utilities.nullStringOutput : values.get(i)));
       }
       outStream.write(Utilities.newLineCode);
     } catch (IOException e) {
-      throw new SemanticException(e); // TODO : simple wrap & rethrow for now, clean up with error
-                                      // codes
+      throw new SemanticException(e);
     } finally {
-      IOUtils.closeStream(outStream); // TODO : we have other closes here, and in ReplCopyTask -
-                                      // replace with this
+      IOUtils.closeStream(outStream);
     }
   }
 
