@@ -63,6 +63,7 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge.UdfWhitelistChecker;
 import org.apache.hadoop.metrics2.util.MBeans;
+import org.apache.hadoop.security.SecurityUtil;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.service.CompositeService;
 import org.apache.hadoop.util.ExitUtil;
@@ -141,12 +142,19 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
     }
     String hostName = MetricsUtils.getHostName();
     try {
-      daemonId = new DaemonId(UserGroupInformation.getCurrentUser().getShortUserName(),
-          LlapUtil.generateClusterName(daemonConf), hostName, appName, System.currentTimeMillis());
+      // re-login with kerberos. This makes sure all daemons have the same login user.
+      if (UserGroupInformation.isSecurityEnabled()) {
+        final String daemonPrincipal = HiveConf.getVar(daemonConf, ConfVars.LLAP_KERBEROS_PRINCIPAL);
+        final String daemonKeytab = HiveConf.getVar(daemonConf, ConfVars.LLAP_KERBEROS_KEYTAB_FILE);
+        LlapUtil.loginWithKerberosAndUpdateCurrentUser(daemonPrincipal, daemonKeytab);
+      }
+      String currentUser = UserGroupInformation.getCurrentUser().getShortUserName();
+      LOG.info("Starting daemon as user: {}", currentUser);
+      daemonId = new DaemonId(currentUser, LlapUtil.generateClusterName(daemonConf),
+        hostName, appName, System.currentTimeMillis());
     } catch (IOException ex) {
       throw new RuntimeException(ex);
     }
-
 
     this.maxJvmMemory = getTotalHeapSize();
     this.llapIoEnabled = ioEnabled;
