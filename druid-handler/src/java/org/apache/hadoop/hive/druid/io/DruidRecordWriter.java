@@ -95,12 +95,13 @@ public class DruidRecordWriter implements RecordWriter<NullWritable, DruidWritab
   }
 
   /**
-   * This function computes the segment identifier and push the current open segment if max size is reached or the event belongs to the next interval.
+   * This function computes the segment identifier and push the current open segment
+   * The push will occur if max size is reached or the event belongs to the next interval.
    * Note that this function assumes that timestamps are pseudo sorted.
-   * This function will close and move to the next segment granularity as soon as it we get an event from the next interval.
-   * The sorting is done by the previous stage.
+   * This function will close and move to the next segment granularity as soon as
+   * an event from the next interval appears. The sorting is done by the previous stage.
    *
-   * @return segmentIdentifier with respect to the timestamp and maybe push the current open segment.
+   * @return segmentIdentifier with of the truncatedTime and maybe push the current open segment.
    */
   private SegmentIdentifier getSegmentIdentifierAndMaybePush(long truncatedTime) {
 
@@ -209,9 +210,6 @@ public class DruidRecordWriter implements RecordWriter<NullWritable, DruidWritab
 
   @Override
   public void write(Writable w) throws IOException {
-    if (w == null) {
-      return;
-    }
     DruidWritable record = (DruidWritable) w;
     final long timestamp = (long) record.getValue().get(DruidTable.DEFAULT_TIMESTAMP_COLUMN);
     final long truncatedTime = (long) record.getValue()

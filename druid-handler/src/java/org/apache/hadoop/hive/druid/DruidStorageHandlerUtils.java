@@ -6,9 +6,9 @@
  * to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -140,9 +140,12 @@ public final class DruidStorageHandlerUtils {
 
   /**
    * Method that creates a request for Druid JSON query (using SMILE).
+   *
    * @param address
    * @param query
+   *
    * @return
+   *
    * @throws IOException
    */
   public static Request createRequest(String address, BaseQuery<?> query)
@@ -155,9 +158,12 @@ public final class DruidStorageHandlerUtils {
   /**
    * Method that submits a request to an Http address and retrieves the result.
    * The caller is responsible for closing the stream once it finishes consuming it.
+   *
    * @param client
    * @param request
+   *
    * @return
+   *
    * @throws IOException
    */
   public static InputStream submitRequest(HttpClient client, Request request)
@@ -204,8 +210,9 @@ public final class DruidStorageHandlerUtils {
   /**
    * This function will write to filesystem serialized from of segment descriptor
    * if an existing file exists it will try to replace it.
-   * @param outputFS filesystem
-   * @param segment DataSegment object
+   *
+   * @param outputFS       filesystem
+   * @param segment        DataSegment object
    * @param descriptorPath path
    *
    * @throws IOException
@@ -248,7 +255,7 @@ public final class DruidStorageHandlerUtils {
   }
 
   /**
-   * @param connector SQL metadata connector to the metadata storage
+   * @param connector                   SQL metadata connector to the metadata storage
    * @param metadataStorageTablesConfig Table config
    *
    * @return all the active data sources in the metadata storage
@@ -263,18 +270,14 @@ public final class DruidStorageHandlerUtils {
                 return handle.createQuery(
                         String.format("SELECT DISTINCT(datasource) FROM %s WHERE used = true",
                                 metadataStorageTablesConfig.getSegmentsTable()
-                        )
-                )
-                        .fold(
-                                Lists.<String>newArrayList(),
+                        ))
+                        .fold(Lists.<String>newArrayList(),
                                 new Folder3<ArrayList<String>, Map<String, Object>>() {
                                   @Override
-                                  public ArrayList<String> fold(
-                                          ArrayList<String> druidDataSources,
+                                  public ArrayList<String> fold(ArrayList<String> druidDataSources,
                                           Map<String, Object> stringObjectMap,
                                           FoldController foldController,
-                                          StatementContext statementContext
-                                  ) throws SQLException {
+                                          StatementContext statementContext) throws SQLException {
                                     druidDataSources.add(
                                             MapUtils.getString(stringObjectMap, "datasource")
                                     );
@@ -286,13 +289,12 @@ public final class DruidStorageHandlerUtils {
               }
             }
     );
-
   }
 
   /**
-   * @param connector SQL connector to metadata
+   * @param connector                   SQL connector to metadata
    * @param metadataStorageTablesConfig Tables configuration
-   * @param dataSource Name of data source
+   * @param dataSource                  Name of data source
    *
    * @return true if the data source was successfully disabled false otherwise
    */
@@ -331,9 +333,9 @@ public final class DruidStorageHandlerUtils {
   }
 
   /**
-   * @param connector SQL connector to metadata
+   * @param connector                   SQL connector to metadata
    * @param metadataStorageTablesConfig Tables configuration
-   * @param dataSource Name of data source
+   * @param dataSource                  Name of data source
    *
    * @return List of all data segments part of the given data source
    */
