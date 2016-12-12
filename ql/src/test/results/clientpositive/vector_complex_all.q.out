@@ -211,7 +211,7 @@ POSTHOOK: query: SELECT strct.B, count(val) FROM orc_create_complex GROUP BY str
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orc_create_complex
 #### A masked pattern was here ####
-strct.b	_c1
+strct.b	c1
 four	4501
 six	4501
 two	4501

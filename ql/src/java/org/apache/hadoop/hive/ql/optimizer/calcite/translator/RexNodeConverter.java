@@ -152,7 +152,7 @@ public class RexNodeConverter {
 
   private RexNode convert(final ExprNodeFieldDesc fieldDesc) throws SemanticException {
     RexNode rexNode = convert(fieldDesc.getDesc());
-    if (rexNode instanceof RexCall) {
+    if (rexNode.getType().isStruct()) {
       // regular case of accessing nested field in a column
       return cluster.getRexBuilder().makeFieldAccess(rexNode, fieldDesc.getFieldName(), true);
     } else {
