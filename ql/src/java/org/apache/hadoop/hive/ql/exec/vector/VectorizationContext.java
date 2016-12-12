@@ -1255,7 +1255,7 @@ public class VectorizationContext {
       cl = (mode == Mode.FILTER ? FilterLongColumnInList.class : LongColumnInList.class);
       long[] inVals = new long[childrenForInList.size()];
       for (int i = 0; i != inVals.length; i++) {
-        inVals[i] = (Integer) getVectorTypeScalarValue((ExprNodeConstantDesc) childrenForInList.get(i));
+        inVals[i] = (Long) getVectorTypeScalarValue((ExprNodeConstantDesc) childrenForInList.get(i));
       }
       expr = createVectorExpression(cl, childExpr.subList(0, 1), Mode.PROJECTION, returnType);
       ((ILongInExpr) expr).setInListValues(inVals);
@@ -1845,7 +1845,7 @@ public class VectorizationContext {
     if (isTimestampFamily(t)) {
       return TimestampUtils.getTimeNanoSec((Timestamp) getScalarValue(constDesc));
     } else if (isDateFamily(t)) {
-      return DateWritable.dateToDays((Date) getScalarValue(constDesc));
+      return new Long(DateWritable.dateToDays((Date) getScalarValue(constDesc)));
     } else {
       return getScalarValue(constDesc);
     }
