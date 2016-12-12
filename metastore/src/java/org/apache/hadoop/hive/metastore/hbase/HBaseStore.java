@@ -2713,12 +2713,12 @@ public class HBaseStore implements RawStore {
     boolean commit = false;
     openTransaction();
     try {
-      List<SQLForeignKey> fks = getHBase().getForeignKeys(parent_db_name, parent_tbl_name);
+      List<SQLForeignKey> fks = getHBase().getForeignKeys(foreign_db_name, foreign_tbl_name);
       if (fks == null || fks.size() == 0) return null;
       List<SQLForeignKey> result = new ArrayList<>(fks.size());
       for (SQLForeignKey fkcol : fks) {
-        if (fkcol.getFktable_db().equals(parent_db_name) &&
-            fkcol.getFktable_name().equals(parent_tbl_name)) {
+        if ((parent_db_name == null || fkcol.getPktable_db().equals(parent_db_name)) &&
+            (parent_tbl_name == null || fkcol.getPktable_name().equals(parent_tbl_name))) {
           result.add(fkcol);
         }
       }

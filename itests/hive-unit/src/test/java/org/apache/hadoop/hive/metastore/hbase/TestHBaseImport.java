@@ -18,6 +18,8 @@
  */
 package org.apache.hadoop.hive.metastore.hbase;
 
+import org.apache.hadoop.hive.metastore.api.SQLForeignKey;
+import org.apache.hadoop.hive.metastore.api.SQLPrimaryKey;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.metastore.ObjectStore;
@@ -50,6 +52,7 @@ import org.junit.rules.ExpectedException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -65,6 +68,8 @@ public class TestHBaseImport extends HBaseIntegrationTests {
   private static final String[] partVals = new String[] {"na", "emea", "latam", "apac"};
   private static final String[] funcNames = new String[] {"allfunc1", "allfunc2"};
   private static final String[] indexNames = new String[] {"allindex1", "allindex2"};
+  private static final String[] pkNames = new String[] {"allnonparttable_pk", "allparttable_pk"};
+  private static final String[] fkNames = new String[] {"", "allparttable_fk"};
 
   private static final List<Integer> masterKeySeqs = new ArrayList<Integer>();
   @Rule
@@ -345,6 +350,64 @@ public class TestHBaseImport extends HBaseIntegrationTests {
   }
 
   @Test
+  public void importTablesWithConstraints() throws Exception {
+    RawStore rdbms;
+    rdbms = new ObjectStore();
+    rdbms.setConf(conf);
+
+    String[] dbNames = new String[] {"onetabwcdb1", "onetabwcdb2"};
+    int now = (int)System.currentTimeMillis() / 1000;
+
+    setupObjectStore(rdbms, dbNames, now, true);
+
+    // Create the database so I can put the table in it.
+    store.createDatabase(
+        new Database(dbNames[0], "no description", "file:/tmp", emptyParameters));
+
+    HBaseImport importer = new HBaseImport("-d", dbNames[0]);
+    importer.setConnections(rdbms, store);
+    importer.run();
+
+    Database db = store.getDatabase(dbNames[0]);
+    Assert.assertNotNull(db);
+
+    Table table = store.getTable(db.getName(), tableNames[1]);
+    Assert.assertNotNull(table);
+
+    List<SQLPrimaryKey> pk = store.getPrimaryKeys(dbNames[0], tableNames[1]);
+    Assert.assertNotNull(pk);
+    Assert.assertEquals(1, pk.size());
+    Assert.assertEquals(dbNames[0], pk.get(0).getTable_db());
+    Assert.assertEquals(tableNames[1], pk.get(0).getTable_name());
+    Assert.assertEquals(0, pk.get(0).getKey_seq());
+    Assert.assertEquals("col1", pk.get(0).getColumn_name());
+    Assert.assertEquals(dbNames[0] + "_" + pkNames[1], pk.get(0).getPk_name());
+    Assert.assertTrue(pk.get(0).isEnable_cstr());
+    Assert.assertFalse(pk.get(0).isValidate_cstr());
+    Assert.assertTrue(pk.get(0).isRely_cstr());
+
+    List<SQLForeignKey> fk =
+        store.getForeignKeys(dbNames[0], tableNames[0], dbNames[0], tableNames[1]);
+    Assert.assertNotNull(fk);
+    Assert.assertEquals(1, fk.size());
+    Assert.assertEquals(dbNames[0], fk.get(0).getPktable_db());
+    Assert.assertEquals(tableNames[0], fk.get(0).getPktable_name());
+    Assert.assertEquals("col1", fk.get(0).getPkcolumn_name());
+    Assert.assertEquals(dbNames[0], fk.get(0).getFktable_db());
+    Assert.assertEquals(tableNames[1], fk.get(0).getFktable_name());
+    Assert.assertEquals("col1", fk.get(0).getFkcolumn_name());
+    Assert.assertEquals(0, fk.get(0).getKey_seq());
+    Assert.assertEquals(1, fk.get(0).getUpdate_rule());
+    Assert.assertEquals(2, fk.get(0).getDelete_rule());
+    Assert.assertEquals(dbNames[0] + "_" + fkNames[1], fk.get(0).getFk_name());
+    Assert.assertTrue(pk.get(0).isEnable_cstr());
+    Assert.assertFalse(pk.get(0).isValidate_cstr());
+    Assert.assertTrue(pk.get(0).isRely_cstr());
+
+
+  }
+
+  @Test
   public void importOneTablePartitioned() throws Exception {
     RawStore rdbms;
     rdbms = new ObjectStore();
@@ -492,8 +555,23 @@ public class TestHBaseImport extends HBaseIntegrationTests {
   private void setupObjectStore(RawStore rdbms, String[] roles, String[] dbNames,
                                 String[] tokenIds, String[] tokens, String[] masterKeys, int now)
       throws MetaException, InvalidObjectException, NoSuchObjectException {
-    for (int i = 0; i < roles.length; i++) {
-      rdbms.addRole(roles[i], "me");
+    setupObjectStore(rdbms, roles, dbNames, tokenIds, tokens, masterKeys, now, false);
+  }
+
+  private void setupObjectStore(RawStore rdbms, String[] dbNames, int now,
+                                boolean putConstraintsOnTables)
+      throws MetaException, InvalidObjectException, NoSuchObjectException {
+    setupObjectStore(rdbms, null, dbNames, null, null, null, now, putConstraintsOnTables);
+  }
+
+  private void setupObjectStore(RawStore rdbms, String[] roles, String[] dbNames,
+                                String[] tokenIds, String[] tokens, String[] masterKeys, int now,
+                                boolean putConstraintsOnTables)
+      throws MetaException, InvalidObjectException, NoSuchObjectException {
+    if (roles != null) {
+      for (int i = 0; i < roles.length; i++) {
+        rdbms.addRole(roles[i], "me");
+      }
     }
 
     for (int i = 0; i < dbNames.length; i++) {
@@ -507,11 +585,29 @@ public class TestHBaseImport extends HBaseIntegrationTests {
           serde, null, null, emptyParameters);
       rdbms.createTable(new Table(tableNames[0], dbNames[i], "me", now, now, 0, sd, null,
           emptyParameters, null, null, null));
+      if (putConstraintsOnTables) {
+        rdbms.addPrimaryKeys(Collections.singletonList(
+            new SQLPrimaryKey(dbNames[i], tableNames[0], "col1", 0, dbNames[i] + "_" + pkNames[0],
+                true, false, true)
+        ));
+      }
 
       List<FieldSchema> partCols = new ArrayList<>();
       partCols.add(new FieldSchema("region", "string", ""));
       rdbms.createTable(new Table(tableNames[1], dbNames[i], "me", now, now, 0, sd, partCols,
           emptyParameters, null, null, null));
+      if (putConstraintsOnTables) {
+        rdbms.addPrimaryKeys(Arrays.asList(
+            new SQLPrimaryKey(dbNames[i], tableNames[1], "col1", 0, dbNames[i] + "_" + pkNames[1],
+                true, false, true)
+        ));
+        rdbms.addForeignKeys(Collections.singletonList(
+            new SQLForeignKey(dbNames[i], tableNames[0], "col1", dbNames[i], tableNames[1],
+                "col1", 0, 1, 2, dbNames[i] + "_" + fkNames[1], dbNames[i] + "_" + pkNames[0],
+                true, false, true)
+        ));
+
+      }
 
       for (int j = 0; j < partVals.length; j++) {
         StorageDescriptor psd = new StorageDescriptor(sd);
@@ -537,9 +633,13 @@ public class TestHBaseImport extends HBaseIntegrationTests {
             now, now, indexTableName, sd, emptyParameters, false));
       }
     }
-    for (int i = 0; i < tokenIds.length; i++) rdbms.addToken(tokenIds[i], tokens[i]);
-    for (int i = 0; i < masterKeys.length; i++) {
-      masterKeySeqs.add(rdbms.addMasterKey(masterKeys[i]));
+    if (tokenIds != null) {
+      for (int i = 0; i < tokenIds.length; i++) rdbms.addToken(tokenIds[i], tokens[i]);
+    }
+    if (masterKeys != null) {
+      for (int i = 0; i < masterKeys.length; i++) {
+        masterKeySeqs.add(rdbms.addMasterKey(masterKeys[i]));
+      }
     }
   }
 

@@ -1445,7 +1445,7 @@ public class TestHBaseStore {
 
     store.createTableWithConstraints(table, null, fk);
 
-    fk = store.getForeignKeys(DB, tableName, DB, pkTable);
+    fk = store.getForeignKeys(DB, pkTable, DB, tableName);
 
     Assert.assertNotNull(fk);
     Assert.assertEquals(1, fk.size());
@@ -1524,7 +1524,7 @@ public class TestHBaseStore {
     store.createTable(table);
     store.addForeignKeys(fk);
 
-    fk = store.getForeignKeys(DB, tableName, DB, pkTable);
+    fk = store.getForeignKeys(DB, pkTable, DB, tableName);
 
     Assert.assertNotNull(fk);
     Assert.assertEquals(2, fk.size());
@@ -1586,10 +1586,10 @@ public class TestHBaseStore {
     store.createTable(table);
     store.addForeignKeys(fk);
 
-    fk = store.getForeignKeys(DB, tableName, DB, pkTable);
+    fk = store.getForeignKeys(DB, pkTable, DB, tableName);
 
     Assert.assertNotNull(fk);
-    Assert.assertEquals(3, fk.size());
+    Assert.assertEquals(2, fk.size());
     SQLForeignKey[] sorted = fk.toArray(new SQLForeignKey[2]);
     Arrays.sort(sorted, new Comparator<SQLForeignKey>() {
       @Override
@@ -1618,20 +1618,23 @@ public class TestHBaseStore {
       Assert.assertFalse(sorted[i].isValidate_cstr());
       Assert.assertTrue(sorted[i].isRely_cstr());
     }
-    Assert.assertEquals(DB, sorted[2].getPktable_db());
-    Assert.assertEquals(pkTable2, sorted[2].getPktable_name());
-    Assert.assertEquals(pkColNames2[0], sorted[2].getPkcolumn_name());
-    Assert.assertEquals(DB, sorted[2].getFktable_db());
-    Assert.assertEquals(tableName, sorted[2].getFktable_name());
-    Assert.assertEquals(fkColNames[0], sorted[2].getFkcolumn_name());
-    Assert.assertEquals(0, sorted[2].getKey_seq());
-    Assert.assertEquals(1, sorted[2].getUpdate_rule());
-    Assert.assertEquals(2, sorted[2].getDelete_rule());
-    Assert.assertEquals(fkName2, sorted[2].getFk_name());
-    Assert.assertEquals(pkName2, sorted[2].getPk_name());
-    Assert.assertTrue(sorted[2].isEnable_cstr());
-    Assert.assertFalse(sorted[2].isValidate_cstr());
-    Assert.assertTrue(sorted[2].isRely_cstr());
+    fk = store.getForeignKeys(DB, pkTable2, DB, tableName);
+    Assert.assertNotNull(fk);
+    Assert.assertEquals(1, fk.size());
+    Assert.assertEquals(DB, fk.get(0).getPktable_db());
+    Assert.assertEquals(pkTable2, fk.get(0).getPktable_name());
+    Assert.assertEquals(pkColNames2[0], fk.get(0).getPkcolumn_name());
+    Assert.assertEquals(DB, fk.get(0).getFktable_db());
+    Assert.assertEquals(tableName, fk.get(0).getFktable_name());
+    Assert.assertEquals(fkColNames[0], fk.get(0).getFkcolumn_name());
+    Assert.assertEquals(0, fk.get(0).getKey_seq());
+    Assert.assertEquals(1, fk.get(0).getUpdate_rule());
+    Assert.assertEquals(2, fk.get(0).getDelete_rule());
+    Assert.assertEquals(fkName2, fk.get(0).getFk_name());
+    Assert.assertEquals(pkName2, fk.get(0).getPk_name());
+    Assert.assertTrue(fk.get(0).isEnable_cstr());
+    Assert.assertFalse(fk.get(0).isValidate_cstr());
+    Assert.assertTrue(fk.get(0).isRely_cstr());
 
   }
 
@@ -1666,10 +1669,10 @@ public class TestHBaseStore {
     );
     store.addForeignKeys(fk);
 
-    fk = store.getForeignKeys(DB, tableName, DB, pkTable);
+    fk = store.getForeignKeys(DB, pkTable, DB, tableName);
 
     Assert.assertNotNull(fk);
-    Assert.assertEquals(3, fk.size());
+    Assert.assertEquals(2, fk.size());
     SQLForeignKey[] sorted = fk.toArray(new SQLForeignKey[2]);
     Arrays.sort(sorted, new Comparator<SQLForeignKey>() {
       @Override
@@ -1698,24 +1701,33 @@ public class TestHBaseStore {
       Assert.assertFalse(sorted[i].isValidate_cstr());
       Assert.assertTrue(sorted[i].isRely_cstr());
     }
-    Assert.assertEquals(DB, sorted[2].getPktable_db());
-    Assert.assertEquals(pkTable2, sorted[2].getPktable_name());
-    Assert.assertEquals(pkColNames2[0], sorted[2].getPkcolumn_name());
-    Assert.assertEquals(DB, sorted[2].getFktable_db());
-    Assert.assertEquals(tableName, sorted[2].getFktable_name());
-    Assert.assertEquals(fkColNames[0], sorted[2].getFkcolumn_name());
-    Assert.assertEquals(0, sorted[2].getKey_seq());
-    Assert.assertEquals(1, sorted[2].getUpdate_rule());
-    Assert.assertEquals(2, sorted[2].getDelete_rule());
-    Assert.assertEquals(fkName2, sorted[2].getFk_name());
-    Assert.assertEquals(pkName2, sorted[2].getPk_name());
-    Assert.assertTrue(sorted[2].isEnable_cstr());
-    Assert.assertFalse(sorted[2].isValidate_cstr());
-    Assert.assertTrue(sorted[2].isRely_cstr());
+
+    fk = store.getForeignKeys(DB, pkTable2, DB, tableName);
+    Assert.assertNotNull(fk);
+    Assert.assertEquals(1, fk.size());
+    Assert.assertEquals(DB, fk.get(0).getPktable_db());
+    Assert.assertEquals(pkTable2, fk.get(0).getPktable_name());
+    Assert.assertEquals(pkColNames2[0], fk.get(0).getPkcolumn_name());
+    Assert.assertEquals(DB, fk.get(0).getFktable_db());
+    Assert.assertEquals(tableName, fk.get(0).getFktable_name());
+    Assert.assertEquals(fkColNames[0], fk.get(0).getFkcolumn_name());
+    Assert.assertEquals(0, fk.get(0).getKey_seq());
+    Assert.assertEquals(1, fk.get(0).getUpdate_rule());
+    Assert.assertEquals(2, fk.get(0).getDelete_rule());
+    Assert.assertEquals(fkName2, fk.get(0).getFk_name());
+    Assert.assertEquals(pkName2, fk.get(0).getPk_name());
+    Assert.assertTrue(fk.get(0).isEnable_cstr());
+    Assert.assertFalse(fk.get(0).isValidate_cstr());
+    Assert.assertTrue(fk.get(0).isRely_cstr());
+
+    // Check that passing null gets all the foreign keys
+    fk = store.getForeignKeys(null, null, DB, tableName);
+    Assert.assertNotNull(fk);
+    Assert.assertEquals(3, fk.size());
 
     store.dropConstraint(DB, tableName, fkName);
 
-    fk = store.getForeignKeys(DB, tableName, DB, pkTable);
+    fk = store.getForeignKeys(DB, pkTable2, DB, tableName);
     Assert.assertNotNull(fk);
     Assert.assertEquals(1, fk.size());
     Assert.assertEquals(DB, fk.get(0).getPktable_db());
@@ -1735,7 +1747,7 @@ public class TestHBaseStore {
 
     store.dropConstraint(DB, tableName, fkName2);
 
-    fk = store.getForeignKeys(DB, tableName, DB, pkTable);
+    fk = store.getForeignKeys(DB, pkTable2, DB, tableName);
     Assert.assertNull(fk);
   }
 

@@ -672,6 +672,18 @@ public interface RawStore extends Configurable {
   public abstract List<SQLPrimaryKey> getPrimaryKeys(String db_name,
     String tbl_name) throws MetaException;
 
+  /**
+   * Get the foreign keys for a table.  All foreign keys for a particular table can be fetched by
+   * passing null for the last two arguments.
+   * @param parent_db_name Database the table referred to is in.  This can be null to match all
+   *                       databases.
+   * @param parent_tbl_name Table that is referred to.  This can be null to match all tables.
+   * @param foreign_db_name Database the table with the foreign key is in.
+   * @param foreign_tbl_name Table with the foreign key.
+   * @return List of all matching foreign key columns.  Note that if more than one foreign key
+   * matches the arguments the results here will be all mixed together into a single list.
+   * @throws MetaException if something goes wrong.
+   */
   public abstract List<SQLForeignKey> getForeignKeys(String parent_db_name,
     String parent_tbl_name, String foreign_db_name, String foreign_tbl_name)
     throws MetaException;

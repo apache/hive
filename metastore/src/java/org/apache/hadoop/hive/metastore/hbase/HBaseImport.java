@@ -27,6 +27,8 @@ import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.lang.StringUtils;
+import org.apache.hadoop.hive.metastore.api.SQLForeignKey;
+import org.apache.hadoop.hive.metastore.api.SQLPrimaryKey;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -368,6 +370,23 @@ public class HBaseImport {
             }
             screen("Copying table " + name[0] + "." + name[1]);
             hbaseStore.get().createTable(table);
+
+            // See if the table has any constraints, and if so copy those as well
+            List<SQLPrimaryKey> pk =
+                rdbmsStore.get().getPrimaryKeys(table.getDbName(), table.getTableName());
+            if (pk != null && pk.size() > 0) {
+              LOG.debug("Found primary keys, adding them");
+              hbaseStore.get().addPrimaryKeys(pk);
+            }
+
+            // Passing null as the target table name results in all of the foreign keys being
+            // retrieved.
+            List<SQLForeignKey> fks =
+                rdbmsStore.get().getForeignKeys(null, null, table.getDbName(), table.getTableName());
+            if (fks != null && fks.size() > 0) {
+              LOG.debug("Found foreign keys, adding them");
+              hbaseStore.get().addForeignKeys(fks);
+            }
           }
         } catch (InterruptedException | MetaException | InvalidObjectException e) {
           throw new RuntimeException(e);

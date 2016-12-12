@@ -19,7 +19,9 @@ package org.apache.hadoop.hive.metastore;
 
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.hadoop.hive.common.metrics.common.MetricsConstant;
 import org.apache.hadoop.hive.common.metrics.common.MetricsFactory;
@@ -39,6 +41,8 @@ import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.PrincipalType;
 import org.apache.hadoop.hive.metastore.api.Role;
+import org.apache.hadoop.hive.metastore.api.SQLForeignKey;
+import org.apache.hadoop.hive.metastore.api.SQLPrimaryKey;
 import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
@@ -322,6 +326,23 @@ public class TestObjectStore {
           List<Partition> parts = store.getPartitions(db, tbl, 100);
           for (Partition part : parts) {
             store.dropPartition(db, tbl, part.getValues());
+          }
+          // Find any constraints and drop them
+          Set<String> constraints = new HashSet<>();
+          List<SQLPrimaryKey> pk = store.getPrimaryKeys(db, tbl);
+          if (pk != null) {
+            for (SQLPrimaryKey pkcol : pk) {
+              constraints.add(pkcol.getPk_name());
+            }
+          }
+          List<SQLForeignKey> fks = store.getForeignKeys(null, null, db, tbl);
+          if (fks != null) {
+            for (SQLForeignKey fkcol : fks) {
+              constraints.add(fkcol.getFk_name());
+            }
+          }
+          for (String constraint : constraints) {
+            store.dropConstraint(db, tbl, constraint);
           }
           store.dropTable(db, tbl);
         }
