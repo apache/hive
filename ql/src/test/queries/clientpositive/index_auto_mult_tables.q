@@ -22,4 +22,4 @@ EXPLAIN SELECT a.key, a.value FROM src a JOIN srcpart b ON (a.key = b.key) WHERE
 SELECT a.key, a.value FROM src a JOIN srcpart b ON (a.key = b.key) WHERE a.key > 80 AND a.key < 100 AND b.key > 70 AND b.key < 90;
 
 DROP INDEX src_index_bitmap on src;
-DROP INDEX srcpart_index_bitmap on src;
+DROP INDEX srcpart_index_bitmap on srcpart;

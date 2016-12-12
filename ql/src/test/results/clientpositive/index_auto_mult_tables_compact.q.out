@@ -487,9 +487,9 @@ PREHOOK: Input: default@src
 POSTHOOK: query: DROP INDEX src_index_compact on src
 POSTHOOK: type: DROPINDEX
 POSTHOOK: Input: default@src
-PREHOOK: query: DROP INDEX srcpart_index_compact on src
+PREHOOK: query: DROP INDEX srcpart_index_compact on srcpart
 PREHOOK: type: DROPINDEX
-PREHOOK: Input: default@src
-POSTHOOK: query: DROP INDEX srcpart_index_compact on src
+PREHOOK: Input: default@srcpart
+POSTHOOK: query: DROP INDEX srcpart_index_compact on srcpart
 POSTHOOK: type: DROPINDEX
-POSTHOOK: Input: default@src
+POSTHOOK: Input: default@srcpart
