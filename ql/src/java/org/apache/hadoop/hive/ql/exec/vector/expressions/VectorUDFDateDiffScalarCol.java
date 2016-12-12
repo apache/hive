@@ -56,6 +56,8 @@ public class VectorUDFDateDiffScalarCol extends VectorExpression {
       this.timestampValue = (Timestamp) object;
     } else if (object instanceof byte []) {
       this.stringValue = (byte[]) object;
+    } else {
+      throw new RuntimeException("Unexpected scalar object " + object.getClass().getName() + " " + object.toString());
     }
   }
 

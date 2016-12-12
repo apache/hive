@@ -20,7 +20,7 @@ package org.apache.hadoop.hive.ql.udf.generic;
 import java.sql.Timestamp;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Date;
+import java.sql.Date;
 import java.util.TimeZone;
 
 import org.apache.hadoop.hive.ql.exec.Description;
@@ -70,7 +70,6 @@ public class GenericUDFDateDiff extends GenericUDF {
   private IntWritable result = new IntWritable();
 
   public GenericUDFDateDiff() {
-    formatter.setTimeZone(TimeZone.getTimeZone("UTC"));
   }
 
   @Override
@@ -106,14 +105,14 @@ public class GenericUDFDateDiff extends GenericUDF {
     if (argument.get() == null) {
       return null;
     }
-    Date date = new Date();
+    Date date = new Date(0);
     switch (inputType) {
     case STRING:
     case VARCHAR:
     case CHAR:
       String dateString = converter.convert(argument.get()).toString();
       try {
-        date = formatter.parse(dateString);
+        date.setTime(formatter.parse(dateString).getTime());
       } catch (ParseException e) {
         return null;
       }
@@ -171,11 +170,8 @@ public class GenericUDFDateDiff extends GenericUDF {
     if (date == null || date2 == null) {
       return null;
     }
-    // NOTE: This implementation avoids the extra-second problem
-    // by comparing with UTC epoch and integer division.
-    // 86400 is the number of seconds in a day
-    long diffInMilliSeconds = date.getTime() - date2.getTime();
-    result.set((int) (diffInMilliSeconds / (86400 * 1000)));
+
+    result.set(DateWritable.dateToDays(date) - DateWritable.dateToDays(date2));
     return result;
   }
 }
