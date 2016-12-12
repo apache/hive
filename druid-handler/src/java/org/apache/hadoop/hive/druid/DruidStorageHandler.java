@@ -309,8 +309,7 @@ public class DruidStorageHandler extends DefaultStorageHandler implements HiveMe
         LOG.info(String.format("Nothing to delete for data source [%s]", dataSourceName));
         return;
       }
-      for (DataSegment dataSegment :
-              dataSegmentList) {
+      for (DataSegment dataSegment : dataSegmentList) {
         try {
           deleteSegment(dataSegment);
         } catch (SegmentLoadingException e) {
