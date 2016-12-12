@@ -17,13 +17,8 @@
  */
 package org.apache.hadoop.hive.ql.optimizer;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Stack;
-
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -71,11 +66,16 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
+import org.apache.parquet.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Stack;
 
 /**
  * Introduces a RS before FS to partition data by configuration specified
@@ -221,8 +221,16 @@ public class SortedDynPartitionTimeGranularityOptimizer extends Transform {
       RowSchema selRS = new RowSchema(fsParent.getSchema());
       // Granularity (partition) column
       String udfName;
+      String segmentGranularity = parseCtx.getCreateTable().getTblProps()
+              .get(Constants.DRUID_SEGMENT_GRANULARITY);
+      segmentGranularity = !Strings.isNullOrEmpty(segmentGranularity)
+              ? segmentGranularity
+              : HiveConf.getVar(parseCtx.getConf(),
+                      HiveConf.ConfVars.HIVE_DRUID_INDEXING_GRANULARITY
+              );
+
       Class<? extends UDF> udfClass;
-      switch (parseCtx.getConf().getVar(HiveConf.ConfVars.HIVE_DRUID_INDEXING_GRANULARITY)) {
+      switch (segmentGranularity) {
         case "YEAR":
           udfName = "floor_year";
           udfClass = UDFDateFloorYear.class;
