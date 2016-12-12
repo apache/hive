@@ -123,6 +123,14 @@ public class SortedDynPartitionTimeGranularityOptimizer extends Transform {
       // introduce RS and EX before FS
       FileSinkOperator fsOp = (FileSinkOperator) nd;
 
+      String segmentGranularity = fsOp.getConf().getTable().getParameters()
+              .get(Constants.DRUID_SEGMENT_GRANULARITY);
+      segmentGranularity = !Strings.isNullOrEmpty(segmentGranularity)
+              ? segmentGranularity
+              : HiveConf.getVar(parseCtx.getConf(),
+                      HiveConf.ConfVars.HIVE_DRUID_INDEXING_GRANULARITY
+              );
+
       final String sh = fsOp.getConf().getTableInfo().getOutputFileFormatClassName();
       if (sh == null || !sh.equals(Constants.DRUID_HIVE_OUTPUT_FORMAT)) {
         // Bail out, nothing to do
@@ -137,7 +145,9 @@ public class SortedDynPartitionTimeGranularityOptimizer extends Transform {
       fsParent.getChildOperators().clear();
 
       // Create SelectOp with granularity column
-      Operator<? extends OperatorDesc> granularitySelOp = getGranularitySelOp(fsParent);
+      Operator<? extends OperatorDesc> granularitySelOp = getGranularitySelOp(fsParent,
+              segmentGranularity
+      );
 
       // Create ReduceSinkOp operator
       ArrayList<ColumnInfo> parentCols = Lists.newArrayList(granularitySelOp.getSchema().getSignature());
@@ -195,7 +205,8 @@ public class SortedDynPartitionTimeGranularityOptimizer extends Transform {
     }
 
     private Operator<? extends OperatorDesc> getGranularitySelOp(
-            Operator<? extends OperatorDesc> fsParent) throws SemanticException {
+            Operator<? extends OperatorDesc> fsParent, String segmentGranularity
+    ) throws SemanticException {
       ArrayList<ColumnInfo> parentCols = Lists.newArrayList(fsParent.getSchema().getSignature());
       ArrayList<ExprNodeDesc> descs = Lists.newArrayList();
       List<String> colNames = Lists.newArrayList();
@@ -221,13 +232,6 @@ public class SortedDynPartitionTimeGranularityOptimizer extends Transform {
       RowSchema selRS = new RowSchema(fsParent.getSchema());
       // Granularity (partition) column
       String udfName;
-      String segmentGranularity = parseCtx.getCreateTable().getTblProps()
-              .get(Constants.DRUID_SEGMENT_GRANULARITY);
-      segmentGranularity = !Strings.isNullOrEmpty(segmentGranularity)
-              ? segmentGranularity
-              : HiveConf.getVar(parseCtx.getConf(),
-                      HiveConf.ConfVars.HIVE_DRUID_INDEXING_GRANULARITY
-              );
 
       Class<? extends UDF> udfClass;
       switch (segmentGranularity) {
