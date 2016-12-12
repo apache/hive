@@ -18,11 +18,9 @@
 
 package org.apache.hadoop.hive.ql;
 
-import java.sql.Timestamp;
 import java.util.Map;
 
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.HiveOperation;
 
 /**

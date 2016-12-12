@@ -34,6 +34,7 @@ public class MTable {
   private Map<String, String> parameters;
   private String viewOriginalText;
   private String viewExpandedText;
+  private boolean rewriteEnabled;
   private String tableType;
 
   public MTable() {}
@@ -54,8 +55,8 @@ public class MTable {
    */
   public MTable(String tableName, MDatabase database, MStorageDescriptor sd, String owner,
       int createTime, int lastAccessTime, int retention, List<MFieldSchema> partitionKeys,
-      Map<String, String> parameters,
-      String viewOriginalText, String viewExpandedText, String tableType) {
+      Map<String, String> parameters, String viewOriginalText, String viewExpandedText,
+      boolean rewriteEnabled, String tableType) {
     this.tableName = tableName;
     this.database = database;
     this.sd = sd;
@@ -67,6 +68,7 @@ public class MTable {
     this.parameters = parameters;
     this.viewOriginalText = viewOriginalText;
     this.viewExpandedText = viewExpandedText;
+    this.rewriteEnabled = rewriteEnabled;
     this.tableType = tableType;
   }
 
@@ -152,6 +154,20 @@ public class MTable {
    */
   public void setViewExpandedText(String viewExpandedText) {
     this.viewExpandedText = viewExpandedText;
+  }
+
+  /**
+   * @return whether the view can be used for rewriting queries
+   */
+  public boolean isRewriteEnabled() {
+    return rewriteEnabled;
+  }
+
+  /**
+   * @param rewriteEnabled whether the view can be used for rewriting queries
+   */
+  public void setRewriteEnabled(boolean rewriteEnabled) {
+    this.rewriteEnabled = rewriteEnabled;
   }
 
   /**

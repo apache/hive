@@ -79,6 +79,11 @@ Compressed:         	No
 Num Buckets:        	-1                  	 
 Bucket Columns:     	[]                  	 
 Sort Columns:       	[]                  	 
+	 	 
+# View Information	 	 
+View Original Text: 	select a, c from cmv_basetable	 
+View Expanded Text: 	null                	 
+View Rewrite Enabled:	No                  	 
 PREHOOK: query: show tblproperties cmv_mat_view
 PREHOOK: type: SHOW_TBLPROPERTIES
 POSTHOOK: query: show tblproperties cmv_mat_view
@@ -157,6 +162,11 @@ Compressed:         	No
 Num Buckets:        	-1                  	 
 Bucket Columns:     	[]                  	 
 Sort Columns:       	[]                  	 
+	 	 
+# View Information	 	 
+View Original Text: 	select a from cmv_basetable	 
+View Expanded Text: 	null                	 
+View Rewrite Enabled:	No                  	 
 PREHOOK: query: select a from cmv_mat_view2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@cmv_mat_view2
@@ -228,6 +238,11 @@ Compressed:         	No
 Num Buckets:        	-1                  	 
 Bucket Columns:     	[]                  	 
 Sort Columns:       	[]                  	 
+	 	 
+# View Information	 	 
+View Original Text: 	select * from cmv_basetable	 
+View Expanded Text: 	null                	 
+View Rewrite Enabled:	No                  	 
 PREHOOK: query: select a, b, c from cmv_mat_view3
 PREHOOK: type: QUERY
 PREHOOK: Input: default@cmv_mat_view3
@@ -310,6 +325,11 @@ Compressed:         	No
 Num Buckets:        	-1                  	 
 Bucket Columns:     	[]                  	 
 Sort Columns:       	[]                  	 
+	 	 
+# View Information	 	 
+View Original Text: 	select a from cmv_basetable	 
+View Expanded Text: 	null                	 
+View Rewrite Enabled:	No                  	 
 PREHOOK: query: select a from cmv_mat_view4
 PREHOOK: type: QUERY
 PREHOOK: Input: default@cmv_mat_view4

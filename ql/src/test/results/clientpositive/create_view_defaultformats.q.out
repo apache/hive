@@ -57,6 +57,7 @@ Sort Columns:       	[]
 # View Information	 	 
 View Original Text: 	select * from src   	 
 View Expanded Text: 	select `src`.`key`, `src`.`value` from `default`.`src`	 
+View Rewrite Enabled:	No                  	 
 PREHOOK: query: describe formatted rcsrc
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@rcsrc
@@ -88,6 +89,7 @@ Sort Columns:       	[]
 # View Information	 	 
 View Original Text: 	select * from src   	 
 View Expanded Text: 	select `src`.`key`, `src`.`value` from `default`.`src`	 
+View Rewrite Enabled:	No                  	 
 PREHOOK: query: select * from sfsrc where key = 100 limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@sfsrc

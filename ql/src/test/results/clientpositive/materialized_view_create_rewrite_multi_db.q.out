@@ -1,0 +1,157 @@
+PREHOOK: query: create database db1
+PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:db1
+POSTHOOK: query: create database db1
+POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:db1
+PREHOOK: query: use db1
+PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:db1
+POSTHOOK: query: use db1
+POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:db1
+PREHOOK: query: create table cmv_basetable (a int, b varchar(256), c decimal(10,2), d int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:db1
+PREHOOK: Output: db1@cmv_basetable
+POSTHOOK: query: create table cmv_basetable (a int, b varchar(256), c decimal(10,2), d int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:db1
+POSTHOOK: Output: db1@cmv_basetable
+PREHOOK: query: insert into cmv_basetable values
+ (1, 'alfred', 10.30, 2),
+ (2, 'bob', 3.14, 3),
+ (2, 'bonnie', 172342.2, 3),
+ (3, 'calvin', 978.76, 3),
+ (3, 'charlie', 9.8, 1)
+PREHOOK: type: QUERY
+PREHOOK: Output: db1@cmv_basetable
+POSTHOOK: query: insert into cmv_basetable values
+ (1, 'alfred', 10.30, 2),
+ (2, 'bob', 3.14, 3),
+ (2, 'bonnie', 172342.2, 3),
+ (3, 'calvin', 978.76, 3),
+ (3, 'charlie', 9.8, 1)
+POSTHOOK: type: QUERY
+POSTHOOK: Output: db1@cmv_basetable
+POSTHOOK: Lineage: cmv_basetable.a EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: cmv_basetable.b EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+POSTHOOK: Lineage: cmv_basetable.c EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
+POSTHOOK: Lineage: cmv_basetable.d EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col4, type:string, comment:), ]
+PREHOOK: query: create database db2
+PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:db2
+POSTHOOK: query: create database db2
+POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:db2
+PREHOOK: query: use db2
+PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:db2
+POSTHOOK: query: use db2
+POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:db2
+PREHOOK: query: create materialized view cmv_mat_view enable rewrite
+as select a, b, c from db1.cmv_basetable where a = 2
+PREHOOK: type: CREATE_MATERIALIZED_VIEW
+PREHOOK: Input: db1@cmv_basetable
+PREHOOK: Output: database:db2
+PREHOOK: Output: db2@cmv_mat_view
+POSTHOOK: query: create materialized view cmv_mat_view enable rewrite
+as select a, b, c from db1.cmv_basetable where a = 2
+POSTHOOK: type: CREATE_MATERIALIZED_VIEW
+POSTHOOK: Input: db1@cmv_basetable
+POSTHOOK: Output: database:db2
+POSTHOOK: Output: db2@cmv_mat_view
+PREHOOK: query: select * from cmv_mat_view
+PREHOOK: type: QUERY
+PREHOOK: Input: db2@cmv_mat_view
+#### A masked pattern was here ####
+POSTHOOK: query: select * from cmv_mat_view
+POSTHOOK: type: QUERY
+POSTHOOK: Input: db2@cmv_mat_view
+#### A masked pattern was here ####
+2	bob	3.14
+2	bonnie	172342.20
+PREHOOK: query: show tblproperties cmv_mat_view
+PREHOOK: type: SHOW_TBLPROPERTIES
+POSTHOOK: query: show tblproperties cmv_mat_view
+POSTHOOK: type: SHOW_TBLPROPERTIES
+numFiles	1
+totalSize	453
+#### A masked pattern was here ####
+PREHOOK: query: create materialized view if not exists cmv_mat_view2 enable rewrite
+as select a, c from db1.cmv_basetable where a = 3
+PREHOOK: type: CREATE_MATERIALIZED_VIEW
+PREHOOK: Input: db1@cmv_basetable
+PREHOOK: Output: database:db2
+PREHOOK: Output: db2@cmv_mat_view2
+POSTHOOK: query: create materialized view if not exists cmv_mat_view2 enable rewrite
+as select a, c from db1.cmv_basetable where a = 3
+POSTHOOK: type: CREATE_MATERIALIZED_VIEW
+POSTHOOK: Input: db1@cmv_basetable
+POSTHOOK: Output: database:db2
+POSTHOOK: Output: db2@cmv_mat_view2
+PREHOOK: query: select * from cmv_mat_view2
+PREHOOK: type: QUERY
+PREHOOK: Input: db2@cmv_mat_view2
+#### A masked pattern was here ####
+POSTHOOK: query: select * from cmv_mat_view2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: db2@cmv_mat_view2
+#### A masked pattern was here ####
+3	978.76
+3	9.80
+PREHOOK: query: show tblproperties cmv_mat_view2
+PREHOOK: type: SHOW_TBLPROPERTIES
+POSTHOOK: query: show tblproperties cmv_mat_view2
+POSTHOOK: type: SHOW_TBLPROPERTIES
+numFiles	1
+totalSize	322
+#### A masked pattern was here ####
+PREHOOK: query: create database db3
+PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:db3
+POSTHOOK: query: create database db3
+POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:db3
+PREHOOK: query: use db3
+PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:db3
+POSTHOOK: query: use db3
+POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:db3
+PREHOOK: query: explain
+select a, c from db1.cmv_basetable where a = 3
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+select a, c from db1.cmv_basetable where a = 3
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: db2.cmv_mat_view2
+          Statistics: Num rows: 2 Data size: 322 Basic stats: COMPLETE Column stats: NONE
+          Select Operator
+            expressions: a (type: int), c (type: decimal(10,2))
+            outputColumnNames: _col0, _col1
+            Statistics: Num rows: 2 Data size: 322 Basic stats: COMPLETE Column stats: NONE
+            ListSink
+
+PREHOOK: query: select a, c from db1.cmv_basetable where a = 3
+PREHOOK: type: QUERY
+PREHOOK: Input: db1@cmv_basetable
+PREHOOK: Input: db2@cmv_mat_view2
+#### A masked pattern was here ####
+POSTHOOK: query: select a, c from db1.cmv_basetable where a = 3
+POSTHOOK: type: QUERY
+POSTHOOK: Input: db1@cmv_basetable
+POSTHOOK: Input: db2@cmv_mat_view2
+#### A masked pattern was here ####
+3	978.76
+3	9.80

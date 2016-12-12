@@ -1062,6 +1062,7 @@ public class HBaseUtils {
     if (table.getViewExpandedText() != null) {
       builder.setViewExpandedText(table.getViewExpandedText());
     }
+    builder.setIsRewriteEnabled(table.isRewriteEnabled());
     if (table.getTableType() != null) builder.setTableType(table.getTableType());
     if (table.getPrivileges() != null) {
       builder.setPrivileges(buildPrincipalPrivilegeSet(table.getPrivileges()));
@@ -1115,6 +1116,7 @@ public class HBaseUtils {
     table.setParameters(buildParameters(proto.getParameters()));
     if (proto.hasViewOriginalText()) table.setViewOriginalText(proto.getViewOriginalText());
     if (proto.hasViewExpandedText()) table.setViewExpandedText(proto.getViewExpandedText());
+    table.setRewriteEnabled(proto.getIsRewriteEnabled());
     table.setTableType(proto.getTableType());
     if (proto.hasPrivileges()) {
       table.setPrivileges(buildPrincipalPrivilegeSet(proto.getPrivileges()));

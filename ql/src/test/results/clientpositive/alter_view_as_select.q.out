@@ -47,6 +47,7 @@ Sort Columns:       	[]
 # View Information	 	 
 View Original Text: 	SELECT * FROM srcpart	 
 View Expanded Text: 	SELECT `srcpart`.`key`, `srcpart`.`value`, `srcpart`.`ds`, `srcpart`.`hr` FROM `default`.`srcpart`	 
+View Rewrite Enabled:	No                  	 
 PREHOOK: query: ALTER VIEW tv.testView AS SELECT value FROM src WHERE key=86
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: default@src
@@ -87,6 +88,7 @@ Sort Columns:       	[]
 # View Information	 	 
 View Original Text: 	SELECT value FROM src WHERE key=86	 
 View Expanded Text: 	SELECT `src`.`value` FROM `default`.`src` WHERE `src`.`key`=86	 
+View Rewrite Enabled:	No                  	 
 PREHOOK: query: ALTER VIEW tv.testView AS
 SELECT * FROM src
 WHERE key > 80 AND key < 100
@@ -142,6 +144,7 @@ View Expanded Text: 	SELECT `src`.`key`, `src`.`value` FROM `default`.`src`
 	                    	WHERE `src`.`key` > 80 AND `src`.`key` < 100
 	                    	ORDER BY `src`.`key`, `src`.`value`
 	                    	LIMIT 10            
+View Rewrite Enabled:	No                  	 
 PREHOOK: query: DROP VIEW tv.testView
 PREHOOK: type: DROPVIEW
 PREHOOK: Input: tv@testview

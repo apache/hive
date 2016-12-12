@@ -142,6 +142,7 @@ Sort Columns:       	[]
 # View Information	 	 
 View Original Text: 	select col1 from unicode_comments_tbl1	 
 View Expanded Text: 	SELECT `col1` AS `col1` FROM (select `unicode_comments_tbl1`.`col1` from `unicode_comments_db`.`unicode_comments_tbl1`) `unicode_comments_db.unicode_comments_view1`	 
+View Rewrite Enabled:	No                  	 
 PREHOOK: query: show formatted index on unicode_comments_tbl1
 PREHOOK: type: SHOWINDEXES
 POSTHOOK: query: show formatted index on unicode_comments_tbl1

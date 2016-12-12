@@ -179,6 +179,9 @@
       <field name="viewExpandedText" default-fetch-group="false">
         <column name="VIEW_EXPANDED_TEXT" jdbc-type="LONGVARCHAR"/>
       </field>
+      <field name="rewriteEnabled">
+        <column name="IS_REWRITE_ENABLED"/>
+      </field>
       <field name="tableType">
         <column name="TBL_TYPE" length="128" jdbc-type="VARCHAR"/>
       </field>

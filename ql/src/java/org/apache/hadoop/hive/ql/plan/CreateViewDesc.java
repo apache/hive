@@ -38,6 +38,7 @@ public class CreateViewDesc extends DDLDesc implements Serializable {
   private String viewName;
   private String originalText;
   private String expandedText;
+  private boolean rewriteEnabled;
   private List<FieldSchema> schema;
   private Map<String, String> tblProps;
   private List<String> partColNames;
@@ -79,7 +80,7 @@ public class CreateViewDesc extends DDLDesc implements Serializable {
    */
   public CreateViewDesc(String viewName, List<FieldSchema> schema, String comment,
           Map<String, String> tblProps, List<String> partColNames,
-          boolean ifNotExists, boolean orReplace, boolean isAlterViewAs,
+          boolean ifNotExists, boolean orReplace, boolean rewriteEnabled, boolean isAlterViewAs,
           String inputFormat, String outputFormat, String location,
           String serde, String storageHandler, Map<String, String> serdeProps) {
     this.viewName = viewName;
@@ -89,8 +90,9 @@ public class CreateViewDesc extends DDLDesc implements Serializable {
     this.comment = comment;
     this.ifNotExists = ifNotExists;
     this.orReplace = orReplace;
-    this.isAlterViewAs = isAlterViewAs;
     this.isMaterialized = true;
+    this.rewriteEnabled = rewriteEnabled;
+    this.isAlterViewAs = isAlterViewAs;
     this.inputFormat = inputFormat;
     this.outputFormat = outputFormat;
     this.location = location;
@@ -126,6 +128,7 @@ public class CreateViewDesc extends DDLDesc implements Serializable {
     this.orReplace = orReplace;
     this.isAlterViewAs = isAlterViewAs;
     this.isMaterialized = false;
+    this.rewriteEnabled = false;
     this.inputFormat = inputFormat;
     this.outputFormat = outputFormat;
     this.serde = serde;
@@ -156,6 +159,15 @@ public class CreateViewDesc extends DDLDesc implements Serializable {
 
   public void setViewExpandedText(String expandedText) {
     this.expandedText = expandedText;
+  }
+
+  @Explain(displayName = "rewrite enabled")
+  public boolean isRewriteEnabled() {
+    return rewriteEnabled;
+  }
+
+  public void setRewriteEnabled(boolean rewriteEnabled) {
+    this.rewriteEnabled = rewriteEnabled;
   }
 
   @Explain(displayName = "columns")

@@ -255,6 +255,7 @@ message Table {
   optional string table_type = 12;
   optional PrincipalPrivilegeSet privileges = 13;
   optional bool is_temporary = 14;
+  optional bool is_rewrite_enabled = 15;
 }
 
 message Index {

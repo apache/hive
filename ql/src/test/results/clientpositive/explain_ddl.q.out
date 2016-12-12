@@ -432,6 +432,7 @@ STAGE PLANS:
           expanded text: select `m1`.`key`, `m1`.`value` from `default`.`M1`
           name: default.V1
           original text: select * from M1
+          rewrite enabled: false
 
 PREHOOK: query: EXPLAIN CREATE TABLE M1 LIKE src
 PREHOOK: type: CREATETABLE

@@ -24,7 +24,6 @@ import java.util.Set;
 
 import org.apache.calcite.plan.RelOptCluster;
 import org.apache.calcite.plan.RelOptCost;
-import org.apache.calcite.plan.RelOptPlanner;
 import org.apache.calcite.plan.RelTraitSet;
 import org.apache.calcite.rel.InvalidRelException;
 import org.apache.calcite.rel.RelCollation;
@@ -212,14 +211,6 @@ public class HiveJoin extends Join implements HiveRelNode {
 
   public void setJoinCost(RelOptCost joinCost) {
     this.joinCost = joinCost;
-  }
-
-  /**
-   * Model cost of join as size of Inputs.
-   */
-  @Override
-  public RelOptCost computeSelfCost(RelOptPlanner planner, RelMetadataQuery mq) {
-    return mq.getNonCumulativeCost(this);
   }
 
   @Override

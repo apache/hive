@@ -46,6 +46,7 @@ Sort Columns:       	[]
 # View Information	 	 
 View Original Text: 	select cast(key as string) from src	 
 View Expanded Text: 	select `src`.`key` from `default`.`src`	 
+View Rewrite Enabled:	No                  	 
 PREHOOK: query: create view w as select key, value from (
   select key, value from src
 ) a
@@ -95,6 +96,7 @@ View Original Text: 	select key, value from (
 View Expanded Text: 	select `a`.`key`, `a`.`value` from (	 
 	                    	  select `src`.`key`, `src`.`value` from `default`.`src`
 	                    	) `a`               
+View Rewrite Enabled:	No                  	 
 PREHOOK: query: drop view v
 PREHOOK: type: DROPVIEW
 PREHOOK: Input: default@v
@@ -141,6 +143,7 @@ STAGE PLANS:
           expanded text: SELECT `items`.`id`, `items`.`info`['price'] FROM `default`.`items`
           name: default.priceview
           original text: SELECT items.id, items.info['price'] FROM items
+          rewrite enabled: false
 
 PREHOOK: query: CREATE VIEW priceview AS SELECT items.id, items.info['price'] FROM items
 PREHOOK: type: CREATEVIEW

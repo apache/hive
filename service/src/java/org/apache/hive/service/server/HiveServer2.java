@@ -57,6 +57,9 @@ import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.llap.coordinator.LlapCoordinator;
 import org.apache.hadoop.hive.ql.exec.spark.session.SparkSessionManagerImpl;
 import org.apache.hadoop.hive.ql.exec.tez.TezSessionPoolManager;
+import org.apache.hadoop.hive.ql.metadata.Hive;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.metadata.HiveMaterializedViewsRegistry;
 import org.apache.hadoop.hive.ql.session.ClearDanglingScratchDir;
 import org.apache.hadoop.hive.ql.util.ZooKeeperHiveHelper;
 import org.apache.hadoop.hive.shims.ShimLoader;
@@ -148,6 +151,13 @@ public class HiveServer2 extends CompositeService {
       } catch (IOException e) {
         throw new RuntimeException(e);
       }
+    }
+    // Create views registry
+    try {
+      Hive sessionHive = Hive.get(hiveConf);
+      HiveMaterializedViewsRegistry.get().init(sessionHive);
+    } catch (HiveException e) {
+      throw new RuntimeException("Failed to get metastore connection", e);
     }
     // Setup web UI
     try {

@@ -11976,6 +11976,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     String dbDotTable = getDotName(qualTabName);
     List<FieldSchema> cols = null;
     boolean ifNotExists = false;
+    boolean rewriteEnabled = false;
     boolean orReplace = false;
     boolean isAlterViewAs = false;
     String comment = null;
@@ -11998,6 +11999,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       switch (child.getToken().getType()) {
       case HiveParser.TOK_IFNOTEXISTS:
         ifNotExists = true;
+        break;
+      case HiveParser.TOK_REWRITE_ENABLED:
+        rewriteEnabled = true;
         break;
       case HiveParser.TOK_ORREPLACE:
         orReplace = true;
@@ -12058,20 +12062,21 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     if (isMaterialized) {
       createVwDesc = new CreateViewDesc(
-              dbDotTable, cols, comment, tblProps, partColNames,
-              ifNotExists, orReplace, isAlterViewAs, storageFormat.getInputFormat(),
-              storageFormat.getOutputFormat(), location, storageFormat.getSerde(),
-              storageFormat.getStorageHandler(), storageFormat.getSerdeProps());
+          dbDotTable, cols, comment, tblProps, partColNames,
+          ifNotExists, orReplace, rewriteEnabled, isAlterViewAs,
+          storageFormat.getInputFormat(), storageFormat.getOutputFormat(),
+          location, storageFormat.getSerde(), storageFormat.getStorageHandler(),
+          storageFormat.getSerdeProps());
       addDbAndTabToOutputs(qualTabName, TableType.MATERIALIZED_VIEW);
       queryState.setCommandType(HiveOperation.CREATE_MATERIALIZED_VIEW);
       qb.setViewDesc(createVwDesc);
     } else {
       createVwDesc = new CreateViewDesc(
-              dbDotTable, cols, comment, tblProps, partColNames,
-              ifNotExists, orReplace, isAlterViewAs, storageFormat.getInputFormat(),
-              storageFormat.getOutputFormat(), storageFormat.getSerde());
+          dbDotTable, cols, comment, tblProps, partColNames,
+          ifNotExists, orReplace, isAlterViewAs, storageFormat.getInputFormat(),
+          storageFormat.getOutputFormat(), storageFormat.getSerde());
       rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
-              createVwDesc), conf));
+          createVwDesc), conf));
       addDbAndTabToOutputs(qualTabName, TableType.VIRTUAL_VIEW);
       queryState.setCommandType(HiveOperation.CREATEVIEW);
     }
@@ -12083,8 +12088,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     return this.createVwDesc;
   }
 
-  // validate the create view statement
-  // the statement could be CREATE VIEW, REPLACE VIEW, or ALTER VIEW AS SELECT
+  // validate the (materialized) view statement
   // check semantic conditions
   private void validateCreateView()
     throws SemanticException {

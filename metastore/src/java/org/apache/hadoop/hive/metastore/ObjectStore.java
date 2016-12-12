@@ -56,7 +56,6 @@ import javax.jdo.Transaction;
 import javax.jdo.datastore.DataStoreCache;
 import javax.jdo.identity.IntIdentity;
 
-import com.google.common.collect.Maps;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.conf.Configuration;
@@ -165,6 +164,7 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 
 /**
  * This class is the interface between the application logic and the database
@@ -1489,11 +1489,13 @@ public class ObjectStore implements RawStore, Configurable {
         tableType = TableType.MANAGED_TABLE.toString();
       }
     }
-    return new Table(mtbl.getTableName(), mtbl.getDatabase().getName(), mtbl
-        .getOwner(), mtbl.getCreateTime(), mtbl.getLastAccessTime(), mtbl
-        .getRetention(), convertToStorageDescriptor(mtbl.getSd()),
-        convertToFieldSchemas(mtbl.getPartitionKeys()), convertMap(mtbl.getParameters()),
-        mtbl.getViewOriginalText(), mtbl.getViewExpandedText(), tableType);
+    final Table table = new Table(mtbl.getTableName(), mtbl.getDatabase().getName(), mtbl
+            .getOwner(), mtbl.getCreateTime(), mtbl.getLastAccessTime(), mtbl
+            .getRetention(), convertToStorageDescriptor(mtbl.getSd()),
+            convertToFieldSchemas(mtbl.getPartitionKeys()), convertMap(mtbl.getParameters()),
+            mtbl.getViewOriginalText(), mtbl.getViewExpandedText(), tableType);
+    table.setRewriteEnabled(mtbl.isRewriteEnabled());
+    return table;
   }
 
   private MTable convertToMTable(Table tbl) throws InvalidObjectException,
@@ -1530,7 +1532,7 @@ public class ObjectStore implements RawStore, Configurable {
         convertToMStorageDescriptor(tbl.getSd()), tbl.getOwner(), tbl
         .getCreateTime(), tbl.getLastAccessTime(), tbl.getRetention(),
         convertToMFieldSchemas(tbl.getPartitionKeys()), tbl.getParameters(),
-        tbl.getViewOriginalText(), tbl.getViewExpandedText(),
+        tbl.getViewOriginalText(), tbl.getViewExpandedText(), tbl.isRewriteEnabled(),
         tableType);
   }
 
@@ -3297,6 +3299,7 @@ public class ObjectStore implements RawStore, Configurable {
       oldt.setLastAccessTime(newt.getLastAccessTime());
       oldt.setViewOriginalText(newt.getViewOriginalText());
       oldt.setViewExpandedText(newt.getViewExpandedText());
+      oldt.setRewriteEnabled(newt.isRewriteEnabled());
 
       // commit the changes
       success = commitTransaction();

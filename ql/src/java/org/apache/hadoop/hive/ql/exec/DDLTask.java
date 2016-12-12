@@ -124,6 +124,7 @@ import org.apache.hadoop.hive.ql.metadata.CheckResult;
 import org.apache.hadoop.hive.ql.metadata.ForeignKeyInfo;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.metadata.HiveMaterializedViewsRegistry;
 import org.apache.hadoop.hive.ql.metadata.HiveMetaStoreChecker;
 import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.metadata.InvalidTableException;
@@ -136,9 +137,9 @@ import org.apache.hadoop.hive.ql.metadata.formatting.MetaDataFormatter;
 import org.apache.hadoop.hive.ql.parse.AlterTablePartMergeFilesDesc;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.DDLSemanticAnalyzer;
+import org.apache.hadoop.hive.ql.parse.ExplainConfiguration.AnalyzeState;
 import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
-import org.apache.hadoop.hive.ql.parse.ExplainConfiguration.AnalyzeState;
 import org.apache.hadoop.hive.ql.plan.AbortTxnsDesc;
 import org.apache.hadoop.hive.ql.plan.AddPartitionDesc;
 import org.apache.hadoop.hive.ql.plan.AlterDatabaseDesc;
@@ -2120,7 +2121,8 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       needsLocation = doesTableNeedLocation(tbl);
 
       if (tbl.isView()) {
-        String createTab_stmt = "CREATE VIEW `" + tableName + "` AS " + tbl.getViewExpandedText();
+        String createTab_stmt = "CREATE VIEW `" + tableName + "` AS " +
+            tbl.getViewExpandedText();
         outStream.write(createTab_stmt.getBytes(StandardCharsets.UTF_8));
         return 0;
       }
@@ -3958,12 +3960,13 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       }
     }
 
-    int partitionBatchSize = HiveConf.getIntVar(conf,
-        ConfVars.METASTORE_BATCH_RETRIEVE_OBJECTS_MAX);
-
     // drop the table
     db.dropTable(dropTbl.getTableName(), dropTbl.getIfPurge());
     if (tbl != null) {
+      // Remove from cache if it is a materialized view
+      if (tbl.isMaterializedView()) {
+        HiveMaterializedViewsRegistry.get().dropMaterializedView(tbl);
+      }
       // We have already locked the table in DDLSemanticAnalyzer, don't do it again here
       addIfAbsentByName(new WriteEntity(tbl, WriteEntity.WriteType.DDL_NO_LOCK));
     }
@@ -4347,17 +4350,16 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     } else {
       // create new view
       Table tbl = db.newTable(crtView.getViewName());
+      tbl.setViewOriginalText(crtView.getViewOriginalText());
       if (crtView.isMaterialized()) {
+        tbl.setRewriteEnabled(crtView.isRewriteEnabled());
         tbl.setTableType(TableType.MATERIALIZED_VIEW);
       } else {
+        tbl.setViewExpandedText(crtView.getViewExpandedText());
         tbl.setTableType(TableType.VIRTUAL_VIEW);
       }
       tbl.setSerializationLib(null);
       tbl.clearSerDeInfo();
-      tbl.setViewOriginalText(crtView.getViewOriginalText());
-      if (!crtView.isMaterialized()) {
-        tbl.setViewExpandedText(crtView.getViewExpandedText());
-      }
       tbl.setFields(crtView.getSchema());
       if (crtView.getComment() != null) {
         tbl.setProperty("comment", crtView.getComment());
@@ -4391,6 +4393,10 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       }
 
       db.createTable(tbl, crtView.getIfNotExists());
+      // Add to cache if it is a materialized view
+      if (tbl.isMaterializedView()) {
+        HiveMaterializedViewsRegistry.get().addMaterializedView(tbl);
+      }
       addIfAbsentByName(new WriteEntity(tbl, WriteEntity.WriteType.DDL_NO_LOCK));
     }
     return 0;

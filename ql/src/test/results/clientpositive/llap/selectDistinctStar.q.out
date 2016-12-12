@@ -1362,6 +1362,7 @@ STAGE PLANS:
           expanded text: select distinct `src`.`key`, `src`.`value` from `default`.`src` order by `src`.`key` limit 2
           name: default.sdi
           original text: select distinct * from src order by key limit 2
+          rewrite enabled: false
 
 PREHOOK: query: create view sdi as select distinct * from src order by key limit 2
 PREHOOK: type: CREATEVIEW
@@ -1414,6 +1415,7 @@ Sort Columns:       	[]
 # View Information	 	 
 View Original Text: 	select distinct * from src order by key limit 2	 
 View Expanded Text: 	select distinct `src`.`key`, `src`.`value` from `default`.`src` order by `src`.`key` limit 2	 
+View Rewrite Enabled:	No                  	 
 PREHOOK: query: select * from sdi
 PREHOOK: type: QUERY
 PREHOOK: Input: default@sdi
@@ -3822,6 +3824,7 @@ STAGE PLANS:
           expanded text: select distinct `src`.`key`, `src`.`value` from `default`.`src` order by `src`.`key` limit 2
           name: default.sdi
           original text: select distinct * from src order by key limit 2
+          rewrite enabled: false
 
 PREHOOK: query: create view sdi as select distinct * from src order by key limit 2
 PREHOOK: type: CREATEVIEW
@@ -3874,6 +3877,7 @@ Sort Columns:       	[]
 # View Information	 	 
 View Original Text: 	select distinct * from src order by key limit 2	 
 View Expanded Text: 	select distinct `src`.`key`, `src`.`value` from `default`.`src` order by `src`.`key` limit 2	 
+View Rewrite Enabled:	No                  	 
 PREHOOK: query: select * from sdi
 PREHOOK: type: QUERY
 PREHOOK: Input: default@sdi

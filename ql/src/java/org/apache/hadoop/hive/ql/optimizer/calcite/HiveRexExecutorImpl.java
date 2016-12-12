@@ -22,8 +22,8 @@ import java.util.HashSet;
 import java.util.List;
 
 import org.apache.calcite.plan.RelOptCluster;
-import org.apache.calcite.plan.RelOptPlanner;
 import org.apache.calcite.rex.RexBuilder;
+import org.apache.calcite.rex.RexExecutorImpl;
 import org.apache.calcite.rex.RexNode;
 import org.apache.hadoop.hive.ql.optimizer.ConstantPropagateProcFactory;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.ExprNodeConverter;
@@ -36,15 +36,15 @@ import org.slf4j.LoggerFactory;
 
 
 
-public class HiveRexExecutorImpl implements RelOptPlanner.Executor {
+public class HiveRexExecutorImpl extends RexExecutorImpl {
+
+  private static final Logger LOG = LoggerFactory.getLogger(HiveRexExecutorImpl.class);
 
   private final RelOptCluster cluster;
 
-  protected final Logger LOG;
-
   public HiveRexExecutorImpl(RelOptCluster cluster) {
+    super(null);
     this.cluster = cluster;
-    LOG = LoggerFactory.getLogger(this.getClass().getName());
   }
 
   @Override

@@ -4563,6 +4563,10 @@ class Table {
    * @var bool
    */
   public $temporary = false;
+  /**
+   * @var bool
+   */
+  public $rewriteEnabled = null;
 
   public function __construct($vals=null) {
     if (!isset(self::$_TSPEC)) {
@@ -4638,6 +4642,10 @@ class Table {
           'var' => 'temporary',
           'type' => TType::BOOL,
           ),
+        15 => array(
+          'var' => 'rewriteEnabled',
+          'type' => TType::BOOL,
+          ),
         );
     }
     if (is_array($vals)) {
@@ -4682,6 +4690,9 @@ class Table {
       }
       if (isset($vals['temporary'])) {
         $this->temporary = $vals['temporary'];
+      }
+      if (isset($vals['rewriteEnabled'])) {
+        $this->rewriteEnabled = $vals['rewriteEnabled'];
       }
     }
   }
@@ -4829,6 +4840,13 @@ class Table {
             $xfer += $input->skip($ftype);
           }
           break;
+        case 15:
+          if ($ftype == TType::BOOL) {
+            $xfer += $input->readBool($this->rewriteEnabled);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
         default:
           $xfer += $input->skip($ftype);
           break;
@@ -4941,6 +4959,11 @@ class Table {
     if ($this->temporary !== null) {
       $xfer += $output->writeFieldBegin('temporary', TType::BOOL, 14);
       $xfer += $output->writeBool($this->temporary);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->rewriteEnabled !== null) {
+      $xfer += $output->writeFieldBegin('rewriteEnabled', TType::BOOL, 15);
+      $xfer += $output->writeBool($this->rewriteEnabled);
       $xfer += $output->writeFieldEnd();
     }
     $xfer += $output->writeFieldStop();

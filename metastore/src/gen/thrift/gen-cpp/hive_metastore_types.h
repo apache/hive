@@ -2062,7 +2062,7 @@ inline std::ostream& operator<<(std::ostream& out, const StorageDescriptor& obj)
 }
 
 typedef struct _Table__isset {
-  _Table__isset() : tableName(false), dbName(false), owner(false), createTime(false), lastAccessTime(false), retention(false), sd(false), partitionKeys(false), parameters(false), viewOriginalText(false), viewExpandedText(false), tableType(false), privileges(false), temporary(true) {}
+  _Table__isset() : tableName(false), dbName(false), owner(false), createTime(false), lastAccessTime(false), retention(false), sd(false), partitionKeys(false), parameters(false), viewOriginalText(false), viewExpandedText(false), tableType(false), privileges(false), temporary(true), rewriteEnabled(false) {}
   bool tableName :1;
   bool dbName :1;
   bool owner :1;
@@ -2077,6 +2077,7 @@ typedef struct _Table__isset {
   bool tableType :1;
   bool privileges :1;
   bool temporary :1;
+  bool rewriteEnabled :1;
 } _Table__isset;
 
 class Table {
@@ -2084,7 +2085,7 @@ class Table {
 
   Table(const Table&);
   Table& operator=(const Table&);
-  Table() : tableName(), dbName(), owner(), createTime(0), lastAccessTime(0), retention(0), viewOriginalText(), viewExpandedText(), tableType(), temporary(false) {
+  Table() : tableName(), dbName(), owner(), createTime(0), lastAccessTime(0), retention(0), viewOriginalText(), viewExpandedText(), tableType(), temporary(false), rewriteEnabled(0) {
   }
 
   virtual ~Table() throw();
@@ -2102,6 +2103,7 @@ class Table {
   std::string tableType;
   PrincipalPrivilegeSet privileges;
   bool temporary;
+  bool rewriteEnabled;
 
   _Table__isset __isset;
 
@@ -2132,6 +2134,8 @@ class Table {
   void __set_privileges(const PrincipalPrivilegeSet& val);
 
   void __set_temporary(const bool val);
+
+  void __set_rewriteEnabled(const bool val);
 
   bool operator == (const Table & rhs) const
   {
@@ -2166,6 +2170,10 @@ class Table {
     if (__isset.temporary != rhs.__isset.temporary)
       return false;
     else if (__isset.temporary && !(temporary == rhs.temporary))
+      return false;
+    if (__isset.rewriteEnabled != rhs.__isset.rewriteEnabled)
+      return false;
+    else if (__isset.rewriteEnabled && !(rewriteEnabled == rhs.rewriteEnabled))
       return false;
     return true;
   }

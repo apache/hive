@@ -24,7 +24,6 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.calcite.plan.RelOptCluster;
-import org.apache.calcite.plan.RelOptCost;
 import org.apache.calcite.plan.RelOptPlanner;
 import org.apache.calcite.plan.RelTraitSet;
 import org.apache.calcite.rel.RelNode;
@@ -122,11 +121,6 @@ public class HiveTableScan extends TableScan implements HiveRelNode {
   public HiveTableScan copy(RelDataType newRowtype) {
     return new HiveTableScan(getCluster(), getTraitSet(), ((RelOptHiveTable) table), this.tblAlias, this.concatQbIDAlias,
             newRowtype, this.useQBIdInDigest, this.insideView);
-  }
-
-  @Override
-  public RelOptCost computeSelfCost(RelOptPlanner planner, RelMetadataQuery mq) {
-    return mq.getNonCumulativeCost(this);
   }
 
   @Override public RelWriter explainTerms(RelWriter pw) {

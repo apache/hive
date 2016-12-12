@@ -256,6 +256,8 @@ TOK_ALTERVIEW_DROPPARTS;
 TOK_ALTERVIEW_RENAME;
 TOK_CREATE_MATERIALIZED_VIEW;
 TOK_DROP_MATERIALIZED_VIEW;
+TOK_REWRITE_ENABLED;
+TOK_REWRITE_DISABLED;
 TOK_VIEWPARTCOLS;
 TOK_EXPLAIN;
 TOK_EXPLAIN_SQ_REWRITE;
@@ -880,6 +882,20 @@ ifNotExists
 @after { popMsg(state); }
     : KW_IF KW_NOT KW_EXISTS
     -> ^(TOK_IFNOTEXISTS)
+    ;
+
+rewriteEnabled
+@init { pushMsg("rewrite enabled clause", state); }
+@after { popMsg(state); }
+    : KW_ENABLE KW_REWRITE
+    -> ^(TOK_REWRITE_ENABLED)
+    ;
+
+rewriteDisabled
+@init { pushMsg("rewrite disabled clause", state); }
+@after { popMsg(state); }
+    : KW_DISABLE KW_REWRITE
+    -> ^(TOK_REWRITE_DISABLED)
     ;
 
 storedAsDirs
@@ -1832,10 +1848,11 @@ createMaterializedViewStatement
 }
 @after { popMsg(state); }
     : KW_CREATE KW_MATERIALIZED KW_VIEW (ifNotExists)? name=tableName
-        tableComment? tableRowFormat? tableFileFormat? tableLocation?
+        rewriteEnabled? tableComment? tableRowFormat? tableFileFormat? tableLocation?
         tablePropertiesPrefixed? KW_AS selectStatementWithCTE
     -> ^(TOK_CREATE_MATERIALIZED_VIEW $name 
          ifNotExists?
+         rewriteEnabled?
          tableComment?
          tableRowFormat?
          tableFileFormat?

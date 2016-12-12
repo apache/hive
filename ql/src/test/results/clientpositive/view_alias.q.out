@@ -43,6 +43,7 @@ Sort Columns:       	[]
 # View Information	 	 
 View Original Text: 	select key, '12' from src	 
 View Expanded Text: 	select `src`.`key`, '12' from `default`.`src`	 
+View Rewrite Enabled:	No                  	 
 PREHOOK: query: select * from v order by `_c1` limit 5
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
@@ -107,6 +108,7 @@ Sort Columns:       	[]
 # View Information	 	 
 View Original Text: 	select key as _c1, '12' from src	 
 View Expanded Text: 	select `src`.`key` as `_c1`, '12' from `default`.`src`	 
+View Rewrite Enabled:	No                  	 
 PREHOOK: query: select * from v order by `_c1` limit 5
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
@@ -172,6 +174,7 @@ Sort Columns:       	[]
 # View Information	 	 
 View Original Text: 	select *, '12' from src	 
 View Expanded Text: 	select `src`.`key`, `src`.`value`, '12' from `default`.`src`	 
+View Rewrite Enabled:	No                  	 
 PREHOOK: query: select * from v order by `_c2` limit 5
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
@@ -237,6 +240,7 @@ Sort Columns:       	[]
 # View Information	 	 
 View Original Text: 	select *, '12' as _c121 from src	 
 View Expanded Text: 	select `src`.`key`, `src`.`value`, '12' as `_c121` from `default`.`src`	 
+View Rewrite Enabled:	No                  	 
 PREHOOK: query: select * from v order by `_c121` limit 5
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
@@ -301,6 +305,7 @@ Sort Columns:       	[]
 # View Information	 	 
 View Original Text: 	select key, count(*) from src group by key	 
 View Expanded Text: 	select `src`.`key`, count(*) from `default`.`src` group by `src`.`key`	 
+View Rewrite Enabled:	No                  	 
 PREHOOK: query: select * from v order by `_c1` limit 5
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
@@ -408,6 +413,7 @@ Sort Columns:       	[]
 # View Information	 	 
 View Original Text: 	select '010', a.*, 121, b.*, 234 from a join b on a.ca = b.cb	 
 View Expanded Text: 	select '010', `a`.`ca`, `a`.`caa`, 121, `b`.`cb`, `b`.`cbb`, 234 from `default`.`a` join `default`.`b` on `a`.`ca` = `b`.`cb`	 
+View Rewrite Enabled:	No                  	 
 PREHOOK: query: select * from v order by `_c3` limit 5
 PREHOOK: type: QUERY
 PREHOOK: Input: default@a

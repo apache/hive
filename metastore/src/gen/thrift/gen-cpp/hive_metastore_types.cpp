@@ -4479,6 +4479,11 @@ void Table::__set_temporary(const bool val) {
 __isset.temporary = true;
 }
 
+void Table::__set_rewriteEnabled(const bool val) {
+  this->rewriteEnabled = val;
+__isset.rewriteEnabled = true;
+}
+
 uint32_t Table::read(::apache::thrift::protocol::TProtocol* iprot) {
 
   apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
@@ -4639,6 +4644,14 @@ uint32_t Table::read(::apache::thrift::protocol::TProtocol* iprot) {
           xfer += iprot->skip(ftype);
         }
         break;
+      case 15:
+        if (ftype == ::apache::thrift::protocol::T_BOOL) {
+          xfer += iprot->readBool(this->rewriteEnabled);
+          this->__isset.rewriteEnabled = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
       default:
         xfer += iprot->skip(ftype);
         break;
@@ -4731,6 +4744,11 @@ uint32_t Table::write(::apache::thrift::protocol::TProtocol* oprot) const {
     xfer += oprot->writeBool(this->temporary);
     xfer += oprot->writeFieldEnd();
   }
+  if (this->__isset.rewriteEnabled) {
+    xfer += oprot->writeFieldBegin("rewriteEnabled", ::apache::thrift::protocol::T_BOOL, 15);
+    xfer += oprot->writeBool(this->rewriteEnabled);
+    xfer += oprot->writeFieldEnd();
+  }
   xfer += oprot->writeFieldStop();
   xfer += oprot->writeStructEnd();
   return xfer;
@@ -4752,6 +4770,7 @@ void swap(Table &a, Table &b) {
   swap(a.tableType, b.tableType);
   swap(a.privileges, b.privileges);
   swap(a.temporary, b.temporary);
+  swap(a.rewriteEnabled, b.rewriteEnabled);
   swap(a.__isset, b.__isset);
 }
 
@@ -4770,6 +4789,7 @@ Table::Table(const Table& other221) {
   tableType = other221.tableType;
   privileges = other221.privileges;
   temporary = other221.temporary;
+  rewriteEnabled = other221.rewriteEnabled;
   __isset = other221.__isset;
 }
 Table& Table::operator=(const Table& other222) {
@@ -4787,6 +4807,7 @@ Table& Table::operator=(const Table& other222) {
   tableType = other222.tableType;
   privileges = other222.privileges;
   temporary = other222.temporary;
+  rewriteEnabled = other222.rewriteEnabled;
   __isset = other222.__isset;
   return *this;
 }
@@ -4807,6 +4828,7 @@ void Table::printTo(std::ostream& out) const {
   out << ", " << "tableType=" << to_string(tableType);
   out << ", " << "privileges="; (__isset.privileges ? (out << to_string(privileges)) : (out << "<null>"));
   out << ", " << "temporary="; (__isset.temporary ? (out << to_string(temporary)) : (out << "<null>"));
+  out << ", " << "rewriteEnabled="; (__isset.rewriteEnabled ? (out << to_string(rewriteEnabled)) : (out << "<null>"));
   out << ")";
 }
 

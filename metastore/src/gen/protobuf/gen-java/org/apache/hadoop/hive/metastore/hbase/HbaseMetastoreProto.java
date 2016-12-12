@@ -28422,6 +28422,16 @@ public final class HbaseMetastoreProto {
      * <code>optional bool is_temporary = 14;</code>
      */
     boolean getIsTemporary();
+
+    // optional bool is_rewrite_enabled = 15;
+    /**
+     * <code>optional bool is_rewrite_enabled = 15;</code>
+     */
+    boolean hasIsRewriteEnabled();
+    /**
+     * <code>optional bool is_rewrite_enabled = 15;</code>
+     */
+    boolean getIsRewriteEnabled();
   }
   /**
    * Protobuf type {@code org.apache.hadoop.hive.metastore.hbase.Table}
@@ -28569,6 +28579,11 @@ public final class HbaseMetastoreProto {
             case 112: {
               bitField0_ |= 0x00001000;
               isTemporary_ = input.readBool();
+              break;
+            }
+            case 120: {
+              bitField0_ |= 0x00002000;
+              isRewriteEnabled_ = input.readBool();
               break;
             }
           }
@@ -29023,6 +29038,22 @@ public final class HbaseMetastoreProto {
       return isTemporary_;
     }
 
+    // optional bool is_rewrite_enabled = 15;
+    public static final int IS_REWRITE_ENABLED_FIELD_NUMBER = 15;
+    private boolean isRewriteEnabled_;
+    /**
+     * <code>optional bool is_rewrite_enabled = 15;</code>
+     */
+    public boolean hasIsRewriteEnabled() {
+      return ((bitField0_ & 0x00002000) == 0x00002000);
+    }
+    /**
+     * <code>optional bool is_rewrite_enabled = 15;</code>
+     */
+    public boolean getIsRewriteEnabled() {
+      return isRewriteEnabled_;
+    }
+
     private void initFields() {
       owner_ = "";
       createTime_ = 0L;
@@ -29038,6 +29069,7 @@ public final class HbaseMetastoreProto {
       tableType_ = "";
       privileges_ = org.apache.hadoop.hive.metastore.hbase.HbaseMetastoreProto.PrincipalPrivilegeSet.getDefaultInstance();
       isTemporary_ = false;
+      isRewriteEnabled_ = false;
     }
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
@@ -29121,6 +29153,9 @@ public final class HbaseMetastoreProto {
       if (((bitField0_ & 0x00001000) == 0x00001000)) {
         output.writeBool(14, isTemporary_);
       }
+      if (((bitField0_ & 0x00002000) == 0x00002000)) {
+        output.writeBool(15, isRewriteEnabled_);
+      }
       getUnknownFields().writeTo(output);
     }
 
@@ -29185,6 +29220,10 @@ public final class HbaseMetastoreProto {
       if (((bitField0_ & 0x00001000) == 0x00001000)) {
         size += com.google.protobuf.CodedOutputStream
           .computeBoolSize(14, isTemporary_);
+      }
+      if (((bitField0_ & 0x00002000) == 0x00002000)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBoolSize(15, isRewriteEnabled_);
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
@@ -29350,6 +29389,8 @@ public final class HbaseMetastoreProto {
         bitField0_ = (bitField0_ & ~0x00001000);
         isTemporary_ = false;
         bitField0_ = (bitField0_ & ~0x00002000);
+        isRewriteEnabled_ = false;
+        bitField0_ = (bitField0_ & ~0x00004000);
         return this;
       }
 
@@ -29451,6 +29492,10 @@ public final class HbaseMetastoreProto {
           to_bitField0_ |= 0x00001000;
         }
         result.isTemporary_ = isTemporary_;
+        if (((from_bitField0_ & 0x00004000) == 0x00004000)) {
+          to_bitField0_ |= 0x00002000;
+        }
+        result.isRewriteEnabled_ = isRewriteEnabled_;
         result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
@@ -29541,6 +29586,9 @@ public final class HbaseMetastoreProto {
         }
         if (other.hasIsTemporary()) {
           setIsTemporary(other.getIsTemporary());
+        }
+        if (other.hasIsRewriteEnabled()) {
+          setIsRewriteEnabled(other.getIsRewriteEnabled());
         }
         this.mergeUnknownFields(other.getUnknownFields());
         return this;
@@ -30758,6 +30806,39 @@ public final class HbaseMetastoreProto {
       public Builder clearIsTemporary() {
         bitField0_ = (bitField0_ & ~0x00002000);
         isTemporary_ = false;
+        onChanged();
+        return this;
+      }
+
+      // optional bool is_rewrite_enabled = 15;
+      private boolean isRewriteEnabled_ ;
+      /**
+       * <code>optional bool is_rewrite_enabled = 15;</code>
+       */
+      public boolean hasIsRewriteEnabled() {
+        return ((bitField0_ & 0x00004000) == 0x00004000);
+      }
+      /**
+       * <code>optional bool is_rewrite_enabled = 15;</code>
+       */
+      public boolean getIsRewriteEnabled() {
+        return isRewriteEnabled_;
+      }
+      /**
+       * <code>optional bool is_rewrite_enabled = 15;</code>
+       */
+      public Builder setIsRewriteEnabled(boolean value) {
+        bitField0_ |= 0x00004000;
+        isRewriteEnabled_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional bool is_rewrite_enabled = 15;</code>
+       */
+      public Builder clearIsRewriteEnabled() {
+        bitField0_ = (bitField0_ & ~0x00004000);
+        isRewriteEnabled_ = false;
         onChanged();
         return this;
       }
@@ -41582,7 +41663,7 @@ public final class HbaseMetastoreProto {
       "Info.SkewedColValueLocationMap\032.\n\022Skewed" +
       "ColValueList\022\030\n\020skewed_col_value\030\001 \003(\t\0327" +
       "\n\031SkewedColValueLocationMap\022\013\n\003key\030\001 \003(\t" +
-      "\022\r\n\005value\030\002 \002(\t\"\220\004\n\005Table\022\r\n\005owner\030\001 \001(\t" +
+      "\022\r\n\005value\030\002 \002(\t\"\254\004\n\005Table\022\r\n\005owner\030\001 \001(\t" +
       "\022\023\n\013create_time\030\002 \001(\003\022\030\n\020last_access_tim",
       "e\030\003 \001(\003\022\021\n\tretention\030\004 \001(\003\022\020\n\010location\030\005" +
       " \001(\t\022I\n\rsd_parameters\030\006 \001(\01322.org.apache" +
@@ -41595,52 +41676,52 @@ public final class HbaseMetastoreProto {
       "w_expanded_text\030\013 \001(\t\022\022\n\ntable_type\030\014 \001(" +
       "\t\022Q\n\nprivileges\030\r \001(\0132=.org.apache.hadoo",
       "p.hive.metastore.hbase.PrincipalPrivileg" +
-      "eSet\022\024\n\014is_temporary\030\016 \001(\010\"\334\002\n\005Index\022\031\n\021" +
-      "indexHandlerClass\030\001 \001(\t\022\016\n\006dbName\030\002 \002(\t\022" +
-      "\025\n\rorigTableName\030\003 \002(\t\022\020\n\010location\030\004 \001(\t" +
-      "\022I\n\rsd_parameters\030\005 \001(\01322.org.apache.had" +
-      "oop.hive.metastore.hbase.Parameters\022\022\n\nc" +
-      "reateTime\030\006 \001(\005\022\026\n\016lastAccessTime\030\007 \001(\005\022" +
-      "\026\n\016indexTableName\030\010 \001(\t\022\017\n\007sd_hash\030\t \001(\014" +
-      "\022F\n\nparameters\030\n \001(\01322.org.apache.hadoop" +
-      ".hive.metastore.hbase.Parameters\022\027\n\017defe",
-      "rredRebuild\030\013 \001(\010\"\353\004\n\026PartitionKeyCompar" +
-      "ator\022\r\n\005names\030\001 \002(\t\022\r\n\005types\030\002 \002(\t\022S\n\002op" +
-      "\030\003 \003(\0132G.org.apache.hadoop.hive.metastor" +
-      "e.hbase.PartitionKeyComparator.Operator\022" +
-      "S\n\005range\030\004 \003(\0132D.org.apache.hadoop.hive." +
-      "metastore.hbase.PartitionKeyComparator.R" +
-      "ange\032(\n\004Mark\022\r\n\005value\030\001 \002(\t\022\021\n\tinclusive" +
-      "\030\002 \002(\010\032\272\001\n\005Range\022\013\n\003key\030\001 \002(\t\022R\n\005start\030\002" +
-      " \001(\0132C.org.apache.hadoop.hive.metastore." +
-      "hbase.PartitionKeyComparator.Mark\022P\n\003end",
-      "\030\003 \001(\0132C.org.apache.hadoop.hive.metastor" +
-      "e.hbase.PartitionKeyComparator.Mark\032\241\001\n\010" +
-      "Operator\022Z\n\004type\030\001 \002(\0162L.org.apache.hado" +
-      "op.hive.metastore.hbase.PartitionKeyComp" +
-      "arator.Operator.Type\022\013\n\003key\030\002 \002(\t\022\013\n\003val" +
-      "\030\003 \002(\t\"\037\n\004Type\022\010\n\004LIKE\020\000\022\r\n\tNOTEQUALS\020\001\"" +
-      "\373\001\n\nPrimaryKey\022\017\n\007pk_name\030\001 \002(\t\022Q\n\004cols\030" +
-      "\002 \003(\0132C.org.apache.hadoop.hive.metastore" +
-      ".hbase.PrimaryKey.PrimaryKeyColumn\022\031\n\021en" +
-      "able_constraint\030\003 \001(\010\022\033\n\023validate_constr",
-      "aint\030\004 \001(\010\022\027\n\017rely_constraint\030\005 \001(\010\0328\n\020P" +
-      "rimaryKeyColumn\022\023\n\013column_name\030\001 \002(\t\022\017\n\007" +
-      "key_seq\030\002 \002(\021\"\205\004\n\013ForeignKeys\022K\n\003fks\030\001 \003" +
-      "(\0132>.org.apache.hadoop.hive.metastore.hb" +
-      "ase.ForeignKeys.ForeignKey\032\250\003\n\nForeignKe" +
-      "y\022\017\n\007fk_name\030\001 \002(\t\022\032\n\022referenced_db_name" +
-      "\030\002 \002(\t\022\035\n\025referenced_table_name\030\003 \002(\t\022\032\n" +
-      "\022referenced_pk_name\030\004 \001(\t\022\023\n\013update_rule" +
-      "\030\005 \001(\005\022\023\n\013delete_rule\030\006 \001(\005\022]\n\004cols\030\007 \003(" +
-      "\0132O.org.apache.hadoop.hive.metastore.hba",
-      "se.ForeignKeys.ForeignKey.ForeignKeyColu" +
-      "mn\022\031\n\021enable_constraint\030\010 \001(\010\022\033\n\023validat" +
-      "e_constraint\030\t \001(\010\022\027\n\017rely_constraint\030\n " +
-      "\001(\010\032X\n\020ForeignKeyColumn\022\023\n\013column_name\030\001" +
-      " \002(\t\022\036\n\026referenced_column_name\030\002 \002(\t\022\017\n\007" +
-      "key_seq\030\003 \002(\021*#\n\rPrincipalType\022\010\n\004USER\020\000" +
-      "\022\010\n\004ROLE\020\001"
+      "eSet\022\024\n\014is_temporary\030\016 \001(\010\022\032\n\022is_rewrite" +
+      "_enabled\030\017 \001(\010\"\334\002\n\005Index\022\031\n\021indexHandler" +
+      "Class\030\001 \001(\t\022\016\n\006dbName\030\002 \002(\t\022\025\n\rorigTable" +
+      "Name\030\003 \002(\t\022\020\n\010location\030\004 \001(\t\022I\n\rsd_param" +
+      "eters\030\005 \001(\01322.org.apache.hadoop.hive.met" +
+      "astore.hbase.Parameters\022\022\n\ncreateTime\030\006 " +
+      "\001(\005\022\026\n\016lastAccessTime\030\007 \001(\005\022\026\n\016indexTabl" +
+      "eName\030\010 \001(\t\022\017\n\007sd_hash\030\t \001(\014\022F\n\nparamete" +
+      "rs\030\n \001(\01322.org.apache.hadoop.hive.metast",
+      "ore.hbase.Parameters\022\027\n\017deferredRebuild\030" +
+      "\013 \001(\010\"\353\004\n\026PartitionKeyComparator\022\r\n\005name" +
+      "s\030\001 \002(\t\022\r\n\005types\030\002 \002(\t\022S\n\002op\030\003 \003(\0132G.org" +
+      ".apache.hadoop.hive.metastore.hbase.Part" +
+      "itionKeyComparator.Operator\022S\n\005range\030\004 \003" +
+      "(\0132D.org.apache.hadoop.hive.metastore.hb" +
+      "ase.PartitionKeyComparator.Range\032(\n\004Mark" +
+      "\022\r\n\005value\030\001 \002(\t\022\021\n\tinclusive\030\002 \002(\010\032\272\001\n\005R" +
+      "ange\022\013\n\003key\030\001 \002(\t\022R\n\005start\030\002 \001(\0132C.org.a" +
+      "pache.hadoop.hive.metastore.hbase.Partit",
+      "ionKeyComparator.Mark\022P\n\003end\030\003 \001(\0132C.org" +
+      ".apache.hadoop.hive.metastore.hbase.Part" +
+      "itionKeyComparator.Mark\032\241\001\n\010Operator\022Z\n\004" +
+      "type\030\001 \002(\0162L.org.apache.hadoop.hive.meta" +
+      "store.hbase.PartitionKeyComparator.Opera" +
+      "tor.Type\022\013\n\003key\030\002 \002(\t\022\013\n\003val\030\003 \002(\t\"\037\n\004Ty" +
+      "pe\022\010\n\004LIKE\020\000\022\r\n\tNOTEQUALS\020\001\"\373\001\n\nPrimaryK" +
+      "ey\022\017\n\007pk_name\030\001 \002(\t\022Q\n\004cols\030\002 \003(\0132C.org." +
+      "apache.hadoop.hive.metastore.hbase.Prima" +
+      "ryKey.PrimaryKeyColumn\022\031\n\021enable_constra",
+      "int\030\003 \001(\010\022\033\n\023validate_constraint\030\004 \001(\010\022\027" +
+      "\n\017rely_constraint\030\005 \001(\010\0328\n\020PrimaryKeyCol" +
+      "umn\022\023\n\013column_name\030\001 \002(\t\022\017\n\007key_seq\030\002 \002(" +
+      "\021\"\205\004\n\013ForeignKeys\022K\n\003fks\030\001 \003(\0132>.org.apa" +
+      "che.hadoop.hive.metastore.hbase.ForeignK" +
+      "eys.ForeignKey\032\250\003\n\nForeignKey\022\017\n\007fk_name" +
+      "\030\001 \002(\t\022\032\n\022referenced_db_name\030\002 \002(\t\022\035\n\025re" +
+      "ferenced_table_name\030\003 \002(\t\022\032\n\022referenced_" +
+      "pk_name\030\004 \001(\t\022\023\n\013update_rule\030\005 \001(\005\022\023\n\013de" +
+      "lete_rule\030\006 \001(\005\022]\n\004cols\030\007 \003(\0132O.org.apac",
+      "he.hadoop.hive.metastore.hbase.ForeignKe" +
+      "ys.ForeignKey.ForeignKeyColumn\022\031\n\021enable" +
+      "_constraint\030\010 \001(\010\022\033\n\023validate_constraint" +
+      "\030\t \001(\010\022\027\n\017rely_constraint\030\n \001(\010\032X\n\020Forei" +
+      "gnKeyColumn\022\023\n\013column_name\030\001 \002(\t\022\036\n\026refe" +
+      "renced_column_name\030\002 \002(\t\022\017\n\007key_seq\030\003 \002(" +
+      "\021*#\n\rPrincipalType\022\010\n\004USER\020\000\022\010\n\004ROLE\020\001"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
@@ -41856,7 +41937,7 @@ public final class HbaseMetastoreProto {
           internal_static_org_apache_hadoop_hive_metastore_hbase_Table_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_org_apache_hadoop_hive_metastore_hbase_Table_descriptor,
-              new java.lang.String[] { "Owner", "CreateTime", "LastAccessTime", "Retention", "Location", "SdParameters", "SdHash", "PartitionKeys", "Parameters", "ViewOriginalText", "ViewExpandedText", "TableType", "Privileges", "IsTemporary", });
+              new java.lang.String[] { "Owner", "CreateTime", "LastAccessTime", "Retention", "Location", "SdParameters", "SdHash", "PartitionKeys", "Parameters", "ViewOriginalText", "ViewExpandedText", "TableType", "Privileges", "IsTemporary", "IsRewriteEnabled", });
           internal_static_org_apache_hadoop_hive_metastore_hbase_Index_descriptor =
             getDescriptor().getMessageTypes().get(21);
           internal_static_org_apache_hadoop_hive_metastore_hbase_Index_fieldAccessorTable = new

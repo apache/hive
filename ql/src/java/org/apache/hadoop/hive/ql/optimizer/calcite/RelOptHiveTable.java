@@ -481,4 +481,18 @@ public class RelOptHiveTable extends RelOptAbstractTable {
   public Map<Integer, ColumnInfo> getNonPartColInfoMap() {
     return hiveNonPartitionColsMap;
   }
+
+  @Override
+  public boolean equals(Object obj) {
+    return obj instanceof RelOptHiveTable
+        && this.rowType.equals(((RelOptHiveTable) obj).getRowType())
+        && this.getHiveTableMD().equals(((RelOptHiveTable) obj).getHiveTableMD());
+  }
+
+  @Override
+  public int hashCode() {
+    return (this.getHiveTableMD() == null)
+        ? super.hashCode() : this.getHiveTableMD().hashCode();
+  }
+
 }

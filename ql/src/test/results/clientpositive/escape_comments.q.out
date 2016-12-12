@@ -188,6 +188,7 @@ Sort Columns:       	[]
 # View Information	 	 
 View Original Text: 	select col1 from escape_comments_tbl1	 
 View Expanded Text: 	SELECT `col1` AS `col1` FROM (select `escape_comments_tbl1`.`col1` from `escape_comments_db`.`escape_comments_tbl1`) `escape_comments_db.escape_comments_view1`	 
+View Rewrite Enabled:	No                  	 
 PREHOOK: query: show formatted index on escape_comments_tbl1
 PREHOOK: type: SHOWINDEXES
 POSTHOOK: query: show formatted index on escape_comments_tbl1

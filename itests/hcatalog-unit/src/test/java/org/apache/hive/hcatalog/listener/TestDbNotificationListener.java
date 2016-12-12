@@ -188,9 +188,8 @@ public class TestDbNotificationListener {
     StorageDescriptor sd =
         new StorageDescriptor(cols, "file:/tmp", "input", "output", false, 0, serde, null, null,
             emptyParameters);
-    Table table =
-        new Table("mytable", "default", "me", startTime, startTime, 0, sd, null, emptyParameters,
-            null, null, null);
+    Table table = new Table("mytable", "default", "me", startTime, startTime, 0, sd, null,
+        emptyParameters, null, null, null);
     msClient.createTable(table);
     // Get the event
     NotificationEventResponse rsp = msClient.getNextNotification(firstEventId, 0, null);
