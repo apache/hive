@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.druid;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
+import com.google.common.base.Strings;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 import com.google.common.base.Throwables;
@@ -43,16 +44,19 @@ import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.ql.metadata.DefaultStorageHandler;
+import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.OutputFormat;
+import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 /**
  * DruidStorageHandler provides a HiveStorageHandler implementation for Druid.
@@ -69,6 +73,10 @@ public class DruidStorageHandler extends DefaultStorageHandler implements HiveMe
   private final SQLMetadataStorageUpdaterJobHandler druidSqlMetadataStorageUpdaterJobHandler;
 
   private final MetadataStorageTablesConfig druidMetadataStorageTablesConfig;
+
+  private String uniqueId = null;
+
+  private String rootWorkingDir = null;
 
   public DruidStorageHandler() {
     //this is the default value in druid
@@ -184,7 +192,7 @@ public class DruidStorageHandler extends DefaultStorageHandler implements HiveMe
     if (MetaStoreUtils.isExternalTable(table)) {
       return;
     }
-    final Path segmentDescriptorDir = new Path(table.getSd().getLocation());
+    final Path segmentDescriptorDir = getSegmentDescriptorDir();
     try {
       List<DataSegment> dataSegmentList = DruidStorageHandlerUtils
               .getPublishedSegments(segmentDescriptorDir, getConf());
@@ -197,7 +205,9 @@ public class DruidStorageHandler extends DefaultStorageHandler implements HiveMe
       }
     } catch (IOException e) {
       LOG.error("Exception while rollback", e);
-      Throwables.propagate(e);
+      throw Throwables.propagate(e);
+    } finally {
+      cleanWorkingDir();
     }
   }
 
@@ -207,16 +217,21 @@ public class DruidStorageHandler extends DefaultStorageHandler implements HiveMe
       return;
     }
     LOG.info(String.format("Committing table [%s] to the druid metastore", table.getDbName()));
-    final Path tableDir = new Path(table.getSd().getLocation());
+    final Path tableDir = getSegmentDescriptorDir();
     try {
+      List<DataSegment> segmentList = DruidStorageHandlerUtils
+              .getPublishedSegments(tableDir, getConf());
+      LOG.info(String.format("Found [%d] segments under path [%s]", segmentList.size(), tableDir));
       druidSqlMetadataStorageUpdaterJobHandler.publishSegments(
               druidMetadataStorageTablesConfig.getSegmentsTable(),
-              DruidStorageHandlerUtils.getPublishedSegments(tableDir, getConf()),
+              segmentList,
               DruidStorageHandlerUtils.JSON_MAPPER
       );
     } catch (IOException e) {
       LOG.error("Exception while commit", e);
       Throwables.propagate(e);
+    } finally {
+      cleanWorkingDir();
     }
   }
 
@@ -296,7 +311,7 @@ public class DruidStorageHandler extends DefaultStorageHandler implements HiveMe
     }
     String dataSourceName = Preconditions
             .checkNotNull(table.getParameters().get(Constants.DRUID_DATA_SOURCE),
-                    "WTF dataSource name is null !"
+                    "DataSource name is null !"
             );
 
     if (deleteData == true) {
@@ -326,8 +341,54 @@ public class DruidStorageHandler extends DefaultStorageHandler implements HiveMe
   }
 
   @Override
+  public void configureOutputJobProperties(TableDesc tableDesc, Map<String, String> jobProperties
+  ) {
+    jobProperties.put(Constants.DRUID_SEGMENT_VERSION, new DateTime().toString());
+    jobProperties.put(Constants.DRUID_JOB_WORKING_DIRECTORY, getStagingWorkingDir().toString());
+  }
+
+  @Override
   public String toString() {
     return Constants.DRUID_HIVE_STORAGE_HANDLER_ID;
   }
 
+  public String getUniqueId() {
+    if (uniqueId == null) {
+      uniqueId = Preconditions.checkNotNull(
+              Strings.emptyToNull(HiveConf.getVar(getConf(), HiveConf.ConfVars.HIVEQUERYID)),
+              "Hive query id is null"
+      );
+    }
+    return uniqueId;
+  }
+
+  private Path getStagingWorkingDir() {
+    return new Path(getRootWorkingDir(), makeStagingName());
+  }
+
+  @VisibleForTesting
+  protected String makeStagingName() {
+    return ".staging-".concat(getUniqueId().replace(":", ""));
+  }
+
+  private Path getSegmentDescriptorDir() {
+    return new Path(getStagingWorkingDir(), SEGMENTS_DESCRIPTOR_DIR_NAME);
+  }
+
+  private void cleanWorkingDir() {
+    final FileSystem fileSystem;
+    try {
+      fileSystem = getStagingWorkingDir().getFileSystem(getConf());
+      fileSystem.delete(getStagingWorkingDir(), true);
+    } catch (IOException e) {
+      LOG.error("Got Exception while cleaning working directory", e);
+    }
+  }
+
+  private String getRootWorkingDir() {
+    if (Strings.isNullOrEmpty(rootWorkingDir)) {
+      rootWorkingDir = HiveConf.getVar(getConf(), HiveConf.ConfVars.DRUID_WORKING_DIR);
+    }
+    return rootWorkingDir;
+  }
 }

@@ -95,9 +95,9 @@ public class DruidRecordWriterTest {
   @Test
   public void testWrite() throws IOException, SegmentLoadingException {
 
-    final String datasourceName = "testDataSource";
+    final String dataSourceName = "testDataSource";
     final File segmentOutputDir = temporaryFolder.newFolder();
-    final File segmentDescriptorOutputDir = temporaryFolder.newFolder();
+    final File workingDir = temporaryFolder.newFolder();
     Configuration config = new Configuration();
 
     final InputRowParser inputRowParser = new MapInputRowParser(new TimeAndDimsParseSpec(
@@ -109,7 +109,7 @@ public class DruidRecordWriterTest {
     final Map<String, Object> parserMap = objectMapper.convertValue(inputRowParser, Map.class);
 
     DataSchema dataSchema = new DataSchema(
-            datasourceName,
+            dataSourceName,
             parserMap,
             new AggregatorFactory[] {
                     new LongSumAggregatorFactory("visited_sum", "visited_sum"),
@@ -130,10 +130,11 @@ public class DruidRecordWriterTest {
               public File getStorageDirectory() {return segmentOutputDir;}
             }, objectMapper);
 
+    Path segmentDescriptroPath = new Path(workingDir.getAbsolutePath(),
+            DruidStorageHandler.SEGMENTS_DESCRIPTOR_DIR_NAME
+    );
     druidRecordWriter = new DruidRecordWriter(dataSchema, tuningConfig, dataSegmentPusher, 20,
-            new Path(segmentDescriptorOutputDir.getAbsolutePath(),
-                    DruidStorageHandler.SEGMENTS_DESCRIPTOR_DIR_NAME
-            ), localFileSystem
+            segmentDescriptroPath, localFileSystem
     );
 
     List<DruidWritable> druidWritables = Lists.transform(expectedRows,
@@ -157,7 +158,7 @@ public class DruidRecordWriterTest {
     }
     druidRecordWriter.close(false);
     List<DataSegment> dataSegmentList = DruidStorageHandlerUtils
-            .getPublishedSegments(new Path(segmentDescriptorOutputDir.getParent()), config);
+            .getPublishedSegments(segmentDescriptroPath, config);
     Assert.assertEquals(1, dataSegmentList.size());
     File tmpUnzippedSegmentDir = temporaryFolder.newFolder();
     new LocalDataSegmentPuller().getSegmentFiles(dataSegmentList.get(0), tmpUnzippedSegmentDir);

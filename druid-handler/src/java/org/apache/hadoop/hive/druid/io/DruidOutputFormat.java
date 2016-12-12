@@ -6,9 +6,9 @@
  * to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -172,26 +172,22 @@ public class DruidOutputFormat<K, V> implements HiveOutputFormat<K, DruidWritabl
             DruidStorageHandlerUtils.JSON_MAPPER
     );
 
+    final String workingPath = jc.get(Constants.DRUID_JOB_WORKING_DIRECTORY);
+    final String version = jc.get(Constants.DRUID_SEGMENT_VERSION);
     Integer maxPartitionSize = HiveConf
             .getIntVar(jc, HiveConf.ConfVars.HIVE_DRUID_MAX_PARTITION_SIZE);
     String basePersistDirectory = HiveConf
             .getVar(jc, HiveConf.ConfVars.HIVE_DRUID_BASE_PERSIST_DIRECTORY);
     final RealtimeTuningConfig realtimeTuningConfig = RealtimeTuningConfig
             .makeDefaultTuningConfig(new File(
-                    basePersistDirectory)).withVersioningPolicy(new CustomVersioningPolicy(null));
+                    basePersistDirectory))
+            .withVersioningPolicy(new CustomVersioningPolicy(version));
 
     LOG.debug(String.format("running with Data schema [%s] ", dataSchema));
-    return new DruidRecordWriter(
-            dataSchema,
-            realtimeTuningConfig,
-            hdfsDataSegmentPusher, maxPartitionSize,
-            makeSegmentDescriptorOutputDir(finalOutPath),
+    return new DruidRecordWriter(dataSchema, realtimeTuningConfig, hdfsDataSegmentPusher,
+            maxPartitionSize, new Path(workingPath, SEGMENTS_DESCRIPTOR_DIR_NAME),
             finalOutPath.getFileSystem(jc)
     );
-  }
-
-  private Path makeSegmentDescriptorOutputDir(Path finalOutPath) {
-    return new Path(finalOutPath, SEGMENTS_DESCRIPTOR_DIR_NAME);
   }
 
   @Override

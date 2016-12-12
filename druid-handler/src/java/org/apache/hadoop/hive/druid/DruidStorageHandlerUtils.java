@@ -180,28 +180,22 @@ public final class DruidStorageHandlerUtils {
   }
 
   /**
-   * @param tableDir path to the table directory containing the segments descriptor info
-   *                 the descriptor path will be .../tableDir/task_id/{@link DruidStorageHandler#SEGMENTS_DESCRIPTOR_DIR_NAME}/*.json
+   * @param taskDir path to the  directory containing the segments descriptor info
+   *                 the descriptor path will be .../workingPath/task_id/{@link DruidStorageHandler#SEGMENTS_DESCRIPTOR_DIR_NAME}/*.json
    * @param conf     hadoop conf to get the file system
    *
    * @return List of DataSegments
    *
    * @throws IOException can be for the case we did not produce data.
    */
-  public static List<DataSegment> getPublishedSegments(Path tableDir, Configuration conf)
+  public static List<DataSegment> getPublishedSegments(Path taskDir, Configuration conf)
           throws IOException {
     ImmutableList.Builder<DataSegment> publishedSegmentsBuilder = ImmutableList.builder();
-    FileSystem fs = tableDir.getFileSystem(conf);
-    for (FileStatus status : fs.listStatus(tableDir)) {
-      Path taskDir = new Path(status.getPath(), DruidStorageHandler.SEGMENTS_DESCRIPTOR_DIR_NAME);
-      if (!fs.isDirectory(taskDir)) {
-        continue;
-      }
-      for (FileStatus fileStatus : fs.listStatus(taskDir)) {
-        final DataSegment segment = JSON_MAPPER
-                .readValue(fs.open(fileStatus.getPath()), DataSegment.class);
-        publishedSegmentsBuilder.add(segment);
-      }
+    FileSystem fs = taskDir.getFileSystem(conf);
+    for (FileStatus fileStatus : fs.listStatus(taskDir)) {
+      final DataSegment segment = JSON_MAPPER
+              .readValue(fs.open(fileStatus.getPath()), DataSegment.class);
+      publishedSegmentsBuilder.add(segment);
     }
     List<DataSegment> publishedSegments = publishedSegmentsBuilder.build();
     return publishedSegments;

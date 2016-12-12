@@ -1976,7 +1976,12 @@ public class HiveConf extends Configuration {
     DRUID_METADATA_DB_PASSWORD("hive.druid.metadata.password", "",
             "Password to connect to Type of the metadata DB."
     ),
-    DRUID_METADATA_DB_URI("hive.druid.metadata.uri", "", "URI to connect to the DB eg jdbc:mysql://localhost/druid"),
+    DRUID_METADATA_DB_URI("hive.druid.metadata.uri", "",
+            "URI to connect to the DB eg jdbc:mysql://localhost/druid"
+    ),
+    DRUID_WORKING_DIR("hive.druid.working.directory", "/tmp/workingDirectory",
+            "Default hdfs working directory used to store some intermediate metadata"
+    ),
     // For HBase storage handler
     HIVE_HBASE_WAL_ENABLED("hive.hbase.wal.enabled", true,
         "Whether writes to HBase should be forced to the write-ahead log. \n" +

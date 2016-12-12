@@ -12,6 +12,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.LocalFileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.Constants;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
@@ -56,7 +57,6 @@ public class DruidStorageHandlerTest {
     Mockito.when(tableMock.getPartitionKeysSize()).thenReturn(0);
     StorageDescriptor storageDes = Mockito.mock(StorageDescriptor.class);
     Mockito.when(storageDes.getBucketColsSize()).thenReturn(0);
-    Mockito.when(storageDes.getLocation()).thenReturn(tablePath);
     Mockito.when(tableMock.getSd()).thenReturn(storageDes);
     Mockito.when(tableMock.getDbName()).thenReturn(DATA_SOURCE_NAME);
   }
@@ -111,13 +111,15 @@ public class DruidStorageHandlerTest {
     );
     druidStorageHandler.preCreateTable(tableMock);
     Configuration config = new Configuration();
+    config.set(String.valueOf(HiveConf.ConfVars.HIVEQUERYID), UUID.randomUUID().toString());
+    config.set(String.valueOf(HiveConf.ConfVars.DRUID_WORKING_DIR), tablePath);
     druidStorageHandler.setConf(config);
     LocalFileSystem localFileSystem = FileSystem.getLocal(config);
     /*
     final descriptor path is in the form tablePath/taskId_Attempt_ID/segmentDescriptorDir/segmentIdentifier.json
     UUID.randomUUID() will fake the taskId_attemptID
     */
-    Path taskDirPath = new Path(tablePath, UUID.randomUUID().toString());
+    Path taskDirPath = new Path(tablePath, druidStorageHandler.makeStagingName());
     Path descriptorPath = DruidStorageHandlerUtils.makeSegmentDescriptorOutputPath(dataSegment,
             new Path(taskDirPath, DruidStorageHandler.SEGMENTS_DESCRIPTOR_DIR_NAME)
     );
