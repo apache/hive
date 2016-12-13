@@ -27,9 +27,11 @@ import static org.junit.Assert.fail;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
+import java.net.URI;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
@@ -50,6 +52,7 @@ import java.util.concurrent.TimeoutException;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
+
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -1165,5 +1168,38 @@ public class TestJdbcWithMiniHS2 {
       System.out.println(e);
     }
     return -1;
+  }
+
+  @Test
+  public void testReplDumpResultSet() throws Exception {
+    String tid =
+        TestJdbcWithMiniHS2.class.getCanonicalName().toLowerCase().replace('.', '_') + "_"
+            + System.currentTimeMillis();
+    String testPathName = System.getProperty("test.warehouse.dir", "/tmp") + Path.SEPARATOR + tid;
+    Path testPath = new Path(testPathName);
+    FileSystem fs = testPath.getFileSystem(new HiveConf());
+    Statement stmt = hs2Conn.createStatement();
+    try {
+      stmt.execute("set hive.repl.rootdir = " + testPathName);
+      ResultSet rs = stmt.executeQuery("repl dump default");
+      ResultSetMetaData rsMeta = rs.getMetaData();
+      assertEquals(2, rsMeta.getColumnCount());
+      int numRows = 0;
+      while (rs.next()) {
+        numRows++;
+        URI uri = new URI(rs.getString(1));
+        int notificationId = rs.getInt(2);
+        assertNotNull(uri);
+        assertEquals(testPath.toUri().getScheme(), uri.getScheme());
+        assertEquals(testPath.toUri().getAuthority(), uri.getAuthority());
+        // In test setup, we append '/next' to hive.repl.rootdir and use that as the dump location
+        assertEquals(testPath.toUri().getPath() + "/next", uri.getPath());
+        assertNotNull(notificationId);
+      }
+      assertEquals(1, numRows);
+    } finally {
+      // Clean up
+      fs.delete(testPath, true);
+    }
   }
 }

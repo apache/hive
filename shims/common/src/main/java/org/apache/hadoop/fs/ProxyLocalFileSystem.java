@@ -24,18 +24,22 @@ import java.net.URI;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.util.Shell;
 import org.apache.hadoop.hive.shims.ShimLoader;
-import org.apache.hadoop.hive.shims.HadoopShims;
 
 /****************************************************************
  * A Proxy for LocalFileSystem
  *
- * Serves uri's corresponding to 'pfile:///' namespace with using
- * a LocalFileSystem
+ * As an example, it serves uri's corresponding to:
+ * 'pfile:///' namespace with using a LocalFileSystem
  *****************************************************************/
 
 public class ProxyLocalFileSystem extends FilterFileSystem {
 
   protected LocalFileSystem localFs;
+
+  /**
+   * URI scheme
+   */
+  private String scheme;
 
   public ProxyLocalFileSystem() {
     localFs = new LocalFileSystem();
@@ -50,7 +54,7 @@ public class ProxyLocalFileSystem extends FilterFileSystem {
     // create a proxy for the local filesystem
     // the scheme/authority serving as the proxy is derived
     // from the supplied URI
-    String scheme = name.getScheme();
+    this.scheme = name.getScheme();
     String nameUriString = name.toString();
     if (Shell.WINDOWS) {
       // Replace the encoded backward slash with forward slash
@@ -62,11 +66,16 @@ public class ProxyLocalFileSystem extends FilterFileSystem {
     }
 
     String authority = name.getAuthority() != null ? name.getAuthority() : "";
-    String proxyUriString = nameUriString + "://" + authority + "/";
+    String proxyUriString = scheme + "://" + authority + "/";
 
     fs = ShimLoader.getHadoopShims().createProxyFileSystem(
         localFs, URI.create(proxyUriString));
 
     fs.initialize(name, conf);
+  }
+
+  @Override
+  public String getScheme() {
+    return scheme;
   }
 }

@@ -32,6 +32,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Properties;
 import java.util.Set;
 
 import org.antlr.runtime.tree.Tree;
@@ -53,10 +54,12 @@ import org.apache.hadoop.hive.ql.QueryProperties;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.exec.FetchTask;
 import org.apache.hadoop.hive.ql.exec.Task;
+import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.hooks.LineageInfo;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
+import org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -66,16 +69,20 @@ import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.optimizer.listbucketingpruner.ListBucketingPrunerUtils;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
+import org.apache.hadoop.hive.ql.plan.FetchWork;
 import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
 import org.apache.hadoop.hive.ql.plan.ListBucketingCtx;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
+import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.io.DateWritable;
+import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
+import org.apache.hadoop.mapred.TextInputFormat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -107,7 +114,7 @@ public abstract class BaseSemanticAnalyzer {
    * back and set it once we actually start running the query.
    */
   protected Set<FileSinkDesc> acidFileSinks = new HashSet<FileSinkDesc>();
-  
+
   // whether any ACID table is involved in a query
   protected boolean acidInQuery;
 
@@ -754,7 +761,7 @@ public abstract class BaseSemanticAnalyzer {
     String[] qualifiedTabName = getQualifiedTableName((ASTNode) parent.getChild(0));
     // The ANTLR grammar looks like :
     // 1.  KW_CONSTRAINT idfr=identifier KW_FOREIGN KW_KEY fkCols=columnParenthesesList
-    // KW_REFERENCES tabName=tableName parCols=columnParenthesesList 
+    // KW_REFERENCES tabName=tableName parCols=columnParenthesesList
     // enableSpec=enableSpecification validateSpec=validateSpecification relySpec=relySpecification
     // -> ^(TOK_FOREIGN_KEY $idfr $fkCols $tabName $parCols $relySpec $enableSpec $validateSpec)
     // when the user specifies the constraint name (i.e. child.getChildCount() == 11)
@@ -1311,7 +1318,7 @@ public abstract class BaseSemanticAnalyzer {
   public Set<FileSinkDesc> getAcidFileSinks() {
     return acidFileSinks;
   }
-  
+
   public boolean hasAcidInQuery() {
     return acidInQuery;
   }
@@ -1731,7 +1738,29 @@ public abstract class BaseSemanticAnalyzer {
   public HashSet<WriteEntity> getAllOutputs() {
     return outputs;
   }
+
   public QueryState getQueryState() {
     return queryState;
+  }
+
+  /**
+   * Create a FetchTask for a given schema.
+   *
+   * @param schema string
+   */
+  protected FetchTask createFetchTask(String schema) {
+    Properties prop = new Properties();
+    // Sets delimiter to tab (ascii 9)
+    prop.setProperty(serdeConstants.SERIALIZATION_FORMAT, Integer.toString(Utilities.tabCode));
+    prop.setProperty(serdeConstants.SERIALIZATION_NULL_FORMAT, " ");
+    String[] colTypes = schema.split("#");
+    prop.setProperty("columns", colTypes[0]);
+    prop.setProperty("columns.types", colTypes[1]);
+    prop.setProperty(serdeConstants.SERIALIZATION_LIB, LazySimpleSerDe.class.getName());
+    FetchWork fetch =
+        new FetchWork(ctx.getResFile(), new TableDesc(TextInputFormat.class,
+            IgnoreKeyTextOutputFormat.class, prop), -1);
+    fetch.setSerializationNullFormat(" ");
+    return (FetchTask) TaskFactory.get(fetch, conf);
   }
 }

@@ -154,40 +154,36 @@ public class EximUtil {
       String scheme = uri.getScheme();
       String authority = uri.getAuthority();
       String path = uri.getPath();
+      FileSystem fs = FileSystem.get(uri, conf);
+
       LOG.info("Path before norm :" + path);
       // generate absolute path relative to home directory
       if (!path.startsWith("/")) {
         if (testMode) {
-          path = (new Path(System.getProperty("test.tmp.dir"),
-              path)).toUri().getPath();
+          path = (new Path(System.getProperty("test.tmp.dir"), path)).toUri().getPath();
         } else {
-          path = (new Path(new Path("/user/" + System.getProperty("user.name")),
-              path)).toUri().getPath();
-        }
-      }
-      // set correct scheme and authority
-      if (StringUtils.isEmpty(scheme)) {
-        if (testMode) {
-          scheme = "pfile";
-        } else {
-          scheme = "hdfs";
+          path =
+              (new Path(new Path("/user/" + System.getProperty("user.name")), path)).toUri()
+                  .getPath();
         }
       }
 
-      // if scheme is specified but not authority then use the default
-      // authority
+      // Get scheme from FileSystem
+      scheme = fs.getScheme();
+
+      // if scheme is specified but not authority then use the default authority
       if (StringUtils.isEmpty(authority)) {
         URI defaultURI = FileSystem.get(conf).getUri();
         authority = defaultURI.getAuthority();
       }
 
       LOG.info("Scheme:" + scheme + ", authority:" + authority + ", path:" + path);
-      Collection<String> eximSchemes = conf.getStringCollection(
-          HiveConf.ConfVars.HIVE_EXIM_URI_SCHEME_WL.varname);
+      Collection<String> eximSchemes =
+          conf.getStringCollection(HiveConf.ConfVars.HIVE_EXIM_URI_SCHEME_WL.varname);
       if (!eximSchemes.contains(scheme)) {
         throw new SemanticException(
-            ErrorMsg.INVALID_PATH.getMsg(
-                "only the following file systems accepted for export/import : "
+            ErrorMsg.INVALID_PATH
+                .getMsg("only the following file systems accepted for export/import : "
                     + conf.get(HiveConf.ConfVars.HIVE_EXIM_URI_SCHEME_WL.varname)));
       }
 
@@ -197,7 +193,7 @@ public class EximUtil {
         throw new SemanticException(ErrorMsg.INVALID_PATH.getMsg(), e);
       }
     } catch (IOException e) {
-      throw new SemanticException(ErrorMsg.IO_ERROR.getMsg(), e);
+      throw new SemanticException(ErrorMsg.IO_ERROR.getMsg() + ": " + e.getMessage(), e);
     }
   }
 
@@ -210,29 +206,31 @@ public class EximUtil {
     }
   }
 
-  public static String relativeToAbsolutePath(HiveConf conf, String location) throws SemanticException {
-    boolean testMode = conf.getBoolVar(HiveConf.ConfVars.HIVETESTMODE);
-    if (testMode) {
-      URI uri = new Path(location).toUri();
-      String scheme = uri.getScheme();
-      String authority = uri.getAuthority();
-      String path = uri.getPath();
-      if (!path.startsWith("/")) {
-          path = (new Path(System.getProperty("test.tmp.dir"),
-              path)).toUri().getPath();
+  public static String relativeToAbsolutePath(HiveConf conf, String location)
+      throws SemanticException {
+    try {
+      boolean testMode = conf.getBoolVar(HiveConf.ConfVars.HIVETESTMODE);
+      if (testMode) {
+        URI uri = new Path(location).toUri();
+        FileSystem fs = FileSystem.get(uri, conf);
+        String scheme = fs.getScheme();
+        String authority = uri.getAuthority();
+        String path = uri.getPath();
+        if (!path.startsWith("/")) {
+          path = (new Path(System.getProperty("test.tmp.dir"), path)).toUri().getPath();
+        }
+        try {
+          uri = new URI(scheme, authority, path, null, null);
+        } catch (URISyntaxException e) {
+          throw new SemanticException(ErrorMsg.INVALID_PATH.getMsg(), e);
+        }
+        return uri.toString();
+      } else {
+        // no-op for non-test mode for now
+        return location;
       }
-      if (StringUtils.isEmpty(scheme)) {
-          scheme = "pfile";
-      }
-      try {
-        uri = new URI(scheme, authority, path, null, null);
-      } catch (URISyntaxException e) {
-        throw new SemanticException(ErrorMsg.INVALID_PATH.getMsg(), e);
-      }
-      return uri.toString();
-    } else {
-      //no-op for non-test mode for now
-      return location;
+    } catch (IOException e) {
+      throw new SemanticException(ErrorMsg.IO_ERROR.getMsg() + ": " + e.getMessage(), e);
     }
   }
 

@@ -286,7 +286,8 @@ public class TestReplicationScenarios {
         throw new RuntimeException(e);
       }
     }
-    return (lastResults.get(rowNum).split("\\001"))[colNum];
+    // Split around the 'tab' character
+    return (lastResults.get(rowNum).split("\\t"))[colNum];
   }
 
   private void verifyResults(String[] data) throws IOException {
