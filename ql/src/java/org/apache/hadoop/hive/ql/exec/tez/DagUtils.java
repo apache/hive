@@ -1010,6 +1010,11 @@ public class DagUtils {
         }
         copyNotifiers.remove(srcStr, notifier);
       } catch (IOException e) {
+        if ("Exception while contacting value generator".equals(e.getMessage())) {
+          // HADOOP-13155, fixed version: 2.8.0, 3.0.0-alpha1
+          throw new IOException("copyFromLocalFile failed due to HDFS KMS failure", e);
+        }
+
         LOG.info("Looks like another thread or process is writing the same file");
         int waitAttempts = HiveConf.getIntVar(
             conf, ConfVars.HIVE_LOCALIZE_RESOURCE_NUM_WAIT_ATTEMPTS);
