@@ -122,21 +122,19 @@ public class SortedDynPartitionTimeGranularityOptimizer extends Transform {
 
       // introduce RS and EX before FS
       FileSinkOperator fsOp = (FileSinkOperator) nd;
-
-      String segmentGranularity = fsOp.getConf().getTable().getParameters()
+      final String sh = fsOp.getConf().getTableInfo().getOutputFileFormatClassName();
+      if (parseCtx.getQueryProperties().isQuery() || sh == null || !sh
+              .equals(Constants.DRUID_HIVE_OUTPUT_FORMAT)) {
+        // Bail out, nothing to do
+        return null;
+      }
+      String segmentGranularity = parseCtx.getCreateTable().getTblProps()
               .get(Constants.DRUID_SEGMENT_GRANULARITY);
       segmentGranularity = !Strings.isNullOrEmpty(segmentGranularity)
               ? segmentGranularity
               : HiveConf.getVar(parseCtx.getConf(),
                       HiveConf.ConfVars.HIVE_DRUID_INDEXING_GRANULARITY
               );
-
-      final String sh = fsOp.getConf().getTableInfo().getOutputFileFormatClassName();
-      if (sh == null || !sh.equals(Constants.DRUID_HIVE_OUTPUT_FORMAT)) {
-        // Bail out, nothing to do
-        return null;
-      }
-
       LOG.info("Sorted dynamic partitioning on time granularity optimization kicked in...");
 
       // unlink connection between FS and its parent
