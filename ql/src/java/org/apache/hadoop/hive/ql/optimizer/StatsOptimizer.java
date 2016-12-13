@@ -178,6 +178,10 @@ public class StatsOptimizer extends Transform {
       abstract Object cast(double doubleValue);
     }
 
+    enum GbyKeyType {
+      NULL, CONSTANT, OTHER
+    }
+
     private StatType getType(String origType) {
       if (serdeConstants.IntegralTypes.contains(origType)) {
         return StatType.Integeral;
@@ -212,23 +216,23 @@ public class StatsOptimizer extends Transform {
       }
     }
 
-    private boolean hasNullOrConstantGbyKey(GroupByOperator gbyOp) {
+    private GbyKeyType getGbyKeyType(GroupByOperator gbyOp) {
       GroupByDesc gbyDesc = gbyOp.getConf();
       int numCols = gbyDesc.getOutputColumnNames().size();
       int aggCols = gbyDesc.getAggregators().size();
       // If the Group by operator has null key
       if (numCols == aggCols) {
-        return true;
+        return GbyKeyType.NULL;
       }
       // If the Gby key is a constant
       List<String> dpCols = gbyOp.getSchema().getColumnNames().subList(0, numCols - aggCols);
       for(String dpCol : dpCols) {
         ExprNodeDesc end = ExprNodeDescUtils.findConstantExprOrigin(dpCol, gbyOp);
         if (!(end instanceof ExprNodeConstantDesc)) {
-          return false;
+          return GbyKeyType.OTHER;
         }
       }
-      return true;
+      return GbyKeyType.CONSTANT;
     }
 
     @Override
@@ -267,6 +271,16 @@ public class StatsOptimizer extends Transform {
           // limit. In order to be safe, we do not use it now.
           return null;
         }
+        Table tbl = tsOp.getConf().getTableMetadata();
+        if (AcidUtils.isAcidTable(tbl)) {
+          Logger.info("Table " + tbl.getTableName() + " is ACID table. Skip StatsOptimizer.");
+          return null;
+        }
+        Long rowCnt = getRowCnt(pctx, tsOp, tbl);
+        // if we can not have correct table stats, then both the table stats and column stats are not useful.
+        if (rowCnt == null) {
+          return null;
+        }
         SelectOperator pselOp = (SelectOperator)stack.get(1);
         for(ExprNodeDesc desc : pselOp.getConf().getColList()) {
           if (!((desc instanceof ExprNodeColumnDesc) || (desc instanceof ExprNodeConstantDesc))) {
@@ -278,7 +292,12 @@ public class StatsOptimizer extends Transform {
         // Since we have done an exact match on TS-SEL-GBY-RS-GBY-(SEL)-FS
         // we need not to do any instanceof checks for following.
         GroupByOperator pgbyOp = (GroupByOperator)stack.get(2);
-        if (!hasNullOrConstantGbyKey(pgbyOp)) {
+        if (getGbyKeyType(pgbyOp) == GbyKeyType.OTHER) {
+          return null;
+        }
+        // we already check if rowCnt is null and rowCnt==0 means table is
+        // empty.
+        else if (getGbyKeyType(pgbyOp) == GbyKeyType.CONSTANT && rowCnt == 0) {
           return null;
         }
         ReduceSinkOperator rsOp = (ReduceSinkOperator)stack.get(3);
@@ -288,7 +307,12 @@ public class StatsOptimizer extends Transform {
         }
 
         GroupByOperator cgbyOp = (GroupByOperator)stack.get(4);
-        if (!hasNullOrConstantGbyKey(cgbyOp)) {
+        if (getGbyKeyType(cgbyOp) == GbyKeyType.OTHER) {
+          return null;
+        }
+        // we already check if rowCnt is null and rowCnt==0 means table is
+        // empty.
+        else if (getGbyKeyType(cgbyOp) == GbyKeyType.CONSTANT && rowCnt == 0) {
           return null;
         }
         Operator<?> last = (Operator<?>) stack.get(5);
@@ -318,11 +342,6 @@ public class StatsOptimizer extends Transform {
           return null;  // todo we can collapse this part of tree into single TS
         }
 
-        Table tbl = tsOp.getConf().getTableMetadata();
-        if (AcidUtils.isAcidTable(tbl)) {
-          Logger.info("Table " + tbl.getTableName() + " is ACID table. Skip StatsOptimizer.");
-          return null;
-        }
         List<Object> oneRow = new ArrayList<Object>();
 
         Hive hive = Hive.get(pctx.getConf());
@@ -350,10 +369,6 @@ public class StatsOptimizer extends Transform {
             } else {
               return null;
             }
-            Long rowCnt = getRowCnt(pctx, tsOp, tbl);
-            if(rowCnt == null) {
-              return null;
-            }
             switch (category) {
               case LONG:
                 oneRow.add(Long.valueOf(constant) * rowCnt);
@@ -370,7 +385,7 @@ public class StatsOptimizer extends Transform {
           }
           else if (udaf instanceof GenericUDAFCount) {
             // always long
-            Long rowCnt = 0L;
+            rowCnt = 0L;
             if (aggr.getParameters().isEmpty()) {
               // Its either count (*) or count() case
               rowCnt = getRowCnt(pctx, tsOp, tbl);
