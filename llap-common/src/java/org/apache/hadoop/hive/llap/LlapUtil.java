@@ -221,4 +221,14 @@ public class LlapUtil {
     // getCanonicalHostName would either return FQDN, or an IP.
     return (ia == null) ? address.getHostName() : ia.getCanonicalHostName();
   }
+
+  public static String humanReadableByteCount(long bytes) {
+    int unit = 1024;
+    if (bytes < unit) {
+      return bytes + "B";
+    }
+    int exp = (int) (Math.log(bytes) / Math.log(unit));
+    String suffix = "KMGTPE".charAt(exp-1) + "";
+    return String.format("%.2f%sB", bytes / Math.pow(unit, exp), suffix);
+  }
 }
