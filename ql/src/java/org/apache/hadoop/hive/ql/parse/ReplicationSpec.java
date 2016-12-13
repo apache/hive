@@ -179,6 +179,14 @@ public class ReplicationSpec {
   }
 
   /**
+   * Determines if a current replication object(current state of dump) is allowed to
+   * replicate-replace-into a given partition
+   */
+  public boolean allowReplacementInto(org.apache.hadoop.hive.metastore.api.Partition ptn){
+    return allowReplacement(getLastReplicatedStateFromParameters(ptn.getParameters()),this.getCurrentReplicationState());
+  }
+
+  /**
    * Determines if a current replication event specification is allowed to
    * replicate-replace-into a given partition
    */

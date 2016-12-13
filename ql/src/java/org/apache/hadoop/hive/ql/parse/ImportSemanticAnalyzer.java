@@ -204,6 +204,10 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
     // Executed if relevant, and used to contain all the other details about the table if not.
     CreateTableDesc tblDesc = getBaseCreateTableDescFromTable(dbname,rv.getTable());
 
+    if ((replicationSpec!= null) && replicationSpec.isInReplicationScope()){
+      tblDesc.setReplicationSpec(replicationSpec);
+    }
+
     if (isExternalSet){
       tblDesc.setExternal(isExternalSet);
       // This condition-check could have been avoided, but to honour the old
@@ -368,8 +372,11 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
   }
 
   private static Task<? extends Serializable> alterTableTask(CreateTableDesc tableDesc,
-      EximUtil.SemanticAnalyzerWrapperContext x) {
+      EximUtil.SemanticAnalyzerWrapperContext x, ReplicationSpec replicationSpec) {
     tableDesc.setReplaceMode(true);
+    if ((replicationSpec != null) && (replicationSpec.isInReplicationScope())){
+      tableDesc.setReplicationSpec(replicationSpec);
+    }
     return TaskFactory.get(new DDLWork(
         x.getInputs(),
         x.getOutputs(),
@@ -383,6 +390,9 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
       ReplicationSpec replicationSpec, org.apache.hadoop.hive.ql.metadata.Partition ptn,
       EximUtil.SemanticAnalyzerWrapperContext x) {
     addPartitionDesc.setReplaceMode(true);
+    if ((replicationSpec != null) && (replicationSpec.isInReplicationScope())){
+      addPartitionDesc.setReplicationSpec(replicationSpec);
+    }
     addPartitionDesc.getPartition(0).setLocation(ptn.getLocation()); // use existing location
     return TaskFactory.get(new DDLWork(
         x.getInputs(),
@@ -860,6 +870,7 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
       if (!replicationSpec.isMetadataOnly()) {
         if (isPartitioned(tblDesc)) {
           for (AddPartitionDesc addPartitionDesc : partitionDescs) {
+            addPartitionDesc.setReplicationSpec(replicationSpec);
             t.addDependentTask(
                 addSinglePartition(fromURI, fs, tblDesc, table, wh, addPartitionDesc, replicationSpec, x));
           }
@@ -881,7 +892,7 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
       if (table.isPartitioned()) {
         x.getLOG().debug("table partitioned");
         for (AddPartitionDesc addPartitionDesc : partitionDescs) {
-
+          addPartitionDesc.setReplicationSpec(replicationSpec);
           Map<String, String> partSpec = addPartitionDesc.getPartition(0).getPartSpec();
           org.apache.hadoop.hive.ql.metadata.Partition ptn = null;
 
@@ -912,7 +923,7 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
         }
         if (replicationSpec.isMetadataOnly() && partitionDescs.isEmpty()){
           // MD-ONLY table alter
-          x.getTasks().add(alterTableTask(tblDesc, x));
+          x.getTasks().add(alterTableTask(tblDesc, x,replicationSpec));
           if (lockType == WriteEntity.WriteType.DDL_NO_LOCK){
             lockType = WriteEntity.WriteType.DDL_SHARED;
           }
@@ -925,7 +936,7 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
         if (!replicationSpec.isMetadataOnly()) {
           loadTable(fromURI, table, true, new Path(fromURI), replicationSpec, x); // repl-imports are replace-into
         } else {
-          x.getTasks().add(alterTableTask(tblDesc, x));
+          x.getTasks().add(alterTableTask(tblDesc, x, replicationSpec));
         }
         if (lockType == WriteEntity.WriteType.DDL_NO_LOCK){
           lockType = WriteEntity.WriteType.DDL_SHARED;

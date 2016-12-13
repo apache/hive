@@ -22,6 +22,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.cli.CliSessionState;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
+import org.apache.hadoop.hive.ql.parse.ReplicationSemanticAnalyzer;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.util.Shell;
@@ -55,6 +56,7 @@ public class TestReplicationScenarios {
   static Driver driver;
 
   protected static final Logger LOG = LoggerFactory.getLogger(TestReplicationScenarios.class);
+  private ArrayList<String> lastResults;
 
   @BeforeClass
   public static void setUpBeforeClass() throws Exception {
@@ -69,8 +71,8 @@ public class TestReplicationScenarios {
       WindowsPathUtil.convertPathsFromWindowsToHdfs(hconf);
     }
 
-//    System.setProperty(HiveConf.ConfVars.METASTORE_EVENT_LISTENERS.varname,
-//        DBNOTIF_LISTENER_CLASSNAME); // turn on db notification listener on metastore
+    System.setProperty(HiveConf.ConfVars.METASTORE_EVENT_LISTENERS.varname,
+        DBNOTIF_LISTENER_CLASSNAME); // turn on db notification listener on metastore
     msPort = MetaStoreUtils.startMetaStore();
     hconf.setVar(HiveConf.ConfVars.REPLDIR,TEST_PATH + "/hrepl/");
     hconf.setVar(HiveConf.ConfVars.METASTOREURIS, "thrift://localhost:"
@@ -104,6 +106,12 @@ public class TestReplicationScenarios {
   @After
   public void tearDown(){
     // after each test
+  }
+
+  private static  int next = 0;
+  private synchronized void advanceDumpDir() {
+    next++;
+    ReplicationSemanticAnalyzer.injectNextDumpDirForTest(String.valueOf(next));
   }
 
   /**
@@ -152,7 +160,7 @@ public class TestReplicationScenarios {
     run("SELECT * from " + dbName + ".unptned_empty");
     verifyResults(empty);
 
-
+    advanceDumpDir();
     run("REPL DUMP " + dbName);
     String replDumpLocn = getResult(0,0);
     run("REPL LOAD " + dbName + "_dupe FROM '"+replDumpLocn+"'");
@@ -169,15 +177,116 @@ public class TestReplicationScenarios {
     verifyResults(empty);
   }
 
+  @Test
+  public void testIncrementalAdds() throws IOException {
+    String testName = "incrementalAdds";
+    LOG.info("Testing "+testName);
+    String dbName = testName + "_" + tid;
+
+    run("CREATE DATABASE " + dbName);
+
+    run("CREATE TABLE " + dbName + ".unptned(a string) STORED AS TEXTFILE");
+    run("CREATE TABLE " + dbName + ".ptned(a string) partitioned by (b int) STORED AS TEXTFILE");
+    run("CREATE TABLE " + dbName + ".unptned_empty(a string) STORED AS TEXTFILE");
+    run("CREATE TABLE " + dbName + ".ptned_empty(a string) partitioned by (b int) STORED AS TEXTFILE");
+
+    advanceDumpDir();
+    run("REPL DUMP " + dbName);
+    String replDumpLocn = getResult(0,0);
+    String replDumpId = getResult(0,1,true);
+    LOG.info("Dumped to {} with id {}",replDumpLocn,replDumpId);
+    run("REPL LOAD " + dbName + "_dupe FROM '" + replDumpLocn + "'");
+
+    String[] unptn_data = new String[]{ "eleven" , "twelve" };
+    String[] ptn_data_1 = new String[]{ "thirteen", "fourteen", "fifteen"};
+    String[] ptn_data_2 = new String[]{ "fifteen", "sixteen", "seventeen"};
+    String[] empty = new String[]{};
+
+    String unptn_locn = new Path(TEST_PATH , testName + "_unptn").toUri().getPath();
+    String ptn_locn_1 = new Path(TEST_PATH , testName + "_ptn1").toUri().getPath();
+    String ptn_locn_2 = new Path(TEST_PATH , testName + "_ptn2").toUri().getPath();
+
+    createTestDataFile(unptn_locn, unptn_data);
+    createTestDataFile(ptn_locn_1, ptn_data_1);
+    createTestDataFile(ptn_locn_2, ptn_data_2);
+
+    run("SELECT a from " + dbName + ".ptned_empty");
+    verifyResults(empty);
+    run("SELECT * from " + dbName + ".unptned_empty");
+    verifyResults(empty);
+
+    run("LOAD DATA LOCAL INPATH '" + unptn_locn + "' OVERWRITE INTO TABLE " + dbName + ".unptned");
+    run("SELECT * from " + dbName + ".unptned");
+    verifyResults(unptn_data);
+    run("CREATE TABLE " + dbName + ".unptned_late AS SELECT * from " + dbName + ".unptned");
+    run("SELECT * from " + dbName + ".unptned_late");
+    verifyResults(unptn_data);
+
+
+    run("LOAD DATA LOCAL INPATH '" + ptn_locn_1 + "' OVERWRITE INTO TABLE " + dbName + ".ptned PARTITION(b=1)");
+    run("SELECT a from " + dbName + ".ptned WHERE b=1");
+    verifyResults(ptn_data_1);
+    run("LOAD DATA LOCAL INPATH '" + ptn_locn_2 + "' OVERWRITE INTO TABLE " + dbName + ".ptned PARTITION(b=2)");
+    run("SELECT a from " + dbName + ".ptned WHERE b=2");
+    verifyResults(ptn_data_2);
+
+    // verified up to here.
+    run("CREATE TABLE " + dbName + ".ptned_late(a string) PARTITIONED BY (b int) STORED AS TEXTFILE");
+    run("LOAD DATA LOCAL INPATH '" + ptn_locn_1 + "' OVERWRITE INTO TABLE " + dbName + ".ptned_late PARTITION(b=1)");
+    run("SELECT a from " + dbName + ".ptned_late WHERE b=1");
+    verifyResults(ptn_data_1);
+    run("LOAD DATA LOCAL INPATH '" + ptn_locn_2 + "' OVERWRITE INTO TABLE " + dbName + ".ptned_late PARTITION(b=2)");
+    run("SELECT a from " + dbName + ".ptned_late WHERE b=2");
+    verifyResults(ptn_data_2);
+
+    advanceDumpDir();
+    run("REPL DUMP " + dbName + " FROM " + replDumpId );
+    String incrementalDumpLocn = getResult(0,0);
+    String incrementalDumpId = getResult(0,1,true);
+    LOG.info("Dumped to {} with id {}", incrementalDumpLocn, incrementalDumpId);
+    run("REPL LOAD " + dbName + "_dupe FROM '"+incrementalDumpLocn+"'");
+
+    run("SELECT * from " + dbName + "_dupe.unptned_empty");
+    verifyResults(empty);
+    run("SELECT a from " + dbName + ".ptned_empty");
+    verifyResults(empty);
+
+
+//  this does not work because LOAD DATA LOCAL INPATH into an unptned table seems
+//  to use ALTER_TABLE only - it does not emit an INSERT or CREATE - re-enable after
+//  fixing that.
+//    run("SELECT * from " + dbName + "_dupe.unptned");
+//    verifyResults(unptn_data);
+    run("SELECT * from " + dbName + "_dupe.unptned_late");
+    verifyResults(unptn_data);
+
+
+    run("SELECT a from " + dbName + "_dupe.ptned WHERE b=1");
+    verifyResults(ptn_data_1);
+    run("SELECT a from " + dbName + "_dupe.ptned WHERE b=2");
+    verifyResults(ptn_data_2);
+
+    // verified up to here.
+    run("SELECT a from " + dbName + "_dupe.ptned_late WHERE b=1");
+    verifyResults(ptn_data_1);
+    run("SELECT a from " + dbName + "_dupe.ptned_late WHERE b=2");
+    verifyResults(ptn_data_2);
+  }
+
   private String getResult(int rowNum, int colNum) throws IOException {
-    List<String> results = new ArrayList<String>();
-    try {
-      driver.getResults(results);
-    } catch (CommandNeedRetryException e) {
-      e.printStackTrace();
-      throw new RuntimeException(e);
+    return getResult(rowNum,colNum,false);
+  }
+  private String getResult(int rowNum, int colNum, boolean reuse) throws IOException {
+    if (!reuse) {
+      lastResults = new ArrayList<String>();
+      try {
+        driver.getResults(lastResults);
+      } catch (CommandNeedRetryException e) {
+        e.printStackTrace();
+        throw new RuntimeException(e);
+      }
     }
-    return (results.get(rowNum).split("\\001"))[colNum];
+    return (lastResults.get(rowNum).split("\\001"))[colNum];
   }
 
   private void verifyResults(String[] data) throws IOException {

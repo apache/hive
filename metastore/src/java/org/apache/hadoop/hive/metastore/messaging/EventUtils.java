@@ -63,6 +63,28 @@ public class EventUtils {
     };
   }
 
+  public static IMetaStoreClient.NotificationFilter getEventBoundaryFilter(final Long eventFrom, final Long eventTo){
+    return new IMetaStoreClient.NotificationFilter() {
+      @Override
+      public boolean accept(NotificationEvent event) {
+        if ( (event == null) || (event.getEventId() < eventFrom) || (event.getEventId() > eventTo)) {
+          return false;
+        }
+        return true;
+      }
+    };
+  }
+
+  public static IMetaStoreClient.NotificationFilter andFilter(
+      final IMetaStoreClient.NotificationFilter filter1,
+      final IMetaStoreClient.NotificationFilter filter2) {
+    return new IMetaStoreClient.NotificationFilter() {
+      @Override
+      public boolean accept(NotificationEvent event) {
+        return filter1.accept(event) && filter2.accept(event);
+      }
+    };
+  }
 
   public interface NotificationFetcher {
     public int getBatchSize() throws IOException;
