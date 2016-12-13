@@ -1560,7 +1560,10 @@ public class HiveConf extends Configuration {
     // Constant propagation optimizer
     HIVEOPTCONSTANTPROPAGATION("hive.optimize.constant.propagation", true, "Whether to enable constant propagation optimizer"),
     HIVEIDENTITYPROJECTREMOVER("hive.optimize.remove.identity.project", true, "Removes identity project from operator tree"),
-    HIVEMETADATAONLYQUERIES("hive.optimize.metadataonly", true, ""),
+    HIVEMETADATAONLYQUERIES("hive.optimize.metadataonly", false,
+        "Whether to eliminate scans of the tables from which no columns are selected. Note\n" +
+        "that, when selecting from empty tables with data files, this can produce incorrect\n" +
+        "results, so it's disabled by default. It works correctly for normal tables."),
     HIVENULLSCANOPTIMIZE("hive.optimize.null.scan", true, "Dont scan relations which are guaranteed to not generate any rows"),
     HIVEOPTPPD_STORAGE("hive.optimize.ppd.storage", true,
         "Whether to push predicates down to storage handlers"),

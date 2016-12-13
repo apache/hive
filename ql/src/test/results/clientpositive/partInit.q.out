@@ -41,4 +41,15 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@empty
 POSTHOOK: Input: default@empty@p=1
 #### A masked pattern was here ####
-1
+NULL
+PREHOOK: query: SELECT MAX(p) FROM empty
+PREHOOK: type: QUERY
+PREHOOK: Input: default@empty
+PREHOOK: Input: default@empty@p=1
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT MAX(p) FROM empty
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@empty
+POSTHOOK: Input: default@empty@p=1
+#### A masked pattern was here ####
+NULL
