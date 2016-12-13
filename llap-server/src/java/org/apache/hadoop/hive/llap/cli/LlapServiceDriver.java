@@ -43,8 +43,10 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.hadoop.hive.llap.LlapUtil;
 import org.apache.hadoop.hive.llap.configuration.LlapDaemonConfiguration;
 import org.apache.hadoop.hive.llap.daemon.impl.LlapConstants;
+import org.apache.hadoop.hive.llap.daemon.impl.LlapDaemon;
 import org.apache.hadoop.hive.llap.daemon.impl.StaticPermanentFunctionChecker;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos;
 import org.apache.hadoop.hive.llap.tezplugins.LlapTezUtils;
@@ -236,8 +238,8 @@ public class LlapServiceDriver {
           if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.LLAP_ALLOCATOR_MAPPED) == false) {
             // direct heap allocations need to be safer
             Preconditions.checkArgument(options.getCache() < options.getSize(), "Cache size ("
-                + humanReadableByteCount(options.getCache()) + ") has to be smaller"
-                + " than the container sizing (" + humanReadableByteCount(options.getSize()) + ")");
+                + LlapUtil.humanReadableByteCount(options.getCache()) + ") has to be smaller"
+                + " than the container sizing (" + LlapUtil.humanReadableByteCount(options.getSize()) + ")");
           } else if (options.getCache() < options.getSize()) {
             LOG.warn("Note that this might need YARN physical memory monitoring to be turned off "
                 + "(yarn.nodemanager.pmem-check-enabled=false)");
@@ -245,18 +247,17 @@ public class LlapServiceDriver {
         }
         if (options.getXmx() != -1) {
           Preconditions.checkArgument(options.getXmx() < options.getSize(), "Working memory (Xmx="
-              + humanReadableByteCount(options.getXmx()) + ") has to be"
-              + " smaller than the container sizing (" + humanReadableByteCount(options.getSize())
+              + LlapUtil.humanReadableByteCount(options.getXmx()) + ") has to be"
+              + " smaller than the container sizing (" + LlapUtil.humanReadableByteCount(options.getSize())
               + ")");
         }
         if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.LLAP_ALLOCATOR_DIRECT)
             && false == HiveConf.getBoolVar(conf, HiveConf.ConfVars.LLAP_ALLOCATOR_MAPPED)) {
           // direct and not memory mapped
-          Preconditions.checkArgument(options.getXmx() + options.getCache() < options.getSize(),
-              "Working memory + cache (Xmx=" + humanReadableByteCount(options.getXmx())
-                  + " + cache=" + humanReadableByteCount(options.getCache()) + ")"
-                  + " has to be smaller than the container sizing ("
-                  + humanReadableByteCount(options.getSize()) + ")");
+          Preconditions.checkArgument(options.getXmx() + options.getCache() <= options.getSize(),
+            "Working memory (Xmx=" + LlapUtil.humanReadableByteCount(options.getXmx()) + ") + cache size ("
+              + LlapUtil.humanReadableByteCount(options.getCache()) + ") has to be smaller than the container sizing ("
+              + LlapUtil.humanReadableByteCount(options.getSize()) + ")");
         }
       }
 
@@ -267,8 +268,8 @@ public class LlapServiceDriver {
       if (options.getSize() != -1) {
         containerSize = options.getSize() / (1024 * 1024);
         Preconditions.checkArgument(containerSize >= minAlloc, "Container size ("
-            + humanReadableByteCount(options.getSize()) + ") should be greater"
-            + " than minimum allocation(" + humanReadableByteCount(minAlloc * 1024L * 1024L) + ")");
+            + LlapUtil.humanReadableByteCount(options.getSize()) + ") should be greater"
+            + " than minimum allocation(" + LlapUtil.humanReadableByteCount(minAlloc * 1024L * 1024L) + ")");
         conf.setLong(ConfVars.LLAP_DAEMON_YARN_CONTAINER_MB.varname, containerSize);
         propsDirectOptions.setProperty(ConfVars.LLAP_DAEMON_YARN_CONTAINER_MB.varname,
             String.valueOf(containerSize));
@@ -300,11 +301,23 @@ public class LlapServiceDriver {
         // Xmx is not the max heap value in JDK8. You need to subtract 50% of the survivor fraction
         // from this, to get actual usable memory before it goes into GC
         xmx = options.getXmx();
-        long xmxMb = (long) (xmx / (1024 * 1024));
+        long xmxMb = (xmx / (1024L * 1024L));
         conf.setLong(ConfVars.LLAP_DAEMON_MEMORY_PER_INSTANCE_MB.varname, xmxMb);
         propsDirectOptions.setProperty(ConfVars.LLAP_DAEMON_MEMORY_PER_INSTANCE_MB.varname,
             String.valueOf(xmxMb));
       }
+
+      final long currentHeadRoom = options.getSize() - options.getXmx() - options.getCache();
+      final long minHeadRoom = (long) (options.getXmx() * LlapDaemon.MIN_HEADROOM_PERCENT);
+      final long headRoom = currentHeadRoom < minHeadRoom ? minHeadRoom : currentHeadRoom;
+      final long headRoomMb = headRoom / (1024L * 1024L);
+      conf.setLong(ConfVars.LLAP_DAEMON_HEADROOM_MEMORY_PER_INSTANCE_MB.varname, headRoomMb);
+      propsDirectOptions.setProperty(ConfVars.LLAP_DAEMON_HEADROOM_MEMORY_PER_INSTANCE_MB.varname,
+        String.valueOf(headRoomMb));
+
+      LOG.info("Memory settings: container memory: {} executor memory: {} cache memory: {} headroom memory: {}",
+        LlapUtil.humanReadableByteCount(options.getSize()), LlapUtil.humanReadableByteCount(options.getXmx()),
+        LlapUtil.humanReadableByteCount(options.getCache()), LlapUtil.humanReadableByteCount(headRoom));
 
       if (options.getLlapQueueName() != null && !options.getLlapQueueName().isEmpty()) {
         conf.set(ConfVars.LLAP_DAEMON_QUEUE_NAME.varname, options.getLlapQueueName());
@@ -551,6 +564,9 @@ public class LlapServiceDriver {
       configs.put(ConfVars.LLAP_DAEMON_MEMORY_PER_INSTANCE_MB.varname,
           HiveConf.getIntVar(conf, ConfVars.LLAP_DAEMON_MEMORY_PER_INSTANCE_MB));
 
+      configs.put(ConfVars.LLAP_DAEMON_HEADROOM_MEMORY_PER_INSTANCE_MB.varname,
+        HiveConf.getIntVar(conf, ConfVars.LLAP_DAEMON_HEADROOM_MEMORY_PER_INSTANCE_MB));
+
       configs.put(ConfVars.LLAP_DAEMON_VCPUS_PER_INSTANCE.varname,
           HiveConf.getIntVar(conf, ConfVars.LLAP_DAEMON_VCPUS_PER_INSTANCE));
 
@@ -698,15 +714,5 @@ public class LlapServiceDriver {
     HiveConf.getBoolVar(new Configuration(false), ConfVars.LLAP_CLIENT_CONSISTENT_SPLITS);
     // they will be file:// URLs
     lfs.copyFromLocalFile(new Path(conf.getResource(f).toString()), confPath);
-  }
-
-  private String humanReadableByteCount(long bytes) {
-    int unit = 1024;
-    if (bytes < unit) {
-      return bytes + "B";
-    }
-    int exp = (int) (Math.log(bytes) / Math.log(unit));
-    String suffix = "KMGTPE".charAt(exp-1) + "";
-    return String.format("%.2f%sB", bytes / Math.pow(unit, exp), suffix);
   }
 }
