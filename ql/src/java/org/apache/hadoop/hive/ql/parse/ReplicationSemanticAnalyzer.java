@@ -22,7 +22,15 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.api.Database;
+import org.apache.hadoop.hive.metastore.api.NotificationEvent;
+import org.apache.hadoop.hive.metastore.messaging.AddPartitionMessage;
+import org.apache.hadoop.hive.metastore.messaging.CreateTableMessage;
+import org.apache.hadoop.hive.metastore.messaging.EventUtils;
+import org.apache.hadoop.hive.metastore.messaging.InsertMessage;
+import org.apache.hadoop.hive.metastore.messaging.MessageDeserializer;
+import org.apache.hadoop.hive.metastore.messaging.MessageFactory;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.exec.Task;
@@ -70,24 +78,27 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
     LOG.debug("ReplicationSemanticAanalyzer: analyzeInternal");
     LOG.debug(ast.getName() + ":" + ast.getToken().getText() + "=" + ast.getText());
     switch (ast.getToken().getType()) {
-    case TOK_REPL_DUMP: {
-      LOG.debug("ReplicationSemanticAnalyzer: analyzeInternal: dump");
-      initReplDump(ast);
-      analyzeReplDump(ast);
-    }
-    case TOK_REPL_LOAD: {
-      LOG.debug("ReplicationSemanticAnalyzer: analyzeInternal: load");
-      initReplLoad(ast);
-      analyzeReplLoad(ast);
-    }
-    case TOK_REPL_STATUS: {
-      LOG.debug("ReplicationSemanticAnalyzer: analyzeInternal: status");
-      initReplStatus(ast);
-      analyzeReplStatus(ast);
-    }
-    default: {
-      throw new SemanticException("Unexpected root token");
-    }
+      case TOK_REPL_DUMP: {
+        LOG.debug("ReplicationSemanticAnalyzer: analyzeInternal: dump");
+        initReplDump(ast);
+        analyzeReplDump(ast);
+        break;
+      }
+      case TOK_REPL_LOAD: {
+        LOG.debug("ReplicationSemanticAnalyzer: analyzeInternal: load");
+        initReplLoad(ast);
+        analyzeReplLoad(ast);
+        break;
+      }
+      case TOK_REPL_STATUS: {
+        LOG.debug("ReplicationSemanticAnalyzer: analyzeInternal: status");
+        initReplStatus(ast);
+        analyzeReplStatus(ast);
+        break;
+      }
+      default: {
+        throw new SemanticException("Unexpected root token");
+      }
     }
   }
 
