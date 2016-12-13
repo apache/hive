@@ -17,40 +17,41 @@
  */
 package org.apache.hive.hcatalog.listener;
 
-import org.apache.hadoop.hive.metastore.api.Function;
-import org.apache.hadoop.hive.metastore.api.Index;
-import org.apache.hadoop.hive.metastore.events.AddIndexEvent;
-import org.apache.hadoop.hive.metastore.events.AlterIndexEvent;
-import org.apache.hadoop.hive.metastore.events.CreateFunctionEvent;
-import org.apache.hadoop.hive.metastore.events.DropFunctionEvent;
-import org.apache.hadoop.hive.metastore.events.DropIndexEvent;
+import java.util.concurrent.TimeUnit;
+
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.MetaStoreEventListener;
 import org.apache.hadoop.hive.metastore.RawStore;
 import org.apache.hadoop.hive.metastore.RawStoreProxy;
 import org.apache.hadoop.hive.metastore.api.Database;
+import org.apache.hadoop.hive.metastore.api.Function;
+import org.apache.hadoop.hive.metastore.api.Index;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NotificationEvent;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.metastore.events.AddIndexEvent;
 import org.apache.hadoop.hive.metastore.events.AddPartitionEvent;
+import org.apache.hadoop.hive.metastore.events.AlterIndexEvent;
 import org.apache.hadoop.hive.metastore.events.AlterPartitionEvent;
 import org.apache.hadoop.hive.metastore.events.AlterTableEvent;
 import org.apache.hadoop.hive.metastore.events.ConfigChangeEvent;
 import org.apache.hadoop.hive.metastore.events.CreateDatabaseEvent;
+import org.apache.hadoop.hive.metastore.events.CreateFunctionEvent;
 import org.apache.hadoop.hive.metastore.events.CreateTableEvent;
 import org.apache.hadoop.hive.metastore.events.DropDatabaseEvent;
+import org.apache.hadoop.hive.metastore.events.DropFunctionEvent;
+import org.apache.hadoop.hive.metastore.events.DropIndexEvent;
 import org.apache.hadoop.hive.metastore.events.DropPartitionEvent;
 import org.apache.hadoop.hive.metastore.events.DropTableEvent;
 import org.apache.hadoop.hive.metastore.events.InsertEvent;
 import org.apache.hadoop.hive.metastore.events.LoadPartitionDoneEvent;
-import org.apache.hive.hcatalog.common.HCatConstants;
-import org.apache.hive.hcatalog.messaging.MessageFactory;
+import org.apache.hadoop.hive.metastore.messaging.EventMessage.EventType;
+import org.apache.hadoop.hive.metastore.messaging.MessageFactory;
+import org.apache.hadoop.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.concurrent.TimeUnit;
 
 /**
  * An implementation of {@link org.apache.hadoop.hive.metastore.MetaStoreEventListener} that
@@ -121,10 +122,11 @@ public class DbNotificationListener extends MetaStoreEventListener {
    * @param tableEvent table event.
    * @throws MetaException
    */
-  public void onCreateTable (CreateTableEvent tableEvent) throws MetaException {
+  public void onCreateTable(CreateTableEvent tableEvent) throws MetaException {
     Table t = tableEvent.getTable();
-    NotificationEvent event = new NotificationEvent(0, now(),
-        HCatConstants.HCAT_CREATE_TABLE_EVENT, msgFactory.buildCreateTableMessage(t).toString());
+    NotificationEvent event =
+        new NotificationEvent(0, now(), EventType.CREATE_TABLE.toString(), msgFactory
+            .buildCreateTableMessage(t).toString());
     event.setDbName(t.getDbName());
     event.setTableName(t.getTableName());
     enqueue(event);
@@ -134,10 +136,11 @@ public class DbNotificationListener extends MetaStoreEventListener {
    * @param tableEvent table event.
    * @throws MetaException
    */
-  public void onDropTable (DropTableEvent tableEvent)  throws MetaException {
+  public void onDropTable(DropTableEvent tableEvent) throws MetaException {
     Table t = tableEvent.getTable();
-    NotificationEvent event = new NotificationEvent(0, now(),
-        HCatConstants.HCAT_DROP_TABLE_EVENT, msgFactory.buildDropTableMessage(t).toString());
+    NotificationEvent event =
+        new NotificationEvent(0, now(), EventType.DROP_TABLE.toString(), msgFactory
+            .buildDropTableMessage(t).toString());
     event.setDbName(t.getDbName());
     event.setTableName(t.getTableName());
     enqueue(event);
@@ -147,12 +150,12 @@ public class DbNotificationListener extends MetaStoreEventListener {
    * @param tableEvent alter table event
    * @throws MetaException
    */
-  public void onAlterTable (AlterTableEvent tableEvent) throws MetaException {
+  public void onAlterTable(AlterTableEvent tableEvent) throws MetaException {
     Table before = tableEvent.getOldTable();
     Table after = tableEvent.getNewTable();
-    NotificationEvent event = new NotificationEvent(0, now(),
-        HCatConstants.HCAT_ALTER_TABLE_EVENT,
-        msgFactory.buildAlterTableMessage(before, after).toString());
+    NotificationEvent event =
+        new NotificationEvent(0, now(), EventType.ALTER_TABLE.toString(), msgFactory
+            .buildAlterTableMessage(before, after).toString());
     event.setDbName(after.getDbName());
     event.setTableName(after.getTableName());
     enqueue(event);
@@ -162,12 +165,12 @@ public class DbNotificationListener extends MetaStoreEventListener {
    * @param partitionEvent partition event
    * @throws MetaException
    */
-  public void onAddPartition (AddPartitionEvent partitionEvent)
-      throws MetaException {
+  public void onAddPartition(AddPartitionEvent partitionEvent) throws MetaException {
     Table t = partitionEvent.getTable();
-    NotificationEvent event = new NotificationEvent(0, now(),
-        HCatConstants.HCAT_ADD_PARTITION_EVENT,
-        msgFactory.buildAddPartitionMessage(t, partitionEvent.getPartitionIterator()).toString());
+    String msg = msgFactory
+        .buildAddPartitionMessage(t, partitionEvent.getPartitionIterator()).toString();
+    NotificationEvent event =
+        new NotificationEvent(0, now(), EventType.ADD_PARTITION.toString(), msg);
     event.setDbName(t.getDbName());
     event.setTableName(t.getTableName());
     enqueue(event);
@@ -177,11 +180,11 @@ public class DbNotificationListener extends MetaStoreEventListener {
    * @param partitionEvent partition event
    * @throws MetaException
    */
-  public void onDropPartition (DropPartitionEvent partitionEvent)  throws MetaException {
+  public void onDropPartition(DropPartitionEvent partitionEvent) throws MetaException {
     Table t = partitionEvent.getTable();
-    NotificationEvent event = new NotificationEvent(0, now(),
-        HCatConstants.HCAT_DROP_PARTITION_EVENT,
-        msgFactory.buildDropPartitionMessage(t, partitionEvent.getPartitionIterator()).toString());
+    NotificationEvent event =
+        new NotificationEvent(0, now(), EventType.DROP_PARTITION.toString(), msgFactory
+            .buildDropPartitionMessage(t, partitionEvent.getPartitionIterator()).toString());
     event.setDbName(t.getDbName());
     event.setTableName(t.getTableName());
     enqueue(event);
@@ -191,12 +194,12 @@ public class DbNotificationListener extends MetaStoreEventListener {
    * @param partitionEvent partition event
    * @throws MetaException
    */
-  public void onAlterPartition (AlterPartitionEvent partitionEvent)  throws MetaException {
+  public void onAlterPartition(AlterPartitionEvent partitionEvent) throws MetaException {
     Partition before = partitionEvent.getOldPartition();
     Partition after = partitionEvent.getNewPartition();
-    NotificationEvent event = new NotificationEvent(0, now(),
-        HCatConstants.HCAT_ALTER_PARTITION_EVENT,
-        msgFactory.buildAlterPartitionMessage(partitionEvent.getTable(),before, after).toString());
+    NotificationEvent event =
+        new NotificationEvent(0, now(), EventType.ALTER_PARTITION.toString(), msgFactory
+            .buildAlterPartitionMessage(partitionEvent.getTable(), before, after).toString());
     event.setDbName(before.getDbName());
     event.setTableName(before.getTableName());
     enqueue(event);
@@ -206,11 +209,11 @@ public class DbNotificationListener extends MetaStoreEventListener {
    * @param dbEvent database event
    * @throws MetaException
    */
-  public void onCreateDatabase (CreateDatabaseEvent dbEvent) throws MetaException {
+  public void onCreateDatabase(CreateDatabaseEvent dbEvent) throws MetaException {
     Database db = dbEvent.getDatabase();
-    NotificationEvent event = new NotificationEvent(0, now(),
-        HCatConstants.HCAT_CREATE_DATABASE_EVENT,
-        msgFactory.buildCreateDatabaseMessage(db).toString());
+    NotificationEvent event =
+        new NotificationEvent(0, now(), EventType.CREATE_DATABASE.toString(), msgFactory
+            .buildCreateDatabaseMessage(db).toString());
     event.setDbName(db.getName());
     enqueue(event);
   }
@@ -219,11 +222,11 @@ public class DbNotificationListener extends MetaStoreEventListener {
    * @param dbEvent database event
    * @throws MetaException
    */
-  public void onDropDatabase (DropDatabaseEvent dbEvent) throws MetaException {
+  public void onDropDatabase(DropDatabaseEvent dbEvent) throws MetaException {
     Database db = dbEvent.getDatabase();
-    NotificationEvent event = new NotificationEvent(0, now(),
-        HCatConstants.HCAT_DROP_DATABASE_EVENT,
-        msgFactory.buildDropDatabaseMessage(db).toString());
+    NotificationEvent event =
+        new NotificationEvent(0, now(), EventType.DROP_DATABASE.toString(), msgFactory
+            .buildDropDatabaseMessage(db).toString());
     event.setDbName(db.getName());
     enqueue(event);
   }
@@ -232,11 +235,11 @@ public class DbNotificationListener extends MetaStoreEventListener {
    * @param fnEvent function event
    * @throws MetaException
    */
-  public void onCreateFunction (CreateFunctionEvent fnEvent) throws MetaException {
+  public void onCreateFunction(CreateFunctionEvent fnEvent) throws MetaException {
     Function fn = fnEvent.getFunction();
-    NotificationEvent event = new NotificationEvent(0, now(),
-        HCatConstants.HCAT_CREATE_FUNCTION_EVENT,
-        msgFactory.buildCreateFunctionMessage(fn).toString());
+    NotificationEvent event =
+        new NotificationEvent(0, now(), EventType.CREATE_FUNCTION.toString(), msgFactory
+            .buildCreateFunctionMessage(fn).toString());
     event.setDbName(fn.getDbName());
     enqueue(event);
   }
@@ -245,11 +248,11 @@ public class DbNotificationListener extends MetaStoreEventListener {
    * @param fnEvent function event
    * @throws MetaException
    */
-  public void onDropFunction (DropFunctionEvent fnEvent) throws MetaException {
+  public void onDropFunction(DropFunctionEvent fnEvent) throws MetaException {
     Function fn = fnEvent.getFunction();
-    NotificationEvent event = new NotificationEvent(0, now(),
-        HCatConstants.HCAT_DROP_FUNCTION_EVENT,
-        msgFactory.buildDropFunctionMessage(fn).toString());
+    NotificationEvent event =
+        new NotificationEvent(0, now(), EventType.DROP_FUNCTION.toString(), msgFactory
+            .buildDropFunctionMessage(fn).toString());
     event.setDbName(fn.getDbName());
     enqueue(event);
   }
@@ -258,11 +261,11 @@ public class DbNotificationListener extends MetaStoreEventListener {
    * @param indexEvent index event
    * @throws MetaException
    */
-  public void onAddIndex (AddIndexEvent indexEvent) throws MetaException {
+  public void onAddIndex(AddIndexEvent indexEvent) throws MetaException {
     Index index = indexEvent.getIndex();
-    NotificationEvent event = new NotificationEvent(0, now(),
-        HCatConstants.HCAT_CREATE_INDEX_EVENT,
-        msgFactory.buildCreateIndexMessage(index).toString());
+    NotificationEvent event =
+        new NotificationEvent(0, now(), EventType.CREATE_INDEX.toString(), msgFactory
+            .buildCreateIndexMessage(index).toString());
     event.setDbName(index.getDbName());
     enqueue(event);
   }
@@ -271,11 +274,11 @@ public class DbNotificationListener extends MetaStoreEventListener {
    * @param indexEvent index event
    * @throws MetaException
    */
-  public void onDropIndex (DropIndexEvent indexEvent) throws MetaException {
+  public void onDropIndex(DropIndexEvent indexEvent) throws MetaException {
     Index index = indexEvent.getIndex();
-    NotificationEvent event = new NotificationEvent(0, now(),
-        HCatConstants.HCAT_DROP_INDEX_EVENT,
-        msgFactory.buildDropIndexMessage(index).toString());
+    NotificationEvent event =
+        new NotificationEvent(0, now(), EventType.DROP_INDEX.toString(), msgFactory
+            .buildDropIndexMessage(index).toString());
     event.setDbName(index.getDbName());
     enqueue(event);
   }
@@ -284,21 +287,22 @@ public class DbNotificationListener extends MetaStoreEventListener {
    * @param indexEvent index event
    * @throws MetaException
    */
-  public void onAlterIndex (AlterIndexEvent indexEvent)  throws MetaException {
+  public void onAlterIndex(AlterIndexEvent indexEvent) throws MetaException {
     Index before = indexEvent.getOldIndex();
     Index after = indexEvent.getNewIndex();
-    NotificationEvent event = new NotificationEvent(0, now(),
-        HCatConstants.HCAT_ALTER_INDEX_EVENT,
-        msgFactory.buildAlterIndexMessage(before, after).toString());
+    NotificationEvent event =
+        new NotificationEvent(0, now(), EventType.ALTER_INDEX.toString(), msgFactory
+            .buildAlterIndexMessage(before, after).toString());
     event.setDbName(before.getDbName());
     enqueue(event);
   }
 
   @Override
   public void onInsert(InsertEvent insertEvent) throws MetaException {
-    NotificationEvent event = new NotificationEvent(0, now(), HCatConstants.HCAT_INSERT_EVENT,
-        msgFactory.buildInsertMessage(insertEvent.getDb(), insertEvent.getTable(),
-            insertEvent.getPartitionKeyValues(), insertEvent.getFiles()).toString());
+    NotificationEvent event =
+        new NotificationEvent(0, now(), EventType.INSERT.toString(), msgFactory.buildInsertMessage(
+            insertEvent.getDb(), insertEvent.getTable(), insertEvent.getPartitionKeyValues(),
+            insertEvent.getFiles()).toString());
     event.setDbName(insertEvent.getDb());
     event.setTableName(insertEvent.getTable());
     enqueue(event);

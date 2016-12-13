@@ -18,28 +18,31 @@
  */
 package org.apache.hive.hcatalog.api;
 
-import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertNull;
-import static junit.framework.Assert.assertTrue;
-import static junit.framework.Assert.fail;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
-import junit.framework.Assert;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.api.NotificationEvent;
+import org.apache.hadoop.hive.metastore.api.Partition;
+import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.metastore.messaging.json.JSONMessageFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hive.hcatalog.common.HCatConstants;
 import org.apache.hive.hcatalog.data.schema.HCatFieldSchema;
 import org.apache.hive.hcatalog.listener.DbNotificationListener;
-import org.apache.hive.hcatalog.messaging.HCatEventMessage;
+import org.codehaus.jackson.JsonFactory;
+import org.codehaus.jackson.JsonParser;
+import org.codehaus.jackson.map.ObjectMapper;
+import org.codehaus.jackson.node.ObjectNode;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -125,8 +128,14 @@ public class TestHCatClientNotification {
     assertEquals(HCatConstants.HCAT_CREATE_TABLE_EVENT, event.getEventType());
     assertEquals(dbName, event.getDbName());
     assertEquals("hcatcreatetable", event.getTableName());
-    assertTrue(event.getMessage().matches("\\{\"eventType\":\"CREATE_TABLE\",\"server\":\"\"," +
-        "\"servicePrincipal\":\"\",\"db\":\"default\",\"table\":\"hcatcreatetable\",\"timestamp\":[0-9]+}"));
+
+    // Parse the message field
+    ObjectNode jsonTree = getJsonTree(event);
+    assertEquals(HCatConstants.HCAT_CREATE_TABLE_EVENT, jsonTree.get("eventType").asText());
+    assertEquals("default", jsonTree.get("db").asText());
+    assertEquals("hcatcreatetable", jsonTree.get("table").asText());
+    Table tableObj = JSONMessageFactory.getTableObj(jsonTree);
+    assertEquals(table.toHiveTable(), tableObj);
   }
 
   // TODO - Currently no way to test alter table, as this interface doesn't support alter table
@@ -166,11 +175,8 @@ public class TestHCatClientNotification {
     String partName = "testpart";
     Map<String, String> partSpec = new HashMap<String, String>(1);
     partSpec.put(partColName, partName);
-    hCatClient.addPartition(
-        HCatAddPartitionDesc.create(
-            new HCatPartition(table, partSpec, null)
-        ).build()
-    );
+    HCatPartition part = new HCatPartition(table, partSpec, null);
+    hCatClient.addPartition(HCatAddPartitionDesc.create(part).build());
 
     List<HCatNotificationEvent> events = hCatClient.getNextNotification(firstEventId, 0, null);
     assertEquals(2, events.size());
@@ -181,9 +187,20 @@ public class TestHCatClientNotification {
     assertEquals(HCatConstants.HCAT_ADD_PARTITION_EVENT, event.getEventType());
     assertEquals("default", event.getDbName());
     assertEquals(tableName, event.getTableName());
-    assertTrue(event.getMessage().matches("\\{\"eventType\":\"ADD_PARTITION\",\"server\":\"\"," +
-        "\"servicePrincipal\":\"\",\"db\":\"default\",\"table\":" +
-        "\"hcataddparttable\",\"timestamp\":[0-9]+,\"partitions\":\\[\\{\"pc\":\"testpart\"}]}"));
+
+    // Parse the message field
+    ObjectNode jsonTree = getJsonTree(event);
+    assertEquals(HCatConstants.HCAT_ADD_PARTITION_EVENT, jsonTree.get("eventType").asText());
+    assertEquals("default", jsonTree.get("db").asText());
+    assertEquals("hcataddparttable", jsonTree.get("table").asText());
+    List<Partition> partitionObjList = JSONMessageFactory.getPartitionObjList(jsonTree);
+    HCatPartition hcatPart = new HCatPartition(table, partitionObjList.get(0));
+    assertEquals(part.getDatabaseName(), hcatPart.getDatabaseName());
+    assertEquals(part.getTableName(), hcatPart.getTableName());
+    assertEquals(part.getValues(), hcatPart.getValues());
+    assertEquals(part.getColumns(), hcatPart.getColumns());
+    assertEquals(part.getPartColumns(), hcatPart.getPartColumns());
+    assertEquals(part.getLocation(), hcatPart.getLocation());
   }
 
   // TODO - currently no way to test alter partition, as HCatClient doesn't support it.
@@ -264,5 +281,11 @@ public class TestHCatClientNotification {
     List<HCatNotificationEvent> events = hCatClient.getNextNotification(firstEventId, 1, filter);
     assertEquals(1, events.size());
     assertEquals(firstEventId + 1, events.get(0).getEventId());
+  }
+
+  private ObjectNode getJsonTree(HCatNotificationEvent event) throws Exception {
+    JsonParser jsonParser = (new JsonFactory()).createJsonParser(event.getMessage());
+    ObjectMapper mapper = new ObjectMapper();
+    return mapper.readValue(jsonParser, ObjectNode.class);
   }
 }
