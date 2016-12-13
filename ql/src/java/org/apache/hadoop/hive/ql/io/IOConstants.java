@@ -35,6 +35,7 @@ public final class IOConstants {
   public static final String PARQUETFILE = "PARQUETFILE";
   public static final String AVRO = "AVRO";
   public static final String AVROFILE = "AVROFILE";
+  public static final String COLON_SEPARATOR = ":";
 
   @VisibleForTesting
   public static final String CUSTOM_TEXT_SERDE = "CustomTextSerde";

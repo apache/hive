@@ -19,6 +19,8 @@
 package org.apache.hadoop.hive.ql.io;
 
 import java.io.IOException;
+import java.net.InetAddress;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -362,6 +364,24 @@ public final class HiveFileFormatUtils {
         }
       }
       part = doGetPartitionDescFromPath(newPathToPartitionInfo, dir);
+    }
+    if (part == null && dir.toUri().getAuthority() != null) {
+        // Exception imminent. Try calling function after reverse mapping hostname
+        String hostname = dir.toUri().getAuthority();
+        hostname = hostname.split(IOConstants.COLON_SEPARATOR)[0];
+
+        InetAddress inetAddress = InetAddress.getByName(hostname);
+        String ip = inetAddress.getHostAddress();
+
+        String dirPath = dir.toString();
+        if (!hostname.equalsIgnoreCase(ip)) {
+          // This check is in place to prevent infinite recursion
+          dirPath = dirPath.replaceAll(hostname, ip);
+          Path newpath = new Path(dirPath);
+
+          part = getPartitionDescFromPathRecursively(pathToPartitionInfo, newpath, cacheMap,
+              ignoreSchema);
+        }
     }
     if (part != null) {
       return part;
