@@ -242,6 +242,7 @@ public class HiveConf extends Configuration {
       HiveConf.ConfVars.METASTORE_AUTHORIZATION_STORAGE_AUTH_CHECKS,
       HiveConf.ConfVars.METASTORE_BATCH_RETRIEVE_MAX,
       HiveConf.ConfVars.METASTORE_EVENT_LISTENERS,
+      HiveConf.ConfVars.METASTORE_TRANSACTIONAL_EVENT_LISTENERS,
       HiveConf.ConfVars.METASTORE_EVENT_CLEAN_FREQ,
       HiveConf.ConfVars.METASTORE_EVENT_EXPIRY_DURATION,
       HiveConf.ConfVars.METASTORE_FILTER_HOOK,
@@ -759,7 +760,13 @@ public class HiveConf extends Configuration {
         "An init hook is specified as the name of Java class which extends org.apache.hadoop.hive.metastore.MetaStoreInitListener."),
     METASTORE_PRE_EVENT_LISTENERS("hive.metastore.pre.event.listeners", "",
         "List of comma separated listeners for metastore events."),
-    METASTORE_EVENT_LISTENERS("hive.metastore.event.listeners", "", ""),
+    METASTORE_EVENT_LISTENERS("hive.metastore.event.listeners", "",
+        "A comma separated list of Java classes that implement the org.apache.hadoop.hive.metastore.MetaStoreEventListener" +
+            " interface. The metastore event and corresponding listener method will be invoked in separate JDO transactions. " +
+            "Alternatively, configure hive.metastore.transactional.event.listeners to ensure both are invoked in same JDO transaction."),
+    METASTORE_TRANSACTIONAL_EVENT_LISTENERS("hive.metastore.transactional.event.listeners", "",
+        "A comma separated list of Java classes that implement the org.apache.hadoop.hive.metastore.MetaStoreEventListener" +
+            " interface. Both the metastore event and corresponding listener method will be invoked in the same JDO transaction."),
     METASTORE_EVENT_DB_LISTENER_TTL("hive.metastore.event.db.listener.timetolive", "86400s",
         new TimeValidator(TimeUnit.SECONDS),
         "time after which events will be removed from the database listener queue"),

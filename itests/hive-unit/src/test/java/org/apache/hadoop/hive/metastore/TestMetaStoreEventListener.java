@@ -18,6 +18,8 @@
 
 package org.apache.hadoop.hive.metastore;
 
+import com.google.common.collect.Lists;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -25,8 +27,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-
-import com.google.common.collect.Lists;
 import junit.framework.TestCase;
 
 import org.apache.hadoop.hive.cli.CliSessionState;
@@ -455,5 +455,4 @@ public class TestMetaStoreEventListener extends TestCase {
     assertEquals("true", event.getOldValue());
     assertEquals("false", event.getNewValue());
   }
-
 }
