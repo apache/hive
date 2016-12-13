@@ -672,7 +672,14 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
         hook.commitCreateTable(tbl);
       }
       success = true;
-    } finally {
+    } 
+    catch(AlreadyExistsException e)
+    {
+        /* since table is already created, create table is true! */
+        success = true;
+        throw e;
+    }
+    finally {
       if (!success && (hook != null)) {
         hook.rollbackCreateTable(tbl);
       }
