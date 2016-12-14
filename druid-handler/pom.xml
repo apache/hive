@@ -194,6 +194,11 @@
       <artifactId>postgresql-metadata-storage</artifactId>
       <version>${druid.version}</version>
     </dependency>
+    <dependency>
+      <groupId>com.google.guava</groupId>
+      <artifactId>guava</artifactId>
+      <version>16.0.1</version>
+    </dependency>
     <!-- test inter-project -->
     <dependency>
       <groupId>junit</groupId>
@@ -276,7 +281,7 @@
                   <include>com.fasterxml.jackson.core:*</include>
                   <include>com.fasterxml.jackson.datatype:*</include>
                   <include>com.fasterxml.jackson.dataformat:*</include>
-                  <include>com.google.common:*</include>
+                  <include>com.google.guava:*</include>
                   <include>it.unimi.dsi:*</include>
                   <include>org.jdbi:*</include>
                   <include>net.jpountz.lz4:*</include>
