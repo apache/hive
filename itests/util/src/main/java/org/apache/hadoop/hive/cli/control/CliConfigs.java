@@ -126,7 +126,7 @@ public class CliConfigs {
 
         setHiveConfDir("data/conf/tez");
         setClusterType(MiniClusterType.tez);
-        setMetastoreType(MetastoreType.hbase);
+        setMetastoreType(MetastoreType.sql);
       } catch (Exception e) {
         throw new RuntimeException("can't construct cliconfig", e);
       }
