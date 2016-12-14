@@ -1,9 +1,0 @@
-PREHOOK: query: CREATE EXTERNAL TABLE druid_table_1
-STORED BY 'org.apache.hadoop.hive.druid.QTestDruidStorageHandler'
-#### A masked pattern was here ####
-TBLPROPERTIES ("druid.datasource" = "wikipedia")
-PREHOOK: type: CREATETABLE
-#### A masked pattern was here ####
-PREHOOK: Output: database:default
-PREHOOK: Output: default@druid_table_1
-FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. MetaException(message:LOCATION may not be specified for Druid)
