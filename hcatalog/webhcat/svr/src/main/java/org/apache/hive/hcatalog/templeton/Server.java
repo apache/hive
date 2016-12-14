@@ -363,7 +363,7 @@ public class Server {
     verifyUser();
     verifyDdlParam(db, ":db");
     verifyDdlParam(table, ":table");
-    verifyDdlParam(property, ":property");
+    verifyPropertyParam(property, ":property");
 
     HcatDelegator d = new HcatDelegator(appConf, execService);
     return d.descTableProperty(getDoAsUser(), db, table, property);
@@ -402,7 +402,7 @@ public class Server {
     verifyUser();
     verifyDdlParam(db, ":db");
     verifyDdlParam(table, ":table");
-    verifyDdlParam(property, ":property");
+    verifyPropertyParam(property, ":property");
     desc.name = property;
 
     HcatDelegator d = new HcatDelegator(appConf, execService);
@@ -1119,6 +1119,8 @@ public class Server {
   }
 
   public static final Pattern DDL_ID = Pattern.compile("[a-zA-Z]\\w*");
+  public static final Pattern PROPERTY_ID =
+      Pattern.compile("[a-zA-Z0-9][\\w\\.\\-]*(?<!\\-)(?<!\\.)(?<!\\_)$");
 
   /**
    * Verify that the parameter exists and is a simple DDL identifier
@@ -1134,6 +1136,21 @@ public class Server {
       throw new BadParam("Invalid DDL identifier " + name);
     }
   }
+
+  /**
+   * Verify that the parameter exists and is a valid property
+   * name.  Throw an exception if invalid.
+   *
+   */
+  public void verifyPropertyParam(String param, String name)
+    throws BadParam {
+    verifyParam(param, name);
+    Matcher m = PROPERTY_ID.matcher(param);
+    if (!m.matches()) {
+      throw new BadParam("Invalid property name " + name);
+    }
+  }
+
   /**
    * Get the user name from the security context, i.e. the user making the HTTP request.
    * With simple/pseudo security mode this should return the
