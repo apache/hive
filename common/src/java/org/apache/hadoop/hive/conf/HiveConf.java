@@ -1961,14 +1961,14 @@ public class HiveConf extends Configuration {
         "the HTTP client."),
     HIVE_DRUID_HTTP_READ_TIMEOUT("hive.druid.http.read.timeout", "PT1M", "Read timeout period for the HTTP\n" +
         "client in ISO8601 format (for example P2W, P3M, PT1H30M, PT0.750S), default is period of 1 minute."),
-    HIVE_DRUID_BASE_PERSIST_DIRECTORY("hive.druid.basePersisitDirectory", "/tmp",
-            "local base persist directory used while indexing  data"
+    HIVE_DRUID_BASE_PERSIST_DIRECTORY("hive.druid.basePersistDirectory", "/tmp",
+            "Local temporary directory used to persist intermediate indexing state."
     ),
     DRUID_SEGMENT_DIRECTORY("hive.druid.storage.storageDirectory", "/druid/segments"
             , "druid deep storage location."),
     DRUID_METADATA_BASE("hive.druid.metadata.base", "druid", "Default prefix for metadata tables"),
     DRUID_METADATA_DB_TYPE("hive.druid.metadata.db.type", "mysql",
-            "Type of the metadata DB eg mysql or postgres."
+            new PatternSet("mysql", "postgres"), "Type of the metadata database."
     ),
     DRUID_METADATA_DB_USERNAME("hive.druid.metadata.username", "",
             "Username to connect to Type of the metadata DB."
@@ -1977,7 +1977,7 @@ public class HiveConf extends Configuration {
             "Password to connect to Type of the metadata DB."
     ),
     DRUID_METADATA_DB_URI("hive.druid.metadata.uri", "",
-            "URI to connect to the DB eg jdbc:mysql://localhost/druid"
+            "URI to connect to the database (for example jdbc:mysql://hostname:port/DBName)."
     ),
     DRUID_WORKING_DIR("hive.druid.working.directory", "/tmp/workingDirectory",
             "Default hdfs working directory used to store some intermediate metadata"
