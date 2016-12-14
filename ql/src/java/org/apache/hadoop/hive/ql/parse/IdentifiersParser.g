@@ -382,7 +382,7 @@ intervalQualifiers
 
 expression
 @init { gParent.pushMsg("expression specification", state); }
-@after { $expression.tree.matchedText = $expression.text; gParent.popMsg(state); }
+@after { gParent.popMsg(state); }
     :
     precedenceOrExpression
     ;
@@ -459,7 +459,6 @@ precedencePlusOperator
     ;
 
 precedencePlusExpression
-@after { $precedencePlusExpression.tree.matchedText = $precedencePlusExpression.text; }
     :
     precedenceStarExpression (precedencePlusOperator^ precedenceStarExpression)*
     ;

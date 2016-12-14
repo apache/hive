@@ -540,10 +540,4 @@ public class TestTxnCommands2WithSplitUpdate extends TestTxnCommands2 {
     resultCount = 2;
     Assert.assertEquals(resultCount, Integer.parseInt(rs.get(0)));
   }
-  @Test
-  @Ignore
-  public void testMergeType2SCD01() throws Exception {}
-  @Test
-  @Ignore
-  public void testMergeType2SCD02() throws Exception {}
 }
