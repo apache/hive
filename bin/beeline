@@ -18,10 +18,6 @@
 bin=`dirname "$0"`
 bin=`cd "$bin"; pwd`
 
-# Set Hadoop User classpath to true so that httpclient jars are taken from
-# hive lib instead of hadoop lib.
-export HADOOP_USER_CLASSPATH_FIRST=true
-
 # If process is backgrounded, don't change terminal settings
 if [[ ( ! $(ps -o stat= -p $$) =~ "+" ) && ! ( -p /dev/stdin ) ]]; then
   export HADOOP_CLIENT_OPTS="$HADOOP_CLIENT_OPTS -Djline.terminal=jline.UnsupportedTerminal"
