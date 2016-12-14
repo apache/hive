@@ -102,6 +102,7 @@ from_utc_timestamp
 get_json_object
 get_splits
 greatest
+grouping
 hash
 hex
 histogram_numeric

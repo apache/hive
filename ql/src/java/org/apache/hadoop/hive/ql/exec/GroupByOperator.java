@@ -31,8 +31,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import javolution.util.FastBitSet;
-
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
@@ -64,7 +62,10 @@ import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.io.BytesWritable;
+import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Text;
+
+import javolution.util.FastBitSet;
 
 /**
  * GroupBy operator implementation.
@@ -127,7 +128,7 @@ public class GroupByOperator extends Operator<GroupByDesc> {
   private transient int groupingSetsPosition;         // position of grouping set, generally the last of keys
   private transient List<Integer> groupingSets;       // declared grouping set values
   private transient FastBitSet[] groupingSetsBitSet;  // bitsets acquired from grouping set values
-  private transient Text[] newKeysGroupingSets;
+  private transient IntWritable[] newKeysGroupingSets;
 
   // for these positions, some variable primitive type (String) is used, so size
   // cannot be estimated. sample it at runtime.
@@ -218,13 +219,13 @@ public class GroupByOperator extends Operator<GroupByDesc> {
     if (groupingSetsPresent) {
       groupingSets = conf.getListGroupingSets();
       groupingSetsPosition = conf.getGroupingSetPosition();
-      newKeysGroupingSets = new Text[groupingSets.size()];
+      newKeysGroupingSets = new IntWritable[groupingSets.size()];
       groupingSetsBitSet = new FastBitSet[groupingSets.size()];
 
       int pos = 0;
       for (Integer groupingSet: groupingSets) {
         // Create the mapping corresponding to the grouping set
-        newKeysGroupingSets[pos] = new Text(String.valueOf(groupingSet));
+        newKeysGroupingSets[pos] = new IntWritable(groupingSet);
         groupingSetsBitSet[pos] = groupingSet2BitSet(groupingSet);
         pos++;
       }

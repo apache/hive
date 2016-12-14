@@ -47,9 +47,12 @@ import org.antlr.runtime.ClassicToken;
 import org.antlr.runtime.CommonToken;
 import org.antlr.runtime.Token;
 import org.antlr.runtime.tree.Tree;
+import org.antlr.runtime.tree.TreeVisitor;
+import org.antlr.runtime.tree.TreeVisitorAction;
 import org.antlr.runtime.tree.TreeWizard;
 import org.antlr.runtime.tree.TreeWizard.ContextVisitor;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.mutable.MutableBoolean;
 import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
@@ -235,6 +238,7 @@ import org.apache.hadoop.mapred.OutputFormat;
 import org.apache.hadoop.security.UserGroupInformation;
 
 import com.google.common.collect.Sets;
+import com.google.common.math.IntMath;
 
 /**
  * Implementation of the semantic analyzer. It generates the query plan.
@@ -2992,6 +2996,18 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
     ASTNode condn = (ASTNode) havingExpr.getChild(0);
 
+    if (!isCBOExecuted()) {
+      // If CBO did not optimize the query, we might need to replace grouping function
+      final String destClauseName = qb.getParseInfo().getClauseNames().iterator().next();
+      final boolean cubeRollupGrpSetPresent = (!qb.getParseInfo().getDestRollups().isEmpty()
+              || !qb.getParseInfo().getDestGroupingSets().isEmpty()
+              || !qb.getParseInfo().getDestCubes().isEmpty());
+      if (cubeRollupGrpSetPresent) {
+        // Special handling of grouping function
+        condn = rewriteGroupingFunctionAST(getGroupByForClause(qb.getParseInfo(), destClauseName), condn);
+      }
+    }
+
     /*
      * Now a having clause can contain a SubQuery predicate;
      * so we invoke genFilterPlan to handle SubQuery algebraic transformation,
@@ -3000,6 +3016,52 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     Operator output = genFilterPlan(condn, qb, input, aliasToOpInfo, true, false);
     output = putOpInsertMap(output, inputRR);
     return output;
+  }
+
+  protected static ASTNode rewriteGroupingFunctionAST(final List<ASTNode> grpByAstExprs, ASTNode targetNode) throws SemanticException {
+    final MutableBoolean visited = new MutableBoolean(false);
+    final MutableBoolean found = new MutableBoolean(false);
+
+    TreeVisitorAction action = new TreeVisitorAction() {
+
+      @Override
+      public Object pre(Object t) {
+        return t;
+      }
+
+      @Override
+      public Object post(Object t) {
+        ASTNode root = (ASTNode) t;
+        if (root.getType() == HiveParser.TOK_FUNCTION && root.getChildCount() == 2) {
+          ASTNode func = (ASTNode) ParseDriver.adaptor.getChild(root, 0);
+          if (func.getText().equals("grouping")) {
+            ASTNode c = (ASTNode) ParseDriver.adaptor.getChild(root, 1);
+            visited.setValue(true);
+            for (int i = 0; i < grpByAstExprs.size(); i++) {
+              ASTNode grpByExpr = grpByAstExprs.get(i);
+              if (grpByExpr.toStringTree().equals(c.toStringTree())) {
+                ASTNode child1 = (ASTNode) ParseDriver.adaptor.create(
+                        HiveParser.TOK_TABLE_OR_COL, "TOK_TABLE_OR_COL");
+                ParseDriver.adaptor.addChild(child1, ParseDriver.adaptor.create(
+                        HiveParser.Identifier, VirtualColumn.GROUPINGID.getName()));
+                ASTNode child2 = (ASTNode) ParseDriver.adaptor.create(HiveParser.IntegralLiteral,
+                        String.valueOf(IntMath.mod(-i, grpByAstExprs.size())));
+                root.setChild(1, child1);
+                root.addChild(child2);
+                found.setValue(true);
+                break;
+              }
+            }
+          }
+        }
+        return t;
+      }
+    };
+    ASTNode newTargetNode = (ASTNode) new TreeVisitor(ParseDriver.adaptor).visit(targetNode, action);
+    if (visited.booleanValue() && !found.booleanValue()) {
+      throw new SemanticException(ErrorMsg.HIVE_GROUPING_FUNCTION_EXPR_NOT_IN_GROUPBY.getMsg());
+    }
+    return newTargetNode;
   }
 
   private Operator genPlanForSubQueryPredicate(
@@ -4101,6 +4163,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       startPosn = 0;
     }
 
+    final boolean cubeRollupGrpSetPresent = (!qb.getParseInfo().getDestRollups().isEmpty()
+            || !qb.getParseInfo().getDestGroupingSets().isEmpty()
+            || !qb.getParseInfo().getDestCubes().isEmpty());
     Set<String> colAliases = new HashSet<String>();
     ASTNode[] exprs = new ASTNode[exprList.getChildCount()];
     String[][] aliases = new String[exprList.getChildCount()][];
@@ -4186,6 +4251,11 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         // We allow stateful functions in the SELECT list (but nowhere else)
         tcCtx.setAllowStatefulFunctions(true);
         tcCtx.setAllowDistinctFunctions(false);
+        if (!isCBOExecuted() && cubeRollupGrpSetPresent) {
+          // If CBO did not optimize the query, we might need to replace grouping function
+          // Special handling of grouping function
+          expr = rewriteGroupingFunctionAST(getGroupByForClause(qb.getParseInfo(), dest), expr);
+        }
         ExprNodeDesc exp = genExprNodeDesc(expr, inputRR, tcCtx);
         String recommended = recommendName(exp, colAlias);
         if (recommended != null && !colAliases.contains(recommended) &&
@@ -4684,7 +4754,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     // For grouping sets, add a dummy grouping key
     String groupingSetColumnName =
         groupByInputRowResolver.get(null, VirtualColumn.GROUPINGID.getName()).getInternalName();
-    ExprNodeDesc inputExpr = new ExprNodeColumnDesc(TypeInfoFactory.stringTypeInfo,
+    ExprNodeDesc inputExpr = new ExprNodeColumnDesc(TypeInfoFactory.intTypeInfo,
         groupingSetColumnName, null, false);
     groupByKeys.add(inputExpr);
 
@@ -4693,7 +4763,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     groupByOutputRowResolver.put(null, VirtualColumn.GROUPINGID.getName(),
         new ColumnInfo(
             field,
-            TypeInfoFactory.stringTypeInfo,
+            TypeInfoFactory.intTypeInfo,
             null,
             true));
     colExprMap.put(field, groupByKeys.get(groupByKeys.size() - 1));
@@ -4715,7 +4785,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     // add a key for reduce sink
     String groupingSetColumnName =
         reduceSinkInputRowResolver.get(null, VirtualColumn.GROUPINGID.getName()).getInternalName();
-    ExprNodeDesc inputExpr = new ExprNodeColumnDesc(TypeInfoFactory.stringTypeInfo,
+    ExprNodeDesc inputExpr = new ExprNodeColumnDesc(TypeInfoFactory.intTypeInfo,
         groupingSetColumnName, null, false);
     reduceKeys.add(inputExpr);
 
@@ -4947,14 +5017,14 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       Map<String, ExprNodeDesc> colExprMap) {
     // The value for the constant does not matter. It is replaced by the grouping set
     // value for the actual implementation
-    ExprNodeConstantDesc constant = new ExprNodeConstantDesc("0");
+    ExprNodeConstantDesc constant = new ExprNodeConstantDesc(0);
     groupByKeys.add(constant);
     String field = getColumnInternalName(groupByKeys.size() - 1);
     outputColumnNames.add(field);
     groupByOutputRowResolver.put(null, VirtualColumn.GROUPINGID.getName(),
         new ColumnInfo(
             field,
-            TypeInfoFactory.stringTypeInfo,
+            TypeInfoFactory.intTypeInfo,
             null,
             true));
     colExprMap.put(field, constant);
@@ -9471,7 +9541,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
 
     if(queryProperties.hasWindowing() && qb.getWindowingSpec(dest) != null) {
-      curr = genWindowingPlan(qb.getWindowingSpec(dest), curr);
+      curr = genWindowingPlan(qb, qb.getWindowingSpec(dest), curr);
       // GBy for DISTINCT after windowing
       if ((qbp.getAggregationExprsForClause(dest).size() != 0
               || getGroupByForClause(qbp, dest).size() > 0)
@@ -12972,8 +13042,24 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
 //--------------------------- Windowing handling: PTFInvocationSpec to PTFDesc --------------------
 
-  Operator genWindowingPlan(WindowingSpec wSpec, Operator input) throws SemanticException {
+  Operator genWindowingPlan(QB qb, WindowingSpec wSpec, Operator input) throws SemanticException {
     wSpec.validateAndMakeEffective();
+
+    if (!isCBOExecuted()) {
+      // If CBO did not optimize the query, we might need to replace grouping function
+      final String selClauseName = qb.getParseInfo().getClauseNames().iterator().next();
+      final boolean cubeRollupGrpSetPresent = (!qb.getParseInfo().getDestRollups().isEmpty()
+              || !qb.getParseInfo().getDestGroupingSets().isEmpty()
+              || !qb.getParseInfo().getDestCubes().isEmpty());
+      if (cubeRollupGrpSetPresent) {
+        for (WindowExpressionSpec wExprSpec : wSpec.getWindowExpressions()) {
+          // Special handling of grouping function
+          wExprSpec.setExpression(rewriteGroupingFunctionAST(
+                  getGroupByForClause(qb.getParseInfo(), selClauseName), wExprSpec.getExpression()));
+        }
+      }
+    }
+
     WindowingComponentizer groups = new WindowingComponentizer(wSpec);
     RowResolver rr = opParseCtx.get(input).getRowResolver();
 

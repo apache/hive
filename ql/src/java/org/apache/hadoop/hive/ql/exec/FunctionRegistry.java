@@ -342,6 +342,8 @@ public final class FunctionRegistry {
     system.registerUDF("shiftright", UDFOPBitShiftRight.class, true);
     system.registerUDF("shiftrightunsigned", UDFOPBitShiftRightUnsigned.class, true);
 
+    system.registerGenericUDF("grouping", GenericUDFGrouping.class);
+
     system.registerGenericUDF("current_database", UDFCurrentDB.class);
     system.registerGenericUDF("current_date", GenericUDFCurrentDate.class);
     system.registerGenericUDF("current_timestamp", GenericUDFCurrentTimestamp.class);
