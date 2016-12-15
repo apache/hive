@@ -148,6 +148,78 @@ row format delimited fields terminated by '|'
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@store
+PREHOOK: query: create table store_bigint
+(
+    s_store_sk                bigint,
+    s_store_id                string,
+    s_rec_start_date          string,
+    s_rec_end_date            string,
+    s_closed_date_sk          int,
+    s_store_name              string,
+    s_number_employees        int,
+    s_floor_space             int,
+    s_hours                   string,
+    s_manager                 string,
+    s_market_id               int,
+    s_geography_class         string,
+    s_market_desc             string,
+    s_market_manager          string,
+    s_division_id             int,
+    s_division_name           string,
+    s_company_id              int,
+    s_company_name            string,
+    s_street_number           string,
+    s_street_name             string,
+    s_street_type             string,
+    s_suite_number            string,
+    s_city                    string,
+    s_county                  string,
+    s_state                   string,
+    s_zip                     string,
+    s_country                 string,
+    s_gmt_offset              float,
+    s_tax_precentage          float
+)
+row format delimited fields terminated by '|'
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@store_bigint
+POSTHOOK: query: create table store_bigint
+(
+    s_store_sk                bigint,
+    s_store_id                string,
+    s_rec_start_date          string,
+    s_rec_end_date            string,
+    s_closed_date_sk          int,
+    s_store_name              string,
+    s_number_employees        int,
+    s_floor_space             int,
+    s_hours                   string,
+    s_manager                 string,
+    s_market_id               int,
+    s_geography_class         string,
+    s_market_desc             string,
+    s_market_manager          string,
+    s_division_id             int,
+    s_division_name           string,
+    s_company_id              int,
+    s_company_name            string,
+    s_street_number           string,
+    s_street_name             string,
+    s_street_type             string,
+    s_suite_number            string,
+    s_city                    string,
+    s_county                  string,
+    s_state                   string,
+    s_zip                     string,
+    s_country                 string,
+    s_gmt_offset              float,
+    s_tax_precentage          float
+)
+row format delimited fields terminated by '|'
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@store_bigint
 PREHOOK: query: create table customer_address
 (
     ca_address_sk             int,
@@ -196,6 +268,14 @@ POSTHOOK: query: load data local inpath '../../data/files/store.txt' overwrite i
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@store
+PREHOOK: query: load data local inpath '../../data/files/store.txt' overwrite into table store_bigint
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@store_bigint
+POSTHOOK: query: load data local inpath '../../data/files/store.txt' overwrite into table store_bigint
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@store_bigint
 PREHOOK: query: load data local inpath '../../data/files/store_sales.txt' overwrite into table store_sales
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
@@ -227,6 +307,22 @@ PREHOOK: Input: default@store
 POSTHOOK: query: analyze table store compute statistics for columns s_store_sk, s_floor_space
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@store
+#### A masked pattern was here ####
+PREHOOK: query: analyze table store_bigint compute statistics
+PREHOOK: type: QUERY
+PREHOOK: Input: default@store_bigint
+PREHOOK: Output: default@store_bigint
+POSTHOOK: query: analyze table store_bigint compute statistics
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@store_bigint
+POSTHOOK: Output: default@store_bigint
+PREHOOK: query: analyze table store_bigint compute statistics for columns s_store_sk, s_floor_space
+PREHOOK: type: QUERY
+PREHOOK: Input: default@store_bigint
+#### A masked pattern was here ####
+POSTHOOK: query: analyze table store_bigint compute statistics for columns s_store_sk, s_floor_space
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@store_bigint
 #### A masked pattern was here ####
 PREHOOK: query: analyze table store_sales compute statistics
 PREHOOK: type: QUERY
@@ -314,6 +410,73 @@ STAGE PLANS:
           File Output Operator
             compressed: false
             Statistics: Num rows: 964 Data size: 3856 Basic stats: COMPLETE Column stats: COMPLETE
+            table:
+                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: -- widening cast: inferred PK-FK, thus same row count as previous query
+explain select s.s_store_sk from store_bigint s join store_sales ss on (s.s_store_sk = ss.ss_store_sk)
+PREHOOK: type: QUERY
+POSTHOOK: query: -- widening cast: inferred PK-FK, thus same row count as previous query
+explain select s.s_store_sk from store_bigint s join store_sales ss on (s.s_store_sk = ss.ss_store_sk)
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: s
+            Statistics: Num rows: 12 Data size: 96 Basic stats: COMPLETE Column stats: COMPLETE
+            Filter Operator
+              predicate: s_store_sk is not null (type: boolean)
+              Statistics: Num rows: 12 Data size: 96 Basic stats: COMPLETE Column stats: COMPLETE
+              Select Operator
+                expressions: s_store_sk (type: bigint)
+                outputColumnNames: _col0
+                Statistics: Num rows: 12 Data size: 96 Basic stats: COMPLETE Column stats: COMPLETE
+                Reduce Output Operator
+                  key expressions: _col0 (type: bigint)
+                  sort order: +
+                  Map-reduce partition columns: _col0 (type: bigint)
+                  Statistics: Num rows: 12 Data size: 96 Basic stats: COMPLETE Column stats: COMPLETE
+          TableScan
+            alias: ss
+            Statistics: Num rows: 1000 Data size: 3860 Basic stats: COMPLETE Column stats: COMPLETE
+            Filter Operator
+              predicate: ss_store_sk is not null (type: boolean)
+              Statistics: Num rows: 964 Data size: 3720 Basic stats: COMPLETE Column stats: COMPLETE
+              Select Operator
+                expressions: ss_store_sk (type: int)
+                outputColumnNames: _col0
+                Statistics: Num rows: 964 Data size: 3720 Basic stats: COMPLETE Column stats: COMPLETE
+                Reduce Output Operator
+                  key expressions: UDFToLong(_col0) (type: bigint)
+                  sort order: +
+                  Map-reduce partition columns: UDFToLong(_col0) (type: bigint)
+                  Statistics: Num rows: 964 Data size: 3720 Basic stats: COMPLETE Column stats: COMPLETE
+      Reduce Operator Tree:
+        Join Operator
+          condition map:
+               Inner Join 0 to 1
+          keys:
+            0 _col0 (type: bigint)
+            1 UDFToLong(_col0) (type: bigint)
+          outputColumnNames: _col0
+          Statistics: Num rows: 964 Data size: 7712 Basic stats: COMPLETE Column stats: COMPLETE
+          File Output Operator
+            compressed: false
+            Statistics: Num rows: 964 Data size: 7712 Basic stats: COMPLETE Column stats: COMPLETE
             table:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -1057,6 +1220,14 @@ POSTHOOK: query: drop table store
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@store
 POSTHOOK: Output: default@store
+PREHOOK: query: drop table store_bigint
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@store_bigint
+PREHOOK: Output: default@store_bigint
+POSTHOOK: query: drop table store_bigint
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@store_bigint
+POSTHOOK: Output: default@store_bigint
 PREHOOK: query: drop table customer_address
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@customer_address
