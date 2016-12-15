@@ -40,7 +40,6 @@
       <groupId>org.apache.hive</groupId>
       <artifactId>hive-exec</artifactId>
       <version>${project.version}</version>
-      <scope>provided</scope>
       <exclusions>
         <exclusion>
           <groupId>io.netty</groupId>
@@ -61,6 +60,83 @@
       <groupId>commons-lang</groupId>
       <artifactId>commons-lang</artifactId>
       <version>${commons-lang.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.google.guava</groupId>
+      <artifactId>guava</artifactId>
+      <version>${druid.guava.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.metamx</groupId>
+      <artifactId>java-util</artifactId>
+      <version>${druid.metamx.util.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>com.fasterxml.jackson.core</groupId>
+          <artifactId>jackson-core</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>com.fasterxml.jackson.core</groupId>
+          <artifactId>jackson-annotations</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>com.fasterxml.jackson.core</groupId>
+          <artifactId>jackson-databind</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>io.druid</groupId>
+      <artifactId>druid-server</artifactId>
+      <version>${druid.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>com.fasterxml.jackson.core</groupId>
+          <artifactId>jackson-core</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>com.fasterxml.jackson.core</groupId>
+          <artifactId>jackson-annotations</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>com.fasterxml.jackson.core</groupId>
+          <artifactId>jackson-databind</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>io.druid</groupId>
+      <artifactId>druid-processing</artifactId>
+      <version>${druid.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>com.fasterxml.jackson.core</groupId>
+          <artifactId>jackson-core</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>com.fasterxml.jackson.core</groupId>
+          <artifactId>jackson-annotations</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>com.fasterxml.jackson.core</groupId>
+          <artifactId>jackson-databind</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>io.druid.extensions</groupId>
+      <artifactId>druid-hdfs-storage</artifactId>
+      <version>${druid.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>io.druid.extensions</groupId>
+      <artifactId>mysql-metadata-storage</artifactId>
+      <version>${druid.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>io.druid.extensions</groupId>
+      <artifactId>postgresql-metadata-storage</artifactId>
+      <version>${druid.version}</version>
     </dependency>
     <dependency>
       <groupId>org.apache.hadoop</groupId>
@@ -112,88 +188,6 @@
       <groupId>org.apache.calcite</groupId>
       <artifactId>calcite-druid</artifactId>
       <version>${calcite.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>io.druid</groupId>
-      <artifactId>druid-server</artifactId>
-      <version>${druid.version}</version>
-      <exclusions>
-        <exclusion>
-          <groupId>com.fasterxml.jackson.core</groupId>
-          <artifactId>jackson-core</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>com.fasterxml.jackson.core</groupId>
-          <artifactId>jackson-annotations</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>com.fasterxml.jackson.core</groupId>
-          <artifactId>jackson-databind</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    <dependency>
-      <groupId>com.metamx</groupId>
-      <artifactId>java-util</artifactId>
-      <version>${druid.metamx.util.version}</version>
-      <exclusions>
-        <exclusion>
-          <groupId>com.fasterxml.jackson.core</groupId>
-          <artifactId>jackson-core</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>com.fasterxml.jackson.core</groupId>
-          <artifactId>jackson-annotations</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>com.fasterxml.jackson.core</groupId>
-          <artifactId>jackson-databind</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.calcite</groupId>
-      <artifactId>calcite-druid</artifactId>
-      <version>${calcite.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>io.druid</groupId>
-      <artifactId>druid-processing</artifactId>
-      <version>${druid.version}</version>
-      <exclusions>
-        <exclusion>
-          <groupId>com.fasterxml.jackson.core</groupId>
-          <artifactId>jackson-core</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>com.fasterxml.jackson.core</groupId>
-          <artifactId>jackson-annotations</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>com.fasterxml.jackson.core</groupId>
-          <artifactId>jackson-databind</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    <dependency>
-      <groupId>io.druid.extensions</groupId>
-      <artifactId>druid-hdfs-storage</artifactId>
-      <version>${druid.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>io.druid.extensions</groupId>
-      <artifactId>mysql-metadata-storage</artifactId>
-      <version>${druid.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>io.druid.extensions</groupId>
-      <artifactId>postgresql-metadata-storage</artifactId>
-      <version>${druid.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>com.google.guava</groupId>
-      <artifactId>guava</artifactId>
-      <version>${druid.guava.version}</version>
     </dependency>
     <!-- test inter-project -->
     <dependency>
