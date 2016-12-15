@@ -866,4 +866,32 @@ public final class FileUtils {
     }
     return false;
   }
+
+  /**
+   * Checks whenever path is inside the given subtree
+   * 
+   * return true iff
+   *  * path = subtree
+   *  * subtreeContains(path,d) for any descendant of the subtree node
+   * @param path    the path in question
+   * @param subtree
+   * 
+   * @return
+   */
+  public static boolean isPathWithinSubtree(Path path, Path subtree) {
+    return isPathWithinSubtree(path, subtree, subtree.depth());
+  }
+
+  private static boolean isPathWithinSubtree(Path path, Path subtree, int subtreeDepth) {
+    while(path != null){
+      if (subtreeDepth > path.depth()) {
+        return false;
+      }
+      if(subtree.equals(path)){
+        return true;
+      }
+      path = path.getParent();
+    }
+    return false;
+  }
 }
