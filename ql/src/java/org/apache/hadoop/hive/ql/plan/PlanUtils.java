@@ -18,21 +18,11 @@
 
 package org.apache.hadoop.hive.ql.plan;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
-
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.hive.llap.LlapOutputFormat;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
@@ -46,7 +36,6 @@ import org.apache.hadoop.hive.ql.io.HiveOutputFormat;
 import org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat;
 import org.apache.hadoop.hive.ql.io.RCFileInputFormat;
 import org.apache.hadoop.hive.ql.io.RCFileOutputFormat;
-import org.apache.hadoop.hive.llap.LlapOutputFormat;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.HiveStorageHandler;
@@ -71,11 +60,23 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.JobConf;
+import org.apache.hadoop.mapred.OutputFormat;
 import org.apache.hadoop.mapred.SequenceFileInputFormat;
 import org.apache.hadoop.mapred.SequenceFileOutputFormat;
 import org.apache.hadoop.mapred.TextInputFormat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
 
 /**
  * PlanUtils.
@@ -306,17 +307,26 @@ public final class PlanUtils {
   public static TableDesc getTableDesc(CreateTableDesc crtTblDesc, String cols,
       String colTypes) {
 
-    Class<? extends Deserializer> serdeClass = LazySimpleSerDe.class;
-    String separatorCode = Integer.toString(Utilities.ctrlaCode);
-    String columns = cols;
-    String columnTypes = colTypes;
-    boolean lastColumnTakesRestOfTheLine = false;
     TableDesc ret;
 
+    // Resolve storage handler (if any)
     try {
-      if (crtTblDesc.getSerName() != null) {
-        Class c = JavaUtils.loadClass(crtTblDesc.getSerName());
-        serdeClass = c;
+      HiveStorageHandler storageHandler = null;
+      if (crtTblDesc.getStorageHandler() != null) {
+        storageHandler = HiveUtils.getStorageHandler(
+                SessionState.getSessionConf(), crtTblDesc.getStorageHandler());
+      }
+
+      Class<? extends Deserializer> serdeClass = LazySimpleSerDe.class;
+      String separatorCode = Integer.toString(Utilities.ctrlaCode);
+      String columns = cols;
+      String columnTypes = colTypes;
+      boolean lastColumnTakesRestOfTheLine = false;
+
+      if (storageHandler != null) {
+        serdeClass = storageHandler.getSerDeClass();
+      } else if (crtTblDesc.getSerName() != null) {
+        serdeClass = JavaUtils.loadClass(crtTblDesc.getSerName());
       }
 
       if (crtTblDesc.getFieldDelim() != null) {
@@ -328,6 +338,12 @@ public final class PlanUtils {
 
       // set other table properties
       Properties properties = ret.getProperties();
+
+      if (crtTblDesc.getStorageHandler() != null) {
+        properties.setProperty(
+                org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_STORAGE,
+                crtTblDesc.getStorageHandler());
+      }
 
       if (crtTblDesc.getCollItemDelim() != null) {
         properties.setProperty(serdeConstants.COLLECTION_DELIM, crtTblDesc
@@ -367,15 +383,24 @@ public final class PlanUtils {
 
       // replace the default input & output file format with those found in
       // crtTblDesc
-      Class c1 = JavaUtils.loadClass(crtTblDesc.getInputFormat());
-      Class c2 = JavaUtils.loadClass(crtTblDesc.getOutputFormat());
-      Class<? extends InputFormat> in_class = c1;
-      Class<? extends HiveOutputFormat> out_class = c2;
-
+      Class<? extends InputFormat> in_class;
+      if (storageHandler != null) {
+        in_class = storageHandler.getInputFormatClass();
+      } else {
+        in_class = JavaUtils.loadClass(crtTblDesc.getInputFormat());
+      }
+      Class<? extends OutputFormat> out_class;
+      if (storageHandler != null) {
+        out_class = storageHandler.getOutputFormatClass();
+      } else {
+        out_class = JavaUtils.loadClass(crtTblDesc.getOutputFormat());
+      }
       ret.setInputFileFormatClass(in_class);
       ret.setOutputFileFormatClass(out_class);
     } catch (ClassNotFoundException e) {
       throw new RuntimeException("Unable to find class in getTableDesc: " + e.getMessage(), e);
+    } catch (HiveException e) {
+      throw new RuntimeException("Error loading storage handler in getTableDesc: " + e.getMessage(), e);
     }
     return ret;
   }

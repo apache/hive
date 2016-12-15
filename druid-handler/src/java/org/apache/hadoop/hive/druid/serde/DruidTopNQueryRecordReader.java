@@ -41,6 +41,7 @@ public class DruidTopNQueryRecordReader
         extends DruidQueryRecordReader<TopNQuery, Result<TopNResultValue>> {
 
   private Result<TopNResultValue> current;
+
   private Iterator<DimensionAndMetricValueExtractor> values = Iterators.emptyIterator();
 
   @Override
@@ -49,9 +50,12 @@ public class DruidTopNQueryRecordReader
   }
 
   @Override
-  protected List<Result<TopNResultValue>> createResultsList(InputStream content) throws IOException {
+  protected List<Result<TopNResultValue>> createResultsList(InputStream content)
+          throws IOException {
     return DruidStorageHandlerUtils.SMILE_MAPPER.readValue(content,
-            new TypeReference<List<Result<TopNResultValue>>>(){});
+            new TypeReference<List<Result<TopNResultValue>>>() {
+            }
+    );
   }
 
   @Override

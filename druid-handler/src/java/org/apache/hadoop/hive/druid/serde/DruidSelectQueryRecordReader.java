@@ -41,6 +41,7 @@ public class DruidSelectQueryRecordReader
         extends DruidQueryRecordReader<SelectQuery, Result<SelectResultValue>> {
 
   private Result<SelectResultValue> current;
+
   private Iterator<EventHolder> values = Iterators.emptyIterator();
 
   @Override
@@ -49,9 +50,12 @@ public class DruidSelectQueryRecordReader
   }
 
   @Override
-  protected List<Result<SelectResultValue>> createResultsList(InputStream content) throws IOException {
+  protected List<Result<SelectResultValue>> createResultsList(InputStream content)
+          throws IOException {
     return DruidStorageHandlerUtils.SMILE_MAPPER.readValue(content,
-            new TypeReference<List<Result<SelectResultValue>>>(){});
+            new TypeReference<List<Result<SelectResultValue>>>() {
+            }
+    );
   }
 
   @Override
