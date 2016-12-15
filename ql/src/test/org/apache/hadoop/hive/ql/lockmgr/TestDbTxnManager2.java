@@ -2098,35 +2098,4 @@ public class TestDbTxnManager2 {
         TxnDbUtil.countQueryAgent("select count(*) from WRITE_SET where ws_txnid=" + txnid2));
     }
   }
-  //https://issues.apache.org/jira/browse/HIVE-15048
-  @Test
-  @Ignore("for some reason this fails with NPE in setUp() when run as part of the suite, but not standalone..")
-  public void testUpdateWithSubquery() throws Exception {
-    dropTable(new String[] {"target", "source"});
-    checkCmdOnDriver(driver.run("create table target (a int, b int) " +
-      "partitioned by (p int, q int) clustered by (a) into 2  buckets " +
-      "stored as orc TBLPROPERTIES ('transactional'='true')"));
-    checkCmdOnDriver(driver.run("create table source (a1 int, b1 int, p1 int, q1 int) clustered by (a1) into 2  buckets stored as orc TBLPROPERTIES ('transactional'='true')"));
-
-    checkCmdOnDriver(driver.run("insert into target partition(p,q) values (1,2,1,2), (3,4,1,2), (5,6,1,3), (7,8,2,2)"));
-    
-    checkCmdOnDriver(driver.run(
-"update target set b = 1 where p in (select t.q1 from source t where t.a1=5)"));
-/**
- * So the above query fails with invalid reference 'p' (in subquery)  (as as if u use t.p)
- * But before it fails, here is inputs/outpus before/after UpdateDeleteSemanticAnalyzer
-* Before UDSA
-* inputs:  [default@target, default@target@p=1/q=2, default@target@p=1/q=3, default@target@p=2/q=2]
-* outputs: [default@target]
-* 
-* after UDSA
-* inputs:  [default@target, default@target@p=1/q=2, default@target@p=1/q=3, default@target@p=2/q=2]
-* outputs: [default@target@p=1/q=2, default@target@p=1/q=3, default@target@p=2/q=2]
-* 
-* So it looks like....
-*/
-    checkCmdOnDriver(driver.run(
-      "update source set b1 = 1 where p1 in (select t.q from target t where t.p=2)"));
-
-  }
 }

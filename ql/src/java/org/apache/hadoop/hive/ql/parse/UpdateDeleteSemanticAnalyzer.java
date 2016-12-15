@@ -455,35 +455,8 @@ public class UpdateDeleteSemanticAnalyzer extends SemanticAnalyzer {
       useSuper = false;
     }
 
-    markReadEntityForUpdate();
+    updateOutputs(mTable);
 
-    if (inputIsPartitioned(inputs)) {
-      //todo: there are bugs here: https://issues.apache.org/jira/browse/HIVE-15048
-      // In order to avoid locking the entire write table we need to replace the single WriteEntity
-      // with a WriteEntity for each partition
-      assert outputs.size() == 1 : "expected 1 WriteEntity. Got " + outputs;//this asserts comment above
-      WriteEntity original = null;
-      for(WriteEntity we : outputs) {
-        original = we;
-      }
-      outputs.clear();
-      for (ReadEntity input : inputs) {
-        /**
-         * The assumption here is that SemanticAnalyzer will will generate ReadEntity for each
-         * partition that exists and is matched by the WHERE clause (which may be all of them).
-         * Since we don't allow updating the value of a partition column, we know that we always
-         * write the same (or fewer) partitions than we read.  Still, the write is a Dynamic
-         * Partition write - see HIVE-15032.
-         */
-        if (input.getTyp() == Entity.Type.PARTITION) {
-          WriteEntity.WriteType writeType = deleting() ? WriteEntity.WriteType.DELETE :
-              WriteEntity.WriteType.UPDATE;
-          WriteEntity we = new WriteEntity(input.getPartition(), writeType);
-          we.setDynamicPartitionWrite(original.isDynamicPartitionWrite());
-          outputs.add(we);
-        }
-      }
-    }
 
     if (updating()) {
       setUpAccessControlInfoForUpdate(mTable, setCols);
@@ -515,17 +488,6 @@ public class UpdateDeleteSemanticAnalyzer extends SemanticAnalyzer {
         "deleting, operation not known.");
     }
     return currentOperation.toString();
-  }
-
-  private boolean inputIsPartitioned(Set<ReadEntity> inputs) {
-    // We cannot simply look at the first entry, as in the case where the input is partitioned
-    // there will be a table entry as well.  So look for at least one partition entry.
-    for (ReadEntity re : inputs) {
-      if (re.getTyp() == Entity.Type.PARTITION) {
-        return true;
-      }
-    }
-    return false;
   }
 
   // This method finds any columns on the right side of a set statement (thus rcols) and puts them
@@ -757,7 +719,17 @@ public class UpdateDeleteSemanticAnalyzer extends SemanticAnalyzer {
     } finally {
       useSuper = false;
     }
+    updateOutputs(targetTable);
+  }
 
+  /**
+   * SemanticAnalyzer will generate a WriteEntity for the target table since it doesn't know/check
+   * if the read and write are of the same table in "insert ... select ....".  Since DbTxnManager
+   * uses Read/WriteEntity objects to decide which locks to acquire, we get more concurrency if we
+   * have change the table WriteEntity to a set of partition WriteEntity objects based on
+   * ReadEntity objects computed for this table.
+   */
+  private void updateOutputs(Table targetTable) {
     markReadEntityForUpdate();
 
     if(targetTable.isPartitioned()) {
@@ -770,6 +742,13 @@ public class UpdateDeleteSemanticAnalyzer extends SemanticAnalyzer {
           WriteEntity.WriteType wt = we.getWriteType();
           if(isTargetTable(we, targetTable) &&
             (wt == WriteEntity.WriteType.UPDATE || wt == WriteEntity.WriteType.DELETE)) {
+            /**
+             * The assumption here is that SemanticAnalyzer will will generate ReadEntity for each
+             * partition that exists and is matched by the WHERE clause (which may be all of them).
+             * Since we don't allow updating the value of a partition column, we know that we always
+             * write the same (or fewer) partitions than we read.  Still, the write is a Dynamic
+             * Partition write - see HIVE-15032.
+             */
             toRemove.add(we);
           }
         }
@@ -797,7 +776,8 @@ public class UpdateDeleteSemanticAnalyzer extends SemanticAnalyzer {
    * be able to not use DP for the Insert...
    *
    * Note that the Insert of Merge may be creating new partitions and writing to partitions
-   * which were not read  (WHEN NOT MATCHED...)
+   * which were not read  (WHEN NOT MATCHED...).  WriteEntity for that should be created
+   * in MoveTask (or some other task after the query is complete)
    */
   private List<ReadEntity> getRestrictedPartitionSet(Table targetTable) {
     List<ReadEntity> partitionsRead = new ArrayList<>();

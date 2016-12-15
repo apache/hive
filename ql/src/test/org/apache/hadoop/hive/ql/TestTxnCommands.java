@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.ql;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.output.StringBuilderWriter;
 import org.apache.hadoop.fs.FileUtil;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -44,6 +45,8 @@ import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestName;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -63,6 +66,7 @@ import java.util.concurrent.TimeUnit;
  * run with Acid 2.0 (see subclasses of TestTxnCommands2)
  */
 public class TestTxnCommands {
+  static final private Logger LOG = LoggerFactory.getLogger(TestTxnCommands.class);
   private static final String TEST_DATA_DIR = new File(System.getProperty("java.io.tmpdir") +
     File.separator + TestTxnCommands.class.getCanonicalName()
     + "-" + System.currentTimeMillis()
@@ -113,6 +117,7 @@ public class TestTxnCommands {
     }
     SessionState.start(new SessionState(hiveConf));
     d = new Driver(hiveConf);
+    d.setMaxRows(10000);
     dropTables();
     runStatementOnDriver("create table " + Table.ACIDTBL + "(a int, b int) clustered by (a) into " + BUCKET_COUNT + " buckets stored as orc TBLPROPERTIES ('transactional'='true')");
     runStatementOnDriver("create table " + Table.NONACIDORCTBL + "(a int, b int) clustered by (a) into " + BUCKET_COUNT + " buckets stored as orc TBLPROPERTIES ('transactional'='false')");
@@ -730,6 +735,26 @@ public class TestTxnCommands {
     int[][] resultVals = {{1,5,0},{1,7,1},{1,18,0},{2,6,1},{3,8,1}};
     List<String> r = runStatementOnDriver("select * from target order by key,data,cur");
     Assert.assertEquals(stringifyValues(resultVals), r);
+  }
+  
+  @Ignore("HIVE-14707")
+  @Test
+  public void testMergeInsertOnly() throws Exception {
+    String query = "merge into " + Table.ACIDTBL +
+      " as t using " + Table.NONACIDORCTBL + " s ON t.a = s.a " +
+      "WHEN NOT MATCHED THEN INSERT VALUES(s.a, s.b) ";
+    d.destroy();
+    HiveConf hc = new HiveConf(hiveConf);
+    hc.setVar(HiveConf.ConfVars.HIVE_EXECUTION_ENGINE, "tez");
+    d = new Driver(hc);
+    d.setMaxRows(10000);
+
+    List<String> explain = runStatementOnDriver("explain " + query);
+    StringBuilder sb = new StringBuilder();
+    for(String s : explain) {
+      sb.append(s).append('\n');
+    }
+    LOG.info("Explain1: " + sb);
   }
   @Test
   public void testMergeUpdateDelete() throws Exception {
