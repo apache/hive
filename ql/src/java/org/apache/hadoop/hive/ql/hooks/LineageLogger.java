@@ -18,7 +18,6 @@
 
 package org.apache.hadoop.hive.ql.hooks;
 
-import com.google.common.base.Charsets;
 import com.google.common.collect.Lists;
 import com.google.common.hash.Hasher;
 import com.google.common.hash.Hashing;
@@ -462,7 +461,7 @@ public class LineageLogger implements ExecuteWithHookContext {
    */
   private String getQueryHash(String queryStr) {
     Hasher hasher = Hashing.md5().newHasher();
-    hasher.putString(queryStr, Charsets.UTF_8);
+    hasher.putString(queryStr);
     return hasher.hash().toString();
   }
 }
