@@ -42,7 +42,9 @@ public class DruidGroupByQueryRecordReader
         extends DruidQueryRecordReader<GroupByQuery, Row> {
 
   private Row current;
+
   private int[] indexes = new int[0];
+
   // Row objects returned by GroupByQuery have different access paths depending on
   // whether the result for the metric is a Float or a Long, thus we keep track
   // using these converters
@@ -62,11 +64,14 @@ public class DruidGroupByQueryRecordReader
   @Override
   protected List<Row> createResultsList(InputStream content) throws IOException {
     return DruidStorageHandlerUtils.SMILE_MAPPER.readValue(content,
-            new TypeReference<List<Row>>(){});
+            new TypeReference<List<Row>>() {
+            }
+    );
   }
 
   private void initExtractors() throws IOException {
-    extractors = new Extract[query.getAggregatorSpecs().size() + query.getPostAggregatorSpecs().size()];
+    extractors = new Extract[query.getAggregatorSpecs().size() + query.getPostAggregatorSpecs()
+            .size()];
     int counter = 0;
     for (int i = 0; i < query.getAggregatorSpecs().size(); i++, counter++) {
       AggregatorFactory af = query.getAggregatorSpecs().get(i);
@@ -103,7 +108,7 @@ public class DruidGroupByQueryRecordReader
     if (results.hasNext()) {
       current = results.next();
       indexes = new int[query.getDimensions().size()];
-      for (int i=0; i < query.getDimensions().size(); i++) {
+      for (int i = 0; i < query.getDimensions().size(); i++) {
         DimensionSpec ds = query.getDimensions().get(i);
         indexes[i] = current.getDimension(ds.getDimension()).size() - 1;
       }
@@ -124,7 +129,7 @@ public class DruidGroupByQueryRecordReader
     // 1) The timestamp column
     value.getValue().put(DruidTable.DEFAULT_TIMESTAMP_COLUMN, current.getTimestamp().getMillis());
     // 2) The dimension columns
-    for (int i=0; i < query.getDimensions().size(); i++) {
+    for (int i = 0; i < query.getDimensions().size(); i++) {
       DimensionSpec ds = query.getDimensions().get(i);
       List<String> dims = current.getDimension(ds.getDimension());
       if (dims.size() == 0) {
@@ -163,7 +168,7 @@ public class DruidGroupByQueryRecordReader
       // 1) The timestamp column
       value.getValue().put(DruidTable.DEFAULT_TIMESTAMP_COLUMN, current.getTimestamp().getMillis());
       // 2) The dimension columns
-      for (int i=0; i < query.getDimensions().size(); i++) {
+      for (int i = 0; i < query.getDimensions().size(); i++) {
         DimensionSpec ds = query.getDimensions().get(i);
         List<String> dims = current.getDimension(ds.getDimension());
         if (dims.size() == 0) {

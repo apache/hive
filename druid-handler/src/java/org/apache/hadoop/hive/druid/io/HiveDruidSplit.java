@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.hive.druid;
+package org.apache.hadoop.hive.druid.io;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -30,6 +30,7 @@ import org.apache.hadoop.mapred.FileSplit;
 public class HiveDruidSplit extends FileSplit implements org.apache.hadoop.mapred.InputSplit {
 
   private String address;
+
   private String druidQuery;
 
   // required for deserialization
@@ -64,7 +65,7 @@ public class HiveDruidSplit extends FileSplit implements org.apache.hadoop.mapre
 
   @Override
   public String[] getLocations() {
-    return new String[] {""} ;
+    return new String[] { "" };
   }
 
   public String getAddress() {

@@ -18,6 +18,8 @@
 
 package org.apache.hadoop.hive.ql.exec;
 
+import com.esotericsoftware.kryo.Kryo;
+import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import java.beans.DefaultPersistenceDelegate;
@@ -196,9 +198,6 @@ import org.apache.hadoop.util.Shell;
 import org.apache.hive.common.util.ReflectionUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.esotericsoftware.kryo.Kryo;
-import com.google.common.base.Preconditions;
 
 /**
  * Utilities.
@@ -3098,7 +3097,7 @@ public final class Utilities {
 
     TableDesc tableDesc = work.getAliasToPartnInfo().get(alias).getTableDesc();
     if (tableDesc.isNonNative()) {
-      // if this isn't a hive table we can't create an empty file for it.
+      // if it does not need native storage, we can't create an empty file for it.
       return null;
     }
 

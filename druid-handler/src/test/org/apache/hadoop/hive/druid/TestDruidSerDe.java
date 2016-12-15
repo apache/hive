@@ -74,374 +74,408 @@ public class TestDruidSerDe {
   // Timeseries query
   private static final String TIMESERIES_QUERY =
           "{  \"queryType\": \"timeseries\", "
-          + " \"dataSource\": \"sample_datasource\", "
-          + " \"granularity\": \"day\", "
-          + " \"descending\": \"true\", "
-          + " \"filter\": {  "
-          + "  \"type\": \"and\",  "
-          + "  \"fields\": [   "
-          + "   { \"type\": \"selector\", \"dimension\": \"sample_dimension1\", \"value\": \"sample_value1\" },   "
-          + "   { \"type\": \"or\",    "
-          + "    \"fields\": [     "
-          + "     { \"type\": \"selector\", \"dimension\": \"sample_dimension2\", \"value\": \"sample_value2\" },     "
-          + "     { \"type\": \"selector\", \"dimension\": \"sample_dimension3\", \"value\": \"sample_value3\" }    "
-          + "    ]   "
-          + "   }  "
-          + "  ] "
-          + " }, "
-          + " \"aggregations\": [  "
-          + "  { \"type\": \"longSum\", \"name\": \"sample_name1\", \"fieldName\": \"sample_fieldName1\" },  "
-          + "  { \"type\": \"doubleSum\", \"name\": \"sample_name2\", \"fieldName\": \"sample_fieldName2\" } "
-          + " ], "
-          + " \"postAggregations\": [  "
-          + "  { \"type\": \"arithmetic\",  "
-          + "    \"name\": \"sample_divide\",  "
-          + "    \"fn\": \"/\",  "
-          + "    \"fields\": [   "
-          + "     { \"type\": \"fieldAccess\", \"name\": \"postAgg__sample_name1\", \"fieldName\": \"sample_name1\" },   "
-          + "     { \"type\": \"fieldAccess\", \"name\": \"postAgg__sample_name2\", \"fieldName\": \"sample_name2\" }  "
-          + "    ]  "
-          + "  } "
-          + " ], "
-          + " \"intervals\": [ \"2012-01-01T00:00:00.000/2012-01-03T00:00:00.000\" ]}";
+                  + " \"dataSource\": \"sample_datasource\", "
+                  + " \"granularity\": \"day\", "
+                  + " \"descending\": \"true\", "
+                  + " \"filter\": {  "
+                  + "  \"type\": \"and\",  "
+                  + "  \"fields\": [   "
+                  + "   { \"type\": \"selector\", \"dimension\": \"sample_dimension1\", \"value\": \"sample_value1\" },   "
+                  + "   { \"type\": \"or\",    "
+                  + "    \"fields\": [     "
+                  + "     { \"type\": \"selector\", \"dimension\": \"sample_dimension2\", \"value\": \"sample_value2\" },     "
+                  + "     { \"type\": \"selector\", \"dimension\": \"sample_dimension3\", \"value\": \"sample_value3\" }    "
+                  + "    ]   "
+                  + "   }  "
+                  + "  ] "
+                  + " }, "
+                  + " \"aggregations\": [  "
+                  + "  { \"type\": \"longSum\", \"name\": \"sample_name1\", \"fieldName\": \"sample_fieldName1\" },  "
+                  + "  { \"type\": \"doubleSum\", \"name\": \"sample_name2\", \"fieldName\": \"sample_fieldName2\" } "
+                  + " ], "
+                  + " \"postAggregations\": [  "
+                  + "  { \"type\": \"arithmetic\",  "
+                  + "    \"name\": \"sample_divide\",  "
+                  + "    \"fn\": \"/\",  "
+                  + "    \"fields\": [   "
+                  + "     { \"type\": \"fieldAccess\", \"name\": \"postAgg__sample_name1\", \"fieldName\": \"sample_name1\" },   "
+                  + "     { \"type\": \"fieldAccess\", \"name\": \"postAgg__sample_name2\", \"fieldName\": \"sample_name2\" }  "
+                  + "    ]  "
+                  + "  } "
+                  + " ], "
+                  + " \"intervals\": [ \"2012-01-01T00:00:00.000/2012-01-03T00:00:00.000\" ]}";
+
   // Timeseries query results
   private static final String TIMESERIES_QUERY_RESULTS =
           "[  "
-          + "{   "
-          + " \"timestamp\": \"2012-01-01T00:00:00.000Z\",   "
-          + " \"result\": { \"sample_name1\": 0, \"sample_name2\": 1.0, \"sample_divide\": 2.2222 }   "
-          + "},  "
-          + "{   "
-          + " \"timestamp\": \"2012-01-02T00:00:00.000Z\",   "
-          + " \"result\": { \"sample_name1\": 2, \"sample_name2\": 3.32, \"sample_divide\": 4 }  "
-          + "}]";
+                  + "{   "
+                  + " \"timestamp\": \"2012-01-01T00:00:00.000Z\",   "
+                  + " \"result\": { \"sample_name1\": 0, \"sample_name2\": 1.0, \"sample_divide\": 2.2222 }   "
+                  + "},  "
+                  + "{   "
+                  + " \"timestamp\": \"2012-01-02T00:00:00.000Z\",   "
+                  + " \"result\": { \"sample_name1\": 2, \"sample_name2\": 3.32, \"sample_divide\": 4 }  "
+                  + "}]";
+
   // Timeseries query results as records
   private static final Object[][] TIMESERIES_QUERY_RESULTS_RECORDS = new Object[][] {
-    new Object[] { new TimestampWritable(new Timestamp(1325376000000L)), new LongWritable(0), new FloatWritable(1.0F), new FloatWritable(2.2222F) } ,
-    new Object[] { new TimestampWritable(new Timestamp(1325462400000L)), new LongWritable(2), new FloatWritable(3.32F), new FloatWritable(4F)}
+          new Object[] { new TimestampWritable(new Timestamp(1325376000000L)), new LongWritable(0),
+                  new FloatWritable(1.0F), new FloatWritable(2.2222F) },
+          new Object[] { new TimestampWritable(new Timestamp(1325462400000L)), new LongWritable(2),
+                  new FloatWritable(3.32F), new FloatWritable(4F) }
   };
 
   // TopN query
   private static final String TOPN_QUERY =
           "{  \"queryType\": \"topN\", "
-          + " \"dataSource\": \"sample_data\", "
-          + " \"dimension\": \"sample_dim\", "
-          + " \"threshold\": 5, "
-          + " \"metric\": \"count\", "
-          + " \"granularity\": \"all\", "
-          + " \"filter\": {  "
-          + "  \"type\": \"and\",  "
-          + "  \"fields\": [   "
-          + "   {    "
-          + "    \"type\": \"selector\",    "
-          + "    \"dimension\": \"dim1\",    "
-          + "    \"value\": \"some_value\"   "
-          + "   },   "
-          + "   {    "
-          + "    \"type\": \"selector\",    "
-          + "    \"dimension\": \"dim2\",    "
-          + "    \"value\": \"some_other_val\"   "
-          + "   }  "
-          + "  ] "
-          + " }, "
-          + " \"aggregations\": [  "
-          + "  {   "
-          + "   \"type\": \"longSum\",   "
-          + "   \"name\": \"count\",   "
-          + "   \"fieldName\": \"count\"  "
-          + "  },  "
-          + "  {   "
-          + "   \"type\": \"doubleSum\",   "
-          + "   \"name\": \"some_metric\",   "
-          + "   \"fieldName\": \"some_metric\"  "
-          + "  } "
-          + " ], "
-          + " \"postAggregations\": [  "
-          + "  {   "
-          + "   \"type\": \"arithmetic\",   "
-          + "   \"name\": \"sample_divide\",   "
-          + "   \"fn\": \"/\",   "
-          + "   \"fields\": [    "
-          + "    {     "
-          + "     \"type\": \"fieldAccess\",     "
-          + "     \"name\": \"some_metric\",     "
-          + "     \"fieldName\": \"some_metric\"    "
-          + "    },    "
-          + "    {     "
-          + "     \"type\": \"fieldAccess\",     "
-          + "     \"name\": \"count\",     "
-          + "     \"fieldName\": \"count\"    "
-          + "    }   "
-          + "   ]  "
-          + "  } "
-          + " ], "
-          + " \"intervals\": [  "
-          + "  \"2013-08-31T00:00:00.000/2013-09-03T00:00:00.000\" "
-          + " ]}";
+                  + " \"dataSource\": \"sample_data\", "
+                  + " \"dimension\": \"sample_dim\", "
+                  + " \"threshold\": 5, "
+                  + " \"metric\": \"count\", "
+                  + " \"granularity\": \"all\", "
+                  + " \"filter\": {  "
+                  + "  \"type\": \"and\",  "
+                  + "  \"fields\": [   "
+                  + "   {    "
+                  + "    \"type\": \"selector\",    "
+                  + "    \"dimension\": \"dim1\",    "
+                  + "    \"value\": \"some_value\"   "
+                  + "   },   "
+                  + "   {    "
+                  + "    \"type\": \"selector\",    "
+                  + "    \"dimension\": \"dim2\",    "
+                  + "    \"value\": \"some_other_val\"   "
+                  + "   }  "
+                  + "  ] "
+                  + " }, "
+                  + " \"aggregations\": [  "
+                  + "  {   "
+                  + "   \"type\": \"longSum\",   "
+                  + "   \"name\": \"count\",   "
+                  + "   \"fieldName\": \"count\"  "
+                  + "  },  "
+                  + "  {   "
+                  + "   \"type\": \"doubleSum\",   "
+                  + "   \"name\": \"some_metric\",   "
+                  + "   \"fieldName\": \"some_metric\"  "
+                  + "  } "
+                  + " ], "
+                  + " \"postAggregations\": [  "
+                  + "  {   "
+                  + "   \"type\": \"arithmetic\",   "
+                  + "   \"name\": \"sample_divide\",   "
+                  + "   \"fn\": \"/\",   "
+                  + "   \"fields\": [    "
+                  + "    {     "
+                  + "     \"type\": \"fieldAccess\",     "
+                  + "     \"name\": \"some_metric\",     "
+                  + "     \"fieldName\": \"some_metric\"    "
+                  + "    },    "
+                  + "    {     "
+                  + "     \"type\": \"fieldAccess\",     "
+                  + "     \"name\": \"count\",     "
+                  + "     \"fieldName\": \"count\"    "
+                  + "    }   "
+                  + "   ]  "
+                  + "  } "
+                  + " ], "
+                  + " \"intervals\": [  "
+                  + "  \"2013-08-31T00:00:00.000/2013-09-03T00:00:00.000\" "
+                  + " ]}";
+
   // TopN query results
   private static final String TOPN_QUERY_RESULTS =
           "[ "
-          + " {  "
-          + "  \"timestamp\": \"2013-08-31T00:00:00.000Z\",  "
-          + "  \"result\": [   "
-          + "   {   "
-          + "     \"sample_dim\": \"dim1_val\",   "
-          + "     \"count\": 111,   "
-          + "     \"some_metric\": 10669,   "
-          + "     \"sample_divide\": 96.11711711711712   "
-          + "   },   "
-          + "   {   "
-          + "     \"sample_dim\": \"another_dim1_val\",   "
-          + "     \"count\": 88,   "
-          + "     \"some_metric\": 28344,   "
-          + "     \"sample_divide\": 322.09090909090907   "
-          + "   },   "
-          + "   {   "
-          + "     \"sample_dim\": \"dim1_val3\",   "
-          + "     \"count\": 70,   "
-          + "     \"some_metric\": 871,   "
-          + "     \"sample_divide\": 12.442857142857143   "
-          + "   },   "
-          + "   {   "
-          + "     \"sample_dim\": \"dim1_val4\",   "
-          + "     \"count\": 62,   "
-          + "     \"some_metric\": 815,   "
-          + "     \"sample_divide\": 13.14516129032258   "
-          + "   },   "
-          + "   {   "
-          + "     \"sample_dim\": \"dim1_val5\",   "
-          + "     \"count\": 60,   "
-          + "     \"some_metric\": 2787,   "
-          + "     \"sample_divide\": 46.45   "
-          + "   }  "
-          + "  ] "
-          + " }]";
+                  + " {  "
+                  + "  \"timestamp\": \"2013-08-31T00:00:00.000Z\",  "
+                  + "  \"result\": [   "
+                  + "   {   "
+                  + "     \"sample_dim\": \"dim1_val\",   "
+                  + "     \"count\": 111,   "
+                  + "     \"some_metric\": 10669,   "
+                  + "     \"sample_divide\": 96.11711711711712   "
+                  + "   },   "
+                  + "   {   "
+                  + "     \"sample_dim\": \"another_dim1_val\",   "
+                  + "     \"count\": 88,   "
+                  + "     \"some_metric\": 28344,   "
+                  + "     \"sample_divide\": 322.09090909090907   "
+                  + "   },   "
+                  + "   {   "
+                  + "     \"sample_dim\": \"dim1_val3\",   "
+                  + "     \"count\": 70,   "
+                  + "     \"some_metric\": 871,   "
+                  + "     \"sample_divide\": 12.442857142857143   "
+                  + "   },   "
+                  + "   {   "
+                  + "     \"sample_dim\": \"dim1_val4\",   "
+                  + "     \"count\": 62,   "
+                  + "     \"some_metric\": 815,   "
+                  + "     \"sample_divide\": 13.14516129032258   "
+                  + "   },   "
+                  + "   {   "
+                  + "     \"sample_dim\": \"dim1_val5\",   "
+                  + "     \"count\": 60,   "
+                  + "     \"some_metric\": 2787,   "
+                  + "     \"sample_divide\": 46.45   "
+                  + "   }  "
+                  + "  ] "
+                  + " }]";
+
   // TopN query results as records
   private static final Object[][] TOPN_QUERY_RESULTS_RECORDS = new Object[][] {
-    new Object[] { new TimestampWritable(new Timestamp(1377907200000L)), new Text("dim1_val"), new LongWritable(111), new FloatWritable(10669F), new FloatWritable(96.11711711711712F) } ,
-    new Object[] { new TimestampWritable(new Timestamp(1377907200000L)), new Text("another_dim1_val"), new LongWritable(88), new FloatWritable(28344F), new FloatWritable(322.09090909090907F) } ,
-    new Object[] { new TimestampWritable(new Timestamp(1377907200000L)), new Text("dim1_val3"), new LongWritable(70), new FloatWritable(871F), new FloatWritable(12.442857142857143F) } ,
-    new Object[] { new TimestampWritable(new Timestamp(1377907200000L)), new Text("dim1_val4"), new LongWritable(62), new FloatWritable(815F), new FloatWritable(13.14516129032258F) } ,
-    new Object[] { new TimestampWritable(new Timestamp(1377907200000L)), new Text("dim1_val5"), new LongWritable(60), new FloatWritable(2787F), new FloatWritable(46.45F) }
+          new Object[] { new TimestampWritable(new Timestamp(1377907200000L)), new Text("dim1_val"),
+                  new LongWritable(111), new FloatWritable(10669F),
+                  new FloatWritable(96.11711711711712F) },
+          new Object[] { new TimestampWritable(new Timestamp(1377907200000L)),
+                  new Text("another_dim1_val"), new LongWritable(88), new FloatWritable(28344F),
+                  new FloatWritable(322.09090909090907F) },
+          new Object[] { new TimestampWritable(new Timestamp(1377907200000L)),
+                  new Text("dim1_val3"), new LongWritable(70), new FloatWritable(871F),
+                  new FloatWritable(12.442857142857143F) },
+          new Object[] { new TimestampWritable(new Timestamp(1377907200000L)),
+                  new Text("dim1_val4"), new LongWritable(62), new FloatWritable(815F),
+                  new FloatWritable(13.14516129032258F) },
+          new Object[] { new TimestampWritable(new Timestamp(1377907200000L)),
+                  new Text("dim1_val5"), new LongWritable(60), new FloatWritable(2787F),
+                  new FloatWritable(46.45F) }
   };
 
   // GroupBy query
   private static final String GROUP_BY_QUERY =
           "{ "
-          + " \"queryType\": \"groupBy\", "
-          + " \"dataSource\": \"sample_datasource\", "
-          + " \"granularity\": \"day\", "
-          + " \"dimensions\": [\"country\", \"device\"], "
-          + " \"limitSpec\": {"
-          + " \"type\": \"default\","
-          + " \"limit\": 5000,"
-          + " \"columns\": [\"country\", \"data_transfer\"] }, "
-          + " \"filter\": {  "
-          + "  \"type\": \"and\",  "
-          + "  \"fields\": [   "
-          + "   { \"type\": \"selector\", \"dimension\": \"carrier\", \"value\": \"AT&T\" },   "
-          + "   { \"type\": \"or\",     "
-          + "    \"fields\": [     "
-          + "     { \"type\": \"selector\", \"dimension\": \"make\", \"value\": \"Apple\" },     "
-          + "     { \"type\": \"selector\", \"dimension\": \"make\", \"value\": \"Samsung\" }    "
-          + "    ]   "
-          + "   }  "
-          + "  ] "
-          + " }, "
-          + " \"aggregations\": [  "
-          + "  { \"type\": \"longSum\", \"name\": \"total_usage\", \"fieldName\": \"user_count\" },  "
-          + "  { \"type\": \"doubleSum\", \"name\": \"data_transfer\", \"fieldName\": \"data_transfer\" } "
-          + " ], "
-          + " \"postAggregations\": [  "
-          + "  { \"type\": \"arithmetic\",  "
-          + "    \"name\": \"avg_usage\",  "
-          + "    \"fn\": \"/\",  "
-          + "    \"fields\": [   "
-          + "     { \"type\": \"fieldAccess\", \"fieldName\": \"data_transfer\" },   "
-          + "     { \"type\": \"fieldAccess\", \"fieldName\": \"total_usage\" }  "
-          + "    ]  "
-          + "  } "
-          + " ], "
-          + " \"intervals\": [ \"2012-01-01T00:00:00.000/2012-01-03T00:00:00.000\" ], "
-          + " \"having\": {  "
-          + "  \"type\": \"greaterThan\",  "
-          + "  \"aggregation\": \"total_usage\",  "
-          + "  \"value\": 100 "
-          + " }}";
+                  + " \"queryType\": \"groupBy\", "
+                  + " \"dataSource\": \"sample_datasource\", "
+                  + " \"granularity\": \"day\", "
+                  + " \"dimensions\": [\"country\", \"device\"], "
+                  + " \"limitSpec\": {"
+                  + " \"type\": \"default\","
+                  + " \"limit\": 5000,"
+                  + " \"columns\": [\"country\", \"data_transfer\"] }, "
+                  + " \"filter\": {  "
+                  + "  \"type\": \"and\",  "
+                  + "  \"fields\": [   "
+                  + "   { \"type\": \"selector\", \"dimension\": \"carrier\", \"value\": \"AT&T\" },   "
+                  + "   { \"type\": \"or\",     "
+                  + "    \"fields\": [     "
+                  + "     { \"type\": \"selector\", \"dimension\": \"make\", \"value\": \"Apple\" },     "
+                  + "     { \"type\": \"selector\", \"dimension\": \"make\", \"value\": \"Samsung\" }    "
+                  + "    ]   "
+                  + "   }  "
+                  + "  ] "
+                  + " }, "
+                  + " \"aggregations\": [  "
+                  + "  { \"type\": \"longSum\", \"name\": \"total_usage\", \"fieldName\": \"user_count\" },  "
+                  + "  { \"type\": \"doubleSum\", \"name\": \"data_transfer\", \"fieldName\": \"data_transfer\" } "
+                  + " ], "
+                  + " \"postAggregations\": [  "
+                  + "  { \"type\": \"arithmetic\",  "
+                  + "    \"name\": \"avg_usage\",  "
+                  + "    \"fn\": \"/\",  "
+                  + "    \"fields\": [   "
+                  + "     { \"type\": \"fieldAccess\", \"fieldName\": \"data_transfer\" },   "
+                  + "     { \"type\": \"fieldAccess\", \"fieldName\": \"total_usage\" }  "
+                  + "    ]  "
+                  + "  } "
+                  + " ], "
+                  + " \"intervals\": [ \"2012-01-01T00:00:00.000/2012-01-03T00:00:00.000\" ], "
+                  + " \"having\": {  "
+                  + "  \"type\": \"greaterThan\",  "
+                  + "  \"aggregation\": \"total_usage\",  "
+                  + "  \"value\": 100 "
+                  + " }}";
+
   // GroupBy query results
   private static final String GROUP_BY_QUERY_RESULTS =
           "[  "
-          + " {  "
-          + "  \"version\" : \"v1\",  "
-          + "  \"timestamp\" : \"2012-01-01T00:00:00.000Z\",  "
-          + "  \"event\" : {   "
-          + "   \"country\" : \"India\",   "
-          + "   \"device\" : \"phone\",   "
-          + "   \"total_usage\" : 88,   "
-          + "   \"data_transfer\" : 29.91233453,   "
-          + "   \"avg_usage\" : 60.32  "
-          + "  } "
-          + " },  "
-          + " {  "
-          + "  \"version\" : \"v1\",  "
-          + "  \"timestamp\" : \"2012-01-01T00:00:12.000Z\",  "
-          + "  \"event\" : {   "
-          + "   \"country\" : \"Spain\",   "
-          + "   \"device\" : \"pc\",   "
-          + "   \"total_usage\" : 16,   "
-          + "   \"data_transfer\" : 172.93494959,   "
-          + "   \"avg_usage\" : 6.333333  "
-          + "  } "
-          + " }]";
+                  + " {  "
+                  + "  \"version\" : \"v1\",  "
+                  + "  \"timestamp\" : \"2012-01-01T00:00:00.000Z\",  "
+                  + "  \"event\" : {   "
+                  + "   \"country\" : \"India\",   "
+                  + "   \"device\" : \"phone\",   "
+                  + "   \"total_usage\" : 88,   "
+                  + "   \"data_transfer\" : 29.91233453,   "
+                  + "   \"avg_usage\" : 60.32  "
+                  + "  } "
+                  + " },  "
+                  + " {  "
+                  + "  \"version\" : \"v1\",  "
+                  + "  \"timestamp\" : \"2012-01-01T00:00:12.000Z\",  "
+                  + "  \"event\" : {   "
+                  + "   \"country\" : \"Spain\",   "
+                  + "   \"device\" : \"pc\",   "
+                  + "   \"total_usage\" : 16,   "
+                  + "   \"data_transfer\" : 172.93494959,   "
+                  + "   \"avg_usage\" : 6.333333  "
+                  + "  } "
+                  + " }]";
+
   // GroupBy query results as records
   private static final Object[][] GROUP_BY_QUERY_RESULTS_RECORDS = new Object[][] {
-    new Object[] { new TimestampWritable(new Timestamp(1325376000000L)), new Text("India"), new Text("phone"), new LongWritable(88), new FloatWritable(29.91233453F), new FloatWritable(60.32F) } ,
-    new Object[] { new TimestampWritable(new Timestamp(1325376012000L)), new Text("Spain"), new Text("pc"), new LongWritable(16), new FloatWritable(172.93494959F), new FloatWritable(6.333333F) }
+          new Object[] { new TimestampWritable(new Timestamp(1325376000000L)), new Text("India"),
+                  new Text("phone"), new LongWritable(88), new FloatWritable(29.91233453F),
+                  new FloatWritable(60.32F) },
+          new Object[] { new TimestampWritable(new Timestamp(1325376012000L)), new Text("Spain"),
+                  new Text("pc"), new LongWritable(16), new FloatWritable(172.93494959F),
+                  new FloatWritable(6.333333F) }
   };
 
   // Select query
   private static final String SELECT_QUERY =
           "{   \"queryType\": \"select\",  "
-          + " \"dataSource\": \"wikipedia\",   \"descending\": \"false\",  "
-          + " \"dimensions\":[\"robot\",\"namespace\",\"anonymous\",\"unpatrolled\",\"page\",\"language\",\"newpage\",\"user\"],  "
-          + " \"metrics\":[\"count\",\"added\",\"delta\",\"variation\",\"deleted\"],  "
-          + " \"granularity\": \"all\",  "
-          + " \"intervals\": [     \"2013-01-01/2013-01-02\"   ],  "
-          + " \"pagingSpec\":{\"pagingIdentifiers\": {}, \"threshold\":5} }";
+                  + " \"dataSource\": \"wikipedia\",   \"descending\": \"false\",  "
+                  + " \"dimensions\":[\"robot\",\"namespace\",\"anonymous\",\"unpatrolled\",\"page\",\"language\",\"newpage\",\"user\"],  "
+                  + " \"metrics\":[\"count\",\"added\",\"delta\",\"variation\",\"deleted\"],  "
+                  + " \"granularity\": \"all\",  "
+                  + " \"intervals\": [     \"2013-01-01/2013-01-02\"   ],  "
+                  + " \"pagingSpec\":{\"pagingIdentifiers\": {}, \"threshold\":5} }";
+
   // Select query results
   private static final String SELECT_QUERY_RESULTS =
           "[{ "
-          + " \"timestamp\" : \"2013-01-01T00:00:00.000Z\", "
-          + " \"result\" : {  "
-          + "  \"pagingIdentifiers\" : {   "
-          + "   \"wikipedia_2012-12-29T00:00:00.000Z_2013-01-10T08:00:00.000Z_2013-01-10T08:13:47.830Z_v9\" : 4    }, "
-          + "   \"events\" : [ {  "
-          + "    \"segmentId\" : \"wikipedia_editstream_2012-12-29T00:00:00.000Z_2013-01-10T08:00:00.000Z_2013-01-10T08:13:47.830Z_v9\",  "
-          + "    \"offset\" : 0,  "
-          + "    \"event\" : {   "
-          + "     \"timestamp\" : \"2013-01-01T00:00:00.000Z\",   "
-          + "     \"robot\" : \"1\",   "
-          + "     \"namespace\" : \"article\",   "
-          + "     \"anonymous\" : \"0\",   "
-          + "     \"unpatrolled\" : \"0\",   "
-          + "     \"page\" : \"11._korpus_(NOVJ)\",   "
-          + "     \"language\" : \"sl\",   "
-          + "     \"newpage\" : \"0\",   "
-          + "     \"user\" : \"EmausBot\",   "
-          + "     \"count\" : 1.0,   "
-          + "     \"added\" : 39.0,   "
-          + "     \"delta\" : 39.0,   "
-          + "     \"variation\" : 39.0,   "
-          + "     \"deleted\" : 0.0  "
-          + "    } "
-          + "   }, {  "
-          + "    \"segmentId\" : \"wikipedia_2012-12-29T00:00:00.000Z_2013-01-10T08:00:00.000Z_2013-01-10T08:13:47.830Z_v9\",  "
-          + "    \"offset\" : 1,  "
-          + "    \"event\" : {   "
-          + "     \"timestamp\" : \"2013-01-01T00:00:00.000Z\",   "
-          + "     \"robot\" : \"0\",   "
-          + "     \"namespace\" : \"article\",   "
-          + "     \"anonymous\" : \"0\",   "
-          + "     \"unpatrolled\" : \"0\",   "
-          + "     \"page\" : \"112_U.S._580\",   "
-          + "     \"language\" : \"en\",   "
-          + "     \"newpage\" : \"1\",   "
-          + "     \"user\" : \"MZMcBride\",   "
-          + "     \"count\" : 1.0,   "
-          + "     \"added\" : 70.0,   "
-          + "     \"delta\" : 70.0,   "
-          + "     \"variation\" : 70.0,   "
-          + "     \"deleted\" : 0.0  "
-          + "    } "
-          + "   }, {  "
-          + "    \"segmentId\" : \"wikipedia_2012-12-29T00:00:00.000Z_2013-01-10T08:00:00.000Z_2013-01-10T08:13:47.830Z_v9\",  "
-          + "    \"offset\" : 2,  "
-          + "    \"event\" : {   "
-          + "     \"timestamp\" : \"2013-01-01T00:00:12.000Z\",   "
-          + "     \"robot\" : \"0\",   "
-          + "     \"namespace\" : \"article\",   "
-          + "     \"anonymous\" : \"0\",   "
-          + "     \"unpatrolled\" : \"0\",   "
-          + "     \"page\" : \"113_U.S._243\",   "
-          + "     \"language\" : \"en\",   "
-          + "     \"newpage\" : \"1\",   "
-          + "     \"user\" : \"MZMcBride\",   "
-          + "     \"count\" : 1.0,   "
-          + "     \"added\" : 77.0,   "
-          + "     \"delta\" : 77.0,   "
-          + "     \"variation\" : 77.0,   "
-          + "     \"deleted\" : 0.0  "
-          + "    } "
-          + "   }, {  "
-          + "    \"segmentId\" : \"wikipedia_2012-12-29T00:00:00.000Z_2013-01-10T08:00:00.000Z_2013-01-10T08:13:47.830Z_v9\",  "
-          + "    \"offset\" : 3,  "
-          + "    \"event\" : {   "
-          + "     \"timestamp\" : \"2013-01-01T00:00:12.000Z\",   "
-          + "     \"robot\" : \"0\",   "
-          + "     \"namespace\" : \"article\",   "
-          + "     \"anonymous\" : \"0\",   "
-          + "     \"unpatrolled\" : \"0\",   "
-          + "     \"page\" : \"113_U.S._73\",   "
-          + "     \"language\" : \"en\",   "
-          + "     \"newpage\" : \"1\",   "
-          + "     \"user\" : \"MZMcBride\",   "
-          + "     \"count\" : 1.0,   "
-          + "     \"added\" : 70.0,   "
-          + "     \"delta\" : 70.0,   "
-          + "     \"variation\" : 70.0,   "
-          + "     \"deleted\" : 0.0  "
-          + "    } "
-          + "   }, {  "
-          + "    \"segmentId\" : \"wikipedia_2012-12-29T00:00:00.000Z_2013-01-10T08:00:00.000Z_2013-01-10T08:13:47.830Z_v9\",  "
-          + "    \"offset\" : 4,  "
-          + "    \"event\" : {   "
-          + "     \"timestamp\" : \"2013-01-01T00:00:12.000Z\",   "
-          + "     \"robot\" : \"0\",   "
-          + "     \"namespace\" : \"article\",   "
-          + "     \"anonymous\" : \"0\",   "
-          + "     \"unpatrolled\" : \"0\",   "
-          + "     \"page\" : \"113_U.S._756\",   "
-          + "     \"language\" : \"en\",   "
-          + "     \"newpage\" : \"1\",   "
-          + "     \"user\" : \"MZMcBride\",   "
-          + "     \"count\" : 1.0,   "
-          + "     \"added\" : 68.0,   "
-          + "     \"delta\" : 68.0,   "
-          + "     \"variation\" : 68.0,   "
-          + "     \"deleted\" : 0.0  "
-          + "    } "
-          + "   } ]  }} ]";
+                  + " \"timestamp\" : \"2013-01-01T00:00:00.000Z\", "
+                  + " \"result\" : {  "
+                  + "  \"pagingIdentifiers\" : {   "
+                  + "   \"wikipedia_2012-12-29T00:00:00.000Z_2013-01-10T08:00:00.000Z_2013-01-10T08:13:47.830Z_v9\" : 4    }, "
+                  + "   \"events\" : [ {  "
+                  + "    \"segmentId\" : \"wikipedia_editstream_2012-12-29T00:00:00.000Z_2013-01-10T08:00:00.000Z_2013-01-10T08:13:47.830Z_v9\",  "
+                  + "    \"offset\" : 0,  "
+                  + "    \"event\" : {   "
+                  + "     \"timestamp\" : \"2013-01-01T00:00:00.000Z\",   "
+                  + "     \"robot\" : \"1\",   "
+                  + "     \"namespace\" : \"article\",   "
+                  + "     \"anonymous\" : \"0\",   "
+                  + "     \"unpatrolled\" : \"0\",   "
+                  + "     \"page\" : \"11._korpus_(NOVJ)\",   "
+                  + "     \"language\" : \"sl\",   "
+                  + "     \"newpage\" : \"0\",   "
+                  + "     \"user\" : \"EmausBot\",   "
+                  + "     \"count\" : 1.0,   "
+                  + "     \"added\" : 39.0,   "
+                  + "     \"delta\" : 39.0,   "
+                  + "     \"variation\" : 39.0,   "
+                  + "     \"deleted\" : 0.0  "
+                  + "    } "
+                  + "   }, {  "
+                  + "    \"segmentId\" : \"wikipedia_2012-12-29T00:00:00.000Z_2013-01-10T08:00:00.000Z_2013-01-10T08:13:47.830Z_v9\",  "
+                  + "    \"offset\" : 1,  "
+                  + "    \"event\" : {   "
+                  + "     \"timestamp\" : \"2013-01-01T00:00:00.000Z\",   "
+                  + "     \"robot\" : \"0\",   "
+                  + "     \"namespace\" : \"article\",   "
+                  + "     \"anonymous\" : \"0\",   "
+                  + "     \"unpatrolled\" : \"0\",   "
+                  + "     \"page\" : \"112_U.S._580\",   "
+                  + "     \"language\" : \"en\",   "
+                  + "     \"newpage\" : \"1\",   "
+                  + "     \"user\" : \"MZMcBride\",   "
+                  + "     \"count\" : 1.0,   "
+                  + "     \"added\" : 70.0,   "
+                  + "     \"delta\" : 70.0,   "
+                  + "     \"variation\" : 70.0,   "
+                  + "     \"deleted\" : 0.0  "
+                  + "    } "
+                  + "   }, {  "
+                  + "    \"segmentId\" : \"wikipedia_2012-12-29T00:00:00.000Z_2013-01-10T08:00:00.000Z_2013-01-10T08:13:47.830Z_v9\",  "
+                  + "    \"offset\" : 2,  "
+                  + "    \"event\" : {   "
+                  + "     \"timestamp\" : \"2013-01-01T00:00:12.000Z\",   "
+                  + "     \"robot\" : \"0\",   "
+                  + "     \"namespace\" : \"article\",   "
+                  + "     \"anonymous\" : \"0\",   "
+                  + "     \"unpatrolled\" : \"0\",   "
+                  + "     \"page\" : \"113_U.S._243\",   "
+                  + "     \"language\" : \"en\",   "
+                  + "     \"newpage\" : \"1\",   "
+                  + "     \"user\" : \"MZMcBride\",   "
+                  + "     \"count\" : 1.0,   "
+                  + "     \"added\" : 77.0,   "
+                  + "     \"delta\" : 77.0,   "
+                  + "     \"variation\" : 77.0,   "
+                  + "     \"deleted\" : 0.0  "
+                  + "    } "
+                  + "   }, {  "
+                  + "    \"segmentId\" : \"wikipedia_2012-12-29T00:00:00.000Z_2013-01-10T08:00:00.000Z_2013-01-10T08:13:47.830Z_v9\",  "
+                  + "    \"offset\" : 3,  "
+                  + "    \"event\" : {   "
+                  + "     \"timestamp\" : \"2013-01-01T00:00:12.000Z\",   "
+                  + "     \"robot\" : \"0\",   "
+                  + "     \"namespace\" : \"article\",   "
+                  + "     \"anonymous\" : \"0\",   "
+                  + "     \"unpatrolled\" : \"0\",   "
+                  + "     \"page\" : \"113_U.S._73\",   "
+                  + "     \"language\" : \"en\",   "
+                  + "     \"newpage\" : \"1\",   "
+                  + "     \"user\" : \"MZMcBride\",   "
+                  + "     \"count\" : 1.0,   "
+                  + "     \"added\" : 70.0,   "
+                  + "     \"delta\" : 70.0,   "
+                  + "     \"variation\" : 70.0,   "
+                  + "     \"deleted\" : 0.0  "
+                  + "    } "
+                  + "   }, {  "
+                  + "    \"segmentId\" : \"wikipedia_2012-12-29T00:00:00.000Z_2013-01-10T08:00:00.000Z_2013-01-10T08:13:47.830Z_v9\",  "
+                  + "    \"offset\" : 4,  "
+                  + "    \"event\" : {   "
+                  + "     \"timestamp\" : \"2013-01-01T00:00:12.000Z\",   "
+                  + "     \"robot\" : \"0\",   "
+                  + "     \"namespace\" : \"article\",   "
+                  + "     \"anonymous\" : \"0\",   "
+                  + "     \"unpatrolled\" : \"0\",   "
+                  + "     \"page\" : \"113_U.S._756\",   "
+                  + "     \"language\" : \"en\",   "
+                  + "     \"newpage\" : \"1\",   "
+                  + "     \"user\" : \"MZMcBride\",   "
+                  + "     \"count\" : 1.0,   "
+                  + "     \"added\" : 68.0,   "
+                  + "     \"delta\" : 68.0,   "
+                  + "     \"variation\" : 68.0,   "
+                  + "     \"deleted\" : 0.0  "
+                  + "    } "
+                  + "   } ]  }} ]";
+
   // Select query results as records
   private static final Object[][] SELECT_QUERY_RESULTS_RECORDS = new Object[][] {
-    new Object[] { new TimestampWritable(new Timestamp(1356998400000L)), new Text("1"), new Text("article"), new Text("0"), new Text("0"),
-        new Text("11._korpus_(NOVJ)"), new Text("sl"), new Text("0"), new Text("EmausBot"),
-        new FloatWritable(1.0F), new FloatWritable(39.0F), new FloatWritable(39.0F), new FloatWritable(39.0F), new FloatWritable(0.0F) } ,
-    new Object[] { new TimestampWritable(new Timestamp(1356998400000L)), new Text("0"), new Text("article"), new Text("0"), new Text("0"),
-        new Text("112_U.S._580"), new Text("en"), new Text("1"), new Text("MZMcBride"),
-        new FloatWritable(1.0F), new FloatWritable(70.0F), new FloatWritable(70.0F), new FloatWritable(70.0F), new FloatWritable(0.0F) } ,
-    new Object[] { new TimestampWritable(new Timestamp(1356998412000L)), new Text("0"), new Text("article"), new Text("0"), new Text("0"),
-        new Text("113_U.S._243"), new Text("en"), new Text("1"), new Text("MZMcBride"),
-        new FloatWritable(1.0F), new FloatWritable(77.0F), new FloatWritable(77.0F), new FloatWritable(77.0F), new FloatWritable(0.0F) } ,
-    new Object[] { new TimestampWritable(new Timestamp(1356998412000L)), new Text("0"), new Text("article"), new Text("0"), new Text("0"),
-        new Text("113_U.S._73"), new Text("en"), new Text("1"), new Text("MZMcBride"),
-        new FloatWritable(1.0F), new FloatWritable(70.0F), new FloatWritable(70.0F), new FloatWritable(70.0F), new FloatWritable(0.0F) } ,
-    new Object[] { new TimestampWritable(new Timestamp(1356998412000L)), new Text("0"), new Text("article"), new Text("0"), new Text("0"),
-        new Text("113_U.S._756"), new Text("en"), new Text("1"), new Text("MZMcBride"),
-        new FloatWritable(1.0F), new FloatWritable(68.0F), new FloatWritable(68.0F), new FloatWritable(68.0F), new FloatWritable(0.0F) }
+          new Object[] { new TimestampWritable(new Timestamp(1356998400000L)), new Text("1"),
+                  new Text("article"), new Text("0"), new Text("0"),
+                  new Text("11._korpus_(NOVJ)"), new Text("sl"), new Text("0"),
+                  new Text("EmausBot"),
+                  new FloatWritable(1.0F), new FloatWritable(39.0F), new FloatWritable(39.0F),
+                  new FloatWritable(39.0F), new FloatWritable(0.0F) },
+          new Object[] { new TimestampWritable(new Timestamp(1356998400000L)), new Text("0"),
+                  new Text("article"), new Text("0"), new Text("0"),
+                  new Text("112_U.S._580"), new Text("en"), new Text("1"), new Text("MZMcBride"),
+                  new FloatWritable(1.0F), new FloatWritable(70.0F), new FloatWritable(70.0F),
+                  new FloatWritable(70.0F), new FloatWritable(0.0F) },
+          new Object[] { new TimestampWritable(new Timestamp(1356998412000L)), new Text("0"),
+                  new Text("article"), new Text("0"), new Text("0"),
+                  new Text("113_U.S._243"), new Text("en"), new Text("1"), new Text("MZMcBride"),
+                  new FloatWritable(1.0F), new FloatWritable(77.0F), new FloatWritable(77.0F),
+                  new FloatWritable(77.0F), new FloatWritable(0.0F) },
+          new Object[] { new TimestampWritable(new Timestamp(1356998412000L)), new Text("0"),
+                  new Text("article"), new Text("0"), new Text("0"),
+                  new Text("113_U.S._73"), new Text("en"), new Text("1"), new Text("MZMcBride"),
+                  new FloatWritable(1.0F), new FloatWritable(70.0F), new FloatWritable(70.0F),
+                  new FloatWritable(70.0F), new FloatWritable(0.0F) },
+          new Object[] { new TimestampWritable(new Timestamp(1356998412000L)), new Text("0"),
+                  new Text("article"), new Text("0"), new Text("0"),
+                  new Text("113_U.S._756"), new Text("en"), new Text("1"), new Text("MZMcBride"),
+                  new FloatWritable(1.0F), new FloatWritable(68.0F), new FloatWritable(68.0F),
+                  new FloatWritable(68.0F), new FloatWritable(0.0F) }
   };
-
 
   /**
    * Test the default behavior of the objects and object inspectors.
-   * @throws IOException 
-   * @throws IllegalAccessException 
-   * @throws IllegalArgumentException 
-   * @throws SecurityException 
-   * @throws NoSuchFieldException 
-   * @throws JsonMappingException 
-   * @throws JsonParseException 
-   * @throws InvocationTargetException 
-   * @throws NoSuchMethodException 
+   * @throws IOException
+   * @throws IllegalAccessException
+   * @throws IllegalArgumentException
+   * @throws SecurityException
+   * @throws NoSuchFieldException
+   * @throws JsonMappingException
+   * @throws JsonParseException
+   * @throws InvocationTargetException
+   * @throws NoSuchMethodException
    */
   @Test
   public void testDruidSerDe()
@@ -457,25 +491,31 @@ public class TestDruidSerDe {
     tbl = createPropertiesQuery("sample_datasource", Query.TIMESERIES, TIMESERIES_QUERY);
     SerDeUtils.initializeSerDe(serDe, conf, tbl, null);
     deserializeQueryResults(serDe, Query.TIMESERIES, TIMESERIES_QUERY,
-            TIMESERIES_QUERY_RESULTS, TIMESERIES_QUERY_RESULTS_RECORDS);
+            TIMESERIES_QUERY_RESULTS, TIMESERIES_QUERY_RESULTS_RECORDS
+    );
     // TopN query
     tbl = createPropertiesQuery("sample_data", Query.TOPN, TOPN_QUERY);
     SerDeUtils.initializeSerDe(serDe, conf, tbl, null);
     deserializeQueryResults(serDe, Query.TOPN, TOPN_QUERY,
-            TOPN_QUERY_RESULTS, TOPN_QUERY_RESULTS_RECORDS);
+            TOPN_QUERY_RESULTS, TOPN_QUERY_RESULTS_RECORDS
+    );
     // GroupBy query
     tbl = createPropertiesQuery("sample_datasource", Query.GROUP_BY, GROUP_BY_QUERY);
     SerDeUtils.initializeSerDe(serDe, conf, tbl, null);
     deserializeQueryResults(serDe, Query.GROUP_BY, GROUP_BY_QUERY,
-            GROUP_BY_QUERY_RESULTS, GROUP_BY_QUERY_RESULTS_RECORDS);
+            GROUP_BY_QUERY_RESULTS, GROUP_BY_QUERY_RESULTS_RECORDS
+    );
     // Select query
     tbl = createPropertiesQuery("wikipedia", Query.SELECT, SELECT_QUERY);
     SerDeUtils.initializeSerDe(serDe, conf, tbl, null);
     deserializeQueryResults(serDe, Query.SELECT, SELECT_QUERY,
-            SELECT_QUERY_RESULTS, SELECT_QUERY_RESULTS_RECORDS);
+            SELECT_QUERY_RESULTS, SELECT_QUERY_RESULTS_RECORDS
+    );
   }
 
-  private static Properties createPropertiesQuery(String dataSource, String queryType, String jsonQuery) {
+  private static Properties createPropertiesQuery(String dataSource, String queryType,
+          String jsonQuery
+  ) {
     Properties tbl = new Properties();
 
     // Set the configuration parameters
@@ -486,14 +526,15 @@ public class TestDruidSerDe {
   }
 
   private static void deserializeQueryResults(DruidSerDe serDe, String queryType, String jsonQuery,
-          String resultString, Object[][] records) throws SerDeException, JsonParseException,
+          String resultString, Object[][] records
+  ) throws SerDeException, JsonParseException,
           JsonMappingException, IOException, NoSuchFieldException, SecurityException,
           IllegalArgumentException, IllegalAccessException, InterruptedException,
           NoSuchMethodException, InvocationTargetException {
 
     // Initialize
     Query<?> query = null;
-    DruidQueryRecordReader<?,?> reader = null;
+    DruidQueryRecordReader<?, ?> reader = null;
     List<?> resultsList = null;
     ObjectMapper mapper = new DefaultObjectMapper();
     switch (queryType) {
@@ -501,25 +542,33 @@ public class TestDruidSerDe {
         query = mapper.readValue(jsonQuery, TimeseriesQuery.class);
         reader = new DruidTimeseriesQueryRecordReader();
         resultsList = mapper.readValue(resultString,
-                new TypeReference<List<Result<TimeseriesResultValue>>>() {});
+                new TypeReference<List<Result<TimeseriesResultValue>>>() {
+                }
+        );
         break;
       case Query.TOPN:
         query = mapper.readValue(jsonQuery, TopNQuery.class);
         reader = new DruidTopNQueryRecordReader();
         resultsList = mapper.readValue(resultString,
-                new TypeReference<List<Result<TopNResultValue>>>() {});
+                new TypeReference<List<Result<TopNResultValue>>>() {
+                }
+        );
         break;
       case Query.GROUP_BY:
         query = mapper.readValue(jsonQuery, GroupByQuery.class);
         reader = new DruidGroupByQueryRecordReader();
         resultsList = mapper.readValue(resultString,
-                new TypeReference<List<Row>>() {});
+                new TypeReference<List<Row>>() {
+                }
+        );
         break;
       case Query.SELECT:
         query = mapper.readValue(jsonQuery, SelectQuery.class);
         reader = new DruidSelectQueryRecordReader();
         resultsList = mapper.readValue(resultString,
-                new TypeReference<List<Result<SelectResultValue>>>() {});
+                new TypeReference<List<Result<SelectResultValue>>>() {
+                }
+        );
         break;
     }
 
@@ -534,7 +583,7 @@ public class TestDruidSerDe {
     }
     Field field2 = DruidQueryRecordReader.class.getDeclaredField("results");
     field2.setAccessible(true);
-    
+
     // Get the row structure
     StructObjectInspector oi = (StructObjectInspector) serDe.getObjectInspector();
     List<? extends StructField> fieldRefs = oi.getAllStructFieldRefs();
