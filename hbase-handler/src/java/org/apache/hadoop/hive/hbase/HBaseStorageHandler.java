@@ -182,6 +182,11 @@ public class HBaseStorageHandler extends DefaultStorageHandler
   }
 
   @Override
+  public void commitInsert(Table table, boolean overwrite) throws MetaException {
+
+  }
+
+  @Override
   public void preCreateTable(Table tbl) throws MetaException {
     boolean isExternal = MetaStoreUtils.isExternalTable(tbl);
 

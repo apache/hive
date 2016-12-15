@@ -341,6 +341,16 @@ public class DruidStorageHandler extends DefaultStorageHandler implements HiveMe
   }
 
   @Override
+  public void commitInsert(Table table, boolean overwrite) throws MetaException {
+    if (overwrite) {
+      LOG.debug(String.format("commit insert overwrite into table [%s]", table.getTableName()));
+      this.commitCreateTable(table);
+    } else {
+      throw new MetaException("Insert into is not supported yet");
+    }
+  }
+
+  @Override
   public void configureOutputJobProperties(TableDesc tableDesc, Map<String, String> jobProperties
   ) {
     jobProperties.put(Constants.DRUID_SEGMENT_VERSION, new DateTime().toString());
