@@ -30,12 +30,10 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Executors;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
-
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -100,6 +98,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableShortObje
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableStringObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableTimestampObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.CharTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.hive.serde2.typeinfo.VarcharTypeInfo;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hive.common.util.AnnotationUtils;
@@ -110,6 +109,7 @@ import org.slf4j.LoggerFactory;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
 import com.google.common.math.LongMath;
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
 public class StatsUtils {
 
@@ -1307,11 +1307,43 @@ public class StatsUtils {
         oi = encd.getWritableObjectInspector();
       }
     } else if (end instanceof ExprNodeGenericFuncDesc) {
-
-      // udf projection
       ExprNodeGenericFuncDesc engfd = (ExprNodeGenericFuncDesc) end;
       colName = engfd.getName();
       colType = engfd.getTypeString();
+
+      // If it is a widening cast, we do not change NDV, min, max
+      if (isWideningCast(engfd) && engfd.getChildren().get(0) instanceof ExprNodeColumnDesc) {
+        // cast on single column
+        ColStatistics stats = parentStats.getColumnStatisticsFromColName(engfd.getCols().get(0));
+        if (stats != null) {
+          ColStatistics newStats;
+          try {
+            newStats = stats.clone();
+          } catch (CloneNotSupportedException e) {
+            LOG.warn("error cloning stats, this should not happen");
+            return null;
+          }
+          newStats.setColumnName(colName);
+          colType = colType.toLowerCase();
+          if (colType.equals(serdeConstants.STRING_TYPE_NAME)
+              || colType.equals(serdeConstants.BINARY_TYPE_NAME)
+              || colType.startsWith(serdeConstants.VARCHAR_TYPE_NAME)
+              || colType.startsWith(serdeConstants.CHAR_TYPE_NAME)
+              || colType.startsWith(serdeConstants.LIST_TYPE_NAME)
+              || colType.startsWith(serdeConstants.MAP_TYPE_NAME)
+              || colType.startsWith(serdeConstants.STRUCT_TYPE_NAME)
+              || colType.startsWith(serdeConstants.UNION_TYPE_NAME)) {
+            avgColSize = getAvgColLenOfVariableLengthTypes(conf, oi, colType);
+          } else {
+            avgColSize = getAvgColLenOfFixedLengthTypes(colType);
+          }
+          newStats.setColumnType(colType);
+          newStats.setAvgColLen(avgColSize);
+          return newStats;
+        }
+      }
+
+      // fallback to default
       countDistincts = getNDVFor(engfd, numRows, parentStats);
       oi = engfd.getWritableObjectInspector();
     } else if (end instanceof ExprNodeColumnListDesc) {
@@ -1356,6 +1388,15 @@ public class StatsUtils {
     return colStats;
   }
 
+  private static boolean isWideningCast(ExprNodeGenericFuncDesc engfd) {
+    GenericUDF udf = engfd.getGenericUDF();
+    if (!FunctionRegistry.isOpCast(udf)) {
+      // It is not a cast
+      return false;
+    }
+    return TypeInfoUtils.implicitConvertible(engfd.getChildren().get(0).getTypeInfo(),
+            engfd.getTypeInfo());
+  }
 
   public static Long addWithExpDecay (List<Long> distinctVals) {
     // Exponential back-off for NDVs.
