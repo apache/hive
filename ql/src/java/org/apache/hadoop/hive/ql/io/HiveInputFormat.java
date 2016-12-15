@@ -23,9 +23,11 @@ import java.io.DataOutput;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.Map.Entry;
 
@@ -595,6 +597,8 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
     Iterator<Entry<Path, ArrayList<String>>> iterator = this.mrwork
         .getPathToAliases().entrySet().iterator();
 
+    Set<Path> splitParentPaths = null;
+    int pathsSize = this.mrwork.getPathToAliases().entrySet().size();
     while (iterator.hasNext()) {
       Entry<Path, ArrayList<String>> entry = iterator.next();
       Path key = entry.getKey();
@@ -610,7 +614,20 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
         // subdirectories.  (Unlike non-native tables, prefix mixups don't seem
         // to be a potential problem here since we are always dealing with the
         // path to something deeper than the table location.)
-        match = FileUtils.isPathWithinSubtree(splitPath, key) || FileUtils.isPathWithinSubtree(splitPathWithNoSchema, key);
+        if (pathsSize > 1) {
+          // Comparing paths multiple times creates lots of objects &
+          // creates GC pressure for tables having large number of partitions.
+          // In such cases, use pre-computed paths for comparison
+          if (splitParentPaths == null) {
+            splitParentPaths = new HashSet<>();
+            FileUtils.populateParentPaths(splitParentPaths, splitPath);
+            FileUtils.populateParentPaths(splitParentPaths, splitPathWithNoSchema);
+          }
+          match = splitParentPaths.contains(key);
+        } else {
+          match = FileUtils.isPathWithinSubtree(splitPath, key)
+              || FileUtils.isPathWithinSubtree(splitPathWithNoSchema, key);
+        }
       }
       if (match) {
         ArrayList<String> list = entry.getValue();

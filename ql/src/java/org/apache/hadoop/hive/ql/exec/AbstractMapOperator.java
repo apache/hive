@@ -114,6 +114,7 @@ public abstract class AbstractMapOperator extends Operator<MapWork>
         throw new IllegalStateException("Ambiguous input path " + fpath);
       }
       nominal = onefile;
+      break;
     }
     if (nominal == null) {
       throw new IllegalStateException("Invalid input path " + fpath);

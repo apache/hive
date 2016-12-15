@@ -916,6 +916,16 @@ public final class FileUtils {
     return false;
   }
 
+  public static void populateParentPaths(Set<Path> parents, Path path) {
+    if (parents == null) {
+      return;
+    }
+    while(path != null) {
+      parents.add(path);
+      path = path.getParent();
+    }
+  }
+
   /**
    * Get the URI of the path. Assume to be local file system if no scheme.
    */

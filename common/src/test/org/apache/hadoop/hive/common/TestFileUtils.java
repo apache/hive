@@ -26,6 +26,7 @@ import static org.junit.Assert.assertTrue;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Set;
 
 import org.apache.hadoop.fs.LocalFileSystem;
@@ -145,5 +146,55 @@ public class TestFileUtils {
     Path unchangedPath = FileUtils.makeAbsolute(localFileSystem, new Path("/absolute/path"));
 
     assertEquals(unchangedPath.toString(), absolutePath.toString());
+  }
+
+  @Test
+  public void testIsPathWithinSubtree() throws IOException {
+    Path splitPath = new Path("file:///user/hive/warehouse/src/data.txt");
+    Path splitPathWithNoSchema = Path.getPathWithoutSchemeAndAuthority(splitPath);
+
+    Set<Path> parents = new HashSet<>();
+    FileUtils.populateParentPaths(parents, splitPath);
+    FileUtils.populateParentPaths(parents, splitPathWithNoSchema);
+
+    Path key = new Path("/user/hive/warehouse/src");
+    verifyIsPathWithInSubTree(splitPath, key, false);
+    verifyIsPathWithInSubTree(splitPathWithNoSchema, key, true);
+    verifyIfParentsContainPath(key, parents, true);
+
+    key = new Path("/user/hive/warehouse/src_2");
+    verifyIsPathWithInSubTree(splitPath, key, false);
+    verifyIsPathWithInSubTree(splitPathWithNoSchema, key, false);
+    verifyIfParentsContainPath(key, parents, false);
+
+    key = new Path("/user/hive/warehouse/src/data.txt");
+    verifyIsPathWithInSubTree(splitPath, key, false);
+    verifyIsPathWithInSubTree(splitPathWithNoSchema, key, true);
+    verifyIfParentsContainPath(key, parents, true);
+
+    key = new Path("file:///user/hive/warehouse/src");
+    verifyIsPathWithInSubTree(splitPath, key, true);
+    verifyIsPathWithInSubTree(splitPathWithNoSchema, key, false);
+    verifyIfParentsContainPath(key, parents, true);
+
+    key = new Path("file:///user/hive/warehouse/src_2");
+    verifyIsPathWithInSubTree(splitPath, key, false);
+    verifyIsPathWithInSubTree(splitPathWithNoSchema, key, false);
+    verifyIfParentsContainPath(key, parents, false);
+
+    key = new Path("file:///user/hive/warehouse/src/data.txt");
+    verifyIsPathWithInSubTree(splitPath, key, true);
+    verifyIsPathWithInSubTree(splitPathWithNoSchema, key, false);
+    verifyIfParentsContainPath(key, parents, true);
+  }
+
+  private void verifyIsPathWithInSubTree(Path splitPath, Path key, boolean expected) {
+    boolean result = FileUtils.isPathWithinSubtree(splitPath, key);
+    assertEquals("splitPath=" + splitPath + ", key=" + key, expected, result);
+  }
+
+  private void verifyIfParentsContainPath(Path key, Set<Path> parents, boolean expected) {
+    boolean result = parents.contains(key);
+    assertEquals("key=" + key, expected, result);
   }
 }
