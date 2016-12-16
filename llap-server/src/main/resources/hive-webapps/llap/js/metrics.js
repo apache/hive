@@ -227,7 +227,7 @@ $(function() {
   var views = [llap.view.Hostname, llap.view.Heap, llap.view.Cache, llap.view.Executors, llap.view.Tasks, llap.view.System]
 
   setInterval(function() {
-    $.getJSON("/jmx", function(jmx){
+    $.getJSON("jmx", function(jmx){
       models.forEach(function (m) { m.push(jmx); });
       views.forEach(function (v) { v.refresh(); });
     });
