@@ -1,3 +1,5 @@
+-- SORT_QUERY_RESULTS
+
 drop table if exists emptyavro;
 create table emptyavro (a int) stored as avro;
 select count(*) from emptyavro;

@@ -1,6 +1,10 @@
-PREHOOK: query: drop table if exists emptyavro
+PREHOOK: query: -- SORT_QUERY_RESULTS
+
+drop table if exists emptyavro
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: drop table if exists emptyavro
+POSTHOOK: query: -- SORT_QUERY_RESULTS
+
+drop table if exists emptyavro
 POSTHOOK: type: DROPTABLE
 PREHOOK: query: create table emptyavro (a int) stored as avro
 PREHOOK: type: CREATETABLE
