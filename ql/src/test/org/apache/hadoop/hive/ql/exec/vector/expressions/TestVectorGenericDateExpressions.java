@@ -511,7 +511,7 @@ public class TestVectorGenericDateExpressions {
     byte[] bytes = "error".getBytes(utf8);
     VectorizedRowBatch batch = new VectorizedRowBatch(2, 1);
 
-    udf = new VectorUDFDateDiffColScalar(0, 0, 1);
+    udf = new VectorUDFDateDiffColScalar(0, 0L, 1);
     udf.setInputTypes(VectorExpression.Type.TIMESTAMP, VectorExpression.Type.STRING);
     batch.cols[0] = new BytesColumnVector(1);
     batch.cols[1] = new LongColumnVector(1);

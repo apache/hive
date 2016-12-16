@@ -39,9 +39,20 @@ select unix_timestamp(d), year(d), month(d), day(d), dayofmonth(d),
 
 select date_add(d, 5), date_sub(d, 10)  from date_udf_string;
 
-select datediff(d, d), datediff(d, '2002-03-21'), datediff('2002-03-21', d),
+select
+    datediff(d, d),
+    datediff(d, '2002-03-21'),
+    datediff(d, date '2002-03-21'),
+    datediff('2002-03-21', d),
+    datediff(date '2002-03-21', d),
     datediff('2002-03-21 00:00:00', d),
-    datediff(d, '2002-03-21 00:00:00')
+    datediff(timestamp '2002-03-21 00:00:00', d),
+    datediff(d, '2002-03-21 00:00:00'),
+    datediff(d, timestamp '2002-03-21 00:00:00'),
+    datediff('2002-03-21 08:01:59', d),
+    datediff(timestamp '2002-03-21 08:01:59', d),
+    datediff(d, '2002-03-21 08:01:59'),
+    datediff(d, timestamp '2002-03-21 08:01:59')
   from date_udf_string;
 
 select 
