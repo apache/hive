@@ -6728,12 +6728,12 @@ STAGE PLANS:
                   0 UDFToDouble(_col0) (type: double)
                   1 UDFToDouble((_col0 + 100)) (type: double)
                 outputColumnNames: _col1, _col2, _col3
-                Statistics: Num rows: 13 Data size: 1300 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 6 Data size: 600 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: _col1 (type: string), _col3 (type: int)
                   sort order: ++
                   Map-reduce partition columns: _col1 (type: string), _col3 (type: int)
-                  Statistics: Num rows: 13 Data size: 1300 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 6 Data size: 600 Basic stats: COMPLETE Column stats: COMPLETE
                   value expressions: _col2 (type: boolean)
         Reducer 15 
             Execution mode: llap
