@@ -457,6 +457,7 @@ public final class FunctionRegistry {
     system.registerGenericUDF("struct", GenericUDFStruct.class);
     system.registerGenericUDF("named_struct", GenericUDFNamedStruct.class);
     system.registerGenericUDF("create_union", GenericUDFUnion.class);
+    system.registerGenericUDF("extract_union", GenericUDFExtractUnion.class);
 
     system.registerGenericUDF("case", GenericUDFCase.class);
     system.registerGenericUDF("when", GenericUDFWhen.class);
