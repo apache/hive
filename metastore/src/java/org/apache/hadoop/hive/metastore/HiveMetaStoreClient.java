@@ -2178,6 +2178,16 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
     client.add_dynamic_partitions(adp);
   }
 
+  @Override
+  public int insertCommit(Table table, boolean overwrite) {
+    try {
+      getHook(table).commitInsert(table, overwrite);
+    } catch (MetaException e) {
+      return -1;
+    }
+    return 0;
+  }
+
   @InterfaceAudience.LimitedPrivate({"HCatalog"})
   @Override
   public NotificationEventResponse getNextNotification(long lastEventId, int maxEvents,

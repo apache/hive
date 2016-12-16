@@ -165,6 +165,7 @@ import org.apache.hadoop.hive.ql.plan.DropTableDesc;
 import org.apache.hadoop.hive.ql.plan.FileMergeDesc;
 import org.apache.hadoop.hive.ql.plan.GrantDesc;
 import org.apache.hadoop.hive.ql.plan.GrantRevokeRoleDDL;
+import org.apache.hadoop.hive.ql.plan.InsertTableDesc;
 import org.apache.hadoop.hive.ql.plan.ListBucketingCtx;
 import org.apache.hadoop.hive.ql.plan.LockDatabaseDesc;
 import org.apache.hadoop.hive.ql.plan.LockTableDesc;
@@ -562,12 +563,24 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       if (cacheMetadataDesc != null) {
         return cacheMetadata(db, cacheMetadataDesc);
       }
+      InsertTableDesc insertTableDesc = work.getInsertTableDesc();
+      if (insertTableDesc != null) {
+        return insertCommitWork(db, insertTableDesc);
+      }
     } catch (Throwable e) {
       failed(e);
       return 1;
     }
     assert false;
     return 0;
+  }
+
+  private int insertCommitWork(Hive db, InsertTableDesc insertTableDesc) throws HiveException {
+    try {
+      return db.getMSC().insertCommit(insertTableDesc.getTable(), insertTableDesc.isOverwrite());
+    } catch (MetaException e) {
+      throw new HiveException(e);
+    }
   }
 
   private int cacheMetadata(Hive db, CacheMetadataDesc desc) throws HiveException {

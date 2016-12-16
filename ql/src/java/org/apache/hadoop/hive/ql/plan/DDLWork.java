@@ -31,6 +31,8 @@ import org.apache.hadoop.hive.ql.plan.Explain.Level;
  */
 public class DDLWork implements Serializable {
   private static final long serialVersionUID = 1L;
+
+  private InsertTableDesc insertTableDesc;
   private CreateIndexDesc createIndexDesc;
   private AlterIndexDesc alterIndexDesc;
   private DropIndexDesc dropIdxDesc;
@@ -522,6 +524,12 @@ public class DDLWork implements Serializable {
       CacheMetadataDesc cacheMetadataDesc) {
     this(inputs, outputs);
     this.cacheMetadataDesc = cacheMetadataDesc;
+  }
+
+  public DDLWork(HashSet<ReadEntity> inputs, HashSet<WriteEntity> outputs,
+          InsertTableDesc insertTableDesc) {
+    this(inputs, outputs);
+    this.insertTableDesc = insertTableDesc;
   }
 
   /**
@@ -1184,5 +1192,14 @@ public class DDLWork implements Serializable {
 
   public void setShowConfDesc(ShowConfDesc showConfDesc) {
     this.showConfDesc = showConfDesc;
+  }
+
+  @Explain(displayName = "Commit insert operator", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
+  public InsertTableDesc getInsertTableDesc() {
+    return insertTableDesc;
+  }
+
+  public void setInsertTableDesc(InsertTableDesc insertTableDesc) {
+    this.insertTableDesc = insertTableDesc;
   }
 }

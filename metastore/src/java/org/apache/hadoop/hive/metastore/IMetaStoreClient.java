@@ -1506,6 +1506,8 @@ public interface IMetaStoreClient {
                             DataOperationType operationType)
     throws TException;
 
+  int insertCommit(Table table, boolean overwrite);
+
   /**
    * A filter provided by the client that determines if a given notification event should be
    * returned.
@@ -1631,7 +1633,7 @@ public interface IMetaStoreClient {
     List<SQLPrimaryKey> primaryKeys, List<SQLForeignKey> foreignKeys)
     throws AlreadyExistsException, InvalidObjectException, MetaException, NoSuchObjectException, TException;
 
-  void dropConstraint(String dbName, String tableName, String constraintName) throws 
+  void dropConstraint(String dbName, String tableName, String constraintName) throws
     MetaException, NoSuchObjectException, TException;
 
   void addPrimaryKey(List<SQLPrimaryKey> primaryKeyCols) throws
