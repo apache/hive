@@ -31,7 +31,10 @@ public class DiskRangeList extends DiskRange {
     super(offset, end);
   }
 
-  /** Replaces this element with another in the list; returns the new element. */
+  /** Replaces this element with another in the list; returns the new element.
+   * @param other the disk range to swap into this list
+   * @return the new element
+   */
   public DiskRangeList replaceSelfWith(DiskRangeList other) {
     other.prev = this.prev;
     other.next = this.next;
@@ -47,7 +50,8 @@ public class DiskRangeList extends DiskRange {
 
   /**
    * Inserts an intersecting range before current in the list and adjusts offset accordingly.
-   * @returns the new element.
+   * @param other the element to insert
+   * @return the new element.
    */
   public DiskRangeList insertPartBefore(DiskRangeList other) {
     assert other.end >= this.offset;
@@ -63,7 +67,8 @@ public class DiskRangeList extends DiskRange {
 
   /**
    * Inserts an element after current in the list.
-   * @returns the new element.
+   * @param other the new element to insert
+   * @return the new element.
    * */
   public DiskRangeList insertAfter(DiskRangeList other) {
     other.next = this.next;
@@ -77,7 +82,8 @@ public class DiskRangeList extends DiskRange {
 
   /**
    * Inserts an intersecting range after current in the list and adjusts offset accordingly.
-   * @returns the new element.
+   * @param other the new element to insert
+   * @return the new element.
    */
   public DiskRangeList insertPartAfter(DiskRangeList other) {
     assert other.offset <= this.end;
@@ -106,7 +112,10 @@ public class DiskRangeList extends DiskRange {
     this.next = this.prev = null;
   }
 
-  /** Splits current element in the list, using DiskRange::slice */
+  /** Splits current element in the list, using DiskRange::slice.
+   * @param cOffset the position to split the list
+   * @return the split list
+   */
   public final DiskRangeList split(long cOffset) {
     insertAfter((DiskRangeList)this.sliceAndShift(cOffset, end, 0));
     return replaceSelfWith((DiskRangeList)this.sliceAndShift(offset, cOffset, 0));

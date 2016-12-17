@@ -183,6 +183,7 @@
     <stax.version>1.0.1</stax.version>
     <slf4j.version>1.7.10</slf4j.version>
     <ST4.version>4.0.4</ST4.version>
+    <storage-api.version>2.3.0-SNAPSHOT</storage-api.version>
     <tez.version>0.8.4</tez.version>
     <slider.version>0.90.2-incubating</slider.version>
     <super-csv.version>2.2.0</super-csv.version>
@@ -506,6 +507,11 @@
         <groupId>stax</groupId>
         <artifactId>stax-api</artifactId>
         <version>${stax.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.hive</groupId>
+        <artifactId>hive-storage-api</artifactId>
+        <version>${storage-api.version}</version>
       </dependency>
       <dependency>
         <groupId>org.apache.pig</groupId>

@@ -50,7 +50,7 @@ public interface DataCache {
    *    return both ranges). It should really be same as #1, however currently ORC uses estimated
    *    end offsets; if we don't return the end block, the caller may read it from disk needlessly.
    *
-   * @param fileId Unique ID of the target file on the file system.
+   * @param fileKey Unique ID of the target file on the file system.
    * @param range A set of DiskRange-s (linked list) that is to be retrieved. May be modified.
    * @param baseOffset base offset for the ranges (stripe/stream offset in case of ORC).
    * @param factory A factory to produce DiskRangeList-s out of cached MemoryBuffer-s.
@@ -72,7 +72,7 @@ public interface DataCache {
    * caller is done with it. Buffers rejected due to conflict will neither be locked, nor
    * automatically deallocated. The caller must take care to discard these buffers.
    *
-   * @param fileId Unique ID of the target file on the file system.
+   * @param fileKey Unique ID of the target file on the file system.
    * @param ranges The ranges for which the data is being cached. These objects will not be stored.
    * @param data The data for the corresponding ranges.
    * @param baseOffset base offset for the ranges (stripe/stream offset in case of ORC).
@@ -84,17 +84,20 @@ public interface DataCache {
   /**
    * Releases the buffer returned by getFileData/provided to putFileData back to cache.
    * See respective javadocs for details.
+   * @param buffer the buffer to release
    */
   void releaseBuffer(MemoryBuffer buffer);
 
   /**
    * Notifies the cache that the buffer returned from getFileData/provided to putFileData will
    * be used by another consumer and therefore released multiple times (one more time per call).
+   * @param buffer the buffer to reuse
    */
   void reuseBuffer(MemoryBuffer buffer);
 
   /**
    * Gets the allocator associated with this DataCache.
+   * @return the allocator
    */
   Allocator getAllocator();
 }

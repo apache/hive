@@ -235,7 +235,7 @@ public class FastHiveDecimal {
 
   protected void fastFractionPortion() {
     FastHiveDecimalImpl.fastFractionPortion(
-        fastSignum, fast0, fast1, fast2, fastIntegerDigitCount, fastScale,
+        fastSignum, fast0, fast1, fast2, fastScale,
         this);
   }
 

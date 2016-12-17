@@ -387,7 +387,7 @@ public class BytesColumnVector extends ColumnVector {
     }
     if (noNulls || !isNull[row]) {
       buffer.append('"');
-      buffer.append(new String(this.buffer, start[row], length[row]));
+      buffer.append(new String(vector[row], start[row], length[row]));
       buffer.append('"');
     } else {
       buffer.append("null");
