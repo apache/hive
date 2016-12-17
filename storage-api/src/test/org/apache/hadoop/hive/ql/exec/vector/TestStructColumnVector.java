@@ -20,6 +20,10 @@ package org.apache.hadoop.hive.ql.exec.vector;
 
 import org.junit.Test;
 
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.sql.Timestamp;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -91,5 +95,37 @@ public class TestStructColumnVector {
     input.reset();
     assertEquals(false, input1.isRepeating);
     assertEquals(true, input.noNulls);
+  }
+
+  @Test
+  public void testStringify() throws IOException {
+    VectorizedRowBatch batch = new VectorizedRowBatch(2);
+    LongColumnVector x1 = new LongColumnVector();
+    TimestampColumnVector x2 = new TimestampColumnVector();
+    StructColumnVector x = new StructColumnVector(1024, x1, x2);
+    BytesColumnVector y = new BytesColumnVector();
+    batch.cols[0] = x;
+    batch.cols[1] = y;
+    batch.reset();
+    Timestamp ts = Timestamp.valueOf("2000-01-01 00:00:00");
+    for(int r=0; r < 10; ++r) {
+      batch.size += 1;
+      x1.vector[r] = 3 * r;
+      ts.setTime(ts.getTime() + 1000);
+      x2.set(r, ts);
+      byte[] buffer = ("value " + r).getBytes(StandardCharsets.UTF_8);
+      y.setRef(r, buffer, 0, buffer.length);
+    }
+    final String EXPECTED = ("[[0, 2000-01-01 00:00:01.0], \"value 0\"]\n" +
+        "[[3, 2000-01-01 00:00:02.0], \"value 1\"]\n" +
+        "[[6, 2000-01-01 00:00:03.0], \"value 2\"]\n" +
+        "[[9, 2000-01-01 00:00:04.0], \"value 3\"]\n" +
+        "[[12, 2000-01-01 00:00:05.0], \"value 4\"]\n" +
+        "[[15, 2000-01-01 00:00:06.0], \"value 5\"]\n" +
+        "[[18, 2000-01-01 00:00:07.0], \"value 6\"]\n" +
+        "[[21, 2000-01-01 00:00:08.0], \"value 7\"]\n" +
+        "[[24, 2000-01-01 00:00:09.0], \"value 8\"]\n" +
+        "[[27, 2000-01-01 00:00:10.0], \"value 9\"]");
+    assertEquals(EXPECTED, batch.toString());
   }
 }

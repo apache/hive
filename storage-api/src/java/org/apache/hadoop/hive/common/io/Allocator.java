@@ -42,12 +42,22 @@ public interface Allocator {
    * Creates an unallocated memory buffer object. This object can be passed to allocateMultiple
    * to allocate; this is useful if data structures are created for separate buffers that can
    * later be allocated together.
+   * @return a new unallocated memory buffer
    */
   MemoryBuffer createUnallocated();
-  /** Deallocates a memory buffer. */
+
+  /** Deallocates a memory buffer.
+   * @param buffer the buffer to deallocate
+   */
   void deallocate(MemoryBuffer buffer);
-  /** Whether the allocator uses direct buffers. */
+
+  /** Whether the allocator uses direct buffers.
+   * @return are they direct buffers?
+   */
   boolean isDirectAlloc();
-  /** Maximum allocation size supported by this allocator. */
+
+  /** Maximum allocation size supported by this allocator.
+   * @return a number of bytes
+   */
   int getMaxAllocation();
 }

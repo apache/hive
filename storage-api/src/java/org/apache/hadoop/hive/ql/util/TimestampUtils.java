@@ -109,7 +109,7 @@ public class TimestampUtils {
    * is the nanoseconds and integer part is the number of seconds.
    *
    * This is a HiveDecimalWritable variation with supplied scratch objects.
-   * @param decdecWritable
+   * @param decWritable
    * @param scratchDecWritable1
    * @param scratchDecWritable2
    * @return
