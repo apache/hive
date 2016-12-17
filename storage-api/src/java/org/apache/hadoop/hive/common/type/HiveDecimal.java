@@ -47,7 +47,7 @@ import java.math.BigInteger;
  *       DECIMAL(precision, scale)}
  * }
  * <p>
- * The declared scale must be <= precision.
+ * The declared scale must be &lt;= precision.
  * <p>
  * Use DECIMAL instead of DOUBLE when exact numeric accuracy is required.  Not all decimal numbers
  * (radix 10) are exactly representable in the binary (radix 2 based) floating point type DOUBLE and
@@ -185,7 +185,7 @@ public final class HiveDecimal extends FastHiveDecimal implements Comparable<Hiv
    * <p>
    *   The Hive function is ROUND.
    * <p>
-   *   For result, throw away round fraction.  If the round fraction is >= 0.5, then add 1 when
+   *   For result, throw away round fraction.  If the round fraction is &gt;= 0.5, then add 1 when
    *   positive and subtract 1 when negative.  So, the sign is irrelevant.
    * <p>
    *      (Example here rounds at scale 0)
@@ -264,6 +264,8 @@ public final class HiveDecimal extends FastHiveDecimal implements Comparable<Hiv
 
   /**
    * Create a HiveDecimal from a FastHiveDecimal object. Used by HiveDecimalWritable.
+   * @param fastDec the value to set
+   * @return new hive decimal
    */
   @HiveDecimalVersionV2
   public static HiveDecimal createFromFast(FastHiveDecimal fastDec) {
@@ -279,14 +281,14 @@ public final class HiveDecimal extends FastHiveDecimal implements Comparable<Hiv
    * 99,999,999,999,999,999,999,999,999,999,999,999,999 or 10^38 - 1.
    *
    * When the BigDecimal value's precision exceeds MAX_PRECISION and there are fractional digits
-   * because of scale > 0, then lower digits are trimmed off with rounding to meet the
+   * because of scale &gt; 0, then lower digits are trimmed off with rounding to meet the
    * MAX_PRECISION requirement.
    *
    * Also, BigDecimal supports negative scale -- which means multiplying the value by 10^abs(scale).
    * And, BigDecimal allows for a non-zero scale for zero.  We normalize that so zero always has
    * scale 0.
    *
-   * @param bigDecimal
+   * @param bigDecimal the value to set
    * @return  The HiveDecimal with the BigDecimal's value adjusted down to a maximum precision.
    *          Otherwise, null is returned for overflow.
    */
@@ -297,7 +299,7 @@ public final class HiveDecimal extends FastHiveDecimal implements Comparable<Hiv
 
   /**
    * Same as the above create method, except fractional digit rounding can be turned off.
-   * @param bigDecimal
+   * @param bigDecimal the value to set
    * @param allowRounding  True requires all of the bigDecimal value be converted to the decimal
    *                       without loss of precision.
    * @return
@@ -318,7 +320,7 @@ public final class HiveDecimal extends FastHiveDecimal implements Comparable<Hiv
    * We will have overflow if BigInteger exceed MAX_PRECISION digits or
    * 99,999,999,999,999,999,999,999,999,999,999,999,999 or 10^38 - 1.
    *
-   * @param bigInteger
+   * @param bigInteger the value to set
    * @return  A HiveDecimal object with the exact BigInteger's value.
    *          Otherwise, null is returned on overflow.
    */
@@ -341,11 +343,11 @@ public final class HiveDecimal extends FastHiveDecimal implements Comparable<Hiv
    * The resulting decimal will have fractional digits when the specified scale is greater than 0.
    *
    * When the BigInteger's value's precision exceeds MAX_PRECISION and there are fractional digits
-   * because of scale > 0, then lower digits are trimmed off with rounding to meet the
+   * because of scale &gt; 0, then lower digits are trimmed off with rounding to meet the
    * MAX_PRECISION requirement.
    *
-   * @param bigInteger
-   * @param scale
+   * @param bigInteger the value to set
+   * @param scale the scale to set
    * @return  A HiveDecimal object with the BigInteger's value adjusted for scale.
    *          Otherwise, null is returned on overflow.
    */
@@ -365,6 +367,8 @@ public final class HiveDecimal extends FastHiveDecimal implements Comparable<Hiv
    * We support parsing a decimal with an exponent because the previous version
    * (i.e. OldHiveDecimal) uses the BigDecimal parser and was able to.
    *
+   * @param string the string to parse
+   * @return a new hive decimal
    */
   @HiveDecimalVersionV1
   public static HiveDecimal create(String string) {
@@ -378,9 +382,9 @@ public final class HiveDecimal extends FastHiveDecimal implements Comparable<Hiv
 
   /**
    * Same as the method above, except blanks before and after are tolerated.
-   * @param string
+   * @param string the string to parse
    * @param trimBlanks  True specifies leading and trailing blanks are to be ignored.
-   * @return
+   * @return a new hive decimal
    */
   @HiveDecimalVersionV2
   public static HiveDecimal create(String string, boolean trimBlanks) {
@@ -766,7 +770,7 @@ public final class HiveDecimal extends FastHiveDecimal implements Comparable<Hiv
    * Is does the equivalent of a setScale(int newScale).  So, more than 38 digits may be returned.
    * See that method for more details on how this can happen.
    * <p>
-   * @param scale The number of digits after the decimal point
+   * @param formatScale The number of digits after the decimal point
    * @return The scaled decimal representation string representation.
    */
   @HiveDecimalVersionV1
@@ -894,7 +898,7 @@ public final class HiveDecimal extends FastHiveDecimal implements Comparable<Hiv
   /**
    * Are two decimal content (values) equal?
    * <p>
-   * @obj   The 2nd decimal.
+   * @param obj   The 2nd decimal.
    * @return  When obj is null or not class HiveDecimal, the return is false.
    *          Otherwise, returns true when the decimal values are exactly equal.
    */

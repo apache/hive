@@ -191,13 +191,13 @@ public abstract class ColumnVector {
      * This method is deliberately *not* recursive because the complex types
      * can easily have more (or less) children than the upper levels.
      * @param size the new minimum size
-     * @param presesrveData should the old data be preserved?
+     * @param preserveData should the old data be preserved?
      */
-    public void ensureSize(int size, boolean presesrveData) {
+    public void ensureSize(int size, boolean preserveData) {
       if (isNull.length < size) {
         boolean[] oldArray = isNull;
         isNull = new boolean[size];
-        if (presesrveData && !noNulls) {
+        if (preserveData && !noNulls) {
           if (isRepeating) {
             isNull[0] = oldArray[0];
           } else {

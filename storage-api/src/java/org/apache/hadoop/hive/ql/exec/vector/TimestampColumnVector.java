@@ -182,7 +182,7 @@ public class TimestampColumnVector extends ColumnVector {
 
   /**
    * Return a double representation of a Timestamp.
-   * @param elementNum
+   * @param timestamp
    * @return
    */
   public static double getDouble(Timestamp timestamp) {

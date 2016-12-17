@@ -26,8 +26,6 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.RoundingMode;
 
-import org.apache.commons.lang.StringUtils;
-
 /**
  *    This class is a companion to the FastHiveDecimal class that separates the essential of code
  *    out of FastHiveDecimal into static methods in this class so that they can be used directly
@@ -254,8 +252,12 @@ public class FastHiveDecimalImpl extends FastHiveDecimal {
    * NOTE: The fastSetFromBytes method requires the caller to pass a fastResult parameter has been
    * reset for better performance.
    *
+   * @param bytes the bytes to copy from
+   * @param offset the starting location in bytes
+   * @param length the number of bytes to use from bytes
+   * @param trimBlanks should spaces be trimmed?
    * @param fastResult  True if the byte array slice was successfully converted to a decimal.
-   * @return
+   * @return Was a valid number found?
    */
   public static boolean fastSetFromBytes(byte[] bytes, int offset, int length, boolean trimBlanks,
       FastHiveDecimal fastResult) {
@@ -681,6 +683,12 @@ public class FastHiveDecimalImpl extends FastHiveDecimal {
    * NOTE: The fastSetFromDigitsOnlyBytesAndScale method requires the caller to pass a fastResult
    * parameter has been reset for better performance.
    *
+   * @param isNegative is the number negative
+   * @param bytes the bytes to read from
+   * @param offset the position to start at
+   * @param length the number of bytes to read
+   * @param scale the scale of the number
+   * @param fastResult an object it into
    * @return True if the sign, digits, and scale were successfully converted to a decimal.
    */
   public static boolean fastSetFromDigitsOnlyBytesAndScale(
@@ -826,6 +834,9 @@ public class FastHiveDecimalImpl extends FastHiveDecimal {
    * NOTE: The fastSetFromBigDecimal method requires the caller to pass a fastResult
    * parameter has been reset for better performance.
    *
+   * @param bigDecimal the big decimal to copy
+   * @param allowRounding is rounding allowed?
+   * @param fastResult an object to reuse
    * @return True if the BigDecimal could be converted to our decimal representation.
    */
   public static boolean fastSetFromBigDecimal(
@@ -891,6 +902,9 @@ public class FastHiveDecimalImpl extends FastHiveDecimal {
    * NOTE: The fastSetFromString method requires the caller to pass a fastResult
    * parameter has been reset for better performance.
    *
+   * @param string the string to parse
+   * @param trimBlanks should the blanks be trimmed
+   * @param result an object to reuse
    * @return True if the String was successfully converted to a decimal.
    */
   public static boolean fastSetFromString(
@@ -904,7 +918,8 @@ public class FastHiveDecimalImpl extends FastHiveDecimal {
    *
    * NOTE: The fastSetFromString method requires the caller to pass a fastResult
    * parameter has been reset for better performance.
-   *
+   * @param intValue the value to set
+   * @param fastResult an object to reuse
    */
   public static void fastSetFromInt(int intValue, FastHiveDecimal fastResult) {
     if (intValue == 0) {
@@ -930,6 +945,8 @@ public class FastHiveDecimalImpl extends FastHiveDecimal {
    * NOTE: The fastSetFromLong method requires the caller to pass a fastResult
    * parameter has been reset for better performance.
    *
+   * @param longValue the value to set
+   * @param fastResult an object to reuse
    */
   public static void fastSetFromLong(
       long longValue, FastHiveDecimal fastResult) {
@@ -971,6 +988,10 @@ public class FastHiveDecimalImpl extends FastHiveDecimal {
    * NOTE: The fastSetFromLongAndScale method requires the caller to pass a fastResult
    * parameter has been reset for better performance.
    *
+   * @param longValue the value to set as a long
+   * @param scale the scale to use
+   * @param fastResult an object to reuse
+   * @return was the conversion successful?
    */
   public static boolean fastSetFromLongAndScale(
       long longValue, int scale, FastHiveDecimal fastResult) {
@@ -999,6 +1020,9 @@ public class FastHiveDecimalImpl extends FastHiveDecimal {
    * NOTE: The fastSetFromFloat method requires the caller to pass a fastResult
    * parameter has been reset for better performance.
    *
+   * @param floatValue the value to set
+   * @param fastResult an object to reuse
+   * @return was the conversion successful?
    */
   public static boolean fastSetFromFloat(
       float floatValue, FastHiveDecimal fastResult) {
@@ -1014,6 +1038,9 @@ public class FastHiveDecimalImpl extends FastHiveDecimal {
    * NOTE: The fastSetFromDouble method requires the caller to pass a fastResult
    * parameter has been reset for better performance.
    *
+   * @param doubleValue the value to set
+   * @param fastResult an object to reuse
+   * @return was the conversion successful?
    */
   public static boolean fastSetFromDouble(
       double doubleValue, FastHiveDecimal fastResult) {
@@ -1032,6 +1059,8 @@ public class FastHiveDecimalImpl extends FastHiveDecimal {
    * NOTE: The fastSetFromBigInteger method requires the caller to pass a fastResult
    * parameter has been reset for better performance.
    *
+   * @param bigInteger the value to set
+   * @param fastResult an object to reuse
    * @return Return true if the BigInteger value fit within HiveDecimal.MAX_PRECISION.  Otherwise,
    *         false for overflow.
    */
@@ -1101,6 +1130,9 @@ public class FastHiveDecimalImpl extends FastHiveDecimal {
    * NOTE: The fastSetFromBigInteger method requires the caller to pass a fastResult
    * parameter has been reset for better performance.
    *
+   * @param bigInteger the value to set as an integer
+   * @param scale the scale to use
+   * @param fastResult an object to reuse
    * @return True if the BigInteger and scale were successfully converted to a decimal.
    */
   public static boolean fastSetFromBigInteger(
@@ -1224,10 +1256,17 @@ public class FastHiveDecimalImpl extends FastHiveDecimal {
    *
    * NOTE: The fastFractionPortion method requires the caller to pass a fastResult
    * parameter has been reset for better performance.
+   *
+   * @param fastSignum the sign of the number (1, 0, or -1)
+   * @param fast0 high bits
+   * @param fast1 second word bits
+   * @param fast2 third word bits
+   * @param fastScale the scale
+   * @param fastResult an object to reuse
    */
   public static void fastFractionPortion(
       int fastSignum, long fast0, long fast1, long fast2,
-      int fastIntegerDigitCount, int fastScale,
+      int fastScale,
       FastHiveDecimal fastResult) {
 
     if (fastSignum == 0 || fastScale == 0) {
@@ -1288,6 +1327,14 @@ public class FastHiveDecimalImpl extends FastHiveDecimal {
    *
    * NOTE: The fastFractionPortion method requires the caller to pass a fastResult
    * parameter has been reset for better performance.
+   *
+   * @param fastSignum the sign of the number (1, 0, or -1)
+   * @param fast0 high bits
+   * @param fast1 second word bits
+   * @param fast2 third word bits
+   * @param fastIntegerDigitCount the number of integer digits
+   * @param fastScale the scale
+   * @param fastResult an object to reuse
    */
   public static void fastIntegerPortion(
       int fastSignum, long fast0, long fast1, long fast2,
@@ -1326,9 +1373,12 @@ public class FastHiveDecimalImpl extends FastHiveDecimal {
    * We let L and M be different to support the SerializationUtil serialization where the lower
    * word is 62 bits and the remaining words are 63 bits...
    *
-   * The fast decimal middleWordMultiplier is 2^L.
-   * The fast decimal highWordMultiplier is 2^(M+L).
-   *
+   * @param lowerWord the lower internal representation
+   * @param middleWord the middle internal representation
+   * @param highWord the high internal representation
+   * @param middleWordMultiplier 2^L
+   * @param highWordMultiplier 2^(M+L)
+   * @param fastResult an object to reuse
    * @return True if the conversion of the 3 binary words to decimal was successful.
    */
   public static boolean doBinaryToDecimalConversion(
@@ -1505,22 +1555,21 @@ public class FastHiveDecimalImpl extends FastHiveDecimal {
    *
    * We produce 1 binary word (remainder) and a decimal quotient for the higher portion.
    *
-   * So, the parameters are:
-   *
-   *   The input decimal (dividendFast0, dividendFast1, and dividendFast2) that will produce a
-   *   single binary word remainder and decimal quotient.
-   *
-   *   The fast decimal inverse of 2^N = 2^-N (fastInverseConst).
-   *
-   *   Where in the inverse multiplication result (quotientIntegerWordNum and
-   *   quotientIntegerDigitNum) to find the quotient integer decimal portion.
-   *
-   *   The fast decimal multiplier for converting the quotient integer to the larger number to
-   *   subtract from the input decimal to get the remainder.
-   *
-   *   And, the scratch longs where to store the result remainder word (index 3) and result quotient
-   *   decimal longwords (indices 0 .. 2).
-   *
+   * @param dividendFast0 The input decimal that will produce a
+   *                      single binary word remainder and decimal quotient.
+   * @param dividendFast1 second word
+   * @param dividendFast2 third word
+   * @param fastInverseConst the fast decimal inverse of 2^N = 2^-N
+   * @param quotientIntegerWordNum the word in the inverse multiplication result
+   *                               to find the quotient integer decimal portion
+   * @param quotientIntegerDigitNum the digit in the result to find the quotient
+   *                                integer decimal portion
+   * @param fastMultiplierConst The fast decimal multiplier for converting the
+   *                            quotient integer to the larger number to
+   *                            subtract from the input decimal to get the
+   *                            remainder.
+   * @param scratchLongs where to store the result remainder word (index 3) and
+   *                     result quotient decimal longwords (indices 0 .. 2)
    * @return True if the results were produced without overflow.
    */
   public static boolean doDecimalToBinaryDivisionRemainder(
@@ -1769,11 +1818,18 @@ public class FastHiveDecimalImpl extends FastHiveDecimal {
    * performance.  Pass a FAST_SCRATCH_BUFFER_LEN_SERIALIZATION_UTILS_READ byte array for
    * scratchBytes.
    *
+   * @param inputStream the stream to read from
+   * @param scale the scale of the number
+   * @param scratchBytes  An array for the binary to decimal conversion for better
+   *                      performance.  Must have length of
+   *                      FAST_SCRATCH_BUFFER_LEN_SERIALIZATION_UTILS_READ.
+   * @param fastResult an object to reuse
    * @return The deserialized decimal or null if the conversion failed.
+   * @throws IOException failures in reading the stream
    */
   public static boolean fastSerializationUtilsRead(InputStream inputStream, int scale,
       byte[] scratchBytes,
-      FastHiveDecimal fastResult) throws IOException, EOFException {
+      FastHiveDecimal fastResult) throws IOException {
 
     // Following a suggestion from Gopal, quickly read in the bytes from the stream.
     // CONSIDER: Have ORC read the whole input stream into a big byte array with one call to
@@ -1909,7 +1965,16 @@ public class FastHiveDecimalImpl extends FastHiveDecimal {
    *    BigInteger.bitLength -- we do not emulate that.  SerializationUtils.readBigInteger will
    *    produce the same result for both.
    *
+   * @param outputStream the stream to write to
+   * @param fastSignum the sign digit (-1, 0, or +1)
+   * @param fast0 word 0 of the internal representation
+   * @param fast1 word 1 of the internal representation
+   * @param fast2 word 2 of the internal representation
+   * @param fastIntegerDigitCount unused
+   * @param fastScale unused
+   * @param scratchLongs scratch space
    * @return True if the decimal was successfully serialized into the output stream.
+   * @throws IOException for problems in writing
    */
   public static boolean fastSerializationUtilsWrite(OutputStream outputStream,
       int fastSignum, long fast0, long fast1, long fast2,
@@ -2130,7 +2195,12 @@ public class FastHiveDecimalImpl extends FastHiveDecimal {
    * This method is designed for high performance and does not create an actual BigInteger during
    * binary to decimal conversion.
    *
-   * @return
+   * @param bytes the bytes to read from
+   * @param offset the starting position in the bytes array
+   * @param length the number of bytes to read from the bytes array
+   * @param scale the scale of the number
+   * @param fastResult an object to reused
+   * @return did the conversion succeed?
    */
   public static boolean fastSetFromBigIntegerBytesAndScale(
       byte[] bytes, int offset, int length, int scale,
@@ -2337,8 +2407,12 @@ public class FastHiveDecimalImpl extends FastHiveDecimal {
    * Scratch objects necessary to do the decimal to binary conversion without actually creating a
    * BigInteger object are passed for better performance.
    *
-   * Allocate scratchLongs with SCRATCH_LONGS_LEN longs.
-   * And, allocate buffer with SCRATCH_BUFFER_LEN_BIG_INTEGER_BYTES bytes.
+   * @param fastSignum the sign (-1, 0, or +1)
+   * @param fast0 word 0 of the internal representation
+   * @param fast1 word 1
+   * @param fast2 word 2
+   * @param scratchLongs scratch array of SCRATCH_LONGS_LEN longs
+   * @param buffer scratch array of SCRATCH_BUFFER_LEN_BIG_INTEGER_BYTES bytes
    * @return The number of bytes used for the binary result in buffer.  Otherwise, 0 if the
    *         conversion failed.
    */
@@ -2680,10 +2754,16 @@ public class FastHiveDecimalImpl extends FastHiveDecimal {
    *
    * This emulates the OldHiveDecimal setScale / OldHiveDecimal getInternalStorage() behavior.
    *
-   * @param serializeScale
-   * @param scratchLongs
-   * @param buffer
-   * @return
+   * @param fastSignum the sign number (-1, 0, or +1)
+   * @param fast0 word 0 of the internal representation
+   * @param fast1 word 1
+   * @param fast2 word 2
+   * @param fastIntegerDigitCount the number of integer digits
+   * @param fastScale the scale
+   * @param serializeScale the scale to serialize
+   * @param scratchLongs a scratch array of longs
+   * @param buffer the buffer to serialize into
+   * @return the number of bytes used to serialize the number
    */
   public static int fastBigIntegerBytesScaled(
       final int fastSignum, long fast0, long fast1, long fast2,
@@ -2801,6 +2881,12 @@ public class FastHiveDecimalImpl extends FastHiveDecimal {
    * NOTE: Fractional digits are ignored in the test since fastByteValueClip() will
    *       remove them (round down).
    *
+   * @param fastSignum the sign (-1, 0, or +1)
+   * @param fast0 word 0 of the internal representation
+   * @param fast1 word 1
+   * @param fast2 word 2
+   * @param fastIntegerDigitCount the number of integer digits
+   * @param fastScale the scale of the number
    * @return True when fastByteValueClip() will return a correct byte.
    */
   public static boolean fastIsByte(
@@ -2953,6 +3039,12 @@ public class FastHiveDecimalImpl extends FastHiveDecimal {
    * NOTE: Fractional digits are ignored in the test since fastShortValueClip() will
    *       remove them (round down).
    *
+   * @param fastSignum the sign (-1, 0, or +1)
+   * @param fast0 word 0 of the internal representation
+   * @param fast1 word 1
+   * @param fast2 word 2
+   * @param fastIntegerDigitCount the number of integer digits
+   * @param fastScale the scale of the number
    * @return True when fastShortValueClip() will return a correct short.
    */
   public static boolean fastIsShort(
@@ -3100,6 +3192,12 @@ public class FastHiveDecimalImpl extends FastHiveDecimal {
    * NOTE: Fractional digits are ignored in the test since fastIntValueClip() will
    *       remove them (round down).
    *
+   * @param fastSignum the sign (-1, 0, or +1)
+   * @param fast0 word 0 of the internal representation
+   * @param fast1 word 1
+   * @param fast2 word 2
+   * @param fastIntegerDigitCount the number of integer digits
+   * @param fastScale the scale of the number
    * @return True when fastIntValueClip() will return a correct int.
    */
   public static boolean fastIsInt(
@@ -3247,6 +3345,12 @@ public class FastHiveDecimalImpl extends FastHiveDecimal {
    * NOTE: Fractional digits are ignored in the test since fastLongValueClip() will
    *       remove them (round down).
    *
+   * @param fastSignum the sign (-1, 0, or +1)
+   * @param fast0 word 0 of the internal representation
+   * @param fast1 word 1
+   * @param fast2 word 2
+   * @param fastIntegerDigitCount the number of integer digits
+   * @param fastScale the scale of the number
    * @return True when fastLongValueClip() will return a correct long.
    */
   public static boolean fastIsLong(
@@ -3449,6 +3553,13 @@ public class FastHiveDecimalImpl extends FastHiveDecimal {
   /**
    * Get a BigInteger representing the decimal's digits without a dot.
    *
+   * @param fastSignum the sign (-1, 0, or +1)
+   * @param fast0 word 0 of the internal representation
+   * @param fast1 word 1
+   * @param fast2 word 2
+   * @param fastIntegerDigitCount the number of integer digits
+   * @param fastScale the scale of the number
+   * @param fastSerializationScale the scale to serialize
    * @return Returns a signed BigInteger.
    */
   public static BigInteger fastBigIntegerValue(
@@ -3521,7 +3632,13 @@ public class FastHiveDecimalImpl extends FastHiveDecimal {
    * NOTE: We are not representing our decimal as BigDecimal now as OldHiveDecimal did, so this
    * is now slower.
    *
-   * @return
+   * @param fastSignum the sign (-1, 0, or +1)
+   * @param fast0 word 0 of the internal representation
+   * @param fast1 word 1
+   * @param fast2 word 2
+   * @param fastIntegerDigitCount the number of integer digits
+   * @param fastScale the scale of the number
+   * @return the BigDecimal equivalent
    */
   public static BigDecimal fastBigDecimalValue(
       int fastSignum, long fast0, long fast1, long fast2,
@@ -3872,6 +3989,13 @@ public class FastHiveDecimalImpl extends FastHiveDecimal {
    * Used by map join and other Hive internal purposes where performance is important.
    *
    * IMPORTANT: See comments for fastHashCode(), too.
+   * @param fastSignum the sign (-1, 0, or +1)
+   * @param fast0 word 0 of the internal representation
+   * @param fast1 word 1
+   * @param fast2 word 2
+   * @param fastIntegerDigitCount the number of integer digits
+   * @param fastScale the scale of the number
+   * @return the hash code
    */
   public static int fastNewFasterHashCode(
       int fastSignum, long fast0, long fast1, long fast2, int fastIntegerDigitCount, int fastScale) {
@@ -3894,7 +4018,14 @@ public class FastHiveDecimalImpl extends FastHiveDecimal {
    *
    * NOTE: It is necessary to create a BigDecimal object and use its hash code, so this method is
    *       slow.
-   * @return
+   *
+   * @param fastSignum the sign (-1, 0, or +1)
+   * @param fast0 word 0 of the internal representation
+   * @param fast1 word 1
+   * @param fast2 word 2
+   * @param fastIntegerDigitCount the number of integer digits
+   * @param fastScale the scale of the number
+   * @return the hash code
    */
   public static int fastHashCode(
       int fastSignum, long fast0, long fast1, long fast2, int fastIntegerDigitCount, int fastScale) {
@@ -4773,6 +4904,15 @@ public class FastHiveDecimalImpl extends FastHiveDecimal {
    * ceiling(12400.8302, -2) = 12500     // E.g. Positive case FAST_ROUND_CEILING
    *            rr rrrr
    *
+   * @param fastSignum the sign (-1, 0, or +1)
+   * @param fast0 word 0 of the internal representation
+   * @param fast1 word 1
+   * @param fast2 word 2
+   * @param fastIntegerDigitCount the number of integer digits
+   * @param fastScale the scale of the number
+   * @param roundPower the power to round to
+   * @param fastResult an object to reuse
+   * @return was the operation successful
    */
   public static boolean fastRoundIntegerUp(
       int fastSignum, long fast0, long fast1, long fast2,
@@ -4855,6 +4995,16 @@ public class FastHiveDecimalImpl extends FastHiveDecimal {
    * The fraction being scaled away is thrown away.
    *
    * The signum will be updated if the result is 0, otherwise the original sign is unchanged.
+   *
+   * @param fastSignum the sign (-1, 0, or +1)
+   * @param fast0 word 0 of the internal representation
+   * @param fast1 word 1
+   * @param fast2 word 2
+   * @param fastIntegerDigitCount the number of integer digits
+   * @param fastScale the scale of the number
+   * @param roundPower the power to round to
+   * @param fastResult an object to reuse
+   * @return was the operation successful?
    */
   public static boolean fastRoundIntegerDown(
       int fastSignum, long fast0, long fast1, long fast2,
@@ -4924,8 +5074,17 @@ public class FastHiveDecimalImpl extends FastHiveDecimal {
   /**
    * Fast decimal scale down by factor of 10 with rounding ROUND_HALF_UP.
    *
-   * When the fraction being scaled away is >= 0.5, the add 1.
+   * When the fraction being scaled away is &gt;= 0.5, the add 1.
    *
+   * @param fastSignum the sign (-1, 0, or +1)
+   * @param fast0 word 0 of the internal representation
+   * @param fast1 word 1
+   * @param fast2 word 2
+   * @param fastIntegerDigitCount the number of integer digits
+   * @param fastScale the scale of the number
+   * @param roundPower the power to round to
+   * @param fastResult an object to reuse
+   * @return was the operation successful?
    */
   public static boolean fastRoundIntegerHalfUp(
       int fastSignum, long fast0, long fast1, long fast2,
@@ -5014,10 +5173,20 @@ public class FastHiveDecimalImpl extends FastHiveDecimal {
    * Fast decimal scale down by factor of 10 with rounding ROUND_HALF_EVEN.
    *
    * When the fraction being scaled away is exactly 0.5, then round and add 1 only if aaa.
-   * When fraction is not exactly 0.5, then if fraction > 0.5 then add 1.
+   * When fraction is not exactly 0.5, then if fraction &gt; 0.5 then add 1.
    * Otherwise, throw away fraction.
    *
    * The signum will be updated if the result is 0, otherwise the original sign is unchanged.
+   *
+   * @param fastSignum the sign (-1, 0, or +1)
+   * @param fast0 word 0 of the internal representation
+   * @param fast1 word 1
+   * @param fast2 word 2
+   * @param fastIntegerDigitCount the number of integer digits
+   * @param fastScale the scale of the number
+   * @param roundPower the power to round to
+   * @param fastResult an object to reuse
+   * @return was the operation successful?
    */
   public static boolean fastRoundIntegerHalfEven(
       int fastSignum, long fast0, long fast1, long fast2,
@@ -5106,7 +5275,16 @@ public class FastHiveDecimalImpl extends FastHiveDecimal {
    *
    * When the fraction being scaled away is non-zero, return false.
    *
-   * The signum will be updated if the result is 0, otherwise the original sign is unchanged.
+   * The signum will be updated if the result is 0, otherwise the original sign
+   * is unchanged.
+   *
+   * @param fastSignum the sign (-1, 0, or +1)
+   * @param fast0 word 0 of the internal representation
+   * @param fast1 word 1
+   * @param fast2 word 2
+   * @param scaleDown the digits to scale down by
+   * @param fastResult an object to reuse
+   * @return was the operation successful?
    */
   public static boolean fastScaleDownNoRound(
       int fastSignum, long fast0, long fast1, long fast2,
@@ -5210,6 +5388,13 @@ public class FastHiveDecimalImpl extends FastHiveDecimal {
    *
    * When the fraction being scaled away is non-zero, the add 1.
    *
+   * @param fastSignum the sign (-1, 0, or +1)
+   * @param fast0 word 0 of the internal representation
+   * @param fast1 word 1
+   * @param fast2 word 2
+   * @param scaleDown the number of integer digits to scale
+   * @param fastResult an object to reuse
+   * @return was the operation successfule?
    */
   public static boolean fastRoundFractionalUp(
       int fastSignum, long fast0, long fast1, long fast2,
@@ -5272,6 +5457,12 @@ public class FastHiveDecimalImpl extends FastHiveDecimal {
    *
    * The fraction being scaled away is thrown away.
    *
+   * @param fastSignum the sign (-1, 0, or +1)
+   * @param fast0 word 0 of the internal representation
+   * @param fast1 word 1
+   * @param fast2 word 2
+   * @param scaleDown the number of integer digits to scale
+   * @param fastResult an object to reuse
    */
   public static void fastRoundFractionalDown(
       int fastSignum, long fast0, long fast1, long fast2,
@@ -5305,8 +5496,15 @@ public class FastHiveDecimalImpl extends FastHiveDecimal {
   /**
    * Fast decimal scale down by factor of 10 with rounding ROUND_HALF_UP.
    *
-   * When the fraction being scaled away is >= 0.5, the add 1.
+   * When the fraction being scaled away is &gt;= 0.5, the add 1.
    *
+   * @param fastSignum the sign (-1, 0, or +1)
+   * @param fast0 word 0 of the internal representation
+   * @param fast1 word 1
+   * @param fast2 word 2
+   * @param scaleDown the number of integer digits to scale
+   * @param fastResult an object to reuse
+   * @return was the operation successfule?
    */
   public static boolean fastRoundFractionalHalfUp(
       int fastSignum, long fast0, long fast1, long fast2,
@@ -5371,8 +5569,17 @@ public class FastHiveDecimalImpl extends FastHiveDecimal {
   /**
    * Fast decimal scale down by factor of 10 with rounding ROUND_HALF_UP.
    *
-   * When the fraction being scaled away is >= 0.5, the add 1.
+   * When the fraction being scaled away is &gt;= 0.5, the add 1.
    *
+   * @param fastSignum the sign (-1, 0, or +1)
+   * @param fast0 word 0 of the internal representation
+   * @param fast1 word 1
+   * @param fast2 word 2
+   * @param fast3 word 3
+   * @param fast4 word 4
+   * @param scaleDown the number of integer digits to scale
+   * @param fastResult an object to reuse
+   * @return was the operation successfule?
    */
   public static boolean fastRoundFractionalHalfUp5Words(
       int fastSignum, long fast0, long fast1, long fast2, long fast3, long fast4,
@@ -5562,9 +5769,16 @@ public class FastHiveDecimalImpl extends FastHiveDecimal {
    * Fast decimal scale down by factor of 10 with rounding ROUND_HALF_EVEN.
    *
    * When the fraction being scaled away is exactly 0.5, then round and add 1 only if aaa.
-   * When fraction is not exactly 0.5, then if fraction > 0.5 then add 1.
+   * When fraction is not exactly 0.5, then if fraction &gt; 0.5 then add 1.
    * Otherwise, throw away fraction.
    *
+   * @param fastSignum the sign (-1, 0, or +1)
+   * @param fast0 word 0 of the internal representation
+   * @param fast1 word 1
+   * @param fast2 word 2
+   * @param scaleDown the number of integer digits to scale
+   * @param fastResult an object to reuse
+   * @return was the operation successfule?
    */
   public static boolean fastRoundFractionalHalfEven(
       int fastSignum, long fast0, long fast1, long fast2,
@@ -5657,6 +5871,12 @@ public class FastHiveDecimalImpl extends FastHiveDecimal {
    * Fast decimal scale down by factor of 10 with NO rounding.
    *
    * The signum will be updated if the result is 0, otherwise the original sign is unchanged.
+   *
+   * @param fast0 word 0 of the internal representation
+   * @param fast1 word 1
+   * @param fast2 word 2
+   * @param scaleDown the number of integer digits to scale
+   * @param fastResult an object to reuse
    */
   public static void doFastScaleDown(
       long fast0, long fast1, long fast2,
@@ -5733,6 +5953,12 @@ public class FastHiveDecimalImpl extends FastHiveDecimal {
 
   /**
    * Fast decimal scale up by factor of 10.
+   * @param fast0 word 0 of the internal representation
+   * @param fast1 word 1
+   * @param fast2 word 2
+   * @param scaleUp the number of integer digits to scale up by
+   * @param fastResult an object to reuse
+   * @return was the operation successfule?
    */
   public static boolean fastScaleUp(
       long fast0, long fast1, long fast2,
@@ -7492,7 +7718,7 @@ public class FastHiveDecimalImpl extends FastHiveDecimal {
    *  +                            0.0000000000006711991169422033     dec2 (int digits 0, scale 28)
    *
    * Trying to make dec1 to have a scale of 28 (i.e. by adding trailing zeroes) would exceed
-   * MAX_PRECISION (int digits 27 + 28 > 38).
+   * MAX_PRECISION (int digits 27 + 28 &gt; 38).
    *
    * In this example we need to make sure we have enough integer digit room in the result to
    * handle dec1's digits.  In order to maintain that, we will need to get rid of lower
@@ -7507,6 +7733,19 @@ public class FastHiveDecimalImpl extends FastHiveDecimal {
    * So, the simplest thing is to emulate what OldHiveDecimal does and do the full digit addition
    * and then fit the result afterwards.
    *
+   * @param leftSignum The left sign (-1, 0, or +1)
+   * @param leftFast0 The left word 0 of reprentation
+   * @param leftFast1 word 1
+   * @param leftFast2 word 2
+   * @param leftIntegerDigitCount The left number of integer digits
+   * @param leftScale the left scale
+   * @param rightSignum The right sign (-1, 0, or +1)
+   * @param rightFast0 The right word 0 of reprentation
+   * @param rightFast1 word 1
+   * @param rightFast2 word 2
+   * @param rightIntegerDigitCount The right number of integer digits
+   * @param rightScale the right scale
+   * @param fastResult an object to reuse
    * @return True if the addition was successful; Otherwise, false is returned on overflow.
    */
   public static boolean fastAdd(

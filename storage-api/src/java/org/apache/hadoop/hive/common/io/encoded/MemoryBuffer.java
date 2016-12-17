@@ -22,7 +22,11 @@ import java.nio.ByteBuffer;
 
 /** Abstract interface for any class wrapping a ByteBuffer. */
 public interface MemoryBuffer {
-  /** Note - raw buffer should not be modified. */
+  /**
+   * Get the raw byte buffer that backs this buffer.
+   * Note - raw buffer should not be modified.
+   * @return the shared byte buffer
+   */
   public ByteBuffer getByteBufferRaw();
   public ByteBuffer getByteBufferDup();
 }
