@@ -17,7 +17,6 @@
  */
 package org.apache.hadoop.hive.ql.optimizer.calcite.rules;
 
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashSet;
@@ -27,60 +26,61 @@ import java.util.Set;
 
 import org.apache.calcite.adapter.druid.DruidQuery;
 import org.apache.calcite.linq4j.Ord;
-import org.apache.calcite.plan.RelOptCluster;
+import org.apache.calcite.plan.RelOptTable;
 import org.apache.calcite.plan.RelOptUtil;
 import org.apache.calcite.rel.RelNode;
-import org.apache.calcite.rel.core.CorrelationId;
 import org.apache.calcite.rel.core.Project;
+import org.apache.calcite.rel.core.TableScan;
 import org.apache.calcite.rel.type.RelDataType;
-import org.apache.calcite.rel.type.RelDataTypeFactory;
 import org.apache.calcite.rel.type.RelDataTypeField;
 import org.apache.calcite.rex.RexBuilder;
-import org.apache.calcite.rex.RexCorrelVariable;
-import org.apache.calcite.rex.RexFieldAccess;
-import org.apache.calcite.rex.RexLiteral;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.rex.RexPermuteInputsShuttle;
 import org.apache.calcite.rex.RexVisitor;
 import org.apache.calcite.sql.validate.SqlValidator;
-import org.apache.calcite.sql2rel.CorrelationReferenceFinder;
 import org.apache.calcite.sql2rel.RelFieldTrimmer;
 import org.apache.calcite.tools.RelBuilder;
 import org.apache.calcite.util.ImmutableBitSet;
-import org.apache.calcite.util.Util;
 import org.apache.calcite.util.mapping.IntPair;
 import org.apache.calcite.util.mapping.Mapping;
 import org.apache.calcite.util.mapping.MappingType;
 import org.apache.calcite.util.mapping.Mappings;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
+import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveMultiJoin;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan;
 import org.apache.hadoop.hive.ql.parse.ColumnAccessInfo;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 
 public class HiveRelFieldTrimmer extends RelFieldTrimmer {
 
-  protected static final Log LOG = LogFactory.getLog(HiveRelFieldTrimmer.class);
+  protected static final Logger LOG = LoggerFactory.getLogger(HiveRelFieldTrimmer.class);
 
   private ColumnAccessInfo columnAccessInfo;
   private Map<HiveProject, Table> viewProjectToTableSchema;
   private final RelBuilder relBuilder;
+  private final boolean fetchStats;
 
   public HiveRelFieldTrimmer(SqlValidator validator, RelBuilder relBuilder) {
-    super(validator, relBuilder);
-    this.relBuilder = relBuilder;
+    this(validator, relBuilder, false);
   }
 
   public HiveRelFieldTrimmer(SqlValidator validator, RelBuilder relBuilder,
       ColumnAccessInfo columnAccessInfo, Map<HiveProject, Table> viewToTableSchema) {
-    super(validator, relBuilder);
+    this(validator, relBuilder, false);
     this.columnAccessInfo = columnAccessInfo;
     this.viewProjectToTableSchema = viewToTableSchema;
+  }
+
+  public HiveRelFieldTrimmer(SqlValidator validator, RelBuilder relBuilder, boolean fetchStats) {
+    super(validator, relBuilder);
     this.relBuilder = relBuilder;
+    this.fetchStats = fetchStats;
   }
 
   /**
@@ -273,4 +273,44 @@ public class HiveRelFieldTrimmer extends RelFieldTrimmer {
     return super.trimFields(project, fieldsUsed, extraFields);
   }
 
+  @Override
+  public TrimResult trimFields(TableScan tableAccessRel, ImmutableBitSet fieldsUsed,
+      Set<RelDataTypeField> extraFields) {
+    final TrimResult result = super.trimFields(tableAccessRel, fieldsUsed, extraFields);
+    if (fetchStats) {
+      fetchColStats(result.getKey(), tableAccessRel, fieldsUsed, extraFields);
+    }
+    return result;
+  }
+
+  private void fetchColStats(RelNode key, TableScan tableAccessRel, ImmutableBitSet fieldsUsed,
+      Set<RelDataTypeField> extraFields) {
+    final List<Integer> iRefSet = Lists.newArrayList();
+    if (key instanceof Project) {
+      final Project project = (Project) key;
+      for (RexNode rx : project.getChildExps()) {
+        iRefSet.addAll(HiveCalciteUtil.getInputRefs(rx));
+      }
+    } else {
+      final int fieldCount = tableAccessRel.getRowType().getFieldCount();
+      if (fieldsUsed.equals(ImmutableBitSet.range(fieldCount)) && extraFields.isEmpty()) {
+        // get all cols
+        iRefSet.addAll(ImmutableBitSet.range(fieldCount).asList());
+      }
+    }
+
+    //Remove any virtual cols
+    if (tableAccessRel instanceof HiveTableScan) {
+      iRefSet.removeAll(((HiveTableScan)tableAccessRel).getPartOrVirtualCols());
+    }
+
+    if (!iRefSet.isEmpty()) {
+      final RelOptTable table = tableAccessRel.getTable();
+      if (table instanceof RelOptHiveTable) {
+        ((RelOptHiveTable) table).getColStat(iRefSet, true);
+        LOG.debug("Got col stats for {} in {}", iRefSet,
+            tableAccessRel.getTable().getQualifiedName());
+      }
+    }
+  }
 }
