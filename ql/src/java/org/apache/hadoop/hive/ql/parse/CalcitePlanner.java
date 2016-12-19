@@ -1428,7 +1428,8 @@ public class CalcitePlanner extends SemanticAnalyzer {
       // 7. Projection Pruning (this introduces select above TS & hence needs to be run last due to PP)
       perfLogger.PerfLogBegin(this.getClass().getName(), PerfLogger.OPTIMIZER);
       HiveRelFieldTrimmer fieldTrimmer = new HiveRelFieldTrimmer(null,
-          HiveRelFactories.HIVE_BUILDER.create(cluster, null));
+          HiveRelFactories.HIVE_BUILDER.create(cluster, null),
+          profilesCBO.contains(ExtendedCBOProfile.JOIN_REORDERING));
       basePlan = fieldTrimmer.trim(basePlan);
       perfLogger.PerfLogEnd(this.getClass().getName(), PerfLogger.OPTIMIZER,
         "Calcite: Prejoin ordering transformation, Projection Pruning");
