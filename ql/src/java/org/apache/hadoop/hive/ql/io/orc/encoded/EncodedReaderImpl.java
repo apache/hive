@@ -207,7 +207,6 @@ class EncodedReaderImpl implements EncodedReader {
       OrcProto.RowIndex[] indexes, List<OrcProto.ColumnEncoding> encodings, List<OrcProto.Stream> streamList,
       boolean[] included, boolean[][] colRgs,
       Consumer<OrcEncodedColumnBatch> consumer) throws IOException {
-    isTracingEnabled = true;
     // Note: for now we don't have to setError here, caller will setError if we throw.
     // We are also not supposed to call setDone, since we are only part of the operation.
     long stripeOffset = stripe.getOffset();
@@ -216,7 +215,7 @@ class EncodedReaderImpl implements EncodedReader {
     // 1.1. Figure out which columns have a present stream
     boolean[] hasNull = RecordReaderUtils.findPresentStreamsByColumn(streamList, types);
     if (isTracingEnabled) {
-      LOG.error("The following columns have PRESENT streams: " + arrayToString(hasNull));
+      LOG.trace("The following columns have PRESENT streams: " + arrayToString(hasNull));
     }
 
     // We assume stream list is sorted by column and that non-data
@@ -229,7 +228,7 @@ class EncodedReaderImpl implements EncodedReader {
       if (!included[i]) continue;
       colCtxs[i] = new ColumnReadContext(i, encodings.get(i), indexes[i], ++colRgIx);
       if (isTracingEnabled) {
-        LOG.error("Creating context: " + colCtxs[i].toString());
+        LOG.trace("Creating context: " + colCtxs[i].toString());
       }
     }
     boolean isCompressed = (codec != null);
