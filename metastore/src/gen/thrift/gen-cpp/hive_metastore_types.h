@@ -6520,6 +6520,10 @@ inline std::ostream& operator<<(std::ostream& out, const CurrentNotificationEven
   return out;
 }
 
+typedef struct _InsertEventRequestData__isset {
+  _InsertEventRequestData__isset() : filesAddedChecksum(false) {}
+  bool filesAddedChecksum :1;
+} _InsertEventRequestData__isset;
 
 class InsertEventRequestData {
  public:
@@ -6531,12 +6535,21 @@ class InsertEventRequestData {
 
   virtual ~InsertEventRequestData() throw();
   std::vector<std::string>  filesAdded;
+  std::vector<std::string>  filesAddedChecksum;
+
+  _InsertEventRequestData__isset __isset;
 
   void __set_filesAdded(const std::vector<std::string> & val);
+
+  void __set_filesAddedChecksum(const std::vector<std::string> & val);
 
   bool operator == (const InsertEventRequestData & rhs) const
   {
     if (!(filesAdded == rhs.filesAdded))
+      return false;
+    if (__isset.filesAddedChecksum != rhs.__isset.filesAddedChecksum)
+      return false;
+    else if (__isset.filesAddedChecksum && !(filesAddedChecksum == rhs.filesAddedChecksum))
       return false;
     return true;
   }

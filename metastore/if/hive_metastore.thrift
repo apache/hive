@@ -811,7 +811,9 @@ struct CurrentNotificationEventId {
 }
 
 struct InsertEventRequestData {
-    1: required list<string> filesAdded
+    1: required list<string> filesAdded,
+    // Checksum of files (UTF8 encoded string) added during this insert event (at the time they were added)
+    2: optional list<binary> filesAddedChecksum,
 }
 
 union FireEventRequestData {

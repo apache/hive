@@ -22,11 +22,13 @@ package org.apache.hadoop.hive.metastore.messaging.json;
 import org.apache.hadoop.hive.metastore.messaging.InsertMessage;
 import org.codehaus.jackson.annotate.JsonProperty;
 
+import java.nio.ByteBuffer;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 /**
- * JSON implementation of DropTableMessage.
+ * JSON implementation of InsertMessage
  */
 public class JSONInsertMessage extends InsertMessage {
 
@@ -40,15 +42,19 @@ public class JSONInsertMessage extends InsertMessage {
   List<String> files;
 
   @JsonProperty
-  Map<String,String> partKeyVals;
+  Map<String, String> partKeyVals;
+
+  @JsonProperty
+  List<byte[]> fileChecksums;
 
   /**
    * Default constructor, needed for Jackson.
    */
-  public JSONInsertMessage() {}
+  public JSONInsertMessage() {
+  }
 
   public JSONInsertMessage(String server, String servicePrincipal, String db, String table,
-                           Map<String,String> partKeyVals, List<String> files, Long timestamp) {
+      Map<String, String> partKeyVals, List<String> files, Long timestamp) {
     this.server = server;
     this.servicePrincipal = servicePrincipal;
     this.db = db;
@@ -59,15 +65,30 @@ public class JSONInsertMessage extends InsertMessage {
     checkValid();
   }
 
+  public JSONInsertMessage(String server, String servicePrincipal, String db, String table,
+      Map<String, String> partKeyVals, List<String> files, List<ByteBuffer> checksums,
+      Long timestamp) {
+    this(server, servicePrincipal, db, table, partKeyVals, files, timestamp);
+    fileChecksums = new ArrayList<byte[]>();
+    for (ByteBuffer checksum : checksums) {
+      byte[] checksumBytes = new byte[checksum.remaining()];
+      checksum.get(checksumBytes);
+      fileChecksums.add(checksumBytes);
+    }
+  }
 
   @Override
-  public String getTable() { return table; }
+  public String getTable() {
+    return table;
+  }
 
   @Override
-  public String getServer() { return server; }
+  public String getServer() {
+    return server;
+  }
 
   @Override
-  public Map<String,String> getPartitionKeyValues() {
+  public Map<String, String> getPartitionKeyValues() {
     return partKeyVals;
   }
 
@@ -77,20 +98,29 @@ public class JSONInsertMessage extends InsertMessage {
   }
 
   @Override
-  public String getServicePrincipal() { return servicePrincipal; }
+  public String getServicePrincipal() {
+    return servicePrincipal;
+  }
 
   @Override
-  public String getDB() { return db; }
+  public String getDB() {
+    return db;
+  }
 
   @Override
-  public Long getTimestamp() { return timestamp; }
+  public Long getTimestamp() {
+    return timestamp;
+  }
+
+  public List<byte[]> getFileChecksums() {
+    return fileChecksums;
+  }
 
   @Override
   public String toString() {
     try {
       return JSONMessageDeserializer.mapper.writeValueAsString(this);
-    }
-    catch (Exception exception) {
+    } catch (Exception exception) {
       throw new IllegalArgumentException("Could not serialize: ", exception);
     }
   }
