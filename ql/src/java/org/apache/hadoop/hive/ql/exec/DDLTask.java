@@ -2109,6 +2109,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     final String TBL_COMMENT = "tbl_comment";
     final String LIST_PARTITIONS = "partitions";
     final String SORT_BUCKET = "sort_bucket";
+    final String SKEWED_INFO = "tbl_skewedinfo";
     final String ROW_FORMAT = "row_format";
     final String TBL_LOCATION = "tbl_location";
     final String TBL_PROPERTIES = "tbl_properties";
@@ -2133,6 +2134,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       createTab_str.append("<" + TBL_COMMENT + ">\n");
       createTab_str.append("<" + LIST_PARTITIONS + ">\n");
       createTab_str.append("<" + SORT_BUCKET + ">\n");
+      createTab_str.append("<" + SKEWED_INFO + ">\n");
       createTab_str.append("<" + ROW_FORMAT + ">\n");
       if (needsLocation) {
         createTab_str.append("LOCATION\n");
@@ -2225,6 +2227,22 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         tbl_sort_bucket += "INTO " + tbl.getNumBuckets() + " BUCKETS";
       }
 
+      // Skewed Info
+      StringBuilder tbl_skewedinfo = new StringBuilder();
+      SkewedInfo skewedInfo = tbl.getSkewedInfo();
+      if (skewedInfo != null && !skewedInfo.getSkewedColNames().isEmpty()) {
+        tbl_skewedinfo.append("SKEWED BY (" + StringUtils.join(skewedInfo.getSkewedColNames(), ",") + ")\n");
+        tbl_skewedinfo.append("  ON (");
+        List<String> colValueList = new ArrayList<String>();
+        for (List<String> colValues : skewedInfo.getSkewedColValues()) {
+          colValueList.add("('" + StringUtils.join(colValues, "','") + "')");
+        }
+        tbl_skewedinfo.append(StringUtils.join(colValueList, ",") + ")");
+        if (tbl.isStoredAsSubDirectories()) {
+          tbl_skewedinfo.append("\n  STORED AS DIRECTORIES");
+        }
+      }
+
       // Row format (SerDe)
       StringBuilder tbl_row_format = new StringBuilder();
       StorageDescriptor sd = tbl.getTTable().getSd();
@@ -2269,6 +2287,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       createTab_stmt.add(TBL_COMMENT, tbl_comment);
       createTab_stmt.add(LIST_PARTITIONS, tbl_partitions);
       createTab_stmt.add(SORT_BUCKET, tbl_sort_bucket);
+      createTab_stmt.add(SKEWED_INFO, tbl_skewedinfo);
       createTab_stmt.add(ROW_FORMAT, tbl_row_format);
       // Table location should not be printed with hbase backed tables
       if (needsLocation) {
