@@ -163,7 +163,13 @@ public class TestReplicationScenarios {
     advanceDumpDir();
     run("REPL DUMP " + dbName);
     String replDumpLocn = getResult(0,0);
-    run("REPL LOAD " + dbName + "_dupe FROM '"+replDumpLocn+"'");
+    String replDumpId = getResult(0,1,true);
+    run("EXPLAIN REPL LOAD " + dbName + "_dupe FROM '" + replDumpLocn + "'");
+    printOutput();
+    run("REPL LOAD " + dbName + "_dupe FROM '" + replDumpLocn + "'");
+
+    run("REPL STATUS " + dbName + "_dupe");
+    verifyResults(new String[] {replDumpId});
 
     run("SELECT * from " + dbName + "_dupe.unptned");
     verifyResults(unptn_data);
@@ -230,7 +236,6 @@ public class TestReplicationScenarios {
     run("SELECT a from " + dbName + ".ptned WHERE b=2");
     verifyResults(ptn_data_2);
 
-    // verified up to here.
     run("CREATE TABLE " + dbName + ".ptned_late(a string) PARTITIONED BY (b int) STORED AS TEXTFILE");
     run("LOAD DATA LOCAL INPATH '" + ptn_locn_1 + "' OVERWRITE INTO TABLE " + dbName + ".ptned_late PARTITION(b=1)");
     run("SELECT a from " + dbName + ".ptned_late WHERE b=1");
@@ -244,7 +249,16 @@ public class TestReplicationScenarios {
     String incrementalDumpLocn = getResult(0,0);
     String incrementalDumpId = getResult(0,1,true);
     LOG.info("Dumped to {} with id {}", incrementalDumpLocn, incrementalDumpId);
+    run("EXPLAIN REPL LOAD " + dbName + "_dupe FROM '" + incrementalDumpLocn + "'");
+    printOutput();
     run("REPL LOAD " + dbName + "_dupe FROM '"+incrementalDumpLocn+"'");
+
+    run("REPL STATUS " + dbName + "_dupe");
+//    verifyResults(new String[] {incrementalDumpId});
+    // TODO: this will currently not work because we need to add in ALTER_DB support into this
+    // and queue in a dummy ALTER_DB to update the repl.last.id on the last event of every
+    // incremental dump. Currently, the dump id fetched will be the last dump id at the time
+    // the db was created from the bootstrap export dump
 
     run("SELECT * from " + dbName + "_dupe.unptned_empty");
     verifyResults(empty);
@@ -252,11 +266,11 @@ public class TestReplicationScenarios {
     verifyResults(empty);
 
 
-//  this does not work because LOAD DATA LOCAL INPATH into an unptned table seems
-//  to use ALTER_TABLE only - it does not emit an INSERT or CREATE - re-enable after
-//  fixing that.
 //    run("SELECT * from " + dbName + "_dupe.unptned");
 //    verifyResults(unptn_data);
+    // TODO :this does not work because LOAD DATA LOCAL INPATH into an unptned table seems
+    // to use ALTER_TABLE only - it does not emit an INSERT or CREATE - re-enable after
+    // fixing that.
     run("SELECT * from " + dbName + "_dupe.unptned_late");
     verifyResults(unptn_data);
 
@@ -291,13 +305,7 @@ public class TestReplicationScenarios {
   }
 
   private void verifyResults(String[] data) throws IOException {
-    List<String> results = new ArrayList<String>();
-    try {
-      driver.getResults(results);
-    } catch (CommandNeedRetryException e) {
-      LOG.warn(e.getMessage(),e);
-      throw new RuntimeException(e);
-    }
+    List<String> results = getOutput();
     LOG.info("Expecting {}",data);
     LOG.info("Got {}",results);
     assertEquals(data.length,results.size());
@@ -306,8 +314,31 @@ public class TestReplicationScenarios {
     }
   }
 
+  private List<String> getOutput() throws IOException {
+    List<String> results = new ArrayList<String>();
+    try {
+      driver.getResults(results);
+    } catch (CommandNeedRetryException e) {
+      LOG.warn(e.getMessage(),e);
+      throw new RuntimeException(e);
+    }
+    return results;
+  }
+
+  private void printOutput() throws IOException {
+    for (String s : getOutput()){
+      LOG.info(s);
+    }
+  }
+
   private static void run(String cmd) throws RuntimeException {
+    try {
     run(cmd,false); // default arg-less run simply runs, and does not care about failure
+    } catch (AssertionError ae){
+      // Hive code has AssertionErrors in some cases - we want to record what happens
+      LOG.warn("AssertionError:",ae);
+      throw new RuntimeException(ae);
+    }
   }
 
   private static boolean run(String cmd, boolean errorOnFail) throws RuntimeException {
