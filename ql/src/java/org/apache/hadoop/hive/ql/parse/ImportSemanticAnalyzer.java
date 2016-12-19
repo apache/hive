@@ -102,9 +102,11 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
       String parsedDbName = null;
       LinkedHashMap<String, String> parsedPartSpec = new LinkedHashMap<String, String>();
 
-      // waitOnCreateDb determines whether or not non-existence of
-      // db is an error. For regular imports, it is.
-      boolean waitOnCreateDb = false;
+      // waitOnPrecursor determines whether or not non-existence of
+      // a dependent object is an error. For regular imports, it is.
+      // for now, the only thing this affects is whether or not the
+      // db exists.
+      boolean waitOnPrecursor = false;
 
       for (int i = 1; i < ast.getChildCount(); ++i){
         ASTNode child = (ASTNode) ast.getChild(i);
@@ -133,7 +135,7 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
 
       // parsing statement is now done, on to logic.
       tableExists = prepareImport(
-          isLocationSet, isExternalSet, isPartSpecSet, waitOnCreateDb,
+          isLocationSet, isExternalSet, isPartSpecSet, waitOnPrecursor,
           parsedLocation, parsedTableName, parsedDbName, parsedPartSpec, fromTree.getText(),
           new EximUtil.SemanticAnalyzerWrapperContext(conf, db, inputs, outputs, rootTasks, LOG, ctx));
 
@@ -168,7 +170,7 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
   }
 
   public static boolean prepareImport(
-      boolean isLocationSet, boolean isExternalSet, boolean isPartSpecSet, boolean waitOnCreateDb,
+      boolean isLocationSet, boolean isExternalSet, boolean isPartSpecSet, boolean waitOnPrecursor,
       String parsedLocation, String parsedTableName, String parsedDbName,
       LinkedHashMap<String, String> parsedPartSpec,
       String fromLocn, EximUtil.SemanticAnalyzerWrapperContext x
@@ -281,7 +283,7 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
     } else {
       createReplImportTasks(
           tblDesc, partitionDescs,
-          isPartSpecSet, replicationSpec, waitOnCreateDb, table,
+          isPartSpecSet, replicationSpec, waitOnPrecursor, table,
           fromURI, fs, wh, x);
     }
     return tableExists;
@@ -799,7 +801,7 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
   private static void createReplImportTasks(
       CreateTableDesc tblDesc,
       List<AddPartitionDesc> partitionDescs,
-      boolean isPartSpecSet, ReplicationSpec replicationSpec, boolean waitOnCreateDb,
+      boolean isPartSpecSet, ReplicationSpec replicationSpec, boolean waitOnPrecursor,
       Table table, URI fromURI, FileSystem fs, Warehouse wh,
       EximUtil.SemanticAnalyzerWrapperContext x)
       throws HiveException, URISyntaxException, IOException, MetaException {
@@ -829,12 +831,12 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
     // defaults and do not error out in that case.
     Database parentDb = x.getHive().getDatabase(tblDesc.getDatabaseName());
     if (parentDb == null){
-      if (!waitOnCreateDb){
+      if (!waitOnPrecursor){
         throw new SemanticException(ErrorMsg.DATABASE_NOT_EXISTS.getMsg(tblDesc.getDatabaseName()));
       }
     }
     if (tblDesc.getLocation() == null) {
-      if (!waitOnCreateDb){
+      if (!waitOnPrecursor){
         tblDesc.setLocation(wh.getTablePath(parentDb, tblDesc.getTableName()).toString());
       } else {
         tblDesc.setLocation(

@@ -44,6 +44,7 @@ import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.plan.CreateDatabaseDesc;
 import org.apache.hadoop.hive.ql.plan.DDLWork;
+import org.apache.hadoop.hive.ql.plan.DependencyCollectionWork;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.io.IOUtils;
 
@@ -205,7 +206,6 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
         }
 
         Integer maxRange = Ints.checkedCast(eventTo - eventFrom + 1);
-        batchSize = 15;
         if (batchSize == null){
           batchSize = maxRange;
         } else {
@@ -478,7 +478,7 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
 
       if ((!evDump) && (tblNameOrPattern != null) && !(tblNameOrPattern.isEmpty())) {
         // not an event dump, and table name pattern specified, this has to be a tbl-level dump
-        analyzeTableLoad(dbNameOrPattern, tblNameOrPattern, path, null);
+        rootTasks.addAll(analyzeTableLoad(dbNameOrPattern, tblNameOrPattern, path, null));
         return;
       }
 
@@ -512,13 +512,45 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
         }
       } else {
         // event dump, each subdir is an individual event dump.
+        Task<? extends Serializable> evTaskRoot = TaskFactory.get(new DependencyCollectionWork(), conf);
+        Task<? extends Serializable> taskChainTail = evTaskRoot;
+        int evstage = 0;
         for (FileStatus dir : dirsInLoadPath){
+          LOG.debug("Loading event from {} to {}.{}", dir.getPath().toUri(), dbNameOrPattern, tblNameOrPattern);
           // event loads will behave similar to table loads, with one crucial difference
           // precursor order is strict, and each event must be processed after the previous one.
-          LOG.debug("Loading event from {} to {}.{}", dir.getPath().toUri(), dbNameOrPattern, tblNameOrPattern);
-          analyzeTableLoad(dbNameOrPattern, tblNameOrPattern, dir.getPath().toUri().toString(), null);
-          // FIXME: we should have a strict order of execution so that each event's tasks occur linearly
+          // The way we handle this strict order is as follows:
+          // First, we start with a taskChainTail which is a dummy noop task (a DependecyCollectionTask)
+          // at the head of our event chain. For each event we process, we tell analyzeTableLoad to
+          // create tasks that use the taskChainTail as a dependency. Then, we collect all those tasks
+          // and introduce a new barrier task(also a DependencyCollectionTask) which depends on all
+          // these tasks. Then, this barrier task becomes our new taskChainTail. Thus, we get a set of
+          // tasks as follows:
+          //
+          //                 --->ev1.task1--                          --->ev2.task1--
+          //                /               \                        /               \
+          //  evTaskRoot-->*---->ev1.task2---*--> ev1.barrierTask-->*---->ev2.task2---*->evTaskChainTail
+          //                \               /
+          //                 --->ev1.task3--
+          //
+          List<Task<? extends Serializable>> evTasks = analyzeEventLoad(
+              dbNameOrPattern, tblNameOrPattern, dir.getPath().toUri().toString(), taskChainTail);
+          LOG.debug("evstage#{} got {} tasks", evstage, evTasks!=null ? evTasks.size() : 0);
+          if ((evTasks != null) && (!evTasks.isEmpty())){
+            Task<? extends Serializable> barrierTask = TaskFactory.get(new DependencyCollectionWork(), conf);
+            for (Task<? extends Serializable> t : evTasks){
+              t.addDependentTask(barrierTask);
+              LOG.debug("Added {}:{} as a precursor of barrier task {}:{}",
+                  t.getClass(), t.getId(), barrierTask.getClass(), barrierTask.getId());
+            }
+            LOG.debug("Updated taskChainTail from {}{} to {}{}",
+                taskChainTail.getClass(),taskChainTail.getId(), barrierTask.getClass(), barrierTask.getId());
+            taskChainTail = barrierTask;
+            evstage++;
+          }
         }
+        LOG.debug("added evTaskRoot {}:{}",evTaskRoot.getClass(),evTaskRoot.getId());
+        rootTasks.add(evTaskRoot);
       }
 
     } catch (Exception e) {
@@ -528,9 +560,12 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
 
   }
 
-  private void analyzeEventLoad(String dbNameOrPattern, String tblNameOrPattern,
-      FileSystem fs, FileStatus dir) throws SemanticException {
-
+  private List<Task<? extends Serializable>> analyzeEventLoad(
+      String dbName, String tblName, String locn,
+      Task<? extends  Serializable> precursor ) throws SemanticException {
+    // Currently handles only create-tbl & insert-ptn, since only those are dumped
+    // As we add more event types, this will expand.
+    return analyzeTableLoad(dbName, tblName, locn, precursor);
   }
 
   private void analyzeDatabaseLoad(String dbName, FileSystem fs, FileStatus dir)
@@ -581,14 +616,16 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
       FileStatus[] dirsInDbPath = fs.listStatus(dir.getPath(), EximUtil.getDirectoryFilter(fs));
 
       for (FileStatus tableDir : dirsInDbPath) {
-        analyzeTableLoad(dbName, null, tableDir.getPath().toUri().toString(), createDbTask);
+        analyzeTableLoad(
+            dbName, null, tableDir.getPath().toUri().toString(), createDbTask);
       }
     } catch (Exception e) {
       throw new SemanticException(e);
     }
   }
 
-  private void analyzeTableLoad(String dbName, String tblName, String locn,
+  private List<Task<? extends Serializable>> analyzeTableLoad(
+      String dbName, String tblName, String locn,
       Task<? extends Serializable> precursor) throws SemanticException {
     // Path being passed to us is a table dump location. We go ahead and load it in as needed.
     // If tblName is null, then we default to the table name specified in _metadata, which is good.
@@ -607,27 +644,23 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
       LinkedHashMap<String, String> parsedPartSpec = null;
       // no location for repl imports
       String parsedLocation = null;
-      boolean waitOnCreateDb = false;
-      List<Task<? extends Serializable>> importTasks = null;
-      if (precursor == null) {
-        importTasks = rootTasks;
-        waitOnCreateDb = false;
-      } else {
-        importTasks = new ArrayList<Task<? extends Serializable>>();
-        waitOnCreateDb = true;
-      }
+      List<Task<? extends Serializable>> importTasks = new ArrayList<Task<? extends Serializable>>();
+
       EximUtil.SemanticAnalyzerWrapperContext x =
           new EximUtil.SemanticAnalyzerWrapperContext(conf, db, inputs, outputs, importTasks, LOG,
               ctx);
       ImportSemanticAnalyzer.prepareImport(isLocationSet, isExternalSet, isPartSpecSet,
-          waitOnCreateDb, parsedLocation, tblName, dbName, parsedPartSpec, locn, x);
+          (precursor != null), parsedLocation, tblName, dbName, parsedPartSpec, locn, x);
 
       if (precursor != null) {
         for (Task<? extends Serializable> t : importTasks) {
           precursor.addDependentTask(t);
+          LOG.debug("Added {}:{} as a precursor of {}:{}",
+              precursor.getClass(), precursor.getId(), t.getClass(), t.getId());
         }
       }
 
+      return importTasks;
     } catch (Exception e) {
       throw new SemanticException(e);
     }
@@ -655,8 +688,8 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
         if (tbl != null) {
           inputs.add(new ReadEntity(tbl));
           Map<String, String> params = tbl.getParameters();
-          if (params != null && (params.containsKey(ReplicationSpec.KEY.CURR_STATE_ID))) {
-            replLastId = params.get(ReplicationSpec.KEY.CURR_STATE_ID);
+          if (params != null && (params.containsKey(ReplicationSpec.KEY.CURR_STATE_ID.toString()))) {
+            replLastId = params.get(ReplicationSpec.KEY.CURR_STATE_ID.toString());
           }
         }
       } else {
@@ -665,8 +698,8 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
         if (database != null) {
           inputs.add(new ReadEntity(database));
           Map<String, String> params = database.getParameters();
-          if (params != null && (params.containsKey(ReplicationSpec.KEY.CURR_STATE_ID))) {
-            replLastId = params.get(ReplicationSpec.KEY.CURR_STATE_ID);
+          if (params != null && (params.containsKey(ReplicationSpec.KEY.CURR_STATE_ID.toString()))) {
+            replLastId = params.get(ReplicationSpec.KEY.CURR_STATE_ID.toString());
           }
         }
       }
@@ -675,9 +708,9 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
                                       // codes
     }
 
-    LOG.debug("RSTATUS: writing repl.last.id=" + String.valueOf(replLastId) + " out to "
-        + ctx.getResFile());
     prepareReturnValues(Collections.singletonList(replLastId), "last_repl_id#string");
+    LOG.debug("ReplicationSemanticAnalyzer.analyzeReplStatus: writing repl.last.id={} out to {}" ,
+        String.valueOf(replLastId),ctx.getResFile());
   }
 
   private void prepareReturnValues(List<String> values, String schema) throws SemanticException {
