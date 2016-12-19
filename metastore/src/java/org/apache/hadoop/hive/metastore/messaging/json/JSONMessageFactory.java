@@ -19,7 +19,9 @@
 
 package org.apache.hadoop.hive.metastore.messaging.json;
 
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -57,6 +59,7 @@ import org.codehaus.jackson.JsonFactory;
 import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.JsonParser;
 import org.codehaus.jackson.map.ObjectMapper;
+import org.codehaus.jackson.node.ArrayNode;
 import org.codehaus.jackson.node.ObjectNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -168,6 +171,13 @@ public class JSONMessageFactory extends MessageFactory {
         files, now());
   }
 
+  @Override
+  public InsertMessage buildInsertMessage(String db, String table, Map<String, String> partKeyVals,
+      List<String> files, List<ByteBuffer> fileChecksums) {
+    return new JSONInsertMessage(MS_SERVER_URL, MS_SERVICE_PRINCIPAL, db, table, partKeyVals,
+        files, fileChecksums, now());
+  }
+
   private long now() {
     return System.currentTimeMillis() / 1000;
   }
@@ -254,5 +264,31 @@ public class JSONMessageFactory extends MessageFactory {
     String tableJson = jsonTree.get(indexObjKey).asText();
     deSerializer.deserialize(indexObj, tableJson, "UTF-8");
     return indexObj;
+  }
+
+  /**
+   * Convert a json ArrayNode to an ordered list of Strings
+   *
+   * @param arrayNode: the json array node
+   * @param elements: the list to populate
+   * @return
+   */
+  public static List<String> getAsList(ArrayNode arrayNode, List<String> elements) {
+    Iterator<JsonNode> arrayNodeIterator = arrayNode.iterator();
+    while (arrayNodeIterator.hasNext()) {
+      JsonNode node = arrayNodeIterator.next();
+      elements.add(node.asText());
+    }
+    return elements;
+  }
+
+  public static LinkedHashMap<String, String> getAsMap(ObjectNode objectNode,
+      LinkedHashMap<String, String> hashMap) {
+    Iterator<Map.Entry<String, JsonNode>> objectNodeIterator = objectNode.getFields();
+    while (objectNodeIterator.hasNext()) {
+      Map.Entry<String, JsonNode> objectAsMap = objectNodeIterator.next();
+      hashMap.put(objectAsMap.getKey(), objectAsMap.getValue().asText());
+    }
+    return hashMap;
   }
 }

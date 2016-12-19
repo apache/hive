@@ -18,18 +18,16 @@
 
 package org.apache.hadoop.hive.metastore.events;
 
-import org.apache.hadoop.hive.metastore.api.ClientCapabilities;
-
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
-
 import org.apache.hadoop.hive.metastore.api.GetTableRequest;
-
 import org.apache.hadoop.hive.metastore.HiveMetaStore.HMSHandler;
-import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.metastore.api.InsertEventRequestData;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.Table;
 
+import java.nio.ByteBuffer;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -40,24 +38,26 @@ public class InsertEvent extends ListenerEvent {
   // we have just the string names, but that's fine for what we need.
   private final String db;
   private final String table;
-  private final Map<String,String> keyValues;
+  private final Map<String, String> keyValues;
   private final List<String> files;
+  private List<ByteBuffer> fileChecksums = new ArrayList<ByteBuffer>();
 
   /**
    *
    * @param db name of the database the table is in
    * @param table name of the table being inserted into
    * @param partVals list of partition values, can be null
+   * @param insertData the inserted files & their checksums
    * @param status status of insert, true = success, false = failure
    * @param handler handler that is firing the event
    */
-  public InsertEvent(String db, String table, List<String> partVals, List<String> files,
-                     boolean status, HMSHandler handler) throws MetaException, NoSuchObjectException {
+  public InsertEvent(String db, String table, List<String> partVals,
+      InsertEventRequestData insertData, boolean status, HMSHandler handler) throws MetaException,
+      NoSuchObjectException {
     super(status, handler);
     this.db = db;
     this.table = table;
-    this.files = files;
-    // TODO: why does this use the handler directly?
+    this.files = insertData.getFilesAdded();
     GetTableRequest req = new GetTableRequest(db, table);
     req.setCapabilities(HiveMetaStoreClient.TEST_VERSION);
     Table t = handler.get_table_req(req).getTable();
@@ -67,11 +67,15 @@ public class InsertEvent extends ListenerEvent {
         keyValues.put(t.getPartitionKeys().get(i).getName(), partVals.get(i));
       }
     }
+    if (insertData.isSetFilesAddedChecksum()) {
+      fileChecksums = insertData.getFilesAddedChecksum();
+    }
   }
 
   public String getDb() {
     return db;
   }
+
   /**
    * @return The table.
    */
@@ -82,15 +86,25 @@ public class InsertEvent extends ListenerEvent {
   /**
    * @return List of values for the partition keys.
    */
-  public Map<String,String> getPartitionKeyValues() {
+  public Map<String, String> getPartitionKeyValues() {
     return keyValues;
   }
 
   /**
    * Get list of files created as a result of this DML operation
+   *
    * @return list of new files
    */
   public List<String> getFiles() {
     return files;
+  }
+
+  /**
+   * Get a list of file checksums corresponding to the files created (if available)
+   *
+   * @return
+   */
+  public List<ByteBuffer> getFileChecksums() {
+    return fileChecksums;
   }
 }

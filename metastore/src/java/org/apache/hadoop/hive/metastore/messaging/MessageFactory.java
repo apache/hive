@@ -28,6 +28,7 @@ import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.util.ReflectionUtils;
 
+import java.nio.ByteBuffer;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -229,13 +230,28 @@ public abstract class MessageFactory {
 
   /**
    * Factory method for building insert message
+   *
    * @param db Name of the database the insert occurred in
    * @param table Name of the table the insert occurred in
-   * @param partVals Partition values for the partition that the insert occurred in, may be null
-   *                 if the insert was done into a non-partitioned table
+   * @param partVals Partition values for the partition that the insert occurred in, may be null if
+   *          the insert was done into a non-partitioned table
    * @param files List of files created as a result of the insert, may be null.
    * @return instance of InsertMessage
    */
   public abstract InsertMessage buildInsertMessage(String db, String table,
-                                                   Map<String,String> partVals, List<String> files);
+      Map<String, String> partVals, List<String> files);
+
+  /**
+   * Factory method for building insert message
+   *
+   * @param db Name of the database the insert occurred in
+   * @param table Name of the table the insert occurred in
+   * @param partVals Partition values for the partition that the insert occurred in, may be null if
+   *          the insert was done into a non-partitioned table
+   * @param files List of files created as a result of the insert, may be null
+   * @param fileChecksums List of checksums corresponding to the files added during insert
+   * @return instance of InsertMessage
+   */
+  public abstract InsertMessage buildInsertMessage(String db, String table,
+      Map<String, String> partVals, List<String> files, List<ByteBuffer> fileChecksums);
 }

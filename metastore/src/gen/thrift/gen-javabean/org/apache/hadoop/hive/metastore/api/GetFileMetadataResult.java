@@ -433,15 +433,15 @@ public class GetFileMetadataResult implements org.apache.thrift.TBase<GetFileMet
           case 1: // METADATA
             if (schemeField.type == org.apache.thrift.protocol.TType.MAP) {
               {
-                org.apache.thrift.protocol.TMap _map592 = iprot.readMapBegin();
-                struct.metadata = new HashMap<Long,ByteBuffer>(2*_map592.size);
-                long _key593;
-                ByteBuffer _val594;
-                for (int _i595 = 0; _i595 < _map592.size; ++_i595)
+                org.apache.thrift.protocol.TMap _map600 = iprot.readMapBegin();
+                struct.metadata = new HashMap<Long,ByteBuffer>(2*_map600.size);
+                long _key601;
+                ByteBuffer _val602;
+                for (int _i603 = 0; _i603 < _map600.size; ++_i603)
                 {
-                  _key593 = iprot.readI64();
-                  _val594 = iprot.readBinary();
-                  struct.metadata.put(_key593, _val594);
+                  _key601 = iprot.readI64();
+                  _val602 = iprot.readBinary();
+                  struct.metadata.put(_key601, _val602);
                 }
                 iprot.readMapEnd();
               }
@@ -475,10 +475,10 @@ public class GetFileMetadataResult implements org.apache.thrift.TBase<GetFileMet
         oprot.writeFieldBegin(METADATA_FIELD_DESC);
         {
           oprot.writeMapBegin(new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.I64, org.apache.thrift.protocol.TType.STRING, struct.metadata.size()));
-          for (Map.Entry<Long, ByteBuffer> _iter596 : struct.metadata.entrySet())
+          for (Map.Entry<Long, ByteBuffer> _iter604 : struct.metadata.entrySet())
           {
-            oprot.writeI64(_iter596.getKey());
-            oprot.writeBinary(_iter596.getValue());
+            oprot.writeI64(_iter604.getKey());
+            oprot.writeBinary(_iter604.getValue());
           }
           oprot.writeMapEnd();
         }
@@ -506,10 +506,10 @@ public class GetFileMetadataResult implements org.apache.thrift.TBase<GetFileMet
       TTupleProtocol oprot = (TTupleProtocol) prot;
       {
         oprot.writeI32(struct.metadata.size());
-        for (Map.Entry<Long, ByteBuffer> _iter597 : struct.metadata.entrySet())
+        for (Map.Entry<Long, ByteBuffer> _iter605 : struct.metadata.entrySet())
         {
-          oprot.writeI64(_iter597.getKey());
-          oprot.writeBinary(_iter597.getValue());
+          oprot.writeI64(_iter605.getKey());
+          oprot.writeBinary(_iter605.getValue());
         }
       }
       oprot.writeBool(struct.isSupported);
@@ -519,15 +519,15 @@ public class GetFileMetadataResult implements org.apache.thrift.TBase<GetFileMet
     public void read(org.apache.thrift.protocol.TProtocol prot, GetFileMetadataResult struct) throws org.apache.thrift.TException {
       TTupleProtocol iprot = (TTupleProtocol) prot;
       {
-        org.apache.thrift.protocol.TMap _map598 = new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.I64, org.apache.thrift.protocol.TType.STRING, iprot.readI32());
-        struct.metadata = new HashMap<Long,ByteBuffer>(2*_map598.size);
-        long _key599;
-        ByteBuffer _val600;
-        for (int _i601 = 0; _i601 < _map598.size; ++_i601)
+        org.apache.thrift.protocol.TMap _map606 = new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.I64, org.apache.thrift.protocol.TType.STRING, iprot.readI32());
+        struct.metadata = new HashMap<Long,ByteBuffer>(2*_map606.size);
+        long _key607;
+        ByteBuffer _val608;
+        for (int _i609 = 0; _i609 < _map606.size; ++_i609)
         {
-          _key599 = iprot.readI64();
-          _val600 = iprot.readBinary();
-          struct.metadata.put(_key599, _val600);
+          _key607 = iprot.readI64();
+          _val608 = iprot.readBinary();
+          struct.metadata.put(_key607, _val608);
         }
       }
       struct.setMetadataIsSet(true);

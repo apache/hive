@@ -16108,6 +16108,11 @@ void InsertEventRequestData::__set_filesAdded(const std::vector<std::string> & v
   this->filesAdded = val;
 }
 
+void InsertEventRequestData::__set_filesAddedChecksum(const std::vector<std::string> & val) {
+  this->filesAddedChecksum = val;
+__isset.filesAddedChecksum = true;
+}
+
 uint32_t InsertEventRequestData::read(::apache::thrift::protocol::TProtocol* iprot) {
 
   apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
@@ -16150,6 +16155,26 @@ uint32_t InsertEventRequestData::read(::apache::thrift::protocol::TProtocol* ipr
           xfer += iprot->skip(ftype);
         }
         break;
+      case 2:
+        if (ftype == ::apache::thrift::protocol::T_LIST) {
+          {
+            this->filesAddedChecksum.clear();
+            uint32_t _size656;
+            ::apache::thrift::protocol::TType _etype659;
+            xfer += iprot->readListBegin(_etype659, _size656);
+            this->filesAddedChecksum.resize(_size656);
+            uint32_t _i660;
+            for (_i660 = 0; _i660 < _size656; ++_i660)
+            {
+              xfer += iprot->readBinary(this->filesAddedChecksum[_i660]);
+            }
+            xfer += iprot->readListEnd();
+          }
+          this->__isset.filesAddedChecksum = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
       default:
         xfer += iprot->skip(ftype);
         break;
@@ -16172,15 +16197,28 @@ uint32_t InsertEventRequestData::write(::apache::thrift::protocol::TProtocol* op
   xfer += oprot->writeFieldBegin("filesAdded", ::apache::thrift::protocol::T_LIST, 1);
   {
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRING, static_cast<uint32_t>(this->filesAdded.size()));
-    std::vector<std::string> ::const_iterator _iter656;
-    for (_iter656 = this->filesAdded.begin(); _iter656 != this->filesAdded.end(); ++_iter656)
+    std::vector<std::string> ::const_iterator _iter661;
+    for (_iter661 = this->filesAdded.begin(); _iter661 != this->filesAdded.end(); ++_iter661)
     {
-      xfer += oprot->writeString((*_iter656));
+      xfer += oprot->writeString((*_iter661));
     }
     xfer += oprot->writeListEnd();
   }
   xfer += oprot->writeFieldEnd();
 
+  if (this->__isset.filesAddedChecksum) {
+    xfer += oprot->writeFieldBegin("filesAddedChecksum", ::apache::thrift::protocol::T_LIST, 2);
+    {
+      xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRING, static_cast<uint32_t>(this->filesAddedChecksum.size()));
+      std::vector<std::string> ::const_iterator _iter662;
+      for (_iter662 = this->filesAddedChecksum.begin(); _iter662 != this->filesAddedChecksum.end(); ++_iter662)
+      {
+        xfer += oprot->writeBinary((*_iter662));
+      }
+      xfer += oprot->writeListEnd();
+    }
+    xfer += oprot->writeFieldEnd();
+  }
   xfer += oprot->writeFieldStop();
   xfer += oprot->writeStructEnd();
   return xfer;
@@ -16189,19 +16227,26 @@ uint32_t InsertEventRequestData::write(::apache::thrift::protocol::TProtocol* op
 void swap(InsertEventRequestData &a, InsertEventRequestData &b) {
   using ::std::swap;
   swap(a.filesAdded, b.filesAdded);
+  swap(a.filesAddedChecksum, b.filesAddedChecksum);
+  swap(a.__isset, b.__isset);
 }
 
-InsertEventRequestData::InsertEventRequestData(const InsertEventRequestData& other657) {
-  filesAdded = other657.filesAdded;
+InsertEventRequestData::InsertEventRequestData(const InsertEventRequestData& other663) {
+  filesAdded = other663.filesAdded;
+  filesAddedChecksum = other663.filesAddedChecksum;
+  __isset = other663.__isset;
 }
-InsertEventRequestData& InsertEventRequestData::operator=(const InsertEventRequestData& other658) {
-  filesAdded = other658.filesAdded;
+InsertEventRequestData& InsertEventRequestData::operator=(const InsertEventRequestData& other664) {
+  filesAdded = other664.filesAdded;
+  filesAddedChecksum = other664.filesAddedChecksum;
+  __isset = other664.__isset;
   return *this;
 }
 void InsertEventRequestData::printTo(std::ostream& out) const {
   using ::apache::thrift::to_string;
   out << "InsertEventRequestData(";
   out << "filesAdded=" << to_string(filesAdded);
+  out << ", " << "filesAddedChecksum="; (__isset.filesAddedChecksum ? (out << to_string(filesAddedChecksum)) : (out << "<null>"));
   out << ")";
 }
 
@@ -16275,13 +16320,13 @@ void swap(FireEventRequestData &a, FireEventRequestData &b) {
   swap(a.__isset, b.__isset);
 }
 
-FireEventRequestData::FireEventRequestData(const FireEventRequestData& other659) {
-  insertData = other659.insertData;
-  __isset = other659.__isset;
+FireEventRequestData::FireEventRequestData(const FireEventRequestData& other665) {
+  insertData = other665.insertData;
+  __isset = other665.__isset;
 }
-FireEventRequestData& FireEventRequestData::operator=(const FireEventRequestData& other660) {
-  insertData = other660.insertData;
-  __isset = other660.__isset;
+FireEventRequestData& FireEventRequestData::operator=(const FireEventRequestData& other666) {
+  insertData = other666.insertData;
+  __isset = other666.__isset;
   return *this;
 }
 void FireEventRequestData::printTo(std::ostream& out) const {
@@ -16378,14 +16423,14 @@ uint32_t FireEventRequest::read(::apache::thrift::protocol::TProtocol* iprot) {
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->partitionVals.clear();
-            uint32_t _size661;
-            ::apache::thrift::protocol::TType _etype664;
-            xfer += iprot->readListBegin(_etype664, _size661);
-            this->partitionVals.resize(_size661);
-            uint32_t _i665;
-            for (_i665 = 0; _i665 < _size661; ++_i665)
+            uint32_t _size667;
+            ::apache::thrift::protocol::TType _etype670;
+            xfer += iprot->readListBegin(_etype670, _size667);
+            this->partitionVals.resize(_size667);
+            uint32_t _i671;
+            for (_i671 = 0; _i671 < _size667; ++_i671)
             {
-              xfer += iprot->readString(this->partitionVals[_i665]);
+              xfer += iprot->readString(this->partitionVals[_i671]);
             }
             xfer += iprot->readListEnd();
           }
@@ -16437,10 +16482,10 @@ uint32_t FireEventRequest::write(::apache::thrift::protocol::TProtocol* oprot) c
     xfer += oprot->writeFieldBegin("partitionVals", ::apache::thrift::protocol::T_LIST, 5);
     {
       xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRING, static_cast<uint32_t>(this->partitionVals.size()));
-      std::vector<std::string> ::const_iterator _iter666;
-      for (_iter666 = this->partitionVals.begin(); _iter666 != this->partitionVals.end(); ++_iter666)
+      std::vector<std::string> ::const_iterator _iter672;
+      for (_iter672 = this->partitionVals.begin(); _iter672 != this->partitionVals.end(); ++_iter672)
       {
-        xfer += oprot->writeString((*_iter666));
+        xfer += oprot->writeString((*_iter672));
       }
       xfer += oprot->writeListEnd();
     }
@@ -16461,21 +16506,21 @@ void swap(FireEventRequest &a, FireEventRequest &b) {
   swap(a.__isset, b.__isset);
 }
 
-FireEventRequest::FireEventRequest(const FireEventRequest& other667) {
-  successful = other667.successful;
-  data = other667.data;
-  dbName = other667.dbName;
-  tableName = other667.tableName;
-  partitionVals = other667.partitionVals;
-  __isset = other667.__isset;
+FireEventRequest::FireEventRequest(const FireEventRequest& other673) {
+  successful = other673.successful;
+  data = other673.data;
+  dbName = other673.dbName;
+  tableName = other673.tableName;
+  partitionVals = other673.partitionVals;
+  __isset = other673.__isset;
 }
-FireEventRequest& FireEventRequest::operator=(const FireEventRequest& other668) {
-  successful = other668.successful;
-  data = other668.data;
-  dbName = other668.dbName;
-  tableName = other668.tableName;
-  partitionVals = other668.partitionVals;
-  __isset = other668.__isset;
+FireEventRequest& FireEventRequest::operator=(const FireEventRequest& other674) {
+  successful = other674.successful;
+  data = other674.data;
+  dbName = other674.dbName;
+  tableName = other674.tableName;
+  partitionVals = other674.partitionVals;
+  __isset = other674.__isset;
   return *this;
 }
 void FireEventRequest::printTo(std::ostream& out) const {
@@ -16538,11 +16583,11 @@ void swap(FireEventResponse &a, FireEventResponse &b) {
   (void) b;
 }
 
-FireEventResponse::FireEventResponse(const FireEventResponse& other669) {
-  (void) other669;
+FireEventResponse::FireEventResponse(const FireEventResponse& other675) {
+  (void) other675;
 }
-FireEventResponse& FireEventResponse::operator=(const FireEventResponse& other670) {
-  (void) other670;
+FireEventResponse& FireEventResponse::operator=(const FireEventResponse& other676) {
+  (void) other676;
   return *this;
 }
 void FireEventResponse::printTo(std::ostream& out) const {
@@ -16642,15 +16687,15 @@ void swap(MetadataPpdResult &a, MetadataPpdResult &b) {
   swap(a.__isset, b.__isset);
 }
 
-MetadataPpdResult::MetadataPpdResult(const MetadataPpdResult& other671) {
-  metadata = other671.metadata;
-  includeBitset = other671.includeBitset;
-  __isset = other671.__isset;
+MetadataPpdResult::MetadataPpdResult(const MetadataPpdResult& other677) {
+  metadata = other677.metadata;
+  includeBitset = other677.includeBitset;
+  __isset = other677.__isset;
 }
-MetadataPpdResult& MetadataPpdResult::operator=(const MetadataPpdResult& other672) {
-  metadata = other672.metadata;
-  includeBitset = other672.includeBitset;
-  __isset = other672.__isset;
+MetadataPpdResult& MetadataPpdResult::operator=(const MetadataPpdResult& other678) {
+  metadata = other678.metadata;
+  includeBitset = other678.includeBitset;
+  __isset = other678.__isset;
   return *this;
 }
 void MetadataPpdResult::printTo(std::ostream& out) const {
@@ -16701,17 +16746,17 @@ uint32_t GetFileMetadataByExprResult::read(::apache::thrift::protocol::TProtocol
         if (ftype == ::apache::thrift::protocol::T_MAP) {
           {
             this->metadata.clear();
-            uint32_t _size673;
-            ::apache::thrift::protocol::TType _ktype674;
-            ::apache::thrift::protocol::TType _vtype675;
-            xfer += iprot->readMapBegin(_ktype674, _vtype675, _size673);
-            uint32_t _i677;
-            for (_i677 = 0; _i677 < _size673; ++_i677)
+            uint32_t _size679;
+            ::apache::thrift::protocol::TType _ktype680;
+            ::apache::thrift::protocol::TType _vtype681;
+            xfer += iprot->readMapBegin(_ktype680, _vtype681, _size679);
+            uint32_t _i683;
+            for (_i683 = 0; _i683 < _size679; ++_i683)
             {
-              int64_t _key678;
-              xfer += iprot->readI64(_key678);
-              MetadataPpdResult& _val679 = this->metadata[_key678];
-              xfer += _val679.read(iprot);
+              int64_t _key684;
+              xfer += iprot->readI64(_key684);
+              MetadataPpdResult& _val685 = this->metadata[_key684];
+              xfer += _val685.read(iprot);
             }
             xfer += iprot->readMapEnd();
           }
@@ -16752,11 +16797,11 @@ uint32_t GetFileMetadataByExprResult::write(::apache::thrift::protocol::TProtoco
   xfer += oprot->writeFieldBegin("metadata", ::apache::thrift::protocol::T_MAP, 1);
   {
     xfer += oprot->writeMapBegin(::apache::thrift::protocol::T_I64, ::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->metadata.size()));
-    std::map<int64_t, MetadataPpdResult> ::const_iterator _iter680;
-    for (_iter680 = this->metadata.begin(); _iter680 != this->metadata.end(); ++_iter680)
+    std::map<int64_t, MetadataPpdResult> ::const_iterator _iter686;
+    for (_iter686 = this->metadata.begin(); _iter686 != this->metadata.end(); ++_iter686)
     {
-      xfer += oprot->writeI64(_iter680->first);
-      xfer += _iter680->second.write(oprot);
+      xfer += oprot->writeI64(_iter686->first);
+      xfer += _iter686->second.write(oprot);
     }
     xfer += oprot->writeMapEnd();
   }
@@ -16777,13 +16822,13 @@ void swap(GetFileMetadataByExprResult &a, GetFileMetadataByExprResult &b) {
   swap(a.isSupported, b.isSupported);
 }
 
-GetFileMetadataByExprResult::GetFileMetadataByExprResult(const GetFileMetadataByExprResult& other681) {
-  metadata = other681.metadata;
-  isSupported = other681.isSupported;
+GetFileMetadataByExprResult::GetFileMetadataByExprResult(const GetFileMetadataByExprResult& other687) {
+  metadata = other687.metadata;
+  isSupported = other687.isSupported;
 }
-GetFileMetadataByExprResult& GetFileMetadataByExprResult::operator=(const GetFileMetadataByExprResult& other682) {
-  metadata = other682.metadata;
-  isSupported = other682.isSupported;
+GetFileMetadataByExprResult& GetFileMetadataByExprResult::operator=(const GetFileMetadataByExprResult& other688) {
+  metadata = other688.metadata;
+  isSupported = other688.isSupported;
   return *this;
 }
 void GetFileMetadataByExprResult::printTo(std::ostream& out) const {
@@ -16844,14 +16889,14 @@ uint32_t GetFileMetadataByExprRequest::read(::apache::thrift::protocol::TProtoco
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->fileIds.clear();
-            uint32_t _size683;
-            ::apache::thrift::protocol::TType _etype686;
-            xfer += iprot->readListBegin(_etype686, _size683);
-            this->fileIds.resize(_size683);
-            uint32_t _i687;
-            for (_i687 = 0; _i687 < _size683; ++_i687)
+            uint32_t _size689;
+            ::apache::thrift::protocol::TType _etype692;
+            xfer += iprot->readListBegin(_etype692, _size689);
+            this->fileIds.resize(_size689);
+            uint32_t _i693;
+            for (_i693 = 0; _i693 < _size689; ++_i693)
             {
-              xfer += iprot->readI64(this->fileIds[_i687]);
+              xfer += iprot->readI64(this->fileIds[_i693]);
             }
             xfer += iprot->readListEnd();
           }
@@ -16878,9 +16923,9 @@ uint32_t GetFileMetadataByExprRequest::read(::apache::thrift::protocol::TProtoco
         break;
       case 4:
         if (ftype == ::apache::thrift::protocol::T_I32) {
-          int32_t ecast688;
-          xfer += iprot->readI32(ecast688);
-          this->type = (FileMetadataExprType::type)ecast688;
+          int32_t ecast694;
+          xfer += iprot->readI32(ecast694);
+          this->type = (FileMetadataExprType::type)ecast694;
           this->__isset.type = true;
         } else {
           xfer += iprot->skip(ftype);
@@ -16910,10 +16955,10 @@ uint32_t GetFileMetadataByExprRequest::write(::apache::thrift::protocol::TProtoc
   xfer += oprot->writeFieldBegin("fileIds", ::apache::thrift::protocol::T_LIST, 1);
   {
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_I64, static_cast<uint32_t>(this->fileIds.size()));
-    std::vector<int64_t> ::const_iterator _iter689;
-    for (_iter689 = this->fileIds.begin(); _iter689 != this->fileIds.end(); ++_iter689)
+    std::vector<int64_t> ::const_iterator _iter695;
+    for (_iter695 = this->fileIds.begin(); _iter695 != this->fileIds.end(); ++_iter695)
     {
-      xfer += oprot->writeI64((*_iter689));
+      xfer += oprot->writeI64((*_iter695));
     }
     xfer += oprot->writeListEnd();
   }
@@ -16947,19 +16992,19 @@ void swap(GetFileMetadataByExprRequest &a, GetFileMetadataByExprRequest &b) {
   swap(a.__isset, b.__isset);
 }
 
-GetFileMetadataByExprRequest::GetFileMetadataByExprRequest(const GetFileMetadataByExprRequest& other690) {
-  fileIds = other690.fileIds;
-  expr = other690.expr;
-  doGetFooters = other690.doGetFooters;
-  type = other690.type;
-  __isset = other690.__isset;
+GetFileMetadataByExprRequest::GetFileMetadataByExprRequest(const GetFileMetadataByExprRequest& other696) {
+  fileIds = other696.fileIds;
+  expr = other696.expr;
+  doGetFooters = other696.doGetFooters;
+  type = other696.type;
+  __isset = other696.__isset;
 }
-GetFileMetadataByExprRequest& GetFileMetadataByExprRequest::operator=(const GetFileMetadataByExprRequest& other691) {
-  fileIds = other691.fileIds;
-  expr = other691.expr;
-  doGetFooters = other691.doGetFooters;
-  type = other691.type;
-  __isset = other691.__isset;
+GetFileMetadataByExprRequest& GetFileMetadataByExprRequest::operator=(const GetFileMetadataByExprRequest& other697) {
+  fileIds = other697.fileIds;
+  expr = other697.expr;
+  doGetFooters = other697.doGetFooters;
+  type = other697.type;
+  __isset = other697.__isset;
   return *this;
 }
 void GetFileMetadataByExprRequest::printTo(std::ostream& out) const {
@@ -17012,17 +17057,17 @@ uint32_t GetFileMetadataResult::read(::apache::thrift::protocol::TProtocol* ipro
         if (ftype == ::apache::thrift::protocol::T_MAP) {
           {
             this->metadata.clear();
-            uint32_t _size692;
-            ::apache::thrift::protocol::TType _ktype693;
-            ::apache::thrift::protocol::TType _vtype694;
-            xfer += iprot->readMapBegin(_ktype693, _vtype694, _size692);
-            uint32_t _i696;
-            for (_i696 = 0; _i696 < _size692; ++_i696)
+            uint32_t _size698;
+            ::apache::thrift::protocol::TType _ktype699;
+            ::apache::thrift::protocol::TType _vtype700;
+            xfer += iprot->readMapBegin(_ktype699, _vtype700, _size698);
+            uint32_t _i702;
+            for (_i702 = 0; _i702 < _size698; ++_i702)
             {
-              int64_t _key697;
-              xfer += iprot->readI64(_key697);
-              std::string& _val698 = this->metadata[_key697];
-              xfer += iprot->readBinary(_val698);
+              int64_t _key703;
+              xfer += iprot->readI64(_key703);
+              std::string& _val704 = this->metadata[_key703];
+              xfer += iprot->readBinary(_val704);
             }
             xfer += iprot->readMapEnd();
           }
@@ -17063,11 +17108,11 @@ uint32_t GetFileMetadataResult::write(::apache::thrift::protocol::TProtocol* opr
   xfer += oprot->writeFieldBegin("metadata", ::apache::thrift::protocol::T_MAP, 1);
   {
     xfer += oprot->writeMapBegin(::apache::thrift::protocol::T_I64, ::apache::thrift::protocol::T_STRING, static_cast<uint32_t>(this->metadata.size()));
-    std::map<int64_t, std::string> ::const_iterator _iter699;
-    for (_iter699 = this->metadata.begin(); _iter699 != this->metadata.end(); ++_iter699)
+    std::map<int64_t, std::string> ::const_iterator _iter705;
+    for (_iter705 = this->metadata.begin(); _iter705 != this->metadata.end(); ++_iter705)
     {
-      xfer += oprot->writeI64(_iter699->first);
-      xfer += oprot->writeBinary(_iter699->second);
+      xfer += oprot->writeI64(_iter705->first);
+      xfer += oprot->writeBinary(_iter705->second);
     }
     xfer += oprot->writeMapEnd();
   }
@@ -17088,13 +17133,13 @@ void swap(GetFileMetadataResult &a, GetFileMetadataResult &b) {
   swap(a.isSupported, b.isSupported);
 }
 
-GetFileMetadataResult::GetFileMetadataResult(const GetFileMetadataResult& other700) {
-  metadata = other700.metadata;
-  isSupported = other700.isSupported;
+GetFileMetadataResult::GetFileMetadataResult(const GetFileMetadataResult& other706) {
+  metadata = other706.metadata;
+  isSupported = other706.isSupported;
 }
-GetFileMetadataResult& GetFileMetadataResult::operator=(const GetFileMetadataResult& other701) {
-  metadata = other701.metadata;
-  isSupported = other701.isSupported;
+GetFileMetadataResult& GetFileMetadataResult::operator=(const GetFileMetadataResult& other707) {
+  metadata = other707.metadata;
+  isSupported = other707.isSupported;
   return *this;
 }
 void GetFileMetadataResult::printTo(std::ostream& out) const {
@@ -17140,14 +17185,14 @@ uint32_t GetFileMetadataRequest::read(::apache::thrift::protocol::TProtocol* ipr
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->fileIds.clear();
-            uint32_t _size702;
-            ::apache::thrift::protocol::TType _etype705;
-            xfer += iprot->readListBegin(_etype705, _size702);
-            this->fileIds.resize(_size702);
-            uint32_t _i706;
-            for (_i706 = 0; _i706 < _size702; ++_i706)
+            uint32_t _size708;
+            ::apache::thrift::protocol::TType _etype711;
+            xfer += iprot->readListBegin(_etype711, _size708);
+            this->fileIds.resize(_size708);
+            uint32_t _i712;
+            for (_i712 = 0; _i712 < _size708; ++_i712)
             {
-              xfer += iprot->readI64(this->fileIds[_i706]);
+              xfer += iprot->readI64(this->fileIds[_i712]);
             }
             xfer += iprot->readListEnd();
           }
@@ -17178,10 +17223,10 @@ uint32_t GetFileMetadataRequest::write(::apache::thrift::protocol::TProtocol* op
   xfer += oprot->writeFieldBegin("fileIds", ::apache::thrift::protocol::T_LIST, 1);
   {
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_I64, static_cast<uint32_t>(this->fileIds.size()));
-    std::vector<int64_t> ::const_iterator _iter707;
-    for (_iter707 = this->fileIds.begin(); _iter707 != this->fileIds.end(); ++_iter707)
+    std::vector<int64_t> ::const_iterator _iter713;
+    for (_iter713 = this->fileIds.begin(); _iter713 != this->fileIds.end(); ++_iter713)
     {
-      xfer += oprot->writeI64((*_iter707));
+      xfer += oprot->writeI64((*_iter713));
     }
     xfer += oprot->writeListEnd();
   }
@@ -17197,11 +17242,11 @@ void swap(GetFileMetadataRequest &a, GetFileMetadataRequest &b) {
   swap(a.fileIds, b.fileIds);
 }
 
-GetFileMetadataRequest::GetFileMetadataRequest(const GetFileMetadataRequest& other708) {
-  fileIds = other708.fileIds;
+GetFileMetadataRequest::GetFileMetadataRequest(const GetFileMetadataRequest& other714) {
+  fileIds = other714.fileIds;
 }
-GetFileMetadataRequest& GetFileMetadataRequest::operator=(const GetFileMetadataRequest& other709) {
-  fileIds = other709.fileIds;
+GetFileMetadataRequest& GetFileMetadataRequest::operator=(const GetFileMetadataRequest& other715) {
+  fileIds = other715.fileIds;
   return *this;
 }
 void GetFileMetadataRequest::printTo(std::ostream& out) const {
@@ -17260,11 +17305,11 @@ void swap(PutFileMetadataResult &a, PutFileMetadataResult &b) {
   (void) b;
 }
 
-PutFileMetadataResult::PutFileMetadataResult(const PutFileMetadataResult& other710) {
-  (void) other710;
+PutFileMetadataResult::PutFileMetadataResult(const PutFileMetadataResult& other716) {
+  (void) other716;
 }
-PutFileMetadataResult& PutFileMetadataResult::operator=(const PutFileMetadataResult& other711) {
-  (void) other711;
+PutFileMetadataResult& PutFileMetadataResult::operator=(const PutFileMetadataResult& other717) {
+  (void) other717;
   return *this;
 }
 void PutFileMetadataResult::printTo(std::ostream& out) const {
@@ -17318,14 +17363,14 @@ uint32_t PutFileMetadataRequest::read(::apache::thrift::protocol::TProtocol* ipr
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->fileIds.clear();
-            uint32_t _size712;
-            ::apache::thrift::protocol::TType _etype715;
-            xfer += iprot->readListBegin(_etype715, _size712);
-            this->fileIds.resize(_size712);
-            uint32_t _i716;
-            for (_i716 = 0; _i716 < _size712; ++_i716)
+            uint32_t _size718;
+            ::apache::thrift::protocol::TType _etype721;
+            xfer += iprot->readListBegin(_etype721, _size718);
+            this->fileIds.resize(_size718);
+            uint32_t _i722;
+            for (_i722 = 0; _i722 < _size718; ++_i722)
             {
-              xfer += iprot->readI64(this->fileIds[_i716]);
+              xfer += iprot->readI64(this->fileIds[_i722]);
             }
             xfer += iprot->readListEnd();
           }
@@ -17338,14 +17383,14 @@ uint32_t PutFileMetadataRequest::read(::apache::thrift::protocol::TProtocol* ipr
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->metadata.clear();
-            uint32_t _size717;
-            ::apache::thrift::protocol::TType _etype720;
-            xfer += iprot->readListBegin(_etype720, _size717);
-            this->metadata.resize(_size717);
-            uint32_t _i721;
-            for (_i721 = 0; _i721 < _size717; ++_i721)
+            uint32_t _size723;
+            ::apache::thrift::protocol::TType _etype726;
+            xfer += iprot->readListBegin(_etype726, _size723);
+            this->metadata.resize(_size723);
+            uint32_t _i727;
+            for (_i727 = 0; _i727 < _size723; ++_i727)
             {
-              xfer += iprot->readBinary(this->metadata[_i721]);
+              xfer += iprot->readBinary(this->metadata[_i727]);
             }
             xfer += iprot->readListEnd();
           }
@@ -17356,9 +17401,9 @@ uint32_t PutFileMetadataRequest::read(::apache::thrift::protocol::TProtocol* ipr
         break;
       case 3:
         if (ftype == ::apache::thrift::protocol::T_I32) {
-          int32_t ecast722;
-          xfer += iprot->readI32(ecast722);
-          this->type = (FileMetadataExprType::type)ecast722;
+          int32_t ecast728;
+          xfer += iprot->readI32(ecast728);
+          this->type = (FileMetadataExprType::type)ecast728;
           this->__isset.type = true;
         } else {
           xfer += iprot->skip(ftype);
@@ -17388,10 +17433,10 @@ uint32_t PutFileMetadataRequest::write(::apache::thrift::protocol::TProtocol* op
   xfer += oprot->writeFieldBegin("fileIds", ::apache::thrift::protocol::T_LIST, 1);
   {
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_I64, static_cast<uint32_t>(this->fileIds.size()));
-    std::vector<int64_t> ::const_iterator _iter723;
-    for (_iter723 = this->fileIds.begin(); _iter723 != this->fileIds.end(); ++_iter723)
+    std::vector<int64_t> ::const_iterator _iter729;
+    for (_iter729 = this->fileIds.begin(); _iter729 != this->fileIds.end(); ++_iter729)
     {
-      xfer += oprot->writeI64((*_iter723));
+      xfer += oprot->writeI64((*_iter729));
     }
     xfer += oprot->writeListEnd();
   }
@@ -17400,10 +17445,10 @@ uint32_t PutFileMetadataRequest::write(::apache::thrift::protocol::TProtocol* op
   xfer += oprot->writeFieldBegin("metadata", ::apache::thrift::protocol::T_LIST, 2);
   {
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRING, static_cast<uint32_t>(this->metadata.size()));
-    std::vector<std::string> ::const_iterator _iter724;
-    for (_iter724 = this->metadata.begin(); _iter724 != this->metadata.end(); ++_iter724)
+    std::vector<std::string> ::const_iterator _iter730;
+    for (_iter730 = this->metadata.begin(); _iter730 != this->metadata.end(); ++_iter730)
     {
-      xfer += oprot->writeBinary((*_iter724));
+      xfer += oprot->writeBinary((*_iter730));
     }
     xfer += oprot->writeListEnd();
   }
@@ -17427,17 +17472,17 @@ void swap(PutFileMetadataRequest &a, PutFileMetadataRequest &b) {
   swap(a.__isset, b.__isset);
 }
 
-PutFileMetadataRequest::PutFileMetadataRequest(const PutFileMetadataRequest& other725) {
-  fileIds = other725.fileIds;
-  metadata = other725.metadata;
-  type = other725.type;
-  __isset = other725.__isset;
+PutFileMetadataRequest::PutFileMetadataRequest(const PutFileMetadataRequest& other731) {
+  fileIds = other731.fileIds;
+  metadata = other731.metadata;
+  type = other731.type;
+  __isset = other731.__isset;
 }
-PutFileMetadataRequest& PutFileMetadataRequest::operator=(const PutFileMetadataRequest& other726) {
-  fileIds = other726.fileIds;
-  metadata = other726.metadata;
-  type = other726.type;
-  __isset = other726.__isset;
+PutFileMetadataRequest& PutFileMetadataRequest::operator=(const PutFileMetadataRequest& other732) {
+  fileIds = other732.fileIds;
+  metadata = other732.metadata;
+  type = other732.type;
+  __isset = other732.__isset;
   return *this;
 }
 void PutFileMetadataRequest::printTo(std::ostream& out) const {
@@ -17498,11 +17543,11 @@ void swap(ClearFileMetadataResult &a, ClearFileMetadataResult &b) {
   (void) b;
 }
 
-ClearFileMetadataResult::ClearFileMetadataResult(const ClearFileMetadataResult& other727) {
-  (void) other727;
+ClearFileMetadataResult::ClearFileMetadataResult(const ClearFileMetadataResult& other733) {
+  (void) other733;
 }
-ClearFileMetadataResult& ClearFileMetadataResult::operator=(const ClearFileMetadataResult& other728) {
-  (void) other728;
+ClearFileMetadataResult& ClearFileMetadataResult::operator=(const ClearFileMetadataResult& other734) {
+  (void) other734;
   return *this;
 }
 void ClearFileMetadataResult::printTo(std::ostream& out) const {
@@ -17546,14 +17591,14 @@ uint32_t ClearFileMetadataRequest::read(::apache::thrift::protocol::TProtocol* i
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->fileIds.clear();
-            uint32_t _size729;
-            ::apache::thrift::protocol::TType _etype732;
-            xfer += iprot->readListBegin(_etype732, _size729);
-            this->fileIds.resize(_size729);
-            uint32_t _i733;
-            for (_i733 = 0; _i733 < _size729; ++_i733)
+            uint32_t _size735;
+            ::apache::thrift::protocol::TType _etype738;
+            xfer += iprot->readListBegin(_etype738, _size735);
+            this->fileIds.resize(_size735);
+            uint32_t _i739;
+            for (_i739 = 0; _i739 < _size735; ++_i739)
             {
-              xfer += iprot->readI64(this->fileIds[_i733]);
+              xfer += iprot->readI64(this->fileIds[_i739]);
             }
             xfer += iprot->readListEnd();
           }
@@ -17584,10 +17629,10 @@ uint32_t ClearFileMetadataRequest::write(::apache::thrift::protocol::TProtocol* 
   xfer += oprot->writeFieldBegin("fileIds", ::apache::thrift::protocol::T_LIST, 1);
   {
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_I64, static_cast<uint32_t>(this->fileIds.size()));
-    std::vector<int64_t> ::const_iterator _iter734;
-    for (_iter734 = this->fileIds.begin(); _iter734 != this->fileIds.end(); ++_iter734)
+    std::vector<int64_t> ::const_iterator _iter740;
+    for (_iter740 = this->fileIds.begin(); _iter740 != this->fileIds.end(); ++_iter740)
     {
-      xfer += oprot->writeI64((*_iter734));
+      xfer += oprot->writeI64((*_iter740));
     }
     xfer += oprot->writeListEnd();
   }
@@ -17603,11 +17648,11 @@ void swap(ClearFileMetadataRequest &a, ClearFileMetadataRequest &b) {
   swap(a.fileIds, b.fileIds);
 }
 
-ClearFileMetadataRequest::ClearFileMetadataRequest(const ClearFileMetadataRequest& other735) {
-  fileIds = other735.fileIds;
+ClearFileMetadataRequest::ClearFileMetadataRequest(const ClearFileMetadataRequest& other741) {
+  fileIds = other741.fileIds;
 }
-ClearFileMetadataRequest& ClearFileMetadataRequest::operator=(const ClearFileMetadataRequest& other736) {
-  fileIds = other736.fileIds;
+ClearFileMetadataRequest& ClearFileMetadataRequest::operator=(const ClearFileMetadataRequest& other742) {
+  fileIds = other742.fileIds;
   return *this;
 }
 void ClearFileMetadataRequest::printTo(std::ostream& out) const {
@@ -17689,11 +17734,11 @@ void swap(CacheFileMetadataResult &a, CacheFileMetadataResult &b) {
   swap(a.isSupported, b.isSupported);
 }
 
-CacheFileMetadataResult::CacheFileMetadataResult(const CacheFileMetadataResult& other737) {
-  isSupported = other737.isSupported;
+CacheFileMetadataResult::CacheFileMetadataResult(const CacheFileMetadataResult& other743) {
+  isSupported = other743.isSupported;
 }
-CacheFileMetadataResult& CacheFileMetadataResult::operator=(const CacheFileMetadataResult& other738) {
-  isSupported = other738.isSupported;
+CacheFileMetadataResult& CacheFileMetadataResult::operator=(const CacheFileMetadataResult& other744) {
+  isSupported = other744.isSupported;
   return *this;
 }
 void CacheFileMetadataResult::printTo(std::ostream& out) const {
@@ -17834,19 +17879,19 @@ void swap(CacheFileMetadataRequest &a, CacheFileMetadataRequest &b) {
   swap(a.__isset, b.__isset);
 }
 
-CacheFileMetadataRequest::CacheFileMetadataRequest(const CacheFileMetadataRequest& other739) {
-  dbName = other739.dbName;
-  tblName = other739.tblName;
-  partName = other739.partName;
-  isAllParts = other739.isAllParts;
-  __isset = other739.__isset;
+CacheFileMetadataRequest::CacheFileMetadataRequest(const CacheFileMetadataRequest& other745) {
+  dbName = other745.dbName;
+  tblName = other745.tblName;
+  partName = other745.partName;
+  isAllParts = other745.isAllParts;
+  __isset = other745.__isset;
 }
-CacheFileMetadataRequest& CacheFileMetadataRequest::operator=(const CacheFileMetadataRequest& other740) {
-  dbName = other740.dbName;
-  tblName = other740.tblName;
-  partName = other740.partName;
-  isAllParts = other740.isAllParts;
-  __isset = other740.__isset;
+CacheFileMetadataRequest& CacheFileMetadataRequest::operator=(const CacheFileMetadataRequest& other746) {
+  dbName = other746.dbName;
+  tblName = other746.tblName;
+  partName = other746.partName;
+  isAllParts = other746.isAllParts;
+  __isset = other746.__isset;
   return *this;
 }
 void CacheFileMetadataRequest::printTo(std::ostream& out) const {
@@ -17894,14 +17939,14 @@ uint32_t GetAllFunctionsResponse::read(::apache::thrift::protocol::TProtocol* ip
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->functions.clear();
-            uint32_t _size741;
-            ::apache::thrift::protocol::TType _etype744;
-            xfer += iprot->readListBegin(_etype744, _size741);
-            this->functions.resize(_size741);
-            uint32_t _i745;
-            for (_i745 = 0; _i745 < _size741; ++_i745)
+            uint32_t _size747;
+            ::apache::thrift::protocol::TType _etype750;
+            xfer += iprot->readListBegin(_etype750, _size747);
+            this->functions.resize(_size747);
+            uint32_t _i751;
+            for (_i751 = 0; _i751 < _size747; ++_i751)
             {
-              xfer += this->functions[_i745].read(iprot);
+              xfer += this->functions[_i751].read(iprot);
             }
             xfer += iprot->readListEnd();
           }
@@ -17931,10 +17976,10 @@ uint32_t GetAllFunctionsResponse::write(::apache::thrift::protocol::TProtocol* o
     xfer += oprot->writeFieldBegin("functions", ::apache::thrift::protocol::T_LIST, 1);
     {
       xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->functions.size()));
-      std::vector<Function> ::const_iterator _iter746;
-      for (_iter746 = this->functions.begin(); _iter746 != this->functions.end(); ++_iter746)
+      std::vector<Function> ::const_iterator _iter752;
+      for (_iter752 = this->functions.begin(); _iter752 != this->functions.end(); ++_iter752)
       {
-        xfer += (*_iter746).write(oprot);
+        xfer += (*_iter752).write(oprot);
       }
       xfer += oprot->writeListEnd();
     }
@@ -17951,13 +17996,13 @@ void swap(GetAllFunctionsResponse &a, GetAllFunctionsResponse &b) {
   swap(a.__isset, b.__isset);
 }
 
-GetAllFunctionsResponse::GetAllFunctionsResponse(const GetAllFunctionsResponse& other747) {
-  functions = other747.functions;
-  __isset = other747.__isset;
+GetAllFunctionsResponse::GetAllFunctionsResponse(const GetAllFunctionsResponse& other753) {
+  functions = other753.functions;
+  __isset = other753.__isset;
 }
-GetAllFunctionsResponse& GetAllFunctionsResponse::operator=(const GetAllFunctionsResponse& other748) {
-  functions = other748.functions;
-  __isset = other748.__isset;
+GetAllFunctionsResponse& GetAllFunctionsResponse::operator=(const GetAllFunctionsResponse& other754) {
+  functions = other754.functions;
+  __isset = other754.__isset;
   return *this;
 }
 void GetAllFunctionsResponse::printTo(std::ostream& out) const {
@@ -18002,16 +18047,16 @@ uint32_t ClientCapabilities::read(::apache::thrift::protocol::TProtocol* iprot) 
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->values.clear();
-            uint32_t _size749;
-            ::apache::thrift::protocol::TType _etype752;
-            xfer += iprot->readListBegin(_etype752, _size749);
-            this->values.resize(_size749);
-            uint32_t _i753;
-            for (_i753 = 0; _i753 < _size749; ++_i753)
+            uint32_t _size755;
+            ::apache::thrift::protocol::TType _etype758;
+            xfer += iprot->readListBegin(_etype758, _size755);
+            this->values.resize(_size755);
+            uint32_t _i759;
+            for (_i759 = 0; _i759 < _size755; ++_i759)
             {
-              int32_t ecast754;
-              xfer += iprot->readI32(ecast754);
-              this->values[_i753] = (ClientCapability::type)ecast754;
+              int32_t ecast760;
+              xfer += iprot->readI32(ecast760);
+              this->values[_i759] = (ClientCapability::type)ecast760;
             }
             xfer += iprot->readListEnd();
           }
@@ -18042,10 +18087,10 @@ uint32_t ClientCapabilities::write(::apache::thrift::protocol::TProtocol* oprot)
   xfer += oprot->writeFieldBegin("values", ::apache::thrift::protocol::T_LIST, 1);
   {
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_I32, static_cast<uint32_t>(this->values.size()));
-    std::vector<ClientCapability::type> ::const_iterator _iter755;
-    for (_iter755 = this->values.begin(); _iter755 != this->values.end(); ++_iter755)
+    std::vector<ClientCapability::type> ::const_iterator _iter761;
+    for (_iter761 = this->values.begin(); _iter761 != this->values.end(); ++_iter761)
     {
-      xfer += oprot->writeI32((int32_t)(*_iter755));
+      xfer += oprot->writeI32((int32_t)(*_iter761));
     }
     xfer += oprot->writeListEnd();
   }
@@ -18061,11 +18106,11 @@ void swap(ClientCapabilities &a, ClientCapabilities &b) {
   swap(a.values, b.values);
 }
 
-ClientCapabilities::ClientCapabilities(const ClientCapabilities& other756) {
-  values = other756.values;
+ClientCapabilities::ClientCapabilities(const ClientCapabilities& other762) {
+  values = other762.values;
 }
-ClientCapabilities& ClientCapabilities::operator=(const ClientCapabilities& other757) {
-  values = other757.values;
+ClientCapabilities& ClientCapabilities::operator=(const ClientCapabilities& other763) {
+  values = other763.values;
   return *this;
 }
 void ClientCapabilities::printTo(std::ostream& out) const {
@@ -18187,17 +18232,17 @@ void swap(GetTableRequest &a, GetTableRequest &b) {
   swap(a.__isset, b.__isset);
 }
 
-GetTableRequest::GetTableRequest(const GetTableRequest& other758) {
-  dbName = other758.dbName;
-  tblName = other758.tblName;
-  capabilities = other758.capabilities;
-  __isset = other758.__isset;
+GetTableRequest::GetTableRequest(const GetTableRequest& other764) {
+  dbName = other764.dbName;
+  tblName = other764.tblName;
+  capabilities = other764.capabilities;
+  __isset = other764.__isset;
 }
-GetTableRequest& GetTableRequest::operator=(const GetTableRequest& other759) {
-  dbName = other759.dbName;
-  tblName = other759.tblName;
-  capabilities = other759.capabilities;
-  __isset = other759.__isset;
+GetTableRequest& GetTableRequest::operator=(const GetTableRequest& other765) {
+  dbName = other765.dbName;
+  tblName = other765.tblName;
+  capabilities = other765.capabilities;
+  __isset = other765.__isset;
   return *this;
 }
 void GetTableRequest::printTo(std::ostream& out) const {
@@ -18281,11 +18326,11 @@ void swap(GetTableResult &a, GetTableResult &b) {
   swap(a.table, b.table);
 }
 
-GetTableResult::GetTableResult(const GetTableResult& other760) {
-  table = other760.table;
+GetTableResult::GetTableResult(const GetTableResult& other766) {
+  table = other766.table;
 }
-GetTableResult& GetTableResult::operator=(const GetTableResult& other761) {
-  table = other761.table;
+GetTableResult& GetTableResult::operator=(const GetTableResult& other767) {
+  table = other767.table;
   return *this;
 }
 void GetTableResult::printTo(std::ostream& out) const {
@@ -18348,14 +18393,14 @@ uint32_t GetTablesRequest::read(::apache::thrift::protocol::TProtocol* iprot) {
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->tblNames.clear();
-            uint32_t _size762;
-            ::apache::thrift::protocol::TType _etype765;
-            xfer += iprot->readListBegin(_etype765, _size762);
-            this->tblNames.resize(_size762);
-            uint32_t _i766;
-            for (_i766 = 0; _i766 < _size762; ++_i766)
+            uint32_t _size768;
+            ::apache::thrift::protocol::TType _etype771;
+            xfer += iprot->readListBegin(_etype771, _size768);
+            this->tblNames.resize(_size768);
+            uint32_t _i772;
+            for (_i772 = 0; _i772 < _size768; ++_i772)
             {
-              xfer += iprot->readString(this->tblNames[_i766]);
+              xfer += iprot->readString(this->tblNames[_i772]);
             }
             xfer += iprot->readListEnd();
           }
@@ -18399,10 +18444,10 @@ uint32_t GetTablesRequest::write(::apache::thrift::protocol::TProtocol* oprot) c
     xfer += oprot->writeFieldBegin("tblNames", ::apache::thrift::protocol::T_LIST, 2);
     {
       xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRING, static_cast<uint32_t>(this->tblNames.size()));
-      std::vector<std::string> ::const_iterator _iter767;
-      for (_iter767 = this->tblNames.begin(); _iter767 != this->tblNames.end(); ++_iter767)
+      std::vector<std::string> ::const_iterator _iter773;
+      for (_iter773 = this->tblNames.begin(); _iter773 != this->tblNames.end(); ++_iter773)
       {
-        xfer += oprot->writeString((*_iter767));
+        xfer += oprot->writeString((*_iter773));
       }
       xfer += oprot->writeListEnd();
     }
@@ -18426,17 +18471,17 @@ void swap(GetTablesRequest &a, GetTablesRequest &b) {
   swap(a.__isset, b.__isset);
 }
 
-GetTablesRequest::GetTablesRequest(const GetTablesRequest& other768) {
-  dbName = other768.dbName;
-  tblNames = other768.tblNames;
-  capabilities = other768.capabilities;
-  __isset = other768.__isset;
+GetTablesRequest::GetTablesRequest(const GetTablesRequest& other774) {
+  dbName = other774.dbName;
+  tblNames = other774.tblNames;
+  capabilities = other774.capabilities;
+  __isset = other774.__isset;
 }
-GetTablesRequest& GetTablesRequest::operator=(const GetTablesRequest& other769) {
-  dbName = other769.dbName;
-  tblNames = other769.tblNames;
-  capabilities = other769.capabilities;
-  __isset = other769.__isset;
+GetTablesRequest& GetTablesRequest::operator=(const GetTablesRequest& other775) {
+  dbName = other775.dbName;
+  tblNames = other775.tblNames;
+  capabilities = other775.capabilities;
+  __isset = other775.__isset;
   return *this;
 }
 void GetTablesRequest::printTo(std::ostream& out) const {
@@ -18483,14 +18528,14 @@ uint32_t GetTablesResult::read(::apache::thrift::protocol::TProtocol* iprot) {
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->tables.clear();
-            uint32_t _size770;
-            ::apache::thrift::protocol::TType _etype773;
-            xfer += iprot->readListBegin(_etype773, _size770);
-            this->tables.resize(_size770);
-            uint32_t _i774;
-            for (_i774 = 0; _i774 < _size770; ++_i774)
+            uint32_t _size776;
+            ::apache::thrift::protocol::TType _etype779;
+            xfer += iprot->readListBegin(_etype779, _size776);
+            this->tables.resize(_size776);
+            uint32_t _i780;
+            for (_i780 = 0; _i780 < _size776; ++_i780)
             {
-              xfer += this->tables[_i774].read(iprot);
+              xfer += this->tables[_i780].read(iprot);
             }
             xfer += iprot->readListEnd();
           }
@@ -18521,10 +18566,10 @@ uint32_t GetTablesResult::write(::apache::thrift::protocol::TProtocol* oprot) co
   xfer += oprot->writeFieldBegin("tables", ::apache::thrift::protocol::T_LIST, 1);
   {
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->tables.size()));
-    std::vector<Table> ::const_iterator _iter775;
-    for (_iter775 = this->tables.begin(); _iter775 != this->tables.end(); ++_iter775)
+    std::vector<Table> ::const_iterator _iter781;
+    for (_iter781 = this->tables.begin(); _iter781 != this->tables.end(); ++_iter781)
     {
-      xfer += (*_iter775).write(oprot);
+      xfer += (*_iter781).write(oprot);
     }
     xfer += oprot->writeListEnd();
   }
@@ -18540,11 +18585,11 @@ void swap(GetTablesResult &a, GetTablesResult &b) {
   swap(a.tables, b.tables);
 }
 
-GetTablesResult::GetTablesResult(const GetTablesResult& other776) {
-  tables = other776.tables;
+GetTablesResult::GetTablesResult(const GetTablesResult& other782) {
+  tables = other782.tables;
 }
-GetTablesResult& GetTablesResult::operator=(const GetTablesResult& other777) {
-  tables = other777.tables;
+GetTablesResult& GetTablesResult::operator=(const GetTablesResult& other783) {
+  tables = other783.tables;
   return *this;
 }
 void GetTablesResult::printTo(std::ostream& out) const {
@@ -18686,19 +18731,19 @@ void swap(TableMeta &a, TableMeta &b) {
   swap(a.__isset, b.__isset);
 }
 
-TableMeta::TableMeta(const TableMeta& other778) {
-  dbName = other778.dbName;
-  tableName = other778.tableName;
-  tableType = other778.tableType;
-  comments = other778.comments;
-  __isset = other778.__isset;
+TableMeta::TableMeta(const TableMeta& other784) {
+  dbName = other784.dbName;
+  tableName = other784.tableName;
+  tableType = other784.tableType;
+  comments = other784.comments;
+  __isset = other784.__isset;
 }
-TableMeta& TableMeta::operator=(const TableMeta& other779) {
-  dbName = other779.dbName;
-  tableName = other779.tableName;
-  tableType = other779.tableType;
-  comments = other779.comments;
-  __isset = other779.__isset;
+TableMeta& TableMeta::operator=(const TableMeta& other785) {
+  dbName = other785.dbName;
+  tableName = other785.tableName;
+  tableType = other785.tableType;
+  comments = other785.comments;
+  __isset = other785.__isset;
   return *this;
 }
 void TableMeta::printTo(std::ostream& out) const {
@@ -18781,13 +18826,13 @@ void swap(MetaException &a, MetaException &b) {
   swap(a.__isset, b.__isset);
 }
 
-MetaException::MetaException(const MetaException& other780) : TException() {
-  message = other780.message;
-  __isset = other780.__isset;
+MetaException::MetaException(const MetaException& other786) : TException() {
+  message = other786.message;
+  __isset = other786.__isset;
 }
-MetaException& MetaException::operator=(const MetaException& other781) {
-  message = other781.message;
-  __isset = other781.__isset;
+MetaException& MetaException::operator=(const MetaException& other787) {
+  message = other787.message;
+  __isset = other787.__isset;
   return *this;
 }
 void MetaException::printTo(std::ostream& out) const {
@@ -18878,13 +18923,13 @@ void swap(UnknownTableException &a, UnknownTableException &b) {
   swap(a.__isset, b.__isset);
 }
 
-UnknownTableException::UnknownTableException(const UnknownTableException& other782) : TException() {
-  message = other782.message;
-  __isset = other782.__isset;
+UnknownTableException::UnknownTableException(const UnknownTableException& other788) : TException() {
+  message = other788.message;
+  __isset = other788.__isset;
 }
-UnknownTableException& UnknownTableException::operator=(const UnknownTableException& other783) {
-  message = other783.message;
-  __isset = other783.__isset;
+UnknownTableException& UnknownTableException::operator=(const UnknownTableException& other789) {
+  message = other789.message;
+  __isset = other789.__isset;
   return *this;
 }
 void UnknownTableException::printTo(std::ostream& out) const {
@@ -18975,13 +19020,13 @@ void swap(UnknownDBException &a, UnknownDBException &b) {
   swap(a.__isset, b.__isset);
 }
 
-UnknownDBException::UnknownDBException(const UnknownDBException& other784) : TException() {
-  message = other784.message;
-  __isset = other784.__isset;
+UnknownDBException::UnknownDBException(const UnknownDBException& other790) : TException() {
+  message = other790.message;
+  __isset = other790.__isset;
 }
-UnknownDBException& UnknownDBException::operator=(const UnknownDBException& other785) {
-  message = other785.message;
-  __isset = other785.__isset;
+UnknownDBException& UnknownDBException::operator=(const UnknownDBException& other791) {
+  message = other791.message;
+  __isset = other791.__isset;
   return *this;
 }
 void UnknownDBException::printTo(std::ostream& out) const {
@@ -19072,13 +19117,13 @@ void swap(AlreadyExistsException &a, AlreadyExistsException &b) {
   swap(a.__isset, b.__isset);
 }
 
-AlreadyExistsException::AlreadyExistsException(const AlreadyExistsException& other786) : TException() {
-  message = other786.message;
-  __isset = other786.__isset;
+AlreadyExistsException::AlreadyExistsException(const AlreadyExistsException& other792) : TException() {
+  message = other792.message;
+  __isset = other792.__isset;
 }
-AlreadyExistsException& AlreadyExistsException::operator=(const AlreadyExistsException& other787) {
-  message = other787.message;
-  __isset = other787.__isset;
+AlreadyExistsException& AlreadyExistsException::operator=(const AlreadyExistsException& other793) {
+  message = other793.message;
+  __isset = other793.__isset;
   return *this;
 }
 void AlreadyExistsException::printTo(std::ostream& out) const {
@@ -19169,13 +19214,13 @@ void swap(InvalidPartitionException &a, InvalidPartitionException &b) {
   swap(a.__isset, b.__isset);
 }
 
-InvalidPartitionException::InvalidPartitionException(const InvalidPartitionException& other788) : TException() {
-  message = other788.message;
-  __isset = other788.__isset;
+InvalidPartitionException::InvalidPartitionException(const InvalidPartitionException& other794) : TException() {
+  message = other794.message;
+  __isset = other794.__isset;
 }
-InvalidPartitionException& InvalidPartitionException::operator=(const InvalidPartitionException& other789) {
-  message = other789.message;
-  __isset = other789.__isset;
+InvalidPartitionException& InvalidPartitionException::operator=(const InvalidPartitionException& other795) {
+  message = other795.message;
+  __isset = other795.__isset;
   return *this;
 }
 void InvalidPartitionException::printTo(std::ostream& out) const {
@@ -19266,13 +19311,13 @@ void swap(UnknownPartitionException &a, UnknownPartitionException &b) {
   swap(a.__isset, b.__isset);
 }
 
-UnknownPartitionException::UnknownPartitionException(const UnknownPartitionException& other790) : TException() {
-  message = other790.message;
-  __isset = other790.__isset;
+UnknownPartitionException::UnknownPartitionException(const UnknownPartitionException& other796) : TException() {
+  message = other796.message;
+  __isset = other796.__isset;
 }
-UnknownPartitionException& UnknownPartitionException::operator=(const UnknownPartitionException& other791) {
-  message = other791.message;
-  __isset = other791.__isset;
+UnknownPartitionException& UnknownPartitionException::operator=(const UnknownPartitionException& other797) {
+  message = other797.message;
+  __isset = other797.__isset;
   return *this;
 }
 void UnknownPartitionException::printTo(std::ostream& out) const {
@@ -19363,13 +19408,13 @@ void swap(InvalidObjectException &a, InvalidObjectException &b) {
   swap(a.__isset, b.__isset);
 }
 
-InvalidObjectException::InvalidObjectException(const InvalidObjectException& other792) : TException() {
-  message = other792.message;
-  __isset = other792.__isset;
+InvalidObjectException::InvalidObjectException(const InvalidObjectException& other798) : TException() {
+  message = other798.message;
+  __isset = other798.__isset;
 }
-InvalidObjectException& InvalidObjectException::operator=(const InvalidObjectException& other793) {
-  message = other793.message;
-  __isset = other793.__isset;
+InvalidObjectException& InvalidObjectException::operator=(const InvalidObjectException& other799) {
+  message = other799.message;
+  __isset = other799.__isset;
   return *this;
 }
 void InvalidObjectException::printTo(std::ostream& out) const {
@@ -19460,13 +19505,13 @@ void swap(NoSuchObjectException &a, NoSuchObjectException &b) {
   swap(a.__isset, b.__isset);
 }
 
-NoSuchObjectException::NoSuchObjectException(const NoSuchObjectException& other794) : TException() {
-  message = other794.message;
-  __isset = other794.__isset;
+NoSuchObjectException::NoSuchObjectException(const NoSuchObjectException& other800) : TException() {
+  message = other800.message;
+  __isset = other800.__isset;
 }
-NoSuchObjectException& NoSuchObjectException::operator=(const NoSuchObjectException& other795) {
-  message = other795.message;
-  __isset = other795.__isset;
+NoSuchObjectException& NoSuchObjectException::operator=(const NoSuchObjectException& other801) {
+  message = other801.message;
+  __isset = other801.__isset;
   return *this;
 }
 void NoSuchObjectException::printTo(std::ostream& out) const {
@@ -19557,13 +19602,13 @@ void swap(IndexAlreadyExistsException &a, IndexAlreadyExistsException &b) {
   swap(a.__isset, b.__isset);
 }
 
-IndexAlreadyExistsException::IndexAlreadyExistsException(const IndexAlreadyExistsException& other796) : TException() {
-  message = other796.message;
-  __isset = other796.__isset;
+IndexAlreadyExistsException::IndexAlreadyExistsException(const IndexAlreadyExistsException& other802) : TException() {
+  message = other802.message;
+  __isset = other802.__isset;
 }
-IndexAlreadyExistsException& IndexAlreadyExistsException::operator=(const IndexAlreadyExistsException& other797) {
-  message = other797.message;
-  __isset = other797.__isset;
+IndexAlreadyExistsException& IndexAlreadyExistsException::operator=(const IndexAlreadyExistsException& other803) {
+  message = other803.message;
+  __isset = other803.__isset;
   return *this;
 }
 void IndexAlreadyExistsException::printTo(std::ostream& out) const {
@@ -19654,13 +19699,13 @@ void swap(InvalidOperationException &a, InvalidOperationException &b) {
   swap(a.__isset, b.__isset);
 }
 
-InvalidOperationException::InvalidOperationException(const InvalidOperationException& other798) : TException() {
-  message = other798.message;
-  __isset = other798.__isset;
+InvalidOperationException::InvalidOperationException(const InvalidOperationException& other804) : TException() {
+  message = other804.message;
+  __isset = other804.__isset;
 }
-InvalidOperationException& InvalidOperationException::operator=(const InvalidOperationException& other799) {
-  message = other799.message;
-  __isset = other799.__isset;
+InvalidOperationException& InvalidOperationException::operator=(const InvalidOperationException& other805) {
+  message = other805.message;
+  __isset = other805.__isset;
   return *this;
 }
 void InvalidOperationException::printTo(std::ostream& out) const {
@@ -19751,13 +19796,13 @@ void swap(ConfigValSecurityException &a, ConfigValSecurityException &b) {
   swap(a.__isset, b.__isset);
 }
 
-ConfigValSecurityException::ConfigValSecurityException(const ConfigValSecurityException& other800) : TException() {
-  message = other800.message;
-  __isset = other800.__isset;
+ConfigValSecurityException::ConfigValSecurityException(const ConfigValSecurityException& other806) : TException() {
+  message = other806.message;
+  __isset = other806.__isset;
 }
-ConfigValSecurityException& ConfigValSecurityException::operator=(const ConfigValSecurityException& other801) {
-  message = other801.message;
-  __isset = other801.__isset;
+ConfigValSecurityException& ConfigValSecurityException::operator=(const ConfigValSecurityException& other807) {
+  message = other807.message;
+  __isset = other807.__isset;
   return *this;
 }
 void ConfigValSecurityException::printTo(std::ostream& out) const {
@@ -19848,13 +19893,13 @@ void swap(InvalidInputException &a, InvalidInputException &b) {
   swap(a.__isset, b.__isset);
 }
 
-InvalidInputException::InvalidInputException(const InvalidInputException& other802) : TException() {
-  message = other802.message;
-  __isset = other802.__isset;
+InvalidInputException::InvalidInputException(const InvalidInputException& other808) : TException() {
+  message = other808.message;
+  __isset = other808.__isset;
 }
-InvalidInputException& InvalidInputException::operator=(const InvalidInputException& other803) {
-  message = other803.message;
-  __isset = other803.__isset;
+InvalidInputException& InvalidInputException::operator=(const InvalidInputException& other809) {
+  message = other809.message;
+  __isset = other809.__isset;
   return *this;
 }
 void InvalidInputException::printTo(std::ostream& out) const {
@@ -19945,13 +19990,13 @@ void swap(NoSuchTxnException &a, NoSuchTxnException &b) {
   swap(a.__isset, b.__isset);
 }
 
-NoSuchTxnException::NoSuchTxnException(const NoSuchTxnException& other804) : TException() {
-  message = other804.message;
-  __isset = other804.__isset;
+NoSuchTxnException::NoSuchTxnException(const NoSuchTxnException& other810) : TException() {
+  message = other810.message;
+  __isset = other810.__isset;
 }
-NoSuchTxnException& NoSuchTxnException::operator=(const NoSuchTxnException& other805) {
-  message = other805.message;
-  __isset = other805.__isset;
+NoSuchTxnException& NoSuchTxnException::operator=(const NoSuchTxnException& other811) {
+  message = other811.message;
+  __isset = other811.__isset;
   return *this;
 }
 void NoSuchTxnException::printTo(std::ostream& out) const {
@@ -20042,13 +20087,13 @@ void swap(TxnAbortedException &a, TxnAbortedException &b) {
   swap(a.__isset, b.__isset);
 }
 
-TxnAbortedException::TxnAbortedException(const TxnAbortedException& other806) : TException() {
-  message = other806.message;
-  __isset = other806.__isset;
+TxnAbortedException::TxnAbortedException(const TxnAbortedException& other812) : TException() {
+  message = other812.message;
+  __isset = other812.__isset;
 }
-TxnAbortedException& TxnAbortedException::operator=(const TxnAbortedException& other807) {
-  message = other807.message;
-  __isset = other807.__isset;
+TxnAbortedException& TxnAbortedException::operator=(const TxnAbortedException& other813) {
+  message = other813.message;
+  __isset = other813.__isset;
   return *this;
 }
 void TxnAbortedException::printTo(std::ostream& out) const {
@@ -20139,13 +20184,13 @@ void swap(TxnOpenException &a, TxnOpenException &b) {
   swap(a.__isset, b.__isset);
 }
 
-TxnOpenException::TxnOpenException(const TxnOpenException& other808) : TException() {
-  message = other808.message;
-  __isset = other808.__isset;
+TxnOpenException::TxnOpenException(const TxnOpenException& other814) : TException() {
+  message = other814.message;
+  __isset = other814.__isset;
 }
-TxnOpenException& TxnOpenException::operator=(const TxnOpenException& other809) {
-  message = other809.message;
-  __isset = other809.__isset;
+TxnOpenException& TxnOpenException::operator=(const TxnOpenException& other815) {
+  message = other815.message;
+  __isset = other815.__isset;
   return *this;
 }
 void TxnOpenException::printTo(std::ostream& out) const {
@@ -20236,13 +20281,13 @@ void swap(NoSuchLockException &a, NoSuchLockException &b) {
   swap(a.__isset, b.__isset);
 }
 
-NoSuchLockException::NoSuchLockException(const NoSuchLockException& other810) : TException() {
-  message = other810.message;
-  __isset = other810.__isset;
+NoSuchLockException::NoSuchLockException(const NoSuchLockException& other816) : TException() {
+  message = other816.message;
+  __isset = other816.__isset;
 }
-NoSuchLockException& NoSuchLockException::operator=(const NoSuchLockException& other811) {
-  message = other811.message;
-  __isset = other811.__isset;
+NoSuchLockException& NoSuchLockException::operator=(const NoSuchLockException& other817) {
+  message = other817.message;
+  __isset = other817.__isset;
   return *this;
 }
 void NoSuchLockException::printTo(std::ostream& out) const {

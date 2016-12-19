@@ -2502,9 +2502,11 @@ end
 class InsertEventRequestData
   include ::Thrift::Struct, ::Thrift::Struct_Union
   FILESADDED = 1
+  FILESADDEDCHECKSUM = 2
 
   FIELDS = {
-    FILESADDED => {:type => ::Thrift::Types::LIST, :name => 'filesAdded', :element => {:type => ::Thrift::Types::STRING}}
+    FILESADDED => {:type => ::Thrift::Types::LIST, :name => 'filesAdded', :element => {:type => ::Thrift::Types::STRING}},
+    FILESADDEDCHECKSUM => {:type => ::Thrift::Types::LIST, :name => 'filesAddedChecksum', :element => {:type => ::Thrift::Types::STRING, :binary => true}, :optional => true}
   }
 
   def struct_fields; FIELDS; end
