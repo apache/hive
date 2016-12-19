@@ -145,7 +145,7 @@ tableAlias
 
 fromSource
 @init { gParent.pushMsg("from source", state); }
-@after { $fromSource.tree.matchedText = $fromSource.text; gParent.popMsg(state); }
+@after { gParent.popMsg(state); }
     :
     (LPAREN KW_VALUES) => fromSource0
     | (LPAREN) => LPAREN joinSource RPAREN -> joinSource
@@ -281,7 +281,7 @@ searchCondition
 // INSERT INTO <table> (col1,col2,...) SELECT * FROM (VALUES(1,2,3),(4,5,6),...) as Foo(a,b,c)
 valueRowConstructor
 @init { gParent.pushMsg("value row constructor", state); }
-@after { $valueRowConstructor.tree.matchedText = $valueRowConstructor.text; gParent.popMsg(state); }
+@after { gParent.popMsg(state); }
     :
     LPAREN precedenceUnaryPrefixExpression (COMMA precedenceUnaryPrefixExpression)* RPAREN -> ^(TOK_VALUE_ROW precedenceUnaryPrefixExpression+)
     ;
