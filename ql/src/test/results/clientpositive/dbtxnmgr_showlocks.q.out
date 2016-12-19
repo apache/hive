@@ -51,6 +51,26 @@ PREHOOK: type: SHOWLOCKS
 POSTHOOK: query: show locks partitioned_acid_table partition (p='abc') extended
 POSTHOOK: type: SHOWLOCKS
 Lock ID	Database	Table	Partition	State	Blocked By	Type	Transaction ID	Last Hearbeat	Acquired At	User	Hostname	Agent Info
+PREHOOK: query: insert into partitioned_acid_table partition(p='abc') values(1,2)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@values__tmp__table__1
+PREHOOK: Output: default@partitioned_acid_table@p=abc
+POSTHOOK: query: insert into partitioned_acid_table partition(p='abc') values(1,2)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@values__tmp__table__1
+POSTHOOK: Output: default@partitioned_acid_table@p=abc
+POSTHOOK: Lineage: partitioned_acid_table PARTITION(p=abc).a EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: partitioned_acid_table PARTITION(p=abc).b EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+PREHOOK: query: alter table partitioned_acid_table partition(p='abc') compact 'minor'
+PREHOOK: type: ALTERTABLE_COMPACT
+POSTHOOK: query: alter table partitioned_acid_table partition(p='abc') compact 'minor'
+POSTHOOK: type: ALTERTABLE_COMPACT
+PREHOOK: query: show compactions
+PREHOOK: type: SHOW COMPACTIONS
+POSTHOOK: query: show compactions
+POSTHOOK: type: SHOW COMPACTIONS
+Database	Table	Partition	Type	State	Worker	Start Time	Duration(ms)	HadoopJobId
+default	partitioned_acid_table	p=abc	MINOR	initiated	 --- 	 --- 	 --- 	 --- 
 PREHOOK: query: drop table partitioned_acid_table
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@partitioned_acid_table

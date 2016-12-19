@@ -21,4 +21,10 @@ show locks partitioned_acid_table partition (p='abc');
 
 show locks partitioned_acid_table partition (p='abc') extended;
 
+insert into partitioned_acid_table partition(p='abc') values(1,2);
+
+alter table partitioned_acid_table partition(p='abc') compact 'minor';
+
+show compactions;
+
 drop table partitioned_acid_table;
