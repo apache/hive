@@ -688,14 +688,14 @@ public class HiveSchemaTool {
       return false;
     }
 
-    System.out.println("Expected (from schema definition) " + schemaTables.size() +
-        " tables, Found (from HMS metastore) " + dbTables.size() + " tables");
-
     // now diff the lists
+    int schemaSize = schemaTables.size();
     schemaTables.removeAll(dbTables);
     if (schemaTables.size() > 0) {
-      System.out.println(schemaTables.size() + " tables [ " + Arrays.toString(schemaTables.toArray())
-          + " ] are missing from the database schema.");
+      System.out.println("Found " + schemaSize + " tables in schema definition, " +
+          schemaTables.size() + " tables [ " + Arrays.toString(schemaTables.toArray())
+          + " ] are missing from the metastore database schema.");
+      System.out.println("Schema table validation failed!!!");
       return false;
     } else {
       System.out.println("Succeeded in schema table validation");
