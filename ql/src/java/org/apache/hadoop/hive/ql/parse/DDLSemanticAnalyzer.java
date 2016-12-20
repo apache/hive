@@ -1637,7 +1637,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       if (!((inputFormatClass.equals(RCFileInputFormat.class) ||
           (inputFormatClass.equals(OrcInputFormat.class))))) {
         throw new SemanticException(
-            "Only RCFile and ORCFile Formats are supportted right now.");
+            "Only RCFile and ORCFile Formats are supported right now.");
       }
       mergeDesc.setInputFormatClass(inputFormatClass);
 

@@ -510,7 +510,7 @@ public class Registry {
       if (prev != null) {
         if (isBuiltInFunc(prev.getFunctionClass())) {
           throw new RuntimeException("Function " + functionName + " is hive builtin function, " +
-              "which cannot be overriden.");
+              "which cannot be overridden.");
         }
         prev.discarded();
       }

@@ -489,7 +489,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
     this.maxPartitions = dpCtx.getMaxPartitionsPerNode();
 
     assert numDynParts == dpColNames.size()
-        : "number of dynamic paritions should be the same as the size of DP mapping";
+        : "number of dynamic partitions should be the same as the size of DP mapping";
 
     if (dpColNames != null && dpColNames.size() > 0) {
       this.bDynParts = true;

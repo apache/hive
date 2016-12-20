@@ -350,7 +350,7 @@ public class TezCompiler extends TaskCompiler {
     opRules.put(new RuleRegExp("No more walking on ReduceSink-MapJoin",
         MapJoinOperator.getOperatorName() + "%"), new ReduceSinkMapJoinProc());
 
-    opRules.put(new RuleRegExp("Recoginze a Sorted Merge Join operator to setup the right edge and"
+    opRules.put(new RuleRegExp("Recognize a Sorted Merge Join operator to setup the right edge and"
         + " stop traversing the DummyStore-MapJoin", CommonMergeJoinOperator.getOperatorName()
         + "%"), new MergeJoinProc());
 

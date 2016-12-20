@@ -170,7 +170,7 @@ public class PartitionPruner extends Transform {
           throws SemanticException {
 
     if (LOG.isTraceEnabled()) {
-      LOG.trace("Started pruning partiton");
+      LOG.trace("Started pruning partition");
       LOG.trace("dbname = " + tab.getDbName());
       LOG.trace("tabname = " + tab.getTableName());
       LOG.trace("prune Expression = " + (prunerExpr == null ? "" : prunerExpr));

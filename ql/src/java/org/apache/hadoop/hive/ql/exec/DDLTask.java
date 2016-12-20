@@ -992,7 +992,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 
       break;
     default:
-      console.printError("Unsupported Alter commnad");
+      console.printError("Unsupported Alter command");
       return 1;
     }
 
@@ -1691,7 +1691,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         if (ret != 0) {
           throw new HiveException("Error while copying files from archive, return code=" + ret);
         } else {
-          console.printInfo("Succefully Copied " + copySource + " to " + copyDest);
+          console.printInfo("Successfully Copied " + copySource + " to " + copyDest);
         }
 
         console.printInfo("Moving " + tmpPath + " to " + intermediateExtractedDir);
@@ -2633,7 +2633,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     os.write(separator);
     os.writeBytes("Transaction ID");
     os.write(separator);
-    os.writeBytes("Last Hearbeat");
+    os.writeBytes("Last Heartbeat");
     os.write(separator);
     os.writeBytes("Acquired At");
     os.write(separator);

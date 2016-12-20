@@ -312,7 +312,7 @@ public class MapJoinTableContainerSerDe {
           clazz.getDeclaredConstructor(Map.class);
       return constructor.newInstance(metaData);
     } catch (Exception e) {
-      String msg = "Error while attemping to create table container" +
+      String msg = "Error while attempting to create table container" +
           " of type: " + name + ", with metaData: " + metaData;
       throw new HiveException(msg, e);
     }

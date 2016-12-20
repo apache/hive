@@ -357,7 +357,7 @@ public final class ConstantPropagateProcFactory {
       // Don't evaluate nondeterministic function since the value can only calculate during runtime.
       if (!isDeterministicUdf(udf, newExprs)) {
         if (LOG.isDebugEnabled()) {
-          LOG.debug("Function " + udf.getClass() + " is undeterministic. Don't evalulate immediately.");
+          LOG.debug("Function " + udf.getClass() + " is undeterministic. Don't evaluate immediately.");
         }
         ((ExprNodeGenericFuncDesc) desc).setChildren(newExprs);
         return desc;
@@ -990,7 +990,7 @@ public final class ConstantPropagateProcFactory {
       return new ExprNodeConstantDesc(o).setFoldedFromVal(constStr);
     } catch (HiveException e) {
       LOG.error("Evaluation function " + udf.getClass()
-          + " failed in Constant Propagatation Optimizer.");
+          + " failed in Constant Propagation Optimizer.");
       throw new RuntimeException(e);
     }
   }

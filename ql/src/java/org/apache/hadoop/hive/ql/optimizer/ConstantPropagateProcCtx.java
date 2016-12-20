@@ -236,7 +236,7 @@ public class ConstantPropagateProcCtx implements NodeProcessorCtx {
         }
       }
     }
-    LOG.debug("Offerring constants " + constants.keySet() + " to operator " + op.toString());
+    LOG.debug("Offering constants " + constants.keySet() + " to operator " + op.toString());
     return constants;
   }
 

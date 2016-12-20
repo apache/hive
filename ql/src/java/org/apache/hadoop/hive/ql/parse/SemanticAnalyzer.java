@@ -7174,7 +7174,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     } catch (HiveException e) {
       throw new SemanticException(e.getMessage());
     }
-    LOG.info("Generate an operator pipleline to autogather column stats for table " + tableName
+    LOG.info("Generate an operator pipeline to autogather column stats for table " + tableName
         + " in query " + ctx.getCmd());
     ColumnStatsAutoGatherContext columnStatsAutoGatherContext = null;
     columnStatsAutoGatherContext = new ColumnStatsAutoGatherContext(this, conf, curr, table, partSpec, isInsertInto, ctx);
@@ -11824,7 +11824,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         }
       } catch (HiveException e) {
         // should not occur since second parameter to getTableWithQN is false
-        throw new IllegalStateException("Unxpected Exception thrown: " + e.getMessage(), e);
+        throw new IllegalStateException("Unexpected Exception thrown: " + e.getMessage(), e);
       }
     }
 

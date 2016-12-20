@@ -491,7 +491,7 @@ public class RexNodeConverter {
       }
 
       if (noInp > 1)
-        throw new RuntimeException("Ambigous column mapping");
+        throw new RuntimeException("Ambiguous column mapping");
     }
 
     return ctxLookingFor;

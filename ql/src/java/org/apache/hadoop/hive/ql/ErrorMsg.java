@@ -332,8 +332,8 @@ public enum ErrorMsg {
             + "fails to construct aggregation for the partition "),
   ANALYZE_TABLE_PARTIALSCAN_AUTOGATHER(10233, "Analyze partialscan is not allowed " +
             "if hive.stats.autogather is set to false"),
-  PARTITION_VALUE_NOT_CONTINUOUS(10234, "Parition values specifed are not continuous." +
-            " A subpartition value is specified without specififying the parent partition's value"),
+  PARTITION_VALUE_NOT_CONTINUOUS(10234, "Partition values specified are not continuous." +
+            " A subpartition value is specified without specifying the parent partition's value"),
   TABLES_INCOMPATIBLE_SCHEMAS(10235, "Tables have incompatible schemas and their partitions " +
             " cannot be exchanged."),
 
@@ -440,7 +440,7 @@ public enum ErrorMsg {
   CANNOT_DROP_INDEX(10317, "Error while dropping index"),
   INVALID_AST_TREE(10318, "Internal error : Invalid AST"),
   ERROR_SERIALIZE_METASTORE(10319, "Error while serializing the metastore objects"),
-  IO_ERROR(10320, "Error while peforming IO operation "),
+  IO_ERROR(10320, "Error while performing IO operation "),
   ERROR_SERIALIZE_METADATA(10321, "Error while serializing the metadata"),
   INVALID_LOAD_TABLE_FILE_WORK(10322, "Invalid Load Table Work or Load File Work"),
   CLASSPATH_ERROR(10323, "Classpath error"),

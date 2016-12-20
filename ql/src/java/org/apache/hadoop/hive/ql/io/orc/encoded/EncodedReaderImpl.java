@@ -643,7 +643,7 @@ class EncodedReaderImpl implements EncodedReader {
       LOG.error("Failed " + (isCompressed ? "" : "un") + " compressed read; cOffset " + cOffset
           + ", endCOffset " + endCOffset + ", streamOffset " + streamOffset
           + ", unlockUntilCOffset " + unlockUntilCOffset + "; ranges passed in "
-          + RecordReaderUtils.stringifyDiskRanges(start) + "; ranges passed to prepate "
+          + RecordReaderUtils.stringifyDiskRanges(start) + "; ranges passed to prepare "
           + RecordReaderUtils.stringifyDiskRanges(current)); // Don't log exception here.
       throw (ex instanceof IOException) ? (IOException)ex : new IOException(ex);
     }

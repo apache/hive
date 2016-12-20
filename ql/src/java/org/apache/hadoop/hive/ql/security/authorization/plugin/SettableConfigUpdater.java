@@ -47,7 +47,7 @@ public class SettableConfigUpdater {
     if(whiteListParamsStr == null || whiteListParamsStr.trim().isEmpty()) {
       throw new HiveAuthzPluginException("Configuration parameter "
           + ConfVars.HIVE_AUTHORIZATION_SQL_STD_AUTH_CONFIG_WHITELIST.varname
-          + " is not iniatialized.");
+          + " is not initialized.");
     }
 
     // append regexes that user wanted to add

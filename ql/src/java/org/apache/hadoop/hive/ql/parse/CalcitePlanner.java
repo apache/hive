@@ -3333,7 +3333,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
         } else if (ParseUtils.containsTokenOfType(expr, HiveParser.TOK_FUNCTIONDI)
             && !(srcRel instanceof HiveAggregate)) {
           // Likely a malformed query eg, select hash(distinct c1) from t1;
-          throw new CalciteSemanticException("Distinct without an aggreggation.",
+          throw new CalciteSemanticException("Distinct without an aggregation.",
               UnsupportedFeature.Distinct_without_an_aggreggation);
         } else {
           // Case when this is an expression

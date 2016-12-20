@@ -126,7 +126,7 @@ public class GenericUDFTrunc extends GenericUDF {
         return initializeNumber(arguments);
       } else {
         throw new UDFArgumentException(
-            "Only primitive type arguments are accepted, when arguments lenght is one, got "
+            "Only primitive type arguments are accepted, when arguments length is one, got "
                 + arguments[1].getTypeName());
       }
     }

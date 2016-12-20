@@ -454,7 +454,7 @@ public class DbTxnManager extends HiveTxnManagerImpl {
           Hive db;
           try {
             db = Hive.get(conf);
-            // Create a new threadlocal synchronized metastore client for use in hearbeater threads.
+            // Create a new threadlocal synchronized metastore client for use in heartbeater threads.
             // This makes the concurrent use of heartbeat thread safe, and won't cause transaction
             // abort due to a long metastore client call blocking the heartbeat call.
             heartbeaterClient = new SynchronizedMetaStoreClient(db.getMSC());
@@ -465,7 +465,7 @@ public class DbTxnManager extends HiveTxnManagerImpl {
           }
           // Increment the threadlocal metastore client count
           if (heartbeaterMSClientCount.incrementAndGet() >= heartbeaterThreadPoolSize) {
-            LOG.warn("The number of hearbeater metastore clients - + "
+            LOG.warn("The number of heartbeater metastore clients - + "
                 + heartbeaterMSClientCount.get() + ", has exceeded the max limit - "
                 + heartbeaterThreadPoolSize);
           }

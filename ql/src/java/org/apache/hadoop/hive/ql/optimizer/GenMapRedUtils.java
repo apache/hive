@@ -558,7 +558,7 @@ public final class GenMapRedUtils {
           LOG.info("Skip optimization to reduce input size of 'limit'");
           parseCtx.getGlobalLimitCtx().disableOpt();
         } else if (parts.isEmpty()) {
-          LOG.info("Empty input: skip limit optimiztion");
+          LOG.info("Empty input: skip limit optimization");
         } else {
           LOG.info("Try to reduce input size for 'limit' " +
               "sizeNeeded: " + sizeNeeded +
@@ -1479,7 +1479,7 @@ public final class GenMapRedUtils {
     } else if (mvWork.getLoadFileWork() != null) {
       statsWork = new StatsWork(mvWork.getLoadFileWork());
     }
-    assert statsWork != null : "Error when genereting StatsTask";
+    assert statsWork != null : "Error when generating StatsTask";
 
     statsWork.setSourceTask(currTask);
     statsWork.setStatsReliable(hconf.getBoolVar(ConfVars.HIVE_STATS_RELIABLE));

@@ -202,7 +202,7 @@ public abstract class TaskCompiler {
       int fetchLimit = HiveConf.getIntVar(conf, HiveConf.ConfVars.HIVELIMITOPTMAXFETCH);
       if (globalLimitCtx.isEnable() && globalLimitCtx.getGlobalLimit() > fetchLimit) {
         LOG.info("For FetchTask, LIMIT " + globalLimitCtx.getGlobalLimit() + " > " + fetchLimit
-            + ". Doesn't qualify limit optimiztion.");
+            + ". Doesn't qualify limit optimization.");
         globalLimitCtx.disableOpt();
 
       }

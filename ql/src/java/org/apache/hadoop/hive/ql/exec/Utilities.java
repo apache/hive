@@ -3379,7 +3379,7 @@ public final class Utilities {
       }
     }
     throw new IllegalStateException("Failed to create a temp dir under "
-    + baseDir + " Giving up after " + MAX_ATTEMPS + " attemps");
+    + baseDir + " Giving up after " + MAX_ATTEMPS + " attempts");
 
   }
 
