@@ -221,7 +221,11 @@ public class JSONMessageFactory extends MessageFactory {
   }
 
   public static ObjectNode getJsonTree(NotificationEvent event) throws Exception {
-    JsonParser jsonParser = (new JsonFactory()).createJsonParser(event.getMessage());
+    return getJsonTree(event.getMessage());
+  }
+
+  public static ObjectNode getJsonTree(String eventMessage) throws Exception {
+    JsonParser jsonParser = (new JsonFactory()).createJsonParser(eventMessage);
     ObjectMapper mapper = new ObjectMapper();
     return mapper.readValue(jsonParser, ObjectNode.class);
   }
