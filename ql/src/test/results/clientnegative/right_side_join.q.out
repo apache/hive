@@ -1,1 +1,2 @@
-FAILED: SemanticException Invalid token on the right side of the join: TOK_LEFTOUTERJOIN; please rewrite your query; for example, put the nested join on the left side, or nest joins differently
+FAILED: ParseException line 7:37 missing ) at 'a' near '<EOF>'
+line 11:0 extraneous input ')' expecting EOF near '<EOF>'
