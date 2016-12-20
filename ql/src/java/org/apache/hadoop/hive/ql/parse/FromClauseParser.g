@@ -96,14 +96,13 @@ joinSource
 uniqueJoinSource
 @init { gParent.pushMsg("unique join source", state); }
 @after { gParent.popMsg(state); }
-    : KW_PRESERVE? fromSource uniqueJoinExpr
+    : KW_PRESERVE? uniqueJoinTableSource uniqueJoinExpr
     ;
 
 uniqueJoinExpr
 @init { gParent.pushMsg("unique join expression list", state); }
 @after { gParent.popMsg(state); }
-    : LPAREN e1+=expression (COMMA e1+=expression)* RPAREN
-      -> ^(TOK_EXPLIST $e1*)
+    : LPAREN! expressionList RPAREN!
     ;
 
 uniqueJoinToken
@@ -190,13 +189,15 @@ tableSample
 tableSource
 @init { gParent.pushMsg("table source", state); }
 @after { gParent.popMsg(state); }
-    : tabname=tableName 
-    ((tableProperties) => props=tableProperties)?
-    ((tableSample) => ts=tableSample)? 
-    ((KW_AS) => (KW_AS alias=identifier) 
-    |
-    (identifier) => (alias=identifier))?
+    : tabname=tableName props=tableProperties? ts=tableSample? (KW_AS? alias=identifier)?
     -> ^(TOK_TABREF $tabname $props? $ts? $alias?)
+    ;
+
+uniqueJoinTableSource
+@init { gParent.pushMsg("unique join table source", state); }
+@after { gParent.popMsg(state); }
+    : tabname=tableName ts=tableSample? (KW_AS? alias=identifier)?
+    -> ^(TOK_TABREF $tabname $ts? $alias?)
     ;
 
 tableName
