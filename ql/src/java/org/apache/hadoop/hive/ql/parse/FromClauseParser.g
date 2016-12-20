@@ -83,14 +83,45 @@ fromClause
 @init { gParent.pushMsg("from clause", state); }
 @after { gParent.popMsg(state); }
     :
-    KW_FROM joinSource -> ^(TOK_FROM joinSource)
+    KW_FROM fromSource -> ^(TOK_FROM fromSource)
+    ;
+
+fromSource
+@init { gParent.pushMsg("join source", state); }
+@after { gParent.popMsg(state); }
+    :
+    (virtualTableSource) => virtualTableSource
+    | 
+    uniqueJoinToken^ uniqueJoinSource (COMMA! uniqueJoinSource)+
+    |
+    joinSource
+    ;
+
+
+atomjoinSource
+@init { gParent.pushMsg("joinSource", state); }
+@after { gParent.popMsg(state); }
+    :
+    tableSource (lateralView^)*
+    |
+    (subQuerySource) => subQuerySource (lateralView^)*
+    |
+    partitionedTableFunction (lateralView^)*
+    |
+    LPAREN! joinSource RPAREN!
     ;
 
 joinSource
-@init { gParent.pushMsg("join source", state); }
+    :
+    atomjoinSource (joinToken^ joinSourcePart (KW_ON! expression {$joinToken.start.getType() != COMMA}?)?)*
+    ;
+
+
+joinSourcePart
+@init { gParent.pushMsg("joinSourcePart", state); }
 @after { gParent.popMsg(state); }
-    : fromSource ( joinToken^ fromSource ( KW_ON! expression {$joinToken.start.getType() != COMMA}? )? )*
-    | uniqueJoinToken^ uniqueJoinSource (COMMA! uniqueJoinSource)+
+    :
+    (tableSource | subQuerySource | partitionedTableFunction) (lateralView^)*
     ;
 
 uniqueJoinSource
@@ -140,23 +171,6 @@ tableAlias
 @after {gParent.popMsg(state); }
     :
     identifier -> ^(TOK_TABALIAS identifier)
-    ;
-
-fromSource
-@init { gParent.pushMsg("from source", state); }
-@after { gParent.popMsg(state); }
-    :
-    (LPAREN KW_VALUES) => fromSource0
-    | (LPAREN) => LPAREN joinSource RPAREN -> joinSource
-    | fromSource0
-    ;
-
-
-fromSource0
-@init { gParent.pushMsg("from source 0", state); }
-@after { gParent.popMsg(state); }
-    :
-    ((Identifier LPAREN)=> partitionedTableFunction | tableSource | subQuerySource | virtualTableSource) (lateralView^)*
     ;
 
 tableBucketSample

@@ -1,1 +1,1 @@
-FAILED: ParseException line 1:20 cannot recognize input near 'with' 'q1' 'as' in from source
+FAILED: SemanticException [Error 10001]: Line 1:44 Table not found 'q2'

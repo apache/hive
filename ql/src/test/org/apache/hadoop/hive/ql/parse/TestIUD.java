@@ -161,7 +161,7 @@ public class TestIUD {
     }
     catch(ParseException ex) {
       Assert.assertEquals("Failure didn't match.",
-          "line 1:14 cannot recognize input near 'values' '(' '3' in from source 0",
+          "line 1:24 cannot recognize input near 'values' '(' '3' in joinSource",
           ex.getMessage());
     }
   }
