@@ -9,7 +9,8 @@ FROM srcbucket TABLESAMPLE (BUCKET 1 OUT OF 4 on key) s;
 INSERT OVERWRITE TABLE dest1 SELECT s.*
 FROM srcbucket TABLESAMPLE (BUCKET 1 OUT OF 4 on key) s;
 
-SELECT dest1.* FROM dest1;
+SELECT dest1.* FROM dest1
+order by key, value;
 
 EXPLAIN EXTENDED SELECT s.* FROM srcbucket TABLESAMPLE (BUCKET 4 OUT OF 4 on key) s
 ORDER BY key, value;
