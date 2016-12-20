@@ -91,6 +91,7 @@ public class TestJdbcDriver2 {
   private static final Logger LOG = LoggerFactory.getLogger(TestJdbcDriver2.class);
   private static final String driverName = "org.apache.hive.jdbc.HiveDriver";
   private static final String tableName = "testHiveJdbcDriver_Table";
+  private static final String tableNameWithPk = "pktable";
   private static final String tableComment = "Simple table";
   private static final String viewName = "testHiveJdbcDriverView";
   private static final String viewComment = "Simple view";
@@ -190,8 +191,8 @@ public class TestJdbcDriver2 {
 
     // create table
     stmt.execute("create table " + tableName
-        + " (under_col int comment 'the under column', value string) comment '"
-        + tableComment + "'");
+        + " (under_col int comment 'the under column', value string) comment '" + tableComment
+        + "'");
 
     // load data
     if (loadData) {
@@ -2179,6 +2180,42 @@ public void testParseUrlHttpMode() throws SQLException, JdbcUriParseException,
     ResultSetMetaData md = res.getMetaData();
     assertEquals(md.getColumnCount(), 6);
     assertFalse(res.next());
+  }
+
+  /**
+   * test testPrimaryKeysNotNull()
+   * @throws SQLException
+   */
+  @Test
+  public void testPrimaryKeysNotNull() throws SQLException {
+	Connection connection = getConnection("default");
+
+	Statement stmt = connection.createStatement();
+
+	stmt.execute("drop table " + tableNameWithPk);
+	stmt.execute("create table " + tableNameWithPk
+				+ " (a STRING, b STRING, primary key (a) disable novalidate) ");
+    DatabaseMetaData dbmd = con.getMetaData();
+    assertNotNull(dbmd);
+    ResultSet rs = dbmd.getColumns(null, "default", tableNameWithPk, "%");
+    int index = 0;
+    while (rs.next()) {
+      int nullableInt = rs.getInt("NULLABLE");
+      String isNullable = rs.getString("IS_NULLABLE");
+      if (index == 0) {
+        assertEquals(nullableInt, 0);
+        assertEquals(isNullable, "NO");
+      } else if (index == 1) {
+        assertEquals(nullableInt, 1);
+        assertEquals(isNullable, "YES");
+      } else {
+        throw new SQLException("Unexpected column.");
+      }
+      index++;
+    }
+    rs.close();
+	stmt.execute("drop table " + tableNameWithPk);
+	stmt.close();
   }
 
   /**
