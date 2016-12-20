@@ -1950,7 +1950,7 @@ public class Driver implements CommandProcessor {
     } catch (CommandNeedRetryException e) {
       executionError = true;
       throw e;
-    } catch (Exception e) {
+    } catch (Throwable e) {
       executionError = true;
       if (isInterrupted()) {
         return handleInterruption("during query execution: \n" + e.getMessage());

@@ -1712,7 +1712,7 @@ public final class Utilities {
     return -1;
   }
 
-  public static String getNameMessage(Exception e) {
+  public static String getNameMessage(Throwable e) {
     return e.getClass().getName() + "(" + e.getMessage() + ")";
   }
 
