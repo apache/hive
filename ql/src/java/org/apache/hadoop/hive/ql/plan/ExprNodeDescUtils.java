@@ -713,4 +713,73 @@ public class ExprNodeDescUtils {
     // Otherwise, we return the expression
     return foldedExpr;
   }
+
+  /**
+   * Checks whether the keys of a parent operator are a prefix of the keys of a
+   * child operator.
+   * @param childKeys keys of the child operator
+   * @param parentKeys keys of the parent operator
+   * @param childOp child operator
+   * @param parentOp parent operator
+   * @return true if the keys are a prefix, false otherwise
+   * @throws SemanticException
+   */
+  public static boolean checkPrefixKeys(List<ExprNodeDesc> childKeys, List<ExprNodeDesc> parentKeys,
+      Operator<? extends OperatorDesc> childOp, Operator<? extends OperatorDesc> parentOp)
+          throws SemanticException {
+    return checkPrefixKeys(childKeys, parentKeys, childOp, parentOp, false);
+  }
+
+  /**
+   * Checks whether the keys of a child operator are a prefix of the keys of a
+   * parent operator.
+   * @param childKeys keys of the child operator
+   * @param parentKeys keys of the parent operator
+   * @param childOp child operator
+   * @param parentOp parent operator
+   * @return true if the keys are a prefix, false otherwise
+   * @throws SemanticException
+   */
+  public static boolean checkPrefixKeysUpstream(List<ExprNodeDesc> childKeys, List<ExprNodeDesc> parentKeys,
+      Operator<? extends OperatorDesc> childOp, Operator<? extends OperatorDesc> parentOp)
+          throws SemanticException {
+    return checkPrefixKeys(childKeys, parentKeys, childOp, parentOp, true);
+  }
+
+  private static boolean checkPrefixKeys(List<ExprNodeDesc> childKeys, List<ExprNodeDesc> parentKeys,
+      Operator<? extends OperatorDesc> childOp, Operator<? extends OperatorDesc> parentOp,
+      boolean upstream) throws SemanticException {
+    if (childKeys == null || childKeys.isEmpty()) {
+      if (parentKeys != null && !parentKeys.isEmpty()) {
+        return false;
+      }
+      return true;
+    }
+    if (parentKeys == null || parentKeys.isEmpty()) {
+      return false;
+    }
+    int size;
+    if (upstream) {
+      if (childKeys.size() > parentKeys.size()) {
+        return false;
+      }
+      size = childKeys.size();
+    } else {
+      if (parentKeys.size() > childKeys.size()) {
+        return false;
+      }
+      size = parentKeys.size();
+    }
+    for (int i = 0; i < size; i++) {
+      ExprNodeDesc expr = ExprNodeDescUtils.backtrack(childKeys.get(i), childOp, parentOp);
+      if (expr == null) {
+        // cKey is not present in parent
+        return false;
+      }
+      if (!expr.isSame(parentKeys.get(i))) {
+        return false;
+      }
+    }
+    return true;
+  }
 }
