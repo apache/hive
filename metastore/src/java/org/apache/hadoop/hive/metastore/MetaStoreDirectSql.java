@@ -1144,9 +1144,18 @@ class MetaStoreDirectSql {
     }
   }
 
+  /**
+   * Retrieve the column statistics for the specified columns of the table. NULL
+   * is returned if the columns are not provided.
+   * @param dbName      the database name of the table
+   * @param tableName   the table name
+   * @param colNames    the list of the column names
+   * @return            the column statistics for the specified columns
+   * @throws MetaException
+   */
   public ColumnStatistics getTableStats(final String dbName, final String tableName,
       List<String> colNames) throws MetaException {
-    if (colNames.isEmpty()) {
+    if (colNames == null || colNames.isEmpty()) {
       return null;
     }
     final boolean doTrace = LOG.isDebugEnabled();

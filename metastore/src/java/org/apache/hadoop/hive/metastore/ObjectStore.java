@@ -7176,6 +7176,10 @@ public class ObjectStore implements RawStore, Configurable {
 
   private List<MTableColumnStatistics> getMTableColumnStatistics(Table table, List<String> colNames, QueryWrapper queryWrapper)
       throws MetaException {
+    if (colNames == null || colNames.isEmpty()) {
+      return null;
+    }
+
     boolean committed = false;
 
     try {
