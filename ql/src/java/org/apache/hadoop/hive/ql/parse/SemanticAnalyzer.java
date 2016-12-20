@@ -3046,7 +3046,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
                 ParseDriver.adaptor.addChild(child1, ParseDriver.adaptor.create(
                         HiveParser.Identifier, VirtualColumn.GROUPINGID.getName()));
                 ASTNode child2 = (ASTNode) ParseDriver.adaptor.create(HiveParser.IntegralLiteral,
-                        String.valueOf(IntMath.mod(-i, grpByAstExprs.size())));
+                        String.valueOf(IntMath.mod(-i-1, grpByAstExprs.size())));
                 root.setChild(1, child1);
                 root.addChild(child2);
                 found.setValue(true);
