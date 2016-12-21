@@ -119,9 +119,13 @@ public class GenericUDFOPMod extends GenericUDFBaseNumeric {
 
   @Override
   protected DecimalTypeInfo deriveResultDecimalTypeInfo(int prec1, int scale1, int prec2, int scale2) {
+    // From https://msdn.microsoft.com/en-us/library/ms190476.aspx
+    // e1 % e2
+    // Precision: min(p1-s1, p2 -s2) + max( s1,s2 )
+    // Scale: max(s1, s2)
+    int prec = Math.min(prec1 - scale1, prec2 - scale2) + Math.max(scale1, scale2);
     int scale = Math.max(scale1, scale2);
-    int prec = Math.min(HiveDecimal.MAX_PRECISION, Math.min(prec1 - scale1, prec2 - scale2) + scale);
-    return TypeInfoFactory.getDecimalTypeInfo(prec, scale);
+    return adjustPrecScale(prec, scale);
   }
 
 }

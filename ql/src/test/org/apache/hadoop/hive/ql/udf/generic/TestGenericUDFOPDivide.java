@@ -227,15 +227,15 @@ public class TestGenericUDFOPDivide extends AbstractTestGenericUDFOPNumeric {
   @Test
   public void testDecimalDivisionResultType() throws HiveException {
     testDecimalDivisionResultType(5, 2, 3, 2, 11, 6);
-    testDecimalDivisionResultType(38, 18, 38, 18, 38, 18);
-    testDecimalDivisionResultType(38, 18, 20, 0, 38, 27);
+    testDecimalDivisionResultType(38, 18, 38, 18, 38, 6);
+    testDecimalDivisionResultType(38, 18, 20, 0, 38, 18);
     testDecimalDivisionResultType(20, 0, 8, 5, 34, 9);
     testDecimalDivisionResultType(10, 0, 10, 0, 21, 11);
     testDecimalDivisionResultType(5, 2, 5, 5, 16, 8);
     testDecimalDivisionResultType(10, 10, 5, 0, 16, 16);
     testDecimalDivisionResultType(10, 10, 5, 5, 21, 16);
-    testDecimalDivisionResultType(38, 38, 38, 38, 38, 18);
-    testDecimalDivisionResultType(38, 0, 38, 0, 38, 18);
+    testDecimalDivisionResultType(38, 38, 38, 38, 38, 6);
+    testDecimalDivisionResultType(38, 0, 38, 0, 38, 6);
   }
 
   private void testDecimalDivisionResultType(int prec1, int scale1, int prec2, int scale2, int prec3, int scale3)

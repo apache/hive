@@ -98,9 +98,13 @@ public class GenericUDFOPMultiply extends GenericUDFBaseNumeric {
 
   @Override
   protected DecimalTypeInfo deriveResultDecimalTypeInfo(int prec1, int scale1, int prec2, int scale2) {
-    int scale = Math.min(HiveDecimal.MAX_SCALE, scale1 + scale2 );
-    int prec = Math.min(HiveDecimal.MAX_PRECISION, prec1 + prec2 + 1);
-    return TypeInfoFactory.getDecimalTypeInfo(prec, scale);
+    // From https://msdn.microsoft.com/en-us/library/ms190476.aspx
+    // e1 * e2
+    // Precision: p1 + p2 + 1
+    // Scale: s1 + s2
+    int scale = scale1 + scale2;
+    int prec = prec1 + prec2 + 1;
+    return adjustPrecScale(prec, scale);
   }
 
 }
