@@ -67,7 +67,7 @@ public class ATSHook implements ExecuteWithHookContext {
   private enum EventTypes { QUERY_SUBMITTED, QUERY_COMPLETED };
 
   private enum OtherInfoTypes {
-    QUERY, STATUS, TEZ, MAPRED, INVOKER_INFO, THREAD_NAME, VERSION,
+    QUERY, STATUS, TEZ, MAPRED, INVOKER_INFO, SESSION_ID, THREAD_NAME, VERSION,
     CLIENT_IP_ADDRESS, HIVE_ADDRESS, HIVE_INSTANCE_TYPE, CONF, PERF,
   };
   private enum ExecutionMode {
@@ -171,7 +171,7 @@ public class ATSHook implements ExecuteWithHookContext {
                   createPreHookEvent(queryId, query, explainPlan, queryStartTime,
                       user, requestuser, numMrJobs, numTezJobs, opId,
                       hookContext.getIpAddress(), hiveInstanceAddress, hiveInstanceType,
-                      logID, hookContext.getThreadId(), executionMode,
+                      hookContext.getSessionId(), logID, hookContext.getThreadId(), executionMode,
                       tablesRead, tablesWritten, conf));
               break;
             case POST_EXEC_HOOK:
@@ -228,7 +228,7 @@ public class ATSHook implements ExecuteWithHookContext {
   TimelineEntity createPreHookEvent(String queryId, String query, JSONObject explainPlan,
       long startTime, String user, String requestuser, int numMrJobs, int numTezJobs, String opId,
       String clientIpAddress, String hiveInstanceAddress, String hiveInstanceType,
-      String logID, String threadId, String executionMode,
+      String sessionID, String logID, String threadId, String executionMode,
       List<String> tablesRead, List<String> tablesWritten, HiveConf conf) throws Exception {
 
     JSONObject queryObj = new JSONObject(new LinkedHashMap<>());
@@ -275,6 +275,7 @@ public class ATSHook implements ExecuteWithHookContext {
     atsEntity.addOtherInfo(OtherInfoTypes.QUERY.name(), queryObj.toString());
     atsEntity.addOtherInfo(OtherInfoTypes.TEZ.name(), numTezJobs > 0);
     atsEntity.addOtherInfo(OtherInfoTypes.MAPRED.name(), numMrJobs > 0);
+    atsEntity.addOtherInfo(OtherInfoTypes.SESSION_ID.name(), sessionID);
     atsEntity.addOtherInfo(OtherInfoTypes.INVOKER_INFO.name(), logID);
     atsEntity.addOtherInfo(OtherInfoTypes.THREAD_NAME.name(), threadId);
     atsEntity.addOtherInfo(OtherInfoTypes.VERSION.name(), VERSION);
