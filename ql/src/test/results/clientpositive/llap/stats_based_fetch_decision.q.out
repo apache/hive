@@ -1,10 +1,8 @@
-PREHOOK: query: -- will not print tez counters as tasks will not be launched
-select * from src where key is null
+PREHOOK: query: select * from src where key is null
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
-POSTHOOK: query: -- will not print tez counters as tasks will not be launched
-select * from src where key is null
+POSTHOOK: query: select * from src where key is null
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
@@ -45,9 +43,9 @@ STAGE PLANS:
               outputColumnNames: _col0, _col1
               ListSink
 
-PREHOOK: query: explain select * from srcpart where key is null
+PREHOOK: query: explain select key,value from srcpart where key is null
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select * from srcpart where key is null
+POSTHOOK: query: explain select key,value from srcpart where key is null
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
@@ -62,17 +60,15 @@ STAGE PLANS:
           Filter Operator
             predicate: key is null (type: boolean)
             Select Operator
-              expressions: null (type: string), value (type: string), ds (type: string), hr (type: string)
-              outputColumnNames: _col0, _col1, _col2, _col3
+              expressions: null (type: string), value (type: string)
+              outputColumnNames: _col0, _col1
               ListSink
 
-PREHOOK: query: -- will print tez counters as tasks will be launched
-select * from src where key is null
+PREHOOK: query: select * from src where key is null
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
-POSTHOOK: query: -- will print tez counters as tasks will be launched
-select * from src where key is null
+POSTHOOK: query: select * from src where key is null
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
@@ -109,17 +105,17 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src
-                  Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key is null (type: boolean)
-                    Statistics: Num rows: 1 Data size: 178 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: null (type: string), value (type: string)
                       outputColumnNames: _col0, _col1
-                      Statistics: Num rows: 1 Data size: 175 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                       File Output Operator
                         compressed: false
-                        Statistics: Num rows: 1 Data size: 175 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                         table:
                             input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                             output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -133,9 +129,9 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: explain select * from srcpart where key is null
+PREHOOK: query: explain select key,value from srcpart where key is null
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select * from srcpart where key is null
+POSTHOOK: query: explain select key,value from srcpart where key is null
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -150,17 +146,17 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart
-                  Statistics: Num rows: 2000 Data size: 1092000 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key is null (type: boolean)
-                    Statistics: Num rows: 1 Data size: 546 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
-                      expressions: null (type: string), value (type: string), ds (type: string), hr (type: string)
-                      outputColumnNames: _col0, _col1, _col2, _col3
-                      Statistics: Num rows: 1 Data size: 543 Basic stats: COMPLETE Column stats: COMPLETE
+                      expressions: null (type: string), value (type: string)
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
                       File Output Operator
                         compressed: false
-                        Statistics: Num rows: 1 Data size: 543 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
                         table:
                             input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                             output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat

@@ -54,4 +54,4 @@ POSTHOOK: type: SHOWPARTITIONS
 POSTHOOK: Input: default@exchange_part_test2
 ds=2013-04-05/hr=h1
 ds=2013-04-05/hr=h2
-FAILED: SemanticException [Error 10234]: Parition values specifed are not continuous. A subpartition value is specified without specififying the parent partition's value {hr=h1}
+FAILED: SemanticException [Error 10234]: Partition values specified are not continuous. A subpartition value is specified without specifying the parent partition's value {hr=h1}
