@@ -218,6 +218,17 @@ public class TableScanDesc extends AbstractOperatorDesc {
     return neededColumns;
   }
 
+  @Explain(displayName = "Pruned Column Paths")
+  public List<String> getPrunedColumnPaths() {
+    List<String> result = new ArrayList<>();
+    for (String p : neededNestedColumnPaths) {
+      if (p.indexOf('.') >= 0) {
+        result.add(p);
+      }
+    }
+    return result;
+  }
+
   public void setReferencedColumns(List<String> referencedColumns) {
     this.referencedColumns = referencedColumns;
   }

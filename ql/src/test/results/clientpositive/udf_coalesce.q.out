@@ -140,6 +140,7 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: src_thrift
+          Pruned Column Paths: lintstring.mystring
           Statistics: Num rows: 11 Data size: 3070 Basic stats: COMPLETE Column stats: NONE
           Select Operator
             expressions: COALESCE(lint[1],999) (type: int), COALESCE(lintstring[0].mystring,'999') (type: string), COALESCE(mstringstring['key_2'],'999') (type: string)

@@ -153,6 +153,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: nested_tbl_1
+            Pruned Column Paths: s1.f1
             Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: s1.f1 (type: boolean)
@@ -195,6 +196,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: nested_tbl_1
+            Pruned Column Paths: s1.f1, s1.f2
             Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: s1.f1 (type: boolean), s1.f2 (type: string)
@@ -239,6 +241,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: nested_tbl_1
+            Pruned Column Paths: s1.f3
             Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: s1.f3 (type: struct<f4:int,f5:double>), s1.f3.f4 (type: int)
@@ -283,6 +286,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: nested_tbl_1
+            Pruned Column Paths: s1.f3.f5
             Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: s1.f3.f5 (type: double)
@@ -327,6 +331,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: nested_tbl_1
+            Pruned Column Paths: s1.f3.f4, s2.f8.f9
             Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: s1.f3.f4 (type: int), s2.f8.f9 (type: boolean)
@@ -373,6 +378,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: nested_tbl_1
+            Pruned Column Paths: s1.f2, s1.f1
             Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (s1.f1 = false) (type: boolean)
@@ -418,6 +424,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: nested_tbl_1
+            Pruned Column Paths: s1.f3.f5, s1.f3.f4
             Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: (s1.f3.f4 = 4) (type: boolean)
@@ -463,6 +470,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: nested_tbl_1
+            Pruned Column Paths: s1.f2, s2.f8
             Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
               predicate: ((s1.f2 = 'foo') and (size(s2.f8.f10) > 1) and s2.f8.f11['key1']) (type: boolean)
@@ -516,6 +524,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: nested_tbl_1
+            Pruned Column Paths: s2.f8.f10
             Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
             Lateral View Forward
               Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
@@ -657,6 +666,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: nested_tbl_1
+            Pruned Column Paths: s2.f8.f10, s1.f3.f4
             Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: (s2.f8.f10[1] pmod s1.f3.f4) (type: int)
@@ -703,6 +713,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: nested_tbl_1
+            Pruned Column Paths: s1.f3.f5, s1.f3.f4
             Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: s1.f3.f5 (type: double), s1.f3.f4 (type: int)
@@ -764,6 +775,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: nested_tbl_1
+            Pruned Column Paths: s1.f3
             Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: s1.f3 (type: struct<f4:int,f5:double>), s1.f3.f4 (type: int)
@@ -826,6 +838,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: nested_tbl_1
+            Pruned Column Paths: s1.f3
             Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: s1.f3 (type: struct<f4:int,f5:double>), s1.f3.f4 (type: int)
