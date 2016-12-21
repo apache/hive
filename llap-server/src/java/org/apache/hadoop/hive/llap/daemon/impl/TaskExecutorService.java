@@ -256,7 +256,7 @@ public class TaskExecutorService extends AbstractService implements Scheduler<Ta
                     task.getRequestId(), task.getTaskRunnerCallable().canFinish(),
                     preemptionQueue.size(), numSlotsAvailable.get(), waitQueue.size());
               }
-              if (numSlotsAvailable.get() == 0 && preemptionQueue.isEmpty()) {
+              if (numSlotsAvailable.get() == 0 && (enablePreemption == false || preemptionQueue.isEmpty())) {
                 shouldWait = true;
               }
             } else {
