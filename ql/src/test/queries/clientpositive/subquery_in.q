@@ -35,6 +35,7 @@ where b.key in
         )
 ;
 
+
 -- agg, non corr
 explain
 select p_name, p_size 
@@ -119,6 +120,10 @@ from (select distinct l_partkey as p_partkey from lineitem) p join lineitem li o
 where li.l_linenumber = 1 and
  li.l_orderkey in (select l_orderkey from lineitem where l_shipmode = 'AIR' and l_linenumber = li.l_linenumber)
 ;
+
+-- corr, agg in outer and inner
+explain select sum(l_extendedprice) from lineitem, part where p_partkey = l_partkey and l_quantity IN (select avg(l_quantity) from lineitem where l_partkey = p_partkey);
+select sum(l_extendedprice) from lineitem, part where p_partkey = l_partkey and l_quantity IN (select avg(l_quantity) from lineitem where l_partkey = p_partkey);
 
 
 --where has multiple conjuction
@@ -219,4 +224,3 @@ select * from part where p_size IN (select i from tnull);
 select * from tnull where i IN (select i from tnull);
 
 drop table tempty;
-

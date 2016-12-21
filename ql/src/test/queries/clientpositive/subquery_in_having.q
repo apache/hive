@@ -96,6 +96,12 @@ where b.key in (select key from src where src.key > '8')
 group by key, value
 having count(*) in (select count(*) from src s1 where s1.key > '9' group by s1.key )
 ;
+select key, value, count(*)
+from src b
+where b.key in (select key from src where src.key > '8')
+group by key, value
+having count(*) in (select count(*) from src s1 where s1.key > '9' group by s1.key )
+;
 
 set hive.auto.convert.join=true;
 -- Plan is:
@@ -113,6 +119,21 @@ group by key, value
 having count(*) in (select count(*) from src s1 where s1.key > '9' group by s1.key )
 ;
 
+-- both having and where corr
+explain
+select key, value, count(*)
+from src b
+where b.key in (select key from src where src.value = b.value)
+group by key, value
+having count(*) in (select count(*) from src s1 where s1.key > '9' and s1.value = b.value group by s1.key )
+;
+select key, value, count(*)
+from src b
+where b.key in (select key from src where src.value = b.value)
+group by key, value
+having count(*) in (select count(*) from src s1 where s1.key > '9' and s1.value = b.value group by s1.key )
+;
+
 -- non agg, non corr, windowing
 explain
 select p_mfgr, p_name, avg(p_size) 
@@ -122,4 +143,22 @@ having p_name in
   (select first_value(p_name) over(partition by p_mfgr order by p_size) from part_subq)
 ;
 
+CREATE TABLE src_null (key STRING COMMENT 'default', value STRING COMMENT 'default') STORED AS TEXTFILE;
+LOAD DATA LOCAL INPATH "../../data/files/kv1.txt" INTO TABLE src_null;
+INSERT INTO src_null values('5444', null);
+
+explain
+select key, value, count(*)
+from src_null b
+where NOT EXISTS (select key from src_null where src_null.value <> b.value)
+group by key, value
+having count(*) not in (select count(*) from src_null s1 where s1.key > '9' and s1.value <> b.value group by s1.key );
+
+select key, value, count(*)
+from src_null b
+where NOT EXISTS (select key from src_null where src_null.value <> b.value)
+group by key, value
+having count(*) not in (select count(*) from src_null s1 where s1.key > '9' and s1.value <> b.value group by s1.key );
+
+DROP TABLE src_null;
 DROP TABLE part_subq;

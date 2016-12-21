@@ -48,6 +48,7 @@ import java.util.Set;
 
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelFactories;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveSubQRemoveRelBuilder;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter;
 
 /**
  * NOTE: this rule is replicated from Calcite's SubqueryRemoveRule
@@ -74,16 +75,21 @@ public abstract class HiveSubQueryRemoveRule extends RelOptRule{
                 public void onMatch(RelOptRuleCall call) {
                     final Filter filter = call.rel(0);
                     //final RelBuilder builder = call.builder();
+                    //TODO: replace HiveSubQRemoveRelBuilder with calcite's once calcite 1.11.0 is released
                     final HiveSubQRemoveRelBuilder builder = new HiveSubQRemoveRelBuilder(null, call.rel(0).getCluster(), null);
                     final RexSubQuery e =
                             RexUtil.SubQueryFinder.find(filter.getCondition());
                     assert e != null;
+
                     final RelOptUtil.Logic logic =
                             LogicVisitor.find(RelOptUtil.Logic.TRUE,
                                     ImmutableList.of(filter.getCondition()), e);
                     builder.push(filter.getInput());
                     final int fieldCount = builder.peek().getRowType().getFieldCount();
-                    final RexNode target = apply(e, filter.getVariablesSet(), logic,
+
+                    assert(filter instanceof HiveFilter);
+
+                    final RexNode target = apply(e, ((HiveFilter)filter).getVariablesSet(e), logic,
                             builder, 1, fieldCount);
                     final RexShuttle shuttle = new ReplaceSubQueryShuttle(e, target);
                     builder.filter(shuttle.apply(filter.getCondition()));

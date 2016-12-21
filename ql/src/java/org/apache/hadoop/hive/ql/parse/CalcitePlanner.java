@@ -114,7 +114,6 @@ import org.apache.calcite.util.CompositeList;
 import org.apache.calcite.util.ImmutableBitSet;
 import org.apache.calcite.util.ImmutableIntList;
 import org.apache.calcite.util.Pair;
-import org.apache.commons.lang.mutable.MutableBoolean;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -1148,7 +1147,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
       RelNode calciteGenPlan = null;
       RelNode calcitePreCboPlan = null;
       RelNode calciteOptimizedPlan = null;
-      subqueryId = -1;
+      subqueryId = 0;
 
       /*
        * recreate cluster, so that it picks up the additional traitDef
@@ -2150,40 +2149,23 @@ public class CalcitePlanner extends SemanticAnalyzer {
       return filterRel;
     }
 
-    private void subqueryRestritionCheck(QB qb, ASTNode searchCond, RelNode srcRel,
+    private void subqueryRestrictionCheck(QB qb, ASTNode searchCond, RelNode srcRel,
                                          boolean forHavingClause, Map<String, RelNode> aliasToRel ) throws SemanticException {
         List<ASTNode> subQueriesInOriginalTree = SubQueryUtils.findSubQueries(searchCond);
-        if (subQueriesInOriginalTree.size() > 0) {
 
-        /*
-         * Restriction.9.m :: disallow nested SubQuery expressions.
-         */
-          if (qb.getSubQueryPredicateDef() != null) {
-            throw new SemanticException(ErrorMsg.UNSUPPORTED_SUBQUERY_EXPRESSION.getMsg(
-                    subQueriesInOriginalTree.get(0),
-                    "Nested SubQuery expressions are not supported."));
-          }
-
-        /*
-         * Restriction.8.m :: We allow only 1 SubQuery expression per Query.
-         */
-          if (subQueriesInOriginalTree.size() > 1) {
-
-            throw new SemanticException(ErrorMsg.UNSUPPORTED_SUBQUERY_EXPRESSION.getMsg(
-                    subQueriesInOriginalTree.get(1), "Only 1 SubQuery expression is supported."));
-          }
-
+        ASTNode clonedSearchCond = (ASTNode) SubQueryUtils.adaptor.dupTree(searchCond);
+        List<ASTNode> subQueries = SubQueryUtils.findSubQueries(clonedSearchCond);
+        for(int i=0; i<subQueriesInOriginalTree.size(); i++){
           //we do not care about the transformation or rewriting of AST
           // which following statement does
           // we only care about the restriction checks they perform.
           // We plan to get rid of these restrictions later
           int sqIdx = qb.incrNumSubQueryPredicates();
-          ASTNode originalSubQueryAST = subQueriesInOriginalTree.get(0);
+          ASTNode originalSubQueryAST = subQueriesInOriginalTree.get(i);
 
-          ASTNode clonedSearchCond = (ASTNode) SubQueryUtils.adaptor.dupTree(searchCond);
-          List<ASTNode> subQueries = SubQueryUtils.findSubQueries(clonedSearchCond);
-          ASTNode subQueryAST = subQueries.get(0);
-          clonedSearchCond = SubQueryUtils.rewriteParentQueryWhere(clonedSearchCond, subQueryAST);
+          ASTNode subQueryAST = subQueries.get(i);
+
+          SubQueryUtils.rewriteParentQueryWhere(clonedSearchCond, subQueryAST);
 
           QBSubQuery subQuery = SubQueryUtils.buildSubQuery(qb.getId(), sqIdx, subQueryAST,
                   originalSubQueryAST, ctx);
@@ -2197,19 +2179,15 @@ public class CalcitePlanner extends SemanticAnalyzer {
             aliasToRel.put(havingInputAlias, srcRel);
           }
 
-          subQuery.validateAndRewriteAST(inputRR, forHavingClause, havingInputAlias,
-                  aliasToRel.keySet());
-
-          // Missing Check: Check.5.h :: For In and Not In the SubQuery must implicitly or
-          // explicitly only contain one select item.
-        }
+          subQuery.subqueryRestrictionsCheck(inputRR, forHavingClause, havingInputAlias);
+      }
     }
     private boolean genSubQueryRelNode(QB qb, ASTNode node, RelNode srcRel, boolean forHavingClause,
                                        Map<ASTNode, RelNode> subQueryToRelNode,
                                        Map<String, RelNode> aliasToRel) throws SemanticException {
 
         //disallow subqueries which HIVE doesn't currently support
-        subqueryRestritionCheck(qb, node, srcRel, forHavingClause, aliasToRel);
+        subqueryRestrictionCheck(qb, node, srcRel, forHavingClause, aliasToRel);
         Deque<ASTNode> stack = new ArrayDeque<ASTNode>();
         stack.push(node);
 
@@ -2220,12 +2198,20 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
           switch(next.getType()) {
             case HiveParser.TOK_SUBQUERY_EXPR:
+              /*
+               * Restriction 2.h Subquery isnot allowed in LHS
+               */
+              if(next.getChildren().size() == 3
+                      && next.getChild(2).getType() == HiveParser.TOK_SUBQUERY_EXPR){
+                throw new CalciteSemanticException(ErrorMsg.UNSUPPORTED_SUBQUERY_EXPRESSION.getMsg(
+                         next.getChild(2),
+                        "SubQuery in LHS expressions are not supported."));
+              }
               String sbQueryAlias = "sq_" + qb.incrNumSubQueryPredicates();
               QB qbSQ = new QB(qb.getId(), sbQueryAlias, true);
               Phase1Ctx ctx1 = initPhase1Ctx();
               doPhase1((ASTNode)next.getChild(1), qbSQ, ctx1, null);
               getMetaData(qbSQ);
-              subqueryId++;
               RelNode subQueryRelNode = genLogicalPlan(qbSQ, false,  relToHiveColNameCalcitePosMap.get(srcRel),
                       relToHiveRR.get(srcRel));
               subQueryToRelNode.put(next, subQueryRelNode);
@@ -2263,6 +2249,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
         this.relToHiveColNameCalcitePosMap.put(filterRel, this.relToHiveColNameCalcitePosMap
                 .get(srcRel));
         relToHiveRR.put(filterRel, relToHiveRR.get(srcRel));
+        this.subqueryId++;
 
         // semi-join opt doesn't work with subqueries
         conf.setBoolVar(ConfVars.SEMIJOIN_CONVERSION, false);
