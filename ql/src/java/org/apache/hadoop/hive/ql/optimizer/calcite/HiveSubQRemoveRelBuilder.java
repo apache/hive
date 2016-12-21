@@ -148,7 +148,7 @@ public class HiveSubQRemoveRelBuilder {
                     RelFactories.DEFAULT_AGGREGATE_FACTORY);
     this.filterFactory =
             Util.first(context.unwrap(RelFactories.FilterFactory.class),
-                    RelFactories.DEFAULT_FILTER_FACTORY);
+                    HiveRelFactories.HIVE_FILTER_FACTORY);
     this.projectFactory =
             Util.first(context.unwrap(RelFactories.ProjectFactory.class),
                     RelFactories.DEFAULT_PROJECT_FACTORY);

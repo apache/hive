@@ -503,6 +503,106 @@ public class QBSubQuery implements ISubQueryJoinInfo {
         originalSQASTOrigin.getUsageNode());
   }
 
+  void subqueryRestrictionsCheck(RowResolver parentQueryRR,
+                                 boolean forHavingClause,
+                                 String outerQueryAlias)
+          throws SemanticException {
+    ASTNode insertClause = getChildFromSubqueryAST("Insert", HiveParser.TOK_INSERT);
+
+    ASTNode selectClause = (ASTNode) insertClause.getChild(1);
+
+
+    int selectExprStart = 0;
+    if ( selectClause.getChild(0).getType() == HiveParser.TOK_HINTLIST ) {
+      selectExprStart = 1;
+    }
+
+    /*
+     * Check.5.h :: For In and Not In the SubQuery must implicitly or
+     * explicitly only contain one select item.
+     */
+    if ( operator.getType() != SubQueryType.EXISTS &&
+            operator.getType() != SubQueryType.NOT_EXISTS &&
+            selectClause.getChildCount() - selectExprStart > 1 ) {
+      subQueryAST.setOrigin(originalSQASTOrigin);
+      throw new SemanticException(ErrorMsg.INVALID_SUBQUERY_EXPRESSION.getMsg(
+              subQueryAST, "SubQuery can contain only 1 item in Select List."));
+    }
+
+    boolean hasAggreateExprs = false;
+    boolean hasWindowing = false;
+    for(int i= selectExprStart; i < selectClause.getChildCount(); i++ ) {
+
+      ASTNode selectItem = (ASTNode) selectClause.getChild(i);
+      int r = SubQueryUtils.checkAggOrWindowing(selectItem);
+
+      hasWindowing = hasWindowing | ( r == 2);
+      hasAggreateExprs = hasAggreateExprs | ( r == 1 );
+    }
+
+    /*
+     * Restriction.13.m :: In the case of an implied Group By on a
+     * correlated SubQuery, the SubQuery always returns 1 row.
+     * An exists on a SubQuery with an implied GBy will always return true.
+     * Whereas Algebraically transforming to a Join may not return true. See
+     * Specification doc for details.
+     * Similarly a not exists on a SubQuery with a implied GBY will always return false.
+     */
+    boolean noImplicityGby = true;
+    if ( insertClause.getChild(1).getChildCount() > 3 &&
+            insertClause.getChild(1).getChild(3).getType() == HiveParser.TOK_GROUPBY ) {
+      if((ASTNode) insertClause.getChild(1).getChild(3) != null){
+        noImplicityGby = false;
+      }
+    }
+    if ( operator.getType() == SubQueryType.EXISTS  &&
+            hasAggreateExprs &&
+            noImplicityGby) {
+      throw new SemanticException(ErrorMsg.INVALID_SUBQUERY_EXPRESSION.getMsg(
+              subQueryAST,
+              "An Exists predicate on SubQuery with implicit Aggregation(no Group By clause) " +
+                      "cannot be rewritten. (predicate will always return true)."));
+    }
+    if ( operator.getType() == SubQueryType.NOT_EXISTS  &&
+            hasAggreateExprs &&
+            noImplicityGby) {
+      throw new SemanticException(ErrorMsg.INVALID_SUBQUERY_EXPRESSION.getMsg(
+              subQueryAST,
+              "A Not Exists predicate on SubQuery with implicit Aggregation(no Group By clause) " +
+                      "cannot be rewritten. (predicate will always return false)."));
+    }
+
+    ASTNode whereClause = SubQueryUtils.subQueryWhere(insertClause);
+
+    if ( whereClause == null ) {
+      return;
+    }
+    ASTNode searchCond = (ASTNode) whereClause.getChild(0);
+    List<ASTNode> conjuncts = new ArrayList<ASTNode>();
+    SubQueryUtils.extractConjuncts(searchCond, conjuncts);
+
+    ConjunctAnalyzer conjunctAnalyzer = new ConjunctAnalyzer(parentQueryRR,
+            forHavingClause, outerQueryAlias);
+    ASTNode sqNewSearchCond = null;
+
+    boolean hasCorrelation = false;
+    for(ASTNode conjunctAST : conjuncts) {
+      Conjunct conjunct = conjunctAnalyzer.analyzeConjunct(conjunctAST);
+      if(conjunct.isCorrelated()){
+       hasCorrelation = true;
+       break;
+      }
+    }
+
+    /*
+     * Restriction.14.h :: Correlated Sub Queries cannot contain Windowing clauses.
+     */
+    if (  hasWindowing && hasCorrelation) {
+      throw new SemanticException(ErrorMsg.UNSUPPORTED_SUBQUERY_EXPRESSION.getMsg(
+              subQueryAST, "Correlated Sub Queries cannot contain Windowing clauses."));
+    }
+  }
+
   void validateAndRewriteAST(RowResolver outerQueryRR,
       boolean forHavingClause,
       String outerQueryAlias,
@@ -774,17 +874,6 @@ public class QBSubQuery implements ISubQueryJoinInfo {
 
     for(ASTNode conjunctAST : conjuncts) {
       Conjunct conjunct = conjunctAnalyzer.analyzeConjunct(conjunctAST);
-
-      /*
-       *  Restriction.11.m :: A SubQuery predicate that refers to an Outer
-       *  Query column must be a valid Join predicate.
-       */
-      if ( conjunct.eitherSideRefersBoth() ) {
-        throw new SemanticException(ErrorMsg.UNSUPPORTED_SUBQUERY_EXPRESSION.getMsg(
-            conjunctAST,
-            "SubQuery expression refers to both Parent and SubQuery expressions and " +
-            "is not a valid join condition."));
-      }
 
       /*
        * Check.12.h :: SubQuery predicates cannot only refer to Outer Query columns.

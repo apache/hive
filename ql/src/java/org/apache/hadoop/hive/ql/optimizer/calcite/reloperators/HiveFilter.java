@@ -103,6 +103,12 @@ public class HiveFilter extends Filter implements HiveRelNode {
       return allCorrVars;
   }
 
+  public Set<CorrelationId> getVariablesSet(RexSubQuery e) {
+      Set<CorrelationId> allCorrVars = new HashSet<>();
+      traverseFilter(e, allCorrVars);
+      return allCorrVars;
+  }
+
   public RelNode accept(RelShuttle shuttle) {
     if (shuttle instanceof HiveRelShuttle) {
       return ((HiveRelShuttle)shuttle).visit(this);

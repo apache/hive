@@ -228,3 +228,20 @@ select t.i from t where t.i NOT IN (select t1.i from t t1 );
 
 drop table t1;
 
+-- corr predicate is not equi
+explain select *
+from src b
+where b.key not in
+        (select a.key
+         from src a
+         where b.value > a.value and a.key > '9'
+        )
+;
+select *
+from src b
+where b.key not in
+        (select a.key
+         from src a
+         where b.value > a.value and a.key > '9'
+        );
+

@@ -58,3 +58,21 @@ where exists
   )
 ;
 
+-- uncorr exists
+explain
+select *
+from src b
+where exists
+  (select a.key
+  from src a
+  where a.value > 'val_9'
+  );
+
+select *
+from src b
+where exists
+  (select a.key
+  from src a
+  where a.value > 'val_9'
+  );
+
