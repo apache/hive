@@ -1,4 +1,5 @@
 set hive.fetch.task.conversion = none;
+set hive.exec.dynamic.partition.mode = nonstrict;
 
 -- First, create source tables
 DROP TABLE IF EXISTS dummy;
@@ -110,3 +111,14 @@ SELECT t1.s1.f3.f5, t2.s2.f8
 FROM nested_tbl_1 t1 JOIN nested_tbl_1 t2
 ON t1.s1.f3.f4 = t2.s1.f6
 WHERE t2.s2.f8.f9 == TRUE;
+
+-- Testing insert with aliases
+
+DROP TABLE IF EXISTS nested_tbl_3;
+CREATE TABLE nested_tbl_3 (f1 boolean, f2 string) PARTITIONED BY (f3 int) STORED AS PARQUET;
+
+INSERT OVERWRITE TABLE nested_tbl_3 PARTITION(f3)
+SELECT s1.f1 AS f1, S1.f2 AS f2, s1.f6 AS f3
+FROM nested_tbl_1;
+
+SELECT * FROM nested_tbl_3;

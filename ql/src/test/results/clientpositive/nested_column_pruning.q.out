@@ -1091,3 +1091,44 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@nested_tbl_1
 #### A masked pattern was here ####
 5.0	{"f9":true,"f10":[10,11],"f11":{"key1":true,"key2":false}}
+PREHOOK: query: -- Testing insert with aliases
+
+DROP TABLE IF EXISTS nested_tbl_3
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: -- Testing insert with aliases
+
+DROP TABLE IF EXISTS nested_tbl_3
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: CREATE TABLE nested_tbl_3 (f1 boolean, f2 string) PARTITIONED BY (f3 int) STORED AS PARQUET
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@nested_tbl_3
+POSTHOOK: query: CREATE TABLE nested_tbl_3 (f1 boolean, f2 string) PARTITIONED BY (f3 int) STORED AS PARQUET
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@nested_tbl_3
+PREHOOK: query: INSERT OVERWRITE TABLE nested_tbl_3 PARTITION(f3)
+SELECT s1.f1 AS f1, S1.f2 AS f2, s1.f6 AS f3
+FROM nested_tbl_1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@nested_tbl_1
+PREHOOK: Output: default@nested_tbl_3
+POSTHOOK: query: INSERT OVERWRITE TABLE nested_tbl_3 PARTITION(f3)
+SELECT s1.f1 AS f1, S1.f2 AS f2, s1.f6 AS f3
+FROM nested_tbl_1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@nested_tbl_1
+POSTHOOK: Output: default@nested_tbl_3@f3=4
+POSTHOOK: Lineage: nested_tbl_3 PARTITION(f3=4).f1 EXPRESSION [(nested_tbl_1)nested_tbl_1.FieldSchema(name:s1, type:struct<f1:boolean,f2:string,f3:struct<f4:int,f5:double>,f6:int>, comment:null), ]
+POSTHOOK: Lineage: nested_tbl_3 PARTITION(f3=4).f2 EXPRESSION [(nested_tbl_1)nested_tbl_1.FieldSchema(name:s1, type:struct<f1:boolean,f2:string,f3:struct<f4:int,f5:double>,f6:int>, comment:null), ]
+PREHOOK: query: SELECT * FROM nested_tbl_3
+PREHOOK: type: QUERY
+PREHOOK: Input: default@nested_tbl_3
+PREHOOK: Input: default@nested_tbl_3@f3=4
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM nested_tbl_3
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@nested_tbl_3
+POSTHOOK: Input: default@nested_tbl_3@f3=4
+#### A masked pattern was here ####
+false	foo	4
