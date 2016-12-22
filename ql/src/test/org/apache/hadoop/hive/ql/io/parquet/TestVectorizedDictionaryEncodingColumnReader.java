@@ -24,8 +24,8 @@ import org.junit.Test;
 
 import java.io.IOException;
 
-public class TestVectorizedColumnReader extends TestVectorizedColumnReaderBase {
-  static boolean isDictionaryEncoding = false;
+public class TestVectorizedDictionaryEncodingColumnReader extends TestVectorizedColumnReaderBase {
+  static boolean isDictionaryEncoding = true;
 
   @BeforeClass
   public static void setup() throws IOException {
@@ -59,11 +59,6 @@ public class TestVectorizedColumnReader extends TestVectorizedColumnReaderBase {
   }
 
   @Test
-  public void testBooleanRead() throws Exception {
-    booleanRead();
-  }
-
-  @Test
   public void testBinaryRead() throws Exception {
     binaryRead(isDictionaryEncoding);
   }
@@ -75,8 +70,7 @@ public class TestVectorizedColumnReader extends TestVectorizedColumnReaderBase {
 
   @Test
   public void testNestedStructRead() throws Exception {
-    nestedStructRead0(isDictionaryEncoding);
-    nestedStructRead1(isDictionaryEncoding);
+    structRead(isDictionaryEncoding);
   }
 
   @Test
