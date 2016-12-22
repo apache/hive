@@ -1,0 +1,196 @@
+PREHOOK: query: DROP TABLE IF EXISTS test_1
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE IF EXISTS test_1
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: CREATE TABLE test_1 
+( 
+member BIGINT 
+, age VARCHAR (100) 
+) 
+STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test_1
+POSTHOOK: query: CREATE TABLE test_1 
+( 
+member BIGINT 
+, age VARCHAR (100) 
+) 
+STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test_1
+PREHOOK: query: DROP TABLE IF EXISTS test_2
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE IF EXISTS test_2
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: CREATE TABLE test_2 
+( 
+member BIGINT 
+) 
+STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test_2
+POSTHOOK: query: CREATE TABLE test_2 
+( 
+member BIGINT 
+) 
+STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test_2
+PREHOOK: query: INSERT INTO test_1 VALUES (1, '20'), (2, '30'), (3, '40')
+PREHOOK: type: QUERY
+PREHOOK: Output: default@test_1
+POSTHOOK: query: INSERT INTO test_1 VALUES (1, '20'), (2, '30'), (3, '40')
+POSTHOOK: type: QUERY
+POSTHOOK: Output: default@test_1
+POSTHOOK: Lineage: test_1.age EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+POSTHOOK: Lineage: test_1.member EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+PREHOOK: query: INSERT INTO test_2 VALUES (1), (2), (3)
+PREHOOK: type: QUERY
+PREHOOK: Output: default@test_2
+POSTHOOK: query: INSERT INTO test_2 VALUES (1), (2), (3)
+POSTHOOK: type: QUERY
+POSTHOOK: Output: default@test_2
+POSTHOOK: Lineage: test_2.member EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+PREHOOK: query: EXPLAIN
+SELECT 
+t2.member 
+, t1.age_1 
+, t1.age_2 
+FROM 
+test_2 t2 
+LEFT JOIN ( 
+SELECT 
+member 
+, age as age_1 
+, age as age_2 
+FROM 
+test_1 
+) t1 
+ON t2.member = t1.member
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+SELECT 
+t2.member 
+, t1.age_1 
+, t1.age_2 
+FROM 
+test_2 t2 
+LEFT JOIN ( 
+SELECT 
+member 
+, age as age_1 
+, age as age_2 
+FROM 
+test_1 
+) t1 
+ON t2.member = t1.member
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-4 is a root stage
+  Stage-3 depends on stages: Stage-4
+  Stage-0 depends on stages: Stage-3
+
+STAGE PLANS:
+  Stage: Stage-4
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        $hdt$_1:test_1 
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        $hdt$_1:test_1 
+          TableScan
+            alias: test_1
+            Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: member (type: bigint), age (type: varchar(100)), age (type: varchar(100))
+              outputColumnNames: _col0, _col1, _col2
+              Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+              HashTable Sink Operator
+                keys:
+                  0 _col0 (type: bigint)
+                  1 _col0 (type: bigint)
+
+  Stage: Stage-3
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: t2
+            Statistics: Num rows: 3 Data size: 3 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: member (type: bigint)
+              outputColumnNames: _col0
+              Statistics: Num rows: 3 Data size: 3 Basic stats: COMPLETE Column stats: NONE
+              Map Join Operator
+                condition map:
+                     Left Outer Join0 to 1
+                keys:
+                  0 _col0 (type: bigint)
+                  1 _col0 (type: bigint)
+                outputColumnNames: _col0, _col2, _col3
+                Statistics: Num rows: 3 Data size: 3 Basic stats: COMPLETE Column stats: NONE
+                Select Operator
+                  expressions: _col0 (type: bigint), _col2 (type: varchar(100)), _col3 (type: varchar(100))
+                  outputColumnNames: _col0, _col1, _col2
+                  Statistics: Num rows: 3 Data size: 3 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 3 Data size: 3 Basic stats: COMPLETE Column stats: NONE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+      Local Work:
+        Map Reduce Local Work
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SELECT 
+t2.member 
+, t1.age_1 
+, t1.age_2 
+FROM 
+test_2 t2 
+LEFT JOIN ( 
+SELECT 
+member 
+, age as age_1 
+, age as age_2 
+FROM 
+test_1 
+) t1 
+ON t2.member = t1.member
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_1
+PREHOOK: Input: default@test_2
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT 
+t2.member 
+, t1.age_1 
+, t1.age_2 
+FROM 
+test_2 t2 
+LEFT JOIN ( 
+SELECT 
+member 
+, age as age_1 
+, age as age_2 
+FROM 
+test_1 
+) t1 
+ON t2.member = t1.member
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_1
+POSTHOOK: Input: default@test_2
+#### A masked pattern was here ####
+1	20	20
+2	30	30
+3	40	40

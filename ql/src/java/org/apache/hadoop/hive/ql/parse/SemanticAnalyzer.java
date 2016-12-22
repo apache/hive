@@ -8062,18 +8062,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         index[i] = kindex;
         continue;
       }
-      int vindex;
-      if (exprBack == null) {
-        vindex = -1;
-      } else if (ExprNodeDescUtils.isConstant(exprBack)) {
-        vindex = reduceValuesBack.indexOf(exprBack);
-      } else {
-        vindex = ExprNodeDescUtils.indexOf(exprBack, reduceValuesBack);
-      }
-      if (vindex >= 0) {
-        index[i] = -vindex - 1;
-        continue;
-      }
       index[i] = -reduceValues.size() - 1;
       String outputColName = getColumnInternalName(reduceValues.size());
 
