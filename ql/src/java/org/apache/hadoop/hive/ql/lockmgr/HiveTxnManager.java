@@ -38,11 +38,12 @@ public interface HiveTxnManager {
 
   /**
    * Open a new transaction.
+   * @param ctx Context for this query
    * @param user Hive user who is opening this transaction.
    * @return The new transaction id
    * @throws LockException if a transaction is already open.
    */
-  long openTxn(String user) throws LockException;
+  long openTxn(Context ctx, String user) throws LockException;
 
   /**
    * Get the lock manager.  This must be used rather than instantiating an
@@ -55,7 +56,7 @@ public interface HiveTxnManager {
 
   /**
    * Acquire all of the locks needed by a query.  If used with a query that
-   * requires transactions, this should be called after {@link #openTxn(String)}.
+   * requires transactions, this should be called after {@link #openTxn(Context, String)}.
    * A list of acquired locks will be stored in the
    * {@link org.apache.hadoop.hive.ql.Context} object and can be retrieved
    * via {@link org.apache.hadoop.hive.ql.Context#getHiveLocks}.

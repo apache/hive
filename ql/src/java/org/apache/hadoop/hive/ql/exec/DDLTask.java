@@ -2607,7 +2607,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     os.write(separator);
     os.writeBytes("Transaction ID");
     os.write(separator);
-    os.writeBytes("Last Hearbeat");
+    os.writeBytes("Last Heartbeat");
     os.write(separator);
     os.writeBytes("Acquired At");
     os.write(separator);

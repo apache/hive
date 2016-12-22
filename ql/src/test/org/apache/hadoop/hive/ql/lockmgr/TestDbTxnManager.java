@@ -139,7 +139,7 @@ public class TestDbTxnManager {
   public void testSingleWriteTable() throws Exception {
     WriteEntity we = addTableOutput(WriteEntity.WriteType.INSERT);
     QueryPlan qp = new MockQueryPlan(this);
-    txnMgr.openTxn("fred");
+    txnMgr.openTxn(ctx, "fred");
     txnMgr.acquireLocks(qp, ctx, "fred");
     List<HiveLock> locks = ctx.getHiveLocks();
     Assert.assertEquals(1, locks.size());
@@ -155,7 +155,7 @@ public class TestDbTxnManager {
   public void testSingleWritePartition() throws Exception {
     WriteEntity we = addPartitionOutput(newTable(true), WriteEntity.WriteType.INSERT);
     QueryPlan qp = new MockQueryPlan(this);
-    txnMgr.openTxn("fred");
+    txnMgr.openTxn(ctx, "fred");
     txnMgr.acquireLocks(qp, ctx, "fred");
     List<HiveLock> locks = ctx.getHiveLocks();
     Assert.assertEquals(1, locks.size());
@@ -170,7 +170,7 @@ public class TestDbTxnManager {
   public void testWriteDynamicPartition() throws Exception {
     WriteEntity we = addDynamicPartitionedOutput(newTable(true), WriteEntity.WriteType.INSERT);
     QueryPlan qp = new MockQueryPlan(this);
-    txnMgr.openTxn("fred");
+    txnMgr.openTxn(ctx, "fred");
     txnMgr.acquireLocks(qp, ctx, "fred");
     List<HiveLock> locks = ctx.getHiveLocks();
     Assert.assertEquals(1, locks.size());
@@ -213,7 +213,7 @@ public class TestDbTxnManager {
   public void testExceptions() throws Exception {
     addPartitionOutput(newTable(true), WriteEntity.WriteType.INSERT);
     QueryPlan qp = new MockQueryPlan(this);
-    txnMgr.openTxn("NicholasII");
+    ((DbTxnManager) txnMgr).openTxn(ctx, "NicholasII", HiveConf.getTimeVar(conf, HiveConf.ConfVars.HIVE_TXN_TIMEOUT, TimeUnit.MILLISECONDS) * 2);
     Thread.sleep(HiveConf.getTimeVar(conf, HiveConf.ConfVars.HIVE_TXN_TIMEOUT, TimeUnit.MILLISECONDS));
     runReaper();
     LockException exception = null;
@@ -227,7 +227,7 @@ public class TestDbTxnManager {
     Assert.assertEquals("Wrong Exception1", ErrorMsg.TXN_ABORTED, exception.getCanonicalErrorMsg());
 
     exception = null;
-    txnMgr.openTxn("AlexanderIII");
+    ((DbTxnManager) txnMgr).openTxn(ctx, "AlexanderIII", HiveConf.getTimeVar(conf, HiveConf.ConfVars.HIVE_TXN_TIMEOUT, TimeUnit.MILLISECONDS) * 2);
     Thread.sleep(HiveConf.getTimeVar(conf, HiveConf.ConfVars.HIVE_TXN_TIMEOUT, TimeUnit.MILLISECONDS));
     runReaper();
     try {
@@ -245,26 +245,43 @@ public class TestDbTxnManager {
     addPartitionInput(newTable(true));
     QueryPlan qp = new MockQueryPlan(this);
     //make sure it works with nothing to expire
-    expireLocks(txnMgr, 0);
+    testLockExpiration(txnMgr, 0, true);
+
     //create a few read locks, all on the same resource
     for(int i = 0; i < 5; i++) {
       ((DbTxnManager)txnMgr).acquireLocks(qp, ctx, "PeterI" + i, true); // No heartbeat
     }
-    expireLocks(txnMgr, 5);
+    testLockExpiration(txnMgr, 5, true);
+
     //create a lot of locks
     for(int i = 0; i < TxnStore.TIMED_OUT_TXN_ABORT_BATCH_SIZE + 17; i++) {
       ((DbTxnManager)txnMgr).acquireLocks(qp, ctx, "PeterI" + i, true); // No heartbeat
     }
-    expireLocks(txnMgr, TxnStore.TIMED_OUT_TXN_ABORT_BATCH_SIZE + 17);
+    testLockExpiration(txnMgr, TxnStore.TIMED_OUT_TXN_ABORT_BATCH_SIZE + 17, true);
+
+    // Create a lock, but send the heartbeat with a long delay. The lock will get expired.
+    ((DbTxnManager)txnMgr).acquireLocksWithHeartbeatDelay(qp, ctx, "bob",
+        HiveConf.getTimeVar(conf, HiveConf.ConfVars.HIVE_TXN_TIMEOUT, TimeUnit.MILLISECONDS) * 10);
+    testLockExpiration(txnMgr, 1, true);
+
+    // Create a lock and trigger a heartbeat. With heartbeat, the lock won't expire.
+    txnMgr.acquireLocks(qp, ctx, "peter");
+    testLockExpiration(txnMgr, 1, false);
   }
-  private void expireLocks(HiveTxnManager txnMgr, int numLocksBefore) throws Exception {
+
+  private void testLockExpiration(HiveTxnManager txnMgr, int numLocksBefore, boolean shouldExpire) throws Exception {
     DbLockManager lockManager = (DbLockManager)txnMgr.getLockManager();
     ShowLocksResponse resp = lockManager.getLocks();
     Assert.assertEquals("Wrong number of locks before expire", numLocksBefore, resp.getLocks().size());
     Thread.sleep(HiveConf.getTimeVar(conf, HiveConf.ConfVars.HIVE_TXN_TIMEOUT, TimeUnit.MILLISECONDS));
     runReaper();
     resp = lockManager.getLocks();
-    Assert.assertEquals("Expected all locks to expire", 0, resp.getLocks().size());
+    if (shouldExpire) {
+      Assert.assertEquals("Expected all locks to expire", 0, resp.getLocks().size());
+      lockManager.clearLocalLockRecords();
+    } else {
+      Assert.assertEquals("No lock should expire because there is heartbeating", numLocksBefore, resp.getLocks().size());
+    }
   }
 
   @Test
@@ -275,7 +292,7 @@ public class TestDbTxnManager {
     addPartitionInput(t);
     WriteEntity we = addTableOutput(WriteEntity.WriteType.INSERT);
     QueryPlan qp = new MockQueryPlan(this);
-    txnMgr.openTxn("fred");
+    txnMgr.openTxn(ctx, "fred");
     txnMgr.acquireLocks(qp, ctx, "fred");
     List<HiveLock> locks = ctx.getHiveLocks();
     Assert.assertEquals(1, locks.size());
@@ -290,7 +307,7 @@ public class TestDbTxnManager {
   public void testUpdate() throws Exception {
     WriteEntity we = addTableOutput(WriteEntity.WriteType.UPDATE);
     QueryPlan qp = new MockQueryPlan(this);
-    txnMgr.openTxn("fred");
+    txnMgr.openTxn(ctx, "fred");
     txnMgr.acquireLocks(qp, ctx, "fred");
     List<HiveLock> locks = ctx.getHiveLocks();
     Assert.assertEquals(1, locks.size());
@@ -305,7 +322,7 @@ public class TestDbTxnManager {
   public void testDelete() throws Exception {
     WriteEntity we = addTableOutput(WriteEntity.WriteType.DELETE);
     QueryPlan qp = new MockQueryPlan(this);
-    txnMgr.openTxn("fred");
+    txnMgr.openTxn(ctx, "fred");
     txnMgr.acquireLocks(qp, ctx, "fred");
     List<HiveLock> locks = ctx.getHiveLocks();
     Assert.assertEquals(1, locks.size());
@@ -320,7 +337,7 @@ public class TestDbTxnManager {
   public void testRollback() throws Exception {
     WriteEntity we = addTableOutput(WriteEntity.WriteType.DELETE);
     QueryPlan qp = new MockQueryPlan(this);
-    txnMgr.openTxn("fred");
+    txnMgr.openTxn(ctx, "fred");
     txnMgr.acquireLocks(qp, ctx, "fred");
     List<HiveLock> locks = ctx.getHiveLocks();
     Assert.assertEquals(1, locks.size());
@@ -404,7 +421,7 @@ public class TestDbTxnManager {
     QueryPlan qp = new MockQueryPlan(this);
 
     // Case 1: If there's no delay for the heartbeat, txn should be able to commit
-    txnMgr.openTxn("fred");
+    txnMgr.openTxn(ctx, "fred");
     txnMgr.acquireLocks(qp, ctx, "fred"); // heartbeat started..
     runReaper();
     try {
@@ -417,10 +434,10 @@ public class TestDbTxnManager {
 
     // Case 2: If there's delay for the heartbeat, but the delay is within the reaper's tolerance,
     //         then txt should be able to commit
-    txnMgr.openTxn("tom");
     // Start the heartbeat after a delay, which is shorter than  the HIVE_TXN_TIMEOUT
-    ((DbTxnManager) txnMgr).acquireLocksWithHeartbeatDelay(qp, ctx, "tom",
+    ((DbTxnManager) txnMgr).openTxn(ctx, "tom",
         HiveConf.getTimeVar(conf, HiveConf.ConfVars.HIVE_TXN_TIMEOUT, TimeUnit.MILLISECONDS) / 2);
+    txnMgr.acquireLocks(qp, ctx, "tom");
     runReaper();
     try {
       txnMgr.commitTxn();
@@ -433,9 +450,9 @@ public class TestDbTxnManager {
     // Case 3: If there's delay for the heartbeat, and the delay is long enough to trigger the reaper,
     //         then the txn will time out and be aborted.
     //         Here we just don't send the heartbeat at all - an infinite delay.
-    txnMgr.openTxn("jerry");
     // Start the heartbeat after a delay, which exceeds the HIVE_TXN_TIMEOUT
-    ((DbTxnManager) txnMgr).acquireLocks(qp, ctx, "jerry", true);
+    ((DbTxnManager) txnMgr).openTxn(ctx, "jerry", HiveConf.getTimeVar(conf, HiveConf.ConfVars.HIVE_TXN_TIMEOUT, TimeUnit.MILLISECONDS) * 2);
+    txnMgr.acquireLocks(qp, ctx, "jerry");
     Thread.sleep(HiveConf.getTimeVar(conf, HiveConf.ConfVars.HIVE_TXN_TIMEOUT, TimeUnit.MILLISECONDS));
     runReaper();
     try {

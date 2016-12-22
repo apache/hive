@@ -135,7 +135,12 @@ public class DbTxnManager extends HiveTxnManagerImpl {
   }
 
   @Override
-  public long openTxn(String user) throws LockException {
+  public long openTxn(Context ctx, String user) throws LockException {
+    return openTxn(ctx, user, 0);
+  }
+
+  @VisibleForTesting
+  long openTxn(Context ctx, String user, long delay) throws LockException {
     //todo: why don't we lock the snapshot here???  Instead of having client make an explicit call
     //whenever it chooses
     init();
@@ -146,6 +151,7 @@ public class DbTxnManager extends HiveTxnManagerImpl {
       txnId = client.openTxn(user);
       statementId = 0;
       LOG.debug("Opened " + JavaUtils.txnIdToString(txnId));
+      ctx.setHeartbeater(startHeartbeat(delay));
       return txnId;
     } catch (TException e) {
       throw new LockException(e, ErrorMsg.METASTORE_COMMUNICATION_FAILED);
@@ -353,7 +359,9 @@ public class DbTxnManager extends HiveTxnManagerImpl {
   @VisibleForTesting
   void acquireLocksWithHeartbeatDelay(QueryPlan plan, Context ctx, String username, long delay) throws LockException {
     LockState ls = acquireLocks(plan, ctx, username, true);
-    if (ls != null) { // If there's no lock, we don't need to do heartbeat
+    if (ls != null && !isTxnOpen()) { // If there's no lock, we don't need to do heartbeat
+      // Start heartbeat for read-only queries which don't open transactions but requires locks.
+      // For those that require transactions, the heartbeat has already been started in openTxn.
       ctx.setHeartbeater(startHeartbeat(delay));
     }
   }
