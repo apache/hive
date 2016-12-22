@@ -204,10 +204,10 @@ public class UDFToLong extends UDF {
   }
 
   public LongWritable evaluate(HiveDecimalWritable i) {
-    if (i == null) {
+    if (i == null || !i.isSet() || !i.isLong()) {
       return null;
     } else {
-      longWritable.set(i.getHiveDecimal().longValue()); // TODO: lossy conversion!
+      longWritable.set(i.longValue());
       return longWritable;
     }
   }

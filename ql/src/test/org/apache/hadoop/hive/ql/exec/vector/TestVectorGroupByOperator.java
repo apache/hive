@@ -732,12 +732,12 @@ public class TestVectorGroupByOperator {
         "sum",
         4,
         Arrays.asList(new Object[]{
-                HiveDecimal.create("1234.2401").setScale(scale),
-                HiveDecimal.create("1868.52").setScale(scale),
-                HiveDecimal.ZERO.setScale(scale),
-                HiveDecimal.create("456.84").setScale(scale),
-                HiveDecimal.create("121.89").setScale(scale)}),
-       HiveDecimal.create("3681.4901").setScale( scale));
+                HiveDecimal.create("1234.2401"),
+                HiveDecimal.create("1868.52"),
+                HiveDecimal.ZERO,
+                HiveDecimal.create("456.84"),
+                HiveDecimal.create("121.89")}),
+       HiveDecimal.create("3681.4901"));
   }
 
   @Test

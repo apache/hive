@@ -203,18 +203,10 @@ public class MyTestPrimitiveClass {
           sb.append(getRandString(r, DECIMAL_CHARS, scale));
         }
 
-        HiveDecimal bd = HiveDecimal.create(sb.toString());
-        extraTypeInfo.precision = bd.precision();
-        extraTypeInfo.scale = bd.scale();
-        if (extraTypeInfo.scale > extraTypeInfo.precision) {
-          // Sometimes weird decimals are produced?
-          continue;
-        }
-
-        // For now, punt.
-        extraTypeInfo.precision = HiveDecimal.SYSTEM_DEFAULT_PRECISION;
-        extraTypeInfo.scale = HiveDecimal.SYSTEM_DEFAULT_SCALE;
-        return bd;
+        HiveDecimal dec = HiveDecimal.create(sb.toString());
+        extraTypeInfo.precision = dec.precision();
+        extraTypeInfo.scale = dec.scale();
+        return dec;
       }
     }
 

@@ -57,19 +57,7 @@ public class RandomTypeUtil {
 
   private static final String DECIMAL_CHARS = "0123456789";
 
-  public static class HiveDecimalAndPrecisionScale {
-    public HiveDecimal hiveDecimal;
-    public int precision;
-    public int scale;
-
-    HiveDecimalAndPrecisionScale(HiveDecimal hiveDecimal, int precision, int scale) {
-      this.hiveDecimal = hiveDecimal;
-      this.precision = precision;
-      this.scale = scale;
-    }
-  }
-
-  public static HiveDecimalAndPrecisionScale getRandHiveDecimal(Random r) {
+  public static HiveDecimal getRandHiveDecimal(Random r) {
     int precision;
     int scale;
     while (true) {
@@ -93,18 +81,7 @@ public class RandomTypeUtil {
         sb.append(getRandString(r, DECIMAL_CHARS, scale));
       }
 
-      HiveDecimal bd = HiveDecimal.create(sb.toString());
-      precision = bd.precision();
-      scale = bd.scale();
-      if (scale > precision) {
-        // Sometimes weird decimals are produced?
-        continue;
-      }
-
-      // For now, punt.
-      precision = HiveDecimal.SYSTEM_DEFAULT_PRECISION;
-      scale = HiveDecimal.SYSTEM_DEFAULT_SCALE;
-      return new HiveDecimalAndPrecisionScale(bd, precision, scale);
+      return HiveDecimal.create(sb.toString());
     }
   }
 

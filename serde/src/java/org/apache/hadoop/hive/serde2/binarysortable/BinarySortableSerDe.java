@@ -29,6 +29,7 @@ import java.util.Map;
 import java.util.Properties;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.common.type.HiveDecimalV1;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.common.type.HiveIntervalDayTime;
 import org.apache.hadoop.hive.common.type.HiveIntervalYearMonth;
@@ -797,18 +798,6 @@ public class BinarySortableSerDe extends AbstractSerDe {
         return;
       }
       case DECIMAL: {
-        // decimals are encoded in three pieces:
-        // sign: 1, 2 or 3 for smaller, equal or larger than 0 respectively
-        // factor: Number that indicates the amount of digits you have to move
-        // the decimal point left or right until the resulting number is smaller
-        // than zero but has something other than 0 as the first digit.
-        // digits: which is a string of all the digits in the decimal. If the number
-        // is negative the binary string will be inverted to get the correct ordering.
-        // Example: 0.00123
-        // Sign is 3 (bigger than 0)
-        // Factor is -2 (move decimal point 2 positions right)
-        // Digits are: 123
-
         HiveDecimalObjectInspector boi = (HiveDecimalObjectInspector) poi;
         HiveDecimal dec = boi.getPrimitiveJavaObject(o);
         serializeHiveDecimal(buffer, dec, invert);
@@ -980,22 +969,22 @@ public class BinarySortableSerDe extends AbstractSerDe {
     serializeInt(buffer, nanos, invert);
   }
 
-  public static void serializeHiveDecimal(ByteStream.Output buffer, HiveDecimal dec, boolean invert) {
+  public static void serializeOldHiveDecimal(ByteStream.Output buffer, HiveDecimalV1 oldDec, boolean invert) {
     // get the sign of the big decimal
-    int sign = dec.compareTo(HiveDecimal.ZERO);
+    int sign = oldDec.compareTo(HiveDecimalV1.ZERO);
 
     // we'll encode the absolute value (sign is separate)
-    dec = dec.abs();
+    oldDec = oldDec.abs();
 
     // get the scale factor to turn big decimal into a decimal < 1
     // This relies on the BigDecimal precision value, which as of HIVE-10270
     // is now different from HiveDecimal.precision()
-    int factor = dec.bigDecimalValue().precision() - dec.bigDecimalValue().scale();
+    int factor = oldDec.bigDecimalValue().precision() - oldDec.bigDecimalValue().scale();
     factor = sign == 1 ? factor : -factor;
 
     // convert the absolute big decimal to string
-    dec.scaleByPowerOfTen(Math.abs(dec.scale()));
-    String digits = dec.unscaledValue().toString();
+    oldDec.scaleByPowerOfTen(Math.abs(oldDec.scale()));
+    String digits = oldDec.unscaledValue().toString();
 
     // finally write out the pieces (sign, scale, digits)
     writeByte(buffer, (byte) ( sign + 1), invert);
@@ -1005,6 +994,119 @@ public class BinarySortableSerDe extends AbstractSerDe {
     writeByte(buffer, (byte)   factor, invert);
     serializeBytes(buffer, digits.getBytes(decimalCharSet),
         digits.length(), sign == -1 ? !invert : invert);
+  }
+
+  // See comments for next method.
+  public static void serializeHiveDecimal(ByteStream.Output buffer, HiveDecimal dec, boolean invert) {
+
+    byte[] scratchBuffer = new byte[HiveDecimal.SCRATCH_BUFFER_LEN_TO_BYTES];
+    serializeHiveDecimal(buffer, dec, invert, scratchBuffer);
+  }
+
+  /**
+   * Decimals are encoded in three pieces:Decimals are encoded in three pieces:
+   *
+   * Sign:   1, 2 or 3 for smaller, equal or larger than 0 respectively
+   * Factor: Number that indicates the amount of digits you have to move
+   *         the decimal point left or right until the resulting number is smaller
+   *         than zero but has something other than 0 as the first digit.
+   * Digits: which is a string of all the digits in the decimal. If the number
+   *         is negative the binary string will be inverted to get the correct ordering.
+   *
+   * UNDONE: Is this example correct?
+   *   Example: 0.00123
+   *   Sign is 3 (bigger than 0)
+   *   Factor is -2 (move decimal point 2 positions right)
+   *   Digits are: 123
+   *
+   * @param buffer
+   * @param dec
+   * @param invert
+   * @param scratchBuffer
+   */
+  public static void serializeHiveDecimal(
+    ByteStream.Output buffer, HiveDecimal dec, boolean invert,
+    byte[] scratchBuffer) {
+
+    // Get the sign of the decimal.
+    int signum = dec.signum();
+
+    // Get the 10^N power to turn digits into the desired decimal with a possible
+    // fractional part.
+    // To be compatible with the OldHiveDecimal version, zero has factor 1.
+    int factor;
+    if (signum == 0) {
+      factor = 1;
+    } else {
+      factor = dec.rawPrecision() - dec.scale();
+    }
+
+    // To make comparisons work properly, the "factor" gets the decimal's sign, too.
+    factor = signum == 1 ? factor : -factor;
+
+    // Convert just the decimal digits (no dot, sign, etc) into bytes.
+    //
+    // This is much faster than converting the BigInteger value from unscaledValue() which is no
+    // longer part of the HiveDecimal representation anymore to string, then bytes.
+    int index = dec.toDigitsOnlyBytes(scratchBuffer);
+
+    /*
+     * Finally write out the pieces (sign, power, digits)
+     */
+    writeByte(buffer, (byte) ( signum + 1), invert);
+    writeByte(buffer, (byte) ((factor >> 24) ^ 0x80), invert);
+    writeByte(buffer, (byte) ( factor >> 16), invert);
+    writeByte(buffer, (byte) ( factor >> 8), invert);
+    writeByte(buffer, (byte)   factor, invert);
+
+    // The toDigitsOnlyBytes stores digits at the end of the scratch buffer.
+    serializeBytes(
+        buffer,
+        scratchBuffer, index, scratchBuffer.length - index,
+        signum == -1 ? !invert : invert);
+  }
+
+  // A HiveDecimalWritable version.
+  public static void serializeHiveDecimal(
+      ByteStream.Output buffer, HiveDecimalWritable decWritable, boolean invert,
+      byte[] scratchBuffer) {
+
+      // Get the sign of the decimal.
+      int signum = decWritable.signum();
+
+      // Get the 10^N power to turn digits into the desired decimal with a possible
+      // fractional part.
+      // To be compatible with the OldHiveDecimal version, zero has factor 1.
+      int factor;
+      if (signum == 0) {
+        factor = 1;
+      } else {
+        factor = decWritable.rawPrecision() - decWritable.scale();
+      }
+
+      // To make comparisons work properly, the "factor" gets the decimal's sign, too.
+      factor = signum == 1 ? factor : -factor;
+
+      // Convert just the decimal digits (no dot, sign, etc) into bytes.
+      //
+      // This is much faster than converting the BigInteger value from unscaledValue() which is no
+      // longer part of the HiveDecimal representation anymore to string, then bytes.
+      int index = decWritable.toDigitsOnlyBytes(scratchBuffer);
+
+      /*
+       * Finally write out the pieces (sign, power, digits)
+       */
+      writeByte(buffer, (byte) ( signum + 1), invert);
+      writeByte(buffer, (byte) ((factor >> 24) ^ 0x80), invert);
+      writeByte(buffer, (byte) ( factor >> 16), invert);
+      writeByte(buffer, (byte) ( factor >> 8), invert);
+      writeByte(buffer, (byte)   factor, invert);
+
+      // The toDigitsOnlyBytes stores digits at the end of the scratch buffer.
+      serializeBytes(
+          buffer,
+          scratchBuffer, index, scratchBuffer.length - index,
+          signum == -1 ? !invert : invert);
   }
 
   @Override

@@ -206,7 +206,7 @@ public class GenericUDAFSum extends AbstractGenericUDAFResolver {
     public ObjectInspector init(Mode m, ObjectInspector[] parameters) throws HiveException {
       assert (parameters.length == 1);
       super.init(m, parameters);
-      result = new HiveDecimalWritable(HiveDecimal.ZERO);
+      result = new HiveDecimalWritable(0);
       inputOI = (PrimitiveObjectInspector) parameters[0];
       // The output precision is 10 greater than the input which should cover at least
       // 10b rows. The scale is the same as the input.
@@ -226,21 +226,21 @@ public class GenericUDAFSum extends AbstractGenericUDAFResolver {
 
     /** class for storing decimal sum value. */
     @AggregationType(estimable = false) // hard to know exactly for decimals
-    static class SumHiveDecimalAgg extends SumAgg<HiveDecimal> {
+    static class SumHiveDecimalWritableAgg extends SumAgg<HiveDecimalWritable> {
     }
 
     @Override
     public AggregationBuffer getNewAggregationBuffer() throws HiveException {
-      SumHiveDecimalAgg agg = new SumHiveDecimalAgg();
+      SumHiveDecimalWritableAgg agg = new SumHiveDecimalWritableAgg();
       reset(agg);
       return agg;
     }
 
     @Override
     public void reset(AggregationBuffer agg) throws HiveException {
-      SumAgg<HiveDecimal> bdAgg = (SumAgg<HiveDecimal>) agg;
+      SumAgg<HiveDecimalWritable> bdAgg = (SumAgg<HiveDecimalWritable>) agg;
       bdAgg.empty = true;
-      bdAgg.sum = HiveDecimal.ZERO;
+      bdAgg.sum = new HiveDecimalWritable(0);
       bdAgg.uniqueObjects = new HashSet<ObjectInspectorObject>();
     }
 
@@ -250,9 +250,9 @@ public class GenericUDAFSum extends AbstractGenericUDAFResolver {
     public void iterate(AggregationBuffer agg, Object[] parameters) throws HiveException {
       assert (parameters.length == 1);
       try {
-        if (isEligibleValue((SumHiveDecimalAgg) agg, parameters[0])) {
-          ((SumHiveDecimalAgg)agg).empty = false;
-          ((SumHiveDecimalAgg)agg).sum = ((SumHiveDecimalAgg)agg).sum.add(
+        if (isEligibleValue((SumHiveDecimalWritableAgg) agg, parameters[0])) {
+          ((SumHiveDecimalWritableAgg)agg).empty = false;
+          ((SumHiveDecimalWritableAgg)agg).sum.mutateAdd(
               PrimitiveObjectInspectorUtils.getHiveDecimal(parameters[0], inputOI));
         }
       } catch (NumberFormatException e) {
@@ -270,8 +270,8 @@ public class GenericUDAFSum extends AbstractGenericUDAFResolver {
     @Override
     public void merge(AggregationBuffer agg, Object partial) throws HiveException {
       if (partial != null) {
-        SumHiveDecimalAgg myagg = (SumHiveDecimalAgg) agg;
-        if (myagg.sum == null) {
+        SumHiveDecimalWritableAgg myagg = (SumHiveDecimalWritableAgg) agg;
+        if (myagg.sum == null || !myagg.sum.isSet()) {
           return;
         }
 
@@ -279,22 +279,22 @@ public class GenericUDAFSum extends AbstractGenericUDAFResolver {
         if (isWindowingDistinct()) {
           throw new HiveException("Distinct windowing UDAF doesn't support merge and terminatePartial");
         } else {
-          myagg.sum = myagg.sum.add(PrimitiveObjectInspectorUtils.getHiveDecimal(partial, inputOI));
+          myagg.sum.mutateAdd(PrimitiveObjectInspectorUtils.getHiveDecimal(partial, inputOI));
         }
       }
     }
 
     @Override
     public Object terminate(AggregationBuffer agg) throws HiveException {
-      SumHiveDecimalAgg myagg = (SumHiveDecimalAgg) agg;
-      if (myagg.empty || myagg.sum == null) {
+      SumHiveDecimalWritableAgg myagg = (SumHiveDecimalWritableAgg) agg;
+      if (myagg.empty || myagg.sum == null || !myagg.sum.isSet()) {
         return null;
       }
-      if (myagg.sum != null) {
-        if (HiveDecimalUtils.enforcePrecisionScale(myagg.sum, (DecimalTypeInfo)outputOI.getTypeInfo()) == null) {
-          LOG.warn("The sum of a column with data type HiveDecimal is out of range");
-          return null;
-        }
+      DecimalTypeInfo decimalTypeInfo = (DecimalTypeInfo)outputOI.getTypeInfo();
+      myagg.sum.mutateEnforcePrecisionScale(decimalTypeInfo.getPrecision(), decimalTypeInfo.getScale());
+      if (!myagg.sum.isSet()) {
+        LOG.warn("The sum of a column with data type HiveDecimal is out of range");
+        return null;
       }
 
       result.set(myagg.sum);
@@ -315,8 +315,8 @@ public class GenericUDAFSum extends AbstractGenericUDAFResolver {
         protected HiveDecimalWritable getNextResult(
             org.apache.hadoop.hive.ql.udf.generic.GenericUDAFStreamingEvaluator.SumAvgEnhancer<HiveDecimalWritable, HiveDecimal>.SumAvgStreamingState ss)
             throws HiveException {
-          SumHiveDecimalAgg myagg = (SumHiveDecimalAgg) ss.wrappedBuf;
-          HiveDecimal r = myagg.empty ? null : myagg.sum;
+          SumHiveDecimalWritableAgg myagg = (SumHiveDecimalWritableAgg) ss.wrappedBuf;
+          HiveDecimal r = myagg.empty ? null : myagg.sum.getHiveDecimal();
           HiveDecimal d = ss.retrieveNextIntermediateValue();
           if (d != null ) {
             r = r == null ? null : r.subtract(d);
@@ -329,8 +329,8 @@ public class GenericUDAFSum extends AbstractGenericUDAFResolver {
         protected HiveDecimal getCurrentIntermediateResult(
             org.apache.hadoop.hive.ql.udf.generic.GenericUDAFStreamingEvaluator.SumAvgEnhancer<HiveDecimalWritable, HiveDecimal>.SumAvgStreamingState ss)
             throws HiveException {
-          SumHiveDecimalAgg myagg = (SumHiveDecimalAgg) ss.wrappedBuf;
-          return myagg.empty ? null : myagg.sum;
+          SumHiveDecimalWritableAgg myagg = (SumHiveDecimalWritableAgg) ss.wrappedBuf;
+          return myagg.empty ? null : myagg.sum.getHiveDecimal();
         }
 
       };

@@ -191,10 +191,10 @@ public class UDFToBoolean extends UDF {
   }
 
   public BooleanWritable evaluate(HiveDecimalWritable i) {
-    if (i == null) {
+    if (i == null || !i.isSet()) {
       return null;
     } else {
-      booleanWritable.set(HiveDecimal.ZERO.compareTo(i.getHiveDecimal()) != 0);
+      booleanWritable.set(i.compareTo(HiveDecimal.ZERO) != 0);
       return booleanWritable;
     }
   }

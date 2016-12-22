@@ -773,7 +773,7 @@ public class VectorHashKeyWrapperBatch extends VectorColumnSetInfo {
     } else if (klh.decimalIndex >= 0) {
       return kw.getIsDecimalNull(klh.decimalIndex)? null :
           keyOutputWriter.writeValue(
-                kw.getDecimal(klh.decimalIndex).getHiveDecimal());
+                kw.getDecimal(klh.decimalIndex));
     } else if (klh.timestampIndex >= 0) {
       return kw.getIsTimestampNull(klh.timestampIndex)? null :
           keyOutputWriter.writeValue(

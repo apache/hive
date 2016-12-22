@@ -661,7 +661,7 @@ POSTHOOK: query: select cast(t as tinyint) from decimal_2 order by t
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_2
 #### A masked pattern was here ####
-13
+NULL
 PREHOOK: query: explain
 select cast(t as smallint) from decimal_2 order by t
 PREHOOK: type: QUERY
@@ -724,7 +724,7 @@ POSTHOOK: query: select cast(t as smallint) from decimal_2 order by t
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_2
 #### A masked pattern was here ####
--3827
+NULL
 PREHOOK: query: explain
 select cast(t as int) from decimal_2 order by t
 PREHOOK: type: QUERY

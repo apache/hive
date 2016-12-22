@@ -27,7 +27,6 @@ import java.util.Arrays;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.common.type.HiveIntervalDayTime;
 import org.apache.hadoop.hive.common.type.HiveIntervalYearMonth;
 import org.apache.hadoop.hive.serde2.fast.DeserializeRead;
@@ -556,20 +555,24 @@ public final class LazySimpleDeserializeRead extends DeserializeRead {
           if (!LazyUtils.isNumberMaybe(bytes, fieldStart, fieldLength)) {
             return false;
           }
-          String byteData = new String(bytes, fieldStart, fieldLength, StandardCharsets.UTF_8);
-          HiveDecimal decimal = HiveDecimal.create(byteData);
-          DecimalTypeInfo decimalTypeInfo = (DecimalTypeInfo) typeInfos[fieldIndex];
-          int precision = decimalTypeInfo.getPrecision();
-          int scale = decimalTypeInfo.getScale();
-          decimal = HiveDecimal.enforcePrecisionScale(decimal, precision, scale);
-          if (decimal == null) {
+          // Trim blanks because OldHiveDecimal did...
+          currentHiveDecimalWritable.setFromBytes(bytes, fieldStart, fieldLength, /* trimBlanks */ true);
+          boolean decimalIsNull = !currentHiveDecimalWritable.isSet();
+          if (!decimalIsNull) {
+            DecimalTypeInfo decimalTypeInfo = (DecimalTypeInfo) typeInfos[fieldIndex];
+
+            int precision = decimalTypeInfo.getPrecision();
+            int scale = decimalTypeInfo.getScale();
+
+            decimalIsNull = !currentHiveDecimalWritable.mutateEnforcePrecisionScale(precision, scale);
+          }
+          if (decimalIsNull) {
             if (LOG.isDebugEnabled()) {
               LOG.debug("Data not in the HiveDecimal data type range so converted to null. Given data is :"
-                + byteData);
+                + new String(bytes, fieldStart, fieldLength, StandardCharsets.UTF_8));
             }
             return false;
           }
-          currentHiveDecimalWritable.set(decimal);
         }
         return true;
 

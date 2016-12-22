@@ -56,11 +56,12 @@ public class LazyBinarySerializeWrite implements SerializeWrite {
   private long nullOffset;
 
   // For thread safety, we allocate private writable objects for our use only.
-  private HiveDecimalWritable hiveDecimalWritable;
   private TimestampWritable timestampWritable;
   private HiveIntervalYearMonthWritable hiveIntervalYearMonthWritable;
   private HiveIntervalDayTimeWritable hiveIntervalDayTimeWritable;
   private HiveIntervalDayTime hiveIntervalDayTime;
+  private long[] scratchLongs;
+  private byte[] scratchBuffer;
 
   public LazyBinarySerializeWrite(int fieldCount) {
     this();
@@ -675,9 +676,12 @@ public class LazyBinarySerializeWrite implements SerializeWrite {
 
   /*
    * DECIMAL.
+   *
+   * NOTE: The scale parameter is for text serialization (e.g. HiveDecimal.toFormatString) that
+   * creates trailing zeroes output decimals.
    */
   @Override
-  public void writeHiveDecimal(HiveDecimal v, int scale) throws IOException {
+  public void writeHiveDecimal(HiveDecimal dec, int scale) throws IOException {
 
     // Every 8 fields we write a NULL byte.
     if ((fieldIndex % 8) == 0) {
@@ -694,11 +698,51 @@ public class LazyBinarySerializeWrite implements SerializeWrite {
     // Set bit in NULL byte when a field is NOT NULL.
     nullByte |= 1 << (fieldIndex % 8);
 
-    if (hiveDecimalWritable == null) {
-      hiveDecimalWritable = new HiveDecimalWritable();
+    if (scratchLongs == null) {
+      scratchLongs = new long[HiveDecimal.SCRATCH_LONGS_LEN];
+      scratchBuffer = new byte[HiveDecimal.SCRATCH_BUFFER_LEN_BIG_INTEGER_BYTES];
     }
-    hiveDecimalWritable.set(v);
-    LazyBinarySerDe.writeToByteStream(output, hiveDecimalWritable);
+    LazyBinarySerDe.writeToByteStream(
+        output,
+        dec,
+        scratchLongs,
+        scratchBuffer);
+
+    fieldIndex++;
+
+    if (fieldIndex == fieldCount) {
+      // Write back the final NULL byte before the last fields.
+      output.writeByte(nullOffset, nullByte);
+    }
+  }
+
+  @Override
+  public void writeHiveDecimal(HiveDecimalWritable decWritable, int scale) throws IOException {
+
+    // Every 8 fields we write a NULL byte.
+    if ((fieldIndex % 8) == 0) {
+      if (fieldIndex > 0) {
+        // Write back previous 8 field's NULL byte.
+        output.writeByte(nullOffset, nullByte);
+        nullByte = 0;
+        nullOffset = output.getLength();
+      }
+      // Allocate next NULL byte.
+      output.reserve(1);
+    }
+
+    // Set bit in NULL byte when a field is NOT NULL.
+    nullByte |= 1 << (fieldIndex % 8);
+
+    if (scratchLongs == null) {
+      scratchLongs = new long[HiveDecimal.SCRATCH_LONGS_LEN];
+      scratchBuffer = new byte[HiveDecimal.SCRATCH_BUFFER_LEN_BIG_INTEGER_BYTES];
+    }
+    LazyBinarySerDe.writeToByteStream(
+        output,
+        decWritable,
+        scratchLongs,
+        scratchBuffer);
 
     fieldIndex++;
 

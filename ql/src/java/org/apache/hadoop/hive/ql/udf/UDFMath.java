@@ -54,7 +54,7 @@ public abstract class UDFMath extends UDF {
       return null;
     }
 
-    double d = writable.getHiveDecimal().bigDecimalValue().doubleValue();
+    double d = writable.doubleValue();
     doubleWritable.set(d);
     return doEvaluate(doubleWritable);
   }

@@ -97,7 +97,9 @@ public class TestVectorSerDeRow extends TestCase {
       PrimitiveCategory primitiveCategory = primitiveCategories[i];
       PrimitiveTypeInfo primitiveTypeInfo = source.primitiveTypeInfos()[i];
       if (!deserializeRead.readNextField()) {
-        throw new HiveException("Unexpected NULL");
+        throw new HiveException("Unexpected NULL when reading primitiveCategory " + primitiveCategory +
+            " expected (" + expected.getClass().getName() + ", " + expected.toString() + ") " +
+            " deserializeRead " + deserializeRead.getClass().getName());
       }
       switch (primitiveCategory) {
       case BOOLEAN:
@@ -307,7 +309,7 @@ public class TestVectorSerDeRow extends TestCase {
     }
   }
 
-  void testVectorSerializeRow(int caseNum, Random r, SerializationType serializationType)
+  void testVectorSerializeRow(Random r, SerializationType serializationType)
       throws HiveException, IOException, SerDeException {
 
     String[] emptyScratchTypeNames = new String[0];
@@ -383,7 +385,9 @@ public class TestVectorSerDeRow extends TestCase {
         Object rowObj = row[c];
         Object expectedObj = expectedRow[c];
         if (rowObj == null) {
-          fail("Unexpected NULL from extractRow");
+          fail("Unexpected NULL from extractRow.  Expected class " +
+              expectedObj.getClass().getName() + " value " + expectedObj.toString() +
+              " batch index " + i + " firstRandomRowIndex " + firstRandomRowIndex);
         }
         if (!rowObj.equals(expectedObj)) {
           fail("Row " + (firstRandomRowIndex + i) + " and column " + c + " mismatch (" + primitiveTypeInfos[c].getPrimitiveCategory() + " actual value " + rowObj + " and expected value " + expectedObj + ")");
@@ -541,7 +545,7 @@ public class TestVectorSerDeRow extends TestCase {
     return new LazySerDeParameters(conf, tbl, LazySimpleSerDe.class.getName());
   }
 
-  void testVectorDeserializeRow(int caseNum, Random r, SerializationType serializationType,
+  void testVectorDeserializeRow(Random r, SerializationType serializationType,
       boolean alternate1, boolean alternate2,
       boolean useExternalBuffer)
           throws HiveException, IOException, SerDeException {
@@ -689,113 +693,111 @@ public class TestVectorSerDeRow extends TestCase {
     }
   }
 
-  public void testVectorSerDeRow() throws Throwable {
+  public void testVectorBinarySortableSerializeRow() throws Throwable {
+    Random r = new Random(8732);
+    testVectorSerializeRow(r, SerializationType.BINARY_SORTABLE);
+  }
 
-    Random r = new Random(5678);
+  public void testVectorLazyBinarySerializeRow() throws Throwable {
+    Random r = new Random(8732);
+    testVectorSerializeRow(r, SerializationType.LAZY_BINARY);
+  }
 
-    int c = 0;
+  public void testVectorLazySimpleSerializeRow() throws Throwable {
+    Random r = new Random(8732);
+    testVectorSerializeRow(r, SerializationType.LAZY_SIMPLE);
+  }
+ 
+  public void testVectorBinarySortableDeserializeRow() throws Throwable {
+    Random r = new Random(8732);
+    testVectorDeserializeRow(r,
+        SerializationType.BINARY_SORTABLE,
+        /* alternate1 = useColumnSortOrderIsDesc */ false,
+        /* alternate2 = useBinarySortableCharsNeedingEscape */ false,
+        /* useExternalBuffer */ false);
 
-    /*
-     * SERIALIZE tests.
-     */
-      testVectorSerializeRow(c++, r, SerializationType.BINARY_SORTABLE);
+    testVectorDeserializeRow(r,
+        SerializationType.BINARY_SORTABLE,
+        /* alternate1 = useColumnSortOrderIsDesc */ true,
+        /* alternate2 = useBinarySortableCharsNeedingEscape */ false,
+        /* useExternalBuffer */ false);
 
-      testVectorSerializeRow(c++, r, SerializationType.LAZY_BINARY);
+    testVectorDeserializeRow(r,
+        SerializationType.BINARY_SORTABLE,
+        /* alternate1 = useColumnSortOrderIsDesc */ false,
+        /* alternate2 = useBinarySortableCharsNeedingEscape */ false,
+        /* useExternalBuffer */ true);
 
-      testVectorSerializeRow(c++, r, SerializationType.LAZY_SIMPLE);
+    testVectorDeserializeRow(r,
+        SerializationType.BINARY_SORTABLE,
+        /* alternate1 = useColumnSortOrderIsDesc */ true,
+        /* alternate2 = useBinarySortableCharsNeedingEscape */ false,
+        /* useExternalBuffer */ true);
 
-    /*
-     * DESERIALIZE tests.
-     */
+    testVectorDeserializeRow(r,
+        SerializationType.BINARY_SORTABLE,
+        /* alternate1 = useColumnSortOrderIsDesc */ false,
+        /* alternate2 = useBinarySortableCharsNeedingEscape */ true,
+        /* useExternalBuffer */ false);
 
-    // BINARY_SORTABLE
+    testVectorDeserializeRow(r,
+        SerializationType.BINARY_SORTABLE,
+        /* alternate1 = useColumnSortOrderIsDesc */ true,
+        /* alternate2 = useBinarySortableCharsNeedingEscape */ true,
+        /* useExternalBuffer */ false);
 
-      testVectorDeserializeRow(c++, r,
-          SerializationType.BINARY_SORTABLE,
-          /* alternate1 = useColumnSortOrderIsDesc */ false,
-          /* alternate2 = useBinarySortableCharsNeedingEscape */ false,
-          /* useExternalBuffer */ false);
+    testVectorDeserializeRow(r,
+        SerializationType.BINARY_SORTABLE,
+        /* alternate1 = useColumnSortOrderIsDesc */ false,
+        /* alternate2 = useBinarySortableCharsNeedingEscape */ true,
+        /* useExternalBuffer */ true);
 
-      testVectorDeserializeRow(c++, r,
-          SerializationType.BINARY_SORTABLE,
-          /* alternate1 = useColumnSortOrderIsDesc */ true,
-          /* alternate2 = useBinarySortableCharsNeedingEscape */ false,
-          /* useExternalBuffer */ false);
+    testVectorDeserializeRow(r,
+        SerializationType.BINARY_SORTABLE,
+        /* alternate1 = useColumnSortOrderIsDesc */ true,
+        /* alternate2 = useBinarySortableCharsNeedingEscape */ true,
+        /* useExternalBuffer */ true);
+  }
 
-      testVectorDeserializeRow(c++, r,
-          SerializationType.BINARY_SORTABLE,
-          /* alternate1 = useColumnSortOrderIsDesc */ false,
-          /* alternate2 = useBinarySortableCharsNeedingEscape */ false,
-          /* useExternalBuffer */ true);
+  public void testVectorLazyBinaryDeserializeRow() throws Throwable {
+    Random r = new Random(8732);
+    testVectorDeserializeRow(r,
+        SerializationType.LAZY_BINARY,
+        /* alternate1 = unused */ false,
+        /* alternate2 = unused */ false,
+        /* useExternalBuffer */ false);
 
-      testVectorDeserializeRow(c++, r,
-          SerializationType.BINARY_SORTABLE,
-          /* alternate1 = useColumnSortOrderIsDesc */ true,
-          /* alternate2 = useBinarySortableCharsNeedingEscape */ false,
-          /* useExternalBuffer */ true);
+    testVectorDeserializeRow(r,
+        SerializationType.LAZY_BINARY,
+        /* alternate1 = unused */ false,
+        /* alternate2 = unused */ false,
+        /* useExternalBuffer */ true);
+  }
 
-      testVectorDeserializeRow(c++, r,
-          SerializationType.BINARY_SORTABLE,
-          /* alternate1 = useColumnSortOrderIsDesc */ false,
-          /* alternate2 = useBinarySortableCharsNeedingEscape */ true,
-          /* useExternalBuffer */ false);
+  public void testVectorLazySimpleDeserializeRow() throws Throwable {
+    Random r = new Random(8732);
+    testVectorDeserializeRow(r,
+        SerializationType.LAZY_SIMPLE,
+        /* alternate1 = useLazySimpleEscapes */ false,
+        /* alternate2 = unused */ false,
+        /* useExternalBuffer */ false);
 
-      testVectorDeserializeRow(c++, r,
-          SerializationType.BINARY_SORTABLE,
-          /* alternate1 = useColumnSortOrderIsDesc */ true,
-          /* alternate2 = useBinarySortableCharsNeedingEscape */ true,
-          /* useExternalBuffer */ false);
+    testVectorDeserializeRow(r,
+        SerializationType.LAZY_SIMPLE,
+        /* alternate1 = useLazySimpleEscapes */ false,
+        /* alternate2 = unused */ false,
+        /* useExternalBuffer */ true);
 
-      testVectorDeserializeRow(c++, r,
-          SerializationType.BINARY_SORTABLE,
-          /* alternate1 = useColumnSortOrderIsDesc */ false,
-          /* alternate2 = useBinarySortableCharsNeedingEscape */ true,
-          /* useExternalBuffer */ true);
+    testVectorDeserializeRow(r,
+        SerializationType.LAZY_SIMPLE,
+        /* alternate1 = useLazySimpleEscapes */ true,
+        /* alternate2 = unused */ false,
+        /* useExternalBuffer */ false);
 
-      testVectorDeserializeRow(c++, r,
-          SerializationType.BINARY_SORTABLE,
-          /* alternate1 = useColumnSortOrderIsDesc */ true,
-          /* alternate2 = useBinarySortableCharsNeedingEscape */ true,
-          /* useExternalBuffer */ true);
-
-    // LAZY_BINARY
-
-      testVectorDeserializeRow(c++, r,
-          SerializationType.LAZY_BINARY,
-          /* alternate1 = unused */ false,
-          /* alternate2 = unused */ false,
-          /* useExternalBuffer */ false);
-
-      testVectorDeserializeRow(c++, r,
-          SerializationType.LAZY_BINARY,
-          /* alternate1 = unused */ false,
-          /* alternate2 = unused */ false,
-          /* useExternalBuffer */ true);
-
-    // LAZY_SIMPLE
-
-      testVectorDeserializeRow(c++, r,
-          SerializationType.LAZY_SIMPLE,
-          /* alternate1 = useLazySimpleEscapes */ false,
-          /* alternate2 = unused */ false,
-          /* useExternalBuffer */ false);
-
-      testVectorDeserializeRow(c++, r,
-          SerializationType.LAZY_SIMPLE,
-          /* alternate1 = useLazySimpleEscapes */ false,
-          /* alternate2 = unused */ false,
-          /* useExternalBuffer */ true);
-
-      testVectorDeserializeRow(c++, r,
-          SerializationType.LAZY_SIMPLE,
-          /* alternate1 = useLazySimpleEscapes */ true,
-          /* alternate2 = unused */ false,
-          /* useExternalBuffer */ false);
-
-      testVectorDeserializeRow(c++, r,
-          SerializationType.LAZY_SIMPLE,
-          /* alternate1 = useLazySimpleEscapes */ true,
-          /* alternate2 = unused */ false,
-          /* useExternalBuffer */ true);
+    testVectorDeserializeRow(r,
+        SerializationType.LAZY_SIMPLE,
+        /* alternate1 = useLazySimpleEscapes */ true,
+        /* alternate2 = unused */ false,
+        /* useExternalBuffer */ true);
   }
 }

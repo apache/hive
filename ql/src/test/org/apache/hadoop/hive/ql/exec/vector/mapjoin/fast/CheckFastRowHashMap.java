@@ -166,7 +166,9 @@ public class CheckFastRowHashMap extends CheckFastHashTable {
         }
       } else {
         if (thrown) {
-          TestCase.fail("Not expecting an exception to be thrown for the non-clipped case...");
+          TestCase.fail("Not expecting an exception to be thrown for the non-clipped case... " +
+              " exception message " + debugExceptionMessage +
+              " stack trace " + getStackTraceAsSingleLine(debugStackTrace));
         }
         TestCase.assertTrue(lazyBinaryDeserializeRead.isEndOfInputReached());
       }
@@ -381,5 +383,28 @@ public class CheckFastRowHashMap extends CheckFastHashTable {
         }
       }
     }
+  }
+
+  static int STACK_LENGTH_LIMIT = 20;
+  public static String getStackTraceAsSingleLine(StackTraceElement[] stackTrace) {
+    StringBuilder sb = new StringBuilder();
+    sb.append("Stack trace: ");
+    int length = stackTrace.length;
+    boolean isTruncated = false;
+    if (length > STACK_LENGTH_LIMIT) {
+      length = STACK_LENGTH_LIMIT;
+      isTruncated = true;
+    }
+    for (int i = 0; i < length; i++) {
+      if (i > 0) {
+        sb.append(", ");
+      }
+      sb.append(stackTrace[i]);
+    }
+    if (isTruncated) {
+      sb.append(", ...");
+    }
+
+    return sb.toString();
   }
 }

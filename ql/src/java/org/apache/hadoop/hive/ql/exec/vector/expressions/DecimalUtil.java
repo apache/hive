@@ -34,15 +34,17 @@ public class DecimalUtil {
   }
 
   public static int compare(HiveDecimal left, HiveDecimalWritable writableRight) {
-    return left.compareTo(writableRight.getHiveDecimal());
+    return HiveDecimalWritable.compareTo(left, writableRight);
   }
 
   // Addition with overflow check. Overflow produces NULL output.
   public static void addChecked(int i, HiveDecimal left, HiveDecimal right,
       DecimalColumnVector outputColVector) {
-    try {
-      outputColVector.set(i, left.add(right));
-    } catch (ArithmeticException e) {  // catch on overflow
+    HiveDecimalWritable decWritable = outputColVector.vector[i];
+    decWritable.set(left);
+    decWritable.mutateAdd(right);
+    decWritable.mutateEnforcePrecisionScale(outputColVector.precision, outputColVector.scale);
+    if (!decWritable.isSet()) {
       outputColVector.noNulls = false;
       outputColVector.isNull[i] = true;
     }
@@ -50,9 +52,11 @@ public class DecimalUtil {
 
   public static void addChecked(int i, HiveDecimalWritable left, HiveDecimalWritable right,
       DecimalColumnVector outputColVector) {
-    try {
-      outputColVector.set(i, left.getHiveDecimal().add(right.getHiveDecimal()));
-    } catch (ArithmeticException e) {  // catch on overflow
+    HiveDecimalWritable decWritable = outputColVector.vector[i];
+    decWritable.set(left);
+    decWritable.mutateAdd(right);
+    decWritable.mutateEnforcePrecisionScale(outputColVector.precision, outputColVector.scale);
+    if (!decWritable.isSet()) {
       outputColVector.noNulls = false;
       outputColVector.isNull[i] = true;
     }
@@ -60,9 +64,11 @@ public class DecimalUtil {
 
   public static void addChecked(int i, HiveDecimalWritable left, HiveDecimal right,
       DecimalColumnVector outputColVector) {
-    try {
-      outputColVector.set(i, left.getHiveDecimal().add(right));
-    } catch (ArithmeticException e) {  // catch on overflow
+    HiveDecimalWritable decWritable = outputColVector.vector[i];
+    decWritable.set(left);
+    decWritable.mutateAdd(right);
+    decWritable.mutateEnforcePrecisionScale(outputColVector.precision, outputColVector.scale);
+    if (!decWritable.isSet()) {
       outputColVector.noNulls = false;
       outputColVector.isNull[i] = true;
     }
@@ -70,9 +76,11 @@ public class DecimalUtil {
 
   public static void addChecked(int i, HiveDecimal left, HiveDecimalWritable right,
       DecimalColumnVector outputColVector) {
-    try {
-      outputColVector.set(i, left.add(right.getHiveDecimal()));
-    } catch (ArithmeticException e) {  // catch on overflow
+    HiveDecimalWritable decWritable = outputColVector.vector[i];
+    decWritable.set(left);
+    decWritable.mutateAdd(right);
+    decWritable.mutateEnforcePrecisionScale(outputColVector.precision, outputColVector.scale);
+    if (!decWritable.isSet()) {
       outputColVector.noNulls = false;
       outputColVector.isNull[i] = true;
     }
@@ -81,9 +89,11 @@ public class DecimalUtil {
   // Subtraction with overflow check. Overflow produces NULL output.
   public static void subtractChecked(int i, HiveDecimal left, HiveDecimal right,
       DecimalColumnVector outputColVector) {
-    try {
-      outputColVector.set(i, left.subtract(right));
-    } catch (ArithmeticException e) {  // catch on overflow
+    HiveDecimalWritable decWritable = outputColVector.vector[i];
+    decWritable.set(left);
+    decWritable.mutateSubtract(right);
+    decWritable.mutateEnforcePrecisionScale(outputColVector.precision, outputColVector.scale);
+    if (!decWritable.isSet()) {
       outputColVector.noNulls = false;
       outputColVector.isNull[i] = true;
     }
@@ -91,9 +101,11 @@ public class DecimalUtil {
 
   public static void subtractChecked(int i, HiveDecimalWritable left, HiveDecimalWritable right,
       DecimalColumnVector outputColVector) {
-    try {
-      outputColVector.set(i, left.getHiveDecimal().subtract(right.getHiveDecimal()));
-    } catch (ArithmeticException e) {  // catch on overflow
+    HiveDecimalWritable decWritable = outputColVector.vector[i];
+    decWritable.set(left);
+    decWritable.mutateSubtract(right);
+    decWritable.mutateEnforcePrecisionScale(outputColVector.precision, outputColVector.scale);
+    if (!decWritable.isSet()) {
       outputColVector.noNulls = false;
       outputColVector.isNull[i] = true;
     }
@@ -101,9 +113,11 @@ public class DecimalUtil {
 
   public static void subtractChecked(int i, HiveDecimalWritable left, HiveDecimal right,
       DecimalColumnVector outputColVector) {
-    try {
-      outputColVector.set(i, left.getHiveDecimal().subtract(right));
-    } catch (ArithmeticException e) {  // catch on overflow
+    HiveDecimalWritable decWritable = outputColVector.vector[i];
+    decWritable.set(left);
+    decWritable.mutateSubtract(right);
+    decWritable.mutateEnforcePrecisionScale(outputColVector.precision, outputColVector.scale);
+    if (!decWritable.isSet()) {
       outputColVector.noNulls = false;
       outputColVector.isNull[i] = true;
     }
@@ -111,9 +125,11 @@ public class DecimalUtil {
 
   public static void subtractChecked(int i, HiveDecimal left, HiveDecimalWritable right,
       DecimalColumnVector outputColVector) {
-    try {
-      outputColVector.set(i, left.subtract(right.getHiveDecimal()));
-    } catch (ArithmeticException e) {  // catch on overflow
+    HiveDecimalWritable decWritable = outputColVector.vector[i];
+    decWritable.set(left);
+    decWritable.mutateSubtract(right);
+    decWritable.mutateEnforcePrecisionScale(outputColVector.precision, outputColVector.scale);
+    if (!decWritable.isSet()) {
       outputColVector.noNulls = false;
       outputColVector.isNull[i] = true;
     }
@@ -122,9 +138,11 @@ public class DecimalUtil {
   // Multiplication with overflow check. Overflow produces NULL output.
   public static void multiplyChecked(int i, HiveDecimal left, HiveDecimal right,
       DecimalColumnVector outputColVector) {
-    try {
-      outputColVector.set(i, left.multiply(right));
-    } catch (ArithmeticException e) {  // catch on overflow
+    HiveDecimalWritable decWritable = outputColVector.vector[i];
+    decWritable.set(left);
+    decWritable.mutateMultiply(right);
+    decWritable.mutateEnforcePrecisionScale(outputColVector.precision, outputColVector.scale);
+    if (!decWritable.isSet()) {
       outputColVector.noNulls = false;
       outputColVector.isNull[i] = true;
     }
@@ -132,9 +150,11 @@ public class DecimalUtil {
 
   public static void multiplyChecked(int i, HiveDecimalWritable left, HiveDecimalWritable right,
       DecimalColumnVector outputColVector) {
-    try {
-      outputColVector.set(i, left.getHiveDecimal().multiply(right.getHiveDecimal()));
-    } catch (ArithmeticException e) {  // catch on overflow
+    HiveDecimalWritable decWritable = outputColVector.vector[i];
+    decWritable.set(left);
+    decWritable.mutateMultiply(right);
+    decWritable.mutateEnforcePrecisionScale(outputColVector.precision, outputColVector.scale);
+    if (!decWritable.isSet()) {
       outputColVector.noNulls = false;
       outputColVector.isNull[i] = true;
     }
@@ -142,9 +162,11 @@ public class DecimalUtil {
 
   public static void multiplyChecked(int i, HiveDecimalWritable left, HiveDecimal right,
       DecimalColumnVector outputColVector) {
-    try {
-      outputColVector.set(i, left.getHiveDecimal().multiply(right));
-    } catch (ArithmeticException e) {  // catch on overflow
+    HiveDecimalWritable decWritable = outputColVector.vector[i];
+    decWritable.set(left);
+    decWritable.mutateMultiply(right);
+    decWritable.mutateEnforcePrecisionScale(outputColVector.precision, outputColVector.scale);
+    if (!decWritable.isSet()) {
       outputColVector.noNulls = false;
       outputColVector.isNull[i] = true;
     }
@@ -152,9 +174,11 @@ public class DecimalUtil {
 
   public static void multiplyChecked(int i, HiveDecimal left, HiveDecimalWritable right,
       DecimalColumnVector outputColVector) {
-    try {
-      outputColVector.set(i, left.multiply(right.getHiveDecimal()));
-    } catch (ArithmeticException e) {  // catch on overflow
+    HiveDecimalWritable decWritable = outputColVector.vector[i];
+    decWritable.set(left);
+    decWritable.mutateMultiply(right);
+    decWritable.mutateEnforcePrecisionScale(outputColVector.precision, outputColVector.scale);
+    if (!decWritable.isSet()) {
       outputColVector.noNulls = false;
       outputColVector.isNull[i] = true;
     }
@@ -163,9 +187,11 @@ public class DecimalUtil {
   // Division with overflow/zero-divide check. Error produces NULL output.
   public static void divideChecked(int i, HiveDecimal left, HiveDecimal right,
       DecimalColumnVector outputColVector) {
-    try {
-      outputColVector.set(i, left.divide(right));
-    } catch (ArithmeticException e) {  // catch on error
+    HiveDecimalWritable decWritable = outputColVector.vector[i];
+    decWritable.set(left);
+    decWritable.mutateDivide(right);
+    decWritable.mutateEnforcePrecisionScale(outputColVector.precision, outputColVector.scale);
+    if (!decWritable.isSet()) {
       outputColVector.noNulls = false;
       outputColVector.isNull[i] = true;
     }
@@ -173,9 +199,11 @@ public class DecimalUtil {
 
   public static void divideChecked(int i, HiveDecimalWritable left, HiveDecimalWritable right,
       DecimalColumnVector outputColVector) {
-    try {
-      outputColVector.set(i, left.getHiveDecimal().divide(right.getHiveDecimal()));
-    } catch (ArithmeticException e) {  // catch on error
+    HiveDecimalWritable decWritable = outputColVector.vector[i];
+    decWritable.set(left);
+    decWritable.mutateDivide(right);
+    decWritable.mutateEnforcePrecisionScale(outputColVector.precision, outputColVector.scale);
+    if (!decWritable.isSet()) {
       outputColVector.noNulls = false;
       outputColVector.isNull[i] = true;
     }
@@ -183,9 +211,11 @@ public class DecimalUtil {
 
   public static void divideChecked(int i, HiveDecimalWritable left, HiveDecimal right,
       DecimalColumnVector outputColVector) {
-    try {
-      outputColVector.set(i, left.getHiveDecimal().divide(right));
-    } catch (ArithmeticException e) {  // catch on error
+    HiveDecimalWritable decWritable = outputColVector.vector[i];
+    decWritable.set(left);
+    decWritable.mutateDivide(right);
+    decWritable.mutateEnforcePrecisionScale(outputColVector.precision, outputColVector.scale);
+    if (!decWritable.isSet()) {
       outputColVector.noNulls = false;
       outputColVector.isNull[i] = true;
     }
@@ -193,9 +223,11 @@ public class DecimalUtil {
 
   public static void divideChecked(int i, HiveDecimal left, HiveDecimalWritable right,
       DecimalColumnVector outputColVector) {
-    try {
-      outputColVector.set(i, left.divide(right.getHiveDecimal()));
-    } catch (ArithmeticException e) {  // catch on error
+    HiveDecimalWritable decWritable = outputColVector.vector[i];
+    decWritable.set(left);
+    decWritable.mutateDivide(right);
+    decWritable.mutateEnforcePrecisionScale(outputColVector.precision, outputColVector.scale);
+    if (!decWritable.isSet()) {
       outputColVector.noNulls = false;
       outputColVector.isNull[i] = true;
     }
@@ -204,9 +236,11 @@ public class DecimalUtil {
   // Modulo operator with overflow/zero-divide check.
   public static void moduloChecked(int i, HiveDecimal left, HiveDecimal right,
       DecimalColumnVector outputColVector) {
-    try {
-      outputColVector.set(i, left.remainder(right));
-    } catch (ArithmeticException e) {  // catch on error
+    HiveDecimalWritable decWritable = outputColVector.vector[i];
+    decWritable.set(left);
+    decWritable.mutateRemainder(right);
+    decWritable.mutateEnforcePrecisionScale(outputColVector.precision, outputColVector.scale);
+    if (!decWritable.isSet()) {
       outputColVector.noNulls = false;
       outputColVector.isNull[i] = true;
     }
@@ -214,9 +248,11 @@ public class DecimalUtil {
 
   public static void moduloChecked(int i, HiveDecimalWritable left, HiveDecimalWritable right,
       DecimalColumnVector outputColVector) {
-    try {
-      outputColVector.set(i, left.getHiveDecimal().remainder(right.getHiveDecimal()));
-    } catch (ArithmeticException e) {  // catch on error
+    HiveDecimalWritable decWritable = outputColVector.vector[i];
+    decWritable.set(left);
+    decWritable.mutateRemainder(right);
+    decWritable.mutateEnforcePrecisionScale(outputColVector.precision, outputColVector.scale);
+    if (!decWritable.isSet()) {
       outputColVector.noNulls = false;
       outputColVector.isNull[i] = true;
     }
@@ -224,9 +260,11 @@ public class DecimalUtil {
 
   public static void moduloChecked(int i, HiveDecimalWritable left, HiveDecimal right,
       DecimalColumnVector outputColVector) {
-    try {
-      outputColVector.set(i, left.getHiveDecimal().remainder(right));
-    } catch (ArithmeticException e) {  // catch on error
+    HiveDecimalWritable decWritable = outputColVector.vector[i];
+    decWritable.set(left);
+    decWritable.mutateRemainder(right);
+    decWritable.mutateEnforcePrecisionScale(outputColVector.precision, outputColVector.scale);
+    if (!decWritable.isSet()) {
       outputColVector.noNulls = false;
       outputColVector.isNull[i] = true;
     }
@@ -234,99 +272,122 @@ public class DecimalUtil {
 
   public static void moduloChecked(int i, HiveDecimal left, HiveDecimalWritable right,
       DecimalColumnVector outputColVector) {
-    try {
-      outputColVector.set(i, left.remainder(right.getHiveDecimal()));
-    } catch (ArithmeticException e) {  // catch on error
+    HiveDecimalWritable decWritable = outputColVector.vector[i];
+    decWritable.set(left);
+    decWritable.mutateRemainder(right);
+    decWritable.mutateEnforcePrecisionScale(outputColVector.precision, outputColVector.scale);
+    if (!decWritable.isSet()) {
       outputColVector.noNulls = false;
       outputColVector.isNull[i] = true;
     }
   }
 
+  // UNDONE: Why don't these methods take decimalPlaces?
   public static void floor(int i, HiveDecimal input, DecimalColumnVector outputColVector) {
-    try {
-      outputColVector.set(i, input.setScale(0, HiveDecimal.ROUND_FLOOR));
-    } catch (ArithmeticException e) {
+    HiveDecimalWritable decWritable = outputColVector.vector[i];
+    decWritable.set(input);
+    decWritable.mutateSetScale(0, HiveDecimal.ROUND_FLOOR);
+    decWritable.mutateEnforcePrecisionScale(outputColVector.precision, outputColVector.scale);
+    if (!decWritable.isSet()) {
       outputColVector.noNulls = false;
       outputColVector.isNull[i] = true;
     }
   }
 
   public static void floor(int i, HiveDecimalWritable input, DecimalColumnVector outputColVector) {
-    try {
-      outputColVector.set(i, input.getHiveDecimal().setScale(0, HiveDecimal.ROUND_FLOOR));
-    } catch (ArithmeticException e) {
+    HiveDecimalWritable decWritable = outputColVector.vector[i];
+    decWritable.set(input);
+    decWritable.mutateSetScale(0, HiveDecimal.ROUND_FLOOR);
+    decWritable.mutateEnforcePrecisionScale(outputColVector.precision, outputColVector.scale);
+    if (!decWritable.isSet()) {
       outputColVector.noNulls = false;
       outputColVector.isNull[i] = true;
     }
   }
 
   public static void ceiling(int i, HiveDecimal input, DecimalColumnVector outputColVector) {
-    try {
-      outputColVector.set(i, input.setScale(0, HiveDecimal.ROUND_CEILING));
-    } catch (ArithmeticException e) {
+    HiveDecimalWritable decWritable = outputColVector.vector[i];
+    decWritable.set(input);
+    decWritable.mutateSetScale(0, HiveDecimal.ROUND_CEILING);
+    decWritable.mutateEnforcePrecisionScale(outputColVector.precision, outputColVector.scale);
+    if (!decWritable.isSet()) {
       outputColVector.noNulls = false;
       outputColVector.isNull[i] = true;
     }
   }
 
   public static void ceiling(int i, HiveDecimalWritable input, DecimalColumnVector outputColVector) {
-    try {
-      outputColVector.set(i, input.getHiveDecimal().setScale(0, HiveDecimal.ROUND_CEILING));
-    } catch (ArithmeticException e) {
+    HiveDecimalWritable decWritable = outputColVector.vector[i];
+    decWritable.set(input);
+    decWritable.mutateSetScale(0, HiveDecimal.ROUND_CEILING);
+    decWritable.mutateEnforcePrecisionScale(outputColVector.precision, outputColVector.scale);
+    if (!decWritable.isSet()) {
       outputColVector.noNulls = false;
       outputColVector.isNull[i] = true;
     }
   }
 
   public static void round(int i, HiveDecimal input, int decimalPlaces, DecimalColumnVector outputColVector) {
-    try {
-      outputColVector.set(i, RoundUtils.round(input, decimalPlaces));
-    } catch (ArithmeticException e) {
+    HiveDecimalWritable decWritable = outputColVector.vector[i];
+    decWritable.set(input);
+    decWritable.mutateSetScale(decimalPlaces, HiveDecimal.ROUND_HALF_UP);
+    decWritable.mutateEnforcePrecisionScale(outputColVector.precision, outputColVector.scale);
+    if (!decWritable.isSet()) {
       outputColVector.noNulls = false;
       outputColVector.isNull[i] = true;
     }
   }
 
   public static void round(int i, HiveDecimalWritable input, int decimalPlaces, DecimalColumnVector outputColVector) {
-    try {
-      outputColVector.set(i, RoundUtils.round(input.getHiveDecimal(), decimalPlaces));
-    } catch (ArithmeticException e) {
+    HiveDecimalWritable decWritable = outputColVector.vector[i];
+    decWritable.set(input);
+    decWritable.mutateSetScale(decimalPlaces, HiveDecimal.ROUND_HALF_UP);
+    decWritable.mutateEnforcePrecisionScale(outputColVector.precision, outputColVector.scale);
+    if (!decWritable.isSet()) {
       outputColVector.noNulls = false;
       outputColVector.isNull[i] = true;
     }
   }
 
   public static void round(int i, HiveDecimal input, DecimalColumnVector outputColVector) {
-    try {
-      outputColVector.set(i, RoundUtils.round(input, outputColVector.scale));
-    } catch (ArithmeticException e) {
+    HiveDecimalWritable decWritable = outputColVector.vector[i];
+    decWritable.set(input);
+    decWritable.mutateSetScale(outputColVector.scale, HiveDecimal.ROUND_HALF_UP);
+    decWritable.mutateEnforcePrecisionScale(outputColVector.precision, outputColVector.scale);
+    if (!decWritable.isSet()) {
       outputColVector.noNulls = false;
       outputColVector.isNull[i] = true;
     }
   }
 
   public static void round(int i, HiveDecimalWritable input, DecimalColumnVector outputColVector) {
-    try {
-      outputColVector.set(i, RoundUtils.round(input.getHiveDecimal(), outputColVector.scale));
-    } catch (ArithmeticException e) {
+    HiveDecimalWritable decWritable = outputColVector.vector[i];
+    decWritable.set(input);
+    decWritable.mutateSetScale(outputColVector.scale, HiveDecimal.ROUND_HALF_UP);
+    decWritable.mutateEnforcePrecisionScale(outputColVector.precision, outputColVector.scale);
+    if (!decWritable.isSet()) {
       outputColVector.noNulls = false;
       outputColVector.isNull[i] = true;
     }
   }
 
   public static void bround(int i, HiveDecimalWritable input, int decimalPlaces, DecimalColumnVector outputColVector) {
-    try {
-      outputColVector.set(i, RoundUtils.bround(input.getHiveDecimal(), decimalPlaces));
-    } catch (ArithmeticException e) {
+    HiveDecimalWritable decWritable = outputColVector.vector[i];
+    decWritable.set(input);
+    decWritable.mutateSetScale(decimalPlaces, HiveDecimal.ROUND_HALF_EVEN);
+    decWritable.mutateEnforcePrecisionScale(outputColVector.precision, outputColVector.scale);
+    if (!decWritable.isSet()) {
       outputColVector.noNulls = false;
       outputColVector.isNull[i] = true;
     }
   }
 
   public static void bround(int i, HiveDecimalWritable input, DecimalColumnVector outputColVector) {
-    try {
-      outputColVector.set(i, RoundUtils.bround(input.getHiveDecimal(), outputColVector.scale));
-    } catch (ArithmeticException e) {
+    HiveDecimalWritable decWritable = outputColVector.vector[i];
+    decWritable.set(input);
+    decWritable.mutateSetScale(outputColVector.scale, HiveDecimal.ROUND_HALF_EVEN);
+    decWritable.mutateEnforcePrecisionScale(outputColVector.precision, outputColVector.scale);
+    if (!decWritable.isSet()) {
       outputColVector.noNulls = false;
       outputColVector.isNull[i] = true;
     }
@@ -337,42 +398,30 @@ public class DecimalUtil {
   }
 
   public static void sign(int i, HiveDecimalWritable input, LongColumnVector outputColVector) {
-    outputColVector.vector[i] = input.getHiveDecimal().signum();
+    outputColVector.vector[i] = input.signum();
   }
 
   public static void abs(int i, HiveDecimal input, DecimalColumnVector outputColVector) {
-    try {
-      outputColVector.set(i, input.abs());
-    } catch (ArithmeticException e) {
-      outputColVector.noNulls = false;
-      outputColVector.isNull[i] = true;
-    }
+    HiveDecimalWritable decWritable = outputColVector.vector[i];
+    decWritable.set(input);
+    decWritable.mutateAbs();
   }
 
   public static void abs(int i, HiveDecimalWritable input, DecimalColumnVector outputColVector) {
-    try {
-      outputColVector.set(i, input.getHiveDecimal().abs());
-    } catch (ArithmeticException e) {
-      outputColVector.noNulls = false;
-      outputColVector.isNull[i] = true;
-    }
+    HiveDecimalWritable decWritable = outputColVector.vector[i];
+    decWritable.set(input);
+    decWritable.mutateAbs();
   }
 
   public static void negate(int i, HiveDecimal input, DecimalColumnVector outputColVector) {
-    try {
-      outputColVector.set(i, input.negate());
-    } catch (ArithmeticException e) {
-      outputColVector.noNulls = false;
-      outputColVector.isNull[i] = true;
-    }
+    HiveDecimalWritable decWritable = outputColVector.vector[i];
+    decWritable.set(input);
+    decWritable.mutateNegate();
   }
 
   public static void negate(int i, HiveDecimalWritable input, DecimalColumnVector outputColVector) {
-    try {
-      outputColVector.set(i, input.getHiveDecimal().negate());
-    } catch (ArithmeticException e) {
-      outputColVector.noNulls = false;
-      outputColVector.isNull[i] = true;
-    }
+    HiveDecimalWritable decWritable = outputColVector.vector[i];
+    decWritable.set(input);
+    decWritable.mutateNegate();
   }
 }

@@ -196,10 +196,10 @@ public class UDFToFloat extends UDF {
   }
 
   public FloatWritable evaluate(HiveDecimalWritable i) {
-    if (i == null) {
+    if (i == null || !i.isSet()) {
       return null;
     } else {
-      floatWritable.set(i.getHiveDecimal().floatValue());
+      floatWritable.set(i.floatValue());
       return floatWritable;
     }
   }

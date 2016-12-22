@@ -30,6 +30,7 @@ import java.util.Map;
 import java.util.TimeZone;
 import java.util.TreeMap;
 
+import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.ql.util.JavaDataModel;
 import org.apache.orc.BinaryColumnStatistics;
 import org.apache.orc.BloomFilterIO;
@@ -1610,6 +1611,11 @@ public class WriterImpl implements Writer, MemoryManager.Callback {
 
   private static class DecimalTreeWriter extends TreeWriter {
     private final PositionedOutputStream valueStream;
+
+    // These scratch buffers allow us to serialize decimals much faster.
+    private final long[] scratchLongs;
+    private final byte[] scratchBuffer;
+
     private final IntegerWriter scaleStream;
     private final boolean isDirectV2;
 
@@ -1620,6 +1626,8 @@ public class WriterImpl implements Writer, MemoryManager.Callback {
       super(columnId, schema, writer, nullable);
       this.isDirectV2 = isNewWriteFormat(writer);
       valueStream = writer.createStream(id, OrcProto.Stream.Kind.DATA);
+      scratchLongs = new long[HiveDecimal.SCRATCH_LONGS_LEN];
+      scratchBuffer = new byte[HiveDecimal.SCRATCH_BUFFER_LEN_TO_BYTES];
       this.scaleStream = createIntegerWriter(writer.createStream(id,
           OrcProto.Stream.Kind.SECONDARY), true, isDirectV2, writer);
       recordPosition(rowIndexPosition);
@@ -1642,27 +1650,36 @@ public class WriterImpl implements Writer, MemoryManager.Callback {
       DecimalColumnVector vec = (DecimalColumnVector) vector;
       if (vector.isRepeating) {
         if (vector.noNulls || !vector.isNull[0]) {
-          HiveDecimal value = vec.vector[0].getHiveDecimal();
+          HiveDecimalWritable value = vec.vector[0];
           indexStatistics.updateDecimal(value);
           if (createBloomFilter) {
-            bloomFilter.addString(value.toString());
+
+            // The HiveDecimalWritable toString() method with a scratch buffer for good performance
+            // when creating the String.  We need to use a String hash code and not UTF-8 byte[]
+            // hash code in order to get the right hash code.
+            bloomFilter.addString(value.toString(scratchBuffer));
           }
           for(int i=0; i < length; ++i) {
-            SerializationUtils.writeBigInteger(valueStream,
-                value.unscaledValue());
+
+            // Use the fast ORC serialization method that emulates SerializationUtils.writeBigInteger
+            // provided by HiveDecimalWritable.
+            value.serializationUtilsWrite(
+                valueStream,
+                scratchLongs);
             scaleStream.write(value.scale());
           }
         }
       } else {
         for(int i=0; i < length; ++i) {
           if (vec.noNulls || !vec.isNull[i + offset]) {
-            HiveDecimal value = vec.vector[i + offset].getHiveDecimal();
-            SerializationUtils.writeBigInteger(valueStream,
-                value.unscaledValue());
+            HiveDecimalWritable value = vec.vector[i + offset];
+            value.serializationUtilsWrite(
+                valueStream,
+                scratchLongs);
             scaleStream.write(value.scale());
             indexStatistics.updateDecimal(value);
             if (createBloomFilter) {
-              bloomFilter.addString(value.toString());
+              bloomFilter.addString(value.toString(scratchBuffer));
             }
           }
         }

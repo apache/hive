@@ -192,10 +192,10 @@ public class UDFToByte extends UDF {
   }
 
   public ByteWritable evaluate(HiveDecimalWritable i) {
-    if (i == null) {
+    if (i == null || !i.isSet() || !i.isByte()) {
       return null;
     } else {
-      byteWritable.set(i.getHiveDecimal().byteValue());
+      byteWritable.set(i.byteValue());
       return byteWritable;
     }
   }

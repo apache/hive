@@ -50,8 +50,8 @@ public final class GenericUDFCeil extends GenericUDFFloorCeilBase {
 
   @Override
   protected HiveDecimalWritable evaluate(HiveDecimalWritable input) {
-    HiveDecimal bd = input.getHiveDecimal();
-    decimalWritable.set(bd.setScale(0, HiveDecimal.ROUND_CEILING));
+    decimalWritable.set(input);
+    decimalWritable.mutateSetScale(0, HiveDecimal.ROUND_CEILING);
     return decimalWritable;
   }
 

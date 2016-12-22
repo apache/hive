@@ -201,10 +201,10 @@ public class UDFToInteger extends UDF {
   }
 
   public IntWritable evaluate(HiveDecimalWritable i) {
-    if (i == null) {
+    if (i == null || !i.isSet() || !i.isInt()) {
       return null;
     } else {
-      intWritable.set(i.getHiveDecimal().intValue());  // TODO: lossy conversion!
+      intWritable.set(i.intValue());
       return intWritable;
     }
   }

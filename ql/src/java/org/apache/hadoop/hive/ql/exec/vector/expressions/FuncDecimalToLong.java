@@ -22,6 +22,10 @@ import org.apache.hadoop.hive.ql.exec.vector.DecimalColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
+import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
+import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 
 /**
  * This is a superclass for unary decimal functions and expressions returning integers that
@@ -31,6 +35,9 @@ public abstract class FuncDecimalToLong extends VectorExpression {
   private static final long serialVersionUID = 1L;
   int inputColumn;
   int outputColumn;
+
+  private transient boolean integerPrimitiveCategoryKnown = false;
+  protected transient PrimitiveCategory integerPrimitiveCategory;
 
   public FuncDecimalToLong(int inputColumn, int outputColumn) {
     this.inputColumn = inputColumn;
@@ -48,6 +55,13 @@ public abstract class FuncDecimalToLong extends VectorExpression {
 
     if (childExpressions != null) {
       super.evaluateChildren(batch);
+    }
+
+    if (!integerPrimitiveCategoryKnown) {
+      String typeName = getOutputType().toLowerCase();
+      TypeInfo typeInfo = TypeInfoUtils.getTypeInfoFromTypeString(typeName);
+      integerPrimitiveCategory = ((PrimitiveTypeInfo) typeInfo).getPrimitiveCategory();
+      integerPrimitiveCategoryKnown = true;
     }
 
     DecimalColumnVector inV = (DecimalColumnVector) batch.cols[inputColumn];
@@ -114,11 +128,6 @@ public abstract class FuncDecimalToLong extends VectorExpression {
   @Override
   public int getOutputColumn() {
     return outputColumn;
-  }
-
-  @Override
-  public String getOutputType() {
-    return "long";
   }
 
   @Override

@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
 import org.apache.hadoop.hive.ql.exec.vector.DecimalColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
+import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 
 /**
  * Type cast decimal to long
@@ -37,6 +38,47 @@ public class CastDecimalToLong extends FuncDecimalToLong {
 
   @Override
   protected void func(LongColumnVector outV, DecimalColumnVector inV,  int i) {
-    outV.vector[i] = inV.vector[i].getHiveDecimal().longValue(); // TODO: lossy conversion!
+    HiveDecimalWritable decWritable = inV.vector[i];
+
+    // Check based on the Hive integer type we need to test with isByte, isShort, isInt, isLong
+    // so we do not use corrupted (truncated) values for the Hive integer type.
+    boolean isInRange;
+    switch (integerPrimitiveCategory) {
+    case BYTE:
+      isInRange = decWritable.isByte();
+      break;
+    case SHORT:
+      isInRange = decWritable.isShort();
+      break;
+    case INT:
+      isInRange = decWritable.isInt();
+      break;
+    case LONG:
+      isInRange = decWritable.isLong();
+      break;
+    default:
+      throw new RuntimeException("Unexpected integer primitive category " + integerPrimitiveCategory);
+    }
+    if (!isInRange) {
+      outV.isNull[i] = true;
+      outV.noNulls = false;
+      return;
+    }
+    switch (integerPrimitiveCategory) {
+    case BYTE:
+      outV.vector[i] = decWritable.byteValue();
+      break;
+    case SHORT:
+      outV.vector[i] = decWritable.shortValue();
+      break;
+    case INT:
+      outV.vector[i] = decWritable.intValue();
+      break;
+    case LONG:
+      outV.vector[i] = decWritable.longValue();
+      break;
+    default:
+      throw new RuntimeException("Unexpected integer primitive category " + integerPrimitiveCategory);
+    }
   }
 }

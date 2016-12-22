@@ -241,8 +241,9 @@ public class AvroSerdeUtils {
       return null;
     }
 
-    dec = dec.setScale(scale);
-    return AvroSerdeUtils.getBufferFromBytes(dec.unscaledValue().toByteArray());
+    // NOTE: Previously, we did OldHiveDecimal.setScale(scale), called OldHiveDecimal
+    //       unscaledValue().toByteArray().
+    return AvroSerdeUtils.getBufferFromBytes(dec.bigIntegerBytesScaled(scale));
   }
 
   public static byte[] getBytesFromByteBuffer(ByteBuffer byteBuffer) {

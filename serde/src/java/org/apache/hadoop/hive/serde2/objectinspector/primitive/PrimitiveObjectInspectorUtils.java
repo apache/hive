@@ -580,7 +580,24 @@ public final class PrimitiveObjectInspectorUtils {
    * NumberFormatException will be thrown if o is not a valid number.
    */
   public static byte getByte(Object o, PrimitiveObjectInspector oi) {
-    return (byte) getInt(o, oi);
+    byte result;
+    switch (oi.getPrimitiveCategory()) {
+    case DECIMAL:
+      {
+        HiveDecimal dec = ((HiveDecimalObjectInspector) oi)
+            .getPrimitiveJavaObject(o);
+        if (!dec.isByte()) {
+          throw new NumberFormatException();
+        }
+        result = dec.byteValue();
+      }
+      break;
+    default:
+      // For all other data types, use int conversion.  At some point, we should have all
+      // conversions make sure the value fits.
+      return (byte) getInt(o, oi);
+    }
+    return result;
   }
 
   /**
@@ -589,7 +606,24 @@ public final class PrimitiveObjectInspectorUtils {
    * NumberFormatException will be thrown if o is not a valid number.
    */
   public static short getShort(Object o, PrimitiveObjectInspector oi) {
-    return (short) getInt(o, oi);
+    short result;
+    switch (oi.getPrimitiveCategory()) {
+    case DECIMAL:
+      {
+        HiveDecimal dec = ((HiveDecimalObjectInspector) oi)
+            .getPrimitiveJavaObject(o);
+        if (!dec.isShort()) {
+          throw new NumberFormatException();
+        }
+        result = dec.shortValue();
+      }
+      break;
+    default:
+      // For all other data types, use int conversion.  At some point, we should have all
+      // conversions make sure the value fits.
+      return (short) getInt(o, oi);
+    }
+    return result;
   }
 
   /**
@@ -653,8 +687,14 @@ public final class PrimitiveObjectInspectorUtils {
           .getPrimitiveWritableObject(o).getSeconds());
       break;
     case DECIMAL:
-      result = ((HiveDecimalObjectInspector) oi)
-          .getPrimitiveJavaObject(o).intValue();  // TODO: lossy conversion!
+      {
+        HiveDecimal dec = ((HiveDecimalObjectInspector) oi)
+            .getPrimitiveJavaObject(o);
+        if (!dec.isInt()) {
+          throw new NumberFormatException();
+        }
+        result = dec.intValue();
+      }
       break;
     case DATE:  // unsupported conversion
     default: {
@@ -717,8 +757,14 @@ public final class PrimitiveObjectInspectorUtils {
           .getSeconds();
       break;
     case DECIMAL:
-      result = ((HiveDecimalObjectInspector) oi)
-          .getPrimitiveJavaObject(o).longValue();  // TODO: lossy conversion!
+      {
+        HiveDecimal dec = ((HiveDecimalObjectInspector) oi)
+            .getPrimitiveJavaObject(o);
+        if (!dec.isLong()) {
+          throw new NumberFormatException();
+        }
+        result = dec.longValue();
+      }
       break;
     case DATE:  // unsupported conversion
     default:

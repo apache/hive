@@ -141,7 +141,11 @@ public class ConvertAstToSearchArg {
     switch (type) {
       case LONG:
         if (lit instanceof HiveDecimal) {
-          return ((HiveDecimal)lit).longValueExact();
+          HiveDecimal dec = (HiveDecimal) lit;
+          if (!dec.isLong()) {
+            throw new ArithmeticException("Overflow");
+          }
+          return dec.longValue();
         }
         return ((Number) lit).longValue();
       case STRING:

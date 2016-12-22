@@ -35,7 +35,7 @@ public class FilterDecimalColumnInList extends VectorExpression implements IDeci
   private HiveDecimal[] inListValues;
 
   // The set object containing the IN list.
-  private transient HashSet<HiveDecimal> inSet;
+  private transient HashSet<HiveDecimalWritable> inSet;
 
   public FilterDecimalColumnInList() {
     super();
@@ -58,9 +58,9 @@ public class FilterDecimalColumnInList extends VectorExpression implements IDeci
     }
 
     if (inSet == null) {
-      inSet = new HashSet<HiveDecimal>(inListValues.length);
+      inSet = new HashSet<HiveDecimalWritable>(inListValues.length);
       for (HiveDecimal val : inListValues) {
-        inSet.add(val);
+        inSet.add(new HiveDecimalWritable(val));
       }
     }
 
@@ -81,7 +81,7 @@ public class FilterDecimalColumnInList extends VectorExpression implements IDeci
         // All must be selected otherwise size would be zero
         // Repeating property will not change.
 
-        if (!(inSet.contains(vector[0].getHiveDecimal()))) {
+        if (!(inSet.contains(vector[0]))) {
           //Entire batch is filtered out.
           batch.size = 0;
         }
@@ -89,7 +89,7 @@ public class FilterDecimalColumnInList extends VectorExpression implements IDeci
         int newSize = 0;
         for(int j = 0; j != n; j++) {
           int i = sel[j];
-          if (inSet.contains(vector[i].getHiveDecimal())) {
+          if (inSet.contains(vector[i])) {
             sel[newSize++] = i;
           }
         }
@@ -97,7 +97,7 @@ public class FilterDecimalColumnInList extends VectorExpression implements IDeci
       } else {
         int newSize = 0;
         for(int i = 0; i != n; i++) {
-          if (inSet.contains(vector[i].getHiveDecimal())) {
+          if (inSet.contains(vector[i])) {
             sel[newSize++] = i;
           }
         }
@@ -112,7 +112,7 @@ public class FilterDecimalColumnInList extends VectorExpression implements IDeci
         //All must be selected otherwise size would be zero
         //Repeating property will not change.
         if (!nullPos[0]) {
-          if (!inSet.contains(vector[0].getHiveDecimal())) {
+          if (!inSet.contains(vector[0])) {
 
             //Entire batch is filtered out.
             batch.size = 0;
@@ -125,7 +125,7 @@ public class FilterDecimalColumnInList extends VectorExpression implements IDeci
         for(int j = 0; j != n; j++) {
           int i = sel[j];
           if (!nullPos[i]) {
-           if (inSet.contains(vector[i].getHiveDecimal())) {
+           if (inSet.contains(vector[i])) {
              sel[newSize++] = i;
            }
           }
@@ -137,7 +137,7 @@ public class FilterDecimalColumnInList extends VectorExpression implements IDeci
         int newSize = 0;
         for(int i = 0; i != n; i++) {
           if (!nullPos[i]) {
-            if (inSet.contains(vector[i].getHiveDecimal())) {
+            if (inSet.contains(vector[i])) {
               sel[newSize++] = i;
             }
           }

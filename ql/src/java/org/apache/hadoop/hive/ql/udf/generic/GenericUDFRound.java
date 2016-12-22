@@ -201,12 +201,12 @@ public class GenericUDFRound extends GenericUDF {
     case VOID:
       return null;
     case DECIMAL:
-      HiveDecimalWritable decimalWritable = (HiveDecimalWritable) inputOI.getPrimitiveWritableObject(input);
-      HiveDecimal dec = round(decimalWritable.getHiveDecimal(), scale);
-      if (dec == null) {
-        return null;
+      {
+        // The getPrimitiveWritableObject method returns a new writable.
+        HiveDecimalWritable decimalWritable = (HiveDecimalWritable) inputOI.getPrimitiveWritableObject(input);
+        // Call the different round flavor.
+        return round(decimalWritable, scale);
       }
-      return new HiveDecimalWritable(dec);
     case BYTE:
       ByteWritable byteWritable = (ByteWritable)inputOI.getPrimitiveWritableObject(input);
       if (scale >= 0) {
@@ -255,8 +255,10 @@ public class GenericUDFRound extends GenericUDF {
     }
   }
 
-  protected HiveDecimal round(HiveDecimal input, int scale) {
-    return RoundUtils.round(input, scale);
+  protected HiveDecimalWritable round(HiveDecimalWritable inputDecWritable, int scale) {
+    HiveDecimalWritable result = new HiveDecimalWritable(inputDecWritable);
+    result.mutateSetScale(scale, HiveDecimal.ROUND_HALF_UP);
+    return result;
   }
 
   protected long round(long input, int scale) {

@@ -310,8 +310,9 @@ public class VectorExtractRow {
             return primitiveWritable;
           }
         case DECIMAL:
+          // The HiveDecimalWritable set method will quickly copy the deserialized decimal writable fields.
           ((HiveDecimalWritable) primitiveWritable).set(
-              ((DecimalColumnVector) batch.cols[projectionColumnNum]).vector[adjustedIndex].getHiveDecimal());
+              ((DecimalColumnVector) batch.cols[projectionColumnNum]).vector[adjustedIndex]);
           return primitiveWritable;
         case INTERVAL_YEAR_MONTH:
           ((HiveIntervalYearMonthWritable) primitiveWritable).set(
