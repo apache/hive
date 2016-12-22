@@ -49,7 +49,7 @@ class DummyTxnManager extends HiveTxnManagerImpl {
   private HiveLockManager lockMgr;
 
   @Override
-  public long openTxn(String user) throws LockException {
+  public long openTxn(Context ctx, String user) throws LockException {
     // No-op
     return 0L;
   }

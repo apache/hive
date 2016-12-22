@@ -1102,7 +1102,7 @@ public class Driver implements CommandProcessor {
           throw new RuntimeException("Already have an open transaction txnid:" + txnMgr.getCurrentTxnId());
         }
         // We are writing to tables in an ACID compliant way, so we need to open a transaction
-        txnMgr.openTxn(userFromUGI);
+        txnMgr.openTxn(ctx, userFromUGI);
         initiatingTransaction = true;
       }
       else {
