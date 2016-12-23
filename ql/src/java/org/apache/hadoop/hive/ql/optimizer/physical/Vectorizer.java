@@ -2501,6 +2501,7 @@ public class Vectorizer implements PhysicalPlanResolver {
       case EXTRACT:
       case EVENT:
       case HASHTABLESINK:
+      case SPARKPRUNINGSINK:
         vectorOp = OperatorFactory.getVectorOperator(
             op.getCompilationOpContext(), op.getConf(), vContext);
         break;

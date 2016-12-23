@@ -30,11 +30,9 @@ POSTHOOK: Output: default@a1
 POSTHOOK: Output: default@a1@end_dt=20161021
 PREHOOK: query: insert into table a1 partition(END_DT='20161020') values('2000721360','20161001')
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__1
 PREHOOK: Output: default@a1@end_dt=20161020
 POSTHOOK: query: insert into table a1 partition(END_DT='20161020') values('2000721360','20161001')
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__1
 POSTHOOK: Output: default@a1@end_dt=20161020
 POSTHOOK: Lineage: a1 PARTITION(end_dt=20161020).kehhao SIMPLE [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 POSTHOOK: Lineage: a1 PARTITION(end_dt=20161020).start_dt SIMPLE [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
