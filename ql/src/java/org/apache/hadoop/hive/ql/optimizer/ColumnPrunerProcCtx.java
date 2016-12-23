@@ -39,8 +39,10 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeFieldDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.SelectDesc;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFIndex;
 
 import static org.apache.hadoop.hive.ql.optimizer.FieldNode.mergeFieldNodes;
 
@@ -242,10 +244,24 @@ public class ColumnPrunerProcCtx implements NodeProcessorCtx {
       p.addFieldNodes(pathToRoot);
       paths.add(p);
     } else if (desc instanceof ExprNodeFieldDesc) {
-      String f = ((ExprNodeFieldDesc) desc).getFieldName();
+      ExprNodeFieldDesc fieldDesc = (ExprNodeFieldDesc) desc;
+      ExprNodeDesc childDesc = fieldDesc.getDesc();
+
+      // Check cases for arr[i].f and map[key].v
+      // For these we should not generate paths like arr.f or map.v
+      // Otherwise we would have a mismatch between type info and path
+      if (childDesc instanceof ExprNodeGenericFuncDesc) {
+        ExprNodeGenericFuncDesc funcDesc = (ExprNodeGenericFuncDesc) childDesc;
+        if (funcDesc.getGenericUDF() instanceof GenericUDFIndex) {
+          getNestedColsFromExprNodeDesc(funcDesc, pathToRoot, paths);
+          return;
+        }
+      }
+
+      String f = fieldDesc.getFieldName();
       FieldNode p = new FieldNode(f);
       p.addFieldNodes(pathToRoot);
-      getNestedColsFromExprNodeDesc(((ExprNodeFieldDesc) desc).getDesc(), p, paths);
+      getNestedColsFromExprNodeDesc(childDesc, p, paths);
     } else {
       List<ExprNodeDesc> children = desc.getChildren();
       if (children == null || children.isEmpty()) {

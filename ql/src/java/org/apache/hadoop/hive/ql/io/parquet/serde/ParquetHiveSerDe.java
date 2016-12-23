@@ -217,7 +217,7 @@ public class ParquetHiveSerDe extends AbstractSerDe {
 
   private static void pruneFromSinglePath(PrunedStructTypeInfo prunedInfo, String path) {
     Preconditions.checkArgument(prunedInfo != null,
-      "PrunedStructTypeInfo for path " + path + " should not be null");
+      "PrunedStructTypeInfo for path '" + path + "' should not be null");
 
     int index = path.indexOf('.');
     if (index < 0) {
