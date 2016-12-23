@@ -128,7 +128,7 @@ public class GenericUDFTrunc extends GenericUDF {
       } else {
         throw new UDFArgumentException(
             "Only primitive type arguments are accepted, when arguments length is one, got "
-                + arguments[1].getTypeName());
+                + arguments[0].getTypeName());
       }
     }
     throw new UDFArgumentException("TRUNC requires one or two argument, got " + arguments.length);
