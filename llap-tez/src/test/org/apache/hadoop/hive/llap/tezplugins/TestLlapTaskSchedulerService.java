@@ -456,6 +456,62 @@ public class TestLlapTaskSchedulerService {
     }
   }
 
+  @Test(timeout = 10000000)
+  public void testFallbackAllocationOrderedNext() throws IOException, InterruptedException {
+    Priority priority1 = Priority.newInstance(1);
+
+    String[] hostsKnown = new String[]{HOST1, HOST2};
+    String[] hostsUnknown = new String[]{HOST3};
+    String[] noHosts = new String[]{};
+
+    TestTaskSchedulerServiceWrapper tsWrapper =
+      new TestTaskSchedulerServiceWrapper(2000, hostsKnown, 1, 1, -1l);
+    try {
+      Object task1 = "task1";
+      Object clientCookie1 = "cookie1";
+
+      Object task2 = "task2";
+      Object clientCookie2 = "cookie2";
+
+      Object task3 = "task3";
+      Object clientCookie3 = "cookie3";
+
+      tsWrapper.controlScheduler(true);
+      tsWrapper.allocateTask(task1, hostsUnknown, priority1, clientCookie1);
+      tsWrapper.allocateTask(task2, hostsKnown, priority1, clientCookie2);
+      tsWrapper.allocateTask(task3, noHosts, priority1, clientCookie3);
+
+      while (true) {
+        tsWrapper.signalSchedulerRun();
+        tsWrapper.awaitSchedulerRun();
+        if (tsWrapper.ts.dagStats.numTotalAllocations == 3) {
+          break;
+        }
+      }
+
+      ArgumentCaptor<Object> argumentCaptor = ArgumentCaptor.forClass(Object.class);
+      ArgumentCaptor<Container> argumentCaptor2 = ArgumentCaptor.forClass(Container.class);
+      verify(tsWrapper.mockAppCallback, times(3))
+        .taskAllocated(argumentCaptor.capture(), any(Object.class), argumentCaptor2.capture());
+      assertEquals(3, argumentCaptor.getAllValues().size());
+      assertEquals(task1, argumentCaptor.getAllValues().get(0));
+      // 1st task provided unknown host location, it should be assigned first host
+      assertEquals(hostsKnown[0], argumentCaptor2.getAllValues().get(0).getNodeId().getHost());
+      assertEquals(task2, argumentCaptor.getAllValues().get(1));
+      // 2nd task provided host1 as location preference, it should be assigned host1 as it has capacity
+      assertEquals(hostsKnown[0], argumentCaptor2.getAllValues().get(1).getNodeId().getHost());
+      assertEquals(task3, argumentCaptor.getAllValues().get(2));
+      // 3rd task provided no location preference, it is tried with host1 but it is full, so gets assigned host2
+      assertEquals(hostsKnown[1], argumentCaptor2.getAllValues().get(2).getNodeId().getHost());
+
+      assertEquals(1, tsWrapper.ts.dagStats.numAllocationsNoLocalityRequest);
+      assertEquals(1, tsWrapper.ts.dagStats.numLocalAllocations);
+      assertEquals(1, tsWrapper.ts.dagStats.numNonLocalAllocations);
+    } finally {
+      tsWrapper.shutdown();
+    }
+  }
+
   @Test(timeout = 10000)
   public void testForcedLocalityPreemption() throws IOException, InterruptedException {
     Priority priority1 = Priority.newInstance(1);
