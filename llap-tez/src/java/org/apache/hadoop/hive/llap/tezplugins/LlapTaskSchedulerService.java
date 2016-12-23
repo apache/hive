@@ -782,27 +782,60 @@ public class LlapTaskSchedulerService extends TaskScheduler {
           }
         }
       }
-      /* fall through - miss in locality (random scheduling) or no locality-requested */
-      Collection<ServiceInstance> instances = activeInstances.getAll();
-      ArrayList<NodeInfo> all = new ArrayList<>(instances.size());
+
+      /* fall through - miss in locality or no locality-requested */
+      Collection<ServiceInstance> instances = activeInstances.getAllInstancesOrdered(true);
+      ArrayList<NodeInfo> allNodes = new ArrayList<>(instances.size());
       for (ServiceInstance inst : instances) {
         NodeInfo nodeInfo = instanceToNodeMap.get(inst.getWorkerIdentity());
-        if (nodeInfo != null && nodeInfo.canAcceptTask()) {
-          all.add(nodeInfo);
+        if (nodeInfo != null) {
+          allNodes.add(nodeInfo);
         }
       }
-      if (LOG.isDebugEnabled()) {
-        LOG.debug("Attempting random allocation for task={}", request.task);
-      }
-      if (all.isEmpty()) {
-        return SELECT_HOST_RESULT_DELAYED_RESOURCES;
-      }
-      NodeInfo randomNode = all.get(random.nextInt(all.size()));
-      LOG.info("Assigning " + randomNode.toShortString()
-          + " when looking for any host, from #hosts=" + all.size() + ", requestedHosts="
-          + ((requestedHosts == null || requestedHosts.length == 0)
+
+      if (requestedHosts == null || requestedHosts.length == 0) {
+        // no locality-requested, iterate the available hosts in consistent order from the beginning
+        if (LOG.isDebugEnabled()) {
+          LOG.debug("No-locality requested. Attempting to allocate next available host for task={}", request.task);
+        }
+        for (NodeInfo nodeInfo : allNodes) {
+          if (nodeInfo.canAcceptTask()) {
+            LOG.info("Assigning " + nodeInfo.toShortString()
+              + " when looking for any host, from #hosts=" + allNodes.size() + ", requestedHosts="
+              + ((requestedHosts == null || requestedHosts.length == 0)
               ? "null" : Arrays.toString(requestedHosts)));
-      return new SelectHostResult(randomNode);
+            return new SelectHostResult(nodeInfo);
+          }
+        }
+      } else {
+        // miss in locality request, try the next available host that can accept tasks (assume the consistent instances
+        // list as a ring) from the index of first requested host
+        final String firstRequestedHost = requestedHosts[0];
+        if (LOG.isDebugEnabled()) {
+          LOG.debug("Locality miss. Attempting to allocate next available host from first requested host({}) for " +
+            "task={}", firstRequestedHost, request.task);
+        }
+        int requestedHostIdx = -1;
+        for (int i = 0; i < allNodes.size(); i++) {
+          if (allNodes.get(i).getHost().equals(firstRequestedHost)) {
+            requestedHostIdx = i;
+            break;
+          }
+        }
+
+        for (int i = 0; i < allNodes.size(); i++) {
+          NodeInfo nodeInfo = allNodes.get((i + requestedHostIdx + 1) % allNodes.size());
+          if (nodeInfo.canAcceptTask()) {
+            LOG.info("Assigning " + nodeInfo.toShortString()
+              + " when looking for first requested host, from #hosts=" + allNodes.size() + ", requestedHosts="
+              + ((requestedHosts == null || requestedHosts.length == 0)
+              ? "null" : Arrays.toString(requestedHosts)));
+            return new SelectHostResult(nodeInfo);
+          }
+        }
+      }
+
+      return SELECT_HOST_RESULT_DELAYED_RESOURCES;
     } finally {
       readLock.unlock();
     }
