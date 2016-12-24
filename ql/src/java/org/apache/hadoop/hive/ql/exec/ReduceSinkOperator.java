@@ -244,7 +244,7 @@ public class ReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
 
       if (limit >= 0 && memUsage > 0) {
         reducerHash = conf.isPTFReduceSink() ? new PTFTopNHash() : new TopNHash();
-        reducerHash.initialize(limit, memUsage, conf.isMapGroupBy(), this);
+        reducerHash.initialize(limit, memUsage, conf.isMapGroupBy(), this, conf, hconf);
       }
 
       useUniformHash = conf.getReducerTraits().contains(UNIFORM);

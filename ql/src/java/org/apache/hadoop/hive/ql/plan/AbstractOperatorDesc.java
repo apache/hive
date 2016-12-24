@@ -31,6 +31,7 @@ public class AbstractOperatorDesc implements OperatorDesc {
   protected transient OpTraits opTraits;
   protected transient Map<String, String> opProps;
   protected long memNeeded = 0;
+  protected long memAvailable = 0;
 
   @Override
   @Explain(skipHeader = true, displayName = "Statistics")
@@ -89,4 +90,15 @@ public class AbstractOperatorDesc implements OperatorDesc {
   public void setMemoryNeeded(long memNeeded) {
     this.memNeeded = memNeeded;
   }
+
+  @Override
+  public long getMaxMemoryAvailable() {
+    return memAvailable;
+  }
+
+  @Override
+  public void setMaxMemoryAvailable(final long memoryAvailble) {
+    this.memAvailable = memoryAvailble;
+  }
+
 }

@@ -27,6 +27,7 @@ import java.util.Map.Entry;
 import java.util.TreeMap;
 import java.util.concurrent.Callable;
 
+import org.apache.hadoop.hive.llap.LlapUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -161,6 +162,13 @@ public class ReduceRecordProcessor  extends RecordProcessor{
     reducer = reduceWork.getReducer();
     // Check immediately after reducer is assigned, in cae the abort came in during
     checkAbortCondition();
+    // set memory available for operators
+    long memoryAvailableToTask = processorContext.getTotalMemoryAvailableToTask();
+    if (reducer.getConf() != null) {
+      reducer.getConf().setMaxMemoryAvailable(memoryAvailableToTask);
+      l4j.info("Memory available for operators set to {}", LlapUtil.humanReadableByteCount(memoryAvailableToTask));
+    }
+    OperatorUtils.setMemoryAvailable(reducer.getChildOperators(), memoryAvailableToTask);
     if (numTags > 1) {
       sources = new ReduceRecordSource[numTags];
       mainWorkOIs = new ObjectInspector[numTags];
@@ -199,6 +207,7 @@ public class ReduceRecordProcessor  extends RecordProcessor{
     checkAbortCondition();
 
     reducer = reduceWork.getReducer();
+
     // initialize reduce operator tree
     try {
       l4j.info(reducer.dump(0));
