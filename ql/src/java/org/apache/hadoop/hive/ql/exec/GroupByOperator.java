@@ -63,6 +63,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.IntWritable;
+import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 
 import javolution.util.FastBitSet;
@@ -145,6 +146,10 @@ public class GroupByOperator extends Operator<GroupByDesc> {
 
   private transient int countAfterReport;   // report or forward
   private transient int heartbeatInterval;
+
+  private transient boolean isTez;
+  private transient boolean isLlap;
+  private transient int numExecutors;
 
   /**
    * Total amount of memory allowed for JVM heap.
@@ -391,17 +396,20 @@ public class GroupByOperator extends Operator<GroupByDesc> {
       new KeyWrapperFactory(keyFields, keyObjectInspectors, currentKeyObjectInspectors);
 
     newKeys = keyWrapperFactory.getKeyWrapper();
-
+    isTez = HiveConf.getVar(hconf, HiveConf.ConfVars.HIVE_EXECUTION_ENGINE).equals("tez");
+    isLlap = isTez && HiveConf.getVar(hconf, HiveConf.ConfVars.HIVE_EXECUTION_MODE).equals("llap");
+    numExecutors = isLlap ? HiveConf.getIntVar(hconf, HiveConf.ConfVars.LLAP_DAEMON_NUM_EXECUTORS) : 1;
     firstRow = true;
     // estimate the number of hash table entries based on the size of each
     // entry. Since the size of a entry
     // is not known, estimate that based on the number of entries
     if (hashAggr) {
-      computeMaxEntriesHashAggr(hconf);
+      computeMaxEntriesHashAggr();
     }
     memoryMXBean = ManagementFactory.getMemoryMXBean();
-    maxMemory = memoryMXBean.getHeapMemoryUsage().getMax();
+    maxMemory = isTez ? getConf().getMaxMemoryAvailable() : memoryMXBean.getHeapMemoryUsage().getMax();
     memoryThreshold = this.getConf().getMemoryThreshold();
+    LOG.info("isTez: {} isLlap: {} numExecutors: {} maxMemory: {}", isTez, isLlap, numExecutors, maxMemory);
   }
 
   /**
@@ -413,9 +421,14 @@ public class GroupByOperator extends Operator<GroupByDesc> {
    * @return number of entries that can fit in hash table - useful for map-side
    *         aggregation only
    **/
-  private void computeMaxEntriesHashAggr(Configuration hconf) throws HiveException {
+  private void computeMaxEntriesHashAggr() throws HiveException {
     float memoryPercentage = this.getConf().getGroupByMemoryUsage();
-    maxHashTblMemory = (long) (memoryPercentage * Runtime.getRuntime().maxMemory());
+    if (isTez) {
+      maxHashTblMemory = (long) (memoryPercentage * getConf().getMaxMemoryAvailable());
+    } else {
+      maxHashTblMemory = (long) (memoryPercentage * Runtime.getRuntime().maxMemory());
+    }
+    LOG.info("Max hash table memory: {} bytes", maxHashTblMemory);
     estimateRowSize();
   }
 
@@ -875,6 +888,9 @@ public class GroupByOperator extends Operator<GroupByDesc> {
     if ((numEntriesHashTable == 0) || ((numEntries % NUMROWSESTIMATESIZE) == 0)) {
       //check how much memory left memory
       usedMemory = memoryMXBean.getHeapMemoryUsage().getUsed();
+      // TODO: there is no easy and reliable way to compute the memory used by the executor threads and on-heap cache.
+      // Assuming the used memory is equally divided among all executors.
+      usedMemory = isLlap ? usedMemory / numExecutors : usedMemory;
       rate = (float) usedMemory / (float) maxMemory;
       if(rate > memoryThreshold){
         return true;
@@ -957,7 +973,6 @@ public class GroupByOperator extends Operator<GroupByDesc> {
    * @throws HiveException
    */
   private void flushHashTable(boolean complete) throws HiveException {
-
     countAfterReport = 0;
 
     // Currently, the algorithm flushes 10% of the entries - this can be
@@ -973,7 +988,7 @@ public class GroupByOperator extends Operator<GroupByDesc> {
       hashAggregations.clear();
       hashAggregations = null;
       if (isLogInfoEnabled) {
-	LOG.info("Hash Table completed flushed");
+        LOG.info("Hash Table completed flushed");
       }
       return;
     }
@@ -991,9 +1006,9 @@ public class GroupByOperator extends Operator<GroupByDesc> {
       iter.remove();
       numDel++;
       if (numDel * 10 >= oldSize) {
-	if (isLogInfoEnabled) {
-	  LOG.info("Hash Table flushed: new size = " + hashAggregations.size());
-	}
+        if (isLogInfoEnabled) {
+          LOG.info("Hash Table flushed: new size = " + hashAggregations.size());
+        }
         return;
       }
     }

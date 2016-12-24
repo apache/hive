@@ -29,6 +29,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.Callable;
 
+import org.apache.hadoop.hive.llap.LlapUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -193,6 +194,7 @@ public class MapRecordProcessor extends RecordProcessor {
       } else {
         mapOp = new MapOperator(runtimeCtx);
       }
+
       // Not synchronizing creation of mapOp with an invocation. Check immediately
       // after creation in case abort has been set.
       // Relying on the regular flow to clean up the actual operator. i.e. If an exception is
@@ -282,6 +284,14 @@ public class MapRecordProcessor extends RecordProcessor {
       mapOp.setChildren(jconf);
       mapOp.passExecContext(execContext);
       l4j.info(mapOp.dump(0));
+
+      // set memory available for operators
+      long memoryAvailableToTask = processorContext.getTotalMemoryAvailableToTask();
+      if (mapOp.getConf() != null) {
+        mapOp.getConf().setMaxMemoryAvailable(memoryAvailableToTask);
+        l4j.info("Memory available for operators set to {}", LlapUtil.humanReadableByteCount(memoryAvailableToTask));
+      }
+      OperatorUtils.setMemoryAvailable(mapOp.getChildOperators(), memoryAvailableToTask);
 
       mapOp.initializeLocalWork(jconf);
 
