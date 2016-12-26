@@ -18,11 +18,11 @@
 
 package org.apache.hive.service.cli;
 
-import java.util.List;
-import java.util.Map;
-
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hive.service.auth.HiveAuthFactory;
+
+import java.util.List;
+import java.util.Map;
 
 
 /**
@@ -225,5 +225,10 @@ public class EmbeddedCLIServiceClient extends CLIServiceClient {
 		throws HiveSQLException {
     return cliService.getCrossReference(sessionHandle, primaryCatalog, primarySchema,
       primaryTable, foreignCatalog, foreignSchema, foreignTable);
+  }
+
+  @Override
+  public JobProgressUpdate progressUpdate(OperationHandle operationHandle) throws HiveSQLException {
+    return cliService.progressUpdate(operationHandle);
   }
 }

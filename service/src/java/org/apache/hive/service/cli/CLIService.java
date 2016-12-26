@@ -18,20 +18,12 @@
 
 package org.apache.hive.service.cli;
 
-import java.io.IOException;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.CancellationException;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
-
-import javax.security.auth.login.LoginException;
-
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
+import org.apache.hadoop.hive.ql.exec.tez.TezSessionState;
+import org.apache.hadoop.hive.ql.log.ProgressMonitor;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.session.SessionState;
@@ -41,11 +33,21 @@ import org.apache.hive.service.CompositeService;
 import org.apache.hive.service.ServiceException;
 import org.apache.hive.service.auth.HiveAuthFactory;
 import org.apache.hive.service.cli.operation.Operation;
+import org.apache.hive.service.cli.session.HiveSession;
 import org.apache.hive.service.cli.session.SessionManager;
 import org.apache.hive.service.rpc.thrift.TProtocolVersion;
 import org.apache.hive.service.server.HiveServer2;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.security.auth.login.LoginException;
+import java.io.IOException;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.CancellationException;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 /**
  * CLIService.
@@ -410,13 +412,27 @@ public class CLIService extends CompositeService implements ICLIService {
 	      String foreignSchema, String foreignTable)
           throws HiveSQLException {
     OperationHandle opHandle = sessionManager.getSession(sessionHandle)
-        .getCrossReference(primaryCatalog, primarySchema, primaryTable, 
+        .getCrossReference(primaryCatalog, primarySchema, primaryTable,
          foreignCatalog,
          foreignSchema, foreignTable);
     LOG.debug(sessionHandle + ": getCrossReference()");
     return opHandle;
   }
-  
+
+  @Override
+  public JobProgressUpdate progressUpdate(OperationHandle operationHandle) throws HiveSQLException {
+    HiveSession parentSession = sessionManager.getOperationManager().getOperation(operationHandle)
+        .getParentSession();
+    if ("tez".equals(hiveConf.getVar(ConfVars.HIVE_EXECUTION_ENGINE))) {
+      TezSessionState tezSession = parentSession.getSessionState().getTezSession();
+      if (tezSession != null) {
+        ProgressMonitor monitor = tezSession.monitor();
+        return new JobProgressUpdate(monitor);
+      }
+    }
+    return new JobProgressUpdate(ProgressMonitor.NULL);
+  }
+
   /* (non-Javadoc)
    * @see org.apache.hive.service.cli.ICLIService#getOperationStatus(org.apache.hive.service.cli.OperationHandle)
    */

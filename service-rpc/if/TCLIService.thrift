@@ -1202,6 +1202,31 @@ struct TRenewDelegationTokenResp {
   1: required TStatus status
 }
 
+struct TProgressUpdateReq {
+  // Operation against which to get the progress bar update
+  1: required TOperationHandle operationHandle
+}
+
+enum TJobExecutionStatus {
+    SUBMITTED,
+    INITING,
+    RUNNING,
+    SUCCEEDED,
+    KILLED,
+    FAILED,
+    ERROR,
+    NOT_AVAILABLE
+}
+
+struct TProgressUpdateResp {
+  1: required list<string> headerNames
+  2: required list<list<string>> rows
+  3: required double progressedPercentage
+  4: required TJobExecutionStatus status
+  5: required string footerSummary
+  6: required i64 startTime
+}
+
 service TCLIService {
 
   TOpenSessionResp OpenSession(1:TOpenSessionReq req);
@@ -1245,4 +1270,6 @@ service TCLIService {
   TCancelDelegationTokenResp CancelDelegationToken(1:TCancelDelegationTokenReq req);
 
   TRenewDelegationTokenResp RenewDelegationToken(1:TRenewDelegationTokenReq req);
+
+  TProgressUpdateResp GetProgressUpdate(1:TProgressUpdateReq req);
 }
