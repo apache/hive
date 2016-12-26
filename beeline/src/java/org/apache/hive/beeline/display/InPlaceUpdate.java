@@ -51,7 +51,7 @@ public class InPlaceUpdate {
    */
   private void reprintLineWithColorAsBold(String line, Ansi.Color color) {
     out.print(ansi().eraseLine(Ansi.Erase.ALL).fg(color).bold().a(line).a('\n').boldOff().reset()
-        .toString());
+      .toString());
     out.flush();
     lines++;
   }
@@ -102,6 +102,7 @@ public class InPlaceUpdate {
   }
 
   public void render(TProgressUpdateResp progressResponse) {
+    if (progressResponse == null) return;
     // position the cursor to line 0
     repositionCursor();
 
@@ -111,7 +112,7 @@ public class InPlaceUpdate {
     // -------------------------------------------------------------------------------
     reprintLine(SEPARATOR);
     reprintLineWithColorAsBold(String.format(HEADER_FORMAT, progressResponse.getHeaderNames().toArray()),
-        Ansi.Color.CYAN);
+      Ansi.Color.CYAN);
     reprintLine(SEPARATOR);
 
 
@@ -132,11 +133,11 @@ public class InPlaceUpdate {
     float et = (float) (System.currentTimeMillis() - progressResponse.getStartTime()) / (float) 1000;
     String elapsedTime = "ELAPSED TIME: " + secondsFormatter.format(et) + " s";
     String footer = String.format(
-        FOOTER_FORMAT,
-        progressResponse.getFooterSummary(),
-        getInPlaceProgressBar(progressResponse.getProgressedPercentage()),
-        progressStr,
-        elapsedTime);
+      FOOTER_FORMAT,
+      progressResponse.getFooterSummary(),
+      getInPlaceProgressBar(progressResponse.getProgressedPercentage()),
+      progressStr,
+      elapsedTime);
 
     reprintLineWithColorAsBold(footer, Ansi.Color.RED);
     reprintLine(SEPARATOR);

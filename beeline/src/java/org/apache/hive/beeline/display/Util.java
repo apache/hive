@@ -38,7 +38,7 @@ public class Util {
     return true;
   }
 
-  public static boolean canDisplayInPlace() {
+  public static boolean canRenderInPlace() {
     // we need at least 80 chars wide terminal to display in-place updates properly
     return isUnixTerminal() && TerminalFactory.get().getWidth() >= MIN_TERMINAL_WIDTH;
   }
