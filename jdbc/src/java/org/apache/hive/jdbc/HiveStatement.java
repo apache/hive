@@ -935,6 +935,7 @@ public class HiveStatement implements java.sql.Statement {
   }
 
   public TProgressUpdateResp getProgressResponse() throws SQLException {
+    if(stmtHandle == null) return null;
     try {
       return client.GetProgressUpdate(new TProgressUpdateReq(stmtHandle));
     } catch (TException e) {

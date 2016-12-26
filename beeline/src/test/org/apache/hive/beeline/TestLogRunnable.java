@@ -10,6 +10,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.powermock.core.classloader.annotations.PowerMockIgnore;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
@@ -38,14 +39,14 @@ public class TestLogRunnable {
   @Before
   public void setup() {
     mockStatic(Util.class);
-    when(Util.canDisplayInPlace()).thenReturn(true);
-    logRunnable = new Commands.LogRunnable(commands, hiveStatement);
+    when(Util.canRenderInPlace()).thenReturn(true);
+    logRunnable = new Commands.LogRunnable(commands, hiveStatement, 0L);
   }
 
   @After
   public void assertStatic() {
     verifyStatic();
-    Util.canDisplayInPlace();
+    Util.canRenderInPlace();
   }
 
   @Test
@@ -67,5 +68,20 @@ public class TestLogRunnable {
     verify(inplaceUpdate).render(any(TProgressUpdateResp.class));
   }
 
+  @Test
+  public void shouldNotTryToRenderWhenJobStatusIsNotAvailable() throws Exception {
+    when(hiveStatement.hasMoreLogs()).thenReturn(true).thenReturn(false);
+    when(hiveStatement.getProgressResponse()).thenReturn(new TProgressUpdateResp(
+      Collections.<String>emptyList(), Collections.<List<String>>emptyList(),
+      0.0D,
+      TJobExecutionStatus.NOT_AVAILABLE,
+      "", 0L));
 
-}
+    logRunnable.run();
+
+    verify(hiveStatement, times(2)).hasMoreLogs();
+    verify(hiveStatement).getProgressResponse();
+    verifyNoMoreInteractions(hiveStatement);
+    Mockito.verifyZeroInteractions(inplaceUpdate);
+  }
+ }
