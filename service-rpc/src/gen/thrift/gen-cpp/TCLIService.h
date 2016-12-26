@@ -42,6 +42,7 @@ class TCLIServiceIf {
   virtual void GetDelegationToken(TGetDelegationTokenResp& _return, const TGetDelegationTokenReq& req) = 0;
   virtual void CancelDelegationToken(TCancelDelegationTokenResp& _return, const TCancelDelegationTokenReq& req) = 0;
   virtual void RenewDelegationToken(TRenewDelegationTokenResp& _return, const TRenewDelegationTokenReq& req) = 0;
+  virtual void GetProgressUpdate(TProgressUpdateResp& _return, const TProgressUpdateReq& req) = 0;
 };
 
 class TCLIServiceIfFactory {
@@ -132,6 +133,9 @@ class TCLIServiceNull : virtual public TCLIServiceIf {
     return;
   }
   void RenewDelegationToken(TRenewDelegationTokenResp& /* _return */, const TRenewDelegationTokenReq& /* req */) {
+    return;
+  }
+  void GetProgressUpdate(TProgressUpdateResp& /* _return */, const TProgressUpdateReq& /* req */) {
     return;
   }
 };
@@ -2320,6 +2324,110 @@ class TCLIService_RenewDelegationToken_presult {
 
 };
 
+typedef struct _TCLIService_GetProgressUpdate_args__isset {
+  _TCLIService_GetProgressUpdate_args__isset() : req(false) {}
+  bool req :1;
+} _TCLIService_GetProgressUpdate_args__isset;
+
+class TCLIService_GetProgressUpdate_args {
+ public:
+
+  TCLIService_GetProgressUpdate_args(const TCLIService_GetProgressUpdate_args&);
+  TCLIService_GetProgressUpdate_args& operator=(const TCLIService_GetProgressUpdate_args&);
+  TCLIService_GetProgressUpdate_args() {
+  }
+
+  virtual ~TCLIService_GetProgressUpdate_args() throw();
+  TProgressUpdateReq req;
+
+  _TCLIService_GetProgressUpdate_args__isset __isset;
+
+  void __set_req(const TProgressUpdateReq& val);
+
+  bool operator == (const TCLIService_GetProgressUpdate_args & rhs) const
+  {
+    if (!(req == rhs.req))
+      return false;
+    return true;
+  }
+  bool operator != (const TCLIService_GetProgressUpdate_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const TCLIService_GetProgressUpdate_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class TCLIService_GetProgressUpdate_pargs {
+ public:
+
+
+  virtual ~TCLIService_GetProgressUpdate_pargs() throw();
+  const TProgressUpdateReq* req;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _TCLIService_GetProgressUpdate_result__isset {
+  _TCLIService_GetProgressUpdate_result__isset() : success(false) {}
+  bool success :1;
+} _TCLIService_GetProgressUpdate_result__isset;
+
+class TCLIService_GetProgressUpdate_result {
+ public:
+
+  TCLIService_GetProgressUpdate_result(const TCLIService_GetProgressUpdate_result&);
+  TCLIService_GetProgressUpdate_result& operator=(const TCLIService_GetProgressUpdate_result&);
+  TCLIService_GetProgressUpdate_result() {
+  }
+
+  virtual ~TCLIService_GetProgressUpdate_result() throw();
+  TProgressUpdateResp success;
+
+  _TCLIService_GetProgressUpdate_result__isset __isset;
+
+  void __set_success(const TProgressUpdateResp& val);
+
+  bool operator == (const TCLIService_GetProgressUpdate_result & rhs) const
+  {
+    if (!(success == rhs.success))
+      return false;
+    return true;
+  }
+  bool operator != (const TCLIService_GetProgressUpdate_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const TCLIService_GetProgressUpdate_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _TCLIService_GetProgressUpdate_presult__isset {
+  _TCLIService_GetProgressUpdate_presult__isset() : success(false) {}
+  bool success :1;
+} _TCLIService_GetProgressUpdate_presult__isset;
+
+class TCLIService_GetProgressUpdate_presult {
+ public:
+
+
+  virtual ~TCLIService_GetProgressUpdate_presult() throw();
+  TProgressUpdateResp* success;
+
+  _TCLIService_GetProgressUpdate_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
 class TCLIServiceClient : virtual public TCLIServiceIf {
  public:
   TCLIServiceClient(boost::shared_ptr< ::apache::thrift::protocol::TProtocol> prot) {
@@ -2408,6 +2516,9 @@ class TCLIServiceClient : virtual public TCLIServiceIf {
   void RenewDelegationToken(TRenewDelegationTokenResp& _return, const TRenewDelegationTokenReq& req);
   void send_RenewDelegationToken(const TRenewDelegationTokenReq& req);
   void recv_RenewDelegationToken(TRenewDelegationTokenResp& _return);
+  void GetProgressUpdate(TProgressUpdateResp& _return, const TProgressUpdateReq& req);
+  void send_GetProgressUpdate(const TProgressUpdateReq& req);
+  void recv_GetProgressUpdate(TProgressUpdateResp& _return);
  protected:
   boost::shared_ptr< ::apache::thrift::protocol::TProtocol> piprot_;
   boost::shared_ptr< ::apache::thrift::protocol::TProtocol> poprot_;
@@ -2444,6 +2555,7 @@ class TCLIServiceProcessor : public ::apache::thrift::TDispatchProcessor {
   void process_GetDelegationToken(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_CancelDelegationToken(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_RenewDelegationToken(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_GetProgressUpdate(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
  public:
   TCLIServiceProcessor(boost::shared_ptr<TCLIServiceIf> iface) :
     iface_(iface) {
@@ -2468,6 +2580,7 @@ class TCLIServiceProcessor : public ::apache::thrift::TDispatchProcessor {
     processMap_["GetDelegationToken"] = &TCLIServiceProcessor::process_GetDelegationToken;
     processMap_["CancelDelegationToken"] = &TCLIServiceProcessor::process_CancelDelegationToken;
     processMap_["RenewDelegationToken"] = &TCLIServiceProcessor::process_RenewDelegationToken;
+    processMap_["GetProgressUpdate"] = &TCLIServiceProcessor::process_GetProgressUpdate;
   }
 
   virtual ~TCLIServiceProcessor() {}
@@ -2706,6 +2819,16 @@ class TCLIServiceMultiface : virtual public TCLIServiceIf {
     return;
   }
 
+  void GetProgressUpdate(TProgressUpdateResp& _return, const TProgressUpdateReq& req) {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->GetProgressUpdate(_return, req);
+    }
+    ifaces_[i]->GetProgressUpdate(_return, req);
+    return;
+  }
+
 };
 
 // The 'concurrent' client is a thread safe client that correctly handles
@@ -2799,6 +2922,9 @@ class TCLIServiceConcurrentClient : virtual public TCLIServiceIf {
   void RenewDelegationToken(TRenewDelegationTokenResp& _return, const TRenewDelegationTokenReq& req);
   int32_t send_RenewDelegationToken(const TRenewDelegationTokenReq& req);
   void recv_RenewDelegationToken(TRenewDelegationTokenResp& _return, const int32_t seqid);
+  void GetProgressUpdate(TProgressUpdateResp& _return, const TProgressUpdateReq& req);
+  int32_t send_GetProgressUpdate(const TProgressUpdateReq& req);
+  void recv_GetProgressUpdate(TProgressUpdateResp& _return, const int32_t seqid);
  protected:
   boost::shared_ptr< ::apache::thrift::protocol::TProtocol> piprot_;
   boost::shared_ptr< ::apache::thrift::protocol::TProtocol> poprot_;

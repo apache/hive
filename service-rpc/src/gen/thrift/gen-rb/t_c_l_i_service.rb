@@ -326,6 +326,21 @@ module TCLIService
       raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'RenewDelegationToken failed: unknown result')
     end
 
+    def GetProgressUpdate(req)
+      send_GetProgressUpdate(req)
+      return recv_GetProgressUpdate()
+    end
+
+    def send_GetProgressUpdate(req)
+      send_message('GetProgressUpdate', GetProgressUpdate_args, :req => req)
+    end
+
+    def recv_GetProgressUpdate()
+      result = receive_message(GetProgressUpdate_result)
+      return result.success unless result.success.nil?
+      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'GetProgressUpdate failed: unknown result')
+    end
+
   end
 
   class Processor
@@ -476,6 +491,13 @@ module TCLIService
       result = RenewDelegationToken_result.new()
       result.success = @handler.RenewDelegationToken(args.req)
       write_result(result, oprot, 'RenewDelegationToken', seqid)
+    end
+
+    def process_GetProgressUpdate(seqid, iprot, oprot)
+      args = read_args(iprot, GetProgressUpdate_args)
+      result = GetProgressUpdate_result.new()
+      result.success = @handler.GetProgressUpdate(args.req)
+      write_result(result, oprot, 'GetProgressUpdate', seqid)
     end
 
   end
@@ -1144,6 +1166,38 @@ module TCLIService
 
     FIELDS = {
       SUCCESS => {:type => ::Thrift::Types::STRUCT, :name => 'success', :class => ::TRenewDelegationTokenResp}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class GetProgressUpdate_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    REQ = 1
+
+    FIELDS = {
+      REQ => {:type => ::Thrift::Types::STRUCT, :name => 'req', :class => ::TProgressUpdateReq}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class GetProgressUpdate_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SUCCESS = 0
+
+    FIELDS = {
+      SUCCESS => {:type => ::Thrift::Types::STRUCT, :name => 'success', :class => ::TProgressUpdateResp}
     }
 
     def struct_fields; FIELDS; end

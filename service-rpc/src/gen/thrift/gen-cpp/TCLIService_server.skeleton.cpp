@@ -127,6 +127,11 @@ class TCLIServiceHandler : virtual public TCLIServiceIf {
     printf("RenewDelegationToken\n");
   }
 
+  void GetProgressUpdate(TProgressUpdateResp& _return, const TProgressUpdateReq& req) {
+    // Your implementation goes here
+    printf("GetProgressUpdate\n");
+  }
+
 };
 
 int main(int argc, char **argv) {
