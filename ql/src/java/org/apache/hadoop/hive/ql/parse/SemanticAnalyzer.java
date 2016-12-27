@@ -150,14 +150,12 @@ import org.apache.hadoop.hive.ql.parse.PTFInvocationSpec.PartitioningSpec;
 import org.apache.hadoop.hive.ql.parse.QBSubQuery.SubQueryType;
 import org.apache.hadoop.hive.ql.parse.SubQueryUtils.ISubQueryJoinInfo;
 import org.apache.hadoop.hive.ql.parse.WindowingSpec.BoundarySpec;
-import org.apache.hadoop.hive.ql.parse.WindowingSpec.CurrentRowSpec;
 import org.apache.hadoop.hive.ql.parse.WindowingSpec.Direction;
-import org.apache.hadoop.hive.ql.parse.WindowingSpec.RangeBoundarySpec;
-import org.apache.hadoop.hive.ql.parse.WindowingSpec.ValueBoundarySpec;
 import org.apache.hadoop.hive.ql.parse.WindowingSpec.WindowExpressionSpec;
 import org.apache.hadoop.hive.ql.parse.WindowingSpec.WindowFrameSpec;
 import org.apache.hadoop.hive.ql.parse.WindowingSpec.WindowFunctionSpec;
 import org.apache.hadoop.hive.ql.parse.WindowingSpec.WindowSpec;
+import org.apache.hadoop.hive.ql.parse.WindowingSpec.WindowType;
 import org.apache.hadoop.hive.ql.plan.AggregationDesc;
 import org.apache.hadoop.hive.ql.plan.AlterTableDesc;
 import org.apache.hadoop.hive.ql.plan.AlterTableDesc.AlterTableTypes;
@@ -12748,13 +12746,12 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     if ( node.getChildCount() > 1 ) {
       end = processBoundary(type, (ASTNode) node.getChild(1));
     }
-
-    return new WindowFrameSpec(start, end);
+    // Note: TOK_WINDOWVALUES means RANGE type, TOK_WINDOWRANGE means ROWS type
+    return new WindowFrameSpec(type == HiveParser.TOK_WINDOWVALUES ? WindowType.RANGE : WindowType.ROWS, start, end);
   }
 
   private BoundarySpec processBoundary(int frameType, ASTNode node)  throws SemanticException {
-    BoundarySpec bs = frameType == HiveParser.TOK_WINDOWRANGE ?
-        new RangeBoundarySpec() : new ValueBoundarySpec();
+    BoundarySpec bs = new BoundarySpec();
     int type = node.getType();
     boolean hasAmt = true;
 
@@ -12767,7 +12764,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       bs.setDirection(Direction.FOLLOWING);
       break;
     case HiveParser.KW_CURRENT:
-      bs = new CurrentRowSpec();
+      bs.setDirection(Direction.CURRENT);
       hasAmt = false;
       break;
     }

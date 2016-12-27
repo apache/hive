@@ -50,19 +50,16 @@ import org.apache.hadoop.hive.ql.parse.PTFInvocationSpec.PartitionSpec;
 import org.apache.hadoop.hive.ql.parse.PTFInvocationSpec.PartitionedTableFunctionSpec;
 import org.apache.hadoop.hive.ql.parse.PTFInvocationSpec.PartitioningSpec;
 import org.apache.hadoop.hive.ql.parse.WindowingSpec.BoundarySpec;
-import org.apache.hadoop.hive.ql.parse.WindowingSpec.CurrentRowSpec;
-import org.apache.hadoop.hive.ql.parse.WindowingSpec.RangeBoundarySpec;
-import org.apache.hadoop.hive.ql.parse.WindowingSpec.ValueBoundarySpec;
 import org.apache.hadoop.hive.ql.parse.WindowingSpec.WindowExpressionSpec;
 import org.apache.hadoop.hive.ql.parse.WindowingSpec.WindowFrameSpec;
 import org.apache.hadoop.hive.ql.parse.WindowingSpec.WindowFunctionSpec;
 import org.apache.hadoop.hive.ql.parse.WindowingSpec.WindowSpec;
+import org.apache.hadoop.hive.ql.parse.WindowingSpec.WindowType;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.plan.PTFDesc;
 import org.apache.hadoop.hive.ql.plan.PTFDeserializer;
 import org.apache.hadoop.hive.ql.plan.ptf.BoundaryDef;
-import org.apache.hadoop.hive.ql.plan.ptf.CurrentRowDef;
 import org.apache.hadoop.hive.ql.plan.ptf.OrderDef;
 import org.apache.hadoop.hive.ql.plan.ptf.OrderExpressionDef;
 import org.apache.hadoop.hive.ql.plan.ptf.PTFExpressionDef;
@@ -70,9 +67,7 @@ import org.apache.hadoop.hive.ql.plan.ptf.PTFInputDef;
 import org.apache.hadoop.hive.ql.plan.ptf.PTFQueryInputDef;
 import org.apache.hadoop.hive.ql.plan.ptf.PartitionDef;
 import org.apache.hadoop.hive.ql.plan.ptf.PartitionedTableFunctionDef;
-import org.apache.hadoop.hive.ql.plan.ptf.RangeBoundaryDef;
 import org.apache.hadoop.hive.ql.plan.ptf.ShapeDetails;
-import org.apache.hadoop.hive.ql.plan.ptf.ValueBoundaryDef;
 import org.apache.hadoop.hive.ql.plan.ptf.WindowFrameDef;
 import org.apache.hadoop.hive.ql.plan.ptf.WindowFunctionDef;
 import org.apache.hadoop.hive.ql.plan.ptf.WindowTableFunctionDef;
@@ -521,11 +516,12 @@ public class PTFTranslator {
      * Since we componentize Windowing, no need to translate
      * the Partition & Order specs of individual WFns.
      */
-    return translate(inpShape, spec.getWindowFrame());
+    return translate(inpShape, spec.getWindowFrame(), spec.getOrder().getExpressions());
   }
 
   private WindowFrameDef translate(ShapeDetails inpShape,
-      WindowFrameSpec spec)
+      WindowFrameSpec spec,
+      List<OrderExpression> orderExpressions)
       throws SemanticException {
     if (spec == null) {
       return null;
@@ -539,38 +535,38 @@ public class PTFTranslator {
           "Window range invalid, start boundary is greater than end boundary: %s", spec));
     }
 
-    return new WindowFrameDef(translate(inpShape, s), translate(inpShape, e));
+    WindowFrameDef winFrame = new WindowFrameDef(
+        spec.getWindowType(),
+        new BoundaryDef(s.direction, s.getAmt()),
+        new BoundaryDef(e.direction, e.getAmt()));
+    if (winFrame.getWindowType() == WindowType.RANGE) {
+      winFrame.setOrderDef(buildOrderExpressions(inpShape, orderExpressions));
+    }
+    return winFrame;
   }
 
-  private BoundaryDef translate(ShapeDetails inpShape, BoundarySpec bndSpec)
+  /**
+   * Collect order expressions for RANGE based windowing
+   * @throws SemanticException
+   */
+  private OrderDef buildOrderExpressions(ShapeDetails inpShape, List<OrderExpression> orderExpressions)
       throws SemanticException {
-    if (bndSpec instanceof ValueBoundarySpec) {
-      ValueBoundarySpec vBndSpec = (ValueBoundarySpec) bndSpec;
-      ValueBoundaryDef vbDef = new ValueBoundaryDef(vBndSpec.getDirection(), vBndSpec.getAmt());
-      for (OrderExpression oe : vBndSpec.getOrderExpressions()) {
-        PTFTranslator.validateNoLeadLagInValueBoundarySpec(oe.getExpression());
-        PTFExpressionDef exprDef = null;
-        try {
-          exprDef = buildExpressionDef(inpShape, oe.getExpression());
-        } catch (HiveException he) {
-          throw new SemanticException(he);
-        }
-        PTFTranslator.validateValueBoundaryExprType(exprDef.getOI());
-        OrderExpressionDef orderExprDef = new OrderExpressionDef(exprDef);
-        orderExprDef.setOrder(oe.getOrder());
-        orderExprDef.setNullOrder(oe.getNullOrder());
-        vbDef.addOrderExpressionDef(orderExprDef);
+    OrderDef orderDef = new OrderDef();
+    for (OrderExpression oe : orderExpressions) {
+      PTFTranslator.validateNoLeadLagInValueBoundarySpec(oe.getExpression());
+      PTFExpressionDef exprDef = null;
+      try {
+        exprDef = buildExpressionDef(inpShape, oe.getExpression());
+      } catch (HiveException he) {
+        throw new SemanticException(he);
       }
-      return vbDef;
+      PTFTranslator.validateValueBoundaryExprType(exprDef.getOI());
+      OrderExpressionDef orderExprDef = new OrderExpressionDef(exprDef);
+      orderExprDef.setOrder(oe.getOrder());
+      orderExprDef.setNullOrder(oe.getNullOrder());
+      orderDef.addExpression(orderExprDef);
     }
-    else if (bndSpec instanceof RangeBoundarySpec) {
-      RangeBoundarySpec rBndSpec = (RangeBoundarySpec) bndSpec;
-      return new RangeBoundaryDef(rBndSpec.getDirection(), rBndSpec.getAmt());
-    } else if (bndSpec instanceof CurrentRowSpec) {
-      CurrentRowDef cbDef = new CurrentRowDef();
-      return cbDef;
-    }
-    throw new SemanticException("Unknown Boundary: " + bndSpec);
+    return orderDef;
   }
 
   static void setupWdwFnEvaluator(WindowFunctionDef def) throws HiveException {

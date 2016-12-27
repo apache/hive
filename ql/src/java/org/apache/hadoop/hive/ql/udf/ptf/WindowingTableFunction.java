@@ -42,19 +42,18 @@ import org.apache.hadoop.hive.ql.parse.PTFInvocationSpec.Order;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.WindowingSpec.BoundarySpec;
 import org.apache.hadoop.hive.ql.parse.WindowingSpec.Direction;
+import org.apache.hadoop.hive.ql.parse.WindowingSpec.WindowType;
 import org.apache.hadoop.hive.ql.plan.PTFDesc;
 import org.apache.hadoop.hive.ql.plan.ptf.BoundaryDef;
 import org.apache.hadoop.hive.ql.plan.ptf.OrderDef;
 import org.apache.hadoop.hive.ql.plan.ptf.OrderExpressionDef;
 import org.apache.hadoop.hive.ql.plan.ptf.PTFExpressionDef;
 import org.apache.hadoop.hive.ql.plan.ptf.PartitionedTableFunctionDef;
-import org.apache.hadoop.hive.ql.plan.ptf.ValueBoundaryDef;
 import org.apache.hadoop.hive.ql.plan.ptf.WindowFrameDef;
 import org.apache.hadoop.hive.ql.plan.ptf.WindowFunctionDef;
 import org.apache.hadoop.hive.ql.plan.ptf.WindowTableFunctionDef;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator.AggregationBuffer;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFStreamingEvaluator.SumAvgEnhancer;
 import org.apache.hadoop.hive.ql.udf.generic.ISupportStreamingModeForWindowing;
 import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.objectinspector.ListObjectInspector;
@@ -198,7 +197,7 @@ public class WindowingTableFunction extends TableFunctionEvaluator {
      * Currently we are not handling dynamic sized windows implied by range
      * based windows.
      */
-    if (start instanceof ValueBoundaryDef || end instanceof ValueBoundaryDef) {
+    if (wdwFrame.getWindowType() == WindowType.RANGE) {
       return false;
     }
 
@@ -264,8 +263,7 @@ public class WindowingTableFunction extends TableFunctionEvaluator {
       }
       BoundaryDef start = wdwFrame.getStart();
       BoundaryDef end = wdwFrame.getEnd();
-      if (!(end instanceof ValueBoundaryDef)
-          && !(start instanceof ValueBoundaryDef)) {
+      if (wdwFrame.getWindowType() == WindowType.ROWS) {
         if (!end.isUnbounded() && !start.isUnbounded()) {
           startPos = Math.min(startPos, wdwFrame.getStart().getRelativeOffset());
           endPos = Math.max(endPos, wdwFrame.getEnd().getRelativeOffset());
@@ -297,7 +295,6 @@ public class WindowingTableFunction extends TableFunctionEvaluator {
     WindowTableFunctionDef tabDef = (WindowTableFunctionDef) getTableDef();
     for (int i = 0; i < tabDef.getWindowFunctions().size(); i++) {
       WindowFunctionDef wFn = tabDef.getWindowFunctions().get(i);
-      GenericUDAFEvaluator fnEval = wFn.getWFnEval();
       WindowFunctionInfo wFnInfo = FunctionRegistry.getWindowFunctionInfo(wFn.getName());
       boolean supportsWindow = wFnInfo.isSupportsWindow();
       windowingFunctionHelpers.put(wFn.getName(), new WindowingFunctionInfoHelper(supportsWindow));
@@ -672,40 +669,18 @@ public class WindowingTableFunction extends TableFunctionEvaluator {
 
   private Range getRange(WindowFunctionDef wFnDef, int currRow, PTFPartition p) throws HiveException
   {
-    BoundaryDef startB = wFnDef.getWindowFrame().getStart();
-    BoundaryDef endB = wFnDef.getWindowFrame().getEnd();
-    boolean rowFrame = true;
-
-    if ( startB instanceof ValueBoundaryDef || endB instanceof ValueBoundaryDef) {
-      rowFrame = false;
-    }
+    WindowFrameDef winFrame = wFnDef.getWindowFrame();
+    BoundaryDef startB = winFrame.getStart();
+    BoundaryDef endB = winFrame.getEnd();
 
     int start, end;
-    if (rowFrame) {
+    if (winFrame.getWindowType() == WindowType.ROWS) {
       start = getRowBoundaryStart(startB, currRow);
       end = getRowBoundaryEnd(endB, currRow, p);
     } else {
-      ValueBoundaryScanner vbs;
-      if ( startB instanceof ValueBoundaryDef ) {
-        ValueBoundaryDef startValueBoundaryDef = (ValueBoundaryDef)startB;
-        if (startValueBoundaryDef.getOrderDef().getExpressions().size() != 1) {
-          vbs = MultiValueBoundaryScanner.getScanner(startValueBoundaryDef);
-        } else {
-          vbs = SingleValueBoundaryScanner.getScanner(startValueBoundaryDef);
-        }
-      }
-      else {
-        ValueBoundaryDef endValueBoundaryDef = (ValueBoundaryDef)endB;
-        if (endValueBoundaryDef.getOrderDef().getExpressions().size() != 1) {
-          vbs = MultiValueBoundaryScanner.getScanner(endValueBoundaryDef);
-        } else {
-          vbs = SingleValueBoundaryScanner.getScanner(endValueBoundaryDef);
-        }
-      }
-      vbs.reset(startB);
-      start =  vbs.computeStart(currRow, p);
-      vbs.reset(endB);
-      end =  vbs.computeEnd(currRow, p);
+      ValueBoundaryScanner vbs = ValueBoundaryScanner.getScanner(winFrame);
+      start = vbs.computeStart(currRow, p);
+      end = vbs.computeEnd(currRow, p);
     }
     start = start < 0 ? 0 : start;
     end = end > p.size() ? p.size() : end;
@@ -775,30 +750,38 @@ public class WindowingTableFunction extends TableFunctionEvaluator {
 
 
   static abstract class ValueBoundaryScanner {
-    BoundaryDef bndDef;
+    BoundaryDef start, end;
 
-    public ValueBoundaryScanner(BoundaryDef bndDef) {
-      this.bndDef = bndDef;
-    }
-
-    public void reset(BoundaryDef bndDef) {
-      this.bndDef = bndDef;
+    public ValueBoundaryScanner(BoundaryDef start, BoundaryDef end) {
+      this.start = start;
+      this.end = end;
     }
 
     protected abstract int computeStart(int rowIdx, PTFPartition p) throws HiveException;
 
     protected abstract int computeEnd(int rowIdx, PTFPartition p) throws HiveException;
+
+    public static ValueBoundaryScanner getScanner(WindowFrameDef winFrameDef)
+        throws HiveException {
+      OrderDef orderDef = winFrameDef.getOrderDef();
+      int numOrders = orderDef.getExpressions().size();
+      if (numOrders != 1) {
+        return new MultiValueBoundaryScanner(winFrameDef.getStart(), winFrameDef.getEnd(), orderDef);
+      } else {
+        return SingleValueBoundaryScanner.getScanner(winFrameDef.getStart(), winFrameDef.getEnd(), orderDef);
+      }
+    }
   }
 
   /*
    * - starting from the given rowIdx scan in the given direction until a row's expr
-   * evaluates to an amt that crosses the 'amt' threshold specified in the ValueBoundaryDef.
+   * evaluates to an amt that crosses the 'amt' threshold specified in the BoundaryDef.
    */
   static abstract class SingleValueBoundaryScanner extends ValueBoundaryScanner {
     OrderExpressionDef expressionDef;
 
-    public SingleValueBoundaryScanner(BoundaryDef bndDef, OrderExpressionDef expressionDef) {
-      super(bndDef);
+    public SingleValueBoundaryScanner(BoundaryDef start, BoundaryDef end, OrderExpressionDef expressionDef) {
+      super(start, end);
       this.expressionDef = expressionDef;
     }
 
@@ -837,7 +820,7 @@ public class WindowingTableFunction extends TableFunctionEvaluator {
      */
     @Override
     protected int computeStart(int rowIdx, PTFPartition p) throws HiveException {
-      switch(bndDef.getDirection()) {
+      switch(start.getDirection()) {
       case PRECEDING:
         return computeStartPreceding(rowIdx, p);
       case CURRENT:
@@ -849,7 +832,7 @@ public class WindowingTableFunction extends TableFunctionEvaluator {
     }
 
     protected int computeStartPreceding(int rowIdx, PTFPartition p) throws HiveException {
-      int amt = bndDef.getAmt();
+      int amt = start.getAmt();
       // Use Case 1.
       if ( amt == BoundarySpec.UNBOUNDED_AMOUNT ) {
         return 0;
@@ -924,7 +907,7 @@ public class WindowingTableFunction extends TableFunctionEvaluator {
     }
 
     protected int computeStartFollowing(int rowIdx, PTFPartition p) throws HiveException {
-      int amt = bndDef.getAmt();
+      int amt = start.getAmt();
       Object sortKey = computeValue(p.getAt(rowIdx));
 
       Object rowVal = sortKey;
@@ -1001,7 +984,7 @@ public class WindowingTableFunction extends TableFunctionEvaluator {
      */
     @Override
     protected int computeEnd(int rowIdx, PTFPartition p) throws HiveException {
-      switch(bndDef.getDirection()) {
+      switch(end.getDirection()) {
       case PRECEDING:
         return computeEndPreceding(rowIdx, p);
       case CURRENT:
@@ -1013,7 +996,7 @@ public class WindowingTableFunction extends TableFunctionEvaluator {
     }
 
     protected int computeEndPreceding(int rowIdx, PTFPartition p) throws HiveException {
-      int amt = bndDef.getAmt();
+      int amt = end.getAmt();
       // Use Case 1.
       // amt == UNBOUNDED, is caught during translation
 
@@ -1081,7 +1064,7 @@ public class WindowingTableFunction extends TableFunctionEvaluator {
     }
 
     protected int computeEndFollowing(int rowIdx, PTFPartition p) throws HiveException {
-      int amt = bndDef.getAmt();
+      int amt = end.getAmt();
 
       // Use Case 8.
       if ( amt == BoundarySpec.UNBOUNDED_AMOUNT ) {
@@ -1148,13 +1131,13 @@ public class WindowingTableFunction extends TableFunctionEvaluator {
 
 
     @SuppressWarnings("incomplete-switch")
-    public static SingleValueBoundaryScanner getScanner(ValueBoundaryDef vbDef)
+    public static SingleValueBoundaryScanner getScanner(BoundaryDef start, BoundaryDef end, OrderDef orderDef)
         throws HiveException {
-      if (vbDef.getOrderDef().getExpressions().size() != 1) {
+      if (orderDef.getExpressions().size() != 1) {
         throw new HiveException("Internal error: initializing SingleValueBoundaryScanner with"
                 + " multiple expression for sorting");
       }
-      OrderExpressionDef exprDef = vbDef.getOrderDef().getExpressions().get(0);
+      OrderExpressionDef exprDef = orderDef.getExpressions().get(0);
       PrimitiveObjectInspector pOI = (PrimitiveObjectInspector) exprDef.getOI();
       switch(pOI.getPrimitiveCategory()) {
       case BYTE:
@@ -1162,16 +1145,16 @@ public class WindowingTableFunction extends TableFunctionEvaluator {
       case LONG:
       case SHORT:
       case TIMESTAMP:
-        return new LongValueBoundaryScanner(vbDef, exprDef);
+        return new LongValueBoundaryScanner(start, end, exprDef);
       case DOUBLE:
       case FLOAT:
-        return new DoubleValueBoundaryScanner(vbDef, exprDef);
+        return new DoubleValueBoundaryScanner(start, end, exprDef);
       case DECIMAL:
-        return new HiveDecimalValueBoundaryScanner(vbDef, exprDef);
+        return new HiveDecimalValueBoundaryScanner(start, end, exprDef);
       case DATE:
-        return new DateValueBoundaryScanner(vbDef, exprDef);
+        return new DateValueBoundaryScanner(start, end, exprDef);
       case STRING:
-        return new StringValueBoundaryScanner(vbDef, exprDef);
+        return new StringValueBoundaryScanner(start, end, exprDef);
       }
       throw new HiveException(
           String.format("Internal Error: attempt to setup a Window for datatype %s",
@@ -1180,8 +1163,8 @@ public class WindowingTableFunction extends TableFunctionEvaluator {
   }
 
   public static class LongValueBoundaryScanner extends SingleValueBoundaryScanner {
-    public LongValueBoundaryScanner(BoundaryDef bndDef, OrderExpressionDef expressionDef) {
-      super(bndDef,expressionDef);
+    public LongValueBoundaryScanner(BoundaryDef start, BoundaryDef end, OrderExpressionDef expressionDef) {
+      super(start, end,expressionDef);
     }
 
     @Override
@@ -1212,8 +1195,8 @@ public class WindowingTableFunction extends TableFunctionEvaluator {
   }
 
   public static class DoubleValueBoundaryScanner extends SingleValueBoundaryScanner {
-    public DoubleValueBoundaryScanner(BoundaryDef bndDef, OrderExpressionDef expressionDef) {
-      super(bndDef,expressionDef);
+    public DoubleValueBoundaryScanner(BoundaryDef start, BoundaryDef end, OrderExpressionDef expressionDef) {
+      super(start, end,expressionDef);
     }
 
     @Override
@@ -1244,8 +1227,8 @@ public class WindowingTableFunction extends TableFunctionEvaluator {
   }
 
   public static class HiveDecimalValueBoundaryScanner extends SingleValueBoundaryScanner {
-    public HiveDecimalValueBoundaryScanner(BoundaryDef bndDef, OrderExpressionDef expressionDef) {
-      super(bndDef,expressionDef);
+    public HiveDecimalValueBoundaryScanner(BoundaryDef start, BoundaryDef end, OrderExpressionDef expressionDef) {
+      super(start, end,expressionDef);
     }
 
     @Override
@@ -1276,8 +1259,8 @@ public class WindowingTableFunction extends TableFunctionEvaluator {
   }
 
   public static class DateValueBoundaryScanner extends SingleValueBoundaryScanner {
-    public DateValueBoundaryScanner(BoundaryDef bndDef, OrderExpressionDef expressionDef) {
-      super(bndDef,expressionDef);
+    public DateValueBoundaryScanner(BoundaryDef start, BoundaryDef end, OrderExpressionDef expressionDef) {
+      super(start, end,expressionDef);
     }
 
     @Override
@@ -1303,8 +1286,8 @@ public class WindowingTableFunction extends TableFunctionEvaluator {
   }
 
   public static class StringValueBoundaryScanner extends SingleValueBoundaryScanner {
-    public StringValueBoundaryScanner(BoundaryDef bndDef, OrderExpressionDef expressionDef) {
-      super(bndDef,expressionDef);
+    public StringValueBoundaryScanner(BoundaryDef start, BoundaryDef end, OrderExpressionDef expressionDef) {
+      super(start, end,expressionDef);
     }
 
     @Override
@@ -1331,8 +1314,8 @@ public class WindowingTableFunction extends TableFunctionEvaluator {
   static class MultiValueBoundaryScanner extends ValueBoundaryScanner {
     OrderDef orderDef;
 
-    public MultiValueBoundaryScanner(BoundaryDef bndDef, OrderDef orderDef) {
-      super(bndDef);
+    public MultiValueBoundaryScanner(BoundaryDef start, BoundaryDef end, OrderDef orderDef) {
+      super(start, end);
       this.orderDef = orderDef;
     }
 
@@ -1349,7 +1332,7 @@ public class WindowingTableFunction extends TableFunctionEvaluator {
      */
     @Override
     protected int computeStart(int rowIdx, PTFPartition p) throws HiveException {
-      switch(bndDef.getDirection()) {
+      switch(start.getDirection()) {
       case PRECEDING:
         return computeStartPreceding(rowIdx, p);
       case CURRENT:
@@ -1362,7 +1345,7 @@ public class WindowingTableFunction extends TableFunctionEvaluator {
     }
 
     protected int computeStartPreceding(int rowIdx, PTFPartition p) throws HiveException {
-      int amt = bndDef.getAmt();
+      int amt = start.getAmt();
       if ( amt == BoundarySpec.UNBOUNDED_AMOUNT ) {
         return 0;
       }
@@ -1397,7 +1380,7 @@ public class WindowingTableFunction extends TableFunctionEvaluator {
      */
     @Override
     protected int computeEnd(int rowIdx, PTFPartition p) throws HiveException {
-      switch(bndDef.getDirection()) {
+      switch(end.getDirection()) {
       case PRECEDING:
         throw new HiveException(
                 "PRECEDING not allowed for finishing RANGE with multiple expressions in ORDER BY");
@@ -1424,7 +1407,7 @@ public class WindowingTableFunction extends TableFunctionEvaluator {
     }
 
     protected int computeEndFollowing(int rowIdx, PTFPartition p) throws HiveException {
-      int amt = bndDef.getAmt();
+      int amt = end.getAmt();
       if ( amt == BoundarySpec.UNBOUNDED_AMOUNT ) {
         return p.size();
       }
@@ -1457,15 +1440,6 @@ public class WindowingTableFunction extends TableFunctionEvaluator {
         }
       }
       return true;
-    }
-
-    public static MultiValueBoundaryScanner getScanner(ValueBoundaryDef vbDef)
-        throws HiveException {
-      if (vbDef.getOrderDef().getExpressions().size() <= 1) {
-        throw new HiveException("Internal error: initializing SingleValueBoundaryScanner with"
-                + " multiple expression for sorting");
-      }
-      return new MultiValueBoundaryScanner(vbDef, vbDef.getOrderDef());
     }
   }
 

@@ -211,7 +211,7 @@ STAGE PLANS:
                         arguments: _col0
                         name: avg
                         window function: GenericUDAFAverageEvaluatorDouble
-                        window frame: PRECEDING(MAX)~
+                        window frame: PRECEDING(MAX)~CURRENT
             Statistics: Num rows: 10 Data size: 131 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: avg_window_0 (type: double)
