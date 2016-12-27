@@ -270,6 +270,7 @@ POSTHOOK: Input: default@myinput1
 100	100	100	100	100	100
 NULL	35	NULL	35	NULL	35
 NULL	NULL	48	NULL	NULL	NULL
+Warning: Shuffle Join JOIN[5][tables = [a, b]] in Stage 'Stage-1:MAPRED' is a cross product
 PREHOOK: query: SELECT * FROM myinput1 a LEFT OUTER JOIN myinput1 b RIGHT OUTER JOIN myinput1 c ON a.value = b.value and b.value = c.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@myinput1
