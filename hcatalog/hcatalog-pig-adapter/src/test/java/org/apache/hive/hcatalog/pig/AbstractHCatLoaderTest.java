@@ -18,6 +18,12 @@
  */
 package org.apache.hive.hcatalog.pig;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -28,63 +34,44 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.Set;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.FileUtil;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.cli.CliSessionState;
-import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.CommandNeedRetryException;
 import org.apache.hadoop.hive.ql.Driver;
-import org.apache.hadoop.hive.ql.WindowsPathUtil;
-import org.apache.hadoop.hive.ql.io.IOConstants;
-import org.apache.hadoop.hive.ql.io.StorageFormats;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
-import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
 import org.apache.hadoop.mapreduce.Job;
-import org.apache.hadoop.util.Shell;
 import org.apache.hive.hcatalog.HcatTestUtils;
-import org.apache.hive.hcatalog.common.HCatUtil;
 import org.apache.hive.hcatalog.common.HCatConstants;
+import org.apache.hive.hcatalog.common.HCatUtil;
 import org.apache.hive.hcatalog.data.Pair;
 import org.apache.hive.hcatalog.data.schema.HCatFieldSchema;
+import org.apache.hive.hcatalog.mapreduce.HCatBaseTest;
 import org.apache.pig.ExecType;
 import org.apache.pig.PigRunner;
 import org.apache.pig.PigServer;
 import org.apache.pig.ResourceStatistics;
-import org.apache.pig.tools.pigstats.OutputStats;
-import org.apache.pig.tools.pigstats.PigStats;
 import org.apache.pig.data.DataType;
 import org.apache.pig.data.Tuple;
 import org.apache.pig.impl.logicalLayer.schema.Schema;
 import org.apache.pig.impl.logicalLayer.schema.Schema.FieldSchema;
-import org.apache.pig.impl.util.PropertiesUtil;
+import org.apache.pig.tools.pigstats.OutputStats;
+import org.apache.pig.tools.pigstats.PigStats;
 import org.joda.time.DateTime;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static org.junit.Assert.*;
-import static org.junit.Assume.assumeTrue;
-
-@RunWith(Parameterized.class)
-public class TestHCatLoader {
-  private static final Logger LOG = LoggerFactory.getLogger(TestHCatLoader.class);
-  private static final String TEST_DATA_DIR = HCatUtil.makePathASafeFileName(System.getProperty("java.io.tmpdir") +
-      File.separator + TestHCatLoader.class.getCanonicalName() + "-" + System.currentTimeMillis());
-  private static final String TEST_WAREHOUSE_DIR = TEST_DATA_DIR + "/warehouse";
+public abstract class AbstractHCatLoaderTest extends HCatBaseTest {
+  private static final Logger LOG = LoggerFactory.getLogger(AbstractHCatLoaderTest.class);
   private static final String BASIC_FILE_NAME = TEST_DATA_DIR + "/basic.input.data";
   private static final String COMPLEX_FILE_NAME = TEST_DATA_DIR + "/complex.input.data";
   private static final String DATE_FILE_NAME = TEST_DATA_DIR + "/datetimestamp.input.data";
@@ -95,31 +82,14 @@ public class TestHCatLoader {
   private static final String SPECIFIC_SIZE_TABLE = "junit_specific_size";
   private static final String PARTITIONED_DATE_TABLE = "junit_parted_date";
 
-  private Driver driver;
   private Map<Integer, Pair<Integer, String>> basicInputData;
 
-  private static final Map<String, Set<String>> DISABLED_STORAGE_FORMATS =
-      new HashMap<String, Set<String>>() {{
-        put(IOConstants.PARQUETFILE, new HashSet<String>() {{
-          add("testReadDataBasic");
-          add("testReadPartitionedBasic");
-          add("testProjectionsBasic");
-          add("testColumnarStorePushdown2");
-          add("testReadMissingPartitionBasicNeg");
-          add("testDatePartitionPushUp");
-          add("testTimestampPartitionPushUp");
-        }});
-      }};
+  protected String storageFormat;
 
-  private final String storageFormat;
+  abstract String getStorageFormat();
 
-  @Parameterized.Parameters
-  public static Collection<Object[]> generateParameters() {
-    return StorageFormats.names();
-  }
-
-  public TestHCatLoader(String storageFormat) {
-    this.storageFormat = storageFormat;
+  public AbstractHCatLoaderTest() {
+    this.storageFormat = getStorageFormat();
   }
 
   private void dropTable(String tablename) throws IOException, CommandNeedRetryException {
@@ -168,32 +138,7 @@ public class TestHCatLoader {
   }
 
   @Before
-  public void setup() throws Exception {
-    File f = new File(TEST_WAREHOUSE_DIR);
-    if (f.exists()) {
-      FileUtil.fullyDelete(f);
-    }
-    if (!(new File(TEST_WAREHOUSE_DIR).mkdirs())) {
-      throw new RuntimeException("Could not create " + TEST_WAREHOUSE_DIR);
-    }
-
-    HiveConf hiveConf = new HiveConf(this.getClass());
-    hiveConf.set(HiveConf.ConfVars.PREEXECHOOKS.varname, "");
-    hiveConf.set(HiveConf.ConfVars.POSTEXECHOOKS.varname, "");
-    hiveConf.set(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY.varname, "false");
-    hiveConf.set(HiveConf.ConfVars.METASTOREWAREHOUSE.varname, TEST_WAREHOUSE_DIR);
-    hiveConf.setVar(HiveConf.ConfVars.HIVEMAPREDMODE, "nonstrict");
-    hiveConf
-    .setVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER,
-        "org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory");
-
-    if (Shell.WINDOWS) {
-      WindowsPathUtil.convertPathsFromWindowsToHdfs(hiveConf);
-    }
-
-    driver = new Driver(hiveConf);
-    SessionState.start(new CliSessionState(hiveConf));
-
+  public void setUpTest() throws Exception {
     createTable(BASIC_TABLE, "a int, b string");
     createTable(COMPLEX_TABLE,
       "name string, studentid int, "
@@ -233,7 +178,7 @@ public class TestHCatLoader {
         "2016-07-15 11:54:55\tEdward Hyde",
       }
     );
-    PigServer server = new PigServer(ExecType.LOCAL);
+    PigServer server = createPigServer(false);
     server.setBatchOn();
     int i = 0;
     server.registerQuery("A = load '" + BASIC_FILE_NAME + "' as (a:int, b:chararray);", ++i);
@@ -276,9 +221,7 @@ public class TestHCatLoader {
 
   @Test
   public void testSchemaLoadBasic() throws IOException {
-    assumeTrue(!TestUtil.shouldSkip(storageFormat, DISABLED_STORAGE_FORMATS));
-
-    PigServer server = new PigServer(ExecType.LOCAL);
+    PigServer server = createPigServer(false);
 
     // test that schema was loaded correctly
     server.registerQuery("X = load '" + BASIC_TABLE + "' using org.apache.hive.hcatalog.pig.HCatLoader();");
@@ -297,7 +240,6 @@ public class TestHCatLoader {
    */
   @Test
   public void testSchemaLoadPrimitiveTypes() throws IOException {
-    assumeTrue(!TestUtil.shouldSkip(storageFormat, DISABLED_STORAGE_FORMATS));
     AllTypesTable.testSchemaLoadPrimitiveTypes();
   }
 
@@ -306,14 +248,12 @@ public class TestHCatLoader {
    */
   @Test
   public void testReadDataPrimitiveTypes() throws Exception {
-    assumeTrue(!TestUtil.shouldSkip(storageFormat, DISABLED_STORAGE_FORMATS));
     AllTypesTable.testReadDataPrimitiveTypes();
   }
 
   @Test
   public void testReadDataBasic() throws IOException {
-    assumeTrue(!TestUtil.shouldSkip(storageFormat, DISABLED_STORAGE_FORMATS));
-    PigServer server = new PigServer(ExecType.LOCAL);
+    PigServer server = createPigServer(false);
 
     server.registerQuery("X = load '" + BASIC_TABLE + "' using org.apache.hive.hcatalog.pig.HCatLoader();");
     Iterator<Tuple> XIter = server.openIterator("X");
@@ -334,9 +274,7 @@ public class TestHCatLoader {
 
   @Test
   public void testSchemaLoadComplex() throws IOException {
-    assumeTrue(!TestUtil.shouldSkip(storageFormat, DISABLED_STORAGE_FORMATS));
-
-    PigServer server = new PigServer(ExecType.LOCAL);
+    PigServer server = createPigServer(false);
 
     // test that schema was loaded correctly
     server.registerQuery("K = load '" + COMPLEX_TABLE + "' using org.apache.hive.hcatalog.pig.HCatLoader();");
@@ -393,8 +331,7 @@ public class TestHCatLoader {
 
   @Test
   public void testReadPartitionedBasic() throws IOException, CommandNeedRetryException {
-    assumeTrue(!TestUtil.shouldSkip(storageFormat, DISABLED_STORAGE_FORMATS));
-    PigServer server = new PigServer(ExecType.LOCAL);
+    PigServer server = createPigServer(false);
 
     driver.run("select * from " + PARTITIONED_TABLE);
     ArrayList<String> valuesReadFromHiveDriver = new ArrayList<String>();
@@ -461,8 +398,7 @@ public class TestHCatLoader {
 
   @Test
   public void testReadMissingPartitionBasicNeg() throws IOException, CommandNeedRetryException {
-    assumeTrue(!TestUtil.shouldSkip(storageFormat, DISABLED_STORAGE_FORMATS));
-    PigServer server = new PigServer(ExecType.LOCAL);
+    PigServer server = createPigServer(false);
 
     File removedPartitionDir = new File(TEST_WAREHOUSE_DIR + "/" + PARTITIONED_TABLE + "/bkt=0");
     if (!removeDirectory(removedPartitionDir)) {
@@ -514,9 +450,7 @@ public class TestHCatLoader {
 
   @Test
   public void testProjectionsBasic() throws IOException {
-    assumeTrue(!TestUtil.shouldSkip(storageFormat, DISABLED_STORAGE_FORMATS));
-
-    PigServer server = new PigServer(ExecType.LOCAL);
+    PigServer server = createPigServer(false);
 
     // projections are handled by using generate, not "as" on the Load
 
@@ -600,9 +534,7 @@ public class TestHCatLoader {
    */
   @Test
   public void testColumnarStorePushdown2() throws Exception {
-    assumeTrue(!TestUtil.shouldSkip(storageFormat, DISABLED_STORAGE_FORMATS));
-
-    PigServer server = new PigServer(ExecType.LOCAL);
+    PigServer server = createPigServer(false);
     server.registerQuery("A = load '" + COMPLEX_TABLE + "' using org.apache.hive.hcatalog.pig.HCatLoader();");
     server.registerQuery("B = load '" + COMPLEX_TABLE + "' using org.apache.hive.hcatalog.pig.HCatLoader();");
     server.registerQuery("C = join A by name, B by name;");
@@ -619,7 +551,6 @@ public class TestHCatLoader {
 
   @Test
   public void testGetInputBytes() throws Exception {
-    assumeTrue(!TestUtil.shouldSkip(storageFormat, DISABLED_STORAGE_FORMATS));
     File file = new File(TEST_WAREHOUSE_DIR + "/" + SPECIFIC_SIZE_TABLE + "/part-m-00000");
     file.deleteOnExit();
     RandomAccessFile randomAccessFile = new RandomAccessFile(file, "rw");
@@ -635,7 +566,6 @@ public class TestHCatLoader {
 
   @Test
   public void testConvertBooleanToInt() throws Exception {
-    assumeTrue(!TestUtil.shouldSkip(storageFormat, DISABLED_STORAGE_FORMATS));
     String tbl = "test_convert_boolean_to_int";
     String inputFileName = TEST_DATA_DIR + "/testConvertBooleanToInt/data.txt";
     File inputDataDir = new File(inputFileName).getParentFile();
@@ -652,6 +582,7 @@ public class TestHCatLoader {
 
     Properties properties = new Properties();
     properties.setProperty(HCatConstants.HCAT_DATA_CONVERT_BOOLEAN_TO_INTEGER, "true");
+    properties.put("stop.on.failure", Boolean.TRUE.toString());
     PigServer server = new PigServer(ExecType.LOCAL, properties);
     server.registerQuery(
       "data = load 'test_convert_boolean_to_int' using org.apache.hive.hcatalog.pig.HCatLoader();");
@@ -682,8 +613,7 @@ public class TestHCatLoader {
    */
   @Test
   public void testDatePartitionPushUp() throws Exception {
-    assumeTrue(!TestUtil.shouldSkip(storageFormat, DISABLED_STORAGE_FORMATS));
-    PigServer server = new PigServer(ExecType.LOCAL);
+    PigServer server = createPigServer(false);
     server.registerQuery("X = load '" + PARTITIONED_DATE_TABLE + "' using " + HCatLoader.class.getName() + "();");
     server.registerQuery("Y = filter X by dt == ToDate('2016-07-14','yyyy-MM-dd');");
     Iterator<Tuple> YIter = server.openIterator("Y");
@@ -700,7 +630,7 @@ public class TestHCatLoader {
    * basic tests that cover each scalar type
    * https://issues.apache.org/jira/browse/HIVE-5814
    */
-  private static final class AllTypesTable {
+  protected static final class AllTypesTable {
     private static final String ALL_TYPES_FILE_NAME = TEST_DATA_DIR + "/alltypes.input.data";
     private static final String ALL_PRIMITIVE_TYPES_TABLE = "junit_unparted_alltypes";
     private static final String ALL_TYPES_SCHEMA = "( c_boolean boolean, " +   //0
@@ -728,8 +658,8 @@ public class TestHCatLoader {
     /**
      * Test that we properly translate data types in Hive/HCat table schema into Pig schema
      */
-    private static void testSchemaLoadPrimitiveTypes() throws IOException {
-      PigServer server = new PigServer(ExecType.LOCAL);
+    static void testSchemaLoadPrimitiveTypes() throws IOException {
+      PigServer server = createPigServer(false);
       server.registerQuery("X = load '" + ALL_PRIMITIVE_TYPES_TABLE + "' using " + HCatLoader.class.getName() + "();");
       Schema dumpedXSchema = server.dumpSchema("X");
       List<FieldSchema> Xfields = dumpedXSchema.getFields();

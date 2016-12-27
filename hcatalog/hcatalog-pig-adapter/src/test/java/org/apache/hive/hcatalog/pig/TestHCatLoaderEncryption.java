@@ -84,9 +84,9 @@ import static org.junit.Assume.assumeTrue;
 @RunWith(Parameterized.class)
 public class TestHCatLoaderEncryption {
   private static final AtomicInteger salt = new AtomicInteger(new Random().nextInt());
-  private static final Logger LOG = LoggerFactory.getLogger(TestHCatLoader.class);
+  private static final Logger LOG = LoggerFactory.getLogger(TestHCatLoaderEncryption.class);
   private final String TEST_DATA_DIR = HCatUtil.makePathASafeFileName(System.getProperty
-      ("java.io.tmpdir") + File.separator + TestHCatLoader.class.getCanonicalName() + "-" +
+      ("java.io.tmpdir") + File.separator + TestHCatLoaderEncryption.class.getCanonicalName() + "-" +
       System.currentTimeMillis() + "_" + salt.getAndIncrement());
   private final String TEST_WAREHOUSE_DIR = TEST_DATA_DIR + "/warehouse";
   private final String BASIC_FILE_NAME = TEST_DATA_DIR + "/basic.input.data";
