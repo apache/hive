@@ -29,13 +29,13 @@ import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.lib.NodeProcessor;
+import org.apache.hadoop.hive.ql.parse.SubQueryDiagnostic.QBSubQueryRewrite;
 import org.apache.hadoop.hive.ql.parse.SubQueryUtils.ISubQueryJoinInfo;
 import org.apache.hadoop.hive.ql.parse.TypeCheckProcFactory.DefaultExprProcessor;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
-import org.apache.hadoop.hive.ql.parse.SubQueryDiagnostic.QBSubQueryRewrite;
 
 public class QBSubQuery implements ISubQueryJoinInfo {
 
@@ -327,14 +327,13 @@ public class QBSubQuery implements ISubQueryJoinInfo {
       try {
         TypeCheckCtx tcCtx = new TypeCheckCtx(parentQueryRR);
         String str = BaseSemanticAnalyzer.unescapeIdentifier(node.getChild(1).getText());
-        ExprNodeDesc idDesc = new ExprNodeConstantDesc(TypeInfoFactory.stringTypeInfo,
-                str.toLowerCase());
-         ExprNodeColumnDesc colDesc = (ExprNodeColumnDesc)
-             defaultExprProcessor.process(node, stack, tcCtx, (Object) null, idDesc);
-         if ( colDesc != null ) {
-           String[] qualName = parentQueryRR.reverseLookup(colDesc.getColumn());
-           return parentQueryRR.get(qualName[0], qualName[1]);
-         }
+        ExprNodeDesc idDesc = new ExprNodeConstantDesc(TypeInfoFactory.stringTypeInfo, str.toLowerCase());
+        Object desc = defaultExprProcessor.process(node, stack, tcCtx, (Object) null, idDesc);
+        if (desc != null && desc instanceof ExprNodeColumnDesc) {
+          ExprNodeColumnDesc colDesc = (ExprNodeColumnDesc) desc;
+          String[] qualName = parentQueryRR.reverseLookup(colDesc.getColumn());
+          return parentQueryRR.get(qualName[0], qualName[1]);
+        }
       } catch(SemanticException se) {
       }
       return null;
