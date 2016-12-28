@@ -394,7 +394,8 @@ public class TestSSL {
     setSslConfOverlay(confOverlay);
     // Test in http mode
     setHttpConfOverlay(confOverlay);
-    miniHS2 = new MiniHS2.Builder().withRemoteMetastore().cleanupLocalDirOnStartup(false).withConf(conf).build();
+    // Frankeinstein backport for CDH-47480. Removed cleanupLocalDirOnStartup(false)
+    miniHS2 = new MiniHS2.Builder().withRemoteMetastore().withConf(conf).build();
     miniHS2.start(confOverlay);
 
     String tableName = "sslTab";
@@ -428,7 +429,8 @@ public class TestSSL {
     setMetastoreSslConf(conf);
     conf.setVar(ConfVars.HIVE_METASTORE_SSL_KEYSTORE_PATH,
         dataFileDir + File.separator +  EXAMPLEDOTCOM_KEY_STORE_NAME);
-    miniHS2 = new MiniHS2.Builder().withRemoteMetastore().cleanupLocalDirOnStartup(false).withConf(conf).build();
+    // Frankeinstein backport for CDH-47480. Removed cleanupLocalDirOnStartup(false)
+    miniHS2 = new MiniHS2.Builder().withRemoteMetastore().withConf(conf).build();
     try {
       miniHS2.start(confOverlay);
     } catch (java.net.ConnectException e) {
