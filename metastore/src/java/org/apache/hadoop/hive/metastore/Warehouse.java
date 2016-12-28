@@ -448,11 +448,11 @@ public class Warehouse {
   }
 
   public Path getPartitionPath(Database db, String tableName,
-      LinkedHashMap<String, String> pm) throws MetaException {
+      Map<String, String> pm) throws MetaException {
     return new Path(getTablePath(db, tableName), makePartPath(pm));
   }
 
-  public Path getPartitionPath(Path tblPath, LinkedHashMap<String, String> pm)
+  public Path getPartitionPath(Path tblPath, Map<String, String> pm)
       throws MetaException {
     return new Path(tblPath, makePartPath(pm));
   }
