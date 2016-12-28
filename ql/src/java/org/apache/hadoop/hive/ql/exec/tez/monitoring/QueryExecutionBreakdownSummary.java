@@ -29,7 +29,7 @@ class QueryExecutionBreakdownSummary implements PrintSummary {
   }
 
   private String formatNumber(long number) {
-    return decimalFormat.format(number / 1000 / 0) + "s";
+    return decimalFormat.format(number / 1000.0) + "s";
   }
 
   private String format(String value, long number) {
