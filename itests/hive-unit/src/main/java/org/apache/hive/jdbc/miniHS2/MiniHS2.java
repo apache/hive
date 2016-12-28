@@ -19,13 +19,12 @@
 package org.apache.hive.jdbc.miniHS2;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicLong;
 
-import com.google.common.base.Preconditions;
 import org.apache.commons.io.FileUtils;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -44,13 +43,10 @@ import org.apache.hive.service.cli.thrift.ThriftBinaryCLIService;
 import org.apache.hive.service.cli.thrift.ThriftCLIServiceClient;
 import org.apache.hive.service.cli.thrift.ThriftHttpCLIService;
 import org.apache.hive.service.server.HiveServer2;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
+import com.google.common.io.Files;
 
 public class MiniHS2 extends AbstractHiveService {
-
-  private static final Logger LOG = LoggerFactory.getLogger(MiniHS2.class);
-
   public static final String HS2_BINARY_MODE = "binary";
   public static final String HS2_HTTP_MODE = "http";
   private static final String driverName = "org.apache.hive.jdbc.HiveDriver";
@@ -59,7 +55,7 @@ public class MiniHS2 extends AbstractHiveService {
   private static final String tmpDir = System.getProperty("test.tmp.dir");
   private HiveServer2 hiveServer2 = null;
   private final File baseDir;
-  private final Path baseFsDir;
+  private final Path baseDfsDir;
   private MiniMrShim mr;
   private MiniDFSShim dfs;
   private FileSystem localFS;
@@ -68,12 +64,10 @@ public class MiniHS2 extends AbstractHiveService {
   private final String serverPrincipal;
   private final String serverKeytab;
   private final boolean isMetastoreRemote;
-  private final boolean cleanupLocalDirOnStartup;
 
   public static class Builder {
     private HiveConf hiveConf = new HiveConf();
     private boolean useMiniMR = false;
-    private boolean cleanupLocalDirOnStartup = true;
     private boolean useMiniKdc = false;
     private String serverPrincipal;
     private String serverKeytab;
@@ -120,10 +114,6 @@ public class MiniHS2 extends AbstractHiveService {
       return this;
     }
 
-    public Builder cleanupLocalDirOnStartup(boolean val) {
-      this.cleanupLocalDirOnStartup = val;
-      return this;
-    }
 
     public MiniHS2 build() throws Exception {
       if (useMiniMR && useMiniKdc) {
@@ -135,7 +125,7 @@ public class MiniHS2 extends AbstractHiveService {
         hiveConf.setVar(ConfVars.HIVE_SERVER2_TRANSPORT_MODE, HS2_BINARY_MODE);
       }
       return new MiniHS2(hiveConf, useMiniMR, useMiniKdc, serverPrincipal, serverKeytab,
-          isMetastoreRemote, authType, cleanupLocalDirOnStartup);
+          isMetastoreRemote, authType);
     }
   }
 
@@ -172,18 +162,16 @@ public class MiniHS2 extends AbstractHiveService {
   }
 
   private MiniHS2(HiveConf hiveConf, boolean useMiniMR, boolean useMiniKdc,
-      String serverPrincipal, String serverKeytab, boolean isMetastoreRemote, String authType, boolean cleanupLocalDirOnStartup) throws Exception {
+      String serverPrincipal, String serverKeytab, boolean isMetastoreRemote, String authType) throws Exception {
     super(hiveConf, "localhost", MetaStoreUtils.findFreePort(), MetaStoreUtils.findFreePort());
     this.useMiniMR = useMiniMR;
     this.useMiniKdc = useMiniKdc;
     this.serverPrincipal = serverPrincipal;
     this.serverKeytab = serverKeytab;
     this.isMetastoreRemote = isMetastoreRemote;
-    this.cleanupLocalDirOnStartup = cleanupLocalDirOnStartup;
-    baseDir = getBaseDir();
+    baseDir = new File(tmpDir + "/local_base");
     localFS = FileSystem.getLocal(hiveConf);
     FileSystem fs;
-
     if (useMiniMR) {
       dfs = ShimLoader.getHadoopShims().getMiniDfs(hiveConf, 4, true, null);
       fs = dfs.getFileSystem();
@@ -191,16 +179,10 @@ public class MiniHS2 extends AbstractHiveService {
           fs.getUri().toString(), 1);
       // store the config in system properties
       mr.setupConfiguration(getHiveConf());
-      baseFsDir =  new Path(new Path(fs.getUri()), "/base");
+      baseDfsDir =  new Path(new Path(fs.getUri()), "/base");
     } else {
       fs = FileSystem.getLocal(hiveConf);
-      baseFsDir = new Path("file://"+ baseDir.toURI().getPath());
-      if (cleanupLocalDirOnStartup) {
-        // Cleanup baseFsDir since it can be shared across tests.
-        LOG.info("Attempting to cleanup baseFsDir: {} while setting up MiniHS2", baseDir);
-        Preconditions.checkState(baseFsDir.depth() >= 3); // Avoid "/tmp", directories closer to "/"
-        fs.delete(baseFsDir, true);
-      }
+      baseDfsDir = new Path("file://"+ baseDir.toURI().getPath());
     }
     if (useMiniKdc) {
       hiveConf.setVar(ConfVars.HIVE_SERVER2_KERBEROS_PRINCIPAL, serverPrincipal);
@@ -210,8 +192,8 @@ public class MiniHS2 extends AbstractHiveService {
     String metaStoreURL =
         "jdbc:derby:;databaseName=" + baseDir.getAbsolutePath() + File.separator
             + "test_metastore;create=true";
-    fs.mkdirs(baseFsDir);
-    Path wareHouseDir = new Path(baseFsDir, "warehouse");
+    fs.mkdirs(baseDfsDir);
+    Path wareHouseDir = new Path(baseDfsDir, "warehouse");
     // Create warehouse with 777, so that user impersonation has no issues.
     FileSystem.mkdirs(fs, wareHouseDir, FULL_PERM);
 
@@ -225,7 +207,7 @@ public class MiniHS2 extends AbstractHiveService {
     hiveConf.setIntVar(ConfVars.HIVE_SERVER2_THRIFT_PORT, getBinaryPort());
     hiveConf.setIntVar(ConfVars.HIVE_SERVER2_THRIFT_HTTP_PORT, getHttpPort());
 
-    Path scratchDir = new Path(baseFsDir, "scratch");
+    Path scratchDir = new Path(baseDfsDir, "scratch");
     // Create root scratchdir with write all, so that user impersonation has no issues.
     Utilities.createDirsWithPermission(hiveConf, scratchDir, WRITE_ALL_PERM, true);
     System.setProperty(HiveConf.ConfVars.SCRATCHDIR.varname, scratchDir.toString());
@@ -241,7 +223,7 @@ public class MiniHS2 extends AbstractHiveService {
   }
 
   public MiniHS2(HiveConf hiveConf, boolean useMiniMR) throws Exception {
-    this(hiveConf, useMiniMR, false, null, null, false, "KERBEROS", true);
+    this(hiveConf, useMiniMR, false, null, null, false, "KERBEROS");
   }
 
   public void start(Map<String, String> confOverlay) throws Exception {
@@ -413,19 +395,5 @@ public class MiniHS2 extends AbstractHiveService {
       hs2Client.closeSession(sessionHandle);
       break;
     } while (true);
-  }
-
-  static File getBaseDir() {
-    File baseDir = new File(tmpDir + "/local_base");
-    return baseDir;
-  }
-
-  public static void cleanupLocalDir() throws IOException {
-    File baseDir = getBaseDir();
-    try {
-      org.apache.hadoop.hive.common.FileUtils.deleteDirectory(baseDir);
-    } catch (FileNotFoundException e) {
-      // Ignore. Safe if it does not exist.
-    }
   }
 }
