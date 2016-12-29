@@ -23,11 +23,13 @@ import org.apache.hadoop.hive.ql.io.parquet.ProjectionPusher;
 import org.apache.hadoop.hive.ql.io.parquet.read.DataWritableReadSupport;
 import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
 import org.apache.hadoop.hive.serde2.SerDeStats;
+import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.RecordReader;
 import org.apache.hadoop.mapreduce.InputSplit;
+import org.apache.parquet.ParquetRuntimeException;
 import org.apache.parquet.column.ColumnDescriptor;
 import org.apache.parquet.column.page.PageReadStore;
 import org.apache.parquet.filter2.compat.FilterCompat;
@@ -35,6 +37,7 @@ import org.apache.parquet.hadoop.ParquetFileReader;
 import org.apache.parquet.hadoop.ParquetInputSplit;
 import org.apache.parquet.hadoop.metadata.BlockMetaData;
 import org.apache.parquet.hadoop.metadata.ParquetMetadata;
+import org.apache.parquet.schema.InvalidSchemaException;
 import org.apache.parquet.schema.MessageType;
 import org.apache.parquet.schema.Type;
 import org.slf4j.Logger;
@@ -68,6 +71,7 @@ public class VectorizedParquetRecordReader extends ParquetRecordReaderBase
   private List<String> columnNamesList;
   private List<TypeInfo> columnTypesList;
   private VectorizedRowBatchCtx rbCtx;
+  private List<Integer> indexColumnsWanted;
 
   /**
    * For each request column, the reader to read this column. This is NULL if this column
@@ -198,7 +202,7 @@ public class VectorizedParquetRecordReader extends ParquetRecordReaderBase
         columnTypesList);
     }
 
-    List<Integer> indexColumnsWanted = ColumnProjectionUtils.getReadColumnIDs(configuration);
+    indexColumnsWanted = ColumnProjectionUtils.getReadColumnIDs(configuration);
     if (!ColumnProjectionUtils.isReadAllColumns(configuration) && !indexColumnsWanted.isEmpty()) {
       requestedSchema =
         DataWritableReadSupport.getSchemaByIndex(tableSchema, columnNamesList, indexColumnsWanted);
@@ -279,11 +283,81 @@ public class VectorizedParquetRecordReader extends ParquetRecordReaderBase
     List<ColumnDescriptor> columns = requestedSchema.getColumns();
     List<Type> types = requestedSchema.getFields();
     columnReaders = new VectorizedColumnReader[columns.size()];
-    for (int i = 0; i < columns.size(); ++i) {
-      columnReaders[i] =
-        new VectorizedColumnReader(columns.get(i), pages.getPageReader(columns.get(i)),
-          skipTimestampConversion, types.get(i));
+
+    if (!ColumnProjectionUtils.isReadAllColumns(jobConf) && !indexColumnsWanted.isEmpty()) {
+      for (int i = 0; i < types.size(); ++i) {
+        columnReaders[i] =
+          buildVectorizedParquetReader(columnTypesList.get(indexColumnsWanted.get(i)), types.get(i),
+            pages, requestedSchema.getColumns(), skipTimestampConversion, 0);
+      }
+    } else {
+      for (int i = 0; i < types.size(); ++i) {
+        columnReaders[i] = buildVectorizedParquetReader(columnTypesList.get(i), types.get(i), pages,
+          requestedSchema.getColumns(), skipTimestampConversion, 0);
+      }
     }
+
     totalCountLoadedSoFar += pages.getRowCount();
+  }
+
+  private List<ColumnDescriptor> getAllColumnDescriptorByType(
+    int depth,
+    Type type,
+    List<ColumnDescriptor> columns) throws ParquetRuntimeException {
+    List<ColumnDescriptor> res = new ArrayList<>();
+    for (ColumnDescriptor descriptor : columns) {
+      if (depth >= descriptor.getPath().length) {
+        throw new InvalidSchemaException("Corrupted Parquet schema");
+      }
+      if (type.getName().equals(descriptor.getPath()[depth])) {
+        res.add(descriptor);
+      }
+    }
+    return res;
+  }
+
+  // Build VectorizedParquetColumnReader via Hive typeInfo and Parquet schema
+  private VectorizedColumnReader buildVectorizedParquetReader(
+    TypeInfo typeInfo,
+    Type type,
+    PageReadStore pages,
+    List<ColumnDescriptor> columnDescriptors,
+    boolean skipTimestampConversion,
+    int depth) throws IOException {
+    List<ColumnDescriptor> descriptors =
+      getAllColumnDescriptorByType(depth, type, columnDescriptors);
+    switch (typeInfo.getCategory()) {
+    case PRIMITIVE:
+      if (columnDescriptors == null || columnDescriptors.isEmpty()) {
+        throw new RuntimeException(
+          "Failed to find related Parquet column descriptor with type " + type);
+      } else {
+        return new VectorizedPrimitiveColumnReader(descriptors.get(0),
+          pages.getPageReader(descriptors.get(0)), skipTimestampConversion, type);
+      }
+    case STRUCT:
+      StructTypeInfo structTypeInfo = (StructTypeInfo) typeInfo;
+      List<VectorizedColumnReader> fieldReaders = new ArrayList<>();
+      List<TypeInfo> fieldTypes = structTypeInfo.getAllStructFieldTypeInfos();
+      List<Type> types = type.asGroupType().getFields();
+      for (int i = 0; i < fieldTypes.size(); i++) {
+        VectorizedColumnReader r =
+          buildVectorizedParquetReader(fieldTypes.get(i), types.get(i), pages, descriptors,
+            skipTimestampConversion, depth + 1);
+        if (r != null) {
+          fieldReaders.add(r);
+        } else {
+          throw new RuntimeException(
+            "Fail to build Parquet vectorized reader based on Hive type " + fieldTypes.get(i)
+              .getTypeName() + " and Parquet type" + types.get(i).toString());
+        }
+      }
+      return new VectorizedStructColumnReader(fieldReaders);
+    case LIST:
+    case MAP:
+    case UNION:
+    default:
+      throw new RuntimeException("Unsupported category " + typeInfo.getCategory().name());
+    }
   }
 }
