@@ -18,9 +18,9 @@ import static org.apache.hadoop.hive.ql.exec.tez.monitoring.TezJobMonitor.getCou
 
 public class LLAPioSummary implements PrintSummary {
 
-  String LLAP_SUMMARY_HEADER_FORMAT = "%10s %9s %9s %10s %9s %10s %11s %8s %9s";
-  String LLAP_IO_SUMMARY_HEADER = "LLAP IO Summary";
-  String LLAP_SUMMARY_HEADER = String.format(LLAP_SUMMARY_HEADER_FORMAT,
+  private static final String LLAP_SUMMARY_HEADER_FORMAT = "%10s %9s %9s %10s %9s %10s %11s %8s %9s";
+  private static final String LLAP_IO_SUMMARY_HEADER = "LLAP IO Summary";
+  private static final String LLAP_SUMMARY_HEADER = String.format(LLAP_SUMMARY_HEADER_FORMAT,
       "VERTICES", "ROWGROUPS", "META_HIT", "META_MISS", "DATA_HIT", "DATA_MISS",
       "ALLOCATION", "USED", "TOTAL_IO");
 
@@ -54,7 +54,7 @@ public class LLAPioSummary implements PrintSummary {
       if (vertexCounters != null) {
         if (!first) {
           console.printInfo(SEPARATOR);
-          console.printInfo(LLAP_IO_SUMMARY_HEADER);
+          console.printInfo(LLAP_SUMMARY_HEADER);
           console.printInfo(SEPARATOR);
           first = true;
         }

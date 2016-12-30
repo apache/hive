@@ -1,7 +1,7 @@
 package org.apache.hadoop.hive.ql.exec.tez.monitoring;
 
-import org.apache.hadoop.hive.ql.exec.InPlaceUpdates;
+import org.apache.hadoop.hive.ql.log.InPlaceUpdate;
 
 public interface Constants {
-  String SEPARATOR = new String(new char[InPlaceUpdates.MIN_TERMINAL_WIDTH]).replace("\0", "-");
+  String SEPARATOR = new String(new char[InPlaceUpdate.MIN_TERMINAL_WIDTH]).replace("\0", "-");
 }

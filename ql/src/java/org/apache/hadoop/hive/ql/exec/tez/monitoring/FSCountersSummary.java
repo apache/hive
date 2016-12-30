@@ -18,7 +18,7 @@ import static org.apache.hadoop.hive.ql.exec.tez.monitoring.TezJobMonitor.getCou
 
 public class FSCountersSummary implements PrintSummary {
 
-  public static final String FORMATTING_PATTERN = "%10s %15s %13s %18s %18s %13s";
+  private static final String FORMATTING_PATTERN = "%10s %15s %13s %18s %18s %13s";
   private static final String HEADER = String.format(FORMATTING_PATTERN,
       "VERTICES", "BYTES_READ", "READ_OPS", "LARGE_READ_OPS", "BYTES_WRITTEN", "WRITE_OPS");
 

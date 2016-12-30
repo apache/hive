@@ -683,6 +683,6 @@ public class TezSessionState {
   }
 
   public ProgressMonitor monitor(){
-    return jobMonitor;
+    return jobMonitor.progressMonitor();
   }
 }
