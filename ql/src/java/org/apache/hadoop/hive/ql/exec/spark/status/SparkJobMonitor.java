@@ -19,7 +19,7 @@
 package org.apache.hadoop.hive.ql.exec.spark.status;
 
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.ql.exec.InPlaceUpdates;
+import org.apache.hadoop.hive.ql.log.InPlaceUpdate;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.fusesource.jansi.Ansi;
@@ -30,12 +30,7 @@ import java.io.PrintStream;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-import java.util.SortedSet;
-import java.util.TreeSet;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 import static org.fusesource.jansi.Ansi.ansi;
@@ -82,7 +77,7 @@ abstract class SparkJobMonitor {
   protected SparkJobMonitor(HiveConf hiveConf) {
     monitorTimeoutInterval = hiveConf.getTimeVar(
         HiveConf.ConfVars.SPARK_JOB_MONITOR_TIMEOUT, TimeUnit.SECONDS);
-    inPlaceUpdate = InPlaceUpdates.inPlaceEligible(hiveConf);
+    inPlaceUpdate = InPlaceUpdate.canRenderInPlace(hiveConf) && !SessionState.getConsole().getIsSilent();
     console = SessionState.getConsole();
     out = SessionState.LogHelper.getInfoStream();
   }
@@ -270,7 +265,7 @@ abstract class SparkJobMonitor {
   }
 
   private void reprintLine(String line) {
-    InPlaceUpdates.reprintLine(out, line);
+    InPlaceUpdate.reprintLine(out, line);
     lines++;
   }
 

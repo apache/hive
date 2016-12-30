@@ -1,7 +1,8 @@
 package org.apache.hive.beeline;
 
-import org.apache.hive.beeline.display.InPlaceUpdate;
-import org.apache.hive.beeline.display.Util;
+import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.log.InPlaceUpdate;
+import org.apache.hadoop.hive.ql.log.ProgressMonitor;
 import org.apache.hive.jdbc.HiveStatement;
 import org.apache.hive.service.rpc.thrift.TJobExecutionStatus;
 import org.apache.hive.service.rpc.thrift.TProgressUpdateResp;
@@ -24,7 +25,7 @@ import static org.mockito.Mockito.verify;
 import static org.powermock.api.mockito.PowerMockito.*;
 
 @RunWith(PowerMockRunner.class)
-@PrepareForTest({Util.class, Commands.LogRunnable.class})
+@PrepareForTest({InPlaceUpdate.class, Commands.LogRunnable.class})
 @PowerMockIgnore("javax.management.*")
 public class TestLogRunnable {
 
@@ -38,15 +39,15 @@ public class TestLogRunnable {
 
   @Before
   public void setup() {
-    mockStatic(Util.class);
-    when(Util.canRenderInPlace()).thenReturn(true);
+    mockStatic(InPlaceUpdate.class);
+    when(InPlaceUpdate.canRenderInPlace(any(HiveConf.class))).thenReturn(true);
     logRunnable = new Commands.LogRunnable(commands, hiveStatement, 0L);
   }
 
   @After
   public void assertStatic() {
     verifyStatic();
-    Util.canRenderInPlace();
+    InPlaceUpdate.canRenderInPlace(any(HiveConf.class));
   }
 
   @Test
@@ -65,7 +66,7 @@ public class TestLogRunnable {
     verify(hiveStatement, times(2)).hasMoreLogs();
     verify(hiveStatement).getProgressResponse();
     verifyNoMoreInteractions(hiveStatement);
-    verify(inplaceUpdate).render(any(TProgressUpdateResp.class));
+    verify(inplaceUpdate).render(any(ProgressMonitor.class));
   }
 
   @Test

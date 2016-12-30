@@ -1,9 +1,10 @@
-package org.apache.hive.beeline.display;
+package org.apache.hadoop.hive.ql.log;
 
 import com.google.common.base.Function;
 import com.google.common.collect.Lists;
+import jline.TerminalFactory;
 import org.apache.commons.lang.StringUtils;
-import org.apache.hive.service.rpc.thrift.TProgressUpdateResp;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.fusesource.jansi.Ansi;
 
 import javax.annotation.Nullable;
@@ -13,9 +14,11 @@ import java.text.DecimalFormat;
 import java.util.List;
 
 import static org.fusesource.jansi.Ansi.ansi;
+import static org.fusesource.jansi.internal.CLibrary.*;
 
 public class InPlaceUpdate {
 
+  public static final int MIN_TERMINAL_WIDTH = 94;
 
   // keep this within 80 chars width. If more columns needs to be added then update min terminal
   // width requirement and SEPARATOR width accordingly
@@ -24,12 +27,23 @@ public class InPlaceUpdate {
   private static final String FOOTER_FORMAT = "%-15s  %-30s %-4s  %-25s";
 
   private static final int PROGRESS_BAR_CHARS = 30;
-  private static final String SEPARATOR = new String(new char[Util.MIN_TERMINAL_WIDTH]).replace("\0", "-");
+  private static final String SEPARATOR = new String(new char[MIN_TERMINAL_WIDTH]).replace("\0", "-");
 
   /* Pretty print the values */
   private final DecimalFormat secondsFormatter = new DecimalFormat("#0.00");
   private int lines = 0;
   private PrintStream out = System.out;
+
+
+  public static void reprintLine(PrintStream out, String line) {
+    out.print(ansi().eraseLine(Ansi.Erase.ALL).a(line).a('\n').toString());
+    out.flush();
+  }
+
+  public static void rePositionCursor(PrintStream ps) {
+    ps.print(ansi().cursorUp(0).toString());
+    ps.flush();
+  }
 
   /**
    * NOTE: Use this method only if isUnixTerminal is true.
@@ -38,7 +52,7 @@ public class InPlaceUpdate {
    * @param line - line to print
    */
   private void reprintLine(String line) {
-    Util.reprintLine(out, line);
+    reprintLine(out, line);
     lines++;
   }
 
@@ -101,8 +115,8 @@ public class InPlaceUpdate {
     return bar.toString();
   }
 
-  public void render(TProgressUpdateResp progressResponse) {
-    if (progressResponse == null) return;
+  public void render(ProgressMonitor monitor) {
+    if (monitor == null) return;
     // position the cursor to line 0
     repositionCursor();
 
@@ -111,13 +125,13 @@ public class InPlaceUpdate {
     //         VERTICES     STATUS  TOTAL  COMPLETED  RUNNING  PENDING  FAILED  KILLED
     // -------------------------------------------------------------------------------
     reprintLine(SEPARATOR);
-    reprintLineWithColorAsBold(String.format(HEADER_FORMAT, progressResponse.getHeaderNames().toArray()),
+    reprintLineWithColorAsBold(String.format(HEADER_FORMAT, monitor.headers().toArray()),
       Ansi.Color.CYAN);
     reprintLine(SEPARATOR);
 
 
     // Map 1 .......... container  SUCCEEDED      7          7        0        0       0       0
-    List<String> printReady = Lists.transform(progressResponse.getRows(), new Function<List<String>, String>() {
+    List<String> printReady = Lists.transform(monitor.rows(), new Function<List<String>, String>() {
       @Nullable
       @Override
       public String apply(@Nullable List<String> row) {
@@ -129,17 +143,50 @@ public class InPlaceUpdate {
     // -------------------------------------------------------------------------------
     // VERTICES: 03/04            [=================>>-----] 86%  ELAPSED TIME: 1.71 s
     // -------------------------------------------------------------------------------
-    String progressStr = "" + (int) (progressResponse.getProgressedPercentage() * 100) + "%";
-    float et = (float) (System.currentTimeMillis() - progressResponse.getStartTime()) / (float) 1000;
+    String progressStr = "" + (int) (monitor.progressedPercentage() * 100) + "%";
+    float et = (float) (System.currentTimeMillis() - monitor.startTime()) / (float) 1000;
     String elapsedTime = "ELAPSED TIME: " + secondsFormatter.format(et) + " s";
     String footer = String.format(
       FOOTER_FORMAT,
-      progressResponse.getFooterSummary(),
-      getInPlaceProgressBar(progressResponse.getProgressedPercentage()),
+      monitor.footerSummary(),
+      getInPlaceProgressBar(monitor.progressedPercentage()),
       progressStr,
       elapsedTime);
 
     reprintLineWithColorAsBold(footer, Ansi.Color.RED);
     reprintLine(SEPARATOR);
+  }
+
+
+  public static boolean canRenderInPlace(HiveConf conf) {
+    boolean inPlaceUpdates = HiveConf.getBoolVar(conf, HiveConf.ConfVars.TEZ_EXEC_INPLACE_PROGRESS);
+
+    // we need at least 80 chars wide terminal to display in-place updates properly
+    return inPlaceUpdates && isUnixTerminal() && TerminalFactory.get().getWidth() >= MIN_TERMINAL_WIDTH;
+  }
+
+  private static boolean isUnixTerminal() {
+
+    String os = System.getProperty("os.name");
+    if (os.startsWith("Windows")) {
+      // we do not support Windows, we will revisit this if we really need it for windows.
+      return false;
+    }
+
+    // We must be on some unix variant..
+    // check if standard out is a terminal
+    try {
+      // isatty system call will return 1 if the file descriptor is terminal else 0
+      if (isatty(STDOUT_FILENO) == 0) {
+        return false;
+      }
+      if (isatty(STDERR_FILENO) == 0) {
+        return false;
+      }
+    } catch (NoClassDefFoundError | UnsatisfiedLinkError ignore) {
+      // These errors happen if the JNI lib is not available for your platform.
+      return false;
+    }
+    return true;
   }
 }

@@ -63,11 +63,7 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
-import org.apache.hadoop.hive.common.BlobStorageUtils;
-import org.apache.hadoop.hive.common.FileUtils;
-import org.apache.hadoop.hive.common.HiveStatsUtils;
-import org.apache.hadoop.hive.common.ObjectPair;
-import org.apache.hadoop.hive.common.StatsSetupConst;
+import org.apache.hadoop.hive.common.*;
 import org.apache.hadoop.hive.common.classification.InterfaceAudience.LimitedPrivate;
 import org.apache.hadoop.hive.common.classification.InterfaceStability.Unstable;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -127,11 +123,11 @@ import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.FunctionTask;
 import org.apache.hadoop.hive.ql.exec.FunctionUtils;
-import org.apache.hadoop.hive.ql.exec.InPlaceUpdates;
 import org.apache.hadoop.hive.ql.exec.SerializationUtilities;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.index.HiveIndexHandler;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
+import org.apache.hadoop.hive.ql.log.InPlaceUpdate;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.optimizer.listbucketingpruner.ListBucketingPrunerUtils;
 import org.apache.hadoop.hive.ql.plan.AddPartitionDesc;
@@ -1898,7 +1894,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     final AtomicInteger partitionsLoaded = new AtomicInteger(0);
 
     final boolean inPlaceEligible = conf.getLong("fs.trash.interval", 0) <= 0
-        && InPlaceUpdates.inPlaceEligible(conf);
+        && InPlaceUpdate.canRenderInPlace(conf) && !SessionState.getConsole().getIsSilent();
     final PrintStream ps = (inPlaceEligible) ? SessionState.getConsole().getInfoStream() : null;
     final SessionState parentSession = SessionState.get();
 
@@ -1926,9 +1922,9 @@ private void constructOneLBLocationMap(FileStatus fSta,
 
               if (inPlaceEligible) {
                 synchronized (ps) {
-                  InPlaceUpdates.rePositionCursor(ps);
+                  InPlaceUpdate.rePositionCursor(ps);
                   partitionsLoaded.incrementAndGet();
-                  InPlaceUpdates.reprintLine(ps, "Loaded : " + partitionsLoaded.get() + "/"
+                  InPlaceUpdate.reprintLine(ps, "Loaded : " + partitionsLoaded.get() + "/"
                       + partsToLoad + " partitions.");
                 }
               }

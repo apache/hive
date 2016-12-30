@@ -27,9 +27,9 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveVariableSource;
 import org.apache.hadoop.hive.conf.SystemVariables;
 import org.apache.hadoop.hive.conf.VariableSubstitution;
+import org.apache.hadoop.hive.ql.log.InPlaceUpdate;
+import org.apache.hadoop.hive.ql.log.ProgressMonitor;
 import org.apache.hadoop.io.IOUtils;
-import org.apache.hive.beeline.display.InPlaceUpdate;
-import org.apache.hive.beeline.display.Util;
 import org.apache.hive.jdbc.HiveStatement;
 import org.apache.hive.jdbc.Utils;
 import org.apache.hive.jdbc.Utils.JdbcConnectionParams;
@@ -1244,7 +1244,7 @@ public class Commands {
 
     LogRunnable(Commands commands, HiveStatement hiveStatement, long queryProgressInterval) {
       this.hiveStatement = hiveStatement;
-      canDisplayInPlaceProgress = Util.canRenderInPlace();
+      canDisplayInPlaceProgress = InPlaceUpdate.canRenderInPlace(commands.getHiveConfHelper(false));
       this.commands = commands;
       this.queryProgressInterval = queryProgressInterval;
     }
@@ -1263,7 +1263,7 @@ public class Commands {
           if (canDisplayInPlaceProgress && !progressBarUpdateCompleted) {
             TProgressUpdateResp progressResponse = hiveStatement.getProgressResponse();
             if (progressResponse != null && !TJobExecutionStatus.NOT_AVAILABLE.equals(progressResponse.getStatus())) {
-              new InPlaceUpdate().render(progressResponse);
+              new InPlaceUpdate().render(new ProgressMonitorWrapper(progressResponse));
               if (receivedAllProgressUpdates(progressResponse.getStatus())) {
                 progressBarUpdateCompleted = true;
               }
@@ -1284,6 +1284,44 @@ public class Commands {
           commands.showRemainingLogsIfAny(hiveStatement);
         }
       }
+    }
+  }
+
+  static class ProgressMonitorWrapper implements ProgressMonitor{
+    private TProgressUpdateResp response;
+
+    ProgressMonitorWrapper(TProgressUpdateResp response) {
+      this.response = response;
+    }
+
+    @Override
+    public List<String> headers() {
+      return response.getHeaderNames();
+    }
+
+    @Override
+    public List<List<String>> rows() {
+      return response.getRows();
+    }
+
+    @Override
+    public String footerSummary() {
+      return response.getFooterSummary();
+    }
+
+    @Override
+    public long startTime() {
+      return response.getStartTime();
+    }
+
+    @Override
+    public String executionStatus() {
+      return response.getStatus().name();
+    }
+
+    @Override
+    public double progressedPercentage() {
+      return response.getProgressedPercentage();
     }
   }
 
