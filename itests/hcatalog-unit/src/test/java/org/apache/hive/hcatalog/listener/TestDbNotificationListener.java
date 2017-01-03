@@ -53,6 +53,8 @@ import org.apache.hadoop.hive.metastore.api.ResourceUri;
 import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.metastore.messaging.AlterPartitionMessage;
+import org.apache.hadoop.hive.metastore.messaging.AlterTableMessage;
 import org.apache.hadoop.hive.metastore.messaging.EventMessage.EventType;
 import org.apache.hadoop.hive.metastore.messaging.json.JSONMessageFactory;
 import org.apache.hadoop.hive.ql.Driver;
@@ -295,13 +297,9 @@ public class TestDbNotificationListener {
     assertEquals(defaultDbName, event.getDbName());
     assertEquals(tblName, event.getTableName());
 
-    // Parse the message field
-    ObjectNode jsonTree = JSONMessageFactory.getJsonTree(event);
-    assertEquals(EventType.ALTER_TABLE.toString(), jsonTree.get("eventType").asText());
-    assertEquals(defaultDbName, jsonTree.get("db").asText());
-    assertEquals(tblName, jsonTree.get("table").asText());
-    Table tableObj = JSONMessageFactory.getTableObj(jsonTree);
-    assertEquals(table, tableObj);
+    AlterTableMessage alterTableMessage =
+        JSONMessageFactory.getInstance().getDeserializer().getAlterTableMessage(event.getMessage());
+    assertEquals(table, alterTableMessage.getTableObjAfter());
 
     // When hive.metastore.transactional.event.listeners is set,
     // a failed event should not create a new notification
@@ -485,8 +483,10 @@ public class TestDbNotificationListener {
     assertEquals(EventType.ALTER_PARTITION.toString(), jsonTree.get("eventType").asText());
     assertEquals(defaultDbName, jsonTree.get("db").asText());
     assertEquals(tblName, jsonTree.get("table").asText());
-    List<Partition> partitionObjList = JSONMessageFactory.getPartitionObjList(jsonTree);
-    assertEquals(newPart, partitionObjList.get(0));
+
+    AlterPartitionMessage alterPartitionMessage =
+        JSONMessageFactory.getInstance().getDeserializer().getAlterPartitionMessage(event.getMessage());
+    assertEquals(newPart, alterPartitionMessage.getPtnObjAfter());
 
     // When hive.metastore.transactional.event.listeners is set,
     // a failed event should not create a new notification

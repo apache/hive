@@ -19,6 +19,9 @@
 
 package org.apache.hadoop.hive.metastore.messaging;
 
+import org.apache.hadoop.hive.metastore.api.Partition;
+import org.apache.hadoop.hive.metastore.api.Table;
+
 import java.util.List;
 import java.util.Map;
 
@@ -34,11 +37,15 @@ public abstract class AddPartitionMessage extends EventMessage {
    */
   public abstract String getTable();
 
+  public abstract Table getTableObj() throws Exception;
+
   /**
    * Getter for list of partitions added.
    * @return List of maps, where each map identifies values for each partition-key, for every added partition.
    */
   public abstract List<Map<String, String>> getPartitions ();
+
+  public abstract Iterable<Partition> getPartitionObjs() throws Exception;
 
   @Override
   public EventMessage checkValid() {

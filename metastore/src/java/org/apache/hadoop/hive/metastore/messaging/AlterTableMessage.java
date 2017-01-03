@@ -18,6 +18,8 @@
  */
 package org.apache.hadoop.hive.metastore.messaging;
 
+import org.apache.hadoop.hive.metastore.api.Table;
+
 public abstract class AlterTableMessage extends EventMessage {
 
   protected AlterTableMessage() {
@@ -26,9 +28,27 @@ public abstract class AlterTableMessage extends EventMessage {
 
   public abstract String getTable();
 
+  public abstract Table getTableObjBefore() throws Exception;
+
+  public abstract Table getTableObjAfter() throws Exception;
+
   @Override
   public EventMessage checkValid() {
     if (getTable() == null) throw new IllegalStateException("Table name unset.");
+    try {
+      if (getTableObjAfter() == null){
+        throw new IllegalStateException("Table object(after) not set.");
+      }
+      if (getTableObjBefore() == null){
+        throw new IllegalStateException("Table object(before) not set.");
+      }
+    } catch (Exception e) {
+      if (! (e instanceof IllegalStateException)){
+        throw new IllegalStateException("Event not set up correctly",e);
+      } else {
+        throw (IllegalStateException) e;
+      }
+    }
     return super.checkValid();
   }
 }
