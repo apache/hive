@@ -258,6 +258,10 @@ public class ReplicationSpec {
     return isMetadataOnly;
   }
 
+  public void setIsMetadataOnly(boolean isMetadataOnly){
+    this.isMetadataOnly = isMetadataOnly;
+  }
+
   /**
    * @return the replication state of the event that spawned this statement
    */

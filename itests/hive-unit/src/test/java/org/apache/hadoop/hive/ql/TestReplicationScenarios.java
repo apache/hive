@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.ql;
 
+import com.google.common.collect.Lists;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.cli.CliSessionState;
@@ -24,6 +25,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
+import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.ql.parse.ReplicationSemanticAnalyzer;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
@@ -42,8 +44,10 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
+import static junit.framework.Assert.assertTrue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -402,6 +406,192 @@ public class TestReplicationScenarios {
     assertEquals(NoSuchObjectException.class, e.getClass());
 
   }
+
+
+  @Test
+  public void testAlters() throws IOException {
+
+    String testName = "alters";
+    LOG.info("Testing "+testName);
+    String dbName = testName + "_" + tid;
+
+    run("CREATE DATABASE " + dbName);
+    run("CREATE TABLE " + dbName + ".unptned(a string) STORED AS TEXTFILE");
+    run("CREATE TABLE " + dbName + ".unptned2(a string) STORED AS TEXTFILE");
+    run("CREATE TABLE " + dbName + ".ptned(a string) partitioned by (b string) STORED AS TEXTFILE");
+    run("CREATE TABLE " + dbName + ".ptned2(a string) partitioned by (b string) STORED AS TEXTFILE");
+
+    String[] unptn_data = new String[]{ "eleven" , "twelve" };
+    String[] ptn_data_1 = new String[]{ "thirteen", "fourteen", "fifteen"};
+    String[] ptn_data_2 = new String[]{ "fifteen", "sixteen", "seventeen"};
+    String[] empty = new String[]{};
+
+    String unptn_locn = new Path(TEST_PATH , testName + "_unptn").toUri().getPath();
+    String ptn_locn_1 = new Path(TEST_PATH , testName + "_ptn1").toUri().getPath();
+    String ptn_locn_2 = new Path(TEST_PATH , testName + "_ptn2").toUri().getPath();
+
+    createTestDataFile(unptn_locn, unptn_data);
+    createTestDataFile(ptn_locn_1, ptn_data_1);
+    createTestDataFile(ptn_locn_2, ptn_data_2);
+
+    run("LOAD DATA LOCAL INPATH '" + unptn_locn + "' OVERWRITE INTO TABLE " + dbName + ".unptned");
+    run("SELECT * from " + dbName + ".unptned");
+    verifyResults(unptn_data);
+    run("LOAD DATA LOCAL INPATH '" + unptn_locn + "' OVERWRITE INTO TABLE " + dbName + ".unptned2");
+    run("SELECT * from " + dbName + ".unptned2");
+    verifyResults(unptn_data);
+
+    run("LOAD DATA LOCAL INPATH '" + ptn_locn_1 + "' OVERWRITE INTO TABLE " + dbName + ".ptned PARTITION(b='1')");
+    run("SELECT a from " + dbName + ".ptned WHERE b='1'");
+    verifyResults(ptn_data_1);
+    run("LOAD DATA LOCAL INPATH '" + ptn_locn_2 + "' OVERWRITE INTO TABLE " + dbName + ".ptned PARTITION(b='2')");
+    run("SELECT a from " + dbName + ".ptned WHERE b='2'");
+    verifyResults(ptn_data_2);
+    run("LOAD DATA LOCAL INPATH '" + ptn_locn_1 + "' OVERWRITE INTO TABLE " + dbName + ".ptned2 PARTITION(b='1')");
+    run("SELECT a from " + dbName + ".ptned2 WHERE b='1'");
+    verifyResults(ptn_data_1);
+    run("LOAD DATA LOCAL INPATH '" + ptn_locn_2 + "' OVERWRITE INTO TABLE " + dbName + ".ptned2 PARTITION(b='2')");
+    run("SELECT a from " + dbName + ".ptned2 WHERE b='2'");
+    verifyResults(ptn_data_2);
+
+    advanceDumpDir();
+    run("REPL DUMP " + dbName);
+    String replDumpLocn = getResult(0,0);
+    String replDumpId = getResult(0,1,true);
+    run("EXPLAIN REPL LOAD " + dbName + "_dupe FROM '" + replDumpLocn + "'");
+    printOutput();
+    run("REPL LOAD " + dbName + "_dupe FROM '" + replDumpLocn + "'");
+
+    run("REPL STATUS " + dbName + "_dupe");
+    verifyResults(new String[] {replDumpId});
+
+    run("SELECT * from " + dbName + "_dupe.unptned");
+    verifyResults(unptn_data);
+    run("SELECT * from " + dbName + "_dupe.unptned2");
+    verifyResults(unptn_data);
+    run("SELECT a from " + dbName + "_dupe.ptned WHERE b='1'");
+    verifyResults(ptn_data_1);
+    run("SELECT a from " + dbName + "_dupe.ptned WHERE b='2'");
+    verifyResults(ptn_data_2);
+    run("SELECT a from " + dbName + "_dupe.ptned2 WHERE b='1'");
+    verifyResults(ptn_data_1);
+    run("SELECT a from " + dbName + "_dupe.ptned2 WHERE b='2'");
+    verifyResults(ptn_data_2);
+
+    run("ALTER TABLE " + dbName + ".unptned RENAME TO " + dbName + ".unptned_rn");
+    run("SELECT * from " + dbName + ".unptned_rn");
+    verifyResults(unptn_data);
+
+    String testKey = "blah";
+    String testVal = "foo";
+    run("ALTER TABLE " + dbName + ".unptned2 SET TBLPROPERTIES ('" + testKey + "' = '" + testVal + "')");
+    try {
+      Table unptn2 = metaStoreClient.getTable(dbName,"unptned2");
+      assertTrue(unptn2.getParameters().containsKey(testKey));
+      assertEquals(testVal,unptn2.getParameters().get(testKey));
+    } catch (TException e) {
+      assertNull(e);
+    }
+
+    run("ALTER TABLE " + dbName + ".ptned PARTITION (b='2') RENAME TO PARTITION (b='22')");
+    run("SELECT a from " + dbName + ".ptned WHERE b=2");
+    verifyResults(empty);
+    run("SELECT a from " + dbName + ".ptned WHERE b=22");
+    verifyResults(ptn_data_2);
+
+    run("ALTER TABLE " + dbName + ".ptned SET TBLPROPERTIES ('" + testKey + "' = '" + testVal + "')");
+    try {
+      Table ptned = metaStoreClient.getTable(dbName,"ptned");
+      assertTrue(ptned.getParameters().containsKey(testKey));
+      assertEquals(testVal,ptned.getParameters().get(testKey));
+    } catch (TException e) {
+      assertNull(e);
+    }
+
+    // No DDL way to alter a partition, so we use the MSC api directly.
+    try {
+      List<String> ptnVals1 = new ArrayList<String>();
+      ptnVals1.add("1");
+      Partition ptn1 = metaStoreClient.getPartition(dbName, "ptned", ptnVals1);
+      ptn1.getParameters().put(testKey,testVal);
+      metaStoreClient.alter_partition(dbName,"ptned",ptn1,null);
+    } catch (TException e) {
+      assertNull(e);
+    }
+
+
+    run("SELECT a from " + dbName + ".ptned2 WHERE b=2");
+    verifyResults(ptn_data_2);
+    run("ALTER TABLE " + dbName + ".ptned2 RENAME TO " + dbName + ".ptned2_rn");
+    run("SELECT a from " + dbName + ".ptned2_rn WHERE b=2");
+    verifyResults(ptn_data_2);
+
+    advanceDumpDir();
+    run("REPL DUMP " + dbName + " FROM " + replDumpId);
+    String postAlterReplDumpLocn = getResult(0,0);
+    String postAlterReplDumpId = getResult(0,1,true);
+    LOG.info("Dumped to {} with id {}->{}", postAlterReplDumpLocn, replDumpId, postAlterReplDumpId);
+    run("EXPLAIN REPL LOAD " + dbName + "_dupe FROM '" + postAlterReplDumpLocn + "'");
+    printOutput();
+    run("REPL LOAD " + dbName + "_dupe FROM '" + postAlterReplDumpLocn + "'");
+
+    Exception e = null;
+    try {
+      Table tbl = metaStoreClient.getTable(dbName + "_dupe" , "unptned");
+      assertNull(tbl);
+    } catch (TException te) {
+      e = te;
+    }
+    assertNotNull(e);
+    assertEquals(NoSuchObjectException.class, e.getClass());
+
+    try {
+      Table unptn2 = metaStoreClient.getTable(dbName + "_dupe" , "unptned2");
+      assertTrue(unptn2.getParameters().containsKey(testKey));
+      assertEquals(testVal,unptn2.getParameters().get(testKey));
+    } catch (TException te) {
+      assertNull(te);
+    }
+
+    run("SELECT * from " + dbName + "_dupe.unptned_rn");
+    verifyResults(unptn_data);
+    run("SELECT a from " + dbName + "_dupe.ptned WHERE b=2");
+    verifyResults(empty);
+    run("SELECT a from " + dbName + "_dupe.ptned WHERE b=22");
+    verifyResults(ptn_data_2);
+
+    Exception e2 = null;
+    try {
+      Table tbl = metaStoreClient.getTable(dbName + "_dupe" , "ptned2");
+      assertNull(tbl);
+    } catch (TException te) {
+      e2 = te;
+    }
+    assertNotNull(e2);
+    assertEquals(NoSuchObjectException.class, e.getClass());
+
+    try {
+      Table ptned = metaStoreClient.getTable(dbName + "_dupe" , "ptned");
+      assertTrue(ptned.getParameters().containsKey(testKey));
+      assertEquals(testVal,ptned.getParameters().get(testKey));
+    } catch (TException te) {
+      assertNull(te);
+    }
+
+    try {
+      List<String> ptnVals1 = new ArrayList<String>();
+      ptnVals1.add("1");
+      Partition ptn1 = metaStoreClient.getPartition(dbName + "_dupe", "ptned", ptnVals1);
+      assertTrue(ptn1.getParameters().containsKey(testKey));
+      assertEquals(testVal,ptn1.getParameters().get(testKey));
+    } catch (TException te) {
+      assertNull(te);
+    }
+
+    run("SELECT a from " + dbName + "_dupe.ptned2_rn WHERE b=2");
+    verifyResults(ptn_data_2);
+  }
+
 
   private String getResult(int rowNum, int colNum) throws IOException {
     return getResult(rowNum,colNum,false);

@@ -29,7 +29,7 @@ import org.codehaus.jackson.annotate.JsonProperty;
 public class JSONAlterTableMessage extends AlterTableMessage {
 
   @JsonProperty
-  String server, servicePrincipal, db, table, tableObjJson;
+  String server, servicePrincipal, db, table, tableObjBeforeJson, tableObjAfterJson;
 
   @JsonProperty
   Long timestamp;
@@ -40,24 +40,20 @@ public class JSONAlterTableMessage extends AlterTableMessage {
   public JSONAlterTableMessage() {
   }
 
-  public JSONAlterTableMessage(String server, String servicePrincipal, String db, String table,
+  public JSONAlterTableMessage(String server, String servicePrincipal, Table tableObjBefore, Table tableObjAfter,
       Long timestamp) {
     this.server = server;
     this.servicePrincipal = servicePrincipal;
-    this.db = db;
-    this.table = table;
+    this.db = tableObjBefore.getDbName();
+    this.table = tableObjBefore.getTableName();
     this.timestamp = timestamp;
-    checkValid();
-  }
-
-  public JSONAlterTableMessage(String server, String servicePrincipal, Table tableObj,
-      Long timestamp) {
-    this(server, servicePrincipal, tableObj.getDbName(), tableObj.getTableName(), timestamp);
     try {
-      this.tableObjJson = JSONMessageFactory.createTableObjJson(tableObj);
+      this.tableObjBeforeJson = JSONMessageFactory.createTableObjJson(tableObjBefore);
+      this.tableObjAfterJson = JSONMessageFactory.createTableObjJson(tableObjAfter);
     } catch (TException e) {
       throw new IllegalArgumentException("Could not serialize: ", e);
     }
+    checkValid();
   }
 
   @Override
@@ -85,8 +81,22 @@ public class JSONAlterTableMessage extends AlterTableMessage {
     return table;
   }
 
-  public String getTableObjJson() {
-    return tableObjJson;
+  @Override
+  public Table getTableObjBefore() throws Exception {
+    return (Table) JSONMessageFactory.getTObj(tableObjBeforeJson,Table.class);
+  }
+
+  @Override
+  public Table getTableObjAfter() throws Exception {
+    return (Table) JSONMessageFactory.getTObj(tableObjAfterJson,Table.class);
+  }
+
+  public String getTableObjBeforeJson() {
+    return tableObjBeforeJson;
+  }
+
+  public String getTableObjAfterJson() {
+    return tableObjAfterJson ;
   }
 
   @Override

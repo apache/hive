@@ -19,12 +19,16 @@
 
 package org.apache.hadoop.hive.metastore.messaging.json;
 
+import com.google.common.base.Function;
+import com.google.common.collect.Iterables;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.messaging.AddPartitionMessage;
+import org.apache.thrift.TBase;
 import org.apache.thrift.TException;
 import org.codehaus.jackson.annotate.JsonProperty;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -51,17 +55,6 @@ public class JSONAddPartitionMessage extends AddPartitionMessage {
    * Default Constructor. Required for Jackson.
    */
   public JSONAddPartitionMessage() {
-  }
-
-  public JSONAddPartitionMessage(String server, String servicePrincipal, String db, String table,
-      List<Map<String, String>> partitions, Long timestamp) {
-    this.server = server;
-    this.servicePrincipal = servicePrincipal;
-    this.db = db;
-    this.table = table;
-    this.partitions = partitions;
-    this.timestamp = timestamp;
-    checkValid();
   }
 
   /**
@@ -111,6 +104,11 @@ public class JSONAddPartitionMessage extends AddPartitionMessage {
   }
 
   @Override
+  public Table getTableObj() throws Exception {
+    return (Table) JSONMessageFactory.getTObj(tableObjJson,Table.class);
+  }
+
+  @Override
   public Long getTimestamp() {
     return timestamp;
   }
@@ -118,6 +116,20 @@ public class JSONAddPartitionMessage extends AddPartitionMessage {
   @Override
   public List<Map<String, String>> getPartitions() {
     return partitions;
+  }
+
+  @Override
+  public Iterable<Partition> getPartitionObjs() throws Exception {
+    // glorified cast from Iterable<TBase> to Iterable<Partition>
+    return Iterables.transform(
+        JSONMessageFactory.getTObjs(partitionListJson,Partition.class),
+        new Function<Object, Partition>() {
+      @Nullable
+      @Override
+      public Partition apply(@Nullable Object input) {
+        return (Partition) input;
+      }
+    });
   }
 
   public String getTableObjJson() {

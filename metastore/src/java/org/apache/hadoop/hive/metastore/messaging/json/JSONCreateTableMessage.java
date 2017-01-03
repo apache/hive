@@ -85,6 +85,11 @@ public class JSONCreateTableMessage extends CreateTableMessage {
     return table;
   }
 
+  @Override
+  public Table getTableObj() throws Exception {
+    return (Table) JSONMessageFactory.getTObj(tableObjJson,Table.class);
+  }
+
   public String getTableObjJson() {
     return tableObjJson;
   }

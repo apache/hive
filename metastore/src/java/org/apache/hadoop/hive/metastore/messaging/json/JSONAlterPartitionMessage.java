@@ -43,7 +43,7 @@ public class JSONAlterPartitionMessage extends AlterPartitionMessage {
   Map<String, String> keyValues;
 
   @JsonProperty
-  List<String> partitionListJson;
+  String partitionObjBeforeJson, partitionObjAfterJson;
 
   /**
    * Default constructor, needed for Jackson.
@@ -51,28 +51,22 @@ public class JSONAlterPartitionMessage extends AlterPartitionMessage {
   public JSONAlterPartitionMessage() {
   }
 
-  public JSONAlterPartitionMessage(String server, String servicePrincipal, String db, String table,
-      Map<String, String> keyValues, Long timestamp) {
-    this.server = server;
-    this.servicePrincipal = servicePrincipal;
-    this.db = db;
-    this.table = table;
-    this.timestamp = timestamp;
-    this.keyValues = keyValues;
-    checkValid();
-  }
-
   public JSONAlterPartitionMessage(String server, String servicePrincipal, Table tableObj,
       Partition partitionObjBefore, Partition partitionObjAfter, Long timestamp) {
-    this(server, servicePrincipal, tableObj.getDbName(), tableObj.getTableName(),
-        JSONMessageFactory.getPartitionKeyValues(tableObj, partitionObjBefore), timestamp);
+    this.server = server;
+    this.servicePrincipal = servicePrincipal;
+    this.db = tableObj.getDbName();
+    this.table = tableObj.getTableName();
+    this.timestamp = timestamp;
+    this.keyValues = JSONMessageFactory.getPartitionKeyValues(tableObj, partitionObjBefore);
     try {
       this.tableObjJson = JSONMessageFactory.createTableObjJson(tableObj);
-      partitionListJson = new ArrayList<String>();
-      partitionListJson.add(JSONMessageFactory.createPartitionObjJson(partitionObjAfter));
+      this.partitionObjBeforeJson = JSONMessageFactory.createPartitionObjJson(partitionObjBefore);
+      this.partitionObjAfterJson = JSONMessageFactory.createPartitionObjJson(partitionObjAfter);
     } catch (TException e) {
       throw new IllegalArgumentException("Could not serialize: ", e);
     }
+    checkValid();
   }
 
   @Override
@@ -105,12 +99,31 @@ public class JSONAlterPartitionMessage extends AlterPartitionMessage {
     return keyValues;
   }
 
+  @Override
+  public Table getTableObj() throws Exception {
+    return (Table) JSONMessageFactory.getTObj(tableObjJson,Table.class);
+  }
+
+  @Override
+  public Partition getPtnObjBefore() throws Exception {
+    return (Partition) JSONMessageFactory.getTObj(partitionObjBeforeJson, Partition.class);
+  }
+
+  @Override
+  public Partition getPtnObjAfter() throws Exception {
+    return (Partition) JSONMessageFactory.getTObj(partitionObjAfterJson, Partition.class);
+  }
+
   public String getTableObjJson() {
     return tableObjJson;
   }
 
-  public List<String> getPartitionListJson() {
-    return partitionListJson;
+  public String getPartitionObjBeforeJson() {
+    return partitionObjBeforeJson;
+  }
+
+  public String getPartitionObjAfterJson() {
+    return partitionObjAfterJson;
   }
 
   @Override

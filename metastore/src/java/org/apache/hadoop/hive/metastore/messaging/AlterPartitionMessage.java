@@ -18,6 +18,9 @@
  */
 package org.apache.hadoop.hive.metastore.messaging;
 
+import org.apache.hadoop.hive.metastore.api.Partition;
+import org.apache.hadoop.hive.metastore.api.Table;
+
 import java.util.Map;
 
 public abstract class AlterPartitionMessage extends EventMessage {
@@ -30,10 +33,32 @@ public abstract class AlterPartitionMessage extends EventMessage {
 
   public abstract Map<String,String> getKeyValues();
 
+  public abstract Table getTableObj() throws Exception;
+
+  public abstract Partition getPtnObjBefore() throws Exception;
+
+  public abstract Partition getPtnObjAfter() throws Exception;
   @Override
   public EventMessage checkValid() {
     if (getTable() == null) throw new IllegalStateException("Table name unset.");
     if (getKeyValues() == null) throw new IllegalStateException("Partition values unset");
+    try {
+      if (getTableObj() == null){
+        throw new IllegalStateException("Table object not set.");
+      }
+      if (getPtnObjAfter() == null){
+        throw new IllegalStateException("Partition object(after) not set.");
+      }
+      if (getPtnObjBefore() == null){
+        throw new IllegalStateException("Partition object(before) not set.");
+      }
+    } catch (Exception e) {
+      if (! (e instanceof IllegalStateException)){
+        throw new IllegalStateException("Event not set up correctly",e);
+      } else {
+        throw (IllegalStateException) e;
+      }
+    }
     return super.checkValid();
   }
 }
