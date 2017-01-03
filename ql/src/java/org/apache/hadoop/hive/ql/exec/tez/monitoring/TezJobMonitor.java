@@ -97,6 +97,11 @@ public class TezJobMonitor {
   private final Context context;
   private long executionStartTime = 0;
   private final UpdateFunction updateFunction;
+  /**
+   * Have to use the same instance to render else the number lines printed earlier is lost and the
+   * screen will print the table again and again.
+   */
+  private final InPlaceUpdate inPlaceUpdate = new InPlaceUpdate();
 
   public TezJobMonitor(Map<String, BaseWork> workMap, final DAGClient dagClient, HiveConf conf, DAG dag,
                        Context ctx) {
@@ -119,7 +124,7 @@ public class TezJobMonitor {
     UpdateFunction log = new UpdateFunction() {
       @Override
       public void update(String report) {
-        new InPlaceUpdate().render(progressMonitor());
+        inPlaceUpdate.render(progressMonitor());
         console.logInfo(report);
       }
     };
