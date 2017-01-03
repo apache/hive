@@ -56,6 +56,17 @@ class TezProgressMonitor implements ProgressMonitor {
           vertexState = VertexStatus.State.INITED;
         }
 
+        // RUNNING state
+        final int running = progress.getRunningTaskCount();
+        final int failed = progress.getFailedTaskAttemptCount();
+        if (complete < total && (complete > 0 || running > 0 || failed > 0)) {
+          vertexState = VertexStatus.State.RUNNING;
+        }
+
+        // SUCCEEDED state
+        if (complete == total) {
+          vertexState = VertexStatus.State.SUCCEEDED;
+        }
 
         // DAG might have been killed, lets try to get vertex state from AM before dying
         // KILLED or FAILED state

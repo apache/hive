@@ -1237,14 +1237,12 @@ public class Commands {
   }
 
   static class LogRunnable implements Runnable {
-    private boolean canDisplayInPlaceProgress;
     private Commands commands;
     private HiveStatement hiveStatement;
     private long queryProgressInterval;
 
     LogRunnable(Commands commands, HiveStatement hiveStatement, long queryProgressInterval) {
       this.hiveStatement = hiveStatement;
-      canDisplayInPlaceProgress = InPlaceUpdate.canRenderInPlace(commands.getHiveConfHelper(false));
       this.commands = commands;
       this.queryProgressInterval = queryProgressInterval;
     }
@@ -1260,7 +1258,7 @@ public class Commands {
       boolean progressBarUpdateCompleted = false;
       while (hiveStatement.hasMoreLogs()) {
         try {
-          if (canDisplayInPlaceProgress && !progressBarUpdateCompleted) {
+          if (!progressBarUpdateCompleted) {
             TProgressUpdateResp progressResponse = hiveStatement.getProgressResponse();
             if (progressResponse != null && !TJobExecutionStatus.NOT_AVAILABLE.equals(progressResponse.getStatus())) {
               new InPlaceUpdate().render(new ProgressMonitorWrapper(progressResponse));
