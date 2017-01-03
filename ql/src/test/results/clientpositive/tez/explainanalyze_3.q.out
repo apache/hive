@@ -250,17 +250,15 @@ Stage-2
   Column Stats Work{}
     Stage-0
       Reducer 2
-      File Output Operator [FS_6]
-        Group By Operator [GBY_4] (rows=1/1 width=984)
-          Output:["_col0","_col1"],aggregations:["compute_stats(VALUE._col0)","compute_stats(VALUE._col1)"]
+      File Output Operator [FS_5]
+        Group By Operator [GBY_3] (rows=1/1 width=960)
+          Output:["_col0","_col1"],aggregations:["compute_stats(VALUE._col0, 16)","compute_stats(VALUE._col2, 16)"]
         <-Map 1 [SIMPLE_EDGE]
-          SHUFFLE [RS_3]
-            Group By Operator [GBY_2] (rows=1/1 width=984)
-              Output:["_col0","_col1"],aggregations:["compute_stats(key, 16)","compute_stats(value, 16)"]
-              Select Operator [SEL_1] (rows=500/500 width=10)
-                Output:["key","value"]
-                TableScan [TS_0] (rows=500/500 width=10)
-                  default@src_stats,src_stats,Tbl:COMPLETE,Col:NONE,Output:["key","value"]
+          SHUFFLE [RS_2]
+            Select Operator [SEL_1] (rows=500/500 width=10)
+              Output:["key","value"]
+              TableScan [TS_0] (rows=500/500 width=10)
+                default@src_stats,src_stats,Tbl:COMPLETE,Col:NONE,Output:["key","value"]
 
 PREHOOK: query: CREATE TEMPORARY MACRO SIGMOID (x DOUBLE) 1.0 / (1.0 + EXP(-x))
 PREHOOK: type: CREATEMACRO

@@ -52,17 +52,15 @@ Stage-2
   Column Stats Work{}
     Stage-0
       Reducer 2
-      File Output Operator [FS_6]
-        Group By Operator [GBY_4] (rows=1/1 width=984)
-          Output:["_col0","_col1"],aggregations:["compute_stats(VALUE._col0)","compute_stats(VALUE._col1)"]
+      File Output Operator [FS_5]
+        Group By Operator [GBY_3] (rows=1/1 width=960)
+          Output:["_col0","_col1"],aggregations:["compute_stats(VALUE._col0, 16)","compute_stats(VALUE._col2, 16)"]
         <-Map 1 [SIMPLE_EDGE]
-          SHUFFLE [RS_3]
-            Group By Operator [GBY_2] (rows=1/1 width=984)
-              Output:["_col0","_col1"],aggregations:["compute_stats(key, 16)","compute_stats(value, 16)"]
-              Select Operator [SEL_1] (rows=500/500 width=10)
-                Output:["key","value"]
-                TableScan [TS_0] (rows=500/500 width=10)
-                  default@src_stats,src_stats,Tbl:COMPLETE,Col:NONE,Output:["key","value"]
+          SHUFFLE [RS_2]
+            Select Operator [SEL_1] (rows=500/500 width=10)
+              Output:["key","value"]
+              TableScan [TS_0] (rows=500/500 width=10)
+                default@src_stats,src_stats,Tbl:COMPLETE,Col:NONE,Output:["key","value"]
 
 PREHOOK: query: drop table src_multi2
 PREHOOK: type: DROPTABLE
@@ -110,61 +108,55 @@ Stage-4
               Dependency Collection{}
                 Stage-1
                   Reducer 5
-                  File Output Operator [FS_6]
-                    Group By Operator [GBY_4] (rows=1/1 width=960)
-                      Output:["_col0","_col1"],aggregations:["compute_stats(VALUE._col0)","compute_stats(VALUE._col1)"]
+                  File Output Operator [FS_5]
+                    Group By Operator [GBY_3] (rows=1/1 width=960)
+                      Output:["_col0","_col1"],aggregations:["compute_stats(VALUE._col0, 16)","compute_stats(VALUE._col2, 16)"]
                     <-Reducer 4 [SIMPLE_EDGE]
-                      File Output Operator [FS_20]
+                      File Output Operator [FS_19]
                         table:{"name:":"default.src_multi2"}
-                        Select Operator [SEL_19] (rows=639/508 width=178)
+                        Select Operator [SEL_18] (rows=1280/508 width=178)
                           Output:["_col0","_col1"]
-                          Merge Join Operator [MERGEJOIN_27] (rows=639/508 width=178)
-                            Conds:RS_16._col0=RS_17._col0(Inner),Output:["_col0","_col3"]
+                          Merge Join Operator [MERGEJOIN_26] (rows=1280/508 width=178)
+                            Conds:RS_15._col0=RS_16._col0(Inner),Output:["_col0","_col3"]
                           <-Map 7 [SIMPLE_EDGE]
-                            SHUFFLE [RS_17]
-                              PartitionCols:_col0
-                              Select Operator [SEL_15] (rows=500/500 width=178)
-                                Output:["_col0","_col1"]
-                                Filter Operator [FIL_26] (rows=500/500 width=178)
-                                  predicate:key is not null
-                                  TableScan [TS_13] (rows=500/500 width=178)
-                                    default@src,src,Tbl:COMPLETE,Col:COMPLETE,Output:["key","value"]
-                          <-Reducer 3 [SIMPLE_EDGE]
                             SHUFFLE [RS_16]
                               PartitionCols:_col0
-                              Select Operator [SEL_12] (rows=262/319 width=178)
+                              Select Operator [SEL_14] (rows=500/500 width=178)
+                                Output:["_col0","_col1"]
+                                Filter Operator [FIL_25] (rows=500/500 width=178)
+                                  predicate:key is not null
+                                  TableScan [TS_12] (rows=500/500 width=178)
+                                    default@src,src,Tbl:COMPLETE,Col:COMPLETE,Output:["key","value"]
+                          <-Reducer 3 [SIMPLE_EDGE]
+                            SHUFFLE [RS_15]
+                              PartitionCols:_col0
+                              Select Operator [SEL_11] (rows=525/319 width=178)
                                 Output:["_col0"]
-                                Group By Operator [GBY_11] (rows=262/319 width=178)
+                                Group By Operator [GBY_10] (rows=525/319 width=178)
                                   Output:["_col0","_col1"],keys:KEY._col0, KEY._col1
                                 <-Union 2 [SIMPLE_EDGE]
                                   <-Map 1 [CONTAINS]
-                                    Reduce Output Operator [RS_10]
+                                    Reduce Output Operator [RS_9]
                                       PartitionCols:_col0, _col1
-                                      Group By Operator [GBY_9] (rows=262/331 width=178)
-                                        Output:["_col0","_col1"],keys:_col0, _col1
-                                        Select Operator [SEL_2] (rows=500/500 width=178)
-                                          Output:["_col0","_col1"]
-                                          Filter Operator [FIL_24] (rows=500/500 width=178)
-                                            predicate:key is not null
-                                            TableScan [TS_0] (rows=500/500 width=178)
-                                              Output:["key","value"]
+                                      Select Operator [SEL_2] (rows=500/500 width=178)
+                                        Output:["_col0","_col1"]
+                                        Filter Operator [FIL_23] (rows=500/500 width=178)
+                                          predicate:key is not null
+                                          TableScan [TS_0] (rows=500/500 width=178)
+                                            Output:["key","value"]
                                   <-Map 6 [CONTAINS]
-                                    Reduce Output Operator [RS_10]
+                                    Reduce Output Operator [RS_9]
                                       PartitionCols:_col0, _col1
-                                      Group By Operator [GBY_9] (rows=262/331 width=178)
-                                        Output:["_col0","_col1"],keys:_col0, _col1
-                                        Select Operator [SEL_5] (rows=25/25 width=175)
-                                          Output:["_col0","_col1"]
-                                          Filter Operator [FIL_25] (rows=25/25 width=175)
-                                            predicate:key is not null
-                                            TableScan [TS_3] (rows=25/25 width=175)
-                                              Output:["key","value"]
-                      SHUFFLE [RS_3]
-                        Group By Operator [GBY_2] (rows=1/1 width=984)
-                          Output:["_col0","_col1"],aggregations:["compute_stats(key, 16)","compute_stats(value, 16)"]
-                          Select Operator [SEL_1] (rows=639/508 width=178)
-                            Output:["key","value"]
-                             Please refer to the previous Select Operator [SEL_19]
+                                      Select Operator [SEL_5] (rows=25/25 width=175)
+                                        Output:["_col0","_col1"]
+                                        Filter Operator [FIL_24] (rows=25/25 width=175)
+                                          predicate:key is not null
+                                          TableScan [TS_3] (rows=25/25 width=175)
+                                            Output:["key","value"]
+                      SHUFFLE [RS_2]
+                        Select Operator [SEL_1] (rows=1280/508 width=178)
+                          Output:["key","value"]
+                           Please refer to the previous Select Operator [SEL_18]
 
 PREHOOK: query: select count(*) from (select * from src union select * from src1)subq
 PREHOOK: type: QUERY

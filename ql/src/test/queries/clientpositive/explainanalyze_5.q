@@ -1,3 +1,5 @@
+set hive.map.aggr=false;
+
 set hive.stats.column.autogather=true;
 
 drop table src_stats;
