@@ -106,7 +106,7 @@ public final class ParseUtils {
    *
    * @return node at which descent stopped
    */
-  private static ASTNode findRootNonNullToken(ASTNode tree) {
+  public static ASTNode findRootNonNullToken(ASTNode tree) {
     while ((tree.getToken() == null) && (tree.getChildCount() > 0)) {
       tree = (ASTNode) tree.getChild(0);
     }

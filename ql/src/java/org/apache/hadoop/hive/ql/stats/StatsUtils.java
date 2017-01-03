@@ -1341,7 +1341,7 @@ public class StatsUtils {
               || colType.startsWith(serdeConstants.MAP_TYPE_NAME)
               || colType.startsWith(serdeConstants.STRUCT_TYPE_NAME)
               || colType.startsWith(serdeConstants.UNION_TYPE_NAME)) {
-            avgColSize = getAvgColLenOfVariableLengthTypes(conf, oi, colType);
+            avgColSize = getAvgColLenOf(conf, oi, colType);
           } else {
             avgColSize = getAvgColLenOfFixedLengthTypes(colType);
           }

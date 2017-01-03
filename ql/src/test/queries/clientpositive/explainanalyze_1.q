@@ -1,3 +1,4 @@
+set hive.map.aggr=false;
 set hive.mapred.mode=nonstrict;
 
 explain analyze select * from src a union all select * from src b limit 10;

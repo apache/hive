@@ -1,8 +1,14 @@
+set hive.map.aggr=false;
+
 set hive.stats.column.autogather=true;
 
-explain analyze analyze table src compute statistics;
+drop table src_stats;
 
-explain analyze analyze table src compute statistics for columns;
+create table src_stats as select * from src;
+
+explain analyze analyze table src_stats compute statistics;
+
+explain analyze analyze table src_stats compute statistics for columns;
 
 drop table src_multi2;
 

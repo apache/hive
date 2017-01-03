@@ -1,3 +1,5 @@
+set hive.map.aggr=false;
+
 set hive.security.authorization.manager=org.apache.hadoop.hive.ql.security.authorization.DefaultHiveAuthorizationProvider;
 set hive.metastore.filter.hook=org.apache.hadoop.hive.metastore.DefaultMetaStoreFilterHookImpl;
 set hive.mapred.mode=nonstrict;
@@ -40,9 +42,13 @@ use default;
 
 drop database newDB;
 
-explain analyze analyze table src compute statistics;
+drop table src_stats;
 
-explain analyze analyze table src compute statistics for columns;
+create table src_stats as select * from src;
+
+explain analyze analyze table src_stats compute statistics;
+
+explain analyze analyze table src_stats compute statistics for columns;
 
 explain analyze
 CREATE TEMPORARY MACRO SIGMOID (x DOUBLE) 1.0 / (1.0 + EXP(-x));
