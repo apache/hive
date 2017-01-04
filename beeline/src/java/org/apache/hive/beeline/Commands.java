@@ -1236,27 +1236,18 @@ public class Commands {
     }
   }
 
-  static class Some {
-    private Commands commands;
-
-    public Some(Commands commands) {
-      this.commands = commands;
-    }
-
-    public void something() {
-      commands.debug("somehting");
-    }
-  }
-
   static class LogRunnable implements Runnable {
-    private Commands commands;
-    private HiveStatement hiveStatement;
-    private long queryProgressInterval;
+    private final Commands commands;
+    private final HiveStatement hiveStatement;
+    private final long queryProgressInterval;
+    private final InPlaceUpdate inPlaceUpdate;
+    boolean progressBarUpdateCompleted = false;
 
     LogRunnable(Commands commands, HiveStatement hiveStatement, long queryProgressInterval) {
       this.hiveStatement = hiveStatement;
       this.commands = commands;
       this.queryProgressInterval = queryProgressInterval;
+      inPlaceUpdate = new InPlaceUpdate(commands.beeLine.getOutputStream());
     }
 
     private boolean receivedAllProgressUpdates(TJobExecutionStatus status) {
@@ -1273,7 +1264,6 @@ public class Commands {
 
     @Override
     public void run() {
-      boolean progressBarUpdateCompleted = false;
       while (hiveStatement.hasMoreLogs()) {
         try {
           // fetch the log periodically and output to beeline console
@@ -1288,7 +1278,7 @@ public class Commands {
             if (progressResponse == null || TJobExecutionStatus.NOT_AVAILABLE.equals(progressResponse.getStatus())) {
               progressBarUpdateCompleted = true;
             } else {
-              new InPlaceUpdate(commands.beeLine.getOutputStream()).render(new ProgressMonitorWrapper(progressResponse));
+              inPlaceUpdate.render(new ProgressMonitorWrapper(progressResponse));
               if (receivedAllProgressUpdates(progressResponse.getStatus())) {
                 progressBarUpdateCompleted = true;
               }
@@ -1298,7 +1288,7 @@ public class Commands {
           commands.beeLine.error(new SQLWarning(e));
         } catch (InterruptedException e) {
           commands.beeLine.debug("Getting log thread is interrupted, since query is done!");
-          commands.showRemainingLogsIfAny(hiveStatement);
+          commands.showRemainingProgress(hiveStatement, inPlaceUpdate);
         }
       }
     }
@@ -1344,6 +1334,21 @@ public class Commands {
     public double progressedPercentage() {
       return response.getProgressedPercentage();
     }
+  }
+
+  private void showRemainingProgress(Statement statement, InPlaceUpdate inPlaceUpdate) {
+    if (statement instanceof HiveStatement) {
+      HiveStatement hiveStatement = (HiveStatement) statement;
+      try {
+        TProgressUpdateResp progressResponse = hiveStatement.getProgressResponse();
+        if (TJobExecutionStatus.NOT_AVAILABLE != progressResponse.getStatus()) {
+          inPlaceUpdate.render(new ProgressMonitorWrapper(progressResponse));
+        }
+      } catch (SQLException e) {
+        beeLine.error(new SQLWarning(e));
+      }
+    }
+    showRemainingLogsIfAny(statement);
   }
 
   private void showRemainingLogsIfAny(Statement statement) {
