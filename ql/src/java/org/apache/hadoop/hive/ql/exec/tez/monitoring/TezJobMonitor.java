@@ -101,7 +101,7 @@ public class TezJobMonitor {
    * Have to use the same instance to render else the number lines printed earlier is lost and the
    * screen will print the table again and again.
    */
-  private final InPlaceUpdate inPlaceUpdate = new InPlaceUpdate();
+  private final InPlaceUpdate inPlaceUpdate;
 
   public TezJobMonitor(Map<String, BaseWork> workMap, final DAGClient dagClient, HiveConf conf, DAG dag,
                        Context ctx) {
@@ -111,6 +111,7 @@ public class TezJobMonitor {
     this.dag = dag;
     this.context = ctx;
     console = SessionState.getConsole();
+    inPlaceUpdate = new InPlaceUpdate(LogHelper.getInfoStream());
     updateFunction = updateFunction();
   }
 

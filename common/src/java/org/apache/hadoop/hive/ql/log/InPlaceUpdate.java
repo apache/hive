@@ -32,8 +32,15 @@ public class InPlaceUpdate {
   /* Pretty print the values */
   private final DecimalFormat secondsFormatter = new DecimalFormat("#0.00");
   private int lines = 0;
-  private PrintStream out = System.out;
+  private PrintStream out;
 
+  public InPlaceUpdate(PrintStream out) {
+    this.out = out;
+  }
+
+  public InPlaceUpdate() {
+    this(System.out);
+  }
 
   public static void reprintLine(PrintStream out, String line) {
     out.print(ansi().eraseLine(Ansi.Erase.ALL).a(line).a('\n').toString());
