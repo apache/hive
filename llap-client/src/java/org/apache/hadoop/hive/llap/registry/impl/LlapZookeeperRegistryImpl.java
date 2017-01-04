@@ -588,18 +588,10 @@ public class LlapZookeeperRegistryImpl implements ServiceRegistry {
 
     @Override
     public ServiceInstance getInstance(String name) {
-      ChildData childData = instancesCache.getCurrentData(name);
-      if (childData != null) {
-        byte[] data = childData.getData();
-        if (data != null) {
-          try {
-            ServiceRecord srv = encoder.fromBytes(name, data);
-            ServiceInstance instance = new DynamicServiceInstance(srv);
-            return instance;
-          } catch (IOException e) {
-            LOG.error("Unable to decode data for zkpath: {}", name);
-            return null;
-          }
+      Collection<ServiceInstance> instances = getAll();
+      for(ServiceInstance instance : instances) {
+        if (instance.getWorkerIdentity().equals(name)) {
+          return instance;
         }
       }
       return null;
