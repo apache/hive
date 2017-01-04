@@ -678,11 +678,11 @@ public class TezSessionState {
     } while (!ownerThread.compareAndSet(null, newName));
   }
 
-  void tezJobMonitor(TezJobMonitor jobMonitor) {
+  void monitor(TezJobMonitor jobMonitor) {
     this.jobMonitor = jobMonitor;
   }
 
-  public ProgressMonitor monitor(){
+  public ProgressMonitor monitor() {
     return jobMonitor.progressMonitor();
   }
 }

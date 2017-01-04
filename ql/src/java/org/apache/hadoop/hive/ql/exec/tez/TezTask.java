@@ -157,7 +157,7 @@ public class TezTask extends Task<TezWork> {
 
         // finally monitor will print progress until the job is done
         TezJobMonitor monitor = new TezJobMonitor(work.getWorkMap(),dagClient, conf, dag, ctx);
-        session.tezJobMonitor(monitor);
+        session.monitor(monitor);
         rc = monitor.monitorExecution();
 
         if (rc != 0) {
