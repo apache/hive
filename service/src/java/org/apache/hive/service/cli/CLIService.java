@@ -427,6 +427,7 @@ public class CLIService extends CompositeService implements ICLIService {
     if ("tez".equals(hiveConf.getVar(ConfVars.HIVE_EXECUTION_ENGINE))) {
       TezSessionState tezSession = parentSession.getSessionState().getTezSession();
       if (tezSession != null) {
+        LOG.debug("Tez session is available, getting data from TezMonitor");
         ProgressMonitor monitor = tezSession.monitor();
         return new JobProgressUpdate(monitor);
       }

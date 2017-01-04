@@ -1236,6 +1236,18 @@ public class Commands {
     }
   }
 
+  static class Some {
+    private Commands commands;
+
+    public Some(Commands commands) {
+      this.commands = commands;
+    }
+
+    public void something() {
+      commands.debug("somehting");
+    }
+  }
+
   static class LogRunnable implements Runnable {
     private Commands commands;
     private HiveStatement hiveStatement;
@@ -1253,28 +1265,35 @@ public class Commands {
         || TJobExecutionStatus.KILLED.equals(status);
     }
 
+    private void updateQueryLog() throws SQLException {
+      for (String log : hiveStatement.getQueryLog()) {
+        commands.beeLine.info(log);
+      }
+    }
+
     @Override
     public void run() {
       boolean progressBarUpdateCompleted = false;
       while (hiveStatement.hasMoreLogs()) {
         try {
-          if (!progressBarUpdateCompleted) {
+          // fetch the log periodically and output to beeline console
+          // we are sleeping at the start so as to give the execute statement on server
+          // to setup the session state correctly before we make the call to get progress update
+          Thread.sleep(queryProgressInterval);
+          if (progressBarUpdateCompleted) {
+            updateQueryLog();
+          } else {
             TProgressUpdateResp progressResponse = hiveStatement.getProgressResponse();
-            if (progressResponse != null && !TJobExecutionStatus.NOT_AVAILABLE.equals(progressResponse.getStatus())) {
-              new InPlaceUpdate().render(new ProgressMonitorWrapper(progressResponse));
+            commands.debug("progress response sent: " + (progressResponse == null ? "null" : progressResponse.toString()));
+            if (progressResponse == null || TJobExecutionStatus.NOT_AVAILABLE.equals(progressResponse.getStatus())) {
+              progressBarUpdateCompleted = true;
+            } else {
+              new InPlaceUpdate(commands.beeLine.getOutputStream()).render(new ProgressMonitorWrapper(progressResponse));
               if (receivedAllProgressUpdates(progressResponse.getStatus())) {
                 progressBarUpdateCompleted = true;
               }
-            } else {
-              progressBarUpdateCompleted = true;
-            }
-          } else {
-            for (String log : hiveStatement.getQueryLog()) {
-              commands.beeLine.info(log);
             }
           }
-          // fetch the log periodically and output to beeline console
-          Thread.sleep(queryProgressInterval);
         } catch (SQLException e) {
           commands.beeLine.error(new SQLWarning(e));
         } catch (InterruptedException e) {
@@ -1285,7 +1304,11 @@ public class Commands {
     }
   }
 
-  static class ProgressMonitorWrapper implements ProgressMonitor{
+  private void debug(String message) {
+    beeLine.debug(message);
+  }
+
+  static class ProgressMonitorWrapper implements ProgressMonitor {
     private TProgressUpdateResp response;
 
     ProgressMonitorWrapper(TProgressUpdateResp response) {
