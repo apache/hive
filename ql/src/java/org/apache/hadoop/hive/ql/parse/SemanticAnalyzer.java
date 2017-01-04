@@ -1482,14 +1482,30 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           throw new SemanticException(ErrorMsg.NO_INSERT_INSUBQUERY.getMsg(ast));
         }
 
-        if (plannerCtx != null) {
-          plannerCtx.setInsertToken(ast, isTmpFileDest);
-        }
-
         qbp.setDestForClause(ctx_1.dest, (ASTNode) ast.getChild(0));
         handleInsertStatementSpecPhase1(ast, qbp, ctx_1);
-        if (qbp.getClauseNamesForDest().size() > 1) {
+
+        if (qbp.getClauseNamesForDest().size() == 2) {
+          // From the moment that we have two destination clauses,
+          // we know that this is a multi-insert query.
+          // Thus, set property to right value.
+          // Using qbp.getClauseNamesForDest().size() >= 2 would be
+          // equivalent, but we use == to avoid setting the property
+          // multiple times
           queryProperties.setMultiDestQuery(true);
+        }
+
+        if (plannerCtx != null && !queryProperties.hasMultiDestQuery()) {
+          plannerCtx.setInsertToken(ast, isTmpFileDest);
+        } else if (plannerCtx != null && qbp.getClauseNamesForDest().size() == 2) {
+          // For multi-insert query, currently we only optimize the FROM clause.
+          // Hence, introduce multi-insert token on top of it.
+          // However, first we need to reset existing token (insert).
+          // Using qbp.getClauseNamesForDest().size() >= 2 would be
+          // equivalent, but we use == to avoid setting the property
+          // multiple times
+          plannerCtx.resetToken();
+          plannerCtx.setMultiInsertToken((ASTNode) qbp.getQueryFrom().getChild(0));
         }
         break;
 
@@ -1498,6 +1514,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         if (child_count != 1) {
           throw new SemanticException(generateErrorMessage(ast,
               "Multiple Children " + child_count));
+        }
+
+        if (!qbp.getIsSubQ()) {
+          qbp.setQueryFromExpr(ast);
         }
 
         // Check if this is a subquery / lateral view
@@ -10662,6 +10682,11 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     void setInsertToken(ASTNode ast, boolean isTmpFileDest) {
     }
 
+    void setMultiInsertToken(ASTNode child) {
+    }
+
+    void resetToken() {
+    }
   }
 
   private Table getTableObjectByName(String tableName) throws HiveException {

@@ -1032,7 +1032,7 @@ from (
 insert overwrite table dest1 select key, val1
 insert overwrite table dest2 select key, val1, val2
 POSTHOOK: type: QUERY
-Plan not optimized by CBO.
+Plan optimized by CBO.
 
 Stage-4
   Stats-Aggr Operator
@@ -1043,25 +1043,29 @@ Stage-4
           Dependency Collection{}
             Stage-2
               Map 1 llap
-              File Output Operator [FS_9]
-                table:{"name:":"default.dest1"}
-                Select Operator [SEL_8] (rows=11 width=93)
-                  Output:["_col0","_col1"]
-                  Select Operator [SEL_7] (rows=11 width=93)
-                    Output:["_col0","_col1","_col2"]
-                    Merge Join Operator [MERGEJOIN_16] (rows=11 width=93)
-                      Conds:FIL_14.key=FIL_15.key(Inner),Output:["_col0","_col1","_col6"]
-                    <-Filter Operator [FIL_15] (rows=10 width=93)
-                        predicate:key is not null
-                        TableScan [TS_1] (rows=10 width=93)
-                          default@tbl2,b,Tbl:COMPLETE,Col:NONE,Output:["key","value"]
-                    <-Filter Operator [FIL_14] (rows=10 width=93)
-                        predicate:key is not null
-                        TableScan [TS_0] (rows=10 width=93)
-                          default@tbl1,a,Tbl:COMPLETE,Col:NONE,Output:["key","value"]
               File Output Operator [FS_11]
+                table:{"name:":"default.dest1"}
+                Select Operator [SEL_10] (rows=11 width=93)
+                  Output:["_col0","_col1"]
+                  Select Operator [SEL_9] (rows=11 width=93)
+                    Output:["_col0","_col1","_col2"]
+                    Merge Join Operator [MERGEJOIN_18] (rows=11 width=93)
+                      Conds:SEL_2._col0=SEL_5._col0(Inner),Output:["_col0","_col1","_col3"]
+                    <-Select Operator [SEL_5] (rows=10 width=93)
+                        Output:["_col0","_col1"]
+                        Filter Operator [FIL_17] (rows=10 width=93)
+                          predicate:key is not null
+                          TableScan [TS_3] (rows=10 width=93)
+                            default@tbl2,b,Tbl:COMPLETE,Col:NONE,Output:["key","value"]
+                    <-Select Operator [SEL_2] (rows=10 width=93)
+                        Output:["_col0","_col1"]
+                        Filter Operator [FIL_16] (rows=10 width=93)
+                          predicate:key is not null
+                          TableScan [TS_0] (rows=10 width=93)
+                            default@tbl1,a,Tbl:COMPLETE,Col:NONE,Output:["key","value"]
+              File Output Operator [FS_13]
                 table:{"name:":"default.dest2"}
-                 Please refer to the previous Select Operator [SEL_7]
+                 Please refer to the previous Select Operator [SEL_9]
 Stage-5
   Stats-Aggr Operator
     Stage-1
@@ -1188,7 +1192,7 @@ from (
 insert overwrite table dest1 select key, val1
 insert overwrite table dest2 select key, count(*) group by key
 POSTHOOK: type: QUERY
-Plan not optimized by CBO.
+Plan optimized by CBO.
 
 Vertex dependency in root stage
 Reducer 2 <- Map 1 (SIMPLE_EDGE)
@@ -1202,32 +1206,36 @@ Stage-4
           Dependency Collection{}
             Stage-2
               Reducer 2 vectorized, llap
-              File Output Operator [FS_25]
+              File Output Operator [FS_27]
                 table:{"name:":"default.dest2"}
-                Select Operator [SEL_24] (rows=5 width=93)
+                Select Operator [SEL_26] (rows=5 width=93)
                   Output:["_col0","_col1"]
-                  Group By Operator [GBY_23] (rows=5 width=93)
+                  Group By Operator [GBY_25] (rows=5 width=93)
                     Output:["_col0","_col1"],aggregations:["count(VALUE._col0)"],keys:KEY._col0
                   <-Map 1 [SIMPLE_EDGE] llap
-                    File Output Operator [FS_9]
+                    File Output Operator [FS_11]
                       table:{"name:":"default.dest1"}
-                      Merge Join Operator [MERGEJOIN_21] (rows=11 width=93)
-                        Conds:FIL_19.key=FIL_20.key(Inner),Output:["_col0","_col1"]
-                      <-Filter Operator [FIL_20] (rows=10 width=93)
-                          predicate:key is not null
-                          TableScan [TS_1] (rows=10 width=93)
-                            default@tbl2,b,Tbl:COMPLETE,Col:NONE,Output:["key"]
-                      <-Filter Operator [FIL_19] (rows=10 width=93)
-                          predicate:key is not null
-                          TableScan [TS_0] (rows=10 width=93)
-                            default@tbl1,a,Tbl:COMPLETE,Col:NONE,Output:["key","value"]
-                    SHUFFLE [RS_12]
-                      PartitionCols:_col0
-                      Group By Operator [GBY_11] (rows=11 width=93)
-                        Output:["_col0","_col1"],aggregations:["count()"],keys:_col0
-                        Select Operator [SEL_10] (rows=11 width=93)
+                      Merge Join Operator [MERGEJOIN_23] (rows=11 width=93)
+                        Conds:SEL_2._col0=SEL_5._col0(Inner),Output:["_col0","_col1"]
+                      <-Select Operator [SEL_5] (rows=10 width=93)
                           Output:["_col0"]
-                           Please refer to the previous Merge Join Operator [MERGEJOIN_21]
+                          Filter Operator [FIL_22] (rows=10 width=93)
+                            predicate:key is not null
+                            TableScan [TS_3] (rows=10 width=93)
+                              default@tbl2,b,Tbl:COMPLETE,Col:NONE,Output:["key"]
+                      <-Select Operator [SEL_2] (rows=10 width=93)
+                          Output:["_col0","_col1"]
+                          Filter Operator [FIL_21] (rows=10 width=93)
+                            predicate:key is not null
+                            TableScan [TS_0] (rows=10 width=93)
+                              default@tbl1,a,Tbl:COMPLETE,Col:NONE,Output:["key","value"]
+                    SHUFFLE [RS_14]
+                      PartitionCols:_col0
+                      Group By Operator [GBY_13] (rows=11 width=93)
+                        Output:["_col0","_col1"],aggregations:["count()"],keys:_col0
+                        Select Operator [SEL_12] (rows=11 width=93)
+                          Output:["_col0"]
+                           Please refer to the previous Merge Join Operator [MERGEJOIN_23]
 Stage-5
   Stats-Aggr Operator
     Stage-1

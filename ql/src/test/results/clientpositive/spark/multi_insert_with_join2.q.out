@@ -1,0 +1,1006 @@
+PREHOOK: query: CREATE TABLE T_A ( id STRING, val STRING )
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@T_A
+POSTHOOK: query: CREATE TABLE T_A ( id STRING, val STRING )
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@T_A
+PREHOOK: query: CREATE TABLE T_B ( id STRING, val STRING )
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@T_B
+POSTHOOK: query: CREATE TABLE T_B ( id STRING, val STRING )
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@T_B
+PREHOOK: query: CREATE TABLE join_result_1 ( ida STRING, vala STRING, idb STRING, valb STRING )
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@join_result_1
+POSTHOOK: query: CREATE TABLE join_result_1 ( ida STRING, vala STRING, idb STRING, valb STRING )
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@join_result_1
+PREHOOK: query: CREATE TABLE join_result_3 ( ida STRING, vala STRING, idb STRING, valb STRING )
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@join_result_3
+POSTHOOK: query: CREATE TABLE join_result_3 ( ida STRING, vala STRING, idb STRING, valb STRING )
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@join_result_3
+PREHOOK: query: INSERT INTO TABLE T_A 
+VALUES ('Id_1', 'val_101'), ('Id_2', 'val_102'), ('Id_3', 'val_103')
+PREHOOK: type: QUERY
+PREHOOK: Output: default@t_a
+POSTHOOK: query: INSERT INTO TABLE T_A 
+VALUES ('Id_1', 'val_101'), ('Id_2', 'val_102'), ('Id_3', 'val_103')
+POSTHOOK: type: QUERY
+POSTHOOK: Output: default@t_a
+POSTHOOK: Lineage: t_a.id SIMPLE [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: t_a.val SIMPLE [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+PREHOOK: query: INSERT INTO TABLE T_B 
+VALUES ('Id_1', 'val_103'), ('Id_2', 'val_104')
+PREHOOK: type: QUERY
+PREHOOK: Output: default@t_b
+POSTHOOK: query: INSERT INTO TABLE T_B 
+VALUES ('Id_1', 'val_103'), ('Id_2', 'val_104')
+POSTHOOK: type: QUERY
+POSTHOOK: Output: default@t_b
+POSTHOOK: Lineage: t_b.id SIMPLE [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: t_b.val SIMPLE [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+Warning: Shuffle Join JOIN[8][tables = [$hdt$_0, $hdt$_1]] in Work 'Reducer 2' is a cross product
+PREHOOK: query: explain
+FROM T_A a LEFT JOIN T_B b ON a.id = b.id
+INSERT OVERWRITE TABLE join_result_1
+SELECT a.*, b.*
+WHERE b.id = 'Id_1' AND b.val = 'val_103'
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+FROM T_A a LEFT JOIN T_B b ON a.id = b.id
+INSERT OVERWRITE TABLE join_result_1
+SELECT a.*, b.*
+WHERE b.id = 'Id_1' AND b.val = 'val_103'
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+  Stage-2 depends on stages: Stage-0
+
+STAGE PLANS:
+  Stage: Stage-1
+    Spark
+      Edges:
+        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 1), Map 3 (PARTITION-LEVEL SORT, 1)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: a
+                  Statistics: Num rows: 3 Data size: 36 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: (id = 'Id_1') (type: boolean)
+                    Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: val (type: string)
+                      outputColumnNames: _col1
+                      Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        sort order: 
+                        Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                        value expressions: _col1 (type: string)
+        Map 3 
+            Map Operator Tree:
+                TableScan
+                  alias: b
+                  Statistics: Num rows: 2 Data size: 24 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: ((id = 'Id_1') and (val = 'val_103')) (type: boolean)
+                    Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        sort order: 
+                        Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+        Reducer 2 
+            Reduce Operator Tree:
+              Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 
+                  1 
+                outputColumnNames: _col1
+                Statistics: Num rows: 1 Data size: 25 Basic stats: COMPLETE Column stats: NONE
+                Select Operator
+                  expressions: 'Id_1' (type: string), _col1 (type: string), 'Id_1' (type: string), 'val_103' (type: string)
+                  outputColumnNames: _col0, _col1, _col2, _col3
+                  Statistics: Num rows: 1 Data size: 25 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 1 Data size: 25 Basic stats: COMPLETE Column stats: NONE
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                        name: default.join_result_1
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          replace: true
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.join_result_1
+
+  Stage: Stage-2
+    Stats-Aggr Operator
+
+Warning: Shuffle Join JOIN[8][tables = [$hdt$_0, $hdt$_1]] in Work 'Reducer 2' is a cross product
+PREHOOK: query: explain
+FROM T_A a LEFT JOIN T_B b ON a.id = b.id
+INSERT OVERWRITE TABLE join_result_3
+SELECT a.*, b.*
+WHERE b.val = 'val_104' AND b.id = 'Id_2' AND a.val <> b.val
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+FROM T_A a LEFT JOIN T_B b ON a.id = b.id
+INSERT OVERWRITE TABLE join_result_3
+SELECT a.*, b.*
+WHERE b.val = 'val_104' AND b.id = 'Id_2' AND a.val <> b.val
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+  Stage-2 depends on stages: Stage-0
+
+STAGE PLANS:
+  Stage: Stage-1
+    Spark
+      Edges:
+        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 1), Map 3 (PARTITION-LEVEL SORT, 1)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: a
+                  Statistics: Num rows: 3 Data size: 36 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: ((id = 'Id_2') and (val <> 'val_104')) (type: boolean)
+                    Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: val (type: string)
+                      outputColumnNames: _col1
+                      Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        sort order: 
+                        Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                        value expressions: _col1 (type: string)
+        Map 3 
+            Map Operator Tree:
+                TableScan
+                  alias: b
+                  Statistics: Num rows: 2 Data size: 24 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: ((val = 'val_104') and (id = 'Id_2')) (type: boolean)
+                    Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        sort order: 
+                        Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+        Reducer 2 
+            Reduce Operator Tree:
+              Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 
+                  1 
+                outputColumnNames: _col1
+                Statistics: Num rows: 1 Data size: 25 Basic stats: COMPLETE Column stats: NONE
+                Select Operator
+                  expressions: 'Id_2' (type: string), _col1 (type: string), 'Id_2' (type: string), 'val_104' (type: string)
+                  outputColumnNames: _col0, _col1, _col2, _col3
+                  Statistics: Num rows: 1 Data size: 25 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 1 Data size: 25 Basic stats: COMPLETE Column stats: NONE
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                        name: default.join_result_3
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          replace: true
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.join_result_3
+
+  Stage: Stage-2
+    Stats-Aggr Operator
+
+PREHOOK: query: explain
+FROM T_A a LEFT JOIN T_B b ON a.id = b.id
+INSERT OVERWRITE TABLE join_result_1
+SELECT a.*, b.*
+WHERE b.id = 'Id_1' AND b.val = 'val_103'
+INSERT OVERWRITE TABLE join_result_3
+SELECT a.*, b.*
+WHERE b.val = 'val_104' AND b.id = 'Id_2' AND a.val <> b.val
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+FROM T_A a LEFT JOIN T_B b ON a.id = b.id
+INSERT OVERWRITE TABLE join_result_1
+SELECT a.*, b.*
+WHERE b.id = 'Id_1' AND b.val = 'val_103'
+INSERT OVERWRITE TABLE join_result_3
+SELECT a.*, b.*
+WHERE b.val = 'val_104' AND b.id = 'Id_2' AND a.val <> b.val
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-2 is a root stage
+  Stage-1 depends on stages: Stage-2
+  Stage-3 depends on stages: Stage-1
+  Stage-0 depends on stages: Stage-2
+  Stage-4 depends on stages: Stage-0
+
+STAGE PLANS:
+  Stage: Stage-2
+    Spark
+      Edges:
+        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 2), Map 3 (PARTITION-LEVEL SORT, 2)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: a
+                  Statistics: Num rows: 3 Data size: 36 Basic stats: COMPLETE Column stats: NONE
+                  Reduce Output Operator
+                    key expressions: id (type: string)
+                    sort order: +
+                    Map-reduce partition columns: id (type: string)
+                    Statistics: Num rows: 3 Data size: 36 Basic stats: COMPLETE Column stats: NONE
+                    value expressions: val (type: string)
+        Map 3 
+            Map Operator Tree:
+                TableScan
+                  alias: b
+                  Statistics: Num rows: 2 Data size: 24 Basic stats: COMPLETE Column stats: NONE
+                  Reduce Output Operator
+                    key expressions: id (type: string)
+                    sort order: +
+                    Map-reduce partition columns: id (type: string)
+                    Statistics: Num rows: 2 Data size: 24 Basic stats: COMPLETE Column stats: NONE
+                    value expressions: val (type: string)
+        Reducer 2 
+            Reduce Operator Tree:
+              Join Operator
+                condition map:
+                     Left Outer Join0 to 1
+                keys:
+                  0 id (type: string)
+                  1 id (type: string)
+                outputColumnNames: _col0, _col1, _col5, _col6
+                Statistics: Num rows: 3 Data size: 39 Basic stats: COMPLETE Column stats: NONE
+                Filter Operator
+                  predicate: ((_col6 = 'val_104') and (_col5 = 'Id_2') and (_col1 <> _col6)) (type: boolean)
+                  Statistics: Num rows: 1 Data size: 13 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: _col0 (type: string), _col1 (type: string), 'Id_2' (type: string), 'val_104' (type: string)
+                    outputColumnNames: _col0, _col1, _col2, _col3
+                    Statistics: Num rows: 1 Data size: 13 Basic stats: COMPLETE Column stats: NONE
+                    File Output Operator
+                      compressed: false
+                      Statistics: Num rows: 1 Data size: 13 Basic stats: COMPLETE Column stats: NONE
+                      table:
+                          input format: org.apache.hadoop.mapred.TextInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                          name: default.join_result_3
+                Filter Operator
+                  predicate: ((_col5 = 'Id_1') and (_col6 = 'val_103')) (type: boolean)
+                  Statistics: Num rows: 1 Data size: 13 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: _col0 (type: string), _col1 (type: string), 'Id_1' (type: string), 'val_103' (type: string)
+                    outputColumnNames: _col0, _col1, _col2, _col3
+                    Statistics: Num rows: 1 Data size: 13 Basic stats: COMPLETE Column stats: NONE
+                    File Output Operator
+                      compressed: false
+                      Statistics: Num rows: 1 Data size: 13 Basic stats: COMPLETE Column stats: NONE
+                      table:
+                          input format: org.apache.hadoop.mapred.TextInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                          name: default.join_result_1
+
+  Stage: Stage-1
+    Move Operator
+      tables:
+          replace: true
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.join_result_3
+
+  Stage: Stage-3
+    Stats-Aggr Operator
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          replace: true
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.join_result_1
+
+  Stage: Stage-4
+    Stats-Aggr Operator
+
+PREHOOK: query: explain
+FROM T_A a LEFT JOIN T_B b ON a.id = b.id
+INSERT OVERWRITE TABLE join_result_1
+SELECT a.*, b.*
+WHERE b.id = 'Id_1' AND b.val = 'val_103'
+INSERT OVERWRITE TABLE join_result_3
+SELECT a.*, b.*
+WHERE b.val = 'val_104' AND b.id = 'Id_2'
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+FROM T_A a LEFT JOIN T_B b ON a.id = b.id
+INSERT OVERWRITE TABLE join_result_1
+SELECT a.*, b.*
+WHERE b.id = 'Id_1' AND b.val = 'val_103'
+INSERT OVERWRITE TABLE join_result_3
+SELECT a.*, b.*
+WHERE b.val = 'val_104' AND b.id = 'Id_2'
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-2 is a root stage
+  Stage-0 depends on stages: Stage-2
+  Stage-3 depends on stages: Stage-0
+  Stage-1 depends on stages: Stage-2
+  Stage-4 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-2
+    Spark
+      Edges:
+        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 2), Map 3 (PARTITION-LEVEL SORT, 2)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: a
+                  Statistics: Num rows: 3 Data size: 36 Basic stats: COMPLETE Column stats: NONE
+                  Reduce Output Operator
+                    key expressions: id (type: string)
+                    sort order: +
+                    Map-reduce partition columns: id (type: string)
+                    Statistics: Num rows: 3 Data size: 36 Basic stats: COMPLETE Column stats: NONE
+                    value expressions: val (type: string)
+        Map 3 
+            Map Operator Tree:
+                TableScan
+                  alias: b
+                  Statistics: Num rows: 2 Data size: 24 Basic stats: COMPLETE Column stats: NONE
+                  Reduce Output Operator
+                    key expressions: id (type: string)
+                    sort order: +
+                    Map-reduce partition columns: id (type: string)
+                    Statistics: Num rows: 2 Data size: 24 Basic stats: COMPLETE Column stats: NONE
+                    value expressions: val (type: string)
+        Reducer 2 
+            Reduce Operator Tree:
+              Join Operator
+                condition map:
+                     Left Outer Join0 to 1
+                keys:
+                  0 id (type: string)
+                  1 id (type: string)
+                outputColumnNames: _col0, _col1, _col5, _col6
+                Statistics: Num rows: 3 Data size: 39 Basic stats: COMPLETE Column stats: NONE
+                Filter Operator
+                  predicate: ((_col5 = 'Id_1') and (_col6 = 'val_103')) (type: boolean)
+                  Statistics: Num rows: 1 Data size: 13 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: _col0 (type: string), _col1 (type: string), 'Id_1' (type: string), 'val_103' (type: string)
+                    outputColumnNames: _col0, _col1, _col2, _col3
+                    Statistics: Num rows: 1 Data size: 13 Basic stats: COMPLETE Column stats: NONE
+                    File Output Operator
+                      compressed: false
+                      Statistics: Num rows: 1 Data size: 13 Basic stats: COMPLETE Column stats: NONE
+                      table:
+                          input format: org.apache.hadoop.mapred.TextInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                          name: default.join_result_1
+                Filter Operator
+                  predicate: ((_col6 = 'val_104') and (_col5 = 'Id_2')) (type: boolean)
+                  Statistics: Num rows: 1 Data size: 13 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: _col0 (type: string), _col1 (type: string), 'Id_2' (type: string), 'val_104' (type: string)
+                    outputColumnNames: _col0, _col1, _col2, _col3
+                    Statistics: Num rows: 1 Data size: 13 Basic stats: COMPLETE Column stats: NONE
+                    File Output Operator
+                      compressed: false
+                      Statistics: Num rows: 1 Data size: 13 Basic stats: COMPLETE Column stats: NONE
+                      table:
+                          input format: org.apache.hadoop.mapred.TextInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                          name: default.join_result_3
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          replace: true
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.join_result_1
+
+  Stage: Stage-3
+    Stats-Aggr Operator
+
+  Stage: Stage-1
+    Move Operator
+      tables:
+          replace: true
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.join_result_3
+
+  Stage: Stage-4
+    Stats-Aggr Operator
+
+PREHOOK: query: explain
+FROM T_A a JOIN T_B b ON a.id = b.id
+INSERT OVERWRITE TABLE join_result_1
+SELECT a.*, b.*
+WHERE b.id = 'Id_1' AND b.val = 'val_103'
+INSERT OVERWRITE TABLE join_result_3
+SELECT a.*, b.*
+WHERE b.val = 'val_104' AND b.id = 'Id_2'
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+FROM T_A a JOIN T_B b ON a.id = b.id
+INSERT OVERWRITE TABLE join_result_1
+SELECT a.*, b.*
+WHERE b.id = 'Id_1' AND b.val = 'val_103'
+INSERT OVERWRITE TABLE join_result_3
+SELECT a.*, b.*
+WHERE b.val = 'val_104' AND b.id = 'Id_2'
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-2 is a root stage
+  Stage-0 depends on stages: Stage-2
+  Stage-3 depends on stages: Stage-0
+  Stage-1 depends on stages: Stage-2
+  Stage-4 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-2
+    Spark
+      Edges:
+        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 2), Map 3 (PARTITION-LEVEL SORT, 2)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: a
+                  Statistics: Num rows: 3 Data size: 36 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: id is not null (type: boolean)
+                    Statistics: Num rows: 3 Data size: 36 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: id (type: string)
+                      sort order: +
+                      Map-reduce partition columns: id (type: string)
+                      Statistics: Num rows: 3 Data size: 36 Basic stats: COMPLETE Column stats: NONE
+                      value expressions: val (type: string)
+        Map 3 
+            Map Operator Tree:
+                TableScan
+                  alias: b
+                  Statistics: Num rows: 2 Data size: 24 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: id is not null (type: boolean)
+                    Statistics: Num rows: 2 Data size: 24 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: id (type: string)
+                      sort order: +
+                      Map-reduce partition columns: id (type: string)
+                      Statistics: Num rows: 2 Data size: 24 Basic stats: COMPLETE Column stats: NONE
+                      value expressions: val (type: string)
+        Reducer 2 
+            Reduce Operator Tree:
+              Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 id (type: string)
+                  1 id (type: string)
+                outputColumnNames: _col0, _col1, _col5, _col6
+                Statistics: Num rows: 3 Data size: 39 Basic stats: COMPLETE Column stats: NONE
+                Filter Operator
+                  predicate: ((_col5 = 'Id_1') and (_col6 = 'val_103')) (type: boolean)
+                  Statistics: Num rows: 1 Data size: 13 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: _col0 (type: string), _col1 (type: string), 'Id_1' (type: string), 'val_103' (type: string)
+                    outputColumnNames: _col0, _col1, _col2, _col3
+                    Statistics: Num rows: 1 Data size: 13 Basic stats: COMPLETE Column stats: NONE
+                    File Output Operator
+                      compressed: false
+                      Statistics: Num rows: 1 Data size: 13 Basic stats: COMPLETE Column stats: NONE
+                      table:
+                          input format: org.apache.hadoop.mapred.TextInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                          name: default.join_result_1
+                Filter Operator
+                  predicate: ((_col6 = 'val_104') and (_col5 = 'Id_2')) (type: boolean)
+                  Statistics: Num rows: 1 Data size: 13 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: _col0 (type: string), _col1 (type: string), 'Id_2' (type: string), 'val_104' (type: string)
+                    outputColumnNames: _col0, _col1, _col2, _col3
+                    Statistics: Num rows: 1 Data size: 13 Basic stats: COMPLETE Column stats: NONE
+                    File Output Operator
+                      compressed: false
+                      Statistics: Num rows: 1 Data size: 13 Basic stats: COMPLETE Column stats: NONE
+                      table:
+                          input format: org.apache.hadoop.mapred.TextInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                          name: default.join_result_3
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          replace: true
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.join_result_1
+
+  Stage: Stage-3
+    Stats-Aggr Operator
+
+  Stage: Stage-1
+    Move Operator
+      tables:
+          replace: true
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.join_result_3
+
+  Stage: Stage-4
+    Stats-Aggr Operator
+
+PREHOOK: query: explain
+FROM T_A a JOIN T_B b ON a.id = b.id
+INSERT OVERWRITE TABLE join_result_1
+SELECT *
+WHERE b.id = 'Id_1' AND b.val = 'val_103'
+INSERT OVERWRITE TABLE join_result_3
+SELECT *
+WHERE b.val = 'val_104' AND b.id = 'Id_2'
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+FROM T_A a JOIN T_B b ON a.id = b.id
+INSERT OVERWRITE TABLE join_result_1
+SELECT *
+WHERE b.id = 'Id_1' AND b.val = 'val_103'
+INSERT OVERWRITE TABLE join_result_3
+SELECT *
+WHERE b.val = 'val_104' AND b.id = 'Id_2'
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-2 is a root stage
+  Stage-0 depends on stages: Stage-2
+  Stage-3 depends on stages: Stage-0
+  Stage-1 depends on stages: Stage-2
+  Stage-4 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-2
+    Spark
+      Edges:
+        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 2), Map 3 (PARTITION-LEVEL SORT, 2)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: a
+                  Statistics: Num rows: 3 Data size: 36 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: id is not null (type: boolean)
+                    Statistics: Num rows: 3 Data size: 36 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: id (type: string)
+                      sort order: +
+                      Map-reduce partition columns: id (type: string)
+                      Statistics: Num rows: 3 Data size: 36 Basic stats: COMPLETE Column stats: NONE
+                      value expressions: val (type: string)
+        Map 3 
+            Map Operator Tree:
+                TableScan
+                  alias: b
+                  Statistics: Num rows: 2 Data size: 24 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: id is not null (type: boolean)
+                    Statistics: Num rows: 2 Data size: 24 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: id (type: string)
+                      sort order: +
+                      Map-reduce partition columns: id (type: string)
+                      Statistics: Num rows: 2 Data size: 24 Basic stats: COMPLETE Column stats: NONE
+                      value expressions: val (type: string)
+        Reducer 2 
+            Reduce Operator Tree:
+              Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 id (type: string)
+                  1 id (type: string)
+                outputColumnNames: _col0, _col1, _col5, _col6
+                Statistics: Num rows: 3 Data size: 39 Basic stats: COMPLETE Column stats: NONE
+                Filter Operator
+                  predicate: ((_col5 = 'Id_1') and (_col6 = 'val_103')) (type: boolean)
+                  Statistics: Num rows: 1 Data size: 13 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: _col0 (type: string), _col1 (type: string), 'Id_1' (type: string), 'val_103' (type: string)
+                    outputColumnNames: _col0, _col1, _col2, _col3
+                    Statistics: Num rows: 1 Data size: 13 Basic stats: COMPLETE Column stats: NONE
+                    File Output Operator
+                      compressed: false
+                      Statistics: Num rows: 1 Data size: 13 Basic stats: COMPLETE Column stats: NONE
+                      table:
+                          input format: org.apache.hadoop.mapred.TextInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                          name: default.join_result_1
+                Filter Operator
+                  predicate: ((_col6 = 'val_104') and (_col5 = 'Id_2')) (type: boolean)
+                  Statistics: Num rows: 1 Data size: 13 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: _col0 (type: string), _col1 (type: string), 'Id_2' (type: string), 'val_104' (type: string)
+                    outputColumnNames: _col0, _col1, _col2, _col3
+                    Statistics: Num rows: 1 Data size: 13 Basic stats: COMPLETE Column stats: NONE
+                    File Output Operator
+                      compressed: false
+                      Statistics: Num rows: 1 Data size: 13 Basic stats: COMPLETE Column stats: NONE
+                      table:
+                          input format: org.apache.hadoop.mapred.TextInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                          name: default.join_result_3
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          replace: true
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.join_result_1
+
+  Stage: Stage-3
+    Stats-Aggr Operator
+
+  Stage: Stage-1
+    Move Operator
+      tables:
+          replace: true
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.join_result_3
+
+  Stage: Stage-4
+    Stats-Aggr Operator
+
+PREHOOK: query: explain
+FROM T_A a JOIN T_B b ON a.id = b.id
+INSERT OVERWRITE TABLE join_result_1
+SELECT a.id, a.val, b.id, b.val
+WHERE b.id = 'Id_1' AND b.val = 'val_103'
+INSERT OVERWRITE TABLE join_result_3
+SELECT a.id, a.val, b.id, b.val
+WHERE b.val = 'val_104' AND b.id = 'Id_2'
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+FROM T_A a JOIN T_B b ON a.id = b.id
+INSERT OVERWRITE TABLE join_result_1
+SELECT a.id, a.val, b.id, b.val
+WHERE b.id = 'Id_1' AND b.val = 'val_103'
+INSERT OVERWRITE TABLE join_result_3
+SELECT a.id, a.val, b.id, b.val
+WHERE b.val = 'val_104' AND b.id = 'Id_2'
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-2 is a root stage
+  Stage-0 depends on stages: Stage-2
+  Stage-3 depends on stages: Stage-0
+  Stage-1 depends on stages: Stage-2
+  Stage-4 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-2
+    Spark
+      Edges:
+        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 2), Map 3 (PARTITION-LEVEL SORT, 2)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: a
+                  Statistics: Num rows: 3 Data size: 36 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: id is not null (type: boolean)
+                    Statistics: Num rows: 3 Data size: 36 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: id (type: string), val (type: string)
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 3 Data size: 36 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 3 Data size: 36 Basic stats: COMPLETE Column stats: NONE
+                        value expressions: _col1 (type: string)
+        Map 3 
+            Map Operator Tree:
+                TableScan
+                  alias: b
+                  Statistics: Num rows: 2 Data size: 24 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: id is not null (type: boolean)
+                    Statistics: Num rows: 2 Data size: 24 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: id (type: string), val (type: string)
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 2 Data size: 24 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 2 Data size: 24 Basic stats: COMPLETE Column stats: NONE
+                        value expressions: _col1 (type: string)
+        Reducer 2 
+            Reduce Operator Tree:
+              Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 _col0 (type: string)
+                  1 _col0 (type: string)
+                outputColumnNames: _col0, _col1, _col2, _col3
+                Statistics: Num rows: 3 Data size: 39 Basic stats: COMPLETE Column stats: NONE
+                Select Operator
+                  expressions: _col0 (type: string), _col1 (type: string), _col3 (type: string), _col2 (type: string)
+                  outputColumnNames: _col0, _col1, _col2, _col3
+                  Statistics: Num rows: 3 Data size: 39 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: ((_col3 = 'Id_1') and (_col2 = 'val_103')) (type: boolean)
+                    Statistics: Num rows: 1 Data size: 13 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: _col0 (type: string), _col1 (type: string), _col3 (type: string), _col2 (type: string)
+                      outputColumnNames: _col0, _col1, _col2, _col3
+                      Statistics: Num rows: 1 Data size: 13 Basic stats: COMPLETE Column stats: NONE
+                      File Output Operator
+                        compressed: false
+                        Statistics: Num rows: 1 Data size: 13 Basic stats: COMPLETE Column stats: NONE
+                        table:
+                            input format: org.apache.hadoop.mapred.TextInputFormat
+                            output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                            name: default.join_result_1
+                  Filter Operator
+                    predicate: ((_col2 = 'val_104') and (_col3 = 'Id_2')) (type: boolean)
+                    Statistics: Num rows: 1 Data size: 13 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: _col0 (type: string), _col1 (type: string), _col3 (type: string), _col2 (type: string)
+                      outputColumnNames: _col0, _col1, _col2, _col3
+                      Statistics: Num rows: 1 Data size: 13 Basic stats: COMPLETE Column stats: NONE
+                      File Output Operator
+                        compressed: false
+                        Statistics: Num rows: 1 Data size: 13 Basic stats: COMPLETE Column stats: NONE
+                        table:
+                            input format: org.apache.hadoop.mapred.TextInputFormat
+                            output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                            name: default.join_result_3
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          replace: true
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.join_result_1
+
+  Stage: Stage-3
+    Stats-Aggr Operator
+
+  Stage: Stage-1
+    Move Operator
+      tables:
+          replace: true
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.join_result_3
+
+  Stage: Stage-4
+    Stats-Aggr Operator
+
+PREHOOK: query: explain
+FROM T_A a JOIN T_B b ON a.id = b.id
+INSERT OVERWRITE TABLE join_result_1
+SELECT a.val, a.id, b.id, b.val
+WHERE b.id = 'Id_1' AND b.val = 'val_103'
+INSERT OVERWRITE TABLE join_result_3
+SELECT a.id, b.val, b.id, a.val
+WHERE b.val = 'val_104' AND b.id = 'Id_2'
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+FROM T_A a JOIN T_B b ON a.id = b.id
+INSERT OVERWRITE TABLE join_result_1
+SELECT a.val, a.id, b.id, b.val
+WHERE b.id = 'Id_1' AND b.val = 'val_103'
+INSERT OVERWRITE TABLE join_result_3
+SELECT a.id, b.val, b.id, a.val
+WHERE b.val = 'val_104' AND b.id = 'Id_2'
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-2 is a root stage
+  Stage-0 depends on stages: Stage-2
+  Stage-3 depends on stages: Stage-0
+  Stage-1 depends on stages: Stage-2
+  Stage-4 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-2
+    Spark
+      Edges:
+        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 2), Map 3 (PARTITION-LEVEL SORT, 2)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: a
+                  Statistics: Num rows: 3 Data size: 36 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: id is not null (type: boolean)
+                    Statistics: Num rows: 3 Data size: 36 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: id (type: string), val (type: string)
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 3 Data size: 36 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 3 Data size: 36 Basic stats: COMPLETE Column stats: NONE
+                        value expressions: _col1 (type: string)
+        Map 3 
+            Map Operator Tree:
+                TableScan
+                  alias: b
+                  Statistics: Num rows: 2 Data size: 24 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: id is not null (type: boolean)
+                    Statistics: Num rows: 2 Data size: 24 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: id (type: string), val (type: string)
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 2 Data size: 24 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 2 Data size: 24 Basic stats: COMPLETE Column stats: NONE
+                        value expressions: _col1 (type: string)
+        Reducer 2 
+            Reduce Operator Tree:
+              Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 _col0 (type: string)
+                  1 _col0 (type: string)
+                outputColumnNames: _col0, _col1, _col2, _col3
+                Statistics: Num rows: 3 Data size: 39 Basic stats: COMPLETE Column stats: NONE
+                Select Operator
+                  expressions: _col0 (type: string), _col1 (type: string), _col3 (type: string), _col2 (type: string)
+                  outputColumnNames: _col0, _col1, _col2, _col3
+                  Statistics: Num rows: 3 Data size: 39 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: ((_col3 = 'Id_1') and (_col2 = 'val_103')) (type: boolean)
+                    Statistics: Num rows: 1 Data size: 13 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: _col1 (type: string), _col0 (type: string), _col3 (type: string), _col2 (type: string)
+                      outputColumnNames: _col0, _col1, _col2, _col3
+                      Statistics: Num rows: 1 Data size: 13 Basic stats: COMPLETE Column stats: NONE
+                      File Output Operator
+                        compressed: false
+                        Statistics: Num rows: 1 Data size: 13 Basic stats: COMPLETE Column stats: NONE
+                        table:
+                            input format: org.apache.hadoop.mapred.TextInputFormat
+                            output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                            name: default.join_result_1
+                  Filter Operator
+                    predicate: ((_col2 = 'val_104') and (_col3 = 'Id_2')) (type: boolean)
+                    Statistics: Num rows: 1 Data size: 13 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: _col0 (type: string), _col2 (type: string), _col3 (type: string), _col1 (type: string)
+                      outputColumnNames: _col0, _col1, _col2, _col3
+                      Statistics: Num rows: 1 Data size: 13 Basic stats: COMPLETE Column stats: NONE
+                      File Output Operator
+                        compressed: false
+                        Statistics: Num rows: 1 Data size: 13 Basic stats: COMPLETE Column stats: NONE
+                        table:
+                            input format: org.apache.hadoop.mapred.TextInputFormat
+                            output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                            name: default.join_result_3
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          replace: true
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.join_result_1
+
+  Stage: Stage-3
+    Stats-Aggr Operator
+
+  Stage: Stage-1
+    Move Operator
+      tables:
+          replace: true
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.join_result_3
+
+  Stage: Stage-4
+    Stats-Aggr Operator
+

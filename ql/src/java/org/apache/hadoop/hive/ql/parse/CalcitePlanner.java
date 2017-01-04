@@ -23,10 +23,11 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.UndeclaredThrowableException;
 import java.math.BigDecimal;
 import java.util.AbstractMap.SimpleEntry;
-import java.util.ArrayList;
 import java.util.ArrayDeque;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.BitSet;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Deque;
 import java.util.EnumSet;
@@ -38,9 +39,11 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.antlr.runtime.ClassicToken;
+import org.antlr.runtime.CommonToken;
 import org.antlr.runtime.tree.TreeVisitor;
 import org.antlr.runtime.tree.TreeVisitorAction;
 import org.apache.calcite.adapter.druid.DruidQuery;
@@ -138,7 +141,6 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveDefaultRelMetadataProvider;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HivePlannerContext;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelFactories;
-import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveRelDecorrelator;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRexExecutorImpl;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveTypeSystemImpl;
 import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
@@ -186,6 +188,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveProjectOverIntersec
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveProjectSortTransposeRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveReduceExpressionsRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveReduceExpressionsWithStatsRule;
+import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveRelDecorrelator;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveRelFieldTrimmer;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveRulesRegistry;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveSemiJoinRule;
@@ -241,10 +244,12 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.joda.time.Interval;
 
 import com.google.common.base.Function;
+import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Multimap;
 
 public class CalcitePlanner extends SemanticAnalyzer {
 
@@ -328,9 +333,13 @@ public class CalcitePlanner extends SemanticAnalyzer {
         queryForCbo = cboCtx.nodeOfInterest; // nodeOfInterest is the query
       }
       runCBO = canCBOHandleAst(queryForCbo, getQB(), cboCtx);
-      profilesCBO = obtainCBOProfiles(queryProperties);
+      if (queryProperties.hasMultiDestQuery()) {
+        handleMultiDestQuery(ast, cboCtx);
+      }
 
       if (runCBO) {
+        profilesCBO = obtainCBOProfiles(queryProperties);
+
         disableJoinMerge = true;
         boolean reAnalyzeAST = false;
         final boolean materializedView = getQB().isMaterializedView();
@@ -454,6 +463,167 @@ public class CalcitePlanner extends SemanticAnalyzer {
     return sinkOp;
   }
 
+  /*
+   * Tries to optimize FROM clause of multi-insert. No attempt to optimize insert clauses of the query.
+   * Returns true if rewriting is successful, false otherwise.
+   */
+  private void handleMultiDestQuery(ASTNode ast, PreCboCtx cboCtx) throws SemanticException {
+    // Not supported by CBO
+    if (!runCBO) {
+      return;
+    }
+    // Currently, we only optimized the query the content of the FROM clause
+    // for multi-insert queries. Thus, nodeOfInterest is the FROM clause
+    if (isJoinToken(cboCtx.nodeOfInterest)) {
+      // Join clause: rewriting is needed
+      ASTNode subq = rewriteASTForMultiInsert(ast, cboCtx.nodeOfInterest);
+      if (subq != null) {
+        // We could rewrite into a subquery
+        cboCtx.nodeOfInterest = (ASTNode) subq.getChild(0);
+        QB newQB = new QB(null, "", false);
+        Phase1Ctx ctx_1 = initPhase1Ctx();
+        doPhase1(cboCtx.nodeOfInterest, newQB, ctx_1, null);
+        setQB(newQB);
+        getMetaData(getQB());
+      } else {
+        runCBO = false;
+      }
+    } else if (cboCtx.nodeOfInterest.getToken().getType() == HiveParser.TOK_SUBQUERY) {
+      // Subquery: no rewriting needed
+      ASTNode subq = cboCtx.nodeOfInterest;
+      // First child is subquery, second child is alias
+      // We set the node of interest and QB to the subquery
+      // We do not need to generate the QB again, but rather we use it directly
+      cboCtx.nodeOfInterest = (ASTNode) subq.getChild(0);
+      String subQAlias = unescapeIdentifier(subq.getChild(1).getText());
+      final QB newQB = getQB().getSubqForAlias(subQAlias).getQB();
+      newQB.getParseInfo().setAlias("");
+      newQB.getParseInfo().setIsSubQ(false);
+      setQB(newQB);
+    } else {
+      // No need to run CBO (table ref or virtual table) or not supported
+      runCBO = false;
+    }
+  }
+
+  private ASTNode rewriteASTForMultiInsert(ASTNode query, ASTNode nodeOfInterest) {
+    // 1. gather references from original query
+    // This is a map from aliases to references.
+    // We keep all references as we will need to modify them after creating
+    // the subquery
+    final Multimap<String, Object> aliasNodes = ArrayListMultimap.create();
+    // To know if we need to bail out
+    final AtomicBoolean notSupported = new AtomicBoolean(false);
+    TreeVisitorAction action = new TreeVisitorAction() {
+      @Override
+      public Object pre(Object t) {
+        if (!notSupported.get()) {
+          if (ParseDriver.adaptor.getType(t) == HiveParser.TOK_ALLCOLREF) {
+            // TODO: this is a limitation of the AST rewriting approach that we will
+            // not be able to overcome till proper integration of full multi-insert
+            // queries with Calcite is implemented.
+            // The current rewriting gather references from insert clauses and then
+            // updates them with the new subquery references. However, if insert
+            // clauses use * or tab.*, we cannot resolve the columns that we are
+            // referring to. Thus, we just bail out and those queries will not be
+            // currently optimized by Calcite.
+            // An example of such query is:
+            // FROM T_A a LEFT JOIN T_B b ON a.id = b.id
+            // INSERT OVERWRITE TABLE join_result_1
+            // SELECT a.*, b.*
+            // INSERT OVERWRITE TABLE join_result_3
+            // SELECT a.*, b.*;
+            notSupported.set(true);
+          } else if (ParseDriver.adaptor.getType(t) == HiveParser.DOT) {
+            Object c = ParseDriver.adaptor.getChild(t, 0);
+            if (c != null && ParseDriver.adaptor.getType(c) == HiveParser.TOK_TABLE_OR_COL) {
+              aliasNodes.put(((ASTNode) t).toStringTree(), t);
+            }
+          } else if (ParseDriver.adaptor.getType(t) == HiveParser.TOK_TABLE_OR_COL) {
+            Object p = ParseDriver.adaptor.getParent(t);
+            if (p == null || ParseDriver.adaptor.getType(p) != HiveParser.DOT) {
+              aliasNodes.put(((ASTNode) t).toStringTree(), t);
+            }
+          }
+        }
+        return t;
+      }
+      @Override
+      public Object post(Object t) {
+        return t;
+      }
+    };
+    TreeVisitor tv = new TreeVisitor(ParseDriver.adaptor);
+    // We will iterate through the children: if it is an INSERT, we will traverse
+    // the subtree to gather the references
+    for (int i = 0; i < query.getChildCount(); i++) {
+      ASTNode child = (ASTNode) query.getChild(i);
+      if (ParseDriver.adaptor.getType(child) != HiveParser.TOK_INSERT) {
+        // If it is not an INSERT, we do not need to anything
+        continue;
+      }
+      tv.visit(child, action);
+    }
+    if (notSupported.get()) {
+      // Bail out
+      return null;
+    }
+    // 2. rewrite into query
+    //  TOK_QUERY
+    //     TOK_FROM
+    //        join
+    //     TOK_INSERT
+    //        TOK_DESTINATION
+    //           TOK_DIR
+    //              TOK_TMP_FILE
+    //        TOK_SELECT
+    //           refs
+    ASTNode from = new ASTNode(new CommonToken(HiveParser.TOK_FROM, "TOK_FROM"));
+    from.addChild((ASTNode) ParseDriver.adaptor.dupTree(nodeOfInterest));
+    ASTNode destination = new ASTNode(new CommonToken(HiveParser.TOK_DESTINATION, "TOK_DESTINATION"));
+    ASTNode dir = new ASTNode(new CommonToken(HiveParser.TOK_DIR, "TOK_DIR"));
+    ASTNode tmpFile = new ASTNode(new CommonToken(HiveParser.TOK_TMP_FILE, "TOK_TMP_FILE"));
+    dir.addChild(tmpFile);
+    destination.addChild(dir);
+    ASTNode select = new ASTNode(new CommonToken(HiveParser.TOK_SELECT, "TOK_SELECT"));
+    int num = 0;
+    for (Collection<Object> selectIdentifier : aliasNodes.asMap().values()) {
+      Iterator<Object> it = selectIdentifier.iterator();
+      ASTNode node = (ASTNode) it.next();
+      // Add select expression
+      ASTNode selectExpr = new ASTNode(new CommonToken(HiveParser.TOK_SELEXPR, "TOK_SELEXPR"));
+      selectExpr.addChild((ASTNode) ParseDriver.adaptor.dupTree(node)); // Identifier
+      String colAlias = "col" + num;
+      selectExpr.addChild(new ASTNode(new CommonToken(HiveParser.Identifier, colAlias))); // Alias
+      select.addChild(selectExpr);
+      // Rewrite all INSERT references (all the node values for this key)
+      ASTNode colExpr = new ASTNode(new CommonToken(HiveParser.TOK_TABLE_OR_COL, "TOK_TABLE_OR_COL"));
+      colExpr.addChild(new ASTNode(new CommonToken(HiveParser.Identifier, colAlias)));
+      replaceASTChild(node, colExpr);
+      while (it.hasNext()) {
+        // Loop to rewrite rest of INSERT references
+        node = (ASTNode) it.next();
+        colExpr = new ASTNode(new CommonToken(HiveParser.TOK_TABLE_OR_COL, "TOK_TABLE_OR_COL"));
+        colExpr.addChild(new ASTNode(new CommonToken(HiveParser.Identifier, colAlias)));
+        replaceASTChild(node, colExpr);
+      }
+      num++;
+    }
+    ASTNode insert = new ASTNode(new CommonToken(HiveParser.TOK_INSERT, "TOK_INSERT"));
+    insert.addChild(destination);
+    insert.addChild(select);
+    ASTNode newQuery = new ASTNode(new CommonToken(HiveParser.TOK_QUERY, "TOK_QUERY"));
+    newQuery.addChild(from);
+    newQuery.addChild(insert);
+    // 3. create subquery
+    ASTNode subq = new ASTNode(new CommonToken(HiveParser.TOK_SUBQUERY, "TOK_SUBQUERY"));
+    subq.addChild(newQuery);
+    subq.addChild(new ASTNode(new CommonToken(HiveParser.Identifier, "subq")));
+    replaceASTChild(nodeOfInterest, subq);
+    // 4. return subquery
+    return subq;
+  }
+
   /**
    * Can CBO handle the given AST?
    *
@@ -476,7 +646,8 @@ public class CalcitePlanner extends SemanticAnalyzer {
         || qb.isCTAS() || qb.isMaterializedView();
     // Queries without a source table currently are not supported by CBO
     boolean isSupportedType = (qb.getIsQuery() && !qb.containsQueryWithoutSourceTable())
-        || qb.isCTAS() || qb.isMaterializedView() || cboCtx.type == PreCboCtx.Type.INSERT;
+        || qb.isCTAS() || qb.isMaterializedView() || cboCtx.type == PreCboCtx.Type.INSERT
+        || cboCtx.type == PreCboCtx.Type.MULTI_INSERT;
     boolean noBadTokens = HiveCalciteUtil.validateASTForUnsupportedTokens(ast);
     boolean result = isSupportedRoot && isSupportedType
         && (getCreateViewDesc() == null || getCreateViewDesc().isMaterialized())
@@ -542,7 +713,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
     if (!queryProperties.hasClusterBy() && !queryProperties.hasDistributeBy()
         && !queryProperties.hasSortBy() && !queryProperties.hasPTF() && !queryProperties.usesScript()
-        && !queryProperties.hasMultiDestQuery() && !queryProperties.hasLateralViews()) {
+        && !queryProperties.hasLateralViews()) {
       // Ok to run CBO.
       return null;
     }
@@ -560,8 +731,6 @@ public class CalcitePlanner extends SemanticAnalyzer {
         msg += "has PTF; ";
       if (queryProperties.usesScript())
         msg += "uses scripts; ";
-      if (queryProperties.hasMultiDestQuery())
-        msg += "is a multi-destination query; ";
       if (queryProperties.hasLateralViews())
         msg += "has lateral views; ";
 
@@ -664,7 +833,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
    */
   static class PreCboCtx extends PlannerContext {
     enum Type {
-      NONE, INSERT, CTAS_OR_MV, UNEXPECTED
+      NONE, INSERT, MULTI_INSERT, CTAS_OR_MV, UNEXPECTED
     }
 
     private ASTNode nodeOfInterest;
@@ -691,6 +860,17 @@ public class CalcitePlanner extends SemanticAnalyzer {
       if (!isTmpFileDest) {
         set(PreCboCtx.Type.INSERT, ast);
       }
+    }
+
+    @Override
+    void setMultiInsertToken(ASTNode child) {
+      set(PreCboCtx.Type.MULTI_INSERT, child);
+    }
+
+    @Override
+    void resetToken() {
+      this.type = Type.NONE;
+      this.nodeOfInterest = null;
     }
   }
 
@@ -720,6 +900,12 @@ public class CalcitePlanner extends SemanticAnalyzer {
       }
       replaceASTChild(newDest, cboCtx.nodeOfInterest);
       return newAst;
+    }
+
+    case MULTI_INSERT: {
+      // Patch the optimized query back into original FROM clause.
+      replaceASTChild(cboCtx.nodeOfInterest, newAst);
+      return originalAst;
     }
 
     default:
@@ -3803,14 +3989,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
     }
 
     private QBParseInfo getQBParseInfo(QB qb) throws CalciteSemanticException {
-      QBParseInfo qbp = qb.getParseInfo();
-      if (qbp.getClauseNames().size() > 1) {
-        String msg = String.format("Multi Insert is currently not supported in CBO,"
-            + " turn off cbo to use Multi Insert.");
-        LOG.debug(msg);
-        throw new CalciteSemanticException(msg, UnsupportedFeature.Multi_insert);
-      }
-      return qbp;
+      return qb.getParseInfo();
     }
 
     private List<String> getTabAliases(RowResolver inputRR) {
