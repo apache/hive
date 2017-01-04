@@ -711,11 +711,11 @@ POSTHOOK: Input: default@decimal_date_test
 6172
 PREHOOK: query: -- projections
 
-EXPLAIN SELECT c0, count(1) from (SELECT cdate IN (CAST("1969-10-26" AS DATE), CAST("1969-07-14" AS DATE)) as c0 FROM decimal_date_test) tab GROUP BY c0
+EXPLAIN SELECT c0, count(1) from (SELECT cdate IN (CAST("1969-10-26" AS DATE), CAST("1969-07-14" AS DATE)) as c0 FROM decimal_date_test) tab GROUP BY c0 ORDER BY c0
 PREHOOK: type: QUERY
 POSTHOOK: query: -- projections
 
-EXPLAIN SELECT c0, count(1) from (SELECT cdate IN (CAST("1969-10-26" AS DATE), CAST("1969-07-14" AS DATE)) as c0 FROM decimal_date_test) tab GROUP BY c0
+EXPLAIN SELECT c0, count(1) from (SELECT cdate IN (CAST("1969-10-26" AS DATE), CAST("1969-07-14" AS DATE)) as c0 FROM decimal_date_test) tab GROUP BY c0 ORDER BY c0
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -727,6 +727,7 @@ STAGE PLANS:
 #### A masked pattern was here ####
       Edges:
         Reducer 2 <- Map 1 (SIMPLE_EDGE)
+        Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -761,6 +762,18 @@ STAGE PLANS:
                 mode: mergepartial
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 6144 Data size: 1233808 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col0 (type: boolean)
+                  sort order: +
+                  Statistics: Num rows: 6144 Data size: 1233808 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col1 (type: bigint)
+        Reducer 3 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Select Operator
+                expressions: KEY.reducesinkkey0 (type: boolean), VALUE._col0 (type: bigint)
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 6144 Data size: 1233808 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
                   Statistics: Num rows: 6144 Data size: 1233808 Basic stats: COMPLETE Column stats: NONE
@@ -775,9 +788,9 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: EXPLAIN SELECT c0, count(1) from (SELECT cdecimal1 IN (2365.8945945946, 881.0135135135, -3367.6517567568) as c0 FROM decimal_date_test) tab GROUP BY c0
+PREHOOK: query: EXPLAIN SELECT c0, count(1) from (SELECT cdecimal1 IN (2365.8945945946, 881.0135135135, -3367.6517567568) as c0 FROM decimal_date_test) tab GROUP BY c0 ORDER BY c0
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN SELECT c0, count(1) from (SELECT cdecimal1 IN (2365.8945945946, 881.0135135135, -3367.6517567568) as c0 FROM decimal_date_test) tab GROUP BY c0
+POSTHOOK: query: EXPLAIN SELECT c0, count(1) from (SELECT cdecimal1 IN (2365.8945945946, 881.0135135135, -3367.6517567568) as c0 FROM decimal_date_test) tab GROUP BY c0 ORDER BY c0
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -789,6 +802,7 @@ STAGE PLANS:
 #### A masked pattern was here ####
       Edges:
         Reducer 2 <- Map 1 (SIMPLE_EDGE)
+        Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -823,6 +837,18 @@ STAGE PLANS:
                 mode: mergepartial
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 6144 Data size: 1233808 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col0 (type: boolean)
+                  sort order: +
+                  Statistics: Num rows: 6144 Data size: 1233808 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col1 (type: bigint)
+        Reducer 3 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Select Operator
+                expressions: KEY.reducesinkkey0 (type: boolean), VALUE._col0 (type: bigint)
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 6144 Data size: 1233808 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
                   Statistics: Num rows: 6144 Data size: 1233808 Basic stats: COMPLETE Column stats: NONE
@@ -837,9 +863,9 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: EXPLAIN SELECT c0, count(1) from (SELECT  cdate BETWEEN CAST("1969-12-30" AS DATE) AND CAST("1970-01-02" AS DATE) as c0  FROM decimal_date_test) tab GROUP BY c0
+PREHOOK: query: EXPLAIN SELECT c0, count(1) from (SELECT  cdate BETWEEN CAST("1969-12-30" AS DATE) AND CAST("1970-01-02" AS DATE) as c0  FROM decimal_date_test) tab GROUP BY c0 ORDER BY c0
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN SELECT c0, count(1) from (SELECT  cdate BETWEEN CAST("1969-12-30" AS DATE) AND CAST("1970-01-02" AS DATE) as c0  FROM decimal_date_test) tab GROUP BY c0
+POSTHOOK: query: EXPLAIN SELECT c0, count(1) from (SELECT  cdate BETWEEN CAST("1969-12-30" AS DATE) AND CAST("1970-01-02" AS DATE) as c0  FROM decimal_date_test) tab GROUP BY c0 ORDER BY c0
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -851,6 +877,7 @@ STAGE PLANS:
 #### A masked pattern was here ####
       Edges:
         Reducer 2 <- Map 1 (SIMPLE_EDGE)
+        Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -885,6 +912,18 @@ STAGE PLANS:
                 mode: mergepartial
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 6144 Data size: 1233808 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col0 (type: boolean)
+                  sort order: +
+                  Statistics: Num rows: 6144 Data size: 1233808 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col1 (type: bigint)
+        Reducer 3 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Select Operator
+                expressions: KEY.reducesinkkey0 (type: boolean), VALUE._col0 (type: bigint)
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 6144 Data size: 1233808 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
                   Statistics: Num rows: 6144 Data size: 1233808 Basic stats: COMPLETE Column stats: NONE
@@ -899,9 +938,9 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: EXPLAIN SELECT c0, count(1) from (SELECT cdecimal1 NOT BETWEEN -2000 AND 4390.1351351351 as c0 FROM decimal_date_test) tab GROUP BY c0
+PREHOOK: query: EXPLAIN SELECT c0, count(1) from (SELECT cdecimal1 NOT BETWEEN -2000 AND 4390.1351351351 as c0 FROM decimal_date_test) tab GROUP BY c0 ORDER BY c0
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN SELECT c0, count(1) from (SELECT cdecimal1 NOT BETWEEN -2000 AND 4390.1351351351 as c0 FROM decimal_date_test) tab GROUP BY c0
+POSTHOOK: query: EXPLAIN SELECT c0, count(1) from (SELECT cdecimal1 NOT BETWEEN -2000 AND 4390.1351351351 as c0 FROM decimal_date_test) tab GROUP BY c0 ORDER BY c0
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -913,6 +952,7 @@ STAGE PLANS:
 #### A masked pattern was here ####
       Edges:
         Reducer 2 <- Map 1 (SIMPLE_EDGE)
+        Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -947,6 +987,18 @@ STAGE PLANS:
                 mode: mergepartial
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 6144 Data size: 1233808 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col0 (type: boolean)
+                  sort order: +
+                  Statistics: Num rows: 6144 Data size: 1233808 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col1 (type: bigint)
+        Reducer 3 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Select Operator
+                expressions: KEY.reducesinkkey0 (type: boolean), VALUE._col0 (type: bigint)
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 6144 Data size: 1233808 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
                   Statistics: Num rows: 6144 Data size: 1233808 Basic stats: COMPLETE Column stats: NONE
@@ -961,88 +1013,88 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: SELECT c0, count(1) from (SELECT cdate IN (CAST("1969-10-26" AS DATE), CAST("1969-07-14" AS DATE)) as c0 FROM decimal_date_test) tab GROUP BY c0
+PREHOOK: query: SELECT c0, count(1) from (SELECT cdate IN (CAST("1969-10-26" AS DATE), CAST("1969-07-14" AS DATE)) as c0 FROM decimal_date_test) tab GROUP BY c0 ORDER BY c0
 PREHOOK: type: QUERY
 PREHOOK: Input: default@decimal_date_test
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT c0, count(1) from (SELECT cdate IN (CAST("1969-10-26" AS DATE), CAST("1969-07-14" AS DATE)) as c0 FROM decimal_date_test) tab GROUP BY c0
+POSTHOOK: query: SELECT c0, count(1) from (SELECT cdate IN (CAST("1969-10-26" AS DATE), CAST("1969-07-14" AS DATE)) as c0 FROM decimal_date_test) tab GROUP BY c0 ORDER BY c0
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_date_test
 #### A masked pattern was here ####
 NULL	6230
 false	6041
 true	17
-PREHOOK: query: SELECT c0, count(1) from (SELECT cdecimal1 IN (2365.8945945946, 881.0135135135, -3367.6517567568) as c0 FROM decimal_date_test) tab GROUP BY c0
+PREHOOK: query: SELECT c0, count(1) from (SELECT cdecimal1 IN (2365.8945945946, 881.0135135135, -3367.6517567568) as c0 FROM decimal_date_test) tab GROUP BY c0 ORDER BY c0
 PREHOOK: type: QUERY
 PREHOOK: Input: default@decimal_date_test
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT c0, count(1) from (SELECT cdecimal1 IN (2365.8945945946, 881.0135135135, -3367.6517567568) as c0 FROM decimal_date_test) tab GROUP BY c0
+POSTHOOK: query: SELECT c0, count(1) from (SELECT cdecimal1 IN (2365.8945945946, 881.0135135135, -3367.6517567568) as c0 FROM decimal_date_test) tab GROUP BY c0 ORDER BY c0
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_date_test
 #### A masked pattern was here ####
 NULL	3114
 false	9165
 true	9
-PREHOOK: query: SELECT c0, count(1) from (SELECT  cdate BETWEEN CAST("1969-12-30" AS DATE) AND CAST("1970-01-02" AS DATE) as c0 FROM decimal_date_test) tab GROUP BY c0
+PREHOOK: query: SELECT c0, count(1) from (SELECT  cdate BETWEEN CAST("1969-12-30" AS DATE) AND CAST("1970-01-02" AS DATE) as c0 FROM decimal_date_test) tab GROUP BY c0 ORDER BY c0
 PREHOOK: type: QUERY
 PREHOOK: Input: default@decimal_date_test
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT c0, count(1) from (SELECT  cdate BETWEEN CAST("1969-12-30" AS DATE) AND CAST("1970-01-02" AS DATE) as c0 FROM decimal_date_test) tab GROUP BY c0
+POSTHOOK: query: SELECT c0, count(1) from (SELECT  cdate BETWEEN CAST("1969-12-30" AS DATE) AND CAST("1970-01-02" AS DATE) as c0 FROM decimal_date_test) tab GROUP BY c0 ORDER BY c0
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_date_test
 #### A masked pattern was here ####
 NULL	6230
 false	5974
 true	84
-PREHOOK: query: SELECT c0, count(1) from (SELECT cdecimal1 NOT BETWEEN -2000 AND 4390.1351351351 as c0 FROM decimal_date_test) tab GROUP BY c0
+PREHOOK: query: SELECT c0, count(1) from (SELECT cdecimal1 NOT BETWEEN -2000 AND 4390.1351351351 as c0 FROM decimal_date_test) tab GROUP BY c0 ORDER BY c0
 PREHOOK: type: QUERY
 PREHOOK: Input: default@decimal_date_test
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT c0, count(1) from (SELECT cdecimal1 NOT BETWEEN -2000 AND 4390.1351351351 as c0 FROM decimal_date_test) tab GROUP BY c0
+POSTHOOK: query: SELECT c0, count(1) from (SELECT cdecimal1 NOT BETWEEN -2000 AND 4390.1351351351 as c0 FROM decimal_date_test) tab GROUP BY c0 ORDER BY c0
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_date_test
 #### A masked pattern was here ####
 NULL	3114
 false	3002
 true	6172
-PREHOOK: query: SELECT c0, count(1) from (SELECT cdate IN (CAST("1969-10-26" AS DATE), CAST("1969-07-14" AS DATE)) as c0 FROM decimal_date_test) tab GROUP BY c0
+PREHOOK: query: SELECT c0, count(1) from (SELECT cdate IN (CAST("1969-10-26" AS DATE), CAST("1969-07-14" AS DATE)) as c0 FROM decimal_date_test) tab GROUP BY c0 ORDER BY c0
 PREHOOK: type: QUERY
 PREHOOK: Input: default@decimal_date_test
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT c0, count(1) from (SELECT cdate IN (CAST("1969-10-26" AS DATE), CAST("1969-07-14" AS DATE)) as c0 FROM decimal_date_test) tab GROUP BY c0
+POSTHOOK: query: SELECT c0, count(1) from (SELECT cdate IN (CAST("1969-10-26" AS DATE), CAST("1969-07-14" AS DATE)) as c0 FROM decimal_date_test) tab GROUP BY c0 ORDER BY c0
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_date_test
 #### A masked pattern was here ####
 NULL	6230
 false	6041
 true	17
-PREHOOK: query: SELECT c0, count(1) from (SELECT cdecimal1 IN (2365.8945945946, 881.0135135135, -3367.6517567568) as c0 FROM decimal_date_test) tab GROUP BY c0
+PREHOOK: query: SELECT c0, count(1) from (SELECT cdecimal1 IN (2365.8945945946, 881.0135135135, -3367.6517567568) as c0 FROM decimal_date_test) tab GROUP BY c0 ORDER BY c0
 PREHOOK: type: QUERY
 PREHOOK: Input: default@decimal_date_test
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT c0, count(1) from (SELECT cdecimal1 IN (2365.8945945946, 881.0135135135, -3367.6517567568) as c0 FROM decimal_date_test) tab GROUP BY c0
+POSTHOOK: query: SELECT c0, count(1) from (SELECT cdecimal1 IN (2365.8945945946, 881.0135135135, -3367.6517567568) as c0 FROM decimal_date_test) tab GROUP BY c0 ORDER BY c0
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_date_test
 #### A masked pattern was here ####
 NULL	3114
 false	9165
 true	9
-PREHOOK: query: SELECT c0, count(1) from (SELECT  cdate BETWEEN CAST("1969-12-30" AS DATE) AND CAST("1970-01-02" AS DATE) as c0 FROM decimal_date_test) tab GROUP BY c0
+PREHOOK: query: SELECT c0, count(1) from (SELECT  cdate BETWEEN CAST("1969-12-30" AS DATE) AND CAST("1970-01-02" AS DATE) as c0 FROM decimal_date_test) tab GROUP BY c0 ORDER BY c0
 PREHOOK: type: QUERY
 PREHOOK: Input: default@decimal_date_test
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT c0, count(1) from (SELECT  cdate BETWEEN CAST("1969-12-30" AS DATE) AND CAST("1970-01-02" AS DATE) as c0 FROM decimal_date_test) tab GROUP BY c0
+POSTHOOK: query: SELECT c0, count(1) from (SELECT  cdate BETWEEN CAST("1969-12-30" AS DATE) AND CAST("1970-01-02" AS DATE) as c0 FROM decimal_date_test) tab GROUP BY c0 ORDER BY c0
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_date_test
 #### A masked pattern was here ####
 NULL	6230
 false	5974
 true	84
-PREHOOK: query: SELECT c0, count(1) from (SELECT cdecimal1 NOT BETWEEN -2000 AND 4390.1351351351 as c0 FROM decimal_date_test) tab GROUP BY c0
+PREHOOK: query: SELECT c0, count(1) from (SELECT cdecimal1 NOT BETWEEN -2000 AND 4390.1351351351 as c0 FROM decimal_date_test) tab GROUP BY c0 ORDER BY c0
 PREHOOK: type: QUERY
 PREHOOK: Input: default@decimal_date_test
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT c0, count(1) from (SELECT cdecimal1 NOT BETWEEN -2000 AND 4390.1351351351 as c0 FROM decimal_date_test) tab GROUP BY c0
+POSTHOOK: query: SELECT c0, count(1) from (SELECT cdecimal1 NOT BETWEEN -2000 AND 4390.1351351351 as c0 FROM decimal_date_test) tab GROUP BY c0 ORDER BY c0
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_date_test
 #### A masked pattern was here ####
