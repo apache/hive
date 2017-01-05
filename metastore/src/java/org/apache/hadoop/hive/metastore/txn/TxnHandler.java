@@ -2114,6 +2114,9 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     private boolean isTableLock() {
       return db != null && table != null && partition == null;
     }
+    private boolean isPartitionLock() {
+      return !(isDbLock() || isTableLock());
+    }
   }
 
   private static class LockInfoComparator implements Comparator<LockInfo> {
@@ -2603,15 +2606,25 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
    * the {@link #jumpTable} only deals with LockState/LockType.  In some cases it's not
    * sufficient.  For example, an EXCLUSIVE lock on partition should prevent SHARED_READ
    * on the table, but there is no reason for EXCLUSIVE on a table to prevent SHARED_READ
-   * on a database.
+   * on a database.  Similarly, EXCLUSIVE on a partition should not conflict with SHARED_READ on
+   * a database.  (SHARED_READ is usually acquired on a database to make sure it's not dropped
+   * while some operation is performed on that db (e.g. show tables, created table, etc)
+   * EXCLUSIVE on an object may mean it's being dropped or overwritten (for non-acid tables,
+   * an Insert uses EXCLUSIVE as well)).
    */
   private boolean ignoreConflict(LockInfo desiredLock, LockInfo existingLock) {
     return
       ((desiredLock.isDbLock() && desiredLock.type == LockType.SHARED_READ &&
           existingLock.isTableLock() && existingLock.type == LockType.EXCLUSIVE) ||
         (existingLock.isDbLock() && existingLock.type == LockType.SHARED_READ &&
-          desiredLock.isTableLock() && desiredLock.type == LockType.EXCLUSIVE))
+          desiredLock.isTableLock() && desiredLock.type == LockType.EXCLUSIVE) ||
+
+        (desiredLock.isDbLock() && desiredLock.type == LockType.SHARED_READ &&
+          existingLock.isPartitionLock() && existingLock.type == LockType.EXCLUSIVE) ||
+        (existingLock.isDbLock() && existingLock.type == LockType.SHARED_READ &&
+          desiredLock.isPartitionLock() && desiredLock.type == LockType.EXCLUSIVE))
         ||
+
       //different locks from same txn should not conflict with each other
       (desiredLock.txnId != 0 && desiredLock.txnId == existingLock.txnId) ||
       //txnId=0 means it's a select or IUD which does not write to ACID table, e.g
