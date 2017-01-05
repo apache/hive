@@ -397,11 +397,12 @@ atomExpression
     | floorExpression
     | caseExpression
     | whenExpression
+    | (LPAREN KW_SELECT)=> (subQueryExpression)
+        -> ^(TOK_SUBQUERY_EXPR TOK_SUBQUERY_OP subQueryExpression)
     | (functionName LPAREN) => function
     | tableOrColumn
     | LPAREN! expression RPAREN!
     ;
-
 
 precedenceFieldExpression
     :
@@ -531,7 +532,7 @@ precedenceEqualExpressionSingle
        -> ^(KW_NOT ^(precedenceEqualNegatableOperator $precedenceEqualExpressionSingle $notExpr))
     | (precedenceEqualOperator equalExpr=precedenceBitwiseOrExpression)
        -> ^(precedenceEqualOperator $precedenceEqualExpressionSingle $equalExpr)
-    | (KW_NOT KW_IN LPAREN KW_SELECT)=>  (KW_NOT KW_IN subQueryExpression) 
+    | (KW_NOT KW_IN LPAREN KW_SELECT)=>  (KW_NOT KW_IN subQueryExpression)
        -> ^(KW_NOT ^(TOK_SUBQUERY_EXPR ^(TOK_SUBQUERY_OP KW_IN) subQueryExpression $precedenceEqualExpressionSingle))
     | (KW_NOT KW_IN expressions)
        -> ^(KW_NOT ^(TOK_FUNCTION KW_IN $precedenceEqualExpressionSingle expressions))
@@ -544,7 +545,8 @@ precedenceEqualExpressionSingle
     | ( KW_BETWEEN (min=precedenceBitwiseOrExpression) KW_AND (max=precedenceBitwiseOrExpression) )
        -> ^(TOK_FUNCTION Identifier["between"] KW_FALSE $left $min $max)
     )*
-    | (KW_EXISTS LPAREN KW_SELECT)=> (KW_EXISTS subQueryExpression) -> ^(TOK_SUBQUERY_EXPR ^(TOK_SUBQUERY_OP KW_EXISTS) subQueryExpression)
+    | (KW_EXISTS LPAREN KW_SELECT)=> (KW_EXISTS subQueryExpression) 
+	-> ^(TOK_SUBQUERY_EXPR ^(TOK_SUBQUERY_OP KW_EXISTS) subQueryExpression)
     ;
 
 expressions

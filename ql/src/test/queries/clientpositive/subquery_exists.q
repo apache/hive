@@ -76,3 +76,12 @@ where exists
   where a.value > 'val_9'
   );
 
+-- uncorr, aggregate in sub which produces result irrespective of zero rows
+create table t(i int);
+insert into t values(1);
+insert into t values(0);
+
+explain select * from t where exists (select count(*) from src where 1=2);
+select * from t where exists (select count(*) from src where 1=2);
+
+drop table t;

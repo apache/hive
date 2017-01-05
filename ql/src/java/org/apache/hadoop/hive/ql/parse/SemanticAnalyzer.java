@@ -9032,7 +9032,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     if (node.getPostJoinFilters().size() != 0) {
       // Safety check: if we are merging join operators and there are post-filtering
       // conditions, they cannot be outer joins
-      assert node.getNoOuterJoin() && target.getNoOuterJoin();
+      assert node.getNoOuterJoin() ;
+      if( target.getPostJoinFilters().size() != 0) {
+        assert target.getNoOuterJoin() ;
+      }
       for (ASTNode exprPostFilter : node.getPostJoinFilters()) {
         target.addPostJoinFilter(exprPostFilter);
       }

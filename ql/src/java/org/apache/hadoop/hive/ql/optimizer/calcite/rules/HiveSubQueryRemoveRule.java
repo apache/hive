@@ -22,22 +22,25 @@ import org.apache.calcite.plan.RelOptRuleCall;
 import org.apache.calcite.plan.RelOptRuleOperand;
 import org.apache.calcite.plan.RelOptUtil;
 import org.apache.calcite.rel.RelNode;
+import org.apache.calcite.rel.core.Aggregate;
 import org.apache.calcite.rel.core.CorrelationId;
 import org.apache.calcite.rel.core.Filter;
 import org.apache.calcite.rel.core.JoinRelType;
-import org.apache.calcite.rel.core.RelFactories;
-import org.apache.calcite.rel.metadata.RelMetadataQuery;
 import org.apache.calcite.rex.LogicVisitor;
 import org.apache.calcite.rex.RexInputRef;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.rex.RexShuttle;
 import org.apache.calcite.rex.RexSubQuery;
 import org.apache.calcite.rex.RexUtil;
+import org.apache.calcite.sql.SqlFunctionCategory;
 import org.apache.calcite.sql.fun.SqlStdOperatorTable;
+import org.apache.calcite.sql.SqlFunction;
 import org.apache.calcite.sql.SqlKind;
+import org.apache.calcite.sql.type.InferTypes;
+import org.apache.calcite.sql.type.OperandTypes;
+import org.apache.calcite.sql.type.ReturnTypes;
 import org.apache.calcite.sql.type.SqlTypeName;
 import org.apache.calcite.tools.RelBuilderFactory;
-import org.apache.calcite.util.ImmutableBitSet;
 import org.apache.calcite.util.Pair;
 
 import com.google.common.collect.ImmutableList;
@@ -88,9 +91,11 @@ public abstract class HiveSubQueryRemoveRule extends RelOptRule{
                     final int fieldCount = builder.peek().getRowType().getFieldCount();
 
                     assert(filter instanceof HiveFilter);
+                    Set<RelNode> corrScalarQueries = filter.getCluster().getPlanner().getContext().unwrap(Set.class);
+                    boolean isCorrScalarQuery = corrScalarQueries.contains(e.rel);
 
                     final RexNode target = apply(e, ((HiveFilter)filter).getVariablesSet(e), logic,
-                            builder, 1, fieldCount);
+                            builder, 1, fieldCount, isCorrScalarQuery);
                     final RexShuttle shuttle = new ReplaceSubQueryShuttle(e, target);
                     builder.filter(shuttle.apply(filter.getCondition()));
                     builder.project(fields(builder, filter.getRowType().getFieldCount()));
@@ -104,21 +109,85 @@ public abstract class HiveSubQueryRemoveRule extends RelOptRule{
         super(operand, relBuilderFactory, description);
     }
 
+    // given a subquery it checks to see what is the aggegate function
+    /// if COUNT returns true since COUNT produces 0 on empty result set
+    private boolean isAggZeroOnEmpty(RexSubQuery e) {
+        //as this is corr scalar subquery with agg we expect one aggregate
+        assert(e.getKind() == SqlKind.SCALAR_QUERY);
+        assert(e.rel.getInputs().size() == 1);
+        Aggregate relAgg = (Aggregate)e.rel.getInput(0);
+        assert( relAgg.getAggCallList().size() == 1); //should only have one aggregate
+        if( relAgg.getAggCallList().get(0).getAggregation().getKind() == SqlKind.COUNT ) {
+            return true;
+        }
+        return false;
+    }
+    private SqlTypeName getAggTypeForScalarSub(RexSubQuery e) {
+        assert(e.getKind() == SqlKind.SCALAR_QUERY);
+        assert(e.rel.getInputs().size() == 1);
+        Aggregate relAgg = (Aggregate)e.rel.getInput(0);
+        assert( relAgg.getAggCallList().size() == 1); //should only have one aggregate
+        return relAgg.getAggCallList().get(0).getType().getSqlTypeName();
+    }
+
     protected RexNode apply(RexSubQuery e, Set<CorrelationId> variablesSet,
                             RelOptUtil.Logic logic,
-                            HiveSubQRemoveRelBuilder builder, int inputCount, int offset) {
+                            HiveSubQRemoveRelBuilder builder, int inputCount, int offset,
+                            boolean isCorrScalarAgg) {
         switch (e.getKind()) {
             case SCALAR_QUERY:
-                builder.push(e.rel);
-                final RelMetadataQuery mq = RelMetadataQuery.instance();
-                final Boolean unique = mq.areColumnsUnique(builder.peek(),
-                        ImmutableBitSet.of());
-                if (unique == null || !unique) {
-                    builder.aggregate(builder.groupKey(),
-                            builder.aggregateCall(SqlStdOperatorTable.SINGLE_VALUE, false, null,
-                                    null, builder.field(0)));
+                if(isCorrScalarAgg) {
+                    // Transformation :
+                    // Outer Query Left Join (inner query) on correlated predicate and preserve rows only from left side.
+                    builder.push(e.rel);
+                    final List<RexNode> parentQueryFields = new ArrayList<>();
+                    parentQueryFields.addAll(builder.fields());
+
+                    // id is appended since there could be multiple scalar subqueries and FILTER
+                    // is created using field name
+                    String indicator = "alwaysTrue" + e.rel.getId();
+                    parentQueryFields.add(builder.alias(builder.literal(true), indicator));
+                    builder.project(parentQueryFields);
+                    builder.join(JoinRelType.LEFT, builder.literal(true), variablesSet);
+
+                    final ImmutableList.Builder<RexNode> operands = ImmutableList.builder();
+                    RexNode literal;
+                    if(isAggZeroOnEmpty(e)) {
+                        literal = builder.literal(0);
+                    }
+                    else {
+                        literal = e.rel.getCluster().getRexBuilder().makeNullLiteral(getAggTypeForScalarSub(e));
+                    }
+                    operands.add((builder.isNull(builder.field(indicator))), literal);
+                    operands.add(field(builder, 1, builder.fields().size()-2));
+                    return builder.call(SqlStdOperatorTable.CASE, operands.build());
                 }
+
+                //Transformation is to left join for correlated predicates and inner join otherwise,
+                // but do a count on inner side before that to make sure it generates atmost 1 row.
+                builder.push(e.rel);
+                // returns single row/column
+                builder.aggregate(builder.groupKey(),
+                        builder.count(false, "cnt"));
+
+                SqlFunction countCheck = new SqlFunction("sq_count_check", SqlKind.OTHER_FUNCTION, ReturnTypes.BIGINT,
+                        InferTypes.RETURN_TYPE, OperandTypes.NUMERIC, SqlFunctionCategory.USER_DEFINED_FUNCTION);
+
+                // we create FILTER (sq_count_check(count()) <= 1) instead of PROJECT because RelFieldTrimmer
+                //  ends up getting rid of Project since it is not used further up the tree
+                builder.filter(builder.call(SqlStdOperatorTable.LESS_THAN_OR_EQUAL,
+                        builder.call(countCheck, builder.field("cnt")),
+                        builder.literal(1)));
+
+                if( !variablesSet.isEmpty())
+                {
+                    builder.join(JoinRelType.LEFT, builder.literal(true), variablesSet);
+                }
+                else
+                    builder.join(JoinRelType.INNER, builder.literal(true), variablesSet);
+                builder.push(e.rel);
                 builder.join(JoinRelType.LEFT, builder.literal(true), variablesSet);
+                offset++;
                 return field(builder, inputCount, offset);
 
             case IN:

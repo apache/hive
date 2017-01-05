@@ -212,6 +212,7 @@ sort_array_by
 soundex
 space
 split
+sq_count_check
 sqrt
 stack
 std

@@ -231,7 +231,10 @@ public class HiveRelDecorrelator implements ReflectiveVisitor {
             .addRuleInstance(new AdjustProjectForCountAggregateRule(true))
             .addRuleInstance(FilterJoinRule.FILTER_ON_JOIN)
             .addRuleInstance(FilterProjectTransposeRule.INSTANCE)
-            .addRuleInstance(FilterCorrelateRule.INSTANCE)
+            // FilterCorrelateRule rule mistakenly pushes a FILTER, consiting of correlated vars,
+            // on top of LogicalCorrelate to within  left input for scalar corr queries
+            // which causes exception during decorrelation. This has been disabled for now.
+            //.addRuleInstance(FilterCorrelateRule.INSTANCE)
             .build();
 
     HepPlanner planner = createPlanner(program);

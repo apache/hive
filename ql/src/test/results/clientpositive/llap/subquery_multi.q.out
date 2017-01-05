@@ -4781,24 +4781,17 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: s1
-                  Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
-                  Filter Operator
-                    predicate: (key > '9') (type: boolean)
-                    Statistics: Num rows: 166 Data size: 29548 Basic stats: COMPLETE Column stats: COMPLETE
-                    Select Operator
-                      expressions: value (type: string)
-                      outputColumnNames: value
-                      Statistics: Num rows: 166 Data size: 29548 Basic stats: COMPLETE Column stats: COMPLETE
-                      Group By Operator
-                        keys: value (type: string)
-                        mode: hash
-                        outputColumnNames: _col0
-                        Statistics: Num rows: 72 Data size: 6552 Basic stats: COMPLETE Column stats: COMPLETE
-                        Reduce Output Operator
-                          key expressions: _col0 (type: string)
-                          sort order: +
-                          Map-reduce partition columns: _col0 (type: string)
-                          Statistics: Num rows: 72 Data size: 6552 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 500 Data size: 45500 Basic stats: COMPLETE Column stats: COMPLETE
+                  Group By Operator
+                    keys: value (type: string)
+                    mode: hash
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 214 Data size: 19474 Basic stats: COMPLETE Column stats: COMPLETE
+                    Reduce Output Operator
+                      key expressions: _col0 (type: string)
+                      sort order: +
+                      Map-reduce partition columns: _col0 (type: string)
+                      Statistics: Num rows: 214 Data size: 19474 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: llap
             LLAP IO: no inputs
         Map 5 
@@ -4907,17 +4900,17 @@ STAGE PLANS:
                   0 _col0 (type: string)
                   1 _col0 (type: string)
                 outputColumnNames: _col1
-                Statistics: Num rows: 168 Data size: 15288 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 500 Data size: 45500 Basic stats: COMPLETE Column stats: COMPLETE
                 Group By Operator
                   keys: _col1 (type: string)
                   mode: hash
                   outputColumnNames: _col0
-                  Statistics: Num rows: 72 Data size: 6552 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 214 Data size: 19474 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     key expressions: _col0 (type: string)
                     sort order: +
                     Map-reduce partition columns: _col0 (type: string)
-                    Statistics: Num rows: 72 Data size: 6552 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 214 Data size: 19474 Basic stats: COMPLETE Column stats: COMPLETE
         Reducer 16 
             Execution mode: llap
             Reduce Operator Tree:
@@ -4925,12 +4918,12 @@ STAGE PLANS:
                 keys: KEY._col0 (type: string)
                 mode: mergepartial
                 outputColumnNames: _col0
-                Statistics: Num rows: 72 Data size: 6552 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 214 Data size: 19474 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: _col0 (type: string)
                   sort order: +
                   Map-reduce partition columns: _col0 (type: string)
-                  Statistics: Num rows: 72 Data size: 6552 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 214 Data size: 19474 Basic stats: COMPLETE Column stats: COMPLETE
         Reducer 18 
             Execution mode: llap
             Reduce Operator Tree:
@@ -4938,12 +4931,12 @@ STAGE PLANS:
                 keys: KEY._col0 (type: string)
                 mode: mergepartial
                 outputColumnNames: _col0
-                Statistics: Num rows: 72 Data size: 6552 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 214 Data size: 19474 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: _col0 (type: string)
                   sort order: +
                   Map-reduce partition columns: _col0 (type: string)
-                  Statistics: Num rows: 72 Data size: 6552 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 214 Data size: 19474 Basic stats: COMPLETE Column stats: COMPLETE
         Reducer 2 
             Execution mode: llap
             Reduce Operator Tree:

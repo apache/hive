@@ -57,25 +57,6 @@ part where part.p_size not in
 order by p_name, p_size
 ;
 
--- agg, corr
-explain
-select p_mfgr, p_name, p_size 
-from part b where b.p_size not in 
-  (select min(p_size) 
-  from (select p_mfgr, p_size, rank() over(partition by p_mfgr order by p_size) as r from part) a 
-  where r <= 2 and b.p_mfgr = a.p_mfgr
-  )
-;
-
-select p_mfgr, p_name, p_size 
-from part b where b.p_size not in 
-  (select min(p_size) 
-  from (select p_mfgr, p_size, rank() over(partition by p_mfgr order by p_size) as r from part) a 
-  where r <= 2 and b.p_mfgr = a.p_mfgr
-  )
-order by p_mfgr, p_size
-;
-
 -- non agg, non corr, Group By in Parent Query
 select li.l_partkey, count(*)
 from lineitem li
@@ -106,8 +87,8 @@ select *
 from T1_v where T1_v.key not in (select T2_v.key from T2_v);
 
 --where has multiple conjuction
-explain select * from part where p_brand <> 'Brand#14' AND p_size NOT IN (select min(p_size) from part p where p.p_type = part.p_type group by p_type) AND p_size <> 340;
-select * from part where p_brand <> 'Brand#14' AND p_size NOT IN (select min(p_size) from part p where p.p_type = part.p_type group by p_type) AND p_size <> 340;
+explain select * from part where p_brand <> 'Brand#14' AND p_size NOT IN (select (p_size*p_size) from part p where p.p_type = part.p_type ) AND p_size <> 340;
+select * from part where p_brand <> 'Brand#14' AND p_size NOT IN (select (p_size*p_size) from part p where p.p_type = part.p_type ) AND p_size <> 340;
 
 --lhs contains non-simple expression
 explain select * from part  where (p_size-1) NOT IN (select min(p_size) from part group by p_type);
@@ -132,20 +113,20 @@ explain select * from part where p_name NOT IN (select p_name from part p where 
 select * from part where p_name NOT IN (select p_name from part p where p.p_size = part.p_size AND part.p_partkey= p.p_partkey );
 
 -- correlated var refers to outer table alias
-explain select p_name from (select p_name, p_type, p_brand as brand from part) fpart where fpart.p_type NOT IN (select p_type from part where part.p_brand = fpart.brand);
-select p_name from (select p_name, p_type, p_brand as brand from part) fpart where fpart.p_type NOT IN (select p_type from part where part.p_brand = fpart.brand);
+explain select p_name from (select p_name, p_type, p_brand as brand from part) fpart where fpart.p_type NOT IN (select p_type+2 from part where part.p_brand = fpart.brand);
+select p_name from (select p_name, p_type, p_brand as brand from part) fpart where fpart.p_type NOT IN (select p_type+2 from part where part.p_brand = fpart.brand);
  
 -- correlated var refers to outer table alias which is an expression 
 explain select p_name from (select p_name, p_type, p_size+1 as size from part) fpart where fpart.p_type NOT IN (select p_type from part where (part.p_size+1) = fpart.size);
-select p_name from (select p_name, p_type, p_size+1 as size from part) fpart where fpart.p_type NOT IN (select p_type from part where (part.p_size+1) = fpart.size);
+select p_name from (select p_name, p_type, p_size+1 as size from part) fpart where fpart.p_type NOT IN (select p_type from part where (part.p_size+1) = fpart.size+1);
 
 -- where plus having
-explain select key, count(*) from src where value NOT IN (select value from src) group by key having count(*) in (select count(*) from src s1 where s1.key = '90' group by s1.key );
-select key, count(*) from src where value NOT IN (select value from src) group by key having count(*) in (select count(*) from src s1 where s1.key = '90' group by s1.key );
+explain select key, count(*) from src where value NOT IN (select key from src) group by key having count(*) in (select count(*) from src s1 where s1.key = '90' group by s1.key );
+select key, count(*) from src where value NOT IN (select key from src) group by key having count(*) in (select count(*) from src s1 where s1.key = '90' group by s1.key );
 
 -- where with having, correlated
-explain select key, count(*) from src where value NOT IN (select value from src sc where sc.key = src.key ) group by key having count(*) in (select count(*) from src s1 where s1.key = '90' group by s1.key );
-select key, count(*) from src where value NOT IN (select value from src sc where sc.key = src.key ) group by key having count(*) in (select count(*) from src s1 where s1.key = '90' group by s1.key );
+explain select key, count(*) from src where value NOT IN (select concat('v', value) from src sc where sc.key = src.key ) group by key having count(*) in (select count(*) from src s1 where s1.key = '90' group by s1.key );
+select key, count(*) from src where value NOT IN (select concat('v', value) from src sc where sc.key = src.key ) group by key having count(*) in (select count(*) from src s1 where s1.key = '90' group by s1.key );
 
 -- subquery with order by
 explain select * from part  where (p_size-1) NOT IN (select min(p_size) from part group by p_type) order by p_brand;
