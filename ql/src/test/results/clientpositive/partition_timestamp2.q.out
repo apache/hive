@@ -147,7 +147,6 @@ POSTHOOK: Input: default@partition_timestamp2_1@dt=2000-01-01 01%3A00%3A00.0/reg
 #### A masked pattern was here ####
 1999-01-01 00:00:00
 1999-01-01 01:00:00
-2000-01-01 00:00:00
 2000-01-01 01:00:00
 PREHOOK: query: select * from partition_timestamp2_1
 PREHOOK: type: QUERY
@@ -195,10 +194,8 @@ POSTHOOK: Input: default@partition_timestamp2_1@dt=1999-01-01 01%3A00%3A00.0/reg
 POSTHOOK: Input: default@partition_timestamp2_1@dt=2000-01-01 00%3A00%3A00.0/region=1
 POSTHOOK: Input: default@partition_timestamp2_1@dt=2000-01-01 01%3A00%3A00.0/region=1
 #### A masked pattern was here ####
-1980-01-02 00:00:00
 1999-01-01 00:00:00
 1999-01-01 01:00:00
-2000-01-01 00:00:00
 2000-01-01 01:00:00
 PREHOOK: query: select * from partition_timestamp2_1
 PREHOOK: type: QUERY
@@ -247,9 +244,7 @@ POSTHOOK: Input: default@partition_timestamp2_1@dt=1999-01-01 00%3A00%3A00.0/reg
 POSTHOOK: Input: default@partition_timestamp2_1@dt=2000-01-01 00%3A00%3A00.0/region=1
 POSTHOOK: Input: default@partition_timestamp2_1@dt=2000-01-01 01%3A00%3A00.0/region=1
 #### A masked pattern was here ####
-1980-01-02 00:00:00
 1999-01-01 00:00:00
-2000-01-01 00:00:00
 2000-01-01 01:00:00
 PREHOOK: query: select * from partition_timestamp2_1
 PREHOOK: type: QUERY

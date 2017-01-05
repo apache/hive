@@ -18,6 +18,8 @@
 
 package org.apache.hadoop.hive.ql.io;
 
+import org.apache.hadoop.hive.ql.io.OneNullRowInputFormat.OneNullRowRecordReader;
+
 import java.io.IOException;
 
 import org.apache.hadoop.conf.Configuration;
@@ -29,47 +31,24 @@ import org.apache.hadoop.mapred.RecordReader;
 import org.apache.hadoop.mapred.Reporter;
 
 /**
- * OneNullRowInputFormat outputs one null row. Used in implementation of
- * metadata only queries.
- *
+ * Same as OneNullRowInputFormat, but with 0 rows. There's no way to store smth like OperatorDesc
+ * in InputFormat, so this is how it is. We could perhaps encode the number of null rows in the
+ * null path. However, NullIF can be used without using NullFS, so that would not be possible.
  */
-public class OneNullRowInputFormat extends NullRowsInputFormat
+public class ZeroRowsInputFormat extends NullRowsInputFormat
   implements VectorizedInputFormatInterface {
 
   @SuppressWarnings("unchecked")
   @Override
   public RecordReader<NullWritable, NullWritable> getRecordReader(InputSplit split,
       JobConf conf, Reporter arg2) throws IOException {
-    return new OneNullRowRecordReader(conf, split);
+    return new ZeroRowsRecordReader(conf, split);
   }
 
-  public static class OneNullRowRecordReader extends NullRowsRecordReader {
-    public OneNullRowRecordReader(Configuration conf, InputSplit split) throws IOException {
+  public static class ZeroRowsRecordReader extends OneNullRowRecordReader {
+    public ZeroRowsRecordReader(Configuration conf, InputSplit split) throws IOException {
       super(conf, split);
-    }
-
-    protected boolean processed;
-
-    @Override
-    public long getPos() throws IOException {
-      return processed ? 1 : 0;
-    }
-
-    @Override
-    public float getProgress() throws IOException {
-      return processed ? 1.0f : 0f;
-    }
-
-    @Override
-    public boolean next(Object key, Object value) throws IOException {
-      if (processed) {
-        return false;
-      }
       processed = true;
-      if (rbCtx != null) {
-        makeNullVrb(value, 1);
-      }
-      return true;
     }
   }
 }
