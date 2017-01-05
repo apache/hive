@@ -200,28 +200,28 @@ Manufacturer#1	almond antique burnished rose metallic	2	32
 Manufacturer#1	almond antique burnished rose metallic	2	4
 Manufacturer#1	almond antique chartreuse lavender yellow	34	26
 Manufacturer#1	almond antique salmon chartreuse burlywood	6	40
-Manufacturer#1	almond aquamarine burnished black steel	28	8
-Manufacturer#1	almond aquamarine pink moccasin thistle	42	36
+Manufacturer#1	almond aquamarine burnished black steel	28	40
+Manufacturer#1	almond aquamarine pink moccasin thistle	42	8
 Manufacturer#2	almond antique violet chocolate turquoise	14	-12
 Manufacturer#2	almond antique violet turquoise frosted	40	11
 Manufacturer#2	almond aquamarine midnight light salmon	2	4
-Manufacturer#2	almond aquamarine rose maroon antique	25	-22
-Manufacturer#2	almond aquamarine sandy cyan gainsboro	18	16
+Manufacturer#2	almond aquamarine rose maroon antique	25	4
+Manufacturer#2	almond aquamarine sandy cyan gainsboro	18	-22
 Manufacturer#3	almond antique chartreuse khaki white	17	2
 Manufacturer#3	almond antique forest lavender goldenrod	14	-16
 Manufacturer#3	almond antique metallic orange dim	19	28
-Manufacturer#3	almond antique misty red olive	1	31
-Manufacturer#3	almond antique olive coral navajo	45	26
+Manufacturer#3	almond antique misty red olive	1	28
+Manufacturer#3	almond antique olive coral navajo	45	31
 Manufacturer#4	almond antique gainsboro frosted violet	10	17
 Manufacturer#4	almond antique violet mint lemon	39	-3
 Manufacturer#4	almond aquamarine floral ivory bisque	27	2
-Manufacturer#4	almond aquamarine yellow dodger mint	7	-27
-Manufacturer#4	almond azure aquamarine papaya violet	12	-15
+Manufacturer#4	almond aquamarine yellow dodger mint	7	2
+Manufacturer#4	almond azure aquamarine papaya violet	12	-27
 Manufacturer#5	almond antique blue firebrick mint	31	-29
 Manufacturer#5	almond antique medium spring khaki	6	15
 Manufacturer#5	almond antique sky peru orange	2	-8
-Manufacturer#5	almond aquamarine dodger light gainsboro	46	17
-Manufacturer#5	almond azure blanched chiffon midnight	23	21
+Manufacturer#5	almond aquamarine dodger light gainsboro	46	-8
+Manufacturer#5	almond azure blanched chiffon midnight	23	17
 PREHOOK: query: -- 6. testRankInLead
 -- disable cbo because of CALCITE-653
 

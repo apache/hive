@@ -27,6 +27,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.exec.PTFPartition.PTFPartitionIterator;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.parse.LeadLagInfo;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.plan.PTFDesc;
 import org.apache.hadoop.hive.ql.plan.PTFDeserializer;
@@ -217,15 +218,14 @@ public class PTFOperator extends Operator<PTFDesc> implements Serializable {
     return first;
   }
 
-  public static void connectLeadLagFunctionsToPartition(PTFDesc ptfDesc,
+  public static void connectLeadLagFunctionsToPartition(LeadLagInfo leadLagInfo,
       PTFPartitionIterator<Object> pItr) throws HiveException {
-    List<ExprNodeGenericFuncDesc> llFnDescs = ptfDesc.getLlInfo().getLeadLagExprs();
-    if (llFnDescs == null) {
+    if (leadLagInfo == null || leadLagInfo.getLeadLagExprs() == null) {
       return;
     }
-    for (ExprNodeGenericFuncDesc llFnDesc : llFnDescs) {
-      GenericUDFLeadLag llFn = (GenericUDFLeadLag) llFnDesc
-          .getGenericUDF();
+
+    for (ExprNodeGenericFuncDesc llFnDesc : leadLagInfo.getLeadLagExprs()) {
+      GenericUDFLeadLag llFn = (GenericUDFLeadLag) llFnDesc.getGenericUDF();
       llFn.setpItr(pItr);
     }
   }

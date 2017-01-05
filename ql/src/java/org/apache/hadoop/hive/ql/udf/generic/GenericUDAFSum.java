@@ -18,33 +18,36 @@
 package org.apache.hadoop.hive.ql.udf.generic;
 
 import java.util.HashSet;
+import java.util.List;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.ql.exec.Description;
+import org.apache.hadoop.hive.ql.exec.PTFPartition;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hadoop.hive.ql.plan.ptf.PTFExpressionDef;
 import org.apache.hadoop.hive.ql.plan.ptf.WindowFrameDef;
+import org.apache.hadoop.hive.ql.udf.ptf.BasePartitionEvaluator;
 import org.apache.hadoop.hive.ql.util.JavaDataModel;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
-import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils.ObjectInspectorCopyOption;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils.ObjectInspectorObject;
+import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
-import org.apache.hadoop.hive.serde2.typeinfo.HiveDecimalUtils;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.util.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * GenericUDAFSum.
@@ -152,7 +155,7 @@ public class GenericUDAFSum extends AbstractGenericUDAFResolver {
       this.sumDistinct = sumDistinct;
     }
 
-    protected boolean isWindowingDistinct() {
+    public boolean isWindowingDistinct() {
       return isWindowing && sumDistinct;
     }
 
@@ -335,6 +338,15 @@ public class GenericUDAFSum extends AbstractGenericUDAFResolver {
 
       };
     }
+
+    @Override
+    protected BasePartitionEvaluator createPartitionEvaluator(
+        WindowFrameDef winFrame,
+        PTFPartition partition,
+        List<PTFExpressionDef> parameters,
+        ObjectInspector outputOI) {
+      return new BasePartitionEvaluator.SumPartitionHiveDecimalEvaluator(this, winFrame, partition, parameters, outputOI);
+    }
   }
 
   /**
@@ -455,6 +467,14 @@ public class GenericUDAFSum extends AbstractGenericUDAFResolver {
       };
     }
 
+    @Override
+    protected BasePartitionEvaluator createPartitionEvaluator(
+        WindowFrameDef winFrame,
+        PTFPartition partition,
+        List<PTFExpressionDef> parameters,
+        ObjectInspector outputOI) {
+      return new BasePartitionEvaluator.SumPartitionDoubleEvaluator(this, winFrame, partition, parameters, outputOI);
+    }
   }
 
   /**
@@ -569,6 +589,15 @@ public class GenericUDAFSum extends AbstractGenericUDAFResolver {
           return myagg.empty ? null : new Long(myagg.sum);
         }
       };
+    }
+
+    @Override
+    protected BasePartitionEvaluator createPartitionEvaluator(
+        WindowFrameDef winFrame,
+        PTFPartition partition,
+        List<PTFExpressionDef> parameters,
+        ObjectInspector outputOI) {
+      return new BasePartitionEvaluator.SumPartitionLongEvaluator(this, winFrame, partition, parameters, outputOI);
     }
   }
 }

@@ -46,7 +46,7 @@ explain extended
 select p_mfgr, p_name, p_size,
 rank() over (partition by p_mfgr order by p_name) as r,
 dense_rank() over (partition by p_mfgr order by p_name) as dr,
-sum(p_retailprice) over (partition by p_mfgr order by p_name rows between unbounded preceding and current row) as s1
+round(sum(p_retailprice) over (partition by p_mfgr order by p_name rows between unbounded preceding and current row),2) as s1
 from noop(on part_orc 
   partition by p_mfgr
   order by p_name
@@ -97,7 +97,7 @@ explain extended
 select p_mfgr, p_name, p_size,
 rank() over (partition by p_mfgr order by p_name) as r,
 dense_rank() over (partition by p_mfgr order by p_name) as dr,
-sum(p_retailprice) over (partition by p_mfgr order by p_name rows between unbounded preceding and current row) as s1
+round(sum(p_retailprice) over (partition by p_mfgr order by p_name rows between unbounded preceding and current row),2) as s1
 from noop(on part_orc 
   partition by p_mfgr
   order by p_name
@@ -106,7 +106,7 @@ from noop(on part_orc
 select p_mfgr, p_name, p_size,
 rank() over (partition by p_mfgr order by p_name) as r,
 dense_rank() over (partition by p_mfgr order by p_name) as dr,
-sum(p_retailprice) over (partition by p_mfgr order by p_name rows between unbounded preceding and current row) as s1
+round(sum(p_retailprice) over (partition by p_mfgr order by p_name rows between unbounded preceding and current row),2) as s1
 from noop(on part_orc 
   partition by p_mfgr
   order by p_name
@@ -211,7 +211,7 @@ explain extended
 select p_mfgr, p_name, p_size,
 rank() over (partition by p_mfgr order by p_name) as r,
 dense_rank() over (partition by p_mfgr order by p_name) as dr,
-sum(p_retailprice) over (partition by p_mfgr order by p_name rows between unbounded preceding and current row) as s1
+round(sum(p_retailprice) over (partition by p_mfgr order by p_name rows between unbounded preceding and current row),2) as s1
 from noopwithmap(on part_orc 
   partition by p_mfgr
   order by p_name);
@@ -219,7 +219,7 @@ from noopwithmap(on part_orc
 select p_mfgr, p_name, p_size,
 rank() over (partition by p_mfgr order by p_name) as r,
 dense_rank() over (partition by p_mfgr order by p_name) as dr,
-sum(p_retailprice) over (partition by p_mfgr order by p_name rows between unbounded preceding and current row) as s1
+round(sum(p_retailprice) over (partition by p_mfgr order by p_name rows between unbounded preceding and current row),2) as s1
 from noopwithmap(on part_orc 
   partition by p_mfgr
   order by p_name);
@@ -230,7 +230,7 @@ explain extended
 select p_mfgr, p_name, p_size,
 rank() over (partition by p_mfgr order by p_name) as r,
 dense_rank() over (partition by p_mfgr order by p_name) as dr,
-sum(p_retailprice) over (partition by p_mfgr order by p_name rows between unbounded preceding and current row) as s1
+round(sum(p_retailprice) over (partition by p_mfgr order by p_name rows between unbounded preceding and current row),2) as s1
 from noop(on part_orc
 partition by p_mfgr
 order by p_name)
@@ -239,7 +239,7 @@ order by p_name)
 select p_mfgr, p_name, p_size,
 rank() over (partition by p_mfgr order by p_name) as r,
 dense_rank() over (partition by p_mfgr order by p_name) as dr,
-sum(p_retailprice) over (partition by p_mfgr order by p_name rows between unbounded preceding and current row) as s1
+round(sum(p_retailprice) over (partition by p_mfgr order by p_name rows between unbounded preceding and current row),2) as s1
 from noop(on part_orc
 partition by p_mfgr
 order by p_name)
@@ -251,7 +251,7 @@ explain extended
 select p_mfgr, p_name, p_size, 
 rank() over (partition by p_mfgr order by p_name) as r, 
 dense_rank() over (partition by p_mfgr order by p_name) as dr, 
-sum(p_retailprice) over (partition by p_mfgr order by p_name rows between unbounded preceding and current row)  as s1
+round(sum(p_retailprice) over (partition by p_mfgr order by p_name rows between unbounded preceding and current row),2) as s1
 from noop(on noopwithmap(on noop(on part_orc 
 partition by p_mfgr 
 order by p_mfgr, p_name
@@ -260,7 +260,7 @@ order by p_mfgr, p_name
 select p_mfgr, p_name, p_size, 
 rank() over (partition by p_mfgr order by p_name) as r, 
 dense_rank() over (partition by p_mfgr order by p_name) as dr, 
-sum(p_retailprice) over (partition by p_mfgr order by p_name rows between unbounded preceding and current row)  as s1
+round(sum(p_retailprice) over (partition by p_mfgr order by p_name rows between unbounded preceding and current row),2) as s1
 from noop(on noopwithmap(on noop(on part_orc 
 partition by p_mfgr 
 order by p_mfgr, p_name
@@ -274,7 +274,7 @@ sub1.cd, sub1.s1
 from (select p_mfgr, p_name, 
 count(p_size) over (partition by p_mfgr order by p_name) as cd, 
 p_retailprice, 
-sum(p_retailprice) over w1  as s1
+round(sum(p_retailprice) over w1,2) as s1
 from noop(on part_orc 
 partition by p_mfgr 
 order by p_name) 
@@ -286,7 +286,7 @@ sub1.cd, sub1.s1
 from (select p_mfgr, p_name, 
 count(p_size) over (partition by p_mfgr order by p_name) as cd, 
 p_retailprice, 
-sum(p_retailprice) over w1  as s1
+round(sum(p_retailprice) over w1,2) as s1
 from noop(on part_orc 
 partition by p_mfgr 
 order by p_name) 
@@ -300,7 +300,7 @@ select abc.p_mfgr, abc.p_name,
 rank() over (distribute by abc.p_mfgr sort by abc.p_name) as r, 
 dense_rank() over (distribute by abc.p_mfgr sort by abc.p_name) as dr, 
 count(abc.p_name) over (distribute by abc.p_mfgr sort by abc.p_name) as cd, 
-abc.p_retailprice, sum(abc.p_retailprice) over (distribute by abc.p_mfgr sort by abc.p_name rows between unbounded preceding and current row) as s1, 
+abc.p_retailprice, round(sum(abc.p_retailprice) over (distribute by abc.p_mfgr sort by abc.p_name rows between unbounded preceding and current row),2) as s1,
 abc.p_size, abc.p_size - lag(abc.p_size,1,abc.p_size) over (distribute by abc.p_mfgr sort by abc.p_name) as deltaSz 
 from noop(on part_orc 
 partition by p_mfgr 
@@ -312,7 +312,7 @@ select abc.p_mfgr, abc.p_name,
 rank() over (distribute by abc.p_mfgr sort by abc.p_name) as r, 
 dense_rank() over (distribute by abc.p_mfgr sort by abc.p_name) as dr, 
 count(abc.p_name) over (distribute by abc.p_mfgr sort by abc.p_name) as cd, 
-abc.p_retailprice, sum(abc.p_retailprice) over (distribute by abc.p_mfgr sort by abc.p_name rows between unbounded preceding and current row) as s1, 
+abc.p_retailprice, round(sum(abc.p_retailprice) over (distribute by abc.p_mfgr sort by abc.p_name rows between unbounded preceding and current row),2) as s1,
 abc.p_size, abc.p_size - lag(abc.p_size,1,abc.p_size) over (distribute by abc.p_mfgr sort by abc.p_name) as deltaSz 
 from noop(on part_orc 
 partition by p_mfgr 
@@ -337,20 +337,20 @@ order by p_name);
 -- 16. testViewAsTableInputToPTF
 create view IF NOT EXISTS mfgr_price_view as 
 select p_mfgr, p_brand, 
-sum(p_retailprice) as s 
+round(sum(p_retailprice),2) as s
 from part_orc 
 group by p_mfgr, p_brand;
 
 explain extended
 select p_mfgr, p_brand, s, 
-sum(s) over w1  as s1
+round(sum(s) over w1,2) as s1
 from noop(on mfgr_price_view 
 partition by p_mfgr 
 order by p_mfgr)  
 window w1 as ( partition by p_mfgr order by p_brand rows between 2 preceding and current row);
 
 select p_mfgr, p_brand, s, 
-sum(s) over w1  as s1
+round(sum(s) over w1,2) as s1
 from noop(on mfgr_price_view 
 partition by p_mfgr 
 order by p_mfgr)  
@@ -382,7 +382,7 @@ order by p_name)
 INSERT OVERWRITE TABLE part_4 select p_mfgr, p_name, p_size, 
 rank() over (distribute by p_mfgr sort by p_name) as r, 
 dense_rank() over (distribute by p_mfgr sort by p_name) as dr, 
-sum(p_retailprice) over (distribute by p_mfgr sort by p_name rows between unbounded preceding and current row)  as s  
+round(sum(p_retailprice) over (distribute by p_mfgr sort by p_name rows between unbounded preceding and current row),2) as s
 INSERT OVERWRITE TABLE part_5 select  p_mfgr,p_name, p_size,  
 round(sum(p_size) over (distribute by p_mfgr sort by p_size range between 5 preceding and current row),1) as s2,
 rank() over (distribute by p_mfgr sort by p_mfgr, p_name) as r, 
@@ -397,7 +397,7 @@ order by p_name)
 INSERT OVERWRITE TABLE part_4 select p_mfgr, p_name, p_size, 
 rank() over (distribute by p_mfgr sort by p_name) as r, 
 dense_rank() over (distribute by p_mfgr sort by p_name) as dr, 
-sum(p_retailprice) over (distribute by p_mfgr sort by p_name rows between unbounded preceding and current row)  as s  
+round(sum(p_retailprice) over (distribute by p_mfgr sort by p_name rows between unbounded preceding and current row),2) as s
 INSERT OVERWRITE TABLE part_5 select  p_mfgr,p_name, p_size,  
 round(sum(p_size) over (distribute by p_mfgr sort by p_size range between 5 preceding and current row),1) as s2,
 rank() over (distribute by p_mfgr sort by p_mfgr, p_name) as r, 

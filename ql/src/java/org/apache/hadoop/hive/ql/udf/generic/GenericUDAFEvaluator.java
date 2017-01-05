@@ -22,11 +22,15 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.util.List;
 
 import org.apache.hadoop.hive.ql.exec.MapredContext;
+import org.apache.hadoop.hive.ql.exec.PTFPartition;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.plan.ptf.PTFExpressionDef;
 import org.apache.hadoop.hive.ql.plan.ptf.WindowFrameDef;
 import org.apache.hadoop.hive.ql.udf.UDFType;
+import org.apache.hadoop.hive.ql.udf.ptf.BasePartitionEvaluator;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hive.common.util.AnnotationUtils;
 
@@ -258,4 +262,44 @@ public abstract class GenericUDAFEvaluator implements Closeable {
     return null;
   }
 
+  protected BasePartitionEvaluator partitionEvaluator;
+
+  /**
+   * When evaluating an aggregates over a fixed Window, streaming is not possible
+   * especially for RANGE Window type. For such case, the whole partition data needs
+   * to be collected and then to evaluate the aggregates. The naive approach is to
+   * calculate a row range for each row and to perform the aggregates. For some
+   * functions, a better implementation can be used to reduce the calculation.
+   * Note: since the evaluator is reused across different partitions, AggregationBuffer
+   * needs reset before aggregating for the new partition in the implementation.
+   * @param winFrame    the Window definition in play for this evaluation.
+   * @param partition   the partition data
+   * @param parameters  the list of the expressions in the function
+   * @param outputOI    the output object inspector
+   * @return            the evaluator, default to BasePartitionEvaluator which
+   *                    implements the naive approach
+   */
+  public final BasePartitionEvaluator getPartitionWindowingEvaluator(
+      WindowFrameDef winFrame,
+      PTFPartition partition,
+      List<PTFExpressionDef> parameters,
+      ObjectInspector outputOI) {
+    if (partitionEvaluator == null) {
+      partitionEvaluator = createPartitionEvaluator(winFrame, partition, parameters, outputOI);
+    }
+
+    return partitionEvaluator;
+  }
+
+  /**
+   *  This class needs to be overridden by the child class to implement function
+   *  specific evaluator.
+   */
+  protected BasePartitionEvaluator createPartitionEvaluator(
+      WindowFrameDef winFrame,
+      PTFPartition partition,
+      List<PTFExpressionDef> parameters,
+      ObjectInspector outputOI) {
+    return new BasePartitionEvaluator(this, winFrame, partition, parameters, outputOI);
+  }
 }
