@@ -20,6 +20,7 @@ package org.apache.orc.impl;
 import java.sql.Date;
 import java.sql.Timestamp;
 
+import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.serde2.io.DateWritable;
 import org.apache.hadoop.io.BytesWritable;
@@ -573,9 +574,11 @@ public class ColumnStatisticsImpl implements ColumnStatistics {
 
   private static final class DecimalStatisticsImpl extends ColumnStatisticsImpl
       implements DecimalColumnStatistics {
-    private HiveDecimal minimum = null;
-    private HiveDecimal maximum = null;
-    private HiveDecimal sum = HiveDecimal.ZERO;
+
+    // These objects are mutable for better performance.
+    private HiveDecimalWritable minimum = null;
+    private HiveDecimalWritable maximum = null;
+    private HiveDecimalWritable sum = new HiveDecimalWritable(0);
 
     DecimalStatisticsImpl() {
     }
@@ -584,13 +587,13 @@ public class ColumnStatisticsImpl implements ColumnStatistics {
       super(stats);
       OrcProto.DecimalStatistics dec = stats.getDecimalStatistics();
       if (dec.hasMaximum()) {
-        maximum = HiveDecimal.create(dec.getMaximum());
+        maximum = new HiveDecimalWritable(dec.getMaximum());
       }
       if (dec.hasMinimum()) {
-        minimum = HiveDecimal.create(dec.getMinimum());
+        minimum = new HiveDecimalWritable(dec.getMinimum());
       }
       if (dec.hasSum()) {
-        sum = HiveDecimal.create(dec.getSum());
+        sum = new HiveDecimalWritable(dec.getSum());
       } else {
         sum = null;
       }
@@ -601,21 +604,21 @@ public class ColumnStatisticsImpl implements ColumnStatistics {
       super.reset();
       minimum = null;
       maximum = null;
-      sum = HiveDecimal.ZERO;
+      sum = new HiveDecimalWritable(0);
     }
 
     @Override
-    public void updateDecimal(HiveDecimal value) {
+    public void updateDecimal(HiveDecimalWritable value) {
       if (minimum == null) {
-        minimum = value;
-        maximum = value;
+        minimum = new HiveDecimalWritable(value);
+        maximum = new HiveDecimalWritable(value);
       } else if (minimum.compareTo(value) > 0) {
-        minimum = value;
+        minimum.set(value);
       } else if (maximum.compareTo(value) < 0) {
-        maximum = value;
+        maximum.set(value);
       }
       if (sum != null) {
-        sum = sum.add(value);
+        sum.mutateAdd(value);
       }
     }
 
@@ -624,20 +627,20 @@ public class ColumnStatisticsImpl implements ColumnStatistics {
       if (other instanceof DecimalStatisticsImpl) {
         DecimalStatisticsImpl dec = (DecimalStatisticsImpl) other;
         if (minimum == null) {
-          minimum = dec.minimum;
-          maximum = dec.maximum;
+          minimum = (dec.minimum != null ? new HiveDecimalWritable(dec.minimum) : null);
+          maximum = (dec.maximum != null ? new HiveDecimalWritable(dec.maximum) : null);
           sum = dec.sum;
         } else if (dec.minimum != null) {
           if (minimum.compareTo(dec.minimum) > 0) {
-            minimum = dec.minimum;
+            minimum.set(dec.minimum);
           }
           if (maximum.compareTo(dec.maximum) < 0) {
-            maximum = dec.maximum;
+            maximum.set(dec.maximum);
           }
           if (sum == null || dec.sum == null) {
             sum = null;
           } else {
-            sum = sum.add(dec.sum);
+            sum.mutateAdd(dec.sum);
           }
         }
       } else {
@@ -657,7 +660,8 @@ public class ColumnStatisticsImpl implements ColumnStatistics {
         dec.setMinimum(minimum.toString());
         dec.setMaximum(maximum.toString());
       }
-      if (sum != null) {
+      // Check isSet for overflow.
+      if (sum != null && sum.isSet()) {
         dec.setSum(sum.toString());
       }
       result.setDecimalStatistics(dec);
@@ -666,17 +670,17 @@ public class ColumnStatisticsImpl implements ColumnStatistics {
 
     @Override
     public HiveDecimal getMinimum() {
-      return minimum;
+      return minimum.getHiveDecimal();
     }
 
     @Override
     public HiveDecimal getMaximum() {
-      return maximum;
+      return maximum.getHiveDecimal();
     }
 
     @Override
     public HiveDecimal getSum() {
-      return sum;
+      return sum.getHiveDecimal();
     }
 
     @Override
@@ -987,7 +991,7 @@ public class ColumnStatisticsImpl implements ColumnStatistics {
     throw new UnsupportedOperationException("Can't update string");
   }
 
-  public void updateDecimal(HiveDecimal value) {
+  public void updateDecimal(HiveDecimalWritable value) {
     throw new UnsupportedOperationException("Can't update decimal");
   }
 

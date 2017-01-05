@@ -61,12 +61,11 @@ public class <ClassName> extends VectorAggregateExpression {
       }
 
       public void checkValue(HiveDecimalWritable writable, short scale) {
-        HiveDecimal value = writable.getHiveDecimal();
         if (isNull) {
           isNull = false;
-          this.value.set(value);
-        } else if (this.value.getHiveDecimal().compareTo(value) <OperatorSymbol> 0) {
-          this.value.set(value);
+          this.value.set(writable);
+        } else if (this.value.compareTo(writable) <OperatorSymbol> 0) {
+          this.value.set(writable);
         }
       }
 
@@ -321,8 +320,7 @@ public class <ClassName> extends VectorAggregateExpression {
           if (inputVector.noNulls &&
             (myagg.isNull || (myagg.value.compareTo(vector[0]) <OperatorSymbol> 0))) {
             myagg.isNull = false;
-            HiveDecimal value = vector[0].getHiveDecimal();
-            myagg.value.set(value);
+            myagg.value.set(vector[0]);
           }
           return;
         }
@@ -354,13 +352,13 @@ public class <ClassName> extends VectorAggregateExpression {
       for (int j=0; j< batchSize; ++j) {
         int i = selected[j];
         if (!isNull[i]) {
-          HiveDecimal value = vector[i].getHiveDecimal();
+          HiveDecimalWritable writable = vector[i];
           if (myagg.isNull) {
             myagg.isNull = false;
-            myagg.value.set(value);
+            myagg.value.set(writable);
           }
-          else if (myagg.value.getHiveDecimal().compareTo(value) <OperatorSymbol> 0) {
-            myagg.value.set(value);
+          else if (myagg.value.compareTo(writable) <OperatorSymbol> 0) {
+            myagg.value.set(writable);
           }
         }
       }
@@ -374,15 +372,14 @@ public class <ClassName> extends VectorAggregateExpression {
         int[] selected) {
 
       if (myagg.isNull) {
-        HiveDecimal value = vector[selected[0]].getHiveDecimal();
-        myagg.value.set(value);
+        myagg.value.set(vector[selected[0]]);
         myagg.isNull = false;
       }
 
       for (int i=0; i< batchSize; ++i) {
-        HiveDecimal value = vector[selected[i]].getHiveDecimal();
-        if (myagg.value.getHiveDecimal().compareTo(value) <OperatorSymbol> 0) {
-          myagg.value.set(value);
+        HiveDecimalWritable writable = vector[selected[i]];
+        if (myagg.value.compareTo(writable) <OperatorSymbol> 0) {
+          myagg.value.set(writable);
         }
       }
     }
@@ -396,13 +393,13 @@ public class <ClassName> extends VectorAggregateExpression {
 
       for(int i=0;i<batchSize;++i) {
         if (!isNull[i]) {
-          HiveDecimal value = vector[i].getHiveDecimal();
+          HiveDecimalWritable writable = vector[i];
           if (myagg.isNull) {
-            myagg.value.set(value);
+            myagg.value.set(writable);
             myagg.isNull = false;
           }
-          else if (myagg.value.getHiveDecimal().compareTo(value) <OperatorSymbol> 0) {
-            myagg.value.set(value);
+          else if (myagg.value.compareTo(writable) <OperatorSymbol> 0) {
+            myagg.value.set(writable);
           }
         }
       }
@@ -414,15 +411,14 @@ public class <ClassName> extends VectorAggregateExpression {
         short scale,
         int batchSize) {
       if (myagg.isNull) {
-        HiveDecimal value = vector[0].getHiveDecimal();
-        myagg.value.set(value);
+        myagg.value.set(vector[0]);
         myagg.isNull = false;
       }
 
       for (int i=0;i<batchSize;++i) {
-        HiveDecimal value = vector[i].getHiveDecimal();
-        if (myagg.value.getHiveDecimal().compareTo(value) <OperatorSymbol> 0) {
-          myagg.value.set(value);
+        HiveDecimalWritable writable = vector[i];
+        if (myagg.value.compareTo(writable) <OperatorSymbol> 0) {
+          myagg.value.set(writable);
         }
       }
     }
@@ -472,4 +468,3 @@ public class <ClassName> extends VectorAggregateExpression {
     this.inputExpression = inputExpression;
   }
 }
-

@@ -20,12 +20,12 @@ package org.apache.hadoop.hive.serde2.lazy.fast;
 
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.CharacterCodingException;
+import java.nio.charset.StandardCharsets;
 import java.sql.Date;
 import java.util.Arrays;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.common.type.HiveIntervalDayTime;
 import org.apache.hadoop.hive.common.type.HiveIntervalYearMonth;
 import org.apache.hadoop.hive.serde2.fast.DeserializeRead;
@@ -490,28 +490,26 @@ public final class LazySimpleDeserializeRead extends DeserializeRead {
     case DECIMAL:
       {
         if (!LazyUtils.isNumberMaybe(bytes, fieldStart, fieldLength)) {
-          return true;
+          return false;
         }
-        String byteData = null;
-        try {
-          byteData = Text.decode(bytes, fieldStart, fieldLength);
-        } catch (CharacterCodingException e) {
-          LOG.debug("Data not in the HiveDecimal data type range so converted to null.", e);
-          return true;
-        }
+        // Trim blanks because OldHiveDecimal did...
+        currentHiveDecimalWritable.setFromBytes(bytes, fieldStart, fieldLength, /* trimBlanks */ true);
+        boolean decimalIsNull = !currentHiveDecimalWritable.isSet();
+        if (!decimalIsNull) {
+          DecimalTypeInfo decimalTypeInfo = (DecimalTypeInfo) typeInfos[fieldIndex];
 
-        HiveDecimal decimal = HiveDecimal.create(byteData);
-        DecimalTypeInfo decimalTypeInfo = (DecimalTypeInfo) typeInfos[fieldIndex];
-        int precision = decimalTypeInfo.getPrecision();
-        int scale = decimalTypeInfo.getScale();
-        decimal = HiveDecimal.enforcePrecisionScale(
-            decimal, precision, scale);
-        if (decimal == null) {
-          LOG.debug("Data not in the HiveDecimal data type range so converted to null. Given data is :"
-              + byteData);
+          int precision = decimalTypeInfo.getPrecision();
+          int scale = decimalTypeInfo.getScale();
+
+          decimalIsNull = !currentHiveDecimalWritable.mutateEnforcePrecisionScale(precision, scale);
+        }
+        if (decimalIsNull) {
+          if (LOG.isDebugEnabled()) {
+            LOG.debug("Data not in the HiveDecimal data type range so converted to null. Given data is :"
+              + new String(bytes, fieldStart, fieldLength, StandardCharsets.UTF_8));
+          }
           return true;
         }
-        currentHiveDecimalWritable.set(decimal);
       }
       break;
 

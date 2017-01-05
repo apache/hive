@@ -17,10 +17,12 @@
  */
 
 package org.apache.hadoop.hive.ql.exec.vector;
+
 import java.math.BigInteger;
 
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
+import org.apache.hadoop.hive.common.type.FastHiveDecimal;
 
 public class DecimalColumnVector extends ColumnVector {
 
@@ -45,7 +47,7 @@ public class DecimalColumnVector extends ColumnVector {
     this.scale = (short) scale;
     vector = new HiveDecimalWritable[size];
     for (int i = 0; i < size; i++) {
-      vector[i] = new HiveDecimalWritable(HiveDecimal.ZERO);
+      vector[i] = new HiveDecimalWritable(0);  // Initially zero.
     }
   }
 
@@ -71,15 +73,14 @@ public class DecimalColumnVector extends ColumnVector {
       inputElementNum = 0;
     }
     if (inputVector.noNulls || !inputVector.isNull[inputElementNum]) {
-      HiveDecimal hiveDec =
-          ((DecimalColumnVector) inputVector).vector[inputElementNum]
-              .getHiveDecimal(precision, scale);
-      if (hiveDec == null) {
+      vector[outElementNum].set(
+          ((DecimalColumnVector) inputVector).vector[inputElementNum],
+          precision, scale);
+      if (!vector[outElementNum].isSet()) {
         isNull[outElementNum] = true;
         noNulls = false;
       } else {
         isNull[outElementNum] = false;
-        vector[outElementNum].set(hiveDec);
       }
     } else {
       isNull[outElementNum] = true;
@@ -100,34 +101,28 @@ public class DecimalColumnVector extends ColumnVector {
   }
 
   public void set(int elementNum, HiveDecimalWritable writeable) {
-    if (writeable == null) {
+    vector[elementNum].set(writeable, precision, scale);
+    if (!vector[elementNum].isSet()) {
       noNulls = false;
       isNull[elementNum] = true;
     } else {
-      HiveDecimal hiveDec = writeable.getHiveDecimal(precision, scale);
-      if (hiveDec == null) {
-        noNulls = false;
-        isNull[elementNum] = true;
-      } else {
-        vector[elementNum].set(hiveDec);
-      }
+      isNull[elementNum] = false;
     }
   }
 
   public void set(int elementNum, HiveDecimal hiveDec) {
-    HiveDecimal checkedDec = HiveDecimal.enforcePrecisionScale(hiveDec, precision, scale);
-    if (checkedDec == null) {
+    vector[elementNum].set(hiveDec, precision, scale);
+    if (!vector[elementNum].isSet()) {
       noNulls = false;
       isNull[elementNum] = true;
     } else {
-      vector[elementNum].set(checkedDec);
+      isNull[elementNum] = false;
     }
   }
 
   public void setNullDataValue(int elementNum) {
     // E.g. For scale 2 the minimum is "0.01"
-    HiveDecimal minimumNonZeroValue = HiveDecimal.create(BigInteger.ONE, scale);
-    vector[elementNum].set(minimumNonZeroValue);
+    vector[elementNum].setFromLongAndScale(1L, scale);
   }
 
   @Override
@@ -144,7 +139,7 @@ public class DecimalColumnVector extends ColumnVector {
       System.arraycopy(oldArray, 0, vector, 0 , oldArray.length);
     }
     for (int i = initPos; i < vector.length; ++i) {
-      vector[i] = new HiveDecimalWritable(HiveDecimal.ZERO);
+      vector[i] = new HiveDecimalWritable(0);  // Initially zero.
     }
   }
 }

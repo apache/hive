@@ -369,7 +369,8 @@ public abstract class VectorMapJoinCommonOperator extends MapJoinOperator implem
             // we must have a physical (scratch) column for those keys.  We cannot use the
             // projection optimization used by inner joins above.
 
-            int scratchColumn = vOutContext.allocateScratchColumn(typeName);
+            TypeInfo typeInfo = TypeInfoUtils.getTypeInfoFromTypeString(typeName);
+            int scratchColumn = vOutContext.allocateScratchColumn(typeInfo);
             projectionMapping.add(nextOutputColumn, scratchColumn, typeName);
 
             bigTableRetainedMapping.add(batchKeyColumn, scratchColumn, typeName);
@@ -385,7 +386,8 @@ public abstract class VectorMapJoinCommonOperator extends MapJoinOperator implem
           String typeName = smallTableExprs.get(i).getTypeString();
 
           // Make a new big table scratch column for the small table value.
-          int scratchColumn = vOutContext.allocateScratchColumn(typeName);
+          TypeInfo typeInfo = TypeInfoUtils.getTypeInfoFromTypeString(typeName);
+          int scratchColumn = vOutContext.allocateScratchColumn(typeInfo);
           projectionMapping.add(nextOutputColumn, scratchColumn, typeName);
 
           smallTableMapping.add(smallTableValueIndex, scratchColumn, typeName);
@@ -401,9 +403,10 @@ public abstract class VectorMapJoinCommonOperator extends MapJoinOperator implem
         int smallTableValueIndex = smallTableRetainList.get(i);
 
         // Make a new big table scratch column for the small table value.
-        String typeName = smallTableExprs.get(i).getTypeString();
-        int scratchColumn = vOutContext.allocateScratchColumn(typeName);
+        TypeInfo typeInfo = smallTableExprs.get(i).getTypeInfo();
+        int scratchColumn = vOutContext.allocateScratchColumn(typeInfo);
 
+        String typeName = smallTableExprs.get(i).getTypeString();
         projectionMapping.add(nextOutputColumn, scratchColumn, typeName);
 
         smallTableMapping.add(smallTableValueIndex, scratchColumn, typeName);

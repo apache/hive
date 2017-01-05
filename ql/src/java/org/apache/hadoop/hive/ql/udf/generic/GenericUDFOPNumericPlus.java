@@ -87,13 +87,8 @@ public class GenericUDFOPNumericPlus extends GenericUDFBaseNumeric {
 
   @Override
   protected HiveDecimalWritable evaluate(HiveDecimal left, HiveDecimal right) {
-    HiveDecimal dec = left.add(right);
-
-    if (dec == null) {
-      return null;
-    }
-
-    decimalWritable.set(dec);
+    decimalWritable.set(left);
+    decimalWritable.mutateAdd(right);
     return decimalWritable;
   }
 

@@ -340,10 +340,10 @@ POSTHOOK: Input: default@part_change_various_various_tinyint@part=1
 POSTHOOK: Input: default@part_change_various_various_tinyint@part=2
 #### A masked pattern was here ####
 insert_num	part	c1	c2	c3	c4	c5	c6	c7	c8	c9	c10	c11	b
-1	1	1	-48	-51	-66	-29	119	119	73	73	73	-43	original
-2	1	1	-24	-63	-25	-67	34	34	NULL	NULL	NULL	105	original
-3	1	0	NULL	-66	-38	30	85	85	1	1	1	84	original
-4	1	1	NULL	87	6	34	36	36	-77	-77	-77	60	original
+1	1	1	-48	-51	-66	-29	119	NULL	73	73	73	-43	original
+2	1	1	-24	-63	-25	-67	34	NULL	NULL	NULL	NULL	105	original
+3	1	0	NULL	-66	-38	30	85	NULL	1	1	1	84	original
+4	1	1	NULL	87	6	34	36	NULL	-77	-77	-77	60	original
 5	2	23	71	127	1	NULL	-60	68	NULL	NULL	40	93	new
 6	1	NULL	85	-126	NULL	91	113	-28	-63	0	8	NULL	new
 PREHOOK: query: drop table part_change_various_various_tinyint
@@ -511,10 +511,10 @@ POSTHOOK: Input: default@part_change_various_various_smallint@part=1
 POSTHOOK: Input: default@part_change_various_various_smallint@part=2
 #### A masked pattern was here ####
 insert_num	part	c1	c2	c3	c4	c5	c6	c7	c8	c9	c10	c11	b
-1	1	1	NULL	7373	-32578	-29	119	119	-2999	-2999	-2999	-11819	original
-2	1	1	100	25025	29415	-3651	-19422	-19422	NULL	NULL	NULL	29801	original
-3	1	0	72	-32578	-27686	30	-939	-939	1	1	1	-8620	original
-4	1	1	-90	14935	12294	-19422	9764	9764	5299	5299	5299	-17092	original
+1	1	1	NULL	7373	-32578	-29	119	NULL	-2999	-2999	-2999	-11819	original
+2	1	1	100	25025	29415	-3651	-19422	NULL	NULL	NULL	NULL	29801	original
+3	1	0	72	-32578	-27686	30	-939	NULL	1	1	1	-8620	original
+4	1	1	-90	14935	12294	-19422	9764	NULL	5299	5299	5299	-17092	original
 5	2	-30486	15230	3117	1	-117	-7131	20227	-24858	-28771	NULL	NULL	new
 6	1	NULL	NULL	-4844	15507	91	22385	-28	-12268	0	NULL	NULL	new
 PREHOOK: query: drop table part_change_various_various_smallint

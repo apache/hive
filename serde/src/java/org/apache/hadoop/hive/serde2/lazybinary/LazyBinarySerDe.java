@@ -36,6 +36,7 @@ import org.apache.hadoop.hive.serde2.SerDeSpec;
 import org.apache.hadoop.hive.serde2.SerDeStats;
 import org.apache.hadoop.hive.serde2.io.DateWritable;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
+import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.serde2.io.HiveIntervalDayTimeWritable;
 import org.apache.hadoop.hive.serde2.io.HiveIntervalYearMonthWritable;
 import org.apache.hadoop.hive.serde2.io.TimestampWritable;
@@ -316,7 +317,7 @@ public class LazyBinarySerDe extends AbstractSerDe {
     LazyBinaryUtils.writeVInt(byteStream, date.getDays());
   }
 
-  public static void setFromBytes(byte[] bytes, int offset, int length,
+  public static void setFromBigIntegerBytesAndScale(byte[] bytes, int offset, int length,
                                   HiveDecimalWritable dec) {
     LazyBinaryUtils.VInt vInt = new LazyBinaryUtils.VInt();
     LazyBinaryUtils.readVInt(bytes, offset, vInt);
@@ -324,20 +325,69 @@ public class LazyBinarySerDe extends AbstractSerDe {
     offset += vInt.length;
     LazyBinaryUtils.readVInt(bytes, offset, vInt);
     offset += vInt.length;
-    byte[] internalStorage = dec.getInternalStorage();
-    if (internalStorage.length != vInt.value) {
-      internalStorage = new byte[vInt.value];
-    }
-    System.arraycopy(bytes, offset, internalStorage, 0, vInt.value);
-    dec.set(internalStorage, scale);
+    dec.setFromBigIntegerBytesAndScale(bytes, offset, vInt.value, scale);
   }
 
   public static void writeToByteStream(RandomAccessOutput byteStream,
-                                       HiveDecimalWritable dec) {
-    LazyBinaryUtils.writeVInt(byteStream, dec.getScale());
-    byte[] internalStorage = dec.getInternalStorage();
-    LazyBinaryUtils.writeVInt(byteStream, internalStorage.length);
-    byteStream.write(internalStorage, 0, internalStorage.length);
+                                       HiveDecimalWritable decWritable) {
+    LazyBinaryUtils.writeVInt(byteStream, decWritable.scale());
+
+    // NOTE: This writes into a scratch buffer within HiveDecimalWritable.
+    //
+    int byteLength = decWritable.bigIntegerBytesInternalScratch();
+
+    LazyBinaryUtils.writeVInt(byteStream, byteLength);
+    byteStream.write(decWritable.bigIntegerBytesInternalScratchBuffer(), 0, byteLength);
+  }
+
+  /**
+   *
+   * Allocate scratchLongs with HiveDecimal.SCRATCH_LONGS_LEN longs.
+   * And, allocate scratch buffer with HiveDecimal.SCRATCH_BUFFER_LEN_BIG_INTEGER_BYTES bytes.
+   *
+   * @param byteStream
+   * @param dec
+   * @param scratchLongs
+   * @param buffer
+   */
+  public static void writeToByteStream(
+      RandomAccessOutput byteStream,
+      HiveDecimal dec,
+      long[] scratchLongs, byte[] scratchBytes) {
+    LazyBinaryUtils.writeVInt(byteStream, dec.scale());
+
+    // Convert decimal into the scratch buffer without allocating a byte[] each time
+    // for better performance.
+    int byteLength = 
+        dec.bigIntegerBytes(
+            scratchLongs, scratchBytes);
+    if (byteLength == 0) {
+      throw new RuntimeException("Decimal to binary conversion failed");
+    }
+    LazyBinaryUtils.writeVInt(byteStream, byteLength);
+    byteStream.write(scratchBytes, 0, byteLength);
+  }
+
+  /**
+  *
+  * Allocate scratchLongs with HiveDecimal.SCRATCH_LONGS_LEN longs.
+  * And, allocate scratch buffer with HiveDecimal.SCRATCH_BUFFER_LEN_BIG_INTEGER_BYTES bytes.
+  *
+  * @param byteStream
+  * @param dec
+  * @param scratchLongs
+  * @param buffer
+  */
+  public static void writeToByteStream(
+      RandomAccessOutput byteStream,
+      HiveDecimalWritable decWritable,
+      long[] scratchLongs, byte[] scratchBytes) {
+    LazyBinaryUtils.writeVInt(byteStream, decWritable.scale());
+    int byteLength =
+        decWritable.bigIntegerBytes(
+            scratchLongs, scratchBytes);
+    LazyBinaryUtils.writeVInt(byteStream, byteLength);
+    byteStream.write(scratchBytes, 0, byteLength);
   }
 
   /**

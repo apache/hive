@@ -497,7 +497,10 @@ public final class VectorSerializeRow<T extends SerializeWrite> {
 
       if (colVector.isRepeating) {
         if (colVector.noNulls || !colVector.isNull[0]) {
-          serializeWrite.writeHiveDecimal(colVector.vector[0].getHiveDecimal(), colVector.scale);
+          // We serialize specifying the HiveDecimalWritable but also the desired
+          // serialization scale that will be used by text serialization for adding
+          // trailing fractional zeroes.
+          serializeWrite.writeHiveDecimal(colVector.vector[0], colVector.scale);
           return true;
         } else {
           serializeWrite.writeNull();
@@ -505,7 +508,7 @@ public final class VectorSerializeRow<T extends SerializeWrite> {
         }
       } else {
         if (colVector.noNulls || !colVector.isNull[batchIndex]) {
-          serializeWrite.writeHiveDecimal(colVector.vector[batchIndex].getHiveDecimal(), colVector.scale);
+          serializeWrite.writeHiveDecimal(colVector.vector[batchIndex], colVector.scale);
           return true;
         } else {
           serializeWrite.writeNull();

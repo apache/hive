@@ -19,6 +19,8 @@
 package org.apache.hadoop.hive.ql.util;
 
 import org.apache.hadoop.hive.common.type.HiveDecimal;
+import org.apache.hadoop.hive.common.type.HiveDecimalV1;
+import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
@@ -68,9 +70,86 @@ public class TimestampUtils {
     }
   }
 
-  public static Timestamp decimalToTimestamp(HiveDecimal d) {
+  /**
+   * Take a HiveDecimal and return the timestamp representation where the fraction part is the
+   * nanoseconds and integer part is the number of seconds.
+   * @param dec
+   * @return
+   */
+  public static Timestamp decimalToTimestamp(HiveDecimal dec) {
+
+    HiveDecimalWritable nanosWritable = new HiveDecimalWritable(dec);
+    nanosWritable.mutateFractionPortion();               // Clip off seconds portion.
+    nanosWritable.mutateScaleByPowerOfTen(9);            // Bring nanoseconds into integer portion.
+    if (!nanosWritable.isSet() || !nanosWritable.isInt()) {
+      return null;
+    }
+    int nanos = nanosWritable.intValue();
+    if (nanos < 0) {
+      nanos += 1000000000;
+    }
+    nanosWritable.setFromLong(nanos);
+
+    HiveDecimalWritable nanoInstant = new HiveDecimalWritable(dec);
+    nanoInstant.mutateScaleByPowerOfTen(9);
+
+    nanoInstant.mutateSubtract(nanosWritable);
+    nanoInstant.mutateScaleByPowerOfTen(-9);              // Back to seconds.
+    if (!nanoInstant.isSet() || !nanoInstant.isLong()) {
+      return null;
+    }
+    long seconds = nanoInstant.longValue();
+    Timestamp t = new Timestamp(seconds * 1000);
+    t.setNanos(nanos);
+    return t;
+  }
+
+  /**
+   * Take a HiveDecimalWritable and return the timestamp representation where the fraction part
+   * is the nanoseconds and integer part is the number of seconds.
+   *
+   * This is a HiveDecimalWritable variation with supplied scratch objects.
+   * @param decdecWritable
+   * @param scratchDecWritable1
+   * @param scratchDecWritable2
+   * @return
+   */
+  public static Timestamp decimalToTimestamp(
+      HiveDecimalWritable decWritable,
+      HiveDecimalWritable scratchDecWritable1, HiveDecimalWritable scratchDecWritable2) {
+
+    HiveDecimalWritable nanosWritable = scratchDecWritable1;
+    nanosWritable.set(decWritable);
+    nanosWritable.mutateFractionPortion();               // Clip off seconds portion.
+    nanosWritable.mutateScaleByPowerOfTen(9);            // Bring nanoseconds into integer portion.
+    if (!nanosWritable.isSet() || !nanosWritable.isInt()) {
+      return null;
+    }
+    int nanos = nanosWritable.intValue();
+    if (nanos < 0) {
+      nanos += 1000000000;
+    }
+    nanosWritable.setFromLong(nanos);
+
+    HiveDecimalWritable nanoInstant = scratchDecWritable2;
+    nanoInstant.set(decWritable);
+    nanoInstant.mutateScaleByPowerOfTen(9);
+
+    nanoInstant.mutateSubtract(nanosWritable);
+    nanoInstant.mutateScaleByPowerOfTen(-9);              // Back to seconds.
+    if (!nanoInstant.isSet() || !nanoInstant.isLong()) {
+      return null;
+    }
+    long seconds = nanoInstant.longValue();
+
+    Timestamp timestamp = new Timestamp(seconds * 1000L);
+    timestamp.setNanos(nanos);
+    return timestamp;
+  }
+
+  public static Timestamp decimalToTimestamp(HiveDecimalV1 dec) {
     try {
-      BigDecimal nanoInstant = d.bigDecimalValue().multiply(BILLION_BIG_DECIMAL);
+      BigDecimal nanoInstant = dec.bigDecimalValue().multiply(BILLION_BIG_DECIMAL);
       int nanos = nanoInstant.remainder(BILLION_BIG_DECIMAL).intValue();
       if (nanos < 0) {
         nanos += 1000000000;

@@ -138,7 +138,8 @@ public class GenericUDFAbs extends GenericUDF {
       HiveDecimalWritable val = decimalOI.getPrimitiveWritableObject(valObject);
 
       if (val != null) {
-        resultDecimal.set(val.getHiveDecimal().abs());
+        resultDecimal.set(val);
+        resultDecimal.mutateAbs();
         val = resultDecimal;
       }
       return val;

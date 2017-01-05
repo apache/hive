@@ -613,13 +613,53 @@ public class ConvertTreeReaderFactory extends TreeReaderFactory {
 
     @Override
     public void setConvertVectorElement(int elementNum) throws IOException {
-      HiveDecimal decimalValue = decimalColVector.vector[elementNum].getHiveDecimal();
-      if (decimalValue.compareTo(DECIMAL_MAX_LONG) > 0 ||
-          decimalValue.compareTo(DECIMAL_MIN_LONG) < 0) {
+      HiveDecimalWritable decWritable = decimalColVector.vector[elementNum];
+      long[] vector = longColVector.vector;
+      Category readerCategory = readerType.getCategory();
+
+      // Check to see if the decimal will fit in the Hive integer data type.
+      // If not, set the element to null.
+      boolean isInRange;
+      switch (readerCategory) {
+      case BOOLEAN:
+        // No data loss for boolean.
+        vector[elementNum] = decWritable.signum() == 0 ? 0 : 1;
+        return;
+      case BYTE:
+        isInRange = decWritable.isByte();
+        break;
+      case SHORT:
+        isInRange = decWritable.isShort();
+        break;
+      case INT:
+        isInRange = decWritable.isInt();
+        break;
+      case LONG:
+        isInRange = decWritable.isLong();
+        break;
+      default:
+        throw new RuntimeException("Unexpected type kind " + readerCategory.name());
+      }
+      if (!isInRange) {
         longColVector.isNull[elementNum] = true;
         longColVector.noNulls = false;
-      } else {
-        downCastAnyInteger(longColVector, elementNum, decimalValue.longValue(), readerType);
+        return;
+      }
+      switch (readerCategory) {
+      case BYTE:
+        vector[elementNum] = decWritable.byteValue();
+        break;
+      case SHORT:
+        vector[elementNum] = decWritable.shortValue();
+        break;
+      case INT:
+        vector[elementNum] = decWritable.intValue();
+        break;
+      case LONG:
+        vector[elementNum] = decWritable.longValue();
+        break;
+      default:
+        throw new RuntimeException("Unexpected type kind " + readerCategory.name());
       }
     }
 
@@ -827,7 +867,7 @@ public class ConvertTreeReaderFactory extends TreeReaderFactory {
     @Override
     public void setConvertVectorElement(int elementNum) throws IOException {
       doubleColVector.vector[elementNum] =
-          (float) decimalColVector.vector[elementNum].getHiveDecimal().doubleValue();
+          (float) decimalColVector.vector[elementNum].doubleValue();
     }
 
     @Override
@@ -1033,7 +1073,7 @@ public class ConvertTreeReaderFactory extends TreeReaderFactory {
     @Override
     public void setConvertVectorElement(int elementNum) throws IOException {
       doubleColVector.vector[elementNum] =
-          decimalColVector.vector[elementNum].getHiveDecimal().doubleValue();
+          decimalColVector.vector[elementNum].doubleValue();
     }
 
     @Override
@@ -1370,14 +1410,8 @@ public class ConvertTreeReaderFactory extends TreeReaderFactory {
     @Override
     public void setConvertVectorElement(int elementNum) throws IOException {
 
-      HiveDecimalWritable valueWritable = HiveDecimalWritable.enforcePrecisionScale(
-          fileDecimalColVector.vector[elementNum], readerPrecision, readerScale);
-      if (valueWritable != null) {
-        decimalColVector.set(elementNum, valueWritable);
-      } else {
-        decimalColVector.noNulls = false;
-        decimalColVector.isNull[elementNum] = true;
-      }
+      decimalColVector.set(elementNum, fileDecimalColVector.vector[elementNum]);
+
     }
 
     @Override
@@ -1539,6 +1573,7 @@ public class ConvertTreeReaderFactory extends TreeReaderFactory {
     private final TypeDescription readerType;
     private DecimalColumnVector decimalColVector;
     private BytesColumnVector bytesColVector;
+    private byte[] scratchBuffer;
 
     StringGroupFromDecimalTreeReader(int columnId, TypeDescription fileType,
         TypeDescription readerType, boolean skipCorrupt) throws IOException {
@@ -1548,13 +1583,19 @@ public class ConvertTreeReaderFactory extends TreeReaderFactory {
       this.readerType = readerType;
       decimalTreeReader = new DecimalTreeReader(columnId, precision, scale);
       setConvertTreeReader(decimalTreeReader);
+      scratchBuffer = new byte[HiveDecimal.SCRATCH_BUFFER_LEN_TO_BYTES];
     }
 
     @Override
     public void setConvertVectorElement(int elementNum) {
-      String string = decimalColVector.vector[elementNum].getHiveDecimal().toString();
-      byte[] bytes = string.getBytes();
-      assignStringGroupVectorEntry(bytesColVector, elementNum, readerType, bytes);
+      HiveDecimalWritable decWritable = decimalColVector.vector[elementNum];
+
+      // Convert decimal into bytes instead of a String for better performance.
+      final int byteIndex = decWritable.toBytes(scratchBuffer);
+
+      assignStringGroupVectorEntry(
+          bytesColVector, elementNum, readerType,
+          scratchBuffer, byteIndex, HiveDecimal.SCRATCH_BUFFER_LEN_TO_BYTES - byteIndex);
     }
 
     @Override

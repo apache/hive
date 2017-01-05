@@ -24,6 +24,7 @@ import java.sql.Timestamp;
 
 import org.apache.hadoop.hive.common.type.HiveChar;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
+import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.common.type.HiveIntervalDayTime;
 import org.apache.hadoop.hive.common.type.HiveIntervalYearMonth;
 import org.apache.hadoop.hive.common.type.HiveVarchar;
@@ -147,6 +148,10 @@ public interface SerializeWrite {
 
   /*
    * DECIMAL.
+   *
+   * NOTE: The scale parameter is for text serialization (e.g. HiveDecimal.toFormatString) that
+   * creates trailing zeroes output decimals.
    */
   void writeHiveDecimal(HiveDecimal dec, int scale) throws IOException;
+  void writeHiveDecimal(HiveDecimalWritable decWritable, int scale) throws IOException;
 }

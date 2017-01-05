@@ -23,6 +23,7 @@ import java.sql.Timestamp;
 import org.apache.hadoop.hive.ql.exec.vector.DecimalColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.TimestampColumnVector;
 import org.apache.hadoop.hive.ql.util.TimestampUtils;
+import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 
 /**
  * Type cast decimal to timestamp. The decimal value is interpreted
@@ -32,8 +33,13 @@ import org.apache.hadoop.hive.ql.util.TimestampUtils;
 public class CastDecimalToTimestamp extends FuncDecimalToTimestamp {
   private static final long serialVersionUID = 1L;
 
+  private HiveDecimalWritable scratchHiveDecimalWritable1;
+  private HiveDecimalWritable scratchHiveDecimalWritable2;
+
   public CastDecimalToTimestamp(int inputColumn, int outputColumn) {
     super(inputColumn, outputColumn);
+    scratchHiveDecimalWritable1 = new HiveDecimalWritable();
+    scratchHiveDecimalWritable2 = new HiveDecimalWritable();
   }
 
   public CastDecimalToTimestamp() {
@@ -41,7 +47,10 @@ public class CastDecimalToTimestamp extends FuncDecimalToTimestamp {
 
   @Override
   protected void func(TimestampColumnVector outV, DecimalColumnVector inV,  int i) {
-    Timestamp timestamp = TimestampUtils.decimalToTimestamp(inV.vector[i].getHiveDecimal());
+    Timestamp timestamp =
+        TimestampUtils.decimalToTimestamp(
+            inV.vector[i],
+            scratchHiveDecimalWritable1, scratchHiveDecimalWritable2);
     outV.set(i, timestamp);
   }
 }

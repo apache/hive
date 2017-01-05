@@ -24,7 +24,6 @@ import java.util.Arrays;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.serde2.fast.DeserializeRead;
 import org.apache.hadoop.hive.serde2.io.TimestampWritable;
 import org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe;
@@ -308,16 +307,16 @@ public final class LazyBinaryDeserializeRead extends DeserializeRead {
             throw new EOFException();
           }
           LazyBinaryUtils.readVInt(bytes, offset, tempVInt);
-          int saveStart = offset;
           offset += tempVInt.length;
+          int readScale = tempVInt.value;
 
           // Parse the first byte of a vint/vlong to determine the number of bytes.
           if (offset + WritableUtils.decodeVIntSize(bytes[offset]) > end) {
             throw new EOFException();
           }
           LazyBinaryUtils.readVInt(bytes, offset, tempVInt);
-          offset += tempVInt.length;
 
+          int saveStart = offset;
           offset += tempVInt.value;
           // Last item -- ok to be at end.
           if (offset > end) {
@@ -325,20 +324,24 @@ public final class LazyBinaryDeserializeRead extends DeserializeRead {
           }
           int length = offset - saveStart;
 
-          LazyBinarySerDe.setFromBytes(bytes, saveStart, length,
-              currentHiveDecimalWritable);
+          //   scale = 2, length = 6, value = -6065716379.11
+          //   \002\006\255\114\197\131\083\105
+          //           \255\114\197\131\083\105
 
-          DecimalTypeInfo decimalTypeInfo = (DecimalTypeInfo) typeInfos[fieldIndex];
+          currentHiveDecimalWritable.setFromBigIntegerBytesAndScale(
+              bytes, saveStart, length, readScale);
+          boolean decimalIsNull = !currentHiveDecimalWritable.isSet();
+          if (!decimalIsNull) {
 
-          int precision = decimalTypeInfo.getPrecision();
-          int scale = decimalTypeInfo.getScale();
+            DecimalTypeInfo decimalTypeInfo = (DecimalTypeInfo) typeInfos[fieldIndex];
 
-          HiveDecimal decimal = currentHiveDecimalWritable.getHiveDecimal(precision, scale);
-          if (decimal == null) {
+            int precision = decimalTypeInfo.getPrecision();
+            int scale = decimalTypeInfo.getScale();
+
+            decimalIsNull = !currentHiveDecimalWritable.mutateEnforcePrecisionScale(precision, scale);
+          }
+          if (decimalIsNull) {
             isNull = true;
-          } else {
-            // Put value back into writable.
-            currentHiveDecimalWritable.set(decimal);
           }
         }
         break;

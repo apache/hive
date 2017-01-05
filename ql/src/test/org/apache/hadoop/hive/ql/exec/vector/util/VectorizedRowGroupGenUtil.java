@@ -151,7 +151,7 @@ public class VectorizedRowGroupGenUtil {
 
     HiveDecimalWritable repeatingValue = new HiveDecimalWritable();
     do{
-      repeatingValue.set(HiveDecimal.create(((Double) rand.nextDouble()).toString()).setScale((short)typeInfo.scale()));
+      repeatingValue.set(HiveDecimal.create(((Double) rand.nextDouble()).toString()).setScale((short)typeInfo.scale(), HiveDecimal.ROUND_HALF_UP));
     }while(repeatingValue.getHiveDecimal().doubleValue() == 0);
 
     int nullFrequency = generateNullFrequency(rand);
@@ -159,14 +159,14 @@ public class VectorizedRowGroupGenUtil {
     for(int i = 0; i < size; i++) {
       if(nulls && (repeating || i % nullFrequency == 0)) {
         dcv.isNull[i] = true;
-        dcv.vector[i] = null;//Decimal128.ONE;
+        dcv.vector[i] = null;
 
       }else {
         dcv.isNull[i] = false;
         if (repeating) {
           dcv.vector[i].set(repeatingValue);
         } else {
-          dcv.vector[i].set(HiveDecimal.create(((Double) rand.nextDouble()).toString()).setScale((short) typeInfo.scale()));
+          dcv.vector[i].set(HiveDecimal.create(((Double) rand.nextDouble()).toString()).setScale((short) typeInfo.scale(), HiveDecimal.ROUND_HALF_UP));
         }
 
         if(dcv.vector[i].getHiveDecimal().doubleValue() == 0) {

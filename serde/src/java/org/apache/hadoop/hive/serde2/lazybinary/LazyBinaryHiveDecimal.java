@@ -44,9 +44,7 @@ public class LazyBinaryHiveDecimal extends
 
   @Override
   public void init(ByteArrayRef bytes, int start, int length) {
-    LazyBinarySerDe.setFromBytes(bytes.getData(), start, length, data);
-    HiveDecimal dec = data.getHiveDecimal(precision, scale);
-    data = dec == null ? null : new HiveDecimalWritable(dec);
+    LazyBinarySerDe.setFromBigIntegerBytesAndScale(bytes.getData(), start, length, data);
+    data.mutateEnforcePrecisionScale(precision, scale);
   }
-
 }

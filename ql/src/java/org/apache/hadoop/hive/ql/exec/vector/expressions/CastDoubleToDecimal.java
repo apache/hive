@@ -18,9 +18,9 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
-import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.ql.exec.vector.DecimalColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.DoubleColumnVector;
+import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 
 /**
  * Cast input double to a decimal. Get target value scale from output column vector.
@@ -39,7 +39,11 @@ public class CastDoubleToDecimal extends FuncDoubleToDecimal {
 
   @Override
   protected void func(DecimalColumnVector outV, DoubleColumnVector inV, int i) {
-    String s = ((Double) inV.vector[i]).toString();
-    outV.vector[i].set(HiveDecimal.create(s));
+    HiveDecimalWritable decWritable = outV.vector[i];
+    decWritable.setFromDouble(inV.vector[i]);
+    if (!decWritable.isSet()) {
+      outV.isNull[i] = true;
+      outV.noNulls = false;
+    }
   }
 }

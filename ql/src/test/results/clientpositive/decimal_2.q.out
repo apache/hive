@@ -129,7 +129,7 @@ POSTHOOK: query: select cast(t as tinyint) from decimal_2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_2
 #### A masked pattern was here ####
-13
+NULL
 PREHOOK: query: select cast(t as smallint) from decimal_2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@decimal_2
@@ -138,7 +138,7 @@ POSTHOOK: query: select cast(t as smallint) from decimal_2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_2
 #### A masked pattern was here ####
--3827
+NULL
 PREHOOK: query: select cast(t as int) from decimal_2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@decimal_2
