@@ -59,6 +59,7 @@ import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException;
 import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException.UnsupportedFeature;
+import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSubquerySemanticException;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveExtractDate;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFloorDate;
 import org.apache.hadoop.hive.ql.parse.ParseUtils;
@@ -177,13 +178,13 @@ public class RexNodeConverter {
   }
 
   private RexNode convert(final ExprNodeSubQueryDesc subQueryDesc) throws  SemanticException {
-    if(subQueryDesc.getType() == ExprNodeSubQueryDesc.SubqueryType.IN) {
+    if(subQueryDesc.getType() == ExprNodeSubQueryDesc.SubqueryType.IN ) {
      /*
       * Check.5.h :: For In and Not In the SubQuery must implicitly or
       * explicitly only contain one select item.
       */
       if(subQueryDesc.getRexSubQuery().getRowType().getFieldCount() > 1) {
-        throw new SemanticException(ErrorMsg.INVALID_SUBQUERY_EXPRESSION.getMsg(
+        throw new CalciteSubquerySemanticException(ErrorMsg.INVALID_SUBQUERY_EXPRESSION.getMsg(
                 "SubQuery can contain only 1 item in Select List."));
       }
       //create RexNode for LHS
@@ -198,9 +199,19 @@ public class RexNodeConverter {
       RexNode subQueryNode = RexSubQuery.exists(subQueryDesc.getRexSubQuery());
       return subQueryNode;
     }
+    else if( subQueryDesc.getType() == ExprNodeSubQueryDesc.SubqueryType.SCALAR){
+      if(subQueryDesc.getRexSubQuery().getRowType().getFieldCount() > 1) {
+        throw new CalciteSubquerySemanticException(ErrorMsg.INVALID_SUBQUERY_EXPRESSION.getMsg(
+                "SubQuery can contain only 1 item in Select List."));
+      }
+      //create RexSubQuery node
+      RexNode rexSubQuery = RexSubQuery.scalar(subQueryDesc.getRexSubQuery());
+      return rexSubQuery;
+    }
+
     else {
-      throw new SemanticException(ErrorMsg.INVALID_SUBQUERY_EXPRESSION.getMsg(
-              "Currently only IN and EXISTS type of subqueries are supported"));
+      throw new CalciteSubquerySemanticException(ErrorMsg.INVALID_SUBQUERY_EXPRESSION.getMsg(
+              "Invalid subquery: " + subQueryDesc.getType()));
     }
   }
 

@@ -397,6 +397,8 @@ atomExpression
     | floorExpression
     | caseExpression
     | whenExpression
+    | (LPAREN KW_SELECT)=> (subQueryExpression)
+        -> ^(TOK_SUBQUERY_EXPR TOK_SUBQUERY_OP subQueryExpression)
     | (function) => function
     | tableOrColumn
     | LPAREN! expression RPAREN!

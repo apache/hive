@@ -1,0 +1,1 @@
+FAILED: SemanticException [Error 10250]: org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSubquerySemanticException: Line 1:68 Invalid SubQuery expression 'p_type': A predicate on EXISTS/NOT EXISTS/IN/NOT IN SubQuery with implicit Aggregation(no Group By clause) cannot be rewritten.

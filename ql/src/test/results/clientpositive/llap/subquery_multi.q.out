@@ -276,7 +276,7 @@ STAGE PLANS:
       Edges:
         Reducer 10 <- Map 9 (SIMPLE_EDGE)
         Reducer 2 <- Map 1 (SIMPLE_EDGE), Reducer 6 (SIMPLE_EDGE)
-        Reducer 3 <- Reducer 2 (SIMPLE_EDGE), Reducer 8 (SIMPLE_EDGE)
+        Reducer 3 <- Reducer 2 (XPROD_EDGE), Reducer 8 (XPROD_EDGE)
         Reducer 4 <- Reducer 10 (SIMPLE_EDGE), Reducer 3 (SIMPLE_EDGE)
         Reducer 6 <- Map 5 (SIMPLE_EDGE)
         Reducer 8 <- Map 7 (SIMPLE_EDGE)
@@ -487,7 +487,7 @@ STAGE PLANS:
       Edges:
         Reducer 10 <- Map 9 (SIMPLE_EDGE)
         Reducer 2 <- Map 1 (SIMPLE_EDGE), Reducer 6 (SIMPLE_EDGE)
-        Reducer 3 <- Reducer 2 (SIMPLE_EDGE), Reducer 8 (SIMPLE_EDGE)
+        Reducer 3 <- Reducer 2 (XPROD_EDGE), Reducer 8 (XPROD_EDGE)
         Reducer 4 <- Reducer 10 (SIMPLE_EDGE), Reducer 3 (SIMPLE_EDGE)
         Reducer 6 <- Map 5 (SIMPLE_EDGE)
         Reducer 8 <- Map 7 (SIMPLE_EDGE)
@@ -724,7 +724,7 @@ STAGE PLANS:
       Edges:
         Reducer 10 <- Map 9 (SIMPLE_EDGE)
         Reducer 2 <- Map 1 (SIMPLE_EDGE), Reducer 6 (SIMPLE_EDGE)
-        Reducer 3 <- Reducer 2 (SIMPLE_EDGE), Reducer 8 (SIMPLE_EDGE)
+        Reducer 3 <- Reducer 2 (XPROD_EDGE), Reducer 8 (XPROD_EDGE)
         Reducer 4 <- Reducer 10 (SIMPLE_EDGE), Reducer 3 (SIMPLE_EDGE)
         Reducer 6 <- Map 5 (SIMPLE_EDGE)
         Reducer 8 <- Map 7 (SIMPLE_EDGE)
@@ -936,7 +936,7 @@ STAGE PLANS:
 #### A masked pattern was here ####
       Edges:
         Reducer 10 <- Map 9 (SIMPLE_EDGE)
-        Reducer 2 <- Map 1 (SIMPLE_EDGE), Reducer 6 (SIMPLE_EDGE)
+        Reducer 2 <- Map 1 (XPROD_EDGE), Reducer 6 (XPROD_EDGE)
         Reducer 3 <- Reducer 2 (SIMPLE_EDGE), Reducer 8 (SIMPLE_EDGE)
         Reducer 4 <- Reducer 10 (SIMPLE_EDGE), Reducer 3 (SIMPLE_EDGE)
         Reducer 6 <- Map 5 (SIMPLE_EDGE)
@@ -1176,7 +1176,7 @@ STAGE PLANS:
 #### A masked pattern was here ####
       Edges:
         Reducer 2 <- Map 1 (SIMPLE_EDGE), Reducer 5 (SIMPLE_EDGE)
-        Reducer 3 <- Reducer 2 (SIMPLE_EDGE), Reducer 7 (SIMPLE_EDGE)
+        Reducer 3 <- Reducer 2 (XPROD_EDGE), Reducer 7 (XPROD_EDGE)
         Reducer 5 <- Map 4 (SIMPLE_EDGE)
         Reducer 7 <- Map 6 (SIMPLE_EDGE)
 #### A masked pattern was here ####
@@ -1352,7 +1352,7 @@ STAGE PLANS:
 #### A masked pattern was here ####
       Edges:
         Reducer 2 <- Map 1 (SIMPLE_EDGE), Reducer 5 (SIMPLE_EDGE)
-        Reducer 3 <- Reducer 2 (SIMPLE_EDGE), Reducer 7 (SIMPLE_EDGE)
+        Reducer 3 <- Reducer 2 (XPROD_EDGE), Reducer 7 (XPROD_EDGE)
         Reducer 5 <- Map 4 (SIMPLE_EDGE)
         Reducer 7 <- Map 6 (SIMPLE_EDGE)
 #### A masked pattern was here ####
@@ -1691,11 +1691,11 @@ STAGE PLANS:
         Reducer 13 <- Reducer 12 (SIMPLE_EDGE)
         Reducer 15 <- Map 14 (SIMPLE_EDGE), Reducer 19 (SIMPLE_EDGE)
         Reducer 16 <- Reducer 15 (SIMPLE_EDGE)
-        Reducer 18 <- Map 17 (SIMPLE_EDGE), Reducer 21 (SIMPLE_EDGE)
+        Reducer 18 <- Map 17 (XPROD_EDGE), Reducer 21 (XPROD_EDGE)
         Reducer 19 <- Reducer 18 (SIMPLE_EDGE)
         Reducer 2 <- Map 1 (SIMPLE_EDGE), Reducer 7 (SIMPLE_EDGE)
         Reducer 21 <- Map 20 (SIMPLE_EDGE)
-        Reducer 23 <- Map 22 (SIMPLE_EDGE), Reducer 26 (SIMPLE_EDGE)
+        Reducer 23 <- Map 22 (XPROD_EDGE), Reducer 26 (XPROD_EDGE)
         Reducer 24 <- Reducer 23 (SIMPLE_EDGE)
         Reducer 26 <- Map 25 (SIMPLE_EDGE)
         Reducer 28 <- Map 27 (SIMPLE_EDGE), Reducer 34 (SIMPLE_EDGE)
@@ -2780,11 +2780,11 @@ STAGE PLANS:
         Reducer 13 <- Reducer 12 (SIMPLE_EDGE)
         Reducer 15 <- Map 14 (SIMPLE_EDGE), Reducer 19 (SIMPLE_EDGE)
         Reducer 16 <- Reducer 15 (SIMPLE_EDGE)
-        Reducer 18 <- Map 17 (SIMPLE_EDGE), Reducer 21 (SIMPLE_EDGE)
+        Reducer 18 <- Map 17 (XPROD_EDGE), Reducer 21 (XPROD_EDGE)
         Reducer 19 <- Reducer 18 (SIMPLE_EDGE)
         Reducer 2 <- Map 1 (SIMPLE_EDGE), Reducer 7 (SIMPLE_EDGE)
         Reducer 21 <- Map 20 (SIMPLE_EDGE)
-        Reducer 23 <- Map 22 (SIMPLE_EDGE), Reducer 26 (SIMPLE_EDGE)
+        Reducer 23 <- Map 22 (XPROD_EDGE), Reducer 26 (XPROD_EDGE)
         Reducer 24 <- Reducer 23 (SIMPLE_EDGE)
         Reducer 26 <- Map 25 (SIMPLE_EDGE)
         Reducer 28 <- Map 27 (SIMPLE_EDGE), Reducer 34 (SIMPLE_EDGE)
@@ -4331,7 +4331,7 @@ STAGE PLANS:
         Reducer 3 <- Map 5 (SIMPLE_EDGE), Reducer 2 (SIMPLE_EDGE)
         Reducer 4 <- Reducer 10 (SIMPLE_EDGE), Reducer 3 (SIMPLE_EDGE)
         Reducer 7 <- Map 6 (SIMPLE_EDGE), Reducer 14 (SIMPLE_EDGE)
-        Reducer 8 <- Reducer 17 (SIMPLE_EDGE), Reducer 7 (SIMPLE_EDGE)
+        Reducer 8 <- Reducer 17 (XPROD_EDGE), Reducer 7 (XPROD_EDGE)
         Reducer 9 <- Reducer 20 (SIMPLE_EDGE), Reducer 8 (SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
@@ -4818,23 +4818,16 @@ STAGE PLANS:
                 TableScan
                   alias: s1
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-                  Filter Operator
-                    predicate: (key > '9') (type: boolean)
-                    Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
-                    Select Operator
-                      expressions: value (type: string)
-                      outputColumnNames: value
-                      Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
-                      Group By Operator
-                        keys: value (type: string)
-                        mode: hash
-                        outputColumnNames: _col0
-                        Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
-                        Reduce Output Operator
-                          key expressions: _col0 (type: string)
-                          sort order: +
-                          Map-reduce partition columns: _col0 (type: string)
-                          Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+                  Group By Operator
+                    keys: value (type: string)
+                    mode: hash
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: _col0 (type: string)
+                      sort order: +
+                      Map-reduce partition columns: _col0 (type: string)
+                      Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Execution mode: llap
             LLAP IO: no inputs
         Map 5 
@@ -4974,12 +4967,12 @@ STAGE PLANS:
                 keys: KEY._col0 (type: string)
                 mode: mergepartial
                 outputColumnNames: _col0
-                Statistics: Num rows: 83 Data size: 881 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col0 (type: string)
                   sort order: +
                   Map-reduce partition columns: _col0 (type: string)
-                  Statistics: Num rows: 83 Data size: 881 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
         Reducer 2 
             Execution mode: llap
             Reduce Operator Tree:
@@ -5425,7 +5418,7 @@ STAGE PLANS:
 #### A masked pattern was here ####
       Edges:
         Reducer 2 <- Map 1 (SIMPLE_EDGE), Reducer 5 (SIMPLE_EDGE)
-        Reducer 4 <- Map 3 (SIMPLE_EDGE), Reducer 7 (SIMPLE_EDGE)
+        Reducer 4 <- Map 3 (XPROD_EDGE), Reducer 7 (XPROD_EDGE)
         Reducer 5 <- Reducer 4 (SIMPLE_EDGE)
         Reducer 7 <- Map 6 (SIMPLE_EDGE)
 #### A masked pattern was here ####

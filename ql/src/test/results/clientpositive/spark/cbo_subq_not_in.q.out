@@ -227,6 +227,7 @@ almond aquamarine sandy cyan gainsboro	18
 almond aquamarine yellow dodger mint	7
 almond azure aquamarine papaya violet	12
 almond azure blanched chiffon midnight	23
+<<<<<<< HEAD
 PREHOOK: query: -- agg, corr
 select p_mfgr, p_name, p_size 
 from part b where b.p_size not in 
@@ -269,6 +270,9 @@ Manufacturer#4	almond azure aquamarine papaya violet	12
 Manufacturer#5	almond azure blanched chiffon midnight	23
 PREHOOK: query: -- non agg, non corr, Group By in Parent Query
 select li.l_partkey, count(*) 
+=======
+PREHOOK: query: select li.l_partkey, count(*) 
+>>>>>>> d9343f6... HIVE-15544 : Support scalar subqueries (Vineet Garg via Ashutosh Chauhan)
 from lineitem li 
 where li.l_linenumber = 1 and 
   li.l_orderkey not in (select l_orderkey from lineitem where l_shipmode = 'AIR') 
