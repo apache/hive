@@ -1,0 +1,101 @@
+PREHOOK: query: create table test_table(d date)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test_table
+POSTHOOK: query: create table test_table(d date)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test_table
+PREHOOK: query: insert into test_table values(null), (null), (null)
+PREHOOK: type: QUERY
+PREHOOK: Output: default@test_table
+POSTHOOK: query: insert into test_table values(null), (null), (null)
+POSTHOOK: type: QUERY
+POSTHOOK: Output: default@test_table
+POSTHOOK: Lineage: test_table.d EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+PREHOOK: query: analyze table test_table compute statistics for columns
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_table
+#### A masked pattern was here ####
+POSTHOOK: query: analyze table test_table compute statistics for columns
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_table
+#### A masked pattern was here ####
+PREHOOK: query: describe formatted test_table
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@test_table
+POSTHOOK: query: describe formatted test_table
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@test_table
+# col_name            	data_type           	comment             
+	 	 
+d                   	date                	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"d\":\"true\"}}
+	numFiles            	1                   
+	numRows             	3                   
+	rawDataSize         	6                   
+	totalSize           	9                   
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: explain select * from test_table where d is not null
+PREHOOK: type: QUERY
+POSTHOOK: query: explain select * from test_table where d is not null
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: test_table
+            Statistics: Num rows: 3 Data size: 6 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: d is not null (type: boolean)
+              Statistics: Num rows: 3 Data size: 6 Basic stats: COMPLETE Column stats: NONE
+              Select Operator
+                expressions: d (type: date)
+                outputColumnNames: _col0
+                Statistics: Num rows: 3 Data size: 6 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 3 Data size: 6 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select * from test_table where d is not null
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_table
+#### A masked pattern was here ####
+POSTHOOK: query: select * from test_table where d is not null
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_table
+#### A masked pattern was here ####
