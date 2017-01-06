@@ -26,8 +26,7 @@ import static org.apache.hadoop.hive.serde.serdeConstants.LINE_DELIM;
 import static org.apache.hadoop.hive.serde.serdeConstants.MAPKEY_DELIM;
 import static org.apache.hadoop.hive.serde.serdeConstants.SERIALIZATION_FORMAT;
 import static org.apache.hadoop.hive.serde.serdeConstants.STRING_TYPE_NAME;
-import java.io.ByteArrayOutputStream;
-import java.io.DataOutputStream;
+
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintStream;
@@ -127,11 +126,11 @@ import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.FunctionTask;
 import org.apache.hadoop.hive.ql.exec.FunctionUtils;
-import org.apache.hadoop.hive.ql.exec.InPlaceUpdates;
 import org.apache.hadoop.hive.ql.exec.SerializationUtilities;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.index.HiveIndexHandler;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
+import org.apache.hadoop.hive.common.log.InPlaceUpdate;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.optimizer.listbucketingpruner.ListBucketingPrunerUtils;
 import org.apache.hadoop.hive.ql.plan.AddPartitionDesc;
@@ -1898,7 +1897,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     final AtomicInteger partitionsLoaded = new AtomicInteger(0);
 
     final boolean inPlaceEligible = conf.getLong("fs.trash.interval", 0) <= 0
-        && InPlaceUpdates.inPlaceEligible(conf);
+        && InPlaceUpdate.canRenderInPlace(conf) && !SessionState.getConsole().getIsSilent();
     final PrintStream ps = (inPlaceEligible) ? SessionState.getConsole().getInfoStream() : null;
     final SessionState parentSession = SessionState.get();
 
@@ -1926,9 +1925,9 @@ private void constructOneLBLocationMap(FileStatus fSta,
 
               if (inPlaceEligible) {
                 synchronized (ps) {
-                  InPlaceUpdates.rePositionCursor(ps);
+                  InPlaceUpdate.rePositionCursor(ps);
                   partitionsLoaded.incrementAndGet();
-                  InPlaceUpdates.reprintLine(ps, "Loaded : " + partitionsLoaded.get() + "/"
+                  InPlaceUpdate.reprintLine(ps, "Loaded : " + partitionsLoaded.get() + "/"
                       + partsToLoad + " partitions.");
                 }
               }

@@ -75,7 +75,7 @@ public interface ICLIService {
       String catalogName, String schemaName, String functionName)
           throws HiveSQLException;
 
-  OperationStatus getOperationStatus(OperationHandle opHandle)
+  OperationStatus getOperationStatus(OperationHandle opHandle, boolean getProgressUpdate)
       throws HiveSQLException;
 
   void cancelOperation(OperationHandle opHandle)

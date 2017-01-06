@@ -367,9 +367,10 @@ public class ThriftCLIServiceClient extends CLIServiceClient {
    * @see org.apache.hive.service.cli.ICLIService#getOperationStatus(org.apache.hive.service.cli.OperationHandle)
    */
   @Override
-  public OperationStatus getOperationStatus(OperationHandle opHandle) throws HiveSQLException {
+  public OperationStatus getOperationStatus(OperationHandle opHandle, boolean getProgressUpdate) throws HiveSQLException {
     try {
       TGetOperationStatusReq req = new TGetOperationStatusReq(opHandle.toTOperationHandle());
+      req.setGetProgressUpdate(getProgressUpdate);
       TGetOperationStatusResp resp = cliService.GetOperationStatus(req);
       // Checks the status of the RPC call, throws an exception in case of error
       checkStatus(resp.getStatus());
