@@ -79,6 +79,7 @@ import org.apache.tez.dag.api.client.DAGStatus;
 import org.apache.tez.dag.api.client.StatusGetOpts;
 import org.apache.tez.dag.api.client.VertexStatus;
 import org.json.JSONObject;
+import org.apache.hadoop.hive.ql.exec.tez.monitoring.TezJobMonitor;
 
 /**
  *
@@ -178,8 +179,9 @@ public class TezTask extends Task<TezWork> {
             additionalLr, inputOutputJars, inputOutputLocalResources);
 
         // finally monitor will print progress until the job is done
-        TezJobMonitor monitor = new TezJobMonitor(work.getWorkMap());
-        rc = monitor.monitorExecution(dagClient, conf, dag, ctx);
+        TezJobMonitor monitor = new TezJobMonitor(work.getWorkMap(),dagClient, conf, dag, ctx);
+        rc = monitor.monitorExecution();
+
         if (rc != 0) {
           this.setException(new HiveException(monitor.getDiagnostics()));
         }

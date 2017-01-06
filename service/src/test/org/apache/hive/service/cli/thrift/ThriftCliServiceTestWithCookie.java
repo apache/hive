@@ -202,7 +202,7 @@ public class ThriftCliServiceTestWithCookie {
     OperationHandle opHandle = client.executeStatement(sessHandle, queryString, opConf);
     assertNotNull(opHandle);
 
-    OperationStatus opStatus = client.getOperationStatus(opHandle);
+    OperationStatus opStatus = client.getOperationStatus(opHandle, false);
     assertNotNull(opStatus);
 
     OperationState state = opStatus.getState();

@@ -19,6 +19,7 @@
 package org.apache.hive.jdbc;
 
 import org.apache.commons.codec.binary.Base64;
+import org.apache.hive.jdbc.logs.InPlaceUpdateStream;
 import org.apache.hive.service.cli.RowSet;
 import org.apache.hive.service.cli.RowSetFactory;
 import org.apache.hive.service.rpc.thrift.TCLIService;
@@ -113,6 +114,8 @@ public class HiveStatement implements java.sql.Statement {
   private boolean isExecuteStatementFailed = false;
 
   private int queryTimeout = 0;
+
+  private InPlaceUpdateStream inPlaceUpdateStream = InPlaceUpdateStream.NO_OP;
 
   public HiveStatement(HiveConnection connection, TCLIService.Iface client,
       TSessionHandle sessHandle) {
@@ -342,6 +345,7 @@ public class HiveStatement implements java.sql.Statement {
 
   TGetOperationStatusResp waitForOperationToComplete() throws SQLException {
     TGetOperationStatusReq statusReq = new TGetOperationStatusReq(stmtHandle);
+    statusReq.setGetProgressUpdate(inPlaceUpdateStream != InPlaceUpdateStream.NO_OP);
     TGetOperationStatusResp statusResp = null;
 
     // Poll on the operation status, till the operation is complete
@@ -352,6 +356,7 @@ public class HiveStatement implements java.sql.Statement {
          * essentially return after the HIVE_SERVER2_LONG_POLLING_TIMEOUT (a server config) expires
          */
         statusResp = client.GetOperationStatus(statusReq);
+        inPlaceUpdateStream.update(statusResp.getProgressUpdateResponse());
         Utils.verifySuccessWithInfo(statusResp.getStatus());
         if (statusResp.isSetOperationState()) {
           switch (statusResp.getOperationState()) {
@@ -950,5 +955,13 @@ public class HiveStatement implements java.sql.Statement {
       return guid64;
     }
     return null;
+  }
+
+  /**
+   * This is only used by the beeline client to set the stream on which in place progress updates
+   * are to be shown
+   */
+  public void setInPlaceUpdateStream(InPlaceUpdateStream stream) {
+    this.inPlaceUpdateStream = stream;
   }
 }
