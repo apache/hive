@@ -39,6 +39,7 @@ public class TGetOperationStatusReq implements org.apache.thrift.TBase<TGetOpera
   private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("TGetOperationStatusReq");
 
   private static final org.apache.thrift.protocol.TField OPERATION_HANDLE_FIELD_DESC = new org.apache.thrift.protocol.TField("operationHandle", org.apache.thrift.protocol.TType.STRUCT, (short)1);
+  private static final org.apache.thrift.protocol.TField GET_PROGRESS_UPDATE_FIELD_DESC = new org.apache.thrift.protocol.TField("getProgressUpdate", org.apache.thrift.protocol.TType.BOOL, (short)2);
 
   private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
   static {
@@ -47,10 +48,12 @@ public class TGetOperationStatusReq implements org.apache.thrift.TBase<TGetOpera
   }
 
   private TOperationHandle operationHandle; // required
+  private boolean getProgressUpdate; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
-    OPERATION_HANDLE((short)1, "operationHandle");
+    OPERATION_HANDLE((short)1, "operationHandle"),
+    GET_PROGRESS_UPDATE((short)2, "getProgressUpdate");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -67,6 +70,8 @@ public class TGetOperationStatusReq implements org.apache.thrift.TBase<TGetOpera
       switch(fieldId) {
         case 1: // OPERATION_HANDLE
           return OPERATION_HANDLE;
+        case 2: // GET_PROGRESS_UPDATE
+          return GET_PROGRESS_UPDATE;
         default:
           return null;
       }
@@ -107,11 +112,16 @@ public class TGetOperationStatusReq implements org.apache.thrift.TBase<TGetOpera
   }
 
   // isset id assignments
+  private static final int __GETPROGRESSUPDATE_ISSET_ID = 0;
+  private byte __isset_bitfield = 0;
+  private static final _Fields optionals[] = {_Fields.GET_PROGRESS_UPDATE};
   public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
     tmpMap.put(_Fields.OPERATION_HANDLE, new org.apache.thrift.meta_data.FieldMetaData("operationHandle", org.apache.thrift.TFieldRequirementType.REQUIRED, 
         new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, TOperationHandle.class)));
+    tmpMap.put(_Fields.GET_PROGRESS_UPDATE, new org.apache.thrift.meta_data.FieldMetaData("getProgressUpdate", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(TGetOperationStatusReq.class, metaDataMap);
   }
@@ -130,9 +140,11 @@ public class TGetOperationStatusReq implements org.apache.thrift.TBase<TGetOpera
    * Performs a deep copy on <i>other</i>.
    */
   public TGetOperationStatusReq(TGetOperationStatusReq other) {
+    __isset_bitfield = other.__isset_bitfield;
     if (other.isSetOperationHandle()) {
       this.operationHandle = new TOperationHandle(other.operationHandle);
     }
+    this.getProgressUpdate = other.getProgressUpdate;
   }
 
   public TGetOperationStatusReq deepCopy() {
@@ -142,6 +154,8 @@ public class TGetOperationStatusReq implements org.apache.thrift.TBase<TGetOpera
   @Override
   public void clear() {
     this.operationHandle = null;
+    setGetProgressUpdateIsSet(false);
+    this.getProgressUpdate = false;
   }
 
   public TOperationHandle getOperationHandle() {
@@ -167,6 +181,28 @@ public class TGetOperationStatusReq implements org.apache.thrift.TBase<TGetOpera
     }
   }
 
+  public boolean isGetProgressUpdate() {
+    return this.getProgressUpdate;
+  }
+
+  public void setGetProgressUpdate(boolean getProgressUpdate) {
+    this.getProgressUpdate = getProgressUpdate;
+    setGetProgressUpdateIsSet(true);
+  }
+
+  public void unsetGetProgressUpdate() {
+    __isset_bitfield = EncodingUtils.clearBit(__isset_bitfield, __GETPROGRESSUPDATE_ISSET_ID);
+  }
+
+  /** Returns true if field getProgressUpdate is set (has been assigned a value) and false otherwise */
+  public boolean isSetGetProgressUpdate() {
+    return EncodingUtils.testBit(__isset_bitfield, __GETPROGRESSUPDATE_ISSET_ID);
+  }
+
+  public void setGetProgressUpdateIsSet(boolean value) {
+    __isset_bitfield = EncodingUtils.setBit(__isset_bitfield, __GETPROGRESSUPDATE_ISSET_ID, value);
+  }
+
   public void setFieldValue(_Fields field, Object value) {
     switch (field) {
     case OPERATION_HANDLE:
@@ -177,6 +213,14 @@ public class TGetOperationStatusReq implements org.apache.thrift.TBase<TGetOpera
       }
       break;
 
+    case GET_PROGRESS_UPDATE:
+      if (value == null) {
+        unsetGetProgressUpdate();
+      } else {
+        setGetProgressUpdate((Boolean)value);
+      }
+      break;
+
     }
   }
 
@@ -184,6 +228,9 @@ public class TGetOperationStatusReq implements org.apache.thrift.TBase<TGetOpera
     switch (field) {
     case OPERATION_HANDLE:
       return getOperationHandle();
+
+    case GET_PROGRESS_UPDATE:
+      return isGetProgressUpdate();
 
     }
     throw new IllegalStateException();
@@ -198,6 +245,8 @@ public class TGetOperationStatusReq implements org.apache.thrift.TBase<TGetOpera
     switch (field) {
     case OPERATION_HANDLE:
       return isSetOperationHandle();
+    case GET_PROGRESS_UPDATE:
+      return isSetGetProgressUpdate();
     }
     throw new IllegalStateException();
   }
@@ -224,6 +273,15 @@ public class TGetOperationStatusReq implements org.apache.thrift.TBase<TGetOpera
         return false;
     }
 
+    boolean this_present_getProgressUpdate = true && this.isSetGetProgressUpdate();
+    boolean that_present_getProgressUpdate = true && that.isSetGetProgressUpdate();
+    if (this_present_getProgressUpdate || that_present_getProgressUpdate) {
+      if (!(this_present_getProgressUpdate && that_present_getProgressUpdate))
+        return false;
+      if (this.getProgressUpdate != that.getProgressUpdate)
+        return false;
+    }
+
     return true;
   }
 
@@ -235,6 +293,11 @@ public class TGetOperationStatusReq implements org.apache.thrift.TBase<TGetOpera
     list.add(present_operationHandle);
     if (present_operationHandle)
       list.add(operationHandle);
+
+    boolean present_getProgressUpdate = true && (isSetGetProgressUpdate());
+    list.add(present_getProgressUpdate);
+    if (present_getProgressUpdate)
+      list.add(getProgressUpdate);
 
     return list.hashCode();
   }
@@ -253,6 +316,16 @@ public class TGetOperationStatusReq implements org.apache.thrift.TBase<TGetOpera
     }
     if (isSetOperationHandle()) {
       lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.operationHandle, other.operationHandle);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = Boolean.valueOf(isSetGetProgressUpdate()).compareTo(other.isSetGetProgressUpdate());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetGetProgressUpdate()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.getProgressUpdate, other.getProgressUpdate);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -284,6 +357,12 @@ public class TGetOperationStatusReq implements org.apache.thrift.TBase<TGetOpera
       sb.append(this.operationHandle);
     }
     first = false;
+    if (isSetGetProgressUpdate()) {
+      if (!first) sb.append(", ");
+      sb.append("getProgressUpdate:");
+      sb.append(this.getProgressUpdate);
+      first = false;
+    }
     sb.append(")");
     return sb.toString();
   }
@@ -310,6 +389,8 @@ public class TGetOperationStatusReq implements org.apache.thrift.TBase<TGetOpera
 
   private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, ClassNotFoundException {
     try {
+      // it doesn't seem like you should have to do this, but java serialization is wacky, and doesn't call the default constructor.
+      __isset_bitfield = 0;
       read(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(in)));
     } catch (org.apache.thrift.TException te) {
       throw new java.io.IOException(te);
@@ -343,6 +424,14 @@ public class TGetOperationStatusReq implements org.apache.thrift.TBase<TGetOpera
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
+          case 2: // GET_PROGRESS_UPDATE
+            if (schemeField.type == org.apache.thrift.protocol.TType.BOOL) {
+              struct.getProgressUpdate = iprot.readBool();
+              struct.setGetProgressUpdateIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
           default:
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
         }
@@ -359,6 +448,11 @@ public class TGetOperationStatusReq implements org.apache.thrift.TBase<TGetOpera
       if (struct.operationHandle != null) {
         oprot.writeFieldBegin(OPERATION_HANDLE_FIELD_DESC);
         struct.operationHandle.write(oprot);
+        oprot.writeFieldEnd();
+      }
+      if (struct.isSetGetProgressUpdate()) {
+        oprot.writeFieldBegin(GET_PROGRESS_UPDATE_FIELD_DESC);
+        oprot.writeBool(struct.getProgressUpdate);
         oprot.writeFieldEnd();
       }
       oprot.writeFieldStop();
@@ -379,6 +473,14 @@ public class TGetOperationStatusReq implements org.apache.thrift.TBase<TGetOpera
     public void write(org.apache.thrift.protocol.TProtocol prot, TGetOperationStatusReq struct) throws org.apache.thrift.TException {
       TTupleProtocol oprot = (TTupleProtocol) prot;
       struct.operationHandle.write(oprot);
+      BitSet optionals = new BitSet();
+      if (struct.isSetGetProgressUpdate()) {
+        optionals.set(0);
+      }
+      oprot.writeBitSet(optionals, 1);
+      if (struct.isSetGetProgressUpdate()) {
+        oprot.writeBool(struct.getProgressUpdate);
+      }
     }
 
     @Override
@@ -387,6 +489,11 @@ public class TGetOperationStatusReq implements org.apache.thrift.TBase<TGetOpera
       struct.operationHandle = new TOperationHandle();
       struct.operationHandle.read(iprot);
       struct.setOperationHandleIsSet(true);
+      BitSet incoming = iprot.readBitSet(1);
+      if (incoming.get(0)) {
+        struct.getProgressUpdate = iprot.readBool();
+        struct.setGetProgressUpdateIsSet(true);
+      }
     }
   }
 

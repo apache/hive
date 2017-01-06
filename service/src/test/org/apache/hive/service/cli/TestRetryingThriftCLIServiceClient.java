@@ -206,7 +206,7 @@ public class TestRetryingThriftCLIServiceClient {
       // operations will be lost once owning session is closed.
       for (OperationHandle op: new OperationHandle[]{op1, op2}) {
         try {
-          client.getOperationStatus(op);
+          client.getOperationStatus(op, false);
           fail("Should have failed.");
         } catch (HiveSQLException ignored) {
 

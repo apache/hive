@@ -181,7 +181,7 @@ public abstract class ThriftCLIServiceTest {
     OperationHandle opHandle = client.executeStatement(sessHandle, queryString, opConf);
     assertNotNull(opHandle);
 
-    OperationStatus opStatus = client.getOperationStatus(opHandle);
+    OperationStatus opStatus = client.getOperationStatus(opHandle, false);
     assertNotNull(opStatus);
 
     OperationState state = opStatus.getState();
@@ -241,7 +241,7 @@ public abstract class ThriftCLIServiceTest {
         System.out.println("Polling timed out");
         break;
       }
-      opStatus = client.getOperationStatus(opHandle);
+      opStatus = client.getOperationStatus(opHandle, false);
       assertNotNull(opStatus);
       state = opStatus.getState();
       System.out.println("Current state: " + state);
@@ -264,7 +264,7 @@ public abstract class ThriftCLIServiceTest {
     System.out.println("Will attempt to execute: " + queryString);
     opHandle = client.executeStatementAsync(sessHandle, queryString, opConf);
     assertNotNull(opHandle);
-    opStatus = client.getOperationStatus(opHandle);
+    opStatus = client.getOperationStatus(opHandle, false);
     assertNotNull(opStatus);
     isQueryRunning = true;
     pollTimeout = System.currentTimeMillis() + 100000;
@@ -283,7 +283,7 @@ public abstract class ThriftCLIServiceTest {
         isQueryRunning = false;
       }
       Thread.sleep(1000);
-      opStatus = client.getOperationStatus(opHandle);
+      opStatus = client.getOperationStatus(opHandle, false);
     }
     // Expect query to return an error state
     assertEquals("Operation should be in error state",

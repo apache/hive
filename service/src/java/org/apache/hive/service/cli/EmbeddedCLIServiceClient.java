@@ -156,8 +156,8 @@ public class EmbeddedCLIServiceClient extends CLIServiceClient {
    * @see org.apache.hive.service.cli.CLIServiceClient#getOperationStatus(org.apache.hive.service.cli.OperationHandle)
    */
   @Override
-  public OperationStatus getOperationStatus(OperationHandle opHandle) throws HiveSQLException {
-    return cliService.getOperationStatus(opHandle);
+  public OperationStatus getOperationStatus(OperationHandle opHandle, boolean getProgressUpdate) throws HiveSQLException {
+    return cliService.getOperationStatus(opHandle, getProgressUpdate);
   }
 
   /* (non-Javadoc)

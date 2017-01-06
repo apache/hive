@@ -173,11 +173,11 @@ public abstract class CLIServiceTest {
     queryString = "SELECT ID+1 FROM TEST_EXEC";
     opHandle = client.executeStatement(sessionHandle, queryString, confOverlay);
 
-    OperationStatus opStatus = client.getOperationStatus(opHandle);
+    OperationStatus opStatus = client.getOperationStatus(opHandle, false);
     checkOperationTimes(opHandle, opStatus);
     // Expect query to be completed now
     assertEquals("Query should be finished",
-        OperationState.FINISHED, client.getOperationStatus(opHandle).getState());
+        OperationState.FINISHED, client.getOperationStatus(opHandle, false).getState());
     client.closeOperation(opHandle);
 
     // Cleanup
@@ -273,10 +273,10 @@ public abstract class CLIServiceTest {
     System.out.println("Cancelling " + opHandle);
     client.cancelOperation(opHandle);
 
-    OperationStatus operationStatus = client.getOperationStatus(opHandle);
+    OperationStatus operationStatus = client.getOperationStatus(opHandle, false);
     checkOperationTimes(opHandle, operationStatus);
 
-    state = client.getOperationStatus(opHandle).getState();
+    state = client.getOperationStatus(opHandle, false).getState();
     System.out.println(opHandle + " after cancelling, state= " + state);
     assertEquals("Query should be cancelled", OperationState.CANCELED, state);
 
@@ -545,7 +545,7 @@ public abstract class CLIServiceTest {
       }
       longPollingStart = System.currentTimeMillis();
       System.out.println("Long polling starts at: " + longPollingStart);
-      opStatus = client.getOperationStatus(opHandle);
+      opStatus = client.getOperationStatus(opHandle, false);
       state = opStatus.getState();
       longPollingEnd = System.currentTimeMillis();
       System.out.println("Long polling ends at: " + longPollingEnd);
@@ -568,7 +568,7 @@ public abstract class CLIServiceTest {
         assertTrue(longPollingTimeDelta - 0.9*expectedTimeout > 0);
       }
     }
-    assertEquals(expectedState, client.getOperationStatus(opHandle).getState());
+    assertEquals(expectedState, client.getOperationStatus(opHandle, false).getState());
     client.closeOperation(opHandle);
     return opStatus;
   }
@@ -606,7 +606,7 @@ public abstract class CLIServiceTest {
     assertNotNull(opHandle);
     // query should pass and create the table
     assertEquals("Query should be finished",
-        OperationState.FINISHED, client.getOperationStatus(opHandle).getState());
+        OperationState.FINISHED, client.getOperationStatus(opHandle, false).getState());
     client.closeOperation(opHandle);
 
     // select from  the new table should pass
@@ -615,7 +615,7 @@ public abstract class CLIServiceTest {
     assertNotNull(opHandle);
     // query should pass and create the table
     assertEquals("Query should be finished",
-        OperationState.FINISHED, client.getOperationStatus(opHandle).getState());
+        OperationState.FINISHED, client.getOperationStatus(opHandle, false).getState());
     client.closeOperation(opHandle);
 
     // the settings in conf overlay should not be part of session config
@@ -653,7 +653,7 @@ public abstract class CLIServiceTest {
     OperationStatus status = null;
     int count = 0;
     while (true) {
-      status = client.getOperationStatus(ophandle);
+      status = client.getOperationStatus(ophandle, false);
       checkOperationTimes(ophandle, status);
       OperationState state = status.getState();
       System.out.println("Polling: " + ophandle + " count=" + (++count)

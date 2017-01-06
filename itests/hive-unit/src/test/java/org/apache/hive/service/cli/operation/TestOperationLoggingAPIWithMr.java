@@ -97,7 +97,7 @@ public class TestOperationLoggingAPIWithMr extends OperationLoggingAPITestBase {
       if (System.currentTimeMillis() > pollTimeout) {
         break;
       }
-      opStatus = client.getOperationStatus(operationHandle);
+      opStatus = client.getOperationStatus(operationHandle, false);
       Assert.assertNotNull(opStatus);
       state = opStatus.getState();
 

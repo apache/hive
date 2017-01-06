@@ -269,6 +269,18 @@ const char* _kTFetchOrientationNames[] = {
 };
 const std::map<int, const char*> _TFetchOrientation_VALUES_TO_NAMES(::apache::thrift::TEnumIterator(6, _kTFetchOrientationValues, _kTFetchOrientationNames), ::apache::thrift::TEnumIterator(-1, NULL, NULL));
 
+int _kTJobExecutionStatusValues[] = {
+  TJobExecutionStatus::IN_PROGRESS,
+  TJobExecutionStatus::COMPLETE,
+  TJobExecutionStatus::NOT_AVAILABLE
+};
+const char* _kTJobExecutionStatusNames[] = {
+  "IN_PROGRESS",
+  "COMPLETE",
+  "NOT_AVAILABLE"
+};
+const std::map<int, const char*> _TJobExecutionStatus_VALUES_TO_NAMES(::apache::thrift::TEnumIterator(3, _kTJobExecutionStatusValues, _kTJobExecutionStatusNames), ::apache::thrift::TEnumIterator(-1, NULL, NULL));
+
 
 TTypeQualifierValue::~TTypeQualifierValue() throw() {
 }
@@ -8174,6 +8186,11 @@ void TGetOperationStatusReq::__set_operationHandle(const TOperationHandle& val) 
   this->operationHandle = val;
 }
 
+void TGetOperationStatusReq::__set_getProgressUpdate(const bool val) {
+  this->getProgressUpdate = val;
+__isset.getProgressUpdate = true;
+}
+
 uint32_t TGetOperationStatusReq::read(::apache::thrift::protocol::TProtocol* iprot) {
 
   apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
@@ -8204,6 +8221,14 @@ uint32_t TGetOperationStatusReq::read(::apache::thrift::protocol::TProtocol* ipr
           xfer += iprot->skip(ftype);
         }
         break;
+      case 2:
+        if (ftype == ::apache::thrift::protocol::T_BOOL) {
+          xfer += iprot->readBool(this->getProgressUpdate);
+          this->__isset.getProgressUpdate = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
       default:
         xfer += iprot->skip(ftype);
         break;
@@ -8227,6 +8252,11 @@ uint32_t TGetOperationStatusReq::write(::apache::thrift::protocol::TProtocol* op
   xfer += this->operationHandle.write(oprot);
   xfer += oprot->writeFieldEnd();
 
+  if (this->__isset.getProgressUpdate) {
+    xfer += oprot->writeFieldBegin("getProgressUpdate", ::apache::thrift::protocol::T_BOOL, 2);
+    xfer += oprot->writeBool(this->getProgressUpdate);
+    xfer += oprot->writeFieldEnd();
+  }
   xfer += oprot->writeFieldStop();
   xfer += oprot->writeStructEnd();
   return xfer;
@@ -8235,19 +8265,26 @@ uint32_t TGetOperationStatusReq::write(::apache::thrift::protocol::TProtocol* op
 void swap(TGetOperationStatusReq &a, TGetOperationStatusReq &b) {
   using ::std::swap;
   swap(a.operationHandle, b.operationHandle);
+  swap(a.getProgressUpdate, b.getProgressUpdate);
+  swap(a.__isset, b.__isset);
 }
 
 TGetOperationStatusReq::TGetOperationStatusReq(const TGetOperationStatusReq& other268) {
   operationHandle = other268.operationHandle;
+  getProgressUpdate = other268.getProgressUpdate;
+  __isset = other268.__isset;
 }
 TGetOperationStatusReq& TGetOperationStatusReq::operator=(const TGetOperationStatusReq& other269) {
   operationHandle = other269.operationHandle;
+  getProgressUpdate = other269.getProgressUpdate;
+  __isset = other269.__isset;
   return *this;
 }
 void TGetOperationStatusReq::printTo(std::ostream& out) const {
   using ::apache::thrift::to_string;
   out << "TGetOperationStatusReq(";
   out << "operationHandle=" << to_string(operationHandle);
+  out << ", " << "getProgressUpdate="; (__isset.getProgressUpdate ? (out << to_string(getProgressUpdate)) : (out << "<null>"));
   out << ")";
 }
 
@@ -8298,6 +8335,11 @@ __isset.operationCompleted = true;
 void TGetOperationStatusResp::__set_hasResultSet(const bool val) {
   this->hasResultSet = val;
 __isset.hasResultSet = true;
+}
+
+void TGetOperationStatusResp::__set_progressUpdateResponse(const TProgressUpdateResp& val) {
+  this->progressUpdateResponse = val;
+__isset.progressUpdateResponse = true;
 }
 
 uint32_t TGetOperationStatusResp::read(::apache::thrift::protocol::TProtocol* iprot) {
@@ -8396,6 +8438,14 @@ uint32_t TGetOperationStatusResp::read(::apache::thrift::protocol::TProtocol* ip
           xfer += iprot->skip(ftype);
         }
         break;
+      case 10:
+        if (ftype == ::apache::thrift::protocol::T_STRUCT) {
+          xfer += this->progressUpdateResponse.read(iprot);
+          this->__isset.progressUpdateResponse = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
       default:
         xfer += iprot->skip(ftype);
         break;
@@ -8459,6 +8509,11 @@ uint32_t TGetOperationStatusResp::write(::apache::thrift::protocol::TProtocol* o
     xfer += oprot->writeBool(this->hasResultSet);
     xfer += oprot->writeFieldEnd();
   }
+  if (this->__isset.progressUpdateResponse) {
+    xfer += oprot->writeFieldBegin("progressUpdateResponse", ::apache::thrift::protocol::T_STRUCT, 10);
+    xfer += this->progressUpdateResponse.write(oprot);
+    xfer += oprot->writeFieldEnd();
+  }
   xfer += oprot->writeFieldStop();
   xfer += oprot->writeStructEnd();
   return xfer;
@@ -8475,6 +8530,7 @@ void swap(TGetOperationStatusResp &a, TGetOperationStatusResp &b) {
   swap(a.operationStarted, b.operationStarted);
   swap(a.operationCompleted, b.operationCompleted);
   swap(a.hasResultSet, b.hasResultSet);
+  swap(a.progressUpdateResponse, b.progressUpdateResponse);
   swap(a.__isset, b.__isset);
 }
 
@@ -8488,6 +8544,7 @@ TGetOperationStatusResp::TGetOperationStatusResp(const TGetOperationStatusResp& 
   operationStarted = other271.operationStarted;
   operationCompleted = other271.operationCompleted;
   hasResultSet = other271.hasResultSet;
+  progressUpdateResponse = other271.progressUpdateResponse;
   __isset = other271.__isset;
 }
 TGetOperationStatusResp& TGetOperationStatusResp::operator=(const TGetOperationStatusResp& other272) {
@@ -8500,6 +8557,7 @@ TGetOperationStatusResp& TGetOperationStatusResp::operator=(const TGetOperationS
   operationStarted = other272.operationStarted;
   operationCompleted = other272.operationCompleted;
   hasResultSet = other272.hasResultSet;
+  progressUpdateResponse = other272.progressUpdateResponse;
   __isset = other272.__isset;
   return *this;
 }
@@ -8515,6 +8573,7 @@ void TGetOperationStatusResp::printTo(std::ostream& out) const {
   out << ", " << "operationStarted="; (__isset.operationStarted ? (out << to_string(operationStarted)) : (out << "<null>"));
   out << ", " << "operationCompleted="; (__isset.operationCompleted ? (out << to_string(operationCompleted)) : (out << "<null>"));
   out << ", " << "hasResultSet="; (__isset.hasResultSet ? (out << to_string(hasResultSet)) : (out << "<null>"));
+  out << ", " << "progressUpdateResponse="; (__isset.progressUpdateResponse ? (out << to_string(progressUpdateResponse)) : (out << "<null>"));
   out << ")";
 }
 
@@ -9981,6 +10040,269 @@ void TRenewDelegationTokenResp::printTo(std::ostream& out) const {
   using ::apache::thrift::to_string;
   out << "TRenewDelegationTokenResp(";
   out << "status=" << to_string(status);
+  out << ")";
+}
+
+
+TProgressUpdateResp::~TProgressUpdateResp() throw() {
+}
+
+
+void TProgressUpdateResp::__set_headerNames(const std::vector<std::string> & val) {
+  this->headerNames = val;
+}
+
+void TProgressUpdateResp::__set_rows(const std::vector<std::vector<std::string> > & val) {
+  this->rows = val;
+}
+
+void TProgressUpdateResp::__set_progressedPercentage(const double val) {
+  this->progressedPercentage = val;
+}
+
+void TProgressUpdateResp::__set_status(const TJobExecutionStatus::type val) {
+  this->status = val;
+}
+
+void TProgressUpdateResp::__set_footerSummary(const std::string& val) {
+  this->footerSummary = val;
+}
+
+void TProgressUpdateResp::__set_startTime(const int64_t val) {
+  this->startTime = val;
+}
+
+uint32_t TProgressUpdateResp::read(::apache::thrift::protocol::TProtocol* iprot) {
+
+  apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
+  uint32_t xfer = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TType ftype;
+  int16_t fid;
+
+  xfer += iprot->readStructBegin(fname);
+
+  using ::apache::thrift::protocol::TProtocolException;
+
+  bool isset_headerNames = false;
+  bool isset_rows = false;
+  bool isset_progressedPercentage = false;
+  bool isset_status = false;
+  bool isset_footerSummary = false;
+  bool isset_startTime = false;
+
+  while (true)
+  {
+    xfer += iprot->readFieldBegin(fname, ftype, fid);
+    if (ftype == ::apache::thrift::protocol::T_STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 1:
+        if (ftype == ::apache::thrift::protocol::T_LIST) {
+          {
+            this->headerNames.clear();
+            uint32_t _size302;
+            ::apache::thrift::protocol::TType _etype305;
+            xfer += iprot->readListBegin(_etype305, _size302);
+            this->headerNames.resize(_size302);
+            uint32_t _i306;
+            for (_i306 = 0; _i306 < _size302; ++_i306)
+            {
+              xfer += iprot->readString(this->headerNames[_i306]);
+            }
+            xfer += iprot->readListEnd();
+          }
+          isset_headerNames = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 2:
+        if (ftype == ::apache::thrift::protocol::T_LIST) {
+          {
+            this->rows.clear();
+            uint32_t _size307;
+            ::apache::thrift::protocol::TType _etype310;
+            xfer += iprot->readListBegin(_etype310, _size307);
+            this->rows.resize(_size307);
+            uint32_t _i311;
+            for (_i311 = 0; _i311 < _size307; ++_i311)
+            {
+              {
+                this->rows[_i311].clear();
+                uint32_t _size312;
+                ::apache::thrift::protocol::TType _etype315;
+                xfer += iprot->readListBegin(_etype315, _size312);
+                this->rows[_i311].resize(_size312);
+                uint32_t _i316;
+                for (_i316 = 0; _i316 < _size312; ++_i316)
+                {
+                  xfer += iprot->readString(this->rows[_i311][_i316]);
+                }
+                xfer += iprot->readListEnd();
+              }
+            }
+            xfer += iprot->readListEnd();
+          }
+          isset_rows = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 3:
+        if (ftype == ::apache::thrift::protocol::T_DOUBLE) {
+          xfer += iprot->readDouble(this->progressedPercentage);
+          isset_progressedPercentage = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 4:
+        if (ftype == ::apache::thrift::protocol::T_I32) {
+          int32_t ecast317;
+          xfer += iprot->readI32(ecast317);
+          this->status = (TJobExecutionStatus::type)ecast317;
+          isset_status = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 5:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->footerSummary);
+          isset_footerSummary = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 6:
+        if (ftype == ::apache::thrift::protocol::T_I64) {
+          xfer += iprot->readI64(this->startTime);
+          isset_startTime = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
+    xfer += iprot->readFieldEnd();
+  }
+
+  xfer += iprot->readStructEnd();
+
+  if (!isset_headerNames)
+    throw TProtocolException(TProtocolException::INVALID_DATA);
+  if (!isset_rows)
+    throw TProtocolException(TProtocolException::INVALID_DATA);
+  if (!isset_progressedPercentage)
+    throw TProtocolException(TProtocolException::INVALID_DATA);
+  if (!isset_status)
+    throw TProtocolException(TProtocolException::INVALID_DATA);
+  if (!isset_footerSummary)
+    throw TProtocolException(TProtocolException::INVALID_DATA);
+  if (!isset_startTime)
+    throw TProtocolException(TProtocolException::INVALID_DATA);
+  return xfer;
+}
+
+uint32_t TProgressUpdateResp::write(::apache::thrift::protocol::TProtocol* oprot) const {
+  uint32_t xfer = 0;
+  apache::thrift::protocol::TOutputRecursionTracker tracker(*oprot);
+  xfer += oprot->writeStructBegin("TProgressUpdateResp");
+
+  xfer += oprot->writeFieldBegin("headerNames", ::apache::thrift::protocol::T_LIST, 1);
+  {
+    xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRING, static_cast<uint32_t>(this->headerNames.size()));
+    std::vector<std::string> ::const_iterator _iter318;
+    for (_iter318 = this->headerNames.begin(); _iter318 != this->headerNames.end(); ++_iter318)
+    {
+      xfer += oprot->writeString((*_iter318));
+    }
+    xfer += oprot->writeListEnd();
+  }
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("rows", ::apache::thrift::protocol::T_LIST, 2);
+  {
+    xfer += oprot->writeListBegin(::apache::thrift::protocol::T_LIST, static_cast<uint32_t>(this->rows.size()));
+    std::vector<std::vector<std::string> > ::const_iterator _iter319;
+    for (_iter319 = this->rows.begin(); _iter319 != this->rows.end(); ++_iter319)
+    {
+      {
+        xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRING, static_cast<uint32_t>((*_iter319).size()));
+        std::vector<std::string> ::const_iterator _iter320;
+        for (_iter320 = (*_iter319).begin(); _iter320 != (*_iter319).end(); ++_iter320)
+        {
+          xfer += oprot->writeString((*_iter320));
+        }
+        xfer += oprot->writeListEnd();
+      }
+    }
+    xfer += oprot->writeListEnd();
+  }
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("progressedPercentage", ::apache::thrift::protocol::T_DOUBLE, 3);
+  xfer += oprot->writeDouble(this->progressedPercentage);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("status", ::apache::thrift::protocol::T_I32, 4);
+  xfer += oprot->writeI32((int32_t)this->status);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("footerSummary", ::apache::thrift::protocol::T_STRING, 5);
+  xfer += oprot->writeString(this->footerSummary);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("startTime", ::apache::thrift::protocol::T_I64, 6);
+  xfer += oprot->writeI64(this->startTime);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldStop();
+  xfer += oprot->writeStructEnd();
+  return xfer;
+}
+
+void swap(TProgressUpdateResp &a, TProgressUpdateResp &b) {
+  using ::std::swap;
+  swap(a.headerNames, b.headerNames);
+  swap(a.rows, b.rows);
+  swap(a.progressedPercentage, b.progressedPercentage);
+  swap(a.status, b.status);
+  swap(a.footerSummary, b.footerSummary);
+  swap(a.startTime, b.startTime);
+}
+
+TProgressUpdateResp::TProgressUpdateResp(const TProgressUpdateResp& other321) {
+  headerNames = other321.headerNames;
+  rows = other321.rows;
+  progressedPercentage = other321.progressedPercentage;
+  status = other321.status;
+  footerSummary = other321.footerSummary;
+  startTime = other321.startTime;
+}
+TProgressUpdateResp& TProgressUpdateResp::operator=(const TProgressUpdateResp& other322) {
+  headerNames = other322.headerNames;
+  rows = other322.rows;
+  progressedPercentage = other322.progressedPercentage;
+  status = other322.status;
+  footerSummary = other322.footerSummary;
+  startTime = other322.startTime;
+  return *this;
+}
+void TProgressUpdateResp::printTo(std::ostream& out) const {
+  using ::apache::thrift::to_string;
+  out << "TProgressUpdateResp(";
+  out << "headerNames=" << to_string(headerNames);
+  out << ", " << "rows=" << to_string(rows);
+  out << ", " << "progressedPercentage=" << to_string(progressedPercentage);
+  out << ", " << "status=" << to_string(status);
+  out << ", " << "footerSummary=" << to_string(footerSummary);
+  out << ", " << "startTime=" << to_string(startTime);
   out << ")";
 }
 

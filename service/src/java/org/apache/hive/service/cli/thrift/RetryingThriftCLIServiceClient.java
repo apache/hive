@@ -189,8 +189,8 @@ public class RetryingThriftCLIServiceClient implements InvocationHandler {
     }
 
     @Override
-    public OperationStatus getOperationStatus(OperationHandle opHandle) throws HiveSQLException {
-      return cliService.getOperationStatus(opHandle);
+    public OperationStatus getOperationStatus(OperationHandle opHandle, boolean getProgressUpdate) throws HiveSQLException {
+      return cliService.getOperationStatus(opHandle, getProgressUpdate);
     }
 
     @Override
