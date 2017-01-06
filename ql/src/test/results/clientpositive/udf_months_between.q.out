@@ -2,14 +2,14 @@ PREHOOK: query: describe function months_between
 PREHOOK: type: DESCFUNCTION
 POSTHOOK: query: describe function months_between
 POSTHOOK: type: DESCFUNCTION
-months_between(date1, date2) - returns number of months between dates date1 and date2
+months_between(date1, date2, roundOff) - returns number of months between dates date1 and date2
 PREHOOK: query: desc function extended months_between
 PREHOOK: type: DESCFUNCTION
 POSTHOOK: query: desc function extended months_between
 POSTHOOK: type: DESCFUNCTION
-months_between(date1, date2) - returns number of months between dates date1 and date2
+months_between(date1, date2, roundOff) - returns number of months between dates date1 and date2
 If date1 is later than date2, then the result is positive. If date1 is earlier than date2, then the result is negative. If date1 and date2 are either the same days of the month or both last days of months, then the result is always an integer. Otherwise the UDF calculates the fractional portion of the result based on a 31-day month and considers the difference in time components date1 and date2.
-date1 and date2 type can be date, timestamp or string in the format 'yyyy-MM-dd' or 'yyyy-MM-dd HH:mm:ss'. The result is rounded to 8 decimal places.
+date1 and date2 type can be date, timestamp or string in the format 'yyyy-MM-dd' or 'yyyy-MM-dd HH:mm:ss'. The result is rounded to 8 decimal places by default. Set roundOff=false otherwise.
  Example:
   > SELECT months_between('1997-02-28 10:30:00', '1996-10-30');
  3.94959677
