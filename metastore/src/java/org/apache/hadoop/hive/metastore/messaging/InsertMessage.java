@@ -45,7 +45,9 @@ public abstract class InsertMessage extends EventMessage {
   public abstract Map<String,String> getPartitionKeyValues();
 
   /**
-   * Get the list of files created as a result of this DML operation.  May be null.
+   * Get the list of files created as a result of this DML operation. May be null. The file uri may
+   * be an encoded uri, which represents both a uri and the file checksum
+   *
    * @return List of new files, or null.
    */
   public abstract List<String> getFiles();

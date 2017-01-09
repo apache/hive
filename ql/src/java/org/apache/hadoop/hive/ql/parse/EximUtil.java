@@ -19,9 +19,9 @@
 package org.apache.hadoop.hive.ql.parse;
 
 import com.google.common.base.Function;
+
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.fs.PathFilter;
-import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.exec.Task;
@@ -31,6 +31,7 @@ import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.fs.FSDataInputStream;
+import org.apache.hadoop.fs.FileChecksum;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -50,6 +51,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import javax.annotation.Nullable;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -73,7 +75,10 @@ import java.util.TreeMap;
  */
 public class EximUtil {
 
-  public static final String METADATA_NAME="_metadata";
+  public static final String METADATA_NAME = "_metadata";
+  public static final String FILES_NAME = "_files";
+  public static final String DATA_PATH_NAME = "data";
+  public static final String URI_FRAGMENT_SEPARATOR = "#";
 
   private static final Logger LOG = LoggerFactory.getLogger(EximUtil.class);
 
@@ -278,6 +283,7 @@ public class EximUtil {
     if (replicationSpec == null){
       replicationSpec = new ReplicationSpec(); // instantiate default values if not specified
     }
+
     if (tableHandle == null){
       replicationSpec.setNoop(true);
     }
@@ -349,10 +355,6 @@ public class EximUtil {
     }
     jgen.writeEndObject();
     jgen.close(); // JsonGenerator owns the OutputStream, so it closes it when we call close.
-  }
-
-  private static void write(OutputStream out, String s) throws IOException {
-    out.write(s.getBytes("UTF-8"));
   }
 
   /**
@@ -571,4 +573,20 @@ public class EximUtil {
       }
     };
   }
+
+  public static String getCMEncodedFileName(String fileURIStr, String fileChecksum) {
+    // The checksum is set as the fragment portion of the file uri
+    return fileURIStr + URI_FRAGMENT_SEPARATOR + fileChecksum;
+  }
+
+  public static String getCMDecodedFileName(String encodedFileURIStr) {
+    String[] uriAndFragment = encodedFileURIStr.split(URI_FRAGMENT_SEPARATOR);
+    return uriAndFragment[0];
+  }
+
+  public static FileChecksum getCMDecodedChecksum(String encodedFileURIStr) {
+    // TODO: Implement this as part of HIVE-15490
+    return null;
+  }
+
 }

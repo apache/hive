@@ -22,8 +22,6 @@ package org.apache.hadoop.hive.metastore.messaging.json;
 import org.apache.hadoop.hive.metastore.messaging.InsertMessage;
 import org.codehaus.jackson.annotate.JsonProperty;
 
-import java.nio.ByteBuffer;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -44,9 +42,6 @@ public class JSONInsertMessage extends InsertMessage {
   @JsonProperty
   Map<String, String> partKeyVals;
 
-  @JsonProperty
-  List<byte[]> fileChecksums;
-
   /**
    * Default constructor, needed for Jackson.
    */
@@ -66,15 +61,19 @@ public class JSONInsertMessage extends InsertMessage {
   }
 
   public JSONInsertMessage(String server, String servicePrincipal, String db, String table,
-      Map<String, String> partKeyVals, List<String> files, List<ByteBuffer> checksums,
-      Long timestamp) {
+      Map<String, String> partKeyVals, List<String> files, List<String> checksums, Long timestamp) {
     this(server, servicePrincipal, db, table, partKeyVals, files, timestamp);
-    fileChecksums = new ArrayList<byte[]>();
-    for (ByteBuffer checksum : checksums) {
-      byte[] checksumBytes = new byte[checksum.remaining()];
-      checksum.get(checksumBytes);
-      fileChecksums.add(checksumBytes);
+    for (int i = 0; i < files.size(); i++) {
+      if ((!checksums.isEmpty()) && (checksums.get(i) != null) && !checksums.get(i).isEmpty()) {
+        files.set(i, encodeFileUri(files.get(i), checksums.get(i)));
+      }
     }
+  }
+
+  // TODO: this needs to be enhanced once change management based filesystem is implemented
+  // Currently using fileuri#checksum as the format
+  private String encodeFileUri(String fileUriStr, String fileChecksum) {
+    return fileUriStr + "#" + fileChecksum;
   }
 
   @Override
@@ -110,10 +109,6 @@ public class JSONInsertMessage extends InsertMessage {
   @Override
   public Long getTimestamp() {
     return timestamp;
-  }
-
-  public List<byte[]> getFileChecksums() {
-    return fileChecksums;
   }
 
   @Override

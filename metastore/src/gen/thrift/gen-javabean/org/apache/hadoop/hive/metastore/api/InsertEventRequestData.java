@@ -48,7 +48,7 @@ public class InsertEventRequestData implements org.apache.thrift.TBase<InsertEve
   }
 
   private List<String> filesAdded; // required
-  private List<ByteBuffer> filesAddedChecksum; // optional
+  private List<String> filesAddedChecksum; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
@@ -121,7 +121,7 @@ public class InsertEventRequestData implements org.apache.thrift.TBase<InsertEve
             new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING))));
     tmpMap.put(_Fields.FILES_ADDED_CHECKSUM, new org.apache.thrift.meta_data.FieldMetaData("filesAddedChecksum", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
-            new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING            , true))));
+            new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING))));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(InsertEventRequestData.class, metaDataMap);
   }
@@ -145,7 +145,7 @@ public class InsertEventRequestData implements org.apache.thrift.TBase<InsertEve
       this.filesAdded = __this__filesAdded;
     }
     if (other.isSetFilesAddedChecksum()) {
-      List<ByteBuffer> __this__filesAddedChecksum = new ArrayList<ByteBuffer>(other.filesAddedChecksum);
+      List<String> __this__filesAddedChecksum = new ArrayList<String>(other.filesAddedChecksum);
       this.filesAddedChecksum = __this__filesAddedChecksum;
     }
   }
@@ -202,22 +202,22 @@ public class InsertEventRequestData implements org.apache.thrift.TBase<InsertEve
     return (this.filesAddedChecksum == null) ? 0 : this.filesAddedChecksum.size();
   }
 
-  public java.util.Iterator<ByteBuffer> getFilesAddedChecksumIterator() {
+  public java.util.Iterator<String> getFilesAddedChecksumIterator() {
     return (this.filesAddedChecksum == null) ? null : this.filesAddedChecksum.iterator();
   }
 
-  public void addToFilesAddedChecksum(ByteBuffer elem) {
+  public void addToFilesAddedChecksum(String elem) {
     if (this.filesAddedChecksum == null) {
-      this.filesAddedChecksum = new ArrayList<ByteBuffer>();
+      this.filesAddedChecksum = new ArrayList<String>();
     }
     this.filesAddedChecksum.add(elem);
   }
 
-  public List<ByteBuffer> getFilesAddedChecksum() {
+  public List<String> getFilesAddedChecksum() {
     return this.filesAddedChecksum;
   }
 
-  public void setFilesAddedChecksum(List<ByteBuffer> filesAddedChecksum) {
+  public void setFilesAddedChecksum(List<String> filesAddedChecksum) {
     this.filesAddedChecksum = filesAddedChecksum;
   }
 
@@ -250,7 +250,7 @@ public class InsertEventRequestData implements org.apache.thrift.TBase<InsertEve
       if (value == null) {
         unsetFilesAddedChecksum();
       } else {
-        setFilesAddedChecksum((List<ByteBuffer>)value);
+        setFilesAddedChecksum((List<String>)value);
       }
       break;
 
@@ -396,7 +396,7 @@ public class InsertEventRequestData implements org.apache.thrift.TBase<InsertEve
       if (this.filesAddedChecksum == null) {
         sb.append("null");
       } else {
-        org.apache.thrift.TBaseHelper.toString(this.filesAddedChecksum, sb);
+        sb.append(this.filesAddedChecksum);
       }
       first = false;
     }
@@ -469,11 +469,11 @@ public class InsertEventRequestData implements org.apache.thrift.TBase<InsertEve
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
                 org.apache.thrift.protocol.TList _list561 = iprot.readListBegin();
-                struct.filesAddedChecksum = new ArrayList<ByteBuffer>(_list561.size);
-                ByteBuffer _elem562;
+                struct.filesAddedChecksum = new ArrayList<String>(_list561.size);
+                String _elem562;
                 for (int _i563 = 0; _i563 < _list561.size; ++_i563)
                 {
-                  _elem562 = iprot.readBinary();
+                  _elem562 = iprot.readString();
                   struct.filesAddedChecksum.add(_elem562);
                 }
                 iprot.readListEnd();
@@ -513,9 +513,9 @@ public class InsertEventRequestData implements org.apache.thrift.TBase<InsertEve
           oprot.writeFieldBegin(FILES_ADDED_CHECKSUM_FIELD_DESC);
           {
             oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, struct.filesAddedChecksum.size()));
-            for (ByteBuffer _iter565 : struct.filesAddedChecksum)
+            for (String _iter565 : struct.filesAddedChecksum)
             {
-              oprot.writeBinary(_iter565);
+              oprot.writeString(_iter565);
             }
             oprot.writeListEnd();
           }
@@ -554,9 +554,9 @@ public class InsertEventRequestData implements org.apache.thrift.TBase<InsertEve
       if (struct.isSetFilesAddedChecksum()) {
         {
           oprot.writeI32(struct.filesAddedChecksum.size());
-          for (ByteBuffer _iter567 : struct.filesAddedChecksum)
+          for (String _iter567 : struct.filesAddedChecksum)
           {
-            oprot.writeBinary(_iter567);
+            oprot.writeString(_iter567);
           }
         }
       }
@@ -580,11 +580,11 @@ public class InsertEventRequestData implements org.apache.thrift.TBase<InsertEve
       if (incoming.get(0)) {
         {
           org.apache.thrift.protocol.TList _list571 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
-          struct.filesAddedChecksum = new ArrayList<ByteBuffer>(_list571.size);
-          ByteBuffer _elem572;
+          struct.filesAddedChecksum = new ArrayList<String>(_list571.size);
+          String _elem572;
           for (int _i573 = 0; _i573 < _list571.size; ++_i573)
           {
-            _elem572 = iprot.readBinary();
+            _elem572 = iprot.readString();
             struct.filesAddedChecksum.add(_elem572);
           }
         }
