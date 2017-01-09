@@ -20,7 +20,7 @@ package org.apache.hadoop.hive.ql.plan;
 
 import org.apache.hadoop.hive.metastore.api.Table;
 
-@Explain(displayName = "Commit insert operator", explainLevels = { Explain.Level.USER, Explain.Level.DEFAULT, Explain.Level.EXTENDED })
+@Explain(displayName = "Insert", explainLevels = { Explain.Level.USER, Explain.Level.DEFAULT, Explain.Level.EXTENDED })
 public class InsertTableDesc extends DDLDesc {
   private final Table table;
   private final boolean overwrite;

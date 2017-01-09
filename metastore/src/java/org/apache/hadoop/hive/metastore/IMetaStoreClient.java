@@ -1506,6 +1506,13 @@ public interface IMetaStoreClient {
                             DataOperationType operationType)
     throws TException;
 
+  /**
+   * Performs the commit to the metadata storage after a successful insert operation.
+   * @param table table name
+   * @param overwrite true if the insert is overwrite
+   *
+   * @return 0 if the commit operation succeeded
+   */
   int insertCommit(Table table, boolean overwrite);
 
   /**

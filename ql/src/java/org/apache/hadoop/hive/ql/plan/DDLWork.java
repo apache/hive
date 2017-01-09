@@ -1194,7 +1194,7 @@ public class DDLWork implements Serializable {
     this.showConfDesc = showConfDesc;
   }
 
-  @Explain(displayName = "Commit insert operator", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
+  @Explain(displayName = "Insert operator", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public InsertTableDesc getInsertTableDesc() {
     return insertTableDesc;
   }
