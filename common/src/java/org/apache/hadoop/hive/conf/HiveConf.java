@@ -1966,6 +1966,9 @@ public class HiveConf extends Configuration {
                     +
                     "declared"
     ),
+    HIVE_DRUID_COORDINATOR_DEFAULT_ADDRESS("hive.druid.coordinator.address.default", "localhost:8081",
+            "Address of the Druid coordinator. It is used to check the load status of newly created segments"
+    ),
     HIVE_DRUID_SELECT_THRESHOLD("hive.druid.select.threshold", 10000,
         "When we can split a Select query, this is the maximum number of rows that we try to retrieve\n" +
         "per query. In order to do that, we obtain the estimated size for the complete result. If the\n" +
@@ -1976,6 +1979,9 @@ public class HiveConf extends Configuration {
         "the HTTP client."),
     HIVE_DRUID_HTTP_READ_TIMEOUT("hive.druid.http.read.timeout", "PT1M", "Read timeout period for the HTTP\n" +
         "client in ISO8601 format (for example P2W, P3M, PT1H30M, PT0.750S), default is period of 1 minute."),
+    HIVE_DRUID_SLEEP_TIME("hive.druid.sleep.time", "PT10S",
+            "Sleep time between retries in ISO8601 format (for example P2W, P3M, PT1H30M, PT0.750S), default is period of 10 seconds."
+    ),
     HIVE_DRUID_BASE_PERSIST_DIRECTORY("hive.druid.basePersistDirectory", "/tmp",
             "Local temporary directory used to persist intermediate indexing state."
     ),
@@ -1996,6 +2002,10 @@ public class HiveConf extends Configuration {
     ),
     DRUID_WORKING_DIR("hive.druid.working.directory", "/tmp/workingDirectory",
             "Default hdfs working directory used to store some intermediate metadata"
+    ),
+    HIVE_DRUID_MAX_TRIES("hive.druid.maxTries", 5, "Maximum number of retries before giving up"),
+    HIVE_DRUID_PASSIVE_WAIT_TIME("hive.druid.passiveWaitTimeMs", 30000,
+            "Wait time in ms default to 30 seconds."
     ),
     // For HBase storage handler
     HIVE_HBASE_WAL_ENABLED("hive.hbase.wal.enabled", true,

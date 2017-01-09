@@ -20,16 +20,21 @@ package org.apache.hadoop.hive.druid;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.jsontype.NamedType;
 import com.fasterxml.jackson.dataformat.smile.SmileFactory;
+import com.google.common.base.Strings;
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Interner;
 import com.google.common.collect.Interners;
 import com.google.common.collect.Lists;
+import com.google.common.io.CharStreams;
 import com.metamx.common.MapUtils;
+import com.metamx.common.lifecycle.Lifecycle;
 import com.metamx.emitter.EmittingLogger;
 import com.metamx.emitter.core.NoopEmitter;
 import com.metamx.emitter.service.ServiceEmitter;
 import com.metamx.http.client.HttpClient;
+import com.metamx.http.client.HttpClientConfig;
+import com.metamx.http.client.HttpClientInit;
 import com.metamx.http.client.Request;
 import com.metamx.http.client.response.InputStreamResponseHandler;
 import io.druid.jackson.DefaultObjectMapper;
@@ -46,10 +51,14 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.io.retry.RetryPolicies;
 import org.apache.hadoop.io.retry.RetryProxy;
 import org.jboss.netty.handler.codec.http.HttpHeaders;
 import org.jboss.netty.handler.codec.http.HttpMethod;
+import org.joda.time.Period;
 import org.skife.jdbi.v2.FoldController;
 import org.skife.jdbi.v2.Folder3;
 import org.skife.jdbi.v2.Handle;
@@ -61,8 +70,11 @@ import org.skife.jdbi.v2.util.ByteArrayMapper;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.io.Reader;
 import java.net.InetAddress;
+import java.net.URI;
 import java.net.URL;
 import java.net.UnknownHostException;
 import java.sql.SQLException;
@@ -80,7 +92,6 @@ import java.util.concurrent.TimeUnit;
 public final class DruidStorageHandlerUtils {
 
   private static final String SMILE_CONTENT_TYPE = "application/x-jackson-smile";
-
   /**
    * Mapper to use to serialize/deserialize Druid objects (JSON)
    */
@@ -177,6 +188,14 @@ public final class DruidStorageHandlerUtils {
       throw new IOException(e.getCause());
     }
     return response;
+  }
+
+
+  public static String getURL(HttpClient client, URL url) throws IOException {
+    try (Reader reader = new InputStreamReader(
+            DruidStorageHandlerUtils.submitRequest(client, new Request(HttpMethod.GET, url)))) {
+      return  CharStreams.toString(reader);
+    }
   }
 
   /**
