@@ -2182,10 +2182,11 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
   public int insertCommit(Table table, boolean overwrite) {
     try {
       HiveMetaHook hook = getHook(table);
-      if (hook == null) {
+      if (hook == null || !(hook instanceof HiveMetaHookV2)) {
         return -1;
       }
-      hook.commitInsert(table, overwrite);
+      HiveMetaHookV2 hiveMetaHook = (HiveMetaHookV2) hook;
+      hiveMetaHook.commitInsert(table, overwrite);
     } catch (MetaException e) {
       return -1;
     }

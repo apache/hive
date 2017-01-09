@@ -323,11 +323,6 @@ public class AccumuloStorageHandler extends DefaultStorageHandler implements Hiv
     // do nothing
   }
 
-  @Override
-  public void commitInsert(Table table, boolean overwrite) throws MetaException {
-
-  }
-
   @SuppressWarnings("deprecation")
   @Override
   public DecomposedPredicate decomposePredicate(JobConf conf, Deserializer deserializer,

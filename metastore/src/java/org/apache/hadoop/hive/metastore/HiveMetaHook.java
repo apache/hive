@@ -89,13 +89,4 @@ public interface HiveMetaHook {
    */
   public void commitDropTable(Table table, boolean deleteData)
     throws MetaException;
-
-  /**
-   * Called after successfully after INSERT [OVERWRITE] statement is executed.
-   * @param table table definition
-   * @param overwrite true if it is INSERT OVERWRITE
-   *
-   * @throws MetaException
-   */
-  public void commitInsert(Table table, boolean overwrite) throws MetaException;
 }
