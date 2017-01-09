@@ -68,7 +68,7 @@ class BeeLineOpts implements Completer {
   private boolean showHeader = true;
   private int headerInterval = 100;
   private boolean fastConnect = true;
-  private boolean autoCommit = false;
+  private boolean autoCommit = true;
   private boolean verbose = false;
   private boolean force = false;
   private boolean incremental = false;

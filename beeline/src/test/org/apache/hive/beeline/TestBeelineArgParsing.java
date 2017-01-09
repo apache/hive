@@ -187,6 +187,23 @@ public class TestBeelineArgParsing {
     Assert.assertTrue(bl.getOpts().getTruncateTable());
   }
 
+  @Test
+  public void testBeelineAutoCommit() throws Exception {
+    TestBeeline bl = new TestBeeline();
+    String[] args = {};
+    bl.initArgs(args);
+    Assert.assertTrue(bl.getOpts().getAutoCommit());
+
+    args = new String[] {"--autoCommit=false"};
+    bl.initArgs(args);
+    Assert.assertFalse(bl.getOpts().getAutoCommit());
+
+    args = new String[] {"--autoCommit=true"};
+    bl.initArgs(args);
+    Assert.assertTrue(bl.getOpts().getAutoCommit());
+    bl.close();
+  }
+
   /**
    * Test setting script file with -f option.
    */
