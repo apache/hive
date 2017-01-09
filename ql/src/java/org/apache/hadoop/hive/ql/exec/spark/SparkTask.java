@@ -72,7 +72,7 @@ public class SparkTask extends Task<SparkWork> {
   private static final String CLASS_NAME = SparkTask.class.getName();
   private static final Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
   private static final LogHelper console = new LogHelper(LOG);
-  private final PerfLogger perfLogger = SessionState.getPerfLogger();
+  private PerfLogger perfLogger;
   private static final long serialVersionUID = 1L;
   private transient String sparkJobID;
   private transient SparkStatistics sparkStatistics;
@@ -94,6 +94,7 @@ public class SparkTask extends Task<SparkWork> {
   public int execute(DriverContext driverContext) {
 
     int rc = 0;
+    perfLogger = SessionState.getPerfLogger();
     SparkSession sparkSession = null;
     SparkSessionManager sparkSessionManager = null;
     try {
