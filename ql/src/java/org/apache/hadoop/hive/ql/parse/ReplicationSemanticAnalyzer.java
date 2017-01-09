@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.parse;
 import com.google.common.base.Function;
 import com.google.common.collect.Iterables;
 import com.google.common.primitives.Ints;
+
 import org.antlr.runtime.tree.Tree;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
@@ -36,6 +37,7 @@ import org.apache.hadoop.hive.metastore.messaging.CreateTableMessage;
 import org.apache.hadoop.hive.metastore.messaging.DropPartitionMessage;
 import org.apache.hadoop.hive.metastore.messaging.DropTableMessage;
 import org.apache.hadoop.hive.metastore.messaging.EventUtils;
+import org.apache.hadoop.hive.metastore.messaging.InsertMessage;
 import org.apache.hadoop.hive.metastore.messaging.MessageDeserializer;
 import org.apache.hadoop.hive.metastore.messaging.MessageFactory;
 import org.apache.hadoop.hive.ql.ErrorMsg;
@@ -61,13 +63,15 @@ import org.apache.hadoop.hive.ql.plan.RenamePartitionDesc;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.io.IOUtils;
-
 import javax.annotation.Nullable;
+
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.DataOutputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.io.Serializable;
 import java.net.URI;
 import java.util.ArrayList;
@@ -108,6 +112,7 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
     EVENT_RENAME_TABLE("EVENT_RENAME_TABLE"),
     EVENT_ALTER_PARTITION("EVENT_ALTER_PARTITION"),
     EVENT_RENAME_PARTITION("EVENT_RENAME_PARTITION"),
+    EVENT_INSERT("EVENT_INSERT"),
     EVENT_UNKNOWN("EVENT_UNKNOWN");
 
     String type = null;
@@ -559,7 +564,39 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
           dmd.write();
           break;
         }
-
+      }
+      case MessageFactory.INSERT_EVENT: {
+        InsertMessage insertMsg = md.getInsertMessage(ev.getMessage());
+        String tblName = insertMsg.getTable();
+        Table qlMdTable = db.getTable(tblName);
+        Map<String, String> partSpec = insertMsg.getPartitionKeyValues();
+        List<Partition> qlPtns  = null;
+        if (qlMdTable.isPartitioned() && !partSpec.isEmpty()) {
+          qlPtns = Arrays.asList(db.getPartition(qlMdTable, partSpec, false));
+        }
+        Path metaDataPath = new Path(evRoot, EximUtil.METADATA_NAME);
+        EximUtil.createExportDump(metaDataPath.getFileSystem(conf), metaDataPath, qlMdTable, qlPtns,
+            replicationSpec);
+        Path dataPath = new Path(evRoot, EximUtil.DATA_PATH_NAME);
+        Path filesPath = new Path(dataPath, EximUtil.FILES_NAME);
+        FileSystem fs = dataPath.getFileSystem(conf);
+        BufferedWriter fileListWriter =
+            new BufferedWriter(new OutputStreamWriter(fs.create(filesPath)));
+        try {
+          // TODO: HIVE-15205: move this metadata generation to a task
+          // Get the encoded filename of files that are being inserted
+          List<String> files = insertMsg.getFiles();
+          for (String fileUriStr : files) {
+            fileListWriter.write(fileUriStr + "\n");
+          }
+        } finally {
+          fileListWriter.close();
+        }
+        LOG.info("Processing#{} INSERT message : {}", ev.getEventId(), ev.getMessage());
+        DumpMetaData dmd = new DumpMetaData(evRoot, DUMPTYPE.EVENT_INSERT, evid, evid);
+        dmd.setPayload(ev.getMessage());
+        dmd.write();
+        break;
       }
       // TODO : handle other event types
       default:
@@ -956,6 +993,12 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
         tasks.add(renamePtnTask);
         LOG.debug("Added rename ptn task : {}:{}->{}", renamePtnTask.getId(), oldPartSpec, newPartSpec);
         return tasks;
+      }
+      case EVENT_INSERT: {
+        md = MessageFactory.getInstance().getDeserializer();
+        InsertMessage insertMessage = md.getInsertMessage(dmd.getPayload());
+        // Piggybacking in Import logic for now
+        return analyzeTableLoad(insertMessage.getDB(), insertMessage.getTable(), locn, precursor);
       }
       case EVENT_UNKNOWN: {
         break;

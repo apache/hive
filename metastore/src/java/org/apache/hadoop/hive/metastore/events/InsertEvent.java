@@ -26,7 +26,6 @@ import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.Table;
 
-import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -40,7 +39,7 @@ public class InsertEvent extends ListenerEvent {
   private final String table;
   private final Map<String, String> keyValues;
   private final List<String> files;
-  private List<ByteBuffer> fileChecksums = new ArrayList<ByteBuffer>();
+  private List<String> fileChecksums = new ArrayList<String>();
 
   /**
    *
@@ -104,7 +103,7 @@ public class InsertEvent extends ListenerEvent {
    *
    * @return
    */
-  public List<ByteBuffer> getFileChecksums() {
+  public List<String> getFileChecksums() {
     return fileChecksums;
   }
 }

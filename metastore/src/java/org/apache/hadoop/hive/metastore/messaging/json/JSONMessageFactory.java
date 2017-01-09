@@ -176,7 +176,7 @@ public class JSONMessageFactory extends MessageFactory {
 
   @Override
   public InsertMessage buildInsertMessage(String db, String table, Map<String, String> partKeyVals,
-      List<String> files, List<ByteBuffer> fileChecksums) {
+      List<String> files, List<String> fileChecksums) {
     return new JSONInsertMessage(MS_SERVER_URL, MS_SERVICE_PRINCIPAL, db, table, partKeyVals,
         files, fileChecksums, now());
   }

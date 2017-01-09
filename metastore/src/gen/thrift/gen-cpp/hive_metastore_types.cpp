@@ -16166,7 +16166,7 @@ uint32_t InsertEventRequestData::read(::apache::thrift::protocol::TProtocol* ipr
             uint32_t _i660;
             for (_i660 = 0; _i660 < _size656; ++_i660)
             {
-              xfer += iprot->readBinary(this->filesAddedChecksum[_i660]);
+              xfer += iprot->readString(this->filesAddedChecksum[_i660]);
             }
             xfer += iprot->readListEnd();
           }
@@ -16213,7 +16213,7 @@ uint32_t InsertEventRequestData::write(::apache::thrift::protocol::TProtocol* op
       std::vector<std::string> ::const_iterator _iter662;
       for (_iter662 = this->filesAddedChecksum.begin(); _iter662 != this->filesAddedChecksum.end(); ++_iter662)
       {
-        xfer += oprot->writeBinary((*_iter662));
+        xfer += oprot->writeString((*_iter662));
       }
       xfer += oprot->writeListEnd();
     }

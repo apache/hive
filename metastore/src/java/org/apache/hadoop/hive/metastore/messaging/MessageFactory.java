@@ -28,7 +28,6 @@ import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.util.ReflectionUtils;
 
-import java.nio.ByteBuffer;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -253,5 +252,5 @@ public abstract class MessageFactory {
    * @return instance of InsertMessage
    */
   public abstract InsertMessage buildInsertMessage(String db, String table,
-      Map<String, String> partVals, List<String> files, List<ByteBuffer> fileChecksums);
+      Map<String, String> partVals, List<String> files, List<String> fileChecksums);
 }

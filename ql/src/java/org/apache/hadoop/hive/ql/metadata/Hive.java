@@ -2349,11 +2349,12 @@ private void constructOneLBLocationMap(FileStatus fSta,
             FileChecksum cksum = fileSystem.getFileChecksum(p);
             // File checksum is not implemented for local filesystem (RawLocalFileSystem)
             if (cksum != null) {
-              ByteArrayOutputStream baos = new ByteArrayOutputStream();
-              cksum.write(new DataOutputStream(baos));
-              insertData.addToFilesAddedChecksum(ByteBuffer.wrap(baos.toByteArray()));
+              String checksumString =
+                  StringUtils.byteToHexString(cksum.getBytes(), 0, cksum.getLength());
+              insertData.addToFilesAddedChecksum(checksumString);
             } else {
-              insertData.addToFilesAddedChecksum(ByteBuffer.allocate(0));
+              // Add an empty checksum string for filesystems that don't generate one
+              insertData.addToFilesAddedChecksum("");
             }
           }
         } else {

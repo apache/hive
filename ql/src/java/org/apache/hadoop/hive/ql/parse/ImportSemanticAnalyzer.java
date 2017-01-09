@@ -344,7 +344,7 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
 
   private static Task<?> loadTable(URI fromURI, Table table, boolean replace, Path tgtPath,
                             ReplicationSpec replicationSpec, EximUtil.SemanticAnalyzerWrapperContext x) {
-    Path dataPath = new Path(fromURI.toString(), "data");
+    Path dataPath = new Path(fromURI.toString(), EximUtil.DATA_PATH_NAME);
     Path tmpPath = x.getCtx().getExternalTmpPath(tgtPath);
     Task<?> copyTask = ReplCopyTask.getLoadCopyTask(replicationSpec, dataPath, tmpPath, x.getConf());
     LoadTableDesc loadTableWork = new LoadTableDesc(tmpPath,
@@ -777,7 +777,7 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
         x.getLOG().debug("adding dependent CopyWork/MoveWork for table");
         if (tblDesc.isExternal() && (tblDesc.getLocation() == null)) {
           x.getLOG().debug("Importing in place, no emptiness check, no copying/loading");
-          Path dataPath = new Path(fromURI.toString(), "data");
+          Path dataPath = new Path(fromURI.toString(), EximUtil.DATA_PATH_NAME);
           tblDesc.setLocation(dataPath.toString());
         } else {
           Path tablePath = null;

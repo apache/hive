@@ -913,7 +913,7 @@ public class TestDbNotificationListener {
     assertEquals(defaultDbName, event.getDbName());
     assertEquals(tblName, event.getTableName());
     // Parse the message field
-    verifyInsertJSON(event, defaultDbName, tblName, false);
+    verifyInsertJSON(event, defaultDbName, tblName);
   }
 
   @Test
@@ -967,7 +967,7 @@ public class TestDbNotificationListener {
     assertEquals(defaultDbName, event.getDbName());
     assertEquals(tblName, event.getTableName());
     // Parse the message field
-    verifyInsertJSON(event, defaultDbName, tblName, false);
+    verifyInsertJSON(event, defaultDbName, tblName);
     ObjectNode jsonTree = JSONMessageFactory.getJsonTree(event);
     LinkedHashMap<String, String> partKeyValsFromNotif =
         JSONMessageFactory.getAsMap((ObjectNode) jsonTree.get("partKeyVals"),
@@ -1057,7 +1057,7 @@ public class TestDbNotificationListener {
     assertEquals(firstEventId + 3, event.getEventId());
     assertEquals(EventType.INSERT.toString(), event.getEventType());
     // Parse the message field
-    verifyInsertJSON(event, defaultDbName, tblName, true);
+    verifyInsertJSON(event, defaultDbName, tblName);
 
     event = rsp.getEvents().get(4);
     assertEquals(firstEventId + 5, event.getEventId());
@@ -1090,7 +1090,7 @@ public class TestDbNotificationListener {
     assertEquals(firstEventId + 3, event.getEventId());
     assertEquals(EventType.INSERT.toString(), event.getEventType());
     // Parse the message field
-    verifyInsertJSON(event, null, sourceTblName, true);
+    verifyInsertJSON(event, null, sourceTblName);
 
     event = rsp.getEvents().get(4);
     assertEquals(firstEventId + 5, event.getEventId());
@@ -1165,13 +1165,13 @@ public class TestDbNotificationListener {
     assertEquals(firstEventId + 4, event.getEventId());
     assertEquals(EventType.INSERT.toString(), event.getEventType());
     // Parse the message field
-    verifyInsertJSON(event, null, tblName, true);
+    verifyInsertJSON(event, null, tblName);
 
     event = rsp.getEvents().get(6);
     assertEquals(firstEventId + 7, event.getEventId());
     assertEquals(EventType.INSERT.toString(), event.getEventType());
     // Parse the message field
-    verifyInsertJSON(event, null, tblName, true);
+    verifyInsertJSON(event, null, tblName);
 
     event = rsp.getEvents().get(9);
     assertEquals(firstEventId + 10, event.getEventId());
@@ -1181,13 +1181,13 @@ public class TestDbNotificationListener {
     assertEquals(firstEventId + 11, event.getEventId());
     assertEquals(EventType.INSERT.toString(), event.getEventType());
     // Parse the message field
-    verifyInsertJSON(event, null, tblName, true);
+    verifyInsertJSON(event, null, tblName);
 
     event = rsp.getEvents().get(13);
     assertEquals(firstEventId + 14, event.getEventId());
     assertEquals(EventType.INSERT.toString(), event.getEventType());
     // Parse the message field
-    verifyInsertJSON(event, null, tblName, true);
+    verifyInsertJSON(event, null, tblName);
 
     event = rsp.getEvents().get(16);
     assertEquals(firstEventId + 17, event.getEventId());
@@ -1223,8 +1223,7 @@ public class TestDbNotificationListener {
     assertTrue(event.getMessage().matches(".*\"ds\":\"todaytwo\".*"));
   }
 
-  private void verifyInsertJSON(NotificationEvent event, String dbName, String tblName,
-      boolean verifyChecksums) throws Exception {
+  private void verifyInsertJSON(NotificationEvent event, String dbName, String tblName) throws Exception {
     // Parse the message field
     ObjectNode jsonTree = JSONMessageFactory.getJsonTree(event);
     System.out.println("JSONInsertMessage: " + jsonTree.toString());
@@ -1239,14 +1238,6 @@ public class TestDbNotificationListener {
     List<String> files =
         JSONMessageFactory.getAsList((ArrayNode) jsonTree.get("files"), new ArrayList<String>());
     assertTrue(files.size() > 0);
-    if (verifyChecksums) {
-      // Should have list of file checksums
-      List<String> fileChecksums =
-          JSONMessageFactory.getAsList((ArrayNode) jsonTree.get("fileChecksums"),
-              new ArrayList<String>());
-      assertTrue(fileChecksums.size() > 0);
-
-    }
   }
 
   @Test
