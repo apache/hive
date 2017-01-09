@@ -67,13 +67,23 @@ import static org.junit.Assert.assertTrue;
   )
 })
 
-@ApplyLdifFiles("ldap/example.com.ldif")
+@ApplyLdifFiles({
+    "ldap/example.com.ldif",
+    "ldap/microsoft.schema.ldif",
+    "ldap/ad.example.com.ldif"
+})
 public class TestLdapAtnProviderWithMiniDS extends AbstractLdapTestUnit {
 
   private static final String GROUP1_NAME = "group1";
   private static final String GROUP2_NAME = "group2";
   private static final String GROUP3_NAME = "group3";
   private static final String GROUP4_NAME = "group4";
+
+  private static final String GROUP_ADMINS_NAME = "admins";
+  private static final String GROUP_TEAM1_NAME = "team1";
+  private static final String GROUP_TEAM2_NAME = "team2";
+  private static final String GROUP_RESOURCE1_NAME = "resource1";
+  private static final String GROUP_RESOURCE2_NAME = "resource2";
 
   private static final User USER1 = User.builder()
       .id("user1")
@@ -97,6 +107,36 @@ public class TestLdapAtnProviderWithMiniDS extends AbstractLdapTestUnit {
       .id("user4")
       .useIdForPassword()
       .dn("cn=user4,ou=People,dc=example,dc=com")
+      .build();
+
+  private static final User ENGINEER_1 = User.builder()
+      .id("engineer1")
+      .dn("sAMAccountName=engineer1,ou=Engineering,dc=ad,dc=example,dc=com")
+      .password("engineer1-password")
+      .build();
+
+  private static final User ENGINEER_2 = User.builder()
+      .id("engineer2")
+      .dn("sAMAccountName=engineer2,ou=Engineering,dc=ad,dc=example,dc=com")
+      .password("engineer2-password")
+      .build();
+
+  private static final User MANAGER_1 = User.builder()
+      .id("manager1")
+      .dn("sAMAccountName=manager1,ou=Management,dc=ad,dc=example,dc=com")
+      .password("manager1-password")
+      .build();
+
+  private static final User MANAGER_2 = User.builder()
+      .id("manager2")
+      .dn("sAMAccountName=manager2,ou=Management,dc=ad,dc=example,dc=com")
+      .password("manager2-password")
+      .build();
+
+  private static final User ADMIN_1 = User.builder()
+      .id("admin1")
+      .dn("sAMAccountName=admin1,ou=Administration,dc=ad,dc=example,dc=com")
+      .password("admin1-password")
       .build();
 
   private LdapAuthenticationTestCase testCase;
@@ -481,7 +521,7 @@ public class TestLdapAtnProviderWithMiniDS extends AbstractLdapTestUnit {
         .userDNPatterns(
             "cn=%s,ou=People,dc=example,dc=com",
             "uid=%s,ou=People,dc=example,dc=com")
-        .groupMembership("uniqueMember")
+        .groupMembershipKey("uniqueMember")
         .customQuery(
             String.format("(&(objectClass=groupOfUniqueNames)(cn=%s))",
                 GROUP4_NAME))
@@ -528,11 +568,112 @@ public class TestLdapAtnProviderWithMiniDS extends AbstractLdapTestUnit {
         .groupDNPatterns("cn=%s,ou=Groups,dc=example,dc=com")
         .groupFilters(GROUP4_NAME)
         .guidKey("cn")
-        .groupMembership("uniqueMember")
+        .groupMembershipKey("uniqueMember")
         .groupClassKey("groupOfUniqueNames")
         .build();
 
     testCase.assertAuthenticatePasses(USER4.credentialsWithId());
     testCase.assertAuthenticatePasses(USER4.credentialsWithDn());
+  }
+
+  @Test
+  public void testDirectUserMembershipGroupFilterPositive() {
+    testCase = defaultBuilder()
+        .userDNPatterns(
+            "sAMAccountName=%s,ou=Engineering,dc=ad,dc=example,dc=com",
+            "sAMAccountName=%s,ou=Management,dc=ad,dc=example,dc=com")
+        .groupDNPatterns(
+            "sAMAccountName=%s,ou=Teams,dc=ad,dc=example,dc=com",
+            "sAMAccountName=%s,ou=Resources,dc=ad,dc=example,dc=com")
+        .groupFilters(
+            GROUP_TEAM1_NAME,
+            GROUP_TEAM2_NAME,
+            GROUP_RESOURCE1_NAME,
+            GROUP_RESOURCE2_NAME)
+        .guidKey("sAMAccountName")
+        .userMembershipKey("memberOf")
+        .build();
+
+    testCase.assertAuthenticatePasses(ENGINEER_1.credentialsWithId());
+    testCase.assertAuthenticatePasses(ENGINEER_2.credentialsWithId());
+    testCase.assertAuthenticatePasses(MANAGER_1.credentialsWithId());
+    testCase.assertAuthenticatePasses(MANAGER_2.credentialsWithId());
+  }
+
+  @Test
+  public void testDirectUserMembershipGroupFilterNegative() {
+    testCase = defaultBuilder()
+        .userDNPatterns(
+            "sAMAccountName=%s,ou=Engineering,dc=ad,dc=example,dc=com",
+            "sAMAccountName=%s,ou=Management,dc=ad,dc=example,dc=com")
+        .groupDNPatterns("cn=%s,ou=Teams,dc=ad,dc=example,dc=com")
+        .groupFilters(GROUP_TEAM1_NAME)
+        .guidKey("sAMAccountName")
+        .userMembershipKey("memberOf")
+        .build();
+
+    testCase.assertAuthenticateFails(ENGINEER_2.credentialsWithId());
+    testCase.assertAuthenticateFails(MANAGER_2.credentialsWithId());
+  }
+
+  @Test
+  public void testDirectUserMembershipGroupFilterNegativeWithoutUserBases() throws Exception {
+    testCase = defaultBuilder()
+        .groupDNPatterns("cn=%s,ou=Teams,dc=ad,dc=example,dc=com")
+        .groupFilters(GROUP_TEAM1_NAME)
+        .guidKey("sAMAccountName")
+        .userMembershipKey("memberOf")
+        .build();
+
+    testCase.assertAuthenticateFails(ENGINEER_1.credentialsWithId());
+    testCase.assertAuthenticateFails(ENGINEER_2.credentialsWithId());
+    testCase.assertAuthenticateFails(MANAGER_1.credentialsWithId());
+    testCase.assertAuthenticateFails(MANAGER_2.credentialsWithId());
+  }
+
+  @Test
+  public void testDirectUserMembershipGroupFilterWithDNCredentials() throws Exception {
+    testCase = defaultBuilder()
+        .userDNPatterns("sAMAccountName=%s,ou=Engineering,dc=ad,dc=example,dc=com")
+        .groupDNPatterns("cn=%s,ou=Teams,dc=ad,dc=example,dc=com")
+        .groupFilters(GROUP_TEAM1_NAME)
+        .guidKey("sAMAccountName")
+        .userMembershipKey("memberOf")
+        .build();
+
+    testCase.assertAuthenticatePasses(ENGINEER_1.credentialsWithDn());
+    testCase.assertAuthenticateFails(MANAGER_1.credentialsWithDn());
+  }
+
+  @Test
+  public void testDirectUserMembershipGroupFilterWithDifferentGroupClassKey() throws Exception {
+    testCase = defaultBuilder()
+        .userDNPatterns("sAMAccountName=%s,ou=Administration,dc=ad,dc=example,dc=com")
+        .groupDNPatterns("cn=%s,ou=Administration,dc=ad,dc=example,dc=com")
+        .groupFilters(GROUP_ADMINS_NAME)
+        .guidKey("sAMAccountName")
+        .userMembershipKey("memberOf")
+        .groupClassKey("groupOfUniqueNames")
+        .build();
+
+    testCase.assertAuthenticatePasses(ADMIN_1.credentialsWithId());
+    testCase.assertAuthenticateFails(ENGINEER_1.credentialsWithId());
+    testCase.assertAuthenticateFails(MANAGER_1.credentialsWithDn());
+  }
+
+  @Test
+  public void testDirectUserMembershipGroupFilterNegativeWithWrongGroupClassKey() throws Exception {
+    testCase = defaultBuilder()
+        .userDNPatterns("sAMAccountName=%s,ou=Administration,dc=ad,dc=example,dc=com")
+        .groupDNPatterns("cn=%s,ou=Administration,dc=ad,dc=example,dc=com")
+        .groupFilters(GROUP_ADMINS_NAME)
+        .guidKey("sAMAccountName")
+        .userMembershipKey("memberOf")
+        .groupClassKey("wrongClass")
+        .build();
+
+    testCase.assertAuthenticateFails(ADMIN_1.credentialsWithId());
+    testCase.assertAuthenticateFails(ENGINEER_1.credentialsWithId());
+    testCase.assertAuthenticateFails(MANAGER_1.credentialsWithDn());
   }
 }

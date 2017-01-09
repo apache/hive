@@ -121,6 +121,23 @@ public final class LdapSearch implements DirSearch {
    * {@inheritDoc}
    */
   @Override
+  public String findGroupDn(String group) throws NamingException {
+    return execute(groupBases, queries.findGroupDnById(group)).getSingleLdapName();
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public boolean isUserMemberOfGroup(String user, String groupDn) throws NamingException {
+    String userId = LdapUtils.extractUserName(user);
+    return execute(userBases, queries.isUserMemberOfGroup(userId, groupDn)).hasSingleResult();
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
   public List<String> findGroupsForUser(String userDn) throws NamingException {
     String userName = LdapUtils.extractUserName(userDn);
     return execute(groupBases, queries.findGroupsForUser(userName, userDn)).getAllLdapNames();

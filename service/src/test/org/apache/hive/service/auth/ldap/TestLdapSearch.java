@@ -17,6 +17,7 @@
  */
 package org.apache.hive.service.auth.ldap;
 
+import com.google.common.base.Joiner;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -49,6 +50,7 @@ public class TestLdapSearch {
   @Before
   public void setup() {
     conf = new HiveConf();
+    conf.setVar(HiveConf.ConfVars.HIVE_SERVER2_PLAIN_LDAP_USERMEMBERSHIP_KEY, "memberOf");
   }
 
   @Test
@@ -205,5 +207,87 @@ public class TestLdapSearch {
     Collections.sort(expected);
     Collections.sort(actual);
     assertEquals(expected, actual);
+  }
+
+  @Test
+  public void testFindGroupDnPositive() throws NamingException {
+    conf.setVar(HiveConf.ConfVars.HIVE_SERVER2_PLAIN_LDAP_GROUPDNPATTERN,
+        "CN=%s,OU=org1,DC=foo,DC=bar");
+    String groupDn = "CN=Group1";
+    NamingEnumeration<SearchResult> result = mockNamingEnumeration(groupDn);
+    when(ctx.search(anyString(), anyString(), any(SearchControls.class))).thenReturn(result);
+    search = new LdapSearch(conf, ctx);
+    String expected = groupDn;
+    String actual = search.findGroupDn("grp1");
+    assertEquals(expected, actual);
+  }
+
+  @Test(expected = NamingException.class)
+  public void testFindGroupDNNoResults() throws NamingException {
+    conf.setVar(HiveConf.ConfVars.HIVE_SERVER2_PLAIN_LDAP_GROUPDNPATTERN,
+        "CN=%s,OU=org1,DC=foo,DC=bar");
+    NamingEnumeration<SearchResult> result = mockEmptyNamingEnumeration();
+    when(ctx.search(anyString(), anyString(), any(SearchControls.class))).thenReturn(result);
+    search = new LdapSearch(conf, ctx);
+    search.findGroupDn("anyGroup");
+  }
+
+  @Test(expected = NamingException.class)
+  public void testFindGroupDNTooManyResults() throws NamingException {
+    conf.setVar(HiveConf.ConfVars.HIVE_SERVER2_PLAIN_LDAP_GROUPDNPATTERN,
+        "CN=%s,OU=org1,DC=foo,DC=bar");
+    NamingEnumeration<SearchResult> result =
+        LdapTestUtils.mockNamingEnumeration("Result1", "Result2", "Result3");
+    when(ctx.search(anyString(), anyString(), any(SearchControls.class))).thenReturn(result);
+    search = new LdapSearch(conf, ctx);
+    search.findGroupDn("anyGroup");
+  }
+
+  @Test
+  public void testFindGroupDNWhenExceptionInSearch() throws NamingException {
+    conf.setVar(HiveConf.ConfVars.HIVE_SERVER2_PLAIN_LDAP_GROUPDNPATTERN,
+        Joiner.on(":").join(
+            "CN=%s,OU=org1,DC=foo,DC=bar",
+            "CN=%s,OU=org2,DC=foo,DC=bar"
+        )
+    );
+    NamingEnumeration<SearchResult> result = LdapTestUtils.mockNamingEnumeration("CN=Group1");
+    when(ctx.search(anyString(), anyString(), any(SearchControls.class)))
+        .thenReturn(result)
+        .thenThrow(NamingException.class);
+    search = new LdapSearch(conf, ctx);
+    String expected = "CN=Group1";
+    String actual = search.findGroupDn("grp1");
+    assertEquals(expected, actual);
+  }
+
+  @Test
+  public void testIsUserMemberOfGroupWhenUserId() throws NamingException {
+    conf.setVar(HiveConf.ConfVars.HIVE_SERVER2_PLAIN_LDAP_USERDNPATTERN,
+        "CN=%s,OU=org1,DC=foo,DC=bar");
+    NamingEnumeration<SearchResult> validResult = LdapTestUtils.mockNamingEnumeration("CN=User1");
+    NamingEnumeration<SearchResult> emptyResult = LdapTestUtils.mockEmptyNamingEnumeration();
+    when(ctx.search(anyString(), contains("(uid=usr1)"), any(SearchControls.class)))
+        .thenReturn(validResult);
+    when(ctx.search(anyString(), contains("(uid=usr2)"), any(SearchControls.class)))
+        .thenReturn(emptyResult);
+    search = new LdapSearch(conf, ctx);
+    assertTrue(search.isUserMemberOfGroup("usr1", "grp1"));
+    assertFalse(search.isUserMemberOfGroup("usr2", "grp2"));
+  }
+
+  @Test
+  public void testIsUserMemberOfGroupWhenUserDn() throws NamingException {
+    conf.setVar(HiveConf.ConfVars.HIVE_SERVER2_PLAIN_LDAP_USERDNPATTERN,
+        "CN=%s,OU=org1,DC=foo,DC=bar");
+    NamingEnumeration<SearchResult> validResult = LdapTestUtils.mockNamingEnumeration("CN=User1");
+    NamingEnumeration<SearchResult> emptyResult = LdapTestUtils.mockEmptyNamingEnumeration();
+    when(ctx.search(anyString(), contains("(uid=User1)"), any(SearchControls.class)))
+        .thenReturn(validResult);
+    when(ctx.search(anyString(), contains("(uid=User2)"), any(SearchControls.class)))
+        .thenReturn(emptyResult);
+    search = new LdapSearch(conf, ctx);
+    assertTrue(search.isUserMemberOfGroup("CN=User1,OU=org1,DC=foo,DC=bar", "grp1"));
+    assertFalse(search.isUserMemberOfGroup("CN=User2,OU=org1,DC=foo,DC=bar", "grp2"));
   }
 }

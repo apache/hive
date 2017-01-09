@@ -17,17 +17,21 @@
  */
 package org.apache.hive.service.auth.ldap;
 
+import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import org.apache.hadoop.hive.conf.HiveConf;
 
 /**
  * A factory for common types of directory service search queries.
  */
-public final class QueryFactory {
+final class QueryFactory {
+
+  private static final String[] USER_OBJECT_CLASSES = {"person", "user", "inetOrgPerson"};
 
   private final String guidAttr;
   private final String groupClassAttr;
   private final String groupMembershipAttr;
+  private final String userMembershipAttr;
 
   /**
    * Constructs the factory based on provided Hive configuration.
@@ -38,6 +42,8 @@ public final class QueryFactory {
     groupClassAttr = conf.getVar(HiveConf.ConfVars.HIVE_SERVER2_PLAIN_LDAP_GROUPCLASS_KEY);
     groupMembershipAttr = conf.getVar(
         HiveConf.ConfVars.HIVE_SERVER2_PLAIN_LDAP_GROUPMEMBERSHIP_KEY);
+    userMembershipAttr = conf.getVar(
+        HiveConf.ConfVars.HIVE_SERVER2_PLAIN_LDAP_USERMEMBERSHIP_KEY);
   }
 
   /**
@@ -62,9 +68,10 @@ public final class QueryFactory {
    */
   public Query findUserDnByRdn(String userRdn) {
     return Query.builder()
-        .filter("(&(|(objectClass=person)(objectClass=user)(objectClass=inetOrgPerson))"
+        .filter("(&(|<classes:{ class |(objectClass=<class>)}>)"
             + "(<userRdn>))")
         .limit(2)
+        .map("classes", USER_OBJECT_CLASSES)
         .map("userRdn", userRdn)
         .build();
   }
@@ -93,8 +100,9 @@ public final class QueryFactory {
    */
   public Query findUserDnByName(String userName) {
     return Query.builder()
-        .filter("(&(|(objectClass=person)(objectClass=user)(objectClass=inetOrgPerson))"
+        .filter("(&(|<classes:{ class |(objectClass=<class>)}>)"
             + "(|(uid=<userName>)(sAMAccountName=<userName>)))")
+        .map("classes", USER_OBJECT_CLASSES)
         .map("userName", userName)
         .limit(2)
         .build();
@@ -114,6 +122,34 @@ public final class QueryFactory {
         .map("groupMembershipAttr", groupMembershipAttr)
         .map("userName", userName)
         .map("userDn", userDn)
+        .build();
+  }
+
+  /**
+   * Returns a query for checking whether specified user is a member of specified group.
+   *
+   * The query requires {@value HiveConf#HIVE_SERVER2_AUTHENTICATION_LDAP_USERMEMBERSHIPKEY_NAME}
+   * Hive configuration property to be set.
+   *
+   * @param userId user unique identifier
+   * @param groupDn group DN
+   * @return an instance of {@link Query}
+   * @see HiveConf.ConfVars#HIVE_SERVER2_PLAIN_LDAP_USERMEMBERSHIP_KEY
+   * @throws NullPointerException when
+   * {@value HiveConf#HIVE_SERVER2_AUTHENTICATION_LDAP_USERMEMBERSHIPKEY_NAME} is not set.
+   */
+  public Query isUserMemberOfGroup(String userId, String groupDn) {
+    Preconditions.checkState(!Strings.isNullOrEmpty(userMembershipAttr),
+        "hive.server2.authentication.ldap.userMembershipKey is not configured.");
+    return Query.builder()
+        .filter("(&(|<classes:{ class |(objectClass=<class>)}>)" +
+            "(<userMembershipAttr>=<groupDn>)(<guidAttr>=<userId>))")
+        .map("classes", USER_OBJECT_CLASSES)
+        .map("guidAttr", guidAttr)
+        .map("userMembershipAttr", userMembershipAttr)
+        .map("userId", userId)
+        .map("groupDn", groupDn)
+        .limit(2)
         .build();
   }
 

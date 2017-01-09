@@ -103,6 +103,17 @@ public final class Query {
     }
 
     /**
+     * Sets mapping between names in the search filter template and actual values.
+     * @param key marker in the search filter template.
+     * @param values array of values
+     * @return the current instance of the builder
+     */
+    public QueryBuilder map(String key, String[] values) {
+      filterTemplate.add(key, values);
+      return this;
+    }
+
+    /**
      * Sets attribute that should be returned in results for the query.
      * @param attributeName attribute name
      * @return the current instance of the builder
