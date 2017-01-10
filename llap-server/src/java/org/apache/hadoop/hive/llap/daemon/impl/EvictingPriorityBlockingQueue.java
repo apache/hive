@@ -19,6 +19,9 @@ package org.apache.hadoop.hive.llap.daemon.impl;
 
 import java.util.Comparator;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * Bounded priority queue that evicts the last element based on priority order specified
  * through comparator. Elements that are added to the queue are sorted based on the specified
@@ -27,6 +30,10 @@ import java.util.Comparator;
  * returned back. If the queue is not full, new element will be added to queue and null is returned.
  */
 public class EvictingPriorityBlockingQueue<E> {
+
+  private static final Logger LOG =
+      LoggerFactory.getLogger(EvictingPriorityBlockingQueue.class);
+
   private final PriorityBlockingDeque<E> deque;
   private final Comparator<E> comparator;
 
@@ -42,7 +49,14 @@ public class EvictingPriorityBlockingQueue<E> {
       E last = deque.peekLast();
       if (comparator.compare(e, last) < 0) {
         deque.removeLast();
-        deque.offer(e);
+        if (!deque.offer(e)) {
+          LOG.error(
+              "Failed to insert element into queue with capacity available. size={}, element={}",
+              size(), e);
+          throw new RuntimeException(
+              "Failed to insert element into queue with capacity available. size=" +
+                  size());
+        }
         return last;
       }
       return e;
