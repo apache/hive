@@ -410,8 +410,8 @@ public class LlapZookeeperRegistryImpl implements ServiceRegistry {
     public DynamicServiceInstance(ServiceRecord srv) throws IOException {
       this.srv = srv;
 
-      if (LOG.isDebugEnabled()) {
-        LOG.debug("Working with ServiceRecord: {}", srv);
+      if (LOG.isTraceEnabled()) {
+        LOG.trace("Working with ServiceRecord: {}", srv);
       }
 
       final Endpoint shuffle = srv.getInternalEndpoint(IPC_SHUFFLE);

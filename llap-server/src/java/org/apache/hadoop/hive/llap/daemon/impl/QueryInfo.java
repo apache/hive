@@ -203,11 +203,12 @@ public class QueryInfo {
           sourceToEntity.put(source, entityInfo);
         }
 
-        if (lastFinishableState != fragmentInfo.canFinish()) {
+        if (lastFinishableState == fragmentInfo.canFinish()) {
+          // State has not changed.
+          return true;
+        } else {
           entityInfo.setLastFinishableState(fragmentInfo.canFinish());
           return false;
-        } else {
-          return true;
         }
       } finally {
         lock.unlock();
