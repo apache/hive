@@ -171,7 +171,7 @@ public class <ClassName> extends VectorExpression {
   }
 
   public void setRightValue(<OperandType> value) {
-    this.leftValue = value;
+    this.rightValue = value;
   }
   
   @Override

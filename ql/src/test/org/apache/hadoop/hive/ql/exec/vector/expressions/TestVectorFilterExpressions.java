@@ -424,6 +424,18 @@ public class TestVectorFilterExpressions {
     expr1.evaluate(vrb3);
     assertEquals(0, vrb3.size);
 
+    // Test getters/setters
+    FilterLongColumnBetween betweenExpr = (FilterLongColumnBetween) expr1;
+    assertEquals(15, betweenExpr.getLeftValue());
+    assertEquals(17, betweenExpr.getRightValue());
+    assertEquals(0, betweenExpr.getColNum());
+
+    betweenExpr.setColNum(1);
+    assertEquals(1, betweenExpr.getColNum());
+    betweenExpr.setLeftValue(2);
+    assertEquals(2, betweenExpr.getLeftValue());
+    betweenExpr.setRightValue(3);
+    assertEquals(3, betweenExpr.getRightValue());
   }
 
   @Test
