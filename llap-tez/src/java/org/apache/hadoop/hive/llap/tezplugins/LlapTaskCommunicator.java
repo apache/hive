@@ -752,18 +752,28 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
 
     public void registerTaskSubmittedToNode(
         TezTaskAttemptID taskAttemptID, String uniqueNodeId) {
-      String prev = uniqueNodeMap.putIfAbsent(taskAttemptID, uniqueNodeId);
-      if (prev != null) {
-        LOG.warn("Replaced the unique node mapping for task from " + prev + " to " + uniqueNodeId);
+      synchronized (attemptToNodeMap) {
+        if (attemptToNodeMap.containsKey(taskAttemptID)) {
+          // Register only if the attempt is known. In case an unregister call
+          // came in before the register call.
+          String prev = uniqueNodeMap.putIfAbsent(taskAttemptID, uniqueNodeId);
+          if (prev != null) {
+            LOG.warn("Replaced the unique node mapping for task from " + prev +
+                " to " + uniqueNodeId);
+          }
+        }
       }
     }
 
     void unregisterTaskAttempt(TezTaskAttemptID attemptId) {
       uniqueNodeMap.remove(attemptId);
-      LlapNodeId llapNodeId = attemptToNodeMap.remove(attemptId);
-      if (llapNodeId == null) {
-        // Possible since either container / task can be unregistered.
-        return;
+      LlapNodeId llapNodeId;
+      synchronized (attemptToNodeMap) {
+        llapNodeId = attemptToNodeMap.remove(attemptId);
+        if (llapNodeId == null) {
+          // Possible since either container / task can be unregistered.
+          return;
+        }
       }
 
       BiMap<ContainerId, TezTaskAttemptID> bMap = nodeMap.get(llapNodeId);

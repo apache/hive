@@ -346,11 +346,12 @@ public class TaskExecutorService extends AbstractService implements Scheduler<Ta
       // The wait queue should be able to fit at least (waitQueue + currentFreeExecutor slots)
       canFinish = taskWrapper.getTaskRunnerCallable().canFinish();
       evictedTask = waitQueue.offer(taskWrapper);
+      // Finishable state is checked on the task, via an explicit query to the TaskRunnerCallable
 
       // null evicted task means offer accepted
       // evictedTask is not equal taskWrapper means current task is accepted and it evicted
       // some other task
-      if (evictedTask == null || evictedTask != taskWrapper) {
+      if (evictedTask == null || !evictedTask.equals(taskWrapper)) {
         knownTasks.put(taskWrapper.getRequestId(), taskWrapper);
         taskWrapper.setIsInWaitQueue(true);
         if (isDebugEnabled) {
@@ -379,6 +380,18 @@ public class TaskExecutorService extends AbstractService implements Scheduler<Ta
         }
         return result;
       }
+
+      // Register for notifications inside the lock. Should avoid races with unregisterForNotifications
+      // happens in a different Submission thread. i.e. Avoid register running for this task
+      // after some other submission has evicted it.
+      boolean stateChanged = !taskWrapper.maybeRegisterForFinishedStateNotifications(canFinish);
+      if (stateChanged) {
+        if (isDebugEnabled) {
+          LOG.debug("Finishable state of {} updated to {} during registration for state updates",
+              taskWrapper.getRequestId(), !canFinish);
+        }
+        finishableStateUpdated(taskWrapper, !canFinish);
+      }
     }
 
     // At this point, the task has been added into the queue. It may have caused an eviction for
@@ -387,26 +400,24 @@ public class TaskExecutorService extends AbstractService implements Scheduler<Ta
     // This registration has to be done after knownTasks has been populated.
     // Register for state change notifications so that the waitQueue can be re-ordered correctly
     // if the fragment moves in or out of the finishable state.
-    boolean stateChanged = taskWrapper.maybeRegisterForFinishedStateNotifications(canFinish);
-    if (stateChanged) {
-      if (isDebugEnabled) {
-        LOG.debug("Finishable state of {} updated to {} during registration for state updates",
-            taskWrapper.getRequestId(), !canFinish);
-      }
-      finishableStateUpdated(taskWrapper, !canFinish);
-    }
 
     if (isDebugEnabled) {
       LOG.debug("Wait Queue: {}", waitQueue);
     }
+
     if (evictedTask != null) {
-      knownTasks.remove(evictedTask.getRequestId());
-      evictedTask.maybeUnregisterForFinishedStateNotifications();
-      evictedTask.setIsInWaitQueue(false);
-      evictedTask.getTaskRunnerCallable().killTask();
       if (isInfoEnabled) {
         LOG.info("{} evicted from wait queue in favor of {} because of lower priority",
             evictedTask.getRequestId(), task.getRequestId());
+      }
+      try {
+        knownTasks.remove(evictedTask.getRequestId());
+        evictedTask.maybeUnregisterForFinishedStateNotifications();
+        evictedTask.setIsInWaitQueue(false);
+      } finally {
+        // This is dealing with tasks from a different submission, and cause the kill
+        // to go out before the previous submissions has completed. Handled in the AM
+        evictedTask.getTaskRunnerCallable().killTask();
       }
       if (metrics != null) {
         metrics.incrTotalEvictedFromWaitQueue();
@@ -769,6 +780,7 @@ public class TaskExecutorService extends AbstractService implements Scheduler<Ta
         return taskRunnerCallable.getFragmentInfo()
             .registerForFinishableStateUpdates(this, currentFinishableState);
       } else {
+        // State has not changed / already registered for notifications.
         return true;
       }
     }
@@ -829,6 +841,29 @@ public class TaskExecutorService extends AbstractService implements Scheduler<Ta
       LOG.info("Received finishable state update for {}, state={}",
           taskRunnerCallable.getRequestId(), finishableState);
       taskExecutorService.finishableStateUpdated(this, finishableState);
+    }
+
+
+    // TaskWrapper is used in structures, as well as for ordering using Comparators
+    // in the waitQueue. Avoid Object comparison.
+    @Override
+    public boolean equals(Object o) {
+      if (this == o) {
+        return true;
+      }
+      if (o == null || getClass() != o.getClass()) {
+        return false;
+      }
+
+      TaskWrapper that = (TaskWrapper) o;
+
+      return taskRunnerCallable.getRequestId()
+          .equals(that.taskRunnerCallable.getRequestId());
+    }
+
+    @Override
+    public int hashCode() {
+      return taskRunnerCallable.getRequestId().hashCode();
     }
   }
 

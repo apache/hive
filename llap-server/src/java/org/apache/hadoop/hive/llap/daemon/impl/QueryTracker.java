@@ -231,6 +231,8 @@ public class QueryTracker extends AbstractService {
           deleteDelay);
       queryInfoMap.remove(queryIdentifier);
       if (queryInfo == null) {
+        // One case where this happens is when a query is killed via an explicit signal, and then
+        // another message is received from teh AMHeartbeater.
         LOG.warn("Ignoring query complete for unknown dag: {}", queryIdentifier);
         return Collections.emptyList();
       }
