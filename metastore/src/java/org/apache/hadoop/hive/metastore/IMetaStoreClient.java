@@ -1507,13 +1507,13 @@ public interface IMetaStoreClient {
     throws TException;
 
   /**
-   * Performs the commit to the metadata storage after a successful insert operation.
+   * Performs the pre/commit/rollback to the metadata storage for insert operator from external storage handler.
    * @param table table name
    * @param overwrite true if the insert is overwrite
    *
-   * @return 0 if the commit operation succeeded
+   * @throws MetaException
    */
-  int insertCommit(Table table, boolean overwrite);
+  void insertTable(Table table, boolean overwrite) throws MetaException;
 
   /**
    * A filter provided by the client that determines if a given notification event should be

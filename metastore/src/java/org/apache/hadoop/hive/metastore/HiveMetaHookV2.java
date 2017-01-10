@@ -29,5 +29,23 @@ public interface HiveMetaHookV2 extends HiveMetaHook {
    *
    * @throws MetaException
    */
-  public void commitInsert(Table table, boolean overwrite) throws MetaException;
+  public void commitInsertTable(Table table, boolean overwrite) throws MetaException;
+
+  /**
+   * called before commit insert method is called
+   * @param table table definition
+   * @param overwrite true if it is INSERT OVERWRITE
+   *
+   * @throws MetaException
+   */
+  public void preInsertTable(Table table, boolean overwrite) throws MetaException;
+
+  /**
+   * called in case pre commit or commit insert fail.
+   * @param table table definition
+   * @param overwrite true if it is INSERT OVERWRITE
+   *
+   * @throws MetaException
+   */
+  public void rollbackInsertTable(Table table, boolean overwrite) throws MetaException;
 }

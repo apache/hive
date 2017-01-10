@@ -342,7 +342,7 @@ public class DruidStorageHandler extends DefaultStorageHandler implements HiveMe
   }
 
   @Override
-  public void commitInsert(Table table, boolean overwrite) throws MetaException {
+  public void commitInsertTable(Table table, boolean overwrite) throws MetaException {
     if (overwrite) {
       LOG.debug(String.format("commit insert overwrite into table [%s]", table.getTableName()));
       this.commitCreateTable(table);
@@ -352,12 +352,12 @@ public class DruidStorageHandler extends DefaultStorageHandler implements HiveMe
   }
 
   @Override
-  public void preInsert(Table table, boolean overwrite) throws MetaException {
+  public void preInsertTable(Table table, boolean overwrite) throws MetaException {
     //do nothing
   }
 
   @Override
-  public void rollbackInsert(Table table, boolean overwrite) throws MetaException {
+  public void rollbackInsertTable(Table table, boolean overwrite) throws MetaException {
     // do nothing
   }
 

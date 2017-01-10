@@ -577,7 +577,8 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 
   private int insertCommitWork(Hive db, InsertTableDesc insertTableDesc) throws HiveException {
     try {
-      return db.getMSC().insertCommit(insertTableDesc.getTable(), insertTableDesc.isOverwrite());
+      db.getMSC().insertTable(insertTableDesc.getTable(), insertTableDesc.isOverwrite());
+      return 0;
     } catch (MetaException e) {
       throw new HiveException(e);
     }

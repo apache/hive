@@ -2179,18 +2179,21 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
   }
 
   @Override
-  public int insertCommit(Table table, boolean overwrite) {
-    try {
-      HiveMetaHook hook = getHook(table);
-      if (hook == null || !(hook instanceof HiveMetaHookV2)) {
-        return -1;
-      }
-      HiveMetaHookV2 hiveMetaHook = (HiveMetaHookV2) hook;
-      hiveMetaHook.commitInsert(table, overwrite);
-    } catch (MetaException e) {
-      return -1;
+  public void insertTable(Table table, boolean overwrite) throws MetaException {
+    boolean failed = true;
+    HiveMetaHook hook = getHook(table);
+    if (hook == null || !(hook instanceof HiveMetaHookV2)) {
+      return;
     }
-    return 0;
+    HiveMetaHookV2 hiveMetaHook = (HiveMetaHookV2) hook;
+    try {
+      hiveMetaHook.preInsertTable(table, overwrite);
+      hiveMetaHook.commitInsertTable(table, overwrite);
+    } finally {
+      if (failed) {
+        hiveMetaHook.rollbackInsertTable(table, overwrite);
+      }
+    }
   }
 
   @InterfaceAudience.LimitedPrivate({"HCatalog"})
