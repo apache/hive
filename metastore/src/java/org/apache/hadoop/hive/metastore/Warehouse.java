@@ -66,6 +66,7 @@ public class Warehouse {
 
   private MetaStoreFS fsHandler = null;
   private boolean storageAuthCheck = false;
+  private ReplChangeManager cm = null;
 
   public Warehouse(Configuration conf) throws MetaException {
     this.conf = conf;
@@ -75,6 +76,7 @@ public class Warehouse {
           + " is not set in the config or blank");
     }
     fsHandler = getMetaStoreFsHandler(conf);
+    cm = ReplChangeManager.getInstance((HiveConf)conf);
     storageAuthCheck = HiveConf.getBoolVar(conf,
         HiveConf.ConfVars.METASTORE_AUTHORIZATION_STORAGE_AUTH_CHECKS);
   }
@@ -213,6 +215,7 @@ public class Warehouse {
   }
 
   public boolean deleteDir(Path f, boolean recursive, boolean ifPurge) throws MetaException {
+    cm.recycle(f, ifPurge);
     FileSystem fs = getFs(f);
     return fsHandler.deleteDir(fs, f, recursive, ifPurge, conf);
   }
