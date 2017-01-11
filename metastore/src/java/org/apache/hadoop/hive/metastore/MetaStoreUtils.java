@@ -655,6 +655,21 @@ public class MetaStoreUtils {
     return true;
   }
 
+  static boolean columnsIncluded(List<FieldSchema> oldCols, List<FieldSchema> newCols) {
+    if (oldCols.size() > newCols.size()) {
+      return false;
+    }
+
+    Set<FieldSchema> newColsSet = new HashSet<FieldSchema>(newCols);
+    for (final FieldSchema oldCol : oldCols) {
+      if (!newColsSet.contains(oldCol)) {
+        return false;
+      }
+    }
+
+    return true;
+  }
+
   /**
    * @return true if oldType and newType are compatible.
    * Two types are compatible if we have internal functions to cast one to another.

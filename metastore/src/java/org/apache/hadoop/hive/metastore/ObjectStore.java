@@ -7218,7 +7218,6 @@ public class ObjectStore implements RawStore, Configurable {
     } finally {
       if (!committed) {
         rollbackTransaction();
-        return Lists.newArrayList();
       }
     }
   }

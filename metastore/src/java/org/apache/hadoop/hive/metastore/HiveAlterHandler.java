@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.metastore;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Lists;
 
 import org.apache.commons.lang.StringUtils;
@@ -777,7 +778,7 @@ public class HiveAlterHandler implements AlterHandler {
         }
         if (oldPartition.getSd() != null && newPart.getSd() != null) {
         List<FieldSchema> oldCols = oldPartition.getSd().getCols();
-          if (!MetaStoreUtils.areSameColumns(oldCols, newPart.getSd().getCols())) {
+          if (!MetaStoreUtils.columnsIncluded(oldCols, newPart.getSd().getCols())) {
             updatePartColumnStatsForAlterColumns(msdb, oldPartition, oldPartName, partVals, oldCols, newPart);
           }
         }
@@ -790,7 +791,8 @@ public class HiveAlterHandler implements AlterHandler {
     }
   }
 
-  private void alterTableUpdateTableColumnStats(RawStore msdb,
+  @VisibleForTesting
+  void alterTableUpdateTableColumnStats(RawStore msdb,
       Table oldTable, Table newTable)
       throws MetaException, InvalidObjectException {
     String dbName = oldTable.getDbName().toLowerCase();
@@ -808,7 +810,7 @@ public class HiveAlterHandler implements AlterHandler {
       // Nothing to update if everything is the same
         if (newDbName.equals(dbName) &&
             newTableName.equals(tableName) &&
-            MetaStoreUtils.areSameColumns(oldCols, newCols)) {
+            MetaStoreUtils.columnsIncluded(oldCols, newCols)) {
           updateColumnStats = false;
         }
 
