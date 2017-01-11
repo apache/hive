@@ -154,7 +154,7 @@ public class MergeFileTask extends Task<MergeFileWork> implements Serializable,
 
       // Finally SUBMIT the JOB!
       rj = jc.submitJob(job);
-
+      this.jobID = rj.getJobID();
       returnVal = jobExecHelper.progress(rj, jc, ctx);
       success = (returnVal == 0);
 
@@ -183,7 +183,6 @@ public class MergeFileTask extends Task<MergeFileWork> implements Serializable,
           if (returnVal != 0) {
             rj.killJob();
           }
-          jobID = rj.getID().toString();
         }
         // get the list of Dynamic partition paths
         if (rj != null) {

@@ -186,7 +186,7 @@ public class ColumnTruncateTask extends Task<ColumnTruncateWork> implements Seri
 
       // Finally SUBMIT the JOB!
       rj = jc.submitJob(job);
-
+      this.jobID = rj.getJobID();
       returnVal = jobExecHelper.progress(rj, jc, ctx);
       success = (returnVal == 0);
 
@@ -216,7 +216,6 @@ public class ColumnTruncateTask extends Task<ColumnTruncateWork> implements Seri
           if (returnVal != 0) {
             rj.killJob();
           }
-          jobID = rj.getID().toString();
         }
         ColumnTruncateMapper.jobClose(outputPath, success, job, console,
           work.getDynPartCtx(), null);
