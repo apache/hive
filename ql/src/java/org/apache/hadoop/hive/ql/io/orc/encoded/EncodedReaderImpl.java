@@ -289,16 +289,17 @@ class EncodedReaderImpl implements EncodedReader {
 
     // 2. Now, read all of the ranges from cache or disk.
     DiskRangeList.MutateHelper toRead = new DiskRangeList.MutateHelper(listToRead.get());
-    if (isTracingEnabled && LOG.isInfoEnabled()) {
-      LOG.trace("Resulting disk ranges to read (file " + fileKey + "): "
+    if (/*isTracingEnabled && */LOG.isInfoEnabled()) {
+      LOG.info("Resulting disk ranges to read (file " + fileKey + "): "
           + RecordReaderUtils.stringifyDiskRanges(toRead.next));
     }
     BooleanRef isAllInCache = new BooleanRef();
     if (hasFileId) {
       cacheWrapper.getFileData(fileKey, toRead.next, stripeOffset, CC_FACTORY, isAllInCache);
-      if (isTracingEnabled && LOG.isInfoEnabled()) {
-        LOG.trace("Disk ranges after cache (file " + fileKey + ", base offset " + stripeOffset
-            + "): " + RecordReaderUtils.stringifyDiskRanges(toRead.next));
+      if (/*isTracingEnabled && */LOG.isInfoEnabled()) {
+        LOG.info("Disk ranges after cache (found everything " + isAllInCache.value + "; file "
+            + fileKey + ", base offset " + stripeOffset  + "): "
+            + RecordReaderUtils.stringifyDiskRanges(toRead.next));
       }
     }
 
@@ -640,7 +641,7 @@ class EncodedReaderImpl implements EncodedReader {
         : prepareRangesForUncompressedRead(
             cOffset, endCOffset, streamOffset, unlockUntilCOffset, current, csd);
     } catch (Exception ex) {
-      LOG.error("Failed " + (isCompressed ? "" : "un") + " compressed read; cOffset " + cOffset
+      LOG.error("Failed " + (isCompressed ? "" : "un") + "compressed read; cOffset " + cOffset
           + ", endCOffset " + endCOffset + ", streamOffset " + streamOffset
           + ", unlockUntilCOffset " + unlockUntilCOffset + "; ranges passed in "
           + RecordReaderUtils.stringifyDiskRanges(start) + "; ranges passed to prepare "

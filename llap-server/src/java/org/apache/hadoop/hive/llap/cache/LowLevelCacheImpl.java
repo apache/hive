@@ -17,6 +17,8 @@
  */
 package org.apache.hadoop.hive.llap.cache;
 
+import org.apache.orc.impl.RecordReaderUtils;
+
 import java.nio.ByteBuffer;
 import java.util.Iterator;
 import java.util.List;
@@ -108,6 +110,7 @@ public class LowLevelCacheImpl implements LowLevelCache, BufferUsageManager, Lla
     } finally {
       subCache.decRef();
     }
+    boolean isInvalid = false;
     if (qfCounters != null) {
       DiskRangeList current = prev.next;
       long bytesHit = 0, bytesMissed = 0;
@@ -116,12 +119,46 @@ public class LowLevelCacheImpl implements LowLevelCache, BufferUsageManager, Lla
         if (current.hasData()) {
           bytesHit += current.getLength();
         } else {
+          if (gotAllData.value) {
+            isInvalid = true;
+          }
           bytesMissed += current.getLength();
         }
         current = current.next;
       }
       qfCounters.recordCacheHit(bytesHit);
       qfCounters.recordCacheMiss(bytesMissed);
+    } else if (gotAllData.value) {
+      DiskRangeList current = prev.next;
+      while (current != null) {
+        if (!current.hasData()) {
+          isInvalid = true;
+          break;
+        }
+        current = current.next;
+      }
+    }
+    if (isInvalid) {
+      StringBuilder invalidMsg = new StringBuilder(
+          "Internal error - gotAllData=true but the resulting ranges are ").append(
+              RecordReaderUtils.stringifyDiskRanges(prev.next));
+      subCache = cache.get(fileKey);
+      if (subCache != null && subCache.incRef()) {
+        try {
+          invalidMsg.append("; cache ranges (not necessarily consistent) are ");
+          for (Map.Entry<Long, LlapDataBuffer> e : subCache.cache.entrySet()) {
+            long start = e.getKey(), end = start + e.getValue().declaredCachedLength;
+            invalidMsg.append("[").append(start).append(", ").append(end).append("), ");
+          }
+        } finally {
+          subCache.decRef();
+        }
+      } else {
+        invalidMsg.append("; cache ranges can no longer be determined");
+      }
+      String s = invalidMsg.toString();
+      LlapIoImpl.LOG.error(s);
+      throw new RuntimeException(s);
     }
     return prev.next;
   }

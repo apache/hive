@@ -121,6 +121,23 @@ public class TestLowLevelCacheImpl {
     }
   }
 
+/*
+Example code to test specific scenarios:
+    LowLevelCacheImpl cache = new LowLevelCacheImpl(
+        LlapDaemonCacheMetrics.create("test", "1"), new DummyCachePolicy(),
+        new DummyAllocator(), true, -1); // no cleanup thread
+    final int FILE = 1;
+    cache.putFileData(FILE, gaps(3756206, 4261729, 7294767, 7547564), fbs(3), 0, Priority.NORMAL, null);
+    cache.putFileData(FILE, gaps(7790545, 11051556), fbs(1), 0, Priority.NORMAL, null);
+    cache.putFileData(FILE, gaps(11864971, 11912961, 13350968, 13393630), fbs(3), 0, Priority.NORMAL, null);
+    DiskRangeList dr = dr(3756206, 7313562);
+    MutateHelper mh = new MutateHelper(dr);
+    dr = dr.insertAfter(dr(7790545, 11051556));
+    dr = dr.insertAfter(dr(11864971, 13393630));
+    BooleanRef g = new BooleanRef();
+    dr = cache.getFileData(FILE, mh.next, 0, testFactory, null, g);
+*/
+
   @Test
   public void testGetPut() {
     LowLevelCacheImpl cache = new LowLevelCacheImpl(
@@ -488,6 +505,15 @@ public class TestLowLevelCacheImpl {
     return rv;
   }
 
+  private MemoryBuffer[] fbs(int count) {
+    MemoryBuffer[] rv = new MemoryBuffer[count];
+    for (int i = 0; i < count; ++i) {
+      rv[i] = fb();
+    }
+    return rv;
+  }
+
+
   private LlapDataBuffer fb() {
     LlapDataBuffer fake = LowLevelCacheImpl.allocateFake();
     fake.incRef();
@@ -502,6 +528,14 @@ public class TestLowLevelCacheImpl {
     DiskRange[] result = new DiskRange[offsets.length];
     for (int i = 0; i < offsets.length; ++i) {
       result[i] = new DiskRange(offsets[i], offsets[i] + 1);
+    }
+    return result;
+  }
+
+  private DiskRange[] gaps(int... offsets) {
+    DiskRange[] result = new DiskRange[offsets.length - 1];
+    for (int i = 0; i < result .length; ++i) {
+      result[i] = new DiskRange(offsets[i], offsets[i + 1]);
     }
     return result;
   }
