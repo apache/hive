@@ -18,6 +18,9 @@
 package org.apache.hadoop.hive.ql.lockmgr;
 
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.Context;
+import org.apache.hadoop.hive.ql.Driver.LockedDriverState;
+import org.apache.hadoop.hive.ql.QueryPlan;
 
 /**
  * An implementation HiveTxnManager that includes internal methods that all
@@ -37,6 +40,11 @@ abstract class HiveTxnManagerImpl implements HiveTxnManager {
   @Override
   public void closeTxnManager() {
     destruct();
+  }
+
+  @Override
+  public void acquireLocks(QueryPlan plan, Context ctx, String username, LockedDriverState lDrvState) throws LockException {
+    acquireLocks(plan, ctx, username);
   }
 
   @Override

@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.lockmgr;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.Driver.LockedDriverState;
 import org.apache.hadoop.hive.ql.lockmgr.HiveLockObject.HiveLockObjectData;
 import org.apache.hadoop.hive.ql.metadata.*;
 
@@ -56,7 +57,7 @@ public class EmbeddedLockManager implements HiveLockManager {
     return lock(key, mode, numRetriesForLock, sleepTime);
   }
 
-  public List<HiveLock> lock(List<HiveLockObj> objs, boolean keepAlive) throws LockException {
+  public List<HiveLock> lock(List<HiveLockObj> objs, boolean keepAlive, LockedDriverState lDrvState) throws LockException {
     return lock(objs, numRetriesForLock, sleepTime);
   }
 
