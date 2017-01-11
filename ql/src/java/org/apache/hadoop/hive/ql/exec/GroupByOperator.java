@@ -407,7 +407,11 @@ public class GroupByOperator extends Operator<GroupByDesc> {
       computeMaxEntriesHashAggr();
     }
     memoryMXBean = ManagementFactory.getMemoryMXBean();
-    maxMemory = isTez ? getConf().getMaxMemoryAvailable() : memoryMXBean.getHeapMemoryUsage().getMax();
+    if (isLlap || !isTez) {
+      maxMemory = memoryMXBean.getHeapMemoryUsage().getMax();
+    } else {
+      maxMemory = getConf().getMaxMemoryAvailable();
+    }
     memoryThreshold = this.getConf().getMemoryThreshold();
     LOG.info("isTez: {} isLlap: {} numExecutors: {} maxMemory: {}", isTez, isLlap, numExecutors, maxMemory);
   }
@@ -423,12 +427,13 @@ public class GroupByOperator extends Operator<GroupByDesc> {
    **/
   private void computeMaxEntriesHashAggr() throws HiveException {
     float memoryPercentage = this.getConf().getGroupByMemoryUsage();
-    if (isTez) {
-      maxHashTblMemory = (long) (memoryPercentage * getConf().getMaxMemoryAvailable());
-    } else {
+    if (isLlap || !isTez) {
       maxHashTblMemory = (long) (memoryPercentage * Runtime.getRuntime().maxMemory());
+    } else {
+      maxHashTblMemory = (long) (memoryPercentage * getConf().getMaxMemoryAvailable());
     }
-    LOG.info("Max hash table memory: {} bytes", maxHashTblMemory);
+    LOG.info("Max hash table memory: memoryPercentage:{}, maxHashTblMemory:{} bytes",
+        memoryPercentage, maxHashTblMemory);
     estimateRowSize();
   }
 
