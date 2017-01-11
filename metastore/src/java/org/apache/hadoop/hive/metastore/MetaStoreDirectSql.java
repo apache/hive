@@ -23,6 +23,7 @@ import static org.apache.commons.lang.StringUtils.repeat;
 
 import com.google.common.collect.Lists;
 import java.sql.Connection;
+import java.sql.Statement;
 import java.sql.SQLException;
 import java.text.ParseException;
 import java.util.ArrayList;
@@ -260,12 +261,17 @@ class MetaStoreDirectSql {
 
   private void executeNoResult(final String queryText) throws SQLException {
     JDOConnection jdoConn = pm.getDataStoreConnection();
+    Statement statement = null;
     boolean doTrace = LOG.isDebugEnabled();
     try {
       long start = doTrace ? System.nanoTime() : 0;
-      ((Connection)jdoConn.getNativeConnection()).createStatement().execute(queryText);
+      statement = ((Connection)jdoConn.getNativeConnection()).createStatement();
+      statement.execute(queryText);
       timingTrace(doTrace, queryText, start, doTrace ? System.nanoTime() : 0);
     } finally {
+      if(statement != null){
+          statement.close();
+      }
       jdoConn.close(); // We must release the connection before we call other pm methods.
     }
   }
