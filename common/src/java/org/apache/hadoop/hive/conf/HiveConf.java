@@ -431,7 +431,7 @@ public class HiveConf extends Configuration {
     REPLDIR("hive.repl.rootdir","/user/hive/repl/",
         "HDFS root dir for all replication dumps."),
     REPLCMENABLED("hive.repl.cm.enabled", false,
-        "Turn on ChangeManager, so delete files will goes to cmrootdir."),
+        "Turn on ChangeManager, so delete files will go to cmrootdir."),
     REPLCMDIR("hive.repl.cmrootdir","/user/hive/cmroot/",
         "Root dir for ChangeManager, used for deleted files."),
     REPLCMRETIAN("hive.repl.cm.retain","24h",

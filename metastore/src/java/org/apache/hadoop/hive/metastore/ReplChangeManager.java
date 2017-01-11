@@ -19,7 +19,6 @@
 package org.apache.hadoop.hive.metastore;
 
 import java.io.IOException;
-import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -30,14 +29,13 @@ import org.apache.hadoop.fs.FileChecksum;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.fs.PathFilter;
+import org.apache.hadoop.fs.Trash;
 import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.hdfs.DFSConfigKeys;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
-import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.MetaException;
-import org.apache.hadoop.hive.metastore.api.Partition;
-import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.StringUtils;
 import org.slf4j.Logger;
@@ -50,129 +48,124 @@ public class ReplChangeManager {
   private static boolean inited = false;
   private static boolean enabled = false;
   private static Path cmroot;
-  private static HiveConf conf;
-  private static Warehouse wh;
-  private String user;
-  private String group;
+  private static HiveConf hiveConf;
+  private String msUser;
+  private String msGroup;
+  private FileSystem fs;
 
-  public static ReplChangeManager getInstance(HiveConf conf, Warehouse wh) throws IOException {
+  public static final String ORIG_LOC_TAG = "user.original-loc";
+  public static final String REMAIN_IN_TRASH_TAG = "user.remain-in-trash";
+
+  public static ReplChangeManager getInstance(HiveConf hiveConf) throws MetaException {
     if (instance == null) {
-      instance = new ReplChangeManager(conf, wh);
+      instance = new ReplChangeManager(hiveConf);
     }
     return instance;
   }
 
-  ReplChangeManager(HiveConf conf, Warehouse wh) throws IOException {
-    if (!inited) {
-      if (conf.getBoolVar(HiveConf.ConfVars.REPLCMENABLED)) {
-        ReplChangeManager.enabled = true;
-        ReplChangeManager.cmroot = new Path(conf.get(HiveConf.ConfVars.REPLCMDIR.varname));
-        ReplChangeManager.conf = conf;
-        ReplChangeManager.wh = wh;
+  ReplChangeManager(HiveConf hiveConf) throws MetaException {
+    try {
+      if (!inited) {
+        if (hiveConf.getBoolVar(HiveConf.ConfVars.REPLCMENABLED)) {
+          ReplChangeManager.enabled = true;
+          ReplChangeManager.cmroot = new Path(hiveConf.get(HiveConf.ConfVars.REPLCMDIR.varname));
+          ReplChangeManager.hiveConf = hiveConf;
 
-        FileSystem fs = cmroot.getFileSystem(conf);
-        // Create cmroot with permission 700 if not exist
-        if (!fs.exists(cmroot)) {
-          fs.mkdirs(cmroot);
-          fs.setPermission(cmroot, new FsPermission("700"));
+          fs = cmroot.getFileSystem(hiveConf);
+          // Create cmroot with permission 700 if not exist
+          if (!fs.exists(cmroot)) {
+            fs.mkdirs(cmroot);
+            fs.setPermission(cmroot, new FsPermission("700"));
+          }
+          UserGroupInformation usergroupInfo = UserGroupInformation.getCurrentUser();
+          msUser = usergroupInfo.getShortUserName();
+          msGroup = usergroupInfo.getPrimaryGroupName();
         }
-        UserGroupInformation usergroupInfo = UserGroupInformation.getCurrentUser();
-        user = usergroupInfo.getShortUserName();
-        group = usergroupInfo.getPrimaryGroupName();
+        inited = true;
       }
-      inited = true;
+    } catch (IOException e) {
+      throw new MetaException(StringUtils.stringifyException(e));
     }
   }
 
+  // Filter files starts with ".". Note Hadoop consider files starts with
+  // "." or "_" as hidden file. However, we need to replicate files starts
+  // with "_". We find at least 2 use cases:
+  // 1. For har files, _index and _masterindex is required files
+  // 2. _success file is required for Oozie to indicate availability of data source
+  private static final PathFilter hiddenFileFilter = new PathFilter(){
+    public boolean accept(Path p){
+      return !p.getName().startsWith(".");
+    }
+  };
+
   /***
-   * Recycle a managed table, move table files to cmroot
-   * @param db
-   * @param table
+   * Move a path into cmroot. If the path is a directory (of a partition, or table if nonpartitioned),
+   *   recursively move files inside directory to cmroot. Note the table must be managed table
+   * @param path a single file or directory
+   * @param ifPurge if the file should skip Trash when delete
    * @return
-   * @throws IOException
    * @throws MetaException
    */
-  public int recycle(Database db, Table table) throws IOException, MetaException {
+  public int recycle(Path path, boolean ifPurge) throws MetaException {
     if (!enabled) {
       return 0;
     }
 
-    Path tablePath = wh.getTablePath(db, table.getTableName());
-    FileSystem fs = tablePath.getFileSystem(conf);
-    int failCount = 0;
-    for (FileStatus file : fs.listStatus(tablePath)) {
-      if (!recycle(file.getPath())) {
-        failCount++;
+    try {
+      int count = 0;
+
+      if (fs.isDirectory(path)) {
+        FileStatus[] files = fs.listStatus(path, hiddenFileFilter);
+        for (FileStatus file : files) {
+          count += recycle(file.getPath(), ifPurge);
+        }
+      } else {
+        Path cmPath = getCMPath(path, hiveConf, getCksumString(path, hiveConf));
+
+        if (LOG.isDebugEnabled()) {
+          LOG.debug("Moving " + path.toString() + " to " + cmPath.toString());
+        }
+
+        // set timestamp before moving to cmroot, so we can
+        // avoid race condition CM remove the file before setting
+        // timestamp
+        long now = System.currentTimeMillis();
+        fs.setTimes(path, now, now);
+
+        boolean succ = fs.rename(path, cmPath);
+        // Ignore if a file with same content already exist in cmroot
+        // We might want to setXAttr for the new location in the future
+        if (!succ) {
+          if (LOG.isDebugEnabled()) {
+            LOG.debug("A file with the same content of " + path.toString() + " already exists, ignore");
+          }
+          // Need to extend the tenancy if we saw a newer file with the same content
+          fs.setTimes(cmPath, now, now);
+        } else {
+
+          // set the file owner to hive (or the id metastore run as)
+          fs.setOwner(cmPath, msUser, msGroup);
+
+          // tag the original file name so we know where the file comes from
+          // Note we currently only track the last known trace as
+          // xattr has limited capacity. We shall revisit and store all original
+          // locations if orig-loc becomes important
+          fs.setXAttr(cmPath, ORIG_LOC_TAG, path.toString().getBytes());
+
+          count++;
+        }
+        // Tag if we want to remain in trash after deletion.
+        // If multiple files share the same content, then
+        // any file claim remain in trash would be granted
+        if (!ifPurge) {
+          fs.setXAttr(cmPath, REMAIN_IN_TRASH_TAG, new byte[]{0});
+        }
       }
+      return count;
+    } catch (IOException e) {
+      throw new MetaException(StringUtils.stringifyException(e));
     }
-    return failCount;
-  }
-
-  /***
-   * Recycle a partition of a managed table, move partition files to cmroot
-   * @param db
-   * @param table
-   * @param part
-   * @return
-   * @throws IOException
-   * @throws MetaException
-   */
-  public int recycle(Database db, Table table, Partition part) throws IOException, MetaException {
-    if (!enabled) {
-      return 0;
-    }
-
-    Map<String, String> pm = Warehouse.makeSpecFromValues(table.getPartitionKeys(), part.getValues());
-    Path partPath = wh.getPartitionPath(db, table.getTableName(), pm);
-    FileSystem fs = partPath.getFileSystem(conf);
-    int failCount = 0;
-    for (FileStatus file : fs.listStatus(partPath)) {
-      if (!recycle(file.getPath())) {
-        failCount++;
-      }
-    }
-    return failCount;
-  }
-
-  /***
-   * Recycle a single file (of a partition, or table if nonpartitioned),
-   *   move files to cmroot. Note the table must be managed table
-   * @param path
-   * @return
-   * @throws IOException
-   * @throws MetaException
-   */
-  public boolean recycle(Path path) throws IOException, MetaException {
-    if (!enabled) {
-      return true;
-    }
-
-    Path cmPath = getCMPath(path, conf, getCksumString(path, conf));
-
-    if (LOG.isDebugEnabled()) {
-      LOG.debug("Moving " + path.toString() + " to " + cmPath.toString());
-    }
-
-    FileSystem fs = path.getFileSystem(conf);
-
-    boolean succ = fs.rename(path, cmPath);
-    // Ignore if a file with same content already exist in cmroot
-    // We might want to setXAttr for the new location in the future
-    if (!succ) {
-      if (LOG.isDebugEnabled()) {
-        LOG.debug("A file with the same content of " + path.toString() + " already exists, ignore");
-      }
-    } else {
-      long now = System.currentTimeMillis();
-      fs.setTimes(cmPath, now, now);
-
-      // set the file owner to hive (or the id metastore run as)
-      fs.setOwner(cmPath, user, group);
-
-      // tag the original file name so we know where the file comes from
-      fs.setXAttr(cmPath, "user.original-loc", path.toString().getBytes());
-    }
-    return succ;
   }
 
   // Get checksum of a file
@@ -189,17 +182,17 @@ public class ReplChangeManager {
   /***
    * Convert a path of file inside a partition or table (if non-partitioned)
    *   to a deterministic location of cmroot. So user can retrieve the file back
-   *   with the original location plus signature.
+   *   with the original location plus checksum.
    * @param path original path inside partition or table
    * @param conf
-   * @param signature unique signature of the file, can be retrieved by {@link getSignature}
+   * @param chksum checksum of the file, can be retrieved by {@link getCksumString}
    * @return
    * @throws IOException
    * @throws MetaException
    */
-  static public Path getCMPath(Path path, Configuration conf, String signature)
+  static public Path getCMPath(Path path, Configuration conf, String chksum)
       throws IOException, MetaException {
-    String newFileName = signature + path.getName();
+    String newFileName = chksum;
     int maxLength = conf.getInt(DFSConfigKeys.DFS_NAMENODE_MAX_COMPONENT_LENGTH_KEY,
         DFSConfigKeys.DFS_NAMENODE_MAX_COMPONENT_LENGTH_DEFAULT);
 
@@ -218,64 +211,64 @@ public class ReplChangeManager {
   static class CMClearer implements Runnable {
     private Path cmroot;
     private long secRetain;
-    private Configuration conf;
+    private HiveConf hiveConf;
 
-    CMClearer(String cmrootString, long secRetain, Configuration conf) {
+    CMClearer(String cmrootString, long secRetain, HiveConf hiveConf) {
       this.cmroot = new Path(cmrootString);
       this.secRetain = secRetain;
-      this.conf = conf;
+      this.hiveConf = hiveConf;
     }
 
     @Override
     public void run() {
       try {
         LOG.info("CMClearer started");
+
         long now = System.currentTimeMillis();
-        processDir(cmroot, now);
+        FileSystem fs = cmroot.getFileSystem(hiveConf);
+        FileStatus[] files = fs.listStatus(cmroot);
+
+        for (FileStatus file : files) {
+          long modifiedTime = file.getModificationTime();
+          if (now - modifiedTime > secRetain*1000) {
+            if (fs.getXAttrs(file.getPath()).containsKey(REMAIN_IN_TRASH_TAG)) {
+              boolean succ = Trash.moveToAppropriateTrash(fs, file.getPath(), hiveConf);
+              if (succ) {
+                if (LOG.isDebugEnabled()) {
+                  LOG.debug("Move " + file.toString() + " to trash");
+                }
+              } else {
+                LOG.warn("Fail to move " + file.toString() + " to trash");
+              }
+            } else {
+              boolean succ = fs.delete(file.getPath(), false);
+              if (succ) {
+                if (LOG.isDebugEnabled()) {
+                  LOG.debug("Remove " + file.toString());
+                }
+              } else {
+                LOG.warn("Fail to remove " + file.toString());
+              }
+            }
+          }
+        }
       } catch (IOException e) {
         LOG.error("Exception when clearing cmroot:" + StringUtils.stringifyException(e));
       }
-    }
-
-    private boolean processDir(Path folder, long now) throws IOException {
-      FileStatus[] files = folder.getFileSystem(conf).listStatus(folder);
-      boolean empty = true;
-      for (FileStatus file : files) {
-        if (file.isDirectory()) {
-          if (processDir(file.getPath(), now)) {
-            file.getPath().getFileSystem(conf).delete(file.getPath(), false);
-            if (LOG.isDebugEnabled()) {
-              LOG.debug("Remove " + file.toString());
-            }
-          } else {
-            empty = false;
-          }
-        } else {
-          long modifiedTime = file.getModificationTime();
-          if (now - modifiedTime > secRetain*1000) {
-            file.getPath().getFileSystem(conf).delete(file.getPath(), false);
-          } else {
-            empty = false;
-          }
-        }
-      }
-      return empty;
     }
   }
 
   // Schedule CMClearer thread. Will be invoked by metastore
   public static void scheduleCMClearer(HiveConf hiveConf) {
-    if (hiveConf.getBoolVar(HiveConf.ConfVars.REPLCMENABLED)) {
+    if (HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.REPLCMENABLED)) {
       ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor(
           new BasicThreadFactory.Builder()
           .namingPattern("cmclearer-%d")
           .daemon(true)
           .build());
       executor.scheduleAtFixedRate(new CMClearer(hiveConf.get(HiveConf.ConfVars.REPLCMDIR.varname),
-          HiveConf.getTimeVar(hiveConf, ConfVars.REPLCMRETIAN, TimeUnit.SECONDS), hiveConf),
-          0,
-          HiveConf.getTimeVar(hiveConf, ConfVars.REPLCMINTERVAL,
-          TimeUnit.SECONDS), TimeUnit.SECONDS);
+          hiveConf.getTimeVar(ConfVars.REPLCMRETIAN, TimeUnit.SECONDS), hiveConf),
+          0, hiveConf.getTimeVar(ConfVars.REPLCMINTERVAL, TimeUnit.SECONDS), TimeUnit.SECONDS);
     }
   }
 }
