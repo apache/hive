@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.ql.lockmgr;
 
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.ql.Context;
+import org.apache.hadoop.hive.ql.Driver.LockedDriverState;
 import org.apache.hadoop.hive.ql.QueryPlan;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -68,6 +69,20 @@ public interface HiveTxnManager {
    * to get more info on how to handle the exception.
    */
   void acquireLocks(QueryPlan plan, Context ctx, String username) throws LockException;
+
+  /**
+   * Acquire all of the locks needed by a query.  If used with a query that
+   * requires transactions, this should be called after {@link #openTxn(String)}.
+   * A list of acquired locks will be stored in the
+   * {@link org.apache.hadoop.hive.ql.Context} object and can be retrieved
+   * via {@link org.apache.hadoop.hive.ql.Context#getHiveLocks}.
+   * @param plan query plan
+   * @param ctx Context for this query
+   * @param username name of the user for this query
+   * @param lDrvState the state to inform if the query cancelled or not
+   * @throws LockException if there is an error getting the locks
+   */
+   void acquireLocks(QueryPlan plan, Context ctx, String username, LockedDriverState lDrvState) throws LockException;
 
   /**
    * Release specified locks.

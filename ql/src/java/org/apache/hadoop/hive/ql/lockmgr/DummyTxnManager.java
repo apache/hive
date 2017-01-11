@@ -25,6 +25,8 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.ql.Context;
+import org.apache.hadoop.hive.ql.Driver.DriverState;
+import org.apache.hadoop.hive.ql.Driver.LockedDriverState;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.QueryPlan;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
@@ -110,6 +112,11 @@ class DummyTxnManager extends HiveTxnManagerImpl {
 
   @Override
   public void acquireLocks(QueryPlan plan, Context ctx, String username) throws LockException {
+    acquireLocks(plan,ctx,username,null);
+  }
+
+  @Override
+  public void acquireLocks(QueryPlan plan, Context ctx, String username, LockedDriverState lDrvState) throws LockException {
     // Make sure we've built the lock manager
     getLockManager();
 
@@ -171,7 +178,7 @@ class DummyTxnManager extends HiveTxnManagerImpl {
     }
 
     dedupLockObjects(lockObjects);
-    List<HiveLock> hiveLocks = lockMgr.lock(lockObjects, false);
+    List<HiveLock> hiveLocks = lockMgr.lock(lockObjects, false, lDrvState);
 
     if (hiveLocks == null) {
       throw new LockException(ErrorMsg.LOCK_CANNOT_BE_ACQUIRED.getMsg());
