@@ -249,7 +249,7 @@ public class SQLOperation extends ExecuteStatementOperation {
       if (0 != response.getResponseCode()) {
         throw toSQLException("Error while processing statement", response);
       }
-    } catch (HiveSQLException e) {
+    } catch (Throwable e) {
       /**
        * If the operation was cancelled by another thread, or the execution timed out, Driver#run
        * may return a non-zero response code. We will simply return if the operation state is
@@ -258,14 +258,15 @@ public class SQLOperation extends ExecuteStatementOperation {
       if ((getStatus().getState() == OperationState.CANCELED)
           || (getStatus().getState() == OperationState.TIMEDOUT)
           || (getStatus().getState() == OperationState.CLOSED)) {
+        LOG.warn("Ignore exception in terminal state", e);
         return;
-      } else {
-        setState(OperationState.ERROR);
-        throw e;
       }
-    } catch (Throwable e) {
       setState(OperationState.ERROR);
-      throw new HiveSQLException("Error running query: " + e.toString(), e);
+      if (e instanceof HiveSQLException) {
+        throw (HiveSQLException) e;
+      } else {
+        throw new HiveSQLException("Error running query: " + e.toString(), e);
+      }
     }
     setState(OperationState.FINISHED);
   }
