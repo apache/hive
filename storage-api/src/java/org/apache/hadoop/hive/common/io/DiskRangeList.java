@@ -169,7 +169,7 @@ public class DiskRangeList extends DiskRange {
     public void addOrMerge(long offset, long end, boolean doMerge, boolean doLogNew) {
       if (doMerge && tail != null && tail.merge(offset, end)) return;
       if (doLogNew) {
-        LOG.info("Creating new range; last range (which can include some previous adds) was "
+        LOG.debug("Creating new range; last range (which can include some previous adds) was "
             + tail);
       }
       DiskRangeList node = new DiskRangeList(offset, end);
