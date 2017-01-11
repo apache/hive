@@ -333,6 +333,7 @@ class SparkClientImpl implements SparkClient {
       // SparkSubmit will take care of that for us.
       String master = conf.get("spark.master");
       Preconditions.checkArgument(master != null, "spark.master is not defined.");
+      String deployMode = conf.get("spark.submit.deployMode");
 
       List<String> argv = Lists.newArrayList();
 
@@ -342,7 +343,9 @@ class SparkClientImpl implements SparkClient {
         LOG.info("No spark.home provided, calling SparkSubmit directly.");
         argv.add(new File(System.getProperty("java.home"), "bin/java").getAbsolutePath());
 
-        if (master.startsWith("local") || master.startsWith("mesos") || master.endsWith("-client") || master.startsWith("spark")) {
+        if (master.startsWith("local") || master.startsWith("mesos") ||
+            SparkClientUtilities.isYarnClientMode(master, deployMode) ||
+            master.startsWith("spark")) {
           String mem = conf.get("spark.driver.memory");
           if (mem != null) {
             argv.add("-Xms" + mem);
@@ -383,7 +386,7 @@ class SparkClientImpl implements SparkClient {
           argv.add(keyTabFile);
       }
 
-      if (master.equals("yarn-cluster")) {
+      if (SparkClientUtilities.isYarnClusterMode(master, deployMode)) {
         String executorCores = conf.get("spark.executor.cores");
         if (executorCores != null) {
           argv.add("--executor-cores");

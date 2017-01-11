@@ -3567,8 +3567,7 @@ public class HiveConf extends Configuration {
       result = !name.equals("spark.app.name");
     } else if (name.startsWith("yarn")) { // YARN property in Spark on YARN mode.
       String sparkMaster = get("spark.master");
-      if (sparkMaster != null &&
-        (sparkMaster.equals("yarn-client") || sparkMaster.equals("yarn-cluster"))) {
+      if (sparkMaster != null && sparkMaster.startsWith("yarn")) {
         result = true;
       }
     } else if (name.startsWith("hive.spark")) { // Remote Spark Context property.

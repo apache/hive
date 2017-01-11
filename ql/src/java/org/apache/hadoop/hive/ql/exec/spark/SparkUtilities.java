@@ -39,6 +39,7 @@ import org.apache.hadoop.hive.ql.plan.BaseWork;
 import org.apache.hadoop.hive.ql.plan.SparkWork;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.io.BytesWritable;
+import org.apache.hive.spark.client.SparkClientUtilities;
 import org.apache.spark.Dependency;
 import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaPairRDD;
@@ -87,7 +88,10 @@ public class SparkUtilities {
 
   // checks if a resource has to be uploaded to HDFS for yarn-cluster mode
   public static boolean needUploadToHDFS(URI source, SparkConf sparkConf) {
-    return sparkConf.get("spark.master").equals("yarn-cluster") &&
+    String master = sparkConf.get("spark.master");
+    String deployMode = sparkConf.contains("spark.submit.deployMode") ?
+        sparkConf.get("spark.submit.deployMode") : null;
+    return SparkClientUtilities.isYarnClusterMode(master, deployMode) &&
         !source.getScheme().equals("hdfs");
   }
 
@@ -102,7 +106,7 @@ public class SparkUtilities {
 
   public static boolean isDedicatedCluster(Configuration conf) {
     String master = conf.get("spark.master");
-    return master.startsWith("yarn-") || master.startsWith("local");
+    return SparkClientUtilities.isYarnMaster(master) || SparkClientUtilities.isLocalMaster(master);
   }
 
   public static SparkSession getSparkSession(HiveConf conf,
