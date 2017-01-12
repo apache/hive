@@ -128,7 +128,7 @@ public class LowLevelCacheImpl implements LowLevelCache, BufferUsageManager, Lla
       }
       qfCounters.recordCacheHit(bytesHit);
       qfCounters.recordCacheMiss(bytesMissed);
-    } else if (gotAllData.value) {
+    } else if (gotAllData != null && gotAllData.value) {
       DiskRangeList current = prev.next;
       while (current != null) {
         if (!current.hasData()) {
