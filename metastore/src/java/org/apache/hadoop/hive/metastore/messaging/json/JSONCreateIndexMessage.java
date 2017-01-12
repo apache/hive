@@ -71,6 +71,11 @@ public class JSONCreateIndexMessage extends CreateIndexMessage {
   }
 
   @Override
+  public Index getIndexObj() throws Exception {
+    return (Index)  JSONMessageFactory.getTObj(indexObjJson, Index.class);
+  }
+
+  @Override
   public String toString() {
     try {
       return JSONMessageDeserializer.mapper.writeValueAsString(this);

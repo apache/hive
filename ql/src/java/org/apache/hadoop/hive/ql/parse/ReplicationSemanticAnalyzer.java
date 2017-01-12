@@ -426,9 +426,6 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
       case MessageFactory.ADD_PARTITION_EVENT : {
         AddPartitionMessage apm = md.getAddPartitionMessage(ev.getMessage());
         LOG.info("Processing#{} ADD_PARTITION message : {}", ev.getEventId(), ev.getMessage());
-        // FIXME : Current MessageFactory api is lacking,
-        // and impl is in JSONMessageFactory instead. This needs to be
-        // refactored correctly so we don't depend on a specific impl.
         Iterable<org.apache.hadoop.hive.metastore.api.Partition> ptns = apm.getPartitionObjs();
         if ((ptns == null) || (!ptns.iterator().hasNext())) {
           LOG.debug("Event#{} was an ADD_PTN_EVENT with no partitions");

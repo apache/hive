@@ -30,7 +30,7 @@ import org.codehaus.jackson.annotate.JsonProperty;
 public class JSONDropIndexMessage extends DropIndexMessage {
 
   @JsonProperty
-  String server, servicePrincipal, db, indexObjJson;
+  String server, servicePrincipal, db, indexName, origTableName, indexTableName;
 
   @JsonProperty
   Long timestamp;
@@ -44,11 +44,9 @@ public class JSONDropIndexMessage extends DropIndexMessage {
     this.server = server;
     this.servicePrincipal = servicePrincipal;
     this.db = index.getDbName();
-    try {
-      this.indexObjJson = JSONMessageFactory.createIndexObjJson(index);
-    } catch (TException ex) {
-      throw new IllegalArgumentException("Could not serialize Index object", ex);
-    }
+    this.indexName = index.getIndexName();
+    this.origTableName = index.getOrigTableName();
+    this.indexTableName = index.getIndexTableName();
 
     this.timestamp = timestamp;
     checkValid();
@@ -66,8 +64,19 @@ public class JSONDropIndexMessage extends DropIndexMessage {
   @Override
   public Long getTimestamp() { return timestamp; }
 
-  public String getIndexObjJson() {
-    return indexObjJson;
+  @Override
+  public String getIndexName() {
+    return indexName;
+  }
+
+  @Override
+  public String getOrigTableName() {
+    return origTableName;
+  }
+
+  @Override
+  public String getIndexTableName() {
+    return indexTableName;
   }
 
   @Override

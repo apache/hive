@@ -17,7 +17,6 @@
  */
 package org.apache.hadoop.hive.ql;
 
-import com.google.common.collect.Lists;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.cli.CliSessionState;
@@ -44,7 +43,6 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import static junit.framework.Assert.assertTrue;
@@ -68,6 +66,13 @@ public class TestReplicationScenarios {
 
   protected static final Logger LOG = LoggerFactory.getLogger(TestReplicationScenarios.class);
   private ArrayList<String> lastResults;
+
+  private final boolean VERIFY_SETUP_STEPS = true;
+  // if verifySetup is set to true, all the test setup we do will perform additional
+  // verifications as well, which is useful to verify that our setup occurred
+  // correctly when developing and debugging tests. These verifications, however
+  // do not test any new functionality for replication, and thus, are not relevant
+  // for testing replication itself. For steady state, we want this to be false.
 
   @BeforeClass
   public static void setUpBeforeClass() throws Exception {
@@ -130,7 +135,7 @@ public class TestReplicationScenarios {
    * Tests basic operation - creates a db, with 4 tables, 2 ptned and 2 unptned.
    * Inserts data into one of the ptned tables, and one of the unptned tables,
    * and verifies that a REPL DUMP followed by a REPL LOAD is able to load it
-   * appropriately.
+   * appropriately. This tests bootstrap behaviour primarily.
    */
   @Test
   public void testBasic() throws IOException {
@@ -159,18 +164,13 @@ public class TestReplicationScenarios {
     createTestDataFile(ptn_locn_2, ptn_data_2);
 
     run("LOAD DATA LOCAL INPATH '" + unptn_locn + "' OVERWRITE INTO TABLE " + dbName + ".unptned");
-    run("SELECT * from " + dbName + ".unptned");
-    verifyResults(unptn_data);
+    verifySetup("SELECT * from " + dbName + ".unptned", unptn_data);
     run("LOAD DATA LOCAL INPATH '" + ptn_locn_1 + "' OVERWRITE INTO TABLE " + dbName + ".ptned PARTITION(b=1)");
-    run("SELECT a from " + dbName + ".ptned WHERE b=1");
-    verifyResults(ptn_data_1);
+    verifySetup("SELECT a from " + dbName + ".ptned WHERE b=1", ptn_data_1);
     run("LOAD DATA LOCAL INPATH '" + ptn_locn_2 + "' OVERWRITE INTO TABLE " + dbName + ".ptned PARTITION(b=2)");
-    run("SELECT a from " + dbName + ".ptned WHERE b=2");
-    verifyResults(ptn_data_2);
-    run("SELECT a from " + dbName + ".ptned_empty");
-    verifyResults(empty);
-    run("SELECT * from " + dbName + ".unptned_empty");
-    verifyResults(empty);
+    verifySetup("SELECT a from " + dbName + ".ptned WHERE b=2", ptn_data_2);
+    verifySetup("SELECT a from " + dbName + ".ptned_empty", empty);
+    verifySetup("SELECT * from " + dbName + ".unptned_empty", empty);
 
     advanceDumpDir();
     run("REPL DUMP " + dbName);
@@ -183,16 +183,11 @@ public class TestReplicationScenarios {
     run("REPL STATUS " + dbName + "_dupe");
     verifyResults(new String[] {replDumpId});
 
-    run("SELECT * from " + dbName + "_dupe.unptned");
-    verifyResults(unptn_data);
-    run("SELECT a from " + dbName + "_dupe.ptned WHERE b=1");
-    verifyResults(ptn_data_1);
-    run("SELECT a from " + dbName + "_dupe.ptned WHERE b=2");
-    verifyResults(ptn_data_2);
-    run("SELECT a from " + dbName + ".ptned_empty");
-    verifyResults(empty);
-    run("SELECT * from " + dbName + ".unptned_empty");
-    verifyResults(empty);
+    verifyRun("SELECT * from " + dbName + "_dupe.unptned", unptn_data);
+    verifyRun("SELECT a from " + dbName + "_dupe.ptned WHERE b=1", ptn_data_1);
+    verifyRun("SELECT a from " + dbName + "_dupe.ptned WHERE b=2", ptn_data_2);
+    verifyRun("SELECT a from " + dbName + ".ptned_empty", empty);
+    verifyRun("SELECT * from " + dbName + ".unptned_empty", empty);
   }
 
   @Test
@@ -228,34 +223,29 @@ public class TestReplicationScenarios {
     createTestDataFile(ptn_locn_1, ptn_data_1);
     createTestDataFile(ptn_locn_2, ptn_data_2);
 
-    run("SELECT a from " + dbName + ".ptned_empty");
-    verifyResults(empty);
-    run("SELECT * from " + dbName + ".unptned_empty");
-    verifyResults(empty);
+    verifySetup("SELECT a from " + dbName + ".ptned_empty", empty);
+    verifySetup("SELECT * from " + dbName + ".unptned_empty", empty);
+
+    // Now, we load data into the tables, and see if an incremental
+    // repl drop/load can duplicate it.
 
     run("LOAD DATA LOCAL INPATH '" + unptn_locn + "' OVERWRITE INTO TABLE " + dbName + ".unptned");
-    run("SELECT * from " + dbName + ".unptned");
-    verifyResults(unptn_data);
+    verifySetup("SELECT * from " + dbName + ".unptned", unptn_data);
     run("CREATE TABLE " + dbName + ".unptned_late AS SELECT * from " + dbName + ".unptned");
-    run("SELECT * from " + dbName + ".unptned_late");
-    verifyResults(unptn_data);
-
+    verifySetup("SELECT * from " + dbName + ".unptned_late", unptn_data);
 
     run("LOAD DATA LOCAL INPATH '" + ptn_locn_1 + "' OVERWRITE INTO TABLE " + dbName + ".ptned PARTITION(b=1)");
-    run("SELECT a from " + dbName + ".ptned WHERE b=1");
-    verifyResults(ptn_data_1);
+    verifySetup("SELECT a from " + dbName + ".ptned WHERE b=1", ptn_data_1);
     run("LOAD DATA LOCAL INPATH '" + ptn_locn_2 + "' OVERWRITE INTO TABLE " + dbName + ".ptned PARTITION(b=2)");
-    run("SELECT a from " + dbName + ".ptned WHERE b=2");
-    verifyResults(ptn_data_2);
+    verifySetup("SELECT a from " + dbName + ".ptned WHERE b=2", ptn_data_2);
 
     run("CREATE TABLE " + dbName + ".ptned_late(a string) PARTITIONED BY (b int) STORED AS TEXTFILE");
     run("LOAD DATA LOCAL INPATH '" + ptn_locn_1 + "' OVERWRITE INTO TABLE " + dbName + ".ptned_late PARTITION(b=1)");
-    run("SELECT a from " + dbName + ".ptned_late WHERE b=1");
-    verifyResults(ptn_data_1);
+    verifySetup("SELECT a from " + dbName + ".ptned_late WHERE b=1",ptn_data_1);
     run("LOAD DATA LOCAL INPATH '" + ptn_locn_2 + "' OVERWRITE INTO TABLE " + dbName + ".ptned_late PARTITION(b=2)");
-    run("SELECT a from " + dbName + ".ptned_late WHERE b=2");
-    verifyResults(ptn_data_2);
+    verifySetup("SELECT a from " + dbName + ".ptned_late WHERE b=2", ptn_data_2);
 
+    // Perform REPL-DUMP/LOAD
     advanceDumpDir();
     run("REPL DUMP " + dbName + " FROM " + replDumpId );
     String incrementalDumpLocn = getResult(0,0);
@@ -272,32 +262,22 @@ public class TestReplicationScenarios {
     // incremental dump. Currently, the dump id fetched will be the last dump id at the time
     // the db was created from the bootstrap export dump
 
-    run("SELECT * from " + dbName + "_dupe.unptned_empty");
-    verifyResults(empty);
-    run("SELECT a from " + dbName + ".ptned_empty");
-    verifyResults(empty);
+    // VERIFY tables and partitions on destination for equivalence.
 
+    verifyRun("SELECT * from " + dbName + "_dupe.unptned_empty", empty);
+    verifyRun("SELECT a from " + dbName + "_dupe.ptned_empty", empty);
 
-//    run("SELECT * from " + dbName + "_dupe.unptned");
-//    verifyResults(unptn_data);
+//    verifyRun("SELECT * from " + dbName + "_dupe.unptned", unptn_data);
     // TODO :this does not work because LOAD DATA LOCAL INPATH into an unptned table seems
     // to use ALTER_TABLE only - it does not emit an INSERT or CREATE - re-enable after
     // fixing that.
-    run("SELECT * from " + dbName + "_dupe.unptned_late");
-    verifyResults(unptn_data);
+    verifyRun("SELECT * from " + dbName + "_dupe.unptned_late", unptn_data);
 
+    verifyRun("SELECT a from " + dbName + "_dupe.ptned WHERE b=1", ptn_data_1);
+    verifyRun("SELECT a from " + dbName + "_dupe.ptned WHERE b=2", ptn_data_2);
 
-    run("SELECT a from " + dbName + "_dupe.ptned WHERE b=1");
-    verifyResults(ptn_data_1);
-    run("SELECT a from " + dbName + "_dupe.ptned WHERE b=2");
-    verifyResults(ptn_data_2);
-
-    // verified up to here.
-    run("SELECT a from " + dbName + "_dupe.ptned_late WHERE b=1");
-    verifyResults(ptn_data_1);
-    run("SELECT a from " + dbName + "_dupe.ptned_late WHERE b=2");
-    verifyResults(ptn_data_2);
-
+    verifyRun("SELECT a from " + dbName + "_dupe.ptned_late WHERE b=1", ptn_data_1);
+    verifyRun("SELECT a from " + dbName + "_dupe.ptned_late WHERE b=2", ptn_data_2);
   }
 
   @Test
@@ -326,20 +306,18 @@ public class TestReplicationScenarios {
     createTestDataFile(ptn_locn_2, ptn_data_2);
 
     run("LOAD DATA LOCAL INPATH '" + unptn_locn + "' OVERWRITE INTO TABLE " + dbName + ".unptned");
-    run("SELECT * from " + dbName + ".unptned");
-    verifyResults(unptn_data);
+    verifySetup("SELECT * from " + dbName + ".unptned", unptn_data);
     run("LOAD DATA LOCAL INPATH '" + ptn_locn_1 + "' OVERWRITE INTO TABLE " + dbName + ".ptned PARTITION(b='1')");
-    run("SELECT a from " + dbName + ".ptned WHERE b='1'");
-    verifyResults(ptn_data_1);
+    verifySetup("SELECT a from " + dbName + ".ptned WHERE b='1'", ptn_data_1);
     run("LOAD DATA LOCAL INPATH '" + ptn_locn_2 + "' OVERWRITE INTO TABLE " + dbName + ".ptned PARTITION(b='2')");
-    run("SELECT a from " + dbName + ".ptned WHERE b='2'");
-    verifyResults(ptn_data_2);
+    verifySetup("SELECT a from " + dbName + ".ptned WHERE b='2'", ptn_data_2);
     run("LOAD DATA LOCAL INPATH '" + ptn_locn_1 + "' OVERWRITE INTO TABLE " + dbName + ".ptned2 PARTITION(b='1')");
-    run("SELECT a from " + dbName + ".ptned2 WHERE b='1'");
-    verifyResults(ptn_data_1);
+    verifySetup("SELECT a from " + dbName + ".ptned2 WHERE b='1'", ptn_data_1);
     run("LOAD DATA LOCAL INPATH '" + ptn_locn_2 + "' OVERWRITE INTO TABLE " + dbName + ".ptned2 PARTITION(b='2')");
-    run("SELECT a from " + dbName + ".ptned2 WHERE b='2'");
-    verifyResults(ptn_data_2);
+    verifySetup("SELECT a from " + dbName + ".ptned2 WHERE b='2'", ptn_data_2);
+
+    // At this point, we've set up all the tables and ptns we're going to test drops across
+    // Replicate it first, and then we'll drop it on the source.
 
     advanceDumpDir();
     run("REPL DUMP " + dbName);
@@ -348,28 +326,23 @@ public class TestReplicationScenarios {
     run("EXPLAIN REPL LOAD " + dbName + "_dupe FROM '" + replDumpLocn + "'");
     printOutput();
     run("REPL LOAD " + dbName + "_dupe FROM '" + replDumpLocn + "'");
+    verifySetup("REPL STATUS " + dbName + "_dupe", new String[] {replDumpId});
 
-    run("REPL STATUS " + dbName + "_dupe");
-    verifyResults(new String[] {replDumpId});
+    verifySetup("SELECT * from " + dbName + "_dupe.unptned", unptn_data);
+    verifySetup("SELECT a from " + dbName + "_dupe.ptned WHERE b='1'", ptn_data_1);
+    verifySetup("SELECT a from " + dbName + "_dupe.ptned WHERE b='2'", ptn_data_2);
+    verifySetup("SELECT a from " + dbName + "_dupe.ptned2 WHERE b='1'", ptn_data_1);
+    verifySetup("SELECT a from " + dbName + "_dupe.ptned2 WHERE b='2'", ptn_data_2);
 
-    run("SELECT * from " + dbName + "_dupe.unptned");
-    verifyResults(unptn_data);
-    run("SELECT a from " + dbName + "_dupe.ptned WHERE b='1'");
-    verifyResults(ptn_data_1);
-    run("SELECT a from " + dbName + "_dupe.ptned WHERE b='2'");
-    verifyResults(ptn_data_2);
-    run("SELECT a from " + dbName + "_dupe.ptned2 WHERE b='1'");
-    verifyResults(ptn_data_1);
-    run("SELECT a from " + dbName + "_dupe.ptned2 WHERE b='2'");
-    verifyResults(ptn_data_2);
+    // All tables good on destination, drop on source.
 
     run("DROP TABLE " + dbName + ".unptned");
     run("ALTER TABLE " + dbName + ".ptned DROP PARTITION (b='2')");
     run("DROP TABLE " + dbName + ".ptned2");
-    run("SELECT a from " + dbName + ".ptned WHERE b=2");
-    verifyResults(empty);
-    run("SELECT a from " + dbName + ".ptned");
-    verifyResults(ptn_data_1);
+    verifySetup("SELECT a from " + dbName + ".ptned WHERE b=2", empty);
+    verifySetup("SELECT a from " + dbName + ".ptned", ptn_data_1);
+
+    // replicate the incremental drops
 
     advanceDumpDir();;
     run("REPL DUMP " + dbName + " FROM " + replDumpId);
@@ -379,6 +352,10 @@ public class TestReplicationScenarios {
     run("EXPLAIN REPL LOAD " + dbName + "_dupe FROM '" + postDropReplDumpLocn + "'");
     printOutput();
     run("REPL LOAD " + dbName + "_dupe FROM '" + postDropReplDumpLocn + "'");
+
+    // verify that drops were replicated. This can either be from tables or ptns
+    // not existing, and thus, throwing a NoSuchObjectException, or returning nulls
+    // or select * returning empty, depending on what we're testing.
 
     Exception e = null;
     try {
@@ -390,10 +367,8 @@ public class TestReplicationScenarios {
     assertNotNull(e);
     assertEquals(NoSuchObjectException.class, e.getClass());
 
-    run("SELECT a from " + dbName + "_dupe.ptned WHERE b=2");
-    verifyResults(empty);
-    run("SELECT a from " + dbName + "_dupe.ptned");
-    verifyResults(ptn_data_1);
+    verifyRun("SELECT a from " + dbName + "_dupe.ptned WHERE b=2", empty);
+    verifyRun("SELECT a from " + dbName + "_dupe.ptned", ptn_data_1);
 
     Exception e2 = null;
     try {
@@ -406,7 +381,6 @@ public class TestReplicationScenarios {
     assertEquals(NoSuchObjectException.class, e.getClass());
 
   }
-
 
   @Test
   public void testAlters() throws IOException {
@@ -435,24 +409,20 @@ public class TestReplicationScenarios {
     createTestDataFile(ptn_locn_2, ptn_data_2);
 
     run("LOAD DATA LOCAL INPATH '" + unptn_locn + "' OVERWRITE INTO TABLE " + dbName + ".unptned");
-    run("SELECT * from " + dbName + ".unptned");
-    verifyResults(unptn_data);
+    verifySetup("SELECT * from " + dbName + ".unptned", unptn_data);
     run("LOAD DATA LOCAL INPATH '" + unptn_locn + "' OVERWRITE INTO TABLE " + dbName + ".unptned2");
-    run("SELECT * from " + dbName + ".unptned2");
-    verifyResults(unptn_data);
+    verifySetup("SELECT * from " + dbName + ".unptned2", unptn_data);
 
     run("LOAD DATA LOCAL INPATH '" + ptn_locn_1 + "' OVERWRITE INTO TABLE " + dbName + ".ptned PARTITION(b='1')");
-    run("SELECT a from " + dbName + ".ptned WHERE b='1'");
-    verifyResults(ptn_data_1);
+    verifySetup("SELECT a from " + dbName + ".ptned WHERE b='1'", ptn_data_1);
     run("LOAD DATA LOCAL INPATH '" + ptn_locn_2 + "' OVERWRITE INTO TABLE " + dbName + ".ptned PARTITION(b='2')");
-    run("SELECT a from " + dbName + ".ptned WHERE b='2'");
-    verifyResults(ptn_data_2);
+    verifySetup("SELECT a from " + dbName + ".ptned WHERE b='2'", ptn_data_2);
     run("LOAD DATA LOCAL INPATH '" + ptn_locn_1 + "' OVERWRITE INTO TABLE " + dbName + ".ptned2 PARTITION(b='1')");
-    run("SELECT a from " + dbName + ".ptned2 WHERE b='1'");
-    verifyResults(ptn_data_1);
+    verifySetup("SELECT a from " + dbName + ".ptned2 WHERE b='1'",ptn_data_1);
     run("LOAD DATA LOCAL INPATH '" + ptn_locn_2 + "' OVERWRITE INTO TABLE " + dbName + ".ptned2 PARTITION(b='2')");
-    run("SELECT a from " + dbName + ".ptned2 WHERE b='2'");
-    verifyResults(ptn_data_2);
+    verifySetup("SELECT a from " + dbName + ".ptned2 WHERE b='2'", ptn_data_2);
+
+    // base tables set up, let's replicate them over
 
     advanceDumpDir();
     run("REPL DUMP " + dbName);
@@ -465,50 +435,53 @@ public class TestReplicationScenarios {
     run("REPL STATUS " + dbName + "_dupe");
     verifyResults(new String[] {replDumpId});
 
-    run("SELECT * from " + dbName + "_dupe.unptned");
-    verifyResults(unptn_data);
-    run("SELECT * from " + dbName + "_dupe.unptned2");
-    verifyResults(unptn_data);
-    run("SELECT a from " + dbName + "_dupe.ptned WHERE b='1'");
-    verifyResults(ptn_data_1);
-    run("SELECT a from " + dbName + "_dupe.ptned WHERE b='2'");
-    verifyResults(ptn_data_2);
-    run("SELECT a from " + dbName + "_dupe.ptned2 WHERE b='1'");
-    verifyResults(ptn_data_1);
-    run("SELECT a from " + dbName + "_dupe.ptned2 WHERE b='2'");
-    verifyResults(ptn_data_2);
+    verifySetup("SELECT * from " + dbName + "_dupe.unptned", unptn_data);
+    verifySetup("SELECT * from " + dbName + "_dupe.unptned2", unptn_data);
+    verifySetup("SELECT a from " + dbName + "_dupe.ptned WHERE b='1'", ptn_data_1);
+    verifySetup("SELECT a from " + dbName + "_dupe.ptned WHERE b='2'", ptn_data_2);
+    verifySetup("SELECT a from " + dbName + "_dupe.ptned2 WHERE b='1'", ptn_data_1);
+    verifySetup("SELECT a from " + dbName + "_dupe.ptned2 WHERE b='2'", ptn_data_2);
 
+    // tables have been replicated over, and verified to be identical. Now, we do a couple of
+    // alters on the source
+
+    // Rename unpartitioned table
     run("ALTER TABLE " + dbName + ".unptned RENAME TO " + dbName + ".unptned_rn");
-    run("SELECT * from " + dbName + ".unptned_rn");
-    verifyResults(unptn_data);
+    verifySetup("SELECT * from " + dbName + ".unptned_rn", unptn_data);
 
+    // Alter unpartitioned table set table property
     String testKey = "blah";
     String testVal = "foo";
     run("ALTER TABLE " + dbName + ".unptned2 SET TBLPROPERTIES ('" + testKey + "' = '" + testVal + "')");
-    try {
-      Table unptn2 = metaStoreClient.getTable(dbName,"unptned2");
-      assertTrue(unptn2.getParameters().containsKey(testKey));
-      assertEquals(testVal,unptn2.getParameters().get(testKey));
-    } catch (TException e) {
-      assertNull(e);
+    if (VERIFY_SETUP_STEPS){
+      try {
+        Table unptn2 = metaStoreClient.getTable(dbName,"unptned2");
+        assertTrue(unptn2.getParameters().containsKey(testKey));
+        assertEquals(testVal,unptn2.getParameters().get(testKey));
+      } catch (TException e) {
+        assertNull(e);
+      }
     }
 
+    // alter partitioned table, rename partition
     run("ALTER TABLE " + dbName + ".ptned PARTITION (b='2') RENAME TO PARTITION (b='22')");
-    run("SELECT a from " + dbName + ".ptned WHERE b=2");
-    verifyResults(empty);
-    run("SELECT a from " + dbName + ".ptned WHERE b=22");
-    verifyResults(ptn_data_2);
+    verifySetup("SELECT a from " + dbName + ".ptned WHERE b=2", empty);
+    verifySetup("SELECT a from " + dbName + ".ptned WHERE b=22", ptn_data_2);
 
+    // alter partitioned table set table property
     run("ALTER TABLE " + dbName + ".ptned SET TBLPROPERTIES ('" + testKey + "' = '" + testVal + "')");
-    try {
-      Table ptned = metaStoreClient.getTable(dbName,"ptned");
-      assertTrue(ptned.getParameters().containsKey(testKey));
-      assertEquals(testVal,ptned.getParameters().get(testKey));
-    } catch (TException e) {
-      assertNull(e);
+    if (VERIFY_SETUP_STEPS){
+      try {
+        Table ptned = metaStoreClient.getTable(dbName,"ptned");
+        assertTrue(ptned.getParameters().containsKey(testKey));
+        assertEquals(testVal,ptned.getParameters().get(testKey));
+      } catch (TException e) {
+        assertNull(e);
+      }
     }
 
-    // No DDL way to alter a partition, so we use the MSC api directly.
+    // alter partitioned table's partition set partition property
+    // Note : No DDL way to alter a partition, so we use the MSC api directly.
     try {
       List<String> ptnVals1 = new ArrayList<String>();
       ptnVals1.add("1");
@@ -519,12 +492,12 @@ public class TestReplicationScenarios {
       assertNull(e);
     }
 
-
-    run("SELECT a from " + dbName + ".ptned2 WHERE b=2");
-    verifyResults(ptn_data_2);
+    // rename partitioned table
+    verifySetup("SELECT a from " + dbName + ".ptned2 WHERE b=2", ptn_data_2);
     run("ALTER TABLE " + dbName + ".ptned2 RENAME TO " + dbName + ".ptned2_rn");
-    run("SELECT a from " + dbName + ".ptned2_rn WHERE b=2");
-    verifyResults(ptn_data_2);
+    verifySetup("SELECT a from " + dbName + ".ptned2_rn WHERE b=2", ptn_data_2);
+
+    // All alters done, now we replicate them over.
 
     advanceDumpDir();
     run("REPL DUMP " + dbName + " FROM " + replDumpId);
@@ -535,6 +508,9 @@ public class TestReplicationScenarios {
     printOutput();
     run("REPL LOAD " + dbName + "_dupe FROM '" + postAlterReplDumpLocn + "'");
 
+    // Replication done, we now do the following verifications:
+
+    // verify that unpartitioned table rename succeeded.
     Exception e = null;
     try {
       Table tbl = metaStoreClient.getTable(dbName + "_dupe" , "unptned");
@@ -544,7 +520,9 @@ public class TestReplicationScenarios {
     }
     assertNotNull(e);
     assertEquals(NoSuchObjectException.class, e.getClass());
+    verifyRun("SELECT * from " + dbName + "_dupe.unptned_rn", unptn_data);
 
+    // verify that partition rename succeded.
     try {
       Table unptn2 = metaStoreClient.getTable(dbName + "_dupe" , "unptned2");
       assertTrue(unptn2.getParameters().containsKey(testKey));
@@ -553,13 +531,10 @@ public class TestReplicationScenarios {
       assertNull(te);
     }
 
-    run("SELECT * from " + dbName + "_dupe.unptned_rn");
-    verifyResults(unptn_data);
-    run("SELECT a from " + dbName + "_dupe.ptned WHERE b=2");
-    verifyResults(empty);
-    run("SELECT a from " + dbName + "_dupe.ptned WHERE b=22");
-    verifyResults(ptn_data_2);
+    verifyRun("SELECT a from " + dbName + "_dupe.ptned WHERE b=2", empty);
+    verifyRun("SELECT a from " + dbName + "_dupe.ptned WHERE b=22", ptn_data_2);
 
+    // verify that ptned table rename succeded.
     Exception e2 = null;
     try {
       Table tbl = metaStoreClient.getTable(dbName + "_dupe" , "ptned2");
@@ -569,15 +544,18 @@ public class TestReplicationScenarios {
     }
     assertNotNull(e2);
     assertEquals(NoSuchObjectException.class, e.getClass());
+    verifyRun("SELECT a from " + dbName + "_dupe.ptned2_rn WHERE b=2", ptn_data_2);
 
+    // verify that ptned table property set worked
     try {
       Table ptned = metaStoreClient.getTable(dbName + "_dupe" , "ptned");
       assertTrue(ptned.getParameters().containsKey(testKey));
-      assertEquals(testVal,ptned.getParameters().get(testKey));
+      assertEquals(testVal, ptned.getParameters().get(testKey));
     } catch (TException te) {
       assertNull(te);
     }
 
+    // verify that partitioned table partition property set worked.
     try {
       List<String> ptnVals1 = new ArrayList<String>();
       ptnVals1.add("1");
@@ -588,8 +566,6 @@ public class TestReplicationScenarios {
       assertNull(te);
     }
 
-    run("SELECT a from " + dbName + "_dupe.ptned2_rn WHERE b=2");
-    verifyResults(ptn_data_2);
   }
 
   @Test
@@ -626,18 +602,14 @@ public class TestReplicationScenarios {
     createTestDataFile(ptn_locn_1, ptn_data_1);
     createTestDataFile(ptn_locn_2, ptn_data_2);
 
-    run("SELECT a from " + dbName + ".ptned_empty");
-    verifyResults(empty);
-    run("SELECT * from " + dbName + ".unptned_empty");
-    verifyResults(empty);
+    verifySetup("SELECT a from " + dbName + ".ptned_empty", empty);
+    verifySetup("SELECT * from " + dbName + ".unptned_empty", empty);
 
     run("LOAD DATA LOCAL INPATH '" + unptn_locn + "' OVERWRITE INTO TABLE " + dbName + ".unptned");
-    run("SELECT * from " + dbName + ".unptned");
-    verifyResults(unptn_data);
+    verifySetup("SELECT * from " + dbName + ".unptned", unptn_data);
     run("CREATE TABLE " + dbName + ".unptned_late LIKE " + dbName + ".unptned");
     run("INSERT INTO TABLE " + dbName + ".unptned_late SELECT * FROM " + dbName + ".unptned");
-    run("SELECT * from " + dbName + ".unptned_late");
-    verifyResults(unptn_data);
+    verifySetup("SELECT * from " + dbName + ".unptned_late", unptn_data);
 
     advanceDumpDir();
     run("REPL DUMP " + dbName + " FROM " + replDumpId);
@@ -647,29 +619,24 @@ public class TestReplicationScenarios {
     run("EXPLAIN REPL LOAD " + dbName + "_dupe FROM '" + incrementalDumpLocn + "'");
     printOutput();
     run("REPL LOAD " + dbName + "_dupe FROM '" + incrementalDumpLocn + "'");
-    run("SELECT * from " + dbName + "_dupe.unptned_late");
-    verifyResults(unptn_data);
+    verifyRun("SELECT * from " + dbName + "_dupe.unptned_late", unptn_data);
 
     run("LOAD DATA LOCAL INPATH '" + ptn_locn_1 + "' OVERWRITE INTO TABLE " + dbName
         + ".ptned PARTITION(b=1)");
-    run("SELECT a from " + dbName + ".ptned WHERE b=1");
-    verifyResults(ptn_data_1);
+    verifySetup("SELECT a from " + dbName + ".ptned WHERE b=1", ptn_data_1);
     run("LOAD DATA LOCAL INPATH '" + ptn_locn_2 + "' OVERWRITE INTO TABLE " + dbName
         + ".ptned PARTITION(b=2)");
-    run("SELECT a from " + dbName + ".ptned WHERE b=2");
-    verifyResults(ptn_data_2);
+    verifySetup("SELECT a from " + dbName + ".ptned WHERE b=2", ptn_data_2);
 
     run("CREATE TABLE " + dbName
         + ".ptned_late(a string) PARTITIONED BY (b int) STORED AS TEXTFILE");
     run("INSERT INTO TABLE " + dbName + ".ptned_late PARTITION(b=1) SELECT a FROM " + dbName
         + ".ptned WHERE b=1");
-    run("SELECT a from " + dbName + ".ptned_late WHERE b=1");
-    verifyResults(ptn_data_1);
+    verifySetup("SELECT a from " + dbName + ".ptned_late WHERE b=1", ptn_data_1);
 
     run("INSERT INTO TABLE " + dbName + ".ptned_late PARTITION(b=2) SELECT a FROM " + dbName
         + ".ptned WHERE b=2");
-    run("SELECT a from " + dbName + ".ptned_late WHERE b=2");
-    verifyResults(ptn_data_2);
+    verifySetup("SELECT a from " + dbName + ".ptned_late WHERE b=2", ptn_data_2);
 
     advanceDumpDir();
     run("REPL DUMP " + dbName + " FROM " + replDumpId);
@@ -679,11 +646,11 @@ public class TestReplicationScenarios {
     run("EXPLAIN REPL LOAD " + dbName + "_dupe FROM '" + incrementalDumpLocn + "'");
     printOutput();
     run("REPL LOAD " + dbName + "_dupe FROM '" + incrementalDumpLocn + "'");
-    run("SELECT a from " + dbName + "_dupe.ptned_late WHERE b=1");
-    verifyResults(ptn_data_1);
-    run("SELECT a from " + dbName + "_dupe.ptned_late WHERE b=2");
-    verifyResults(ptn_data_2);
+
+    verifyRun("SELECT a from " + dbName + "_dupe.ptned_late WHERE b=1", ptn_data_1);
+    verifyRun("SELECT a from " + dbName + "_dupe.ptned_late WHERE b=2", ptn_data_2);
   }
+
 
   private String getResult(int rowNum, int colNum) throws IOException {
     return getResult(rowNum,colNum,false);
@@ -727,6 +694,18 @@ public class TestReplicationScenarios {
     for (String s : getOutput()){
       LOG.info(s);
     }
+  }
+
+  private void verifySetup(String cmd, String[] data) throws  IOException {
+    if (VERIFY_SETUP_STEPS){
+      run(cmd);
+      verifyResults(data);
+    }
+  }
+
+  private void verifyRun(String cmd, String[] data) throws IOException {
+    run(cmd);
+    verifyResults(data);
   }
 
   private static void run(String cmd) throws RuntimeException {
