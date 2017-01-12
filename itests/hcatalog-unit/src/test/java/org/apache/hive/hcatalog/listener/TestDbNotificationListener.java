@@ -27,6 +27,7 @@ import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -53,14 +54,25 @@ import org.apache.hadoop.hive.metastore.api.ResourceUri;
 import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.metastore.messaging.AddPartitionMessage;
+import org.apache.hadoop.hive.metastore.messaging.AlterIndexMessage;
 import org.apache.hadoop.hive.metastore.messaging.AlterPartitionMessage;
 import org.apache.hadoop.hive.metastore.messaging.AlterTableMessage;
+import org.apache.hadoop.hive.metastore.messaging.CreateDatabaseMessage;
+import org.apache.hadoop.hive.metastore.messaging.CreateFunctionMessage;
+import org.apache.hadoop.hive.metastore.messaging.CreateIndexMessage;
+import org.apache.hadoop.hive.metastore.messaging.CreateTableMessage;
+import org.apache.hadoop.hive.metastore.messaging.DropDatabaseMessage;
+import org.apache.hadoop.hive.metastore.messaging.DropFunctionMessage;
+import org.apache.hadoop.hive.metastore.messaging.DropIndexMessage;
+import org.apache.hadoop.hive.metastore.messaging.DropPartitionMessage;
+import org.apache.hadoop.hive.metastore.messaging.DropTableMessage;
 import org.apache.hadoop.hive.metastore.messaging.EventMessage.EventType;
-import org.apache.hadoop.hive.metastore.messaging.json.JSONMessageFactory;
+import org.apache.hadoop.hive.metastore.messaging.InsertMessage;
+import org.apache.hadoop.hive.metastore.messaging.MessageDeserializer;
+import org.apache.hadoop.hive.metastore.messaging.MessageFactory;
 import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.session.SessionState;
-import org.codehaus.jackson.node.ArrayNode;
-import org.codehaus.jackson.node.ObjectNode;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -79,6 +91,7 @@ public class TestDbNotificationListener {
   private static Map<String, String> emptyParameters = new HashMap<String, String>();
   private static IMetaStoreClient msClient;
   private static Driver driver;
+  private static MessageDeserializer md = null;
   private int startTime;
   private long firstEventId;
 
@@ -108,6 +121,7 @@ public class TestDbNotificationListener {
     SessionState.start(new CliSessionState(conf));
     msClient = new HiveMetaStoreClient(conf);
     driver = new Driver(conf);
+    md = MessageFactory.getInstance().getDeserializer();
   }
 
   @Before
@@ -145,9 +159,8 @@ public class TestDbNotificationListener {
     assertNull(event.getTableName());
 
     // Parse the message field
-    ObjectNode jsonTree = JSONMessageFactory.getJsonTree(event);
-    assertEquals(EventType.CREATE_DATABASE.toString(), jsonTree.get("eventType").asText());
-    assertEquals(dbName, jsonTree.get("db").asText());
+    CreateDatabaseMessage createDbMsg = md.getCreateDatabaseMessage(event.getMessage());
+    assertEquals(dbName, createDbMsg.getDB());
 
     // When hive.metastore.transactional.event.listeners is set,
     // a failed event should not create a new notification
@@ -188,9 +201,8 @@ public class TestDbNotificationListener {
     assertNull(event.getTableName());
 
     // Parse the message field
-    ObjectNode jsonTree = JSONMessageFactory.getJsonTree(event);
-    assertEquals(EventType.DROP_DATABASE.toString(), jsonTree.get("eventType").asText());
-    assertEquals(dbName, jsonTree.get("db").asText());
+    DropDatabaseMessage dropDbMsg = md.getDropDatabaseMessage(event.getMessage());
+    assertEquals(dbName, dropDbMsg.getDB());
 
     // When hive.metastore.transactional.event.listeners is set,
     // a failed event should not create a new notification
@@ -237,12 +249,10 @@ public class TestDbNotificationListener {
     assertEquals(tblName, event.getTableName());
 
     // Parse the message field
-    ObjectNode jsonTree = JSONMessageFactory.getJsonTree(event);
-    assertEquals(EventType.CREATE_TABLE.toString(), jsonTree.get("eventType").asText());
-    assertEquals(defaultDbName, jsonTree.get("db").asText());
-    assertEquals(tblName, jsonTree.get("table").asText());
-    Table tableObj = JSONMessageFactory.getTableObj(jsonTree);
-    assertEquals(table, tableObj);
+    CreateTableMessage createTblMsg = md.getCreateTableMessage(event.getMessage());
+    assertEquals(defaultDbName, createTblMsg.getDB());
+    assertEquals(tblName, createTblMsg.getTable());
+    assertEquals(table, createTblMsg.getTableObj());
 
     // When hive.metastore.transactional.event.listeners is set,
     // a failed event should not create a new notification
@@ -297,8 +307,7 @@ public class TestDbNotificationListener {
     assertEquals(defaultDbName, event.getDbName());
     assertEquals(tblName, event.getTableName());
 
-    AlterTableMessage alterTableMessage =
-        JSONMessageFactory.getInstance().getDeserializer().getAlterTableMessage(event.getMessage());
+    AlterTableMessage alterTableMessage = md.getAlterTableMessage(event.getMessage());
     assertEquals(table, alterTableMessage.getTableObjAfter());
 
     // When hive.metastore.transactional.event.listeners is set,
@@ -348,10 +357,9 @@ public class TestDbNotificationListener {
     assertEquals(tblName, event.getTableName());
 
     // Parse the message field
-    ObjectNode jsonTree = JSONMessageFactory.getJsonTree(event);
-    assertEquals(EventType.DROP_TABLE.toString(), jsonTree.get("eventType").asText());
-    assertEquals(defaultDbName, jsonTree.get("db").asText());
-    assertEquals(tblName, jsonTree.get("table").asText());
+    DropTableMessage dropTblMsg = md.getDropTableMessage(event.getMessage());
+    assertEquals(defaultDbName, dropTblMsg.getDB());
+    assertEquals(tblName, dropTblMsg.getTable());
 
     // When hive.metastore.transactional.event.listeners is set,
     // a failed event should not create a new notification
@@ -411,12 +419,12 @@ public class TestDbNotificationListener {
     assertEquals(tblName, event.getTableName());
 
     // Parse the message field
-    ObjectNode jsonTree = JSONMessageFactory.getJsonTree(event);
-    assertEquals(EventType.ADD_PARTITION.toString(), jsonTree.get("eventType").asText());
-    assertEquals(defaultDbName, jsonTree.get("db").asText());
-    assertEquals(tblName, jsonTree.get("table").asText());
-    List<Partition> partitionObjList = JSONMessageFactory.getPartitionObjList(jsonTree);
-    assertEquals(partition, partitionObjList.get(0));
+    AddPartitionMessage addPtnMsg = md.getAddPartitionMessage(event.getMessage());
+    assertEquals(defaultDbName, addPtnMsg.getDB());
+    assertEquals(tblName, addPtnMsg.getTable());
+    Iterator<Partition> ptnIter = addPtnMsg.getPartitionObjs().iterator();
+    assertTrue(ptnIter.hasNext());
+    assertEquals(partition, ptnIter.next());
 
     // When hive.metastore.transactional.event.listeners is set,
     // a failed event should not create a new notification
@@ -479,14 +487,10 @@ public class TestDbNotificationListener {
     assertEquals(tblName, event.getTableName());
 
     // Parse the message field
-    ObjectNode jsonTree = JSONMessageFactory.getJsonTree(event);
-    assertEquals(EventType.ALTER_PARTITION.toString(), jsonTree.get("eventType").asText());
-    assertEquals(defaultDbName, jsonTree.get("db").asText());
-    assertEquals(tblName, jsonTree.get("table").asText());
-
-    AlterPartitionMessage alterPartitionMessage =
-        JSONMessageFactory.getInstance().getDeserializer().getAlterPartitionMessage(event.getMessage());
-    assertEquals(newPart, alterPartitionMessage.getPtnObjAfter());
+    AlterPartitionMessage alterPtnMsg = md.getAlterPartitionMessage(event.getMessage());
+    assertEquals(defaultDbName, alterPtnMsg.getDB());
+    assertEquals(tblName, alterPtnMsg.getTable());
+    assertEquals(newPart, alterPtnMsg.getPtnObjAfter());
 
     // When hive.metastore.transactional.event.listeners is set,
     // a failed event should not create a new notification
@@ -543,10 +547,9 @@ public class TestDbNotificationListener {
     assertEquals(tblName, event.getTableName());
 
     // Parse the message field
-    ObjectNode jsonTree = JSONMessageFactory.getJsonTree(event);
-    assertEquals(EventType.DROP_PARTITION.toString(), jsonTree.get("eventType").asText());
-    assertEquals(defaultDbName, jsonTree.get("db").asText());
-    assertEquals(tblName, jsonTree.get("table").asText());
+    DropPartitionMessage dropPtnMsg = md.getDropPartitionMessage(event.getMessage());
+    assertEquals(defaultDbName, dropPtnMsg.getDB());
+    assertEquals(tblName, dropPtnMsg.getTable());
 
     // When hive.metastore.transactional.event.listeners is set,
     // a failed event should not create a new notification
@@ -592,7 +595,9 @@ public class TestDbNotificationListener {
     assertEquals(defaultDbName, event.getDbName());
 
     // Parse the message field
-    Function funcObj = JSONMessageFactory.getFunctionObj(JSONMessageFactory.getJsonTree(event));
+    CreateFunctionMessage createFuncMsg = md.getCreateFunctionMessage(event.getMessage());
+    assertEquals(defaultDbName, createFuncMsg.getDB());
+    Function funcObj = createFuncMsg.getFunctionObj();
     assertEquals(defaultDbName, funcObj.getDbName());
     assertEquals(funcName, funcObj.getFunctionName());
     assertEquals(funcClass, funcObj.getClassName());
@@ -647,15 +652,9 @@ public class TestDbNotificationListener {
     assertEquals(defaultDbName, event.getDbName());
 
     // Parse the message field
-    Function funcObj = JSONMessageFactory.getFunctionObj(JSONMessageFactory.getJsonTree(event));
-    assertEquals(defaultDbName, funcObj.getDbName());
-    assertEquals(funcName, funcObj.getFunctionName());
-    assertEquals(funcClass, funcObj.getClassName());
-    assertEquals(ownerName, funcObj.getOwnerName());
-    assertEquals(FunctionType.JAVA, funcObj.getFunctionType());
-    assertEquals(1, funcObj.getResourceUrisSize());
-    assertEquals(ResourceType.JAR, funcObj.getResourceUris().get(0).getResourceType());
-    assertEquals(funcResource, funcObj.getResourceUris().get(0).getUri());
+    DropFunctionMessage dropFuncMsg = md.getDropFunctionMessage(event.getMessage());
+    assertEquals(defaultDbName, dropFuncMsg.getDB());
+    assertEquals(funcName, dropFuncMsg.getFunctionName());
 
     // When hive.metastore.transactional.event.listeners is set,
     // a failed event should not create a new notification
@@ -714,7 +713,9 @@ public class TestDbNotificationListener {
     assertEquals(dbName, event.getDbName());
 
     // Parse the message field
-    Index indexObj = JSONMessageFactory.getIndexObj(JSONMessageFactory.getJsonTree(event));
+    CreateIndexMessage createIdxMessage = md.getCreateIndexMessage(event.getMessage());
+    assertEquals(dbName, createIdxMessage.getDB());
+    Index indexObj = createIdxMessage.getIndexObj();
     assertEquals(dbName, indexObj.getDbName());
     assertEquals(indexName, indexObj.getIndexName());
     assertEquals(tableName, indexObj.getOrigTableName());
@@ -780,11 +781,11 @@ public class TestDbNotificationListener {
     assertEquals(dbName, event.getDbName());
 
     // Parse the message field
-    Index indexObj = JSONMessageFactory.getIndexObj(JSONMessageFactory.getJsonTree(event));
-    assertEquals(dbName, indexObj.getDbName());
-    assertEquals(indexName.toLowerCase(), indexObj.getIndexName());
-    assertEquals(tableName.toLowerCase(), indexObj.getOrigTableName());
-    assertEquals(indexTableName.toLowerCase(), indexObj.getIndexTableName());
+    DropIndexMessage dropIdxMsg = md.getDropIndexMessage(event.getMessage());
+    assertEquals(dbName, dropIdxMsg.getDB());
+    assertEquals(indexName.toLowerCase(), dropIdxMsg.getIndexName());
+    assertEquals(indexTableName.toLowerCase(), dropIdxMsg.getIndexTableName());
+    assertEquals(tableName.toLowerCase(), dropIdxMsg.getOrigTableName());
 
     // When hive.metastore.transactional.event.listeners is set,
     // a failed event should not create a new notification
@@ -852,8 +853,8 @@ public class TestDbNotificationListener {
     assertEquals(dbName, event.getDbName());
 
     // Parse the message field
-    Index indexObj =
-        JSONMessageFactory.getIndexObj(JSONMessageFactory.getJsonTree(event), "afterIndexObjJson");
+    AlterIndexMessage alterIdxMsg = md.getAlterIndexMessage(event.getMessage());
+    Index indexObj = alterIdxMsg.getIndexObjAfter();
     assertEquals(dbName, indexObj.getDbName());
     assertEquals(indexName, indexObj.getIndexName());
     assertEquals(tableName, indexObj.getOrigTableName());
@@ -913,7 +914,7 @@ public class TestDbNotificationListener {
     assertEquals(defaultDbName, event.getDbName());
     assertEquals(tblName, event.getTableName());
     // Parse the message field
-    verifyInsertJSON(event, defaultDbName, tblName);
+    verifyInsert(event, defaultDbName, tblName);
   }
 
   @Test
@@ -967,13 +968,13 @@ public class TestDbNotificationListener {
     assertEquals(defaultDbName, event.getDbName());
     assertEquals(tblName, event.getTableName());
     // Parse the message field
-    verifyInsertJSON(event, defaultDbName, tblName);
-    ObjectNode jsonTree = JSONMessageFactory.getJsonTree(event);
-    LinkedHashMap<String, String> partKeyValsFromNotif =
-        JSONMessageFactory.getAsMap((ObjectNode) jsonTree.get("partKeyVals"),
-            new LinkedHashMap<String, String>());
-    assertEquals(partKeyVals, partKeyValsFromNotif);
+    verifyInsert(event, defaultDbName, tblName);
+    InsertMessage insertMessage = md.getInsertMessage(event.getMessage());
+    Map<String,String> partKeyValsFromNotif = insertMessage.getPartitionKeyValues();
+
+    assertMapEquals(partKeyVals, partKeyValsFromNotif);
   }
+
 
   @Test
   public void getOnlyMaxEvents() throws Exception {
@@ -1057,7 +1058,7 @@ public class TestDbNotificationListener {
     assertEquals(firstEventId + 3, event.getEventId());
     assertEquals(EventType.INSERT.toString(), event.getEventType());
     // Parse the message field
-    verifyInsertJSON(event, defaultDbName, tblName);
+    verifyInsert(event, defaultDbName, tblName);
 
     event = rsp.getEvents().get(4);
     assertEquals(firstEventId + 5, event.getEventId());
@@ -1090,7 +1091,7 @@ public class TestDbNotificationListener {
     assertEquals(firstEventId + 3, event.getEventId());
     assertEquals(EventType.INSERT.toString(), event.getEventType());
     // Parse the message field
-    verifyInsertJSON(event, null, sourceTblName);
+    verifyInsert(event, null, sourceTblName);
 
     event = rsp.getEvents().get(4);
     assertEquals(firstEventId + 5, event.getEventId());
@@ -1165,13 +1166,13 @@ public class TestDbNotificationListener {
     assertEquals(firstEventId + 4, event.getEventId());
     assertEquals(EventType.INSERT.toString(), event.getEventType());
     // Parse the message field
-    verifyInsertJSON(event, null, tblName);
+    verifyInsert(event, null, tblName);
 
     event = rsp.getEvents().get(6);
     assertEquals(firstEventId + 7, event.getEventId());
     assertEquals(EventType.INSERT.toString(), event.getEventType());
     // Parse the message field
-    verifyInsertJSON(event, null, tblName);
+    verifyInsert(event, null, tblName);
 
     event = rsp.getEvents().get(9);
     assertEquals(firstEventId + 10, event.getEventId());
@@ -1181,13 +1182,13 @@ public class TestDbNotificationListener {
     assertEquals(firstEventId + 11, event.getEventId());
     assertEquals(EventType.INSERT.toString(), event.getEventType());
     // Parse the message field
-    verifyInsertJSON(event, null, tblName);
+    verifyInsert(event, null, tblName);
 
     event = rsp.getEvents().get(13);
     assertEquals(firstEventId + 14, event.getEventId());
     assertEquals(EventType.INSERT.toString(), event.getEventType());
     // Parse the message field
-    verifyInsertJSON(event, null, tblName);
+    verifyInsert(event, null, tblName);
 
     event = rsp.getEvents().get(16);
     assertEquals(firstEventId + 17, event.getEventId());
@@ -1223,21 +1224,34 @@ public class TestDbNotificationListener {
     assertTrue(event.getMessage().matches(".*\"ds\":\"todaytwo\".*"));
   }
 
-  private void verifyInsertJSON(NotificationEvent event, String dbName, String tblName) throws Exception {
+  private void verifyInsert(NotificationEvent event, String dbName, String tblName) throws Exception {
     // Parse the message field
-    ObjectNode jsonTree = JSONMessageFactory.getJsonTree(event);
-    System.out.println("JSONInsertMessage: " + jsonTree.toString());
-    assertEquals(EventType.INSERT.toString(), jsonTree.get("eventType").asText());
-    if (dbName != null) {
-      assertEquals(dbName, jsonTree.get("db").asText());
+    InsertMessage insertMsg = md.getInsertMessage(event.getMessage());
+    System.out.println("InsertMessage: " + insertMsg.toString());
+    if (dbName != null ){
+      assertEquals(dbName, insertMsg.getDB());
     }
-    if (tblName != null) {
-      assertEquals(tblName, jsonTree.get("table").asText());
+    if (tblName != null){
+      assertEquals(tblName, insertMsg.getTable());
     }
     // Should have list of files
-    List<String> files =
-        JSONMessageFactory.getAsList((ArrayNode) jsonTree.get("files"), new ArrayList<String>());
+    List<String> files = insertMsg.getFiles();
     assertTrue(files.size() > 0);
+  }
+
+
+  private void assertMapEquals(Map<String, String> map1, Map<String, String> map2) {
+    // non ordered, non-classed map comparison - use sparingly instead of assertEquals
+    // only if you're sure that the order does not matter.
+    if ((map1 == null) || (map2 == null)){
+      assertNull(map1);
+      assertNull(map2);
+    }
+    assertEquals(map1.size(),map2.size());
+    for (String k : map1.keySet()){
+      assertTrue(map2.containsKey(k));
+      assertEquals(map1.get(k), map2.get(k));
+    }
   }
 
   @Test

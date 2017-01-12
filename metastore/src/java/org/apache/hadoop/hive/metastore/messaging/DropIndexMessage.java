@@ -21,7 +21,26 @@ package org.apache.hadoop.hive.metastore.messaging;
 
 public abstract class DropIndexMessage extends EventMessage {
 
+  public abstract String getIndexName();
+  public abstract String getOrigTableName();
+  public abstract String getIndexTableName();
+
   protected DropIndexMessage() {
     super(EventType.DROP_INDEX);
   }
+
+  @Override
+  public EventMessage checkValid() {
+    if (getIndexName() == null){
+      throw new IllegalStateException("Index name unset.");
+    }
+    if (getOrigTableName() == null){
+      throw new IllegalStateException("Index original table name unset.");
+    }
+    // NOTE: we do not do a not-null check on getIndexTableName,
+    // since, per the index design wiki, it can actually be null.
+
+    return super.checkValid();
+  }
+
 }

@@ -30,7 +30,7 @@ import org.codehaus.jackson.annotate.JsonProperty;
 public class JSONDropFunctionMessage extends DropFunctionMessage {
 
   @JsonProperty
-  String server, servicePrincipal, db, functionObjJson;
+  String server, servicePrincipal, db, functionName;
 
   @JsonProperty
   Long timestamp;
@@ -44,12 +44,8 @@ public class JSONDropFunctionMessage extends DropFunctionMessage {
     this.server = server;
     this.servicePrincipal = servicePrincipal;
     this.db = fn.getDbName();
+    this.functionName = fn.getFunctionName();
     this.timestamp = timestamp;
-    try {
-      this.functionObjJson = JSONMessageFactory.createFunctionObjJson(fn);
-    } catch (TException ex) {
-      throw new IllegalArgumentException("Could not serialize Function object", ex);
-    }
     checkValid();
   }
 
@@ -65,10 +61,6 @@ public class JSONDropFunctionMessage extends DropFunctionMessage {
   @Override
   public Long getTimestamp() { return timestamp; }
 
-  public String getFunctionObjJson() {
-    return functionObjJson;
-  }
-
   @Override
   public String toString() {
     try {
@@ -78,4 +70,10 @@ public class JSONDropFunctionMessage extends DropFunctionMessage {
       throw new IllegalArgumentException("Could not serialize: ", exception);
     }
   }
+
+  @Override
+  public String getFunctionName() {
+    return functionName;
+  }
+
 }

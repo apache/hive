@@ -21,7 +21,18 @@ package org.apache.hadoop.hive.metastore.messaging;
 
 public abstract class DropFunctionMessage extends EventMessage {
 
+  public abstract String getFunctionName();
+
   protected DropFunctionMessage() {
     super(EventType.DROP_FUNCTION);
   }
+
+  @Override
+  public EventMessage checkValid() {
+    if (getFunctionName() == null){
+      throw new IllegalStateException("Function name unset.");
+    }
+    return super.checkValid();
+  }
+
 }
