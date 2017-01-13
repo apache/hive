@@ -63,6 +63,7 @@ import org.apache.hadoop.hive.ql.plan.RenamePartitionDesc;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.io.IOUtils;
+
 import javax.annotation.Nullable;
 
 import java.io.BufferedReader;
@@ -890,23 +891,38 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
         return tasks;
       }
       case EVENT_DROP_PARTITION: {
-        DropPartitionMessage dropPartitionMessage = md.getDropPartitionMessage(dmd.getPayload());
-        Map<Integer, List<ExprNodeGenericFuncDesc>> partSpecs = genPartSpecs(dropPartitionMessage.getPartitions());
-        if (partSpecs.size() > 0){
-          DropTableDesc dropPtnDesc = new DropTableDesc(
-              dbName + "." + (tblName == null ? dropPartitionMessage.getTable() : tblName), partSpecs,
-              null, true, getNewEventOnlyReplicationSpec(String.valueOf(dmd.getEventFrom())));
-          Task<DDLWork> dropPtnTask = TaskFactory.get(new DDLWork(inputs, outputs, dropPtnDesc), conf);
-          if (precursor != null){
-            precursor.addDependentTask(dropPtnTask);
+        try {
+          DropPartitionMessage dropPartitionMessage = md.getDropPartitionMessage(dmd.getPayload());
+          Map<Integer, List<ExprNodeGenericFuncDesc>> partSpecs;
+          partSpecs =
+              genPartSpecs(new Table(dropPartitionMessage.getTableObj()),
+                  dropPartitionMessage.getPartitions());
+          if (partSpecs.size() > 0) {
+            DropTableDesc dropPtnDesc =
+                new DropTableDesc(dbName + "."
+                    + (tblName == null ? dropPartitionMessage.getTable() : tblName), partSpecs, null,
+                    true, getNewEventOnlyReplicationSpec(String.valueOf(dmd.getEventFrom())));
+            Task<DDLWork> dropPtnTask =
+                TaskFactory.get(new DDLWork(inputs, outputs, dropPtnDesc), conf);
+            if (precursor != null) {
+              precursor.addDependentTask(dropPtnTask);
+            }
+            List<Task<? extends Serializable>> tasks = new ArrayList<Task<? extends Serializable>>();
+            tasks.add(dropPtnTask);
+            LOG.debug("Added drop ptn task : {}:{},{}", dropPtnTask.getId(),
+                dropPtnDesc.getTableName(), dropPartitionMessage.getPartitions());
+            return tasks;
+          } else {
+            throw new SemanticException(
+                "DROP PARTITION EVENT does not return any part descs for event message :"
+                    + dmd.getPayload());
           }
-          List<Task<? extends Serializable>> tasks = new ArrayList<Task<? extends Serializable>>();
-          tasks.add(dropPtnTask);
-          LOG.debug("Added drop ptn task : {}:{},{}",
-              dropPtnTask.getId(), dropPtnDesc.getTableName(), dropPartitionMessage.getPartitions());
-          return tasks;
-        } else {
-          throw new SemanticException("DROP PARTITION EVENT does not return any part descs for event message :"+dmd.getPayload());
+        } catch (Exception e) {
+          if (!(e instanceof SemanticException)){
+            throw new SemanticException("Error reading message members", e);
+          } else {
+            throw (SemanticException)e;
+          }
         }
       }
       case EVENT_ALTER_TABLE: {
@@ -1007,38 +1023,37 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
     return null;
   }
 
-  private Map<Integer, List<ExprNodeGenericFuncDesc>> genPartSpecs(List<Map<String, String>> partitions) throws SemanticException {
-    Map<Integer,List<ExprNodeGenericFuncDesc>> partSpecs = new HashMap<Integer,List<ExprNodeGenericFuncDesc>>();
-
+  private Map<Integer, List<ExprNodeGenericFuncDesc>> genPartSpecs(Table table,
+      List<Map<String, String>> partitions) throws SemanticException {
+    Map<Integer, List<ExprNodeGenericFuncDesc>> partSpecs =
+        new HashMap<Integer, List<ExprNodeGenericFuncDesc>>();
     int partPrefixLength = 0;
     if ((partitions != null) && (partitions.size() > 0)) {
       partPrefixLength = partitions.get(0).size();
-      // pick the length of the first ptn, we expect all ptns listed to have the same number of key-vals.
+      // pick the length of the first ptn, we expect all ptns listed to have the same number of
+      // key-vals.
     }
     List<ExprNodeGenericFuncDesc> ptnDescs = new ArrayList<ExprNodeGenericFuncDesc>();
-    for (Map<String,String> ptn : partitions) {
+    for (Map<String, String> ptn : partitions) {
       // convert each key-value-map to appropriate expression.
-
       ExprNodeGenericFuncDesc expr = null;
-      for (Map.Entry<String,String> kvp : ptn.entrySet()) {
+      for (Map.Entry<String, String> kvp : ptn.entrySet()) {
         String key = kvp.getKey();
         Object val = kvp.getValue();
-        // FIXME : bug here, value is being placed as a String, but should actually be the underlying type
-        // as converted to it by looking at the table's col schema. To do that, however, we need the
-        // tableObjJson from the DropTableMessage. So, currently, this will only work for partitions for
-        // which the partition keys are all strings. So, for now, we hardcode it, but we need to fix this.
-        String type = "string";
-
+        String type = table.getPartColByName(key).getType();
+        ;
         PrimitiveTypeInfo pti = TypeInfoFactory.getPrimitiveTypeInfo(type);
         ExprNodeColumnDesc column = new ExprNodeColumnDesc(pti, key, null, true);
-        ExprNodeGenericFuncDesc op = DDLSemanticAnalyzer.makeBinaryPredicate("=", column, new ExprNodeConstantDesc(pti, val));
+        ExprNodeGenericFuncDesc op =
+            DDLSemanticAnalyzer
+                .makeBinaryPredicate("=", column, new ExprNodeConstantDesc(pti, val));
         expr = (expr == null) ? op : DDLSemanticAnalyzer.makeBinaryPredicate("and", expr, op);
       }
       if (expr != null) {
         ptnDescs.add(expr);
       }
     }
-    if (ptnDescs.size() > 0){
+    if (ptnDescs.size() > 0) {
       partSpecs.put(partPrefixLength, ptnDescs);
     }
     return partSpecs;

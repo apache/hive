@@ -291,6 +291,7 @@ public class TestReplicationScenarios {
     run("CREATE TABLE " + dbName + ".unptned(a string) STORED AS TEXTFILE");
     run("CREATE TABLE " + dbName + ".ptned(a string) partitioned by (b string) STORED AS TEXTFILE");
     run("CREATE TABLE " + dbName + ".ptned2(a string) partitioned by (b string) STORED AS TEXTFILE");
+    run("CREATE TABLE " + dbName + ".ptned3(a string) partitioned by (b int) STORED AS TEXTFILE");
 
     String[] unptn_data = new String[]{ "eleven" , "twelve" };
     String[] ptn_data_1 = new String[]{ "thirteen", "fourteen", "fifteen"};
@@ -315,6 +316,11 @@ public class TestReplicationScenarios {
     verifySetup("SELECT a from " + dbName + ".ptned2 WHERE b='1'", ptn_data_1);
     run("LOAD DATA LOCAL INPATH '" + ptn_locn_2 + "' OVERWRITE INTO TABLE " + dbName + ".ptned2 PARTITION(b='2')");
     verifySetup("SELECT a from " + dbName + ".ptned2 WHERE b='2'", ptn_data_2);
+    run("LOAD DATA LOCAL INPATH '" + ptn_locn_1 + "' OVERWRITE INTO TABLE " + dbName + ".ptned3 PARTITION(b=1)");
+    verifySetup("SELECT a from " + dbName + ".ptned2 WHERE b=1", ptn_data_1);
+    run("LOAD DATA LOCAL INPATH '" + ptn_locn_2 + "' OVERWRITE INTO TABLE " + dbName + ".ptned3 PARTITION(b=2)");
+    verifySetup("SELECT a from " + dbName + ".ptned2 WHERE b=2", ptn_data_2);
+
 
     // At this point, we've set up all the tables and ptns we're going to test drops across
     // Replicate it first, and then we'll drop it on the source.
@@ -333,18 +339,23 @@ public class TestReplicationScenarios {
     verifySetup("SELECT a from " + dbName + "_dupe.ptned WHERE b='2'", ptn_data_2);
     verifySetup("SELECT a from " + dbName + "_dupe.ptned2 WHERE b='1'", ptn_data_1);
     verifySetup("SELECT a from " + dbName + "_dupe.ptned2 WHERE b='2'", ptn_data_2);
+    verifySetup("SELECT a from " + dbName + "_dupe.ptned3 WHERE b=1", ptn_data_1);
+    verifySetup("SELECT a from " + dbName + "_dupe.ptned3 WHERE b=2", ptn_data_2);
 
     // All tables good on destination, drop on source.
 
     run("DROP TABLE " + dbName + ".unptned");
     run("ALTER TABLE " + dbName + ".ptned DROP PARTITION (b='2')");
     run("DROP TABLE " + dbName + ".ptned2");
-    verifySetup("SELECT a from " + dbName + ".ptned WHERE b=2", empty);
+    run("ALTER TABLE " + dbName + ".ptned3 DROP PARTITION (b=1)");
+    verifySetup("SELECT a from " + dbName + ".ptned WHERE b='2'", empty);
     verifySetup("SELECT a from " + dbName + ".ptned", ptn_data_1);
+    verifySetup("SELECT a from " + dbName + ".ptned3 WHERE b=1",empty);
+    verifySetup("SELECT a from " + dbName + ".ptned3",ptn_data_2);
 
     // replicate the incremental drops
 
-    advanceDumpDir();;
+    advanceDumpDir();
     run("REPL DUMP " + dbName + " FROM " + replDumpId);
     String postDropReplDumpLocn = getResult(0,0);
     String postDropReplDumpId = getResult(0,1,true);
@@ -367,8 +378,10 @@ public class TestReplicationScenarios {
     assertNotNull(e);
     assertEquals(NoSuchObjectException.class, e.getClass());
 
-    verifyRun("SELECT a from " + dbName + "_dupe.ptned WHERE b=2", empty);
+    verifyRun("SELECT a from " + dbName + "_dupe.ptned WHERE b='2'", empty);
     verifyRun("SELECT a from " + dbName + "_dupe.ptned", ptn_data_1);
+    verifyRun("SELECT a from " + dbName + "_dupe.ptned3 WHERE b=1", empty);
+    verifyRun("SELECT a from " + dbName + "_dupe.ptned3", ptn_data_2);
 
     Exception e2 = null;
     try {
@@ -379,7 +392,6 @@ public class TestReplicationScenarios {
     }
     assertNotNull(e2);
     assertEquals(NoSuchObjectException.class, e.getClass());
-
   }
 
   @Test
