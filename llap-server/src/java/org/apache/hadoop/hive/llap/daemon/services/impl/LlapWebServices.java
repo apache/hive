@@ -88,8 +88,10 @@ public class LlapWebServices extends AbstractService {
       builder.setUseSSL(this.useSSL);
       if (this.useSPNEGO) {
         builder.setUseSPNEGO(true); // this setups auth filtering in build()
-        builder.setSPNEGOPrincipal(HiveConf.getVar(conf, ConfVars.LLAP_KERBEROS_PRINCIPAL));
-        builder.setSPNEGOKeytab(HiveConf.getVar(conf, ConfVars.LLAP_KERBEROS_KEYTAB_FILE));
+        builder.setSPNEGOPrincipal(HiveConf.getVar(conf, ConfVars.LLAP_WEBUI_SPNEGO_PRINCIPAL,
+            HiveConf.getVar(conf, ConfVars.LLAP_KERBEROS_PRINCIPAL)));
+        builder.setSPNEGOKeytab(HiveConf.getVar(conf, ConfVars.LLAP_WEBUI_SPNEGO_KEYTAB_FILE,
+            HiveConf.getVar(conf, ConfVars.LLAP_KERBEROS_KEYTAB_FILE)));
       }
     }
 
