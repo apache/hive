@@ -2957,6 +2957,12 @@ public class HiveConf extends Configuration {
     LLAP_ZKSM_KERBEROS_KEYTAB_FILE("hive.llap.zk.sm.keytab.file", "",
         "The path to the Kerberos Keytab file containing the principal to use to talk to\n" +
         "ZooKeeper for ZooKeeper SecretManager."),
+    LLAP_WEBUI_SPNEGO_KEYTAB_FILE("hive.llap.webui.spnego.keytab", "",
+        "The path to the Kerberos Keytab file containing the LLAP WebUI SPNEGO principal.\n" +
+        "Typical value would look like /etc/security/keytabs/spnego.service.keytab."),
+    LLAP_WEBUI_SPNEGO_PRINCIPAL("hive.llap.webui.spnego.principal", "",
+        "The LLAP WebUI SPNEGO service principal. Configured similarly to\n" +
+        "hive.server2.webui.spnego.principal"),
     LLAP_FS_KERBEROS_PRINCIPAL("hive.llap.task.principal", "",
         "The name of the principal to use to run tasks. By default, the clients are required\n" +
         "to provide tokens to access HDFS/etc."),
