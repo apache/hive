@@ -22,6 +22,8 @@ package org.apache.hadoop.hive.metastore.messaging;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.hadoop.hive.metastore.api.Table;
+
 public abstract class DropPartitionMessage extends EventMessage {
 
   protected DropPartitionMessage() {
@@ -29,6 +31,9 @@ public abstract class DropPartitionMessage extends EventMessage {
   }
 
   public abstract String getTable();
+
+  public abstract Table getTableObj() throws Exception;
+
   public abstract List<Map<String, String>> getPartitions ();
 
   @Override

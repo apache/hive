@@ -550,6 +550,10 @@ public class TestDbNotificationListener {
     DropPartitionMessage dropPtnMsg = md.getDropPartitionMessage(event.getMessage());
     assertEquals(defaultDbName, dropPtnMsg.getDB());
     assertEquals(tblName, dropPtnMsg.getTable());
+    Table tableObj = dropPtnMsg.getTableObj();
+    assertEquals(table.getDbName(), tableObj.getDbName());
+    assertEquals(table.getTableName(), tableObj.getTableName());
+    assertEquals(table.getOwner(), tableObj.getOwner());
 
     // When hive.metastore.transactional.event.listeners is set,
     // a failed event should not create a new notification

@@ -138,8 +138,8 @@ public class JSONMessageFactory extends MessageFactory {
   @Override
   public DropPartitionMessage buildDropPartitionMessage(Table table,
       Iterator<Partition> partitionsIterator) {
-    return new JSONDropPartitionMessage(MS_SERVER_URL, MS_SERVICE_PRINCIPAL, table.getDbName(),
-        table.getTableName(), getPartitionKeyValues(table, partitionsIterator), now());
+    return new JSONDropPartitionMessage(MS_SERVER_URL, MS_SERVICE_PRINCIPAL, table,
+        getPartitionKeyValues(table, partitionsIterator), now());
   }
 
   @Override
