@@ -306,7 +306,8 @@ public class VectorExtractRow {
                 maxLengths[logicalColumnIndex]);
 
             HiveCharWritable hiveCharWritable = (HiveCharWritable) primitiveWritable;
-            hiveCharWritable.set(new String(bytes, start, adjustedLength, Charsets.UTF_8), -1);
+            hiveCharWritable.set(new String(bytes, start, adjustedLength, Charsets.UTF_8),
+                maxLengths[logicalColumnIndex]);
             return primitiveWritable;
           }
         case DECIMAL:
