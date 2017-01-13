@@ -23,7 +23,9 @@ import static org.junit.Assert.fail;
 import java.util.concurrent.TimeUnit;
 
 import com.google.common.base.Stopwatch;
+import com.google.common.base.Strings;
 import org.apache.hadoop.hive.cli.control.AbstractCliConfig.MetastoreType;
+import org.apache.hadoop.hive.ql.QTestProcessExecResult;
 import org.apache.hadoop.hive.ql.QTestUtil;
 import org.apache.hadoop.hive.ql.QTestUtil.MiniClusterType;
 import org.apache.hadoop.hive.util.ElapsedTimeLoggingWrapper;
@@ -175,13 +177,15 @@ public class CoreCliDriver extends CliAdapter {
         failed = true;
         qt.failed(ecode, fname, debugHint);
       }
-      ecode = qt.checkCliDriverResults(fname);
-      if (ecode != 0) {
+      QTestProcessExecResult result = qt.checkCliDriverResults(fname);
+      if (result.getReturnCode() != 0) {
         failed = true;
-        qt.failedDiff(ecode, fname, debugHint);
+        String message = Strings.isNullOrEmpty(result.getCapturedOutput()) ?
+            debugHint : "\r\n" + result.getCapturedOutput();
+        qt.failedDiff(result.getReturnCode(), fname, message);
       }
     }
-    catch (Throwable e) {
+    catch (Exception e) {
       failed = true;
       qt.failed(e, fname, debugHint);
     } finally {
