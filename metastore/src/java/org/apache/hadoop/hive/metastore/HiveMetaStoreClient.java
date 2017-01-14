@@ -167,7 +167,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
   private boolean isConnected = false;
   private URI metastoreUris[];
   private final HiveMetaHookLoader hookLoader;
-  protected final HiveConf conf;  // Keep a copy of HiveConf so if Session conf changes, we may need to get a new HMS client.
+  protected final HiveConf conf;
   private String tokenStrForm;
   private final boolean localMetaStore;
   private final MetaStoreFilterHook filterHook;
@@ -193,10 +193,8 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
     this.hookLoader = hookLoader;
     if (conf == null) {
       conf = new HiveConf(HiveMetaStoreClient.class);
-      this.conf = conf;
-    } else {
-      this.conf = new HiveConf(conf);
     }
+    this.conf = conf;
     filterHook = loadFilterHooks();
 
     String msUri = conf.getVar(HiveConf.ConfVars.METASTOREURIS);
@@ -204,7 +202,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
     if (localMetaStore) {
       // instantiate the metastore server handler directly instead of connecting
       // through the network
-      client = HiveMetaStore.newRetryingHMSHandler("hive client", this.conf, true);
+      client = HiveMetaStore.newRetryingHMSHandler("hive client", conf, true);
       isConnected = true;
       snapshotActiveConf();
       return;

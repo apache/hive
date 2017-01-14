@@ -82,8 +82,9 @@ public class TestJdbcWithMiniHS2 {
     miniHS2.start(confOverlay);
   }
 
-  private Connection getConnection() throws Exception {
-    return getConnection(miniHS2.getJdbcURL(), System.getProperty("user.name"), "bar");
+  @Before
+  public void setUp() throws Exception {
+    hs2Conn = getConnection(miniHS2.getJdbcURL(), System.getProperty("user.name"), "bar");
   }
 
   private Connection getConnection(String jdbcURL, String user, String pwd) throws SQLException {
@@ -94,9 +95,7 @@ public class TestJdbcWithMiniHS2 {
 
   @After
   public void tearDown() throws Exception {
-    if (hs2Conn != null) {
-      hs2Conn.close();
-    }
+    hs2Conn.close();
   }
 
   @AfterClass
@@ -109,7 +108,6 @@ public class TestJdbcWithMiniHS2 {
   @Test
   public void testConnection() throws Exception {
     String tableName = "testTab1";
-    hs2Conn = getConnection();
     Statement stmt = hs2Conn.createStatement();
 
     // create table
@@ -131,7 +129,6 @@ public class TestJdbcWithMiniHS2 {
   @Test
   public void testConcurrentStatements() throws Exception {
     String tableName = "testConcurrentStatements";
-    hs2Conn = getConnection();
     Statement stmt = hs2Conn.createStatement();
 
     // create table
@@ -310,7 +307,6 @@ public class TestJdbcWithMiniHS2 {
     stmt.execute(" drop table if exists table_in_non_default_schema");
     expected = stmt.execute("DROP DATABASE "+ dbName);
     stmt.close();
-    hs2Conn.close();
 
     hs2Conn  = getConnection(jdbcUri+"default",System.getProperty("user.name"),"bar");
     stmt = hs2Conn .createStatement();
@@ -344,7 +340,6 @@ public class TestJdbcWithMiniHS2 {
      * get/set Schema are new in JDK7 and not available in java.sql.Connection in JDK6.
      * Hence the test uses HiveConnection object to call these methods so that test will run with older JDKs
      */
-    hs2Conn = getConnection();
     HiveConnection hiveConn = (HiveConnection)hs2Conn;
 
     assertEquals("default", hiveConn.getSchema());
@@ -378,7 +373,6 @@ public class TestJdbcWithMiniHS2 {
    */
   private void verifyCurrentDB(String expectedDbName, Connection hs2Conn) throws Exception {
     String verifyTab = "miniHS2DbVerificationTable";
-    hs2Conn = getConnection();
     Statement stmt = hs2Conn.createStatement();
     stmt.execute("DROP TABLE IF EXISTS " + expectedDbName + "." + verifyTab);
     stmt.execute("CREATE TABLE " + expectedDbName + "." + verifyTab + "(id INT)");
@@ -478,7 +472,6 @@ public class TestJdbcWithMiniHS2 {
     // Downloaded resources dir
     scratchDirPath = new Path(HiveConf.getVar(conf, HiveConf.ConfVars.DOWNLOADED_RESOURCES_DIR));
     verifyScratchDir(conf, fs, scratchDirPath, expectedFSPermission, userName, true);
-    hs2Conn.close();
 
     // 2. Test with doAs=true
     // Restart HiveServer2 with doAs=true
@@ -505,7 +498,6 @@ public class TestJdbcWithMiniHS2 {
     // Downloaded resources dir
     scratchDirPath = new Path(HiveConf.getVar(conf, HiveConf.ConfVars.DOWNLOADED_RESOURCES_DIR));
     verifyScratchDir(conf, fs, scratchDirPath, expectedFSPermission, userName, true);
-    hs2Conn.close();
 
     // Test for user "trinity"
     userName = "trinity";
@@ -537,7 +529,6 @@ public class TestJdbcWithMiniHS2 {
     HiveConf testConf = new HiveConf();
     assertTrue(testConf.getVar(ConfVars.HIVE_SERVER2_BUILTIN_UDF_WHITELIST).isEmpty());
     // verify that udf in default whitelist can be executed
-    hs2Conn = getConnection();
     Statement stmt = hs2Conn.createStatement();
     stmt.executeQuery("SELECT substr('foobar', 4) ");
     hs2Conn.close();
@@ -579,11 +570,10 @@ public class TestJdbcWithMiniHS2 {
   public void testUdfBlackList() throws Exception {
     HiveConf testConf = new HiveConf();
     assertTrue(testConf.getVar(ConfVars.HIVE_SERVER2_BUILTIN_UDF_BLACKLIST).isEmpty());
-    hs2Conn = getConnection();
+
     Statement stmt = hs2Conn.createStatement();
     // verify that udf in default whitelist can be executed
     stmt.executeQuery("SELECT substr('foobar', 4) ");
-    hs2Conn.close();
 
     miniHS2.stop();
     testConf.setVar(ConfVars.HIVE_SERVER2_BUILTIN_UDF_BLACKLIST, "reflect");
@@ -605,9 +595,6 @@ public class TestJdbcWithMiniHS2 {
    */
   @Test
   public void testUdfBlackListOverride() throws Exception {
-    if (miniHS2.isStarted()) {
-      miniHS2.stop();
-    }
     // setup whitelist
     HiveConf testConf = new HiveConf();
 
@@ -662,8 +649,6 @@ public class TestJdbcWithMiniHS2 {
     // HDFS scratch dir
     scratchDirPath = new Path(HiveConf.getVar(conf, HiveConf.ConfVars.SCRATCHDIR));
     verifyScratchDir(conf, fs, scratchDirPath, expectedFSPermission, userName, false);
-    hs2Conn.close();
-
     // Test with multi-level scratch dir path
     // Stop HiveServer2
     if (miniHS2.isStarted()) {
