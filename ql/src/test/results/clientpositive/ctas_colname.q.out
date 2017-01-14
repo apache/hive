@@ -69,7 +69,7 @@ STAGE PLANS:
   Stage: Stage-3
       Create Table Operator:
         Create Table
-          columns: key string, value string, c1 double, c2 string
+          columns: key string, value string, _c1 double, _c2 string
           input format: org.apache.hadoop.mapred.TextInputFormat
           output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
           serde name: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
@@ -88,8 +88,8 @@ POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@summary
-POSTHOOK: Lineage: summary.c1 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: summary.c2 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: summary._c1 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: summary._c2 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: summary.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: summary.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: describe formatted summary
@@ -102,8 +102,8 @@ POSTHOOK: Input: default@summary
 	 	 
 key                 	string              	                    
 value               	string              	                    
-c1                  	double              	                    
-c2                  	string              	                    
+_c1                 	double              	                    
+_c2                 	string              	                    
 	 	 
 # Detailed Table Information	 	 
 Database:           	default             	 

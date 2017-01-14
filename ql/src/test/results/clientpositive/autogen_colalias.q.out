@@ -20,14 +20,14 @@ POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@dest_grouped_old1
-POSTHOOK: Lineage: dest_grouped_old1.c0 SIMPLE []
-POSTHOOK: Lineage: dest_grouped_old1.c3 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: dest_grouped_old1.c4 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: dest_grouped_old1.c5 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: dest_grouped_old1.c6 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: dest_grouped_old1.c7 SIMPLE []
-POSTHOOK: Lineage: dest_grouped_old1.c8 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: dest_grouped_old1.c9 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: dest_grouped_old1._c0 SIMPLE []
+POSTHOOK: Lineage: dest_grouped_old1._c3 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: dest_grouped_old1._c4 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: dest_grouped_old1._c5 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: dest_grouped_old1._c6 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: dest_grouped_old1._c7 SIMPLE []
+POSTHOOK: Lineage: dest_grouped_old1._c8 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: dest_grouped_old1._c9 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: dest_grouped_old1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: dest_grouped_old1.zz SIMPLE []
 PREHOOK: query: describe dest_grouped_old1
@@ -36,16 +36,16 @@ PREHOOK: Input: default@dest_grouped_old1
 POSTHOOK: query: describe dest_grouped_old1
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@dest_grouped_old1
-c0                  	int                 	                    
+_c0                 	int                 	                    
 zz                  	int                 	                    
 key                 	string              	                    
-c3                  	int                 	                    
-c4                  	bigint              	                    
-c5                  	double              	                    
-c6                  	bigint              	                    
-c7                  	timestamp           	                    
-c8                  	int                 	                    
-c9                  	int                 	                    
+_c3                 	int                 	                    
+_c4                 	bigint              	                    
+_c5                 	double              	                    
+_c6                 	bigint              	                    
+_c7                 	timestamp           	                    
+_c8                 	int                 	                    
+_c9                 	int                 	                    
 PREHOOK: query: create table dest_grouped_old2 as select distinct src.key from src
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@src

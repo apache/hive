@@ -111,7 +111,7 @@ POSTHOOK: query: describe extended cmv_mat_view4
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@cmv_mat_view4
 a                   	int                 	                    
-c1                  	decimal(20,2)       	                    
+_c1                 	decimal(20,2)       	                    
 	 	 
 #### A masked pattern was here ####
 PREHOOK: query: create table cmv_basetable2 (d int, e varchar(256), f decimal(10,2))

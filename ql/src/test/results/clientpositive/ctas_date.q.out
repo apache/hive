@@ -47,7 +47,7 @@ POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@ctas_date_1
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@ctas_date_2
-POSTHOOK: Lineage: ctas_date_2.c3 SIMPLE []
+POSTHOOK: Lineage: ctas_date_2._c3 SIMPLE []
 POSTHOOK: Lineage: ctas_date_2.dd SIMPLE [(ctas_date_1)ctas_date_1.FieldSchema(name:dd, type:date, comment:null), ]
 POSTHOOK: Lineage: ctas_date_2.key SIMPLE [(ctas_date_1)ctas_date_1.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: ctas_date_2.value SIMPLE [(ctas_date_1)ctas_date_1.FieldSchema(name:value, type:string, comment:null), ]

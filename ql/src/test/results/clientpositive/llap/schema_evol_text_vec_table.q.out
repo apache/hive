@@ -63,7 +63,7 @@ POSTHOOK: Output: default@table_add_int_permute_select
 POSTHOOK: Lineage: table_add_int_permute_select.a SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:int1, type:int, comment:null), ]
 POSTHOOK: Lineage: table_add_int_permute_select.b SIMPLE []
 POSTHOOK: Lineage: table_add_int_permute_select.insert_num SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:insert_num, type:int, comment:null), ]
-insert_num	int1	c2
+insert_num	int1	_c2
 PREHOOK: query: -- Table-Non-Cascade ADD COLUMNS ...
 alter table table_add_int_permute_select add columns(c int)
 PREHOOK: type: ALTERTABLE_ADDCOLS
@@ -185,7 +185,7 @@ POSTHOOK: Output: default@table_add_int_string_permute_select
 POSTHOOK: Lineage: table_add_int_string_permute_select.a SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:int1, type:int, comment:null), ]
 POSTHOOK: Lineage: table_add_int_string_permute_select.b SIMPLE []
 POSTHOOK: Lineage: table_add_int_string_permute_select.insert_num SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:insert_num, type:int, comment:null), ]
-insert_num	int1	c2
+insert_num	int1	_c2
 PREHOOK: query: -- Table-Non-Cascade ADD COLUMNS ...
 alter table table_add_int_string_permute_select add columns(c int, d string)
 PREHOOK: type: ALTERTABLE_ADDCOLS

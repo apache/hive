@@ -30190,7 +30190,7 @@ POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@srcbucket
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@cast_string_to_int_1
-POSTHOOK: Lineage: cast_string_to_int_1.c0 EXPRESSION [(srcbucket)srcbucket.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: cast_string_to_int_1._c0 EXPRESSION [(srcbucket)srcbucket.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: cast_string_to_int_1.value SIMPLE [(srcbucket)srcbucket.FieldSchema(name:value, type:string, comment:null), ]
 PREHOOK: query: create table cast_string_to_int_2(i int,s string)
 PREHOOK: type: CREATETABLE
@@ -30208,7 +30208,7 @@ POSTHOOK: query: insert overwrite table cast_string_to_int_2 select * from cast_
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@cast_string_to_int_1
 POSTHOOK: Output: default@cast_string_to_int_2
-POSTHOOK: Lineage: cast_string_to_int_2.i EXPRESSION [(cast_string_to_int_1)cast_string_to_int_1.FieldSchema(name:c0, type:string, comment:null), ]
+POSTHOOK: Lineage: cast_string_to_int_2.i EXPRESSION [(cast_string_to_int_1)cast_string_to_int_1.FieldSchema(name:_c0, type:string, comment:null), ]
 POSTHOOK: Lineage: cast_string_to_int_2.s SIMPLE [(cast_string_to_int_1)cast_string_to_int_1.FieldSchema(name:value, type:string, comment:null), ]
 PREHOOK: query: --moving ALL_1 system test here
 select all key from src

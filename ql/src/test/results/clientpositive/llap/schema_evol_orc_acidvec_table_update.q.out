@@ -75,7 +75,7 @@ POSTHOOK: Output: default@table5
 POSTHOOK: Lineage: table5.a SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:int1, type:int, comment:null), ]
 POSTHOOK: Lineage: table5.b SIMPLE []
 POSTHOOK: Lineage: table5.insert_num SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:insert_num, type:int, comment:null), ]
-insert_num	int1	c2
+insert_num	int1	_c2
 PREHOOK: query: -- Table-Non-Cascade ADD COLUMNS ...
 alter table table5 add columns(c int, d string)
 PREHOOK: type: ALTERTABLE_ADDCOLS
@@ -222,7 +222,7 @@ POSTHOOK: Output: default@table6
 POSTHOOK: Lineage: table6.a SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:int1, type:int, comment:null), ]
 POSTHOOK: Lineage: table6.b SIMPLE []
 POSTHOOK: Lineage: table6.insert_num SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:insert_num, type:int, comment:null), ]
-insert_num	int1	c2
+insert_num	int1	_c2
 PREHOOK: query: -- Table-Non-Cascade ADD COLUMNS ...
 alter table table6 add columns(c int, d string)
 PREHOOK: type: ALTERTABLE_ADDCOLS
@@ -377,7 +377,7 @@ POSTHOOK: Output: default@table7
 POSTHOOK: Lineage: table7.a SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:int1, type:int, comment:null), ]
 POSTHOOK: Lineage: table7.b SIMPLE []
 POSTHOOK: Lineage: table7.insert_num SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:insert_num, type:int, comment:null), ]
-insert_num	int1	c2
+insert_num	int1	_c2
 PREHOOK: query: -- Table-Non-Cascade ADD COLUMNS ...
 alter table table7 add columns(c int, d string)
 PREHOOK: type: ALTERTABLE_ADDCOLS
