@@ -6,9 +6,9 @@
  * to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -18,77 +18,18 @@
 
 package org.apache.hive.service.cli.thrift;
 
+import com.google.common.annotations.VisibleForTesting;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hive.service.auth.HiveAuthFactory;
+import org.apache.hive.service.cli.*;
+import org.apache.hive.service.rpc.thrift.*;
+import org.apache.thrift.TException;
+
 import java.util.List;
 import java.util.Map;
 
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hive.service.auth.HiveAuthFactory;
-import org.apache.hive.service.cli.CLIServiceClient;
-import org.apache.hive.service.cli.FetchOrientation;
-import org.apache.hive.service.cli.FetchType;
-import org.apache.hive.service.cli.GetInfoType;
-import org.apache.hive.service.cli.GetInfoValue;
-import org.apache.hive.service.cli.HiveSQLException;
-import org.apache.hive.service.cli.OperationHandle;
-import org.apache.hive.service.cli.OperationState;
-import org.apache.hive.service.cli.OperationStatus;
-import org.apache.hive.service.cli.RowSet;
-import org.apache.hive.service.cli.RowSetFactory;
-import org.apache.hive.service.cli.SessionHandle;
-import org.apache.hive.service.cli.TableSchema;
-import org.apache.hive.service.rpc.thrift.TCLIService;
-import org.apache.hive.service.rpc.thrift.TCancelDelegationTokenReq;
-import org.apache.hive.service.rpc.thrift.TCancelDelegationTokenResp;
-import org.apache.hive.service.rpc.thrift.TCancelOperationReq;
-import org.apache.hive.service.rpc.thrift.TCancelOperationResp;
-import org.apache.hive.service.rpc.thrift.TCloseOperationReq;
-import org.apache.hive.service.rpc.thrift.TCloseOperationResp;
-import org.apache.hive.service.rpc.thrift.TCloseSessionReq;
-import org.apache.hive.service.rpc.thrift.TCloseSessionResp;
-import org.apache.hive.service.rpc.thrift.TExecuteStatementReq;
-import org.apache.hive.service.rpc.thrift.TExecuteStatementResp;
-import org.apache.hive.service.rpc.thrift.TFetchResultsReq;
-import org.apache.hive.service.rpc.thrift.TFetchResultsResp;
-import org.apache.hive.service.rpc.thrift.TGetCatalogsReq;
-import org.apache.hive.service.rpc.thrift.TGetCatalogsResp;
-import org.apache.hive.service.rpc.thrift.TGetColumnsReq;
-import org.apache.hive.service.rpc.thrift.TGetColumnsResp;
-import org.apache.hive.service.rpc.thrift.TGetCrossReferenceReq;
-import org.apache.hive.service.rpc.thrift.TGetCrossReferenceResp;
-import org.apache.hive.service.rpc.thrift.TGetDelegationTokenReq;
-import org.apache.hive.service.rpc.thrift.TGetDelegationTokenResp;
-import org.apache.hive.service.rpc.thrift.TGetFunctionsReq;
-import org.apache.hive.service.rpc.thrift.TGetFunctionsResp;
-import org.apache.hive.service.rpc.thrift.TGetInfoReq;
-import org.apache.hive.service.rpc.thrift.TGetInfoResp;
-import org.apache.hive.service.rpc.thrift.TGetOperationStatusReq;
-import org.apache.hive.service.rpc.thrift.TGetOperationStatusResp;
-import org.apache.hive.service.rpc.thrift.TGetPrimaryKeysReq;
-import org.apache.hive.service.rpc.thrift.TGetPrimaryKeysResp;
-import org.apache.hive.service.rpc.thrift.TGetResultSetMetadataReq;
-import org.apache.hive.service.rpc.thrift.TGetResultSetMetadataResp;
-import org.apache.hive.service.rpc.thrift.TGetSchemasReq;
-import org.apache.hive.service.rpc.thrift.TGetSchemasResp;
-import org.apache.hive.service.rpc.thrift.TGetTableTypesReq;
-import org.apache.hive.service.rpc.thrift.TGetTableTypesResp;
-import org.apache.hive.service.rpc.thrift.TGetTablesReq;
-import org.apache.hive.service.rpc.thrift.TGetTablesResp;
-import org.apache.hive.service.rpc.thrift.TGetTypeInfoReq;
-import org.apache.hive.service.rpc.thrift.TGetTypeInfoResp;
-import org.apache.hive.service.rpc.thrift.TOpenSessionReq;
-import org.apache.hive.service.rpc.thrift.TOpenSessionResp;
-import org.apache.hive.service.rpc.thrift.TProtocolVersion;
-import org.apache.hive.service.rpc.thrift.TRenewDelegationTokenReq;
-import org.apache.hive.service.rpc.thrift.TRenewDelegationTokenResp;
-import org.apache.hive.service.rpc.thrift.TStatus;
-import org.apache.hive.service.rpc.thrift.TStatusCode;
-import org.apache.thrift.TException;
-
-import com.google.common.annotations.VisibleForTesting;
-
 /**
  * ThriftCLIServiceClient.
- *
  */
 public class ThriftCLIServiceClient extends CLIServiceClient {
   private final TCLIService.Iface cliService;
@@ -114,8 +55,8 @@ public class ThriftCLIServiceClient extends CLIServiceClient {
    */
   @Override
   public SessionHandle openSession(String username, String password,
-      Map<String, String> configuration)
-          throws HiveSQLException {
+                                   Map<String, String> configuration)
+    throws HiveSQLException {
     try {
       TOpenSessionReq req = new TOpenSessionReq();
       req.setUsername(username);
@@ -136,7 +77,7 @@ public class ThriftCLIServiceClient extends CLIServiceClient {
    */
   @Override
   public SessionHandle openSessionWithImpersonation(String username, String password,
-      Map<String, String> configuration, String delegationToken) throws HiveSQLException {
+                                                    Map<String, String> configuration, String delegationToken) throws HiveSQLException {
     throw new HiveSQLException("open with impersonation operation is not supported in the client");
   }
 
@@ -161,7 +102,7 @@ public class ThriftCLIServiceClient extends CLIServiceClient {
    */
   @Override
   public GetInfoValue getInfo(SessionHandle sessionHandle, GetInfoType infoType)
-      throws HiveSQLException {
+    throws HiveSQLException {
     try {
       // FIXME extract the right info type
       TGetInfoReq req = new TGetInfoReq(sessionHandle.toTSessionHandle(), infoType.toTGetInfoType());
@@ -177,33 +118,33 @@ public class ThriftCLIServiceClient extends CLIServiceClient {
 
   @Override
   public OperationHandle executeStatement(SessionHandle sessionHandle, String statement,
-      Map<String, String> confOverlay) throws HiveSQLException {
+                                          Map<String, String> confOverlay) throws HiveSQLException {
     return executeStatementInternal(sessionHandle, statement, confOverlay, false, 0);
   }
 
   @Override
   public OperationHandle executeStatement(SessionHandle sessionHandle, String statement,
-      Map<String, String> confOverlay, long queryTimeout) throws HiveSQLException {
+                                          Map<String, String> confOverlay, long queryTimeout) throws HiveSQLException {
     return executeStatementInternal(sessionHandle, statement, confOverlay, false, queryTimeout);
   }
 
   @Override
   public OperationHandle executeStatementAsync(SessionHandle sessionHandle, String statement,
-      Map<String, String> confOverlay) throws HiveSQLException {
+                                               Map<String, String> confOverlay) throws HiveSQLException {
     return executeStatementInternal(sessionHandle, statement, confOverlay, true, 0);
   }
 
   @Override
   public OperationHandle executeStatementAsync(SessionHandle sessionHandle, String statement,
-      Map<String, String> confOverlay, long queryTimeout) throws HiveSQLException {
+                                               Map<String, String> confOverlay, long queryTimeout) throws HiveSQLException {
     return executeStatementInternal(sessionHandle, statement, confOverlay, true, queryTimeout);
   }
 
   private OperationHandle executeStatementInternal(SessionHandle sessionHandle, String statement,
-      Map<String, String> confOverlay, boolean isAsync, long queryTimeout) throws HiveSQLException {
+                                                   Map<String, String> confOverlay, boolean isAsync, long queryTimeout) throws HiveSQLException {
     try {
       TExecuteStatementReq req =
-          new TExecuteStatementReq(sessionHandle.toTSessionHandle(), statement);
+        new TExecuteStatementReq(sessionHandle.toTSessionHandle(), statement);
       req.setConfOverlay(confOverlay);
       req.setRunAsync(isAsync);
       req.setQueryTimeout(queryTimeout);
@@ -259,8 +200,8 @@ public class ThriftCLIServiceClient extends CLIServiceClient {
    */
   @Override
   public OperationHandle getSchemas(SessionHandle sessionHandle, String catalogName,
-      String schemaName)
-          throws HiveSQLException {
+                                    String schemaName)
+    throws HiveSQLException {
     try {
       TGetSchemasReq req = new TGetSchemasReq(sessionHandle.toTSessionHandle());
       req.setCatalogName(catalogName);
@@ -281,8 +222,8 @@ public class ThriftCLIServiceClient extends CLIServiceClient {
    */
   @Override
   public OperationHandle getTables(SessionHandle sessionHandle, String catalogName,
-      String schemaName, String tableName, List<String> tableTypes)
-          throws HiveSQLException {
+                                   String schemaName, String tableName, List<String> tableTypes)
+    throws HiveSQLException {
     try {
       TGetTablesReq req = new TGetTablesReq(sessionHandle.toTSessionHandle());
       req.setTableName(tableName);
@@ -322,8 +263,8 @@ public class ThriftCLIServiceClient extends CLIServiceClient {
    */
   @Override
   public OperationHandle getColumns(SessionHandle sessionHandle,
-      String catalogName, String schemaName, String tableName, String columnName)
-          throws HiveSQLException {
+                                    String catalogName, String schemaName, String tableName, String columnName)
+    throws HiveSQLException {
     try {
       TGetColumnsReq req = new TGetColumnsReq();
       req.setSessionHandle(sessionHandle.toTSessionHandle());
@@ -347,7 +288,7 @@ public class ThriftCLIServiceClient extends CLIServiceClient {
    */
   @Override
   public OperationHandle getFunctions(SessionHandle sessionHandle,
-      String catalogName, String schemaName, String functionName) throws HiveSQLException {
+                                      String catalogName, String schemaName, String functionName) throws HiveSQLException {
     try {
       TGetFunctionsReq req = new TGetFunctionsReq(sessionHandle.toTSessionHandle(), functionName);
       req.setCatalogName(catalogName);
@@ -408,9 +349,9 @@ public class ThriftCLIServiceClient extends CLIServiceClient {
    */
   @Override
   public void closeOperation(OperationHandle opHandle)
-      throws HiveSQLException {
+    throws HiveSQLException {
     try {
-      TCloseOperationReq req  = new TCloseOperationReq(opHandle.toTOperationHandle());
+      TCloseOperationReq req = new TCloseOperationReq(opHandle.toTOperationHandle());
       TCloseOperationResp resp = cliService.CloseOperation(req);
       checkStatus(resp.getStatus());
     } catch (HiveSQLException e) {
@@ -425,7 +366,7 @@ public class ThriftCLIServiceClient extends CLIServiceClient {
    */
   @Override
   public TableSchema getResultSetMetadata(OperationHandle opHandle)
-      throws HiveSQLException {
+    throws HiveSQLException {
     try {
       TGetResultSetMetadataReq req = new TGetResultSetMetadataReq(opHandle.toTOperationHandle());
       TGetResultSetMetadataResp resp = cliService.GetResultSetMetadata(req);
@@ -440,7 +381,7 @@ public class ThriftCLIServiceClient extends CLIServiceClient {
 
   @Override
   public RowSet fetchResults(OperationHandle opHandle, FetchOrientation orientation, long maxRows,
-      FetchType fetchType) throws HiveSQLException {
+                             FetchType fetchType) throws HiveSQLException {
     try {
       TFetchResultsReq req = new TFetchResultsReq();
       req.setOperationHandle(opHandle.toTOperationHandle());
@@ -463,14 +404,14 @@ public class ThriftCLIServiceClient extends CLIServiceClient {
   @Override
   public RowSet fetchResults(OperationHandle opHandle) throws HiveSQLException {
     return fetchResults(
-        opHandle, FetchOrientation.FETCH_NEXT, defaultFetchRows, FetchType.QUERY_OUTPUT);
+      opHandle, FetchOrientation.FETCH_NEXT, defaultFetchRows, FetchType.QUERY_OUTPUT);
   }
 
   @Override
   public String getDelegationToken(SessionHandle sessionHandle, HiveAuthFactory authFactory,
-      String owner, String renewer) throws HiveSQLException {
+                                   String owner, String renewer) throws HiveSQLException {
     TGetDelegationTokenReq req = new TGetDelegationTokenReq(
-        sessionHandle.toTSessionHandle(), owner, renewer);
+      sessionHandle.toTSessionHandle(), owner, renewer);
     try {
       TGetDelegationTokenResp tokenResp = cliService.GetDelegationToken(req);
       checkStatus(tokenResp.getStatus());
@@ -482,9 +423,9 @@ public class ThriftCLIServiceClient extends CLIServiceClient {
 
   @Override
   public void cancelDelegationToken(SessionHandle sessionHandle, HiveAuthFactory authFactory,
-      String tokenStr) throws HiveSQLException {
+                                    String tokenStr) throws HiveSQLException {
     TCancelDelegationTokenReq cancelReq = new TCancelDelegationTokenReq(
-          sessionHandle.toTSessionHandle(), tokenStr);
+      sessionHandle.toTSessionHandle(), tokenStr);
     try {
       TCancelDelegationTokenResp cancelResp =
         cliService.CancelDelegationToken(cancelReq);
@@ -497,9 +438,9 @@ public class ThriftCLIServiceClient extends CLIServiceClient {
 
   @Override
   public void renewDelegationToken(SessionHandle sessionHandle, HiveAuthFactory authFactory,
-      String tokenStr) throws HiveSQLException {
+                                   String tokenStr) throws HiveSQLException {
     TRenewDelegationTokenReq cancelReq = new TRenewDelegationTokenReq(
-        sessionHandle.toTSessionHandle(), tokenStr);
+      sessionHandle.toTSessionHandle(), tokenStr);
     try {
       TRenewDelegationTokenResp renewResp =
         cliService.RenewDelegationToken(cancelReq);
@@ -512,7 +453,7 @@ public class ThriftCLIServiceClient extends CLIServiceClient {
 
   @Override
   public OperationHandle getPrimaryKeys(SessionHandle sessionHandle,
-    String catalog, String schema, String table) throws HiveSQLException {
+                                        String catalog, String schema, String table) throws HiveSQLException {
     try {
       TGetPrimaryKeysReq req = new TGetPrimaryKeysReq(sessionHandle.toTSessionHandle());
       req.setCatalogName(catalog);
@@ -531,9 +472,9 @@ public class ThriftCLIServiceClient extends CLIServiceClient {
 
   @Override
   public OperationHandle getCrossReference(SessionHandle sessionHandle,
-		String primaryCatalog, String primarySchema, String primaryTable,
-		String foreignCatalog, String foreignSchema, String foreignTable)
-		throws HiveSQLException {
+                                           String primaryCatalog, String primarySchema, String primaryTable,
+                                           String foreignCatalog, String foreignSchema, String foreignTable)
+    throws HiveSQLException {
     try {
       TGetCrossReferenceReq req = new TGetCrossReferenceReq(sessionHandle.toTSessionHandle());
       req.setParentCatalogName(primaryCatalog);
@@ -549,6 +490,23 @@ public class ThriftCLIServiceClient extends CLIServiceClient {
     } catch (HiveSQLException e) {
       throw e;
     } catch (Exception e) {
+      throw new HiveSQLException(e);
+    }
+  }
+
+  @Override
+  public JobProgressUpdate progressUpdate(OperationHandle operationHandle) throws HiveSQLException {
+    try {
+      TProgressUpdateResp tProgressUpdateResp = cliService.GetProgressUpdate(new TProgressUpdateReq(operationHandle.toTOperationHandle()));
+      return new JobProgressUpdate(
+        tProgressUpdateResp.getHeaderNames(),
+        tProgressUpdateResp.getRows(),
+        tProgressUpdateResp.getFooterSummary(),
+        tProgressUpdateResp.getProgressedPercentage(),
+        JobExecutionStatus.fromString(tProgressUpdateResp.getStatus().name()),
+        tProgressUpdateResp.getStartTime()
+      );
+    } catch (TException e) {
       throw new HiveSQLException(e);
     }
   }

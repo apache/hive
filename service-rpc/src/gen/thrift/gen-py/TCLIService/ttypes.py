@@ -393,6 +393,38 @@ class TFetchOrientation:
     "FETCH_LAST": 5,
   }
 
+class TJobExecutionStatus:
+  SUBMITTED = 0
+  INITING = 1
+  RUNNING = 2
+  SUCCEEDED = 3
+  KILLED = 4
+  FAILED = 5
+  ERROR = 6
+  NOT_AVAILABLE = 7
+
+  _VALUES_TO_NAMES = {
+    0: "SUBMITTED",
+    1: "INITING",
+    2: "RUNNING",
+    3: "SUCCEEDED",
+    4: "KILLED",
+    5: "FAILED",
+    6: "ERROR",
+    7: "NOT_AVAILABLE",
+  }
+
+  _NAMES_TO_VALUES = {
+    "SUBMITTED": 0,
+    "INITING": 1,
+    "RUNNING": 2,
+    "SUCCEEDED": 3,
+    "KILLED": 4,
+    "FAILED": 5,
+    "ERROR": 6,
+    "NOT_AVAILABLE": 7,
+  }
+
 
 class TTypeQualifierValue:
   """
@@ -7357,6 +7389,240 @@ class TRenewDelegationTokenResp:
   def __hash__(self):
     value = 17
     value = (value * 31) ^ hash(self.status)
+    return value
+
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+  def __eq__(self, other):
+    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+  def __ne__(self, other):
+    return not (self == other)
+
+class TProgressUpdateReq:
+  """
+  Attributes:
+   - operationHandle
+  """
+
+  thrift_spec = (
+    None, # 0
+    (1, TType.STRUCT, 'operationHandle', (TOperationHandle, TOperationHandle.thrift_spec), None, ), # 1
+  )
+
+  def __init__(self, operationHandle=None,):
+    self.operationHandle = operationHandle
+
+  def read(self, iprot):
+    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
+      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
+      return
+    iprot.readStructBegin()
+    while True:
+      (fname, ftype, fid) = iprot.readFieldBegin()
+      if ftype == TType.STOP:
+        break
+      if fid == 1:
+        if ftype == TType.STRUCT:
+          self.operationHandle = TOperationHandle()
+          self.operationHandle.read(iprot)
+        else:
+          iprot.skip(ftype)
+      else:
+        iprot.skip(ftype)
+      iprot.readFieldEnd()
+    iprot.readStructEnd()
+
+  def write(self, oprot):
+    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
+      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
+      return
+    oprot.writeStructBegin('TProgressUpdateReq')
+    if self.operationHandle is not None:
+      oprot.writeFieldBegin('operationHandle', TType.STRUCT, 1)
+      self.operationHandle.write(oprot)
+      oprot.writeFieldEnd()
+    oprot.writeFieldStop()
+    oprot.writeStructEnd()
+
+  def validate(self):
+    if self.operationHandle is None:
+      raise TProtocol.TProtocolException(message='Required field operationHandle is unset!')
+    return
+
+
+  def __hash__(self):
+    value = 17
+    value = (value * 31) ^ hash(self.operationHandle)
+    return value
+
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+  def __eq__(self, other):
+    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+  def __ne__(self, other):
+    return not (self == other)
+
+class TProgressUpdateResp:
+  """
+  Attributes:
+   - headerNames
+   - rows
+   - progressedPercentage
+   - status
+   - footerSummary
+   - startTime
+  """
+
+  thrift_spec = (
+    None, # 0
+    (1, TType.LIST, 'headerNames', (TType.STRING,None), None, ), # 1
+    (2, TType.LIST, 'rows', (TType.LIST,(TType.STRING,None)), None, ), # 2
+    (3, TType.DOUBLE, 'progressedPercentage', None, None, ), # 3
+    (4, TType.I32, 'status', None, None, ), # 4
+    (5, TType.STRING, 'footerSummary', None, None, ), # 5
+    (6, TType.I64, 'startTime', None, None, ), # 6
+  )
+
+  def __init__(self, headerNames=None, rows=None, progressedPercentage=None, status=None, footerSummary=None, startTime=None,):
+    self.headerNames = headerNames
+    self.rows = rows
+    self.progressedPercentage = progressedPercentage
+    self.status = status
+    self.footerSummary = footerSummary
+    self.startTime = startTime
+
+  def read(self, iprot):
+    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
+      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
+      return
+    iprot.readStructBegin()
+    while True:
+      (fname, ftype, fid) = iprot.readFieldBegin()
+      if ftype == TType.STOP:
+        break
+      if fid == 1:
+        if ftype == TType.LIST:
+          self.headerNames = []
+          (_etype162, _size159) = iprot.readListBegin()
+          for _i163 in xrange(_size159):
+            _elem164 = iprot.readString()
+            self.headerNames.append(_elem164)
+          iprot.readListEnd()
+        else:
+          iprot.skip(ftype)
+      elif fid == 2:
+        if ftype == TType.LIST:
+          self.rows = []
+          (_etype168, _size165) = iprot.readListBegin()
+          for _i169 in xrange(_size165):
+            _elem170 = []
+            (_etype174, _size171) = iprot.readListBegin()
+            for _i175 in xrange(_size171):
+              _elem176 = iprot.readString()
+              _elem170.append(_elem176)
+            iprot.readListEnd()
+            self.rows.append(_elem170)
+          iprot.readListEnd()
+        else:
+          iprot.skip(ftype)
+      elif fid == 3:
+        if ftype == TType.DOUBLE:
+          self.progressedPercentage = iprot.readDouble()
+        else:
+          iprot.skip(ftype)
+      elif fid == 4:
+        if ftype == TType.I32:
+          self.status = iprot.readI32()
+        else:
+          iprot.skip(ftype)
+      elif fid == 5:
+        if ftype == TType.STRING:
+          self.footerSummary = iprot.readString()
+        else:
+          iprot.skip(ftype)
+      elif fid == 6:
+        if ftype == TType.I64:
+          self.startTime = iprot.readI64()
+        else:
+          iprot.skip(ftype)
+      else:
+        iprot.skip(ftype)
+      iprot.readFieldEnd()
+    iprot.readStructEnd()
+
+  def write(self, oprot):
+    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
+      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
+      return
+    oprot.writeStructBegin('TProgressUpdateResp')
+    if self.headerNames is not None:
+      oprot.writeFieldBegin('headerNames', TType.LIST, 1)
+      oprot.writeListBegin(TType.STRING, len(self.headerNames))
+      for iter177 in self.headerNames:
+        oprot.writeString(iter177)
+      oprot.writeListEnd()
+      oprot.writeFieldEnd()
+    if self.rows is not None:
+      oprot.writeFieldBegin('rows', TType.LIST, 2)
+      oprot.writeListBegin(TType.LIST, len(self.rows))
+      for iter178 in self.rows:
+        oprot.writeListBegin(TType.STRING, len(iter178))
+        for iter179 in iter178:
+          oprot.writeString(iter179)
+        oprot.writeListEnd()
+      oprot.writeListEnd()
+      oprot.writeFieldEnd()
+    if self.progressedPercentage is not None:
+      oprot.writeFieldBegin('progressedPercentage', TType.DOUBLE, 3)
+      oprot.writeDouble(self.progressedPercentage)
+      oprot.writeFieldEnd()
+    if self.status is not None:
+      oprot.writeFieldBegin('status', TType.I32, 4)
+      oprot.writeI32(self.status)
+      oprot.writeFieldEnd()
+    if self.footerSummary is not None:
+      oprot.writeFieldBegin('footerSummary', TType.STRING, 5)
+      oprot.writeString(self.footerSummary)
+      oprot.writeFieldEnd()
+    if self.startTime is not None:
+      oprot.writeFieldBegin('startTime', TType.I64, 6)
+      oprot.writeI64(self.startTime)
+      oprot.writeFieldEnd()
+    oprot.writeFieldStop()
+    oprot.writeStructEnd()
+
+  def validate(self):
+    if self.headerNames is None:
+      raise TProtocol.TProtocolException(message='Required field headerNames is unset!')
+    if self.rows is None:
+      raise TProtocol.TProtocolException(message='Required field rows is unset!')
+    if self.progressedPercentage is None:
+      raise TProtocol.TProtocolException(message='Required field progressedPercentage is unset!')
+    if self.status is None:
+      raise TProtocol.TProtocolException(message='Required field status is unset!')
+    if self.footerSummary is None:
+      raise TProtocol.TProtocolException(message='Required field footerSummary is unset!')
+    if self.startTime is None:
+      raise TProtocol.TProtocolException(message='Required field startTime is unset!')
+    return
+
+
+  def __hash__(self):
+    value = 17
+    value = (value * 31) ^ hash(self.headerNames)
+    value = (value * 31) ^ hash(self.rows)
+    value = (value * 31) ^ hash(self.progressedPercentage)
+    value = (value * 31) ^ hash(self.status)
+    value = (value * 31) ^ hash(self.footerSummary)
+    value = (value * 31) ^ hash(self.startTime)
     return value
 
   def __repr__(self):

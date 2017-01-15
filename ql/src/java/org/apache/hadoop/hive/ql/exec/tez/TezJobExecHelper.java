@@ -18,9 +18,10 @@
 
 package org.apache.hadoop.hive.ql.exec.tez;
 
-import java.lang.reflect.Method;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.lang.reflect.Method;
 
 /**
  * TezJobExecHelper is a utility to safely call Tez functionality from
@@ -37,7 +38,7 @@ public class TezJobExecHelper {
 
       // we have tez installed
       ClassLoader classLoader = TezJobExecHelper.class.getClassLoader();
-      Method method = classLoader.loadClass("org.apache.hadoop.hive.ql.exec.tez.TezJobMonitor")
+      Method method = classLoader.loadClass("org.apache.hadoop.hive.ql.exec.tez.monitoring.TezJobMonitor")
         .getMethod("killRunningJobs");
       method.invoke(null, null);
     }

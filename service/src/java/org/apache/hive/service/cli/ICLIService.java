@@ -17,10 +17,10 @@
  */
 package org.apache.hive.service.cli;
 
+import org.apache.hive.service.auth.HiveAuthFactory;
+
 import java.util.List;
 import java.util.Map;
-
-import org.apache.hive.service.auth.HiveAuthFactory;
 
 public interface ICLIService {
 
@@ -109,4 +109,6 @@ public interface ICLIService {
     String primaryCatalog, String primarySchema, String primaryTable,
     String foreignCatalog, String foreignSchema, String foreignTable)
     throws HiveSQLException;
+
+  JobProgressUpdate progressUpdate(OperationHandle operationHandle) throws HiveSQLException;
 }

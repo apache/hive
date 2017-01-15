@@ -18,31 +18,6 @@
 package org.apache.hadoop.hive.ql.exec.tez;
 
 
-import java.util.Collection;
-
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
-import java.util.concurrent.Callable;
-import java.util.concurrent.CancellationException;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-import java.util.concurrent.FutureTask;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
-import java.util.concurrent.atomic.AtomicReference;
-
-import javax.security.auth.login.LoginException;
-
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.hadoop.conf.Configuration;
@@ -61,6 +36,8 @@ import org.apache.hadoop.hive.llap.tezplugins.LlapContainerLauncher;
 import org.apache.hadoop.hive.llap.tezplugins.LlapTaskCommunicator;
 import org.apache.hadoop.hive.llap.tezplugins.LlapTaskSchedulerService;
 import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.exec.tez.monitoring.TezJobMonitor;
+import org.apache.hadoop.hive.ql.log.ProgressMonitor;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
 import org.apache.hadoop.hive.shims.Utils;
@@ -71,11 +48,7 @@ import org.apache.hadoop.yarn.api.records.LocalResource;
 import org.apache.hadoop.yarn.api.records.LocalResourceType;
 import org.apache.tez.client.TezClient;
 import org.apache.tez.common.TezUtils;
-import org.apache.tez.dag.api.PreWarmVertex;
-import org.apache.tez.dag.api.SessionNotRunning;
-import org.apache.tez.dag.api.TezConfiguration;
-import org.apache.tez.dag.api.TezException;
-import org.apache.tez.dag.api.UserPayload;
+import org.apache.tez.dag.api.*;
 import org.apache.tez.mapreduce.hadoop.MRHelpers;
 import org.apache.tez.serviceplugins.api.ContainerLauncherDescriptor;
 import org.apache.tez.serviceplugins.api.ServicePluginsDescriptor;
@@ -83,6 +56,16 @@ import org.apache.tez.serviceplugins.api.TaskCommunicatorDescriptor;
 import org.apache.tez.serviceplugins.api.TaskSchedulerDescriptor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.security.auth.login.LoginException;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URISyntaxException;
+import java.util.*;
+import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * Holds session state related to Tez
@@ -115,6 +98,7 @@ public class TezSessionState {
   private final Set<LocalResource> localizedResources = new HashSet<LocalResource>();
   private boolean doAsEnabled;
 
+  private TezJobMonitor jobMonitor;
   /**
    * Constructor. We do not automatically connect, because we only want to
    * load tez classes when the user has tez installed.
@@ -666,7 +650,7 @@ public class TezSessionState {
   }
 
   public List<LocalResource> getLocalizedResources() {
-    return new ArrayList<LocalResource>(localizedResources);
+    return new ArrayList<>(localizedResources);
   }
 
   public String getUser() {
@@ -692,5 +676,13 @@ public class TezSessionState {
             + oldName + "; cannot use from " + newName);
       }
     } while (!ownerThread.compareAndSet(null, newName));
+  }
+
+  void monitor(TezJobMonitor jobMonitor) {
+    this.jobMonitor = jobMonitor;
+  }
+
+  public ProgressMonitor monitor() {
+    return jobMonitor.progressMonitor();
   }
 }

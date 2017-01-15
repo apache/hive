@@ -6,9 +6,9 @@
  * to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -22,47 +22,28 @@
  */
 package org.apache.hive.beeline;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import org.apache.hadoop.hive.common.cli.ShellCmdExecutor;
+import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveVariableSource;
+import org.apache.hadoop.hive.conf.SystemVariables;
+import org.apache.hadoop.hive.conf.VariableSubstitution;
+import org.apache.hadoop.hive.ql.log.InPlaceUpdate;
+import org.apache.hadoop.hive.ql.log.ProgressMonitor;
+import org.apache.hadoop.io.IOUtils;
+import org.apache.hive.jdbc.HiveStatement;
+import org.apache.hive.jdbc.Utils;
+import org.apache.hive.jdbc.Utils.JdbcConnectionParams;
+import org.apache.hive.service.rpc.thrift.TJobExecutionStatus;
+import org.apache.hive.service.rpc.thrift.TProgressUpdateResp;
+
+import java.io.*;
 import java.lang.reflect.Method;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.sql.CallableStatement;
-import java.sql.Connection;
-import java.sql.DatabaseMetaData;
-import java.sql.Driver;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.SQLWarning;
-import java.sql.Statement;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
-import java.util.TreeSet;
-
-import org.apache.hadoop.hive.common.cli.ShellCmdExecutor;
-import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
-import org.apache.hadoop.hive.conf.HiveVariableSource;
-import org.apache.hadoop.hive.conf.SystemVariables;
-import org.apache.hadoop.hive.conf.VariableSubstitution;
-import org.apache.hadoop.io.IOUtils;
-import org.apache.hive.jdbc.HiveStatement;
-import org.apache.hive.jdbc.Utils;
-import org.apache.hive.jdbc.Utils.JdbcConnectionParams;
+import java.sql.*;
+import java.util.*;
 
 
 public class Commands {
@@ -91,7 +72,7 @@ public class Commands {
     params.remove(0);
     beeLine.debug(params.toString());
     return metadata(parts[1],
-        params.toArray(new String[0]));
+      params.toArray(new String[0]));
   }
 
 
@@ -112,14 +93,14 @@ public class Commands {
       if (!methodNamesUpper.contains(cmd.toUpperCase())) {
         beeLine.error(beeLine.loc("no-such-method", cmd));
         beeLine.error(beeLine.loc("possible-methods"));
-        for (Iterator<String> i = methodNames.iterator(); i.hasNext();) {
+        for (Iterator<String> i = methodNames.iterator(); i.hasNext(); ) {
           beeLine.error("   " + i.next());
         }
         return false;
       }
 
       Object res = beeLine.getReflector().invoke(beeLine.getDatabaseMetaData(),
-          DatabaseMetaData.class, cmd, Arrays.asList(args));
+        DatabaseMetaData.class, cmd, Arrays.asList(args));
 
       if (res instanceof ResultSet) {
         ResultSet rs = (ResultSet) res;
@@ -184,11 +165,11 @@ public class Commands {
   public boolean history(String line) {
     Iterator hist = beeLine.getConsoleReader().getHistory().entries();
     String[] tmp;
-    while(hist.hasNext()){
+    while (hist.hasNext()) {
       tmp = hist.next().toString().split(":", 2);
       tmp[0] = Integer.toString(Integer.parseInt(tmp[0]) + 1);
       beeLine.output(beeLine.getColorBuffer().pad(tmp[0], 6)
-          .append(":" + tmp[1]));
+        .append(":" + tmp[1]));
     }
     return true;
   }
@@ -207,53 +188,53 @@ public class Commands {
         return def;
       }
       throw new IllegalArgumentException(beeLine.loc("arg-usage",
-          new Object[] {ret.length == 0 ? "" : ret[0],
-              paramname}));
+        new Object[]{ret.length == 0 ? "" : ret[0],
+          paramname}));
     }
     return ret[1];
   }
 
 
   public boolean indexes(String line) throws Exception {
-    return metadata("getIndexInfo", new String[] {
-        beeLine.getConnection().getCatalog(), null,
-        arg1(line, "table name"),
-        false + "",
-        true + ""});
+    return metadata("getIndexInfo", new String[]{
+      beeLine.getConnection().getCatalog(), null,
+      arg1(line, "table name"),
+      false + "",
+      true + ""});
   }
 
 
   public boolean primarykeys(String line) throws Exception {
-    return metadata("getPrimaryKeys", new String[] {
-        beeLine.getConnection().getCatalog(), null,
-        arg1(line, "table name"),});
+    return metadata("getPrimaryKeys", new String[]{
+      beeLine.getConnection().getCatalog(), null,
+      arg1(line, "table name"),});
   }
 
 
   public boolean exportedkeys(String line) throws Exception {
     return metadata("getExportedKeys",
-        new String[] { beeLine.getConnection().getCatalog(), null, arg1(line, "table name"), });
+      new String[]{beeLine.getConnection().getCatalog(), null, arg1(line, "table name"),});
   }
 
 
   public boolean importedkeys(String line) throws Exception {
-    return metadata("getImportedKeys", new String[] {
-        beeLine.getConnection().getCatalog(), null,
-        arg1(line, "table name"),});
+    return metadata("getImportedKeys", new String[]{
+      beeLine.getConnection().getCatalog(), null,
+      arg1(line, "table name"),});
   }
 
 
   public boolean procedures(String line) throws Exception {
-    return metadata("getProcedures", new String[] {
-        beeLine.getConnection().getCatalog(), null,
-        arg1(line, "procedure name pattern", "%"),});
+    return metadata("getProcedures", new String[]{
+      beeLine.getConnection().getCatalog(), null,
+      arg1(line, "procedure name pattern", "%"),});
   }
 
 
   public boolean tables(String line) throws Exception {
-    return metadata("getTables", new String[] {
-        beeLine.getConnection().getCatalog(), null,
-        arg1(line, "table name", "%"), null});
+    return metadata("getTables", new String[]{
+      beeLine.getConnection().getCatalog(), null,
+      arg1(line, "table name", "%"), null});
   }
 
 
@@ -276,9 +257,9 @@ public class Commands {
 
 
   public boolean columns(String line) throws Exception {
-    return metadata("getColumns", new String[] {
-        beeLine.getConnection().getCatalog(), null,
-        arg1(line, "table name"), "%"});
+    return metadata("getColumns", new String[]{
+      beeLine.getConnection().getCatalog(), null,
+      arg1(line, "table name"), "%"});
   }
 
 
@@ -296,7 +277,7 @@ public class Commands {
       try {
         while (rs.next()) {
           cmds.add("DROP TABLE "
-              + rs.getString("TABLE_NAME") + ";");
+            + rs.getString("TABLE_NAME") + ";");
         }
       } finally {
         try {
@@ -316,9 +297,9 @@ public class Commands {
     if (beeLine.getDatabaseConnection() == null || beeLine.getDatabaseConnection().getUrl() == null) {
       // First, let's try connecting using the last successful url - if that fails, then we error out.
       String lastConnectedUrl = beeLine.getOpts().getLastConnectedUrl();
-      if (lastConnectedUrl != null){
+      if (lastConnectedUrl != null) {
         Properties props = new Properties();
-        props.setProperty("url",lastConnectedUrl);
+        props.setProperty("url", lastConnectedUrl);
         try {
           return connect(props);
         } catch (IOException e) {
@@ -348,24 +329,24 @@ public class Commands {
     beeLine.info(beeLine.loc("drivers-found-count", beeLine.getDrivers().size()));
 
     // unique the list
-    for (Iterator<Driver> i = beeLine.getDrivers().iterator(); i.hasNext();) {
+    for (Iterator<Driver> i = beeLine.getDrivers().iterator(); i.hasNext(); ) {
       names.add(i.next().getClass().getName());
     }
 
     beeLine.output(beeLine.getColorBuffer()
-        .bold(beeLine.getColorBuffer().pad(beeLine.loc("compliant"), 10).getMono())
-        .bold(beeLine.getColorBuffer().pad(beeLine.loc("jdbc-version"), 8).getMono())
-        .bold(beeLine.getColorBuffer(beeLine.loc("driver-class")).getMono()));
+      .bold(beeLine.getColorBuffer().pad(beeLine.loc("compliant"), 10).getMono())
+      .bold(beeLine.getColorBuffer().pad(beeLine.loc("jdbc-version"), 8).getMono())
+      .bold(beeLine.getColorBuffer(beeLine.loc("driver-class")).getMono()));
 
-    for (Iterator<String> i = names.iterator(); i.hasNext();) {
+    for (Iterator<String> i = names.iterator(); i.hasNext(); ) {
       String name = i.next().toString();
       try {
         Driver driver = (Driver) Class.forName(name).newInstance();
         ColorBuffer msg = beeLine.getColorBuffer()
-            .pad(driver.jdbcCompliant() ? "yes" : "no", 10)
-            .pad(driver.getMajorVersion() + "."
-                + driver.getMinorVersion(), 8)
-            .append(name);
+          .pad(driver.jdbcCompliant() ? "yes" : "no", 10)
+          .pad(driver.getMajorVersion() + "."
+            + driver.getMinorVersion(), 8)
+          .append(name);
         if (driver.jdbcCompliant()) {
           beeLine.output(msg);
         } else {
@@ -397,13 +378,13 @@ public class Commands {
     try {
       Properties props = beeLine.getOpts().toProperties();
       Set keys = new TreeSet(props.keySet());
-      for (Iterator i = keys.iterator(); i.hasNext();) {
+      for (Iterator i = keys.iterator(); i.hasNext(); ) {
         String key = (String) i.next();
         beeLine.output(beeLine.getColorBuffer()
-            .green(beeLine.getColorBuffer().pad(key.substring(
-                beeLine.getOpts().PROPERTY_PREFIX.length()), 20)
-                .getMono())
-            .append(props.getProperty(key)));
+          .green(beeLine.getColorBuffer().pad(key.substring(
+            beeLine.getOpts().PROPERTY_PREFIX.length()), 20)
+            .getMono())
+          .append(props.getProperty(key)));
       }
     } catch (Exception e) {
       return beeLine.error(e);
@@ -414,7 +395,7 @@ public class Commands {
 
   public boolean set(String line) {
     if (line == null || line.trim().equals("set")
-        || line.length() == 0) {
+      || line.length() == 0) {
       return config(null);
     }
 
@@ -450,7 +431,7 @@ public class Commands {
       long end = System.currentTimeMillis();
       beeLine.showWarnings();
       beeLine.info(beeLine.loc("commit-complete")
-          + " " + beeLine.locElapsedTime(end - start));
+        + " " + beeLine.locElapsedTime(end - start));
       return true;
     } catch (Exception e) {
       return beeLine.error(e);
@@ -471,7 +452,7 @@ public class Commands {
       long end = System.currentTimeMillis();
       beeLine.showWarnings();
       beeLine.info(beeLine.loc("rollback-complete")
-          + " " + beeLine.locElapsedTime(end - start));
+        + " " + beeLine.locElapsedTime(end - start));
       return true;
     } catch (Exception e) {
       return beeLine.error(e);
@@ -502,131 +483,131 @@ public class Commands {
     beeLine.showWarnings();
     int padlen = 50;
 
-    String[] m = new String[] {
-        "allProceduresAreCallable",
-        "allTablesAreSelectable",
-        "dataDefinitionCausesTransactionCommit",
-        "dataDefinitionIgnoredInTransactions",
-        "doesMaxRowSizeIncludeBlobs",
-        "getCatalogSeparator",
-        "getCatalogTerm",
-        "getDatabaseProductName",
-        "getDatabaseProductVersion",
-        "getDefaultTransactionIsolation",
-        "getDriverMajorVersion",
-        "getDriverMinorVersion",
-        "getDriverName",
-        "getDriverVersion",
-        "getExtraNameCharacters",
-        "getIdentifierQuoteString",
-        "getMaxBinaryLiteralLength",
-        "getMaxCatalogNameLength",
-        "getMaxCharLiteralLength",
-        "getMaxColumnNameLength",
-        "getMaxColumnsInGroupBy",
-        "getMaxColumnsInIndex",
-        "getMaxColumnsInOrderBy",
-        "getMaxColumnsInSelect",
-        "getMaxColumnsInTable",
-        "getMaxConnections",
-        "getMaxCursorNameLength",
-        "getMaxIndexLength",
-        "getMaxProcedureNameLength",
-        "getMaxRowSize",
-        "getMaxSchemaNameLength",
-        "getMaxStatementLength",
-        "getMaxStatements",
-        "getMaxTableNameLength",
-        "getMaxTablesInSelect",
-        "getMaxUserNameLength",
-        "getNumericFunctions",
-        "getProcedureTerm",
-        "getSchemaTerm",
-        "getSearchStringEscape",
-        "getSQLKeywords",
-        "getStringFunctions",
-        "getSystemFunctions",
-        "getTimeDateFunctions",
-        "getURL",
-        "getUserName",
-        "isCatalogAtStart",
-        "isReadOnly",
-        "nullPlusNonNullIsNull",
-        "nullsAreSortedAtEnd",
-        "nullsAreSortedAtStart",
-        "nullsAreSortedHigh",
-        "nullsAreSortedLow",
-        "storesLowerCaseIdentifiers",
-        "storesLowerCaseQuotedIdentifiers",
-        "storesMixedCaseIdentifiers",
-        "storesMixedCaseQuotedIdentifiers",
-        "storesUpperCaseIdentifiers",
-        "storesUpperCaseQuotedIdentifiers",
-        "supportsAlterTableWithAddColumn",
-        "supportsAlterTableWithDropColumn",
-        "supportsANSI92EntryLevelSQL",
-        "supportsANSI92FullSQL",
-        "supportsANSI92IntermediateSQL",
-        "supportsBatchUpdates",
-        "supportsCatalogsInDataManipulation",
-        "supportsCatalogsInIndexDefinitions",
-        "supportsCatalogsInPrivilegeDefinitions",
-        "supportsCatalogsInProcedureCalls",
-        "supportsCatalogsInTableDefinitions",
-        "supportsColumnAliasing",
-        "supportsConvert",
-        "supportsCoreSQLGrammar",
-        "supportsCorrelatedSubqueries",
-        "supportsDataDefinitionAndDataManipulationTransactions",
-        "supportsDataManipulationTransactionsOnly",
-        "supportsDifferentTableCorrelationNames",
-        "supportsExpressionsInOrderBy",
-        "supportsExtendedSQLGrammar",
-        "supportsFullOuterJoins",
-        "supportsGroupBy",
-        "supportsGroupByBeyondSelect",
-        "supportsGroupByUnrelated",
-        "supportsIntegrityEnhancementFacility",
-        "supportsLikeEscapeClause",
-        "supportsLimitedOuterJoins",
-        "supportsMinimumSQLGrammar",
-        "supportsMixedCaseIdentifiers",
-        "supportsMixedCaseQuotedIdentifiers",
-        "supportsMultipleResultSets",
-        "supportsMultipleTransactions",
-        "supportsNonNullableColumns",
-        "supportsOpenCursorsAcrossCommit",
-        "supportsOpenCursorsAcrossRollback",
-        "supportsOpenStatementsAcrossCommit",
-        "supportsOpenStatementsAcrossRollback",
-        "supportsOrderByUnrelated",
-        "supportsOuterJoins",
-        "supportsPositionedDelete",
-        "supportsPositionedUpdate",
-        "supportsSchemasInDataManipulation",
-        "supportsSchemasInIndexDefinitions",
-        "supportsSchemasInPrivilegeDefinitions",
-        "supportsSchemasInProcedureCalls",
-        "supportsSchemasInTableDefinitions",
-        "supportsSelectForUpdate",
-        "supportsStoredProcedures",
-        "supportsSubqueriesInComparisons",
-        "supportsSubqueriesInExists",
-        "supportsSubqueriesInIns",
-        "supportsSubqueriesInQuantifieds",
-        "supportsTableCorrelationNames",
-        "supportsTransactions",
-        "supportsUnion",
-        "supportsUnionAll",
-        "usesLocalFilePerTable",
-        "usesLocalFiles",
+    String[] m = new String[]{
+      "allProceduresAreCallable",
+      "allTablesAreSelectable",
+      "dataDefinitionCausesTransactionCommit",
+      "dataDefinitionIgnoredInTransactions",
+      "doesMaxRowSizeIncludeBlobs",
+      "getCatalogSeparator",
+      "getCatalogTerm",
+      "getDatabaseProductName",
+      "getDatabaseProductVersion",
+      "getDefaultTransactionIsolation",
+      "getDriverMajorVersion",
+      "getDriverMinorVersion",
+      "getDriverName",
+      "getDriverVersion",
+      "getExtraNameCharacters",
+      "getIdentifierQuoteString",
+      "getMaxBinaryLiteralLength",
+      "getMaxCatalogNameLength",
+      "getMaxCharLiteralLength",
+      "getMaxColumnNameLength",
+      "getMaxColumnsInGroupBy",
+      "getMaxColumnsInIndex",
+      "getMaxColumnsInOrderBy",
+      "getMaxColumnsInSelect",
+      "getMaxColumnsInTable",
+      "getMaxConnections",
+      "getMaxCursorNameLength",
+      "getMaxIndexLength",
+      "getMaxProcedureNameLength",
+      "getMaxRowSize",
+      "getMaxSchemaNameLength",
+      "getMaxStatementLength",
+      "getMaxStatements",
+      "getMaxTableNameLength",
+      "getMaxTablesInSelect",
+      "getMaxUserNameLength",
+      "getNumericFunctions",
+      "getProcedureTerm",
+      "getSchemaTerm",
+      "getSearchStringEscape",
+      "getSQLKeywords",
+      "getStringFunctions",
+      "getSystemFunctions",
+      "getTimeDateFunctions",
+      "getURL",
+      "getUserName",
+      "isCatalogAtStart",
+      "isReadOnly",
+      "nullPlusNonNullIsNull",
+      "nullsAreSortedAtEnd",
+      "nullsAreSortedAtStart",
+      "nullsAreSortedHigh",
+      "nullsAreSortedLow",
+      "storesLowerCaseIdentifiers",
+      "storesLowerCaseQuotedIdentifiers",
+      "storesMixedCaseIdentifiers",
+      "storesMixedCaseQuotedIdentifiers",
+      "storesUpperCaseIdentifiers",
+      "storesUpperCaseQuotedIdentifiers",
+      "supportsAlterTableWithAddColumn",
+      "supportsAlterTableWithDropColumn",
+      "supportsANSI92EntryLevelSQL",
+      "supportsANSI92FullSQL",
+      "supportsANSI92IntermediateSQL",
+      "supportsBatchUpdates",
+      "supportsCatalogsInDataManipulation",
+      "supportsCatalogsInIndexDefinitions",
+      "supportsCatalogsInPrivilegeDefinitions",
+      "supportsCatalogsInProcedureCalls",
+      "supportsCatalogsInTableDefinitions",
+      "supportsColumnAliasing",
+      "supportsConvert",
+      "supportsCoreSQLGrammar",
+      "supportsCorrelatedSubqueries",
+      "supportsDataDefinitionAndDataManipulationTransactions",
+      "supportsDataManipulationTransactionsOnly",
+      "supportsDifferentTableCorrelationNames",
+      "supportsExpressionsInOrderBy",
+      "supportsExtendedSQLGrammar",
+      "supportsFullOuterJoins",
+      "supportsGroupBy",
+      "supportsGroupByBeyondSelect",
+      "supportsGroupByUnrelated",
+      "supportsIntegrityEnhancementFacility",
+      "supportsLikeEscapeClause",
+      "supportsLimitedOuterJoins",
+      "supportsMinimumSQLGrammar",
+      "supportsMixedCaseIdentifiers",
+      "supportsMixedCaseQuotedIdentifiers",
+      "supportsMultipleResultSets",
+      "supportsMultipleTransactions",
+      "supportsNonNullableColumns",
+      "supportsOpenCursorsAcrossCommit",
+      "supportsOpenCursorsAcrossRollback",
+      "supportsOpenStatementsAcrossCommit",
+      "supportsOpenStatementsAcrossRollback",
+      "supportsOrderByUnrelated",
+      "supportsOuterJoins",
+      "supportsPositionedDelete",
+      "supportsPositionedUpdate",
+      "supportsSchemasInDataManipulation",
+      "supportsSchemasInIndexDefinitions",
+      "supportsSchemasInPrivilegeDefinitions",
+      "supportsSchemasInProcedureCalls",
+      "supportsSchemasInTableDefinitions",
+      "supportsSelectForUpdate",
+      "supportsStoredProcedures",
+      "supportsSubqueriesInComparisons",
+      "supportsSubqueriesInExists",
+      "supportsSubqueriesInIns",
+      "supportsSubqueriesInQuantifieds",
+      "supportsTableCorrelationNames",
+      "supportsTransactions",
+      "supportsUnion",
+      "supportsUnionAll",
+      "usesLocalFilePerTable",
+      "usesLocalFiles",
     };
 
     for (int i = 0; i < m.length; i++) {
       try {
         beeLine.output(beeLine.getColorBuffer().pad(m[i], padlen).append(
-            "" + beeLine.getReflector().invoke(beeLine.getDatabaseMetaData(),
-                m[i], new Object[0])));
+          "" + beeLine.getReflector().invoke(beeLine.getDatabaseMetaData(),
+            m[i], new Object[0])));
       } catch (Exception e) {
         beeLine.output(beeLine.getColorBuffer().pad(m[i], padlen), false);
         beeLine.handleException(e);
@@ -672,35 +653,34 @@ public class Commands {
       i = Connection.TRANSACTION_SERIALIZABLE;
     } else {
       return beeLine.error("Usage: isolation <TRANSACTION_NONE "
-          + "| TRANSACTION_READ_COMMITTED "
-          + "| TRANSACTION_READ_UNCOMMITTED "
-          + "| TRANSACTION_REPEATABLE_READ "
-          + "| TRANSACTION_SERIALIZABLE>");
+        + "| TRANSACTION_READ_COMMITTED "
+        + "| TRANSACTION_READ_UNCOMMITTED "
+        + "| TRANSACTION_REPEATABLE_READ "
+        + "| TRANSACTION_SERIALIZABLE>");
     }
 
     beeLine.getDatabaseConnection().getConnection().setTransactionIsolation(i);
 
     int isol = beeLine.getDatabaseConnection().getConnection().getTransactionIsolation();
     final String isoldesc;
-    switch (i)
-    {
-    case Connection.TRANSACTION_NONE:
-      isoldesc = "TRANSACTION_NONE";
-      break;
-    case Connection.TRANSACTION_READ_COMMITTED:
-      isoldesc = "TRANSACTION_READ_COMMITTED";
-      break;
-    case Connection.TRANSACTION_READ_UNCOMMITTED:
-      isoldesc = "TRANSACTION_READ_UNCOMMITTED";
-      break;
-    case Connection.TRANSACTION_REPEATABLE_READ:
-      isoldesc = "TRANSACTION_REPEATABLE_READ";
-      break;
-    case Connection.TRANSACTION_SERIALIZABLE:
-      isoldesc = "TRANSACTION_SERIALIZABLE";
-      break;
-    default:
-      isoldesc = "UNKNOWN";
+    switch (i) {
+      case Connection.TRANSACTION_NONE:
+        isoldesc = "TRANSACTION_NONE";
+        break;
+      case Connection.TRANSACTION_READ_COMMITTED:
+        isoldesc = "TRANSACTION_READ_COMMITTED";
+        break;
+      case Connection.TRANSACTION_READ_UNCOMMITTED:
+        isoldesc = "TRANSACTION_READ_UNCOMMITTED";
+        break;
+      case Connection.TRANSACTION_REPEATABLE_READ:
+        isoldesc = "TRANSACTION_REPEATABLE_READ";
+        break;
+      case Connection.TRANSACTION_SERIALIZABLE:
+        isoldesc = "TRANSACTION_SERIALIZABLE";
+        break;
+      default:
+        isoldesc = "UNKNOWN";
     }
 
     beeLine.info(beeLine.loc("isolation-status", isoldesc));
@@ -827,7 +807,7 @@ public class Commands {
     }
     String val = r.values[0];
     if (r.values[0].startsWith(SystemVariables.SYSTEM_PREFIX) || r.values[0]
-        .startsWith(SystemVariables.ENV_PREFIX)) {
+      .startsWith(SystemVariables.ENV_PREFIX)) {
       return;
     } else {
       String[] kv = val.split("=", 2);
@@ -998,7 +978,7 @@ public class Commands {
               long end = System.currentTimeMillis();
 
               beeLine.info(
-                  beeLine.loc("rows-selected", count) + " " + beeLine.locElapsedTime(end - start));
+                beeLine.loc("rows-selected", count) + " " + beeLine.locElapsedTime(end - start));
             } finally {
               if (logThread != null) {
                 logThread.join(DEFAULT_QUERY_PROGRESS_THREAD_TIMEOUT);
@@ -1012,7 +992,7 @@ public class Commands {
           int count = stmnt.getUpdateCount();
           long end = System.currentTimeMillis();
           beeLine.info(
-              beeLine.loc("rows-affected", count) + " " + beeLine.locElapsedTime(end - start));
+            beeLine.loc("rows-affected", count) + " " + beeLine.locElapsedTime(end - start));
         }
       } finally {
         if (logThread != null) {
@@ -1054,7 +1034,7 @@ public class Commands {
       //avoid NPE below if for some reason -e argument has multi-line command
       if (beeLine.getConsoleReader() == null) {
         throw new RuntimeException("Console reader not initialized. This could happen when there "
-            + "is a multi-line command using -e option and which requires further reading from console");
+          + "is a multi-line command using -e option and which requires further reading from console");
       }
       if (beeLine.getOpts().isSilent() && beeLine.getOpts().getScriptFile() != null) {
         extra = beeLine.getConsoleReader().readLine(null, jline.console.ConsoleReader.NULL_MASK);
@@ -1121,7 +1101,7 @@ public class Commands {
 
     try {
       ShellCmdExecutor executor = new ShellCmdExecutor(line, beeLine.getOutputStream(),
-          beeLine.getErrorStream());
+        beeLine.getErrorStream());
       int ret = executor.execute();
       if (ret != 0) {
         beeLine.output("Command failed with exit code = " + ret);
@@ -1242,32 +1222,9 @@ public class Commands {
     command.setLength(0);
   }
 
-  private Runnable createLogRunnable(Statement statement) {
+  private Runnable createLogRunnable(final Statement statement) {
     if (statement instanceof HiveStatement) {
-      final HiveStatement hiveStatement = (HiveStatement) statement;
-
-      Runnable runnable = new Runnable() {
-        @Override
-        public void run() {
-          while (hiveStatement.hasMoreLogs()) {
-            try {
-              // fetch the log periodically and output to beeline console
-              for (String log : hiveStatement.getQueryLog()) {
-                beeLine.info(log);
-              }
-              Thread.sleep(DEFAULT_QUERY_PROGRESS_INTERVAL);
-            } catch (SQLException e) {
-              beeLine.error(new SQLWarning(e));
-              return;
-            } catch (InterruptedException e) {
-              beeLine.debug("Getting log thread is interrupted, since query is done!");
-              showRemainingLogsIfAny(hiveStatement);
-              return;
-            }
-          }
-        }
-      };
-      return runnable;
+      return new LogRunnable(this, (HiveStatement) statement, DEFAULT_QUERY_PROGRESS_INTERVAL);
     } else {
       beeLine.debug("The statement instance is not HiveStatement type: " + statement.getClass());
       return new Runnable() {
@@ -1277,6 +1234,121 @@ public class Commands {
         }
       };
     }
+  }
+
+  static class LogRunnable implements Runnable {
+    private final Commands commands;
+    private final HiveStatement hiveStatement;
+    private final long queryProgressInterval;
+    private final InPlaceUpdate inPlaceUpdate;
+    boolean progressBarUpdateCompleted = false;
+
+    LogRunnable(Commands commands, HiveStatement hiveStatement, long queryProgressInterval) {
+      this.hiveStatement = hiveStatement;
+      this.commands = commands;
+      this.queryProgressInterval = queryProgressInterval;
+      inPlaceUpdate = new InPlaceUpdate(commands.beeLine.getOutputStream());
+    }
+
+    private boolean receivedAllProgressUpdates(TJobExecutionStatus status) {
+      return TJobExecutionStatus.ERROR.equals(status)
+        || TJobExecutionStatus.SUBMITTED.equals(status)
+        || TJobExecutionStatus.KILLED.equals(status);
+    }
+
+    private void updateQueryLog() throws SQLException {
+      for (String log : hiveStatement.getQueryLog()) {
+        commands.beeLine.info(log);
+      }
+    }
+
+    @Override
+    public void run() {
+      while (hiveStatement.hasMoreLogs()) {
+        try {
+          // fetch the log periodically and output to beeline console
+          // we are sleeping at the start so as to give the execute statement on server
+          // to setup the session state correctly before we make the call to get progress update
+          Thread.sleep(queryProgressInterval);
+          if (progressBarUpdateCompleted) {
+            updateQueryLog();
+          } else {
+            TProgressUpdateResp progressResponse = hiveStatement.getProgressResponse();
+            commands.debug("progress response sent: " + (progressResponse == null ? "null" : progressResponse.toString()));
+            if (progressResponse == null || TJobExecutionStatus.NOT_AVAILABLE.equals(progressResponse.getStatus())) {
+              progressBarUpdateCompleted = true;
+            } else {
+              inPlaceUpdate.render(new ProgressMonitorWrapper(progressResponse));
+              if (receivedAllProgressUpdates(progressResponse.getStatus())) {
+                progressBarUpdateCompleted = true;
+              }
+            }
+          }
+        } catch (SQLException e) {
+          commands.beeLine.error(new SQLWarning(e));
+        } catch (InterruptedException e) {
+          commands.beeLine.debug("Getting log thread is interrupted, since query is done!");
+          commands.showRemainingProgress(hiveStatement, inPlaceUpdate);
+        }
+      }
+    }
+  }
+
+  private void debug(String message) {
+    beeLine.debug(message);
+  }
+
+  static class ProgressMonitorWrapper implements ProgressMonitor {
+    private TProgressUpdateResp response;
+
+    ProgressMonitorWrapper(TProgressUpdateResp response) {
+      this.response = response;
+    }
+
+    @Override
+    public List<String> headers() {
+      return response.getHeaderNames();
+    }
+
+    @Override
+    public List<List<String>> rows() {
+      return response.getRows();
+    }
+
+    @Override
+    public String footerSummary() {
+      return response.getFooterSummary();
+    }
+
+    @Override
+    public long startTime() {
+      return response.getStartTime();
+    }
+
+    @Override
+    public String executionStatus() {
+      return response.getStatus().name();
+    }
+
+    @Override
+    public double progressedPercentage() {
+      return response.getProgressedPercentage();
+    }
+  }
+
+  private void showRemainingProgress(Statement statement, InPlaceUpdate inPlaceUpdate) {
+    if (statement instanceof HiveStatement) {
+      HiveStatement hiveStatement = (HiveStatement) statement;
+      try {
+        TProgressUpdateResp progressResponse = hiveStatement.getProgressResponse();
+        if (TJobExecutionStatus.NOT_AVAILABLE != progressResponse.getStatus()) {
+          inPlaceUpdate.render(new ProgressMonitorWrapper(progressResponse));
+        }
+      } catch (SQLException e) {
+        beeLine.error(new SQLWarning(e));
+      }
+    }
+    showRemainingLogsIfAny(statement);
   }
 
   private void showRemainingLogsIfAny(Statement statement) {
@@ -1299,24 +1371,22 @@ public class Commands {
     }
   }
 
-  public boolean quit(String line) {
+  private boolean quit() {
     beeLine.setExit(true);
-    close(null);
+    close();
     return true;
   }
 
-  public boolean exit(String line) {
-    return quit(line);
+  public boolean exit() {
+    return quit();
   }
 
   /**
    * Close all connections.
    */
-  public boolean closeall(String line) {
-    if (close(null)) {
-      while (close(null)) {
-        ;
-      }
+  boolean closeall() {
+    if (close()) {
+      while (close()) ;
       return true;
     }
     return false;
@@ -1326,13 +1396,13 @@ public class Commands {
   /**
    * Close the current connection.
    */
-  public boolean close(String line) {
+  public boolean close() {
     if (beeLine.getDatabaseConnection() == null) {
       return false;
     }
     try {
       if (beeLine.getDatabaseConnection().getCurrentConnection() != null
-          && !(beeLine.getDatabaseConnection().getCurrentConnection().isClosed())) {
+        && !(beeLine.getDatabaseConnection().getCurrentConnection().isClosed())) {
         int index = beeLine.getDatabaseConnections().getIndex();
         beeLine.info(beeLine.loc("closing", index, beeLine.getDatabaseConnection()));
         beeLine.getDatabaseConnection().getCurrentConnection().close();
@@ -1384,7 +1454,7 @@ public class Commands {
 
   public boolean connect(String line) throws Exception {
     String example = "Usage: connect <url> <username> <password> [driver]"
-        + BeeLine.getSeparator();
+      + BeeLine.getSeparator();
 
     String[] parts = beeLine.split(line);
     if (parts == null) {
@@ -1447,20 +1517,20 @@ public class Commands {
     // Otherwise, we assume it is a name of parameter that we have to get the url from
     try {
       URI tryParse = new URI(urlParam);
-      if (tryParse.getScheme() == null){
+      if (tryParse.getScheme() == null) {
         // param had no scheme, so not a URL
         useIndirectUrl = true;
       }
-    } catch (URISyntaxException e){
+    } catch (URISyntaxException e) {
       // param did not parse as a URL, so not a URL
       useIndirectUrl = true;
     }
-    if (useIndirectUrl){
+    if (useIndirectUrl) {
       // Use url param indirectly - as the name of an env var that contains the url
       // If the urlParam is "default", we would look for a BEELINE_URL_DEFAULT url
       String envUrl = beeLine.getOpts().getEnv().get(
-          BeeLineOpts.URL_ENV_PREFIX + urlParam.toUpperCase());
-      if (envUrl != null){
+        BeeLineOpts.URL_ENV_PREFIX + urlParam.toUpperCase());
+      if (envUrl != null) {
         return envUrl;
       }
     }
@@ -1475,7 +1545,7 @@ public class Commands {
       }
     }
 
-    for (Iterator i = props.keySet().iterator(); i.hasNext();) {
+    for (Iterator i = props.keySet().iterator(); i.hasNext(); ) {
       String key = (String) i.next();
       for (int j = 0; j < keys.length; j++) {
         if (key.endsWith(keys[j])) {
@@ -1488,25 +1558,25 @@ public class Commands {
   }
 
   public boolean connect(Properties props) throws IOException {
-    String url = getProperty(props, new String[] {
-        JdbcConnectionParams.PROPERTY_URL,
-        "javax.jdo.option.ConnectionURL",
-        "ConnectionURL",
+    String url = getProperty(props, new String[]{
+      JdbcConnectionParams.PROPERTY_URL,
+      "javax.jdo.option.ConnectionURL",
+      "ConnectionURL",
     });
-    String driver = getProperty(props, new String[] {
-        JdbcConnectionParams.PROPERTY_DRIVER,
-        "javax.jdo.option.ConnectionDriverName",
-        "ConnectionDriverName",
+    String driver = getProperty(props, new String[]{
+      JdbcConnectionParams.PROPERTY_DRIVER,
+      "javax.jdo.option.ConnectionDriverName",
+      "ConnectionDriverName",
     });
-    String username = getProperty(props, new String[] {
-        JdbcConnectionParams.AUTH_USER,
-        "javax.jdo.option.ConnectionUserName",
-        "ConnectionUserName",
+    String username = getProperty(props, new String[]{
+      JdbcConnectionParams.AUTH_USER,
+      "javax.jdo.option.ConnectionUserName",
+      "ConnectionUserName",
     });
-    String password = getProperty(props, new String[] {
-        JdbcConnectionParams.AUTH_PASSWD,
-        "javax.jdo.option.ConnectionPassword",
-        "ConnectionPassword",
+    String password = getProperty(props, new String[]{
+      JdbcConnectionParams.AUTH_PASSWD,
+      "javax.jdo.option.ConnectionPassword",
+      "ConnectionPassword",
     });
 
     if (url == null || url.length() == 0) {
@@ -1518,7 +1588,7 @@ public class Commands {
       }
     }
 
-    String auth = getProperty(props, new String[] {JdbcConnectionParams.AUTH_TYPE});
+    String auth = getProperty(props, new String[]{JdbcConnectionParams.AUTH_TYPE});
     if (auth == null) {
       auth = beeLine.getOpts().getAuthType();
       if (auth != null) {
@@ -1542,7 +1612,7 @@ public class Commands {
 
     try {
       beeLine.getDatabaseConnections().setConnection(
-          new DatabaseConnection(beeLine, driver, url, props));
+        new DatabaseConnection(beeLine, driver, url, props));
       beeLine.getDatabaseConnection().getConnection();
 
       if (!beeLine.isBeeLine()) {
@@ -1593,8 +1663,8 @@ public class Commands {
       }
 
       beeLine.output(beeLine.getColorBuffer().pad(" #" + index + "", 5)
-          .pad(closed ? beeLine.loc("closed") : beeLine.loc("open"), 9)
-          .append(c.getUrl()));
+        .pad(closed ? beeLine.loc("closed") : beeLine.loc("open"), 9)
+        .append(c.getUrl()));
     }
 
     return true;
@@ -1650,8 +1720,7 @@ public class Commands {
   private boolean stopScript(String line) {
     try {
       beeLine.getScriptOutputFile().close();
-    } catch (Exception e)
-    {
+    } catch (Exception e) {
       beeLine.handleException(e);
     }
 
@@ -1697,11 +1766,11 @@ public class Commands {
 
     try {
       BufferedReader reader = new BufferedReader(new FileReader(
-          parts[1]));
+        parts[1]));
       try {
         // ### NOTE: fix for sf.net bug 879427
         StringBuilder cmd = null;
-        for (;;) {
+        for (; ; ) {
           String scriptLine = reader.readLine();
 
           if (scriptLine == null) {
@@ -1804,8 +1873,6 @@ public class Commands {
   }
 
 
-
-
   public boolean describe(String line) throws SQLException {
     String[] table = beeLine.split(line, 2, "Usage: describe <table name>");
     if (table == null) {
@@ -1838,13 +1905,13 @@ public class Commands {
 
     for (int i = 0; i < beeLine.commandHandlers.length; i++) {
       if (cmd.length() == 0 ||
-          Arrays.asList(beeLine.commandHandlers[i].getNames()).contains(cmd)) {
+        Arrays.asList(beeLine.commandHandlers[i].getNames()).contains(cmd)) {
         clist.add(beeLine.getColorBuffer().pad("!" + beeLine.commandHandlers[i].getName(), 20)
-            .append(beeLine.wrap(beeLine.commandHandlers[i].getHelpText(), 60, 20)));
+          .append(beeLine.wrap(beeLine.commandHandlers[i].getHelpText(), 60, 20)));
       }
     }
 
-    for (Iterator<ColorBuffer> i = clist.iterator(); i.hasNext();) {
+    for (Iterator<ColorBuffer> i = clist.iterator(); i.hasNext(); ) {
       beeLine.output(i.next());
     }
 
@@ -1864,7 +1931,7 @@ public class Commands {
     }
 
     BufferedReader breader = new BufferedReader(
-        new InputStreamReader(in));
+      new InputStreamReader(in));
     String man;
     int index = 0;
     while ((man = breader.readLine()) != null) {

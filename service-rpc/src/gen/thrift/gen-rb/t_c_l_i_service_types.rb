@@ -148,6 +148,19 @@ module TFetchOrientation
   VALID_VALUES = Set.new([FETCH_NEXT, FETCH_PRIOR, FETCH_RELATIVE, FETCH_ABSOLUTE, FETCH_FIRST, FETCH_LAST]).freeze
 end
 
+module TJobExecutionStatus
+  SUBMITTED = 0
+  INITING = 1
+  RUNNING = 2
+  SUCCEEDED = 3
+  KILLED = 4
+  FAILED = 5
+  ERROR = 6
+  NOT_AVAILABLE = 7
+  VALUE_MAP = {0 => "SUBMITTED", 1 => "INITING", 2 => "RUNNING", 3 => "SUCCEEDED", 4 => "KILLED", 5 => "FAILED", 6 => "ERROR", 7 => "NOT_AVAILABLE"}
+  VALID_VALUES = Set.new([SUBMITTED, INITING, RUNNING, SUCCEEDED, KILLED, FAILED, ERROR, NOT_AVAILABLE]).freeze
+end
+
 class TTypeQualifierValue < ::Thrift::Union
   include ::Thrift::Struct_Union
   class << self
@@ -1862,6 +1875,58 @@ class TRenewDelegationTokenResp
 
   def validate
     raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field status is unset!') unless @status
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class TProgressUpdateReq
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  OPERATIONHANDLE = 1
+
+  FIELDS = {
+    OPERATIONHANDLE => {:type => ::Thrift::Types::STRUCT, :name => 'operationHandle', :class => ::TOperationHandle}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field operationHandle is unset!') unless @operationHandle
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class TProgressUpdateResp
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  HEADERNAMES = 1
+  ROWS = 2
+  PROGRESSEDPERCENTAGE = 3
+  STATUS = 4
+  FOOTERSUMMARY = 5
+  STARTTIME = 6
+
+  FIELDS = {
+    HEADERNAMES => {:type => ::Thrift::Types::LIST, :name => 'headerNames', :element => {:type => ::Thrift::Types::STRING}},
+    ROWS => {:type => ::Thrift::Types::LIST, :name => 'rows', :element => {:type => ::Thrift::Types::LIST, :element => {:type => ::Thrift::Types::STRING}}},
+    PROGRESSEDPERCENTAGE => {:type => ::Thrift::Types::DOUBLE, :name => 'progressedPercentage'},
+    STATUS => {:type => ::Thrift::Types::I32, :name => 'status', :enum_class => ::TJobExecutionStatus},
+    FOOTERSUMMARY => {:type => ::Thrift::Types::STRING, :name => 'footerSummary'},
+    STARTTIME => {:type => ::Thrift::Types::I64, :name => 'startTime'}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field headerNames is unset!') unless @headerNames
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field rows is unset!') unless @rows
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field progressedPercentage is unset!') unless @progressedPercentage
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field status is unset!') unless @status
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field footerSummary is unset!') unless @footerSummary
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field startTime is unset!') unless @startTime
+    unless @status.nil? || ::TJobExecutionStatus::VALID_VALUES.include?(@status)
+      raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Invalid value of field status!')
+    end
   end
 
   ::Thrift::Struct.generate_accessors self

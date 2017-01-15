@@ -18,35 +18,10 @@
 
 package org.apache.hive.service.cli.thrift;
 
-import java.lang.reflect.InvocationHandler;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.lang.reflect.Proxy;
-import java.lang.reflect.UndeclaredThrowableException;
-import java.net.SocketException;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.TimeUnit;
-
-import javax.security.sasl.SaslException;
-
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hive.service.auth.HiveAuthFactory;
 import org.apache.hive.service.auth.PlainSaslHelper;
-import org.apache.hive.service.cli.CLIServiceClient;
-import org.apache.hive.service.cli.FetchOrientation;
-import org.apache.hive.service.cli.FetchType;
-import org.apache.hive.service.cli.GetInfoType;
-import org.apache.hive.service.cli.GetInfoValue;
-import org.apache.hive.service.cli.HiveSQLException;
-import org.apache.hive.service.cli.ICLIService;
-import org.apache.hive.service.cli.OperationHandle;
-import org.apache.hive.service.cli.OperationStatus;
-import org.apache.hive.service.cli.RowSet;
-import org.apache.hive.service.cli.SessionHandle;
-import org.apache.hive.service.cli.TableSchema;
+import org.apache.hive.service.cli.*;
 import org.apache.hive.service.rpc.thrift.TCLIService;
 import org.apache.thrift.TApplicationException;
 import org.apache.thrift.protocol.TBinaryProtocol;
@@ -57,6 +32,14 @@ import org.apache.thrift.transport.TTransport;
 import org.apache.thrift.transport.TTransportException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.security.sasl.SaslException;
+import java.lang.reflect.*;
+import java.net.SocketException;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 /**
  * RetryingThriftCLIServiceClient. Creates a proxy for a CLIServiceClient
@@ -234,6 +217,11 @@ public class RetryingThriftCLIServiceClient implements InvocationHandler {
       throws HiveSQLException {
       return cliService.getCrossReference(sessionHandle, primaryCatalog, primarySchema,
         primaryTable, foreignCatalog, foreignSchema, foreignTable);
+    }
+
+    @Override
+    public JobProgressUpdate progressUpdate(OperationHandle operationHandle) throws HiveSQLException {
+      return cliService.progressUpdate(operationHandle);
     }
   }
 
