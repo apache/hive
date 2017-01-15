@@ -51,6 +51,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.common.JavaUtils;
+import org.apache.hadoop.hive.common.LogUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.ObjectStore;
@@ -381,7 +382,21 @@ public class SessionState {
     overriddenConfigurations.putAll(HiveConf.getConfSystemProperties());
     // if there isn't already a session name, go ahead and create it.
     if (StringUtils.isEmpty(conf.getVar(HiveConf.ConfVars.HIVESESSIONID))) {
-      conf.setVar(HiveConf.ConfVars.HIVESESSIONID, makeSessionId());
+      String sessionId = makeSessionId();
+      conf.setVar(HiveConf.ConfVars.HIVESESSIONID, sessionId);
+      if(conf.getBoolVar(HiveConf.ConfVars.HIVE_LOG_RELOAD_VARIABLE_ENABLE)) {
+        // add hive.session.id to System Property
+        // if hive-log4j2.properties is used
+        System.setProperty(ConfVars.HIVESESSIONID.varname, sessionId);
+        try {
+          LogUtils.initHiveLog4j();
+          // print hive.session.id to console
+          System.err.println("Hive Session ID = " + sessionId);
+        }catch (LogUtils.LogInitializationException e) {
+          e.printStackTrace();
+          System.err.println("Reload VARIABLE for log4j fail!");
+        }
+      }
     }
     // Using system classloader as the parent. Using thread context
     // classloader as parent can pollute the session. See HIVE-11878
