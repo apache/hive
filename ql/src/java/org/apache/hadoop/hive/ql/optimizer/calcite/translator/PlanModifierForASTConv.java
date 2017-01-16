@@ -206,10 +206,7 @@ public class PlanModifierForASTConv {
     String colAlias;
     for (int i = 0; i < rootChildExps.size(); i++) {
       colAlias = resultSchema.get(i).getName();
-      if (colAlias.startsWith("_")) {
-        colAlias = colAlias.substring(1);
-        colAlias = getNewColAlias(newSelAliases, colAlias);
-      }
+      colAlias = getNewColAlias(newSelAliases, colAlias);
       newSelAliases.add(colAlias);
     }
 

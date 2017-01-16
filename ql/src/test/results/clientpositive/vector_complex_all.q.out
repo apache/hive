@@ -65,7 +65,7 @@ POSTHOOK: Lineage: orc_create_complex.mp SIMPLE [(orc_create_staging)orc_create_
 POSTHOOK: Lineage: orc_create_complex.str SIMPLE [(orc_create_staging)orc_create_staging.FieldSchema(name:str, type:string, comment:null), ]
 POSTHOOK: Lineage: orc_create_complex.strct SIMPLE [(orc_create_staging)orc_create_staging.FieldSchema(name:strct, type:struct<A:string,B:string>, comment:null), ]
 POSTHOOK: Lineage: orc_create_complex.val SIMPLE []
-orc_create_staging.str	orc_create_staging.mp	orc_create_staging.lst	orc_create_staging.strct	c1
+orc_create_staging.str	orc_create_staging.mp	orc_create_staging.lst	orc_create_staging.strct	_c1
 PREHOOK: query: SELECT * FROM orc_create_complex
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_create_complex
@@ -177,7 +177,7 @@ POSTHOOK: query: select count(*) from orc_create_complex
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orc_create_complex
 #### A masked pattern was here ####
-c0
+_c0
 13503
 PREHOOK: query: SELECT distinct lst, strct FROM orc_create_complex
 PREHOOK: type: QUERY
@@ -199,7 +199,7 @@ POSTHOOK: query: SELECT str, count(val)  FROM orc_create_complex GROUP BY str
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orc_create_complex
 #### A masked pattern was here ####
-str	c1
+str	_c1
 line1	4501
 line2	4501
 line3	4501
@@ -211,7 +211,7 @@ POSTHOOK: query: SELECT strct.B, count(val) FROM orc_create_complex GROUP BY str
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orc_create_complex
 #### A masked pattern was here ####
-strct.b	c1
+strct.b	_c1
 four	4501
 six	4501
 two	4501
@@ -223,7 +223,7 @@ POSTHOOK: query: SELECT strct, mp, lst, str, count(val) FROM orc_create_complex 
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orc_create_complex
 #### A masked pattern was here ####
-strct	mp	lst	str	c4
+strct	mp	lst	str	_c4
 {"a":"one","b":"two"}	{"key11":"value11","key12":"value12","key13":"value13"}	["a","b","c"]	line1	4501
 {"a":"three","b":"four"}	{"key21":"value21","key22":"value22","key23":"value23"}	["d","e","f"]	line2	4501
 {"a":"five","b":"six"}	{"key31":"value31","key32":"value32","key33":"value33"}	["g","h","i"]	line3	4501

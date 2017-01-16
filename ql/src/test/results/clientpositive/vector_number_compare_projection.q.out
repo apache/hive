@@ -174,7 +174,7 @@ POSTHOOK: query: SELECT sum(hash(*)) FROM
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@vectortab2k_orc
 #### A masked pattern was here ####
-c0
+_c0
 -3601806268
 PREHOOK: query: EXPLAIN
 SELECT sum(hash(*)) FROM
@@ -244,7 +244,7 @@ POSTHOOK: query: SELECT sum(hash(*)) FROM
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@vectortab2k_orc
 #### A masked pattern was here ####
-c0
+_c0
 24462176095
 PREHOOK: query: -- With some filtering
 SELECT sum(hash(*)) FROM
@@ -262,7 +262,7 @@ SELECT sum(hash(*)) FROM
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@vectortab2k_orc
 #### A masked pattern was here ####
-c0
+_c0
 62396741790
 PREHOOK: query: SELECT sum(hash(*)) FROM
     (SELECT t, si, i, b, (t > 0) as compare1, (si >= 0) as compare2, (i != 0) as compare3, (b > 0) as compare4 from vectortab2k_orc
@@ -278,7 +278,7 @@ POSTHOOK: query: SELECT sum(hash(*)) FROM
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@vectortab2k_orc
 #### A masked pattern was here ####
-c0
+_c0
 14122059922
 PREHOOK: query: --
 -- Projection LongScalar<Compare>LongColumn
@@ -298,7 +298,7 @@ SELECT sum(hash(*)) FROM
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@vectortab2k_orc
 #### A masked pattern was here ####
-c0
+_c0
 -3601796069
 PREHOOK: query: SELECT sum(hash(*)) FROM
     (SELECT t, si, i, b, (0 > t) as compare1, (0 >= si) as compare2, (0 != i) as compare3, (0 > b) as compare4 from vectortab2k_orc
@@ -312,7 +312,7 @@ POSTHOOK: query: SELECT sum(hash(*)) FROM
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@vectortab2k_orc
 #### A masked pattern was here ####
-c0
+_c0
 20166891877
 PREHOOK: query: -- With some filtering
 SELECT sum(hash(*)) FROM
@@ -330,7 +330,7 @@ SELECT sum(hash(*)) FROM
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@vectortab2k_orc
 #### A masked pattern was here ####
-c0
+_c0
 62396748920
 PREHOOK: query: SELECT sum(hash(*)) FROM
     (SELECT t, si, i, b, (0 > t) as compare1, (0 >= si) as compare2, (0 != i) as compare3, (0 > b) as compare4 from vectortab2k_orc
@@ -346,7 +346,7 @@ POSTHOOK: query: SELECT sum(hash(*)) FROM
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@vectortab2k_orc
 #### A masked pattern was here ####
-c0
+_c0
 14121946175
 PREHOOK: query: CREATE TABLE scratch_repeat AS SELECT t, si, i, b, bo, 20 as t_repeat,
      9000 as si_repeat, 9233320 as i_repeat, -823823999339992 as b_repeat, false as bo_repeat_false, true as bo_repeat_true FROM vectortab2k
@@ -416,7 +416,7 @@ SELECT sum(hash(*)) FROM
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@vectortab2k_orc_repeat
 #### A masked pattern was here ####
-c0
+_c0
 972535192000
 PREHOOK: query: SELECT sum(hash(*)) FROM
     (SELECT t_repeat, si_repeat, i_repeat, (t_repeat < 0) as compare1, (si_repeat <=0) as compare2, (i_repeat != 0) as compare3 from vectortab2k_orc_repeat
@@ -430,7 +430,7 @@ POSTHOOK: query: SELECT sum(hash(*)) FROM
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@vectortab2k_orc_repeat
 #### A masked pattern was here ####
-c0
+_c0
 972533210000
 PREHOOK: query: -- With some filtering
 SELECT sum(hash(*)) FROM
@@ -448,7 +448,7 @@ SELECT sum(hash(*)) FROM
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@vectortab2k_orc_repeat
 #### A masked pattern was here ####
-c0
+_c0
 231949643292
 PREHOOK: query: SELECT sum(hash(*)) FROM
     (SELECT t_repeat, si_repeat, i_repeat, (t_repeat < 0) as compare1, (si_repeat <=0) as compare2, (i_repeat != 0) as compare3 from vectortab2k_orc_repeat
@@ -464,7 +464,7 @@ POSTHOOK: query: SELECT sum(hash(*)) FROM
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@vectortab2k_orc_repeat
 #### A masked pattern was here ####
-c0
+_c0
 235353036820
 PREHOOK: query: --
 -- Projection LongScalar<Compare>LongColumn
@@ -484,7 +484,7 @@ SELECT sum(hash(*)) FROM
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@vectortab2k_orc_repeat
 #### A masked pattern was here ####
-c0
+_c0
 972533208000
 PREHOOK: query: SELECT sum(hash(*)) FROM
     (SELECT t_repeat, si_repeat, i_repeat, (0 < t_repeat) as compare1, (0 <= si_repeat) as compare2, (0 != i_repeat) as compare3 from vectortab2k_orc_repeat
@@ -498,7 +498,7 @@ POSTHOOK: query: SELECT sum(hash(*)) FROM
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@vectortab2k_orc_repeat
 #### A masked pattern was here ####
-c0
+_c0
 972535194000
 PREHOOK: query: -- With some filtering
 SELECT sum(hash(*)) FROM
@@ -516,7 +516,7 @@ SELECT sum(hash(*)) FROM
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@vectortab2k_orc_repeat
 #### A masked pattern was here ####
-c0
+_c0
 231949170108
 PREHOOK: query: SELECT sum(hash(*)) FROM
     (SELECT t_repeat, si_repeat, i_repeat, (0 < t_repeat) as compare1, (0 <= si_repeat) as compare2, (0 != i_repeat) as compare3 from vectortab2k_orc_repeat
@@ -532,7 +532,7 @@ POSTHOOK: query: SELECT sum(hash(*)) FROM
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@vectortab2k_orc_repeat
 #### A masked pattern was here ####
-c0
+_c0
 235353516948
 PREHOOK: query: CREATE TABLE scratch_null AS SELECT t, si, i, b, bo,
      cast(null as tinyint) as t_null, cast(null as smallint) as si_null, cast(null as int) as i_null, cast(null as bigint) as b_null, cast(null as boolean) as bo_null FROM vectortab2k
@@ -598,7 +598,7 @@ SELECT sum(hash(*)) FROM
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@vectortab2k_orc_null
 #### A masked pattern was here ####
-c0
+_c0
 0
 PREHOOK: query: SELECT sum(hash(*)) FROM
     (SELECT t_null, si_null, i_null, (t_null < 0) as compare1, (si_null <=0) as compare2, (i_null != 0) as compare3 from vectortab2k_orc_null
@@ -612,7 +612,7 @@ POSTHOOK: query: SELECT sum(hash(*)) FROM
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@vectortab2k_orc_null
 #### A masked pattern was here ####
-c0
+_c0
 0
 PREHOOK: query: -- With some filtering
 SELECT sum(hash(*)) FROM
@@ -630,7 +630,7 @@ SELECT sum(hash(*)) FROM
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@vectortab2k_orc_null
 #### A masked pattern was here ####
-c0
+_c0
 0
 PREHOOK: query: SELECT sum(hash(*)) FROM
     (SELECT t_null, si_null, i_null, (t_null < 0) as compare1, (si_null <=0) as compare2, (i_null != 0) as compare3 from vectortab2k_orc_null
@@ -646,7 +646,7 @@ POSTHOOK: query: SELECT sum(hash(*)) FROM
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@vectortab2k_orc_null
 #### A masked pattern was here ####
-c0
+_c0
 0
 PREHOOK: query: --
 -- Projection LongScalar<Compare>LongColumn
@@ -666,7 +666,7 @@ SELECT sum(hash(*)) FROM
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@vectortab2k_orc_null
 #### A masked pattern was here ####
-c0
+_c0
 0
 PREHOOK: query: SELECT sum(hash(*)) FROM
     (SELECT t_null, si_null, i_null, (0 < t_null) as compare1, (0 <= si_null) as compare2, (0 != i_null) as compare3 from vectortab2k_orc_null
@@ -680,7 +680,7 @@ POSTHOOK: query: SELECT sum(hash(*)) FROM
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@vectortab2k_orc_null
 #### A masked pattern was here ####
-c0
+_c0
 0
 PREHOOK: query: -- With some filtering
 SELECT sum(hash(*)) FROM
@@ -698,7 +698,7 @@ SELECT sum(hash(*)) FROM
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@vectortab2k_orc_null
 #### A masked pattern was here ####
-c0
+_c0
 0
 PREHOOK: query: SELECT sum(hash(*)) FROM
     (SELECT t_null, si_null, i_null, (0 < t_null) as compare1, (0 <= si_null) as compare2, (0 != i_null) as compare3 from vectortab2k_orc_null
@@ -714,5 +714,5 @@ POSTHOOK: query: SELECT sum(hash(*)) FROM
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@vectortab2k_orc_null
 #### A masked pattern was here ####
-c0
+_c0
 0

@@ -493,7 +493,7 @@ POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@orc_llap
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@llap_temp_table
-POSTHOOK: Lineage: llap_temp_table.c2 EXPRESSION [(orc_llap)orc_llap.null, ]
+POSTHOOK: Lineage: llap_temp_table._c2 EXPRESSION [(orc_llap)orc_llap.null, ]
 POSTHOOK: Lineage: llap_temp_table.cstring1 SIMPLE [(orc_llap)orc_llap.FieldSchema(name:cstring1, type:string, comment:null), ]
 POSTHOOK: Lineage: llap_temp_table.cstring2 SIMPLE [(orc_llap)orc_llap.FieldSchema(name:cstring2, type:string, comment:null), ]
 PREHOOK: query: select sum(hash(*)) from llap_temp_table
@@ -921,7 +921,7 @@ POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@orc_llap
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@llap_temp_table
-POSTHOOK: Lineage: llap_temp_table.c2 EXPRESSION [(orc_llap)orc_llap.null, ]
+POSTHOOK: Lineage: llap_temp_table._c2 EXPRESSION [(orc_llap)orc_llap.null, ]
 POSTHOOK: Lineage: llap_temp_table.cstring1 SIMPLE [(orc_llap)orc_llap.FieldSchema(name:cstring1, type:string, comment:null), ]
 POSTHOOK: Lineage: llap_temp_table.cstring2 SIMPLE [(orc_llap)orc_llap.FieldSchema(name:cstring2, type:string, comment:null), ]
 PREHOOK: query: select sum(hash(*)) from llap_temp_table

@@ -20,7 +20,7 @@ POSTHOOK: Input: default@src
 POSTHOOK: Output: default@test
 POSTHOOK: Lineage: test.a SIMPLE []
 POSTHOOK: Lineage: test.b EXPRESSION []
-c0	c1
+_c0	_c1
 PREHOOK: query: explain
 select * from alltypesorc join test where alltypesorc.cint=test.a
 PREHOOK: type: QUERY
@@ -123,7 +123,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@test2a
 POSTHOOK: Lineage: test2a.a EXPRESSION []
-c0
+_c0
 PREHOOK: query: CREATE TABLE test2b (a INT) STORED AS ORC
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default

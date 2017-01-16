@@ -58,7 +58,7 @@ POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@staging
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@parquet_jointable2
-POSTHOOK: Lineage: parquet_jointable2.c1 EXPRESSION [(staging)staging.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: parquet_jointable2._c1 EXPRESSION [(staging)staging.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: parquet_jointable2.key SIMPLE [(staging)staging.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: parquet_jointable2.myvalue EXPRESSION [(staging)staging.FieldSchema(name:value, type:string, comment:null), ]
 PREHOOK: query: -- SORT_QUERY_RESULTS

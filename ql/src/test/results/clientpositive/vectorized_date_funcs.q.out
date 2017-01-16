@@ -58,7 +58,7 @@ POSTHOOK: Input: default@date_udf_flight
 POSTHOOK: Output: default@date_udf_flight_orc
 POSTHOOK: Lineage: date_udf_flight_orc.fl_date SIMPLE [(date_udf_flight)date_udf_flight.FieldSchema(name:fl_date, type:date, comment:null), ]
 POSTHOOK: Lineage: date_udf_flight_orc.fl_time EXPRESSION [(date_udf_flight)date_udf_flight.FieldSchema(name:fl_date, type:date, comment:null), ]
-fl_date	c1
+fl_date	_c1
 PREHOOK: query: SELECT * FROM date_udf_flight_orc
 PREHOOK: type: QUERY
 PREHOOK: Input: default@date_udf_flight_orc
@@ -332,7 +332,7 @@ FROM date_udf_flight_orc
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@date_udf_flight_orc
 #### A masked pattern was here ####
-fl_time	c1	c2	c3	c4	c5	c6	c7	c8	c9	c10	c11	c12	c13	c14	c15	c16	c17	c18	c19
+fl_time	_c1	_c2	_c3	_c4	_c5	_c6	_c7	_c8	_c9	_c10	_c11	_c12	_c13	_c14	_c15	_c16	_c17	_c18	_c19
 2010-10-20 07:00:00	1287583200	2010	10	20	20	4	42	2010-10-20	2010-10-20	2010-10-22	2010-10-18	3945	3945	3945	3945	1316	1316	1316	1316
 2010-10-20 07:00:00	1287583200	2010	10	20	20	4	42	2010-10-20	2010-10-20	2010-10-22	2010-10-18	3945	3945	3945	3945	1316	1316	1316	1316
 2010-10-20 07:00:00	1287583200	2010	10	20	20	4	42	2010-10-20	2010-10-20	2010-10-22	2010-10-18	3945	3945	3945	3945	1316	1316	1316	1316
@@ -597,7 +597,7 @@ FROM date_udf_flight_orc
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@date_udf_flight_orc
 #### A masked pattern was here ####
-fl_date	c1	c2	c3	c4	c5	c6	c7	c8	c9	c10	c11	c12	c13	c14	c15	c16	c17	c18	c19
+fl_date	_c1	_c2	_c3	_c4	_c5	_c6	_c7	_c8	_c9	_c10	_c11	_c12	_c13	_c14	_c15	_c16	_c17	_c18	_c19
 2010-10-20	1287558000	2010	10	20	20	4	42	2010-10-20	2010-10-20	2010-10-22	2010-10-18	3945	3945	3945	3945	1316	1316	1316	1316
 2010-10-20	1287558000	2010	10	20	20	4	42	2010-10-20	2010-10-20	2010-10-22	2010-10-18	3945	3945	3945	3945	1316	1316	1316	1316
 2010-10-20	1287558000	2010	10	20	20	4	42	2010-10-20	2010-10-20	2010-10-22	2010-10-18	3945	3945	3945	3945	1316	1316	1316	1316
@@ -872,7 +872,7 @@ FROM date_udf_flight_orc
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@date_udf_flight_orc
 #### A masked pattern was here ####
-fl_time	fl_date	c2	c3	c4	c5	c6	c7	c8	c9	c10	c11	c12	c13	c14	c15	c16	c17	c18	c19	c20	c21
+fl_time	fl_date	_c2	_c3	_c4	_c5	_c6	_c7	_c8	_c9	_c10	_c11	_c12	_c13	_c14	_c15	_c16	_c17	_c18	_c19	_c20	_c21
 2010-10-20 07:00:00	2010-10-20	true	true	true	true	true	true	true	true	true	true	true	true	true	true	true	true	true	true	true	true
 2010-10-20 07:00:00	2010-10-20	true	true	true	true	true	true	true	true	true	true	true	true	true	true	true	true	true	true	true	true
 2010-10-20 07:00:00	2010-10-20	true	true	true	true	true	true	true	true	true	true	true	true	true	true	true	true	true	true	true	true
@@ -1084,7 +1084,7 @@ FROM date_udf_flight_orc LIMIT 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@date_udf_flight_orc
 #### A masked pattern was here ####
-fl_date	c1	c2	c3	c4	c5
+fl_date	_c1	_c2	_c3	_c4	_c5
 2010-10-20	2010-10-22	2010-10-18	-2	2	4
 2010-10-20	2010-10-22	2010-10-18	-2	2	4
 2010-10-20	2010-10-22	2010-10-18	-2	2	4
@@ -1105,7 +1105,7 @@ SELECT to_date('2009-07-30 04:17:52') FROM date_udf_flight_orc LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@date_udf_flight_orc
 #### A masked pattern was here ####
-c0
+_c0
 2009-07-30
 PREHOOK: query: EXPLAIN SELECT
   min(fl_date) AS c1,
@@ -1211,5 +1211,5 @@ ORDER BY c1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@date_udf_flight_orc
 #### A masked pattern was here ####
-c1	c1_1	c2	c3
+c1	_c1	_c2	_c3
 2010-10-20	2010-10-31	137	137

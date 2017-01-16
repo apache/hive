@@ -1805,7 +1805,7 @@ public class TestJdbcDriver2 {
     assertEquals(meta.getPrecision(12), colRS.getInt("COLUMN_SIZE"));
     assertEquals(meta.getScale(12), colRS.getInt("DECIMAL_DIGITS"));
 
-    assertEquals("c12_1", meta.getColumnName(13));
+    assertEquals("_c12", meta.getColumnName(13));
     assertEquals(Types.INTEGER, meta.getColumnType(13));
     assertEquals("int", meta.getColumnTypeName(13));
     assertEquals(11, meta.getColumnDisplaySize(13));
@@ -1950,7 +1950,7 @@ public class TestJdbcDriver2 {
 
     assertTrue(colRS.next());
 
-    assertEquals("c2_2", meta.getColumnName(3));
+    assertEquals("_c2", meta.getColumnName(3));
 
   }
   // [url] [host] [port] [db]
@@ -2112,7 +2112,7 @@ public void testParseUrlHttpMode() throws SQLException, JdbcUriParseException,
         + " where c1=1");
     ResultSetMetaData md = res.getMetaData();
     assertEquals(md.getColumnCount(), 2); // only one result column
-    assertEquals(md.getColumnLabel(2), "c1" ); // verify the system generated column name
+    assertEquals(md.getColumnLabel(2), "_c1" ); // verify the system generated column name
     assertTrue(res.next());
     assertEquals(res.getLong(1), 1);
     assertEquals(res.getString(2), "1");
