@@ -168,6 +168,15 @@ public class AppConfig extends Configuration {
 
   public static final String XSRF_FILTER_ENABLED = "templeton.xsrf.filter.enabled";
 
+  /**
+   * JDBC connection to hive server2 for DDL/Hive queries
+   * to enable set 'templeton.ddl.mode' to 'jdbc'
+   */
+  public static final String DDL_MODE                 = "templeton.ddl.mode";
+  public static final String HIVE_KERBEROS_PRINCIPAL  = "hive.server2.kerberos.principal";
+  public static final String HIVE_KERBEROS_KEYTAB     = "hive.server2.kerberos.keytab";
+  public static final String HIVE_JDBC_URL            = "hive.jdbc.url";
+
   private static final Logger LOG = LoggerFactory.getLogger(AppConfig.class);
 
   public AppConfig() {
@@ -389,4 +398,9 @@ public class AppConfig extends Configuration {
 
   public String zkHosts()          { return get(ZooKeeperStorage.ZK_HOSTS); }
   public int zkSessionTimeout()    { return getInt(ZooKeeperStorage.ZK_SESSION_TIMEOUT, 30000); }
+
+  public String hiveKerberosPrincipal(){ return get(HIVE_KERBEROS_PRINCIPAL); }
+  public String hiveKerberosKeytab()   { return get(HIVE_KERBEROS_KEYTAB); }
+  public String hiveJdbcUrl()          { return get(HIVE_JDBC_URL); }
+  public boolean jdbcMode()            { return "jdbc".equalsIgnoreCase(get(DDL_MODE)); }
 }
