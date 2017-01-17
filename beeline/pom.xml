@@ -29,7 +29,6 @@
 
   <properties>
     <hive.path.to.root>..</hive.path.to.root>
-    <powermock.version>1.6.6</powermock.version>
   </properties>
 
   <dependencies>
