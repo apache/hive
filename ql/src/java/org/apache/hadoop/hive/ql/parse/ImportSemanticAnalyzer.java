@@ -25,6 +25,7 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -137,7 +138,8 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
       tableExists = prepareImport(
           isLocationSet, isExternalSet, isPartSpecSet, waitOnPrecursor,
           parsedLocation, parsedTableName, parsedDbName, parsedPartSpec, fromTree.getText(),
-          new EximUtil.SemanticAnalyzerWrapperContext(conf, db, inputs, outputs, rootTasks, LOG, ctx));
+          new EximUtil.SemanticAnalyzerWrapperContext(conf, db, inputs, outputs, rootTasks, LOG, ctx),
+          null, null);
 
     } catch (SemanticException e) {
       throw e;
@@ -173,7 +175,8 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
       boolean isLocationSet, boolean isExternalSet, boolean isPartSpecSet, boolean waitOnPrecursor,
       String parsedLocation, String parsedTableName, String parsedDbName,
       LinkedHashMap<String, String> parsedPartSpec,
-      String fromLocn, EximUtil.SemanticAnalyzerWrapperContext x
+      String fromLocn, EximUtil.SemanticAnalyzerWrapperContext x,
+      Map<String,Long> dbsUpdated, Map<String,Long> tablesUpdated
   ) throws IOException, MetaException, HiveException, URISyntaxException {
 
     // initialize load path
@@ -201,6 +204,11 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
       // If the parsed statement contained a db.tablename specification, prefer that.
       dbname = parsedDbName;
     }
+    if (dbsUpdated != null){
+      dbsUpdated.put(
+          dbname,
+          Long.valueOf(replicationSpec.get(ReplicationSpec.KEY.EVENT_ID)));
+    }
 
     // Create table associated with the import
     // Executed if relevant, and used to contain all the other details about the table if not.
@@ -224,6 +232,11 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
 
     if ((parsedTableName!= null) && (!parsedTableName.isEmpty())){
       tblDesc.setTableName(parsedTableName);
+    }
+    if (tablesUpdated != null){
+      tablesUpdated.put(
+          dbname + "." + tblDesc.getTableName(),
+          Long.valueOf(replicationSpec.get(ReplicationSpec.KEY.EVENT_ID)));
     }
 
     List<AddPartitionDesc> partitionDescs = new ArrayList<AddPartitionDesc>();
