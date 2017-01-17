@@ -25,6 +25,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
+import java.sql.Connection;
 import java.util.Random;
 
 import junit.framework.TestCase;
@@ -39,6 +40,7 @@ import org.apache.hive.beeline.HiveSchemaHelper.PostgresCommandParser;
 
 public class TestSchemaTool extends TestCase {
   private HiveSchemaTool schemaTool;
+  private Connection conn;
   private HiveConf hiveConf;
   private String testMetastoreDB;
   private PrintStream errStream;
@@ -57,6 +59,7 @@ public class TestSchemaTool extends TestCase {
     System.setProperty("beeLine.system.exit", "true");
     errStream = System.err;
     outStream = System.out;
+    conn = schemaTool.getConnectionToMetastore(false);
   }
 
   @Override
@@ -67,6 +70,106 @@ public class TestSchemaTool extends TestCase {
     }
     System.setOut(outStream);
     System.setErr(errStream);
+    if (conn != null) {
+      conn.close();
+    }
+  }
+
+  /**
+   * Test the sequence validation functionality
+   * @throws Exception
+   */
+  public void testValidateSequences() throws Exception {
+    schemaTool.doInit();
+
+    // Test empty database
+    boolean isValid = schemaTool.validateSequences(conn);
+    assertTrue(isValid);
+
+    // Test valid case
+    String[] scripts = new String[] {
+        "insert into SEQUENCE_TABLE values('org.apache.hadoop.hive.metastore.model.MDatabase', 100)",
+        "insert into DBS values(99, 'test db1', 'hdfs:///tmp', 'db1', 'test', 'test')"
+    };
+    File scriptFile = generateTestScript(scripts);
+    schemaTool.runBeeLine(scriptFile.getPath());
+    isValid = schemaTool.validateSequences(conn);
+    assertTrue(isValid);
+
+    // Test invalid case
+    scripts = new String[] {
+        "delete from SEQUENCE_TABLE",
+        "delete from DBS",
+        "insert into SEQUENCE_TABLE values('org.apache.hadoop.hive.metastore.model.MDatabase', 100)",
+        "insert into DBS values(102, 'test db1', 'hdfs:///tmp', 'db1', 'test', 'test')"
+    };
+    scriptFile = generateTestScript(scripts);
+    schemaTool.runBeeLine(scriptFile.getPath());
+    isValid = schemaTool.validateSequences(conn);
+    assertFalse(isValid);
+  }
+
+  /**
+   * Test to validate that all tables exist in the HMS metastore.
+   * @throws Exception
+   */
+  public void testValidateSchemaTables() throws Exception {
+    schemaTool.doInit("0.12.0");
+
+    boolean isValid = (boolean)schemaTool.validateSchemaTables(conn);
+    assertTrue(isValid);
+
+    // upgrade to 1.1.0 schema and re-validate
+    schemaTool.doUpgrade("1.1.0");
+    isValid = (boolean)schemaTool.validateSchemaTables(conn);
+    assertTrue(isValid);
+
+    // Simulate a missing table scenario by renaming a couple of tables
+    String[] scripts = new String[] {
+        "RENAME TABLE SEQUENCE_TABLE to SEQUENCE_TABLE_RENAMED",
+        "RENAME TABLE NUCLEUS_TABLES to NUCLEUS_TABLES_RENAMED"
+    };
+
+    File scriptFile = generateTestScript(scripts);
+    schemaTool.runBeeLine(scriptFile.getPath());
+    isValid = schemaTool.validateSchemaTables(conn);
+    assertFalse(isValid);
+
+    // Restored the renamed tables
+    scripts = new String[] {
+        "RENAME TABLE SEQUENCE_TABLE_RENAMED to SEQUENCE_TABLE",
+        "RENAME TABLE NUCLEUS_TABLES_RENAMED to NUCLEUS_TABLES"
+    };
+
+    scriptFile = generateTestScript(scripts);
+    schemaTool.runBeeLine(scriptFile.getPath());
+    isValid = schemaTool.validateSchemaTables(conn);
+    assertTrue(isValid);
+   }
+
+  /*
+   * Test the validation of incorrect NULL values in the tables
+   * @throws Exception
+   */
+  public void testValidateNullValues() throws Exception {
+    schemaTool.doInit();
+
+    // Test empty database
+    boolean isValid = schemaTool.validateColumnNullValues(conn);
+    assertTrue(isValid);
+
+    // Test valid case
+    createTestHiveTableSchemas();
+    isValid = schemaTool.validateColumnNullValues(conn);
+
+    // Test invalid case
+    String[] scripts = new String[] {
+        "update TBLS set SD_ID=null"
+    };
+    File scriptFile = generateTestScript(scripts);
+    schemaTool.runBeeLine(scriptFile.getPath());
+    isValid = schemaTool.validateColumnNullValues(conn);
+    assertFalse(isValid);
   }
 
   /**
@@ -112,7 +215,41 @@ public class TestSchemaTool extends TestCase {
   public void testSchemaInit() throws Exception {
     schemaTool.doInit(MetaStoreSchemaInfo.getHiveSchemaVersion());
     schemaTool.verifySchemaVersion();
-    }
+  }
+
+  /**
+  * Test validation for schema versions
+  * @throws Exception
+  */
+ public void testValidateSchemaVersions() throws Exception {
+   schemaTool.doInit();
+   boolean isValid = schemaTool.validateSchemaVersions(conn);
+   // Test an invalid case with multiple versions
+   String[] scripts = new String[] {
+       "insert into VERSION values(100, '2.2.0', 'Hive release version 2.2.0')"
+   };
+   File scriptFile = generateTestScript(scripts);
+   schemaTool.runBeeLine(scriptFile.getPath());
+   isValid = schemaTool.validateSchemaVersions(conn);
+   assertFalse(isValid);
+
+   scripts = new String[] {
+       "delete from VERSION where VER_ID = 100"
+   };
+   scriptFile = generateTestScript(scripts);
+   schemaTool.runBeeLine(scriptFile.getPath());
+   isValid = schemaTool.validateSchemaVersions(conn);
+   assertTrue(isValid);
+
+   // Test an invalid case without version
+   scripts = new String[] {
+       "delete from VERSION"
+   };
+   scriptFile = generateTestScript(scripts);
+   schemaTool.runBeeLine(scriptFile.getPath());
+   isValid = schemaTool.validateSchemaVersions(conn);
+   assertFalse(isValid);
+ }
 
   /**
    * Test schema upgrade
@@ -457,6 +594,59 @@ public class TestSchemaTool extends TestCase {
     assertEquals(expectedSQL, flattenedSql);
   }
 
+  /**
+   * Test validate uri of locations
+   * @throws Exception
+   */
+  public void testValidateLocations() throws Exception {
+    schemaTool.doInit();
+    String defaultRoot = "hdfs://myhost.com:8020";
+    //check empty DB
+    boolean isValid = schemaTool.validateLocations(conn, null);
+    assertTrue(isValid);
+    isValid = schemaTool.validateLocations(conn, defaultRoot);
+    assertTrue(isValid);
+
+ // Test valid case
+    String[] scripts = new String[] {
+         "insert into DBS values(2, 'my db', 'hdfs://myhost.com:8020/user/hive/warehouse/mydb', 'mydb', 'public', 'role')",
+         "insert into SDS(SD_ID,CD_ID,INPUT_FORMAT,IS_COMPRESSED,IS_STOREDASSUBDIRECTORIES,LOCATION,NUM_BUCKETS,OUTPUT_FORMAT,SERDE_ID) values (1,null,'org.apache.hadoop.mapred.TextInputFormat','N','N','hdfs://myhost.com:8020/user/hive/warehouse/mydb',-1,'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat',null)",
+         "insert into SDS(SD_ID,CD_ID,INPUT_FORMAT,IS_COMPRESSED,IS_STOREDASSUBDIRECTORIES,LOCATION,NUM_BUCKETS,OUTPUT_FORMAT,SERDE_ID) values (2,null,'org.apache.hadoop.mapred.TextInputFormat','N','N','hdfs://myhost.com:8020/user/admin/2015_11_18',-1,'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat',null)",
+         "insert into SDS(SD_ID,CD_ID,INPUT_FORMAT,IS_COMPRESSED,IS_STOREDASSUBDIRECTORIES,LOCATION,NUM_BUCKETS,OUTPUT_FORMAT,SERDE_ID) values (3,null,'org.apache.hadoop.mapred.TextInputFormat','N','N',null,-1,'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat',null)",
+         "insert into TBLS(TBL_ID,CREATE_TIME,DB_ID,LAST_ACCESS_TIME,OWNER,RETENTION,SD_ID,TBL_NAME,TBL_TYPE,VIEW_EXPANDED_TEXT,VIEW_ORIGINAL_TEXT) values (2 ,1435255431,2,0 ,'hive',0,1,'mytal','MANAGED_TABLE',NULL,NULL)",
+         "insert into PARTITiONS(PART_ID,CREATE_TIME,LAST_ACCESS_TIME, PART_NAME,SD_ID,TBL_ID) values(1, 1441402388,0, 'd1=1/d2=1',2,2)",
+         "insert into TBLS(TBL_ID,CREATE_TIME,DB_ID,LAST_ACCESS_TIME,OWNER,RETENTION,SD_ID,TBL_NAME,TBL_TYPE,VIEW_EXPANDED_TEXT,VIEW_ORIGINAL_TEXT) values (3 ,1435255431,2,0 ,'hive',0,3,'myView','VIRTUAL_VIEW','select a.col1,a.col2 from foo','select * from foo')"
+
+       };
+    File scriptFile = generateTestScript(scripts);
+    schemaTool.runBeeLine(scriptFile.getPath());
+    isValid = schemaTool.validateLocations(conn, null);
+    assertTrue(isValid);
+    isValid = schemaTool.validateLocations(conn, defaultRoot);
+    assertTrue(isValid);
+    scripts = new String[] {
+        "delete from PARTITIONS",
+        "delete from TBLS",
+        "delete from SDS",
+        "delete from DBS",
+        "insert into DBS values(2, 'my db', '/user/hive/warehouse/mydb', 'mydb', 'public', 'role')",
+        "insert into SDS(SD_ID,CD_ID,INPUT_FORMAT,IS_COMPRESSED,IS_STOREDASSUBDIRECTORIES,LOCATION,NUM_BUCKETS,OUTPUT_FORMAT,SERDE_ID) values (1,null,'org.apache.hadoop.mapred.TextInputFormat','N','N','hdfs://yourhost.com:8020/user/hive/warehouse/mydb',-1,'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat',null)",
+        "insert into SDS(SD_ID,CD_ID,INPUT_FORMAT,IS_COMPRESSED,IS_STOREDASSUBDIRECTORIES,LOCATION,NUM_BUCKETS,OUTPUT_FORMAT,SERDE_ID) values (2,null,'org.apache.hadoop.mapred.TextInputFormat','N','N','file:///user/admin/2015_11_18',-1,'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat',null)",
+        "insert into TBLS(TBL_ID,CREATE_TIME,DB_ID,LAST_ACCESS_TIME,OWNER,RETENTION,SD_ID,TBL_NAME,TBL_TYPE,VIEW_EXPANDED_TEXT,VIEW_ORIGINAL_TEXT) values (2 ,1435255431,2,0 ,'hive',0,1,'mytal','MANAGED_TABLE',NULL,NULL)",
+        "insert into PARTITiONS(PART_ID,CREATE_TIME,LAST_ACCESS_TIME, PART_NAME,SD_ID,TBL_ID) values(1, 1441402388,0, 'd1=1/d2=1',2,2)",
+        "insert into SDS(SD_ID,CD_ID,INPUT_FORMAT,IS_COMPRESSED,IS_STOREDASSUBDIRECTORIES,LOCATION,NUM_BUCKETS,OUTPUT_FORMAT,SERDE_ID) values (3000,null,'org.apache.hadoop.mapred.TextInputFormat','N','N','yourhost.com:8020/user/hive/warehouse/mydb',-1,'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat',null)",
+        "insert into SDS(SD_ID,CD_ID,INPUT_FORMAT,IS_COMPRESSED,IS_STOREDASSUBDIRECTORIES,LOCATION,NUM_BUCKETS,OUTPUT_FORMAT,SERDE_ID) values (5000,null,'org.apache.hadoop.mapred.TextInputFormat','N','N','file:///user/admin/2016_11_18',-1,'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat',null)",
+        "insert into TBLS(TBL_ID,CREATE_TIME,DB_ID,LAST_ACCESS_TIME,OWNER,RETENTION,SD_ID,TBL_NAME,TBL_TYPE,VIEW_EXPANDED_TEXT,VIEW_ORIGINAL_TEXT) values (3000 ,1435255431,2,0 ,'hive',0,3000,'mytal3000','MANAGED_TABLE',NULL,NULL)",
+        "insert into PARTITiONS(PART_ID,CREATE_TIME,LAST_ACCESS_TIME, PART_NAME,SD_ID,TBL_ID) values(5000, 1441402388,0, 'd1=1/d2=5000',5000,2)"
+    };
+    scriptFile = generateTestScript(scripts);
+    schemaTool.runBeeLine(scriptFile.getPath());
+    isValid = schemaTool.validateLocations(conn, null);
+    assertFalse(isValid);
+    isValid = schemaTool.validateLocations(conn, defaultRoot);
+    assertFalse(isValid);
+  }
+
   private File generateTestScript(String [] stmts) throws IOException {
     File testScriptFile = File.createTempFile("schematest", ".sql");
     testScriptFile.deleteOnExit();
@@ -485,5 +675,21 @@ public class TestSchemaTool extends TestCase {
     out.write(sql + System.getProperty("line.separator") + ";");
     out.close();
     return preUpgradeScript;
+  }
+
+  /**
+   * Insert the records in DB to simulate a hive table
+   * @throws IOException
+   */
+  private void createTestHiveTableSchemas() throws IOException {
+     String[] scripts = new String[] {
+          "insert into DBS values(2, 'my db', 'hdfs://myhost.com:8020/user/hive/warehouse/mydb', 'mydb', 'public', 'role')",
+          "insert into SDS(SD_ID,CD_ID,INPUT_FORMAT,IS_COMPRESSED,IS_STOREDASSUBDIRECTORIES,LOCATION,NUM_BUCKETS,OUTPUT_FORMAT,SERDE_ID) values (1,null,'org.apache.hadoop.mapred.TextInputFormat','N','N','hdfs://myhost.com:8020/user/hive/warehouse/mydb',-1,'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat',null)",
+          "insert into SDS(SD_ID,CD_ID,INPUT_FORMAT,IS_COMPRESSED,IS_STOREDASSUBDIRECTORIES,LOCATION,NUM_BUCKETS,OUTPUT_FORMAT,SERDE_ID) values (2,null,'org.apache.hadoop.mapred.TextInputFormat','N','N','hdfs://myhost.com:8020/user/admin/2015_11_18',-1,'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat',null)",
+          "insert into TBLS(TBL_ID,CREATE_TIME,DB_ID,LAST_ACCESS_TIME,OWNER,RETENTION,SD_ID,TBL_NAME,TBL_TYPE,VIEW_EXPANDED_TEXT,VIEW_ORIGINAL_TEXT) values (2 ,1435255431,2,0 ,'hive',0,1,'mytal','MANAGED_TABLE',NULL,NULL)",
+          "insert into PARTITIONS(PART_ID,CREATE_TIME,LAST_ACCESS_TIME, PART_NAME,SD_ID,TBL_ID) values(1, 1441402388,0, 'd1=1/d2=1',2,2)"
+        };
+     File scriptFile = generateTestScript(scripts);
+     schemaTool.runBeeLine(scriptFile.getPath());
   }
 }
