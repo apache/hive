@@ -27,6 +27,7 @@ import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.ql.parse.ReplicationSemanticAnalyzer;
+import org.apache.hadoop.hive.ql.parse.ReplicationSpec.ReplStateMap;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.util.Shell;
@@ -44,6 +45,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import static junit.framework.Assert.assertTrue;
 import static org.junit.Assert.assertEquals;
@@ -180,8 +182,7 @@ public class TestReplicationScenarios {
     printOutput();
     run("REPL LOAD " + dbName + "_dupe FROM '" + replDumpLocn + "'");
 
-    run("REPL STATUS " + dbName + "_dupe");
-    verifyResults(new String[] {replDumpId});
+    verifyRun("REPL STATUS " + dbName + "_dupe", replDumpId);
 
     verifyRun("SELECT * from " + dbName + "_dupe.unptned", unptn_data);
     verifyRun("SELECT a from " + dbName + "_dupe.ptned WHERE b=1", ptn_data_1);
@@ -256,11 +257,7 @@ public class TestReplicationScenarios {
     run("REPL LOAD " + dbName + "_dupe FROM '"+incrementalDumpLocn+"'");
 
     run("REPL STATUS " + dbName + "_dupe");
-//    verifyResults(new String[] {incrementalDumpId});
-    // TODO: this will currently not work because we need to add in ALTER_DB support into this
-    // and queue in a dummy ALTER_DB to update the repl.last.id on the last event of every
-    // incremental dump. Currently, the dump id fetched will be the last dump id at the time
-    // the db was created from the bootstrap export dump
+    verifyResults(new String[] {incrementalDumpId});
 
     // VERIFY tables and partitions on destination for equivalence.
 
@@ -332,7 +329,7 @@ public class TestReplicationScenarios {
     run("EXPLAIN REPL LOAD " + dbName + "_dupe FROM '" + replDumpLocn + "'");
     printOutput();
     run("REPL LOAD " + dbName + "_dupe FROM '" + replDumpLocn + "'");
-    verifySetup("REPL STATUS " + dbName + "_dupe", new String[] {replDumpId});
+    verifySetup("REPL STATUS " + dbName + "_dupe", new String[]{replDumpId});
 
     verifySetup("SELECT * from " + dbName + "_dupe.unptned", unptn_data);
     verifySetup("SELECT a from " + dbName + "_dupe.ptned WHERE b='1'", ptn_data_1);
@@ -351,7 +348,7 @@ public class TestReplicationScenarios {
     verifySetup("SELECT a from " + dbName + ".ptned WHERE b='2'", empty);
     verifySetup("SELECT a from " + dbName + ".ptned", ptn_data_1);
     verifySetup("SELECT a from " + dbName + ".ptned3 WHERE b=1",empty);
-    verifySetup("SELECT a from " + dbName + ".ptned3",ptn_data_2);
+    verifySetup("SELECT a from " + dbName + ".ptned3", ptn_data_2);
 
     // replicate the incremental drops
 
@@ -663,6 +660,117 @@ public class TestReplicationScenarios {
     verifyRun("SELECT a from " + dbName + "_dupe.ptned_late WHERE b=2", ptn_data_2);
   }
 
+  @Test
+  public void testStatus() throws IOException {
+    // first test ReplStateMap functionality
+    Map<String,Long> cmap = new ReplStateMap<String,Long>();
+
+    Long oldV;
+    oldV = cmap.put("a",1L);
+    assertEquals(1L,cmap.get("a").longValue());
+    assertEquals(null,oldV);
+
+    cmap.put("b",2L);
+    oldV = cmap.put("b",-2L);
+    assertEquals(2L, cmap.get("b").longValue());
+    assertEquals(2L, oldV.longValue());
+
+    cmap.put("c",3L);
+    oldV = cmap.put("c",33L);
+    assertEquals(33L, cmap.get("c").longValue());
+    assertEquals(3L, oldV.longValue());
+
+    // Now, to actually testing status - first, we bootstrap.
+
+    String testName = "incrementalStatus";
+    LOG.info("Testing " + testName);
+    String dbName = testName + "_" + tid;
+
+    run("CREATE DATABASE " + dbName);
+    advanceDumpDir();
+    run("REPL DUMP " + dbName);
+    String lastReplDumpLocn = getResult(0, 0);
+    String lastReplDumpId = getResult(0, 1, true);
+    run("REPL LOAD " + dbName + "_dupe FROM '" + lastReplDumpLocn + "'");
+
+    // Bootstrap done, now on to incremental. First, we test db-level REPL LOADs.
+    // Both db-level and table-level repl.last.id must be updated.
+
+    lastReplDumpId = verifyAndReturnDbReplStatus(dbName, "ptned", lastReplDumpId,
+        "CREATE TABLE " + dbName + ".ptned(a string) partitioned by (b int) STORED AS TEXTFILE");
+    lastReplDumpId = verifyAndReturnDbReplStatus(dbName, "ptned", lastReplDumpId,
+        "ALTER TABLE " + dbName + ".ptned ADD PARTITION (b=1)");
+    lastReplDumpId = verifyAndReturnDbReplStatus(dbName, "ptned", lastReplDumpId,
+        "ALTER TABLE " + dbName + ".ptned PARTITION (b=1) RENAME TO PARTITION (b=11)");
+    lastReplDumpId = verifyAndReturnDbReplStatus(dbName, "ptned", lastReplDumpId,
+        "ALTER TABLE " + dbName + ".ptned SET TBLPROPERTIES ('blah'='foo')");
+    lastReplDumpId = verifyAndReturnDbReplStatus(dbName, "ptned_rn", lastReplDumpId,
+        "ALTER TABLE " + dbName + ".ptned RENAME TO  " + dbName + ".ptned_rn");
+    lastReplDumpId = verifyAndReturnDbReplStatus(dbName, "ptned_rn", lastReplDumpId,
+        "ALTER TABLE " + dbName + ".ptned_rn DROP PARTITION (b=11)");
+    lastReplDumpId = verifyAndReturnDbReplStatus(dbName, null, lastReplDumpId,
+        "DROP TABLE " + dbName + ".ptned_rn");
+
+    // DB-level REPL LOADs testing done, now moving on to table level repl loads.
+    // In each of these cases, the table-level repl.last.id must move forward, but the
+    // db-level last.repl.id must not.
+
+    String lastTblReplDumpId = lastReplDumpId;
+    lastTblReplDumpId = verifyAndReturnTblReplStatus(
+        dbName, "ptned2", lastReplDumpId, lastTblReplDumpId,
+        "CREATE TABLE " + dbName + ".ptned2(a string) partitioned by (b int) STORED AS TEXTFILE");
+    lastTblReplDumpId = verifyAndReturnTblReplStatus(
+        dbName, "ptned2", lastReplDumpId, lastTblReplDumpId,
+        "ALTER TABLE " + dbName + ".ptned2 ADD PARTITION (b=1)");
+    lastTblReplDumpId = verifyAndReturnTblReplStatus(
+        dbName, "ptned2", lastReplDumpId, lastTblReplDumpId,
+        "ALTER TABLE " + dbName + ".ptned2 PARTITION (b=1) RENAME TO PARTITION (b=11)");
+    lastTblReplDumpId = verifyAndReturnTblReplStatus(
+        dbName, "ptned2", lastReplDumpId, lastTblReplDumpId,
+        "ALTER TABLE " + dbName + ".ptned2 SET TBLPROPERTIES ('blah'='foo')");
+    // Note : Not testing table rename because table rename replication is not supported for table-level repl.
+    String finalTblReplDumpId = verifyAndReturnTblReplStatus(
+        dbName, "ptned2", lastReplDumpId, lastTblReplDumpId,
+        "ALTER TABLE " + dbName + ".ptned2 DROP PARTITION (b=11)");
+
+    assertTrue(finalTblReplDumpId.compareTo(lastTblReplDumpId) > 0);
+
+    // TODO : currently not testing the following scenarios:
+    //   a) Multi-db wh-level REPL LOAD - need to add that
+    //   b) Insert into tables - quite a few cases need to be enumerated there, including dyn adds.
+
+  }
+
+  private String verifyAndReturnDbReplStatus(String dbName, String tblName, String prevReplDumpId, String cmd) throws IOException {
+    run(cmd);
+    advanceDumpDir();
+    run("REPL DUMP " + dbName + " FROM " + prevReplDumpId);
+    String lastDumpLocn = getResult(0, 0);
+    String lastReplDumpId = getResult(0, 1, true);
+    run("REPL LOAD " + dbName + "_dupe FROM '" + lastDumpLocn + "'");
+    verifyRun("REPL STATUS " + dbName + "_dupe", lastReplDumpId);
+    if (tblName != null){
+      verifyRun("REPL STATUS " + dbName + "_dupe." + tblName, lastReplDumpId);
+    }
+    assertTrue(lastReplDumpId.compareTo(prevReplDumpId) > 0);
+    return lastReplDumpId;
+  }
+
+  // Tests that doing a table-level REPL LOAD updates table repl.last.id, but not db-level repl.last.id
+  private String verifyAndReturnTblReplStatus(
+      String dbName, String tblName, String lastDbReplDumpId, String prevReplDumpId, String cmd) throws IOException {
+    run(cmd);
+    advanceDumpDir();
+    run("REPL DUMP " + dbName + "."+ tblName + " FROM " + prevReplDumpId);
+    String lastDumpLocn = getResult(0, 0);
+    String lastReplDumpId = getResult(0, 1, true);
+    run("REPL LOAD " + dbName + "_dupe." + tblName + " FROM '" + lastDumpLocn + "'");
+    verifyRun("REPL STATUS " + dbName + "_dupe", lastDbReplDumpId);
+    verifyRun("REPL STATUS " + dbName + "_dupe." + tblName, lastReplDumpId);
+    assertTrue(lastReplDumpId.compareTo(prevReplDumpId) > 0);
+    return lastReplDumpId;
+  }
+
 
   private String getResult(int rowNum, int colNum) throws IOException {
     return getResult(rowNum,colNum,false);
@@ -713,6 +821,10 @@ public class TestReplicationScenarios {
       run(cmd);
       verifyResults(data);
     }
+  }
+
+  private void verifyRun(String cmd, String data) throws IOException {
+    verifyRun(cmd, new String[] { data });
   }
 
   private void verifyRun(String cmd, String[] data) throws IOException {
