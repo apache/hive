@@ -76,8 +76,7 @@ POSTHOOK: query: load data local inpath '../../data/files/vc1.txt' into table va
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@varchar_union1_str
-PREHOOK: query: -- union varchar with same length varchar
-select * from (
+PREHOOK: query: select * from (
   select * from varchar_union1_vc1
   union all
   select * from varchar_union1_vc1 limit 1
@@ -85,8 +84,7 @@ select * from (
 PREHOOK: type: QUERY
 PREHOOK: Input: default@varchar_union1_vc1
 #### A masked pattern was here ####
-POSTHOOK: query: -- union varchar with same length varchar
-select * from (
+POSTHOOK: query: select * from (
   select * from varchar_union1_vc1
   union all
   select * from varchar_union1_vc1 limit 1
@@ -98,8 +96,7 @@ POSTHOOK: Input: default@varchar_union1_vc1
 1	abc
 2	abc 
 3	 abc
-PREHOOK: query: -- union varchar with different length varchar
-select * from (
+PREHOOK: query: select * from (
   select * from varchar_union1_vc1
   union all
   select * from varchar_union1_vc2 limit 1
@@ -108,8 +105,7 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@varchar_union1_vc1
 PREHOOK: Input: default@varchar_union1_vc2
 #### A masked pattern was here ####
-POSTHOOK: query: -- union varchar with different length varchar
-select * from (
+POSTHOOK: query: select * from (
   select * from varchar_union1_vc1
   union all
   select * from varchar_union1_vc2 limit 1
@@ -122,8 +118,7 @@ POSTHOOK: Input: default@varchar_union1_vc2
 1	abc
 2	abc 
 3	 abc
-PREHOOK: query: -- union varchar with string
-select * from (
+PREHOOK: query: select * from (
   select * from varchar_union1_vc1
   union all
   select * from varchar_union1_str limit 1
@@ -132,8 +127,7 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@varchar_union1_str
 PREHOOK: Input: default@varchar_union1_vc1
 #### A masked pattern was here ####
-POSTHOOK: query: -- union varchar with string
-select * from (
+POSTHOOK: query: select * from (
   select * from varchar_union1_vc1
   union all
   select * from varchar_union1_str limit 1

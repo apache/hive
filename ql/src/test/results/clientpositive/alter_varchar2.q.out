@@ -1,8 +1,6 @@
-PREHOOK: query: -- alter column type, with partitioned table
-drop table if exists alter_varchar2
+PREHOOK: query: drop table if exists alter_varchar2
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: -- alter column type, with partitioned table
-drop table if exists alter_varchar2
+POSTHOOK: query: drop table if exists alter_varchar2
 POSTHOOK: type: DROPTABLE
 PREHOOK: query: create table alter_varchar2 (
   c1 varchar(255)

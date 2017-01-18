@@ -6,13 +6,11 @@ POSTHOOK: query: create table stats_part like srcpart
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@stats_part
-PREHOOK: query: -- The stats key should be hashed since the max length is too small
-insert overwrite table stats_part partition (ds='2010-04-08', hr = '13') select key, value from src
+PREHOOK: query: insert overwrite table stats_part partition (ds='2010-04-08', hr = '13') select key, value from src
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Output: default@stats_part@ds=2010-04-08/hr=13
-POSTHOOK: query: -- The stats key should be hashed since the max length is too small
-insert overwrite table stats_part partition (ds='2010-04-08', hr = '13') select key, value from src
+POSTHOOK: query: insert overwrite table stats_part partition (ds='2010-04-08', hr = '13') select key, value from src
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@stats_part@ds=2010-04-08/hr=13
@@ -60,13 +58,11 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: -- The stats key should not be hashed since the max length is large enough
-insert overwrite table stats_part partition (ds='2010-04-08', hr = '13') select key, value from src
+PREHOOK: query: insert overwrite table stats_part partition (ds='2010-04-08', hr = '13') select key, value from src
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Output: default@stats_part@ds=2010-04-08/hr=13
-POSTHOOK: query: -- The stats key should not be hashed since the max length is large enough
-insert overwrite table stats_part partition (ds='2010-04-08', hr = '13') select key, value from src
+POSTHOOK: query: insert overwrite table stats_part partition (ds='2010-04-08', hr = '13') select key, value from src
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@stats_part@ds=2010-04-08/hr=13
@@ -114,13 +110,11 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: -- The stats key should not be hashed since negative values should imply hashing is turned off
-insert overwrite table stats_part partition (ds='2010-04-08', hr = '13') select key, value from src
+PREHOOK: query: insert overwrite table stats_part partition (ds='2010-04-08', hr = '13') select key, value from src
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Output: default@stats_part@ds=2010-04-08/hr=13
-POSTHOOK: query: -- The stats key should not be hashed since negative values should imply hashing is turned off
-insert overwrite table stats_part partition (ds='2010-04-08', hr = '13') select key, value from src
+POSTHOOK: query: insert overwrite table stats_part partition (ds='2010-04-08', hr = '13') select key, value from src
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@stats_part@ds=2010-04-08/hr=13
@@ -168,17 +162,11 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: -- Verify the stats are correct for dynamic partitions
-
--- The stats key should be hashed since the max length is too small
-insert overwrite table stats_part partition (ds='2010-04-08', hr) select key, value, '13' from src
+PREHOOK: query: insert overwrite table stats_part partition (ds='2010-04-08', hr) select key, value, '13' from src
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Output: default@stats_part@ds=2010-04-08
-POSTHOOK: query: -- Verify the stats are correct for dynamic partitions
-
--- The stats key should be hashed since the max length is too small
-insert overwrite table stats_part partition (ds='2010-04-08', hr) select key, value, '13' from src
+POSTHOOK: query: insert overwrite table stats_part partition (ds='2010-04-08', hr) select key, value, '13' from src
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@stats_part@ds=2010-04-08/hr=13
@@ -226,13 +214,11 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: -- The stats key should not be hashed since the max length is large enough
-insert overwrite table stats_part partition (ds='2010-04-08', hr) select key, value, '13' from src
+PREHOOK: query: insert overwrite table stats_part partition (ds='2010-04-08', hr) select key, value, '13' from src
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Output: default@stats_part@ds=2010-04-08
-POSTHOOK: query: -- The stats key should not be hashed since the max length is large enough
-insert overwrite table stats_part partition (ds='2010-04-08', hr) select key, value, '13' from src
+POSTHOOK: query: insert overwrite table stats_part partition (ds='2010-04-08', hr) select key, value, '13' from src
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@stats_part@ds=2010-04-08/hr=13
@@ -280,13 +266,11 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: -- The stats key should not be hashed since negative values should imply hashing is turned off
-insert overwrite table stats_part partition (ds='2010-04-08', hr) select key, value, '13' from src
+PREHOOK: query: insert overwrite table stats_part partition (ds='2010-04-08', hr) select key, value, '13' from src
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Output: default@stats_part@ds=2010-04-08
-POSTHOOK: query: -- The stats key should not be hashed since negative values should imply hashing is turned off
-insert overwrite table stats_part partition (ds='2010-04-08', hr) select key, value, '13' from src
+POSTHOOK: query: insert overwrite table stats_part partition (ds='2010-04-08', hr) select key, value, '13' from src
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@stats_part@ds=2010-04-08/hr=13

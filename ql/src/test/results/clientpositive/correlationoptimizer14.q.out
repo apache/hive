@@ -1,13 +1,4 @@
-PREHOOK: query: -- This file is used to show plans of queries involving cluster by, distribute by,
--- order by, and sort by.
--- Right now, Correlation optimizer check the most restrictive condition
--- when determining if a ReduceSinkOperator is not necessary.
--- This condition is that two ReduceSinkOperators should have same sorting columns,
--- same partitioning columns, same sorting orders and no conflict on the numbers of reducers. 
-
--- Distribute by will not be optimized because distribute by does not introduce
--- sorting columns.
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT xx.key, xx.value, yy.key, yy.value
 FROM
 (SELECT x.key as key, x.value as value FROM src x DISTRIBUTE BY key) xx
@@ -15,16 +6,7 @@ JOIN
 (SELECT y.key as key, y.value as value FROM src1 y DISTRIBUTE BY key) yy
 ON (xx.key=yy.key)
 PREHOOK: type: QUERY
-POSTHOOK: query: -- This file is used to show plans of queries involving cluster by, distribute by,
--- order by, and sort by.
--- Right now, Correlation optimizer check the most restrictive condition
--- when determining if a ReduceSinkOperator is not necessary.
--- This condition is that two ReduceSinkOperators should have same sorting columns,
--- same partitioning columns, same sorting orders and no conflict on the numbers of reducers. 
-
--- Distribute by will not be optimized because distribute by does not introduce
--- sorting columns.
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT xx.key, xx.value, yy.key, yy.value
 FROM
 (SELECT x.key as key, x.value as value FROM src x DISTRIBUTE BY key) xx
@@ -139,8 +121,7 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: -- Sort by will not be optimized because sort by does not introduce partitioning columns
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT xx.key, xx.value, yy.key, yy.value
 FROM
 (SELECT x.key as key, x.value as value FROM src x SORT BY key) xx
@@ -148,8 +129,7 @@ JOIN
 (SELECT y.key as key, y.value as value FROM src1 y SORT BY key) yy
 ON (xx.key=yy.key)
 PREHOOK: type: QUERY
-POSTHOOK: query: -- Sort by will not be optimized because sort by does not introduce partitioning columns
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT xx.key, xx.value, yy.key, yy.value
 FROM
 (SELECT x.key as key, x.value as value FROM src x SORT BY key) xx
@@ -264,8 +244,7 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: -- Distribute by and sort by on the same key(s) should be optimized
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT xx.key, xx.value, yy.key, yy.value
 FROM
 (SELECT x.key as key, x.value as value FROM src x DISTRIBUTE BY key SORT BY key) xx
@@ -273,8 +252,7 @@ JOIN
 (SELECT y.key as key, y.value as value FROM src1 y DISTRIBUTE BY key SORT BY key) yy
 ON (xx.key=yy.key)
 PREHOOK: type: QUERY
-POSTHOOK: query: -- Distribute by and sort by on the same key(s) should be optimized
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT xx.key, xx.value, yy.key, yy.value
 FROM
 (SELECT x.key as key, x.value as value FROM src x DISTRIBUTE BY key SORT BY key) xx
@@ -613,9 +591,7 @@ POSTHOOK: Input: default@src1
 66	val_66	66	val_66
 98	val_98	98	val_98
 98	val_98	98	val_98
-PREHOOK: query: -- Because for join we use ascending order, if sort by uses descending order,
--- this query will not be optimized
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT xx.key, xx.value, yy.key, yy.value
 FROM
 (SELECT x.key as key, x.value as value FROM src x DISTRIBUTE BY key SORT BY key DESC) xx
@@ -623,9 +599,7 @@ JOIN
 (SELECT y.key as key, y.value as value FROM src1 y DISTRIBUTE BY key SORT BY key DESC) yy
 ON (xx.key=yy.key)
 PREHOOK: type: QUERY
-POSTHOOK: query: -- Because for join we use ascending order, if sort by uses descending order,
--- this query will not be optimized
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT xx.key, xx.value, yy.key, yy.value
 FROM
 (SELECT x.key as key, x.value as value FROM src x DISTRIBUTE BY key SORT BY key DESC) xx
@@ -742,9 +716,7 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: -- Even if hive.optimize.reducededuplication.min.reducer=1, order by will not be optimized
--- because order by does not introduce partitioning columns
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT xx.key, xx.value, yy.key, yy.value
 FROM
 (SELECT x.key as key, x.value as value FROM src x ORDER BY key) xx
@@ -752,9 +724,7 @@ JOIN
 (SELECT y.key as key, y.value as value FROM src1 y ORDER BY key) yy
 ON (xx.key=yy.key)
 PREHOOK: type: QUERY
-POSTHOOK: query: -- Even if hive.optimize.reducededuplication.min.reducer=1, order by will not be optimized
--- because order by does not introduce partitioning columns
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT xx.key, xx.value, yy.key, yy.value
 FROM
 (SELECT x.key as key, x.value as value FROM src x ORDER BY key) xx
@@ -869,8 +839,7 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: -- Cluster by will be optimized
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT xx.key, xx.value, yy.key, yy.value
 FROM
 (SELECT x.key as key, x.value as value FROM src x Cluster BY key) xx
@@ -878,8 +847,7 @@ JOIN
 (SELECT y.key as key, y.value as value FROM src1 y Cluster BY key) yy
 ON (xx.key=yy.key)
 PREHOOK: type: QUERY
-POSTHOOK: query: -- Cluster by will be optimized
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT xx.key, xx.value, yy.key, yy.value
 FROM
 (SELECT x.key as key, x.value as value FROM src x Cluster BY key) xx
@@ -1218,9 +1186,7 @@ POSTHOOK: Input: default@src1
 66	val_66	66	val_66
 98	val_98	98	val_98
 98	val_98	98	val_98
-PREHOOK: query: -- If hive.optimize.reducededuplication.min.reducer=1,
--- group by and then order by should be optimized
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT xx.key, xx.value, yy.key, yy.value
 FROM
 (SELECT x.key as key, x.value as value FROM src x CLUSTER BY key) xx
@@ -1228,9 +1194,7 @@ JOIN
 (SELECT y.key as key, count(*) as value FROM src1 y GROUP BY y.key ORDER BY key) yy
 ON (xx.key=yy.key)
 PREHOOK: type: QUERY
-POSTHOOK: query: -- If hive.optimize.reducededuplication.min.reducer=1,
--- group by and then order by should be optimized
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT xx.key, xx.value, yy.key, yy.value
 FROM
 (SELECT x.key as key, x.value as value FROM src x CLUSTER BY key) xx

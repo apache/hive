@@ -1,5 +1,4 @@
-PREHOOK: query: -- Delimiter test, taken from delimiter.q
-create temporary table impressions (imp string, msg string)
+PREHOOK: query: create temporary table impressions (imp string, msg string)
 row format delimited
 fields terminated by '\t'
 lines terminated by '\n'
@@ -7,8 +6,7 @@ stored as textfile
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@impressions
-POSTHOOK: query: -- Delimiter test, taken from delimiter.q
-create temporary table impressions (imp string, msg string)
+POSTHOOK: query: create temporary table impressions (imp string, msg string)
 row format delimited
 fields terminated by '\t'
 lines terminated by '\n'
@@ -54,12 +52,7 @@ POSTHOOK: query: drop table impressions
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@impressions
 POSTHOOK: Output: default@impressions
-PREHOOK: query: -- Try different SerDe formats, taken from date_serde.q
-
---
--- RegexSerDe
---
-create temporary table date_serde_regex (
+PREHOOK: query: create temporary table date_serde_regex (
   ORIGIN_CITY_NAME string,
   DEST_CITY_NAME string,
   FL_DATE date,
@@ -74,12 +67,7 @@ stored as textfile
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@date_serde_regex
-POSTHOOK: query: -- Try different SerDe formats, taken from date_serde.q
-
---
--- RegexSerDe
---
-create temporary table date_serde_regex (
+POSTHOOK: query: create temporary table date_serde_regex (
   ORIGIN_CITY_NAME string,
   DEST_CITY_NAME string,
   FL_DATE date,
@@ -267,20 +255,14 @@ POSTHOOK: Input: default@date_serde_regex
 2010-10-29	12
 2010-10-30	11
 2010-10-31	8
-PREHOOK: query: --
--- LazyBinary
---
-create temporary table date_serde_lb (
+PREHOOK: query: create temporary table date_serde_lb (
   c1 date,
   c2 int
 )
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@date_serde_lb
-POSTHOOK: query: --
--- LazyBinary
---
-create temporary table date_serde_lb (
+POSTHOOK: query: create temporary table date_serde_lb (
   c1 date,
   c2 int
 )
@@ -325,20 +307,14 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@date_serde_lb
 #### A masked pattern was here ####
 2010-10-20	1064
-PREHOOK: query: --
--- LazySimple
---
-create temporary table date_serde_ls (
+PREHOOK: query: create temporary table date_serde_ls (
   c1 date,
   c2 int
 )
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@date_serde_ls
-POSTHOOK: query: --
--- LazySimple
---
-create temporary table date_serde_ls (
+POSTHOOK: query: create temporary table date_serde_ls (
   c1 date,
   c2 int
 )
@@ -383,20 +359,14 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@date_serde_ls
 #### A masked pattern was here ####
 2010-10-20	1064
-PREHOOK: query: --
--- Columnar
---
-create temporary table date_serde_c (
+PREHOOK: query: create temporary table date_serde_c (
   c1 date,
   c2 int
 ) stored as rcfile
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@date_serde_c
-POSTHOOK: query: --
--- Columnar
---
-create temporary table date_serde_c (
+POSTHOOK: query: create temporary table date_serde_c (
   c1 date,
   c2 int
 ) stored as rcfile
@@ -441,20 +411,14 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@date_serde_c
 #### A masked pattern was here ####
 2010-10-20	1064
-PREHOOK: query: --
--- LazyBinaryColumnar
---
-create temporary table date_serde_lbc (
+PREHOOK: query: create temporary table date_serde_lbc (
   c1 date,
   c2 int
 ) stored as rcfile
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@date_serde_lbc
-POSTHOOK: query: --
--- LazyBinaryColumnar
---
-create temporary table date_serde_lbc (
+POSTHOOK: query: create temporary table date_serde_lbc (
   c1 date,
   c2 int
 ) stored as rcfile
@@ -499,20 +463,14 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@date_serde_lbc
 #### A masked pattern was here ####
 2010-10-20	1064
-PREHOOK: query: --
--- ORC
---
-create temporary table date_serde_orc (
+PREHOOK: query: create temporary table date_serde_orc (
   c1 date,
   c2 int
 ) stored as orc
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@date_serde_orc
-POSTHOOK: query: --
--- ORC
---
-create temporary table date_serde_orc (
+POSTHOOK: query: create temporary table date_serde_orc (
   c1 date,
   c2 int
 ) stored as orc

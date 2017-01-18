@@ -1,11 +1,7 @@
-PREHOOK: query: -- SORT_QUERY_RESULTS
-
-DESCRIBE src_thrift
+PREHOOK: query: DESCRIBE src_thrift
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@src_thrift
-POSTHOOK: query: -- SORT_QUERY_RESULTS
-
-DESCRIBE src_thrift
+POSTHOOK: query: DESCRIBE src_thrift
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@src_thrift
 aint                	int                 	from deserializer   

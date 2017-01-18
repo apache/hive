@@ -1,8 +1,6 @@
-PREHOOK: query: -- Test HIVE-16019
-drop table if exists test
+PREHOOK: query: drop table if exists test
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: -- Test HIVE-16019
-drop table if exists test
+POSTHOOK: query: drop table if exists test
 POSTHOOK: type: DROPTABLE
 PREHOOK: query: create table test(key int, value1 int, value2 string)
 PREHOOK: type: CREATETABLE

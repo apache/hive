@@ -76,8 +76,7 @@ POSTHOOK: query: load data local inpath '../../data/files/vc1.txt' into table ch
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@char_union1_str
-PREHOOK: query: -- union char with same length char
-select * from (
+PREHOOK: query: select * from (
   select * from char_union1_ch1
   union all
   select * from char_union1_ch1 limit 1
@@ -85,8 +84,7 @@ select * from (
 PREHOOK: type: QUERY
 PREHOOK: Input: default@char_union1_ch1
 #### A masked pattern was here ####
-POSTHOOK: query: -- union char with same length char
-select * from (
+POSTHOOK: query: select * from (
   select * from char_union1_ch1
   union all
   select * from char_union1_ch1 limit 1
@@ -98,8 +96,7 @@ POSTHOOK: Input: default@char_union1_ch1
 1	abc       
 2	abc       
 3	 abc      
-PREHOOK: query: -- union char with different length char
-select * from (
+PREHOOK: query: select * from (
   select * from char_union1_ch1
   union all
   select * from char_union1_ch2 limit 1
@@ -108,8 +105,7 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@char_union1_ch1
 PREHOOK: Input: default@char_union1_ch2
 #### A masked pattern was here ####
-POSTHOOK: query: -- union char with different length char
-select * from (
+POSTHOOK: query: select * from (
   select * from char_union1_ch1
   union all
   select * from char_union1_ch2 limit 1
@@ -122,8 +118,7 @@ POSTHOOK: Input: default@char_union1_ch2
 1	abc                 
 2	abc                 
 3	 abc                
-PREHOOK: query: -- union char with string
-select * from (
+PREHOOK: query: select * from (
   select * from char_union1_ch1
   union all
   select * from char_union1_str limit 1
@@ -132,8 +127,7 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@char_union1_ch1
 PREHOOK: Input: default@char_union1_str
 #### A masked pattern was here ####
-POSTHOOK: query: -- union char with string
-select * from (
+POSTHOOK: query: select * from (
   select * from char_union1_ch1
   union all
   select * from char_union1_str limit 1

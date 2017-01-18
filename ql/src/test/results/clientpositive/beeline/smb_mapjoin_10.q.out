@@ -62,8 +62,7 @@ INFO  : OK
 DEBUG : Shutting down query alter table tmp_smb_bucket_10 add partition (ds = '2')
 No rows affected 
 >>>  
->>>  -- add dummy files to make sure that the number of files in each partition is same as number of buckets
->>>   
+>>>  >>>   
 >>>  load data local inpath '../../data/files/smbbucket_1.rc' INTO TABLE tmp_smb_bucket_10 partition(ds='1');
 DEBUG : Acquire a monitor for compiling query
 INFO  : Compiling commandqueryId=(!!{queryId}!!): load data local inpath '../../data/files/smbbucket_1.rc' INTO TABLE tmp_smb_bucket_10 partition(ds='1')

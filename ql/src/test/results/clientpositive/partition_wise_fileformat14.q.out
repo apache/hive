@@ -80,8 +80,7 @@ POSTHOOK: query: alter table tbl1 change key key string
 POSTHOOK: type: ALTERTABLE_RENAMECOL
 POSTHOOK: Input: default@tbl1
 POSTHOOK: Output: default@tbl1
-PREHOOK: query: -- The subquery itself is being map-joined. Multiple partitions of tbl1 with different schemas are being read for tbl2
-select /*+mapjoin(subq1)*/ count(*) from 
+PREHOOK: query: select /*+mapjoin(subq1)*/ count(*) from 
   (select a.key as key, a.value as value from tbl1 a where key < 6) subq1 
     join
   (select a.key as key, a.value as value from tbl2 a where key < 6) subq2
@@ -93,8 +92,7 @@ PREHOOK: Input: default@tbl1@ds=2
 PREHOOK: Input: default@tbl2
 PREHOOK: Input: default@tbl2@ds=1
 #### A masked pattern was here ####
-POSTHOOK: query: -- The subquery itself is being map-joined. Multiple partitions of tbl1 with different schemas are being read for tbl2
-select /*+mapjoin(subq1)*/ count(*) from 
+POSTHOOK: query: select /*+mapjoin(subq1)*/ count(*) from 
   (select a.key as key, a.value as value from tbl1 a where key < 6) subq1 
     join
   (select a.key as key, a.value as value from tbl2 a where key < 6) subq2
@@ -107,10 +105,7 @@ POSTHOOK: Input: default@tbl2
 POSTHOOK: Input: default@tbl2@ds=1
 #### A masked pattern was here ####
 40
-PREHOOK: query: -- The subquery itself is being map-joined. Since the sub-query only contains selects and filters, it should 
--- be converted to a bucketized mapside join. Multiple partitions of tbl1 with different schemas are being read for each
--- bucket of tbl2
-select /*+mapjoin(subq1)*/ count(*) from 
+PREHOOK: query: select /*+mapjoin(subq1)*/ count(*) from 
   (select a.key as key, a.value as value from tbl1 a where key < 6) subq1 
     join
   (select a.key as key, a.value as value from tbl2 a where key < 6) subq2
@@ -122,10 +117,7 @@ PREHOOK: Input: default@tbl1@ds=2
 PREHOOK: Input: default@tbl2
 PREHOOK: Input: default@tbl2@ds=1
 #### A masked pattern was here ####
-POSTHOOK: query: -- The subquery itself is being map-joined. Since the sub-query only contains selects and filters, it should 
--- be converted to a bucketized mapside join. Multiple partitions of tbl1 with different schemas are being read for each
--- bucket of tbl2
-select /*+mapjoin(subq1)*/ count(*) from 
+POSTHOOK: query: select /*+mapjoin(subq1)*/ count(*) from 
   (select a.key as key, a.value as value from tbl1 a where key < 6) subq1 
     join
   (select a.key as key, a.value as value from tbl2 a where key < 6) subq2
@@ -138,10 +130,7 @@ POSTHOOK: Input: default@tbl2
 POSTHOOK: Input: default@tbl2@ds=1
 #### A masked pattern was here ####
 40
-PREHOOK: query: -- The subquery itself is being map-joined. Since the sub-query only contains selects and filters, it should 
--- be converted to a sort-merge join. Multiple partitions of tbl1 with different schemas are being read for a
--- given file of tbl2
-select /*+mapjoin(subq1)*/ count(*) from 
+PREHOOK: query: select /*+mapjoin(subq1)*/ count(*) from 
   (select a.key as key, a.value as value from tbl1 a where key < 6) subq1 
     join
   (select a.key as key, a.value as value from tbl2 a where key < 6) subq2
@@ -153,10 +142,7 @@ PREHOOK: Input: default@tbl1@ds=2
 PREHOOK: Input: default@tbl2
 PREHOOK: Input: default@tbl2@ds=1
 #### A masked pattern was here ####
-POSTHOOK: query: -- The subquery itself is being map-joined. Since the sub-query only contains selects and filters, it should 
--- be converted to a sort-merge join. Multiple partitions of tbl1 with different schemas are being read for a
--- given file of tbl2
-select /*+mapjoin(subq1)*/ count(*) from 
+POSTHOOK: query: select /*+mapjoin(subq1)*/ count(*) from 
   (select a.key as key, a.value as value from tbl1 a where key < 6) subq1 
     join
   (select a.key as key, a.value as value from tbl2 a where key < 6) subq2
@@ -169,9 +155,7 @@ POSTHOOK: Input: default@tbl2
 POSTHOOK: Input: default@tbl2@ds=1
 #### A masked pattern was here ####
 40
-PREHOOK: query: -- Since the join key is modified by the sub-query, neither sort-merge join not bucketized map-side
--- join should be performed.  Multiple partitions of tbl1 with different schemas are being read for tbl2
-select /*+mapjoin(subq1)*/ count(*) from 
+PREHOOK: query: select /*+mapjoin(subq1)*/ count(*) from 
   (select a.key+1 as key, concat(a.value, a.value) as value from tbl1 a) subq1 
     join
   (select a.key+1 as key, concat(a.value, a.value) as value from tbl2 a) subq2
@@ -183,9 +167,7 @@ PREHOOK: Input: default@tbl1@ds=2
 PREHOOK: Input: default@tbl2
 PREHOOK: Input: default@tbl2@ds=1
 #### A masked pattern was here ####
-POSTHOOK: query: -- Since the join key is modified by the sub-query, neither sort-merge join not bucketized map-side
--- join should be performed.  Multiple partitions of tbl1 with different schemas are being read for tbl2
-select /*+mapjoin(subq1)*/ count(*) from 
+POSTHOOK: query: select /*+mapjoin(subq1)*/ count(*) from 
   (select a.key+1 as key, concat(a.value, a.value) as value from tbl1 a) subq1 
     join
   (select a.key+1 as key, concat(a.value, a.value) as value from tbl2 a) subq2

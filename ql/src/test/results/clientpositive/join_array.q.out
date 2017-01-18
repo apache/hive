@@ -30,15 +30,11 @@ POSTHOOK: query: load data local inpath '../../data/files/tiny_b.txt' into table
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@tinyb
-PREHOOK: query: -- SORT_QUERY_RESULTS
-
-select * from tinyA
+PREHOOK: query: select * from tinyA
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tinya
 #### A masked pattern was here ####
-POSTHOOK: query: -- SORT_QUERY_RESULTS
-
-select * from tinyA
+POSTHOOK: query: select * from tinyA
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tinya
 #### A masked pattern was here ####

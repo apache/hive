@@ -28,9 +28,7 @@ POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/orc_create_people.txt'
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@orc_create_people_staging
-PREHOOK: query: -- non-partitioned table
--- partial scan gather
-CREATE TABLE orc_create_people (
+PREHOOK: query: CREATE TABLE orc_create_people (
   id int,
   first_name string,
   last_name string,
@@ -42,9 +40,7 @@ STORED AS orc
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@orc_create_people
-POSTHOOK: query: -- non-partitioned table
--- partial scan gather
-CREATE TABLE orc_create_people (
+POSTHOOK: query: CREATE TABLE orc_create_people (
   id int,
   first_name string,
   last_name string,
@@ -128,8 +124,7 @@ POSTHOOK: query: drop table orc_create_people
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@orc_create_people
 POSTHOOK: Output: default@orc_create_people
-PREHOOK: query: -- auto stats gather
-CREATE TABLE orc_create_people (
+PREHOOK: query: CREATE TABLE orc_create_people (
   id int,
   first_name string,
   last_name string,
@@ -141,8 +136,7 @@ STORED AS orc
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@orc_create_people
-POSTHOOK: query: -- auto stats gather
-CREATE TABLE orc_create_people (
+POSTHOOK: query: CREATE TABLE orc_create_people (
   id int,
   first_name string,
   last_name string,
@@ -218,9 +212,7 @@ POSTHOOK: query: drop table orc_create_people
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@orc_create_people
 POSTHOOK: Output: default@orc_create_people
-PREHOOK: query: -- partitioned table
--- partial scan gather
-CREATE TABLE orc_create_people (
+PREHOOK: query: CREATE TABLE orc_create_people (
   id int,
   first_name string,
   last_name string,
@@ -232,9 +224,7 @@ STORED AS orc
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@orc_create_people
-POSTHOOK: query: -- partitioned table
--- partial scan gather
-CREATE TABLE orc_create_people (
+POSTHOOK: query: CREATE TABLE orc_create_people (
   id int,
   first_name string,
   last_name string,
@@ -379,8 +369,7 @@ POSTHOOK: query: drop table orc_create_people
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@orc_create_people
 POSTHOOK: Output: default@orc_create_people
-PREHOOK: query: -- auto stats gather
-CREATE TABLE orc_create_people (
+PREHOOK: query: CREATE TABLE orc_create_people (
   id int,
   first_name string,
   last_name string,
@@ -392,8 +381,7 @@ STORED AS orc
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@orc_create_people
-POSTHOOK: query: -- auto stats gather
-CREATE TABLE orc_create_people (
+POSTHOOK: query: CREATE TABLE orc_create_people (
   id int,
   first_name string,
   last_name string,
@@ -526,9 +514,7 @@ POSTHOOK: query: drop table orc_create_people
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@orc_create_people
 POSTHOOK: Output: default@orc_create_people
-PREHOOK: query: -- partitioned and bucketed table
--- partial scan gather
-CREATE TABLE orc_create_people (
+PREHOOK: query: CREATE TABLE orc_create_people (
   id int,
   first_name string,
   last_name string,
@@ -543,9 +529,7 @@ STORED AS orc
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@orc_create_people
-POSTHOOK: query: -- partitioned and bucketed table
--- partial scan gather
-CREATE TABLE orc_create_people (
+POSTHOOK: query: CREATE TABLE orc_create_people (
   id int,
   first_name string,
   last_name string,
@@ -693,8 +677,7 @@ POSTHOOK: query: drop table orc_create_people
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@orc_create_people
 POSTHOOK: Output: default@orc_create_people
-PREHOOK: query: -- auto stats gather
-CREATE TABLE orc_create_people (
+PREHOOK: query: CREATE TABLE orc_create_people (
   id int,
   first_name string,
   last_name string,
@@ -709,8 +692,7 @@ STORED AS orc
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@orc_create_people
-POSTHOOK: query: -- auto stats gather
-CREATE TABLE orc_create_people (
+POSTHOOK: query: CREATE TABLE orc_create_people (
   id int,
   first_name string,
   last_name string,
@@ -846,10 +828,7 @@ POSTHOOK: query: drop table orc_create_people
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@orc_create_people
 POSTHOOK: Output: default@orc_create_people
-PREHOOK: query: -- create table with partitions containing text and ORC files.
--- ORC files implements StatsProvidingRecordReader but text files does not.
--- So the partition containing text file should not have statistics.
-CREATE TABLE orc_create_people (
+PREHOOK: query: CREATE TABLE orc_create_people (
   id int,
   first_name string,
   last_name string,
@@ -861,10 +840,7 @@ STORED AS orc
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@orc_create_people
-POSTHOOK: query: -- create table with partitions containing text and ORC files.
--- ORC files implements StatsProvidingRecordReader but text files does not.
--- So the partition containing text file should not have statistics.
-CREATE TABLE orc_create_people (
+POSTHOOK: query: CREATE TABLE orc_create_people (
   id int,
   first_name string,
   last_name string,
@@ -899,13 +875,11 @@ POSTHOOK: Lineage: orc_create_people PARTITION(state=Or).id SIMPLE [(orc_create_
 POSTHOOK: Lineage: orc_create_people PARTITION(state=Or).last_name SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:last_name, type:string, comment:null), ]
 POSTHOOK: Lineage: orc_create_people PARTITION(state=Or).salary SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:salary, type:decimal(10,0), comment:null), ]
 POSTHOOK: Lineage: orc_create_people PARTITION(state=Or).start_date SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:start_date, type:timestamp, comment:null), ]
-PREHOOK: query: -- set the table to text format
-ALTER TABLE orc_create_people SET SERDE 'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe'
+PREHOOK: query: ALTER TABLE orc_create_people SET SERDE 'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe'
 PREHOOK: type: ALTERTABLE_SERIALIZER
 PREHOOK: Input: default@orc_create_people
 PREHOOK: Output: default@orc_create_people
-POSTHOOK: query: -- set the table to text format
-ALTER TABLE orc_create_people SET SERDE 'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe'
+POSTHOOK: query: ALTER TABLE orc_create_people SET SERDE 'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe'
 POSTHOOK: type: ALTERTABLE_SERIALIZER
 POSTHOOK: Input: default@orc_create_people
 POSTHOOK: Output: default@orc_create_people
@@ -917,24 +891,20 @@ POSTHOOK: query: ALTER TABLE orc_create_people SET FILEFORMAT TEXTFILE
 POSTHOOK: type: ALTERTABLE_FILEFORMAT
 POSTHOOK: Input: default@orc_create_people
 POSTHOOK: Output: default@orc_create_people
-PREHOOK: query: -- load the text data into a new partition
-LOAD DATA LOCAL INPATH '../../data/files/kv1.txt' OVERWRITE INTO TABLE orc_create_people PARTITION(state="OH")
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv1.txt' OVERWRITE INTO TABLE orc_create_people PARTITION(state="OH")
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
 PREHOOK: Output: default@orc_create_people
-POSTHOOK: query: -- load the text data into a new partition
-LOAD DATA LOCAL INPATH '../../data/files/kv1.txt' OVERWRITE INTO TABLE orc_create_people PARTITION(state="OH")
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv1.txt' OVERWRITE INTO TABLE orc_create_people PARTITION(state="OH")
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@orc_create_people
 POSTHOOK: Output: default@orc_create_people@state=OH
-PREHOOK: query: -- set the table back to orc
-ALTER TABLE orc_create_people SET SERDE 'org.apache.hadoop.hive.ql.io.orc.OrcSerde'
+PREHOOK: query: ALTER TABLE orc_create_people SET SERDE 'org.apache.hadoop.hive.ql.io.orc.OrcSerde'
 PREHOOK: type: ALTERTABLE_SERIALIZER
 PREHOOK: Input: default@orc_create_people
 PREHOOK: Output: default@orc_create_people
-POSTHOOK: query: -- set the table back to orc
-ALTER TABLE orc_create_people SET SERDE 'org.apache.hadoop.hive.ql.io.orc.OrcSerde'
+POSTHOOK: query: ALTER TABLE orc_create_people SET SERDE 'org.apache.hadoop.hive.ql.io.orc.OrcSerde'
 POSTHOOK: type: ALTERTABLE_SERIALIZER
 POSTHOOK: Input: default@orc_create_people
 POSTHOOK: Output: default@orc_create_people

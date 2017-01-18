@@ -38,24 +38,10 @@ POSTHOOK: Input: default@src
 POSTHOOK: Output: default@table_desc
 POSTHOOK: Lineage: table_desc.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: table_desc.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: -- If the user asked for sort merge join to be enforced (by setting
--- hive.enforce.sortmergebucketmapjoin to true), an error should be thrown, since
--- one of the tables is in ascending order and the other is in descending order,
--- and sort merge bucket mapjoin cannot be performed. In the default mode, the
--- query would succeed, although a regular map-join would be performed instead of
--- what the user asked.
-
-explain 
+PREHOOK: query: explain 
 select /*+mapjoin(a)*/ * from table_asc a join table_desc b on a.key = b.key
 PREHOOK: type: QUERY
-POSTHOOK: query: -- If the user asked for sort merge join to be enforced (by setting
--- hive.enforce.sortmergebucketmapjoin to true), an error should be thrown, since
--- one of the tables is in ascending order and the other is in descending order,
--- and sort merge bucket mapjoin cannot be performed. In the default mode, the
--- query would succeed, although a regular map-join would be performed instead of
--- what the user asked.
-
-explain 
+POSTHOOK: query: explain 
 select /*+mapjoin(a)*/ * from table_asc a join table_desc b on a.key = b.key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:

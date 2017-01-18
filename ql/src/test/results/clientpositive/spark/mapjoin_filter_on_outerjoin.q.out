@@ -1,8 +1,4 @@
-PREHOOK: query: -- SORT_QUERY_RESULTS
-
---HIVE-2101 mapjoin sometimes gives wrong results if there is a filter in the on condition
-
-SELECT * FROM src1
+PREHOOK: query: SELECT * FROM src1
   RIGHT OUTER JOIN src1 src2 ON (src1.key = src2.key AND src1.key < 10 AND src2.key > 10)
   JOIN src src3 ON (src2.key = src3.key AND src3.key < 300)
   SORT BY src1.key, src2.key, src3.key
@@ -10,11 +6,7 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Input: default@src1
 #### A masked pattern was here ####
-POSTHOOK: query: -- SORT_QUERY_RESULTS
-
---HIVE-2101 mapjoin sometimes gives wrong results if there is a filter in the on condition
-
-SELECT * FROM src1
+POSTHOOK: query: SELECT * FROM src1
   RIGHT OUTER JOIN src1 src2 ON (src1.key = src2.key AND src1.key < 10 AND src2.key > 10)
   JOIN src src3 ON (src2.key = src3.key AND src3.key < 300)
   SORT BY src1.key, src2.key, src3.key

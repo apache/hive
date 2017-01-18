@@ -1,11 +1,7 @@
-PREHOOK: query: -- Test SHOW CREATE TABLE on a table name of format "db.table".
-
-CREATE DATABASE tmp_feng comment 'for show create table test'
+PREHOOK: query: CREATE DATABASE tmp_feng comment 'for show create table test'
 PREHOOK: type: CREATEDATABASE
 PREHOOK: Output: database:tmp_feng
-POSTHOOK: query: -- Test SHOW CREATE TABLE on a table name of format "db.table".
-
-CREATE DATABASE tmp_feng comment 'for show create table test'
+POSTHOOK: query: CREATE DATABASE tmp_feng comment 'for show create table test'
 POSTHOOK: type: CREATEDATABASE
 POSTHOOK: Output: database:tmp_feng
 PREHOOK: query: SHOW DATABASES

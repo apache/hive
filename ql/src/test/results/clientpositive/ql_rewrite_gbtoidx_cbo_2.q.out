@@ -3357,9 +3357,7 @@ POSTHOOK: Input: default@lineitem_ix
 98	2
 99	3
 100	3
-PREHOOK: query: --with cbo on, the following query can use idx
-
-explain
+PREHOOK: query: explain
 select b, count(b) as ckeysum
 from
 (
@@ -3375,9 +3373,7 @@ group by L_PARTKEY
 ) tabA
 group by b
 PREHOOK: type: QUERY
-POSTHOOK: query: --with cbo on, the following query can use idx
-
-explain
+POSTHOOK: query: explain
 select b, count(b) as ckeysum
 from
 (
@@ -3581,9 +3577,7 @@ POSTHOOK: Input: default@lineitem_ix
 1	3
 3	1
 6	2
-PREHOOK: query: --with cbo on, the following query can not use idx because AggFunc is empty here
-
-explain
+PREHOOK: query: explain
 select a, count(a) as ckeysum
 from
 (
@@ -3599,9 +3593,7 @@ group by L_PARTKEY
 ) tabA
 group by a
 PREHOOK: type: QUERY
-POSTHOOK: query: --with cbo on, the following query can not use idx because AggFunc is empty here
-
-explain
+POSTHOOK: query: explain
 select a, count(a) as ckeysum
 from
 (

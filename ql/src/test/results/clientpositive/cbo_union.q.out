@@ -1,17 +1,11 @@
-PREHOOK: query: -- SORT_QUERY_RESULTS
-
--- 11. Union All
-select * from cbo_t1 order by key, c_boolean, value, dt union all select * from cbo_t2 order by key, c_boolean, value, dt
+PREHOOK: query: select * from cbo_t1 order by key, c_boolean, value, dt union all select * from cbo_t2 order by key, c_boolean, value, dt
 PREHOOK: type: QUERY
 PREHOOK: Input: default@cbo_t1
 PREHOOK: Input: default@cbo_t1@dt=2014
 PREHOOK: Input: default@cbo_t2
 PREHOOK: Input: default@cbo_t2@dt=2014
 #### A masked pattern was here ####
-POSTHOOK: query: -- SORT_QUERY_RESULTS
-
--- 11. Union All
-select * from cbo_t1 order by key, c_boolean, value, dt union all select * from cbo_t2 order by key, c_boolean, value, dt
+POSTHOOK: query: select * from cbo_t1 order by key, c_boolean, value, dt union all select * from cbo_t2 order by key, c_boolean, value, dt
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@cbo_t1
 POSTHOOK: Input: default@cbo_t1@dt=2014

@@ -152,8 +152,7 @@ POSTHOOK: Input: default@alltypesorc
 1969-12-31 15:59:57.847	-200.0	NULL	NULL	50.0	200.0	-5438.15	51400.0	NULL	1.819421586E9	200.0	-51.389	-50.0	NULL
 1969-12-31 15:59:49.764	-200.0	NULL	NULL	-20.0	200.0	-5438.15	51400.0	NULL	1.115401341E9	200.0	18.611	20.0	NULL
 1969-12-31 15:59:51.417	-200.0	NULL	NULL	-17.0	200.0	-5438.15	51400.0	NULL	1.806593848E9	200.0	15.611	17.0	NULL
-PREHOOK: query: -- double compare timestamp
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT ctimestamp1,
        cdouble,
        cboolean1,
@@ -177,8 +176,7 @@ WHERE  (((cstring2 IS NOT NULL)
                 AND (cdouble = 988888))))
 LIMIT 20
 PREHOOK: type: QUERY
-POSTHOOK: query: -- double compare timestamp
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT ctimestamp1,
        cdouble,
        cboolean1,

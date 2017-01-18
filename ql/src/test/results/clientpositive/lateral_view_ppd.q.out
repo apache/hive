@@ -413,11 +413,9 @@ val_0	2
 val_0	3
 val_0	3
 val_0	3
-PREHOOK: query: -- HIVE-4293 Predicates following UDTF operator are removed by PPD
-EXPLAIN SELECT value, myCol FROM (SELECT * FROM src LATERAL VIEW explode(array(1,2,3)) myTable AS myCol WHERE myCol > 1) a WHERE key='0'
+PREHOOK: query: EXPLAIN SELECT value, myCol FROM (SELECT * FROM src LATERAL VIEW explode(array(1,2,3)) myTable AS myCol WHERE myCol > 1) a WHERE key='0'
 PREHOOK: type: QUERY
-POSTHOOK: query: -- HIVE-4293 Predicates following UDTF operator are removed by PPD
-EXPLAIN SELECT value, myCol FROM (SELECT * FROM src LATERAL VIEW explode(array(1,2,3)) myTable AS myCol WHERE myCol > 1) a WHERE key='0'
+POSTHOOK: query: EXPLAIN SELECT value, myCol FROM (SELECT * FROM src LATERAL VIEW explode(array(1,2,3)) myTable AS myCol WHERE myCol > 1) a WHERE key='0'
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage

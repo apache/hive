@@ -10,10 +10,7 @@ PREHOOK: query: drop table customer_address
 PREHOOK: type: DROPTABLE
 POSTHOOK: query: drop table customer_address
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: -- s_store_sk is PK, ss_store_sk is FK
--- ca_address_sk is PK, ss_addr_sk is FK
-
-create table store_sales
+PREHOOK: query: create table store_sales
 (
     ss_sold_date_sk           int,
     ss_sold_time_sk           int,
@@ -43,10 +40,7 @@ row format delimited fields terminated by '|'
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@store_sales
-POSTHOOK: query: -- s_store_sk is PK, ss_store_sk is FK
--- ca_address_sk is PK, ss_addr_sk is FK
-
-create table store_sales
+POSTHOOK: query: create table store_sales
 (
     ss_sold_date_sk           int,
     ss_sold_time_sk           int,

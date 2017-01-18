@@ -1,11 +1,9 @@
-PREHOOK: query: -- 10. Test views
-create view v1 as select c_int, value, c_boolean, dt from cbo_t1
+PREHOOK: query: create view v1 as select c_int, value, c_boolean, dt from cbo_t1
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: default@cbo_t1
 PREHOOK: Output: database:default
 PREHOOK: Output: default@v1
-POSTHOOK: query: -- 10. Test views
-create view v1 as select c_int, value, c_boolean, dt from cbo_t1
+POSTHOOK: query: create view v1 as select c_int, value, c_boolean, dt from cbo_t1
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@cbo_t1
 POSTHOOK: Output: database:default

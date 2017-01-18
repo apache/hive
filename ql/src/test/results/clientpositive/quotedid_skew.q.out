@@ -34,16 +34,10 @@ POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/T1.txt' INTO TABLE T2
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@t2
-PREHOOK: query: -- a simple join query with skew on both the tables on the join key
--- adding a order by at the end to make the results deterministic
-
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT a.*, b.* FROM T1 a JOIN T2 b ON a. `!@#$%^&*()_q`  = b. `!@#$%^&*()_q`
 PREHOOK: type: QUERY
-POSTHOOK: query: -- a simple join query with skew on both the tables on the join key
--- adding a order by at the end to make the results deterministic
-
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT a.*, b.* FROM T1 a JOIN T2 b ON a. `!@#$%^&*()_q`  = b. `!@#$%^&*()_q`
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:

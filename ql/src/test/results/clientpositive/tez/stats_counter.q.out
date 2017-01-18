@@ -1,11 +1,9 @@
-PREHOOK: query: -- by analyze
-create table dummy1 as select * from src
+PREHOOK: query: create table dummy1 as select * from src
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@src
 PREHOOK: Output: database:default
 PREHOOK: Output: default@dummy1
-POSTHOOK: query: -- by analyze
-create table dummy1 as select * from src
+POSTHOOK: query: create table dummy1 as select * from src
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
@@ -54,14 +52,12 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: -- by autogather
-create table dummy2 as select * from src
+PREHOOK: query: create table dummy2 as select * from src
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@src
 PREHOOK: Output: database:default
 PREHOOK: Output: default@dummy2
-POSTHOOK: query: -- by autogather
-create table dummy2 as select * from src
+POSTHOOK: query: create table dummy2 as select * from src
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default

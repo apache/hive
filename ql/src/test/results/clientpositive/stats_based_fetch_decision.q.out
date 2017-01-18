@@ -1,10 +1,8 @@
-PREHOOK: query: -- will not print tez counters as tasks will not be launched
-select * from src where key is null
+PREHOOK: query: select * from src where key is null
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
-POSTHOOK: query: -- will not print tez counters as tasks will not be launched
-select * from src where key is null
+POSTHOOK: query: select * from src where key is null
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
@@ -72,13 +70,11 @@ STAGE PLANS:
               Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
               ListSink
 
-PREHOOK: query: -- will print tez counters as tasks will be launched
-select * from src where key is null
+PREHOOK: query: select * from src where key is null
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
-POSTHOOK: query: -- will print tez counters as tasks will be launched
-select * from src where key is null
+POSTHOOK: query: select * from src where key is null
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####

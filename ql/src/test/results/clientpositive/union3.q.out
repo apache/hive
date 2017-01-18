@@ -1,6 +1,4 @@
-PREHOOK: query: -- SORT_QUERY_RESULTS
-
-explain
+PREHOOK: query: explain
 SELECT *
 FROM (
   SELECT 1 AS id
@@ -18,9 +16,7 @@ FROM (
   FROM (SELECT * FROM src LIMIT 1) s2
 ) a
 PREHOOK: type: QUERY
-POSTHOOK: query: -- SORT_QUERY_RESULTS
-
-explain
+POSTHOOK: query: explain
 SELECT *
 FROM (
   SELECT 1 AS id

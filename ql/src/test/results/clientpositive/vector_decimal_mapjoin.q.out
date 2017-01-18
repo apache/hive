@@ -1,6 +1,4 @@
-PREHOOK: query: -- SORT_QUERY_RESULTS
-
-CREATE TABLE decimal_mapjoin STORED AS ORC AS 
+PREHOOK: query: CREATE TABLE decimal_mapjoin STORED AS ORC AS 
   SELECT cdouble, CAST (((cdouble*22.1)/37) AS DECIMAL(20,10)) AS cdecimal1, 
   CAST (((cdouble*9.3)/13) AS DECIMAL(23,14)) AS cdecimal2,
   cint
@@ -9,9 +7,7 @@ PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@alltypesorc
 PREHOOK: Output: database:default
 PREHOOK: Output: default@decimal_mapjoin
-POSTHOOK: query: -- SORT_QUERY_RESULTS
-
-CREATE TABLE decimal_mapjoin STORED AS ORC AS 
+POSTHOOK: query: CREATE TABLE decimal_mapjoin STORED AS ORC AS 
   SELECT cdouble, CAST (((cdouble*22.1)/37) AS DECIMAL(20,10)) AS cdecimal1, 
   CAST (((cdouble*9.3)/13) AS DECIMAL(23,14)) AS cdecimal2,
   cint

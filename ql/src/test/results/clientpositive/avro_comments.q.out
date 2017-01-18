@@ -1,8 +1,6 @@
-PREHOOK: query: -- verify Avro columns comments
-DROP TABLE IF EXISTS testAvroComments1
+PREHOOK: query: DROP TABLE IF EXISTS testAvroComments1
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: -- verify Avro columns comments
-DROP TABLE IF EXISTS testAvroComments1
+POSTHOOK: query: DROP TABLE IF EXISTS testAvroComments1
 POSTHOOK: type: DROPTABLE
 PREHOOK: query: CREATE TABLE testAvroComments1
 ROW FORMAT

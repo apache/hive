@@ -1,11 +1,7 @@
-PREHOOK: query: -- This test verifies that a table could be dropped with columns stats computed
--- The column stats for table without partition will go to TAB_COL_STATS
-CREATE DATABASE IF NOT EXISTS tblstatsdb1
+PREHOOK: query: CREATE DATABASE IF NOT EXISTS tblstatsdb1
 PREHOOK: type: CREATEDATABASE
 PREHOOK: Output: database:tblstatsdb1
-POSTHOOK: query: -- This test verifies that a table could be dropped with columns stats computed
--- The column stats for table without partition will go to TAB_COL_STATS
-CREATE DATABASE IF NOT EXISTS tblstatsdb1
+POSTHOOK: query: CREATE DATABASE IF NOT EXISTS tblstatsdb1
 POSTHOOK: type: CREATEDATABASE
 POSTHOOK: Output: database:tblstatsdb1
 PREHOOK: query: USE tblstatsdb1

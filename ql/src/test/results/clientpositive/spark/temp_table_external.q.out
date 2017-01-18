@@ -20,13 +20,11 @@ POSTHOOK: Input: default@temp_table_external
 NULL	35
 48	NULL
 100	100
-PREHOOK: query: -- Even after we drop the table, the data directory should still be there
-drop table temp_table_external
+PREHOOK: query: drop table temp_table_external
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@temp_table_external
 PREHOOK: Output: default@temp_table_external
-POSTHOOK: query: -- Even after we drop the table, the data directory should still be there
-drop table temp_table_external
+POSTHOOK: query: drop table temp_table_external
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@temp_table_external
 POSTHOOK: Output: default@temp_table_external

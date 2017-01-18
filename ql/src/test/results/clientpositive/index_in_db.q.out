@@ -2,16 +2,10 @@ PREHOOK: query: drop database if exists index_test_db cascade
 PREHOOK: type: DROPDATABASE
 POSTHOOK: query: drop database if exists index_test_db cascade
 POSTHOOK: type: DROPDATABASE
-PREHOOK: query: -- Test selecting selecting from a table that is backed by an index
--- create table, index in a db, then set default db as current db, and try selecting
-
-create database index_test_db
+PREHOOK: query: create database index_test_db
 PREHOOK: type: CREATEDATABASE
 PREHOOK: Output: database:index_test_db
-POSTHOOK: query: -- Test selecting selecting from a table that is backed by an index
--- create table, index in a db, then set default db as current db, and try selecting
-
-create database index_test_db
+POSTHOOK: query: create database index_test_db
 POSTHOOK: type: CREATEDATABASE
 POSTHOOK: Output: database:index_test_db
 PREHOOK: query: use index_test_db

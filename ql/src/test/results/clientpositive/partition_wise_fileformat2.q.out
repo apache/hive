@@ -1,12 +1,8 @@
-PREHOOK: query: -- SORT_BEFORE_DIFF
-
-create table partition_test_partitioned(key string, value string) partitioned by (dt string)
+PREHOOK: query: create table partition_test_partitioned(key string, value string) partitioned by (dt string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@partition_test_partitioned
-POSTHOOK: query: -- SORT_BEFORE_DIFF
-
-create table partition_test_partitioned(key string, value string) partitioned by (dt string)
+POSTHOOK: query: create table partition_test_partitioned(key string, value string) partitioned by (dt string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@partition_test_partitioned

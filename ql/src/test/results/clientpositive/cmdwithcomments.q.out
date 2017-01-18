@@ -26,14 +26,12 @@ insert into numt values(2)
 POSTHOOK: type: QUERY
 POSTHOOK: Output: default@numt
 POSTHOOK: Lineage: numt.idx EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-PREHOOK: query: --comment4
-select idx from numt where --comment5
+PREHOOK: query: select idx from numt where --comment5
 idx = 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@numt
 #### A masked pattern was here ####
-POSTHOOK: query: --comment4
-select idx from numt where --comment5
+POSTHOOK: query: select idx from numt where --comment5
 idx = 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@numt
@@ -52,14 +50,12 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@numt
 #### A masked pattern was here ####
 2
-PREHOOK: query: --comment7
-select "this is
+PREHOOK: query: select "this is
 another --string value" from numt where idx =2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@numt
 #### A masked pattern was here ####
-POSTHOOK: query: --comment7
-select "this is
+POSTHOOK: query: select "this is
 another --string value" from numt where idx =2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@numt

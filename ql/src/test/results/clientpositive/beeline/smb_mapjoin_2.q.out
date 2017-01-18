@@ -146,8 +146,7 @@ No rows affected
 >>>  set hive.input.format = org.apache.hadoop.hive.ql.io.BucketizedHiveInputFormat;
 No rows affected 
 >>>  
->>>  -- SORT_QUERY_RESULTS
->>>  
+>>>  >>>  
 >>>  explain
 select /*+mapjoin(a)*/ * from smb_bucket_1 a join smb_bucket_3 b on a.key = b.key;
 DEBUG : Acquire a monitor for compiling query

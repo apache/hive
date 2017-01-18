@@ -6,9 +6,7 @@ POSTHOOK: query: CREATE TABLE dest1(c1 INT, c2 STRING, c3 INT, c4 STRING) STORED
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@dest1
-PREHOOK: query: -- SORT_QUERY_RESULTS
-
-EXPLAIN
+PREHOOK: query: EXPLAIN
 FROM (
  FROM 
   (
@@ -23,9 +21,7 @@ FROM (
 ) c
 INSERT OVERWRITE TABLE dest1 SELECT c.c1, c.c2, c.c3, c.c4
 PREHOOK: type: QUERY
-POSTHOOK: query: -- SORT_QUERY_RESULTS
-
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 FROM (
  FROM 
   (

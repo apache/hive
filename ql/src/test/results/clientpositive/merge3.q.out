@@ -1,6 +1,4 @@
-PREHOOK: query: -- SORT_QUERY_RESULTS
-
-create table merge_src as
+PREHOOK: query: create table merge_src as
 select key, value from srcpart where ds is not null
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@srcpart
@@ -10,9 +8,7 @@ PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
 PREHOOK: Output: database:default
 PREHOOK: Output: default@merge_src
-POSTHOOK: query: -- SORT_QUERY_RESULTS
-
-create table merge_src as
+POSTHOOK: query: create table merge_src as
 select key, value from srcpart where ds is not null
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@srcpart

@@ -16,20 +16,14 @@ POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@alltypesorc
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@decimal_vgby
-PREHOOK: query: -- SORT_QUERY_RESULTS
-
--- First only do simple aggregations that output primitives only
-EXPLAIN SELECT cint,
+PREHOOK: query: EXPLAIN SELECT cint,
     COUNT(cdecimal1), MAX(cdecimal1), MIN(cdecimal1), SUM(cdecimal1),
     COUNT(cdecimal2), MAX(cdecimal2), MIN(cdecimal2), SUM(cdecimal2)
     FROM decimal_vgby
     GROUP BY cint
     HAVING COUNT(*) > 1
 PREHOOK: type: QUERY
-POSTHOOK: query: -- SORT_QUERY_RESULTS
-
--- First only do simple aggregations that output primitives only
-EXPLAIN SELECT cint,
+POSTHOOK: query: EXPLAIN SELECT cint,
     COUNT(cdecimal1), MAX(cdecimal1), MIN(cdecimal1), SUM(cdecimal1),
     COUNT(cdecimal2), MAX(cdecimal2), MIN(cdecimal2), SUM(cdecimal2)
     FROM decimal_vgby
@@ -118,16 +112,14 @@ POSTHOOK: Input: default@decimal_vgby
 6981	3	5831542.269248378	-515.621072973	5830511.027102432	3	6984454.211097692	-617.5607769230769	6983219.0895438458462
 762	2	5831542.269248378	1531.2194054054	5833073.4886537834	2	6984454.211097692	1833.9456923076925	6986288.1567899996925
 NULL	3072	9318.4351351351	-4298.1513513514	5018444.1081079808	3072	11160.715384615385	-5147.907692307693	6010604.3076923073536
-PREHOOK: query: -- Now add the others...
-EXPLAIN SELECT cint,
+PREHOOK: query: EXPLAIN SELECT cint,
     COUNT(cdecimal1), MAX(cdecimal1), MIN(cdecimal1), SUM(cdecimal1), AVG(cdecimal1), STDDEV_POP(cdecimal1), STDDEV_SAMP(cdecimal1),
     COUNT(cdecimal2), MAX(cdecimal2), MIN(cdecimal2), SUM(cdecimal2), AVG(cdecimal2), STDDEV_POP(cdecimal2), STDDEV_SAMP(cdecimal2)
     FROM decimal_vgby
     GROUP BY cint
     HAVING COUNT(*) > 1
 PREHOOK: type: QUERY
-POSTHOOK: query: -- Now add the others...
-EXPLAIN SELECT cint,
+POSTHOOK: query: EXPLAIN SELECT cint,
     COUNT(cdecimal1), MAX(cdecimal1), MIN(cdecimal1), SUM(cdecimal1), AVG(cdecimal1), STDDEV_POP(cdecimal1), STDDEV_SAMP(cdecimal1),
     COUNT(cdecimal2), MAX(cdecimal2), MIN(cdecimal2), SUM(cdecimal2), AVG(cdecimal2), STDDEV_POP(cdecimal2), STDDEV_SAMP(cdecimal2)
     FROM decimal_vgby

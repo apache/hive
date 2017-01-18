@@ -18,8 +18,7 @@ POSTHOOK: Input: default@alltypesorc
 POSTHOOK: Output: default@interval_arithmetic_1
 POSTHOOK: Lineage: interval_arithmetic_1.dateval EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
 POSTHOOK: Lineage: interval_arithmetic_1.tsval SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
-PREHOOK: query: -- interval year-month arithmetic
-explain
+PREHOOK: query: explain
 select
   dateval,
   dateval - interval '2-2' year to month,
@@ -31,8 +30,7 @@ select
 from interval_arithmetic_1
 limit 2
 PREHOOK: type: QUERY
-POSTHOOK: query: -- interval year-month arithmetic
-explain
+POSTHOOK: query: explain
 select
   dateval,
   dateval - interval '2-2' year to month,
@@ -312,8 +310,7 @@ POSTHOOK: Input: default@interval_arithmetic_1
 #### A masked pattern was here ####
 5-5	-1-1
 5-5	-1-1
-PREHOOK: query: -- interval day-time arithmetic
-explain
+PREHOOK: query: explain
 select
   dateval,
   dateval - interval '99 11:22:33.123456789' day to second,
@@ -325,8 +322,7 @@ select
 from interval_arithmetic_1
 limit 2
 PREHOOK: type: QUERY
-POSTHOOK: query: -- interval day-time arithmetic
-explain
+POSTHOOK: query: explain
 select
   dateval,
   dateval - interval '99 11:22:33.123456789' day to second,

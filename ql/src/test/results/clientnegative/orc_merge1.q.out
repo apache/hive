@@ -66,8 +66,7 @@ POSTHOOK: Lineage: orcfile_merge PARTITION(ds=2008-04-09,part=11).key EXPRESSION
 POSTHOOK: Lineage: orcfile_merge PARTITION(ds=2008-04-09,part=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: orcfile_merge PARTITION(ds=2008-04-09,part=12).key EXPRESSION [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: orcfile_merge PARTITION(ds=2008-04-09,part=12).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: -- will fail because of different compression buffer size
-ALTER TABLE orcfile_merge PARTITION(ds='2008-04-08',part=11) CONCATENATE
+PREHOOK: query: ALTER TABLE orcfile_merge PARTITION(ds='2008-04-08',part=11) CONCATENATE
 PREHOOK: type: ALTER_PARTITION_MERGE
 PREHOOK: Input: default@orcfile_merge
 PREHOOK: Output: default@orcfile_merge@ds=2008-04-08/part=11

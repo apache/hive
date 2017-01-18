@@ -40,16 +40,14 @@ POSTHOOK: Input: default@hbase_str
 238	2001-02-03-04.05.06.123456	val_238
 311	2001-02-03-04.05.06.123456	val_311
 86	2001-02-03-04.05.06.123456	val_86
-PREHOOK: query: -- Timestamp string does not match the default timestamp format, specify a custom timestamp format
-create external table hbase_ts(rowkey string,mytime timestamp,mystr string)
+PREHOOK: query: create external table hbase_ts(rowkey string,mytime timestamp,mystr string)
   STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
   WITH SERDEPROPERTIES ('hbase.columns.mapping' = 'm:mytime,m:mystr', 'timestamp.formats' = 'yyyy-MM-dd-HH.mm.ss.SSSSSS')
   TBLPROPERTIES ('hbase.table.name' = 'hbase_ts')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@hbase_ts
-POSTHOOK: query: -- Timestamp string does not match the default timestamp format, specify a custom timestamp format
-create external table hbase_ts(rowkey string,mytime timestamp,mystr string)
+POSTHOOK: query: create external table hbase_ts(rowkey string,mytime timestamp,mystr string)
   STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
   WITH SERDEPROPERTIES ('hbase.columns.mapping' = 'm:mytime,m:mystr', 'timestamp.formats' = 'yyyy-MM-dd-HH.mm.ss.SSSSSS')
   TBLPROPERTIES ('hbase.table.name' = 'hbase_ts')

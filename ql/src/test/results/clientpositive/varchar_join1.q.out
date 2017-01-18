@@ -76,27 +76,23 @@ POSTHOOK: query: load data local inpath '../../data/files/vc1.txt' into table va
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@varchar_join1_str
-PREHOOK: query: -- Join varchar with same length varchar
-select * from varchar_join1_vc1 a join varchar_join1_vc1 b on (a.c2 = b.c2) order by a.c1
+PREHOOK: query: select * from varchar_join1_vc1 a join varchar_join1_vc1 b on (a.c2 = b.c2) order by a.c1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@varchar_join1_vc1
 #### A masked pattern was here ####
-POSTHOOK: query: -- Join varchar with same length varchar
-select * from varchar_join1_vc1 a join varchar_join1_vc1 b on (a.c2 = b.c2) order by a.c1
+POSTHOOK: query: select * from varchar_join1_vc1 a join varchar_join1_vc1 b on (a.c2 = b.c2) order by a.c1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@varchar_join1_vc1
 #### A masked pattern was here ####
 1	abc	1	abc
 2	abc 	2	abc 
 3	 abc	3	 abc
-PREHOOK: query: -- Join varchar with different length varchar
-select * from varchar_join1_vc1 a join varchar_join1_vc2 b on (a.c2 = b.c2) order by a.c1
+PREHOOK: query: select * from varchar_join1_vc1 a join varchar_join1_vc2 b on (a.c2 = b.c2) order by a.c1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@varchar_join1_vc1
 PREHOOK: Input: default@varchar_join1_vc2
 #### A masked pattern was here ####
-POSTHOOK: query: -- Join varchar with different length varchar
-select * from varchar_join1_vc1 a join varchar_join1_vc2 b on (a.c2 = b.c2) order by a.c1
+POSTHOOK: query: select * from varchar_join1_vc1 a join varchar_join1_vc2 b on (a.c2 = b.c2) order by a.c1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@varchar_join1_vc1
 POSTHOOK: Input: default@varchar_join1_vc2
@@ -104,14 +100,12 @@ POSTHOOK: Input: default@varchar_join1_vc2
 1	abc	1	abc
 2	abc 	2	abc 
 3	 abc	3	 abc
-PREHOOK: query: -- Join varchar with string
-select * from varchar_join1_vc1 a join varchar_join1_str b on (a.c2 = b.c2) order by a.c1
+PREHOOK: query: select * from varchar_join1_vc1 a join varchar_join1_str b on (a.c2 = b.c2) order by a.c1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@varchar_join1_str
 PREHOOK: Input: default@varchar_join1_vc1
 #### A masked pattern was here ####
-POSTHOOK: query: -- Join varchar with string
-select * from varchar_join1_vc1 a join varchar_join1_str b on (a.c2 = b.c2) order by a.c1
+POSTHOOK: query: select * from varchar_join1_vc1 a join varchar_join1_str b on (a.c2 = b.c2) order by a.c1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@varchar_join1_str
 POSTHOOK: Input: default@varchar_join1_vc1

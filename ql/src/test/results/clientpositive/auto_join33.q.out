@@ -1,15 +1,11 @@
-PREHOOK: query: -- SORT_QUERY_RESULTS
-
-explain 
+PREHOOK: query: explain 
 SELECT * FROM
   (SELECT * FROM src WHERE key+1 < 10) a
     JOIN 
   (SELECT * FROM src WHERE key+2 < 10) b
     ON a.key+1=b.key+2
 PREHOOK: type: QUERY
-POSTHOOK: query: -- SORT_QUERY_RESULTS
-
-explain 
+POSTHOOK: query: explain 
 SELECT * FROM
   (SELECT * FROM src WHERE key+1 < 10) a
     JOIN 

@@ -1,9 +1,4 @@
-PREHOOK: query: -- SORT_QUERY_RESULTS
-
--- When Correlation Optimizer is turned off, 6 MR jobs are needed.
--- When Correlation Optimizer is turned on, 2 MR jobs are needed.
--- The first job will evaluate subquery xx, subquery yy, and xx join yy.
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT xx.key, xx.cnt, yy.key, yy.cnt
 FROM
 (SELECT x.key as key, count(1) as cnt FROM src1 x JOIN src1 y ON (x.key = y.key) group by x.key) xx
@@ -11,12 +6,7 @@ JOIN
 (SELECT x.key as key, count(1) as cnt FROM src x JOIN src y ON (x.key = y.key) group by x.key) yy
 ON xx.key=yy.key
 PREHOOK: type: QUERY
-POSTHOOK: query: -- SORT_QUERY_RESULTS
-
--- When Correlation Optimizer is turned off, 6 MR jobs are needed.
--- When Correlation Optimizer is turned on, 2 MR jobs are needed.
--- The first job will evaluate subquery xx, subquery yy, and xx join yy.
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT xx.key, xx.cnt, yy.key, yy.cnt
 FROM
 (SELECT x.key as key, count(1) as cnt FROM src1 x JOIN src1 y ON (x.key = y.key) group by x.key) xx
@@ -473,8 +463,7 @@ POSTHOOK: Input: default@src1
 406	1	406	16
 66	1	66	1
 98	1	98	4
-PREHOOK: query: -- Enable hive.auto.convert.join.
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT xx.key, xx.cnt, yy.key, yy.cnt
 FROM
 (SELECT x.key as key, count(1) as cnt FROM src1 x JOIN src1 y ON (x.key = y.key) group by x.key) xx
@@ -482,8 +471,7 @@ JOIN
 (SELECT x.key as key, count(1) as cnt FROM src x JOIN src y ON (x.key = y.key) group by x.key) yy
 ON xx.key=yy.key
 PREHOOK: type: QUERY
-POSTHOOK: query: -- Enable hive.auto.convert.join.
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT xx.key, xx.cnt, yy.key, yy.cnt
 FROM
 (SELECT x.key as key, count(1) as cnt FROM src1 x JOIN src1 y ON (x.key = y.key) group by x.key) xx
@@ -702,20 +690,14 @@ POSTHOOK: Input: default@src1
 406	1	406	16
 66	1	66	1
 98	1	98	4
-PREHOOK: query: -- When Correlation Optimizer is turned off, 3 MR jobs are needed.
--- When Correlation Optimizer is turned on, 2 MR jobs are needed.
--- The first job will evaluate subquery yy and xx join yy.
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT xx.key, yy.key, yy.cnt
 FROM src1 xx
 JOIN
 (SELECT x.key as key, count(1) as cnt FROM src x GROUP BY x.key) yy
 ON xx.key=yy.key
 PREHOOK: type: QUERY
-POSTHOOK: query: -- When Correlation Optimizer is turned off, 3 MR jobs are needed.
--- When Correlation Optimizer is turned on, 2 MR jobs are needed.
--- The first job will evaluate subquery yy and xx join yy.
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT xx.key, yy.key, yy.cnt
 FROM src1 xx
 JOIN
@@ -1002,20 +984,14 @@ POSTHOOK: Input: default@src1
 406	406	4
 66	66	1
 98	98	2
-PREHOOK: query: -- When Correlation Optimizer is turned off, 4 MR jobs are needed.
--- When Correlation Optimizer is turned on, 2 MR jobs are needed.
--- The first job will evaluate subquery yy and xx join yy.
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT xx.key, yy.key, yy.cnt
 FROM src1 xx
 JOIN
 (SELECT x.key as key, count(1) as cnt FROM src x JOIN src y ON (x.key = y.key) group by x.key) yy
 ON xx.key=yy.key
 PREHOOK: type: QUERY
-POSTHOOK: query: -- When Correlation Optimizer is turned off, 4 MR jobs are needed.
--- When Correlation Optimizer is turned on, 2 MR jobs are needed.
--- The first job will evaluate subquery yy and xx join yy.
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT xx.key, yy.key, yy.cnt
 FROM src1 xx
 JOIN
@@ -1361,20 +1337,14 @@ POSTHOOK: Input: default@src1
 406	406	16
 66	66	1
 98	98	4
-PREHOOK: query: -- When Correlation Optimizer is turned off, 4 MR jobs are needed.
--- When Correlation Optimizer is turned on, 2 MR jobs are needed.
--- The first job will evaluate subquery xx and xx join yy.
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT xx.key, xx.cnt, yy.key
 FROM
 (SELECT x.key as key, count(1) as cnt FROM src1 x JOIN src1 y ON (x.key = y.key) group by x.key) xx
 JOIN src yy
 ON xx.key=yy.key
 PREHOOK: type: QUERY
-POSTHOOK: query: -- When Correlation Optimizer is turned off, 4 MR jobs are needed.
--- When Correlation Optimizer is turned on, 2 MR jobs are needed.
--- The first job will evaluate subquery xx and xx join yy.
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT xx.key, xx.cnt, yy.key
 FROM
 (SELECT x.key as key, count(1) as cnt FROM src1 x JOIN src1 y ON (x.key = y.key) group by x.key) xx
@@ -1764,10 +1734,7 @@ POSTHOOK: Input: default@src1
 66	1	66
 98	1	98
 98	1	98
-PREHOOK: query: -- When Correlation Optimizer is turned off, 4 MR jobs are needed.
--- When Correlation Optimizer is turned on, 2 MR jobs are needed.
--- The first job will evaluate subquery xx and xx join yy join zz.
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT xx.key, yy.key, yy.cnt
 FROM src1 xx
 JOIN src zz ON xx.key=zz.key
@@ -1775,10 +1742,7 @@ JOIN
 (SELECT x.key as key, count(1) as cnt FROM src x JOIN src y ON (x.key = y.key) group by x.key) yy
 ON zz.key=yy.key
 PREHOOK: type: QUERY
-POSTHOOK: query: -- When Correlation Optimizer is turned off, 4 MR jobs are needed.
--- When Correlation Optimizer is turned on, 2 MR jobs are needed.
--- The first job will evaluate subquery xx and xx join yy join zz.
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT xx.key, yy.key, yy.cnt
 FROM src1 xx
 JOIN src zz ON xx.key=zz.key
@@ -2023,10 +1987,7 @@ POSTHOOK: Input: default@src1
 66	66	1
 98	98	4
 98	98	4
-PREHOOK: query: -- When Correlation Optimizer is turned off, 4 MR jobs are needed.
--- When Correlation Optimizer is turned on, 2 MR jobs are needed.
--- The first job will evaluate subquery yy and xx join yy join zz.
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT xx.key, yy.key, yy.cnt
 FROM src1 xx
 JOIN src zz ON xx.key=zz.key
@@ -2034,10 +1995,7 @@ JOIN
 (SELECT x.key as key, count(1) as cnt FROM src x JOIN src y ON (x.key = y.key) group by x.key) yy
 ON zz.key=yy.key
 PREHOOK: type: QUERY
-POSTHOOK: query: -- When Correlation Optimizer is turned off, 4 MR jobs are needed.
--- When Correlation Optimizer is turned on, 2 MR jobs are needed.
--- The first job will evaluate subquery yy and xx join yy join zz.
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT xx.key, yy.key, yy.cnt
 FROM src1 xx
 JOIN src zz ON xx.key=zz.key
@@ -2246,10 +2204,7 @@ POSTHOOK: Input: default@src1
 66	66	1
 98	98	4
 98	98	4
-PREHOOK: query: -- When Correlation Optimizer is turned off, 4 MR jobs are needed.
--- When Correlation Optimizer is turned on, 2 MR jobs are needed.
--- The first job will evaluate subquery yy and xx join yy join zz.
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT xx.key, yy.key, yy.cnt
 FROM src1 xx
 JOIN
@@ -2257,10 +2212,7 @@ JOIN
 ON xx.key=yy.key JOIN src zz
 ON yy.key=zz.key
 PREHOOK: type: QUERY
-POSTHOOK: query: -- When Correlation Optimizer is turned off, 4 MR jobs are needed.
--- When Correlation Optimizer is turned on, 2 MR jobs are needed.
--- The first job will evaluate subquery yy and xx join yy join zz.
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT xx.key, yy.key, yy.cnt
 FROM src1 xx
 JOIN
@@ -2693,10 +2645,7 @@ POSTHOOK: Input: default@src1
 66	66	1
 98	98	4
 98	98	4
-PREHOOK: query: -- When Correlation Optimizer is turned off, 6 MR jobs are needed.
--- When Correlation Optimizer is turned on, 2 MR jobs are needed.
--- The first job will evaluate subquery tmp and tmp join z.
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT tmp.key, tmp.sum1, tmp.sum2, z.key, z.value
 FROM
 (SELECT xx.key as key, sum(xx.cnt) as sum1, sum(yy.cnt) as sum2
@@ -2705,10 +2654,7 @@ FROM
  ON (xx.key=yy.key) GROUP BY xx.key) tmp
 JOIN src z ON tmp.key=z.key
 PREHOOK: type: QUERY
-POSTHOOK: query: -- When Correlation Optimizer is turned off, 6 MR jobs are needed.
--- When Correlation Optimizer is turned on, 2 MR jobs are needed.
--- The first job will evaluate subquery tmp and tmp join z.
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT tmp.key, tmp.sum1, tmp.sum2, z.key, z.value
 FROM
 (SELECT xx.key as key, sum(xx.cnt) as sum1, sum(yy.cnt) as sum2
@@ -3257,11 +3203,7 @@ POSTHOOK: Input: default@src1
 66	1	1	66	val_66
 98	2	1	98	val_98
 98	2	1	98	val_98
-PREHOOK: query: -- When Correlation Optimizer is turned off, 6 MR jobs are needed.
--- When Correlation Optimizer is turned on, 4 MR jobs are needed.
--- 2 MR jobs are used to evaluate yy, 1 MR is used to evaluate xx and xx join yy.
--- The last MR is used for ordering. 
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT xx.key, xx.cnt, yy.key, yy.value, yy.cnt
 FROM
 (SELECT x.key as key, count(1) as cnt FROM src1 x JOIN src1 y ON (x.key = y.key) group by x.key) xx
@@ -3269,11 +3211,7 @@ JOIN
 (SELECT x.key as key, x.value as value, count(1) as cnt FROM src x JOIN src y ON (x.key = y.key) group by x.key, x.value) yy
 ON xx.key=yy.key ORDER BY xx.key, xx.cnt, yy.key, yy.value, yy.cnt
 PREHOOK: type: QUERY
-POSTHOOK: query: -- When Correlation Optimizer is turned off, 6 MR jobs are needed.
--- When Correlation Optimizer is turned on, 4 MR jobs are needed.
--- 2 MR jobs are used to evaluate yy, 1 MR is used to evaluate xx and xx join yy.
--- The last MR is used for ordering. 
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT xx.key, xx.cnt, yy.key, yy.value, yy.cnt
 FROM
 (SELECT x.key as key, count(1) as cnt FROM src1 x JOIN src1 y ON (x.key = y.key) group by x.key) xx

@@ -1373,9 +1373,9 @@ public class QTestUtil {
     StringBuilder newCommands = new StringBuilder(commands.length());
     int lastMatchEnd = 0;
     Matcher commentMatcher = Pattern.compile("^--.*$", Pattern.MULTILINE).matcher(commands);
+    // remove the comments
     while (commentMatcher.find()) {
       newCommands.append(commands.substring(lastMatchEnd, commentMatcher.start()));
-      newCommands.append(commentMatcher.group().replaceAll("(?<!\\\\);", "\\\\;"));
       lastMatchEnd = commentMatcher.end();
     }
     newCommands.append(commands.substring(lastMatchEnd, commands.length()));

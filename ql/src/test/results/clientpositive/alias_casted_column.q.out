@@ -1,8 +1,6 @@
-PREHOOK: query: -- HIVE-2477 Use name of original expression for name of CAST output
-explain select key from (select cast(key as int) from src )t
+PREHOOK: query: explain select key from (select cast(key as int) from src )t
 PREHOOK: type: QUERY
-POSTHOOK: query: -- HIVE-2477 Use name of original expression for name of CAST output
-explain select key from (select cast(key as int) from src )t
+POSTHOOK: query: explain select key from (select cast(key as int) from src )t
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -33,11 +31,9 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: --backward
-explain select key2 from (select cast(key as int) key2 from src )t
+PREHOOK: query: explain select key2 from (select cast(key as int) key2 from src )t
 PREHOOK: type: QUERY
-POSTHOOK: query: --backward
-explain select key2 from (select cast(key as int) key2 from src )t
+POSTHOOK: query: explain select key2 from (select cast(key as int) key2 from src )t
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage

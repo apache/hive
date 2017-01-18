@@ -1,12 +1,8 @@
 Warning: Shuffle Join JOIN[8][tables = [$hdt$_0, $hdt$_1]] in Stage 'Stage-1:MAPRED' is a cross product
-PREHOOK: query: -- SORT_QUERY_RESULTS
-
-explain extended
+PREHOOK: query: explain extended
  select * from (select a.key as ak, a.value as av, b.key as bk, b.value as bv from src a join src1 b where a.key = '429' ) c
 PREHOOK: type: QUERY
-POSTHOOK: query: -- SORT_QUERY_RESULTS
-
-explain extended
+POSTHOOK: query: explain extended
  select * from (select a.key as ak, a.value as av, b.key as bk, b.value as bv from src a join src1 b where a.key = '429' ) c
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
@@ -308,13 +304,9 @@ POSTHOOK: Input: default@src1
 429	val_429	66	val_66
 429	val_429	98	val_98
 429	val_429	98	val_98
-PREHOOK: query: -- Test constant propagation where the column name is aliased to its original name, see HIVE-14705 for details
-
-explain extended select * from (select key-1 as key from srcbucket where key = 6) z
+PREHOOK: query: explain extended select * from (select key-1 as key from srcbucket where key = 6) z
 PREHOOK: type: QUERY
-POSTHOOK: query: -- Test constant propagation where the column name is aliased to its original name, see HIVE-14705 for details
-
-explain extended select * from (select key-1 as key from srcbucket where key = 6) z
+POSTHOOK: query: explain extended select * from (select key-1 as key from srcbucket where key = 6) z
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
   
@@ -461,13 +453,9 @@ POSTHOOK: Input: default@srcbucket
 #### A masked pattern was here ####
 5
 5
-PREHOOK: query: -- Test with multiple levels of sub-queries
-
-explain extended select y.key-1 as key from (select z.key-1 as key from (select key-1 as key from srcbucket where key = 6) z) y
+PREHOOK: query: explain extended select y.key-1 as key from (select z.key-1 as key from (select key-1 as key from srcbucket where key = 6) z) y
 PREHOOK: type: QUERY
-POSTHOOK: query: -- Test with multiple levels of sub-queries
-
-explain extended select y.key-1 as key from (select z.key-1 as key from (select key-1 as key from srcbucket where key = 6) z) y
+POSTHOOK: query: explain extended select y.key-1 as key from (select z.key-1 as key from (select key-1 as key from srcbucket where key = 6) z) y
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
   

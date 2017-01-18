@@ -1,29 +1,21 @@
-PREHOOK: query: -- Test to ensure that an empty index result is propagated correctly
-
-CREATE DATABASE it
+PREHOOK: query: CREATE DATABASE it
 PREHOOK: type: CREATEDATABASE
 PREHOOK: Output: database:it
-POSTHOOK: query: -- Test to ensure that an empty index result is propagated correctly
-
-CREATE DATABASE it
+POSTHOOK: query: CREATE DATABASE it
 POSTHOOK: type: CREATEDATABASE
 POSTHOOK: Output: database:it
-PREHOOK: query: -- Create temp, and populate it with some values in src.
-CREATE TABLE it.temp(key STRING, val STRING) STORED AS TEXTFILE
+PREHOOK: query: CREATE TABLE it.temp(key STRING, val STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:it
 PREHOOK: Output: it@temp
-POSTHOOK: query: -- Create temp, and populate it with some values in src.
-CREATE TABLE it.temp(key STRING, val STRING) STORED AS TEXTFILE
+POSTHOOK: query: CREATE TABLE it.temp(key STRING, val STRING) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:it
 POSTHOOK: Output: it@temp
-PREHOOK: query: -- Build an index on it.temp.
-CREATE INDEX temp_index ON TABLE it.temp(key) as 'COMPACT' WITH DEFERRED REBUILD
+PREHOOK: query: CREATE INDEX temp_index ON TABLE it.temp(key) as 'COMPACT' WITH DEFERRED REBUILD
 PREHOOK: type: CREATEINDEX
 PREHOOK: Input: it@temp
-POSTHOOK: query: -- Build an index on it.temp.
-CREATE INDEX temp_index ON TABLE it.temp(key) as 'COMPACT' WITH DEFERRED REBUILD
+POSTHOOK: query: CREATE INDEX temp_index ON TABLE it.temp(key) as 'COMPACT' WITH DEFERRED REBUILD
 POSTHOOK: type: CREATEINDEX
 POSTHOOK: Input: it@temp
 POSTHOOK: Output: it@it__temp_temp_index__
@@ -38,13 +30,11 @@ POSTHOOK: Output: it@it__temp_temp_index__
 POSTHOOK: Lineage: it__temp_temp_index__._bucketname SIMPLE [(temp)temp.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
 POSTHOOK: Lineage: it__temp_temp_index__._offsets EXPRESSION [(temp)temp.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
 POSTHOOK: Lineage: it__temp_temp_index__.key SIMPLE [(temp)temp.FieldSchema(name:key, type:string, comment:null), ]
-PREHOOK: query: -- query should not return any values
-SELECT * FROM it.it__temp_temp_index__ WHERE key = 86
+PREHOOK: query: SELECT * FROM it.it__temp_temp_index__ WHERE key = 86
 PREHOOK: type: QUERY
 PREHOOK: Input: it@it__temp_temp_index__
 #### A masked pattern was here ####
-POSTHOOK: query: -- query should not return any values
-SELECT * FROM it.it__temp_temp_index__ WHERE key = 86
+POSTHOOK: query: SELECT * FROM it.it__temp_temp_index__ WHERE key = 86
 POSTHOOK: type: QUERY
 POSTHOOK: Input: it@it__temp_temp_index__
 #### A masked pattern was here ####

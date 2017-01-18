@@ -1,12 +1,8 @@
-PREHOOK: query: -- SORT_QUERY_RESULTS
-
-create table nzhang_part like srcpart
+PREHOOK: query: create table nzhang_part like srcpart
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@nzhang_part
-POSTHOOK: query: -- SORT_QUERY_RESULTS
-
-create table nzhang_part like srcpart
+POSTHOOK: query: create table nzhang_part like srcpart
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@nzhang_part

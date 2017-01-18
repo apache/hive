@@ -1,13 +1,9 @@
-PREHOOK: query: -- SORT_QUERY_RESULTS
-
-create table src2 as select key, count(1) as count from src group by key
+PREHOOK: query: create table src2 as select key, count(1) as count from src group by key
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@src
 PREHOOK: Output: database:default
 PREHOOK: Output: default@src2
-POSTHOOK: query: -- SORT_QUERY_RESULTS
-
-create table src2 as select key, count(1) as count from src group by key
+POSTHOOK: query: create table src2 as select key, count(1) as count from src group by key
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default

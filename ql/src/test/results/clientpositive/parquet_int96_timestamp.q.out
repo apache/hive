@@ -13,13 +13,11 @@ POSTHOOK: query: insert into table dummy values (1)
 POSTHOOK: type: QUERY
 POSTHOOK: Output: default@dummy
 POSTHOOK: Lineage: dummy.id EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-PREHOOK: query: -- read/write timestamps using UTC as default write zone
-create table timestamps (ts timestamp) stored as parquet
+PREHOOK: query: create table timestamps (ts timestamp) stored as parquet
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@timestamps
-POSTHOOK: query: -- read/write timestamps using UTC as default write zone
-create table timestamps (ts timestamp) stored as parquet
+POSTHOOK: query: create table timestamps (ts timestamp) stored as parquet
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@timestamps
@@ -85,13 +83,11 @@ POSTHOOK: query: drop table timestamps
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@timestamps
 POSTHOOK: Output: default@timestamps
-PREHOOK: query: -- table property is set. the default should not override it
-create table timestamps (ts timestamp) stored as parquet tblproperties('parquet.mr.int96.write.zone'='PST')
+PREHOOK: query: create table timestamps (ts timestamp) stored as parquet tblproperties('parquet.mr.int96.write.zone'='PST')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@timestamps
-POSTHOOK: query: -- table property is set. the default should not override it
-create table timestamps (ts timestamp) stored as parquet tblproperties('parquet.mr.int96.write.zone'='PST')
+POSTHOOK: query: create table timestamps (ts timestamp) stored as parquet tblproperties('parquet.mr.int96.write.zone'='PST')
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@timestamps
@@ -157,13 +153,11 @@ POSTHOOK: query: drop table timestamps
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@timestamps
 POSTHOOK: Output: default@timestamps
-PREHOOK: query: -- read/write timestamps using local timezone
-create table timestamps (ts timestamp) stored as parquet
+PREHOOK: query: create table timestamps (ts timestamp) stored as parquet
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@timestamps
-POSTHOOK: query: -- read/write timestamps using local timezone
-create table timestamps (ts timestamp) stored as parquet
+POSTHOOK: query: create table timestamps (ts timestamp) stored as parquet
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@timestamps
@@ -228,13 +222,11 @@ POSTHOOK: query: drop table timestamps
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@timestamps
 POSTHOOK: Output: default@timestamps
-PREHOOK: query: -- read/write timestamps with timezone specified in table properties
-create table timestamps (ts timestamp) stored as parquet tblproperties('parquet.mr.int96.write.zone'='CST')
+PREHOOK: query: create table timestamps (ts timestamp) stored as parquet tblproperties('parquet.mr.int96.write.zone'='CST')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@timestamps
-POSTHOOK: query: -- read/write timestamps with timezone specified in table properties
-create table timestamps (ts timestamp) stored as parquet tblproperties('parquet.mr.int96.write.zone'='CST')
+POSTHOOK: query: create table timestamps (ts timestamp) stored as parquet tblproperties('parquet.mr.int96.write.zone'='CST')
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@timestamps
@@ -300,13 +292,11 @@ POSTHOOK: query: drop table timestamps
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@timestamps
 POSTHOOK: Output: default@timestamps
-PREHOOK: query: -- read/write timestamps with timezone specified in table properties
-create table timestamps (ts timestamp) stored as parquet tblproperties('parquet.mr.int96.write.zone'='PST')
+PREHOOK: query: create table timestamps (ts timestamp) stored as parquet tblproperties('parquet.mr.int96.write.zone'='PST')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@timestamps
-POSTHOOK: query: -- read/write timestamps with timezone specified in table properties
-create table timestamps (ts timestamp) stored as parquet tblproperties('parquet.mr.int96.write.zone'='PST')
+POSTHOOK: query: create table timestamps (ts timestamp) stored as parquet tblproperties('parquet.mr.int96.write.zone'='PST')
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@timestamps
@@ -372,13 +362,11 @@ POSTHOOK: query: drop table timestamps
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@timestamps
 POSTHOOK: Output: default@timestamps
-PREHOOK: query: -- read timestamps written by Impala
-create table timestamps (ts timestamp) stored as parquet
+PREHOOK: query: create table timestamps (ts timestamp) stored as parquet
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@timestamps
-POSTHOOK: query: -- read timestamps written by Impala
-create table timestamps (ts timestamp) stored as parquet
+POSTHOOK: query: create table timestamps (ts timestamp) stored as parquet
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@timestamps
@@ -407,13 +395,11 @@ POSTHOOK: query: drop table timestamps
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@timestamps
 POSTHOOK: Output: default@timestamps
-PREHOOK: query: -- read timestamps written by Impala when table timezone is set (Impala timestamp should not be converted)
-create table timestamps (ts timestamp) stored as parquet tblproperties('parquet.mr.int96.write.zone'='GMT+10')
+PREHOOK: query: create table timestamps (ts timestamp) stored as parquet tblproperties('parquet.mr.int96.write.zone'='GMT+10')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@timestamps
-POSTHOOK: query: -- read timestamps written by Impala when table timezone is set (Impala timestamp should not be converted)
-create table timestamps (ts timestamp) stored as parquet tblproperties('parquet.mr.int96.write.zone'='GMT+10')
+POSTHOOK: query: create table timestamps (ts timestamp) stored as parquet tblproperties('parquet.mr.int96.write.zone'='GMT+10')
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@timestamps
@@ -442,13 +428,11 @@ POSTHOOK: query: drop table timestamps
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@timestamps
 POSTHOOK: Output: default@timestamps
-PREHOOK: query: -- CREATE TABLE LIKE <OTHER TABLE> will copy the timezone property
-create table timestamps (ts timestamp) stored as parquet tblproperties('parquet.mr.int96.write.zone'='GMT+10')
+PREHOOK: query: create table timestamps (ts timestamp) stored as parquet tblproperties('parquet.mr.int96.write.zone'='GMT+10')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@timestamps
-POSTHOOK: query: -- CREATE TABLE LIKE <OTHER TABLE> will copy the timezone property
-create table timestamps (ts timestamp) stored as parquet tblproperties('parquet.mr.int96.write.zone'='GMT+10')
+POSTHOOK: query: create table timestamps (ts timestamp) stored as parquet tblproperties('parquet.mr.int96.write.zone'='GMT+10')
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@timestamps

@@ -1,8 +1,6 @@
-PREHOOK: query: -- Test type date, int, and string in partition column
-drop table if exists partcolstats
+PREHOOK: query: drop table if exists partcolstats
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: -- Test type date, int, and string in partition column
-drop table if exists partcolstats
+POSTHOOK: query: drop table if exists partcolstats
 POSTHOOK: type: DROPTABLE
 PREHOOK: query: create table partcolstats (key int, value string) partitioned by (ds date, hr int, part string)
 PREHOOK: type: CREATETABLE
@@ -286,11 +284,9 @@ POSTHOOK: query: drop table partcolstats
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@partcolstats
 POSTHOOK: Output: default@partcolstats
-PREHOOK: query: -- Test type tinyint, smallint, and bigint in partition column
-drop table if exists partcolstatsnum
+PREHOOK: query: drop table if exists partcolstatsnum
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: -- Test type tinyint, smallint, and bigint in partition column
-drop table if exists partcolstatsnum
+POSTHOOK: query: drop table if exists partcolstatsnum
 POSTHOOK: type: DROPTABLE
 PREHOOK: query: create table partcolstatsnum (key int, value string) partitioned by (tint tinyint, sint smallint, bint bigint)
 PREHOOK: type: CREATETABLE
@@ -337,11 +333,9 @@ POSTHOOK: query: drop table partcolstatsnum
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@partcolstatsnum
 POSTHOOK: Output: default@partcolstatsnum
-PREHOOK: query: -- Test type decimal in partition column
-drop table if exists partcolstatsdec
+PREHOOK: query: drop table if exists partcolstatsdec
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: -- Test type decimal in partition column
-drop table if exists partcolstatsdec
+POSTHOOK: query: drop table if exists partcolstatsdec
 POSTHOOK: type: DROPTABLE
 PREHOOK: query: create table partcolstatsdec (key int, value string) partitioned by (decpart decimal(8,4))
 PREHOOK: type: CREATETABLE
@@ -388,11 +382,9 @@ POSTHOOK: query: drop table partcolstatsdec
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@partcolstatsdec
 POSTHOOK: Output: default@partcolstatsdec
-PREHOOK: query: -- Test type varchar and char in partition column
-drop table if exists partcolstatschar
+PREHOOK: query: drop table if exists partcolstatschar
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: -- Test type varchar and char in partition column
-drop table if exists partcolstatschar
+POSTHOOK: query: drop table if exists partcolstatschar
 POSTHOOK: type: DROPTABLE
 PREHOOK: query: create table partcolstatschar (key int, value string) partitioned by (varpart varchar(5), charpart char(3))
 PREHOOK: type: CREATETABLE

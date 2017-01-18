@@ -10,17 +10,11 @@ POSTHOOK: query: CREATE TABLE part_table (key INT, value STRING) partitioned by 
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@part_table
-PREHOOK: query: -- Note that HIVE-9481 allow column list specification in INSERT statement
--- is not in CDH. So we are working around that in CDH.
--- INSERT INTO part_table PARTITION(p)(p,key,value) values('2014-09-23', 1, 'foo'),('2014-09-24', 2, 'bar');
-INSERT INTO part_table PARTITION(p) select 1 as key, 'foo' as value, '2014-09-23' as p
+PREHOOK: query: INSERT INTO part_table PARTITION(p) select 1 as key, 'foo' as value, '2014-09-23' as p
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@part_table
-POSTHOOK: query: -- Note that HIVE-9481 allow column list specification in INSERT statement
--- is not in CDH. So we are working around that in CDH.
--- INSERT INTO part_table PARTITION(p)(p,key,value) values('2014-09-23', 1, 'foo'),('2014-09-24', 2, 'bar');
-INSERT INTO part_table PARTITION(p) select 1 as key, 'foo' as value, '2014-09-23' as p
+POSTHOOK: query: INSERT INTO part_table PARTITION(p) select 1 as key, 'foo' as value, '2014-09-23' as p
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@part_table@p=2014-09-23

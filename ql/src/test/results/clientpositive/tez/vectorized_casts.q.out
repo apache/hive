@@ -1,8 +1,5 @@
-PREHOOK: query: -- Test type casting in vectorized mode to verify end-to-end functionality.
-
-explain 
+PREHOOK: query: explain 
 select 
--- to boolean
    cast (ctinyint as boolean)
   ,cast (csmallint as boolean)
   ,cast (cint as boolean)
@@ -13,7 +10,6 @@ select
   ,cast (cbigint * 0 as boolean)
   ,cast (ctimestamp1 as boolean)
   ,cast (cstring1 as boolean)
--- to int family
   ,cast (ctinyint as int)
   ,cast (csmallint as int)
   ,cast (cint as int)
@@ -27,7 +23,6 @@ select
   ,cast (cfloat as tinyint)
   ,cast (cfloat as smallint)
   ,cast (cfloat as bigint)
--- to float family
   ,cast (ctinyint as double)
   ,cast (csmallint as double)
   ,cast (cint as double)
@@ -40,7 +35,6 @@ select
   ,cast (substr(cstring1, 1, 1) as double)
   ,cast (cint as float)
   ,cast (cdouble as float)
--- to timestamp
   ,cast (ctinyint as timestamp)
   ,cast (csmallint as timestamp)
   ,cast (cint as timestamp)
@@ -52,7 +46,6 @@ select
   ,cast (ctimestamp1 as timestamp)
   ,cast (cstring1 as timestamp)
   ,cast (substr(cstring1, 1, 1) as timestamp)
--- to string
   ,cast (ctinyint as string)
   ,cast (csmallint as string)
   ,cast (cint as string)
@@ -63,20 +56,15 @@ select
   ,cast (cbigint * 0 as string)
   ,cast (ctimestamp1 as string)
   ,cast (cstring1 as string)
--- nested and expression arguments
   ,cast (cast (cfloat as int) as float)
   ,cast (cint * 2 as double)
   ,cast (sin(cfloat) as string)
   ,cast (cint as float) + cast(cboolean1 as double)
 from alltypesorc
--- limit output to a reasonably small number of rows
 where cbigint % 250 = 0
 PREHOOK: type: QUERY
-POSTHOOK: query: -- Test type casting in vectorized mode to verify end-to-end functionality.
-
-explain 
+POSTHOOK: query: explain 
 select 
--- to boolean
    cast (ctinyint as boolean)
   ,cast (csmallint as boolean)
   ,cast (cint as boolean)
@@ -87,7 +75,6 @@ select
   ,cast (cbigint * 0 as boolean)
   ,cast (ctimestamp1 as boolean)
   ,cast (cstring1 as boolean)
--- to int family
   ,cast (ctinyint as int)
   ,cast (csmallint as int)
   ,cast (cint as int)
@@ -101,7 +88,6 @@ select
   ,cast (cfloat as tinyint)
   ,cast (cfloat as smallint)
   ,cast (cfloat as bigint)
--- to float family
   ,cast (ctinyint as double)
   ,cast (csmallint as double)
   ,cast (cint as double)
@@ -114,7 +100,6 @@ select
   ,cast (substr(cstring1, 1, 1) as double)
   ,cast (cint as float)
   ,cast (cdouble as float)
--- to timestamp
   ,cast (ctinyint as timestamp)
   ,cast (csmallint as timestamp)
   ,cast (cint as timestamp)
@@ -126,7 +111,6 @@ select
   ,cast (ctimestamp1 as timestamp)
   ,cast (cstring1 as timestamp)
   ,cast (substr(cstring1, 1, 1) as timestamp)
--- to string
   ,cast (ctinyint as string)
   ,cast (csmallint as string)
   ,cast (cint as string)
@@ -137,13 +121,11 @@ select
   ,cast (cbigint * 0 as string)
   ,cast (ctimestamp1 as string)
   ,cast (cstring1 as string)
--- nested and expression arguments
   ,cast (cast (cfloat as int) as float)
   ,cast (cint * 2 as double)
   ,cast (sin(cfloat) as string)
   ,cast (cint as float) + cast(cboolean1 as double)
 from alltypesorc
--- limit output to a reasonably small number of rows
 where cbigint % 250 = 0
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -164,7 +146,6 @@ STAGE PLANS:
               ListSink
 
 PREHOOK: query: select 
--- to boolean
    cast (ctinyint as boolean)
   ,cast (csmallint as boolean)
   ,cast (cint as boolean)
@@ -175,7 +156,6 @@ PREHOOK: query: select
   ,cast (cbigint * 0 as boolean)
   ,cast (ctimestamp1 as boolean)
   ,cast (cstring1 as boolean)
--- to int family
   ,cast (ctinyint as int)
   ,cast (csmallint as int)
   ,cast (cint as int)
@@ -189,7 +169,6 @@ PREHOOK: query: select
   ,cast (cfloat as tinyint)
   ,cast (cfloat as smallint)
   ,cast (cfloat as bigint)
--- to float family
   ,cast (ctinyint as double)
   ,cast (csmallint as double)
   ,cast (cint as double)
@@ -202,7 +181,6 @@ PREHOOK: query: select
   ,cast (substr(cstring1, 1, 1) as double)
   ,cast (cint as float)
   ,cast (cdouble as float)
--- to timestamp
   ,cast (ctinyint as timestamp)
   ,cast (csmallint as timestamp)
   ,cast (cint as timestamp)
@@ -214,7 +192,6 @@ PREHOOK: query: select
   ,cast (ctimestamp1 as timestamp)
   ,cast (cstring1 as timestamp)
   ,cast (substr(cstring1, 1, 1) as timestamp)
--- to string
   ,cast (ctinyint as string)
   ,cast (csmallint as string)
   ,cast (cint as string)
@@ -225,19 +202,16 @@ PREHOOK: query: select
   ,cast (cbigint * 0 as string)
   ,cast (ctimestamp1 as string)
   ,cast (cstring1 as string)
--- nested and expression arguments
   ,cast (cast (cfloat as int) as float)
   ,cast (cint * 2 as double)
   ,cast (sin(cfloat) as string)
   ,cast (cint as float) + cast(cboolean1 as double)
 from alltypesorc
--- limit output to a reasonably small number of rows
 where cbigint % 250 = 0
 PREHOOK: type: QUERY
 PREHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 POSTHOOK: query: select 
--- to boolean
    cast (ctinyint as boolean)
   ,cast (csmallint as boolean)
   ,cast (cint as boolean)
@@ -248,7 +222,6 @@ POSTHOOK: query: select
   ,cast (cbigint * 0 as boolean)
   ,cast (ctimestamp1 as boolean)
   ,cast (cstring1 as boolean)
--- to int family
   ,cast (ctinyint as int)
   ,cast (csmallint as int)
   ,cast (cint as int)
@@ -262,7 +235,6 @@ POSTHOOK: query: select
   ,cast (cfloat as tinyint)
   ,cast (cfloat as smallint)
   ,cast (cfloat as bigint)
--- to float family
   ,cast (ctinyint as double)
   ,cast (csmallint as double)
   ,cast (cint as double)
@@ -275,7 +247,6 @@ POSTHOOK: query: select
   ,cast (substr(cstring1, 1, 1) as double)
   ,cast (cint as float)
   ,cast (cdouble as float)
--- to timestamp
   ,cast (ctinyint as timestamp)
   ,cast (csmallint as timestamp)
   ,cast (cint as timestamp)
@@ -287,7 +258,6 @@ POSTHOOK: query: select
   ,cast (ctimestamp1 as timestamp)
   ,cast (cstring1 as timestamp)
   ,cast (substr(cstring1, 1, 1) as timestamp)
--- to string
   ,cast (ctinyint as string)
   ,cast (csmallint as string)
   ,cast (cint as string)
@@ -298,13 +268,11 @@ POSTHOOK: query: select
   ,cast (cbigint * 0 as string)
   ,cast (ctimestamp1 as string)
   ,cast (cstring1 as string)
--- nested and expression arguments
   ,cast (cast (cfloat as int) as float)
   ,cast (cint * 2 as double)
   ,cast (sin(cfloat) as string)
   ,cast (cint as float) + cast(cboolean1 as double)
 from alltypesorc
--- limit output to a reasonably small number of rows
 where cbigint % 250 = 0
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc

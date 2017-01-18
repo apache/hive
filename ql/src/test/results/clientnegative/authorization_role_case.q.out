@@ -28,8 +28,7 @@ PREHOOK: Output: default@t1
 POSTHOOK: query: grant SELECT  on table t1 to role mixCaseRole1
 POSTHOOK: type: GRANT_PRIVILEGE
 POSTHOOK: Output: default@t1
-PREHOOK: query: -- grant with wrong case should fail with legacy auth
-grant UPDATE  on table t1 to role mixcaserole2
+PREHOOK: query: grant UPDATE  on table t1 to role mixcaserole2
 PREHOOK: type: GRANT_PRIVILEGE
 PREHOOK: Output: default@t1
 FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. org.apache.hadoop.hive.ql.metadata.HiveException: java.lang.RuntimeException: NoSuchObjectException(message:Role mixcaserole2 does not exist)

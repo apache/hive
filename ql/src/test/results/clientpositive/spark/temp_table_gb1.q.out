@@ -1,10 +1,8 @@
-PREHOOK: query: -- Taken from groupby2.q
-CREATE TABLE dest_g2(key STRING, c1 INT, c2 STRING) STORED AS TEXTFILE
+PREHOOK: query: CREATE TABLE dest_g2(key STRING, c1 INT, c2 STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@dest_g2
-POSTHOOK: query: -- Taken from groupby2.q
-CREATE TABLE dest_g2(key STRING, c1 INT, c2 STRING) STORED AS TEXTFILE
+POSTHOOK: query: CREATE TABLE dest_g2(key STRING, c1 INT, c2 STRING) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@dest_g2

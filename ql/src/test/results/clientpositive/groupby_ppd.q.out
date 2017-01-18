@@ -1,10 +1,8 @@
-PREHOOK: query: -- see HIVE-2382
-create table invites (id int, foo int, bar int)
+PREHOOK: query: create table invites (id int, foo int, bar int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@invites
-POSTHOOK: query: -- see HIVE-2382
-create table invites (id int, foo int, bar int)
+POSTHOOK: query: create table invites (id int, foo int, bar int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@invites

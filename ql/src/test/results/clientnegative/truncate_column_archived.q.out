@@ -1,10 +1,6 @@
-PREHOOK: query: -- Tests truncating a column from an archived partition
-
-CREATE TABLE test_tab (key STRING, value STRING) PARTITIONED BY (part STRING) STORED AS RCFILE
+PREHOOK: query: CREATE TABLE test_tab (key STRING, value STRING) PARTITIONED BY (part STRING) STORED AS RCFILE
 PREHOOK: type: CREATETABLE
-POSTHOOK: query: -- Tests truncating a column from an archived partition
-
-CREATE TABLE test_tab (key STRING, value STRING) PARTITIONED BY (part STRING) STORED AS RCFILE
+POSTHOOK: query: CREATE TABLE test_tab (key STRING, value STRING) PARTITIONED BY (part STRING) STORED AS RCFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@test_tab
 PREHOOK: query: INSERT OVERWRITE TABLE test_tab PARTITION (part = '1') SELECT * FROM src

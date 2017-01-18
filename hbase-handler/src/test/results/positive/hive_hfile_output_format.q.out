@@ -1,12 +1,8 @@
-#### A masked pattern was here ####
-
-CREATE TABLE source(id INT, longitude DOUBLE, latitude DOUBLE)
+PREHOOK: query: CREATE TABLE source(id INT, longitude DOUBLE, latitude DOUBLE)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@source
-#### A masked pattern was here ####
-
-CREATE TABLE source(id INT, longitude DOUBLE, latitude DOUBLE)
+POSTHOOK: query: CREATE TABLE source(id INT, longitude DOUBLE, latitude DOUBLE)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@source

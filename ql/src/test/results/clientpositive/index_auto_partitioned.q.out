@@ -1,11 +1,7 @@
-PREHOOK: query: -- SORT_QUERY_RESULTS
--- test automatic use of index on table with partitions
-CREATE INDEX src_part_index ON TABLE srcpart(key) as 'COMPACT' WITH DEFERRED REBUILD
+PREHOOK: query: CREATE INDEX src_part_index ON TABLE srcpart(key) as 'COMPACT' WITH DEFERRED REBUILD
 PREHOOK: type: CREATEINDEX
 PREHOOK: Input: default@srcpart
-POSTHOOK: query: -- SORT_QUERY_RESULTS
--- test automatic use of index on table with partitions
-CREATE INDEX src_part_index ON TABLE srcpart(key) as 'COMPACT' WITH DEFERRED REBUILD
+POSTHOOK: query: CREATE INDEX src_part_index ON TABLE srcpart(key) as 'COMPACT' WITH DEFERRED REBUILD
 POSTHOOK: type: CREATEINDEX
 POSTHOOK: Input: default@srcpart
 POSTHOOK: Output: default@default__srcpart_src_part_index__

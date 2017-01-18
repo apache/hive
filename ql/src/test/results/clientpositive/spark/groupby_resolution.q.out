@@ -494,8 +494,7 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: -- windowing after group by
-select key, count(*), rank() over(order by count(*))
+PREHOOK: query: select key, count(*), rank() over(order by count(*))
 from src b
 where key < '12'
 group by b.key
@@ -503,8 +502,7 @@ order by b.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
-POSTHOOK: query: -- windowing after group by
-select key, count(*), rank() over(order by count(*))
+POSTHOOK: query: select key, count(*), rank() over(order by count(*))
 from src b
 where key < '12'
 group by b.key
@@ -525,8 +523,7 @@ POSTHOOK: Input: default@src
 116	1	1
 118	2	7
 119	3	12
-PREHOOK: query: -- having after group by
-select key, count(*)
+PREHOOK: query: select key, count(*)
 from src b
 group by b.key
 having key < '12'
@@ -534,8 +531,7 @@ order by b.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
-POSTHOOK: query: -- having after group by
-select key, count(*)
+POSTHOOK: query: select key, count(*)
 from src b
 group by b.key
 having key < '12'
@@ -556,8 +552,7 @@ POSTHOOK: Input: default@src
 116	1
 118	2
 119	3
-PREHOOK: query: -- having and windowing
-select key, count(*), rank() over(order by count(*))
+PREHOOK: query: select key, count(*), rank() over(order by count(*))
 from src b
 group by b.key
 having key < '12'
@@ -565,8 +560,7 @@ order by b.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
-POSTHOOK: query: -- having and windowing
-select key, count(*), rank() over(order by count(*))
+POSTHOOK: query: select key, count(*), rank() over(order by count(*))
 from src b
 group by b.key
 having key < '12'
@@ -705,8 +699,7 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: -- order by
-select key 
+PREHOOK: query: select key 
 from src t 
 where key < '12'
 group by t.key 
@@ -714,8 +707,7 @@ order by t.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
-POSTHOOK: query: -- order by
-select key 
+POSTHOOK: query: select key 
 from src t 
 where key < '12'
 group by t.key 
@@ -736,12 +728,10 @@ POSTHOOK: Input: default@src
 116
 118
 119
-PREHOOK: query: -- cluster by
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT x.key, x.value as key FROM SRC x CLUSTER BY key
 PREHOOK: type: QUERY
-POSTHOOK: query: -- cluster by
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT x.key, x.value as key FROM SRC x CLUSTER BY key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:

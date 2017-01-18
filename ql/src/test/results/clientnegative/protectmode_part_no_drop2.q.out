@@ -1,11 +1,7 @@
-PREHOOK: query: -- protect mode: syntax to change protect mode works and queries to drop partitions are blocked if it is marked no drop
-
-create database if not exists db1
+PREHOOK: query: create database if not exists db1
 PREHOOK: type: CREATEDATABASE
 PREHOOK: Output: database:db1
-POSTHOOK: query: -- protect mode: syntax to change protect mode works and queries to drop partitions are blocked if it is marked no drop
-
-create database if not exists db1
+POSTHOOK: query: create database if not exists db1
 POSTHOOK: type: CREATEDATABASE
 POSTHOOK: Output: database:db1
 PREHOOK: query: use db1

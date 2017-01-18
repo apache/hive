@@ -1,20 +1,14 @@
 
 
--- This query should appear in the Hive CLI output.
--- We test DriverTestHook, which does exactly that.
--- This should not break.
+
+
+
 SELECT * FROM src LIMIT 1
-PREHOOK: query: -- This query should appear in the Hive CLI output.
--- We test DriverTestHook, which does exactly that.
--- This should not break.
-SELECT * FROM src LIMIT 1
+PREHOOK: query: SELECT * FROM src LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
-POSTHOOK: query: -- This query should appear in the Hive CLI output.
--- We test DriverTestHook, which does exactly that.
--- This should not break.
-SELECT * FROM src LIMIT 1
+POSTHOOK: query: SELECT * FROM src LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####

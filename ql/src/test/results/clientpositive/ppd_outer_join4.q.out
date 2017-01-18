@@ -1,6 +1,4 @@
-PREHOOK: query: -- SORT_QUERY_RESULTS
-
-EXPLAIN
+PREHOOK: query: EXPLAIN
  FROM 
   src a
  LEFT OUTER JOIN
@@ -12,9 +10,7 @@ EXPLAIN
  SELECT a.key, a.value, b.key, b.value, c.key
  WHERE a.key > '10' AND a.key < '20' AND b.key > '15' AND b.key < '25' AND sqrt(c.key) <> 13
 PREHOOK: type: QUERY
-POSTHOOK: query: -- SORT_QUERY_RESULTS
-
-EXPLAIN
+POSTHOOK: query: EXPLAIN
  FROM 
   src a
  LEFT OUTER JOIN

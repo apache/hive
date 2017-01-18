@@ -15,8 +15,7 @@ No rows affected
 >>>  set hive.merge.mapredfiles=false; 
 No rows affected 
 >>>  
->>>  -- Create bucketed and sorted tables
->>>  CREATE TABLE test_table1 (key INT, value STRING) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS;
+>>>  >>>  CREATE TABLE test_table1 (key INT, value STRING) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS;
 DEBUG : Acquire a monitor for compiling query
 INFO  : Compiling commandqueryId=(!!{queryId}!!): CREATE TABLE test_table1 (key INT, value STRING) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
 DEBUG : Encoding valid txns info 9223372036854775807:
@@ -142,8 +141,7 @@ INSERT OVERWRITE TABLE test_table1 SELECT *
 INSERT OVERWRITE TABLE test_table2 SELECT *
 No rows affected 
 >>>  
->>>  -- Mapjoin followed by a aggregation should be performed in a single MR job
->>>  EXPLAIN
+>>>  >>>  EXPLAIN
 SELECT /*+mapjoin(b)*/ count(*) FROM test_table1 a JOIN test_table2 b ON a.key = b.key;
 DEBUG : Acquire a monitor for compiling query
 INFO  : Compiling commandqueryId=(!!{queryId}!!): EXPLAIN

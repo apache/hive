@@ -1,14 +1,8 @@
-PREHOOK: query: -- Tests trying to (possible) dynamic insert into archived partition.
--- EXCLUDE_HADOOP_MAJOR_VERSIONS(0.17, 0.18, 0.19)
-
-CREATE TABLE tstsrcpart LIKE srcpart
+PREHOOK: query: CREATE TABLE tstsrcpart LIKE srcpart
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@tstsrcpart
-POSTHOOK: query: -- Tests trying to (possible) dynamic insert into archived partition.
--- EXCLUDE_HADOOP_MAJOR_VERSIONS(0.17, 0.18, 0.19)
-
-CREATE TABLE tstsrcpart LIKE srcpart
+POSTHOOK: query: CREATE TABLE tstsrcpart LIKE srcpart
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tstsrcpart

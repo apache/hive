@@ -47,8 +47,7 @@ val_10	10	1
 val_100	200	2
 val_103	206	2
 val_104	208	2
-PREHOOK: query: -- should match the query from src
-select value, sum(cast(key as int)), count(*) numrows
+PREHOOK: query: select value, sum(cast(key as int)), count(*) numrows
 from char_2
 group by value
 order by value asc
@@ -56,8 +55,7 @@ limit 5
 PREHOOK: type: QUERY
 PREHOOK: Input: default@char_2
 #### A masked pattern was here ####
-POSTHOOK: query: -- should match the query from src
-select value, sum(cast(key as int)), count(*) numrows
+POSTHOOK: query: select value, sum(cast(key as int)), count(*) numrows
 from char_2
 group by value
 order by value asc
@@ -91,8 +89,7 @@ val_97	194	2
 val_96	96	1
 val_95	190	2
 val_92	92	1
-PREHOOK: query: -- should match the query from src
-select value, sum(cast(key as int)), count(*) numrows
+PREHOOK: query: select value, sum(cast(key as int)), count(*) numrows
 from char_2
 group by value
 order by value desc
@@ -100,8 +97,7 @@ limit 5
 PREHOOK: type: QUERY
 PREHOOK: Input: default@char_2
 #### A masked pattern was here ####
-POSTHOOK: query: -- should match the query from src
-select value, sum(cast(key as int)), count(*) numrows
+POSTHOOK: query: select value, sum(cast(key as int)), count(*) numrows
 from char_2
 group by value
 order by value desc

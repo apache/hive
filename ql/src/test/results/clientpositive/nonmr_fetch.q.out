@@ -1,8 +1,6 @@
-PREHOOK: query: -- backward compatible (minimal)
-explain select * from src limit 10
+PREHOOK: query: explain select * from src limit 10
 PREHOOK: type: QUERY
-POSTHOOK: query: -- backward compatible (minimal)
-explain select * from src limit 10
+POSTHOOK: query: explain select * from src limit 10
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
@@ -128,11 +126,9 @@ POSTHOOK: Input: default@src
 278
 98
 484
-PREHOOK: query: -- negative, filter on non-partition column
-explain select * from srcpart where key > 100 limit 10
+PREHOOK: query: explain select * from srcpart where key > 100 limit 10
 PREHOOK: type: QUERY
-POSTHOOK: query: -- negative, filter on non-partition column
-explain select * from srcpart where key > 100 limit 10
+POSTHOOK: query: explain select * from srcpart where key > 100 limit 10
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
@@ -183,11 +179,9 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
 265	val_265	2008-04-08	11
 193	val_193	2008-04-08	11
 401	val_401	2008-04-08	11
-PREHOOK: query: -- negative, table sampling
-explain select * from src TABLESAMPLE (0.25 PERCENT) limit 10
+PREHOOK: query: explain select * from src TABLESAMPLE (0.25 PERCENT) limit 10
 PREHOOK: type: QUERY
-POSTHOOK: query: -- negative, table sampling
-explain select * from src TABLESAMPLE (0.25 PERCENT) limit 10
+POSTHOOK: query: explain select * from src TABLESAMPLE (0.25 PERCENT) limit 10
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -239,11 +233,9 @@ POSTHOOK: Input: default@src
 278	val_278
 98	val_98
 484	val_484
-PREHOOK: query: -- backward compatible (more)
-explain select * from src limit 10
+PREHOOK: query: explain select * from src limit 10
 PREHOOK: type: QUERY
-POSTHOOK: query: -- backward compatible (more)
-explain select * from src limit 10
+POSTHOOK: query: explain select * from src limit 10
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
@@ -327,11 +319,9 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 278	val_278	2008-04-08	11
 98	val_98	2008-04-08	11
 484	val_484	2008-04-08	11
-PREHOOK: query: -- select expression
-explain select cast(key as int) * 10, upper(value) from src limit 10
+PREHOOK: query: explain select cast(key as int) * 10, upper(value) from src limit 10
 PREHOOK: type: QUERY
-POSTHOOK: query: -- select expression
-explain select cast(key as int) * 10, upper(value) from src limit 10
+POSTHOOK: query: explain select cast(key as int) * 10, upper(value) from src limit 10
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
@@ -371,11 +361,9 @@ POSTHOOK: Input: default@src
 2780	VAL_278
 980	VAL_98
 4840	VAL_484
-PREHOOK: query: -- filter on non-partition column
-explain select key from src where key < 100 limit 10
+PREHOOK: query: explain select key from src where key < 100 limit 10
 PREHOOK: type: QUERY
-POSTHOOK: query: -- filter on non-partition column
-explain select key from src where key < 100 limit 10
+POSTHOOK: query: explain select key from src where key < 100 limit 10
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
@@ -418,11 +406,9 @@ POSTHOOK: Input: default@src
 17
 0
 57
-PREHOOK: query: -- select expr for partitioned table
-explain select key from srcpart where ds='2008-04-08' AND hr='11' limit 10
+PREHOOK: query: explain select key from srcpart where ds='2008-04-08' AND hr='11' limit 10
 PREHOOK: type: QUERY
-POSTHOOK: query: -- select expr for partitioned table
-explain select key from srcpart where ds='2008-04-08' AND hr='11' limit 10
+POSTHOOK: query: explain select key from srcpart where ds='2008-04-08' AND hr='11' limit 10
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
@@ -464,11 +450,9 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 278
 98
 484
-PREHOOK: query: -- virtual columns
-explain select *, BLOCK__OFFSET__INSIDE__FILE from src where key < 10 limit 10
+PREHOOK: query: explain select *, BLOCK__OFFSET__INSIDE__FILE from src where key < 10 limit 10
 PREHOOK: type: QUERY
-POSTHOOK: query: -- virtual columns
-explain select *, BLOCK__OFFSET__INSIDE__FILE from src where key < 10 limit 10
+POSTHOOK: query: explain select *, BLOCK__OFFSET__INSIDE__FILE from src where key < 10 limit 10
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
@@ -511,11 +495,9 @@ POSTHOOK: Input: default@src
 17	val_17	910
 0	val_0	968
 57	val_57	1024
-PREHOOK: query: -- virtual columns on partitioned table
-explain select *, BLOCK__OFFSET__INSIDE__FILE from srcpart where key < 10 limit 30
+PREHOOK: query: explain select *, BLOCK__OFFSET__INSIDE__FILE from srcpart where key < 10 limit 30
 PREHOOK: type: QUERY
-POSTHOOK: query: -- virtual columns on partitioned table
-explain select *, BLOCK__OFFSET__INSIDE__FILE from srcpart where key < 10 limit 30
+POSTHOOK: query: explain select *, BLOCK__OFFSET__INSIDE__FILE from srcpart where key < 10 limit 30
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
@@ -586,11 +568,9 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
 2	val_2	2008-04-09	11	4004
 5	val_5	2008-04-09	11	4540
 9	val_9	2008-04-09	11	5398
-PREHOOK: query: -- bucket sampling
-explain select *, BLOCK__OFFSET__INSIDE__FILE from src TABLESAMPLE (BUCKET 1 OUT OF 40 ON key)
+PREHOOK: query: explain select *, BLOCK__OFFSET__INSIDE__FILE from src TABLESAMPLE (BUCKET 1 OUT OF 40 ON key)
 PREHOOK: type: QUERY
-POSTHOOK: query: -- bucket sampling
-explain select *, BLOCK__OFFSET__INSIDE__FILE from src TABLESAMPLE (BUCKET 1 OUT OF 40 ON key)
+POSTHOOK: query: explain select *, BLOCK__OFFSET__INSIDE__FILE from src TABLESAMPLE (BUCKET 1 OUT OF 40 ON key)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
@@ -695,11 +675,9 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
 77	val_77	2008-04-09	12	2622
 187	val_187	2008-04-09	12	4516
 448	val_448	2008-04-09	12	5636
-PREHOOK: query: -- split sampling
-explain select * from src TABLESAMPLE (0.25 PERCENT)
+PREHOOK: query: explain select * from src TABLESAMPLE (0.25 PERCENT)
 PREHOOK: type: QUERY
-POSTHOOK: query: -- split sampling
-explain select * from src TABLESAMPLE (0.25 PERCENT)
+POSTHOOK: query: explain select * from src TABLESAMPLE (0.25 PERCENT)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
@@ -773,12 +751,10 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
 86	val_86	2008-04-09	11	12
 238	val_238	2008-04-09	12	0
 86	val_86	2008-04-09	12	12
-PREHOOK: query: -- sub query
-explain
+PREHOOK: query: explain
 select key, value from (select value key,key value from src where key > 200) a where value < 250 limit 20
 PREHOOK: type: QUERY
-POSTHOOK: query: -- sub query
-explain
+POSTHOOK: query: explain
 select key, value from (select value key,key value from src where key > 200) a where value < 250 limit 20
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -832,12 +808,10 @@ val_221	221
 val_241	241
 val_230	230
 val_217	217
-PREHOOK: query: -- lateral view
-explain
+PREHOOK: query: explain
 select key,X from srcpart lateral view explode(array(key,value)) L as x where (ds='2008-04-08' AND hr='11') limit 20
 PREHOOK: type: QUERY
-POSTHOOK: query: -- lateral view
-explain
+POSTHOOK: query: explain
 select key,X from srcpart lateral view explode(array(key,value)) L as x where (ds='2008-04-08' AND hr='11') limit 20
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -917,11 +891,9 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 98	val_98
 484	484
 484	val_484
-PREHOOK: query: -- non deterministic func
-explain select key, value, BLOCK__OFFSET__INSIDE__FILE from srcpart where ds="2008-04-09" AND rand() > 1
+PREHOOK: query: explain select key, value, BLOCK__OFFSET__INSIDE__FILE from srcpart where ds="2008-04-09" AND rand() > 1
 PREHOOK: type: QUERY
-POSTHOOK: query: -- non deterministic func
-explain select key, value, BLOCK__OFFSET__INSIDE__FILE from srcpart where ds="2008-04-09" AND rand() > 1
+POSTHOOK: query: explain select key, value, BLOCK__OFFSET__INSIDE__FILE from srcpart where ds="2008-04-09" AND rand() > 1
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
@@ -955,11 +927,9 @@ POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
 #### A masked pattern was here ####
-PREHOOK: query: -- negative, groupby
-explain select key, count(value) from src group by key
+PREHOOK: query: explain select key, count(value) from src group by key
 PREHOOK: type: QUERY
-POSTHOOK: query: -- negative, groupby
-explain select key, count(value) from src group by key
+POSTHOOK: query: explain select key, count(value) from src group by key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -1009,11 +979,9 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: -- negative, distinct
-explain select distinct key, value from src
+PREHOOK: query: explain select distinct key, value from src
 PREHOOK: type: QUERY
-POSTHOOK: query: -- negative, distinct
-explain select distinct key, value from src
+POSTHOOK: query: explain select distinct key, value from src
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -1060,11 +1028,9 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: -- negative, CTAS
-explain create table srcx as select distinct key, value from src
+PREHOOK: query: explain create table srcx as select distinct key, value from src
 PREHOOK: type: CREATETABLE_AS_SELECT
-POSTHOOK: query: -- negative, CTAS
-explain create table srcx as select distinct key, value from src
+POSTHOOK: query: explain create table srcx as select distinct key, value from src
 POSTHOOK: type: CREATETABLE_AS_SELECT
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -1126,11 +1092,9 @@ STAGE PLANS:
   Stage: Stage-2
     Stats-Aggr Operator
 
-PREHOOK: query: -- negative, analyze
-explain analyze table src compute statistics
+PREHOOK: query: explain analyze table src compute statistics
 PREHOOK: type: QUERY
-POSTHOOK: query: -- negative, analyze
-explain analyze table src compute statistics
+POSTHOOK: query: explain analyze table src compute statistics
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
@@ -1147,11 +1111,9 @@ STAGE PLANS:
   Stage: Stage-1
     Stats-Aggr Operator
 
-PREHOOK: query: -- negative, join
-explain select * from src join src src2 on src.key=src2.key
+PREHOOK: query: explain select * from src join src src2 on src.key=src2.key
 PREHOOK: type: QUERY
-POSTHOOK: query: -- negative, join
-explain select * from src join src src2 on src.key=src2.key
+POSTHOOK: query: explain select * from src join src src2 on src.key=src2.key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage

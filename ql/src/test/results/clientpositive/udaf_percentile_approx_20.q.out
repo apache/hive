@@ -1,11 +1,7 @@
-PREHOOK: query: -- INCLUDE_HADOOP_MAJOR_VERSIONS(0.20, 0.20S)
-
-CREATE TABLE bucket (key double, value string) CLUSTERED BY (key) SORTED BY (key DESC)  INTO 4 BUCKETS STORED AS TEXTFILE
+PREHOOK: query: CREATE TABLE bucket (key double, value string) CLUSTERED BY (key) SORTED BY (key DESC)  INTO 4 BUCKETS STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-POSTHOOK: query: -- INCLUDE_HADOOP_MAJOR_VERSIONS(0.20, 0.20S)
-
-CREATE TABLE bucket (key double, value string) CLUSTERED BY (key) SORTED BY (key DESC)  INTO 4 BUCKETS STORED AS TEXTFILE
+POSTHOOK: query: CREATE TABLE bucket (key double, value string) CLUSTERED BY (key) SORTED BY (key DESC)  INTO 4 BUCKETS STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@bucket
@@ -125,8 +121,7 @@ POSTHOOK: query: create table t12 (result array<double>)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t12
-PREHOOK: query: -- disable map-side aggregation
-FROM bucket
+PREHOOK: query: FROM bucket
 insert overwrite table t1 SELECT percentile_approx(cast(key AS double), 0.5)
 insert overwrite table t2 SELECT percentile_approx(cast(key AS double), 0.5, 100)
 insert overwrite table t3 SELECT percentile_approx(cast(key AS double), 0.5, 1000)
@@ -156,8 +151,7 @@ PREHOOK: Output: default@t6
 PREHOOK: Output: default@t7
 PREHOOK: Output: default@t8
 PREHOOK: Output: default@t9
-POSTHOOK: query: -- disable map-side aggregation
-FROM bucket
+POSTHOOK: query: FROM bucket
 insert overwrite table t1 SELECT percentile_approx(cast(key AS double), 0.5)
 insert overwrite table t2 SELECT percentile_approx(cast(key AS double), 0.5, 100)
 insert overwrite table t3 SELECT percentile_approx(cast(key AS double), 0.5, 1000)
@@ -307,8 +301,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t12
 #### A masked pattern was here ####
 [26.0,255.5,479.0,491.0]
-PREHOOK: query: -- enable map-side aggregation
-FROM bucket
+PREHOOK: query: FROM bucket
 insert overwrite table t1 SELECT percentile_approx(cast(key AS double), 0.5)
 insert overwrite table t2 SELECT percentile_approx(cast(key AS double), 0.5, 100)
 insert overwrite table t3 SELECT percentile_approx(cast(key AS double), 0.5, 1000)
@@ -338,8 +331,7 @@ PREHOOK: Output: default@t6
 PREHOOK: Output: default@t7
 PREHOOK: Output: default@t8
 PREHOOK: Output: default@t9
-POSTHOOK: query: -- enable map-side aggregation
-FROM bucket
+POSTHOOK: query: FROM bucket
 insert overwrite table t1 SELECT percentile_approx(cast(key AS double), 0.5)
 insert overwrite table t2 SELECT percentile_approx(cast(key AS double), 0.5, 100)
 insert overwrite table t3 SELECT percentile_approx(cast(key AS double), 0.5, 1000)

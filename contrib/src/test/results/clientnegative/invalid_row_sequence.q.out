@@ -1,10 +1,6 @@
-PREHOOK: query: -- Verify that a stateful UDF cannot be used outside of the SELECT list
-
-drop temporary function row_sequence
+PREHOOK: query: drop temporary function row_sequence
 PREHOOK: type: DROPFUNCTION
-POSTHOOK: query: -- Verify that a stateful UDF cannot be used outside of the SELECT list
-
-drop temporary function row_sequence
+POSTHOOK: query: drop temporary function row_sequence
 POSTHOOK: type: DROPFUNCTION
 PREHOOK: query: create temporary function row_sequence as 
 'org.apache.hadoop.hive.contrib.udf.UDFRowSequence'

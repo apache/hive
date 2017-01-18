@@ -1,16 +1,6 @@
-PREHOOK: query: -- INCLUDE_OS_WINDOWS
--- included only on  windows because of difference in file name encoding logic
-
--- INCLUDE_HADOOP_MAJOR_VERSIONS(0.20, 0.20S)
-
-create table combine2(key string) partitioned by (value string)
+PREHOOK: query: create table combine2(key string) partitioned by (value string)
 PREHOOK: type: CREATETABLE
-POSTHOOK: query: -- INCLUDE_OS_WINDOWS
--- included only on  windows because of difference in file name encoding logic
-
--- INCLUDE_HADOOP_MAJOR_VERSIONS(0.20, 0.20S)
-
-create table combine2(key string) partitioned by (value string)
+POSTHOOK: query: create table combine2(key string) partitioned by (value string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@combine2
 PREHOOK: query: insert overwrite table combine2 partition(value) 

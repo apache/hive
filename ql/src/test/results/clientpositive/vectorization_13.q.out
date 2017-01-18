@@ -253,8 +253,7 @@ NULL	-56	1969-12-31 16:00:13.958	-56.0	NULL	56	-56	0	-56.0	-0.0	56.0	-4454.968	0
 NULL	-56	1969-12-31 16:00:15.038	-56.0	NULL	56	-56	0	-56.0	-0.0	56.0	-4454.968	0.0	56.0	0.0	-10.175	-56.0	0.4692857142857143	-56.0	0.0	-56
 NULL	-55	1969-12-31 16:00:11.38	-55.0	NULL	55	-55	0	-55.0	-0.0	55.0	-4375.415	0.0	55.0	0.0	-10.175	-55.0	0.47781818181818186	-55.0	0.0	-55
 NULL	-55	1969-12-31 16:00:11.751	-55.0	NULL	55	-55	0	-55.0	-0.0	55.0	-4375.415	0.0	55.0	0.0	-10.175	-55.0	0.47781818181818186	-55.0	0.0	-55
-PREHOOK: query: -- double compare timestamp
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT   cboolean1,
          ctinyint,
          ctimestamp1,
@@ -287,8 +286,7 @@ GROUP BY cboolean1, ctinyint, ctimestamp1, cfloat, cstring1
 ORDER BY cboolean1, ctinyint, ctimestamp1, cfloat, cstring1
 LIMIT 40
 PREHOOK: type: QUERY
-POSTHOOK: query: -- double compare timestamp
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT   cboolean1,
          ctinyint,
          ctimestamp1,

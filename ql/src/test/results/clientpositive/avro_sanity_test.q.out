@@ -1,7 +1,4 @@
-PREHOOK: query: -- SORT_QUERY_RESULTS
-
--- verify that we can actually read avro files
-CREATE TABLE doctors 
+PREHOOK: query: CREATE TABLE doctors 
 ROW FORMAT
 SERDE 'org.apache.hadoop.hive.serde2.avro.AvroSerDe'
 STORED AS
@@ -32,10 +29,7 @@ TBLPROPERTIES ('avro.schema.literal'='{
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@doctors
-POSTHOOK: query: -- SORT_QUERY_RESULTS
-
--- verify that we can actually read avro files
-CREATE TABLE doctors 
+POSTHOOK: query: CREATE TABLE doctors 
 ROW FORMAT
 SERDE 'org.apache.hadoop.hive.serde2.avro.AvroSerDe'
 STORED AS

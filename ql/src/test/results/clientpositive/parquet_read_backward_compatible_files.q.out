@@ -1,7 +1,4 @@
-PREHOOK: query: -- This test makes sure that parquet can read older parquet files written by Hive <= 0.12
--- alltypesparquet is a files written by older version of Hive
-
-CREATE TABLE alltypesparquet (
+PREHOOK: query: CREATE TABLE alltypesparquet (
     bo1 boolean,
     ti1 tinyint,
     si1 smallint,
@@ -17,10 +14,7 @@ CREATE TABLE alltypesparquet (
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@alltypesparquet
-POSTHOOK: query: -- This test makes sure that parquet can read older parquet files written by Hive <= 0.12
--- alltypesparquet is a files written by older version of Hive
-
-CREATE TABLE alltypesparquet (
+POSTHOOK: query: CREATE TABLE alltypesparquet (
     bo1 boolean,
     ti1 tinyint,
     si1 smallint,

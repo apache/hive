@@ -1,25 +1,18 @@
-PREHOOK: query: -- current user has been set (comment line before the set cmd is resulting in parse error!!)
-
-CREATE TABLE table_priv_allf(i int)
+PREHOOK: query: CREATE TABLE table_priv_allf(i int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@table_priv_allf
-POSTHOOK: query: -- current user has been set (comment line before the set cmd is resulting in parse error!!)
-
-CREATE TABLE table_priv_allf(i int)
+POSTHOOK: query: CREATE TABLE table_priv_allf(i int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@table_priv_allf
-PREHOOK: query: -- grant insert to user2 WITH grant option
-GRANT INSERT ON table_priv_allf TO USER user2 with grant option
+PREHOOK: query: GRANT INSERT ON table_priv_allf TO USER user2 with grant option
 PREHOOK: type: GRANT_PRIVILEGE
 PREHOOK: Output: default@table_priv_allf
-POSTHOOK: query: -- grant insert to user2 WITH grant option
-GRANT INSERT ON table_priv_allf TO USER user2 with grant option
+POSTHOOK: query: GRANT INSERT ON table_priv_allf TO USER user2 with grant option
 POSTHOOK: type: GRANT_PRIVILEGE
 POSTHOOK: Output: default@table_priv_allf
-PREHOOK: query: -- try grant all to user3, without having all privileges
-GRANT ALL ON table_priv_allf TO USER user3
+PREHOOK: query: GRANT ALL ON table_priv_allf TO USER user3
 PREHOOK: type: GRANT_PRIVILEGE
 PREHOOK: Output: default@table_priv_allf
 FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. Permission denied: Principal [name=user2, type=USER] does not have following privileges for operation GRANT_PRIVILEGE [[SELECT with grant, UPDATE with grant, DELETE with grant] on Object [type=TABLE_OR_VIEW, name=default.table_priv_allf]]

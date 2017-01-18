@@ -8,9 +8,7 @@ POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@alltypesorc
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@decimal_test
-PREHOOK: query: -- Test math functions in vectorized mode to verify they run correctly end-to-end.
-
-explain 
+PREHOOK: query: explain 
 select
    cdecimal1
   ,Round(cdecimal1, 2)
@@ -20,10 +18,8 @@ select
   ,round(Exp(cdecimal1), 58)
   ,Ln(cdecimal1)  
   ,Log10(cdecimal1)
-  -- Use log2 as a representative function to test all input types.
-  ,Log2(cdecimal1)
-  -- Use 15601.0 to test zero handling, as there are no zeroes in the table
-  ,Log2(cdecimal1 - 15601.0)
+    ,Log2(cdecimal1)
+    ,Log2(cdecimal1 - 15601.0)
   ,Log(2.0, cdecimal1)
   ,Pow(log2(cdecimal1), 2.0)  
   ,Power(log2(cdecimal1), 2.0)
@@ -39,17 +35,12 @@ select
   ,Positive(cdecimal1)
   ,Negative(cdecimal1)
   ,Sign(cdecimal1)
-  -- Test nesting
-  ,cos(-sin(log(cdecimal1)) + 3.14159)
+    ,cos(-sin(log(cdecimal1)) + 3.14159)
 from decimal_test
--- limit output to a reasonably small number of rows
 where cbigint % 500 = 0
--- test use of a math function in the WHERE clause
 and sin(cdecimal1) >= -1.0
 PREHOOK: type: QUERY
-POSTHOOK: query: -- Test math functions in vectorized mode to verify they run correctly end-to-end.
-
-explain 
+POSTHOOK: query: explain 
 select
    cdecimal1
   ,Round(cdecimal1, 2)
@@ -59,10 +50,8 @@ select
   ,round(Exp(cdecimal1), 58)
   ,Ln(cdecimal1)  
   ,Log10(cdecimal1)
-  -- Use log2 as a representative function to test all input types.
-  ,Log2(cdecimal1)
-  -- Use 15601.0 to test zero handling, as there are no zeroes in the table
-  ,Log2(cdecimal1 - 15601.0)
+    ,Log2(cdecimal1)
+    ,Log2(cdecimal1 - 15601.0)
   ,Log(2.0, cdecimal1)
   ,Pow(log2(cdecimal1), 2.0)  
   ,Power(log2(cdecimal1), 2.0)
@@ -78,12 +67,9 @@ select
   ,Positive(cdecimal1)
   ,Negative(cdecimal1)
   ,Sign(cdecimal1)
-  -- Test nesting
-  ,cos(-sin(log(cdecimal1)) + 3.14159)
+    ,cos(-sin(log(cdecimal1)) + 3.14159)
 from decimal_test
--- limit output to a reasonably small number of rows
 where cbigint % 500 = 0
--- test use of a math function in the WHERE clause
 and sin(cdecimal1) >= -1.0
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -112,10 +98,8 @@ PREHOOK: query: select
   ,round(Exp(cdecimal1), 58)
   ,Ln(cdecimal1)  
   ,Log10(cdecimal1)
-  -- Use log2 as a representative function to test all input types.
-  ,Log2(cdecimal1)
-  -- Use 15601.0 to test zero handling, as there are no zeroes in the table
-  ,Log2(cdecimal1 - 15601.0)
+    ,Log2(cdecimal1)
+    ,Log2(cdecimal1 - 15601.0)
   ,Log(2.0, cdecimal1)
   ,Pow(log2(cdecimal1), 2.0)  
   ,Power(log2(cdecimal1), 2.0)
@@ -131,12 +115,9 @@ PREHOOK: query: select
   ,Positive(cdecimal1)
   ,Negative(cdecimal1)
   ,Sign(cdecimal1)
-  -- Test nesting
-  ,cos(-sin(log(cdecimal1)) + 3.14159)
+    ,cos(-sin(log(cdecimal1)) + 3.14159)
 from decimal_test
--- limit output to a reasonably small number of rows
 where cbigint % 500 = 0
--- test use of a math function in the WHERE clause
 and sin(cdecimal1) >= -1.0
 PREHOOK: type: QUERY
 PREHOOK: Input: default@decimal_test
@@ -150,10 +131,8 @@ POSTHOOK: query: select
   ,round(Exp(cdecimal1), 58)
   ,Ln(cdecimal1)  
   ,Log10(cdecimal1)
-  -- Use log2 as a representative function to test all input types.
-  ,Log2(cdecimal1)
-  -- Use 15601.0 to test zero handling, as there are no zeroes in the table
-  ,Log2(cdecimal1 - 15601.0)
+    ,Log2(cdecimal1)
+    ,Log2(cdecimal1 - 15601.0)
   ,Log(2.0, cdecimal1)
   ,Pow(log2(cdecimal1), 2.0)  
   ,Power(log2(cdecimal1), 2.0)
@@ -169,12 +148,9 @@ POSTHOOK: query: select
   ,Positive(cdecimal1)
   ,Negative(cdecimal1)
   ,Sign(cdecimal1)
-  -- Test nesting
-  ,cos(-sin(log(cdecimal1)) + 3.14159)
+    ,cos(-sin(log(cdecimal1)) + 3.14159)
 from decimal_test
--- limit output to a reasonably small number of rows
 where cbigint % 500 = 0
--- test use of a math function in the WHERE clause
 and sin(cdecimal1) >= -1.0
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_test

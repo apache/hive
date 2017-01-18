@@ -1,12 +1,8 @@
-PREHOOK: query: -- INCLUDE_HADOOP_MAJOR_VERSIONS(0.23)
-
-CREATE TABLE fact_daily(x int) PARTITIONED BY (ds STRING)
+PREHOOK: query: CREATE TABLE fact_daily(x int) PARTITIONED BY (ds STRING)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@fact_daily
-POSTHOOK: query: -- INCLUDE_HADOOP_MAJOR_VERSIONS(0.23)
-
-CREATE TABLE fact_daily(x int) PARTITIONED BY (ds STRING)
+POSTHOOK: query: CREATE TABLE fact_daily(x int) PARTITIONED BY (ds STRING)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@fact_daily

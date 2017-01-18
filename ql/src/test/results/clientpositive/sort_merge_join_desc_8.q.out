@@ -95,15 +95,11 @@ POSTHOOK: Input: default@src
 POSTHOOK: Output: default@table_desc4
 POSTHOOK: Lineage: table_desc4.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: table_desc4.value2 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: -- columns are sorted by one key in first table, two keys in second table but in same sort order for key. Hence SMB join should pass
-
-explain
+PREHOOK: query: explain
 select /*+ mapjoin(b) */ count(*) from table_desc1 a join table_desc2 b
 on a.key=b.key where a.key < 10
 PREHOOK: type: QUERY
-POSTHOOK: query: -- columns are sorted by one key in first table, two keys in second table but in same sort order for key. Hence SMB join should pass
-
-explain
+POSTHOOK: query: explain
 select /*+ mapjoin(b) */ count(*) from table_desc1 a join table_desc2 b
 on a.key=b.key where a.key < 10
 POSTHOOK: type: QUERY
@@ -165,15 +161,11 @@ POSTHOOK: Input: default@table_desc1
 POSTHOOK: Input: default@table_desc2
 #### A masked pattern was here ####
 22
-PREHOOK: query: -- columns are sorted by 3 keys(a, b, c) in first table, two keys(a, c) in second table with same sort order. Hence SMB join should not pass
-
-explain
+PREHOOK: query: explain
 select /*+ mapjoin(b) */ count(*) from table_desc3 a join table_desc4 b
 on a.key=b.key and a.value2=b.value2 where a.key < 10
 PREHOOK: type: QUERY
-POSTHOOK: query: -- columns are sorted by 3 keys(a, b, c) in first table, two keys(a, c) in second table with same sort order. Hence SMB join should not pass
-
-explain
+POSTHOOK: query: explain
 select /*+ mapjoin(b) */ count(*) from table_desc3 a join table_desc4 b
 on a.key=b.key and a.value2=b.value2 where a.key < 10
 POSTHOOK: type: QUERY

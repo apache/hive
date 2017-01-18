@@ -1,23 +1,17 @@
-PREHOOK: query: -- Test partition column type is considered as the type given in table def
--- and not as 'string'
-CREATE TABLE datePartTbl(col1 string) PARTITIONED BY (date_prt date)
+PREHOOK: query: CREATE TABLE datePartTbl(col1 string) PARTITIONED BY (date_prt date)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@datePartTbl
-POSTHOOK: query: -- Test partition column type is considered as the type given in table def
--- and not as 'string'
-CREATE TABLE datePartTbl(col1 string) PARTITIONED BY (date_prt date)
+POSTHOOK: query: CREATE TABLE datePartTbl(col1 string) PARTITIONED BY (date_prt date)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@datePartTbl
-PREHOOK: query: -- Add test partitions and some sample data
-INSERT OVERWRITE TABLE datePartTbl PARTITION(date_prt='2014-08-09')
+PREHOOK: query: INSERT OVERWRITE TABLE datePartTbl PARTITION(date_prt='2014-08-09')
   SELECT 'col1-2014-08-09' FROM src LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Output: default@dateparttbl@date_prt=2014-08-09
-POSTHOOK: query: -- Add test partitions and some sample data
-INSERT OVERWRITE TABLE datePartTbl PARTITION(date_prt='2014-08-09')
+POSTHOOK: query: INSERT OVERWRITE TABLE datePartTbl PARTITION(date_prt='2014-08-09')
   SELECT 'col1-2014-08-09' FROM src LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
@@ -34,14 +28,12 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@dateparttbl@date_prt=2014-08-10
 POSTHOOK: Lineage: dateparttbl PARTITION(date_prt=2014-08-10).col1 SIMPLE []
-PREHOOK: query: -- Query where 'date_prt' value is restricted to given values in IN operator.
-SELECT * FROM datePartTbl WHERE date_prt IN (CAST('2014-08-09' AS DATE), CAST('2014-08-08' AS DATE))
+PREHOOK: query: SELECT * FROM datePartTbl WHERE date_prt IN (CAST('2014-08-09' AS DATE), CAST('2014-08-08' AS DATE))
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dateparttbl
 PREHOOK: Input: default@dateparttbl@date_prt=2014-08-09
 #### A masked pattern was here ####
-POSTHOOK: query: -- Query where 'date_prt' value is restricted to given values in IN operator.
-SELECT * FROM datePartTbl WHERE date_prt IN (CAST('2014-08-09' AS DATE), CAST('2014-08-08' AS DATE))
+POSTHOOK: query: SELECT * FROM datePartTbl WHERE date_prt IN (CAST('2014-08-09' AS DATE), CAST('2014-08-08' AS DATE))
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dateparttbl
 POSTHOOK: Input: default@dateparttbl@date_prt=2014-08-09

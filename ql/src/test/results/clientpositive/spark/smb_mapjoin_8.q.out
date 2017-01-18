@@ -1,12 +1,8 @@
-PREHOOK: query: -- SORT_QUERY_RESULTS
-
-create table smb_bucket_input (key int, value string) stored as rcfile
+PREHOOK: query: create table smb_bucket_input (key int, value string) stored as rcfile
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@smb_bucket_input
-POSTHOOK: query: -- SORT_QUERY_RESULTS
-
-create table smb_bucket_input (key int, value string) stored as rcfile
+POSTHOOK: query: create table smb_bucket_input (key int, value string) stored as rcfile
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@smb_bucket_input

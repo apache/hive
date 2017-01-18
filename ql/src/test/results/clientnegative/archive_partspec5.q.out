@@ -1,14 +1,8 @@
-PREHOOK: query: -- Tests trying to archive a partition twice.
--- EXCLUDE_HADOOP_MAJOR_VERSIONS(0.17, 0.18, 0.19)
-
-CREATE TABLE srcpart_archived (key string, value string) partitioned by (ds string, hr int, min int)
+PREHOOK: query: CREATE TABLE srcpart_archived (key string, value string) partitioned by (ds string, hr int, min int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@srcpart_archived
-POSTHOOK: query: -- Tests trying to archive a partition twice.
--- EXCLUDE_HADOOP_MAJOR_VERSIONS(0.17, 0.18, 0.19)
-
-CREATE TABLE srcpart_archived (key string, value string) partitioned by (ds string, hr int, min int)
+POSTHOOK: query: CREATE TABLE srcpart_archived (key string, value string) partitioned by (ds string, hr int, min int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@srcpart_archived

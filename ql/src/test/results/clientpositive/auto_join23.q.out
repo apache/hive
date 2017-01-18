@@ -1,12 +1,8 @@
 Warning: Map Join MAPJOIN[14][bigTable=?] in task 'Stage-2:MAPRED' is a cross product
-PREHOOK: query: -- SORT_QUERY_RESULTS
-
-explain 
+PREHOOK: query: explain 
 SELECT  *  FROM src src1 JOIN src src2 WHERE src1.key < 10 and src2.key < 10 SORT BY src1.key, src1.value, src2.key, src2.value
 PREHOOK: type: QUERY
-POSTHOOK: query: -- SORT_QUERY_RESULTS
-
-explain 
+POSTHOOK: query: explain 
 SELECT  *  FROM src src1 JOIN src src2 WHERE src1.key < 10 and src2.key < 10 SORT BY src1.key, src1.value, src2.key, src2.value
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:

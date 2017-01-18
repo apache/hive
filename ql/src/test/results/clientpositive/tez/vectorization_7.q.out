@@ -168,8 +168,7 @@ true	NULL	-4255	34	1969-12-31 15:59:56.581	cvLH6Eat2yFsyy7p	NULL	-143	4255	-34	-
 true	NULL	-7183	-21	1969-12-31 15:59:45.035	cvLH6Eat2yFsyy7p	NULL	-244	7183	21	38	NULL	2444	21	0
 true	NULL	1475	43	1969-12-31 15:59:56.988	cvLH6Eat2yFsyy7p	NULL	190	-1475	-43	-26	NULL	967	-43	0
 true	NULL	37	41	1969-12-31 15:59:52.817	cvLH6Eat2yFsyy7p	NULL	37	-37	-41	-24	NULL	16	-41	0
-PREHOOK: query: -- double compare timestamp
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT cboolean1,
        cbigint,
        csmallint,
@@ -195,8 +194,7 @@ WHERE  ((ctinyint != 0)
                   AND (3569 >= cdouble)))))
 LIMIT 25
 PREHOOK: type: QUERY
-POSTHOOK: query: -- double compare timestamp
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT cboolean1,
        cbigint,
        csmallint,
