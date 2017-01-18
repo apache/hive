@@ -67,6 +67,7 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorMapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.vector.VectorMapJoinOuterFilteredOperator;
 import org.apache.hadoop.hive.ql.exec.vector.VectorSMBMapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizationContext;
+import org.apache.hadoop.hive.ql.exec.vector.VectorizationContext.HiveVectorAdaptorUsageMode;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizationContext.InConstantType;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizationContextRegion;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.IdentityExpression;
@@ -240,8 +241,16 @@ public class Vectorizer implements PhysicalPlanResolver {
 
   boolean isSchemaEvolution;
 
+  HiveVectorAdaptorUsageMode hiveVectorAdaptorUsageMode;
+
   public Vectorizer() {
 
+    /*
+     * We check UDFs against the supportedGenericUDFs when
+     * hive.vectorized.adaptor.usage.mode=chosen or none.
+     *
+     * We allow all UDFs for hive.vectorized.adaptor.usage.mode=all.
+     */
     supportedGenericUDFs.add(GenericUDFOPPlus.class);
     supportedGenericUDFs.add(GenericUDFOPMinus.class);
     supportedGenericUDFs.add(GenericUDFOPMultiply.class);
@@ -1394,6 +1403,8 @@ public class Vectorizer implements PhysicalPlanResolver {
         HiveConf.getBoolVar(hiveConf,
             HiveConf.ConfVars.HIVE_SCHEMA_EVOLUTION);
 
+    hiveVectorAdaptorUsageMode = HiveVectorAdaptorUsageMode.getHiveConfValue(hiveConf);
+
     // create dispatcher and graph walker
     Dispatcher disp = new VectorizationDispatcher(physicalContext);
     TaskGraphWalker ogw = new TaskGraphWalker(disp);
@@ -1900,13 +1911,17 @@ public class Vectorizer implements PhysicalPlanResolver {
     if (VectorizationContext.isCustomUDF(genericUDFExpr)) {
       return true;
     }
-    GenericUDF genericUDF = genericUDFExpr.getGenericUDF();
-    if (genericUDF instanceof GenericUDFBridge) {
-      Class<? extends UDF> udf = ((GenericUDFBridge) genericUDF).getUdfClass();
-      return supportedGenericUDFs.contains(udf);
-    } else {
-      return supportedGenericUDFs.contains(genericUDF.getClass());
+    if (hiveVectorAdaptorUsageMode == HiveVectorAdaptorUsageMode.NONE ||
+        hiveVectorAdaptorUsageMode == HiveVectorAdaptorUsageMode.CHOSEN) {
+      GenericUDF genericUDF = genericUDFExpr.getGenericUDF();
+      if (genericUDF instanceof GenericUDFBridge) {
+        Class<? extends UDF> udf = ((GenericUDFBridge) genericUDF).getUdfClass();
+        return supportedGenericUDFs.contains(udf);
+      } else {
+        return supportedGenericUDFs.contains(genericUDF.getClass());
+      }
     }
+    return true;
   }
 
   private boolean validateAggregationIsPrimitive(VectorAggregateExpression vectorAggrExpr) {

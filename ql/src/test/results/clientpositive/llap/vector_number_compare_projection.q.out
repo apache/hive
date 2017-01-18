@@ -144,7 +144,7 @@ STAGE PLANS:
             Execution mode: vectorized, llap
             LLAP IO: all inputs
         Reducer 2 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Select Operator
                 expressions: hash(KEY.reducesinkkey0,KEY.reducesinkkey1,KEY.reducesinkkey2,VALUE._col0,VALUE._col1,VALUE._col2) (type: int)
@@ -223,7 +223,7 @@ STAGE PLANS:
             Execution mode: vectorized, llap
             LLAP IO: all inputs
         Reducer 2 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Select Operator
                 expressions: hash(KEY.reducesinkkey0,KEY.reducesinkkey1,KEY.reducesinkkey2,KEY.reducesinkkey3,VALUE._col0,VALUE._col1,VALUE._col2,VALUE._col3) (type: int)

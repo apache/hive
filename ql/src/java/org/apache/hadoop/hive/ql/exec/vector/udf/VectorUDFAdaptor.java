@@ -38,6 +38,8 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.*;
 import org.apache.hadoop.hive.serde2.typeinfo.CharTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.VarcharTypeInfo;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableBinaryObjectInspector;
+import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.Text;
 
 /**
@@ -330,8 +332,14 @@ public class VectorUDFAdaptor extends VectorExpression {
         HiveDecimal hd = ((WritableHiveDecimalObjectInspector) outputOI).getPrimitiveJavaObject(value);
         dcv.set(i, hd);
       }
+    } else if (outputOI instanceof WritableBinaryObjectInspector) {
+      BytesWritable bw = (BytesWritable) value;
+      BytesColumnVector bv = (BytesColumnVector) colVec;
+      bv.setVal(i, bw.getBytes(), 0, bw.getLength());
     } else {
-      throw new RuntimeException("Unhandled object type " + outputOI.getTypeName());
+      throw new RuntimeException("Unhandled object type " + outputOI.getTypeName() +
+          " inspector class " + outputOI.getClass().getName() +
+          " value class " + value.getClass().getName());
     }
   }
 
