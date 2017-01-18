@@ -121,6 +121,11 @@
           <groupId>com.fasterxml.jackson.core</groupId>
           <artifactId>jackson-databind</artifactId>
         </exclusion>
+        <exclusion>
+          <!--LGPL licenced library-->
+          <groupId>com.google.code.findbugs</groupId>
+          <artifactId>annotations</artifactId>
+        </exclusion>
       </exclusions>
     </dependency>
     <dependency>
