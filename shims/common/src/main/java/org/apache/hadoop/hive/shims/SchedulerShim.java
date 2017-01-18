@@ -34,6 +34,4 @@ public interface SchedulerShim {
    */
   public void refreshDefaultQueue(Configuration conf, String userName)
       throws IOException;
-
-  public void validateQueueConfiguration(Configuration configuration, String forUser) throws IOException;
 }

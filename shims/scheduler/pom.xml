@@ -77,12 +77,7 @@
      <version>${hadoop.version}</version>
      <optional>true</optional>
    </dependency>
-    <dependency>
-      <groupId>org.mockito</groupId>
-      <artifactId>mockito-all</artifactId>
-      <version>${mockito-all.version}</version>
-    </dependency>
-    <dependency>
+   <dependency>
      <groupId>org.apache.hadoop</groupId>
      <artifactId>hadoop-yarn-server-tests</artifactId>
      <version>${hadoop.version}</version>
