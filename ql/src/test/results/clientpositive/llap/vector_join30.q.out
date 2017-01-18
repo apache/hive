@@ -77,7 +77,7 @@ STAGE PLANS:
                         value expressions: _col0 (type: string)
             Execution mode: vectorized, llap
         Reducer 2 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: string)
@@ -216,7 +216,7 @@ STAGE PLANS:
                       value expressions: _col0 (type: string)
             Execution mode: vectorized, llap
         Reducer 2 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: string)
@@ -367,7 +367,7 @@ STAGE PLANS:
                   Map-reduce partition columns: _col0 (type: string)
                   Statistics: Num rows: 500 Data size: 88000 Basic stats: COMPLETE Column stats: NONE
         Reducer 4 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Select Operator
                 expressions: VALUE._col0 (type: string), KEY.reducesinkkey0 (type: string)
@@ -524,7 +524,7 @@ STAGE PLANS:
                         value expressions: _col0 (type: string)
             Execution mode: vectorized, llap
         Reducer 2 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: string)
