@@ -175,7 +175,7 @@ public class MiniHS2 extends AbstractHiveService {
     if (useMiniMR) {
       dfs = ShimLoader.getHadoopShims().getMiniDfs(hiveConf, 4, true, null);
       fs = dfs.getFileSystem();
-      mr = ShimLoader.getHadoopShims().getMiniMrCluster(hiveConf, 2,
+      mr = ShimLoader.getHadoopShims().getMiniMrCluster(hiveConf, 4,
           fs.getUri().toString(), 1);
       // store the config in system properties
       mr.setupConfiguration(getHiveConf());
