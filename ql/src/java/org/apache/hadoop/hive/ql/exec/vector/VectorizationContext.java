@@ -1388,58 +1388,53 @@ public class VectorizationContext {
     return ve;
   }
 
+  private void freeNonColumns(VectorExpression[] vectorChildren) {
+    if (vectorChildren == null) {
+      return;
+    }
+    for (VectorExpression v : vectorChildren) {
+      if (!(v instanceof IdentityExpression)) {
+        ocm.freeOutputColumn(v.getOutputColumn());
+      }
+    }
+  }
+
   private VectorExpression getCoalesceExpression(List<ExprNodeDesc> childExpr, TypeInfo returnType)
       throws HiveException {
     int[] inputColumns = new int[childExpr.size()];
-    VectorExpression[] vectorChildren = null;
-    try {
-      vectorChildren = getVectorExpressions(childExpr, VectorExpressionDescriptor.Mode.PROJECTION);
+    VectorExpression[] vectorChildren =
+        getVectorExpressions(childExpr, VectorExpressionDescriptor.Mode.PROJECTION);
 
-      int i = 0;
-      for (VectorExpression ve : vectorChildren) {
-        inputColumns[i++] = ve.getOutputColumn();
-      }
-
-      int outColumn = ocm.allocateOutputColumn(returnType);
-      VectorCoalesce vectorCoalesce = new VectorCoalesce(inputColumns, outColumn);
-      vectorCoalesce.setOutputType(returnType.getTypeName());
-      vectorCoalesce.setChildExpressions(vectorChildren);
-      return vectorCoalesce;
-    } finally {
-      // Free the output columns of the child expressions.
-      if (vectorChildren != null) {
-        for (VectorExpression v : vectorChildren) {
-          ocm.freeOutputColumn(v.getOutputColumn());
-        }
-      }
+    int i = 0;
+    for (VectorExpression ve : vectorChildren) {
+      inputColumns[i++] = ve.getOutputColumn();
     }
+
+    int outColumn = ocm.allocateOutputColumn(returnType);
+    VectorCoalesce vectorCoalesce = new VectorCoalesce(inputColumns, outColumn);
+    vectorCoalesce.setOutputType(returnType.getTypeName());
+    vectorCoalesce.setChildExpressions(vectorChildren);
+    freeNonColumns(vectorChildren);
+    return vectorCoalesce;
   }
 
   private VectorExpression getEltExpression(List<ExprNodeDesc> childExpr, TypeInfo returnType)
       throws HiveException {
     int[] inputColumns = new int[childExpr.size()];
-    VectorExpression[] vectorChildren = null;
-    try {
-      vectorChildren = getVectorExpressions(childExpr, VectorExpressionDescriptor.Mode.PROJECTION);
+    VectorExpression[] vectorChildren =
+        getVectorExpressions(childExpr, VectorExpressionDescriptor.Mode.PROJECTION);
 
-      int i = 0;
-      for (VectorExpression ve : vectorChildren) {
-        inputColumns[i++] = ve.getOutputColumn();
-      }
-
-      int outColumn = ocm.allocateOutputColumn(returnType);
-      VectorElt vectorElt = new VectorElt(inputColumns, outColumn);
-      vectorElt.setOutputType(returnType.getTypeName());
-      vectorElt.setChildExpressions(vectorChildren);
-      return vectorElt;
-    } finally {
-      // Free the output columns of the child expressions.
-      if (vectorChildren != null) {
-        for (VectorExpression v : vectorChildren) {
-          ocm.freeOutputColumn(v.getOutputColumn());
-        }
-      }
+    int i = 0;
+    for (VectorExpression ve : vectorChildren) {
+      inputColumns[i++] = ve.getOutputColumn();
     }
+
+    int outColumn = ocm.allocateOutputColumn(returnType);
+    VectorElt vectorElt = new VectorElt(inputColumns, outColumn);
+    vectorElt.setOutputType(returnType.getTypeName());
+    vectorElt.setChildExpressions(vectorChildren);
+    freeNonColumns(vectorChildren);
+    return vectorElt;
   }
 
   public enum InConstantType {
@@ -2217,25 +2212,20 @@ public class VectorizationContext {
 
     for (int i = 0; i < childExprList.size(); i++) {
       ExprNodeDesc child = childExprList.get(i);
-      /*
-      UNDONE: Until we fix scratch column allocation to not release after each expression, we
-      UNDONE: cannot have another other than a column or constant in the parameter list.
       if (child instanceof ExprNodeGenericFuncDesc) {
         VectorExpression e = getVectorExpression(child, VectorExpressionDescriptor.Mode.PROJECTION);
         vectorExprs.add(e);
         variableArgPositions.add(i);
         exprResultColumnNums.add(e.getOutputColumn());
         argDescs[i].setVariable(e.getOutputColumn());
-      } else 
-      */
-      if (child instanceof ExprNodeColumnDesc) {
+      } else if (child instanceof ExprNodeColumnDesc) {
         variableArgPositions.add(i);
         argDescs[i].setVariable(getInputColumnIndex(((ExprNodeColumnDesc) child).getColumn()));
       } else if (child instanceof ExprNodeConstantDesc) {
         // this is a constant (or null)
         argDescs[i].setConstant((ExprNodeConstantDesc) child);
       } else {
-        throw new HiveException("Unable to use the VectorUDFAdaptor. Encountered unsupported expr desc : "
+        throw new HiveException("Unable to vectorize custom UDF. Encountered unsupported expr desc : "
             + child);
       }
     }
