@@ -1,14 +1,8 @@
-PREHOOK: query: -- Test creating an index on skewed table
-
--- Create a skew table
-CREATE TABLE kv(key STRING, value STRING) SKEWED BY (key) ON ((3), (8)) STORED AS TEXTFILE
+PREHOOK: query: CREATE TABLE kv(key STRING, value STRING) SKEWED BY (key) ON ((3), (8)) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@kv
-POSTHOOK: query: -- Test creating an index on skewed table
-
--- Create a skew table
-CREATE TABLE kv(key STRING, value STRING) SKEWED BY (key) ON ((3), (8)) STORED AS TEXTFILE
+POSTHOOK: query: CREATE TABLE kv(key STRING, value STRING) SKEWED BY (key) ON ((3), (8)) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@kv
@@ -20,12 +14,10 @@ POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/T2.txt' INTO TABLE kv
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@kv
-PREHOOK: query: -- Create and build an index
-CREATE INDEX kv_index ON TABLE kv(value) AS 'COMPACT' WITH DEFERRED REBUILD
+PREHOOK: query: CREATE INDEX kv_index ON TABLE kv(value) AS 'COMPACT' WITH DEFERRED REBUILD
 PREHOOK: type: CREATEINDEX
 PREHOOK: Input: default@kv
-POSTHOOK: query: -- Create and build an index
-CREATE INDEX kv_index ON TABLE kv(value) AS 'COMPACT' WITH DEFERRED REBUILD
+POSTHOOK: query: CREATE INDEX kv_index ON TABLE kv(value) AS 'COMPACT' WITH DEFERRED REBUILD
 POSTHOOK: type: CREATEINDEX
 POSTHOOK: Input: default@kv
 POSTHOOK: Output: default@default__kv_kv_index__
@@ -69,11 +61,9 @@ POSTHOOK: Output: default@default__kv_kv_index__
 POSTHOOK: Lineage: default__kv_kv_index__._bucketname SIMPLE [(kv)kv.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
 POSTHOOK: Lineage: default__kv_kv_index__._offsets EXPRESSION [(kv)kv.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
 POSTHOOK: Lineage: default__kv_kv_index__.value SIMPLE [(kv)kv.FieldSchema(name:value, type:string, comment:null), ]
-PREHOOK: query: -- Run a query that uses the index
-EXPLAIN SELECT * FROM kv WHERE value > '15' ORDER BY value
+PREHOOK: query: EXPLAIN SELECT * FROM kv WHERE value > '15' ORDER BY value
 PREHOOK: type: QUERY
-POSTHOOK: query: -- Run a query that uses the index
-EXPLAIN SELECT * FROM kv WHERE value > '15' ORDER BY value
+POSTHOOK: query: EXPLAIN SELECT * FROM kv WHERE value > '15' ORDER BY value
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-3 is a root stage

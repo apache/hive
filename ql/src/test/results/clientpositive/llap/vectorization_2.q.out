@@ -1,6 +1,4 @@
-PREHOOK: query: -- SORT_QUERY_RESULTS
-
-SELECT AVG(csmallint),
+PREHOOK: query: SELECT AVG(csmallint),
        (AVG(csmallint) % -563),
        (AVG(csmallint) + 762),
        SUM(cfloat),
@@ -24,9 +22,7 @@ WHERE  (((ctimestamp1 < ctimestamp2)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
-POSTHOOK: query: -- SORT_QUERY_RESULTS
-
-SELECT AVG(csmallint),
+POSTHOOK: query: SELECT AVG(csmallint),
        (AVG(csmallint) % -563),
        (AVG(csmallint) + 762),
        SUM(cfloat),

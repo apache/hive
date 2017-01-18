@@ -1,12 +1,8 @@
-PREHOOK: query: -- SORT_QUERY_RESULTS
-
-create table if not exists src_a like src
+PREHOOK: query: create table if not exists src_a like src
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@src_a
-POSTHOOK: query: -- SORT_QUERY_RESULTS
-
-create table if not exists src_a like src
+POSTHOOK: query: create table if not exists src_a like src
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@src_a

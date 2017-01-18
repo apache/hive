@@ -152,13 +152,11 @@ fffee943d640a7714d09f9bd50dba08a9d0ebdd146655e4642c293a4396cb385\N\N2015-01-2
 fffc8a89a8406ba3ed651fc9248fe9b2afb1ee672999ef75d2d9c42484435bca\N\N2015-01-21
 fff06c6e0fd675ebeff09350e6b7a3900115f72341fd353e5e185e8983d10534002015-01-21
 ffef4b7433ee6008e389a1a4121a82b828123864e563a2afe67dcf29e2b71591\N\N2015-01-21
-PREHOOK: query: -- disable sorted dynamic partition optimization to make sure the results are correct
-drop table t1
+PREHOOK: query: drop table t1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@t1
 PREHOOK: Output: default@t1
-POSTHOOK: query: -- disable sorted dynamic partition optimization to make sure the results are correct
-drop table t1
+POSTHOOK: query: drop table t1
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@t1
 POSTHOOK: Output: default@t1

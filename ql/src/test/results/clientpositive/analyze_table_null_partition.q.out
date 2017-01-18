@@ -69,12 +69,10 @@ POSTHOOK: Output: default@test2@age=15
 POSTHOOK: Output: default@test2@age=30
 POSTHOOK: Output: default@test2@age=40
 POSTHOOK: Output: default@test2@age=__HIVE_DEFAULT_PARTITION__
-PREHOOK: query: -- To show stats. It doesn't show due to a bug.
-DESC EXTENDED test2
+PREHOOK: query: DESC EXTENDED test2
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@test2
-POSTHOOK: query: -- To show stats. It doesn't show due to a bug.
-DESC EXTENDED test2
+POSTHOOK: query: DESC EXTENDED test2
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@test2
 name                	string              	                    
@@ -86,11 +84,9 @@ age                 	int
 age                 	int                 	                    
 	 	 
 #### A masked pattern was here ####
-PREHOOK: query: -- Another way to show stats.
-EXPLAIN EXTENDED select * from test2
+PREHOOK: query: EXPLAIN EXTENDED select * from test2
 PREHOOK: type: QUERY
-POSTHOOK: query: -- Another way to show stats.
-EXPLAIN EXTENDED select * from test2
+POSTHOOK: query: EXPLAIN EXTENDED select * from test2
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-0 is a root stage

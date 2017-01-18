@@ -1,12 +1,8 @@
-PREHOOK: query: -- SORT_QUERY_RESULTS
-
-CREATE TABLE triples (foo string, subject string, predicate string, object string, foo2 string)
+PREHOOK: query: CREATE TABLE triples (foo string, subject string, predicate string, object string, foo2 string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@triples
-POSTHOOK: query: -- SORT_QUERY_RESULTS
-
-CREATE TABLE triples (foo string, subject string, predicate string, object string, foo2 string)
+POSTHOOK: query: CREATE TABLE triples (foo string, subject string, predicate string, object string, foo2 string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@triples

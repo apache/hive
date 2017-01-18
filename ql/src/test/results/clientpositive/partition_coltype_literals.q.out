@@ -10,21 +10,17 @@ POSTHOOK: query: create table partcoltypenum (key int, value string) partitioned
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@partcoltypenum
-PREHOOK: query: -- add partition
-alter table partcoltypenum add partition(tint=100Y, sint=20000S, bint=300000000000L)
+PREHOOK: query: alter table partcoltypenum add partition(tint=100Y, sint=20000S, bint=300000000000L)
 PREHOOK: type: ALTERTABLE_ADDPARTS
 PREHOOK: Output: default@partcoltypenum
-POSTHOOK: query: -- add partition
-alter table partcoltypenum add partition(tint=100Y, sint=20000S, bint=300000000000L)
+POSTHOOK: query: alter table partcoltypenum add partition(tint=100Y, sint=20000S, bint=300000000000L)
 POSTHOOK: type: ALTERTABLE_ADDPARTS
 POSTHOOK: Output: default@partcoltypenum
 POSTHOOK: Output: default@partcoltypenum@tint=100/sint=20000/bint=300000000000
-PREHOOK: query: -- describe partition
-describe formatted partcoltypenum partition (tint=100, sint=20000S, bint='300000000000')
+PREHOOK: query: describe formatted partcoltypenum partition (tint=100, sint=20000S, bint='300000000000')
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@partcoltypenum
-POSTHOOK: query: -- describe partition
-describe formatted partcoltypenum partition (tint=100, sint=20000S, bint='300000000000')
+POSTHOOK: query: describe formatted partcoltypenum partition (tint=100, sint=20000S, bint='300000000000')
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@partcoltypenum
 # col_name            	data_type           	comment             
@@ -62,13 +58,11 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: -- change partition file format
-alter table partcoltypenum partition(tint=100, sint=20000S, bint='300000000000') set fileformat rcfile
+PREHOOK: query: alter table partcoltypenum partition(tint=100, sint=20000S, bint='300000000000') set fileformat rcfile
 PREHOOK: type: ALTERPARTITION_FILEFORMAT
 PREHOOK: Input: default@partcoltypenum
 PREHOOK: Output: default@partcoltypenum@tint=100/sint=20000/bint=300000000000
-POSTHOOK: query: -- change partition file format
-alter table partcoltypenum partition(tint=100, sint=20000S, bint='300000000000') set fileformat rcfile
+POSTHOOK: query: alter table partcoltypenum partition(tint=100, sint=20000S, bint='300000000000') set fileformat rcfile
 POSTHOOK: type: ALTERPARTITION_FILEFORMAT
 POSTHOOK: Input: default@partcoltypenum
 POSTHOOK: Input: default@partcoltypenum@tint=100/sint=20000/bint=300000000000
@@ -115,13 +109,11 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: -- change partition clusterby, sortby and bucket
-alter table partcoltypenum partition(tint='100', sint=20000, bint=300000000000L) clustered by (key) sorted by (key desc) into 4 buckets
+PREHOOK: query: alter table partcoltypenum partition(tint='100', sint=20000, bint=300000000000L) clustered by (key) sorted by (key desc) into 4 buckets
 PREHOOK: type: ALTERTABLE_CLUSTER_SORT
 PREHOOK: Input: default@partcoltypenum
 PREHOOK: Output: default@partcoltypenum@tint=100/sint=20000/bint=300000000000
-POSTHOOK: query: -- change partition clusterby, sortby and bucket
-alter table partcoltypenum partition(tint='100', sint=20000, bint=300000000000L) clustered by (key) sorted by (key desc) into 4 buckets
+POSTHOOK: query: alter table partcoltypenum partition(tint='100', sint=20000, bint=300000000000L) clustered by (key) sorted by (key desc) into 4 buckets
 POSTHOOK: type: ALTERTABLE_CLUSTER_SORT
 POSTHOOK: Input: default@partcoltypenum
 POSTHOOK: Input: default@partcoltypenum@tint=100/sint=20000/bint=300000000000
@@ -168,13 +160,11 @@ Bucket Columns:     	[key]
 Sort Columns:       	[Order(col:key, order:0)]	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: -- rename partition
-alter table partcoltypenum partition(tint=100, sint=20000, bint=300000000000) rename to partition (tint=110Y, sint=22000S, bint=330000000000L)
+PREHOOK: query: alter table partcoltypenum partition(tint=100, sint=20000, bint=300000000000) rename to partition (tint=110Y, sint=22000S, bint=330000000000L)
 PREHOOK: type: ALTERTABLE_RENAMEPART
 PREHOOK: Input: default@partcoltypenum
 PREHOOK: Output: default@partcoltypenum@tint=100/sint=20000/bint=300000000000
-POSTHOOK: query: -- rename partition
-alter table partcoltypenum partition(tint=100, sint=20000, bint=300000000000) rename to partition (tint=110Y, sint=22000S, bint=330000000000L)
+POSTHOOK: query: alter table partcoltypenum partition(tint=100, sint=20000, bint=300000000000) rename to partition (tint=110Y, sint=22000S, bint=330000000000L)
 POSTHOOK: type: ALTERTABLE_RENAMEPART
 POSTHOOK: Input: default@partcoltypenum
 POSTHOOK: Input: default@partcoltypenum@tint=100/sint=20000/bint=300000000000
@@ -222,13 +212,11 @@ Bucket Columns:     	[key]
 Sort Columns:       	[Order(col:key, order:0)]	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: -- insert partition
-insert into partcoltypenum partition (tint=110Y, sint=22000S, bint=330000000000L) select key, value from src limit 10
+PREHOOK: query: insert into partcoltypenum partition (tint=110Y, sint=22000S, bint=330000000000L) select key, value from src limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Output: default@partcoltypenum@tint=110/sint=22000/bint=330000000000
-POSTHOOK: query: -- insert partition
-insert into partcoltypenum partition (tint=110Y, sint=22000S, bint=330000000000L) select key, value from src limit 10
+POSTHOOK: query: insert into partcoltypenum partition (tint=110Y, sint=22000S, bint=330000000000L) select key, value from src limit 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@partcoltypenum@tint=110/sint=22000/bint=330000000000
@@ -244,14 +232,12 @@ POSTHOOK: Input: default@src
 POSTHOOK: Output: default@partcoltypenum@tint=110/sint=22000/bint=330000000000
 POSTHOOK: Lineage: partcoltypenum PARTITION(tint=110,sint=22000,bint=330000000000).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: partcoltypenum PARTITION(tint=110,sint=22000,bint=330000000000).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: -- select partition
-select count(1) from partcoltypenum where tint=110Y and sint=22000S and bint=330000000000L
+PREHOOK: query: select count(1) from partcoltypenum where tint=110Y and sint=22000S and bint=330000000000L
 PREHOOK: type: QUERY
 PREHOOK: Input: default@partcoltypenum
 PREHOOK: Input: default@partcoltypenum@tint=110/sint=22000/bint=330000000000
 #### A masked pattern was here ####
-POSTHOOK: query: -- select partition
-select count(1) from partcoltypenum where tint=110Y and sint=22000S and bint=330000000000L
+POSTHOOK: query: select count(1) from partcoltypenum where tint=110Y and sint=22000S and bint=330000000000L
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@partcoltypenum
 POSTHOOK: Input: default@partcoltypenum@tint=110/sint=22000/bint=330000000000
@@ -268,15 +254,13 @@ POSTHOOK: Input: default@partcoltypenum
 POSTHOOK: Input: default@partcoltypenum@tint=110/sint=22000/bint=330000000000
 #### A masked pattern was here ####
 30
-PREHOOK: query: -- analyze partition statistics and columns statistics
-analyze table partcoltypenum partition (tint=110Y, sint=22000S, bint=330000000000L) compute statistics
+PREHOOK: query: analyze table partcoltypenum partition (tint=110Y, sint=22000S, bint=330000000000L) compute statistics
 PREHOOK: type: QUERY
 PREHOOK: Input: default@partcoltypenum
 PREHOOK: Input: default@partcoltypenum@tint=110/sint=22000/bint=330000000000
 PREHOOK: Output: default@partcoltypenum
 PREHOOK: Output: default@partcoltypenum@tint=110/sint=22000/bint=330000000000
-POSTHOOK: query: -- analyze partition statistics and columns statistics
-analyze table partcoltypenum partition (tint=110Y, sint=22000S, bint=330000000000L) compute statistics
+POSTHOOK: query: analyze table partcoltypenum partition (tint=110Y, sint=22000S, bint=330000000000L) compute statistics
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@partcoltypenum
 POSTHOOK: Input: default@partcoltypenum@tint=110/sint=22000/bint=330000000000
@@ -330,13 +314,11 @@ POSTHOOK: Input: default@partcoltypenum
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
 	 	 	 	 	 	 	 	 	 	 
 value               	string              	                    	                    	0                   	18                  	6.766666666666667   	7                   	                    	                    	from deserializer   
-PREHOOK: query: -- change table column type for partition
-alter table partcoltypenum change key key decimal(10,0)
+PREHOOK: query: alter table partcoltypenum change key key decimal(10,0)
 PREHOOK: type: ALTERTABLE_RENAMECOL
 PREHOOK: Input: default@partcoltypenum
 PREHOOK: Output: default@partcoltypenum
-POSTHOOK: query: -- change table column type for partition
-alter table partcoltypenum change key key decimal(10,0)
+POSTHOOK: query: alter table partcoltypenum change key key decimal(10,0)
 POSTHOOK: type: ALTERTABLE_RENAMECOL
 POSTHOOK: Input: default@partcoltypenum
 POSTHOOK: Output: default@partcoltypenum
@@ -391,12 +373,10 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: -- change partititon column type
-alter table partcoltypenum partition column (tint decimal(3,0))
+PREHOOK: query: alter table partcoltypenum partition column (tint decimal(3,0))
 PREHOOK: type: ALTERTABLE_PARTCOLTYPE
 PREHOOK: Input: default@partcoltypenum
-POSTHOOK: query: -- change partititon column type
-alter table partcoltypenum partition column (tint decimal(3,0))
+POSTHOOK: query: alter table partcoltypenum partition column (tint decimal(3,0))
 POSTHOOK: type: ALTERTABLE_PARTCOLTYPE
 POSTHOOK: Input: default@partcoltypenum
 POSTHOOK: Output: default@partcoltypenum
@@ -442,22 +422,18 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: -- show partition
-show partitions partcoltypenum partition (tint=110BD, sint=22000S, bint=330000000000L)
+PREHOOK: query: show partitions partcoltypenum partition (tint=110BD, sint=22000S, bint=330000000000L)
 PREHOOK: type: SHOWPARTITIONS
 PREHOOK: Input: default@partcoltypenum
-POSTHOOK: query: -- show partition
-show partitions partcoltypenum partition (tint=110BD, sint=22000S, bint=330000000000L)
+POSTHOOK: query: show partitions partcoltypenum partition (tint=110BD, sint=22000S, bint=330000000000L)
 POSTHOOK: type: SHOWPARTITIONS
 POSTHOOK: Input: default@partcoltypenum
 tint=110/sint=22000/bint=330000000000
-PREHOOK: query: -- drop partition
-alter table partcoltypenum drop partition (tint=110BD, sint=22000S, bint=330000000000L)
+PREHOOK: query: alter table partcoltypenum drop partition (tint=110BD, sint=22000S, bint=330000000000L)
 PREHOOK: type: ALTERTABLE_DROPPARTS
 PREHOOK: Input: default@partcoltypenum
 PREHOOK: Output: default@partcoltypenum@tint=110/sint=22000/bint=330000000000
-POSTHOOK: query: -- drop partition
-alter table partcoltypenum drop partition (tint=110BD, sint=22000S, bint=330000000000L)
+POSTHOOK: query: alter table partcoltypenum drop partition (tint=110BD, sint=22000S, bint=330000000000L)
 POSTHOOK: type: ALTERTABLE_DROPPARTS
 POSTHOOK: Input: default@partcoltypenum
 POSTHOOK: Output: default@partcoltypenum@tint=110/sint=22000/bint=330000000000
@@ -467,13 +443,11 @@ PREHOOK: Input: default@partcoltypenum
 POSTHOOK: query: show partitions partcoltypenum
 POSTHOOK: type: SHOWPARTITIONS
 POSTHOOK: Input: default@partcoltypenum
-PREHOOK: query: -- change partition file location
-insert into partcoltypenum partition (tint=100BD, sint=20000S, bint=300000000000L) select key, value from src limit 10
+PREHOOK: query: insert into partcoltypenum partition (tint=100BD, sint=20000S, bint=300000000000L) select key, value from src limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Output: default@partcoltypenum@tint=100/sint=20000/bint=300000000000
-POSTHOOK: query: -- change partition file location
-insert into partcoltypenum partition (tint=100BD, sint=20000S, bint=300000000000L) select key, value from src limit 10
+POSTHOOK: query: insert into partcoltypenum partition (tint=100BD, sint=20000S, bint=300000000000L) select key, value from src limit 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@partcoltypenum@tint=100/sint=20000/bint=300000000000

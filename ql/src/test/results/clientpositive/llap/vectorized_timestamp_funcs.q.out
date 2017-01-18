@@ -1,18 +1,8 @@
-PREHOOK: query: -- Test timestamp functions in vectorized mode to verify they run correctly end-to-end.
--- Turning on vectorization has been temporarily moved after filling the test table
--- due to bug HIVE-8197.
-
-
-CREATE TABLE alltypesorc_string(ctimestamp1 timestamp, stimestamp1 string) STORED AS ORC
+PREHOOK: query: CREATE TABLE alltypesorc_string(ctimestamp1 timestamp, stimestamp1 string) STORED AS ORC
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@alltypesorc_string
-POSTHOOK: query: -- Test timestamp functions in vectorized mode to verify they run correctly end-to-end.
--- Turning on vectorization has been temporarily moved after filling the test table
--- due to bug HIVE-8197.
-
-
-CREATE TABLE alltypesorc_string(ctimestamp1 timestamp, stimestamp1 string) STORED AS ORC
+POSTHOOK: query: CREATE TABLE alltypesorc_string(ctimestamp1 timestamp, stimestamp1 string) STORED AS ORC
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@alltypesorc_string
@@ -432,8 +422,7 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: -- Should all be true or NULL
-SELECT
+PREHOOK: query: SELECT
   to_unix_timestamp(ctimestamp1) = to_unix_timestamp(stimestamp1) AS c1,
   year(ctimestamp1) = year(stimestamp1),
   month(ctimestamp1) = month(stimestamp1),
@@ -448,8 +437,7 @@ ORDER BY c1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@alltypesorc_string
 #### A masked pattern was here ####
-POSTHOOK: query: -- Should all be true or NULL
-SELECT
+POSTHOOK: query: SELECT
   to_unix_timestamp(ctimestamp1) = to_unix_timestamp(stimestamp1) AS c1,
   year(ctimestamp1) = year(stimestamp1),
   month(ctimestamp1) = month(stimestamp1),
@@ -504,8 +492,7 @@ NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
 NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
 NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
 NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
-PREHOOK: query: -- Wrong format. Should all be NULL.
-EXPLAIN SELECT
+PREHOOK: query: EXPLAIN SELECT
   to_unix_timestamp(stimestamp1) AS c1,
   year(stimestamp1),
   month(stimestamp1),
@@ -518,8 +505,7 @@ EXPLAIN SELECT
 FROM alltypesorc_wrong
 ORDER BY c1
 PREHOOK: type: QUERY
-POSTHOOK: query: -- Wrong format. Should all be NULL.
-EXPLAIN SELECT
+POSTHOOK: query: EXPLAIN SELECT
   to_unix_timestamp(stimestamp1) AS c1,
   year(stimestamp1),
   month(stimestamp1),
@@ -697,13 +683,11 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc_string
 #### A masked pattern was here ####
 NULL	NULL	0	40
-PREHOOK: query: -- SUM of timestamps are not vectorized reduce-side because they produce a double instead of a long (HIVE-8211)...
-EXPLAIN SELECT
+PREHOOK: query: EXPLAIN SELECT
   round(sum(ctimestamp1), 3)
 FROM alltypesorc_string
 PREHOOK: type: QUERY
-POSTHOOK: query: -- SUM of timestamps are not vectorized reduce-side because they produce a double instead of a long (HIVE-8211)...
-EXPLAIN SELECT
+POSTHOOK: query: EXPLAIN SELECT
   round(sum(ctimestamp1), 3)
 FROM alltypesorc_string
 POSTHOOK: type: QUERY

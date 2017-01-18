@@ -1,6 +1,4 @@
-PREHOOK: query: -- SORT_QUERY_RESULTS
-
-create table vectortab2k(
+PREHOOK: query: create table vectortab2k(
             t tinyint,
             si smallint,
             i int,
@@ -19,9 +17,7 @@ STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@vectortab2k
-POSTHOOK: query: -- SORT_QUERY_RESULTS
-
-create table vectortab2k(
+POSTHOOK: query: create table vectortab2k(
             t tinyint,
             si smallint,
             i int,

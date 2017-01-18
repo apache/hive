@@ -1,15 +1,11 @@
-PREHOOK: query: -- SORT_QUERY_RESULTS
-
-CREATE TABLE test_orc (key STRING)
+PREHOOK: query: CREATE TABLE test_orc (key STRING)
 ROW FORMAT SERDE 'org.apache.hadoop.hive.ql.io.orc.OrcSerde' 
 STORED AS INPUTFORMAT 'org.apache.hadoop.hive.ql.io.orc.OrcInputFormat' 
 OUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat'
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@test_orc
-POSTHOOK: query: -- SORT_QUERY_RESULTS
-
-CREATE TABLE test_orc (key STRING)
+POSTHOOK: query: CREATE TABLE test_orc (key STRING)
 ROW FORMAT SERDE 'org.apache.hadoop.hive.ql.io.orc.OrcSerde' 
 STORED AS INPUTFORMAT 'org.apache.hadoop.hive.ql.io.orc.OrcInputFormat' 
 OUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat'
@@ -25,15 +21,11 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@test_orc
 POSTHOOK: Lineage: test_orc.key SIMPLE []
-PREHOOK: query: -- Test reading a column which is just empty strings
-
-SELECT * FROM test_orc
+PREHOOK: query: SELECT * FROM test_orc
 PREHOOK: type: QUERY
 PREHOOK: Input: default@test_orc
 #### A masked pattern was here ####
-POSTHOOK: query: -- Test reading a column which is just empty strings
-
-SELECT * FROM test_orc
+POSTHOOK: query: SELECT * FROM test_orc
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test_orc
 #### A masked pattern was here ####
@@ -56,15 +48,11 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@test_orc
 POSTHOOK: Lineage: test_orc.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-PREHOOK: query: -- Test reading a column which has some empty strings
-
-SELECT * FROM test_orc
+PREHOOK: query: SELECT * FROM test_orc
 PREHOOK: type: QUERY
 PREHOOK: Input: default@test_orc
 #### A masked pattern was here ####
-POSTHOOK: query: -- Test reading a column which has some empty strings
-
-SELECT * FROM test_orc
+POSTHOOK: query: SELECT * FROM test_orc
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test_orc
 #### A masked pattern was here ####

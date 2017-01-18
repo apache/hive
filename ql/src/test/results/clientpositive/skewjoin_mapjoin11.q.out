@@ -34,24 +34,10 @@ POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/T2.txt' INTO TABLE T2
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@t2
-PREHOOK: query: -- copy from skewjoinopt19
--- test compile time skew join and auto map join
--- add a test where the skewed key is also the bucketized key
--- it should not matter, and the compile time skewed join
--- optimization is performed
--- adding a order by at the end to make the results deterministic
-
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT a.*, b.* FROM T1 a JOIN T2 b ON a.key = b.key
 PREHOOK: type: QUERY
-POSTHOOK: query: -- copy from skewjoinopt19
--- test compile time skew join and auto map join
--- add a test where the skewed key is also the bucketized key
--- it should not matter, and the compile time skewed join
--- optimization is performed
--- adding a order by at the end to make the results deterministic
-
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT a.*, b.* FROM T1 a JOIN T2 b ON a.key = b.key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:

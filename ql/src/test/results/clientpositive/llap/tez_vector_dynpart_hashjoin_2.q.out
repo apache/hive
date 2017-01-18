@@ -1,6 +1,4 @@
-PREHOOK: query: -- Multiple tables, and change the order of the big table (alltypesorc)
--- First try with regular mergejoin
-explain
+PREHOOK: query: explain
 select
   a.*
 from
@@ -12,9 +10,7 @@ where
   and (a.csmallint < 100)
 order by a.csmallint, a.ctinyint, a.cint
 PREHOOK: type: QUERY
-POSTHOOK: query: -- Multiple tables, and change the order of the big table (alltypesorc)
--- First try with regular mergejoin
-explain
+POSTHOOK: query: explain
 select
   a.*
 from
@@ -193,9 +189,7 @@ NULL	67	790444583	-1645852809	NULL	67.0	xptM81y	xH7445Rals48VOulSyR5F	NULL	1969-
 39	74	626923679	NULL	39.0	74.0	821UdmGbkEf4j	NULL	1969-12-31 16:00:10.403	1969-12-31 16:00:12.52	true	NULL
 47	74	626923679	NULL	47.0	74.0	821UdmGbkEf4j	NULL	1969-12-31 15:59:57.849	1969-12-31 15:59:57.569	true	NULL
 -22	77	528534767	NULL	-22.0	77.0	cvLH6Eat2yFsyy7p	NULL	1969-12-31 15:59:45.928	1969-12-31 15:59:43.621	true	NULL
-PREHOOK: query: -- noconditionaltask.size needs to be low enough that entire filtered table results do not fit in one task's hash table
--- Try with dynamically partitioned hash join 
-explain
+PREHOOK: query: explain
 select
   a.*
 from
@@ -207,9 +201,7 @@ where
   and (a.csmallint < 100)
 order by a.csmallint, a.ctinyint, a.cint
 PREHOOK: type: QUERY
-POSTHOOK: query: -- noconditionaltask.size needs to be low enough that entire filtered table results do not fit in one task's hash table
--- Try with dynamically partitioned hash join 
-explain
+POSTHOOK: query: explain
 select
   a.*
 from
@@ -388,8 +380,7 @@ NULL	67	790444583	-1645852809	NULL	67.0	xptM81y	xH7445Rals48VOulSyR5F	NULL	1969-
 39	74	626923679	NULL	39.0	74.0	821UdmGbkEf4j	NULL	1969-12-31 16:00:10.403	1969-12-31 16:00:12.52	true	NULL
 47	74	626923679	NULL	47.0	74.0	821UdmGbkEf4j	NULL	1969-12-31 15:59:57.849	1969-12-31 15:59:57.569	true	NULL
 -22	77	528534767	NULL	-22.0	77.0	cvLH6Eat2yFsyy7p	NULL	1969-12-31 15:59:45.928	1969-12-31 15:59:43.621	true	NULL
-PREHOOK: query: -- Try different order of tables
-explain
+PREHOOK: query: explain
 select
   a.*
 from
@@ -401,8 +392,7 @@ where
   and (a.csmallint < 100)
 order by a.csmallint, a.ctinyint, a.cint
 PREHOOK: type: QUERY
-POSTHOOK: query: -- Try different order of tables
-explain
+POSTHOOK: query: explain
 select
   a.*
 from

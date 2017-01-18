@@ -66,14 +66,12 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@values__tmp__table__1
 POSTHOOK: Output: default@t
 POSTHOOK: Lineage: t.dt EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-PREHOOK: query: -- expressions/columnref
-explain
+PREHOOK: query: explain
 select
 	date '2012-01-01' + interval 1 day + interval '2' days
 	from t
 PREHOOK: type: QUERY
-POSTHOOK: query: -- expressions/columnref
-explain
+POSTHOOK: query: explain
 select
 	date '2012-01-01' + interval 1 day + interval '2' days
 	from t

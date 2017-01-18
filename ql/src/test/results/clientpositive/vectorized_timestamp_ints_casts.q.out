@@ -1,6 +1,6 @@
 PREHOOK: query: explain
 select
--- to timestamp
+
   cast (ctinyint as timestamp)
   ,cast (csmallint as timestamp)
   ,cast (cint as timestamp)
@@ -13,12 +13,12 @@ select
   ,cast (cstring1 as timestamp)
   ,cast (substr(cstring1, 1, 1) as timestamp)
 from alltypesorc
--- limit output to a reasonably small number of rows
+
 where cbigint % 250 = 0
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
 select
--- to timestamp
+
   cast (ctinyint as timestamp)
   ,cast (csmallint as timestamp)
   ,cast (cint as timestamp)
@@ -31,7 +31,7 @@ select
   ,cast (cstring1 as timestamp)
   ,cast (substr(cstring1, 1, 1) as timestamp)
 from alltypesorc
--- limit output to a reasonably small number of rows
+
 where cbigint % 250 = 0
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -68,7 +68,7 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: select
--- to timestamp
+
   cast (ctinyint as timestamp)
   ,cast (csmallint as timestamp)
   ,cast (cint as timestamp)
@@ -81,13 +81,13 @@ PREHOOK: query: select
   ,cast (cstring1 as timestamp)
   ,cast (substr(cstring1, 1, 1) as timestamp)
 from alltypesorc
--- limit output to a reasonably small number of rows
+
 where cbigint % 250 = 0
 PREHOOK: type: QUERY
 PREHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 POSTHOOK: query: select
--- to timestamp
+
   cast (ctinyint as timestamp)
   ,cast (csmallint as timestamp)
   ,cast (cint as timestamp)
@@ -100,7 +100,7 @@ POSTHOOK: query: select
   ,cast (cstring1 as timestamp)
   ,cast (substr(cstring1, 1, 1) as timestamp)
 from alltypesorc
--- limit output to a reasonably small number of rows
+
 where cbigint % 250 = 0
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc
@@ -133,7 +133,7 @@ POSTHOOK: Input: default@alltypesorc
 1969-12-31 16:00:00.011	NULL	1969-12-27 18:49:09.583	1970-01-14 22:35:27	1969-12-31 16:00:11	NULL	1969-12-31 16:00:00.001	1969-12-31 16:00:00	1969-12-31 16:00:02.351	NULL	NULL
 PREHOOK: query: explain
 select
--- to timestamp
+
   cast (ctinyint as timestamp)
   ,cast (csmallint as timestamp)
   ,cast (cint as timestamp)
@@ -146,12 +146,12 @@ select
   ,cast (cstring1 as timestamp)
   ,cast (substr(cstring1, 1, 1) as timestamp)
 from alltypesorc
--- limit output to a reasonably small number of rows
+
 where cbigint % 250 = 0
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
 select
--- to timestamp
+
   cast (ctinyint as timestamp)
   ,cast (csmallint as timestamp)
   ,cast (cint as timestamp)
@@ -164,7 +164,7 @@ select
   ,cast (cstring1 as timestamp)
   ,cast (substr(cstring1, 1, 1) as timestamp)
 from alltypesorc
--- limit output to a reasonably small number of rows
+
 where cbigint % 250 = 0
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -201,7 +201,7 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: select
--- to timestamp
+
   cast (ctinyint as timestamp)
   ,cast (csmallint as timestamp)
   ,cast (cint as timestamp)
@@ -214,13 +214,13 @@ PREHOOK: query: select
   ,cast (cstring1 as timestamp)
   ,cast (substr(cstring1, 1, 1) as timestamp)
 from alltypesorc
--- limit output to a reasonably small number of rows
+
 where cbigint % 250 = 0
 PREHOOK: type: QUERY
 PREHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 POSTHOOK: query: select
--- to timestamp
+
   cast (ctinyint as timestamp)
   ,cast (csmallint as timestamp)
   ,cast (cint as timestamp)
@@ -233,7 +233,7 @@ POSTHOOK: query: select
   ,cast (cstring1 as timestamp)
   ,cast (substr(cstring1, 1, 1) as timestamp)
 from alltypesorc
--- limit output to a reasonably small number of rows
+
 where cbigint % 250 = 0
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc

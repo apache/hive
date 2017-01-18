@@ -4,13 +4,11 @@ PREHOOK: Output: database:ttp
 POSTHOOK: query: create database ttp
 POSTHOOK: type: CREATEDATABASE
 POSTHOOK: Output: database:ttp
-PREHOOK: query: -- Create non-temp tables
-create table ttp.tab1 (a1 string, a2 string)
+PREHOOK: query: create table ttp.tab1 (a1 string, a2 string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:ttp
 PREHOOK: Output: ttp@tab1
-POSTHOOK: query: -- Create non-temp tables
-create table ttp.tab1 (a1 string, a2 string)
+POSTHOOK: query: create table ttp.tab1 (a1 string, a2 string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:ttp
 POSTHOOK: Output: ttp@tab1
@@ -78,13 +76,11 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: ttp@tab2
 #### A masked pattern was here ####
 2	val_2
-PREHOOK: query: -- Now create temp table with same name
-create temporary table ttp.tab1 (c1 int, c2 string)
+PREHOOK: query: create temporary table ttp.tab1 (c1 int, c2 string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:ttp
 PREHOOK: Output: ttp@tab1
-POSTHOOK: query: -- Now create temp table with same name
-create temporary table ttp.tab1 (c1 int, c2 string)
+POSTHOOK: query: create temporary table ttp.tab1 (c1 int, c2 string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:ttp
 POSTHOOK: Output: ttp@tab1
@@ -98,12 +94,10 @@ POSTHOOK: Input: default@src
 POSTHOOK: Output: ttp@tab1
 POSTHOOK: Lineage: tab1.c1 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: tab1.c2 SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: -- describe/select should now use temp table
-describe ttp.tab1
+PREHOOK: query: describe ttp.tab1
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: ttp@tab1
-POSTHOOK: query: -- describe/select should now use temp table
-describe ttp.tab1
+POSTHOOK: query: describe ttp.tab1
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: ttp@tab1
 c1                  	int                 	                    
@@ -119,12 +113,10 @@ POSTHOOK: Input: ttp@tab1
 0	val_0
 0	val_0
 0	val_0
-PREHOOK: query: -- rename the temp table, and now we can see our non-temp table again
-use ttp
+PREHOOK: query: use ttp
 PREHOOK: type: SWITCHDATABASE
 PREHOOK: Input: database:ttp
-POSTHOOK: query: -- rename the temp table, and now we can see our non-temp table again
-use ttp
+POSTHOOK: query: use ttp
 POSTHOOK: type: SWITCHDATABASE
 POSTHOOK: Input: database:ttp
 PREHOOK: query: alter table tab1 rename to tab2
@@ -161,12 +153,10 @@ POSTHOOK: Input: ttp@tab1
 5	val_5
 5	val_5
 5	val_5
-PREHOOK: query: -- now the non-temp tab2 should be hidden
-describe ttp.tab2
+PREHOOK: query: describe ttp.tab2
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: ttp@tab2
-POSTHOOK: query: -- now the non-temp tab2 should be hidden
-describe ttp.tab2
+POSTHOOK: query: describe ttp.tab2
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: ttp@tab2
 c1                  	int                 	                    
@@ -182,13 +172,11 @@ POSTHOOK: Input: ttp@tab2
 0	val_0
 0	val_0
 0	val_0
-PREHOOK: query: -- drop the temp table, and now we should be able to see the non-temp tab2 again
-drop table ttp.tab2
+PREHOOK: query: drop table ttp.tab2
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: ttp@tab2
 PREHOOK: Output: ttp@tab2
-POSTHOOK: query: -- drop the temp table, and now we should be able to see the non-temp tab2 again
-drop table ttp.tab2
+POSTHOOK: query: drop table ttp.tab2
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: ttp@tab2
 POSTHOOK: Output: ttp@tab2

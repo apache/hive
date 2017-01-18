@@ -35,14 +35,12 @@ POSTHOOK: Output: default@ctas_date_1
 POSTHOOK: Lineage: ctas_date_1.dd SIMPLE []
 POSTHOOK: Lineage: ctas_date_1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: ctas_date_1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: -- create table as with date column
-create table ctas_date_2 as select key, value, dd, date '1980-12-12' from ctas_date_1
+PREHOOK: query: create table ctas_date_2 as select key, value, dd, date '1980-12-12' from ctas_date_1
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@ctas_date_1
 PREHOOK: Output: database:default
 PREHOOK: Output: default@ctas_date_2
-POSTHOOK: query: -- create table as with date column
-create table ctas_date_2 as select key, value, dd, date '1980-12-12' from ctas_date_1
+POSTHOOK: query: create table ctas_date_2 as select key, value, dd, date '1980-12-12' from ctas_date_1
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@ctas_date_1
 POSTHOOK: Output: database:default
@@ -51,14 +49,12 @@ POSTHOOK: Lineage: ctas_date_2._c3 SIMPLE []
 POSTHOOK: Lineage: ctas_date_2.dd SIMPLE [(ctas_date_1)ctas_date_1.FieldSchema(name:dd, type:date, comment:null), ]
 POSTHOOK: Lineage: ctas_date_2.key SIMPLE [(ctas_date_1)ctas_date_1.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: ctas_date_2.value SIMPLE [(ctas_date_1)ctas_date_1.FieldSchema(name:value, type:string, comment:null), ]
-PREHOOK: query: -- view with date column
-create view ctas_date_3 as select * from ctas_date_2 where dd > date '2000-01-01'
+PREHOOK: query: create view ctas_date_3 as select * from ctas_date_2 where dd > date '2000-01-01'
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: default@ctas_date_2
 PREHOOK: Output: database:default
 PREHOOK: Output: default@ctas_date_3
-POSTHOOK: query: -- view with date column
-create view ctas_date_3 as select * from ctas_date_2 where dd > date '2000-01-01'
+POSTHOOK: query: create view ctas_date_3 as select * from ctas_date_2 where dd > date '2000-01-01'
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@ctas_date_2
 POSTHOOK: Output: database:default

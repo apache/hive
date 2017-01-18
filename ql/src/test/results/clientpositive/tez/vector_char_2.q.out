@@ -134,8 +134,7 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: -- should match the query from src
-select value, sum(cast(key as int)), count(*) numrows
+PREHOOK: query: select value, sum(cast(key as int)), count(*) numrows
 from char_2
 group by value
 order by value asc
@@ -143,8 +142,7 @@ limit 5
 PREHOOK: type: QUERY
 PREHOOK: Input: default@char_2
 #### A masked pattern was here ####
-POSTHOOK: query: -- should match the query from src
-select value, sum(cast(key as int)), count(*) numrows
+POSTHOOK: query: select value, sum(cast(key as int)), count(*) numrows
 from char_2
 group by value
 order by value asc
@@ -265,8 +263,7 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: -- should match the query from src
-select value, sum(cast(key as int)), count(*) numrows
+PREHOOK: query: select value, sum(cast(key as int)), count(*) numrows
 from char_2
 group by value
 order by value desc
@@ -274,8 +271,7 @@ limit 5
 PREHOOK: type: QUERY
 PREHOOK: Input: default@char_2
 #### A masked pattern was here ####
-POSTHOOK: query: -- should match the query from src
-select value, sum(cast(key as int)), count(*) numrows
+POSTHOOK: query: select value, sum(cast(key as int)), count(*) numrows
 from char_2
 group by value
 order by value desc

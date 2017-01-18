@@ -1,12 +1,6 @@
-PREHOOK: query: -- CTAS
--- SORT_QUERY_RESULTS
-
-EXPLAIN CREATE TABLE tmp_src AS SELECT * FROM (SELECT value, count(value) AS cnt FROM src GROUP BY value) f1 ORDER BY cnt
+PREHOOK: query: EXPLAIN CREATE TABLE tmp_src AS SELECT * FROM (SELECT value, count(value) AS cnt FROM src GROUP BY value) f1 ORDER BY cnt
 PREHOOK: type: CREATETABLE_AS_SELECT
-POSTHOOK: query: -- CTAS
--- SORT_QUERY_RESULTS
-
-EXPLAIN CREATE TABLE tmp_src AS SELECT * FROM (SELECT value, count(value) AS cnt FROM src GROUP BY value) f1 ORDER BY cnt
+POSTHOOK: query: EXPLAIN CREATE TABLE tmp_src AS SELECT * FROM (SELECT value, count(value) AS cnt FROM src GROUP BY value) f1 ORDER BY cnt
 POSTHOOK: type: CREATETABLE_AS_SELECT
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -427,13 +421,11 @@ val_95	2
 val_96	1
 val_97	2
 val_98	2
-PREHOOK: query: -- dyn partitions
-CREATE TABLE tmp_src_part (c string) PARTITIONED BY (d int)
+PREHOOK: query: CREATE TABLE tmp_src_part (c string) PARTITIONED BY (d int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@tmp_src_part
-POSTHOOK: query: -- dyn partitions
-CREATE TABLE tmp_src_part (c string) PARTITIONED BY (d int)
+POSTHOOK: query: CREATE TABLE tmp_src_part (c string) PARTITIONED BY (d int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tmp_src_part
@@ -834,13 +826,11 @@ val_95	2
 val_96	1
 val_97	2
 val_98	2
-PREHOOK: query: -- multi insert
-CREATE TABLE even (c int, d string)
+PREHOOK: query: CREATE TABLE even (c int, d string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@even
-POSTHOOK: query: -- multi insert
-CREATE TABLE even (c int, d string)
+POSTHOOK: query: CREATE TABLE even (c int, d string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@even
@@ -1476,14 +1466,12 @@ POSTHOOK: Input: default@odd
 95	val_95
 97	val_97
 97	val_97
-PREHOOK: query: -- create empty table
-CREATE TABLE empty STORED AS orc AS SELECT * FROM tmp_src_part WHERE d = -1000
+PREHOOK: query: CREATE TABLE empty STORED AS orc AS SELECT * FROM tmp_src_part WHERE d = -1000
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@tmp_src_part
 PREHOOK: Output: database:default
 PREHOOK: Output: default@empty
-POSTHOOK: query: -- create empty table
-CREATE TABLE empty STORED AS orc AS SELECT * FROM tmp_src_part WHERE d = -1000
+POSTHOOK: query: CREATE TABLE empty STORED AS orc AS SELECT * FROM tmp_src_part WHERE d = -1000
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@tmp_src_part
 POSTHOOK: Output: database:default
@@ -1498,13 +1486,11 @@ POSTHOOK: query: SELECT * FROM empty
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@empty
 #### A masked pattern was here ####
-PREHOOK: query: -- drop the tables
-DROP TABLE even
+PREHOOK: query: DROP TABLE even
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@even
 PREHOOK: Output: default@even
-POSTHOOK: query: -- drop the tables
-DROP TABLE even
+POSTHOOK: query: DROP TABLE even
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@even
 POSTHOOK: Output: default@even

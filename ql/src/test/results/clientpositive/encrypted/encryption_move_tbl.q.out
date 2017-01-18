@@ -45,8 +45,7 @@ POSTHOOK: type: SHOWTABLES
 POSTHOOK: Input: database:default
 encrypted_table
 src
-PREHOOK: query: -- should fail
-ALTER TABLE default.encrypted_table RENAME TO encrypted_db.encrypted_table_2
+PREHOOK: query: ALTER TABLE default.encrypted_table RENAME TO encrypted_db.encrypted_table_2
 PREHOOK: type: ALTERTABLE_RENAME
 PREHOOK: Input: default@encrypted_table
 PREHOOK: Output: default@encrypted_table
@@ -59,13 +58,11 @@ POSTHOOK: type: SHOWTABLES
 POSTHOOK: Input: database:default
 encrypted_table
 src
-PREHOOK: query: -- should succeed in Hadoop 2.7 but fail in 2.6  (HDFS-7530)
-ALTER TABLE default.encrypted_table RENAME TO default.plain_table
+PREHOOK: query: ALTER TABLE default.encrypted_table RENAME TO default.plain_table
 PREHOOK: type: ALTERTABLE_RENAME
 PREHOOK: Input: default@encrypted_table
 PREHOOK: Output: default@encrypted_table
-POSTHOOK: query: -- should succeed in Hadoop 2.7 but fail in 2.6  (HDFS-7530)
-ALTER TABLE default.encrypted_table RENAME TO default.plain_table
+POSTHOOK: query: ALTER TABLE default.encrypted_table RENAME TO default.plain_table
 POSTHOOK: type: ALTERTABLE_RENAME
 POSTHOOK: Input: default@encrypted_table
 POSTHOOK: Output: default@encrypted_table

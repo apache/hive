@@ -1,9 +1,7 @@
 Warning: Shuffle Join JOIN[6][tables = [$hdt$_0, $hdt$_1]] in Stage 'Stage-1:MAPRED' is a cross product
-PREHOOK: query: -- current
-explain select src.key from src join src src2
+PREHOOK: query: explain select src.key from src join src src2
 PREHOOK: type: QUERY
-POSTHOOK: query: -- current
-explain select src.key from src join src src2
+POSTHOOK: query: explain select src.key from src join src src2
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -56,11 +54,9 @@ STAGE PLANS:
         ListSink
 
 Warning: Shuffle Join JOIN[6][tables = [$hdt$_0, $hdt$_1]] in Stage 'Stage-1:MAPRED' is a cross product
-PREHOOK: query: -- ansi cross join
-explain select src.key from src cross join src src2
+PREHOOK: query: explain select src.key from src cross join src src2
 PREHOOK: type: QUERY
-POSTHOOK: query: -- ansi cross join
-explain select src.key from src cross join src src2
+POSTHOOK: query: explain select src.key from src cross join src src2
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -112,11 +108,9 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: -- appending condition is allowed
-explain select src.key from src cross join src src2 on src.key=src2.key
+PREHOOK: query: explain select src.key from src cross join src src2 on src.key=src2.key
 PREHOOK: type: QUERY
-POSTHOOK: query: -- appending condition is allowed
-explain select src.key from src cross join src src2 on src.key=src2.key
+POSTHOOK: query: explain select src.key from src cross join src src2 on src.key=src2.key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage

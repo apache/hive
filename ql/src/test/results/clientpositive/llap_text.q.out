@@ -17,7 +17,7 @@ PREHOOK: query: CREATE TABLE text_llap(
     cboolean2 BOOLEAN)
 row format serde 'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe'
 stored as inputformat "org.apache.hadoop.mapred.TextInputFormat" 
--- stored as inputformat "org.apache.hadoop.hive.llap.io.decode.LlapTextInputFormat" 
+
  outputformat "org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat"
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -37,7 +37,7 @@ POSTHOOK: query: CREATE TABLE text_llap(
     cboolean2 BOOLEAN)
 row format serde 'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe'
 stored as inputformat "org.apache.hadoop.mapred.TextInputFormat" 
--- stored as inputformat "org.apache.hadoop.hive.llap.io.decode.LlapTextInputFormat" 
+
  outputformat "org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat"
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
@@ -80,7 +80,7 @@ PREHOOK: query: create table text_llap2(
           bin binary)
 row format delimited fields terminated by '|'
 stored as inputformat "org.apache.hadoop.mapred.TextInputFormat" 
--- stored as inputformat "org.apache.hadoop.hive.llap.io.decode.LlapTextInputFormat" 
+
 outputformat "org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat"
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -99,7 +99,7 @@ POSTHOOK: query: create table text_llap2(
           bin binary)
 row format delimited fields terminated by '|'
 stored as inputformat "org.apache.hadoop.mapred.TextInputFormat" 
--- stored as inputformat "org.apache.hadoop.hive.llap.io.decode.LlapTextInputFormat" 
+
 outputformat "org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat"
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default

@@ -1,14 +1,10 @@
-PREHOOK: query: -- SORT_QUERY_RESULTS
-
-CREATE TABLE src1_rot13_iof(key STRING, value STRING)
+PREHOOK: query: CREATE TABLE src1_rot13_iof(key STRING, value STRING)
   STORED AS INPUTFORMAT 'org.apache.hadoop.hive.ql.io.udf.Rot13InputFormat'
             OUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.udf.Rot13OutputFormat'
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@src1_rot13_iof
-POSTHOOK: query: -- SORT_QUERY_RESULTS
-
-CREATE TABLE src1_rot13_iof(key STRING, value STRING)
+POSTHOOK: query: CREATE TABLE src1_rot13_iof(key STRING, value STRING)
   STORED AS INPUTFORMAT 'org.apache.hadoop.hive.ql.io.udf.Rot13InputFormat'
             OUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.udf.Rot13OutputFormat'
 POSTHOOK: type: CREATETABLE

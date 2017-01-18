@@ -1,6 +1,4 @@
-PREHOOK: query: -- SORT_QUERY_RESULTS
-
-CREATE TABLE over1k(t tinyint,
+PREHOOK: query: CREATE TABLE over1k(t tinyint,
            si smallint,
            i int,
            b bigint,
@@ -16,9 +14,7 @@ STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@over1k
-POSTHOOK: query: -- SORT_QUERY_RESULTS
-
-CREATE TABLE over1k(t tinyint,
+POSTHOOK: query: CREATE TABLE over1k(t tinyint,
            si smallint,
            i int,
            b bigint,

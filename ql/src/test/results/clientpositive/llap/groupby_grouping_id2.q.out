@@ -14,15 +14,11 @@ POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/groupby_groupingid.txt
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@t1
-PREHOOK: query: -- SORT_QUERY_RESULTS
-
-SELECT key, value, GROUPING__ID, count(*) from T1 GROUP BY key, value WITH ROLLUP
+PREHOOK: query: SELECT key, value, GROUPING__ID, count(*) from T1 GROUP BY key, value WITH ROLLUP
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
 #### A masked pattern was here ####
-POSTHOOK: query: -- SORT_QUERY_RESULTS
-
-SELECT key, value, GROUPING__ID, count(*) from T1 GROUP BY key, value WITH ROLLUP
+POSTHOOK: query: SELECT key, value, GROUPING__ID, count(*) from T1 GROUP BY key, value WITH ROLLUP
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 #### A masked pattern was here ####

@@ -1,12 +1,8 @@
-PREHOOK: query: -- SORT_QUERY_RESULTS
-
-EXPLAIN SELECT COUNT(t1.cint) AS CNT, MAX(t2.cint) , MIN(t1.cint), AVG(t1.cint+t2.cint)
+PREHOOK: query: EXPLAIN SELECT COUNT(t1.cint) AS CNT, MAX(t2.cint) , MIN(t1.cint), AVG(t1.cint+t2.cint)
   FROM alltypesorc t1
   JOIN alltypesorc t2 ON t1.cint = t2.cint order by CNT
 PREHOOK: type: QUERY
-POSTHOOK: query: -- SORT_QUERY_RESULTS
-
-EXPLAIN SELECT COUNT(t1.cint) AS CNT, MAX(t2.cint) , MIN(t1.cint), AVG(t1.cint+t2.cint)
+POSTHOOK: query: EXPLAIN SELECT COUNT(t1.cint) AS CNT, MAX(t2.cint) , MIN(t1.cint), AVG(t1.cint+t2.cint)
   FROM alltypesorc t1
   JOIN alltypesorc t2 ON t1.cint = t2.cint order by CNT
 POSTHOOK: type: QUERY

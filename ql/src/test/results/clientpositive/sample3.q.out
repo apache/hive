@@ -1,14 +1,8 @@
-PREHOOK: query: -- SORT_QUERY_RESULTS
-
--- no input pruning, sample filter
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT s.key
 FROM srcbucket TABLESAMPLE (BUCKET 1 OUT OF 5 on key) s
 PREHOOK: type: QUERY
-POSTHOOK: query: -- SORT_QUERY_RESULTS
-
--- no input pruning, sample filter
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT s.key
 FROM srcbucket TABLESAMPLE (BUCKET 1 OUT OF 5 on key) s
 POSTHOOK: type: QUERY

@@ -1,8 +1,6 @@
-PREHOOK: query: -- Test simple PPD through Windowing
-EXPLAIN select * from (SELECT key, sum(key) over(partition by key) as c1 from src)r1 where key > '2'
+PREHOOK: query: EXPLAIN select * from (SELECT key, sum(key) over(partition by key) as c1 from src)r1 where key > '2'
 PREHOOK: type: QUERY
-POSTHOOK: query: -- Test simple PPD through Windowing
-EXPLAIN select * from (SELECT key, sum(key) over(partition by key) as c1 from src)r1 where key > '2'
+POSTHOOK: query: EXPLAIN select * from (SELECT key, sum(key) over(partition by key) as c1 from src)r1 where key > '2'
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -330,11 +328,9 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: -- Test PPD through Windowing where predicate is a subset of partition keys
-EXPLAIN select * from (SELECT key, sum(key) over(partition by key, value) as c1  from src)r1 where key > '2'
+PREHOOK: query: EXPLAIN select * from (SELECT key, sum(key) over(partition by key, value) as c1  from src)r1 where key > '2'
 PREHOOK: type: QUERY
-POSTHOOK: query: -- Test PPD through Windowing where predicate is a subset of partition keys
-EXPLAIN select * from (SELECT key, sum(key) over(partition by key, value) as c1  from src)r1 where key > '2'
+POSTHOOK: query: EXPLAIN select * from (SELECT key, sum(key) over(partition by key, value) as c1  from src)r1 where key > '2'
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -662,11 +658,9 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: -- Test PPD through Windowing where predicate is a subset of partition keys, multiple windows are involved and UDAF is same
-EXPLAIN select * from (SELECT key, sum(key) over(partition by key,value) as c1, sum(key) over(partition by key) as c2  from src)r1 where key > '2'
+PREHOOK: query: EXPLAIN select * from (SELECT key, sum(key) over(partition by key,value) as c1, sum(key) over(partition by key) as c2  from src)r1 where key > '2'
 PREHOOK: type: QUERY
-POSTHOOK: query: -- Test PPD through Windowing where predicate is a subset of partition keys, multiple windows are involved and UDAF is same
-EXPLAIN select * from (SELECT key, sum(key) over(partition by key,value) as c1, sum(key) over(partition by key) as c2  from src)r1 where key > '2'
+POSTHOOK: query: EXPLAIN select * from (SELECT key, sum(key) over(partition by key,value) as c1, sum(key) over(partition by key) as c2  from src)r1 where key > '2'
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -1116,11 +1110,9 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: -- Test PPD through Windowing where predicate is a subset of partition keys, multiple windows are involved and UDAF has different args 
-EXPLAIN select * from (SELECT key, sum(key) over(partition by key,value) as c1, sum(value) over(partition by key) as c2  from src)r1 where key > '2'
+PREHOOK: query: EXPLAIN select * from (SELECT key, sum(key) over(partition by key,value) as c1, sum(value) over(partition by key) as c2  from src)r1 where key > '2'
 PREHOOK: type: QUERY
-POSTHOOK: query: -- Test PPD through Windowing where predicate is a subset of partition keys, multiple windows are involved and UDAF has different args 
-EXPLAIN select * from (SELECT key, sum(key) over(partition by key,value) as c1, sum(value) over(partition by key) as c2  from src)r1 where key > '2'
+POSTHOOK: query: EXPLAIN select * from (SELECT key, sum(key) over(partition by key,value) as c1, sum(value) over(partition by key) as c2  from src)r1 where key > '2'
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -1570,11 +1562,9 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: -- Test predicate is not getting pushed down when multiple windows are involved and they don't have common partition keys 
-EXPLAIN select * from (SELECT key, sum(key) over(partition by key,value) as c1, avg(value) over(partition by value) as c2  from src)r1 where key > '2'
+PREHOOK: query: EXPLAIN select * from (SELECT key, sum(key) over(partition by key,value) as c1, avg(value) over(partition by value) as c2  from src)r1 where key > '2'
 PREHOOK: type: QUERY
-POSTHOOK: query: -- Test predicate is not getting pushed down when multiple windows are involved and they don't have common partition keys 
-EXPLAIN select * from (SELECT key, sum(key) over(partition by key,value) as c1, avg(value) over(partition by value) as c2  from src)r1 where key > '2'
+POSTHOOK: query: EXPLAIN select * from (SELECT key, sum(key) over(partition by key,value) as c1, avg(value) over(partition by value) as c2  from src)r1 where key > '2'
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -1685,11 +1675,9 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: -- Test predicate is not getting pushed down when window has compound partition key
-EXPLAIN select * from (SELECT key, sum(key) over(partition by key + 2) as c1 from src)r1 where key > '2'
+PREHOOK: query: EXPLAIN select * from (SELECT key, sum(key) over(partition by key + 2) as c1 from src)r1 where key > '2'
 PREHOOK: type: QUERY
-POSTHOOK: query: -- Test predicate is not getting pushed down when window has compound partition key
-EXPLAIN select * from (SELECT key, sum(key) over(partition by key + 2) as c1 from src)r1 where key > '2'
+POSTHOOK: query: EXPLAIN select * from (SELECT key, sum(key) over(partition by key + 2) as c1 from src)r1 where key > '2'
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -1821,11 +1809,9 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: -- Test predicate is not getting pushed down when predicate involves more than one col 
-EXPLAIN select * from (SELECT key, value, sum(key) over(partition by key, value) as c1 from src)r1 where (key + value) > '2'
+PREHOOK: query: EXPLAIN select * from (SELECT key, value, sum(key) over(partition by key, value) as c1 from src)r1 where (key + value) > '2'
 PREHOOK: type: QUERY
-POSTHOOK: query: -- Test predicate is not getting pushed down when predicate involves more than one col 
-EXPLAIN select * from (SELECT key, value, sum(key) over(partition by key, value) as c1 from src)r1 where (key + value) > '2'
+POSTHOOK: query: EXPLAIN select * from (SELECT key, value, sum(key) over(partition by key, value) as c1 from src)r1 where (key + value) > '2'
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage

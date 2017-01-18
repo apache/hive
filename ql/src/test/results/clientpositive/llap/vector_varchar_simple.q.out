@@ -108,16 +108,14 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: -- should match the query from src
-select key, value
+PREHOOK: query: select key, value
 from varchar_2
 order by key asc
 limit 5
 PREHOOK: type: QUERY
 PREHOOK: Input: default@varchar_2
 #### A masked pattern was here ####
-POSTHOOK: query: -- should match the query from src
-select key, value
+POSTHOOK: query: select key, value
 from varchar_2
 order by key asc
 limit 5
@@ -211,16 +209,14 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: -- should match the query from src
-select key, value
+PREHOOK: query: select key, value
 from varchar_2
 order by key desc
 limit 5
 PREHOOK: type: QUERY
 PREHOOK: Input: default@varchar_2
 #### A masked pattern was here ####
-POSTHOOK: query: -- should match the query from src
-select key, value
+POSTHOOK: query: select key, value
 from varchar_2
 order by key desc
 limit 5
@@ -240,15 +236,13 @@ POSTHOOK: query: drop table varchar_2
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@varchar_2
 POSTHOOK: Output: default@varchar_2
-PREHOOK: query: -- Implicit conversion.  Occurs in reduce-side under Tez.
-create table varchar_3 (
+PREHOOK: query: create table varchar_3 (
   field varchar(25)
 ) stored as orc
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@varchar_3
-POSTHOOK: query: -- Implicit conversion.  Occurs in reduce-side under Tez.
-create table varchar_3 (
+POSTHOOK: query: create table varchar_3 (
   field varchar(25)
 ) stored as orc
 POSTHOOK: type: CREATETABLE

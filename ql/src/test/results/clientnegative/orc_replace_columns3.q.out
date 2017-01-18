@@ -1,12 +1,8 @@
-PREHOOK: query: -- Currently, smallint to tinyint conversion is not supported because it isn't in the lossless
--- TypeIntoUtils.implicitConvertible conversions.
-create table src_orc (key smallint, val string) stored as orc
+PREHOOK: query: create table src_orc (key smallint, val string) stored as orc
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@src_orc
-POSTHOOK: query: -- Currently, smallint to tinyint conversion is not supported because it isn't in the lossless
--- TypeIntoUtils.implicitConvertible conversions.
-create table src_orc (key smallint, val string) stored as orc
+POSTHOOK: query: create table src_orc (key smallint, val string) stored as orc
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@src_orc

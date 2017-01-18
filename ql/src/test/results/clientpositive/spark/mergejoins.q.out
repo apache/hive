@@ -188,11 +188,9 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: --HIVE-3070 filter on outer join condition removed while merging join tree
-explain select * from src a join src b on a.key=b.key left outer join src c on b.key=c.key and b.key<10
+PREHOOK: query: explain select * from src a join src b on a.key=b.key left outer join src c on b.key=c.key and b.key<10
 PREHOOK: type: QUERY
-POSTHOOK: query: --HIVE-3070 filter on outer join condition removed while merging join tree
-explain select * from src a join src b on a.key=b.key left outer join src c on b.key=c.key and b.key<10
+POSTHOOK: query: explain select * from src a join src b on a.key=b.key left outer join src c on b.key=c.key and b.key<10
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage

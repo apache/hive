@@ -36,12 +36,10 @@ POSTHOOK: Input: default@shcol_test
 key                 
 value               
 ds                  
-PREHOOK: query: -- SHOW COLUMNS
-CREATE DATABASE test_db
+PREHOOK: query: CREATE DATABASE test_db
 PREHOOK: type: CREATEDATABASE
 PREHOOK: Output: database:test_db
-POSTHOOK: query: -- SHOW COLUMNS
-CREATE DATABASE test_db
+POSTHOOK: query: CREATE DATABASE test_db
 POSTHOOK: type: CREATEDATABASE
 POSTHOOK: Output: database:test_db
 PREHOOK: query: USE test_db
@@ -58,12 +56,10 @@ POSTHOOK: query: CREATE TABLE foo(a INT)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:test_db
 POSTHOOK: Output: test_db@foo
-PREHOOK: query: -- SHOW COLUMNS basic syntax tests
-USE test_db
+PREHOOK: query: USE test_db
 PREHOOK: type: SWITCHDATABASE
 PREHOOK: Input: database:test_db
-POSTHOOK: query: -- SHOW COLUMNS basic syntax tests
-USE test_db
+POSTHOOK: query: USE test_db
 POSTHOOK: type: SWITCHDATABASE
 POSTHOOK: Input: database:test_db
 PREHOOK: query: SHOW COLUMNS from foo
@@ -80,12 +76,10 @@ POSTHOOK: query: SHOW COLUMNS in foo
 POSTHOOK: type: SHOWCOLUMNS
 POSTHOOK: Input: test_db@foo
 a                   
-PREHOOK: query: -- SHOW COLUMNS from a database with a name that requires escaping
-CREATE DATABASE `database`
+PREHOOK: query: CREATE DATABASE `database`
 PREHOOK: type: CREATEDATABASE
 PREHOOK: Output: database:database
-POSTHOOK: query: -- SHOW COLUMNS from a database with a name that requires escaping
-CREATE DATABASE `database`
+POSTHOOK: query: CREATE DATABASE `database`
 POSTHOOK: type: CREATEDATABASE
 POSTHOOK: Output: database:database
 PREHOOK: query: USE `database`

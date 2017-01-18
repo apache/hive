@@ -1,12 +1,8 @@
-PREHOOK: query: -- SORT_QUERY_RESULTS
-
-CREATE TABLE T1(key STRING, val STRING) PARTITIONED BY (ds string)
+PREHOOK: query: CREATE TABLE T1(key STRING, val STRING) PARTITIONED BY (ds string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@T1
-POSTHOOK: query: -- SORT_QUERY_RESULTS
-
-CREATE TABLE T1(key STRING, val STRING) PARTITIONED BY (ds string)
+POSTHOOK: query: CREATE TABLE T1(key STRING, val STRING) PARTITIONED BY (ds string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@T1
@@ -18,13 +14,11 @@ POSTHOOK: query: CREATE TABLE outputTbl1(key int, cnt int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@outputTbl1
-PREHOOK: query: -- The plan should not be converted to a map-side group since no partition is being accessed
-EXPLAIN EXTENDED
+PREHOOK: query: EXPLAIN EXTENDED
 INSERT OVERWRITE TABLE outputTbl1
 SELECT key, count(1) FROM T1 where ds = '1' GROUP BY key
 PREHOOK: type: QUERY
-POSTHOOK: query: -- The plan should not be converted to a map-side group since no partition is being accessed
-EXPLAIN EXTENDED
+POSTHOOK: query: EXPLAIN EXTENDED
 INSERT OVERWRITE TABLE outputTbl1
 SELECT key, count(1) FROM T1 where ds = '1' GROUP BY key
 POSTHOOK: type: QUERY
@@ -168,13 +162,11 @@ POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@t1
 POSTHOOK: Output: default@t1@ds=2
-PREHOOK: query: -- The plan should not be converted to a map-side group since no partition is being accessed
-EXPLAIN EXTENDED
+PREHOOK: query: EXPLAIN EXTENDED
 INSERT OVERWRITE TABLE outputTbl1
 SELECT key, count(1) FROM T1 where ds = '1' GROUP BY key
 PREHOOK: type: QUERY
-POSTHOOK: query: -- The plan should not be converted to a map-side group since no partition is being accessed
-EXPLAIN EXTENDED
+POSTHOOK: query: EXPLAIN EXTENDED
 INSERT OVERWRITE TABLE outputTbl1
 SELECT key, count(1) FROM T1 where ds = '1' GROUP BY key
 POSTHOOK: type: QUERY
@@ -309,15 +301,11 @@ POSTHOOK: query: SELECT * FROM outputTbl1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@outputtbl1
 #### A masked pattern was here ####
-PREHOOK: query: -- The plan should not be converted to a map-side group since the partition being accessed
--- is neither bucketed not sorted
-EXPLAIN EXTENDED
+PREHOOK: query: EXPLAIN EXTENDED
 INSERT OVERWRITE TABLE outputTbl1
 SELECT key, count(1) FROM T1 where ds = '2' GROUP BY key
 PREHOOK: type: QUERY
-POSTHOOK: query: -- The plan should not be converted to a map-side group since the partition being accessed
--- is neither bucketed not sorted
-EXPLAIN EXTENDED
+POSTHOOK: query: EXPLAIN EXTENDED
 INSERT OVERWRITE TABLE outputTbl1
 SELECT key, count(1) FROM T1 where ds = '2' GROUP BY key
 POSTHOOK: type: QUERY

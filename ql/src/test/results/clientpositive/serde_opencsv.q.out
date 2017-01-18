@@ -11,7 +11,7 @@ CREATE TABLE serde_opencsv(
 ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.OpenCSVSerde'
 WITH SERDEPROPERTIES(
   "separatorChar" = ",",
-  "quoteChar"     = "'",
+  "quoteChar"     = "\'",
   "escapeChar"    = "\\"
 ) stored as textfile
 PREHOOK: type: CREATETABLE
@@ -28,7 +28,7 @@ CREATE TABLE serde_opencsv(
 ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.OpenCSVSerde'
 WITH SERDEPROPERTIES(
   "separatorChar" = ",",
-  "quoteChar"     = "'",
+  "quoteChar"     = "\'",
   "escapeChar"    = "\\"
 ) stored as textfile
 POSTHOOK: type: CREATETABLE
@@ -61,7 +61,7 @@ PREHOOK: query: CREATE TABLE serde_opencsv(
 ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.OpenCSVSerde'
 WITH SERDEPROPERTIES(
   "separatorChar" = ",",
-  "quoteChar"     = "'",
+  "quoteChar"     = "\'",
   "escapeChar"    = "\\"
 ) stored as textfile
 PREHOOK: type: CREATETABLE
@@ -79,7 +79,7 @@ POSTHOOK: query: CREATE TABLE serde_opencsv(
 ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.OpenCSVSerde'
 WITH SERDEPROPERTIES(
   "separatorChar" = ",",
-  "quoteChar"     = "'",
+  "quoteChar"     = "\'",
   "escapeChar"    = "\\"
 ) stored as textfile
 POSTHOOK: type: CREATETABLE

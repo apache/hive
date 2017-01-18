@@ -1,10 +1,6 @@
-PREHOOK: query: -- Can't update view to have a view cycle (1)
-
-drop view v
+PREHOOK: query: drop view v
 PREHOOK: type: DROPVIEW
-POSTHOOK: query: -- Can't update view to have a view cycle (1)
-
-drop view v
+POSTHOOK: query: drop view v
 POSTHOOK: type: DROPVIEW
 PREHOOK: query: create view v1 partitioned on (ds, hr) as select * from srcpart
 PREHOOK: type: CREATEVIEW

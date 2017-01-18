@@ -1,16 +1,8 @@
-PREHOOK: query: -- SORT_BEFORE_DIFF
--- This tests that a union all with a map only subquery on one side and a 
--- subquery involving two map reduce jobs on the other runs correctly.
-
-CREATE TABLE test_src (key STRING, value STRING)
+PREHOOK: query: CREATE TABLE test_src (key STRING, value STRING)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@test_src
-POSTHOOK: query: -- SORT_BEFORE_DIFF
--- This tests that a union all with a map only subquery on one side and a 
--- subquery involving two map reduce jobs on the other runs correctly.
-
-CREATE TABLE test_src (key STRING, value STRING)
+POSTHOOK: query: CREATE TABLE test_src (key STRING, value STRING)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_src

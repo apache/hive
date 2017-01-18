@@ -1,6 +1,4 @@
-PREHOOK: query: -- SORT_QUERY_RESULTS
-
-EXPLAIN 
+PREHOOK: query: EXPLAIN 
 SELECT   cstring1,
          cdouble,
          ctimestamp1,
@@ -20,9 +18,7 @@ WHERE    ((cstring2 LIKE '%b%')
               OR (cstring1 < 'a')))
 GROUP BY cstring1, cdouble, ctimestamp1
 PREHOOK: type: QUERY
-POSTHOOK: query: -- SORT_QUERY_RESULTS
-
-EXPLAIN 
+POSTHOOK: query: EXPLAIN 
 SELECT   cstring1,
          cdouble,
          ctimestamp1,

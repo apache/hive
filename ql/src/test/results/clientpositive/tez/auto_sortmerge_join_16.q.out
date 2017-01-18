@@ -1,6 +1,4 @@
-PREHOOK: query: -- SORT_QUERY_RESULTS
-
-CREATE TABLE stage_bucket_big
+PREHOOK: query: CREATE TABLE stage_bucket_big
 (
 key BIGINT,
 value STRING
@@ -9,9 +7,7 @@ PARTITIONED BY (file_tag STRING)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@stage_bucket_big
-POSTHOOK: query: -- SORT_QUERY_RESULTS
-
-CREATE TABLE stage_bucket_big
+POSTHOOK: query: CREATE TABLE stage_bucket_big
 (
 key BIGINT,
 value STRING

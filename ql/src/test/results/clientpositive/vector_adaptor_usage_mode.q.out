@@ -1,10 +1,6 @@
-PREHOOK: query: -- SORT_QUERY_RESULTS
-
-drop table varchar_udf_1
+PREHOOK: query: drop table varchar_udf_1
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: -- SORT_QUERY_RESULTS
-
-drop table varchar_udf_1
+POSTHOOK: query: drop table varchar_udf_1
 POSTHOOK: type: DROPTABLE
 PREHOOK: query: create table varchar_udf_1 (c1 string, c2 string, c3 varchar(10), c4 varchar(20)) STORED AS ORC
 PREHOOK: type: CREATETABLE

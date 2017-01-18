@@ -1,12 +1,6 @@
-PREHOOK: query: -- SORT_QUERY_RESULTS
-
--- negative, references twice for result of funcion
-explain select nkey, nkey + 1 from (select key + 1 as nkey, value from src) a
+PREHOOK: query: explain select nkey, nkey + 1 from (select key + 1 as nkey, value from src) a
 PREHOOK: type: QUERY
-POSTHOOK: query: -- SORT_QUERY_RESULTS
-
--- negative, references twice for result of funcion
-explain select nkey, nkey + 1 from (select key + 1 as nkey, value from src) a
+POSTHOOK: query: explain select nkey, nkey + 1 from (select key + 1 as nkey, value from src) a
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -38,9 +32,7 @@ STAGE PLANS:
         ListSink
 
 Warning: Shuffle Join JOIN[10][tables = [$hdt$_0, $hdt$_1]] in Stage 'Stage-1:MAPRED' is a cross product
-PREHOOK: query: -- This test query is introduced for HIVE-4968.
--- First, we do not convert the join to MapJoin.
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT tmp4.key as key, tmp4.value as value, tmp4.count as count
 FROM (SELECT tmp2.key as key, tmp2.value as value, tmp3.count as count
       FROM (SELECT *
@@ -50,9 +42,7 @@ FROM (SELECT tmp2.key as key, tmp2.value as value, tmp3.count as count
             FROM src1) tmp3
       ) tmp4
 PREHOOK: type: QUERY
-POSTHOOK: query: -- This test query is introduced for HIVE-4968.
--- First, we do not convert the join to MapJoin.
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT tmp4.key as key, tmp4.value as value, tmp4.count as count
 FROM (SELECT tmp2.key as key, tmp2.value as value, tmp3.count as count
       FROM (SELECT *
@@ -189,8 +179,7 @@ POSTHOOK: Input: default@src1
 66	val_66	25
 98	val_98	25
 Warning: Map Join MAPJOIN[15][bigTable=?] in task 'Stage-3:MAPRED' is a cross product
-PREHOOK: query: -- Then, we convert the join to MapJoin.
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT tmp4.key as key, tmp4.value as value, tmp4.count as count
 FROM (SELECT tmp2.key as key, tmp2.value as value, tmp3.count as count
       FROM (SELECT *
@@ -200,8 +189,7 @@ FROM (SELECT tmp2.key as key, tmp2.value as value, tmp3.count as count
             FROM src1) tmp3
       ) tmp4
 PREHOOK: type: QUERY
-POSTHOOK: query: -- Then, we convert the join to MapJoin.
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT tmp4.key as key, tmp4.value as value, tmp4.count as count
 FROM (SELECT tmp2.key as key, tmp2.value as value, tmp3.count as count
       FROM (SELECT *

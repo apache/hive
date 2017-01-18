@@ -1,8 +1,6 @@
-PREHOOK: query: -- single level partition, sorted dynamic partition enabled
-drop table acid
+PREHOOK: query: drop table acid
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: -- single level partition, sorted dynamic partition enabled
-drop table acid
+POSTHOOK: query: drop table acid
 POSTHOOK: type: DROPTABLE
 PREHOOK: query: CREATE TABLE acid(key string, value string) PARTITIONED BY(ds string) CLUSTERED BY(key) INTO 2 BUCKETS STORED AS ORC TBLPROPERTIES ('transactional'='true')
 PREHOOK: type: CREATETABLE

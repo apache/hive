@@ -2,17 +2,9 @@ PREHOOK: query: set role ADMIN
 PREHOOK: type: SHOW_ROLES
 POSTHOOK: query: set role ADMIN
 POSTHOOK: type: SHOW_ROLES
-PREHOOK: query: ----------------------------------------
--- granting role to a role that does not exist should fail
-----------------------------------------
-
-create role role1
+PREHOOK: query: create role role1
 PREHOOK: type: CREATEROLE
-POSTHOOK: query: ----------------------------------------
--- granting role to a role that does not exist should fail
-----------------------------------------
-
-create role role1
+POSTHOOK: query: create role role1
 POSTHOOK: type: CREATEROLE
 PREHOOK: query: grant role1 to role nosuchrole
 PREHOOK: type: GRANT_ROLE

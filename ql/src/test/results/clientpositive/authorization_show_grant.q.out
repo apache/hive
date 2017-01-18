@@ -2,13 +2,9 @@ PREHOOK: query: set role admin
 PREHOOK: type: SHOW_ROLES
 POSTHOOK: query: set role admin
 POSTHOOK: type: SHOW_ROLES
-PREHOOK: query: -- test show grant authorization
-
-create role roleA
+PREHOOK: query: create role roleA
 PREHOOK: type: CREATEROLE
-POSTHOOK: query: -- test show grant authorization
-
-create role roleA
+POSTHOOK: query: create role roleA
 POSTHOOK: type: CREATEROLE
 PREHOOK: query: create role roleB
 PREHOOK: type: CREATEROLE
@@ -22,13 +18,11 @@ PREHOOK: query: grant role roleB to role roleA
 PREHOOK: type: GRANT_ROLE
 POSTHOOK: query: grant role roleB to role roleA
 POSTHOOK: type: GRANT_ROLE
-PREHOOK: query: -- create table and grant privileges to a role
-create table t1(i int, j int, k int)
+PREHOOK: query: create table t1(i int, j int, k int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@t1
-POSTHOOK: query: -- create table and grant privileges to a role
-create table t1(i int, j int, k int)
+POSTHOOK: query: create table t1(i int, j int, k int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t1
@@ -74,11 +68,9 @@ PREHOOK: query: set role admin
 PREHOOK: type: SHOW_ROLES
 POSTHOOK: query: set role admin
 POSTHOOK: type: SHOW_ROLES
-PREHOOK: query: -- as user in admin role, it should be possible to see other users grant
-show grant user user1 on table t1
+PREHOOK: query: show grant user user1 on table t1
 PREHOOK: type: SHOW_GRANT
-POSTHOOK: query: -- as user in admin role, it should be possible to see other users grant
-show grant user user1 on table t1
+POSTHOOK: query: show grant user user1 on table t1
 POSTHOOK: type: SHOW_GRANT
 default	t1			user1	USER	DELETE	true	-1	hive_admin_user
 default	t1			user1	USER	INSERT	true	-1	hive_admin_user
@@ -186,11 +178,9 @@ default	t2			user1	USER	SELECT	true	-1	hive_admin_user
 default	t2			user1	USER	UPDATE	true	-1	hive_admin_user
 default	t2			userA	USER	INSERT	false	-1	user1
 default	t2			userA	USER	SELECT	false	-1	user1
-PREHOOK: query: -- user belonging to role should be able to see it
-show grant role roleA on table t1
+PREHOOK: query: show grant role roleA on table t1
 PREHOOK: type: SHOW_GRANT
-POSTHOOK: query: -- user belonging to role should be able to see it
-show grant role roleA on table t1
+POSTHOOK: query: show grant role roleA on table t1
 POSTHOOK: type: SHOW_GRANT
 default	t1			rolea	ROLE	SELECT	false	-1	user1
 PREHOOK: query: show grant role roleA

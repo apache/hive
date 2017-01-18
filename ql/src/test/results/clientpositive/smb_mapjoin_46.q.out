@@ -82,14 +82,12 @@ POSTHOOK: Output: default@test2
 POSTHOOK: Lineage: test2.col_2 SIMPLE [(aux2)aux2.FieldSchema(name:col_2, type:string, comment:null), ]
 POSTHOOK: Lineage: test2.key SIMPLE [(aux2)aux2.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: test2.value SIMPLE [(aux2)aux2.FieldSchema(name:value, type:int, comment:null), ]
-PREHOOK: query: -- Basic outer join
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT *
 FROM test1 LEFT OUTER JOIN test2
 ON (test1.value=test2.value)
 PREHOOK: type: QUERY
-POSTHOOK: query: -- Basic outer join
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT *
 FROM test1 LEFT OUTER JOIN test2
 ON (test1.value=test2.value)
@@ -151,16 +149,14 @@ NULL	NULL	None	NULL	NULL	NULL
 99	2	Mat	103	2	Ema
 99	2	Mat	102	2	Del
 100	1	Bob	NULL	NULL	NULL
-PREHOOK: query: -- Conjunction with pred on multiple inputs and single inputs (left outer join)
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT *
 FROM test1 LEFT OUTER JOIN test2
 ON (test1.value=test2.value
   AND test1.key between 100 and 102
   AND test2.key between 100 and 102)
 PREHOOK: type: QUERY
-POSTHOOK: query: -- Conjunction with pred on multiple inputs and single inputs (left outer join)
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT *
 FROM test1 LEFT OUTER JOIN test2
 ON (test1.value=test2.value
@@ -230,15 +226,13 @@ NULL	NULL	None	NULL	NULL	NULL
 99	2	Mat	NULL	NULL	NULL
 100	1	Bob	NULL	NULL	NULL
 Warning: Map Join MAPJOIN[11][bigTable=?] in task 'Stage-3:MAPRED' is a cross product
-PREHOOK: query: -- Conjunction with pred on single inputs (left outer join)
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT *
 FROM test1 LEFT OUTER JOIN test2
 ON (test1.key between 100 and 102
   AND test2.key between 100 and 102)
 PREHOOK: type: QUERY
-POSTHOOK: query: -- Conjunction with pred on single inputs (left outer join)
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT *
 FROM test1 LEFT OUTER JOIN test2
 ON (test1.key between 100 and 102
@@ -336,14 +330,12 @@ NULL	NULL	None	NULL	NULL	NULL
 101	2	Car	102	2	Del
 99	2	Mat	NULL	NULL	NULL
 100	1	Bob	102	2	Del
-PREHOOK: query: -- Conjunction with pred on multiple inputs and none (left outer join)
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT *
 FROM test1 RIGHT OUTER JOIN test2
 ON (test1.value=test2.value AND true)
 PREHOOK: type: QUERY
-POSTHOOK: query: -- Conjunction with pred on multiple inputs and none (left outer join)
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT *
 FROM test1 RIGHT OUTER JOIN test2
 ON (test1.value=test2.value AND true)
@@ -404,14 +396,12 @@ NULL	NULL	NULL	105	NULL	None
 99	2	Mat	102	2	Del
 NULL	NULL	NULL	104	3	Fli
 Warning: Map Join MAPJOIN[9][bigTable=?] in task 'Stage-3:MAPRED' is a cross product
-PREHOOK: query: -- Condition on one input (left outer join)
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT *
 FROM test1 LEFT OUTER JOIN test2
 ON (test1.key between 100 and 102)
 PREHOOK: type: QUERY
-POSTHOOK: query: -- Condition on one input (left outer join)
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT *
 FROM test1 LEFT OUTER JOIN test2
 ON (test1.key between 100 and 102)
@@ -510,16 +500,14 @@ NULL	NULL	None	NULL	NULL	NULL
 100	1	Bob	102	2	Del
 100	1	Bob	104	3	Fli
 Warning: Map Join MAPJOIN[9][bigTable=?] in task 'Stage-3:MAPRED' is a cross product
-PREHOOK: query: -- Disjunction with pred on multiple inputs and single inputs (left outer join)
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT *
 FROM test1 LEFT OUTER JOIN test2
 ON (test1.value=test2.value
   OR test1.key between 100 and 102
   OR test2.key between 100 and 102)
 PREHOOK: type: QUERY
-POSTHOOK: query: -- Disjunction with pred on multiple inputs and single inputs (left outer join)
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT *
 FROM test1 LEFT OUTER JOIN test2
 ON (test1.value=test2.value
@@ -620,15 +608,13 @@ NULL	NULL	None	102	2	Del
 100	1	Bob	102	2	Del
 100	1	Bob	104	3	Fli
 Warning: Map Join MAPJOIN[9][bigTable=?] in task 'Stage-3:MAPRED' is a cross product
-PREHOOK: query: -- Disjunction with pred on multiple inputs and left input (left outer join)
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT *
 FROM test1 LEFT OUTER JOIN test2
 ON (test1.value=test2.value
   OR test1.key between 100 and 102)
 PREHOOK: type: QUERY
-POSTHOOK: query: -- Disjunction with pred on multiple inputs and left input (left outer join)
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT *
 FROM test1 LEFT OUTER JOIN test2
 ON (test1.value=test2.value
@@ -726,15 +712,13 @@ NULL	NULL	None	NULL	NULL	NULL
 100	1	Bob	102	2	Del
 100	1	Bob	104	3	Fli
 Warning: Map Join MAPJOIN[9][bigTable=?] in task 'Stage-3:MAPRED' is a cross product
-PREHOOK: query: -- Disjunction with pred on multiple inputs and right input (left outer join)
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT *
 FROM test1 LEFT OUTER JOIN test2
 ON (test1.value=test2.value
   OR test2.key between 100 and 102)
 PREHOOK: type: QUERY
-POSTHOOK: query: -- Disjunction with pred on multiple inputs and right input (left outer join)
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT *
 FROM test1 LEFT OUTER JOIN test2
 ON (test1.value=test2.value
@@ -826,16 +810,14 @@ NULL	NULL	None	102	2	Del
 99	2	Mat	103	2	Ema
 99	2	Mat	102	2	Del
 100	1	Bob	102	2	Del
-PREHOOK: query: -- Keys plus residual (left outer join)
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT *
 FROM test1 LEFT OUTER JOIN test2
 ON (test1.value=test2.value
   AND (test1.key between 100 and 102
     OR test2.key between 100 and 102))
 PREHOOK: type: QUERY
-POSTHOOK: query: -- Keys plus residual (left outer join)
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT *
 FROM test1 LEFT OUTER JOIN test2
 ON (test1.value=test2.value
@@ -904,16 +886,14 @@ NULL	NULL	None	NULL	NULL	NULL
 99	2	Mat	102	2	Del
 100	1	Bob	NULL	NULL	NULL
 Warning: Map Join MAPJOIN[9][bigTable=?] in task 'Stage-3:MAPRED' is a cross product
-PREHOOK: query: -- Disjunction with pred on multiple inputs and single inputs (right outer join)
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT *
 FROM test1 RIGHT OUTER JOIN test2
 ON (test1.value=test2.value
   OR test1.key between 100 and 102
   OR test2.key between 100 and 102)
 PREHOOK: type: QUERY
-POSTHOOK: query: -- Disjunction with pred on multiple inputs and single inputs (right outer join)
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT *
 FROM test1 RIGHT OUTER JOIN test2
 ON (test1.value=test2.value
@@ -1014,15 +994,13 @@ NULL	NULL	None	102	2	Del
 101	2	Car	104	3	Fli
 100	1	Bob	104	3	Fli
 Warning: Map Join MAPJOIN[9][bigTable=?] in task 'Stage-3:MAPRED' is a cross product
-PREHOOK: query: -- Disjunction with pred on multiple inputs and left input (right outer join)
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT *
 FROM test1 RIGHT OUTER JOIN test2
 ON (test1.value=test2.value
   OR test1.key between 100 and 102)
 PREHOOK: type: QUERY
-POSTHOOK: query: -- Disjunction with pred on multiple inputs and left input (right outer join)
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT *
 FROM test1 RIGHT OUTER JOIN test2
 ON (test1.value=test2.value
@@ -1117,15 +1095,13 @@ POSTHOOK: Input: default@test2
 101	2	Car	104	3	Fli
 100	1	Bob	104	3	Fli
 Warning: Map Join MAPJOIN[9][bigTable=?] in task 'Stage-3:MAPRED' is a cross product
-PREHOOK: query: -- Disjunction with pred on multiple inputs and right input (right outer join)
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT *
 FROM test1 RIGHT OUTER JOIN test2
 ON (test1.value=test2.value
   OR test2.key between 100 and 102)
 PREHOOK: type: QUERY
-POSTHOOK: query: -- Disjunction with pred on multiple inputs and right input (right outer join)
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT *
 FROM test1 RIGHT OUTER JOIN test2
 ON (test1.value=test2.value
@@ -1219,16 +1195,14 @@ NULL	NULL	None	102	2	Del
 99	2	Mat	102	2	Del
 100	1	Bob	102	2	Del
 NULL	NULL	NULL	104	3	Fli
-PREHOOK: query: -- Keys plus residual (right outer join)
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT *
 FROM test1 RIGHT OUTER JOIN test2
 ON (test1.value=test2.value
   AND (test1.key between 100 and 102
     OR test2.key between 100 and 102))
 PREHOOK: type: QUERY
-POSTHOOK: query: -- Keys plus residual (right outer join)
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT *
 FROM test1 RIGHT OUTER JOIN test2
 ON (test1.value=test2.value
@@ -1295,16 +1269,14 @@ NULL	NULL	NULL	105	NULL	None
 99	2	Mat	102	2	Del
 NULL	NULL	NULL	104	3	Fli
 Warning: Shuffle Join JOIN[6][tables = [$hdt$_0, $hdt$_1]] in Stage 'Stage-1:MAPRED' is a cross product
-PREHOOK: query: -- Disjunction with pred on multiple inputs and single inputs (full outer join)
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT *
 FROM test1 FULL OUTER JOIN test2
 ON (test1.value=test2.value
   OR test1.key between 100 and 102
   OR test2.key between 100 and 102)
 PREHOOK: type: QUERY
-POSTHOOK: query: -- Disjunction with pred on multiple inputs and single inputs (full outer join)
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT *
 FROM test1 FULL OUTER JOIN test2
 ON (test1.value=test2.value
@@ -1398,15 +1370,13 @@ POSTHOOK: Input: default@test2
 NULL	NULL	None	102	2	Del
 98	NULL	None	102	2	Del
 Warning: Shuffle Join JOIN[6][tables = [$hdt$_0, $hdt$_1]] in Stage 'Stage-1:MAPRED' is a cross product
-PREHOOK: query: -- Disjunction with pred on multiple inputs and left input (full outer join)
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT *
 FROM test1 FULL OUTER JOIN test2
 ON (test1.value=test2.value
   OR test1.key between 100 and 102)
 PREHOOK: type: QUERY
-POSTHOOK: query: -- Disjunction with pred on multiple inputs and left input (full outer join)
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT *
 FROM test1 FULL OUTER JOIN test2
 ON (test1.value=test2.value
@@ -1497,15 +1467,13 @@ POSTHOOK: Input: default@test2
 NULL	NULL	None	NULL	NULL	NULL
 98	NULL	None	NULL	NULL	NULL
 Warning: Shuffle Join JOIN[6][tables = [$hdt$_0, $hdt$_1]] in Stage 'Stage-1:MAPRED' is a cross product
-PREHOOK: query: -- Disjunction with pred on multiple inputs and right input (full outer join)
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT *
 FROM test1 FULL OUTER JOIN test2
 ON (test1.value=test2.value
   OR test2.key between 100 and 102)
 PREHOOK: type: QUERY
-POSTHOOK: query: -- Disjunction with pred on multiple inputs and right input (full outer join)
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT *
 FROM test1 FULL OUTER JOIN test2
 ON (test1.value=test2.value
@@ -1592,16 +1560,14 @@ NULL	NULL	None	102	2	Del
 98	NULL	None	102	2	Del
 NULL	NULL	NULL	105	NULL	None
 NULL	NULL	NULL	104	3	Fli
-PREHOOK: query: -- Keys plus residual (full outer join)
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT *
 FROM test1 FULL OUTER JOIN test2
 ON (test1.value=test2.value
   AND (test1.key between 100 and 102
     OR test2.key between 100 and 102))
 PREHOOK: type: QUERY
-POSTHOOK: query: -- Keys plus residual (full outer join)
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT *
 FROM test1 FULL OUTER JOIN test2
 ON (test1.value=test2.value

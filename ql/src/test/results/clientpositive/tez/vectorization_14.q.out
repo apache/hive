@@ -1,6 +1,4 @@
-PREHOOK: query: -- SORT_QUERY_RESULTS
-
-EXPLAIN 
+PREHOOK: query: EXPLAIN 
 SELECT   ctimestamp1,
          cfloat,
          cstring1,
@@ -33,9 +31,7 @@ WHERE    (((ctinyint <= cbigint)
 GROUP BY ctimestamp1, cfloat, cstring1, cboolean1, cdouble
 ORDER BY cstring1, cfloat, cdouble, ctimestamp1
 PREHOOK: type: QUERY
-POSTHOOK: query: -- SORT_QUERY_RESULTS
-
-EXPLAIN 
+POSTHOOK: query: EXPLAIN 
 SELECT   ctimestamp1,
          cfloat,
          cstring1,

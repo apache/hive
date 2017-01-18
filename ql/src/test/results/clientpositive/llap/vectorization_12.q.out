@@ -1,6 +1,4 @@
-PREHOOK: query: -- SORT_QUERY_RESULTS
-
-SELECT   cbigint,
+PREHOOK: query: SELECT   cbigint,
          cboolean1,
          cstring1,
          ctimestamp1,
@@ -33,9 +31,7 @@ ORDER BY ctimestamp1, cdouble, cbigint, cstring1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
-POSTHOOK: query: -- SORT_QUERY_RESULTS
-
-SELECT   cbigint,
+POSTHOOK: query: SELECT   cbigint,
          cboolean1,
          cstring1,
          ctimestamp1,

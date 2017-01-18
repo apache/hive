@@ -135,13 +135,11 @@ POSTHOOK: Input: default@repldst@emp_country=us/emp_state=ca
 4	us	ca
 5	us	ca
 6	us	ca
-PREHOOK: query: -- should be similar, except that select will return no results
-import table repldst_md from 'ql/test/data/exports/repldst_md'
+PREHOOK: query: import table repldst_md from 'ql/test/data/exports/repldst_md'
 PREHOOK: type: IMPORT
 #### A masked pattern was here ####
 PREHOOK: Output: default@repldst_md
-POSTHOOK: query: -- should be similar, except that select will return no results
-import table repldst_md from 'ql/test/data/exports/repldst_md'
+POSTHOOK: query: import table repldst_md from 'ql/test/data/exports/repldst_md'
 POSTHOOK: type: IMPORT
 #### A masked pattern was here ####
 POSTHOOK: Output: default@repldst_md

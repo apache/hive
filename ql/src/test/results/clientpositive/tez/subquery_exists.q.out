@@ -1,8 +1,4 @@
-PREHOOK: query: -- SORT_QUERY_RESULTS
-
--- no agg, corr
--- SORT_QUERY_RESULTS
-explain
+PREHOOK: query: explain
 select * 
 from src b 
 where exists 
@@ -11,11 +7,7 @@ where exists
   where b.value = a.value  and a.key = b.key and a.value > 'val_9'
   )
 PREHOOK: type: QUERY
-POSTHOOK: query: -- SORT_QUERY_RESULTS
-
--- no agg, corr
--- SORT_QUERY_RESULTS
-explain
+POSTHOOK: query: explain
 select * 
 from src b 
 where exists 
@@ -175,8 +167,7 @@ POSTHOOK: Input: default@src
 97	val_97
 98	val_98
 98	val_98
-PREHOOK: query: -- view test
-create view cv1 as 
+PREHOOK: query: create view cv1 as 
 select * 
 from src b 
 where exists
@@ -187,8 +178,7 @@ PREHOOK: type: CREATEVIEW
 PREHOOK: Input: default@src
 PREHOOK: Output: database:default
 PREHOOK: Output: default@cv1
-POSTHOOK: query: -- view test
-create view cv1 as 
+POSTHOOK: query: create view cv1 as 
 select * 
 from src b 
 where exists
@@ -222,8 +212,7 @@ POSTHOOK: Input: default@src
 97	val_97
 98	val_98
 98	val_98
-PREHOOK: query: -- sq in from
-select * 
+PREHOOK: query: select * 
 from (select * 
       from src b 
       where exists 
@@ -234,8 +223,7 @@ from (select *
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
-POSTHOOK: query: -- sq in from
-select * 
+POSTHOOK: query: select * 
 from (select * 
       from src b 
       where exists 
@@ -257,8 +245,7 @@ POSTHOOK: Input: default@src
 97	val_97
 98	val_98
 98	val_98
-PREHOOK: query: -- upper case in subq
-explain
+PREHOOK: query: explain
 select *
 from src b
 where exists
@@ -267,8 +254,7 @@ where exists
   where b.VALUE = a.VALUE
   )
 PREHOOK: type: QUERY
-POSTHOOK: query: -- upper case in subq
-explain
+POSTHOOK: query: explain
 select *
 from src b
 where exists
@@ -396,8 +382,7 @@ STAGE PLANS:
         ListSink
 
 Warning: Shuffle Join MERGEJOIN[16][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
-PREHOOK: query: -- uncorr exists
-explain
+PREHOOK: query: explain
 select *
 from src b
 where exists
@@ -406,8 +391,7 @@ where exists
   where a.value > 'val_9'
   )
 PREHOOK: type: QUERY
-POSTHOOK: query: -- uncorr exists
-explain
+POSTHOOK: query: explain
 select *
 from src b
 where exists
@@ -1019,13 +1003,11 @@ POSTHOOK: Input: default@src
 97	val_97
 98	val_98
 98	val_98
-PREHOOK: query: -- uncorr, aggregate in sub which produces result irrespective of zero rows
-create table t(i int)
+PREHOOK: query: create table t(i int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@t
-POSTHOOK: query: -- uncorr, aggregate in sub which produces result irrespective of zero rows
-create table t(i int)
+POSTHOOK: query: create table t(i int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t

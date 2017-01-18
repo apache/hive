@@ -1,10 +1,6 @@
-PREHOOK: query: -- SORT_QUERY_RESULTS
-
-drop table sales
+PREHOOK: query: drop table sales
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: -- SORT_QUERY_RESULTS
-
-drop table sales
+POSTHOOK: query: drop table sales
 POSTHOOK: type: DROPTABLE
 PREHOOK: query: drop table things
 PREHOOK: type: DROPTABLE
@@ -113,11 +109,9 @@ POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@things
 POSTHOOK: Output: default@things
 Warning: Shuffle Join MERGEJOIN[24][tables = [$hdt$_1, $hdt$_2]] in Stage 'Reducer 4' is a cross product
-PREHOOK: query: -- HIVE-15458
-explain select part.p_type from part join (select p1.p_name from part p1, part p2 group by p1.p_name) pp ON pp.p_name = part.p_name
+PREHOOK: query: explain select part.p_type from part join (select p1.p_name from part p1, part p2 group by p1.p_name) pp ON pp.p_name = part.p_name
 PREHOOK: type: QUERY
-POSTHOOK: query: -- HIVE-15458
-explain select part.p_type from part join (select p1.p_name from part p1, part p2 group by p1.p_name) pp ON pp.p_name = part.p_name
+POSTHOOK: query: explain select part.p_type from part join (select p1.p_name from part p1, part p2 group by p1.p_name) pp ON pp.p_name = part.p_name
 POSTHOOK: type: QUERY
 Plan optimized by CBO.
 
@@ -200,11 +194,9 @@ STANDARD ANODIZED TIN
 STANDARD BURNISHED TIN
 STANDARD PLATED TIN
 STANDARD POLISHED STEEL
-PREHOOK: query: -- Semi join optmization should take out the right side
-explain select part.p_type from part left join (select p1.p_name from part p1, part p2 group by p1.p_name) pp ON pp.p_name = part.p_name
+PREHOOK: query: explain select part.p_type from part left join (select p1.p_name from part p1, part p2 group by p1.p_name) pp ON pp.p_name = part.p_name
 PREHOOK: type: QUERY
-POSTHOOK: query: -- Semi join optmization should take out the right side
-explain select part.p_type from part left join (select p1.p_name from part p1, part p2 group by p1.p_name) pp ON pp.p_name = part.p_name
+POSTHOOK: query: explain select part.p_type from part left join (select p1.p_name from part p1, part p2 group by p1.p_name) pp ON pp.p_name = part.p_name
 POSTHOOK: type: QUERY
 Plan optimized by CBO.
 

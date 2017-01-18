@@ -1,20 +1,16 @@
-PREHOOK: query: -- create testing table.
-create table part_boolexpr(key int, value string) partitioned by (dt int, ts string)
+PREHOOK: query: create table part_boolexpr(key int, value string) partitioned by (dt int, ts string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@part_boolexpr
-POSTHOOK: query: -- create testing table.
-create table part_boolexpr(key int, value string) partitioned by (dt int, ts string)
+POSTHOOK: query: create table part_boolexpr(key int, value string) partitioned by (dt int, ts string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@part_boolexpr
-PREHOOK: query: -- both the below queries should return 0 rows 
-select count(*) from part_boolexpr where key = 'abc'
+PREHOOK: query: select count(*) from part_boolexpr where key = 'abc'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part_boolexpr
 #### A masked pattern was here ####
-POSTHOOK: query: -- both the below queries should return 0 rows 
-select count(*) from part_boolexpr where key = 'abc'
+POSTHOOK: query: select count(*) from part_boolexpr where key = 'abc'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part_boolexpr
 #### A masked pattern was here ####

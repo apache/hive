@@ -1,10 +1,8 @@
-PREHOOK: query: -- check if alter table fails as different user
-create table t_show_parts(i int) partitioned by (j string)
+PREHOOK: query: create table t_show_parts(i int) partitioned by (j string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@t_show_parts
-POSTHOOK: query: -- check if alter table fails as different user
-create table t_show_parts(i int) partitioned by (j string)
+POSTHOOK: query: create table t_show_parts(i int) partitioned by (j string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t_show_parts

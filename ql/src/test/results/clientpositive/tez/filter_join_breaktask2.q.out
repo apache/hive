@@ -1,13 +1,9 @@
-PREHOOK: query: -- SORT_QUERY_RESULTS
-
-create table T1(c1 string, c2 string, c3 string, c4 string, c5 string, c6 string, c7 string) 
+PREHOOK: query: create table T1(c1 string, c2 string, c3 string, c4 string, c5 string, c6 string, c7 string) 
 partitioned by (ds string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@T1
-POSTHOOK: query: -- SORT_QUERY_RESULTS
-
-create table T1(c1 string, c2 string, c3 string, c4 string, c5 string, c6 string, c7 string) 
+POSTHOOK: query: create table T1(c1 string, c2 string, c3 string, c4 string, c5 string, c6 string, c7 string) 
 partitioned by (ds string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default

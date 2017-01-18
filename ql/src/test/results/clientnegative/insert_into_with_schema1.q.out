@@ -1,8 +1,6 @@
-PREHOOK: query: -- set of tests HIVE-9481
-drop database if exists x314n cascade
+PREHOOK: query: drop database if exists x314n cascade
 PREHOOK: type: DROPDATABASE
-POSTHOOK: query: -- set of tests HIVE-9481
-drop database if exists x314n cascade
+POSTHOOK: query: drop database if exists x314n cascade
 POSTHOOK: type: DROPDATABASE
 PREHOOK: query: create database x314n
 PREHOOK: type: CREATEDATABASE

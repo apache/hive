@@ -1,12 +1,6 @@
-PREHOOK: query: -- Exclude test on Windows due to space character being escaped in Hive paths on Windows.
--- EXCLUDE_OS_WINDOWS
-
-DROP TABLE avro_timestamp_staging
+PREHOOK: query: DROP TABLE avro_timestamp_staging
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: -- Exclude test on Windows due to space character being escaped in Hive paths on Windows.
--- EXCLUDE_OS_WINDOWS
-
-DROP TABLE avro_timestamp_staging
+POSTHOOK: query: DROP TABLE avro_timestamp_staging
 POSTHOOK: type: DROPTABLE
 PREHOOK: query: DROP TABLE avro_timestamp
 PREHOOK: type: DROPTABLE

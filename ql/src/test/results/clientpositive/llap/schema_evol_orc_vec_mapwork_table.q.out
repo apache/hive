@@ -1,30 +1,8 @@
-PREHOOK: query: -- SORT_QUERY_RESULTS
---
--- FILE VARIATION: ORC, Vectorized, MapWork, Table
---
-------------------------------------------------------------------------------------------
--- SECTION: ALTER TABLE ADD COLUMNS
---
---
--- SUBSECTION: ALTER TABLE ADD COLUMNS: INT PERMUTE SELECT
---
---
-CREATE TABLE table_add_int_permute_select(insert_num int, a INT, b STRING)
+PREHOOK: query: CREATE TABLE table_add_int_permute_select(insert_num int, a INT, b STRING)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@table_add_int_permute_select
-POSTHOOK: query: -- SORT_QUERY_RESULTS
---
--- FILE VARIATION: ORC, Vectorized, MapWork, Table
---
-------------------------------------------------------------------------------------------
--- SECTION: ALTER TABLE ADD COLUMNS
---
---
--- SUBSECTION: ALTER TABLE ADD COLUMNS: INT PERMUTE SELECT
---
---
-CREATE TABLE table_add_int_permute_select(insert_num int, a INT, b STRING)
+POSTHOOK: query: CREATE TABLE table_add_int_permute_select(insert_num int, a INT, b STRING)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@table_add_int_permute_select
@@ -85,13 +63,11 @@ POSTHOOK: Lineage: table_add_int_permute_select.a EXPRESSION [(values__tmp__tabl
 POSTHOOK: Lineage: table_add_int_permute_select.b SIMPLE [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
 POSTHOOK: Lineage: table_add_int_permute_select.insert_num EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 _col0	_col1	_col2
-PREHOOK: query: -- Table-Non-Cascade ADD COLUMNS ...
-alter table table_add_int_permute_select add columns(c int)
+PREHOOK: query: alter table table_add_int_permute_select add columns(c int)
 PREHOOK: type: ALTERTABLE_ADDCOLS
 PREHOOK: Input: default@table_add_int_permute_select
 PREHOOK: Output: default@table_add_int_permute_select
-POSTHOOK: query: -- Table-Non-Cascade ADD COLUMNS ...
-alter table table_add_int_permute_select add columns(c int)
+POSTHOOK: query: alter table table_add_int_permute_select add columns(c int)
 POSTHOOK: type: ALTERTABLE_ADDCOLS
 POSTHOOK: Input: default@table_add_int_permute_select
 POSTHOOK: Output: default@table_add_int_permute_select
@@ -198,13 +174,11 @@ Stage-0
               TableScan [TS_0] (rows=4 width=100)
                 default@table_add_int_permute_select,table_add_int_permute_select,Tbl:COMPLETE,Col:NONE,Output:["insert_num","a","b"]
 
-PREHOOK: query: -- SELECT permutation columns to make sure NULL defaulting works right
-select insert_num,a,b from table_add_int_permute_select order by insert_num
+PREHOOK: query: select insert_num,a,b from table_add_int_permute_select order by insert_num
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table_add_int_permute_select
 #### A masked pattern was here ####
-POSTHOOK: query: -- SELECT permutation columns to make sure NULL defaulting works right
-select insert_num,a,b from table_add_int_permute_select order by insert_num
+POSTHOOK: query: select insert_num,a,b from table_add_int_permute_select order by insert_num
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table_add_int_permute_select
 #### A masked pattern was here ####
@@ -265,17 +239,11 @@ POSTHOOK: query: drop table table_add_int_permute_select
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@table_add_int_permute_select
 POSTHOOK: Output: default@table_add_int_permute_select
-PREHOOK: query: -- SUBSECTION: ALTER TABLE ADD COLUMNS: INT, STRING, PERMUTE SELECT
---
---
-CREATE TABLE table_add_int_string_permute_select(insert_num int, a INT, b STRING)
+PREHOOK: query: CREATE TABLE table_add_int_string_permute_select(insert_num int, a INT, b STRING)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@table_add_int_string_permute_select
-POSTHOOK: query: -- SUBSECTION: ALTER TABLE ADD COLUMNS: INT, STRING, PERMUTE SELECT
---
---
-CREATE TABLE table_add_int_string_permute_select(insert_num int, a INT, b STRING)
+POSTHOOK: query: CREATE TABLE table_add_int_string_permute_select(insert_num int, a INT, b STRING)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@table_add_int_string_permute_select
@@ -336,13 +304,11 @@ POSTHOOK: Lineage: table_add_int_string_permute_select.a EXPRESSION [(values__tm
 POSTHOOK: Lineage: table_add_int_string_permute_select.b SIMPLE [(values__tmp__table__4)values__tmp__table__4.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
 POSTHOOK: Lineage: table_add_int_string_permute_select.insert_num EXPRESSION [(values__tmp__table__4)values__tmp__table__4.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 _col0	_col1	_col2
-PREHOOK: query: -- Table-Non-Cascade ADD COLUMNS ...
-alter table table_add_int_string_permute_select add columns(c int, d string)
+PREHOOK: query: alter table table_add_int_string_permute_select add columns(c int, d string)
 PREHOOK: type: ALTERTABLE_ADDCOLS
 PREHOOK: Input: default@table_add_int_string_permute_select
 PREHOOK: Output: default@table_add_int_string_permute_select
-POSTHOOK: query: -- Table-Non-Cascade ADD COLUMNS ...
-alter table table_add_int_string_permute_select add columns(c int, d string)
+POSTHOOK: query: alter table table_add_int_string_permute_select add columns(c int, d string)
 POSTHOOK: type: ALTERTABLE_ADDCOLS
 POSTHOOK: Input: default@table_add_int_string_permute_select
 POSTHOOK: Output: default@table_add_int_string_permute_select
@@ -452,13 +418,11 @@ Stage-0
               TableScan [TS_0] (rows=4 width=100)
                 default@table_add_int_string_permute_select,table_add_int_string_permute_select,Tbl:COMPLETE,Col:NONE,Output:["insert_num","a","b"]
 
-PREHOOK: query: -- SELECT permutation columns to make sure NULL defaulting works right
-select insert_num,a,b from table_add_int_string_permute_select order by insert_num
+PREHOOK: query: select insert_num,a,b from table_add_int_string_permute_select order by insert_num
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table_add_int_string_permute_select
 #### A masked pattern was here ####
-POSTHOOK: query: -- SELECT permutation columns to make sure NULL defaulting works right
-select insert_num,a,b from table_add_int_string_permute_select order by insert_num
+POSTHOOK: query: select insert_num,a,b from table_add_int_string_permute_select order by insert_num
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table_add_int_string_permute_select
 #### A masked pattern was here ####
@@ -595,25 +559,11 @@ POSTHOOK: query: drop table table_add_int_string_permute_select
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@table_add_int_string_permute_select
 POSTHOOK: Output: default@table_add_int_string_permute_select
-PREHOOK: query: ------------------------------------------------------------------------------------------
--- SECTION: ALTER TABLE CHANGE COLUMNS for STRING_GROUP -> DOUBLE
---
---
---
--- SUBSECTION: ALTER TABLE CHANGE COLUMNS for STRING_GROUP -> DOUBLE: (STRING, CHAR, VARCHAR)
---
-CREATE TABLE table_change_string_group_double(insert_num int, c1 STRING, c2 CHAR(50), c3 VARCHAR(50), b STRING)
+PREHOOK: query: CREATE TABLE table_change_string_group_double(insert_num int, c1 STRING, c2 CHAR(50), c3 VARCHAR(50), b STRING)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@table_change_string_group_double
-POSTHOOK: query: ------------------------------------------------------------------------------------------
--- SECTION: ALTER TABLE CHANGE COLUMNS for STRING_GROUP -> DOUBLE
---
---
---
--- SUBSECTION: ALTER TABLE CHANGE COLUMNS for STRING_GROUP -> DOUBLE: (STRING, CHAR, VARCHAR)
---
-CREATE TABLE table_change_string_group_double(insert_num int, c1 STRING, c2 CHAR(50), c3 VARCHAR(50), b STRING)
+POSTHOOK: query: CREATE TABLE table_change_string_group_double(insert_num int, c1 STRING, c2 CHAR(50), c3 VARCHAR(50), b STRING)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@table_change_string_group_double
@@ -639,13 +589,11 @@ POSTHOOK: Lineage: table_change_string_group_double.c2 EXPRESSION [(values__tmp_
 POSTHOOK: Lineage: table_change_string_group_double.c3 EXPRESSION [(values__tmp__table__7)values__tmp__table__7.FieldSchema(name:tmp_values_col4, type:string, comment:), ]
 POSTHOOK: Lineage: table_change_string_group_double.insert_num EXPRESSION [(values__tmp__table__7)values__tmp__table__7.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 _col0	_col1	_col2	_col3	_col4
-PREHOOK: query: -- Table-Non-Cascade CHANGE COLUMNS ...
-alter table table_change_string_group_double replace columns (insert_num int, c1 DOUBLE, c2 DOUBLE, c3 DOUBLE, b STRING)
+PREHOOK: query: alter table table_change_string_group_double replace columns (insert_num int, c1 DOUBLE, c2 DOUBLE, c3 DOUBLE, b STRING)
 PREHOOK: type: ALTERTABLE_REPLACECOLS
 PREHOOK: Input: default@table_change_string_group_double
 PREHOOK: Output: default@table_change_string_group_double
-POSTHOOK: query: -- Table-Non-Cascade CHANGE COLUMNS ...
-alter table table_change_string_group_double replace columns (insert_num int, c1 DOUBLE, c2 DOUBLE, c3 DOUBLE, b STRING)
+POSTHOOK: query: alter table table_change_string_group_double replace columns (insert_num int, c1 DOUBLE, c2 DOUBLE, c3 DOUBLE, b STRING)
 POSTHOOK: type: ALTERTABLE_REPLACECOLS
 POSTHOOK: Input: default@table_change_string_group_double
 POSTHOOK: Output: default@table_change_string_group_double
@@ -743,25 +691,11 @@ POSTHOOK: query: drop table table_change_string_group_double
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@table_change_string_group_double
 POSTHOOK: Output: default@table_change_string_group_double
-PREHOOK: query: ------------------------------------------------------------------------------------------
--- SECTION: ALTER TABLE CHANGE COLUMNS for DATE_GROUP -> STRING_GROUP
---
---
---
--- SUBSECTION: ALTER TABLE CHANGE COLUMNS for DATE_GROUP -> STRING_GROUP: TIMESTAMP, (STRING, CHAR, CHAR trunc, VARCHAR, VARCHAR trunc)
---
-CREATE TABLE table_change_date_group_string_group_timestamp(insert_num int, c1 TIMESTAMP, c2 TIMESTAMP, c3 TIMESTAMP, c4 TIMESTAMP, c5 TIMESTAMP, b STRING)
+PREHOOK: query: CREATE TABLE table_change_date_group_string_group_timestamp(insert_num int, c1 TIMESTAMP, c2 TIMESTAMP, c3 TIMESTAMP, c4 TIMESTAMP, c5 TIMESTAMP, b STRING)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@table_change_date_group_string_group_timestamp
-POSTHOOK: query: ------------------------------------------------------------------------------------------
--- SECTION: ALTER TABLE CHANGE COLUMNS for DATE_GROUP -> STRING_GROUP
---
---
---
--- SUBSECTION: ALTER TABLE CHANGE COLUMNS for DATE_GROUP -> STRING_GROUP: TIMESTAMP, (STRING, CHAR, CHAR trunc, VARCHAR, VARCHAR trunc)
---
-CREATE TABLE table_change_date_group_string_group_timestamp(insert_num int, c1 TIMESTAMP, c2 TIMESTAMP, c3 TIMESTAMP, c4 TIMESTAMP, c5 TIMESTAMP, b STRING)
+POSTHOOK: query: CREATE TABLE table_change_date_group_string_group_timestamp(insert_num int, c1 TIMESTAMP, c2 TIMESTAMP, c3 TIMESTAMP, c4 TIMESTAMP, c5 TIMESTAMP, b STRING)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@table_change_date_group_string_group_timestamp
@@ -787,13 +721,11 @@ POSTHOOK: Lineage: table_change_date_group_string_group_timestamp.c4 EXPRESSION 
 POSTHOOK: Lineage: table_change_date_group_string_group_timestamp.c5 EXPRESSION [(values__tmp__table__10)values__tmp__table__10.FieldSchema(name:tmp_values_col6, type:string, comment:), ]
 POSTHOOK: Lineage: table_change_date_group_string_group_timestamp.insert_num EXPRESSION [(values__tmp__table__10)values__tmp__table__10.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 _col0	_col1	_col2	_col3	_col4	_col5	_col6
-PREHOOK: query: -- Table-Non-Cascade CHANGE COLUMNS ...
-alter table table_change_date_group_string_group_timestamp replace columns(insert_num int, c1 STRING, c2 CHAR(50), c3 CHAR(15), c4 VARCHAR(50), c5 VARCHAR(15), b STRING)
+PREHOOK: query: alter table table_change_date_group_string_group_timestamp replace columns(insert_num int, c1 STRING, c2 CHAR(50), c3 CHAR(15), c4 VARCHAR(50), c5 VARCHAR(15), b STRING)
 PREHOOK: type: ALTERTABLE_REPLACECOLS
 PREHOOK: Input: default@table_change_date_group_string_group_timestamp
 PREHOOK: Output: default@table_change_date_group_string_group_timestamp
-POSTHOOK: query: -- Table-Non-Cascade CHANGE COLUMNS ...
-alter table table_change_date_group_string_group_timestamp replace columns(insert_num int, c1 STRING, c2 CHAR(50), c3 CHAR(15), c4 VARCHAR(50), c5 VARCHAR(15), b STRING)
+POSTHOOK: query: alter table table_change_date_group_string_group_timestamp replace columns(insert_num int, c1 STRING, c2 CHAR(50), c3 CHAR(15), c4 VARCHAR(50), c5 VARCHAR(15), b STRING)
 POSTHOOK: type: ALTERTABLE_REPLACECOLS
 POSTHOOK: Input: default@table_change_date_group_string_group_timestamp
 POSTHOOK: Output: default@table_change_date_group_string_group_timestamp
@@ -894,17 +826,11 @@ POSTHOOK: query: drop table table_change_date_group_string_group_timestamp
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@table_change_date_group_string_group_timestamp
 POSTHOOK: Output: default@table_change_date_group_string_group_timestamp
-PREHOOK: query: --
--- SUBSECTION: ALTER TABLE CHANGE COLUMNS for DATE_GROUP -> STRING_GROUP: DATE, (STRING, CHAR, CHAR trunc, VARCHAR, VARCHAR trunc)
---
-CREATE TABLE table_change_date_group_string_group_date(insert_num int, c1 DATE, c2 DATE, c3 DATE, c4 DATE, c5 DATE, b STRING)
+PREHOOK: query: CREATE TABLE table_change_date_group_string_group_date(insert_num int, c1 DATE, c2 DATE, c3 DATE, c4 DATE, c5 DATE, b STRING)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@table_change_date_group_string_group_date
-POSTHOOK: query: --
--- SUBSECTION: ALTER TABLE CHANGE COLUMNS for DATE_GROUP -> STRING_GROUP: DATE, (STRING, CHAR, CHAR trunc, VARCHAR, VARCHAR trunc)
---
-CREATE TABLE table_change_date_group_string_group_date(insert_num int, c1 DATE, c2 DATE, c3 DATE, c4 DATE, c5 DATE, b STRING)
+POSTHOOK: query: CREATE TABLE table_change_date_group_string_group_date(insert_num int, c1 DATE, c2 DATE, c3 DATE, c4 DATE, c5 DATE, b STRING)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@table_change_date_group_string_group_date
@@ -930,13 +856,11 @@ POSTHOOK: Lineage: table_change_date_group_string_group_date.c4 EXPRESSION [(val
 POSTHOOK: Lineage: table_change_date_group_string_group_date.c5 EXPRESSION [(values__tmp__table__13)values__tmp__table__13.FieldSchema(name:tmp_values_col6, type:string, comment:), ]
 POSTHOOK: Lineage: table_change_date_group_string_group_date.insert_num EXPRESSION [(values__tmp__table__13)values__tmp__table__13.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 _col0	_col1	_col2	_col3	_col4	_col5	_col6
-PREHOOK: query: -- Table-Non-Cascade CHANGE COLUMNS ...
-alter table table_change_date_group_string_group_date replace columns(insert_num int, c1 STRING, c2 CHAR(50), c3 CHAR(15), c4 VARCHAR(50), c5 VARCHAR(15), b STRING)
+PREHOOK: query: alter table table_change_date_group_string_group_date replace columns(insert_num int, c1 STRING, c2 CHAR(50), c3 CHAR(15), c4 VARCHAR(50), c5 VARCHAR(15), b STRING)
 PREHOOK: type: ALTERTABLE_REPLACECOLS
 PREHOOK: Input: default@table_change_date_group_string_group_date
 PREHOOK: Output: default@table_change_date_group_string_group_date
-POSTHOOK: query: -- Table-Non-Cascade CHANGE COLUMNS ...
-alter table table_change_date_group_string_group_date replace columns(insert_num int, c1 STRING, c2 CHAR(50), c3 CHAR(15), c4 VARCHAR(50), c5 VARCHAR(15), b STRING)
+POSTHOOK: query: alter table table_change_date_group_string_group_date replace columns(insert_num int, c1 STRING, c2 CHAR(50), c3 CHAR(15), c4 VARCHAR(50), c5 VARCHAR(15), b STRING)
 POSTHOOK: type: ALTERTABLE_REPLACECOLS
 POSTHOOK: Input: default@table_change_date_group_string_group_date
 POSTHOOK: Output: default@table_change_date_group_string_group_date
@@ -1062,25 +986,11 @@ POSTHOOK: query: drop table table_change_date_group_string_group_date
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@table_change_date_group_string_group_date
 POSTHOOK: Output: default@table_change_date_group_string_group_date
-PREHOOK: query: ------------------------------------------------------------------------------------------
--- SECTION: ALTER TABLE CHANGE COLUMNS for NUMERIC_GROUP -> STRING_GROUP
---
---
---
--- SUBSECTION: ALTER TABLE CHANGE COLUMNS for NUMERIC_GROUP -> STRING_GROUP: (TINYINT, SMALLINT, INT, BIGINT), STRING
---
-CREATE TABLE table_change_numeric_group_string_group_multi_ints_string(insert_num int, c1 tinyint, c2 smallint, c3 int, c4 bigint, b STRING)
+PREHOOK: query: CREATE TABLE table_change_numeric_group_string_group_multi_ints_string(insert_num int, c1 tinyint, c2 smallint, c3 int, c4 bigint, b STRING)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@table_change_numeric_group_string_group_multi_ints_string
-POSTHOOK: query: ------------------------------------------------------------------------------------------
--- SECTION: ALTER TABLE CHANGE COLUMNS for NUMERIC_GROUP -> STRING_GROUP
---
---
---
--- SUBSECTION: ALTER TABLE CHANGE COLUMNS for NUMERIC_GROUP -> STRING_GROUP: (TINYINT, SMALLINT, INT, BIGINT), STRING
---
-CREATE TABLE table_change_numeric_group_string_group_multi_ints_string(insert_num int, c1 tinyint, c2 smallint, c3 int, c4 bigint, b STRING)
+POSTHOOK: query: CREATE TABLE table_change_numeric_group_string_group_multi_ints_string(insert_num int, c1 tinyint, c2 smallint, c3 int, c4 bigint, b STRING)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@table_change_numeric_group_string_group_multi_ints_string
@@ -1120,13 +1030,11 @@ insert_num	c1	c2	c3	c4	b
 2	-2	-6737	56	28899333	original
 3	NULL	4957	832222222	9000000000	original
 4	0	20435	847492223	-999999999999	original
-PREHOOK: query: -- Table-Non-Cascade CHANGE COLUMNS ...
-alter table table_change_numeric_group_string_group_multi_ints_string replace columns (insert_num int, c1 STRING, c2 STRING, c3 STRING, c4 STRING, b STRING)
+PREHOOK: query: alter table table_change_numeric_group_string_group_multi_ints_string replace columns (insert_num int, c1 STRING, c2 STRING, c3 STRING, c4 STRING, b STRING)
 PREHOOK: type: ALTERTABLE_REPLACECOLS
 PREHOOK: Input: default@table_change_numeric_group_string_group_multi_ints_string
 PREHOOK: Output: default@table_change_numeric_group_string_group_multi_ints_string
-POSTHOOK: query: -- Table-Non-Cascade CHANGE COLUMNS ...
-alter table table_change_numeric_group_string_group_multi_ints_string replace columns (insert_num int, c1 STRING, c2 STRING, c3 STRING, c4 STRING, b STRING)
+POSTHOOK: query: alter table table_change_numeric_group_string_group_multi_ints_string replace columns (insert_num int, c1 STRING, c2 STRING, c3 STRING, c4 STRING, b STRING)
 POSTHOOK: type: ALTERTABLE_REPLACECOLS
 POSTHOOK: Input: default@table_change_numeric_group_string_group_multi_ints_string
 POSTHOOK: Output: default@table_change_numeric_group_string_group_multi_ints_string
@@ -1211,17 +1119,11 @@ POSTHOOK: query: drop table table_change_numeric_group_string_group_multi_ints_s
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@table_change_numeric_group_string_group_multi_ints_string
 POSTHOOK: Output: default@table_change_numeric_group_string_group_multi_ints_string
-PREHOOK: query: --
--- SUBSECTION: ALTER TABLE CHANGE COLUMNS for NUMERIC_GROUP -> STRING_GROUP: (TINYINT, SMALLINT, INT, BIGINT), CHAR
---
-CREATE TABLE table_change_numeric_group_string_group_multi_ints_char(insert_num int, c1 tinyint, c2 smallint, c3 int, c4 bigint, b STRING)
+PREHOOK: query: CREATE TABLE table_change_numeric_group_string_group_multi_ints_char(insert_num int, c1 tinyint, c2 smallint, c3 int, c4 bigint, b STRING)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@table_change_numeric_group_string_group_multi_ints_char
-POSTHOOK: query: --
--- SUBSECTION: ALTER TABLE CHANGE COLUMNS for NUMERIC_GROUP -> STRING_GROUP: (TINYINT, SMALLINT, INT, BIGINT), CHAR
---
-CREATE TABLE table_change_numeric_group_string_group_multi_ints_char(insert_num int, c1 tinyint, c2 smallint, c3 int, c4 bigint, b STRING)
+POSTHOOK: query: CREATE TABLE table_change_numeric_group_string_group_multi_ints_char(insert_num int, c1 tinyint, c2 smallint, c3 int, c4 bigint, b STRING)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@table_change_numeric_group_string_group_multi_ints_char
@@ -1261,13 +1163,11 @@ insert_num	c1	c2	c3	c4	b
 2	-2	-6737	56	28899333	original
 3	NULL	4957	832222222	9000000000	original
 4	0	20435	847492223	-999999999999	original
-PREHOOK: query: -- Table-Non-Cascade CHANGE COLUMNS ...
-alter table table_change_numeric_group_string_group_multi_ints_char replace columns (insert_num int, c1 CHAR(50), c2 CHAR(50), c3 CHAR(50), c4 CHAR(50), b STRING)
+PREHOOK: query: alter table table_change_numeric_group_string_group_multi_ints_char replace columns (insert_num int, c1 CHAR(50), c2 CHAR(50), c3 CHAR(50), c4 CHAR(50), b STRING)
 PREHOOK: type: ALTERTABLE_REPLACECOLS
 PREHOOK: Input: default@table_change_numeric_group_string_group_multi_ints_char
 PREHOOK: Output: default@table_change_numeric_group_string_group_multi_ints_char
-POSTHOOK: query: -- Table-Non-Cascade CHANGE COLUMNS ...
-alter table table_change_numeric_group_string_group_multi_ints_char replace columns (insert_num int, c1 CHAR(50), c2 CHAR(50), c3 CHAR(50), c4 CHAR(50), b STRING)
+POSTHOOK: query: alter table table_change_numeric_group_string_group_multi_ints_char replace columns (insert_num int, c1 CHAR(50), c2 CHAR(50), c3 CHAR(50), c4 CHAR(50), b STRING)
 POSTHOOK: type: ALTERTABLE_REPLACECOLS
 POSTHOOK: Input: default@table_change_numeric_group_string_group_multi_ints_char
 POSTHOOK: Output: default@table_change_numeric_group_string_group_multi_ints_char
@@ -1352,17 +1252,11 @@ POSTHOOK: query: drop table table_change_numeric_group_string_group_multi_ints_c
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@table_change_numeric_group_string_group_multi_ints_char
 POSTHOOK: Output: default@table_change_numeric_group_string_group_multi_ints_char
-PREHOOK: query: --
--- SUBSECTION: ALTER TABLE CHANGE COLUMNS for NUMERIC_GROUP -> STRING_GROUP: (TINYINT, SMALLINT, INT, BIGINT), CHAR truncation
---
-CREATE TABLE table_change_numeric_group_string_group_multi_ints_char_trunc(insert_num int, c1 tinyint, c2 smallint, c3 int, c4 bigint, b STRING)
+PREHOOK: query: CREATE TABLE table_change_numeric_group_string_group_multi_ints_char_trunc(insert_num int, c1 tinyint, c2 smallint, c3 int, c4 bigint, b STRING)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@table_change_numeric_group_string_group_multi_ints_char_trunc
-POSTHOOK: query: --
--- SUBSECTION: ALTER TABLE CHANGE COLUMNS for NUMERIC_GROUP -> STRING_GROUP: (TINYINT, SMALLINT, INT, BIGINT), CHAR truncation
---
-CREATE TABLE table_change_numeric_group_string_group_multi_ints_char_trunc(insert_num int, c1 tinyint, c2 smallint, c3 int, c4 bigint, b STRING)
+POSTHOOK: query: CREATE TABLE table_change_numeric_group_string_group_multi_ints_char_trunc(insert_num int, c1 tinyint, c2 smallint, c3 int, c4 bigint, b STRING)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@table_change_numeric_group_string_group_multi_ints_char_trunc
@@ -1402,13 +1296,11 @@ insert_num	c1	c2	c3	c4	b
 2	-2	-6737	56	28899333	original
 3	NULL	4957	832222222	9000000000	original
 4	0	20435	847492223	-999999999999	original
-PREHOOK: query: -- Table-Non-Cascade CHANGE COLUMNS ...
-alter table table_change_numeric_group_string_group_multi_ints_char_trunc replace columns (insert_num int, c1 CHAR(5), c2 CHAR(5), c3 CHAR(5), c4 CHAR(5), b STRING)
+PREHOOK: query: alter table table_change_numeric_group_string_group_multi_ints_char_trunc replace columns (insert_num int, c1 CHAR(5), c2 CHAR(5), c3 CHAR(5), c4 CHAR(5), b STRING)
 PREHOOK: type: ALTERTABLE_REPLACECOLS
 PREHOOK: Input: default@table_change_numeric_group_string_group_multi_ints_char_trunc
 PREHOOK: Output: default@table_change_numeric_group_string_group_multi_ints_char_trunc
-POSTHOOK: query: -- Table-Non-Cascade CHANGE COLUMNS ...
-alter table table_change_numeric_group_string_group_multi_ints_char_trunc replace columns (insert_num int, c1 CHAR(5), c2 CHAR(5), c3 CHAR(5), c4 CHAR(5), b STRING)
+POSTHOOK: query: alter table table_change_numeric_group_string_group_multi_ints_char_trunc replace columns (insert_num int, c1 CHAR(5), c2 CHAR(5), c3 CHAR(5), c4 CHAR(5), b STRING)
 POSTHOOK: type: ALTERTABLE_REPLACECOLS
 POSTHOOK: Input: default@table_change_numeric_group_string_group_multi_ints_char_trunc
 POSTHOOK: Output: default@table_change_numeric_group_string_group_multi_ints_char_trunc
@@ -1493,17 +1385,11 @@ POSTHOOK: query: drop table table_change_numeric_group_string_group_multi_ints_c
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@table_change_numeric_group_string_group_multi_ints_char_trunc
 POSTHOOK: Output: default@table_change_numeric_group_string_group_multi_ints_char_trunc
-PREHOOK: query: --
--- SUBSECTION: ALTER TABLE CHANGE COLUMNS for NUMERIC_GROUP -> STRING_GROUP: (TINYINT, SMALLINT, INT, BIGINT), VARCHAR
---
-CREATE TABLE table_change_numeric_group_string_group_multi_ints_varchar(insert_num int, c1 tinyint, c2 smallint, c3 int, c4 bigint, b STRING)
+PREHOOK: query: CREATE TABLE table_change_numeric_group_string_group_multi_ints_varchar(insert_num int, c1 tinyint, c2 smallint, c3 int, c4 bigint, b STRING)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@table_change_numeric_group_string_group_multi_ints_varchar
-POSTHOOK: query: --
--- SUBSECTION: ALTER TABLE CHANGE COLUMNS for NUMERIC_GROUP -> STRING_GROUP: (TINYINT, SMALLINT, INT, BIGINT), VARCHAR
---
-CREATE TABLE table_change_numeric_group_string_group_multi_ints_varchar(insert_num int, c1 tinyint, c2 smallint, c3 int, c4 bigint, b STRING)
+POSTHOOK: query: CREATE TABLE table_change_numeric_group_string_group_multi_ints_varchar(insert_num int, c1 tinyint, c2 smallint, c3 int, c4 bigint, b STRING)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@table_change_numeric_group_string_group_multi_ints_varchar
@@ -1543,13 +1429,11 @@ insert_num	c1	c2	c3	c4	b
 2	-2	-6737	56	28899333	original
 3	NULL	4957	832222222	9000000000	original
 4	0	20435	847492223	-999999999999	original
-PREHOOK: query: -- Table-Non-Cascade CHANGE COLUMNS ...
-alter table table_change_numeric_group_string_group_multi_ints_varchar replace columns (insert_num int, c1 VARCHAR(50), c2 VARCHAR(50), c3 VARCHAR(50), c4 VARCHAR(50), b STRING)
+PREHOOK: query: alter table table_change_numeric_group_string_group_multi_ints_varchar replace columns (insert_num int, c1 VARCHAR(50), c2 VARCHAR(50), c3 VARCHAR(50), c4 VARCHAR(50), b STRING)
 PREHOOK: type: ALTERTABLE_REPLACECOLS
 PREHOOK: Input: default@table_change_numeric_group_string_group_multi_ints_varchar
 PREHOOK: Output: default@table_change_numeric_group_string_group_multi_ints_varchar
-POSTHOOK: query: -- Table-Non-Cascade CHANGE COLUMNS ...
-alter table table_change_numeric_group_string_group_multi_ints_varchar replace columns (insert_num int, c1 VARCHAR(50), c2 VARCHAR(50), c3 VARCHAR(50), c4 VARCHAR(50), b STRING)
+POSTHOOK: query: alter table table_change_numeric_group_string_group_multi_ints_varchar replace columns (insert_num int, c1 VARCHAR(50), c2 VARCHAR(50), c3 VARCHAR(50), c4 VARCHAR(50), b STRING)
 POSTHOOK: type: ALTERTABLE_REPLACECOLS
 POSTHOOK: Input: default@table_change_numeric_group_string_group_multi_ints_varchar
 POSTHOOK: Output: default@table_change_numeric_group_string_group_multi_ints_varchar
@@ -1634,17 +1518,11 @@ POSTHOOK: query: drop table table_change_numeric_group_string_group_multi_ints_v
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@table_change_numeric_group_string_group_multi_ints_varchar
 POSTHOOK: Output: default@table_change_numeric_group_string_group_multi_ints_varchar
-PREHOOK: query: --
--- SUBSECTION: ALTER TABLE CHANGE COLUMNS for NUMERIC_GROUP -> STRING_GROUP: (TINYINT, SMALLINT, INT, BIGINT), VARCHAR truncation
---
-CREATE TABLE table_change_numeric_group_string_group_multi_ints_varchar_trunc(insert_num int, c1 tinyint, c2 smallint, c3 int, c4 bigint, b STRING)
+PREHOOK: query: CREATE TABLE table_change_numeric_group_string_group_multi_ints_varchar_trunc(insert_num int, c1 tinyint, c2 smallint, c3 int, c4 bigint, b STRING)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@table_change_numeric_group_string_group_multi_ints_varchar_trunc
-POSTHOOK: query: --
--- SUBSECTION: ALTER TABLE CHANGE COLUMNS for NUMERIC_GROUP -> STRING_GROUP: (TINYINT, SMALLINT, INT, BIGINT), VARCHAR truncation
---
-CREATE TABLE table_change_numeric_group_string_group_multi_ints_varchar_trunc(insert_num int, c1 tinyint, c2 smallint, c3 int, c4 bigint, b STRING)
+POSTHOOK: query: CREATE TABLE table_change_numeric_group_string_group_multi_ints_varchar_trunc(insert_num int, c1 tinyint, c2 smallint, c3 int, c4 bigint, b STRING)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@table_change_numeric_group_string_group_multi_ints_varchar_trunc
@@ -1684,13 +1562,11 @@ insert_num	c1	c2	c3	c4	b
 2	-2	-6737	56	28899333	original
 3	NULL	4957	832222222	9000000000	original
 4	0	20435	847492223	-999999999999	original
-PREHOOK: query: -- Table-Non-Cascade CHANGE COLUMNS ...
-alter table table_change_numeric_group_string_group_multi_ints_varchar_trunc replace columns (insert_num int, c1 VARCHAR(5), c2 VARCHAR(5), c3 VARCHAR(5), c4 VARCHAR(5), b STRING)
+PREHOOK: query: alter table table_change_numeric_group_string_group_multi_ints_varchar_trunc replace columns (insert_num int, c1 VARCHAR(5), c2 VARCHAR(5), c3 VARCHAR(5), c4 VARCHAR(5), b STRING)
 PREHOOK: type: ALTERTABLE_REPLACECOLS
 PREHOOK: Input: default@table_change_numeric_group_string_group_multi_ints_varchar_trunc
 PREHOOK: Output: default@table_change_numeric_group_string_group_multi_ints_varchar_trunc
-POSTHOOK: query: -- Table-Non-Cascade CHANGE COLUMNS ...
-alter table table_change_numeric_group_string_group_multi_ints_varchar_trunc replace columns (insert_num int, c1 VARCHAR(5), c2 VARCHAR(5), c3 VARCHAR(5), c4 VARCHAR(5), b STRING)
+POSTHOOK: query: alter table table_change_numeric_group_string_group_multi_ints_varchar_trunc replace columns (insert_num int, c1 VARCHAR(5), c2 VARCHAR(5), c3 VARCHAR(5), c4 VARCHAR(5), b STRING)
 POSTHOOK: type: ALTERTABLE_REPLACECOLS
 POSTHOOK: Input: default@table_change_numeric_group_string_group_multi_ints_varchar_trunc
 POSTHOOK: Output: default@table_change_numeric_group_string_group_multi_ints_varchar_trunc
@@ -1775,17 +1651,11 @@ POSTHOOK: query: drop table table_change_numeric_group_string_group_multi_ints_v
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@table_change_numeric_group_string_group_multi_ints_varchar_trunc
 POSTHOOK: Output: default@table_change_numeric_group_string_group_multi_ints_varchar_trunc
-PREHOOK: query: --
--- SUBSECTION: ALTER TABLE CHANGE COLUMNS for NUMERIC_GROUP -> STRING_GROUP: (FLOAT, DOUBLE, DECIMAL), STRING
---
-CREATE TABLE table_change_numeric_group_string_group_floating_string(insert_num int, c1 decimal(38,18), c2 float, c3 double, b STRING)
+PREHOOK: query: CREATE TABLE table_change_numeric_group_string_group_floating_string(insert_num int, c1 float, c2 double, c3 decimal(38,18), b STRING)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@table_change_numeric_group_string_group_floating_string
-POSTHOOK: query: --
--- SUBSECTION: ALTER TABLE CHANGE COLUMNS for NUMERIC_GROUP -> STRING_GROUP: (FLOAT, DOUBLE, DECIMAL), STRING
---
-CREATE TABLE table_change_numeric_group_string_group_floating_string(insert_num int, c1 decimal(38,18), c2 float, c3 double, b STRING)
+POSTHOOK: query: CREATE TABLE table_change_numeric_group_string_group_floating_string(insert_num int, c1 float, c2 double, c3 decimal(38,18), b STRING)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@table_change_numeric_group_string_group_floating_string
@@ -1820,17 +1690,15 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table_change_numeric_group_string_group_floating_string
 #### A masked pattern was here ####
 insert_num	c1	c2	c3	b
-1	-23866739993.000000000000000000	753.7028	-3651.672121	original
-2	-10.300000000000000000	-2.0	-29.0764	original
-3	-832222222.000000000000000000	255.0	4957.0	original
-4	847492223.000000000000000000	0.0	20435.0	original
-PREHOOK: query: -- Table-Non-Cascade CHANGE COLUMNS ...
-alter table table_change_numeric_group_string_group_floating_string replace columns (insert_num int, c1 STRING, c2 STRING, c3 STRING, b STRING)
+1	-2.38667407E10	753.7028	-3651.672121000000000000	original
+2	-10.3	-2.0	-29.076400000000000000	original
+3	-8.3222221E8	255.0	4957.000000000000000000	original
+4	8.4749222E8	0.0	20435.000000000000000000	original
+PREHOOK: query: alter table table_change_numeric_group_string_group_floating_string replace columns (insert_num int, c1 STRING, c2 STRING, c3 STRING, b STRING)
 PREHOOK: type: ALTERTABLE_REPLACECOLS
 PREHOOK: Input: default@table_change_numeric_group_string_group_floating_string
 PREHOOK: Output: default@table_change_numeric_group_string_group_floating_string
-POSTHOOK: query: -- Table-Non-Cascade CHANGE COLUMNS ...
-alter table table_change_numeric_group_string_group_floating_string replace columns (insert_num int, c1 STRING, c2 STRING, c3 STRING, b STRING)
+POSTHOOK: query: alter table table_change_numeric_group_string_group_floating_string replace columns (insert_num int, c1 STRING, c2 STRING, c3 STRING, b STRING)
 POSTHOOK: type: ALTERTABLE_REPLACECOLS
 POSTHOOK: Input: default@table_change_numeric_group_string_group_floating_string
 POSTHOOK: Output: default@table_change_numeric_group_string_group_floating_string
@@ -1896,11 +1764,11 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table_change_numeric_group_string_group_floating_string
 #### A masked pattern was here ####
 insert_num	c1	c2	c3	b
-1	-23866739993	753.7028	-3651.672121	original
+1	-2.38667407E10	753.7028	-3651.672121	original
 10	17	90000	754072151	new
 2	-10.3	-2.0	-29.0764	original
-3	-832222222	255.0	4957.0	original
-4	847492223	0.0	20435.0	original
+3	-8.3222221E8	255.0	4957	original
+4	8.4749222E8	0.0	20435	original
 5	30.774	20.31	46114.284799488	new
 6	-66475.561431	52927714	7203778961	new
 7	256	32768	31889	new
@@ -1914,17 +1782,11 @@ POSTHOOK: query: drop table table_change_numeric_group_string_group_floating_str
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@table_change_numeric_group_string_group_floating_string
 POSTHOOK: Output: default@table_change_numeric_group_string_group_floating_string
-PREHOOK: query: --
--- SUBSECTION: ALTER TABLE CHANGE COLUMNS for NUMERIC_GROUP -> STRING_GROUP: (DECIMAL, FLOAT, DOUBLE), CHAR
---
-CREATE TABLE table_change_numeric_group_string_group_floating_char(insert_num int, c1 decimal(38,18), c2 float, c3 double, b STRING)
+PREHOOK: query: CREATE TABLE table_change_numeric_group_string_group_floating_char(insert_num int, c1 float, c2 double, c3 decimal(38,18), b STRING)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@table_change_numeric_group_string_group_floating_char
-POSTHOOK: query: --
--- SUBSECTION: ALTER TABLE CHANGE COLUMNS for NUMERIC_GROUP -> STRING_GROUP: (DECIMAL, FLOAT, DOUBLE), CHAR
---
-CREATE TABLE table_change_numeric_group_string_group_floating_char(insert_num int, c1 decimal(38,18), c2 float, c3 double, b STRING)
+POSTHOOK: query: CREATE TABLE table_change_numeric_group_string_group_floating_char(insert_num int, c1 float, c2 double, c3 decimal(38,18), b STRING)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@table_change_numeric_group_string_group_floating_char
@@ -1959,17 +1821,15 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table_change_numeric_group_string_group_floating_char
 #### A masked pattern was here ####
 insert_num	c1	c2	c3	b
-1	-23866739993.000000000000000000	753.7028	-3651.672121	original
-2	-10.300000000000000000	-2.0	-29.0764	original
-3	9000000000.000000000000000000	-255.0	4957.0	original
-4	-999999999999.000000000000000000	0.0	20435.0	original
-PREHOOK: query: -- Table-Non-Cascade CHANGE COLUMNS ...
-alter table table_change_numeric_group_string_group_floating_char replace columns (insert_num int, c1 CHAR(50), c2 CHAR(50), c3 CHAR(50), b STRING)
+1	-2.38667407E10	753.7028	-3651.672121000000000000	original
+2	-10.3	-2.0	-29.076400000000000000	original
+3	8.9999995E9	-255.0	4957.000000000000000000	original
+4	-1.0E12	0.0	20435.000000000000000000	original
+PREHOOK: query: alter table table_change_numeric_group_string_group_floating_char replace columns (insert_num int, c1 CHAR(50), c2 CHAR(50), c3 CHAR(50), b STRING)
 PREHOOK: type: ALTERTABLE_REPLACECOLS
 PREHOOK: Input: default@table_change_numeric_group_string_group_floating_char
 PREHOOK: Output: default@table_change_numeric_group_string_group_floating_char
-POSTHOOK: query: -- Table-Non-Cascade CHANGE COLUMNS ...
-alter table table_change_numeric_group_string_group_floating_char replace columns (insert_num int, c1 CHAR(50), c2 CHAR(50), c3 CHAR(50), b STRING)
+POSTHOOK: query: alter table table_change_numeric_group_string_group_floating_char replace columns (insert_num int, c1 CHAR(50), c2 CHAR(50), c3 CHAR(50), b STRING)
 POSTHOOK: type: ALTERTABLE_REPLACECOLS
 POSTHOOK: Input: default@table_change_numeric_group_string_group_floating_char
 POSTHOOK: Output: default@table_change_numeric_group_string_group_floating_char
@@ -2035,11 +1895,11 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table_change_numeric_group_string_group_floating_char
 #### A masked pattern was here ####
 insert_num	c1	c2	c3	b
-1	-23866739993                                      	753.7028                                          	-3651.672121                                      	original
+1	-2.38667407E10                                    	753.7028                                          	-3651.672121                                      	original
 10	17                                                	90000                                             	754072151                                         	new
 2	-10.3                                             	-2.0                                              	-29.0764                                          	original
-3	9000000000                                        	-255.0                                            	4957.0                                            	original
-4	-999999999999                                     	0.0                                               	20435.0                                           	original
+3	8.9999995E9                                       	-255.0                                            	4957                                              	original
+4	-1.0E12                                           	0.0                                               	20435                                             	original
 5	30.774                                            	20.31                                             	46114.284799488                                   	new
 6	-66475.561431                                     	52927714                                          	7203778961                                        	new
 7	256                                               	32768                                             	31889                                             	new
@@ -2053,17 +1913,11 @@ POSTHOOK: query: drop table table_change_numeric_group_string_group_floating_cha
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@table_change_numeric_group_string_group_floating_char
 POSTHOOK: Output: default@table_change_numeric_group_string_group_floating_char
-PREHOOK: query: --
--- SUBSECTION: ALTER TABLE CHANGE COLUMNS for NUMERIC_GROUP -> STRING_GROUP: (DECIMAL, FLOAT, DOUBLE), CHAR truncation
---
-CREATE TABLE table_change_numeric_group_string_group_floating_char_trunc(insert_num int, c1 decimal(38,18), c2 float, c3 double, b STRING)
+PREHOOK: query: CREATE TABLE table_change_numeric_group_string_group_floating_char_trunc(insert_num int, c1 float, c2 double, c3 decimal(38,18), b STRING)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@table_change_numeric_group_string_group_floating_char_trunc
-POSTHOOK: query: --
--- SUBSECTION: ALTER TABLE CHANGE COLUMNS for NUMERIC_GROUP -> STRING_GROUP: (DECIMAL, FLOAT, DOUBLE), CHAR truncation
---
-CREATE TABLE table_change_numeric_group_string_group_floating_char_trunc(insert_num int, c1 decimal(38,18), c2 float, c3 double, b STRING)
+POSTHOOK: query: CREATE TABLE table_change_numeric_group_string_group_floating_char_trunc(insert_num int, c1 float, c2 double, c3 decimal(38,18), b STRING)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@table_change_numeric_group_string_group_floating_char_trunc
@@ -2098,17 +1952,15 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table_change_numeric_group_string_group_floating_char_trunc
 #### A masked pattern was here ####
 insert_num	c1	c2	c3	b
-1	-23866739993.000000000000000000	753.7028	-3651.672121	original
-2	-10.300000000000000000	-2.0	-29.0764	original
-3	832222222.000000000000000000	-255.0	4957.0	original
-4	847492223.000000000000000000	0.0	20435.0	original
-PREHOOK: query: -- Table-Non-Cascade CHANGE COLUMNS ...
-alter table table_change_numeric_group_string_group_floating_char_trunc replace columns (insert_num int, c1 CHAR(7), c2 CHAR(7), c3 CHAR(7), b STRING)
+1	-2.38667407E10	753.7028	-3651.672121000000000000	original
+2	-10.3	-2.0	-29.076400000000000000	original
+3	8.3222221E8	-255.0	4957.000000000000000000	original
+4	8.4749222E8	0.0	20435.000000000000000000	original
+PREHOOK: query: alter table table_change_numeric_group_string_group_floating_char_trunc replace columns (insert_num int, c1 CHAR(7), c2 CHAR(7), c3 CHAR(7), b STRING)
 PREHOOK: type: ALTERTABLE_REPLACECOLS
 PREHOOK: Input: default@table_change_numeric_group_string_group_floating_char_trunc
 PREHOOK: Output: default@table_change_numeric_group_string_group_floating_char_trunc
-POSTHOOK: query: -- Table-Non-Cascade CHANGE COLUMNS ...
-alter table table_change_numeric_group_string_group_floating_char_trunc replace columns (insert_num int, c1 CHAR(7), c2 CHAR(7), c3 CHAR(7), b STRING)
+POSTHOOK: query: alter table table_change_numeric_group_string_group_floating_char_trunc replace columns (insert_num int, c1 CHAR(7), c2 CHAR(7), c3 CHAR(7), b STRING)
 POSTHOOK: type: ALTERTABLE_REPLACECOLS
 POSTHOOK: Input: default@table_change_numeric_group_string_group_floating_char_trunc
 POSTHOOK: Output: default@table_change_numeric_group_string_group_floating_char_trunc
@@ -2174,11 +2026,11 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table_change_numeric_group_string_group_floating_char_trunc
 #### A masked pattern was here ####
 insert_num	c1	c2	c3	b
-1	-238667	753.702	-3651.6	original
+1	-2.3866	753.702	-3651.6	original
 10	17     	90000  	7540721	new
 2	-10.3  	-2.0   	-29.076	original
-3	8322222	-255.0 	4957.0 	original
-4	8474922	0.0    	20435.0	original
+3	8.32222	-255.0 	4957   	original
+4	8.47492	0.0    	20435  	original
 5	30.774 	20.31  	46114.2	new
 6	-66475.	5292771	7203778	new
 7	256    	32768  	31889  	new
@@ -2192,17 +2044,11 @@ POSTHOOK: query: drop table table_change_numeric_group_string_group_floating_cha
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@table_change_numeric_group_string_group_floating_char_trunc
 POSTHOOK: Output: default@table_change_numeric_group_string_group_floating_char_trunc
-PREHOOK: query: --
--- SUBSECTION: ALTER TABLE CHANGE COLUMNS for NUMERIC_GROUP -> STRING_GROUP: (DECIMAL, FLOAT, DOUBLE), VARCHAR
---
-CREATE TABLE table_change_numeric_group_string_group_floating_varchar(insert_num int, c1 float, c2 double, c3 decimal(38,18), b STRING)
+PREHOOK: query: CREATE TABLE table_change_numeric_group_string_group_floating_varchar(insert_num int, c1 float, c2 double, c3 decimal(38,18), b STRING)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@table_change_numeric_group_string_group_floating_varchar
-POSTHOOK: query: --
--- SUBSECTION: ALTER TABLE CHANGE COLUMNS for NUMERIC_GROUP -> STRING_GROUP: (DECIMAL, FLOAT, DOUBLE), VARCHAR
---
-CREATE TABLE table_change_numeric_group_string_group_floating_varchar(insert_num int, c1 float, c2 double, c3 decimal(38,18), b STRING)
+POSTHOOK: query: CREATE TABLE table_change_numeric_group_string_group_floating_varchar(insert_num int, c1 float, c2 double, c3 decimal(38,18), b STRING)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@table_change_numeric_group_string_group_floating_varchar
@@ -2241,13 +2087,11 @@ insert_num	c1	c2	c3	b
 2	-10.3	-2.0	-29.076400000000000000	original
 3	8.9999995E9	-255.0	4957.000000000000000000	original
 4	-1.0E12	0.0	20435.000000000000000000	original
-PREHOOK: query: -- Table-Non-Cascade CHANGE COLUMNS ...
-alter table table_change_numeric_group_string_group_floating_varchar replace columns (insert_num int, c1 VARCHAR(50), c2 VARCHAR(50), c3 VARCHAR(50), b STRING)
+PREHOOK: query: alter table table_change_numeric_group_string_group_floating_varchar replace columns (insert_num int, c1 VARCHAR(50), c2 VARCHAR(50), c3 VARCHAR(50), b STRING)
 PREHOOK: type: ALTERTABLE_REPLACECOLS
 PREHOOK: Input: default@table_change_numeric_group_string_group_floating_varchar
 PREHOOK: Output: default@table_change_numeric_group_string_group_floating_varchar
-POSTHOOK: query: -- Table-Non-Cascade CHANGE COLUMNS ...
-alter table table_change_numeric_group_string_group_floating_varchar replace columns (insert_num int, c1 VARCHAR(50), c2 VARCHAR(50), c3 VARCHAR(50), b STRING)
+POSTHOOK: query: alter table table_change_numeric_group_string_group_floating_varchar replace columns (insert_num int, c1 VARCHAR(50), c2 VARCHAR(50), c3 VARCHAR(50), b STRING)
 POSTHOOK: type: ALTERTABLE_REPLACECOLS
 POSTHOOK: Input: default@table_change_numeric_group_string_group_floating_varchar
 POSTHOOK: Output: default@table_change_numeric_group_string_group_floating_varchar
@@ -2331,17 +2175,11 @@ POSTHOOK: query: drop table table_change_numeric_group_string_group_floating_var
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@table_change_numeric_group_string_group_floating_varchar
 POSTHOOK: Output: default@table_change_numeric_group_string_group_floating_varchar
-PREHOOK: query: --
--- SUBSECTION: ALTER TABLE CHANGE COLUMNS for NUMERIC_GROUP -> STRING_GROUP: (DECIMAL, FLOAT, DOUBLE), VARCHAR truncation
---
-CREATE TABLE table_change_numeric_group_string_group_floating_varchar_trunc(insert_num int, c1 decimal(38,18), c2 float, c3 double, b STRING)
+PREHOOK: query: CREATE TABLE table_change_numeric_group_string_group_floating_varchar_trunc(insert_num int, c1 float, c2 double, c3 decimal(38,18), b STRING)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@table_change_numeric_group_string_group_floating_varchar_trunc
-POSTHOOK: query: --
--- SUBSECTION: ALTER TABLE CHANGE COLUMNS for NUMERIC_GROUP -> STRING_GROUP: (DECIMAL, FLOAT, DOUBLE), VARCHAR truncation
---
-CREATE TABLE table_change_numeric_group_string_group_floating_varchar_trunc(insert_num int, c1 decimal(38,18), c2 float, c3 double, b STRING)
+POSTHOOK: query: CREATE TABLE table_change_numeric_group_string_group_floating_varchar_trunc(insert_num int, c1 float, c2 double, c3 decimal(38,18), b STRING)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@table_change_numeric_group_string_group_floating_varchar_trunc
@@ -2376,17 +2214,15 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table_change_numeric_group_string_group_floating_varchar_trunc
 #### A masked pattern was here ####
 insert_num	c1	c2	c3	b
-1	-23866739993.000000000000000000	753.7028	-3651.672121	original
-2	-10.300000000000000000	-2.0	-29.0764	original
-3	9000000000.000000000000000000	-255.0	4957.0	original
-4	-999999999999.000000000000000000	0.0	20435.0	original
-PREHOOK: query: -- Table-Non-Cascade CHANGE COLUMNS ...
-alter table table_change_numeric_group_string_group_floating_varchar_trunc replace columns (insert_num int, c1 VARCHAR(7), c2 VARCHAR(7), c3 VARCHAR(7), b STRING)
+1	-2.38667407E10	753.7028	-3651.672121000000000000	original
+2	-10.3	-2.0	-29.076400000000000000	original
+3	8.9999995E9	-255.0	4957.000000000000000000	original
+4	-1.0E12	0.0	20435.000000000000000000	original
+PREHOOK: query: alter table table_change_numeric_group_string_group_floating_varchar_trunc replace columns (insert_num int, c1 VARCHAR(7), c2 VARCHAR(7), c3 VARCHAR(7), b STRING)
 PREHOOK: type: ALTERTABLE_REPLACECOLS
 PREHOOK: Input: default@table_change_numeric_group_string_group_floating_varchar_trunc
 PREHOOK: Output: default@table_change_numeric_group_string_group_floating_varchar_trunc
-POSTHOOK: query: -- Table-Non-Cascade CHANGE COLUMNS ...
-alter table table_change_numeric_group_string_group_floating_varchar_trunc replace columns (insert_num int, c1 VARCHAR(7), c2 VARCHAR(7), c3 VARCHAR(7), b STRING)
+POSTHOOK: query: alter table table_change_numeric_group_string_group_floating_varchar_trunc replace columns (insert_num int, c1 VARCHAR(7), c2 VARCHAR(7), c3 VARCHAR(7), b STRING)
 POSTHOOK: type: ALTERTABLE_REPLACECOLS
 POSTHOOK: Input: default@table_change_numeric_group_string_group_floating_varchar_trunc
 POSTHOOK: Output: default@table_change_numeric_group_string_group_floating_varchar_trunc
@@ -2452,11 +2288,11 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table_change_numeric_group_string_group_floating_varchar_trunc
 #### A masked pattern was here ####
 insert_num	c1	c2	c3	b
-1	-238667	753.702	-3651.6	original
+1	-2.3866	753.702	-3651.6	original
 10	17	90000	7540721	new
 2	-10.3	-2.0	-29.076	original
-3	9000000	-255.0	4957.0	original
-4	-999999	0.0	20435.0	original
+3	8.99999	-255.0	4957	original
+4	-1.0E12	0.0	20435	original
 5	30.774	20.31	46114.2	new
 6	-66475.	5292771	7203778	new
 7	256	32768	31889	new
@@ -2470,25 +2306,11 @@ POSTHOOK: query: drop table table_change_numeric_group_string_group_floating_var
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@table_change_numeric_group_string_group_floating_varchar_trunc
 POSTHOOK: Output: default@table_change_numeric_group_string_group_floating_varchar_trunc
-PREHOOK: query: ------------------------------------------------------------------------------------------
--- SECTION: ALTER TABLE CHANGE COLUMNS for STRING_GROUP -> STRING_GROUP
---
---
---
--- SUBSECTION: ALTER TABLE CHANGE COLUMNS for STRING_GROUP -> STRING_GROUP: STRING, (CHAR, CHAR trunc, VARCHAR, VARCHAR trunc)
---
-CREATE TABLE table_change_string_group_string_group_string(insert_num int, c1 string, c2 string, c3 string, c4 string, b STRING)
+PREHOOK: query: CREATE TABLE table_change_string_group_string_group_string(insert_num int, c1 string, c2 string, c3 string, c4 string, b STRING)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@table_change_string_group_string_group_string
-POSTHOOK: query: ------------------------------------------------------------------------------------------
--- SECTION: ALTER TABLE CHANGE COLUMNS for STRING_GROUP -> STRING_GROUP
---
---
---
--- SUBSECTION: ALTER TABLE CHANGE COLUMNS for STRING_GROUP -> STRING_GROUP: STRING, (CHAR, CHAR trunc, VARCHAR, VARCHAR trunc)
---
-CREATE TABLE table_change_string_group_string_group_string(insert_num int, c1 string, c2 string, c3 string, c4 string, b STRING)
+POSTHOOK: query: CREATE TABLE table_change_string_group_string_group_string(insert_num int, c1 string, c2 string, c3 string, c4 string, b STRING)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@table_change_string_group_string_group_string
@@ -2528,13 +2350,11 @@ insert_num	c1	c2	c3	c4	b
 2	heartbeat	heartbeat	heartbeat	heartbeat	original
 3	dynamic reptile	dynamic reptile	dynamic reptile	dynamic reptile	original
 4	blank pads   	blank pads   	blank pads   	blank pads   	original
-PREHOOK: query: -- Table-Non-Cascade CHANGE COLUMNS ...
-alter table table_change_string_group_string_group_string replace columns (insert_num int, c1 CHAR(50), c2 CHAR(9), c3 VARCHAR(50), c4 CHAR(9), b STRING)
+PREHOOK: query: alter table table_change_string_group_string_group_string replace columns (insert_num int, c1 CHAR(50), c2 CHAR(9), c3 VARCHAR(50), c4 CHAR(9), b STRING)
 PREHOOK: type: ALTERTABLE_REPLACECOLS
 PREHOOK: Input: default@table_change_string_group_string_group_string
 PREHOOK: Output: default@table_change_string_group_string_group_string
-POSTHOOK: query: -- Table-Non-Cascade CHANGE COLUMNS ...
-alter table table_change_string_group_string_group_string replace columns (insert_num int, c1 CHAR(50), c2 CHAR(9), c3 VARCHAR(50), c4 CHAR(9), b STRING)
+POSTHOOK: query: alter table table_change_string_group_string_group_string replace columns (insert_num int, c1 CHAR(50), c2 CHAR(9), c3 VARCHAR(50), c4 CHAR(9), b STRING)
 POSTHOOK: type: ALTERTABLE_REPLACECOLS
 POSTHOOK: Input: default@table_change_string_group_string_group_string
 POSTHOOK: Output: default@table_change_string_group_string_group_string
@@ -2619,17 +2439,11 @@ POSTHOOK: query: drop table table_change_string_group_string_group_string
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@table_change_string_group_string_group_string
 POSTHOOK: Output: default@table_change_string_group_string_group_string
-PREHOOK: query: --
--- SUBSECTION: ALTER TABLE CHANGE COLUMNS for STRING_GROUP -> STRING_GROUP: CHAR, (VARCHAR, VARCHAR trunc, STRING)
---
-CREATE TABLE table_change_string_group_string_group_char(insert_num int, c1 CHAR(50), c2 CHAR(50), c3 CHAR(50), b STRING)
+PREHOOK: query: CREATE TABLE table_change_string_group_string_group_char(insert_num int, c1 CHAR(50), c2 CHAR(50), c3 CHAR(50), b STRING)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@table_change_string_group_string_group_char
-POSTHOOK: query: --
--- SUBSECTION: ALTER TABLE CHANGE COLUMNS for STRING_GROUP -> STRING_GROUP: CHAR, (VARCHAR, VARCHAR trunc, STRING)
---
-CREATE TABLE table_change_string_group_string_group_char(insert_num int, c1 CHAR(50), c2 CHAR(50), c3 CHAR(50), b STRING)
+POSTHOOK: query: CREATE TABLE table_change_string_group_string_group_char(insert_num int, c1 CHAR(50), c2 CHAR(50), c3 CHAR(50), b STRING)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@table_change_string_group_string_group_char
@@ -2668,13 +2482,11 @@ insert_num	c1	c2	c3	b
 2	heartbeat                                         	heartbeat                                         	heartbeat                                         	original
 3	dynamic reptile                                   	dynamic reptile                                   	dynamic reptile                                   	original
 4	blank pads                                        	blank pads                                        	blank pads                                        	original
-PREHOOK: query: -- Table-Non-Cascade CHANGE COLUMNS ...
-alter table table_change_string_group_string_group_char replace columns (insert_num int, c1 VARCHAR(50), c2 VARCHAR(9), c3 STRING, b STRING)
+PREHOOK: query: alter table table_change_string_group_string_group_char replace columns (insert_num int, c1 VARCHAR(50), c2 VARCHAR(9), c3 STRING, b STRING)
 PREHOOK: type: ALTERTABLE_REPLACECOLS
 PREHOOK: Input: default@table_change_string_group_string_group_char
 PREHOOK: Output: default@table_change_string_group_string_group_char
-POSTHOOK: query: -- Table-Non-Cascade CHANGE COLUMNS ...
-alter table table_change_string_group_string_group_char replace columns (insert_num int, c1 VARCHAR(50), c2 VARCHAR(9), c3 STRING, b STRING)
+POSTHOOK: query: alter table table_change_string_group_string_group_char replace columns (insert_num int, c1 VARCHAR(50), c2 VARCHAR(9), c3 STRING, b STRING)
 POSTHOOK: type: ALTERTABLE_REPLACECOLS
 POSTHOOK: Input: default@table_change_string_group_string_group_char
 POSTHOOK: Output: default@table_change_string_group_string_group_char
@@ -2758,17 +2570,11 @@ POSTHOOK: query: drop table table_change_string_group_string_group_char
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@table_change_string_group_string_group_char
 POSTHOOK: Output: default@table_change_string_group_string_group_char
-PREHOOK: query: --
--- SUBSECTION: ALTER TABLE CHANGE COLUMNS for STRING_GROUP -> STRING_GROUP: VARCHAR, (CHAR, CHAR trunc, STRING)
---
-CREATE TABLE table_change_string_group_string_group_varchar(insert_num int, c1 VARCHAR(50), c2 VARCHAR(50), c3 VARCHAR(50), b STRING)
+PREHOOK: query: CREATE TABLE table_change_string_group_string_group_varchar(insert_num int, c1 VARCHAR(50), c2 VARCHAR(50), c3 VARCHAR(50), b STRING)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@table_change_string_group_string_group_varchar
-POSTHOOK: query: --
--- SUBSECTION: ALTER TABLE CHANGE COLUMNS for STRING_GROUP -> STRING_GROUP: VARCHAR, (CHAR, CHAR trunc, STRING)
---
-CREATE TABLE table_change_string_group_string_group_varchar(insert_num int, c1 VARCHAR(50), c2 VARCHAR(50), c3 VARCHAR(50), b STRING)
+POSTHOOK: query: CREATE TABLE table_change_string_group_string_group_varchar(insert_num int, c1 VARCHAR(50), c2 VARCHAR(50), c3 VARCHAR(50), b STRING)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@table_change_string_group_string_group_varchar
@@ -2807,13 +2613,11 @@ insert_num	c1	c2	c3	b
 2	heartbeat	heartbeat	heartbeat	original
 3	dynamic reptile	dynamic reptile	dynamic reptile	original
 4	blank pads   	blank pads   	blank pads   	original
-PREHOOK: query: -- Table-Non-Cascade CHANGE COLUMNS ...
-alter table table_change_string_group_string_group_varchar replace columns (insert_num int, c1 CHAR(50), c2 CHAR(9), c3 STRING, b STRING)
+PREHOOK: query: alter table table_change_string_group_string_group_varchar replace columns (insert_num int, c1 CHAR(50), c2 CHAR(9), c3 STRING, b STRING)
 PREHOOK: type: ALTERTABLE_REPLACECOLS
 PREHOOK: Input: default@table_change_string_group_string_group_varchar
 PREHOOK: Output: default@table_change_string_group_string_group_varchar
-POSTHOOK: query: -- Table-Non-Cascade CHANGE COLUMNS ...
-alter table table_change_string_group_string_group_varchar replace columns (insert_num int, c1 CHAR(50), c2 CHAR(9), c3 STRING, b STRING)
+POSTHOOK: query: alter table table_change_string_group_string_group_varchar replace columns (insert_num int, c1 CHAR(50), c2 CHAR(9), c3 STRING, b STRING)
 POSTHOOK: type: ALTERTABLE_REPLACECOLS
 POSTHOOK: Input: default@table_change_string_group_string_group_varchar
 POSTHOOK: Output: default@table_change_string_group_string_group_varchar
@@ -2897,25 +2701,11 @@ POSTHOOK: query: drop table table_change_string_group_string_group_varchar
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@table_change_string_group_string_group_varchar
 POSTHOOK: Output: default@table_change_string_group_string_group_varchar
-PREHOOK: query: ------------------------------------------------------------------------------------------
--- SECTION: ALTER TABLE CHANGE COLUMNS for "lower" type to "higher" NUMERIC_GROUP
---
---
---
--- SUBSECTION: ALTER TABLE CHANGE COLUMNS for "lower" type to "higher" NUMERIC_GROUP: TINYINT, (SMALLINT, INT, BIGINT, DECIMAL, FLOAT, DOUBLE)
---
-CREATE TABLE table_change_lower_to_higher_numeric_group_tinyint(insert_num int, c1 tinyint, c2 tinyint, c3 tinyint, c4 tinyint, c5 tinyint, c6 tinyint, b STRING)
+PREHOOK: query: CREATE TABLE table_change_lower_to_higher_numeric_group_tinyint(insert_num int, c1 tinyint, c2 tinyint, c3 tinyint, c4 tinyint, c5 tinyint, c6 tinyint, b STRING)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@table_change_lower_to_higher_numeric_group_tinyint
-POSTHOOK: query: ------------------------------------------------------------------------------------------
--- SECTION: ALTER TABLE CHANGE COLUMNS for "lower" type to "higher" NUMERIC_GROUP
---
---
---
--- SUBSECTION: ALTER TABLE CHANGE COLUMNS for "lower" type to "higher" NUMERIC_GROUP: TINYINT, (SMALLINT, INT, BIGINT, DECIMAL, FLOAT, DOUBLE)
---
-CREATE TABLE table_change_lower_to_higher_numeric_group_tinyint(insert_num int, c1 tinyint, c2 tinyint, c3 tinyint, c4 tinyint, c5 tinyint, c6 tinyint, b STRING)
+POSTHOOK: query: CREATE TABLE table_change_lower_to_higher_numeric_group_tinyint(insert_num int, c1 tinyint, c2 tinyint, c3 tinyint, c4 tinyint, c5 tinyint, c6 tinyint, b STRING)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@table_change_lower_to_higher_numeric_group_tinyint
@@ -2957,13 +2747,11 @@ insert_num	c1	c2	c3	c4	c5	c6	b
 2	-2	-2	-2	-2	-2	-2	original
 3	NULL	NULL	NULL	NULL	NULL	NULL	original
 4	100	100	100	100	100	100	original
-PREHOOK: query: -- Table-Non-Cascade CHANGE COLUMNS ...
-alter table table_change_lower_to_higher_numeric_group_tinyint replace columns (insert_num int, c1 SMALLINT, c2 INT, c3 BIGINT, c4 decimal(38,18), c5 FLOAT, c6 DOUBLE, b STRING)
+PREHOOK: query: alter table table_change_lower_to_higher_numeric_group_tinyint replace columns (insert_num int, c1 SMALLINT, c2 INT, c3 BIGINT, c4 FLOAT, c5 DOUBLE, c6 decimal(38,18), b STRING)
 PREHOOK: type: ALTERTABLE_REPLACECOLS
 PREHOOK: Input: default@table_change_lower_to_higher_numeric_group_tinyint
 PREHOOK: Output: default@table_change_lower_to_higher_numeric_group_tinyint
-POSTHOOK: query: -- Table-Non-Cascade CHANGE COLUMNS ...
-alter table table_change_lower_to_higher_numeric_group_tinyint replace columns (insert_num int, c1 SMALLINT, c2 INT, c3 BIGINT, c4 decimal(38,18), c5 FLOAT, c6 DOUBLE, b STRING)
+POSTHOOK: query: alter table table_change_lower_to_higher_numeric_group_tinyint replace columns (insert_num int, c1 SMALLINT, c2 INT, c3 BIGINT, c4 FLOAT, c5 DOUBLE, c6 decimal(38,18), b STRING)
 POSTHOOK: type: ALTERTABLE_REPLACECOLS
 POSTHOOK: Input: default@table_change_lower_to_higher_numeric_group_tinyint
 POSTHOOK: Output: default@table_change_lower_to_higher_numeric_group_tinyint
@@ -3032,16 +2820,16 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table_change_lower_to_higher_numeric_group_tinyint
 #### A masked pattern was here ####
 insert_num	c1	c2	c3	c4	c5	c6	b
-1	45	45	45	45.000000000000000000	45.0	45.0	original
-10	17	90000	754072151	95.000000000000000000	20.0	18.0	new
-2	-2	-2	-2	-2.000000000000000000	-2.0	-2.0	original
+1	45	45	45	45.0	45.0	45.000000000000000000	original
+10	17	90000	754072151	95.0	20.0	18.000000000000000000	new
+2	-2	-2	-2	-2.0	-2.0	-2.000000000000000000	original
 3	NULL	NULL	NULL	NULL	NULL	NULL	original
-4	100	100	100	100.000000000000000000	100.0	100.0	original
-5	774	2031	200	12.000000000000000000	99.0	0.0	new
-6	NULL	52927714	7203778961	8.000000000000000000	7.0	6.0	new
-7	256	32768	31889	300.000000000000000000	444.0	506.0	new
-8	5555	40000	-719017797	45.000000000000000000	55.0	65.0	new
-9	100	5000	5443	22.000000000000000000	2.0	-2.0	new
+4	100	100	100	100.0	100.0	100.000000000000000000	original
+5	774	2031	200	12.0	99.0	0.000000000000000000	new
+6	NULL	52927714	7203778961	8.0	7.0	6.000000000000000000	new
+7	256	32768	31889	300.0	444.0	506.000000000000000000	new
+8	5555	40000	-719017797	45.0	55.0	65.000000000000000000	new
+9	100	5000	5443	22.0	2.0	-2.000000000000000000	new
 PREHOOK: query: drop table table_change_lower_to_higher_numeric_group_tinyint
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@table_change_lower_to_higher_numeric_group_tinyint
@@ -3050,17 +2838,11 @@ POSTHOOK: query: drop table table_change_lower_to_higher_numeric_group_tinyint
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@table_change_lower_to_higher_numeric_group_tinyint
 POSTHOOK: Output: default@table_change_lower_to_higher_numeric_group_tinyint
-PREHOOK: query: --
--- SUBSECTION: ALTER TABLE CHANGE COLUMNS for "lower" type to "higher" NUMERIC_GROUP: SMALLINT, (INT, BIGINT, DECIMAL, FLOAT, DOUBLE)
---
-CREATE TABLE table_change_lower_to_higher_numeric_group_smallint(insert_num int, c1 smallint, c2 smallint, c3 smallint, c4 smallint, c5 smallint, b STRING)
+PREHOOK: query: CREATE TABLE table_change_lower_to_higher_numeric_group_smallint(insert_num int, c1 smallint, c2 smallint, c3 smallint, c4 smallint, c5 smallint, b STRING)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@table_change_lower_to_higher_numeric_group_smallint
-POSTHOOK: query: --
--- SUBSECTION: ALTER TABLE CHANGE COLUMNS for "lower" type to "higher" NUMERIC_GROUP: SMALLINT, (INT, BIGINT, DECIMAL, FLOAT, DOUBLE)
---
-CREATE TABLE table_change_lower_to_higher_numeric_group_smallint(insert_num int, c1 smallint, c2 smallint, c3 smallint, c4 smallint, c5 smallint, b STRING)
+POSTHOOK: query: CREATE TABLE table_change_lower_to_higher_numeric_group_smallint(insert_num int, c1 smallint, c2 smallint, c3 smallint, c4 smallint, c5 smallint, b STRING)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@table_change_lower_to_higher_numeric_group_smallint
@@ -3101,13 +2883,11 @@ insert_num	c1	c2	c3	c4	c5	b
 2	-2	-2	-2	-2	-2	original
 3	-5000	-5000	-5000	-5000	-5000	original
 4	100	100	100	100	100	original
-PREHOOK: query: -- Table-Non-Cascade CHANGE COLUMNS ...
-alter table table_change_lower_to_higher_numeric_group_smallint replace columns (insert_num int, c1 INT, c2 BIGINT, c3 decimal(38,18), c4 FLOAT, c5 DOUBLE, b STRING)
+PREHOOK: query: alter table table_change_lower_to_higher_numeric_group_smallint replace columns (insert_num int, c1 INT, c2 BIGINT, c3 FLOAT, c4 DOUBLE, c5 decimal(38,18), b STRING)
 PREHOOK: type: ALTERTABLE_REPLACECOLS
 PREHOOK: Input: default@table_change_lower_to_higher_numeric_group_smallint
 PREHOOK: Output: default@table_change_lower_to_higher_numeric_group_smallint
-POSTHOOK: query: -- Table-Non-Cascade CHANGE COLUMNS ...
-alter table table_change_lower_to_higher_numeric_group_smallint replace columns (insert_num int, c1 INT, c2 BIGINT, c3 decimal(38,18), c4 FLOAT, c5 DOUBLE, b STRING)
+POSTHOOK: query: alter table table_change_lower_to_higher_numeric_group_smallint replace columns (insert_num int, c1 INT, c2 BIGINT, c3 FLOAT, c4 DOUBLE, c5 decimal(38,18), b STRING)
 POSTHOOK: type: ALTERTABLE_REPLACECOLS
 POSTHOOK: Input: default@table_change_lower_to_higher_numeric_group_smallint
 POSTHOOK: Output: default@table_change_lower_to_higher_numeric_group_smallint
@@ -3175,16 +2955,16 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table_change_lower_to_higher_numeric_group_smallint
 #### A masked pattern was here ####
 insert_num	c1	c2	c3	c4	c5	b
-1	2031	2031	2031.000000000000000000	2031.0	2031.0	original
-10	17	90000	754072151.000000000000000000	95.0	20.0	new
-2	-2	-2	-2.000000000000000000	-2.0	-2.0	original
-3	-5000	-5000	-5000.000000000000000000	-5000.0	-5000.0	original
-4	100	100	100.000000000000000000	100.0	100.0	original
-5	774	2031	200.000000000000000000	12.0	99.0	new
-6	561431	52927714	7203778961.000000000000000000	8.0	7.0	new
-7	256	32768	31889.000000000000000000	300.0	444.0	new
-8	5555	40000	-719017797.000000000000000000	45.0	55.0	new
-9	100	5000	5443.000000000000000000	22.0	2.0	new
+1	2031	2031	2031.0	2031.0	2031.000000000000000000	original
+10	17	90000	7.5407213E8	95.0	20.000000000000000000	new
+2	-2	-2	-2.0	-2.0	-2.000000000000000000	original
+3	-5000	-5000	-5000.0	-5000.0	-5000.000000000000000000	original
+4	100	100	100.0	100.0	100.000000000000000000	original
+5	774	2031	200.0	12.0	99.000000000000000000	new
+6	561431	52927714	7.2037791E9	8.0	7.000000000000000000	new
+7	256	32768	31889.0	300.0	444.000000000000000000	new
+8	5555	40000	-7.1901779E8	45.0	55.000000000000000000	new
+9	100	5000	5443.0	22.0	2.000000000000000000	new
 PREHOOK: query: drop table table_change_lower_to_higher_numeric_group_smallint
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@table_change_lower_to_higher_numeric_group_smallint
@@ -3193,17 +2973,11 @@ POSTHOOK: query: drop table table_change_lower_to_higher_numeric_group_smallint
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@table_change_lower_to_higher_numeric_group_smallint
 POSTHOOK: Output: default@table_change_lower_to_higher_numeric_group_smallint
-PREHOOK: query: --
--- SUBSECTION: ALTER TABLE CHANGE COLUMNS for "lower" type to "higher" NUMERIC_GROUP: INT, (BIGINT, DECIMAL, FLOAT, DOUBLE)
---
-CREATE TABLE table_change_lower_to_higher_numeric_group_int(insert_num int, c1 int, c2 int, c3 int, c4 int, b STRING)
+PREHOOK: query: CREATE TABLE table_change_lower_to_higher_numeric_group_int(insert_num int, c1 int, c2 int, c3 int, c4 int, b STRING)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@table_change_lower_to_higher_numeric_group_int
-POSTHOOK: query: --
--- SUBSECTION: ALTER TABLE CHANGE COLUMNS for "lower" type to "higher" NUMERIC_GROUP: INT, (BIGINT, DECIMAL, FLOAT, DOUBLE)
---
-CREATE TABLE table_change_lower_to_higher_numeric_group_int(insert_num int, c1 int, c2 int, c3 int, c4 int, b STRING)
+POSTHOOK: query: CREATE TABLE table_change_lower_to_higher_numeric_group_int(insert_num int, c1 int, c2 int, c3 int, c4 int, b STRING)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@table_change_lower_to_higher_numeric_group_int
@@ -3243,13 +3017,11 @@ insert_num	c1	c2	c3	c4	b
 2	-2	-2	-2	-2	original
 3	-5000	-5000	-5000	-5000	original
 4	52927714	52927714	52927714	52927714	original
-PREHOOK: query: -- Table-Non-Cascade CHANGE COLUMNS ...
-alter table table_change_lower_to_higher_numeric_group_int replace columns (insert_num int, c1 BIGINT, c2 decimal(38,18), c3 FLOAT, c4 DOUBLE,  b STRING)
+PREHOOK: query: alter table table_change_lower_to_higher_numeric_group_int replace columns (insert_num int, c1 BIGINT, c2 FLOAT, c3 DOUBLE, c4 decimal(38,18), b STRING)
 PREHOOK: type: ALTERTABLE_REPLACECOLS
 PREHOOK: Input: default@table_change_lower_to_higher_numeric_group_int
 PREHOOK: Output: default@table_change_lower_to_higher_numeric_group_int
-POSTHOOK: query: -- Table-Non-Cascade CHANGE COLUMNS ...
-alter table table_change_lower_to_higher_numeric_group_int replace columns (insert_num int, c1 BIGINT, c2 decimal(38,18), c3 FLOAT, c4 DOUBLE,  b STRING)
+POSTHOOK: query: alter table table_change_lower_to_higher_numeric_group_int replace columns (insert_num int, c1 BIGINT, c2 FLOAT, c3 DOUBLE, c4 decimal(38,18), b STRING)
 POSTHOOK: type: ALTERTABLE_REPLACECOLS
 POSTHOOK: Input: default@table_change_lower_to_higher_numeric_group_int
 POSTHOOK: Output: default@table_change_lower_to_higher_numeric_group_int
@@ -3316,16 +3088,16 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table_change_lower_to_higher_numeric_group_int
 #### A masked pattern was here ####
 insert_num	c1	c2	c3	c4	b
-1	2031	2031.000000000000000000	2031.0	2031.0	original
-10	17	90000.000000000000000000	7.5407213E8	95.0	new
-2	-2	-2.000000000000000000	-2.0	-2.0	original
-3	-5000	-5000.000000000000000000	-5000.0	-5000.0	original
-4	52927714	52927714.000000000000000000	5.2927712E7	5.2927714E7	original
-5	774	2031.000000000000000000	200.0	12.0	new
-6	561431	52927714.000000000000000000	7.2037791E9	8.0	new
-7	256	32768.000000000000000000	31889.0	300.0	new
-8	5555	40000.000000000000000000	-7.1901779E8	45.0	new
-9	100	5000.000000000000000000	5443.0	22.0	new
+1	2031	2031.0	2031.0	2031.000000000000000000	original
+10	17	90000.0	7.54072151E8	95.000000000000000000	new
+2	-2	-2.0	-2.0	-2.000000000000000000	original
+3	-5000	-5000.0	-5000.0	-5000.000000000000000000	original
+4	52927714	5.2927712E7	5.2927714E7	52927714.000000000000000000	original
+5	774	2031.0	200.0	12.000000000000000000	new
+6	561431	5.2927712E7	7.203778961E9	8.000000000000000000	new
+7	256	32768.0	31889.0	300.000000000000000000	new
+8	5555	40000.0	-7.19017797E8	45.000000000000000000	new
+9	100	5000.0	5443.0	22.000000000000000000	new
 PREHOOK: query: drop table table_change_lower_to_higher_numeric_group_int
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@table_change_lower_to_higher_numeric_group_int
@@ -3334,17 +3106,11 @@ POSTHOOK: query: drop table table_change_lower_to_higher_numeric_group_int
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@table_change_lower_to_higher_numeric_group_int
 POSTHOOK: Output: default@table_change_lower_to_higher_numeric_group_int
-PREHOOK: query: --
--- SUBSECTION: ALTER TABLE CHANGE COLUMNS for "lower" type to "higher" NUMERIC_GROUP: BIGINT, (DECIMAL, FLOAT, DOUBLE)
---
-CREATE TABLE table_change_lower_to_higher_numeric_group_bigint(insert_num int, c1 bigint, c2 bigint, c3 bigint, b STRING)
+PREHOOK: query: CREATE TABLE table_change_lower_to_higher_numeric_group_bigint(insert_num int, c1 bigint, c2 bigint, c3 bigint, b STRING)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@table_change_lower_to_higher_numeric_group_bigint
-POSTHOOK: query: --
--- SUBSECTION: ALTER TABLE CHANGE COLUMNS for "lower" type to "higher" NUMERIC_GROUP: BIGINT, (DECIMAL, FLOAT, DOUBLE)
---
-CREATE TABLE table_change_lower_to_higher_numeric_group_bigint(insert_num int, c1 bigint, c2 bigint, c3 bigint, b STRING)
+POSTHOOK: query: CREATE TABLE table_change_lower_to_higher_numeric_group_bigint(insert_num int, c1 bigint, c2 bigint, c3 bigint, b STRING)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@table_change_lower_to_higher_numeric_group_bigint
@@ -3383,13 +3149,11 @@ insert_num	c1	c2	c3	b
 2	-2	-2	-2	original
 3	-5000	-5000	-5000	original
 4	52927714	52927714	52927714	original
-PREHOOK: query: -- Table-Non-Cascade CHANGE COLUMNS ...
-alter table table_change_lower_to_higher_numeric_group_bigint replace columns (insert_num int, c1 decimal(38,18), c2 FLOAT, c3 DOUBLE, b STRING)
+PREHOOK: query: alter table table_change_lower_to_higher_numeric_group_bigint replace columns (insert_num int, c1 FLOAT, c2 DOUBLE, c3 decimal(38,18), b STRING)
 PREHOOK: type: ALTERTABLE_REPLACECOLS
 PREHOOK: Input: default@table_change_lower_to_higher_numeric_group_bigint
 PREHOOK: Output: default@table_change_lower_to_higher_numeric_group_bigint
-POSTHOOK: query: -- Table-Non-Cascade CHANGE COLUMNS ...
-alter table table_change_lower_to_higher_numeric_group_bigint replace columns (insert_num int, c1 decimal(38,18), c2 FLOAT, c3 DOUBLE, b STRING)
+POSTHOOK: query: alter table table_change_lower_to_higher_numeric_group_bigint replace columns (insert_num int, c1 FLOAT, c2 DOUBLE, c3 decimal(38,18), b STRING)
 POSTHOOK: type: ALTERTABLE_REPLACECOLS
 POSTHOOK: Input: default@table_change_lower_to_higher_numeric_group_bigint
 POSTHOOK: Output: default@table_change_lower_to_higher_numeric_group_bigint
@@ -3455,16 +3219,16 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table_change_lower_to_higher_numeric_group_bigint
 #### A masked pattern was here ####
 insert_num	c1	c2	c3	b
-1	7203778961.000000000000000000	7.2037791E9	7.203778961E9	original
-10	17.000000000000000000	90000.0	7.54072151E8	new
-2	-2.000000000000000000	-2.0	-2.0	original
-3	-5000.000000000000000000	-5000.0	-5000.0	original
-4	52927714.000000000000000000	5.2927712E7	5.2927714E7	original
-5	774.000000000000000000	2031.0	200.0	new
-6	561431.000000000000000000	5.2927712E7	7.203778961E9	new
-7	256.000000000000000000	32768.0	31889.0	new
-8	5555.000000000000000000	40000.0	-7.19017797E8	new
-9	100.000000000000000000	5000.0	5443.0	new
+1	7.2037791E9	7.203778961E9	7203778961.000000000000000000	original
+10	17.0	90000.0	754072151.000000000000000000	new
+2	-2.0	-2.0	-2.000000000000000000	original
+3	-5000.0	-5000.0	-5000.000000000000000000	original
+4	5.2927712E7	5.2927714E7	52927714.000000000000000000	original
+5	774.0	2031.0	200.000000000000000000	new
+6	561431.0	5.2927714E7	7203778961.000000000000000000	new
+7	256.0	32768.0	31889.000000000000000000	new
+8	5555.0	40000.0	-719017797.000000000000000000	new
+9	100.0	5000.0	5443.000000000000000000	new
 PREHOOK: query: drop table table_change_lower_to_higher_numeric_group_bigint
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@table_change_lower_to_higher_numeric_group_bigint
@@ -3473,65 +3237,57 @@ POSTHOOK: query: drop table table_change_lower_to_higher_numeric_group_bigint
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@table_change_lower_to_higher_numeric_group_bigint
 POSTHOOK: Output: default@table_change_lower_to_higher_numeric_group_bigint
-PREHOOK: query: --
--- SUBSECTION: ALTER TABLE CHANGE COLUMNS for "lower" type to "higher" NUMERIC_GROUP: FLOAT, (DOUBLE, DECIMAL)
---
-CREATE TABLE table_change_lower_to_higher_numeric_group_decimal(insert_num int, c1 float, c2 float, b STRING)
+PREHOOK: query: CREATE TABLE table_change_lower_to_higher_numeric_group_float(insert_num int, c1 float, c2 float, b STRING)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@table_change_lower_to_higher_numeric_group_decimal
-POSTHOOK: query: --
--- SUBSECTION: ALTER TABLE CHANGE COLUMNS for "lower" type to "higher" NUMERIC_GROUP: FLOAT, (DOUBLE, DECIMAL)
---
-CREATE TABLE table_change_lower_to_higher_numeric_group_decimal(insert_num int, c1 float, c2 float, b STRING)
+PREHOOK: Output: default@table_change_lower_to_higher_numeric_group_float
+POSTHOOK: query: CREATE TABLE table_change_lower_to_higher_numeric_group_float(insert_num int, c1 float, c2 float, b STRING)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@table_change_lower_to_higher_numeric_group_decimal
-PREHOOK: query: insert into table table_change_lower_to_higher_numeric_group_decimal
+POSTHOOK: Output: default@table_change_lower_to_higher_numeric_group_float
+PREHOOK: query: insert into table table_change_lower_to_higher_numeric_group_float
     values (1, -29.0764, -29.0764, 'original'),
            (2, 753.7028, 753.7028, 'original'),
            (3, -5000, -5000, 'original'),
            (4, 52927714, 52927714, 'original')
 PREHOOK: type: QUERY
 PREHOOK: Input: default@values__tmp__table__49
-PREHOOK: Output: default@table_change_lower_to_higher_numeric_group_decimal
-POSTHOOK: query: insert into table table_change_lower_to_higher_numeric_group_decimal
+PREHOOK: Output: default@table_change_lower_to_higher_numeric_group_float
+POSTHOOK: query: insert into table table_change_lower_to_higher_numeric_group_float
     values (1, -29.0764, -29.0764, 'original'),
            (2, 753.7028, 753.7028, 'original'),
            (3, -5000, -5000, 'original'),
            (4, 52927714, 52927714, 'original')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@values__tmp__table__49
-POSTHOOK: Output: default@table_change_lower_to_higher_numeric_group_decimal
-POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_decimal.b SIMPLE [(values__tmp__table__49)values__tmp__table__49.FieldSchema(name:tmp_values_col4, type:string, comment:), ]
-POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_decimal.c1 EXPRESSION [(values__tmp__table__49)values__tmp__table__49.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
-POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_decimal.c2 EXPRESSION [(values__tmp__table__49)values__tmp__table__49.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
-POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_decimal.insert_num EXPRESSION [(values__tmp__table__49)values__tmp__table__49.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Output: default@table_change_lower_to_higher_numeric_group_float
+POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_float.b SIMPLE [(values__tmp__table__49)values__tmp__table__49.FieldSchema(name:tmp_values_col4, type:string, comment:), ]
+POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_float.c1 EXPRESSION [(values__tmp__table__49)values__tmp__table__49.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_float.c2 EXPRESSION [(values__tmp__table__49)values__tmp__table__49.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
+POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_float.insert_num EXPRESSION [(values__tmp__table__49)values__tmp__table__49.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 _col0	_col1	_col2	_col3
-PREHOOK: query: select insert_num,c1,c2,b from table_change_lower_to_higher_numeric_group_decimal order by insert_num
+PREHOOK: query: select insert_num,c1,c2,b from table_change_lower_to_higher_numeric_group_float order by insert_num
 PREHOOK: type: QUERY
-PREHOOK: Input: default@table_change_lower_to_higher_numeric_group_decimal
+PREHOOK: Input: default@table_change_lower_to_higher_numeric_group_float
 #### A masked pattern was here ####
-POSTHOOK: query: select insert_num,c1,c2,b from table_change_lower_to_higher_numeric_group_decimal order by insert_num
+POSTHOOK: query: select insert_num,c1,c2,b from table_change_lower_to_higher_numeric_group_float order by insert_num
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@table_change_lower_to_higher_numeric_group_decimal
+POSTHOOK: Input: default@table_change_lower_to_higher_numeric_group_float
 #### A masked pattern was here ####
 insert_num	c1	c2	b
 1	-29.0764	-29.0764	original
 2	753.7028	753.7028	original
 3	-5000.0	-5000.0	original
 4	5.2927712E7	5.2927712E7	original
-PREHOOK: query: -- Table-Non-Cascade CHANGE COLUMNS ...
-alter table table_change_lower_to_higher_numeric_group_decimal replace columns (insert_num int, c1 double, c2 decimal(38,18), b STRING)
+PREHOOK: query: alter table table_change_lower_to_higher_numeric_group_float replace columns (insert_num int, c1 double, c2 decimal(38,18), b STRING)
 PREHOOK: type: ALTERTABLE_REPLACECOLS
-PREHOOK: Input: default@table_change_lower_to_higher_numeric_group_decimal
-PREHOOK: Output: default@table_change_lower_to_higher_numeric_group_decimal
-POSTHOOK: query: -- Table-Non-Cascade CHANGE COLUMNS ...
-alter table table_change_lower_to_higher_numeric_group_decimal replace columns (insert_num int, c1 double, c2 decimal(38,18), b STRING)
+PREHOOK: Input: default@table_change_lower_to_higher_numeric_group_float
+PREHOOK: Output: default@table_change_lower_to_higher_numeric_group_float
+POSTHOOK: query: alter table table_change_lower_to_higher_numeric_group_float replace columns (insert_num int, c1 double, c2 decimal(38,18), b STRING)
 POSTHOOK: type: ALTERTABLE_REPLACECOLS
-POSTHOOK: Input: default@table_change_lower_to_higher_numeric_group_decimal
-POSTHOOK: Output: default@table_change_lower_to_higher_numeric_group_decimal
-PREHOOK: query: insert into table table_change_lower_to_higher_numeric_group_decimal
+POSTHOOK: Input: default@table_change_lower_to_higher_numeric_group_float
+POSTHOOK: Output: default@table_change_lower_to_higher_numeric_group_float
+PREHOOK: query: insert into table table_change_lower_to_higher_numeric_group_float
     values (5, '7.74', '22.3', 'new'),
            (6, '56.1431', '90.9', 'new'),
            (7, '2.56', '25.6', 'new'),
@@ -3540,8 +3296,8 @@ PREHOOK: query: insert into table table_change_lower_to_higher_numeric_group_dec
            (10, '1.7', '17.8888', 'new')
 PREHOOK: type: QUERY
 PREHOOK: Input: default@values__tmp__table__50
-PREHOOK: Output: default@table_change_lower_to_higher_numeric_group_decimal
-POSTHOOK: query: insert into table table_change_lower_to_higher_numeric_group_decimal
+PREHOOK: Output: default@table_change_lower_to_higher_numeric_group_float
+POSTHOOK: query: insert into table table_change_lower_to_higher_numeric_group_float
     values (5, '7.74', '22.3', 'new'),
            (6, '56.1431', '90.9', 'new'),
            (7, '2.56', '25.6', 'new'),
@@ -3550,17 +3306,17 @@ POSTHOOK: query: insert into table table_change_lower_to_higher_numeric_group_de
            (10, '1.7', '17.8888', 'new')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@values__tmp__table__50
-POSTHOOK: Output: default@table_change_lower_to_higher_numeric_group_decimal
-POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_decimal.b SIMPLE [(values__tmp__table__50)values__tmp__table__50.FieldSchema(name:tmp_values_col4, type:string, comment:), ]
-POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_decimal.c1 EXPRESSION [(values__tmp__table__50)values__tmp__table__50.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
-POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_decimal.c2 EXPRESSION [(values__tmp__table__50)values__tmp__table__50.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
-POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_decimal.insert_num EXPRESSION [(values__tmp__table__50)values__tmp__table__50.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Output: default@table_change_lower_to_higher_numeric_group_float
+POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_float.b SIMPLE [(values__tmp__table__50)values__tmp__table__50.FieldSchema(name:tmp_values_col4, type:string, comment:), ]
+POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_float.c1 EXPRESSION [(values__tmp__table__50)values__tmp__table__50.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_float.c2 EXPRESSION [(values__tmp__table__50)values__tmp__table__50.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
+POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_float.insert_num EXPRESSION [(values__tmp__table__50)values__tmp__table__50.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 _col0	_col1	_col2	_col3
 PREHOOK: query: explain
-select insert_num,c1,c2,b from table_change_lower_to_higher_numeric_group_decimal order by insert_num
+select insert_num,c1,c2,b from table_change_lower_to_higher_numeric_group_float order by insert_num
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
-select insert_num,c1,c2,b from table_change_lower_to_higher_numeric_group_decimal order by insert_num
+select insert_num,c1,c2,b from table_change_lower_to_higher_numeric_group_float order by insert_num
 POSTHOOK: type: QUERY
 Explain
 Plan optimized by CBO.
@@ -3581,15 +3337,15 @@ Stage-0
             Select Operator [SEL_5] (rows=4 width=104)
               Output:["_col0","_col1","_col2","_col3"]
               TableScan [TS_0] (rows=4 width=104)
-                default@table_change_lower_to_higher_numeric_group_decimal,table_change_lower_to_higher_numeric_group_decimal,Tbl:COMPLETE,Col:NONE,Output:["insert_num","c1","c2","b"]
+                default@table_change_lower_to_higher_numeric_group_float,table_change_lower_to_higher_numeric_group_float,Tbl:COMPLETE,Col:NONE,Output:["insert_num","c1","c2","b"]
 
-PREHOOK: query: select insert_num,c1,c2,b from table_change_lower_to_higher_numeric_group_decimal order by insert_num
+PREHOOK: query: select insert_num,c1,c2,b from table_change_lower_to_higher_numeric_group_float order by insert_num
 PREHOOK: type: QUERY
-PREHOOK: Input: default@table_change_lower_to_higher_numeric_group_decimal
+PREHOOK: Input: default@table_change_lower_to_higher_numeric_group_float
 #### A masked pattern was here ####
-POSTHOOK: query: select insert_num,c1,c2,b from table_change_lower_to_higher_numeric_group_decimal order by insert_num
+POSTHOOK: query: select insert_num,c1,c2,b from table_change_lower_to_higher_numeric_group_float order by insert_num
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@table_change_lower_to_higher_numeric_group_decimal
+POSTHOOK: Input: default@table_change_lower_to_higher_numeric_group_float
 #### A masked pattern was here ####
 insert_num	c1	c2	b
 1	-29.0764	-29.076400000000000000	original
@@ -3602,72 +3358,64 @@ insert_num	c1	c2	b
 7	2.56	25.600000000000000000	new
 8	555.5	55.550000000000000000	new
 9	10.0	0.100000000000000000	new
-PREHOOK: query: drop table table_change_lower_to_higher_numeric_group_decimal
+PREHOOK: query: drop table table_change_lower_to_higher_numeric_group_float
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@table_change_lower_to_higher_numeric_group_decimal
-PREHOOK: Output: default@table_change_lower_to_higher_numeric_group_decimal
-POSTHOOK: query: drop table table_change_lower_to_higher_numeric_group_decimal
+PREHOOK: Input: default@table_change_lower_to_higher_numeric_group_float
+PREHOOK: Output: default@table_change_lower_to_higher_numeric_group_float
+POSTHOOK: query: drop table table_change_lower_to_higher_numeric_group_float
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@table_change_lower_to_higher_numeric_group_decimal
-POSTHOOK: Output: default@table_change_lower_to_higher_numeric_group_decimal
-PREHOOK: query: --
--- SUBSECTION: ALTER TABLE CHANGE COLUMNS for "lower" type to "higher" NUMERIC_GROUP: DOUBLE, (DECIMAL)
---
-CREATE TABLE table_change_lower_to_higher_numeric_group_float(insert_num int, c1 double, b STRING)
+POSTHOOK: Input: default@table_change_lower_to_higher_numeric_group_float
+POSTHOOK: Output: default@table_change_lower_to_higher_numeric_group_float
+PREHOOK: query: CREATE TABLE table_change_lower_to_higher_numeric_group_double(insert_num int, c1 double, b STRING)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
-PREHOOK: Output: default@table_change_lower_to_higher_numeric_group_float
-POSTHOOK: query: --
--- SUBSECTION: ALTER TABLE CHANGE COLUMNS for "lower" type to "higher" NUMERIC_GROUP: DOUBLE, (DECIMAL)
---
-CREATE TABLE table_change_lower_to_higher_numeric_group_float(insert_num int, c1 double, b STRING)
+PREHOOK: Output: default@table_change_lower_to_higher_numeric_group_double
+POSTHOOK: query: CREATE TABLE table_change_lower_to_higher_numeric_group_double(insert_num int, c1 double, b STRING)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
-POSTHOOK: Output: default@table_change_lower_to_higher_numeric_group_float
-PREHOOK: query: insert into table table_change_lower_to_higher_numeric_group_float
+POSTHOOK: Output: default@table_change_lower_to_higher_numeric_group_double
+PREHOOK: query: insert into table table_change_lower_to_higher_numeric_group_double
     values (1, -29.0764, 'original'),
            (2, 753.7028, 'original'),
            (3, -5000, 'original'),
            (4, 52927714, 'original')
 PREHOOK: type: QUERY
 PREHOOK: Input: default@values__tmp__table__51
-PREHOOK: Output: default@table_change_lower_to_higher_numeric_group_float
-POSTHOOK: query: insert into table table_change_lower_to_higher_numeric_group_float
+PREHOOK: Output: default@table_change_lower_to_higher_numeric_group_double
+POSTHOOK: query: insert into table table_change_lower_to_higher_numeric_group_double
     values (1, -29.0764, 'original'),
            (2, 753.7028, 'original'),
            (3, -5000, 'original'),
            (4, 52927714, 'original')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@values__tmp__table__51
-POSTHOOK: Output: default@table_change_lower_to_higher_numeric_group_float
-POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_float.b SIMPLE [(values__tmp__table__51)values__tmp__table__51.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
-POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_float.c1 EXPRESSION [(values__tmp__table__51)values__tmp__table__51.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
-POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_float.insert_num EXPRESSION [(values__tmp__table__51)values__tmp__table__51.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Output: default@table_change_lower_to_higher_numeric_group_double
+POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_double.b SIMPLE [(values__tmp__table__51)values__tmp__table__51.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
+POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_double.c1 EXPRESSION [(values__tmp__table__51)values__tmp__table__51.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_double.insert_num EXPRESSION [(values__tmp__table__51)values__tmp__table__51.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 _col0	_col1	_col2
-PREHOOK: query: select insert_num,c1,b from table_change_lower_to_higher_numeric_group_float order by insert_num
+PREHOOK: query: select insert_num,c1,b from table_change_lower_to_higher_numeric_group_double order by insert_num
 PREHOOK: type: QUERY
-PREHOOK: Input: default@table_change_lower_to_higher_numeric_group_float
+PREHOOK: Input: default@table_change_lower_to_higher_numeric_group_double
 #### A masked pattern was here ####
-POSTHOOK: query: select insert_num,c1,b from table_change_lower_to_higher_numeric_group_float order by insert_num
+POSTHOOK: query: select insert_num,c1,b from table_change_lower_to_higher_numeric_group_double order by insert_num
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@table_change_lower_to_higher_numeric_group_float
+POSTHOOK: Input: default@table_change_lower_to_higher_numeric_group_double
 #### A masked pattern was here ####
 insert_num	c1	b
 1	-29.0764	original
 2	753.7028	original
 3	-5000.0	original
 4	5.2927714E7	original
-PREHOOK: query: -- Table-Non-Cascade CHANGE COLUMNS ...
-alter table table_change_lower_to_higher_numeric_group_float replace columns (insert_num int, c1 decimal(38,18), b STRING)
+PREHOOK: query: alter table table_change_lower_to_higher_numeric_group_double replace columns (insert_num int, c1 decimal(38,18), b STRING)
 PREHOOK: type: ALTERTABLE_REPLACECOLS
-PREHOOK: Input: default@table_change_lower_to_higher_numeric_group_float
-PREHOOK: Output: default@table_change_lower_to_higher_numeric_group_float
-POSTHOOK: query: -- Table-Non-Cascade CHANGE COLUMNS ...
-alter table table_change_lower_to_higher_numeric_group_float replace columns (insert_num int, c1 decimal(38,18), b STRING)
+PREHOOK: Input: default@table_change_lower_to_higher_numeric_group_double
+PREHOOK: Output: default@table_change_lower_to_higher_numeric_group_double
+POSTHOOK: query: alter table table_change_lower_to_higher_numeric_group_double replace columns (insert_num int, c1 decimal(38,18), b STRING)
 POSTHOOK: type: ALTERTABLE_REPLACECOLS
-POSTHOOK: Input: default@table_change_lower_to_higher_numeric_group_float
-POSTHOOK: Output: default@table_change_lower_to_higher_numeric_group_float
-PREHOOK: query: insert into table table_change_lower_to_higher_numeric_group_float
+POSTHOOK: Input: default@table_change_lower_to_higher_numeric_group_double
+POSTHOOK: Output: default@table_change_lower_to_higher_numeric_group_double
+PREHOOK: query: insert into table table_change_lower_to_higher_numeric_group_double
     values (5, '774', 'new'),
            (6, '561431', 'new'),
            (7, '256', 'new'),
@@ -3676,8 +3424,8 @@ PREHOOK: query: insert into table table_change_lower_to_higher_numeric_group_flo
            (10, '17', 'new')
 PREHOOK: type: QUERY
 PREHOOK: Input: default@values__tmp__table__52
-PREHOOK: Output: default@table_change_lower_to_higher_numeric_group_float
-POSTHOOK: query: insert into table table_change_lower_to_higher_numeric_group_float
+PREHOOK: Output: default@table_change_lower_to_higher_numeric_group_double
+POSTHOOK: query: insert into table table_change_lower_to_higher_numeric_group_double
     values (5, '774', 'new'),
            (6, '561431', 'new'),
            (7, '256', 'new'),
@@ -3686,16 +3434,16 @@ POSTHOOK: query: insert into table table_change_lower_to_higher_numeric_group_fl
            (10, '17', 'new')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@values__tmp__table__52
-POSTHOOK: Output: default@table_change_lower_to_higher_numeric_group_float
-POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_float.b SIMPLE [(values__tmp__table__52)values__tmp__table__52.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
-POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_float.c1 EXPRESSION [(values__tmp__table__52)values__tmp__table__52.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
-POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_float.insert_num EXPRESSION [(values__tmp__table__52)values__tmp__table__52.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Output: default@table_change_lower_to_higher_numeric_group_double
+POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_double.b SIMPLE [(values__tmp__table__52)values__tmp__table__52.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
+POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_double.c1 EXPRESSION [(values__tmp__table__52)values__tmp__table__52.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_double.insert_num EXPRESSION [(values__tmp__table__52)values__tmp__table__52.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 _col0	_col1	_col2
 PREHOOK: query: explain
-select insert_num,c1,b from table_change_lower_to_higher_numeric_group_float order by insert_num
+select insert_num,c1,b from table_change_lower_to_higher_numeric_group_double order by insert_num
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
-select insert_num,c1,b from table_change_lower_to_higher_numeric_group_float order by insert_num
+select insert_num,c1,b from table_change_lower_to_higher_numeric_group_double order by insert_num
 POSTHOOK: type: QUERY
 Explain
 Plan optimized by CBO.
@@ -3716,15 +3464,15 @@ Stage-0
             Select Operator [SEL_5] (rows=4 width=104)
               Output:["_col0","_col1","_col2"]
               TableScan [TS_0] (rows=4 width=104)
-                default@table_change_lower_to_higher_numeric_group_float,table_change_lower_to_higher_numeric_group_float,Tbl:COMPLETE,Col:NONE,Output:["insert_num","c1","b"]
+                default@table_change_lower_to_higher_numeric_group_double,table_change_lower_to_higher_numeric_group_double,Tbl:COMPLETE,Col:NONE,Output:["insert_num","c1","b"]
 
-PREHOOK: query: select insert_num,c1,b from table_change_lower_to_higher_numeric_group_float order by insert_num
+PREHOOK: query: select insert_num,c1,b from table_change_lower_to_higher_numeric_group_double order by insert_num
 PREHOOK: type: QUERY
-PREHOOK: Input: default@table_change_lower_to_higher_numeric_group_float
+PREHOOK: Input: default@table_change_lower_to_higher_numeric_group_double
 #### A masked pattern was here ####
-POSTHOOK: query: select insert_num,c1,b from table_change_lower_to_higher_numeric_group_float order by insert_num
+POSTHOOK: query: select insert_num,c1,b from table_change_lower_to_higher_numeric_group_double order by insert_num
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@table_change_lower_to_higher_numeric_group_float
+POSTHOOK: Input: default@table_change_lower_to_higher_numeric_group_double
 #### A masked pattern was here ####
 insert_num	c1	b
 1	-29.076400000000000000	original
@@ -3737,11 +3485,11 @@ insert_num	c1	b
 7	256.000000000000000000	new
 8	5555.000000000000000000	new
 9	100.000000000000000000	new
-PREHOOK: query: drop table table_change_lower_to_higher_numeric_group_float
+PREHOOK: query: drop table table_change_lower_to_higher_numeric_group_double
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: default@table_change_lower_to_higher_numeric_group_float
-PREHOOK: Output: default@table_change_lower_to_higher_numeric_group_float
-POSTHOOK: query: drop table table_change_lower_to_higher_numeric_group_float
+PREHOOK: Input: default@table_change_lower_to_higher_numeric_group_double
+PREHOOK: Output: default@table_change_lower_to_higher_numeric_group_double
+POSTHOOK: query: drop table table_change_lower_to_higher_numeric_group_double
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: default@table_change_lower_to_higher_numeric_group_float
-POSTHOOK: Output: default@table_change_lower_to_higher_numeric_group_float
+POSTHOOK: Input: default@table_change_lower_to_higher_numeric_group_double
+POSTHOOK: Output: default@table_change_lower_to_higher_numeric_group_double

@@ -1,6 +1,4 @@
-PREHOOK: query: -- SORT_BEFORE_DIFF
-
-drop table if exists d1
+PREHOOK: query: drop table if exists d1
 PREHOOK: type: DROPTABLE
 PREHOOK: query: create table d1(a int)
 PREHOOK: type: CREATETABLE

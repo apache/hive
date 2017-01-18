@@ -1,8 +1,6 @@
-PREHOOK: query: -- single level partition, sorted dynamic partition disabled
-drop table acid
+PREHOOK: query: drop table acid
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: -- single level partition, sorted dynamic partition disabled
-drop table acid
+POSTHOOK: query: drop table acid
 POSTHOOK: type: DROPTABLE
 PREHOOK: query: CREATE TABLE acid(key string, value string) PARTITIONED BY(ds string) CLUSTERED BY(key) INTO 2 BUCKETS STORED AS ORC TBLPROPERTIES ('transactional'='true')
 PREHOOK: type: CREATETABLE
@@ -231,13 +229,11 @@ POSTHOOK: Input: default@acid
 POSTHOOK: Input: default@acid@ds=2008-04-08
 #### A masked pattern was here ####
 1000
-PREHOOK: query: -- single level partition, sorted dynamic partition enabled
-drop table acid
+PREHOOK: query: drop table acid
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@acid
 PREHOOK: Output: default@acid
-POSTHOOK: query: -- single level partition, sorted dynamic partition enabled
-drop table acid
+POSTHOOK: query: drop table acid
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@acid
 POSTHOOK: Output: default@acid
@@ -467,13 +463,11 @@ POSTHOOK: Input: default@acid
 POSTHOOK: Input: default@acid@ds=2008-04-08
 #### A masked pattern was here ####
 1000
-PREHOOK: query: -- 2 level partition, sorted dynamic partition disabled
-drop table acid
+PREHOOK: query: drop table acid
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@acid
 PREHOOK: Output: default@acid
-POSTHOOK: query: -- 2 level partition, sorted dynamic partition disabled
-drop table acid
+POSTHOOK: query: drop table acid
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@acid
 POSTHOOK: Output: default@acid
@@ -718,12 +712,10 @@ POSTHOOK: Input: default@acid
 POSTHOOK: Input: default@acid@ds=2008-04-08/hr=11
 #### A masked pattern was here ####
 500
-PREHOOK: query: -- test with bucketing column not in select list
-explain
+PREHOOK: query: explain
 delete from acid where value = 'bar'
 PREHOOK: type: QUERY
-POSTHOOK: query: -- test with bucketing column not in select list
-explain
+POSTHOOK: query: explain
 delete from acid where value = 'bar'
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -814,13 +806,11 @@ POSTHOOK: Input: default@acid@ds=2008-04-09/hr=11
 POSTHOOK: Input: default@acid@ds=2008-04-09/hr=12
 #### A masked pattern was here ####
 2000
-PREHOOK: query: -- 2 level partition, sorted dynamic partition enabled
-drop table acid
+PREHOOK: query: drop table acid
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@acid
 PREHOOK: Output: default@acid
-POSTHOOK: query: -- 2 level partition, sorted dynamic partition enabled
-drop table acid
+POSTHOOK: query: drop table acid
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@acid
 POSTHOOK: Output: default@acid
@@ -1064,12 +1054,10 @@ POSTHOOK: Input: default@acid
 POSTHOOK: Input: default@acid@ds=2008-04-08/hr=11
 #### A masked pattern was here ####
 500
-PREHOOK: query: -- test with bucketing column not in select list
-explain
+PREHOOK: query: explain
 delete from acid where value = 'bar'
 PREHOOK: type: QUERY
-POSTHOOK: query: -- test with bucketing column not in select list
-explain
+POSTHOOK: query: explain
 delete from acid where value = 'bar'
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -1159,13 +1147,11 @@ POSTHOOK: Input: default@acid@ds=2008-04-09/hr=11
 POSTHOOK: Input: default@acid@ds=2008-04-09/hr=12
 #### A masked pattern was here ####
 2000
-PREHOOK: query: -- 2 level partition, sorted dynamic partition enabled, constant propagation disabled
-drop table acid
+PREHOOK: query: drop table acid
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@acid
 PREHOOK: Output: default@acid
-POSTHOOK: query: -- 2 level partition, sorted dynamic partition enabled, constant propagation disabled
-drop table acid
+POSTHOOK: query: drop table acid
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@acid
 POSTHOOK: Output: default@acid

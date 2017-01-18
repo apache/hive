@@ -57,14 +57,10 @@ POSTHOOK: query: drop table repl_employee for replication('33')
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@repl_employee
 POSTHOOK: Output: default@repl_employee
-PREHOOK: query: -- drop 33 => table does not get dropped, but ca will be
-
-show partitions repl_employee
+PREHOOK: query: show partitions repl_employee
 PREHOOK: type: SHOWPARTITIONS
 PREHOOK: Input: default@repl_employee
-POSTHOOK: query: -- drop 33 => table does not get dropped, but ca will be
-
-show partitions repl_employee
+POSTHOOK: query: show partitions repl_employee
 POSTHOOK: type: SHOWPARTITIONS
 POSTHOOK: Input: default@repl_employee
 PREHOOK: query: show table extended like repl_employee
@@ -105,14 +101,10 @@ POSTHOOK: query: drop table repl_employee for replication('')
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@repl_employee
 POSTHOOK: Output: default@repl_employee
-PREHOOK: query: -- drop '' => ptns would be dropped, but not tables
-
-show partitions repl_employee
+PREHOOK: query: show partitions repl_employee
 PREHOOK: type: SHOWPARTITIONS
 PREHOOK: Input: default@repl_employee
-POSTHOOK: query: -- drop '' => ptns would be dropped, but not tables
-
-show partitions repl_employee
+POSTHOOK: query: show partitions repl_employee
 POSTHOOK: type: SHOWPARTITIONS
 POSTHOOK: Input: default@repl_employee
 PREHOOK: query: show table extended like repl_employee
@@ -135,34 +127,26 @@ POSTHOOK: query: drop table repl_employee for replication('49')
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@repl_employee
 POSTHOOK: Output: default@repl_employee
-PREHOOK: query: -- table and ptns should have been dropped, so next create can succeed
-
-create table repl_employee ( emp_id int comment "employee id")
+PREHOOK: query: create table repl_employee ( emp_id int comment "employee id")
 	comment "employee table"
 	partitioned by (emp_country string comment "two char iso code", emp_state string comment "free text")
 	stored as textfile
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@repl_employee
-POSTHOOK: query: -- table and ptns should have been dropped, so next create can succeed
-
-create table repl_employee ( emp_id int comment "employee id")
+POSTHOOK: query: create table repl_employee ( emp_id int comment "employee id")
 	comment "employee table"
 	partitioned by (emp_country string comment "two char iso code", emp_state string comment "free text")
 	stored as textfile
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@repl_employee
-PREHOOK: query: -- created table without a repl.last.id
-
-load data local inpath "../../data/files/test.dat"
+PREHOOK: query: load data local inpath "../../data/files/test.dat"
 	into table repl_employee partition (emp_country="us", emp_state="ca")
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
 PREHOOK: Output: default@repl_employee
-POSTHOOK: query: -- created table without a repl.last.id
-
-load data local inpath "../../data/files/test.dat"
+POSTHOOK: query: load data local inpath "../../data/files/test.dat"
 	into table repl_employee partition (emp_country="us", emp_state="ca")
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
@@ -232,14 +216,10 @@ POSTHOOK: query: alter table repl_employee drop partition (emp_country="us", emp
 POSTHOOK: type: ALTERTABLE_DROPPARTS
 POSTHOOK: Input: default@repl_employee
 POSTHOOK: Output: default@repl_employee@emp_country=us/emp_state=wa
-PREHOOK: query: -- should have dropped ca, wa
-
-show partitions repl_employee
+PREHOOK: query: show partitions repl_employee
 PREHOOK: type: SHOWPARTITIONS
 PREHOOK: Input: default@repl_employee
-POSTHOOK: query: -- should have dropped ca, wa
-
-show partitions repl_employee
+POSTHOOK: query: show partitions repl_employee
 POSTHOOK: type: SHOWPARTITIONS
 POSTHOOK: Input: default@repl_employee
 emp_country=us/emp_state=ak
@@ -276,14 +256,10 @@ POSTHOOK: query: alter table repl_employee drop partition (emp_country="us", emp
 POSTHOOK: type: ALTERTABLE_DROPPARTS
 POSTHOOK: Input: default@repl_employee
 POSTHOOK: Output: default@repl_employee@emp_country=us/emp_state=ak
-PREHOOK: query: -- should have dropped ak
-
-show partitions repl_employee
+PREHOOK: query: show partitions repl_employee
 PREHOOK: type: SHOWPARTITIONS
 PREHOOK: Input: default@repl_employee
-POSTHOOK: query: -- should have dropped ak
-
-show partitions repl_employee
+POSTHOOK: query: show partitions repl_employee
 POSTHOOK: type: SHOWPARTITIONS
 POSTHOOK: Input: default@repl_employee
 PREHOOK: query: show table extended like repl_employee
@@ -306,15 +282,11 @@ POSTHOOK: query: drop table repl_employee
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@repl_employee
 POSTHOOK: Output: default@repl_employee
-PREHOOK: query: -- should drop the whole table, and this can be verified by trying to create another table with the same name
-
-create table repl_employee( a string)
+PREHOOK: query: create table repl_employee( a string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@repl_employee
-POSTHOOK: query: -- should drop the whole table, and this can be verified by trying to create another table with the same name
-
-create table repl_employee( a string)
+POSTHOOK: query: create table repl_employee( a string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@repl_employee

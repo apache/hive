@@ -1,14 +1,10 @@
-PREHOOK: query: -- SORT_QUERY_RESULTS
-
-create table `aci/d_u/ami`(i int,
+PREHOOK: query: create table `aci/d_u/ami`(i int,
                  `d?*de e` decimal(5,2),
                  vc varchar(128)) clustered by (i) into 2 buckets stored as orc TBLPROPERTIES ('transactional'='true')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@aci/d_u/ami
-POSTHOOK: query: -- SORT_QUERY_RESULTS
-
-create table `aci/d_u/ami`(i int,
+POSTHOOK: query: create table `aci/d_u/ami`(i int,
                  `d?*de e` decimal(5,2),
                  vc varchar(128)) clustered by (i) into 2 buckets stored as orc TBLPROPERTIES ('transactional'='true')
 POSTHOOK: type: CREATETABLE

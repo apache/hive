@@ -28,9 +28,7 @@ POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/orc_create_people.txt'
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@orc_create_people_staging
-PREHOOK: query: -- non-partitioned table
--- partial scan gather
-CREATE TABLE orc_create_people (
+PREHOOK: query: CREATE TABLE orc_create_people (
   id int,
   first_name string,
   last_name string,
@@ -42,9 +40,7 @@ STORED AS orc
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@orc_create_people
-POSTHOOK: query: -- non-partitioned table
--- partial scan gather
-CREATE TABLE orc_create_people (
+POSTHOOK: query: CREATE TABLE orc_create_people (
   id int,
   first_name string,
   last_name string,
@@ -223,8 +219,7 @@ POSTHOOK: query: drop table orc_create_people
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@orc_create_people
 POSTHOOK: Output: default@orc_create_people
-PREHOOK: query: -- auto stats gather
-CREATE TABLE orc_create_people (
+PREHOOK: query: CREATE TABLE orc_create_people (
   id int,
   first_name string,
   last_name string,
@@ -236,8 +231,7 @@ STORED AS orc
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@orc_create_people
-POSTHOOK: query: -- auto stats gather
-CREATE TABLE orc_create_people (
+POSTHOOK: query: CREATE TABLE orc_create_people (
   id int,
   first_name string,
   last_name string,
@@ -312,9 +306,7 @@ POSTHOOK: query: drop table orc_create_people
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@orc_create_people
 POSTHOOK: Output: default@orc_create_people
-PREHOOK: query: -- partitioned table
--- partial scan gather
-CREATE TABLE orc_create_people (
+PREHOOK: query: CREATE TABLE orc_create_people (
   id int,
   first_name string,
   last_name string,
@@ -326,9 +318,7 @@ STORED AS orc
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@orc_create_people
-POSTHOOK: query: -- partitioned table
--- partial scan gather
-CREATE TABLE orc_create_people (
+POSTHOOK: query: CREATE TABLE orc_create_people (
   id int,
   first_name string,
   last_name string,
@@ -665,8 +655,7 @@ POSTHOOK: query: drop table orc_create_people
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@orc_create_people
 POSTHOOK: Output: default@orc_create_people
-PREHOOK: query: -- auto stats gather
-CREATE TABLE orc_create_people (
+PREHOOK: query: CREATE TABLE orc_create_people (
   id int,
   first_name string,
   last_name string,
@@ -678,8 +667,7 @@ STORED AS orc
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@orc_create_people
-POSTHOOK: query: -- auto stats gather
-CREATE TABLE orc_create_people (
+POSTHOOK: query: CREATE TABLE orc_create_people (
   id int,
   first_name string,
   last_name string,
@@ -808,9 +796,7 @@ POSTHOOK: query: drop table orc_create_people
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@orc_create_people
 POSTHOOK: Output: default@orc_create_people
-PREHOOK: query: -- partitioned and bucketed table
--- partial scan gather
-CREATE TABLE orc_create_people (
+PREHOOK: query: CREATE TABLE orc_create_people (
   id int,
   first_name string,
   last_name string,
@@ -825,9 +811,7 @@ STORED AS orc
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@orc_create_people
-POSTHOOK: query: -- partitioned and bucketed table
--- partial scan gather
-CREATE TABLE orc_create_people (
+POSTHOOK: query: CREATE TABLE orc_create_people (
   id int,
   first_name string,
   last_name string,
@@ -1167,8 +1151,7 @@ POSTHOOK: query: drop table orc_create_people
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@orc_create_people
 POSTHOOK: Output: default@orc_create_people
-PREHOOK: query: -- auto stats gather
-CREATE TABLE orc_create_people (
+PREHOOK: query: CREATE TABLE orc_create_people (
   id int,
   first_name string,
   last_name string,
@@ -1183,8 +1166,7 @@ STORED AS orc
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@orc_create_people
-POSTHOOK: query: -- auto stats gather
-CREATE TABLE orc_create_people (
+POSTHOOK: query: CREATE TABLE orc_create_people (
   id int,
   first_name string,
   last_name string,
@@ -1316,10 +1298,7 @@ POSTHOOK: query: drop table orc_create_people
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@orc_create_people
 POSTHOOK: Output: default@orc_create_people
-PREHOOK: query: -- create table with partitions containing text and ORC files.
--- ORC files implements StatsProvidingRecordReader but text files does not.
--- So the partition containing text file should not have statistics.
-CREATE TABLE orc_create_people (
+PREHOOK: query: CREATE TABLE orc_create_people (
   id int,
   first_name string,
   last_name string,
@@ -1331,10 +1310,7 @@ STORED AS orc
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@orc_create_people
-POSTHOOK: query: -- create table with partitions containing text and ORC files.
--- ORC files implements StatsProvidingRecordReader but text files does not.
--- So the partition containing text file should not have statistics.
-CREATE TABLE orc_create_people (
+POSTHOOK: query: CREATE TABLE orc_create_people (
   id int,
   first_name string,
   last_name string,

@@ -208,10 +208,7 @@ stored as orc
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@store
-PREHOOK: query: -- For MR, we are verifying this query DOES NOT vectorize the Map vertex with
--- the 2 TableScanOperators that have different schema.
-
-explain select
+PREHOOK: query: explain select
         s_state, count(1)
  from store_sales,
  store,
@@ -223,10 +220,7 @@ explain select
  order by s_state
  limit 100
 PREHOOK: type: QUERY
-POSTHOOK: query: -- For MR, we are verifying this query DOES NOT vectorize the Map vertex with
--- the 2 TableScanOperators that have different schema.
-
-explain select
+POSTHOOK: query: explain select
         s_state, count(1)
  from store_sales,
  store,

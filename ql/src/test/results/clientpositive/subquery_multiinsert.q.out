@@ -1,15 +1,11 @@
-PREHOOK: query: -- SORT_QUERY_RESULTS
-
-CREATE TABLE src_4(
+PREHOOK: query: CREATE TABLE src_4(
   key STRING, 
   value STRING
 )
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@src_4
-POSTHOOK: query: -- SORT_QUERY_RESULTS
-
-CREATE TABLE src_4(
+POSTHOOK: query: CREATE TABLE src_4(
   key STRING, 
   value STRING
 )

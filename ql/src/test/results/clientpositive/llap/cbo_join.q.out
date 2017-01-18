@@ -1,15 +1,11 @@
-PREHOOK: query: -- SORT_QUERY_RESULTS
--- 4. Test Select + Join + TS
-select cbo_t1.c_int, cbo_t2.c_int from cbo_t1 join             cbo_t2 on cbo_t1.key=cbo_t2.key
+PREHOOK: query: select cbo_t1.c_int, cbo_t2.c_int from cbo_t1 join             cbo_t2 on cbo_t1.key=cbo_t2.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@cbo_t1
 PREHOOK: Input: default@cbo_t1@dt=2014
 PREHOOK: Input: default@cbo_t2
 PREHOOK: Input: default@cbo_t2@dt=2014
 #### A masked pattern was here ####
-POSTHOOK: query: -- SORT_QUERY_RESULTS
--- 4. Test Select + Join + TS
-select cbo_t1.c_int, cbo_t2.c_int from cbo_t1 join             cbo_t2 on cbo_t1.key=cbo_t2.key
+POSTHOOK: query: select cbo_t1.c_int, cbo_t2.c_int from cbo_t1 join             cbo_t2 on cbo_t1.key=cbo_t2.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@cbo_t1
 POSTHOOK: Input: default@cbo_t1@dt=2014
@@ -6968,16 +6964,14 @@ NULL	NULL	NULL	NULL
 NULL	NULL	NULL	NULL
 NULL	NULL	NULL	NULL
 NULL	NULL	NULL	NULL
-PREHOOK: query: -- 5. Test Select + Join + FIL + TS
-select cbo_t1.c_int, cbo_t2.c_int from cbo_t1 join cbo_t2 on cbo_t1.key=cbo_t2.key where (cbo_t1.c_int + cbo_t2.c_int == 2) and (cbo_t1.c_int > 0 or cbo_t2.c_float >= 0)
+PREHOOK: query: select cbo_t1.c_int, cbo_t2.c_int from cbo_t1 join cbo_t2 on cbo_t1.key=cbo_t2.key where (cbo_t1.c_int + cbo_t2.c_int == 2) and (cbo_t1.c_int > 0 or cbo_t2.c_float >= 0)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@cbo_t1
 PREHOOK: Input: default@cbo_t1@dt=2014
 PREHOOK: Input: default@cbo_t2
 PREHOOK: Input: default@cbo_t2@dt=2014
 #### A masked pattern was here ####
-POSTHOOK: query: -- 5. Test Select + Join + FIL + TS
-select cbo_t1.c_int, cbo_t2.c_int from cbo_t1 join cbo_t2 on cbo_t1.key=cbo_t2.key where (cbo_t1.c_int + cbo_t2.c_int == 2) and (cbo_t1.c_int > 0 or cbo_t2.c_float >= 0)
+POSTHOOK: query: select cbo_t1.c_int, cbo_t2.c_int from cbo_t1 join cbo_t2 on cbo_t1.key=cbo_t2.key where (cbo_t1.c_int + cbo_t2.c_int == 2) and (cbo_t1.c_int > 0 or cbo_t2.c_float >= 0)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@cbo_t1
 POSTHOOK: Input: default@cbo_t1@dt=2014

@@ -1,10 +1,6 @@
-PREHOOK: query: -- was negative/ambiguous_table_col.q
-
-drop table ambiguous
+PREHOOK: query: drop table ambiguous
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: -- was negative/ambiguous_table_col.q
-
-drop table ambiguous
+POSTHOOK: query: drop table ambiguous
 POSTHOOK: type: DROPTABLE
 PREHOOK: query: create table ambiguous (key string, value string)
 PREHOOK: type: CREATETABLE

@@ -60,12 +60,10 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: -- dimension
-EXPLAIN EXTENDED
+PREHOOK: query: EXPLAIN EXTENDED
 SELECT robot FROM druid_table_1
 PREHOOK: type: QUERY
-POSTHOOK: query: -- dimension
-EXPLAIN EXTENDED
+POSTHOOK: query: EXPLAIN EXTENDED
 SELECT robot FROM druid_table_1
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -89,12 +87,10 @@ STAGE PLANS:
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             ListSink
 
-PREHOOK: query: -- metric
-EXPLAIN EXTENDED
+PREHOOK: query: EXPLAIN EXTENDED
 SELECT delta FROM druid_table_1
 PREHOOK: type: QUERY
-POSTHOOK: query: -- metric
-EXPLAIN EXTENDED
+POSTHOOK: query: EXPLAIN EXTENDED
 SELECT delta FROM druid_table_1
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -180,8 +176,7 @@ STAGE PLANS:
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             ListSink
 
-PREHOOK: query: -- TODO: currently nothing is pushed - ISNOTNULL
-EXPLAIN EXTENDED
+PREHOOK: query: EXPLAIN EXTENDED
 SELECT a.robot, b.language
 FROM
 (
@@ -193,8 +188,7 @@ FROM
   ON a.language = b.language
 )
 PREHOOK: type: QUERY
-POSTHOOK: query: -- TODO: currently nothing is pushed - ISNOTNULL
-EXPLAIN EXTENDED
+POSTHOOK: query: EXPLAIN EXTENDED
 SELECT a.robot, b.language
 FROM
 (

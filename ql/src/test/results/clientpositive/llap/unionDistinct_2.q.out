@@ -1,13 +1,9 @@
-PREHOOK: query: -- SORT_QUERY_RESULTS
-
-CREATE TABLE u1 as select key, value from src order by key limit 5
+PREHOOK: query: CREATE TABLE u1 as select key, value from src order by key limit 5
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@src
 PREHOOK: Output: database:default
 PREHOOK: Output: default@u1
-POSTHOOK: query: -- SORT_QUERY_RESULTS
-
-CREATE TABLE u1 as select key, value from src order by key limit 5
+POSTHOOK: query: CREATE TABLE u1 as select key, value from src order by key limit 5
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default

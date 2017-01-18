@@ -6,8 +6,7 @@ PREHOOK: query: DROP TABLE parquet_types
 PREHOOK: type: DROPTABLE
 POSTHOOK: query: DROP TABLE parquet_types
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: -- init
-CREATE TABLE parquet_types_staging (
+PREHOOK: query: CREATE TABLE parquet_types_staging (
   cint int,
   ctinyint tinyint,
   csmallint smallint,
@@ -30,8 +29,7 @@ MAP KEYS TERMINATED BY ':'
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@parquet_types_staging
-POSTHOOK: query: -- init
-CREATE TABLE parquet_types_staging (
+POSTHOOK: query: CREATE TABLE parquet_types_staging (
   cint int,
   ctinyint tinyint,
   csmallint smallint,
@@ -117,13 +115,11 @@ POSTHOOK: Lineage: parquet_types.cstring1 SIMPLE [(parquet_types_staging)parquet
 POSTHOOK: Lineage: parquet_types.ctinyint SIMPLE [(parquet_types_staging)parquet_types_staging.FieldSchema(name:ctinyint, type:tinyint, comment:null), ]
 POSTHOOK: Lineage: parquet_types.cvarchar SIMPLE [(parquet_types_staging)parquet_types_staging.FieldSchema(name:cvarchar, type:varchar(10), comment:null), ]
 POSTHOOK: Lineage: parquet_types.t SIMPLE [(parquet_types_staging)parquet_types_staging.FieldSchema(name:t, type:timestamp, comment:null), ]
-PREHOOK: query: -- select
-explain
+PREHOOK: query: explain
 SELECT cint, ctinyint, csmallint, cfloat, cdouble, cstring1, t, cchar, cvarchar,
 hex(cbinary), cdecimal FROM parquet_types
 PREHOOK: type: QUERY
-POSTHOOK: query: -- select
-explain
+POSTHOOK: query: explain
 SELECT cint, ctinyint, csmallint, cfloat, cdouble, cstring1, t, cchar, cvarchar,
 hex(cbinary), cdecimal FROM parquet_types
 POSTHOOK: type: QUERY

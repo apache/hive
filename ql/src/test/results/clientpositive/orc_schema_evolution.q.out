@@ -14,13 +14,11 @@ POSTHOOK: query: create table src_orc2 (key smallint, val string) stored as orc
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@src_orc2
-PREHOOK: query: -- integer type widening
-insert overwrite table src_orc select * from src
+PREHOOK: query: insert overwrite table src_orc select * from src
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Output: default@src_orc
-POSTHOOK: query: -- integer type widening
-insert overwrite table src_orc select * from src
+POSTHOOK: query: insert overwrite table src_orc select * from src
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@src_orc
@@ -86,13 +84,11 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_orc
 #### A masked pattern was here ####
 36214430891
-PREHOOK: query: -- replace columns for adding columns and type widening
-insert overwrite table src_orc2 select * from src
+PREHOOK: query: insert overwrite table src_orc2 select * from src
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Output: default@src_orc2
-POSTHOOK: query: -- replace columns for adding columns and type widening
-insert overwrite table src_orc2 select * from src
+POSTHOOK: query: insert overwrite table src_orc2 select * from src
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@src_orc2

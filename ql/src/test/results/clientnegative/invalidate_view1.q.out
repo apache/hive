@@ -6,17 +6,11 @@ PREHOOK: query: DROP VIEW xxx9
 PREHOOK: type: DROPVIEW
 POSTHOOK: query: DROP VIEW xxx9
 POSTHOOK: type: DROPVIEW
-PREHOOK: query: -- create two levels of view reference, then invalidate intermediate view
--- by dropping a column from underlying table, and verify that
--- querying outermost view results in full error context
-CREATE TABLE xxx10 (key int, value int)
+PREHOOK: query: CREATE TABLE xxx10 (key int, value int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@xxx10
-POSTHOOK: query: -- create two levels of view reference, then invalidate intermediate view
--- by dropping a column from underlying table, and verify that
--- querying outermost view results in full error context
-CREATE TABLE xxx10 (key int, value int)
+POSTHOOK: query: CREATE TABLE xxx10 (key int, value int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@xxx10

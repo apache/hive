@@ -1,14 +1,8 @@
-PREHOOK: query: -- SORT_QUERY_RESULTS
-
--- This test checks that selecting from an acid table and inserting into a non-acid table works.
-create table sample_06(name varchar(50), age int, gpa decimal(3, 2)) clustered by (age) into 2 buckets stored as orc TBLPROPERTIES ("transactional"="true")
+PREHOOK: query: create table sample_06(name varchar(50), age int, gpa decimal(3, 2)) clustered by (age) into 2 buckets stored as orc TBLPROPERTIES ("transactional"="true")
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@sample_06
-POSTHOOK: query: -- SORT_QUERY_RESULTS
-
--- This test checks that selecting from an acid table and inserting into a non-acid table works.
-create table sample_06(name varchar(50), age int, gpa decimal(3, 2)) clustered by (age) into 2 buckets stored as orc TBLPROPERTIES ("transactional"="true")
+POSTHOOK: query: create table sample_06(name varchar(50), age int, gpa decimal(3, 2)) clustered by (age) into 2 buckets stored as orc TBLPROPERTIES ("transactional"="true")
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@sample_06

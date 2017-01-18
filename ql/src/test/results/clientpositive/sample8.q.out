@@ -1,16 +1,10 @@
-PREHOOK: query: -- sampling with join and alias
--- SORT_QUERY_RESULTS
-
-EXPLAIN EXTENDED
+PREHOOK: query: EXPLAIN EXTENDED
 SELECT s.*
 FROM srcpart TABLESAMPLE (BUCKET 1 OUT OF 1 ON key) s
 JOIN srcpart TABLESAMPLE (BUCKET 1 OUT OF 10 ON key) t
 WHERE t.key = s.key and t.value = s.value and s.ds='2008-04-08' and s.hr='11'
 PREHOOK: type: QUERY
-POSTHOOK: query: -- sampling with join and alias
--- SORT_QUERY_RESULTS
-
-EXPLAIN EXTENDED
+POSTHOOK: query: EXPLAIN EXTENDED
 SELECT s.*
 FROM srcpart TABLESAMPLE (BUCKET 1 OUT OF 1 ON key) s
 JOIN srcpart TABLESAMPLE (BUCKET 1 OUT OF 10 ON key) t

@@ -631,13 +631,11 @@ POSTHOOK: query: DROP TABLE DECIMAL_PRECISION
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@decimal_precision
 POSTHOOK: Output: default@decimal_precision
-PREHOOK: query: -- Expect overflow and return null as the value
-CREATE TABLE DECIMAL_PRECISION(dec decimal(38,18))
+PREHOOK: query: CREATE TABLE DECIMAL_PRECISION(dec decimal(38,18))
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@DECIMAL_PRECISION
-POSTHOOK: query: -- Expect overflow and return null as the value
-CREATE TABLE DECIMAL_PRECISION(dec decimal(38,18))
+POSTHOOK: query: CREATE TABLE DECIMAL_PRECISION(dec decimal(38,18))
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@DECIMAL_PRECISION

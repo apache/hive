@@ -1,6 +1,4 @@
-PREHOOK: query: -- We are not expecting either query to vectorize due to use of pruneing grouping set id,
--- or use of GROUPING__ID virtual column.
-create table store_txt
+PREHOOK: query: create table store_txt
 (
     s_store_sk                int,
     s_store_id                string,
@@ -37,9 +35,7 @@ stored as textfile
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@store_txt
-POSTHOOK: query: -- We are not expecting either query to vectorize due to use of pruneing grouping set id,
--- or use of GROUPING__ID virtual column.
-create table store_txt
+POSTHOOK: query: create table store_txt
 (
     s_store_sk                int,
     s_store_id                string,

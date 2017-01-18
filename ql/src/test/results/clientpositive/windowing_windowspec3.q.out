@@ -1,10 +1,6 @@
-PREHOOK: query: -- Test value based windowing spec
-
-drop table if exists emp
+PREHOOK: query: drop table if exists emp
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: -- Test value based windowing spec
-
-drop table if exists emp
+POSTHOOK: query: drop table if exists emp
 POSTHOOK: type: DROPTABLE
 PREHOOK: query: create table emp(empno smallint,
            ename varchar(10),
@@ -44,13 +40,11 @@ POSTHOOK: query: load data local inpath '../../data/files/emp2.txt' into table e
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@emp
-PREHOOK: query: -- No order by
-select hirets, salary, sum(salary) over (partition by hirets range between current row and unbounded following) from emp
+PREHOOK: query: select hirets, salary, sum(salary) over (partition by hirets range between current row and unbounded following) from emp
 PREHOOK: type: QUERY
 PREHOOK: Input: default@emp
 #### A masked pattern was here ####
-POSTHOOK: query: -- No order by
-select hirets, salary, sum(salary) over (partition by hirets range between current row and unbounded following) from emp
+POSTHOOK: query: select hirets, salary, sum(salary) over (partition by hirets range between current row and unbounded following) from emp
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@emp
 #### A masked pattern was here ####
@@ -70,8 +64,7 @@ NULL	1500.0	3000.0
 1982-01-23 00:00:00	1300.0	1300.0
 1982-12-09 00:00:00	3000.0	3000.0
 1983-01-12 00:00:00	1100.0	1100.0
-PREHOOK: query: -- Support date datatype
-select deptno, empno, hiredate, salary,
+PREHOOK: query: select deptno, empno, hiredate, salary,
     sum(salary) over (partition by deptno order by hiredate range 90 preceding),
     sum(salary) over (partition by deptno order by hiredate range between 90 preceding and 90 following),
     sum(salary) over (partition by deptno order by hiredate range between 90 preceding and 10 preceding),
@@ -82,8 +75,7 @@ from emp
 PREHOOK: type: QUERY
 PREHOOK: Input: default@emp
 #### A masked pattern was here ####
-POSTHOOK: query: -- Support date datatype
-select deptno, empno, hiredate, salary,
+POSTHOOK: query: select deptno, empno, hiredate, salary,
     sum(salary) over (partition by deptno order by hiredate range 90 preceding),
     sum(salary) over (partition by deptno order by hiredate range between 90 preceding and 90 following),
     sum(salary) over (partition by deptno order by hiredate range between 90 preceding and 10 preceding),
@@ -110,8 +102,7 @@ POSTHOOK: Input: default@emp
 30	7844	1981-09-08	1500.0	1500.0	3700.0	NULL	2200.0	2200.0	7200.0
 30	7654	1981-09-28	1250.0	2750.0	3700.0	1500.0	950.0	950.0	8450.0
 30	7900	1981-12-03	950.0	3700.0	3700.0	2750.0	NULL	NULL	9400.0
-PREHOOK: query: -- Support timestamp datatype. Value in seconds (90days = 90 * 24 * 3600 seconds)
-select deptno, empno, hirets, salary,
+PREHOOK: query: select deptno, empno, hirets, salary,
     sum(salary) over (partition by deptno order by hirets range 7776000 preceding),
     sum(salary) over (partition by deptno order by hirets range between 7776000 preceding and 7776000 following),
     sum(salary) over (partition by deptno order by hirets range between 7776000 preceding and 864000 preceding),
@@ -122,8 +113,7 @@ from emp
 PREHOOK: type: QUERY
 PREHOOK: Input: default@emp
 #### A masked pattern was here ####
-POSTHOOK: query: -- Support timestamp datatype. Value in seconds (90days = 90 * 24 * 3600 seconds)
-select deptno, empno, hirets, salary,
+POSTHOOK: query: select deptno, empno, hirets, salary,
     sum(salary) over (partition by deptno order by hirets range 7776000 preceding),
     sum(salary) over (partition by deptno order by hirets range between 7776000 preceding and 7776000 following),
     sum(salary) over (partition by deptno order by hirets range between 7776000 preceding and 864000 preceding),
@@ -150,8 +140,7 @@ POSTHOOK: Input: default@emp
 30	7844	1981-09-08 00:00:00	1500.0	1500.0	3700.0	NULL	2200.0	2200.0	7200.0
 30	7654	1981-09-28 00:00:00	1250.0	2750.0	3700.0	1500.0	950.0	950.0	8450.0
 30	7900	1981-12-03 00:00:00	950.0	3700.0	3700.0	2750.0	NULL	NULL	9400.0
-PREHOOK: query: -- Support double datatype
-select deptno, empno, bonus,
+PREHOOK: query: select deptno, empno, bonus,
     avg(bonus) over (partition by deptno order by bonus range 200 preceding),
     avg(bonus) over (partition by deptno order by bonus range between 200 preceding and 200 following),
     avg(bonus) over (partition by deptno order by bonus range between 200 preceding and 100 preceding),
@@ -162,8 +151,7 @@ from emp
 PREHOOK: type: QUERY
 PREHOOK: Input: default@emp
 #### A masked pattern was here ####
-POSTHOOK: query: -- Support double datatype
-select deptno, empno, bonus,
+POSTHOOK: query: select deptno, empno, bonus,
     avg(bonus) over (partition by deptno order by bonus range 200 preceding),
     avg(bonus) over (partition by deptno order by bonus range between 200 preceding and 200 following),
     avg(bonus) over (partition by deptno order by bonus range between 200 preceding and 100 preceding),
@@ -190,8 +178,7 @@ POSTHOOK: Input: default@emp
 30	7499	300.0	300.0	400.0	NULL	500.0	1400.0	266.6666666666667
 30	7521	500.0	400.0	400.0	300.0	NULL	1400.0	266.6666666666667
 30	7654	1400.0	1400.0	1400.0	NULL	NULL	NULL	550.0
-PREHOOK: query: -- Support Decimal datatype
-select deptno, empno, stock, salary,
+PREHOOK: query: select deptno, empno, stock, salary,
     avg(salary) over (partition by deptno order by stock range 200 preceding),
     avg(salary) over (partition by deptno order by stock range between 200 preceding and 200 following),
     avg(salary) over (partition by deptno order by stock range between 200 preceding and 100 preceding),
@@ -202,8 +189,7 @@ from emp
 PREHOOK: type: QUERY
 PREHOOK: Input: default@emp
 #### A masked pattern was here ####
-POSTHOOK: query: -- Support Decimal datatype
-select deptno, empno, stock, salary,
+POSTHOOK: query: select deptno, empno, stock, salary,
     avg(salary) over (partition by deptno order by stock range 200 preceding),
     avg(salary) over (partition by deptno order by stock range between 200 preceding and 200 following),
     avg(salary) over (partition by deptno order by stock range between 200 preceding and 100 preceding),

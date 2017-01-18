@@ -1,16 +1,8 @@
-PREHOOK: query: -- Tests truncating a column from a list bucketing table
-
--- INCLUDE_HADOOP_MAJOR_VERSIONS(0.23)
-
-CREATE TABLE test_tab (key STRING, value STRING) PARTITIONED BY (part STRING) STORED AS RCFILE
+PREHOOK: query: CREATE TABLE test_tab (key STRING, value STRING) PARTITIONED BY (part STRING) STORED AS RCFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@test_tab
-POSTHOOK: query: -- Tests truncating a column from a list bucketing table
-
--- INCLUDE_HADOOP_MAJOR_VERSIONS(0.23)
-
-CREATE TABLE test_tab (key STRING, value STRING) PARTITIONED BY (part STRING) STORED AS RCFILE
+POSTHOOK: query: CREATE TABLE test_tab (key STRING, value STRING) PARTITIONED BY (part STRING) STORED AS RCFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_tab
@@ -57,15 +49,9 @@ POSTHOOK: query: TRUNCATE TABLE test_tab PARTITION (part ='1') COLUMNS (value)
 POSTHOOK: type: TRUNCATETABLE
 POSTHOOK: Input: default@test_tab
 POSTHOOK: Output: default@test_tab@part=1
-PREHOOK: query: -- In the following select statements the list bucketing optimization should still be used
--- In both cases value should be null
-
-EXPLAIN EXTENDED SELECT * FROM test_tab WHERE part = '1' AND key = '484'
+PREHOOK: query: EXPLAIN EXTENDED SELECT * FROM test_tab WHERE part = '1' AND key = '484'
 PREHOOK: type: QUERY
-POSTHOOK: query: -- In the following select statements the list bucketing optimization should still be used
--- In both cases value should be null
-
-EXPLAIN EXTENDED SELECT * FROM test_tab WHERE part = '1' AND key = '484'
+POSTHOOK: query: EXPLAIN EXTENDED SELECT * FROM test_tab WHERE part = '1' AND key = '484'
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-0 is a root stage

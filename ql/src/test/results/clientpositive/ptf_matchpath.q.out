@@ -34,10 +34,7 @@ POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/flights_tiny.txt' OVER
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@flights_tiny
-PREHOOK: query: -- SORT_QUERY_RESULTS
-
--- 1. basic Matchpath test
-explain
+PREHOOK: query: explain
 select origin_city_name, fl_num, year, month, day_of_month, sz, tpath 
 from matchpath(on 
         flights_tiny 
@@ -48,10 +45,7 @@ from matchpath(on
     arg4('origin_city_name, fl_num, year, month, day_of_month, size(tpath) as sz, tpath[0].day_of_month as tpath') 
    )
 PREHOOK: type: QUERY
-POSTHOOK: query: -- SORT_QUERY_RESULTS
-
--- 1. basic Matchpath test
-explain
+POSTHOOK: query: explain
 select origin_city_name, fl_num, year, month, day_of_month, sz, tpath 
 from matchpath(on 
         flights_tiny 
@@ -158,8 +152,7 @@ Chicago	897	2010	10	20	4	20
 Chicago	897	2010	10	21	3	21
 Chicago	897	2010	10	22	2	22
 Washington	7291	2010	10	27	2	27
-PREHOOK: query: -- 2. Matchpath on 1 partition
-explain
+PREHOOK: query: explain
 select origin_city_name, fl_num, year, month, day_of_month, sz, tpath 
 from matchpath(on 
         flights_tiny 
@@ -170,8 +163,7 @@ from matchpath(on
    )
 where fl_num = 1142
 PREHOOK: type: QUERY
-POSTHOOK: query: -- 2. Matchpath on 1 partition
-explain
+POSTHOOK: query: explain
 select origin_city_name, fl_num, year, month, day_of_month, sz, tpath 
 from matchpath(on 
         flights_tiny 
@@ -270,8 +262,7 @@ Baltimore	1142	2010	10	21	5	21
 Baltimore	1142	2010	10	22	4	22
 Baltimore	1142	2010	10	25	3	25
 Baltimore	1142	2010	10	26	2	26
-PREHOOK: query: -- 3. empty partition.
-explain
+PREHOOK: query: explain
 select origin_city_name, fl_num, year, month, day_of_month, sz, tpath
 from matchpath(on
         (select * from flights_tiny where fl_num = -1142) flights_tiny
@@ -281,8 +272,7 @@ from matchpath(on
     arg4('origin_city_name, fl_num, year, month, day_of_month, size(tpath) as sz, tpath[0].day_of_month as tpath')
    )
 PREHOOK: type: QUERY
-POSTHOOK: query: -- 3. empty partition.
-explain
+POSTHOOK: query: explain
 select origin_city_name, fl_num, year, month, day_of_month, sz, tpath
 from matchpath(on
         (select * from flights_tiny where fl_num = -1142) flights_tiny

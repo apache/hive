@@ -1,6 +1,4 @@
-PREHOOK: query: -- Test math functions in vectorized mode to verify they run correctly end-to-end.
-
-explain 
+PREHOOK: query: explain 
 select
    cdouble
   ,Round(cdouble, 2)
@@ -12,9 +10,9 @@ select
   ,Ln(cdouble)  
   ,Ln(cfloat)
   ,Log10(cdouble)
-  -- Use log2 as a representative function to test all input types.
+
   ,Log2(cdouble)
-  -- Use 15601.0 to test zero handling, as there are no zeroes in the table
+
   ,Log2(cdouble - 15601.0)
   ,Log2(cfloat)
   ,Log2(cbigint)
@@ -44,17 +42,15 @@ select
   ,Negative(cdouble)
   ,Sign(cdouble)
   ,Sign(cbigint)
-  -- Test nesting
+
   ,cos(-sin(log(cdouble)) + 3.14159)
 from alltypesorc
--- limit output to a reasonably small number of rows
+
 where cbigint % 500 = 0
--- test use of a math function in the WHERE clause
+
 and sin(cfloat) >= -1.0
 PREHOOK: type: QUERY
-POSTHOOK: query: -- Test math functions in vectorized mode to verify they run correctly end-to-end.
-
-explain 
+POSTHOOK: query: explain 
 select
    cdouble
   ,Round(cdouble, 2)
@@ -66,9 +62,9 @@ select
   ,Ln(cdouble)  
   ,Ln(cfloat)
   ,Log10(cdouble)
-  -- Use log2 as a representative function to test all input types.
+
   ,Log2(cdouble)
-  -- Use 15601.0 to test zero handling, as there are no zeroes in the table
+
   ,Log2(cdouble - 15601.0)
   ,Log2(cfloat)
   ,Log2(cbigint)
@@ -98,12 +94,12 @@ select
   ,Negative(cdouble)
   ,Sign(cdouble)
   ,Sign(cbigint)
-  -- Test nesting
+
   ,cos(-sin(log(cdouble)) + 3.14159)
 from alltypesorc
--- limit output to a reasonably small number of rows
+
 where cbigint % 500 = 0
--- test use of a math function in the WHERE clause
+
 and sin(cfloat) >= -1.0
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -144,16 +140,16 @@ PREHOOK: query: select
   ,Round(cdouble, 2)
   ,Floor(cdouble)
   ,Ceil(cdouble)
-  -- Omit rand() from runtime test because it's nondeterministic.
-  -- ,Rand()
+
+
   ,Rand(98007)
   ,Exp(ln(cdouble))
   ,Ln(cdouble)  
   ,Ln(cfloat)
   ,Log10(cdouble)
-  -- Use log2 as a representative function to test all input types.
+
   ,Log2(cdouble)
-  -- Use 15601.0 to test zero handling, as there are no zeroes in the table
+
   ,Log2(cdouble - 15601.0)
   ,Log2(cfloat)
   ,Log2(cbigint)
@@ -183,12 +179,12 @@ PREHOOK: query: select
   ,Negative(cdouble)
   ,Sign(cdouble)
   ,Sign(cbigint)
-  -- Test nesting
+
   ,cos(-sin(log(cdouble)) + 3.14159)
 from alltypesorc
--- limit output to a reasonably small number of rows
+
 where cbigint % 500 = 0
--- test use of a math function in the WHERE clause
+
 and sin(cfloat) >= -1.0
 PREHOOK: type: QUERY
 PREHOOK: Input: default@alltypesorc
@@ -198,16 +194,16 @@ POSTHOOK: query: select
   ,Round(cdouble, 2)
   ,Floor(cdouble)
   ,Ceil(cdouble)
-  -- Omit rand() from runtime test because it's nondeterministic.
-  -- ,Rand()
+
+
   ,Rand(98007)
   ,Exp(ln(cdouble))
   ,Ln(cdouble)  
   ,Ln(cfloat)
   ,Log10(cdouble)
-  -- Use log2 as a representative function to test all input types.
+
   ,Log2(cdouble)
-  -- Use 15601.0 to test zero handling, as there are no zeroes in the table
+
   ,Log2(cdouble - 15601.0)
   ,Log2(cfloat)
   ,Log2(cbigint)
@@ -237,12 +233,12 @@ POSTHOOK: query: select
   ,Negative(cdouble)
   ,Sign(cdouble)
   ,Sign(cbigint)
-  -- Test nesting
+
   ,cos(-sin(log(cdouble)) + 3.14159)
 from alltypesorc
--- limit output to a reasonably small number of rows
+
 where cbigint % 500 = 0
--- test use of a math function in the WHERE clause
+
 and sin(cfloat) >= -1.0
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc

@@ -1,10 +1,6 @@
-PREHOOK: query: -- SORT_QUERY_RESULTS
-
-drop table if exists TJOIN1
+PREHOOK: query: drop table if exists TJOIN1
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: -- SORT_QUERY_RESULTS
-
-drop table if exists TJOIN1
+POSTHOOK: query: drop table if exists TJOIN1
 POSTHOOK: type: DROPTABLE
 PREHOOK: query: drop table if exists TJOIN2
 PREHOOK: type: DROPTABLE

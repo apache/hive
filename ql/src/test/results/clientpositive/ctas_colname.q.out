@@ -1,21 +1,7 @@
-PREHOOK: query: -- SORT_QUERY_RESULTS
-
--- HIVE-4392, column aliases from expressionRR (GBY, etc.) are not valid name for table
-
--- group by
-
-
-explain
+PREHOOK: query: explain
 create table summary as select *, key + 1, concat(value, value) from src limit 20
 PREHOOK: type: CREATETABLE_AS_SELECT
-POSTHOOK: query: -- SORT_QUERY_RESULTS
-
--- HIVE-4392, column aliases from expressionRR (GBY, etc.) are not valid name for table
-
--- group by
-
-
-explain
+POSTHOOK: query: explain
 create table summary as select *, key + 1, concat(value, value) from src limit 20
 POSTHOOK: type: CREATETABLE_AS_SELECT
 STAGE DEPENDENCIES:
@@ -157,12 +143,10 @@ POSTHOOK: Input: default@summary
 66	val_66	67.0	val_66val_66
 86	val_86	87.0	val_86val_86
 98	val_98	99.0	val_98val_98
-PREHOOK: query: -- window functions
-explain
+PREHOOK: query: explain
 create table x4 as select *, rank() over(partition by key order by value) as rr from src1
 PREHOOK: type: CREATETABLE_AS_SELECT
-POSTHOOK: query: -- window functions
-explain
+POSTHOOK: query: explain
 create table x4 as select *, rank() over(partition by key order by value) as rr from src1
 POSTHOOK: type: CREATETABLE_AS_SELECT
 STAGE DEPENDENCIES:
@@ -508,12 +492,10 @@ POSTHOOK: Input: default@x5
 118	val_118	118
 118	val_118	NULL
 119	val_119	119
-PREHOOK: query: -- sub queries
-explain
+PREHOOK: query: explain
 create table x6 as select * from (select *, key + 1 from src1) a
 PREHOOK: type: CREATETABLE_AS_SELECT
-POSTHOOK: query: -- sub queries
-explain
+POSTHOOK: query: explain
 create table x6 as select * from (select *, key + 1 from src1) a
 POSTHOOK: type: CREATETABLE_AS_SELECT
 STAGE DEPENDENCIES:

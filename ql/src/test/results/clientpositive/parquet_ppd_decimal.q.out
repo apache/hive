@@ -18,13 +18,11 @@ POSTHOOK: Lineage: newtypestbl.c EXPRESSION []
 POSTHOOK: Lineage: newtypestbl.d EXPRESSION []
 POSTHOOK: Lineage: newtypestbl.da EXPRESSION []
 POSTHOOK: Lineage: newtypestbl.v EXPRESSION []
-PREHOOK: query: -- decimal data types (EQUAL, NOT_EQUAL, LESS_THAN, LESS_THAN_EQUALS, IN, BETWEEN tests)
-select * from newtypestbl where d=0.22
+PREHOOK: query: select * from newtypestbl where d=0.22
 PREHOOK: type: QUERY
 PREHOOK: Input: default@newtypestbl
 #### A masked pattern was here ####
-POSTHOOK: query: -- decimal data types (EQUAL, NOT_EQUAL, LESS_THAN, LESS_THAN_EQUALS, IN, BETWEEN tests)
-select * from newtypestbl where d=0.22
+POSTHOOK: query: select * from newtypestbl where d=0.22
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@newtypestbl
 #### A masked pattern was here ####

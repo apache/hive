@@ -115,12 +115,10 @@ POSTHOOK: query: ALTER TABLE srcpart ADD PARTITION (ds='4', hr='5')
 POSTHOOK: type: ALTERTABLE_ADDPARTS
 POSTHOOK: Output: db1@srcpart
 POSTHOOK: Output: db1@srcpart@ds=4/hr=5
-PREHOOK: query: -- from db1 to default db
-SHOW PARTITIONS default.srcpart PARTITION(hr='11')
+PREHOOK: query: SHOW PARTITIONS default.srcpart PARTITION(hr='11')
 PREHOOK: type: SHOWPARTITIONS
 PREHOOK: Input: default@srcpart
-POSTHOOK: query: -- from db1 to default db
-SHOW PARTITIONS default.srcpart PARTITION(hr='11')
+POSTHOOK: query: SHOW PARTITIONS default.srcpart PARTITION(hr='11')
 POSTHOOK: type: SHOWPARTITIONS
 POSTHOOK: Input: default@srcpart
 ds=2008-04-08/hr=11
@@ -132,12 +130,10 @@ POSTHOOK: query: SHOW PARTITIONS default.srcpart PARTITION(ds='2008-04-08', hr='
 POSTHOOK: type: SHOWPARTITIONS
 POSTHOOK: Input: default@srcpart
 ds=2008-04-08/hr=12
-PREHOOK: query: -- from db1 to db1
-SHOW PARTITIONS srcpart PARTITION(ds='4')
+PREHOOK: query: SHOW PARTITIONS srcpart PARTITION(ds='4')
 PREHOOK: type: SHOWPARTITIONS
 PREHOOK: Input: db1@srcpart
-POSTHOOK: query: -- from db1 to db1
-SHOW PARTITIONS srcpart PARTITION(ds='4')
+POSTHOOK: query: SHOW PARTITIONS srcpart PARTITION(ds='4')
 POSTHOOK: type: SHOWPARTITIONS
 POSTHOOK: Input: db1@srcpart
 ds=4/hr=4
@@ -155,12 +151,10 @@ PREHOOK: Input: database:default
 POSTHOOK: query: use default
 POSTHOOK: type: SWITCHDATABASE
 POSTHOOK: Input: database:default
-PREHOOK: query: -- from default to db1
-SHOW PARTITIONS db1.srcpart PARTITION(ds='4')
+PREHOOK: query: SHOW PARTITIONS db1.srcpart PARTITION(ds='4')
 PREHOOK: type: SHOWPARTITIONS
 PREHOOK: Input: db1@srcpart
-POSTHOOK: query: -- from default to db1
-SHOW PARTITIONS db1.srcpart PARTITION(ds='4')
+POSTHOOK: query: SHOW PARTITIONS db1.srcpart PARTITION(ds='4')
 POSTHOOK: type: SHOWPARTITIONS
 POSTHOOK: Input: db1@srcpart
 ds=4/hr=4

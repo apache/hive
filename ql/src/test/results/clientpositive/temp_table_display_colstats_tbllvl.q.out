@@ -1,11 +1,8 @@
-PREHOOK: query: -- Based on display_colstats_tbllvl.q, output should be almost exactly the same.
-DROP TABLE IF EXISTS UserVisits_web_text_none
+PREHOOK: query: DROP TABLE IF EXISTS UserVisits_web_text_none
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: -- Based on display_colstats_tbllvl.q, output should be almost exactly the same.
-DROP TABLE IF EXISTS UserVisits_web_text_none
+POSTHOOK: query: DROP TABLE IF EXISTS UserVisits_web_text_none
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: -- Hack, set external location because generated filename changes during test runs
-CREATE TEMPORARY EXTERNAL TABLE UserVisits_web_text_none (
+PREHOOK: query: CREATE TEMPORARY EXTERNAL TABLE UserVisits_web_text_none (
   sourceIP string,
   destURL string,
   visitDate string,
@@ -21,8 +18,7 @@ PREHOOK: type: CREATETABLE
 #### A masked pattern was here ####
 PREHOOK: Output: database:default
 PREHOOK: Output: default@UserVisits_web_text_none
-POSTHOOK: query: -- Hack, set external location because generated filename changes during test runs
-CREATE TEMPORARY EXTERNAL TABLE UserVisits_web_text_none (
+POSTHOOK: query: CREATE TEMPORARY EXTERNAL TABLE UserVisits_web_text_none (
   sourceIP string,
   destURL string,
   visitDate string,

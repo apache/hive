@@ -1,11 +1,9 @@
-PREHOOK: query: -- Create Tables
-create table dsrv_big stored as orc as select key as key_str, cast(key as int) as key_int, value from src
+PREHOOK: query: create table dsrv_big stored as orc as select key as key_str, cast(key as int) as key_int, value from src
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@src
 PREHOOK: Output: database:default
 PREHOOK: Output: default@dsrv_big
-POSTHOOK: query: -- Create Tables
-create table dsrv_big stored as orc as select key as key_str, cast(key as int) as key_int, value from src
+POSTHOOK: query: create table dsrv_big stored as orc as select key as key_str, cast(key as int) as key_int, value from src
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
@@ -26,11 +24,9 @@ POSTHOOK: Output: default@dsrv_small
 POSTHOOK: Lineage: dsrv_small.key_int EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: dsrv_small.key_str SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: dsrv_small.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: -- single key (int)
-EXPLAIN select count(*) from dsrv_big a join dsrv_small b on (a.key_int = b.key_int)
+PREHOOK: query: EXPLAIN select count(*) from dsrv_big a join dsrv_small b on (a.key_int = b.key_int)
 PREHOOK: type: QUERY
-POSTHOOK: query: -- single key (int)
-EXPLAIN select count(*) from dsrv_big a join dsrv_small b on (a.key_int = b.key_int)
+POSTHOOK: query: EXPLAIN select count(*) from dsrv_big a join dsrv_small b on (a.key_int = b.key_int)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -164,11 +160,9 @@ POSTHOOK: Input: default@dsrv_big
 POSTHOOK: Input: default@dsrv_small
 #### A masked pattern was here ####
 84
-PREHOOK: query: -- single key (string)
-EXPLAIN select count(*) from dsrv_big a join dsrv_small b on (a.key_str = b.key_str)
+PREHOOK: query: EXPLAIN select count(*) from dsrv_big a join dsrv_small b on (a.key_str = b.key_str)
 PREHOOK: type: QUERY
-POSTHOOK: query: -- single key (string)
-EXPLAIN select count(*) from dsrv_big a join dsrv_small b on (a.key_str = b.key_str)
+POSTHOOK: query: EXPLAIN select count(*) from dsrv_big a join dsrv_small b on (a.key_str = b.key_str)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -302,11 +296,9 @@ POSTHOOK: Input: default@dsrv_big
 POSTHOOK: Input: default@dsrv_small
 #### A masked pattern was here ####
 84
-PREHOOK: query: -- keys are different type
-EXPLAIN select count(*) from dsrv_big a join dsrv_small b on (a.key_str = b.key_str)
+PREHOOK: query: EXPLAIN select count(*) from dsrv_big a join dsrv_small b on (a.key_str = b.key_str)
 PREHOOK: type: QUERY
-POSTHOOK: query: -- keys are different type
-EXPLAIN select count(*) from dsrv_big a join dsrv_small b on (a.key_str = b.key_str)
+POSTHOOK: query: EXPLAIN select count(*) from dsrv_big a join dsrv_small b on (a.key_str = b.key_str)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -440,11 +432,9 @@ POSTHOOK: Input: default@dsrv_big
 POSTHOOK: Input: default@dsrv_small
 #### A masked pattern was here ####
 84
-PREHOOK: query: -- multiple tables
-EXPLAIN select count(*) from dsrv_big a, dsrv_small b, dsrv_small c where a.key_int = b.key_int and a.key_int = c.key_int
+PREHOOK: query: EXPLAIN select count(*) from dsrv_big a, dsrv_small b, dsrv_small c where a.key_int = b.key_int and a.key_int = c.key_int
 PREHOOK: type: QUERY
-POSTHOOK: query: -- multiple tables
-EXPLAIN select count(*) from dsrv_big a, dsrv_small b, dsrv_small c where a.key_int = b.key_int and a.key_int = c.key_int
+POSTHOOK: query: EXPLAIN select count(*) from dsrv_big a, dsrv_small b, dsrv_small c where a.key_int = b.key_int and a.key_int = c.key_int
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -626,11 +616,9 @@ POSTHOOK: Input: default@dsrv_big
 POSTHOOK: Input: default@dsrv_small
 #### A masked pattern was here ####
 84
-PREHOOK: query: -- multiple keys
-EXPLAIN select count(*) from dsrv_big a join dsrv_small b on (a.key_str = b.key_str and a.key_int = b.key_int)
+PREHOOK: query: EXPLAIN select count(*) from dsrv_big a join dsrv_small b on (a.key_str = b.key_str and a.key_int = b.key_int)
 PREHOOK: type: QUERY
-POSTHOOK: query: -- multiple keys
-EXPLAIN select count(*) from dsrv_big a join dsrv_small b on (a.key_str = b.key_str and a.key_int = b.key_int)
+POSTHOOK: query: EXPLAIN select count(*) from dsrv_big a join dsrv_small b on (a.key_str = b.key_str and a.key_int = b.key_int)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -790,11 +778,9 @@ POSTHOOK: Input: default@dsrv_big
 POSTHOOK: Input: default@dsrv_small
 #### A masked pattern was here ####
 84
-PREHOOK: query: -- small table result is empty
-EXPLAIN select count(*) from dsrv_big a join dsrv_small b on (a.key_int = b.key_int) where b.value in ('nonexistent1', 'nonexistent2')
+PREHOOK: query: EXPLAIN select count(*) from dsrv_big a join dsrv_small b on (a.key_int = b.key_int) where b.value in ('nonexistent1', 'nonexistent2')
 PREHOOK: type: QUERY
-POSTHOOK: query: -- small table result is empty
-EXPLAIN select count(*) from dsrv_big a join dsrv_small b on (a.key_int = b.key_int) where b.value in ('nonexistent1', 'nonexistent2')
+POSTHOOK: query: EXPLAIN select count(*) from dsrv_big a join dsrv_small b on (a.key_int = b.key_int) where b.value in ('nonexistent1', 'nonexistent2')
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage

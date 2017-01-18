@@ -1,26 +1,10 @@
-PREHOOK: query: -- INCLUDE_HADOOP_MAJOR_VERSIONS(0.23)
--- This test uses mapred.max.split.size/mapred.max.split.size for controlling
--- number of input splits.
--- stats_partscan_1.q is the same test with this but has different result.
-
--- test analyze table ... compute statistics partialscan
-
--- 1. prepare data
-CREATE table analyze_srcpart_partial_scan (key STRING, value STRING)
+PREHOOK: query: CREATE table analyze_srcpart_partial_scan (key STRING, value STRING)
 partitioned by (ds string, hr string)
 stored as rcfile
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@analyze_srcpart_partial_scan
-POSTHOOK: query: -- INCLUDE_HADOOP_MAJOR_VERSIONS(0.23)
--- This test uses mapred.max.split.size/mapred.max.split.size for controlling
--- number of input splits.
--- stats_partscan_1.q is the same test with this but has different result.
-
--- test analyze table ... compute statistics partialscan
-
--- 1. prepare data
-CREATE table analyze_srcpart_partial_scan (key STRING, value STRING)
+POSTHOOK: query: CREATE table analyze_srcpart_partial_scan (key STRING, value STRING)
 partitioned by (ds string, hr string)
 stored as rcfile
 POSTHOOK: type: CREATETABLE
@@ -90,12 +74,10 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: -- 2. partialscan
-explain
+PREHOOK: query: explain
 analyze table analyze_srcpart_partial_scan PARTITION(ds='2008-04-08',hr=11) compute statistics partialscan
 PREHOOK: type: QUERY
-POSTHOOK: query: -- 2. partialscan
-explain
+POSTHOOK: query: explain
 analyze table analyze_srcpart_partial_scan PARTITION(ds='2008-04-08',hr=11) compute statistics partialscan
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -121,12 +103,10 @@ POSTHOOK: Input: default@analyze_srcpart_partial_scan
 POSTHOOK: Input: default@analyze_srcpart_partial_scan@ds=2008-04-08/hr=11
 POSTHOOK: Output: default@analyze_srcpart_partial_scan
 POSTHOOK: Output: default@analyze_srcpart_partial_scan@ds=2008-04-08/hr=11
-PREHOOK: query: -- 3. confirm result
-describe formatted analyze_srcpart_partial_scan PARTITION(ds='2008-04-08',hr=11)
+PREHOOK: query: describe formatted analyze_srcpart_partial_scan PARTITION(ds='2008-04-08',hr=11)
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@analyze_srcpart_partial_scan
-POSTHOOK: query: -- 3. confirm result
-describe formatted analyze_srcpart_partial_scan PARTITION(ds='2008-04-08',hr=11)
+POSTHOOK: query: describe formatted analyze_srcpart_partial_scan PARTITION(ds='2008-04-08',hr=11)
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@analyze_srcpart_partial_scan
 # col_name            	data_type           	comment             

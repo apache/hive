@@ -1,7 +1,4 @@
-PREHOOK: query: -- SORT_QUERY_RESULTS
-
--- Use ORDER BY clauses to generate 2 stages.
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT MIN(ctinyint) as c1,
        MAX(ctinyint),
        COUNT(ctinyint),
@@ -9,10 +6,7 @@ SELECT MIN(ctinyint) as c1,
 FROM   alltypesorc
 ORDER BY c1
 PREHOOK: type: QUERY
-POSTHOOK: query: -- SORT_QUERY_RESULTS
-
--- Use ORDER BY clauses to generate 2 stages.
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT MIN(ctinyint) as c1,
        MAX(ctinyint),
        COUNT(ctinyint),

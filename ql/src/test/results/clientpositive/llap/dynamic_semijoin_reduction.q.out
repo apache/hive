@@ -1,10 +1,8 @@
-PREHOOK: query: -- Create Tables
-create table alltypesorc_int ( cint int, cstring string ) stored as ORC
+PREHOOK: query: create table alltypesorc_int ( cint int, cstring string ) stored as ORC
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@alltypesorc_int
-POSTHOOK: query: -- Create Tables
-create table alltypesorc_int ( cint int, cstring string ) stored as ORC
+POSTHOOK: query: create table alltypesorc_int ( cint int, cstring string ) stored as ORC
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@alltypesorc_int
@@ -24,12 +22,10 @@ POSTHOOK: query: CREATE TABLE srcpart_small(key1 STRING, value1 STRING) partitio
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@srcpart_small
-PREHOOK: query: -- Add Partitions
-alter table srcpart_date add partition (ds = "2008-04-08")
+PREHOOK: query: alter table srcpart_date add partition (ds = "2008-04-08")
 PREHOOK: type: ALTERTABLE_ADDPARTS
 PREHOOK: Output: default@srcpart_date
-POSTHOOK: query: -- Add Partitions
-alter table srcpart_date add partition (ds = "2008-04-08")
+POSTHOOK: query: alter table srcpart_date add partition (ds = "2008-04-08")
 POSTHOOK: type: ALTERTABLE_ADDPARTS
 POSTHOOK: Output: default@srcpart_date
 POSTHOOK: Output: default@srcpart_date@ds=2008-04-08
@@ -54,13 +50,11 @@ POSTHOOK: query: alter table srcpart_small add partition (ds = "2008-04-09")
 POSTHOOK: type: ALTERTABLE_ADDPARTS
 POSTHOOK: Output: default@srcpart_small
 POSTHOOK: Output: default@srcpart_small@ds=2008-04-09
-PREHOOK: query: -- Load
-insert overwrite table alltypesorc_int select cint, cstring1 from alltypesorc
+PREHOOK: query: insert overwrite table alltypesorc_int select cint, cstring1 from alltypesorc
 PREHOOK: type: QUERY
 PREHOOK: Input: default@alltypesorc
 PREHOOK: Output: default@alltypesorc_int
-POSTHOOK: query: -- Load
-insert overwrite table alltypesorc_int select cint, cstring1 from alltypesorc
+POSTHOOK: query: insert overwrite table alltypesorc_int select cint, cstring1 from alltypesorc
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc
 POSTHOOK: Output: default@alltypesorc_int
@@ -108,11 +102,9 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
 POSTHOOK: Output: default@srcpart_small@ds=2008-04-09
 POSTHOOK: Lineage: srcpart_small PARTITION(ds=2008-04-09).key1 SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: srcpart_small PARTITION(ds=2008-04-09).value1 SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: -- single column, single key
-EXPLAIN select count(*) from srcpart_date join srcpart_small on (srcpart_date.key = srcpart_small.key1)
+PREHOOK: query: EXPLAIN select count(*) from srcpart_date join srcpart_small on (srcpart_date.key = srcpart_small.key1)
 PREHOOK: type: QUERY
-POSTHOOK: query: -- single column, single key
-EXPLAIN select count(*) from srcpart_date join srcpart_small on (srcpart_date.key = srcpart_small.key1)
+POSTHOOK: query: EXPLAIN select count(*) from srcpart_date join srcpart_small on (srcpart_date.key = srcpart_small.key1)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -371,11 +363,9 @@ POSTHOOK: Input: default@srcpart_small@ds=2008-04-08
 POSTHOOK: Input: default@srcpart_small@ds=2008-04-09
 #### A masked pattern was here ####
 8224
-PREHOOK: query: -- Mix dynamic partition pruning(DPP) and min/max bloom filter optimizations. Should pick the DPP.
-EXPLAIN select count(*) from srcpart_date join srcpart_small on (srcpart_date.key = srcpart_small.ds)
+PREHOOK: query: EXPLAIN select count(*) from srcpart_date join srcpart_small on (srcpart_date.key = srcpart_small.ds)
 PREHOOK: type: QUERY
-POSTHOOK: query: -- Mix dynamic partition pruning(DPP) and min/max bloom filter optimizations. Should pick the DPP.
-EXPLAIN select count(*) from srcpart_date join srcpart_small on (srcpart_date.key = srcpart_small.ds)
+POSTHOOK: query: EXPLAIN select count(*) from srcpart_date join srcpart_small on (srcpart_date.key = srcpart_small.ds)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -502,11 +492,9 @@ POSTHOOK: Input: default@srcpart_small@ds=2008-04-08
 POSTHOOK: Input: default@srcpart_small@ds=2008-04-09
 #### A masked pattern was here ####
 0
-PREHOOK: query: --multiple sources, single key
-EXPLAIN select count(*) from srcpart_date join srcpart_small on (srcpart_date.key = srcpart_small.key1) join alltypesorc_int on (srcpart_small.key1 = alltypesorc_int.cstring)
+PREHOOK: query: EXPLAIN select count(*) from srcpart_date join srcpart_small on (srcpart_date.key = srcpart_small.key1) join alltypesorc_int on (srcpart_small.key1 = alltypesorc_int.cstring)
 PREHOOK: type: QUERY
-POSTHOOK: query: --multiple sources, single key
-EXPLAIN select count(*) from srcpart_date join srcpart_small on (srcpart_date.key = srcpart_small.key1) join alltypesorc_int on (srcpart_small.key1 = alltypesorc_int.cstring)
+POSTHOOK: query: EXPLAIN select count(*) from srcpart_date join srcpart_small on (srcpart_date.key = srcpart_small.key1) join alltypesorc_int on (srcpart_small.key1 = alltypesorc_int.cstring)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -866,11 +854,9 @@ POSTHOOK: Input: default@srcpart_small@ds=2008-04-08
 POSTHOOK: Input: default@srcpart_small@ds=2008-04-09
 #### A masked pattern was here ####
 48
-PREHOOK: query: -- single source, multiple keys
-EXPLAIN select count(*) from srcpart_date join srcpart_small on (srcpart_date.key = srcpart_small.key1 and srcpart_date.value = srcpart_small.value1)
+PREHOOK: query: EXPLAIN select count(*) from srcpart_date join srcpart_small on (srcpart_date.key = srcpart_small.key1 and srcpart_date.value = srcpart_small.value1)
 PREHOOK: type: QUERY
-POSTHOOK: query: -- single source, multiple keys
-EXPLAIN select count(*) from srcpart_date join srcpart_small on (srcpart_date.key = srcpart_small.key1 and srcpart_date.value = srcpart_small.value1)
+POSTHOOK: query: EXPLAIN select count(*) from srcpart_date join srcpart_small on (srcpart_date.key = srcpart_small.key1 and srcpart_date.value = srcpart_small.value1)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -1155,11 +1141,9 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: -- multiple sources, different  keys
-EXPLAIN select count(*) from srcpart_date join srcpart_small on (srcpart_date.key = srcpart_small.key1) join alltypesorc_int on (srcpart_date.value = alltypesorc_int.cstring)
+PREHOOK: query: EXPLAIN select count(*) from srcpart_date join srcpart_small on (srcpart_date.key = srcpart_small.key1) join alltypesorc_int on (srcpart_date.value = alltypesorc_int.cstring)
 PREHOOK: type: QUERY
-POSTHOOK: query: -- multiple sources, different  keys
-EXPLAIN select count(*) from srcpart_date join srcpart_small on (srcpart_date.key = srcpart_small.key1) join alltypesorc_int on (srcpart_date.value = alltypesorc_int.cstring)
+POSTHOOK: query: EXPLAIN select count(*) from srcpart_date join srcpart_small on (srcpart_date.key = srcpart_small.key1) join alltypesorc_int on (srcpart_date.value = alltypesorc_int.cstring)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -1525,11 +1509,9 @@ POSTHOOK: Input: default@srcpart_small@ds=2008-04-08
 POSTHOOK: Input: default@srcpart_small@ds=2008-04-09
 #### A masked pattern was here ####
 0
-PREHOOK: query: -- With Mapjoins.
-EXPLAIN select count(*) from srcpart_date join srcpart_small on (srcpart_date.key = srcpart_small.key1)
+PREHOOK: query: EXPLAIN select count(*) from srcpart_date join srcpart_small on (srcpart_date.key = srcpart_small.key1)
 PREHOOK: type: QUERY
-POSTHOOK: query: -- With Mapjoins.
-EXPLAIN select count(*) from srcpart_date join srcpart_small on (srcpart_date.key = srcpart_small.key1)
+POSTHOOK: query: EXPLAIN select count(*) from srcpart_date join srcpart_small on (srcpart_date.key = srcpart_small.key1)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage

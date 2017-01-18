@@ -1,13 +1,9 @@
-PREHOOK: query: -- SORT_QUERY_RESULTS
-
-create table t1 as select cast(key as int) key, value from src where key <= 10
+PREHOOK: query: create table t1 as select cast(key as int) key, value from src where key <= 10
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@src
 PREHOOK: Output: database:default
 PREHOOK: Output: default@t1
-POSTHOOK: query: -- SORT_QUERY_RESULTS
-
-create table t1 as select cast(key as int) key, value from src where key <= 10
+POSTHOOK: query: create table t1 as select cast(key as int) key, value from src where key <= 10
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default

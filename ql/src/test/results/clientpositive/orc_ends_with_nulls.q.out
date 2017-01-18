@@ -20,19 +20,11 @@ POSTHOOK: query: ALTER TABLE test_orc SET SERDEPROPERTIES ('orc.row.index.stride
 POSTHOOK: type: ALTERTABLE_SERDEPROPERTIES
 POSTHOOK: Input: default@test_orc
 POSTHOOK: Output: default@test_orc
-PREHOOK: query: -- nulls.txt is a file containing a non-null string row followed by 1000 null string rows
--- this produces the effect that the number of non-null rows between the last and second
--- to last index stride are the same (there's only two index strides)
-
-CREATE TABLE src_null(a STRING) STORED AS TEXTFILE
+PREHOOK: query: CREATE TABLE src_null(a STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@src_null
-POSTHOOK: query: -- nulls.txt is a file containing a non-null string row followed by 1000 null string rows
--- this produces the effect that the number of non-null rows between the last and second
--- to last index stride are the same (there's only two index strides)
-
-CREATE TABLE src_null(a STRING) STORED AS TEXTFILE
+POSTHOOK: query: CREATE TABLE src_null(a STRING) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@src_null

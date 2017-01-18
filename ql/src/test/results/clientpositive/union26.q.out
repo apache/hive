@@ -1,6 +1,4 @@
-PREHOOK: query: -- SORT_QUERY_RESULTS
-
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT 
 count(1) as counts,
 key,
@@ -22,9 +20,7 @@ WHERE ds='2008-04-08' and hr='11'
 ) a
 group by key, value
 PREHOOK: type: QUERY
-POSTHOOK: query: -- SORT_QUERY_RESULTS
-
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT 
 count(1) as counts,
 key,

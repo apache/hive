@@ -1,6 +1,4 @@
-PREHOOK: query: -- SORT_QUERY_RESULTS
-
-SELECT cdouble,
+PREHOOK: query: SELECT cdouble,
        ctimestamp1,
        ctinyint,
        cboolean1,
@@ -25,9 +23,7 @@ WHERE  (((cstring2 <= '10')
 PREHOOK: type: QUERY
 PREHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
-POSTHOOK: query: -- SORT_QUERY_RESULTS
-
-SELECT cdouble,
+POSTHOOK: query: SELECT cdouble,
        ctimestamp1,
        ctinyint,
        cboolean1,

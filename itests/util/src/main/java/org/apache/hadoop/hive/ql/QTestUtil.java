@@ -64,6 +64,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import com.google.common.base.Preconditions;
+
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
@@ -1287,7 +1288,7 @@ public class QTestUtil {
   }
 
   private int executeClientInternal(String commands) {
-    String [] cmds = commands.split(";");
+    List<String> cmds = CliDriver.splitSemiColon(commands);
     int rc = 0;
 
     String command = "";
@@ -1410,9 +1411,9 @@ public class QTestUtil {
     StringBuilder newCommands = new StringBuilder(commands.length());
     int lastMatchEnd = 0;
     Matcher commentMatcher = Pattern.compile("^--.*$", Pattern.MULTILINE).matcher(commands);
+    // remove the comments
     while (commentMatcher.find()) {
       newCommands.append(commands.substring(lastMatchEnd, commentMatcher.start()));
-      newCommands.append(commentMatcher.group().replaceAll("(?<!\\\\);", "\\\\;"));
       lastMatchEnd = commentMatcher.end();
     }
     newCommands.append(commands.substring(lastMatchEnd, commands.length()));

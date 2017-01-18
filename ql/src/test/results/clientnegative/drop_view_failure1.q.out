@@ -6,8 +6,7 @@ POSTHOOK: query: CREATE TABLE xxx1(key int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@xxx1
-PREHOOK: query: -- Can't use DROP VIEW on a base table
-DROP VIEW xxx1
+PREHOOK: query: DROP VIEW xxx1
 PREHOOK: type: DROPVIEW
 PREHOOK: Input: default@xxx1
 PREHOOK: Output: default@xxx1

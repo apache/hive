@@ -18,33 +18,25 @@ POSTHOOK: query: CREATE TABLE  t1(i int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t1
-PREHOOK: query: -- all privileges should have been set for user
-
-GRANT ALL ON t1 TO ROLE r1 WITH GRANT OPTION
+PREHOOK: query: GRANT ALL ON t1 TO ROLE r1 WITH GRANT OPTION
 PREHOOK: type: GRANT_PRIVILEGE
 PREHOOK: Output: default@t1
-POSTHOOK: query: -- all privileges should have been set for user
-
-GRANT ALL ON t1 TO ROLE r1 WITH GRANT OPTION
+POSTHOOK: query: GRANT ALL ON t1 TO ROLE r1 WITH GRANT OPTION
 POSTHOOK: type: GRANT_PRIVILEGE
 POSTHOOK: Output: default@t1
-PREHOOK: query: -- check if user belong to role r1 can grant privileges to others
-GRANT ALL ON t1 TO USER user3
+PREHOOK: query: GRANT ALL ON t1 TO USER user3
 PREHOOK: type: GRANT_PRIVILEGE
 PREHOOK: Output: default@t1
-POSTHOOK: query: -- check if user belong to role r1 can grant privileges to others
-GRANT ALL ON t1 TO USER user3
+POSTHOOK: query: GRANT ALL ON t1 TO USER user3
 POSTHOOK: type: GRANT_PRIVILEGE
 POSTHOOK: Output: default@t1
 PREHOOK: query: set role admin
 PREHOOK: type: SHOW_ROLES
 POSTHOOK: query: set role admin
 POSTHOOK: type: SHOW_ROLES
-PREHOOK: query: -- check privileges on table
-show grant on table t1
+PREHOOK: query: show grant on table t1
 PREHOOK: type: SHOW_GRANT
-POSTHOOK: query: -- check privileges on table
-show grant on table t1
+POSTHOOK: query: show grant on table t1
 POSTHOOK: type: SHOW_GRANT
 default	t1			r1	ROLE	DELETE	true	-1	user1
 default	t1			r1	ROLE	INSERT	true	-1	user1
@@ -58,11 +50,9 @@ default	t1			user3	USER	DELETE	false	-1	r1user
 default	t1			user3	USER	INSERT	false	-1	r1user
 default	t1			user3	USER	SELECT	false	-1	r1user
 default	t1			user3	USER	UPDATE	false	-1	r1user
-PREHOOK: query: -- check if drop role removes privileges for that role
-drop role r1
+PREHOOK: query: drop role r1
 PREHOOK: type: DROPROLE
-POSTHOOK: query: -- check if drop role removes privileges for that role
-drop role r1
+POSTHOOK: query: drop role r1
 POSTHOOK: type: DROPROLE
 PREHOOK: query: show grant on table t1
 PREHOOK: type: SHOW_GRANT

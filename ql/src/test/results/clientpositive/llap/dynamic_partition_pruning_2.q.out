@@ -1034,17 +1034,13 @@ POSTHOOK: Input: default@dim_shops
 4
 5
 6
-PREHOOK: query: -- Dynamic partition pruning will be removed as data size exceeds the limit;
--- and for self join on partitioning column, it should not fail (HIVE-10559).
-explain
+PREHOOK: query: explain
 select count(*)
 from srcpart s1,
      srcpart s2
 where s1.ds = s2.ds
 PREHOOK: type: QUERY
-POSTHOOK: query: -- Dynamic partition pruning will be removed as data size exceeds the limit;
--- and for self join on partitioning column, it should not fail (HIVE-10559).
-explain
+POSTHOOK: query: explain
 select count(*)
 from srcpart s1,
      srcpart s2

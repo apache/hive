@@ -1,9 +1,7 @@
-PREHOOK: query: -- run a sql query to initialize authorization, then try setting a allowed config and then a disallowed config param
-use default
+PREHOOK: query: use default
 PREHOOK: type: SWITCHDATABASE
 PREHOOK: Input: database:default
-POSTHOOK: query: -- run a sql query to initialize authorization, then try setting a allowed config and then a disallowed config param
-use default
+POSTHOOK: query: use default
 POSTHOOK: type: SWITCHDATABASE
 POSTHOOK: Input: database:default
 Query returned non-zero code: 1, cause: Cannot modify hive.security.authorization.enabled at runtime. It is not in list of params that are allowed to be modified at runtime

@@ -1,7 +1,5 @@
 Warning: Map Join MAPJOIN[24][bigTable=?] in task 'Stage-1:MAPRED' is a cross product
-PREHOOK: query: -- SORT_QUERY_RESULTS
-
-explain 
+PREHOOK: query: explain 
 select sum(hash(a.k1,a.v1,a.k2, a.v2))
 from (
 SELECT src1.key as k1, src1.value as v1, 
@@ -12,9 +10,7 @@ SELECT src1.key as k1, src1.value as v1,
   SORT BY k1, v1, k2, v2
 ) a
 PREHOOK: type: QUERY
-POSTHOOK: query: -- SORT_QUERY_RESULTS
-
-explain 
+POSTHOOK: query: explain 
 select sum(hash(a.k1,a.v1,a.k2, a.v2))
 from (
 SELECT src1.key as k1, src1.value as v1, 

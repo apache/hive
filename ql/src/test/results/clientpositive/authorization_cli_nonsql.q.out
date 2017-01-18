@@ -1,11 +1,7 @@
-PREHOOK: query: -- Verify that dfs,compile,add,delete commands can be run from hive cli, and no authorization checks happen when auth is diabled
-
-use default
+PREHOOK: query: use default
 PREHOOK: type: SWITCHDATABASE
 PREHOOK: Input: database:default
-POSTHOOK: query: -- Verify that dfs,compile,add,delete commands can be run from hive cli, and no authorization checks happen when auth is diabled
-
-use default
+POSTHOOK: query: use default
 POSTHOOK: type: SWITCHDATABASE
 POSTHOOK: Input: database:default
 PREHOOK: query: create table a_table1(a int, b int)

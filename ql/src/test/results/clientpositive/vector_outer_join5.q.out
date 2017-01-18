@@ -1,6 +1,4 @@
-PREHOOK: query: -- SORT_QUERY_RESULTS
-
-create table sorted_mod_4 stored as orc
+PREHOOK: query: create table sorted_mod_4 stored as orc
 as select ctinyint, pmod(cint, 4) as cmodint from alltypesorc
 where cint is not null and ctinyint is not null
 order by ctinyint
@@ -8,9 +6,7 @@ PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@alltypesorc
 PREHOOK: Output: database:default
 PREHOOK: Output: default@sorted_mod_4
-POSTHOOK: query: -- SORT_QUERY_RESULTS
-
-create table sorted_mod_4 stored as orc
+POSTHOOK: query: create table sorted_mod_4 stored as orc
 as select ctinyint, pmod(cint, 4) as cmodint from alltypesorc
 where cint is not null and ctinyint is not null
 order by ctinyint

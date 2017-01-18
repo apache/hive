@@ -1,5 +1,4 @@
-PREHOOK: query: -- SORT_BEFORE_DIFF
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT count(1) FROM (
   SELECT key, value FROM src UNION ALL
   SELECT key, value FROM src UNION ALL
@@ -31,8 +30,7 @@ SELECT count(1) FROM (
   SELECT key, value FROM src UNION ALL
   SELECT key, value FROM src) src
 PREHOOK: type: QUERY
-POSTHOOK: query: -- SORT_BEFORE_DIFF
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT count(1) FROM (
   SELECT key, value FROM src UNION ALL
   SELECT key, value FROM src UNION ALL

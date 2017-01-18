@@ -81,11 +81,9 @@ POSTHOOK: Lineage: part_null.p_size EXPRESSION [(values__tmp__table__2)values__t
 POSTHOOK: Lineage: part_null.p_type SIMPLE [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col5, type:string, comment:), ]
 Warning: Shuffle Join MERGEJOIN[31][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 Warning: Shuffle Join MERGEJOIN[32][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 3' is a cross product
-PREHOOK: query: -- non corr, simple less than  
-explain select * from part where p_size > (select avg(p_size) from part_null)
+PREHOOK: query: explain select * from part where p_size > (select avg(p_size) from part_null)
 PREHOOK: type: QUERY
-POSTHOOK: query: -- non corr, simple less than  
-explain select * from part where p_size > (select avg(p_size) from part_null)
+POSTHOOK: query: explain select * from part where p_size > (select avg(p_size) from part_null)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -264,14 +262,12 @@ POSTHOOK: Input: default@part_null
 78486	almond azure blanched chiffon midnight	Manufacturer#5	Brand#52	LARGE BRUSHED BRASS	23	MED BAG	1464.48	hely blith
 Warning: Shuffle Join MERGEJOIN[21][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 Warning: Shuffle Join MERGEJOIN[22][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 3' is a cross product
-PREHOOK: query: -- non corr, empty
-select * from part where p_size > (select * from tempty)
+PREHOOK: query: select * from part where p_size > (select * from tempty)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part
 PREHOOK: Input: default@tempty
 #### A masked pattern was here ####
-POSTHOOK: query: -- non corr, empty
-select * from part where p_size > (select * from tempty)
+POSTHOOK: query: select * from part where p_size > (select * from tempty)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part
 POSTHOOK: Input: default@tempty
@@ -408,11 +404,9 @@ STAGE PLANS:
         ListSink
 
 Warning: Shuffle Join MERGEJOIN[24][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 2' is a cross product
-PREHOOK: query: -- non corr, null comparison
-explain select * from part where p_name = (select p_name from part_null where p_name is null)
+PREHOOK: query: explain select * from part where p_name = (select p_name from part_null where p_name is null)
 PREHOOK: type: QUERY
-POSTHOOK: query: -- non corr, null comparison
-explain select * from part where p_name = (select p_name from part_null where p_name is null)
+POSTHOOK: query: explain select * from part where p_name = (select p_name from part_null where p_name is null)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -541,11 +535,9 @@ POSTHOOK: Input: default@part_null
 #### A masked pattern was here ####
 Warning: Shuffle Join MERGEJOIN[32][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 Warning: Shuffle Join MERGEJOIN[33][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 3' is a cross product
-PREHOOK: query: -- non corr, is null 
-explain select * from part where (select i from tnull limit 1) is null
+PREHOOK: query: explain select * from part where (select i from tnull limit 1) is null
 PREHOOK: type: QUERY
-POSTHOOK: query: -- non corr, is null 
-explain select * from part where (select i from tnull limit 1) is null
+POSTHOOK: query: explain select * from part where (select i from tnull limit 1) is null
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -743,11 +735,9 @@ POSTHOOK: Input: default@tnull
 15103	almond aquamarine dodger light gainsboro	Manufacturer#5	Brand#53	ECONOMY BURNISHED STEEL	46	LG PACK	1018.1	packages hinder carefu
 78486	almond azure blanched chiffon midnight	Manufacturer#5	Brand#52	LARGE BRUSHED BRASS	23	MED BAG	1464.48	hely blith
 Warning: Shuffle Join MERGEJOIN[30][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 2' is a cross product
-PREHOOK: query: -- non corr, is not null
-explain select * from part where (select max(p_name) from part_null) is not null
+PREHOOK: query: explain select * from part where (select max(p_name) from part_null) is not null
 PREHOOK: type: QUERY
-POSTHOOK: query: -- non corr, is not null
-explain select * from part where (select max(p_name) from part_null) is not null
+POSTHOOK: query: explain select * from part where (select max(p_name) from part_null) is not null
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -925,11 +915,9 @@ Warning: Shuffle Join MERGEJOIN[57][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reduc
 Warning: Shuffle Join MERGEJOIN[58][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 3' is a cross product
 Warning: Shuffle Join MERGEJOIN[59][tables = [$hdt$_0, $hdt$_1, $hdt$_2, $hdt$_3]] in Stage 'Reducer 4' is a cross product
 Warning: Shuffle Join MERGEJOIN[60][tables = [$hdt$_0, $hdt$_1, $hdt$_2, $hdt$_3, $hdt$_4]] in Stage 'Reducer 5' is a cross product
-PREHOOK: query: -- non corr, between
-explain select * from part where p_size between (select min(p_size) from part) and (select avg(p_size) from part)
+PREHOOK: query: explain select * from part where p_size between (select min(p_size) from part) and (select avg(p_size) from part)
 PREHOOK: type: QUERY
-POSTHOOK: query: -- non corr, between
-explain select * from part where p_size between (select min(p_size) from part) and (select avg(p_size) from part)
+POSTHOOK: query: explain select * from part where p_size between (select min(p_size) from part) and (select avg(p_size) from part)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -1221,13 +1209,11 @@ POSTHOOK: Input: default@part
 155733	almond antique sky peru orange	Manufacturer#5	Brand#53	SMALL PLATED BRASS	2	WRAP DRUM	1788.73	furiously. bra
 Warning: Shuffle Join MERGEJOIN[38][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 Warning: Shuffle Join MERGEJOIN[39][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 3' is a cross product
-PREHOOK: query: -- non corr, windowing
-explain select p_mfgr, p_name, p_size from part 
+PREHOOK: query: explain select p_mfgr, p_name, p_size from part 
 where part.p_size > 
   (select first_value(p_size) over(partition by p_mfgr order by p_size) as fv from part order by fv limit 1)
 PREHOOK: type: QUERY
-POSTHOOK: query: -- non corr, windowing
-explain select p_mfgr, p_name, p_size from part 
+POSTHOOK: query: explain select p_mfgr, p_name, p_size from part 
 where part.p_size > 
   (select first_value(p_size) over(partition by p_mfgr order by p_size) as fv from part order by fv limit 1)
 POSTHOOK: type: QUERY
@@ -1494,11 +1480,9 @@ Manufacturer#5	almond aquamarine dodger light gainsboro	46
 Manufacturer#5	almond azure blanched chiffon midnight	23
 Warning: Shuffle Join MERGEJOIN[31][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 Warning: Shuffle Join MERGEJOIN[32][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 3' is a cross product
-PREHOOK: query: -- lhs contain complex expressions
-explain select * from part where (p_partkey*p_size) <> (select min(p_partkey) from part)
+PREHOOK: query: explain select * from part where (p_partkey*p_size) <> (select min(p_partkey) from part)
 PREHOOK: type: QUERY
-POSTHOOK: query: -- lhs contain complex expressions
-explain select * from part where (p_partkey*p_size) <> (select min(p_partkey) from part)
+POSTHOOK: query: explain select * from part where (p_partkey*p_size) <> (select min(p_partkey) from part)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -1688,11 +1672,9 @@ POSTHOOK: Input: default@part
 155733	almond antique sky peru orange	Manufacturer#5	Brand#53	SMALL PLATED BRASS	2	WRAP DRUM	1788.73	furiously. bra
 15103	almond aquamarine dodger light gainsboro	Manufacturer#5	Brand#53	ECONOMY BURNISHED STEEL	46	LG PACK	1018.1	packages hinder carefu
 78486	almond azure blanched chiffon midnight	Manufacturer#5	Brand#52	LARGE BRUSHED BRASS	23	MED BAG	1464.48	hely blith
-PREHOOK: query: -- corr, lhs contain complex expressions
-explain select count(*) as c from part as e where p_size + 100 < (select max(p_partkey) from part where p_name = e.p_name)
+PREHOOK: query: explain select count(*) as c from part as e where p_size + 100 < (select max(p_partkey) from part where p_name = e.p_name)
 PREHOOK: type: QUERY
-POSTHOOK: query: -- corr, lhs contain complex expressions
-explain select count(*) as c from part as e where p_size + 100 < (select max(p_partkey) from part where p_name = e.p_name)
+POSTHOOK: query: explain select count(*) as c from part as e where p_size + 100 < (select max(p_partkey) from part where p_name = e.p_name)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -1876,11 +1858,9 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
 26
-PREHOOK: query: -- corr, equi-join predicate
-explain select * from part where p_size > (select avg(p_size) from part_null where part_null.p_type = part.p_type)
+PREHOOK: query: explain select * from part where p_size > (select avg(p_size) from part_null where part_null.p_type = part.p_type)
 PREHOOK: type: QUERY
-POSTHOOK: query: -- corr, equi-join predicate
-explain select * from part where p_size > (select avg(p_size) from part_null where part_null.p_type = part.p_type)
+POSTHOOK: query: explain select * from part where p_size > (select avg(p_size) from part_null where part_null.p_type = part.p_type)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -2052,11 +2032,9 @@ POSTHOOK: Input: default@part_null
 192697	almond antique blue firebrick mint	Manufacturer#5	Brand#52	MEDIUM BURNISHED TIN	31	LG DRUM	1789.69	ickly ir
 Warning: Shuffle Join MERGEJOIN[58][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 3' is a cross product
 Warning: Shuffle Join MERGEJOIN[59][tables = [$hdt$_0, $hdt$_1, $hdt$_2, $hdt$_3]] in Stage 'Reducer 4' is a cross product
-PREHOOK: query: -- mix of corr and uncorr
-explain select * from part where p_size BETWEEN (select min(p_size) from part_null where part_null.p_type = part.p_type) AND (select max(p_size) from part_null)
+PREHOOK: query: explain select * from part where p_size BETWEEN (select min(p_size) from part_null where part_null.p_type = part.p_type) AND (select max(p_size) from part_null)
 PREHOOK: type: QUERY
-POSTHOOK: query: -- mix of corr and uncorr
-explain select * from part where p_size BETWEEN (select min(p_size) from part_null where part_null.p_type = part.p_type) AND (select max(p_size) from part_null)
+POSTHOOK: query: explain select * from part where p_size BETWEEN (select min(p_size) from part_null where part_null.p_type = part.p_type) AND (select max(p_size) from part_null)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -2363,11 +2341,9 @@ POSTHOOK: Input: default@part_null
 195606	almond aquamarine sandy cyan gainsboro	Manufacturer#2	Brand#25	STANDARD PLATED TIN	18	SM PKG	1701.6	ic de
 144293	almond antique olive coral navajo	Manufacturer#3	Brand#34	STANDARD POLISHED STEEL	45	JUMBO CAN	1337.29	ag furiously about 
 Warning: Shuffle Join MERGEJOIN[58][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 3' is a cross product
-PREHOOK: query: -- mix of corr and uncorr
-explain select * from part where p_size >= (select min(p_size) from part_null where part_null.p_type = part.p_type) AND p_retailprice <= (select max(p_retailprice) from part_null)
+PREHOOK: query: explain select * from part where p_size >= (select min(p_size) from part_null where part_null.p_type = part.p_type) AND p_retailprice <= (select max(p_retailprice) from part_null)
 PREHOOK: type: QUERY
-POSTHOOK: query: -- mix of corr and uncorr
-explain select * from part where p_size >= (select min(p_size) from part_null where part_null.p_type = part.p_type) AND p_retailprice <= (select max(p_retailprice) from part_null)
+POSTHOOK: query: explain select * from part where p_size >= (select min(p_size) from part_null where part_null.p_type = part.p_type) AND p_retailprice <= (select max(p_retailprice) from part_null)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -2668,11 +2644,9 @@ POSTHOOK: Input: default@part_null
 Warning: Shuffle Join MERGEJOIN[89][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 2' is a cross product
 Warning: Shuffle Join MERGEJOIN[90][tables = [$hdt$_4, $hdt$_5]] in Stage 'Reducer 11' is a cross product
 Warning: Shuffle Join MERGEJOIN[91][tables = [$hdt$_4, $hdt$_5, $hdt$_6]] in Stage 'Reducer 12' is a cross product
-PREHOOK: query: -- mix of scalar and IN corr 
-explain select * from part where p_brand <> (select min(p_brand) from part ) AND p_size IN (select (p_size) from part p where p.p_type = part.p_type ) AND p_size <> 340
+PREHOOK: query: explain select * from part where p_brand <> (select min(p_brand) from part ) AND p_size IN (select (p_size) from part p where p.p_type = part.p_type ) AND p_size <> 340
 PREHOOK: type: QUERY
-POSTHOOK: query: -- mix of scalar and IN corr 
-explain select * from part where p_brand <> (select min(p_brand) from part ) AND p_size IN (select (p_size) from part p where p.p_type = part.p_type ) AND p_size <> 340
+POSTHOOK: query: explain select * from part where p_brand <> (select min(p_brand) from part ) AND p_size IN (select (p_size) from part p where p.p_type = part.p_type ) AND p_size <> 340
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -3051,11 +3025,9 @@ POSTHOOK: Input: default@part
 42669	almond antique medium spring khaki	Manufacturer#5	Brand#51	STANDARD BURNISHED TIN	6	MED CAN	1611.66	sits haggl
 195606	almond aquamarine sandy cyan gainsboro	Manufacturer#2	Brand#25	STANDARD PLATED TIN	18	SM PKG	1701.6	ic de
 144293	almond antique olive coral navajo	Manufacturer#3	Brand#34	STANDARD POLISHED STEEL	45	JUMBO CAN	1337.29	ag furiously about 
-PREHOOK: query: -- multiple corr var with scalar query
-explain select * from part where p_size <> (select count(p_name) from part p where p.p_size = part.p_size AND part.p_partkey= p.p_partkey )
+PREHOOK: query: explain select * from part where p_size <> (select count(p_name) from part p where p.p_size = part.p_size AND part.p_partkey= p.p_partkey )
 PREHOOK: type: QUERY
-POSTHOOK: query: -- multiple corr var with scalar query
-explain select * from part where p_size <> (select count(p_name) from part p where p.p_size = part.p_size AND part.p_partkey= p.p_partkey )
+POSTHOOK: query: explain select * from part where p_size <> (select count(p_name) from part p where p.p_size = part.p_size AND part.p_partkey= p.p_partkey )
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -3249,11 +3221,9 @@ Warning: Shuffle Join MERGEJOIN[68][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reduc
 Warning: Shuffle Join MERGEJOIN[69][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 3' is a cross product
 Warning: Shuffle Join MERGEJOIN[70][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 5' is a cross product
 Warning: Shuffle Join MERGEJOIN[71][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 6' is a cross product
-PREHOOK: query: -- where + having
-explain select key, count(*) from src where value <> (select max(value) from src) group by key having count(*) > (select count(*) from src s1 where s1.key = '90' group by s1.key )
+PREHOOK: query: explain select key, count(*) from src where value <> (select max(value) from src) group by key having count(*) > (select count(*) from src s1 where s1.key = '90' group by s1.key )
 PREHOOK: type: QUERY
-POSTHOOK: query: -- where + having
-explain select key, count(*) from src where value <> (select max(value) from src) group by key having count(*) > (select count(*) from src s1 where s1.key = '90' group by s1.key )
+POSTHOOK: query: explain select key, count(*) from src where value <> (select max(value) from src) group by key having count(*) > (select count(*) from src s1 where s1.key = '90' group by s1.key )
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -3789,11 +3759,9 @@ POSTHOOK: Input: default@part
 2346.3
 Warning: Shuffle Join MERGEJOIN[79][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 Warning: Shuffle Join MERGEJOIN[80][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 3' is a cross product
-PREHOOK: query: -- scalar subquery with INTERSECT
-explain select * from part where p_size > (select count(p_name) from part INTERSECT select count(p_brand) from part)
+PREHOOK: query: explain select * from part where p_size > (select count(p_name) from part INTERSECT select count(p_brand) from part)
 PREHOOK: type: QUERY
-POSTHOOK: query: -- scalar subquery with INTERSECT
-explain select * from part where p_size > (select count(p_name) from part INTERSECT select count(p_brand) from part)
+POSTHOOK: query: explain select * from part where p_size > (select count(p_name) from part INTERSECT select count(p_brand) from part)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -4211,11 +4179,9 @@ POSTHOOK: Input: default@part
 45261	almond aquamarine floral ivory bisque	Manufacturer#4	Brand#42	SMALL PLATED STEEL	27	WRAP CASE	1206.26	careful
 192697	almond antique blue firebrick mint	Manufacturer#5	Brand#52	MEDIUM BURNISHED TIN	31	LG DRUM	1789.69	ickly ir
 15103	almond aquamarine dodger light gainsboro	Manufacturer#5	Brand#53	ECONOMY BURNISHED STEEL	46	LG PACK	1018.1	packages hinder carefu
-PREHOOK: query: -- join in subquery
-explain select p_partkey from part where p_name like (select max(p.p_name) from part p left outer join part pp on p.p_type = pp.p_type where pp.p_size = part.p_size)
+PREHOOK: query: explain select p_partkey from part where p_name like (select max(p.p_name) from part p left outer join part pp on p.p_type = pp.p_type where pp.p_size = part.p_size)
 PREHOOK: type: QUERY
-POSTHOOK: query: -- join in subquery
-explain select p_partkey from part where p_name like (select max(p.p_name) from part p left outer join part pp on p.p_type = pp.p_type where pp.p_size = part.p_size)
+POSTHOOK: query: explain select p_partkey from part where p_name like (select max(p.p_name) from part p left outer join part pp on p.p_type = pp.p_type where pp.p_size = part.p_size)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -4442,11 +4408,9 @@ POSTHOOK: Input: default@part
 Warning: Shuffle Join MERGEJOIN[53][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 Warning: Shuffle Join MERGEJOIN[54][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 3' is a cross product
 Warning: Shuffle Join MERGEJOIN[55][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 4' is a cross product
-PREHOOK: query: -- mix of NOT IN and scalar
-explain select * from part_null where p_name NOT LIKE (select min(p_name) from part_null) AND p_brand NOT IN (select p_name from part)
+PREHOOK: query: explain select * from part_null where p_name NOT LIKE (select min(p_name) from part_null) AND p_brand NOT IN (select p_name from part)
 PREHOOK: type: QUERY
-POSTHOOK: query: -- mix of NOT IN and scalar
-explain select * from part_null where p_name NOT LIKE (select min(p_name) from part_null) AND p_brand NOT IN (select p_name from part)
+POSTHOOK: query: explain select * from part_null where p_name NOT LIKE (select min(p_name) from part_null) AND p_brand NOT IN (select p_name from part)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -4750,11 +4714,9 @@ POSTHOOK: Input: default@part_null
 15103	almond aquamarine dodger light gainsboro	Manufacturer#5	Brand#53	ECONOMY BURNISHED STEEL	46	LG PACK	1018.1	packages hinder carefu
 Warning: Shuffle Join MERGEJOIN[78][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 Warning: Shuffle Join MERGEJOIN[79][tables = [$hdt$_2, $hdt$_3]] in Stage 'Reducer 13' is a cross product
-PREHOOK: query: -- mix of NOT IN and corr scalar
-explain select * from part_null where p_brand NOT IN (select p_name from part) AND p_name NOT LIKE (select min(p_name) from part_null pp where part_null.p_type = pp.p_type)
+PREHOOK: query: explain select * from part_null where p_brand NOT IN (select p_name from part) AND p_name NOT LIKE (select min(p_name) from part_null pp where part_null.p_type = pp.p_type)
 PREHOOK: type: QUERY
-POSTHOOK: query: -- mix of NOT IN and corr scalar
-explain select * from part_null where p_brand NOT IN (select p_name from part) AND p_name NOT LIKE (select min(p_name) from part_null pp where part_null.p_type = pp.p_type)
+POSTHOOK: query: explain select * from part_null where p_brand NOT IN (select p_name from part) AND p_name NOT LIKE (select min(p_name) from part_null pp where part_null.p_type = pp.p_type)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -5139,14 +5101,12 @@ POSTHOOK: Input: default@part
 POSTHOOK: Input: default@part_null
 #### A masked pattern was here ####
 90681	almond antique chartreuse khaki white	Manufacturer#3	Brand#31	MEDIUM BURNISHED TIN	17	SM CASE	1671.68	are slyly after the sl
-PREHOOK: query: -- non corr, with join in parent query
-explain select p.p_partkey, li.l_suppkey 
+PREHOOK: query: explain select p.p_partkey, li.l_suppkey 
 from (select distinct l_partkey as p_partkey from lineitem) p join lineitem li on p.p_partkey = li.l_partkey 
 where li.l_linenumber = 1 and
 li.l_orderkey <> (select min(l_orderkey) from lineitem where l_shipmode = 'AIR' and l_linenumber = li.l_linenumber)
 PREHOOK: type: QUERY
-POSTHOOK: query: -- non corr, with join in parent query
-explain select p.p_partkey, li.l_suppkey 
+POSTHOOK: query: explain select p.p_partkey, li.l_suppkey 
 from (select distinct l_partkey as p_partkey from lineitem) p join lineitem li on p.p_partkey = li.l_partkey 
 where li.l_linenumber = 1 and
 li.l_orderkey <> (select min(l_orderkey) from lineitem where l_shipmode = 'AIR' and l_linenumber = li.l_linenumber)
@@ -5464,14 +5424,12 @@ POSTHOOK: Input: default@lineitem
 155190	7706
 175839	874
 182052	9607
-PREHOOK: query: -- corr, with join in outer query
-explain select p.p_partkey, li.l_suppkey 
+PREHOOK: query: explain select p.p_partkey, li.l_suppkey 
 from (select distinct l_partkey as p_partkey from lineitem) p join lineitem li on p.p_partkey = li.l_partkey 
 where li.l_linenumber = 1 and
  li.l_orderkey <> (select min(l_orderkey) from lineitem where l_shipmode = 'AIR' and l_linenumber = li.l_linenumber)
 PREHOOK: type: QUERY
-POSTHOOK: query: -- corr, with join in outer query
-explain select p.p_partkey, li.l_suppkey 
+POSTHOOK: query: explain select p.p_partkey, li.l_suppkey 
 from (select distinct l_partkey as p_partkey from lineitem) p join lineitem li on p.p_partkey = li.l_partkey 
 where li.l_linenumber = 1 and
  li.l_orderkey <> (select min(l_orderkey) from lineitem where l_shipmode = 'AIR' and l_linenumber = li.l_linenumber)
@@ -5791,11 +5749,9 @@ POSTHOOK: Input: default@lineitem
 182052	9607
 Warning: Shuffle Join MERGEJOIN[98][tables = [$hdt$_3, $hdt$_4]] in Stage 'Reducer 9' is a cross product
 Warning: Shuffle Join MERGEJOIN[99][tables = [$hdt$_4, $hdt$_5]] in Stage 'Reducer 16' is a cross product
-PREHOOK: query: -- corr, aggregate in outer
-explain select sum(l_extendedprice) from lineitem, part where p_partkey = l_partkey and l_quantity > (select avg(l_quantity) from lineitem where l_partkey = p_partkey)
+PREHOOK: query: explain select sum(l_extendedprice) from lineitem, part where p_partkey = l_partkey and l_quantity > (select avg(l_quantity) from lineitem where l_partkey = p_partkey)
 PREHOOK: type: QUERY
-POSTHOOK: query: -- corr, aggregate in outer
-explain select sum(l_extendedprice) from lineitem, part where p_partkey = l_partkey and l_quantity > (select avg(l_quantity) from lineitem where l_partkey = p_partkey)
+POSTHOOK: query: explain select sum(l_extendedprice) from lineitem, part where p_partkey = l_partkey and l_quantity > (select avg(l_quantity) from lineitem where l_partkey = p_partkey)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -6169,11 +6125,9 @@ POSTHOOK: Input: default@lineitem
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
 NULL
-PREHOOK: query: -- nested with scalar
-explain select * from part_null where p_name IN (select p_name from part where part.p_type = part_null.p_type AND p_brand NOT LIKE (select min(p_brand) from part pp where part.p_type = pp.p_type))
+PREHOOK: query: explain select * from part_null where p_name IN (select p_name from part where part.p_type = part_null.p_type AND p_brand NOT LIKE (select min(p_brand) from part pp where part.p_type = pp.p_type))
 PREHOOK: type: QUERY
-POSTHOOK: query: -- nested with scalar
-explain select * from part_null where p_name IN (select p_name from part where part.p_type = part_null.p_type AND p_brand NOT LIKE (select min(p_brand) from part pp where part.p_type = pp.p_type))
+POSTHOOK: query: explain select * from part_null where p_name IN (select p_name from part where part.p_type = part_null.p_type AND p_brand NOT LIKE (select min(p_brand) from part pp where part.p_type = pp.p_type))
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -6595,11 +6549,9 @@ POSTHOOK: Input: default@values__tmp__table__10
 POSTHOOK: Output: default@depts
 POSTHOOK: Lineage: depts.deptno EXPRESSION [(values__tmp__table__10)values__tmp__table__10.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 POSTHOOK: Lineage: depts.name SIMPLE [(values__tmp__table__10)values__tmp__table__10.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
-PREHOOK: query: -- corr, scalar, with count aggregate
-explain select * from emps where deptno <> (select count(deptno) from depts where depts.name = emps.name)
+PREHOOK: query: explain select * from emps where deptno <> (select count(deptno) from depts where depts.name = emps.name)
 PREHOOK: type: QUERY
-POSTHOOK: query: -- corr, scalar, with count aggregate
-explain select * from emps where deptno <> (select count(deptno) from depts where depts.name = emps.name)
+POSTHOOK: query: explain select * from emps where deptno <> (select count(deptno) from depts where depts.name = emps.name)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -6945,11 +6897,9 @@ POSTHOOK: Input: default@depts
 POSTHOOK: Input: default@emps
 #### A masked pattern was here ####
 120	Wilma	20	F	NULL	1	5	NULL	true	2005-09-07
-PREHOOK: query: -- corr, scalar multiple subq with count aggregate
-explain select * from emps where deptno <> (select count(deptno) from depts where depts.name = emps.name) and empno > (select count(name) from depts where depts.deptno = emps.deptno)
+PREHOOK: query: explain select * from emps where deptno <> (select count(deptno) from depts where depts.name = emps.name) and empno > (select count(name) from depts where depts.deptno = emps.deptno)
 PREHOOK: type: QUERY
-POSTHOOK: query: -- corr, scalar multiple subq with count aggregate
-explain select * from emps where deptno <> (select count(deptno) from depts where depts.name = emps.name) and empno > (select count(name) from depts where depts.deptno = emps.deptno)
+POSTHOOK: query: explain select * from emps where deptno <> (select count(deptno) from depts where depts.name = emps.name) and empno > (select count(name) from depts where depts.deptno = emps.deptno)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -7245,11 +7195,9 @@ POSTHOOK: Input: default@emps
 130	Alice	40	F	Vancouver	2	NULL	false	true	2007-01-01
 110	John	40	M	Vancouver	2	NULL	false	true	2002-05-03
 Warning: Shuffle Join MERGEJOIN[58][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 3' is a cross product
-PREHOOK: query: -- mix of corr, uncorr with aggregate
-explain select * from emps where deptno <> (select sum(deptno) from depts where depts.name = emps.name) and empno > (select count(name) from depts)
+PREHOOK: query: explain select * from emps where deptno <> (select sum(deptno) from depts where depts.name = emps.name) and empno > (select count(name) from depts)
 PREHOOK: type: QUERY
-POSTHOOK: query: -- mix of corr, uncorr with aggregate
-explain select * from emps where deptno <> (select sum(deptno) from depts where depts.name = emps.name) and empno > (select count(name) from depts)
+POSTHOOK: query: explain select * from emps where deptno <> (select sum(deptno) from depts where depts.name = emps.name) and empno > (select count(name) from depts)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -7544,15 +7492,13 @@ POSTHOOK: Input: default@emps
 POSTHOOK: Output: default@emps
 Warning: Shuffle Join MERGEJOIN[39][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 3' is a cross product
 Warning: Shuffle Join MERGEJOIN[40][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 4' is a cross product
-PREHOOK: query: -- having
-explain
+PREHOOK: query: explain
  select key, count(*)
 from src
 group by key
 having count(*) > (select count(*) from src s1 where s1.key > '9' )
 PREHOOK: type: QUERY
-POSTHOOK: query: -- having
-explain
+POSTHOOK: query: explain
  select key, count(*)
 from src
 group by key

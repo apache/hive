@@ -36,13 +36,11 @@ POSTHOOK: Input: default@test_table123
 POSTHOOK: Input: default@test_table123@ds=foo1
 #### A masked pattern was here ####
 1	{"a1":"b1"}	foo1
-PREHOOK: query: -- This should now work as hive.metastore.disallow.incompatible.col.type.changes is false
-ALTER TABLE test_table123 REPLACE COLUMNS (a INT, b STRING)
+PREHOOK: query: ALTER TABLE test_table123 REPLACE COLUMNS (a INT, b STRING)
 PREHOOK: type: ALTERTABLE_REPLACECOLS
 PREHOOK: Input: default@test_table123
 PREHOOK: Output: default@test_table123
-POSTHOOK: query: -- This should now work as hive.metastore.disallow.incompatible.col.type.changes is false
-ALTER TABLE test_table123 REPLACE COLUMNS (a INT, b STRING)
+POSTHOOK: query: ALTER TABLE test_table123 REPLACE COLUMNS (a INT, b STRING)
 POSTHOOK: type: ALTERTABLE_REPLACECOLS
 POSTHOOK: Input: default@test_table123
 POSTHOOK: Output: default@test_table123

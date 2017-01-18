@@ -1,14 +1,10 @@
-PREHOOK: query: -- SORT_QUERY_RESULTS
-
-create table if not exists nzhang_part_bucket (key string, value string) 
+PREHOOK: query: create table if not exists nzhang_part_bucket (key string, value string) 
   partitioned by (ds string, hr string) 
   clustered by (key) into 10 buckets
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@nzhang_part_bucket
-POSTHOOK: query: -- SORT_QUERY_RESULTS
-
-create table if not exists nzhang_part_bucket (key string, value string) 
+POSTHOOK: query: create table if not exists nzhang_part_bucket (key string, value string) 
   partitioned by (ds string, hr string) 
   clustered by (key) into 10 buckets
 POSTHOOK: type: CREATETABLE

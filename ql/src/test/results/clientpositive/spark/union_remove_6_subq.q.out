@@ -1,26 +1,8 @@
-PREHOOK: query: -- SORT_QUERY_RESULTS
-
--- This is to test the union->selectstar->filesink optimization
--- Union of 2 subqueries is performed (all of which are mapred queries)
--- followed by select star and a file sink in 2 output tables.
--- The optimiaztion does not take affect since it is a multi-table insert.
--- It does not matter, whether the output is merged or not. In this case,
--- merging is turned off
-
-create table inputTbl1(key string, val string) stored as textfile
+PREHOOK: query: create table inputTbl1(key string, val string) stored as textfile
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@inputTbl1
-POSTHOOK: query: -- SORT_QUERY_RESULTS
-
--- This is to test the union->selectstar->filesink optimization
--- Union of 2 subqueries is performed (all of which are mapred queries)
--- followed by select star and a file sink in 2 output tables.
--- The optimiaztion does not take affect since it is a multi-table insert.
--- It does not matter, whether the output is merged or not. In this case,
--- merging is turned off
-
-create table inputTbl1(key string, val string) stored as textfile
+POSTHOOK: query: create table inputTbl1(key string, val string) stored as textfile
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@inputTbl1
@@ -239,16 +221,14 @@ POSTHOOK: Input: default@outputtbl2
 7	1
 8	2
 8	2
-PREHOOK: query: -- The following queries guarantee the correctness.
-explain
+PREHOOK: query: explain
 select avg(c) from(
   SELECT count(1)-200 as c from src
   UNION ALL
   SELECT count(1) as c from src
 )subq
 PREHOOK: type: QUERY
-POSTHOOK: query: -- The following queries guarantee the correctness.
-explain
+POSTHOOK: query: explain
 select avg(c) from(
   SELECT count(1)-200 as c from src
   UNION ALL

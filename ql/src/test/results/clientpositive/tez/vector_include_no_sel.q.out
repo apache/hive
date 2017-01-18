@@ -1,13 +1,4 @@
-PREHOOK: query: -- HIVE-13872
--- Looking for TableScan immediately followed by ReduceSink (no intervening SEL operator).
--- This caused problems for Vectorizer not eliminating columns which are not included.
--- The input file format didn't fill in those vectorized columns and thus caused NPE in
--- ReduceSink.
--- Only a problem when NOT CBO because of CBO rule-based transforms.
---
--- Using a cross-product.
-
-create table store_sales_txt
+PREHOOK: query: create table store_sales_txt
 (
     ss_sold_date_sk           int,
     ss_sold_time_sk           int,
@@ -38,16 +29,7 @@ stored as textfile
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@store_sales_txt
-POSTHOOK: query: -- HIVE-13872
--- Looking for TableScan immediately followed by ReduceSink (no intervening SEL operator).
--- This caused problems for Vectorizer not eliminating columns which are not included.
--- The input file format didn't fill in those vectorized columns and thus caused NPE in
--- ReduceSink.
--- Only a problem when NOT CBO because of CBO rule-based transforms.
---
--- Using a cross-product.
-
-create table store_sales_txt
+POSTHOOK: query: create table store_sales_txt
 (
     ss_sold_date_sk           int,
     ss_sold_time_sk           int,

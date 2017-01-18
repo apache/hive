@@ -118,41 +118,9 @@ POSTHOOK: query: analyze table loc compute statistics for columns state,locid,zi
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@loc
 #### A masked pattern was here ####
-PREHOOK: query: -- number of rows
--- emp  - 48
--- dept - 6
--- loc  - 8
-
--- count distincts for relevant columns (since count distinct values are approximate in some cases count distint values will be greater than number of rows)
--- emp.deptid - 3
--- emp.lastname - 6
--- emp.locid - 7
--- dept.deptid - 7
--- dept.deptname - 6
--- loc.locid - 7
--- loc.state - 6
-
--- 2 relations, 1 attribute
--- Expected output rows: (48*6)/max(3,7) = 41
-explain select * from emp e join dept d on (e.deptid = d.deptid)
+PREHOOK: query: explain select * from emp e join dept d on (e.deptid = d.deptid)
 PREHOOK: type: QUERY
-POSTHOOK: query: -- number of rows
--- emp  - 48
--- dept - 6
--- loc  - 8
-
--- count distincts for relevant columns (since count distinct values are approximate in some cases count distint values will be greater than number of rows)
--- emp.deptid - 3
--- emp.lastname - 6
--- emp.locid - 7
--- dept.deptid - 7
--- dept.deptname - 6
--- loc.locid - 7
--- loc.state - 6
-
--- 2 relations, 1 attribute
--- Expected output rows: (48*6)/max(3,7) = 41
-explain select * from emp e join dept d on (e.deptid = d.deptid)
+POSTHOOK: query: explain select * from emp e join dept d on (e.deptid = d.deptid)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -225,13 +193,9 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: -- 2 relations, 2 attributes
--- Expected output rows: (48*6)/(max(3,7) * max(6,6)) = 6
-explain select * from emp,dept where emp.deptid = dept.deptid and emp.lastname = dept.deptname
+PREHOOK: query: explain select * from emp,dept where emp.deptid = dept.deptid and emp.lastname = dept.deptname
 PREHOOK: type: QUERY
-POSTHOOK: query: -- 2 relations, 2 attributes
--- Expected output rows: (48*6)/(max(3,7) * max(6,6)) = 6
-explain select * from emp,dept where emp.deptid = dept.deptid and emp.lastname = dept.deptname
+POSTHOOK: query: explain select * from emp,dept where emp.deptid = dept.deptid and emp.lastname = dept.deptname
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -377,13 +341,9 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: -- 2 relations, 3 attributes
--- Expected output rows: (48*6)/(max(3,7) * max(6,6) * max(6,6)) = 1
-explain select * from emp,dept where emp.deptid = dept.deptid and emp.lastname = dept.deptname and dept.deptname = emp.lastname
+PREHOOK: query: explain select * from emp,dept where emp.deptid = dept.deptid and emp.lastname = dept.deptname and dept.deptname = emp.lastname
 PREHOOK: type: QUERY
-POSTHOOK: query: -- 2 relations, 3 attributes
--- Expected output rows: (48*6)/(max(3,7) * max(6,6) * max(6,6)) = 1
-explain select * from emp,dept where emp.deptid = dept.deptid and emp.lastname = dept.deptname and dept.deptname = emp.lastname
+POSTHOOK: query: explain select * from emp,dept where emp.deptid = dept.deptid and emp.lastname = dept.deptname and dept.deptname = emp.lastname
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -455,13 +415,9 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: -- 3 relations, 1 attribute
--- Expected output rows: (48*6*48)/top2largest(3,7,3) = 658
-explain select * from emp e join dept d on (e.deptid = d.deptid) join emp e1 on (e.deptid = e1.deptid)
+PREHOOK: query: explain select * from emp e join dept d on (e.deptid = d.deptid) join emp e1 on (e.deptid = e1.deptid)
 PREHOOK: type: QUERY
-POSTHOOK: query: -- 3 relations, 1 attribute
--- Expected output rows: (48*6*48)/top2largest(3,7,3) = 658
-explain select * from emp e join dept d on (e.deptid = d.deptid) join emp e1 on (e.deptid = e1.deptid)
+POSTHOOK: query: explain select * from emp e join dept d on (e.deptid = d.deptid) join emp e1 on (e.deptid = e1.deptid)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -554,11 +510,9 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: -- Expected output rows: (48*6*8)/top2largest(3,7,7) = 47
-explain select * from emp e join dept d  on (e.deptid = d.deptid) join loc l on (e.deptid = l.locid)
+PREHOOK: query: explain select * from emp e join dept d  on (e.deptid = d.deptid) join loc l on (e.deptid = l.locid)
 PREHOOK: type: QUERY
-POSTHOOK: query: -- Expected output rows: (48*6*8)/top2largest(3,7,7) = 47
-explain select * from emp e join dept d  on (e.deptid = d.deptid) join loc l on (e.deptid = l.locid)
+POSTHOOK: query: explain select * from emp e join dept d  on (e.deptid = d.deptid) join loc l on (e.deptid = l.locid)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -651,13 +605,9 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: -- 3 relations and 2 attribute
--- Expected output rows: (48*6*8)/top2largest(3,7,7)*top2largest(6,6,6) = 1
-explain select * from emp e join dept d on (e.deptid = d.deptid and e.lastname = d.deptname) join loc l on (e.deptid = l.locid and e.lastname = l.state)
+PREHOOK: query: explain select * from emp e join dept d on (e.deptid = d.deptid and e.lastname = d.deptname) join loc l on (e.deptid = l.locid and e.lastname = l.state)
 PREHOOK: type: QUERY
-POSTHOOK: query: -- 3 relations and 2 attribute
--- Expected output rows: (48*6*8)/top2largest(3,7,7)*top2largest(6,6,6) = 1
-explain select * from emp e join dept d on (e.deptid = d.deptid and e.lastname = d.deptname) join loc l on (e.deptid = l.locid and e.lastname = l.state)
+POSTHOOK: query: explain select * from emp e join dept d on (e.deptid = d.deptid and e.lastname = d.deptname) join loc l on (e.deptid = l.locid and e.lastname = l.state)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -749,11 +699,9 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: -- left outer join
-explain select * from emp left outer join dept on emp.deptid = dept.deptid and emp.lastname = dept.deptname and dept.deptname = emp.lastname
+PREHOOK: query: explain select * from emp left outer join dept on emp.deptid = dept.deptid and emp.lastname = dept.deptname and dept.deptname = emp.lastname
 PREHOOK: type: QUERY
-POSTHOOK: query: -- left outer join
-explain select * from emp left outer join dept on emp.deptid = dept.deptid and emp.lastname = dept.deptname and dept.deptname = emp.lastname
+POSTHOOK: query: explain select * from emp left outer join dept on emp.deptid = dept.deptid and emp.lastname = dept.deptname and dept.deptname = emp.lastname
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -819,11 +767,9 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: -- left semi join
-explain select * from emp left semi join dept on emp.deptid = dept.deptid and emp.lastname = dept.deptname and dept.deptname = emp.lastname
+PREHOOK: query: explain select * from emp left semi join dept on emp.deptid = dept.deptid and emp.lastname = dept.deptname and dept.deptname = emp.lastname
 PREHOOK: type: QUERY
-POSTHOOK: query: -- left semi join
-explain select * from emp left semi join dept on emp.deptid = dept.deptid and emp.lastname = dept.deptname and dept.deptname = emp.lastname
+POSTHOOK: query: explain select * from emp left semi join dept on emp.deptid = dept.deptid and emp.lastname = dept.deptname and dept.deptname = emp.lastname
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -900,11 +846,9 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: -- right outer join
-explain select * from emp right outer join dept on emp.deptid = dept.deptid and emp.lastname = dept.deptname and dept.deptname = emp.lastname
+PREHOOK: query: explain select * from emp right outer join dept on emp.deptid = dept.deptid and emp.lastname = dept.deptname and dept.deptname = emp.lastname
 PREHOOK: type: QUERY
-POSTHOOK: query: -- right outer join
-explain select * from emp right outer join dept on emp.deptid = dept.deptid and emp.lastname = dept.deptname and dept.deptname = emp.lastname
+POSTHOOK: query: explain select * from emp right outer join dept on emp.deptid = dept.deptid and emp.lastname = dept.deptname and dept.deptname = emp.lastname
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -970,11 +914,9 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: -- full outer join
-explain select * from emp full outer join dept on emp.deptid = dept.deptid and emp.lastname = dept.deptname and dept.deptname = emp.lastname
+PREHOOK: query: explain select * from emp full outer join dept on emp.deptid = dept.deptid and emp.lastname = dept.deptname and dept.deptname = emp.lastname
 PREHOOK: type: QUERY
-POSTHOOK: query: -- full outer join
-explain select * from emp full outer join dept on emp.deptid = dept.deptid and emp.lastname = dept.deptname and dept.deptname = emp.lastname
+POSTHOOK: query: explain select * from emp full outer join dept on emp.deptid = dept.deptid and emp.lastname = dept.deptname and dept.deptname = emp.lastname
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage

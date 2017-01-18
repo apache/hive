@@ -1,6 +1,4 @@
-PREHOOK: query: -- disabling map side aggregation as that can lead to different intermediate record counts
-
-CREATE TABLE staging(t tinyint,
+PREHOOK: query: CREATE TABLE staging(t tinyint,
            si smallint,
            i int,
            b bigint,
@@ -16,9 +14,7 @@ STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@staging
-POSTHOOK: query: -- disabling map side aggregation as that can lead to different intermediate record counts
-
-CREATE TABLE staging(t tinyint,
+POSTHOOK: query: CREATE TABLE staging(t tinyint,
            si smallint,
            i int,
            b bigint,
@@ -105,15 +101,11 @@ POSTHOOK: Lineage: orc_ppd_staging.s SIMPLE [(staging)staging.FieldSchema(name:s
 POSTHOOK: Lineage: orc_ppd_staging.si SIMPLE [(staging)staging.FieldSchema(name:si, type:smallint, comment:null), ]
 POSTHOOK: Lineage: orc_ppd_staging.t SIMPLE [(staging)staging.FieldSchema(name:t, type:tinyint, comment:null), ]
 POSTHOOK: Lineage: orc_ppd_staging.v EXPRESSION [(staging)staging.FieldSchema(name:s, type:string, comment:null), ]
-PREHOOK: query: -- just to introduce a gap in min/max range for bloom filters. The dataset has contiguous values
--- which makes it hard to test bloom filters
-insert into orc_ppd_staging select -10,-321,-65680,-4294967430,-97.94,-13.07,true,"aaa","aaa","aaa","1990-03-11",-71.54,"aaa" from staging limit 1
+PREHOOK: query: insert into orc_ppd_staging select -10,-321,-65680,-4294967430,-97.94,-13.07,true,"aaa","aaa","aaa","1990-03-11",-71.54,"aaa" from staging limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@staging
 PREHOOK: Output: default@orc_ppd_staging
-POSTHOOK: query: -- just to introduce a gap in min/max range for bloom filters. The dataset has contiguous values
--- which makes it hard to test bloom filters
-insert into orc_ppd_staging select -10,-321,-65680,-4294967430,-97.94,-13.07,true,"aaa","aaa","aaa","1990-03-11",-71.54,"aaa" from staging limit 1
+POSTHOOK: query: insert into orc_ppd_staging select -10,-321,-65680,-4294967430,-97.94,-13.07,true,"aaa","aaa","aaa","1990-03-11",-71.54,"aaa" from staging limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@staging
 POSTHOOK: Output: default@orc_ppd_staging
@@ -206,43 +198,32 @@ POSTHOOK: Lineage: orc_ppd.s SIMPLE [(orc_ppd_staging)orc_ppd_staging.FieldSchem
 POSTHOOK: Lineage: orc_ppd.si SIMPLE [(orc_ppd_staging)orc_ppd_staging.FieldSchema(name:si, type:smallint, comment:null), ]
 POSTHOOK: Lineage: orc_ppd.t SIMPLE [(orc_ppd_staging)orc_ppd_staging.FieldSchema(name:t, type:tinyint, comment:null), ]
 POSTHOOK: Lineage: orc_ppd.v EXPRESSION [(orc_ppd_staging)orc_ppd_staging.FieldSchema(name:s, type:string, comment:null), ]
-PREHOOK: query: -- Row group statistics for column t:
--- Entry 0: count: 994 hasNull: true min: -10 max: 54 sum: 26014 positions: 0,0,0,0,0,0,0
--- Entry 1: count: 1000 hasNull: false min: 54 max: 118 sum: 86812 positions: 0,2,124,0,0,116,11
--- Entry 2: count: 100 hasNull: false min: 118 max: 127 sum: 12151 positions: 0,4,119,0,0,244,19
-
--- INPUT_RECORDS: 0 (no row groups)
-select count(*) from orc_ppd where t > 127
+PREHOOK: query: select count(*) from orc_ppd where t > 127
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_ppd
 #### A masked pattern was here ####
 0
-PREHOOK: query: -- INPUT_RECORDS: 0 (no row groups)
-select count(*) from orc_ppd where t > 127
+PREHOOK: query: select count(*) from orc_ppd where t > 127
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_ppd
 #### A masked pattern was here ####
 0
-PREHOOK: query: -- INPUT_RECORDS: 1000 (1 row group)
-select count(*) from orc_ppd where t = 55
+PREHOOK: query: select count(*) from orc_ppd where t = 55
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_ppd
 #### A masked pattern was here ####
 8
-PREHOOK: query: -- INPUT_RECORDS: 1000 (1 row group)
-select count(*) from orc_ppd where t = 55
+PREHOOK: query: select count(*) from orc_ppd where t = 55
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_ppd
 #### A masked pattern was here ####
 8
-PREHOOK: query: -- INPUT_RECORDS: 2000 (2 row groups)
-select count(*) from orc_ppd where t = 54
+PREHOOK: query: select count(*) from orc_ppd where t = 54
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_ppd
 #### A masked pattern was here ####
 18
-PREHOOK: query: -- INPUT_RECORDS: 2000 (2 row groups)
-select count(*) from orc_ppd where t = 54
+PREHOOK: query: select count(*) from orc_ppd where t = 54
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_ppd
 #### A masked pattern was here ####
@@ -251,38 +232,32 @@ PREHOOK: query: alter table orc_ppd change column t t smallint
 PREHOOK: type: ALTERTABLE_RENAMECOL
 PREHOOK: Input: default@orc_ppd
 PREHOOK: Output: default@orc_ppd
-PREHOOK: query: -- INPUT_RECORDS: 0 (no row groups)
-select count(*) from orc_ppd where t > 127
+PREHOOK: query: select count(*) from orc_ppd where t > 127
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_ppd
 #### A masked pattern was here ####
 0
-PREHOOK: query: -- INPUT_RECORDS: 0 (no row groups)
-select count(*) from orc_ppd where t > 127
+PREHOOK: query: select count(*) from orc_ppd where t > 127
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_ppd
 #### A masked pattern was here ####
 0
-PREHOOK: query: -- INPUT_RECORDS: 1000 (1 row group)
-select count(*) from orc_ppd where t = 55
+PREHOOK: query: select count(*) from orc_ppd where t = 55
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_ppd
 #### A masked pattern was here ####
 8
-PREHOOK: query: -- INPUT_RECORDS: 1000 (1 row group)
-select count(*) from orc_ppd where t = 55
+PREHOOK: query: select count(*) from orc_ppd where t = 55
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_ppd
 #### A masked pattern was here ####
 8
-PREHOOK: query: -- INPUT_RECORDS: 2000 (2 row groups)
-select count(*) from orc_ppd where t = 54
+PREHOOK: query: select count(*) from orc_ppd where t = 54
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_ppd
 #### A masked pattern was here ####
 18
-PREHOOK: query: -- INPUT_RECORDS: 2000 (2 row groups)
-select count(*) from orc_ppd where t = 54
+PREHOOK: query: select count(*) from orc_ppd where t = 54
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_ppd
 #### A masked pattern was here ####
@@ -291,38 +266,32 @@ PREHOOK: query: alter table orc_ppd change column t t int
 PREHOOK: type: ALTERTABLE_RENAMECOL
 PREHOOK: Input: default@orc_ppd
 PREHOOK: Output: default@orc_ppd
-PREHOOK: query: -- INPUT_RECORDS: 0 (no row groups)
-select count(*) from orc_ppd where t > 127
+PREHOOK: query: select count(*) from orc_ppd where t > 127
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_ppd
 #### A masked pattern was here ####
 0
-PREHOOK: query: -- INPUT_RECORDS: 0 (no row groups)
-select count(*) from orc_ppd where t > 127
+PREHOOK: query: select count(*) from orc_ppd where t > 127
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_ppd
 #### A masked pattern was here ####
 0
-PREHOOK: query: -- INPUT_RECORDS: 1000 (1 row group)
-select count(*) from orc_ppd where t = 55
+PREHOOK: query: select count(*) from orc_ppd where t = 55
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_ppd
 #### A masked pattern was here ####
 8
-PREHOOK: query: -- INPUT_RECORDS: 1000 (1 row group)
-select count(*) from orc_ppd where t = 55
+PREHOOK: query: select count(*) from orc_ppd where t = 55
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_ppd
 #### A masked pattern was here ####
 8
-PREHOOK: query: -- INPUT_RECORDS: 2000 (2 row groups)
-select count(*) from orc_ppd where t = 54
+PREHOOK: query: select count(*) from orc_ppd where t = 54
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_ppd
 #### A masked pattern was here ####
 18
-PREHOOK: query: -- INPUT_RECORDS: 2000 (2 row groups)
-select count(*) from orc_ppd where t = 54
+PREHOOK: query: select count(*) from orc_ppd where t = 54
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_ppd
 #### A masked pattern was here ####
@@ -331,38 +300,32 @@ PREHOOK: query: alter table orc_ppd change column t t bigint
 PREHOOK: type: ALTERTABLE_RENAMECOL
 PREHOOK: Input: default@orc_ppd
 PREHOOK: Output: default@orc_ppd
-PREHOOK: query: -- INPUT_RECORDS: 0 (no row groups)
-select count(*) from orc_ppd where t > 127
+PREHOOK: query: select count(*) from orc_ppd where t > 127
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_ppd
 #### A masked pattern was here ####
 0
-PREHOOK: query: -- INPUT_RECORDS: 0 (no row groups)
-select count(*) from orc_ppd where t > 127
+PREHOOK: query: select count(*) from orc_ppd where t > 127
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_ppd
 #### A masked pattern was here ####
 0
-PREHOOK: query: -- INPUT_RECORDS: 1000 (1 row group)
-select count(*) from orc_ppd where t = 55
+PREHOOK: query: select count(*) from orc_ppd where t = 55
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_ppd
 #### A masked pattern was here ####
 8
-PREHOOK: query: -- INPUT_RECORDS: 1000 (1 row group)
-select count(*) from orc_ppd where t = 55
+PREHOOK: query: select count(*) from orc_ppd where t = 55
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_ppd
 #### A masked pattern was here ####
 8
-PREHOOK: query: -- INPUT_RECORDS: 2000 (2 row groups)
-select count(*) from orc_ppd where t = 54
+PREHOOK: query: select count(*) from orc_ppd where t = 54
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_ppd
 #### A masked pattern was here ####
 18
-PREHOOK: query: -- INPUT_RECORDS: 2000 (2 row groups)
-select count(*) from orc_ppd where t = 54
+PREHOOK: query: select count(*) from orc_ppd where t = 54
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_ppd
 #### A masked pattern was here ####
@@ -371,44 +334,37 @@ PREHOOK: query: alter table orc_ppd change column t t string
 PREHOOK: type: ALTERTABLE_RENAMECOL
 PREHOOK: Input: default@orc_ppd
 PREHOOK: Output: default@orc_ppd
-PREHOOK: query: -- INPUT_RECORDS: 0 (no row groups)
-select count(*) from orc_ppd where t > '127'
+PREHOOK: query: select count(*) from orc_ppd where t > '127'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_ppd
 #### A masked pattern was here ####
 1566
-PREHOOK: query: -- INPUT_RECORDS: 0 (no row groups)
-select count(*) from orc_ppd where t > '127'
+PREHOOK: query: select count(*) from orc_ppd where t > '127'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_ppd
 #### A masked pattern was here ####
 1566
-PREHOOK: query: -- INPUT_RECORDS: 1000 (1 row group)
-select count(*) from orc_ppd where t = '55'
+PREHOOK: query: select count(*) from orc_ppd where t = '55'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_ppd
 #### A masked pattern was here ####
 8
-PREHOOK: query: -- INPUT_RECORDS: 1000 (1 row group)
-select count(*) from orc_ppd where t = '55'
+PREHOOK: query: select count(*) from orc_ppd where t = '55'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_ppd
 #### A masked pattern was here ####
 8
-PREHOOK: query: -- INPUT_RECORDS: 2000 (2 row groups)
-select count(*) from orc_ppd where t = '54'
+PREHOOK: query: select count(*) from orc_ppd where t = '54'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_ppd
 #### A masked pattern was here ####
 18
-PREHOOK: query: -- INPUT_RECORDS: 2000 (2 row groups)
-select count(*) from orc_ppd where t = '54'
+PREHOOK: query: select count(*) from orc_ppd where t = '54'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_ppd
 #### A masked pattern was here ####
 18
-PREHOOK: query: -- float tests
-select count(*) from orc_ppd where f = 74.72
+PREHOOK: query: select count(*) from orc_ppd where f = 74.72
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_ppd
 #### A masked pattern was here ####
@@ -446,8 +402,7 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_ppd
 #### A masked pattern was here ####
 2
-PREHOOK: query: -- string tests
-select count(*) from orc_ppd where s = 'bob davidson'
+PREHOOK: query: select count(*) from orc_ppd where s = 'bob davidson'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_ppd
 #### A masked pattern was here ####
@@ -517,8 +472,7 @@ PREHOOK: query: alter table orc_ppd add columns (boo boolean)
 PREHOOK: type: ALTERTABLE_ADDCOLS
 PREHOOK: Input: default@orc_ppd
 PREHOOK: Output: default@orc_ppd
-PREHOOK: query: -- ppd on newly added column
-select count(*) from orc_ppd where si = 442
+PREHOOK: query: select count(*) from orc_ppd where si = 442
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_ppd
 #### A masked pattern was here ####

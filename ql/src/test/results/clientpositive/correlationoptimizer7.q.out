@@ -1,6 +1,4 @@
-PREHOOK: query: -- SORT_QUERY_RESULTS
-
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT xx.key, xx.cnt, yy.key, yy.value
 FROM (SELECT x.key AS key, count(1) AS cnt
       FROM src x JOIN src1 y ON (x.key = y.key)
@@ -8,9 +6,7 @@ FROM (SELECT x.key AS key, count(1) AS cnt
 JOIN src1 yy
 ON xx.key=yy.key
 PREHOOK: type: QUERY
-POSTHOOK: query: -- SORT_QUERY_RESULTS
-
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT xx.key, xx.cnt, yy.key, yy.value
 FROM (SELECT x.key AS key, count(1) AS cnt
       FROM src x JOIN src1 y ON (x.key = y.key)
@@ -365,13 +361,7 @@ POSTHOOK: Input: default@src1
 406	4	406	val_406
 66	1	66	val_66
 98	2	98	val_98
-PREHOOK: query: -- Without correlation optimizer, we will have 3 MR jobs.
--- The first one is a MapJoin and Aggregation (in the Reduce Phase).
--- The second one is another MapJoin. The third one is for ordering.
--- With the correlation optimizer, right now, we have
--- 1 MR jobs, evaluatinf the sub-query xx and the join of
--- xx and yy.
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT xx.key, xx.cnt, yy.key, yy.value
 FROM (SELECT x.key AS key, count(1) AS cnt
       FROM src x JOIN src1 y ON (x.key = y.key)
@@ -379,13 +369,7 @@ FROM (SELECT x.key AS key, count(1) AS cnt
 JOIN src1 yy
 ON xx.key=yy.key
 PREHOOK: type: QUERY
-POSTHOOK: query: -- Without correlation optimizer, we will have 3 MR jobs.
--- The first one is a MapJoin and Aggregation (in the Reduce Phase).
--- The second one is another MapJoin. The third one is for ordering.
--- With the correlation optimizer, right now, we have
--- 1 MR jobs, evaluatinf the sub-query xx and the join of
--- xx and yy.
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT xx.key, xx.cnt, yy.key, yy.value
 FROM (SELECT x.key AS key, count(1) AS cnt
       FROM src x JOIN src1 y ON (x.key = y.key)

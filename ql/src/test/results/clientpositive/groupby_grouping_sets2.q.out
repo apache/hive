@@ -14,12 +14,10 @@ POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/grouping_sets.txt' INT
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@t1
-PREHOOK: query: -- Since 4 grouping sets would be generated for the query below, an additional MR job should be created
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT a, b, count(*) from T1 group by a, b with cube
 PREHOOK: type: QUERY
-POSTHOOK: query: -- Since 4 grouping sets would be generated for the query below, an additional MR job should be created
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT a, b, count(*) from T1 group by a, b with cube
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
