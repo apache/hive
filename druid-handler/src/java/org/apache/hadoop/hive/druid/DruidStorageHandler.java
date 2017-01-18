@@ -288,7 +288,8 @@ public class DruidStorageHandler extends DefaultStorageHandler implements HiveMe
                 "Will skip waiting for data loading");
         return;
       }
-      console.printInfo(String.format("Waiting for the loading of [%s] segments", segmentList.size()));
+      console.printInfo(
+              String.format("Waiting for the loading of [%s] segments", segmentList.size()));
       long passiveWaitTimeMs = HiveConf
               .getLongVar(getConf(), HiveConf.ConfVars.HIVE_DRUID_PASSIVE_WAIT_TIME);
       ImmutableSet<URL> setOfUrls = FluentIterable.from(segmentList)
@@ -342,11 +343,9 @@ public class DruidStorageHandler extends DefaultStorageHandler implements HiveMe
         }
       }
       if (!setOfUrls.isEmpty()) {
-        console.printError(
-                String.format("wait time exhausted for [%s] out of [%s] segments loading",
-                        setOfUrls.size(), segmentList.size()
-                ));
-        throw new MetaException(String.format("wait time exhausted for [%s] out of [%s] segments loading",
+        // We are not Throwing an exception since it might be a transient issue that is blocking loading
+        console.printError(String.format(
+                "Wait time exhausted and we have [%s] out of [%s] segments not loaded yet",
                 setOfUrls.size(), segmentList.size()
         ));
       }
