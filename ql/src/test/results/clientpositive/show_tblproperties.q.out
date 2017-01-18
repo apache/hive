@@ -102,11 +102,9 @@ POSTHOOK: query: alter table tmpfoo set tblproperties ("tmp" = "true1")
 POSTHOOK: type: ALTERTABLE_PROPERTIES
 POSTHOOK: Input: db1@tmpfoo
 POSTHOOK: Output: db1@tmpfoo
-PREHOOK: query: -- from db1 to default db
-show tblproperties default.tmpfoo
+PREHOOK: query: show tblproperties default.tmpfoo
 PREHOOK: type: SHOW_TBLPROPERTIES
-POSTHOOK: query: -- from db1 to default db
-show tblproperties default.tmpfoo
+POSTHOOK: query: show tblproperties default.tmpfoo
 POSTHOOK: type: SHOW_TBLPROPERTIES
 bar	bar value
 #### A masked pattern was here ####
@@ -121,11 +119,9 @@ PREHOOK: type: SHOW_TBLPROPERTIES
 POSTHOOK: query: show tblproperties default.tmpfoo("bar")
 POSTHOOK: type: SHOW_TBLPROPERTIES
 bar value	 
-PREHOOK: query: -- from db1 to db1
-show tblproperties tmpfoo
+PREHOOK: query: show tblproperties tmpfoo
 PREHOOK: type: SHOW_TBLPROPERTIES
-POSTHOOK: query: -- from db1 to db1
-show tblproperties tmpfoo
+POSTHOOK: query: show tblproperties tmpfoo
 POSTHOOK: type: SHOW_TBLPROPERTIES
 bar	bar value1
 #### A masked pattern was here ####
@@ -146,11 +142,9 @@ PREHOOK: Input: database:default
 POSTHOOK: query: use default
 POSTHOOK: type: SWITCHDATABASE
 POSTHOOK: Input: database:default
-PREHOOK: query: -- from default to db1
-show tblproperties db1.tmpfoo
+PREHOOK: query: show tblproperties db1.tmpfoo
 PREHOOK: type: SHOW_TBLPROPERTIES
-POSTHOOK: query: -- from default to db1
-show tblproperties db1.tmpfoo
+POSTHOOK: query: show tblproperties db1.tmpfoo
 POSTHOOK: type: SHOW_TBLPROPERTIES
 bar	bar value1
 #### A masked pattern was here ####

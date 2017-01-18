@@ -2,9 +2,7 @@ PREHOOK: query: DROP VIEW big_view
 PREHOOK: type: DROPVIEW
 POSTHOOK: query: DROP VIEW big_view
 POSTHOOK: type: DROPVIEW
-PREHOOK: query: -- Define a view with long SQL text to test metastore and other limits.
-
-CREATE VIEW big_view AS SELECT 
+PREHOOK: query: CREATE VIEW big_view AS SELECT 
 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa' AS a,
 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
@@ -245,9 +243,7 @@ PREHOOK: type: CREATEVIEW
 PREHOOK: Input: default@src
 PREHOOK: Output: database:default
 PREHOOK: Output: default@big_view
-POSTHOOK: query: -- Define a view with long SQL text to test metastore and other limits.
-
-CREATE VIEW big_view AS SELECT 
+POSTHOOK: query: CREATE VIEW big_view AS SELECT 
 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa' AS a,
 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',

@@ -100,11 +100,7 @@ POSTHOOK: query: ALTER TABLE test_table123 CHANGE COLUMN a a_new BOOLEAN
 POSTHOOK: type: ALTERTABLE_RENAMECOL
 POSTHOOK: Input: default@test_table123
 POSTHOOK: Output: default@test_table123
-PREHOOK: query: -- All the above ALTERs will succeed since they are between compatible types.
--- The following ALTER will fail as MAP<STRING, STRING> and STRING are not
--- compatible.
-
-ALTER TABLE test_table123 REPLACE COLUMNS (a INT, b STRING)
+PREHOOK: query: ALTER TABLE test_table123 REPLACE COLUMNS (a INT, b STRING)
 PREHOOK: type: ALTERTABLE_REPLACECOLS
 PREHOOK: Input: default@test_table123
 PREHOOK: Output: default@test_table123

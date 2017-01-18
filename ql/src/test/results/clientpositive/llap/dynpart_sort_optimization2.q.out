@@ -1,10 +1,6 @@
-PREHOOK: query: -- SORT_QUERY_RESULTS
-
-drop table ss
+PREHOOK: query: drop table ss
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: -- SORT_QUERY_RESULTS
-
-drop table ss
+POSTHOOK: query: drop table ss
 POSTHOOK: type: DROPTABLE
 PREHOOK: query: drop table ss_orc
 PREHOOK: type: DROPTABLE
@@ -533,9 +529,7 @@ POSTHOOK: Input: default@ss_part@ss_sold_date_sk=2452638
 317.87	-3775.38	2452638
 4133.98	-775.72	2452638
 4329.49	-4000.51	2452638
-PREHOOK: query: -- SORT DYNAMIC PARTITION DISABLED
-
-explain insert overwrite table ss_part partition (ss_sold_date_sk)
+PREHOOK: query: explain insert overwrite table ss_part partition (ss_sold_date_sk)
 select ss_net_paid_inc_tax,
   ss_net_profit,
   ss_sold_date_sk
@@ -546,9 +540,7 @@ select ss_net_paid_inc_tax,
     ss_net_profit
     distribute by ss_sold_date_sk
 PREHOOK: type: QUERY
-POSTHOOK: query: -- SORT DYNAMIC PARTITION DISABLED
-
-explain insert overwrite table ss_part partition (ss_sold_date_sk)
+POSTHOOK: query: explain insert overwrite table ss_part partition (ss_sold_date_sk)
 select ss_net_paid_inc_tax,
   ss_net_profit,
   ss_sold_date_sk
@@ -1015,18 +1007,14 @@ POSTHOOK: Input: default@ss_part@ss_sold_date_sk=2452638
 317.87	-3775.38	2452638
 4133.98	-775.72	2452638
 4329.49	-4000.51	2452638
-PREHOOK: query: -- VECTORIZATION IS ENABLED
-
-create table ss_orc (
+PREHOOK: query: create table ss_orc (
 ss_sold_date_sk int,
 ss_net_paid_inc_tax float,
 ss_net_profit float) stored as orc
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@ss_orc
-POSTHOOK: query: -- VECTORIZATION IS ENABLED
-
-create table ss_orc (
+POSTHOOK: query: create table ss_orc (
 ss_sold_date_sk int,
 ss_net_paid_inc_tax float,
 ss_net_profit float) stored as orc

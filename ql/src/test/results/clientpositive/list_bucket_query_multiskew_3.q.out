@@ -1,51 +1,19 @@
-PREHOOK: query: -- INCLUDE_HADOOP_MAJOR_VERSIONS(0.23)	
-
--- List bucketing query logic test case. We simulate the directory structure by DML here.
--- Test condition: 
--- 1. where clause has multiple skewed columns and non-skewed columns
--- 3. where clause has a few operators
--- Test focus:
--- 1. query works for on partition level. 
---    A table can mix up non-skewed partition and skewed partition
---    Even for skewed partition, it can have different skewed information.
--- Test result:
--- 1. pruner only pick up right directory
--- 2. query result is right
-
--- create a skewed table
-create table fact_daily (key String, value String) 
+PREHOOK: query: create table fact_daily (key String, value String) 
 partitioned by (ds String, hr String)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@fact_daily
-POSTHOOK: query: -- INCLUDE_HADOOP_MAJOR_VERSIONS(0.23)	
-
--- List bucketing query logic test case. We simulate the directory structure by DML here.
--- Test condition: 
--- 1. where clause has multiple skewed columns and non-skewed columns
--- 3. where clause has a few operators
--- Test focus:
--- 1. query works for on partition level. 
---    A table can mix up non-skewed partition and skewed partition
---    Even for skewed partition, it can have different skewed information.
--- Test result:
--- 1. pruner only pick up right directory
--- 2. query result is right
-
--- create a skewed table
-create table fact_daily (key String, value String) 
+POSTHOOK: query: create table fact_daily (key String, value String) 
 partitioned by (ds String, hr String)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@fact_daily
-PREHOOK: query: -- partition no skew
-insert overwrite table fact_daily partition (ds = '1', hr = '1')
+PREHOOK: query: insert overwrite table fact_daily partition (ds = '1', hr = '1')
 select key, value from src
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Output: default@fact_daily@ds=1/hr=1
-POSTHOOK: query: -- partition no skew
-insert overwrite table fact_daily partition (ds = '1', hr = '1')
+POSTHOOK: query: insert overwrite table fact_daily partition (ds = '1', hr = '1')
 select key, value from src
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
@@ -92,13 +60,11 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: -- partition. skewed value is 484/238
-alter table fact_daily skewed by (key, value) on (('484','val_484'),('238','val_238')) stored as DIRECTORIES
+PREHOOK: query: alter table fact_daily skewed by (key, value) on (('484','val_484'),('238','val_238')) stored as DIRECTORIES
 PREHOOK: type: ALTERTABLE_SKEWED
 PREHOOK: Input: default@fact_daily
 PREHOOK: Output: default@fact_daily
-POSTHOOK: query: -- partition. skewed value is 484/238
-alter table fact_daily skewed by (key, value) on (('484','val_484'),('238','val_238')) stored as DIRECTORIES
+POSTHOOK: query: alter table fact_daily skewed by (key, value) on (('484','val_484'),('238','val_238')) stored as DIRECTORIES
 POSTHOOK: type: ALTERTABLE_SKEWED
 POSTHOOK: Input: default@fact_daily
 POSTHOOK: Output: default@fact_daily
@@ -159,13 +125,11 @@ Skewed Values:      	[[238, val_238], [484, val_484]]
 Skewed Value to Truncated Path:	{[238, val_238]=/fact_daily/ds=1/hr=2/key=238/value=val_238, [484, val_484]=/fact_daily/ds=1/hr=2/key=484/value=val_484}	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: -- another partition. skewed value is 327
-alter table fact_daily skewed by (key, value) on (('327','val_327')) stored as DIRECTORIES
+PREHOOK: query: alter table fact_daily skewed by (key, value) on (('327','val_327')) stored as DIRECTORIES
 PREHOOK: type: ALTERTABLE_SKEWED
 PREHOOK: Input: default@fact_daily
 PREHOOK: Output: default@fact_daily
-POSTHOOK: query: -- another partition. skewed value is 327
-alter table fact_daily skewed by (key, value) on (('327','val_327')) stored as DIRECTORIES
+POSTHOOK: query: alter table fact_daily skewed by (key, value) on (('327','val_327')) stored as DIRECTORIES
 POSTHOOK: type: ALTERTABLE_SKEWED
 POSTHOOK: Input: default@fact_daily
 POSTHOOK: Output: default@fact_daily
@@ -226,12 +190,10 @@ Skewed Values:      	[[327, val_327]]
 Skewed Value to Truncated Path:	{[327, val_327]=/fact_daily/ds=1/hr=3/key=327/value=val_327}	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: -- query non-skewed partition
-explain extended
+PREHOOK: query: explain extended
 select * from fact_daily where ds = '1' and  hr='1' and key='145'
 PREHOOK: type: QUERY
-POSTHOOK: query: -- query non-skewed partition
-explain extended
+POSTHOOK: query: explain extended
 select * from fact_daily where ds = '1' and  hr='1' and key='145'
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -337,12 +299,10 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@fact_daily
 #### A masked pattern was here ####
 500
-PREHOOK: query: -- query skewed partition
-explain extended
+PREHOOK: query: explain extended
 SELECT * FROM fact_daily WHERE ds='1' and hr='2' and (key='484' and value='val_484')
 PREHOOK: type: QUERY
-POSTHOOK: query: -- query skewed partition
-explain extended
+POSTHOOK: query: explain extended
 SELECT * FROM fact_daily WHERE ds='1' and hr='2' and (key='484' and value='val_484')
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -423,12 +383,10 @@ POSTHOOK: Input: default@fact_daily
 POSTHOOK: Input: default@fact_daily@ds=1/hr=2
 #### A masked pattern was here ####
 484	val_484	1	2
-PREHOOK: query: -- query another skewed partition
-explain extended
+PREHOOK: query: explain extended
 SELECT * FROM fact_daily WHERE ds='1' and hr='3' and (key='327' and value='val_327')
 PREHOOK: type: QUERY
-POSTHOOK: query: -- query another skewed partition
-explain extended
+POSTHOOK: query: explain extended
 SELECT * FROM fact_daily WHERE ds='1' and hr='3' and (key='327' and value='val_327')
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:

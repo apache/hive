@@ -1,12 +1,8 @@
-PREHOOK: query: -- SORT_QUERY_RESULTS
-
-CREATE TABLE tmp(c1 INT, c2 INT, c3 STRING, c4 STRING)
+PREHOOK: query: CREATE TABLE tmp(c1 INT, c2 INT, c3 STRING, c4 STRING)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@tmp
-POSTHOOK: query: -- SORT_QUERY_RESULTS
-
-CREATE TABLE tmp(c1 INT, c2 INT, c3 STRING, c4 STRING)
+POSTHOOK: query: CREATE TABLE tmp(c1 INT, c2 INT, c3 STRING, c4 STRING)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tmp
@@ -196,8 +192,7 @@ POSTHOOK: Input: default@tmp
 116	116	1	1
 118	118	4	4
 119	119	9	9
-PREHOOK: query: -- The merged table scan should be able to load both c1 and c2
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT xx.key, yy.key, xx.cnt, yy.cnt
 FROM 
 (SELECT x.c1 AS key, count(1) AS cnt FROM tmp x WHERE x.c1 < 120 GROUP BY x.c1) xx
@@ -205,8 +200,7 @@ JOIN
 (SELECT x1.c2 AS key, count(1) AS cnt FROM tmp x1 WHERE x1.c2 > 100 GROUP BY x1.c2) yy
 ON (xx.key = yy.key)
 PREHOOK: type: QUERY
-POSTHOOK: query: -- The merged table scan should be able to load both c1 and c2
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT xx.key, yy.key, xx.cnt, yy.cnt
 FROM 
 (SELECT x.c1 AS key, count(1) AS cnt FROM tmp x WHERE x.c1 < 120 GROUP BY x.c1) xx

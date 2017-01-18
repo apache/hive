@@ -1,15 +1,9 @@
-PREHOOK: query: -- This test is used for testing explain for DDL/DML statements
-
--- Create some views and tabels
-CREATE VIEW V1 AS SELECT key, value from src
+PREHOOK: query: CREATE VIEW V1 AS SELECT key, value from src
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: default@src
 PREHOOK: Output: database:default
 PREHOOK: Output: default@V1
-POSTHOOK: query: -- This test is used for testing explain for DDL/DML statements
-
--- Create some views and tabels
-CREATE VIEW V1 AS SELECT key, value from src
+POSTHOOK: query: CREATE VIEW V1 AS SELECT key, value from src
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default

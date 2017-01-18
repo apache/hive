@@ -4,13 +4,9 @@ PREHOOK: Input: database:default
 POSTHOOK: query: use default
 POSTHOOK: type: SWITCHDATABASE
 POSTHOOK: Input: database:default
-PREHOOK: query: -- Test map_values() UDF
-
-DESCRIBE FUNCTION map_values
+PREHOOK: query: DESCRIBE FUNCTION map_values
 PREHOOK: type: DESCFUNCTION
-POSTHOOK: query: -- Test map_values() UDF
-
-DESCRIBE FUNCTION map_values
+POSTHOOK: query: DESCRIBE FUNCTION map_values
 POSTHOOK: type: DESCFUNCTION
 map_values(map) - Returns an unordered array containing the values of the input map.
 PREHOOK: query: DESCRIBE FUNCTION EXTENDED map_values

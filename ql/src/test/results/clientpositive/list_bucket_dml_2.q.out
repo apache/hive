@@ -1,19 +1,4 @@
-PREHOOK: query: -- INCLUDE_HADOOP_MAJOR_VERSIONS(0.23)
--- SORT_QUERY_RESULTS
-
--- list bucketing DML: static partition. multiple skewed columns.
--- ds=2008-04-08/hr=11/HIVE_DEFAULT_LIST_BUCKETING_DIR_NAME:
---  5263 000000_0
---  5263 000001_0
--- ds=2008-04-08/hr=11/key=103/value=val_103:
--- 99 000000_0
--- 99 000001_0
--- ds=2008-04-08/hr=11/key=484/value=val_484:
--- 87 000000_0
--- 87 000001_0
-
--- create a skewed table
-create table list_bucketing_static_part (key String, value String) 
+PREHOOK: query: create table list_bucketing_static_part (key String, value String) 
     partitioned by (ds String, hr String) 
     skewed by (key, value) on (('484','val_484'),('51','val_14'),('103','val_103'))
     stored as DIRECTORIES
@@ -21,22 +6,7 @@ create table list_bucketing_static_part (key String, value String)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@list_bucketing_static_part
-POSTHOOK: query: -- INCLUDE_HADOOP_MAJOR_VERSIONS(0.23)
--- SORT_QUERY_RESULTS
-
--- list bucketing DML: static partition. multiple skewed columns.
--- ds=2008-04-08/hr=11/HIVE_DEFAULT_LIST_BUCKETING_DIR_NAME:
---  5263 000000_0
---  5263 000001_0
--- ds=2008-04-08/hr=11/key=103/value=val_103:
--- 99 000000_0
--- 99 000001_0
--- ds=2008-04-08/hr=11/key=484/value=val_484:
--- 87 000000_0
--- 87 000001_0
-
--- create a skewed table
-create table list_bucketing_static_part (key String, value String) 
+POSTHOOK: query: create table list_bucketing_static_part (key String, value String) 
     partitioned by (ds String, hr String) 
     skewed by (key, value) on (('484','val_484'),('51','val_14'),('103','val_103'))
     stored as DIRECTORIES
@@ -44,13 +14,11 @@ create table list_bucketing_static_part (key String, value String)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@list_bucketing_static_part
-PREHOOK: query: -- list bucketing DML without merge. use bucketize to generate a few small files.
-explain extended
+PREHOOK: query: explain extended
 insert overwrite table list_bucketing_static_part partition (ds = '2008-04-08',  hr = '11')
 select key, value from srcpart where ds = '2008-04-08'
 PREHOOK: type: QUERY
-POSTHOOK: query: -- list bucketing DML without merge. use bucketize to generate a few small files.
-explain extended
+POSTHOOK: query: explain extended
 insert overwrite table list_bucketing_static_part partition (ds = '2008-04-08',  hr = '11')
 select key, value from srcpart where ds = '2008-04-08'
 POSTHOOK: type: QUERY
@@ -246,12 +214,10 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 POSTHOOK: Output: default@list_bucketing_static_part@ds=2008-04-08/hr=11
 POSTHOOK: Lineage: list_bucketing_static_part PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: list_bucketing_static_part PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: -- check DML result
-show partitions list_bucketing_static_part
+PREHOOK: query: show partitions list_bucketing_static_part
 PREHOOK: type: SHOWPARTITIONS
 PREHOOK: Input: default@list_bucketing_static_part
-POSTHOOK: query: -- check DML result
-show partitions list_bucketing_static_part
+POSTHOOK: query: show partitions list_bucketing_static_part
 POSTHOOK: type: SHOWPARTITIONS
 POSTHOOK: Input: default@list_bucketing_static_part
 ds=2008-04-08/hr=11
@@ -417,17 +383,13 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 #### A masked pattern was here ####
 484	val_484	2008-04-08	11
 484	val_484	2008-04-08	12
-PREHOOK: query: -- 51 and val_51 in the table so skewed data for 51 and val_14 should be none
--- but query should succeed for 51 or 51 and val_14
-select * from srcpart where ds = '2008-04-08' and key = '51'
+PREHOOK: query: select * from srcpart where ds = '2008-04-08' and key = '51'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 #### A masked pattern was here ####
-POSTHOOK: query: -- 51 and val_51 in the table so skewed data for 51 and val_14 should be none
--- but query should succeed for 51 or 51 and val_14
-select * from srcpart where ds = '2008-04-08' and key = '51'
+POSTHOOK: query: select * from srcpart where ds = '2008-04-08' and key = '51'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
@@ -473,15 +435,13 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@list_bucketing_static_part
 POSTHOOK: Input: default@list_bucketing_static_part@ds=2008-04-08/hr=11
 #### A masked pattern was here ####
-PREHOOK: query: -- queries with < <= > >= should work for skewed test although we don't benefit from pruning
-select count(1) from srcpart where ds = '2008-04-08' and key < '51'
+PREHOOK: query: select count(1) from srcpart where ds = '2008-04-08' and key < '51'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 #### A masked pattern was here ####
-POSTHOOK: query: -- queries with < <= > >= should work for skewed test although we don't benefit from pruning
-select count(1) from srcpart where ds = '2008-04-08' and key < '51'
+POSTHOOK: query: select count(1) from srcpart where ds = '2008-04-08' and key < '51'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
@@ -571,13 +531,11 @@ POSTHOOK: Input: default@list_bucketing_static_part
 POSTHOOK: Input: default@list_bucketing_static_part@ds=2008-04-08/hr=11
 #### A masked pattern was here ####
 90
-PREHOOK: query: -- clean up
-drop table list_bucketing_static_part
+PREHOOK: query: drop table list_bucketing_static_part
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@list_bucketing_static_part
 PREHOOK: Output: default@list_bucketing_static_part
-POSTHOOK: query: -- clean up
-drop table list_bucketing_static_part
+POSTHOOK: query: drop table list_bucketing_static_part
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@list_bucketing_static_part
 POSTHOOK: Output: default@list_bucketing_static_part

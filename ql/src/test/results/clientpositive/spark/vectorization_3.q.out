@@ -1,7 +1,5 @@
 WARNING: Comparing a bigint and a double may result in a loss of precision.
-PREHOOK: query: -- SORT_QUERY_RESULTS
-
-SELECT STDDEV_SAMP(csmallint),
+PREHOOK: query: SELECT STDDEV_SAMP(csmallint),
        (STDDEV_SAMP(csmallint) - 10.175),
        STDDEV_POP(ctinyint),
        (STDDEV_SAMP(csmallint) * (STDDEV_SAMP(csmallint) - 10.175)),
@@ -27,9 +25,7 @@ WHERE  (((cint <= cfloat)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
-POSTHOOK: query: -- SORT_QUERY_RESULTS
-
-SELECT STDDEV_SAMP(csmallint),
+POSTHOOK: query: SELECT STDDEV_SAMP(csmallint),
        (STDDEV_SAMP(csmallint) - 10.175),
        STDDEV_POP(ctinyint),
        (STDDEV_SAMP(csmallint) * (STDDEV_SAMP(csmallint) - 10.175)),

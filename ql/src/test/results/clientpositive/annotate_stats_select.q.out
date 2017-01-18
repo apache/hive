@@ -89,11 +89,9 @@ POSTHOOK: Lineage: alltypes_orc.st1 SIMPLE [(alltypes)alltypes.FieldSchema(name:
 POSTHOOK: Lineage: alltypes_orc.ti1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ti1, type:tinyint, comment:null), ]
 POSTHOOK: Lineage: alltypes_orc.ts1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ts1, type:timestamp, comment:null), ]
 POSTHOOK: Lineage: alltypes_orc.vc1 SIMPLE [(alltypes)alltypes.FieldSchema(name:vc1, type:varchar(5), comment:null), ]
-PREHOOK: query: -- basicStatState: COMPLETE colStatState: NONE numRows: 2 rawDataSize: 1514
-explain select * from alltypes_orc
+PREHOOK: query: explain select * from alltypes_orc
 PREHOOK: type: QUERY
-POSTHOOK: query: -- basicStatState: COMPLETE colStatState: NONE numRows: 2 rawDataSize: 1514
-explain select * from alltypes_orc
+POSTHOOK: query: explain select * from alltypes_orc
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
@@ -112,21 +110,17 @@ STAGE PLANS:
             Statistics: Num rows: 2 Data size: 1686 Basic stats: COMPLETE Column stats: NONE
             ListSink
 
-PREHOOK: query: -- statistics for complex types are not supported yet
-analyze table alltypes_orc compute statistics for columns bo1, ti1, si1, i1, bi1, f1, d1, s1, vc1
+PREHOOK: query: analyze table alltypes_orc compute statistics for columns bo1, ti1, si1, i1, bi1, f1, d1, s1, vc1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@alltypes_orc
 #### A masked pattern was here ####
-POSTHOOK: query: -- statistics for complex types are not supported yet
-analyze table alltypes_orc compute statistics for columns bo1, ti1, si1, i1, bi1, f1, d1, s1, vc1
+POSTHOOK: query: analyze table alltypes_orc compute statistics for columns bo1, ti1, si1, i1, bi1, f1, d1, s1, vc1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypes_orc
 #### A masked pattern was here ####
-PREHOOK: query: -- numRows: 2 rawDataSize: 1514
-explain select * from alltypes_orc
+PREHOOK: query: explain select * from alltypes_orc
 PREHOOK: type: QUERY
-POSTHOOK: query: -- numRows: 2 rawDataSize: 1514
-explain select * from alltypes_orc
+POSTHOOK: query: explain select * from alltypes_orc
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
@@ -145,11 +139,9 @@ STAGE PLANS:
             Statistics: Num rows: 2 Data size: 420 Basic stats: COMPLETE Column stats: PARTIAL
             ListSink
 
-PREHOOK: query: -- numRows: 2 rawDataSize: 8
-explain select bo1 from alltypes_orc
+PREHOOK: query: explain select bo1 from alltypes_orc
 PREHOOK: type: QUERY
-POSTHOOK: query: -- numRows: 2 rawDataSize: 8
-explain select bo1 from alltypes_orc
+POSTHOOK: query: explain select bo1 from alltypes_orc
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
@@ -168,13 +160,9 @@ STAGE PLANS:
             Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
             ListSink
 
-PREHOOK: query: -- col alias renaming
--- numRows: 2 rawDataSize: 8
-explain select i1 as int1 from alltypes_orc
+PREHOOK: query: explain select i1 as int1 from alltypes_orc
 PREHOOK: type: QUERY
-POSTHOOK: query: -- col alias renaming
--- numRows: 2 rawDataSize: 8
-explain select i1 as int1 from alltypes_orc
+POSTHOOK: query: explain select i1 as int1 from alltypes_orc
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
@@ -193,11 +181,9 @@ STAGE PLANS:
             Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
             ListSink
 
-PREHOOK: query: -- numRows: 2 rawDataSize: 174
-explain select s1 from alltypes_orc
+PREHOOK: query: explain select s1 from alltypes_orc
 PREHOOK: type: QUERY
-POSTHOOK: query: -- numRows: 2 rawDataSize: 174
-explain select s1 from alltypes_orc
+POSTHOOK: query: explain select s1 from alltypes_orc
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
@@ -216,13 +202,9 @@ STAGE PLANS:
             Statistics: Num rows: 2 Data size: 174 Basic stats: COMPLETE Column stats: COMPLETE
             ListSink
 
-PREHOOK: query: -- column statistics for complex types unsupported and so statistics will not be updated
--- numRows: 2 rawDataSize: 1514
-explain select m1 from alltypes_orc
+PREHOOK: query: explain select m1 from alltypes_orc
 PREHOOK: type: QUERY
-POSTHOOK: query: -- column statistics for complex types unsupported and so statistics will not be updated
--- numRows: 2 rawDataSize: 1514
-explain select m1 from alltypes_orc
+POSTHOOK: query: explain select m1 from alltypes_orc
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
@@ -241,11 +223,9 @@ STAGE PLANS:
             Statistics: Num rows: 2 Data size: 1686 Basic stats: COMPLETE Column stats: NONE
             ListSink
 
-PREHOOK: query: -- numRows: 2 rawDataSize: 246
-explain select bo1, ti1, si1, i1, bi1, f1, d1,s1 from alltypes_orc
+PREHOOK: query: explain select bo1, ti1, si1, i1, bi1, f1, d1,s1 from alltypes_orc
 PREHOOK: type: QUERY
-POSTHOOK: query: -- numRows: 2 rawDataSize: 246
-explain select bo1, ti1, si1, i1, bi1, f1, d1,s1 from alltypes_orc
+POSTHOOK: query: explain select bo1, ti1, si1, i1, bi1, f1, d1,s1 from alltypes_orc
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
@@ -264,11 +244,9 @@ STAGE PLANS:
             Statistics: Num rows: 2 Data size: 246 Basic stats: COMPLETE Column stats: COMPLETE
             ListSink
 
-PREHOOK: query: -- numRows: 2 rawDataSize: 0
-explain select null from alltypes_orc
+PREHOOK: query: explain select null from alltypes_orc
 PREHOOK: type: QUERY
-POSTHOOK: query: -- numRows: 2 rawDataSize: 0
-explain select null from alltypes_orc
+POSTHOOK: query: explain select null from alltypes_orc
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
@@ -287,11 +265,9 @@ STAGE PLANS:
             Statistics: Num rows: 2 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
             ListSink
 
-PREHOOK: query: -- numRows: 2 rawDataSize: 8
-explain select 11 from alltypes_orc
+PREHOOK: query: explain select 11 from alltypes_orc
 PREHOOK: type: QUERY
-POSTHOOK: query: -- numRows: 2 rawDataSize: 8
-explain select 11 from alltypes_orc
+POSTHOOK: query: explain select 11 from alltypes_orc
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
@@ -310,11 +286,9 @@ STAGE PLANS:
             Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
             ListSink
 
-PREHOOK: query: -- numRows: 2 rawDataSize: 16
-explain select 11L from alltypes_orc
+PREHOOK: query: explain select 11L from alltypes_orc
 PREHOOK: type: QUERY
-POSTHOOK: query: -- numRows: 2 rawDataSize: 16
-explain select 11L from alltypes_orc
+POSTHOOK: query: explain select 11L from alltypes_orc
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
@@ -333,11 +307,9 @@ STAGE PLANS:
             Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
             ListSink
 
-PREHOOK: query: -- numRows: 2 rawDataSize: 16
-explain select 11.0 from alltypes_orc
+PREHOOK: query: explain select 11.0 from alltypes_orc
 PREHOOK: type: QUERY
-POSTHOOK: query: -- numRows: 2 rawDataSize: 16
-explain select 11.0 from alltypes_orc
+POSTHOOK: query: explain select 11.0 from alltypes_orc
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
@@ -356,11 +328,9 @@ STAGE PLANS:
             Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
             ListSink
 
-PREHOOK: query: -- numRows: 2 rawDataSize: 178
-explain select "hello" from alltypes_orc
+PREHOOK: query: explain select "hello" from alltypes_orc
 PREHOOK: type: QUERY
-POSTHOOK: query: -- numRows: 2 rawDataSize: 178
-explain select "hello" from alltypes_orc
+POSTHOOK: query: explain select "hello" from alltypes_orc
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
@@ -421,11 +391,9 @@ STAGE PLANS:
             Statistics: Num rows: 2 Data size: 178 Basic stats: COMPLETE Column stats: COMPLETE
             ListSink
 
-PREHOOK: query: -- numRows: 2 rawDataSize: 96
-explain select unbase64("0xe23") from alltypes_orc
+PREHOOK: query: explain select unbase64("0xe23") from alltypes_orc
 PREHOOK: type: QUERY
-POSTHOOK: query: -- numRows: 2 rawDataSize: 96
-explain select unbase64("0xe23") from alltypes_orc
+POSTHOOK: query: explain select unbase64("0xe23") from alltypes_orc
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
@@ -444,11 +412,9 @@ STAGE PLANS:
             Statistics: Num rows: 2 Data size: 96 Basic stats: COMPLETE Column stats: COMPLETE
             ListSink
 
-PREHOOK: query: -- numRows: 2 rawDataSize: 16
-explain select cast("1" as TINYINT), cast("20" as SMALLINT) from alltypes_orc
+PREHOOK: query: explain select cast("1" as TINYINT), cast("20" as SMALLINT) from alltypes_orc
 PREHOOK: type: QUERY
-POSTHOOK: query: -- numRows: 2 rawDataSize: 16
-explain select cast("1" as TINYINT), cast("20" as SMALLINT) from alltypes_orc
+POSTHOOK: query: explain select cast("1" as TINYINT), cast("20" as SMALLINT) from alltypes_orc
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
@@ -467,11 +433,9 @@ STAGE PLANS:
             Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
             ListSink
 
-PREHOOK: query: -- numRows: 2 rawDataSize: 80
-explain select cast("1970-12-31 15:59:58.174" as TIMESTAMP) from alltypes_orc
+PREHOOK: query: explain select cast("1970-12-31 15:59:58.174" as TIMESTAMP) from alltypes_orc
 PREHOOK: type: QUERY
-POSTHOOK: query: -- numRows: 2 rawDataSize: 80
-explain select cast("1970-12-31 15:59:58.174" as TIMESTAMP) from alltypes_orc
+POSTHOOK: query: explain select cast("1970-12-31 15:59:58.174" as TIMESTAMP) from alltypes_orc
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
@@ -490,11 +454,9 @@ STAGE PLANS:
             Statistics: Num rows: 2 Data size: 80 Basic stats: COMPLETE Column stats: COMPLETE
             ListSink
 
-PREHOOK: query: -- numRows: 2 rawDataSize: 112
-explain select cast("1970-12-31 15:59:58.174" as DATE) from alltypes_orc
+PREHOOK: query: explain select cast("1970-12-31 15:59:58.174" as DATE) from alltypes_orc
 PREHOOK: type: QUERY
-POSTHOOK: query: -- numRows: 2 rawDataSize: 112
-explain select cast("1970-12-31 15:59:58.174" as DATE) from alltypes_orc
+POSTHOOK: query: explain select cast("1970-12-31 15:59:58.174" as DATE) from alltypes_orc
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
@@ -513,11 +475,9 @@ STAGE PLANS:
             Statistics: Num rows: 2 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
             ListSink
 
-PREHOOK: query: -- numRows: 2 rawDataSize: 224
-explain select cast("58.174" as DECIMAL) from alltypes_orc
+PREHOOK: query: explain select cast("58.174" as DECIMAL) from alltypes_orc
 PREHOOK: type: QUERY
-POSTHOOK: query: -- numRows: 2 rawDataSize: 224
-explain select cast("58.174" as DECIMAL) from alltypes_orc
+POSTHOOK: query: explain select cast("58.174" as DECIMAL) from alltypes_orc
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
@@ -536,11 +496,9 @@ STAGE PLANS:
             Statistics: Num rows: 2 Data size: 224 Basic stats: COMPLETE Column stats: COMPLETE
             ListSink
 
-PREHOOK: query: -- numRows: 2 rawDataSize: 112
-explain select array(1,2,3) from alltypes_orc
+PREHOOK: query: explain select array(1,2,3) from alltypes_orc
 PREHOOK: type: QUERY
-POSTHOOK: query: -- numRows: 2 rawDataSize: 112
-explain select array(1,2,3) from alltypes_orc
+POSTHOOK: query: explain select array(1,2,3) from alltypes_orc
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -571,11 +529,9 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: -- numRows: 2 rawDataSize: 1508
-explain select str_to_map("a=1 b=2 c=3", " ", "=") from alltypes_orc
+PREHOOK: query: explain select str_to_map("a=1 b=2 c=3", " ", "=") from alltypes_orc
 PREHOOK: type: QUERY
-POSTHOOK: query: -- numRows: 2 rawDataSize: 1508
-explain select str_to_map("a=1 b=2 c=3", " ", "=") from alltypes_orc
+POSTHOOK: query: explain select str_to_map("a=1 b=2 c=3", " ", "=") from alltypes_orc
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -606,11 +562,9 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: -- numRows: 2 rawDataSize: 112
-explain select NAMED_STRUCT("a", 11, "b", 11) from alltypes_orc
+PREHOOK: query: explain select NAMED_STRUCT("a", 11, "b", 11) from alltypes_orc
 PREHOOK: type: QUERY
-POSTHOOK: query: -- numRows: 2 rawDataSize: 112
-explain select NAMED_STRUCT("a", 11, "b", 11) from alltypes_orc
+POSTHOOK: query: explain select NAMED_STRUCT("a", 11, "b", 11) from alltypes_orc
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -641,11 +595,9 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: -- numRows: 2 rawDataSize: 250
-explain select CREATE_UNION(0, "hello") from alltypes_orc
+PREHOOK: query: explain select CREATE_UNION(0, "hello") from alltypes_orc
 PREHOOK: type: QUERY
-POSTHOOK: query: -- numRows: 2 rawDataSize: 250
-explain select CREATE_UNION(0, "hello") from alltypes_orc
+POSTHOOK: query: explain select CREATE_UNION(0, "hello") from alltypes_orc
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -676,13 +628,9 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: -- COUNT(*) is projected as new column. It is not projected as GenericUDF and so datasize estimate will be based on number of rows
--- numRows: 1 rawDataSize: 8
-explain select count(*) from alltypes_orc
+PREHOOK: query: explain select count(*) from alltypes_orc
 PREHOOK: type: QUERY
-POSTHOOK: query: -- COUNT(*) is projected as new column. It is not projected as GenericUDF and so datasize estimate will be based on number of rows
--- numRows: 1 rawDataSize: 8
-explain select count(*) from alltypes_orc
+POSTHOOK: query: explain select count(*) from alltypes_orc
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
@@ -694,13 +642,9 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: -- COUNT(1) is projected as new column. It is not projected as GenericUDF and so datasize estimate will be based on number of rows
--- numRows: 1 rawDataSize: 8
-explain select count(1) from alltypes_orc
+PREHOOK: query: explain select count(1) from alltypes_orc
 PREHOOK: type: QUERY
-POSTHOOK: query: -- COUNT(1) is projected as new column. It is not projected as GenericUDF and so datasize estimate will be based on number of rows
--- numRows: 1 rawDataSize: 8
-explain select count(1) from alltypes_orc
+POSTHOOK: query: explain select count(1) from alltypes_orc
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
@@ -712,13 +656,9 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: -- column statistics for complex column types will be missing. data size will be calculated from available column statistics
--- numRows: 2 rawDataSize: 254
-explain select *,11 from alltypes_orc
+PREHOOK: query: explain select *,11 from alltypes_orc
 PREHOOK: type: QUERY
-POSTHOOK: query: -- column statistics for complex column types will be missing. data size will be calculated from available column statistics
--- numRows: 2 rawDataSize: 254
-explain select *,11 from alltypes_orc
+POSTHOOK: query: explain select *,11 from alltypes_orc
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
@@ -737,15 +677,9 @@ STAGE PLANS:
             Statistics: Num rows: 2 Data size: 428 Basic stats: COMPLETE Column stats: PARTIAL
             ListSink
 
-PREHOOK: query: -- subquery selects
--- inner select - numRows: 2 rawDataSize: 8
--- outer select - numRows: 2 rawDataSize: 8
-explain select i1 from (select i1 from alltypes_orc limit 10) temp
+PREHOOK: query: explain select i1 from (select i1 from alltypes_orc limit 10) temp
 PREHOOK: type: QUERY
-POSTHOOK: query: -- subquery selects
--- inner select - numRows: 2 rawDataSize: 8
--- outer select - numRows: 2 rawDataSize: 8
-explain select i1 from (select i1 from alltypes_orc limit 10) temp
+POSTHOOK: query: explain select i1 from (select i1 from alltypes_orc limit 10) temp
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
@@ -767,13 +701,9 @@ STAGE PLANS:
               Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
               ListSink
 
-PREHOOK: query: -- inner select - numRows: 2 rawDataSize: 16
--- outer select - numRows: 2 rawDataSize: 8
-explain select i1 from (select i1,11 from alltypes_orc limit 10) temp
+PREHOOK: query: explain select i1 from (select i1,11 from alltypes_orc limit 10) temp
 PREHOOK: type: QUERY
-POSTHOOK: query: -- inner select - numRows: 2 rawDataSize: 16
--- outer select - numRows: 2 rawDataSize: 8
-explain select i1 from (select i1,11 from alltypes_orc limit 10) temp
+POSTHOOK: query: explain select i1 from (select i1,11 from alltypes_orc limit 10) temp
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
@@ -795,13 +725,9 @@ STAGE PLANS:
               Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
               ListSink
 
-PREHOOK: query: -- inner select - numRows: 2 rawDataSize: 16
--- outer select - numRows: 2 rawDataSize: 186
-explain select i1,"hello" from (select i1,11 from alltypes_orc limit 10) temp
+PREHOOK: query: explain select i1,"hello" from (select i1,11 from alltypes_orc limit 10) temp
 PREHOOK: type: QUERY
-POSTHOOK: query: -- inner select - numRows: 2 rawDataSize: 16
--- outer select - numRows: 2 rawDataSize: 186
-explain select i1,"hello" from (select i1,11 from alltypes_orc limit 10) temp
+POSTHOOK: query: explain select i1,"hello" from (select i1,11 from alltypes_orc limit 10) temp
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -852,13 +778,9 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: -- inner select - numRows: 2 rawDataSize: 24
--- outer select - numRows: 2 rawDataSize: 16
-explain select x from (select i1,11.0 as x from alltypes_orc limit 10) temp
+PREHOOK: query: explain select x from (select i1,11.0 as x from alltypes_orc limit 10) temp
 PREHOOK: type: QUERY
-POSTHOOK: query: -- inner select - numRows: 2 rawDataSize: 24
--- outer select - numRows: 2 rawDataSize: 16
-explain select x from (select i1,11.0 as x from alltypes_orc limit 10) temp
+POSTHOOK: query: explain select x from (select i1,11.0 as x from alltypes_orc limit 10) temp
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -902,13 +824,9 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: -- inner select - numRows: 2 rawDataSize: 104
--- outer select - numRows: 2 rawDataSize: 186
-explain select x,"hello" from (select i1 as x, unbase64("0xe23") as ub from alltypes_orc limit 10) temp
+PREHOOK: query: explain select x,"hello" from (select i1 as x, unbase64("0xe23") as ub from alltypes_orc limit 10) temp
 PREHOOK: type: QUERY
-POSTHOOK: query: -- inner select - numRows: 2 rawDataSize: 104
--- outer select - numRows: 2 rawDataSize: 186
-explain select x,"hello" from (select i1 as x, unbase64("0xe23") as ub from alltypes_orc limit 10) temp
+POSTHOOK: query: explain select x,"hello" from (select i1 as x, unbase64("0xe23") as ub from alltypes_orc limit 10) temp
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -959,15 +877,9 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: -- inner select -  numRows: 2 rawDataSize: 186
--- middle select - numRows: 2 rawDataSize: 178
--- outer select -  numRows: 2 rawDataSize: 194
-explain select h, 11.0 from (select hell as h from (select i1, "hello" as hell from alltypes_orc limit 10) in1 limit 10) in2
+PREHOOK: query: explain select h, 11.0 from (select hell as h from (select i1, "hello" as hell from alltypes_orc limit 10) in1 limit 10) in2
 PREHOOK: type: QUERY
-POSTHOOK: query: -- inner select -  numRows: 2 rawDataSize: 186
--- middle select - numRows: 2 rawDataSize: 178
--- outer select -  numRows: 2 rawDataSize: 194
-explain select h, 11.0 from (select hell as h from (select i1, "hello" as hell from alltypes_orc limit 10) in1 limit 10) in2
+POSTHOOK: query: explain select h, 11.0 from (select hell as h from (select i1, "hello" as hell from alltypes_orc limit 10) in1 limit 10) in2
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -1034,13 +946,9 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: -- This test is for FILTER operator where filter expression is a boolean column
--- numRows: 2 rawDataSize: 8
-explain select bo1 from alltypes_orc where bo1
+PREHOOK: query: explain select bo1 from alltypes_orc where bo1
 PREHOOK: type: QUERY
-POSTHOOK: query: -- This test is for FILTER operator where filter expression is a boolean column
--- numRows: 2 rawDataSize: 8
-explain select bo1 from alltypes_orc where bo1
+POSTHOOK: query: explain select bo1 from alltypes_orc where bo1
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -1074,11 +982,9 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: -- numRows: 0 rawDataSize: 0
-explain select bo1 from alltypes_orc where !bo1
+PREHOOK: query: explain select bo1 from alltypes_orc where !bo1
 PREHOOK: type: QUERY
-POSTHOOK: query: -- numRows: 0 rawDataSize: 0
-explain select bo1 from alltypes_orc where !bo1
+POSTHOOK: query: explain select bo1 from alltypes_orc where !bo1
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage

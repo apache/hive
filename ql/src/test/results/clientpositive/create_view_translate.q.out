@@ -113,15 +113,11 @@ POSTHOOK: query: drop view w
 POSTHOOK: type: DROPVIEW
 POSTHOOK: Input: default@w
 POSTHOOK: Output: default@w
-PREHOOK: query: -- HIVE-4116 Can't use views using map datatype.
-
-CREATE TABLE items (id INT, name STRING, info MAP<STRING,STRING>)
+PREHOOK: query: CREATE TABLE items (id INT, name STRING, info MAP<STRING,STRING>)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@items
-POSTHOOK: query: -- HIVE-4116 Can't use views using map datatype.
-
-CREATE TABLE items (id INT, name STRING, info MAP<STRING,STRING>)
+POSTHOOK: query: CREATE TABLE items (id INT, name STRING, info MAP<STRING,STRING>)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@items

@@ -1,10 +1,6 @@
-PREHOOK: query: -- SORT_QUERY_RESULTS
-
-DROP TABLE IF EXISTS table1
+PREHOOK: query: DROP TABLE IF EXISTS table1
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: -- SORT_QUERY_RESULTS
-
-DROP TABLE IF EXISTS table1
+POSTHOOK: query: DROP TABLE IF EXISTS table1
 POSTHOOK: type: DROPTABLE
 PREHOOK: query: DROP TABLE IF EXISTS table2
 PREHOOK: type: DROPTABLE
@@ -253,14 +249,12 @@ POSTHOOK: query: DROP VIEW view1
 POSTHOOK: type: DROPVIEW
 POSTHOOK: Input: default@view1
 POSTHOOK: Output: default@view1
-PREHOOK: query: -- check partitions
-create view view1 partitioned on (ds, hr) as select * from srcpart
+PREHOOK: query: create view view1 partitioned on (ds, hr) as select * from srcpart
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: default@srcpart
 PREHOOK: Output: database:default
 PREHOOK: Output: default@view1
-POSTHOOK: query: -- check partitions
-create view view1 partitioned on (ds, hr) as select * from srcpart
+POSTHOOK: query: create view view1 partitioned on (ds, hr) as select * from srcpart
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@srcpart
 POSTHOOK: Output: database:default

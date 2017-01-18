@@ -60,16 +60,14 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: -- GRANULARITY: ALL
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT robot, max(added) as m, sum(variation)
 FROM druid_table_1
 GROUP BY robot
 ORDER BY m DESC
 LIMIT 100
 PREHOOK: type: QUERY
-POSTHOOK: query: -- GRANULARITY: ALL
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT robot, max(added) as m, sum(variation)
 FROM druid_table_1
 GROUP BY robot
@@ -96,16 +94,14 @@ STAGE PLANS:
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             ListSink
 
-PREHOOK: query: -- GRANULARITY: NONE
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT robot, `__time`, max(added), sum(variation) as s
 FROM druid_table_1
 GROUP BY robot, `__time`
 ORDER BY s DESC
 LIMIT 100
 PREHOOK: type: QUERY
-POSTHOOK: query: -- GRANULARITY: NONE
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT robot, `__time`, max(added), sum(variation) as s
 FROM druid_table_1
 GROUP BY robot, `__time`
@@ -132,16 +128,14 @@ STAGE PLANS:
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             ListSink
 
-PREHOOK: query: -- GRANULARITY: YEAR
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT robot, floor_year(`__time`), max(added), sum(variation) as s
 FROM druid_table_1
 GROUP BY robot, floor_year(`__time`)
 ORDER BY s DESC
 LIMIT 10
 PREHOOK: type: QUERY
-POSTHOOK: query: -- GRANULARITY: YEAR
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT robot, floor_year(`__time`), max(added), sum(variation) as s
 FROM druid_table_1
 GROUP BY robot, floor_year(`__time`)
@@ -168,16 +162,14 @@ STAGE PLANS:
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             ListSink
 
-PREHOOK: query: -- ASC: TRANSFORM INTO GROUP BY
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT robot, floor_month(`__time`), max(added), sum(variation) as s
 FROM druid_table_1
 GROUP BY robot, floor_month(`__time`)
 ORDER BY s
 LIMIT 10
 PREHOOK: type: QUERY
-POSTHOOK: query: -- ASC: TRANSFORM INTO GROUP BY
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT robot, floor_month(`__time`), max(added), sum(variation) as s
 FROM druid_table_1
 GROUP BY robot, floor_month(`__time`)
@@ -204,16 +196,14 @@ STAGE PLANS:
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             ListSink
 
-PREHOOK: query: -- MULTIPLE ORDER: TRANSFORM INTO GROUP BY
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT robot, floor_month(`__time`), max(added) as m, sum(variation) as s
 FROM druid_table_1
 GROUP BY robot, namespace, floor_month(`__time`)
 ORDER BY s DESC, m DESC
 LIMIT 10
 PREHOOK: type: QUERY
-POSTHOOK: query: -- MULTIPLE ORDER: TRANSFORM INTO GROUP BY
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT robot, floor_month(`__time`), max(added) as m, sum(variation) as s
 FROM druid_table_1
 GROUP BY robot, namespace, floor_month(`__time`)
@@ -240,16 +230,14 @@ STAGE PLANS:
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             ListSink
 
-PREHOOK: query: -- MULTIPLE ORDER MIXED: TRANSFORM INTO GROUP BY
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT robot, floor_month(`__time`), max(added) as m, sum(variation) as s
 FROM druid_table_1
 GROUP BY robot, namespace, floor_month(`__time`)
 ORDER BY robot ASC, m DESC
 LIMIT 10
 PREHOOK: type: QUERY
-POSTHOOK: query: -- MULTIPLE ORDER MIXED: TRANSFORM INTO GROUP BY
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT robot, floor_month(`__time`), max(added) as m, sum(variation) as s
 FROM druid_table_1
 GROUP BY robot, namespace, floor_month(`__time`)
@@ -276,8 +264,7 @@ STAGE PLANS:
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             ListSink
 
-PREHOOK: query: -- WITH FILTER ON DIMENSION: TRANSFORM INTO GROUP BY
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT robot, floor_year(`__time`), max(added), sum(variation) as s
 FROM druid_table_1
 WHERE robot='1'
@@ -285,8 +272,7 @@ GROUP BY robot, floor_year(`__time`)
 ORDER BY s
 LIMIT 10
 PREHOOK: type: QUERY
-POSTHOOK: query: -- WITH FILTER ON DIMENSION: TRANSFORM INTO GROUP BY
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT robot, floor_year(`__time`), max(added), sum(variation) as s
 FROM druid_table_1
 WHERE robot='1'
@@ -314,8 +300,7 @@ STAGE PLANS:
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             ListSink
 
-PREHOOK: query: -- WITH FILTER ON TIME
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT robot, floor_hour(`__time`), max(added) as m, sum(variation)
 FROM druid_table_1
 WHERE floor_hour(`__time`)
@@ -325,8 +310,7 @@ GROUP BY robot, floor_hour(`__time`)
 ORDER BY m
 LIMIT 100
 PREHOOK: type: QUERY
-POSTHOOK: query: -- WITH FILTER ON TIME
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT robot, floor_hour(`__time`), max(added) as m, sum(variation)
 FROM druid_table_1
 WHERE floor_hour(`__time`)

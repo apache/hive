@@ -108,11 +108,9 @@ POSTHOOK: query: create table over1k_part_buck_sort(
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@over1k_part_buck_sort
-PREHOOK: query: -- map-only jobs converted to map-reduce job by hive.optimize.sort.dynamic.partition optimization
-explain insert overwrite table over1k_part partition(ds="foo", t) select si,i,b,f,t from over1k where t is null or t=27
+PREHOOK: query: explain insert overwrite table over1k_part partition(ds="foo", t) select si,i,b,f,t from over1k where t is null or t=27
 PREHOOK: type: QUERY
-POSTHOOK: query: -- map-only jobs converted to map-reduce job by hive.optimize.sort.dynamic.partition optimization
-explain insert overwrite table over1k_part partition(ds="foo", t) select si,i,b,f,t from over1k where t is null or t=27
+POSTHOOK: query: explain insert overwrite table over1k_part partition(ds="foo", t) select si,i,b,f,t from over1k where t is null or t=27
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -487,11 +485,9 @@ POSTHOOK: Lineage: over1k_part_buck_sort PARTITION(t=__HIVE_DEFAULT_PARTITION__)
 POSTHOOK: Lineage: over1k_part_buck_sort PARTITION(t=__HIVE_DEFAULT_PARTITION__).f SIMPLE [(over1k)over1k.FieldSchema(name:f, type:float, comment:null), ]
 POSTHOOK: Lineage: over1k_part_buck_sort PARTITION(t=__HIVE_DEFAULT_PARTITION__).i SIMPLE [(over1k)over1k.FieldSchema(name:i, type:int, comment:null), ]
 POSTHOOK: Lineage: over1k_part_buck_sort PARTITION(t=__HIVE_DEFAULT_PARTITION__).si SIMPLE [(over1k)over1k.FieldSchema(name:si, type:smallint, comment:null), ]
-PREHOOK: query: -- map-reduce jobs modified by hive.optimize.sort.dynamic.partition optimization
-explain insert into table over1k_part partition(ds="foo", t) select si,i,b,f,t from over1k where t is null or t=27
+PREHOOK: query: explain insert into table over1k_part partition(ds="foo", t) select si,i,b,f,t from over1k where t is null or t=27
 PREHOOK: type: QUERY
-POSTHOOK: query: -- map-reduce jobs modified by hive.optimize.sort.dynamic.partition optimization
-explain insert into table over1k_part partition(ds="foo", t) select si,i,b,f,t from over1k where t is null or t=27
+POSTHOOK: query: explain insert into table over1k_part partition(ds="foo", t) select si,i,b,f,t from over1k where t is null or t=27
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -1250,8 +1246,7 @@ POSTHOOK: Input: default@over1k_part_buck_sort@t=27
 POSTHOOK: Input: default@over1k_part_buck_sort@t=__HIVE_DEFAULT_PARTITION__
 #### A masked pattern was here ####
 38
-PREHOOK: query: -- tests for HIVE-6883
-create table over1k_part2(
+PREHOOK: query: create table over1k_part2(
            si smallint,
            i int,
            b bigint,
@@ -1260,8 +1255,7 @@ create table over1k_part2(
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@over1k_part2
-POSTHOOK: query: -- tests for HIVE-6883
-create table over1k_part2(
+POSTHOOK: query: create table over1k_part2(
            si smallint,
            i int,
            b bigint,
@@ -1587,11 +1581,9 @@ STAGE PLANS:
   Stage: Stage-3
     Stats-Aggr Operator
 
-PREHOOK: query: -- tests for HIVE-8162, only partition column 't' should be in last RS operator
-explain insert overwrite table over1k_part2 partition(ds="foo",t) select si,i,b,f,t from over1k where t is null or t=27 group by si,i,b,f,t
+PREHOOK: query: explain insert overwrite table over1k_part2 partition(ds="foo",t) select si,i,b,f,t from over1k where t is null or t=27 group by si,i,b,f,t
 PREHOOK: type: QUERY
-POSTHOOK: query: -- tests for HIVE-8162, only partition column 't' should be in last RS operator
-explain insert overwrite table over1k_part2 partition(ds="foo",t) select si,i,b,f,t from over1k where t is null or t=27 group by si,i,b,f,t
+POSTHOOK: query: explain insert overwrite table over1k_part2 partition(ds="foo",t) select si,i,b,f,t from over1k where t is null or t=27 group by si,i,b,f,t
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -1768,15 +1760,13 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: -- SORT_BEFORE_DIFF
-select * from over1k_part2
+PREHOOK: query: select * from over1k_part2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@over1k_part2
 PREHOOK: Input: default@over1k_part2@ds=foo/t=27
 PREHOOK: Input: default@over1k_part2@ds=foo/t=__HIVE_DEFAULT_PARTITION__
 #### A masked pattern was here ####
-POSTHOOK: query: -- SORT_BEFORE_DIFF
-select * from over1k_part2
+POSTHOOK: query: select * from over1k_part2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@over1k_part2
 POSTHOOK: Input: default@over1k_part2@ds=foo/t=27
@@ -1915,15 +1905,13 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: -- SORT_BEFORE_DIFF
-select * from over1k_part2
+PREHOOK: query: select * from over1k_part2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@over1k_part2
 PREHOOK: Input: default@over1k_part2@ds=foo/t=27
 PREHOOK: Input: default@over1k_part2@ds=foo/t=__HIVE_DEFAULT_PARTITION__
 #### A masked pattern was here ####
-POSTHOOK: query: -- SORT_BEFORE_DIFF
-select * from over1k_part2
+POSTHOOK: query: select * from over1k_part2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@over1k_part2
 POSTHOOK: Input: default@over1k_part2@ds=foo/t=27
@@ -1961,10 +1949,7 @@ POSTHOOK: Input: default@over1k_part2@ds=foo/t=27
 POSTHOOK: Input: default@over1k_part2@ds=foo/t=__HIVE_DEFAULT_PARTITION__
 #### A masked pattern was here ####
 19
-PREHOOK: query: -- hadoop-1 does not honor number of reducers in local mode. There is always only 1 reducer irrespective of the number of buckets.
--- Hence all records go to one bucket and all other buckets will be empty. Similar to HIVE-6867. However, hadoop-2 honors number
--- of reducers and records are spread across all reducers. To avoid this inconsistency we will make number of buckets to 1 for this test.
-create table over1k_part_buck_sort2(
+PREHOOK: query: create table over1k_part_buck_sort2(
            si smallint,
            i int,
            b bigint,
@@ -1975,10 +1960,7 @@ create table over1k_part_buck_sort2(
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@over1k_part_buck_sort2
-POSTHOOK: query: -- hadoop-1 does not honor number of reducers in local mode. There is always only 1 reducer irrespective of the number of buckets.
--- Hence all records go to one bucket and all other buckets will be empty. Similar to HIVE-6867. However, hadoop-2 honors number
--- of reducers and records are spread across all reducers. To avoid this inconsistency we will make number of buckets to 1 for this test.
-create table over1k_part_buck_sort2(
+POSTHOOK: query: create table over1k_part_buck_sort2(
            si smallint,
            i int,
            b bigint,
@@ -3091,13 +3073,11 @@ POSTHOOK: Input: default@over1k_part3@s=wendy van buren/t=27/i=65680
 POSTHOOK: Input: default@over1k_part3@s=xavier quirinius/t=27/i=65599
 #### A masked pattern was here ####
 17814641134
-PREHOOK: query: -- cross verify results with SDPO disabled
-drop table over1k_part3
+PREHOOK: query: drop table over1k_part3
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@over1k_part3
 PREHOOK: Output: default@over1k_part3
-POSTHOOK: query: -- cross verify results with SDPO disabled
-drop table over1k_part3
+POSTHOOK: query: drop table over1k_part3
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@over1k_part3
 POSTHOOK: Output: default@over1k_part3

@@ -1,11 +1,4 @@
-PREHOOK: query: -- Ensure it works if skewed column is not the first column in the table columns
-
--- INCLUDE_HADOOP_MAJOR_VERSIONS(0.23)
-
--- list bucketing DML: static partition. multiple skewed columns.
-
--- create a skewed table
-create table list_bucketing_static_part (key String, value String) 
+PREHOOK: query: create table list_bucketing_static_part (key String, value String) 
     partitioned by (ds String, hr String) 
     skewed by (value) on ('val_466','val_287','val_82')
     stored as DIRECTORIES
@@ -13,14 +6,7 @@ create table list_bucketing_static_part (key String, value String)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@list_bucketing_static_part
-POSTHOOK: query: -- Ensure it works if skewed column is not the first column in the table columns
-
--- INCLUDE_HADOOP_MAJOR_VERSIONS(0.23)
-
--- list bucketing DML: static partition. multiple skewed columns.
-
--- create a skewed table
-create table list_bucketing_static_part (key String, value String) 
+POSTHOOK: query: create table list_bucketing_static_part (key String, value String) 
     partitioned by (ds String, hr String) 
     skewed by (value) on ('val_466','val_287','val_82')
     stored as DIRECTORIES
@@ -28,13 +14,11 @@ create table list_bucketing_static_part (key String, value String)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@list_bucketing_static_part
-PREHOOK: query: -- list bucketing DML without merge. use bucketize to generate a few small files.
-explain extended
+PREHOOK: query: explain extended
 insert overwrite table list_bucketing_static_part partition (ds = '2008-04-08',  hr = '11')
 select key, value from src
 PREHOOK: type: QUERY
-POSTHOOK: query: -- list bucketing DML without merge. use bucketize to generate a few small files.
-explain extended
+POSTHOOK: query: explain extended
 insert overwrite table list_bucketing_static_part partition (ds = '2008-04-08',  hr = '11')
 select key, value from src
 POSTHOOK: type: QUERY
@@ -177,12 +161,10 @@ POSTHOOK: Input: default@src
 POSTHOOK: Output: default@list_bucketing_static_part@ds=2008-04-08/hr=11
 POSTHOOK: Lineage: list_bucketing_static_part PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: list_bucketing_static_part PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: -- check DML result
-show partitions list_bucketing_static_part
+PREHOOK: query: show partitions list_bucketing_static_part
 PREHOOK: type: SHOWPARTITIONS
 PREHOOK: Input: default@list_bucketing_static_part
-POSTHOOK: query: -- check DML result
-show partitions list_bucketing_static_part
+POSTHOOK: query: show partitions list_bucketing_static_part
 POSTHOOK: type: SHOWPARTITIONS
 POSTHOOK: Input: default@list_bucketing_static_part
 ds=2008-04-08/hr=11

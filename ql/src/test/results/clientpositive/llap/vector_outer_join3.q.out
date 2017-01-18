@@ -1,11 +1,9 @@
-PREHOOK: query: -- Using cint and cstring1 in test queries
-create table small_alltypesorc1a as select * from alltypesorc where cint is not null and cstring1 is not null order by ctinyint, csmallint, cint, cbigint, cfloat, cdouble, cstring1, cstring2, ctimestamp1, ctimestamp2, cboolean1, cboolean2 limit 5
+PREHOOK: query: create table small_alltypesorc1a as select * from alltypesorc where cint is not null and cstring1 is not null order by ctinyint, csmallint, cint, cbigint, cfloat, cdouble, cstring1, cstring2, ctimestamp1, ctimestamp2, cboolean1, cboolean2 limit 5
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@alltypesorc
 PREHOOK: Output: database:default
 PREHOOK: Output: default@small_alltypesorc1a
-POSTHOOK: query: -- Using cint and cstring1 in test queries
-create table small_alltypesorc1a as select * from alltypesorc where cint is not null and cstring1 is not null order by ctinyint, csmallint, cint, cbigint, cfloat, cdouble, cstring1, cstring2, ctimestamp1, ctimestamp2, cboolean1, cboolean2 limit 5
+POSTHOOK: query: create table small_alltypesorc1a as select * from alltypesorc where cint is not null and cstring1 is not null order by ctinyint, csmallint, cint, cbigint, cfloat, cdouble, cstring1, cstring2, ctimestamp1, ctimestamp2, cboolean1, cboolean2 limit 5
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@alltypesorc
 POSTHOOK: Output: database:default
@@ -350,9 +348,7 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: -- SORT_QUERY_RESULTS
-
-select count(*) from (select c.cstring1
+PREHOOK: query: select count(*) from (select c.cstring1
 from small_alltypesorc_a c
 left outer join small_alltypesorc_a cd
   on cd.cint = c.cint 
@@ -362,9 +358,7 @@ left outer join small_alltypesorc_a hd
 PREHOOK: type: QUERY
 PREHOOK: Input: default@small_alltypesorc_a
 #### A masked pattern was here ####
-POSTHOOK: query: -- SORT_QUERY_RESULTS
-
-select count(*) from (select c.cstring1
+POSTHOOK: query: select count(*) from (select c.cstring1
 from small_alltypesorc_a c
 left outer join small_alltypesorc_a cd
   on cd.cint = c.cint 
@@ -499,9 +493,7 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: -- SORT_QUERY_RESULTS
-
-select count(*) from (select c.cstring1
+PREHOOK: query: select count(*) from (select c.cstring1
 from small_alltypesorc_a c
 left outer join small_alltypesorc_a cd
   on cd.cstring2 = c.cstring2 
@@ -511,9 +503,7 @@ left outer join small_alltypesorc_a hd
 PREHOOK: type: QUERY
 PREHOOK: Input: default@small_alltypesorc_a
 #### A masked pattern was here ####
-POSTHOOK: query: -- SORT_QUERY_RESULTS
-
-select count(*) from (select c.cstring1
+POSTHOOK: query: select count(*) from (select c.cstring1
 from small_alltypesorc_a c
 left outer join small_alltypesorc_a cd
   on cd.cstring2 = c.cstring2 
@@ -648,9 +638,7 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: -- SORT_QUERY_RESULTS
-
-select count(*) from (select c.cstring1
+PREHOOK: query: select count(*) from (select c.cstring1
 from small_alltypesorc_a c
 left outer join small_alltypesorc_a cd
   on cd.cstring2 = c.cstring2 and cd.cbigint = c.cbigint
@@ -660,9 +648,7 @@ left outer join small_alltypesorc_a hd
 PREHOOK: type: QUERY
 PREHOOK: Input: default@small_alltypesorc_a
 #### A masked pattern was here ####
-POSTHOOK: query: -- SORT_QUERY_RESULTS
-
-select count(*) from (select c.cstring1
+POSTHOOK: query: select count(*) from (select c.cstring1
 from small_alltypesorc_a c
 left outer join small_alltypesorc_a cd
   on cd.cstring2 = c.cstring2 and cd.cbigint = c.cbigint

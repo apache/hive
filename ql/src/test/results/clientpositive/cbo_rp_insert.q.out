@@ -38,13 +38,11 @@ POSTHOOK: type: QUERY
 POSTHOOK: Output: x314@source
 POSTHOOK: Lineage: source.s1 EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
 POSTHOOK: Lineage: source.s2 EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-PREHOOK: query: -- expect source to contain 1 row (1,2)
-select * from source
+PREHOOK: query: select * from source
 PREHOOK: type: QUERY
 PREHOOK: Input: x314@source
 #### A masked pattern was here ####
-POSTHOOK: query: -- expect source to contain 1 row (1,2)
-select * from source
+POSTHOOK: query: select * from source
 POSTHOOK: type: QUERY
 POSTHOOK: Input: x314@source
 #### A masked pattern was here ####
@@ -60,13 +58,11 @@ POSTHOOK: Output: x314@target1
 POSTHOOK: Lineage: target1.x SIMPLE [(source)source.FieldSchema(name:s2, type:int, comment:null), ]
 POSTHOOK: Lineage: target1.y SIMPLE []
 POSTHOOK: Lineage: target1.z SIMPLE [(source)source.FieldSchema(name:s1, type:int, comment:null), ]
-PREHOOK: query: -- expect target1 to contain 1 row (2,NULL,1)
-select * from target1
+PREHOOK: query: select * from target1
 PREHOOK: type: QUERY
 PREHOOK: Input: x314@target1
 #### A masked pattern was here ####
-POSTHOOK: query: -- expect target1 to contain 1 row (2,NULL,1)
-select * from target1
+POSTHOOK: query: select * from target1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: x314@target1
 #### A masked pattern was here ####

@@ -2,15 +2,11 @@ PREHOOK: query: drop table ba_test
 PREHOOK: type: DROPTABLE
 POSTHOOK: query: drop table ba_test
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: -- Everything in ba_table1.q + columnar serde in RCFILE.
-
-create table ba_test (ba_key binary, ba_val binary) stored as rcfile
+PREHOOK: query: create table ba_test (ba_key binary, ba_val binary) stored as rcfile
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@ba_test
-POSTHOOK: query: -- Everything in ba_table1.q + columnar serde in RCFILE.
-
-create table ba_test (ba_key binary, ba_val binary) stored as rcfile
+POSTHOOK: query: create table ba_test (ba_key binary, ba_val binary) stored as rcfile
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@ba_test

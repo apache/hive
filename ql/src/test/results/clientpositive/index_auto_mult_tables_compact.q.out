@@ -1,14 +1,6 @@
-PREHOOK: query: -- SORT_QUERY_RESULTS
--- try the query without indexing, with manual indexing, and with automatic indexing
-
--- without indexing
-EXPLAIN SELECT a.key, a.value FROM src a JOIN srcpart b ON (a.key = b.key) WHERE a.key > 80 AND a.key < 100 AND b.key > 70 AND b.key < 90
+PREHOOK: query: EXPLAIN SELECT a.key, a.value FROM src a JOIN srcpart b ON (a.key = b.key) WHERE a.key > 80 AND a.key < 100 AND b.key > 70 AND b.key < 90
 PREHOOK: type: QUERY
-POSTHOOK: query: -- SORT_QUERY_RESULTS
--- try the query without indexing, with manual indexing, and with automatic indexing
-
--- without indexing
-EXPLAIN SELECT a.key, a.value FROM src a JOIN srcpart b ON (a.key = b.key) WHERE a.key > 80 AND a.key < 100 AND b.key > 70 AND b.key < 90
+POSTHOOK: query: EXPLAIN SELECT a.key, a.value FROM src a JOIN srcpart b ON (a.key = b.key) WHERE a.key > 80 AND a.key < 100 AND b.key > 70 AND b.key < 90
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -197,11 +189,9 @@ POSTHOOK: Lineage: default__srcpart_srcpart_index_compact__ PARTITION(ds=2008-04
 POSTHOOK: Lineage: default__srcpart_srcpart_index_compact__ PARTITION(ds=2008-04-09,hr=12)._bucketname SIMPLE [(srcpart)srcpart.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
 POSTHOOK: Lineage: default__srcpart_srcpart_index_compact__ PARTITION(ds=2008-04-09,hr=12)._offsets EXPRESSION [(srcpart)srcpart.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
 POSTHOOK: Lineage: default__srcpart_srcpart_index_compact__ PARTITION(ds=2008-04-09,hr=12).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
-PREHOOK: query: -- automatic indexing
-EXPLAIN SELECT a.key, a.value FROM src a JOIN srcpart b ON (a.key = b.key) WHERE a.key > 80 AND a.key < 100 AND b.key > 70 AND b.key < 90
+PREHOOK: query: EXPLAIN SELECT a.key, a.value FROM src a JOIN srcpart b ON (a.key = b.key) WHERE a.key > 80 AND a.key < 100 AND b.key > 70 AND b.key < 90
 PREHOOK: type: QUERY
-POSTHOOK: query: -- automatic indexing
-EXPLAIN SELECT a.key, a.value FROM src a JOIN srcpart b ON (a.key = b.key) WHERE a.key > 80 AND a.key < 100 AND b.key > 70 AND b.key < 90
+POSTHOOK: query: EXPLAIN SELECT a.key, a.value FROM src a JOIN srcpart b ON (a.key = b.key) WHERE a.key > 80 AND a.key < 100 AND b.key > 70 AND b.key < 90
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-4 is a root stage

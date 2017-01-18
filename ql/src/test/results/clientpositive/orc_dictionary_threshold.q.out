@@ -1,45 +1,31 @@
-PREHOOK: query: -- Set the threshold to -1 to guarantee dictionary encoding is turned off
--- Tests that the data can be read back correctly when a string column is stored
--- without dictionary encoding
-
-CREATE TABLE test_orc (key STRING)
+PREHOOK: query: CREATE TABLE test_orc (key STRING)
 ROW FORMAT SERDE 'org.apache.hadoop.hive.ql.io.orc.OrcSerde' 
 STORED AS INPUTFORMAT 'org.apache.hadoop.hive.ql.io.orc.OrcInputFormat' 
 OUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat'
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@test_orc
-POSTHOOK: query: -- Set the threshold to -1 to guarantee dictionary encoding is turned off
--- Tests that the data can be read back correctly when a string column is stored
--- without dictionary encoding
-
-CREATE TABLE test_orc (key STRING)
+POSTHOOK: query: CREATE TABLE test_orc (key STRING)
 ROW FORMAT SERDE 'org.apache.hadoop.hive.ql.io.orc.OrcSerde' 
 STORED AS INPUTFORMAT 'org.apache.hadoop.hive.ql.io.orc.OrcInputFormat' 
 OUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat'
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_orc
-PREHOOK: query: -- should be single split
-INSERT OVERWRITE TABLE test_orc SELECT key FROM src TABLESAMPLE (10 ROWS)
+PREHOOK: query: INSERT OVERWRITE TABLE test_orc SELECT key FROM src TABLESAMPLE (10 ROWS)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Output: default@test_orc
-POSTHOOK: query: -- should be single split
-INSERT OVERWRITE TABLE test_orc SELECT key FROM src TABLESAMPLE (10 ROWS)
+POSTHOOK: query: INSERT OVERWRITE TABLE test_orc SELECT key FROM src TABLESAMPLE (10 ROWS)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@test_orc
 POSTHOOK: Lineage: test_orc.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-PREHOOK: query: -- Test reading the column back
-
-SELECT * FROM test_orc
+PREHOOK: query: SELECT * FROM test_orc
 PREHOOK: type: QUERY
 PREHOOK: Input: default@test_orc
 #### A masked pattern was here ####
-POSTHOOK: query: -- Test reading the column back
-
-SELECT * FROM test_orc
+POSTHOOK: query: SELECT * FROM test_orc
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test_orc
 #### A masked pattern was here ####
@@ -79,15 +65,7 @@ POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv1kv2.cogroup.txt'
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@src_thousand
-PREHOOK: query: -- Add data to the table in such a way that alternate stripes encode the column
--- differently.  Setting orc.stripe.size = 1 guarantees the stripes each have 
--- 5000 rows.  The first stripe will have 5 * 630 distinct rows and thus be
--- above the cutoff of 50% and will be direct encoded. The second stripe
--- will have 5 * 1 distinct rows and thus be under the cutoff and will be
--- dictionary encoded. The final stripe will have 630 out of 1000 and be 
--- direct encoded.
-
-INSERT OVERWRITE TABLE test_orc
+PREHOOK: query: INSERT OVERWRITE TABLE test_orc
 SELECT key FROM (
 SELECT CONCAT("a", key) AS key FROM src_thousand
 UNION ALL
@@ -114,15 +92,7 @@ SELECT CONCAT("k", key) AS key FROM src_thousand
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_thousand
 PREHOOK: Output: default@test_orc
-POSTHOOK: query: -- Add data to the table in such a way that alternate stripes encode the column
--- differently.  Setting orc.stripe.size = 1 guarantees the stripes each have 
--- 5000 rows.  The first stripe will have 5 * 630 distinct rows and thus be
--- above the cutoff of 50% and will be direct encoded. The second stripe
--- will have 5 * 1 distinct rows and thus be under the cutoff and will be
--- dictionary encoded. The final stripe will have 630 out of 1000 and be 
--- direct encoded.
-
-INSERT OVERWRITE TABLE test_orc
+POSTHOOK: query: INSERT OVERWRITE TABLE test_orc
 SELECT key FROM (
 SELECT CONCAT("a", key) AS key FROM src_thousand
 UNION ALL

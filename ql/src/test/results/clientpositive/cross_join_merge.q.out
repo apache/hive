@@ -339,12 +339,10 @@ STAGE PLANS:
 
 Warning: Shuffle Join JOIN[11][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Stage-2:MAPRED' is a cross product
 Warning: Shuffle Join JOIN[8][tables = [$hdt$_0, $hdt$_1]] in Stage 'Stage-1:MAPRED' is a cross product
-PREHOOK: query: -- no merge
-explain
+PREHOOK: query: explain
 select src1.key from src src1 left outer join src src2 join src src3
 PREHOOK: type: QUERY
-POSTHOOK: query: -- no merge
-explain
+POSTHOOK: query: explain
 select src1.key from src src1 left outer join src src2 join src src3
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:

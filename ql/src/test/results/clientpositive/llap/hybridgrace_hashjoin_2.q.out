@@ -1,23 +1,17 @@
-PREHOOK: query: -- Hybrid Grace Hash Join
--- Test n-way join
-SELECT 1
+PREHOOK: query: SELECT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
-POSTHOOK: query: -- Hybrid Grace Hash Join
--- Test n-way join
-SELECT 1
+POSTHOOK: query: SELECT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
 1
-PREHOOK: query: -- 3-way mapjoin (1 big table, 2 small tables)
-SELECT 1
+PREHOOK: query: SELECT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
-POSTHOOK: query: -- 3-way mapjoin (1 big table, 2 small tables)
-SELECT 1
+POSTHOOK: query: SELECT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
@@ -284,13 +278,11 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
 #### A masked pattern was here ####
 428
-PREHOOK: query: -- 4-way mapjoin (1 big table, 3 small tables)
-SELECT 1
+PREHOOK: query: SELECT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
-POSTHOOK: query: -- 4-way mapjoin (1 big table, 3 small tables)
-SELECT 1
+POSTHOOK: query: SELECT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
@@ -601,13 +593,11 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
 #### A masked pattern was here ####
 5680
-PREHOOK: query: -- 2 sets of 3-way mapjoin under 2 different tasks
-SELECT 1
+PREHOOK: query: SELECT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
-POSTHOOK: query: -- 2 sets of 3-way mapjoin under 2 different tasks
-SELECT 1
+POSTHOOK: query: SELECT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
@@ -1112,13 +1102,11 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
 #### A masked pattern was here ####
 428
 452
-PREHOOK: query: -- A chain of 2 sets of 3-way mapjoin under the same task
-SELECT 1
+PREHOOK: query: SELECT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
-POSTHOOK: query: -- A chain of 2 sets of 3-way mapjoin under the same task
-SELECT 1
+POSTHOOK: query: SELECT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####

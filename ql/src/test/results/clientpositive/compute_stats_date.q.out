@@ -18,13 +18,11 @@ POSTHOOK: query: create table tab_date (
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tab_date
-PREHOOK: query: -- insert some data
-load data local inpath '../../data/files/flights_join.txt' overwrite into table tab_date
+PREHOOK: query: load data local inpath '../../data/files/flights_join.txt' overwrite into table tab_date
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
 PREHOOK: Output: default@tab_date
-POSTHOOK: query: -- insert some data
-load data local inpath '../../data/files/flights_join.txt' overwrite into table tab_date
+POSTHOOK: query: load data local inpath '../../data/files/flights_join.txt' overwrite into table tab_date
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@tab_date
@@ -37,13 +35,11 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tab_date
 #### A masked pattern was here ####
 20
-PREHOOK: query: -- compute statistical summary of data
-select compute_stats(fl_date, 16) from tab_date
+PREHOOK: query: select compute_stats(fl_date, 16) from tab_date
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tab_date
 #### A masked pattern was here ####
-POSTHOOK: query: -- compute statistical summary of data
-select compute_stats(fl_date, 16) from tab_date
+POSTHOOK: query: select compute_stats(fl_date, 16) from tab_date
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tab_date
 #### A masked pattern was here ####
@@ -116,11 +112,9 @@ POSTHOOK: Input: default@tab_date
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
 	 	 	 	 	 	 	 	 	 	 
 fl_date             	date                	2000-11-20          	2010-10-29          	0                   	18                  	                    	                    	                    	                    	from deserializer   
-PREHOOK: query: -- Update stats manually. Try both yyyy-mm-dd and integer value for high/low value
-alter table tab_date update statistics for column fl_date set ('numDVs'='19', 'highValue'='2015-01-01', 'lowValue'='0')
+PREHOOK: query: alter table tab_date update statistics for column fl_date set ('numDVs'='19', 'highValue'='2015-01-01', 'lowValue'='0')
 PREHOOK: type: ALTERTABLE_UPDATETABLESTATS
-POSTHOOK: query: -- Update stats manually. Try both yyyy-mm-dd and integer value for high/low value
-alter table tab_date update statistics for column fl_date set ('numDVs'='19', 'highValue'='2015-01-01', 'lowValue'='0')
+POSTHOOK: query: alter table tab_date update statistics for column fl_date set ('numDVs'='19', 'highValue'='2015-01-01', 'lowValue'='0')
 POSTHOOK: type: ALTERTABLE_UPDATETABLESTATS
 PREHOOK: query: describe formatted tab_date fl_date
 PREHOOK: type: DESCTABLE

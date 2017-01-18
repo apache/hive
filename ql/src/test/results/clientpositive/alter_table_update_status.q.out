@@ -350,12 +350,10 @@ POSTHOOK: Input: default@datatype_stats
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
 	 	 	 	 	 	 	 	 	 	 
 bin                 	binary              	                    	                    	                    	                    	                    	                    	                    	                    	from deserializer   
-PREHOOK: query: --tinyint
-DESC FORMATTED datatype_stats t
+PREHOOK: query: DESC FORMATTED datatype_stats t
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@datatype_stats
-POSTHOOK: query: --tinyint
-DESC FORMATTED datatype_stats t
+POSTHOOK: query: DESC FORMATTED datatype_stats t
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@datatype_stats
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
@@ -374,12 +372,10 @@ POSTHOOK: Input: default@datatype_stats
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
 	 	 	 	 	 	 	 	 	 	 
 t                   	tinyint             	35                  	234                 	233                 	232                 	                    	                    	                    	                    	from deserializer   
-PREHOOK: query: --smallint
-DESC FORMATTED datatype_stats s
+PREHOOK: query: DESC FORMATTED datatype_stats s
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@datatype_stats
-POSTHOOK: query: --smallint
-DESC FORMATTED datatype_stats s
+POSTHOOK: query: DESC FORMATTED datatype_stats s
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@datatype_stats
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
@@ -398,12 +394,10 @@ POSTHOOK: Input: default@datatype_stats
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
 	 	 	 	 	 	 	 	 	 	 
 s                   	smallint            	25                  	489                 	56                  	56                  	                    	                    	                    	                    	from deserializer   
-PREHOOK: query: --int
-DESC FORMATTED datatype_stats i
+PREHOOK: query: DESC FORMATTED datatype_stats i
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@datatype_stats
-POSTHOOK: query: --int
-DESC FORMATTED datatype_stats i
+POSTHOOK: query: DESC FORMATTED datatype_stats i
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@datatype_stats
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
@@ -422,12 +416,10 @@ POSTHOOK: Input: default@datatype_stats
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
 	 	 	 	 	 	 	 	 	 	 
 i                   	int                 	5                   	889                 	1                   	59                  	                    	                    	                    	                    	from deserializer   
-PREHOOK: query: --bigint
-DESC FORMATTED datatype_stats b
+PREHOOK: query: DESC FORMATTED datatype_stats b
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@datatype_stats
-POSTHOOK: query: --bigint
-DESC FORMATTED datatype_stats b
+POSTHOOK: query: DESC FORMATTED datatype_stats b
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@datatype_stats
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
@@ -446,12 +438,10 @@ POSTHOOK: Input: default@datatype_stats
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
 	 	 	 	 	 	 	 	 	 	 
 b                   	bigint              	8                   	89                  	14                  	9                   	                    	                    	                    	                    	from deserializer   
-PREHOOK: query: --float
-DESC FORMATTED datatype_stats f
+PREHOOK: query: DESC FORMATTED datatype_stats f
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@datatype_stats
-POSTHOOK: query: --float
-DESC FORMATTED datatype_stats f
+POSTHOOK: query: DESC FORMATTED datatype_stats f
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@datatype_stats
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
@@ -470,12 +460,10 @@ POSTHOOK: Input: default@datatype_stats
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
 	 	 	 	 	 	 	 	 	 	 
 f                   	float               	8.0                 	2345.656            	45                  	563                 	                    	                    	                    	                    	from deserializer   
-PREHOOK: query: --double
-DESC FORMATTED datatype_stats d
+PREHOOK: query: DESC FORMATTED datatype_stats d
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@datatype_stats
-POSTHOOK: query: --double
-DESC FORMATTED datatype_stats d
+POSTHOOK: query: DESC FORMATTED datatype_stats d
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@datatype_stats
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
@@ -494,12 +482,10 @@ POSTHOOK: Input: default@datatype_stats
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
 	 	 	 	 	 	 	 	 	 	 
 d                   	double              	0.00455             	560.3367            	12                  	5677                	                    	                    	                    	                    	from deserializer   
-PREHOOK: query: --decimal
-DESC FORMATTED datatype_stats dem
+PREHOOK: query: DESC FORMATTED datatype_stats dem
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@datatype_stats
-POSTHOOK: query: --decimal
-DESC FORMATTED datatype_stats dem
+POSTHOOK: query: DESC FORMATTED datatype_stats dem
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@datatype_stats
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
@@ -518,12 +504,10 @@ POSTHOOK: Input: default@datatype_stats
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
 	 	 	 	 	 	 	 	 	 	 
 dem                 	decimal(10,0)       	0                   	560                 	912                 	57                  	                    	                    	                    	                    	from deserializer   
-PREHOOK: query: --timestamp
-DESC FORMATTED datatype_stats ts
+PREHOOK: query: DESC FORMATTED datatype_stats ts
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@datatype_stats
-POSTHOOK: query: --timestamp
-DESC FORMATTED datatype_stats ts
+POSTHOOK: query: DESC FORMATTED datatype_stats ts
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@datatype_stats
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
@@ -542,12 +526,10 @@ POSTHOOK: Input: default@datatype_stats
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
 	 	 	 	 	 	 	 	 	 	 
 ts                  	timestamp           	1357030924          	1357030923          	12                  	7                   	                    	                    	                    	                    	from deserializer   
-PREHOOK: query: --decimal
-DESC FORMATTED datatype_stats dt
+PREHOOK: query: DESC FORMATTED datatype_stats dt
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@datatype_stats
-POSTHOOK: query: --decimal
-DESC FORMATTED datatype_stats dt
+POSTHOOK: query: DESC FORMATTED datatype_stats dt
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@datatype_stats
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
@@ -566,12 +548,10 @@ POSTHOOK: Input: default@datatype_stats
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
 	 	 	 	 	 	 	 	 	 	 
 dt                  	date                	2001-02-04          	2012-01-01          	912                 	57                  	                    	                    	                    	                    	from deserializer   
-PREHOOK: query: --string
-DESC FORMATTED datatype_stats str
+PREHOOK: query: DESC FORMATTED datatype_stats str
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@datatype_stats
-POSTHOOK: query: --string
-DESC FORMATTED datatype_stats str
+POSTHOOK: query: DESC FORMATTED datatype_stats str
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@datatype_stats
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
@@ -590,12 +570,10 @@ POSTHOOK: Input: default@datatype_stats
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
 	 	 	 	 	 	 	 	 	 	 
 str                 	string              	                    	                    	233                 	232                 	2.34                	235                 	                    	                    	from deserializer   
-PREHOOK: query: --varchar
-DESC FORMATTED datatype_stats v
+PREHOOK: query: DESC FORMATTED datatype_stats v
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@datatype_stats
-POSTHOOK: query: --varchar
-DESC FORMATTED datatype_stats v
+POSTHOOK: query: DESC FORMATTED datatype_stats v
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@datatype_stats
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
@@ -614,12 +592,10 @@ POSTHOOK: Input: default@datatype_stats
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
 	 	 	 	 	 	 	 	 	 	 
 v                   	varchar(12)         	                    	                    	33                  	22                  	4.4                 	25                  	                    	                    	from deserializer   
-PREHOOK: query: --char
-DESC FORMATTED datatype_stats c
+PREHOOK: query: DESC FORMATTED datatype_stats c
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@datatype_stats
-POSTHOOK: query: --char
-DESC FORMATTED datatype_stats c
+POSTHOOK: query: DESC FORMATTED datatype_stats c
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@datatype_stats
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
@@ -638,12 +614,10 @@ POSTHOOK: Input: default@datatype_stats
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
 	 	 	 	 	 	 	 	 	 	 
 c                   	char(5)             	                    	                    	3                   	2                   	9.0                 	58                  	                    	                    	from deserializer   
-PREHOOK: query: --boolean
-DESC FORMATTED datatype_stats bl
+PREHOOK: query: DESC FORMATTED datatype_stats bl
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@datatype_stats
-POSTHOOK: query: --boolean
-DESC FORMATTED datatype_stats bl
+POSTHOOK: query: DESC FORMATTED datatype_stats bl
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@datatype_stats
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
@@ -662,12 +636,10 @@ POSTHOOK: Input: default@datatype_stats
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
 	 	 	 	 	 	 	 	 	 	 
 bl                  	boolean             	                    	                    	1                   	                    	                    	                    	9                   	8                   	from deserializer   
-PREHOOK: query: --binary
-DESC FORMATTED datatype_stats bin
+PREHOOK: query: DESC FORMATTED datatype_stats bin
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@datatype_stats
-POSTHOOK: query: --binary
-DESC FORMATTED datatype_stats bin
+POSTHOOK: query: DESC FORMATTED datatype_stats bin
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@datatype_stats
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             

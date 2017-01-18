@@ -1,20 +1,10 @@
-PREHOOK: query: -- This query has a GroupByOperator folling JoinOperator and they share the same keys.
--- When Correlation Optimizer is turned off, three MR jobs will be generated.
--- When Correlation Optimizer is turned on, two MR jobs will be generated
--- and JoinOperator (on the column of key) and GroupByOperator (also on the column
--- of key) will be executed in the first MR job.
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT SUM(HASH(tmp.key)), SUM(HASH(tmp.cnt))
 FROM (SELECT x.key AS key, count(1) AS cnt
       FROM src1 x JOIN src y ON (x.key = y.key)
       GROUP BY x.key) tmp
 PREHOOK: type: QUERY
-POSTHOOK: query: -- This query has a GroupByOperator folling JoinOperator and they share the same keys.
--- When Correlation Optimizer is turned off, three MR jobs will be generated.
--- When Correlation Optimizer is turned on, two MR jobs will be generated
--- and JoinOperator (on the column of key) and GroupByOperator (also on the column
--- of key) will be executed in the first MR job.
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT SUM(HASH(tmp.key)), SUM(HASH(tmp.cnt))
 FROM (SELECT x.key AS key, count(1) AS cnt
       FROM src1 x JOIN src y ON (x.key = y.key)
@@ -304,21 +294,13 @@ POSTHOOK: Input: default@src
 POSTHOOK: Input: default@src1
 #### A masked pattern was here ####
 652447	37
-PREHOOK: query: -- Enable hive.auto.convert.join.
--- Correlation Optimizer will detect that the join will be converted to a Map-join,
--- so it will not try to optimize this query.
--- We should generate 1 MR job for subquery tmp.
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT SUM(HASH(tmp.key)), SUM(HASH(tmp.cnt))
 FROM (SELECT x.key AS key, count(1) AS cnt
       FROM src1 x JOIN src y ON (x.key = y.key)
       GROUP BY x.key) tmp
 PREHOOK: type: QUERY
-POSTHOOK: query: -- Enable hive.auto.convert.join.
--- Correlation Optimizer will detect that the join will be converted to a Map-join,
--- so it will not try to optimize this query.
--- We should generate 1 MR job for subquery tmp.
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT SUM(HASH(tmp.key)), SUM(HASH(tmp.cnt))
 FROM (SELECT x.key AS key, count(1) AS cnt
       FROM src1 x JOIN src y ON (x.key = y.key)
@@ -454,19 +436,13 @@ POSTHOOK: Input: default@src
 POSTHOOK: Input: default@src1
 #### A masked pattern was here ####
 652447	37
-PREHOOK: query: -- If the key of a GroupByOperator is the left table's key in
--- a Left Semi Join, these two operators will be executed in
--- the same MR job when Correlation Optimizer is enabled.
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT SUM(HASH(tmp.key)), SUM(HASH(tmp.cnt))
 FROM (SELECT x.key AS key, count(1) AS cnt
       FROM src1 x LEFT SEMI JOIN src y ON (x.key = y.key)
       GROUP BY x.key) tmp
 PREHOOK: type: QUERY
-POSTHOOK: query: -- If the key of a GroupByOperator is the left table's key in
--- a Left Semi Join, these two operators will be executed in
--- the same MR job when Correlation Optimizer is enabled.
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT SUM(HASH(tmp.key)), SUM(HASH(tmp.cnt))
 FROM (SELECT x.key AS key, count(1) AS cnt
       FROM src1 x LEFT SEMI JOIN src y ON (x.key = y.key)
@@ -766,19 +742,13 @@ POSTHOOK: Input: default@src
 POSTHOOK: Input: default@src1
 #### A masked pattern was here ####
 652447	15
-PREHOOK: query: -- If the key of a GroupByOperator is the left table's key in
--- a Left Outer Join, these two operators will be executed in
--- the same MR job when Correlation Optimizer is enabled.
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT SUM(HASH(tmp.key)), SUM(HASH(tmp.cnt))
 FROM (SELECT x.key AS key, count(1) AS cnt
       FROM src1 x LEFT OUTER JOIN src y ON (x.key = y.key)
       GROUP BY x.key) tmp
 PREHOOK: type: QUERY
-POSTHOOK: query: -- If the key of a GroupByOperator is the left table's key in
--- a Left Outer Join, these two operators will be executed in
--- the same MR job when Correlation Optimizer is enabled.
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT SUM(HASH(tmp.key)), SUM(HASH(tmp.cnt))
 FROM (SELECT x.key AS key, count(1) AS cnt
       FROM src1 x LEFT OUTER JOIN src y ON (x.key = y.key)
@@ -1056,19 +1026,13 @@ POSTHOOK: Input: default@src
 POSTHOOK: Input: default@src1
 #### A masked pattern was here ####
 652447	47
-PREHOOK: query: -- If the key of a GroupByOperator is the right table's key in
--- a Left Outer Join, we cannot use a single MR to execute these two
--- operators because those keys with a null value are not grouped.
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT SUM(HASH(tmp.key)), SUM(HASH(tmp.cnt))
 FROM (SELECT y.key AS key, count(1) AS cnt
       FROM src1 x LEFT OUTER JOIN src y ON (x.key = y.key)
       GROUP BY y.key) tmp
 PREHOOK: type: QUERY
-POSTHOOK: query: -- If the key of a GroupByOperator is the right table's key in
--- a Left Outer Join, we cannot use a single MR to execute these two
--- operators because those keys with a null value are not grouped.
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT SUM(HASH(tmp.key)), SUM(HASH(tmp.cnt))
 FROM (SELECT y.key AS key, count(1) AS cnt
       FROM src1 x LEFT OUTER JOIN src y ON (x.key = y.key)
@@ -1354,18 +1318,12 @@ POSTHOOK: Input: default@src
 POSTHOOK: Input: default@src1
 #### A masked pattern was here ####
 652447	47
-PREHOOK: query: -- If a column of the key of a GroupByOperator is the right table's key in
--- a Left Outer Join, we cannot use a single MR to execute these two
--- operators because those keys with a null value are not grouped.
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT x.key, y.value, count(1) AS cnt
 FROM src1 x LEFT OUTER JOIN src y ON (x.key = y.key AND x.value = y.value)
 GROUP BY x.key, y.value
 PREHOOK: type: QUERY
-POSTHOOK: query: -- If a column of the key of a GroupByOperator is the right table's key in
--- a Left Outer Join, we cannot use a single MR to execute these two
--- operators because those keys with a null value are not grouped.
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT x.key, y.value, count(1) AS cnt
 FROM src1 x LEFT OUTER JOIN src y ON (x.key = y.key AND x.value = y.value)
 GROUP BY x.key, y.value
@@ -1630,19 +1588,13 @@ POSTHOOK: Input: default@src1
 406	val_406	4
 66	val_66	1
 98	val_98	2
-PREHOOK: query: -- If the key of a GroupByOperator is the right table's key in
--- a Right Outer Join, these two operators will be executed in
--- the same MR job when Correlation Optimizer is enabled.
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT SUM(HASH(tmp.key)), SUM(HASH(tmp.cnt))
 FROM (SELECT y.key AS key, count(1) AS cnt
       FROM src1 x RIGHT OUTER JOIN src y ON (x.key = y.key)
       GROUP BY y.key) tmp
 PREHOOK: type: QUERY
-POSTHOOK: query: -- If the key of a GroupByOperator is the right table's key in
--- a Right Outer Join, these two operators will be executed in
--- the same MR job when Correlation Optimizer is enabled.
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT SUM(HASH(tmp.key)), SUM(HASH(tmp.cnt))
 FROM (SELECT y.key AS key, count(1) AS cnt
       FROM src1 x RIGHT OUTER JOIN src y ON (x.key = y.key)
@@ -1928,19 +1880,13 @@ POSTHOOK: Input: default@src
 POSTHOOK: Input: default@src1
 #### A masked pattern was here ####
 12744278	500
-PREHOOK: query: -- If the key of a GroupByOperator is the left table's key in
--- a Right Outer Join, we cannot use a single MR to execute these two 
--- operators because those keys with a null value are not grouped.
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT SUM(HASH(tmp.key)), SUM(HASH(tmp.cnt))
 FROM (SELECT x.key AS key, count(1) AS cnt
       FROM src1 x RIGHT OUTER JOIN src y ON (x.key = y.key)
       GROUP BY x.key) tmp
 PREHOOK: type: QUERY
-POSTHOOK: query: -- If the key of a GroupByOperator is the left table's key in
--- a Right Outer Join, we cannot use a single MR to execute these two 
--- operators because those keys with a null value are not grouped.
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT SUM(HASH(tmp.key)), SUM(HASH(tmp.cnt))
 FROM (SELECT x.key AS key, count(1) AS cnt
       FROM src1 x RIGHT OUTER JOIN src y ON (x.key = y.key)
@@ -2218,21 +2164,13 @@ POSTHOOK: Input: default@src
 POSTHOOK: Input: default@src1
 #### A masked pattern was here ####
 652447	500
-PREHOOK: query: -- This query has a Full Outer Join followed by a GroupByOperator and
--- they share the same key. Because those keys with a null value are not grouped
--- in the output of the Full Outer Join, we cannot use a single MR to execute
--- these two operators.
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT SUM(HASH(tmp.key)), SUM(HASH(tmp.cnt))
 FROM (SELECT x.key AS key, count(1) AS cnt
       FROM src1 x FULL OUTER JOIN src y ON (x.key = y.key)
       GROUP BY x.key) tmp
 PREHOOK: type: QUERY
-POSTHOOK: query: -- This query has a Full Outer Join followed by a GroupByOperator and
--- they share the same key. Because those keys with a null value are not grouped
--- in the output of the Full Outer Join, we cannot use a single MR to execute
--- these two operators.
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT SUM(HASH(tmp.key)), SUM(HASH(tmp.cnt))
 FROM (SELECT x.key AS key, count(1) AS cnt
       FROM src1 x FULL OUTER JOIN src y ON (x.key = y.key)
@@ -2510,15 +2448,13 @@ POSTHOOK: Input: default@src
 POSTHOOK: Input: default@src1
 #### A masked pattern was here ####
 652447	510
-PREHOOK: query: -- Currently, we only handle exactly same keys, this query will not be optimized
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT SUM(HASH(tmp.key)), SUM(HASH(tmp.value)), SUM(HASH(tmp.cnt)) 
 FROM (SELECT x.key AS key, x.value AS value, count(1) AS cnt
       FROM src1 x JOIN src y ON (x.key = y.key)
       GROUP BY x.key, x.value) tmp
 PREHOOK: type: QUERY
-POSTHOOK: query: -- Currently, we only handle exactly same keys, this query will not be optimized
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT SUM(HASH(tmp.key)), SUM(HASH(tmp.value)), SUM(HASH(tmp.cnt)) 
 FROM (SELECT x.key AS key, x.value AS value, count(1) AS cnt
       FROM src1 x JOIN src y ON (x.key = y.key)
@@ -2810,15 +2746,13 @@ POSTHOOK: Input: default@src
 POSTHOOK: Input: default@src1
 #### A masked pattern was here ####
 652447	661329102	37
-PREHOOK: query: -- Currently, we only handle exactly same keys, this query will not be optimized
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT SUM(HASH(tmp.key)), SUM(HASH(tmp.cnt))
 FROM (SELECT x.key AS key, count(1) AS cnt
       FROM src1 x JOIN src y ON (x.key = y.key AND x.value = y.value)
       GROUP BY x.key) tmp
 PREHOOK: type: QUERY
-POSTHOOK: query: -- Currently, we only handle exactly same keys, this query will not be optimized
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT SUM(HASH(tmp.key)), SUM(HASH(tmp.cnt))
 FROM (SELECT x.key AS key, count(1) AS cnt
       FROM src1 x JOIN src y ON (x.key = y.key AND x.value = y.value)

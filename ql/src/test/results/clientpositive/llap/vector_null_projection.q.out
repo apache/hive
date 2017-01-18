@@ -1,12 +1,8 @@
-PREHOOK: query: -- SORT_QUERY_RESULTS
-
-create table a(s string) stored as orc
+PREHOOK: query: create table a(s string) stored as orc
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@a
-POSTHOOK: query: -- SORT_QUERY_RESULTS
-
-create table a(s string) stored as orc
+POSTHOOK: query: create table a(s string) stored as orc
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@a
@@ -32,12 +28,10 @@ POSTHOOK: query: insert into table b values('aaa')
 POSTHOOK: type: QUERY
 POSTHOOK: Output: default@b
 POSTHOOK: Lineage: b.s SIMPLE [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-PREHOOK: query: -- We expect no vectorization due to NULL (void) projection type.
-explain
+PREHOOK: query: explain
 select NULL from a
 PREHOOK: type: QUERY
-POSTHOOK: query: -- We expect no vectorization due to NULL (void) projection type.
-explain
+POSTHOOK: query: explain
 select NULL from a
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:

@@ -1,9 +1,7 @@
-PREHOOK: query: -- UDTF forwards nothing, OUTER LV add null for that
-explain
+PREHOOK: query: explain
 select * from src LATERAL VIEW OUTER explode(array()) C AS a limit 10
 PREHOOK: type: QUERY
-POSTHOOK: query: -- UDTF forwards nothing, OUTER LV add null for that
-explain
+POSTHOOK: query: explain
 select * from src LATERAL VIEW OUTER explode(array()) C AS a limit 10
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -90,12 +88,10 @@ POSTHOOK: Input: default@src
 278	val_278	NULL
 98	val_98	NULL
 484	val_484	NULL
-PREHOOK: query: -- backward compatible (UDTF forwards something for OUTER LV)
-explain
+PREHOOK: query: explain
 select * from src LATERAL VIEW OUTER explode(array(4,5)) C AS a limit 10
 PREHOOK: type: QUERY
-POSTHOOK: query: -- backward compatible (UDTF forwards something for OUTER LV)
-explain
+POSTHOOK: query: explain
 select * from src LATERAL VIEW OUTER explode(array(4,5)) C AS a limit 10
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:

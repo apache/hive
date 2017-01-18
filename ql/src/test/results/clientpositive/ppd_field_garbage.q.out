@@ -1,10 +1,8 @@
-PREHOOK: query: -- ppd leaves invalid expr in field expr
-CREATE TABLE test_issue (fileid int, infos ARRAY<STRUCT<u:INT>>, test_c STRUCT<user_c:STRUCT<age:INT>>)
+PREHOOK: query: CREATE TABLE test_issue (fileid int, infos ARRAY<STRUCT<u:INT>>, test_c STRUCT<user_c:STRUCT<age:INT>>)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@test_issue
-POSTHOOK: query: -- ppd leaves invalid expr in field expr
-CREATE TABLE test_issue (fileid int, infos ARRAY<STRUCT<u:INT>>, test_c STRUCT<user_c:STRUCT<age:INT>>)
+POSTHOOK: query: CREATE TABLE test_issue (fileid int, infos ARRAY<STRUCT<u:INT>>, test_c STRUCT<user_c:STRUCT<age:INT>>)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_issue
@@ -18,13 +16,11 @@ POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@test_issue
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@v_test_issue
-PREHOOK: query: -- dummy data
-LOAD DATA LOCAL INPATH '../../data/files/kv1.txt' INTO TABLE test_issue
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv1.txt' INTO TABLE test_issue
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
 PREHOOK: Output: default@test_issue
-POSTHOOK: query: -- dummy data
-LOAD DATA LOCAL INPATH '../../data/files/kv1.txt' INTO TABLE test_issue
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv1.txt' INTO TABLE test_issue
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@test_issue

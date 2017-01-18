@@ -1,8 +1,6 @@
-PREHOOK: query: -- negative, RS + join
-explain select * from src a join src b on a.key=b.key limit 20
+PREHOOK: query: explain select * from src a join src b on a.key=b.key limit 20
 PREHOOK: type: QUERY
-POSTHOOK: query: -- negative, RS + join
-explain select * from src a join src b on a.key=b.key limit 20
+POSTHOOK: query: explain select * from src a join src b on a.key=b.key limit 20
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -70,11 +68,9 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: -- negative, RS + filter
-explain select value, sum(key) as sum from src group by value having sum > 100 limit 20
+PREHOOK: query: explain select value, sum(key) as sum from src group by value having sum > 100 limit 20
 PREHOOK: type: QUERY
-POSTHOOK: query: -- negative, RS + filter
-explain select value, sum(key) as sum from src group by value having sum > 100 limit 20
+POSTHOOK: query: explain select value, sum(key) as sum from src group by value having sum > 100 limit 20
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -130,11 +126,9 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: -- negative, RS + lateral view
-explain select key, L.* from (select * from src order by key) a lateral view explode(array(value, value)) L as v limit 10
+PREHOOK: query: explain select key, L.* from (select * from src order by key) a lateral view explode(array(value, value)) L as v limit 10
 PREHOOK: type: QUERY
-POSTHOOK: query: -- negative, RS + lateral view
-explain select key, L.* from (select * from src order by key) a lateral view explode(array(value, value)) L as v limit 10
+POSTHOOK: query: explain select key, L.* from (select * from src order by key) a lateral view explode(array(value, value)) L as v limit 10
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -215,13 +209,11 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: -- negative, RS + forward + multi-groupby
-CREATE TABLE dest_2(key STRING, c1 INT)
+PREHOOK: query: CREATE TABLE dest_2(key STRING, c1 INT)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@dest_2
-POSTHOOK: query: -- negative, RS + forward + multi-groupby
-CREATE TABLE dest_2(key STRING, c1 INT)
+POSTHOOK: query: CREATE TABLE dest_2(key STRING, c1 INT)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@dest_2

@@ -90,9 +90,7 @@ POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/web_sales_2k' OVERWRIT
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@web_sales_txt
-PREHOOK: query: ------------------------------------------------------------------------------------------
-
-create table web_sales
+PREHOOK: query: create table web_sales
 (
     ws_sold_date_sk           int,
     ws_sold_time_sk           int,
@@ -137,9 +135,7 @@ tblproperties ("orc.stripe.size"="33554432", "orc.compress.size"="16384")
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@web_sales
-POSTHOOK: query: ------------------------------------------------------------------------------------------
-
-create table web_sales
+POSTHOOK: query: create table web_sales
 (
     ws_sold_date_sk           int,
     ws_sold_time_sk           int,
@@ -1229,14 +1225,10 @@ POSTHOOK: Lineage: web_sales PARTITION(ws_web_site_sk=9).ws_sold_time_sk SIMPLE 
 POSTHOOK: Lineage: web_sales PARTITION(ws_web_site_sk=9).ws_warehouse_sk SIMPLE [(web_sales_txt)web_sales_txt.FieldSchema(name:ws_warehouse_sk, type:int, comment:null), ]
 POSTHOOK: Lineage: web_sales PARTITION(ws_web_site_sk=9).ws_web_page_sk SIMPLE [(web_sales_txt)web_sales_txt.FieldSchema(name:ws_web_page_sk, type:int, comment:null), ]
 POSTHOOK: Lineage: web_sales PARTITION(ws_web_site_sk=9).ws_wholesale_cost SIMPLE [(web_sales_txt)web_sales_txt.FieldSchema(name:ws_wholesale_cost, type:decimal(7,2), comment:null), ]
-PREHOOK: query: ------------------------------------------------------------------------------------------
-
-explain
+PREHOOK: query: explain
 select count(distinct ws_order_number) from web_sales
 PREHOOK: type: QUERY
-POSTHOOK: query: ------------------------------------------------------------------------------------------
-
-explain
+POSTHOOK: query: explain
 select count(distinct ws_order_number) from web_sales
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:

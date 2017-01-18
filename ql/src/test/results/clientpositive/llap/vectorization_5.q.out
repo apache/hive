@@ -1,6 +1,4 @@
-PREHOOK: query: -- SORT_QUERY_RESULTS
-
-SELECT MAX(csmallint),
+PREHOOK: query: SELECT MAX(csmallint),
        (MAX(csmallint) * -75),
        COUNT(*),
        ((MAX(csmallint) * -75) / COUNT(*)),
@@ -21,9 +19,7 @@ WHERE  (((cboolean2 IS NOT NULL)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
-POSTHOOK: query: -- SORT_QUERY_RESULTS
-
-SELECT MAX(csmallint),
+POSTHOOK: query: SELECT MAX(csmallint),
        (MAX(csmallint) * -75),
        COUNT(*),
        ((MAX(csmallint) * -75) / COUNT(*)),

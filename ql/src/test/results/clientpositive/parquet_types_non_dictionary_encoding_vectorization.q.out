@@ -432,9 +432,7 @@ POSTHOOK: Lineage: parquet_types.l1 SIMPLE [(parquet_types_staging)parquet_types
 POSTHOOK: Lineage: parquet_types.m1 SIMPLE [(parquet_types_staging)parquet_types_staging.FieldSchema(name:m1, type:map<string,varchar(3)>, comment:null), ]
 POSTHOOK: Lineage: parquet_types.st1 SIMPLE [(parquet_types_staging)parquet_types_staging.FieldSchema(name:st1, type:struct<c1:int,c2:char(1)>, comment:null), ]
 POSTHOOK: Lineage: parquet_types.t SIMPLE [(parquet_types_staging)parquet_types_staging.FieldSchema(name:t, type:timestamp, comment:null), ]
-PREHOOK: query: -- test types in group by
-
-EXPLAIN SELECT ctinyint,
+PREHOOK: query: EXPLAIN SELECT ctinyint,
   MAX(cint),
   MIN(csmallint),
   COUNT(cstring1),
@@ -444,9 +442,7 @@ FROM parquet_types
 GROUP BY ctinyint
 ORDER BY ctinyint
 PREHOOK: type: QUERY
-POSTHOOK: query: -- test types in group by
-
-EXPLAIN SELECT ctinyint,
+POSTHOOK: query: EXPLAIN SELECT ctinyint,
   MAX(cint),
   MIN(csmallint),
   COUNT(cstring1),

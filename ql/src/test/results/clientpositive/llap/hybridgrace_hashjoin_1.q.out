@@ -1,28 +1,13 @@
-PREHOOK: query: -- Hybrid Grace Hash Join
--- Test basic functionalities:
--- 1. Various cases when hash partitions spill
--- 2. Partitioned table spilling
--- 3. Vectorization
-
-
-SELECT 1
+PREHOOK: query: SELECT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
-POSTHOOK: query: -- Hybrid Grace Hash Join
--- Test basic functionalities:
--- 1. Various cases when hash partitions spill
--- 2. Partitioned table spilling
--- 3. Vectorization
-
-
-SELECT 1
+POSTHOOK: query: SELECT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
 1
-PREHOOK: query: -- Base result for inner join
-explain
+PREHOOK: query: explain
 select count(*) from
 (select c.ctinyint
  from alltypesorc c
@@ -30,133 +15,7 @@ select count(*) from
  on cd.cint = c.cint
  where c.cint < 2000000000) t1
 PREHOOK: type: QUERY
-POSTHOOK: query: -- Base result for inner join
-explain
-select count(*) from
-(select c.ctinyint
- from alltypesorc c
- inner join alltypesorc cd
- on cd.cint = c.cint
- where c.cint < 2000000000) t1
-POSTHOOK: type: QUERY
-STAGE DEPENDENCIES:
-  Stage-1 is a root stage
-  Stage-0 depends on stages: Stage-1
-
-STAGE PLANS:
-  Stage: Stage-1
-    Tez
-#### A masked pattern was here ####
-      Edges:
-        Map 1 <- Map 3 (BROADCAST_EDGE)
-        Reducer 2 <- Map 1 (SIMPLE_EDGE)
-#### A masked pattern was here ####
-      Vertices:
-        Map 1 
-            Map Operator Tree:
-                TableScan
-                  alias: c
-                  Statistics: Num rows: 12288 Data size: 36696 Basic stats: COMPLETE Column stats: COMPLETE
-                  Filter Operator
-                    predicate: (cint < 2000000000) (type: boolean)
-                    Statistics: Num rows: 12288 Data size: 36696 Basic stats: COMPLETE Column stats: COMPLETE
-                    Select Operator
-                      expressions: cint (type: int)
-                      outputColumnNames: _col0
-                      Statistics: Num rows: 12288 Data size: 36696 Basic stats: COMPLETE Column stats: COMPLETE
-                      Map Join Operator
-                        condition map:
-                             Inner Join 0 to 1
-                        keys:
-                          0 _col0 (type: int)
-                          1 _col0 (type: int)
-                        input vertices:
-                          1 Map 3
-                        Statistics: Num rows: 26150 Data size: 209200 Basic stats: COMPLETE Column stats: COMPLETE
-                        Group By Operator
-                          aggregations: count()
-                          mode: hash
-                          outputColumnNames: _col0
-                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                          Reduce Output Operator
-                            sort order: 
-                            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                            value expressions: _col0 (type: bigint)
-            Execution mode: llap
-            LLAP IO: all inputs
-        Map 3 
-            Map Operator Tree:
-                TableScan
-                  alias: cd
-                  Statistics: Num rows: 12288 Data size: 36696 Basic stats: COMPLETE Column stats: COMPLETE
-                  Filter Operator
-                    predicate: (cint < 2000000000) (type: boolean)
-                    Statistics: Num rows: 12288 Data size: 36696 Basic stats: COMPLETE Column stats: COMPLETE
-                    Select Operator
-                      expressions: cint (type: int)
-                      outputColumnNames: _col0
-                      Statistics: Num rows: 12288 Data size: 36696 Basic stats: COMPLETE Column stats: COMPLETE
-                      Reduce Output Operator
-                        key expressions: _col0 (type: int)
-                        sort order: +
-                        Map-reduce partition columns: _col0 (type: int)
-                        Statistics: Num rows: 12288 Data size: 36696 Basic stats: COMPLETE Column stats: COMPLETE
-            Execution mode: llap
-            LLAP IO: all inputs
-        Reducer 2 
-            Execution mode: llap
-            Reduce Operator Tree:
-              Group By Operator
-                aggregations: count(VALUE._col0)
-                mode: mergepartial
-                outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                File Output Operator
-                  compressed: false
-                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                  table:
-                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-
-  Stage: Stage-0
-    Fetch Operator
-      limit: -1
-      Processor Tree:
-        ListSink
-
-PREHOOK: query: select count(*) from
-(select c.ctinyint
- from alltypesorc c
- inner join alltypesorc cd
- on cd.cint = c.cint
- where c.cint < 2000000000) t1
-PREHOOK: type: QUERY
-PREHOOK: Input: default@alltypesorc
-#### A masked pattern was here ####
-POSTHOOK: query: select count(*) from
-(select c.ctinyint
- from alltypesorc c
- inner join alltypesorc cd
- on cd.cint = c.cint
- where c.cint < 2000000000) t1
-POSTHOOK: type: QUERY
-POSTHOOK: Input: default@alltypesorc
-#### A masked pattern was here ####
-3152013
-PREHOOK: query: -- Two partitions are created. One in memory, one on disk on creation.
--- The one in memory will eventually exceed memory limit, but won't spill.
-explain
-select count(*) from
-(select c.ctinyint
- from alltypesorc c
- inner join alltypesorc cd
- on cd.cint = c.cint
- where c.cint < 2000000000) t1
-PREHOOK: type: QUERY
-POSTHOOK: query: -- Two partitions are created. One in memory, one on disk on creation.
--- The one in memory will eventually exceed memory limit, but won't spill.
-explain
+POSTHOOK: query: explain
 select count(*) from
 (select c.ctinyint
  from alltypesorc c
@@ -269,16 +128,135 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 3152013
-PREHOOK: query: -- Base result for inner join
-explain
+PREHOOK: query: explain
+select count(*) from
+(select c.ctinyint
+ from alltypesorc c
+ inner join alltypesorc cd
+ on cd.cint = c.cint
+ where c.cint < 2000000000) t1
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+select count(*) from
+(select c.ctinyint
+ from alltypesorc c
+ inner join alltypesorc cd
+ on cd.cint = c.cint
+ where c.cint < 2000000000) t1
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Map 1 <- Map 3 (BROADCAST_EDGE)
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: c
+                  Statistics: Num rows: 12288 Data size: 36696 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: (cint < 2000000000) (type: boolean)
+                    Statistics: Num rows: 12288 Data size: 36696 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: cint (type: int)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 12288 Data size: 36696 Basic stats: COMPLETE Column stats: COMPLETE
+                      Map Join Operator
+                        condition map:
+                             Inner Join 0 to 1
+                        keys:
+                          0 _col0 (type: int)
+                          1 _col0 (type: int)
+                        input vertices:
+                          1 Map 3
+                        Statistics: Num rows: 26150 Data size: 209200 Basic stats: COMPLETE Column stats: COMPLETE
+                        Group By Operator
+                          aggregations: count()
+                          mode: hash
+                          outputColumnNames: _col0
+                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                          Reduce Output Operator
+                            sort order: 
+                            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                            value expressions: _col0 (type: bigint)
+            Execution mode: llap
+            LLAP IO: all inputs
+        Map 3 
+            Map Operator Tree:
+                TableScan
+                  alias: cd
+                  Statistics: Num rows: 12288 Data size: 36696 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: (cint < 2000000000) (type: boolean)
+                    Statistics: Num rows: 12288 Data size: 36696 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: cint (type: int)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 12288 Data size: 36696 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: int)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: int)
+                        Statistics: Num rows: 12288 Data size: 36696 Basic stats: COMPLETE Column stats: COMPLETE
+            Execution mode: llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select count(*) from
+(select c.ctinyint
+ from alltypesorc c
+ inner join alltypesorc cd
+ on cd.cint = c.cint
+ where c.cint < 2000000000) t1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from
+(select c.ctinyint
+ from alltypesorc c
+ inner join alltypesorc cd
+ on cd.cint = c.cint
+ where c.cint < 2000000000) t1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+3152013
+PREHOOK: query: explain
 select count(*) from
 (select c.ctinyint
  from alltypesorc c
  inner join alltypesorc cd
  on cd.cint = c.cint) t1
 PREHOOK: type: QUERY
-POSTHOOK: query: -- Base result for inner join
-explain
+POSTHOOK: query: explain
 select count(*) from
 (select c.ctinyint
  from alltypesorc c
@@ -388,18 +366,14 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 3152013
-PREHOOK: query: -- 16 partitions are created: 3 in memory, 13 on disk on creation.
--- 1 partition is spilled during first round processing, which ends up having 2 in memory, 14 on disk
-explain
+PREHOOK: query: explain
 select count(*) from
 (select c.ctinyint
  from alltypesorc c
  inner join alltypesorc cd
  on cd.cint = c.cint) t1
 PREHOOK: type: QUERY
-POSTHOOK: query: -- 16 partitions are created: 3 in memory, 13 on disk on creation.
--- 1 partition is spilled during first round processing, which ends up having 2 in memory, 14 on disk
-explain
+POSTHOOK: query: explain
 select count(*) from
 (select c.ctinyint
  from alltypesorc c
@@ -509,129 +483,14 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 3152013
-PREHOOK: query: -- Base result for outer join
-explain
+PREHOOK: query: explain
 select count(*) from
 (select c.ctinyint
  from alltypesorc c
  left outer join alltypesorc cd
  on cd.cint = c.cint) t1
 PREHOOK: type: QUERY
-POSTHOOK: query: -- Base result for outer join
-explain
-select count(*) from
-(select c.ctinyint
- from alltypesorc c
- left outer join alltypesorc cd
- on cd.cint = c.cint) t1
-POSTHOOK: type: QUERY
-STAGE DEPENDENCIES:
-  Stage-1 is a root stage
-  Stage-0 depends on stages: Stage-1
-
-STAGE PLANS:
-  Stage: Stage-1
-    Tez
-#### A masked pattern was here ####
-      Edges:
-        Map 1 <- Map 3 (BROADCAST_EDGE)
-        Reducer 2 <- Map 1 (SIMPLE_EDGE)
-#### A masked pattern was here ####
-      Vertices:
-        Map 1 
-            Map Operator Tree:
-                TableScan
-                  alias: c
-                  Statistics: Num rows: 12288 Data size: 36696 Basic stats: COMPLETE Column stats: COMPLETE
-                  Select Operator
-                    expressions: cint (type: int)
-                    outputColumnNames: _col0
-                    Statistics: Num rows: 12288 Data size: 36696 Basic stats: COMPLETE Column stats: COMPLETE
-                    Map Join Operator
-                      condition map:
-                           Left Outer Join0 to 1
-                      keys:
-                        0 _col0 (type: int)
-                        1 _col0 (type: int)
-                      input vertices:
-                        1 Map 3
-                      Statistics: Num rows: 26150 Data size: 209200 Basic stats: COMPLETE Column stats: COMPLETE
-                      Group By Operator
-                        aggregations: count()
-                        mode: hash
-                        outputColumnNames: _col0
-                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                        Reduce Output Operator
-                          sort order: 
-                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                          value expressions: _col0 (type: bigint)
-            Execution mode: llap
-            LLAP IO: all inputs
-        Map 3 
-            Map Operator Tree:
-                TableScan
-                  alias: cd
-                  Statistics: Num rows: 12288 Data size: 36696 Basic stats: COMPLETE Column stats: COMPLETE
-                  Select Operator
-                    expressions: cint (type: int)
-                    outputColumnNames: _col0
-                    Statistics: Num rows: 12288 Data size: 36696 Basic stats: COMPLETE Column stats: COMPLETE
-                    Reduce Output Operator
-                      key expressions: _col0 (type: int)
-                      sort order: +
-                      Map-reduce partition columns: _col0 (type: int)
-                      Statistics: Num rows: 12288 Data size: 36696 Basic stats: COMPLETE Column stats: COMPLETE
-            Execution mode: llap
-            LLAP IO: all inputs
-        Reducer 2 
-            Execution mode: llap
-            Reduce Operator Tree:
-              Group By Operator
-                aggregations: count(VALUE._col0)
-                mode: mergepartial
-                outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                File Output Operator
-                  compressed: false
-                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                  table:
-                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-
-  Stage: Stage-0
-    Fetch Operator
-      limit: -1
-      Processor Tree:
-        ListSink
-
-PREHOOK: query: select count(*) from
-(select c.ctinyint
- from alltypesorc c
- left outer join alltypesorc cd
- on cd.cint = c.cint) t1
-PREHOOK: type: QUERY
-PREHOOK: Input: default@alltypesorc
-#### A masked pattern was here ####
-POSTHOOK: query: select count(*) from
-(select c.ctinyint
- from alltypesorc c
- left outer join alltypesorc cd
- on cd.cint = c.cint) t1
-POSTHOOK: type: QUERY
-POSTHOOK: Input: default@alltypesorc
-#### A masked pattern was here ####
-3155128
-PREHOOK: query: -- 32 partitions are created. 3 in memory, 29 on disk on creation.
-explain
-select count(*) from
-(select c.ctinyint
- from alltypesorc c
- left outer join alltypesorc cd
- on cd.cint = c.cint) t1
-PREHOOK: type: QUERY
-POSTHOOK: query: -- 32 partitions are created. 3 in memory, 29 on disk on creation.
-explain
+POSTHOOK: query: explain
 select count(*) from
 (select c.ctinyint
  from alltypesorc c
@@ -735,13 +594,122 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 3155128
-PREHOOK: query: -- Partitioned table
-create table parttbl (key string, value char(20)) partitioned by (dt char(10))
+PREHOOK: query: explain
+select count(*) from
+(select c.ctinyint
+ from alltypesorc c
+ left outer join alltypesorc cd
+ on cd.cint = c.cint) t1
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+select count(*) from
+(select c.ctinyint
+ from alltypesorc c
+ left outer join alltypesorc cd
+ on cd.cint = c.cint) t1
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Map 1 <- Map 3 (BROADCAST_EDGE)
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: c
+                  Statistics: Num rows: 12288 Data size: 36696 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: cint (type: int)
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 12288 Data size: 36696 Basic stats: COMPLETE Column stats: COMPLETE
+                    Map Join Operator
+                      condition map:
+                           Left Outer Join0 to 1
+                      keys:
+                        0 _col0 (type: int)
+                        1 _col0 (type: int)
+                      input vertices:
+                        1 Map 3
+                      Statistics: Num rows: 26150 Data size: 209200 Basic stats: COMPLETE Column stats: COMPLETE
+                      Group By Operator
+                        aggregations: count()
+                        mode: hash
+                        outputColumnNames: _col0
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                        Reduce Output Operator
+                          sort order: 
+                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                          value expressions: _col0 (type: bigint)
+            Execution mode: llap
+            LLAP IO: all inputs
+        Map 3 
+            Map Operator Tree:
+                TableScan
+                  alias: cd
+                  Statistics: Num rows: 12288 Data size: 36696 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: cint (type: int)
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 12288 Data size: 36696 Basic stats: COMPLETE Column stats: COMPLETE
+                    Reduce Output Operator
+                      key expressions: _col0 (type: int)
+                      sort order: +
+                      Map-reduce partition columns: _col0 (type: int)
+                      Statistics: Num rows: 12288 Data size: 36696 Basic stats: COMPLETE Column stats: COMPLETE
+            Execution mode: llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select count(*) from
+(select c.ctinyint
+ from alltypesorc c
+ left outer join alltypesorc cd
+ on cd.cint = c.cint) t1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from
+(select c.ctinyint
+ from alltypesorc c
+ left outer join alltypesorc cd
+ on cd.cint = c.cint) t1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+3155128
+PREHOOK: query: create table parttbl (key string, value char(20)) partitioned by (dt char(10))
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@parttbl
-POSTHOOK: query: -- Partitioned table
-create table parttbl (key string, value char(20)) partitioned by (dt char(10))
+POSTHOOK: query: create table parttbl (key string, value char(20)) partitioned by (dt char(10))
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@parttbl
@@ -769,16 +737,14 @@ POSTHOOK: Input: default@src1
 POSTHOOK: Output: default@parttbl@dt=2000-01-02
 POSTHOOK: Lineage: parttbl PARTITION(dt=2000-01-02).key SIMPLE [(src1)src1.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: parttbl PARTITION(dt=2000-01-02).value EXPRESSION [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: -- No spill, base result
-explain
+PREHOOK: query: explain
 select count(*) from
 (select p1.value
  from parttbl p1
  inner join parttbl p2
  on p1.key = p2.key) t1
 PREHOOK: type: QUERY
-POSTHOOK: query: -- No spill, base result
-explain
+POSTHOOK: query: explain
 select count(*) from
 (select p1.value
  from parttbl p1
@@ -892,16 +858,14 @@ POSTHOOK: Input: default@parttbl@dt=2000-01-01
 POSTHOOK: Input: default@parttbl@dt=2000-01-02
 #### A masked pattern was here ####
 1217
-PREHOOK: query: -- No spill, 2 partitions created in memory
-explain
+PREHOOK: query: explain
 select count(*) from
 (select p1.value
  from parttbl p1
  inner join parttbl p2
  on p1.key = p2.key) t1
 PREHOOK: type: QUERY
-POSTHOOK: query: -- No spill, 2 partitions created in memory
-explain
+POSTHOOK: query: explain
 select count(*) from
 (select p1.value
  from parttbl p1
@@ -1016,16 +980,14 @@ POSTHOOK: Input: default@parttbl@dt=2000-01-01
 POSTHOOK: Input: default@parttbl@dt=2000-01-02
 #### A masked pattern was here ####
 1217
-PREHOOK: query: -- Spill case base result
-explain
+PREHOOK: query: explain
 select count(*) from
 (select p1.value
  from parttbl p1
  inner join parttbl p2
  on p1.key = p2.key) t1
 PREHOOK: type: QUERY
-POSTHOOK: query: -- Spill case base result
-explain
+POSTHOOK: query: explain
 select count(*) from
 (select p1.value
  from parttbl p1
@@ -1139,16 +1101,14 @@ POSTHOOK: Input: default@parttbl@dt=2000-01-01
 POSTHOOK: Input: default@parttbl@dt=2000-01-02
 #### A masked pattern was here ####
 1217
-PREHOOK: query: -- Spill case, one partition in memory, one spilled on creation
-explain
+PREHOOK: query: explain
 select count(*) from
 (select p1.value
  from parttbl p1
  inner join parttbl p2
  on p1.key = p2.key) t1
 PREHOOK: type: QUERY
-POSTHOOK: query: -- Spill case, one partition in memory, one spilled on creation
-explain
+POSTHOOK: query: explain
 select count(*) from
 (select p1.value
  from parttbl p1
@@ -1271,9 +1231,7 @@ POSTHOOK: query: drop table parttbl
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@parttbl
 POSTHOOK: Output: default@parttbl
-PREHOOK: query: -- Test vectorization
--- Test case borrowed from vector_decimal_mapjoin.q
-CREATE TABLE decimal_mapjoin STORED AS ORC AS
+PREHOOK: query: CREATE TABLE decimal_mapjoin STORED AS ORC AS
   SELECT cdouble, CAST (((cdouble*22.1)/37) AS DECIMAL(20,10)) AS cdecimal1,
   CAST (((cdouble*9.3)/13) AS DECIMAL(23,14)) AS cdecimal2,
   cint
@@ -1282,9 +1240,7 @@ PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@alltypesorc
 PREHOOK: Output: database:default
 PREHOOK: Output: default@decimal_mapjoin
-POSTHOOK: query: -- Test vectorization
--- Test case borrowed from vector_decimal_mapjoin.q
-CREATE TABLE decimal_mapjoin STORED AS ORC AS
+POSTHOOK: query: CREATE TABLE decimal_mapjoin STORED AS ORC AS
   SELECT cdouble, CAST (((cdouble*22.1)/37) AS DECIMAL(20,10)) AS cdecimal1,
   CAST (((cdouble*9.3)/13) AS DECIMAL(23,14)) AS cdecimal2,
   cint

@@ -1,5 +1,4 @@
-PREHOOK: query: -- no agg, corr
-explain
+PREHOOK: query: explain
 select * 
 from src b 
 where not exists 
@@ -8,8 +7,7 @@ where not exists
   where b.value = a.value  and a.key = b.key and a.value > 'val_2'
   )
 PREHOOK: type: QUERY
-POSTHOOK: query: -- no agg, corr
-explain
+POSTHOOK: query: explain
 select * 
 from src b 
 where not exists 
@@ -321,8 +319,7 @@ POSTHOOK: Input: default@src
 199	val_199
 199	val_199
 2	val_2
-PREHOOK: query: -- distinct, corr
-explain
+PREHOOK: query: explain
 select * 
 from src b 
 where not exists 
@@ -331,8 +328,7 @@ where not exists
   where b.value = a.value and a.value > 'val_2'
   )
 PREHOOK: type: QUERY
-POSTHOOK: query: -- distinct, corr
-explain
+POSTHOOK: query: explain
 select * 
 from src b 
 where not exists 

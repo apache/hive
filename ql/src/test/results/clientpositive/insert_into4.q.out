@@ -192,13 +192,9 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@insert_into4a
 #### A masked pattern was here ####
 -1653251832
-PREHOOK: query: --At this point insert_into4a has 2 files (if INSERT INTO merges isn't fixed)
-
-EXPLAIN INSERT INTO TABLE insert_into4b SELECT * FROM insert_into4a
+PREHOOK: query: EXPLAIN INSERT INTO TABLE insert_into4b SELECT * FROM insert_into4a
 PREHOOK: type: QUERY
-POSTHOOK: query: --At this point insert_into4a has 2 files (if INSERT INTO merges isn't fixed)
-
-EXPLAIN INSERT INTO TABLE insert_into4b SELECT * FROM insert_into4a
+POSTHOOK: query: EXPLAIN INSERT INTO TABLE insert_into4b SELECT * FROM insert_into4a
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage

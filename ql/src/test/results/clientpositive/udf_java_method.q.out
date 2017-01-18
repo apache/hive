@@ -25,9 +25,7 @@ SELECT java_method("java.lang.String", "valueOf", 1),
        java_method("java.lang.Math", "floor", 1.9D)
 FROM src tablesample (1 rows)
 PREHOOK: type: QUERY
-POSTHOOK: query: -- java_method() is a synonym for reflect()
-
-EXPLAIN EXTENDED
+POSTHOOK: query: EXPLAIN EXTENDED
 SELECT java_method("java.lang.String", "valueOf", 1),
        java_method("java.lang.String", "isEmpty"),
        java_method("java.lang.Math", "max", 2, 3),

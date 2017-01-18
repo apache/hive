@@ -217,9 +217,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 309
-PREHOOK: query: --similar tpcds q14
-
-with  cross_items as
+PREHOOK: query: with  cross_items as
  (select key, k
  from src,
  (select iss.key k
@@ -234,9 +232,7 @@ select * from cross_items order by key limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
-POSTHOOK: query: --similar tpcds q14
-
-with  cross_items as
+POSTHOOK: query: with  cross_items as
  (select key, k
  from src,
  (select iss.key k

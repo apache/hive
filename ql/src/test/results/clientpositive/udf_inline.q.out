@@ -68,8 +68,7 @@ POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 1	dude!
 2	Wheres
-PREHOOK: query: -- HIVE-3475 INLINE UDTF doesn't convert types properly
-select * from (SELECT
+PREHOOK: query: select * from (SELECT
   ARRAY(
     STRUCT (1,'dude!'),
     STRUCT (2,'Wheres'),
@@ -79,8 +78,7 @@ select * from (SELECT
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
-POSTHOOK: query: -- HIVE-3475 INLINE UDTF doesn't convert types properly
-select * from (SELECT
+POSTHOOK: query: select * from (SELECT
   ARRAY(
     STRUCT (1,'dude!'),
     STRUCT (2,'Wheres'),

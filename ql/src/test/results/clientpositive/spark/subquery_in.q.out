@@ -1,15 +1,9 @@
-PREHOOK: query: -- SORT_QUERY_RESULTS
-
--- non agg, non corr
-explain
+PREHOOK: query: explain
  select * 
 from src 
 where src.key in (select key from src s1 where s1.key > '9')
 PREHOOK: type: QUERY
-POSTHOOK: query: -- SORT_QUERY_RESULTS
-
--- non agg, non corr
-explain
+POSTHOOK: query: explain
  select * 
 from src 
 where src.key in (select key from src s1 where s1.key > '9')
@@ -118,8 +112,7 @@ POSTHOOK: Input: default@src
 97	val_97
 98	val_98
 98	val_98
-PREHOOK: query: -- non agg, corr
-explain 
+PREHOOK: query: explain 
 select * 
 from src b 
 where b.key in
@@ -128,8 +121,7 @@ where b.key in
          where b.value = a.value and a.key > '9'
         )
 PREHOOK: type: QUERY
-POSTHOOK: query: -- non agg, corr
-explain 
+POSTHOOK: query: explain 
 select * 
 from src b 
 where b.key in
@@ -302,8 +294,7 @@ POSTHOOK: Input: default@src
 97	val_97
 98	val_98
 98	val_98
-PREHOOK: query: -- agg, non corr
-explain
+PREHOOK: query: explain
 select p_name, p_size 
 from 
 part where part.p_size in 
@@ -312,8 +303,7 @@ part where part.p_size in
 	 where r <= 2
 	)
 PREHOOK: type: QUERY
-POSTHOOK: query: -- agg, non corr
-explain
+POSTHOOK: query: explain
 select p_name, p_size 
 from 
 part where part.p_size in 
@@ -480,8 +470,7 @@ POSTHOOK: Input: default@part
 #### A masked pattern was here ####
 almond antique medium spring khaki	6
 almond antique salmon chartreuse burlywood	6
-PREHOOK: query: -- agg, corr
-explain
+PREHOOK: query: explain
 select p_mfgr, p_name, p_size 
 from part b where b.p_size in 
 	(select min(p_size) 
@@ -489,8 +478,7 @@ from part b where b.p_size in
 	 where r <= 2 and b.p_mfgr = a.p_mfgr
 	)
 PREHOOK: type: QUERY
-POSTHOOK: query: -- agg, corr
-explain
+POSTHOOK: query: explain
 select p_mfgr, p_name, p_size 
 from part b where b.p_size in 
 	(select min(p_size) 
@@ -723,8 +711,7 @@ Manufacturer#2	almond aquamarine midnight light salmon	2
 Manufacturer#3	almond antique misty red olive	1
 Manufacturer#4	almond aquamarine yellow dodger mint	7
 Manufacturer#5	almond antique sky peru orange	2
-PREHOOK: query: -- distinct, corr
-explain 
+PREHOOK: query: explain 
 select * 
 from src b 
 where b.key in
@@ -733,8 +720,7 @@ where b.key in
          where b.value = a.value and a.key > '9'
         )
 PREHOOK: type: QUERY
-POSTHOOK: query: -- distinct, corr
-explain 
+POSTHOOK: query: explain 
 select * 
 from src b 
 where b.key in
@@ -912,16 +898,14 @@ POSTHOOK: Input: default@src
 97	val_97
 98	val_98
 98	val_98
-PREHOOK: query: -- non agg, non corr, windowing
-select p_mfgr, p_name, p_size 
+PREHOOK: query: select p_mfgr, p_name, p_size 
 from part 
 where part.p_size in 
   (select first_value(p_size) over(partition by p_mfgr order by p_size) from part)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part
 #### A masked pattern was here ####
-POSTHOOK: query: -- non agg, non corr, windowing
-select p_mfgr, p_name, p_size 
+POSTHOOK: query: select p_mfgr, p_name, p_size 
 from part 
 where part.p_size in 
   (select first_value(p_size) over(partition by p_mfgr order by p_size) from part)
@@ -934,15 +918,13 @@ Manufacturer#2	almond aquamarine midnight light salmon	2
 Manufacturer#3	almond antique misty red olive	1
 Manufacturer#4	almond aquamarine yellow dodger mint	7
 Manufacturer#5	almond antique sky peru orange	2
-PREHOOK: query: -- non agg, non corr, with join in Parent Query
-explain
+PREHOOK: query: explain
 select p.p_partkey, li.l_suppkey 
 from (select distinct l_partkey as p_partkey from lineitem) p join lineitem li on p.p_partkey = li.l_partkey 
 where li.l_linenumber = 1 and
  li.l_orderkey in (select l_orderkey from lineitem where l_shipmode = 'AIR')
 PREHOOK: type: QUERY
-POSTHOOK: query: -- non agg, non corr, with join in Parent Query
-explain
+POSTHOOK: query: explain
 select p.p_partkey, li.l_suppkey 
 from (select distinct l_partkey as p_partkey from lineitem) p join lineitem li on p.p_partkey = li.l_partkey 
 where li.l_linenumber = 1 and
@@ -1112,16 +1094,14 @@ POSTHOOK: Input: default@lineitem
 61336	8855
 64128	9141
 82704	7721
-PREHOOK: query: -- non agg, corr, with join in Parent Query
-select p.p_partkey, li.l_suppkey 
+PREHOOK: query: select p.p_partkey, li.l_suppkey 
 from (select distinct l_partkey as p_partkey from lineitem) p join lineitem li on p.p_partkey = li.l_partkey 
 where li.l_linenumber = 1 and
  li.l_orderkey in (select l_orderkey from lineitem where l_shipmode = 'AIR' and l_linenumber = li.l_linenumber)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@lineitem
 #### A masked pattern was here ####
-POSTHOOK: query: -- non agg, corr, with join in Parent Query
-select p.p_partkey, li.l_suppkey 
+POSTHOOK: query: select p.p_partkey, li.l_suppkey 
 from (select distinct l_partkey as p_partkey from lineitem) p join lineitem li on p.p_partkey = li.l_partkey 
 where li.l_linenumber = 1 and
  li.l_orderkey in (select l_orderkey from lineitem where l_shipmode = 'AIR' and l_linenumber = li.l_linenumber)

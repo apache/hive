@@ -48,8 +48,7 @@ SELECT
       TRUNC('2016-02-28 10:30:45', 'MM'),
       TRUNC('2016-02-29 10:30:45', 'MM')
 PREHOOK: type: QUERY
-POSTHOOK: query: --test string with 'MM' as format
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT
       TRUNC('2014-01-01', 'MM'),
       TRUNC('2014-01-14', 'MM'),
@@ -127,8 +126,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
 2014-01-01	2014-01-01	2014-01-01	2014-02-01	2014-02-01	2016-02-01	2016-02-01	2016-02-01	2014-01-01	2014-01-01	2014-01-01	2014-02-01	2014-02-01	2016-02-01	2016-02-01	2016-02-01
-PREHOOK: query: --test string with 'YEAR' as format
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT
       TRUNC('2014-01-01', 'YEAR'),
       TRUNC('2014-01-14', 'YEAR'),
@@ -147,8 +145,7 @@ SELECT
       TRUNC('2016-02-28 10:30:45', 'YEAR'),
       TRUNC('2016-02-29 10:30:45', 'YEAR')
 PREHOOK: type: QUERY
-POSTHOOK: query: --test string with 'YEAR' as format
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT
       TRUNC('2014-01-01', 'YEAR'),
       TRUNC('2014-01-14', 'YEAR'),
@@ -226,8 +223,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
 2014-01-01	2014-01-01	2014-01-01	2014-01-01	2014-01-01	2016-01-01	2016-01-01	2016-01-01	2014-01-01	2014-01-01	2014-01-01	2014-01-01	2014-01-01	2016-01-01	2016-01-01	2016-01-01
-PREHOOK: query: --test timestamp with 'MM' as format
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT
       TRUNC(CAST('2014-01-01 00:00:00' AS TIMESTAMP), 'MM'),
       TRUNC(CAST('2014-01-14 00:00:00' AS TIMESTAMP), 'MM'),
@@ -246,8 +242,7 @@ SELECT
       TRUNC(CAST('2016-02-28 10:30:45' AS TIMESTAMP), 'MM'),
       TRUNC(CAST('2016-02-29 10:30:45' AS TIMESTAMP), 'MM')
 PREHOOK: type: QUERY
-POSTHOOK: query: --test timestamp with 'MM' as format
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT
       TRUNC(CAST('2014-01-01 00:00:00' AS TIMESTAMP), 'MM'),
       TRUNC(CAST('2014-01-14 00:00:00' AS TIMESTAMP), 'MM'),
@@ -325,8 +320,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
 2014-01-01	2014-01-01	2014-01-01	2014-02-01	2014-02-01	2016-02-01	2016-02-01	2016-02-01	2014-01-01	2014-01-01	2014-01-01	2014-02-01	2014-02-01	2016-02-01	2016-02-01	2016-02-01
-PREHOOK: query: --test timestamp with 'YEAR' as format
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT
       TRUNC(CAST('2014-01-01 00:00:00' AS TIMESTAMP), 'YEAR'),
       TRUNC(CAST('2014-01-14 00:00:00' AS TIMESTAMP), 'YEAR'),
@@ -345,8 +339,7 @@ SELECT
       TRUNC(CAST('2016-02-28 10:30:45' AS TIMESTAMP), 'YEAR'),
       TRUNC(CAST('2016-02-29 10:30:45' AS TIMESTAMP), 'YEAR')
 PREHOOK: type: QUERY
-POSTHOOK: query: --test timestamp with 'YEAR' as format
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT
       TRUNC(CAST('2014-01-01 00:00:00' AS TIMESTAMP), 'YEAR'),
       TRUNC(CAST('2014-01-14 00:00:00' AS TIMESTAMP), 'YEAR'),
@@ -424,8 +417,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
 2014-01-01	2014-01-01	2014-01-01	2014-01-01	2014-01-01	2016-01-01	2016-01-01	2016-01-01	2014-01-01	2014-01-01	2014-01-01	2014-01-01	2014-01-01	2016-01-01	2016-01-01	2016-01-01
-PREHOOK: query: --test date with 'MM' as format
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT
       TRUNC(CAST('2014-01-01' AS DATE), 'MM'),
       TRUNC(CAST('2014-01-14' AS DATE), 'MM'),
@@ -436,8 +428,7 @@ SELECT
       TRUNC(CAST('2016-02-28' AS DATE), 'MM'),
       TRUNC(CAST('2016-02-29' AS DATE), 'MM')
 PREHOOK: type: QUERY
-POSTHOOK: query: --test date with 'MM' as format
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT
       TRUNC(CAST('2014-01-01' AS DATE), 'MM'),
       TRUNC(CAST('2014-01-14' AS DATE), 'MM'),
@@ -491,8 +482,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
 2014-01-01	2014-01-01	2014-01-01	2014-02-01	2014-02-01	2016-02-01	2016-02-01	2016-02-01
-PREHOOK: query: --test date with 'YEAR' as format
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT
       TRUNC(CAST('2014-01-01' AS DATE), 'YEAR'),
       TRUNC(CAST('2014-01-14' AS DATE), 'YEAR'),
@@ -503,8 +493,7 @@ SELECT
       TRUNC(CAST('2016-02-28' AS DATE), 'YEAR'),
       TRUNC(CAST('2016-02-29' AS DATE), 'YEAR')
 PREHOOK: type: QUERY
-POSTHOOK: query: --test date with 'YEAR' as format
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT
       TRUNC(CAST('2014-01-01' AS DATE), 'YEAR'),
       TRUNC(CAST('2014-01-14' AS DATE), 'YEAR'),
@@ -558,8 +547,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
 2014-01-01	2014-01-01	2014-01-01	2014-01-01	2014-01-01	2016-01-01	2016-01-01	2016-01-01
-PREHOOK: query: --test misc with 'MM' as format
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT
       TRUNC('2014-01-34', 'MM'),
       TRUNC(CAST(null AS STRING), 'MM'),
@@ -568,8 +556,7 @@ SELECT
       TRUNC('2014-01-01', 'M'),
       TRUNC('2014-01-01', CAST(null AS STRING))
 PREHOOK: type: QUERY
-POSTHOOK: query: --test misc with 'MM' as format
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT
       TRUNC('2014-01-34', 'MM'),
       TRUNC(CAST(null AS STRING), 'MM'),
@@ -617,8 +604,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
 2014-02-01	NULL	NULL	NULL	NULL	NULL
-PREHOOK: query: --test misc with 'YEAR' as format
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT
       TRUNC('2014-01-34', 'YEAR'),
       TRUNC(CAST(null AS STRING), 'YEAR'),
@@ -627,8 +613,7 @@ SELECT
       TRUNC('2014-01-01', 'M'),
       TRUNC('2014-01-01', CAST(null AS STRING))
 PREHOOK: type: QUERY
-POSTHOOK: query: --test misc with 'YEAR' as format
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT
       TRUNC('2014-01-34', 'YEAR'),
       TRUNC(CAST(null AS STRING), 'YEAR'),

@@ -1,12 +1,8 @@
-PREHOOK: query: -- SORT_AND_HASH_QUERY_RESULTS
-
-create table partint(key string, value string) partitioned by (ds string, hr int)
+PREHOOK: query: create table partint(key string, value string) partitioned by (ds string, hr int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@partint
-POSTHOOK: query: -- SORT_AND_HASH_QUERY_RESULTS
-
-create table partint(key string, value string) partitioned by (ds string, hr int)
+POSTHOOK: query: create table partint(key string, value string) partitioned by (ds string, hr int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@partint

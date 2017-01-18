@@ -1,8 +1,6 @@
-PREHOOK: query: -- scanning un-partitioned data
-explain extended select * from src where rand(1) < 0.1
+PREHOOK: query: explain extended select * from src where rand(1) < 0.1
 PREHOOK: type: QUERY
-POSTHOOK: query: -- scanning un-partitioned data
-explain extended select * from src where rand(1) < 0.1
+POSTHOOK: query: explain extended select * from src where rand(1) < 0.1
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage

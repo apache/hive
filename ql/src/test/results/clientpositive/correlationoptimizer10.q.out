@@ -1,31 +1,11 @@
-PREHOOK: query: -- When Correlation Optimizer is turned off, 4 MR jobs are needed.
--- When Correlation Optimizer is turned on, 2 MR jobs are needed.
--- The first job will evaluate subquery xx and xx join yy.
--- This case is used to test LEFT SEMI JOIN since Hive will
--- introduce a GroupByOperator before the ReduceSinkOperator of
--- the right table (yy in queries below)
--- of LEFT SEMI JOIN.
-
--- SORT_AND_HASH_QUERY_RESULTS
-
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT xx.key, xx.cnt
 FROM
 (SELECT x.key as key, count(1) as cnt FROM src1 x JOIN src1 y ON (x.key = y.key) group by x.key) xx
 LEFT SEMI JOIN src yy
 ON xx.key=yy.key
 PREHOOK: type: QUERY
-POSTHOOK: query: -- When Correlation Optimizer is turned off, 4 MR jobs are needed.
--- When Correlation Optimizer is turned on, 2 MR jobs are needed.
--- The first job will evaluate subquery xx and xx join yy.
--- This case is used to test LEFT SEMI JOIN since Hive will
--- introduce a GroupByOperator before the ReduceSinkOperator of
--- the right table (yy in queries below)
--- of LEFT SEMI JOIN.
-
--- SORT_AND_HASH_QUERY_RESULTS
-
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT xx.key, xx.cnt
 FROM
 (SELECT x.key as key, count(1) as cnt FROM src1 x JOIN src1 y ON (x.key = y.key) group by x.key) xx
@@ -371,14 +351,7 @@ POSTHOOK: Input: default@src1
 66	1
 98	1
 XifREjIWNTdZii76gCxhIQ==
-PREHOOK: query: -- When Correlation Optimizer is turned off, 4 MR jobs are needed.
--- When Correlation Optimizer is turned on, 2 MR jobs are needed.
--- The first job will evaluate subquery xx and xx join yy.
--- This case is used to test LEFT SEMI JOIN since Hive will
--- introduce a GroupByOperator before the ReduceSinkOperator of
--- the right table (yy in queries below)
--- of LEFT SEMI JOIN.
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT xx.key, xx.value
 FROM
 src1 xx
@@ -389,14 +362,7 @@ LEFT SEMI JOIN
        y.key > 20) yy
 ON xx.key=yy.key
 PREHOOK: type: QUERY
-POSTHOOK: query: -- When Correlation Optimizer is turned off, 4 MR jobs are needed.
--- When Correlation Optimizer is turned on, 2 MR jobs are needed.
--- The first job will evaluate subquery xx and xx join yy.
--- This case is used to test LEFT SEMI JOIN since Hive will
--- introduce a GroupByOperator before the ReduceSinkOperator of
--- the right table (yy in queries below)
--- of LEFT SEMI JOIN.
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT xx.key, xx.value
 FROM
 src1 xx
@@ -707,11 +673,7 @@ POSTHOOK: Input: default@src1
 66	val_66
 98	val_98
 yXzkFzMwxxoH+6e+nKoA8A==
-PREHOOK: query: -- When Correlation Optimizer is turned off, 4 MR jobs are needed.
--- When Correlation Optimizer is turned on, 2 MR jobs are needed.
--- This test is used to test if we can use shared scan for
--- xx, yy:x, and yy:y.
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT xx.key, xx.value
 FROM
 src xx
@@ -721,11 +683,7 @@ LEFT SEMI JOIN
  WHERE x.key < 200 AND x.key > 180) yy
 ON xx.key=yy.key
 PREHOOK: type: QUERY
-POSTHOOK: query: -- When Correlation Optimizer is turned off, 4 MR jobs are needed.
--- When Correlation Optimizer is turned on, 2 MR jobs are needed.
--- This test is used to test if we can use shared scan for
--- xx, yy:x, and yy:y.
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT xx.key, xx.value
 FROM
 src xx

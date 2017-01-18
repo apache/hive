@@ -44,13 +44,11 @@ POSTHOOK: query: load data local inpath '../../data/files/over10k' into table ov
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@over10k
-PREHOOK: query: -- sum
-select ts, f, sum(f) over (partition by ts order by f rows between 2 preceding and 1 preceding) from over10k limit 100
+PREHOOK: query: select ts, f, sum(f) over (partition by ts order by f rows between 2 preceding and 1 preceding) from over10k limit 100
 PREHOOK: type: QUERY
 PREHOOK: Input: default@over10k
 #### A masked pattern was here ####
-POSTHOOK: query: -- sum
-select ts, f, sum(f) over (partition by ts order by f rows between 2 preceding and 1 preceding) from over10k limit 100
+POSTHOOK: query: select ts, f, sum(f) over (partition by ts order by f rows between 2 preceding and 1 preceding) from over10k limit 100
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@over10k
 #### A masked pattern was here ####
@@ -478,13 +476,11 @@ POSTHOOK: Input: default@over10k
 2013-03-01 09:11:58.703072	71.68	802.1099938452244
 2013-03-01 09:11:58.703072	79.46	882.1299904882908
 2013-03-01 09:11:58.703072	80.02	963.4199914038181
-PREHOOK: query: -- avg
-select ts, f, avg(f) over (partition by ts order by f rows between 2 preceding and 1 preceding) from over10k limit 100
+PREHOOK: query: select ts, f, avg(f) over (partition by ts order by f rows between 2 preceding and 1 preceding) from over10k limit 100
 PREHOOK: type: QUERY
 PREHOOK: Input: default@over10k
 #### A masked pattern was here ####
-POSTHOOK: query: -- avg
-select ts, f, avg(f) over (partition by ts order by f rows between 2 preceding and 1 preceding) from over10k limit 100
+POSTHOOK: query: select ts, f, avg(f) over (partition by ts order by f rows between 2 preceding and 1 preceding) from over10k limit 100
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@over10k
 #### A masked pattern was here ####
@@ -912,13 +908,11 @@ POSTHOOK: Input: default@over10k
 2013-03-01 09:11:58.703072	71.68	34.87434755848802
 2013-03-01 09:11:58.703072	79.46	36.75541627034545
 2013-03-01 09:11:58.703072	80.02	38.53679965615272
-PREHOOK: query: -- count
-select ts, f, count(f) over (partition by ts order by f rows between 2 preceding and 1 preceding) from over10k limit 100
+PREHOOK: query: select ts, f, count(f) over (partition by ts order by f rows between 2 preceding and 1 preceding) from over10k limit 100
 PREHOOK: type: QUERY
 PREHOOK: Input: default@over10k
 #### A masked pattern was here ####
-POSTHOOK: query: -- count
-select ts, f, count(f) over (partition by ts order by f rows between 2 preceding and 1 preceding) from over10k limit 100
+POSTHOOK: query: select ts, f, count(f) over (partition by ts order by f rows between 2 preceding and 1 preceding) from over10k limit 100
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@over10k
 #### A masked pattern was here ####
@@ -1346,13 +1340,11 @@ POSTHOOK: Input: default@over10k
 2013-03-01 09:11:58.703072	71.68	23
 2013-03-01 09:11:58.703072	79.46	24
 2013-03-01 09:11:58.703072	80.02	25
-PREHOOK: query: -- max
-select ts, f, max(f) over (partition by ts order by t,f rows between 2 preceding and 1 preceding) from over10k limit 100
+PREHOOK: query: select ts, f, max(f) over (partition by ts order by t,f rows between 2 preceding and 1 preceding) from over10k limit 100
 PREHOOK: type: QUERY
 PREHOOK: Input: default@over10k
 #### A masked pattern was here ####
-POSTHOOK: query: -- max
-select ts, f, max(f) over (partition by ts order by t,f rows between 2 preceding and 1 preceding) from over10k limit 100
+POSTHOOK: query: select ts, f, max(f) over (partition by ts order by t,f rows between 2 preceding and 1 preceding) from over10k limit 100
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@over10k
 #### A masked pattern was here ####
@@ -1780,13 +1772,11 @@ POSTHOOK: Input: default@over10k
 2013-03-01 09:11:58.703072	9.0	99.26
 2013-03-01 09:11:58.703072	88.83	99.26
 2013-03-01 09:11:58.703072	45.91	99.26
-PREHOOK: query: -- min
-select ts, f, min(f) over (partition by ts order by t,f rows between 2 preceding and 1 preceding) from over10k limit 100
+PREHOOK: query: select ts, f, min(f) over (partition by ts order by t,f rows between 2 preceding and 1 preceding) from over10k limit 100
 PREHOOK: type: QUERY
 PREHOOK: Input: default@over10k
 #### A masked pattern was here ####
-POSTHOOK: query: -- min
-select ts, f, min(f) over (partition by ts order by t,f rows between 2 preceding and 1 preceding) from over10k limit 100
+POSTHOOK: query: select ts, f, min(f) over (partition by ts order by t,f rows between 2 preceding and 1 preceding) from over10k limit 100
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@over10k
 #### A masked pattern was here ####
@@ -2214,13 +2204,11 @@ POSTHOOK: Input: default@over10k
 2013-03-01 09:11:58.703072	9.0	0.48
 2013-03-01 09:11:58.703072	88.83	0.48
 2013-03-01 09:11:58.703072	45.91	0.48
-PREHOOK: query: -- first_value
-select ts, f, first_value(f) over (partition by ts order by f rows between 2 preceding and 1 preceding) from over10k limit 100
+PREHOOK: query: select ts, f, first_value(f) over (partition by ts order by f rows between 2 preceding and 1 preceding) from over10k limit 100
 PREHOOK: type: QUERY
 PREHOOK: Input: default@over10k
 #### A masked pattern was here ####
-POSTHOOK: query: -- first_value
-select ts, f, first_value(f) over (partition by ts order by f rows between 2 preceding and 1 preceding) from over10k limit 100
+POSTHOOK: query: select ts, f, first_value(f) over (partition by ts order by f rows between 2 preceding and 1 preceding) from over10k limit 100
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@over10k
 #### A masked pattern was here ####
@@ -2648,13 +2636,11 @@ POSTHOOK: Input: default@over10k
 2013-03-01 09:11:58.703072	71.68	0.36
 2013-03-01 09:11:58.703072	79.46	0.36
 2013-03-01 09:11:58.703072	80.02	0.36
-PREHOOK: query: -- last_value
-select ts, f, last_value(f) over (partition by ts order by f rows between 2 preceding and 1 preceding) from over10k limit 100
+PREHOOK: query: select ts, f, last_value(f) over (partition by ts order by f rows between 2 preceding and 1 preceding) from over10k limit 100
 PREHOOK: type: QUERY
 PREHOOK: Input: default@over10k
 #### A masked pattern was here ####
-POSTHOOK: query: -- last_value
-select ts, f, last_value(f) over (partition by ts order by f rows between 2 preceding and 1 preceding) from over10k limit 100
+POSTHOOK: query: select ts, f, last_value(f) over (partition by ts order by f rows between 2 preceding and 1 preceding) from over10k limit 100
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@over10k
 #### A masked pattern was here ####

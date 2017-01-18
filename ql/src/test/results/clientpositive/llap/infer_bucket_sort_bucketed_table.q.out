@@ -1,27 +1,19 @@
-PREHOOK: query: -- Test writing to a bucketed table, the output should be bucketed by the bucketing key into the
--- a number of files equal to the number of buckets
-CREATE TABLE test_table_bucketed (key STRING, value STRING) PARTITIONED BY (part STRING)
+PREHOOK: query: CREATE TABLE test_table_bucketed (key STRING, value STRING) PARTITIONED BY (part STRING)
 CLUSTERED BY (value) SORTED BY (value) INTO 3 BUCKETS
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@test_table_bucketed
-POSTHOOK: query: -- Test writing to a bucketed table, the output should be bucketed by the bucketing key into the
--- a number of files equal to the number of buckets
-CREATE TABLE test_table_bucketed (key STRING, value STRING) PARTITIONED BY (part STRING)
+POSTHOOK: query: CREATE TABLE test_table_bucketed (key STRING, value STRING) PARTITIONED BY (part STRING)
 CLUSTERED BY (value) SORTED BY (value) INTO 3 BUCKETS
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_table_bucketed
-PREHOOK: query: -- Despite the fact that normally inferring would say this table is bucketed and sorted on key,
--- this should be bucketed and sorted by value into 3 buckets
-INSERT OVERWRITE TABLE test_table_bucketed PARTITION (part = '1')
+PREHOOK: query: INSERT OVERWRITE TABLE test_table_bucketed PARTITION (part = '1')
 SELECT key, count(1) FROM src GROUP BY KEY
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Output: default@test_table_bucketed@part=1
-POSTHOOK: query: -- Despite the fact that normally inferring would say this table is bucketed and sorted on key,
--- this should be bucketed and sorted by value into 3 buckets
-INSERT OVERWRITE TABLE test_table_bucketed PARTITION (part = '1')
+POSTHOOK: query: INSERT OVERWRITE TABLE test_table_bucketed PARTITION (part = '1')
 SELECT key, count(1) FROM src GROUP BY KEY
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
@@ -67,16 +59,12 @@ Bucket Columns:     	[value]
 Sort Columns:       	[Order(col:value, order:1)]	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: -- If the count(*) from sampling the buckets matches the count(*) from each file, the table is
--- bucketed
-SELECT COUNT(*) FROM test_table_bucketed TABLESAMPLE (BUCKET 1 OUT OF 3) WHERE part = '1'
+PREHOOK: query: SELECT COUNT(*) FROM test_table_bucketed TABLESAMPLE (BUCKET 1 OUT OF 3) WHERE part = '1'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@test_table_bucketed
 PREHOOK: Input: default@test_table_bucketed@part=1
 #### A masked pattern was here ####
-POSTHOOK: query: -- If the count(*) from sampling the buckets matches the count(*) from each file, the table is
--- bucketed
-SELECT COUNT(*) FROM test_table_bucketed TABLESAMPLE (BUCKET 1 OUT OF 3) WHERE part = '1'
+POSTHOOK: query: SELECT COUNT(*) FROM test_table_bucketed TABLESAMPLE (BUCKET 1 OUT OF 3) WHERE part = '1'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test_table_bucketed
 POSTHOOK: Input: default@test_table_bucketed@part=1

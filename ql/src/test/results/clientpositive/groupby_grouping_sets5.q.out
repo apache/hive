@@ -1,12 +1,8 @@
-PREHOOK: query: -- Set merging to false above to make the explain more readable
-
-CREATE TABLE T1(a STRING, b STRING, c STRING) ROW FORMAT DELIMITED FIELDS TERMINATED BY ' ' STORED AS TEXTFILE
+PREHOOK: query: CREATE TABLE T1(a STRING, b STRING, c STRING) ROW FORMAT DELIMITED FIELDS TERMINATED BY ' ' STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@T1
-POSTHOOK: query: -- Set merging to false above to make the explain more readable
-
-CREATE TABLE T1(a STRING, b STRING, c STRING) ROW FORMAT DELIMITED FIELDS TERMINATED BY ' ' STORED AS TEXTFILE
+POSTHOOK: query: CREATE TABLE T1(a STRING, b STRING, c STRING) ROW FORMAT DELIMITED FIELDS TERMINATED BY ' ' STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@T1
@@ -18,13 +14,11 @@ POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/grouping_sets.txt' INT
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@t1
-PREHOOK: query: -- This tests that cubes and rollups work fine where the source is a sub-query
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT a, b, count(*) FROM
 (SELECT a, b, count(1) from T1 group by a, b) subq1 group by a, b with cube
 PREHOOK: type: QUERY
-POSTHOOK: query: -- This tests that cubes and rollups work fine where the source is a sub-query
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT a, b, count(*) FROM
 (SELECT a, b, count(1) from T1 group by a, b) subq1 group by a, b with cube
 POSTHOOK: type: QUERY
@@ -223,13 +217,11 @@ NULL	3	1
 5	2	1
 8	NULL	1
 8	1	1
-PREHOOK: query: -- Since 4 grouping sets would be generated for the cube, an additional MR job should be created
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT a, b, count(*) FROM
 (SELECT a, b, count(1) from T1 group by a, b) subq1 group by a, b with cube
 PREHOOK: type: QUERY
-POSTHOOK: query: -- Since 4 grouping sets would be generated for the cube, an additional MR job should be created
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT a, b, count(*) FROM
 (SELECT a, b, count(1) from T1 group by a, b) subq1 group by a, b with cube
 POSTHOOK: type: QUERY

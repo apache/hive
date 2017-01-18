@@ -1,10 +1,8 @@
-PREHOOK: query: -- SORT_QUERY_RESULTS
-create table src10_1 (key string, value string)
+PREHOOK: query: create table src10_1 (key string, value string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@src10_1
-POSTHOOK: query: -- SORT_QUERY_RESULTS
-create table src10_1 (key string, value string)
+POSTHOOK: query: create table src10_1 (key string, value string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@src10_1
@@ -62,18 +60,14 @@ POSTHOOK: Lineage: src10_3.key SIMPLE [(src)src.FieldSchema(name:key, type:strin
 POSTHOOK: Lineage: src10_3.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: src10_4.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: src10_4.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: -- When we convert the Join of sub1 and sub0 into a MapJoin,
--- we can use a single MR job to evaluate this entire query.
-explain
+PREHOOK: query: explain
 SELECT * FROM (
   SELECT sub1.key,sub1.value FROM (SELECT * FROM src10_1) sub1 JOIN (SELECT * FROM src10_2) sub0 ON (sub0.key = sub1.key)
   UNION ALL
   SELECT key,value FROM (SELECT * FROM (SELECT * FROM src10_3) sub2 UNION ALL SELECT * FROM src10_4 ) alias0
 ) alias1
 PREHOOK: type: QUERY
-POSTHOOK: query: -- When we convert the Join of sub1 and sub0 into a MapJoin,
--- we can use a single MR job to evaluate this entire query.
-explain
+POSTHOOK: query: explain
 SELECT * FROM (
   SELECT sub1.key,sub1.value FROM (SELECT * FROM src10_1) sub1 JOIN (SELECT * FROM src10_2) sub0 ON (sub0.key = sub1.key)
   UNION ALL
@@ -235,22 +229,14 @@ POSTHOOK: Input: default@src10_4
 98	val_98
 98	val_98
 98	val_98
-PREHOOK: query: -- When we do not convert the Join of sub1 and sub0 into a MapJoin,
--- we need to use two MR jobs to evaluate this query.
--- The first job is for the Join of sub1 and sub2. The second job
--- is for the UNION ALL and ORDER BY.
-explain
+PREHOOK: query: explain
 SELECT * FROM (
   SELECT sub1.key,sub1.value FROM (SELECT * FROM src10_1) sub1 JOIN (SELECT * FROM src10_2) sub0 ON (sub0.key = sub1.key)
   UNION ALL
   SELECT key,value FROM (SELECT * FROM (SELECT * FROM src10_3) sub2 UNION ALL SELECT * FROM src10_4 ) alias0
 ) alias1
 PREHOOK: type: QUERY
-POSTHOOK: query: -- When we do not convert the Join of sub1 and sub0 into a MapJoin,
--- we need to use two MR jobs to evaluate this query.
--- The first job is for the Join of sub1 and sub2. The second job
--- is for the UNION ALL and ORDER BY.
-explain
+POSTHOOK: query: explain
 SELECT * FROM (
   SELECT sub1.key,sub1.value FROM (SELECT * FROM src10_1) sub1 JOIN (SELECT * FROM src10_2) sub0 ON (sub0.key = sub1.key)
   UNION ALL

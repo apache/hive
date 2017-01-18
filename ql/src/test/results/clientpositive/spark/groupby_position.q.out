@@ -14,16 +14,12 @@ POSTHOOK: query: CREATE TABLE testTable2(key INT, val1 STRING, val2 STRING) STOR
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@testTable2
-PREHOOK: query: -- Position Alias in GROUP BY and ORDER BY
-
-EXPLAIN
+PREHOOK: query: EXPLAIN
 FROM SRC
 INSERT OVERWRITE TABLE testTable1 SELECT SRC.key, COUNT(DISTINCT SUBSTR(SRC.value,5)) WHERE SRC.key < 20 GROUP BY 1 
 INSERT OVERWRITE TABLE testTable2 SELECT SRC.key, SRC.value, COUNT(DISTINCT SUBSTR(SRC.value,5)) WHERE SRC.key < 20 GROUP BY 1, 2
 PREHOOK: type: QUERY
-POSTHOOK: query: -- Position Alias in GROUP BY and ORDER BY
-
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 FROM SRC
 INSERT OVERWRITE TABLE testTable1 SELECT SRC.key, COUNT(DISTINCT SUBSTR(SRC.value,5)) WHERE SRC.key < 20 GROUP BY 1 
 INSERT OVERWRITE TABLE testTable2 SELECT SRC.key, SRC.value, COUNT(DISTINCT SUBSTR(SRC.value,5)) WHERE SRC.key < 20 GROUP BY 1, 2
@@ -404,16 +400,12 @@ POSTHOOK: Input: default@testtable2
 17	val_17	1
 18	val_18	1
 19	val_19	1
-PREHOOK: query: -- Position Alias in subquery
-
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT t.key, t.value
 FROM (SELECT b.key as key, count(1) as value FROM src b WHERE b.key <= 20 GROUP BY 1) t
 ORDER BY 2 DESC, 1 ASC
 PREHOOK: type: QUERY
-POSTHOOK: query: -- Position Alias in subquery
-
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT t.key, t.value
 FROM (SELECT b.key as key, count(1) as value FROM src b WHERE b.key <= 20 GROUP BY 1) t
 ORDER BY 2 DESC, 1 ASC

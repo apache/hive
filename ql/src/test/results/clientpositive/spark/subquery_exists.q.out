@@ -1,8 +1,4 @@
-PREHOOK: query: -- SORT_QUERY_RESULTS
-
--- no agg, corr
--- SORT_QUERY_RESULTS
-explain
+PREHOOK: query: explain
 select * 
 from src b 
 where exists 
@@ -11,11 +7,7 @@ where exists
   where b.value = a.value  and a.key = b.key and a.value > 'val_9'
   )
 PREHOOK: type: QUERY
-POSTHOOK: query: -- SORT_QUERY_RESULTS
-
--- no agg, corr
--- SORT_QUERY_RESULTS
-explain
+POSTHOOK: query: explain
 select * 
 from src b 
 where exists 
@@ -187,8 +179,7 @@ POSTHOOK: Input: default@src
 97	val_97
 98	val_98
 98	val_98
-PREHOOK: query: -- view test
-create view cv1 as 
+PREHOOK: query: create view cv1 as 
 select * 
 from src b 
 where exists
@@ -199,8 +190,7 @@ PREHOOK: type: CREATEVIEW
 PREHOOK: Input: default@src
 PREHOOK: Output: database:default
 PREHOOK: Output: default@cv1
-POSTHOOK: query: -- view test
-create view cv1 as 
+POSTHOOK: query: create view cv1 as 
 select * 
 from src b 
 where exists
@@ -232,8 +222,7 @@ POSTHOOK: Input: default@src
 97	val_97
 98	val_98
 98	val_98
-PREHOOK: query: -- sq in from
-select * 
+PREHOOK: query: select * 
 from (select * 
       from src b 
       where exists 
@@ -244,8 +233,7 @@ from (select *
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
-POSTHOOK: query: -- sq in from
-select * 
+POSTHOOK: query: select * 
 from (select * 
       from src b 
       where exists 
@@ -267,8 +255,7 @@ POSTHOOK: Input: default@src
 97	val_97
 98	val_98
 98	val_98
-PREHOOK: query: -- upper case in subq
-explain
+PREHOOK: query: explain
 select *
 from src b
 where exists
@@ -277,8 +264,7 @@ where exists
   where b.VALUE = a.VALUE
   )
 PREHOOK: type: QUERY
-POSTHOOK: query: -- upper case in subq
-explain
+POSTHOOK: query: explain
 select *
 from src b
 where exists

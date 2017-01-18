@@ -1,10 +1,6 @@
-PREHOOK: query: -- HIVE-2906 Table properties in SQL
-
-explain extended select key from src
+PREHOOK: query: explain extended select key from src
 PREHOOK: type: QUERY
-POSTHOOK: query: -- HIVE-2906 Table properties in SQL
-
-explain extended select key from src
+POSTHOOK: query: explain extended select key from src
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-0 is a root stage

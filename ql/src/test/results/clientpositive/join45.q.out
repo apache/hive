@@ -1,5 +1,4 @@
-PREHOOK: query: -- Conjunction with pred on multiple inputs and single inputs
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT *
 FROM src1 JOIN src
 ON (src1.key=src.key
@@ -7,8 +6,7 @@ ON (src1.key=src.key
   AND src.value between 100 and 102)
 LIMIT 10
 PREHOOK: type: QUERY
-POSTHOOK: query: -- Conjunction with pred on multiple inputs and single inputs
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT *
 FROM src1 JOIN src
 ON (src1.key=src.key
@@ -108,15 +106,13 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@src1
 #### A masked pattern was here ####
-PREHOOK: query: -- Conjunction with pred on multiple inputs and none
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT *
 FROM src1 JOIN src
 ON (src1.key=src.key AND true)
 LIMIT 10
 PREHOOK: type: QUERY
-POSTHOOK: query: -- Conjunction with pred on multiple inputs and none
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT *
 FROM src1 JOIN src
 ON (src1.key=src.key AND true)
@@ -215,8 +211,7 @@ POSTHOOK: Input: default@src1
 224		224	val_224
 224		224	val_224
 Warning: Shuffle Join JOIN[8][tables = [$hdt$_0, $hdt$_1]] in Stage 'Stage-1:MAPRED' is a cross product
-PREHOOK: query: -- Conjunction with pred on single inputs and none
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT *
 FROM src1 JOIN src
 ON (src1.value between 100 and 102
@@ -224,8 +219,7 @@ ON (src1.value between 100 and 102
   AND true)
 LIMIT 10
 PREHOOK: type: QUERY
-POSTHOOK: query: -- Conjunction with pred on single inputs and none
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT *
 FROM src1 JOIN src
 ON (src1.value between 100 and 102
@@ -317,8 +311,7 @@ POSTHOOK: Input: default@src
 POSTHOOK: Input: default@src1
 #### A masked pattern was here ####
 Warning: Shuffle Join JOIN[6][tables = [$hdt$_0, $hdt$_1]] in Stage 'Stage-1:MAPRED' is a cross product
-PREHOOK: query: -- Disjunction with pred on multiple inputs and single inputs
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT *
 FROM src1 JOIN src
 ON (src1.key=src.key
@@ -326,8 +319,7 @@ ON (src1.key=src.key
   OR src.value between 100 and 102)
 LIMIT 10
 PREHOOK: type: QUERY
-POSTHOOK: query: -- Disjunction with pred on multiple inputs and single inputs
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT *
 FROM src1 JOIN src
 ON (src1.key=src.key
@@ -426,16 +418,14 @@ POSTHOOK: Input: default@src1
 128		128	val_128
 128		128	val_128
 Warning: Shuffle Join JOIN[6][tables = [$hdt$_0, $hdt$_1]] in Stage 'Stage-1:MAPRED' is a cross product
-PREHOOK: query: -- Conjunction with multiple inputs on one side
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT *
 FROM src1 JOIN src
 ON (src1.key+src.key >= 100
   AND src1.key+src.key <= 102)
 LIMIT 10
 PREHOOK: type: QUERY
-POSTHOOK: query: -- Conjunction with multiple inputs on one side
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT *
 FROM src1 JOIN src
 ON (src1.key+src.key >= 100
@@ -527,16 +517,14 @@ POSTHOOK: Input: default@src1
 98	val_98	2	val_2
 98	val_98	4	val_4
 Warning: Shuffle Join JOIN[6][tables = [$hdt$_0, $hdt$_1]] in Stage 'Stage-1:MAPRED' is a cross product
-PREHOOK: query: -- Disjunction with multiple inputs on one side
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT *
 FROM src1 JOIN src
 ON (src1.key+src.key >= 100
   OR src1.key+src.key <= 102)
 LIMIT 10
 PREHOOK: type: QUERY
-POSTHOOK: query: -- Disjunction with multiple inputs on one side
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT *
 FROM src1 JOIN src
 ON (src1.key+src.key >= 100
@@ -632,15 +620,13 @@ POSTHOOK: Input: default@src1
 406	val_406	477	val_477
 406	val_406	414	val_414
 Warning: Shuffle Join JOIN[6][tables = [$hdt$_0, $hdt$_1]] in Stage 'Stage-1:MAPRED' is a cross product
-PREHOOK: query: -- Function with multiple inputs on one side
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT *
 FROM src1 JOIN src
 ON ((src1.key,src.key) IN ((100,100),(101,101),(102,102)))
 LIMIT 10
 PREHOOK: type: QUERY
-POSTHOOK: query: -- Function with multiple inputs on one side
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT *
 FROM src1 JOIN src
 ON ((src1.key,src.key) IN ((100,100),(101,101),(102,102)))
@@ -723,16 +709,14 @@ POSTHOOK: Input: default@src
 POSTHOOK: Input: default@src1
 #### A masked pattern was here ####
 Warning: Shuffle Join JOIN[11][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Stage-2:MAPRED' is a cross product
-PREHOOK: query: -- Chained 1
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT *
 FROM src
 JOIN src1 a ON (a.key+src.key >= 100)
 LEFT OUTER JOIN src1 b ON (b.key = src.key)
 LIMIT 10
 PREHOOK: type: QUERY
-POSTHOOK: query: -- Chained 1
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT *
 FROM src
 JOIN src1 a ON (a.key+src.key >= 100)
@@ -872,16 +856,14 @@ POSTHOOK: Input: default@src1
 98	val_98	150	val_150	98	val_98
 98	val_98	401	val_401	98	val_98
 Warning: Shuffle Join JOIN[11][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Stage-2:MAPRED' is a cross product
-PREHOOK: query: -- Chained 2
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT *
 FROM src
 LEFT OUTER JOIN src1 a ON (a.key = src.key)
 JOIN src1 b ON (b.key+src.key<= 102)
 LIMIT 10
 PREHOOK: type: QUERY
-POSTHOOK: query: -- Chained 2
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT *
 FROM src
 LEFT OUTER JOIN src1 a ON (a.key = src.key)
@@ -1017,16 +999,14 @@ POSTHOOK: Input: default@src1
 35	val_35	NULL	NULL	66	val_66
 35	val_35	NULL	NULL	66	val_66
 Warning: Shuffle Join JOIN[8][tables = [$hdt$_0, $hdt$_1]] in Stage 'Stage-1:MAPRED' is a cross product
-PREHOOK: query: -- Chained 3
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT *
 FROM src
 JOIN src1 a ON (a.key+src.key >= 100)
 RIGHT OUTER JOIN src1 b ON (b.key = src.key)
 LIMIT 10
 PREHOOK: type: QUERY
-POSTHOOK: query: -- Chained 3
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT *
 FROM src
 JOIN src1 a ON (a.key+src.key >= 100)
@@ -1162,16 +1142,14 @@ NULL	NULL	NULL	NULL
 NULL	NULL	NULL	NULL		val_193
 NULL	NULL	NULL	NULL		val_265
 Warning: Shuffle Join JOIN[11][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Stage-2:MAPRED' is a cross product
-PREHOOK: query: -- Chained 4
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT *
 FROM src
 RIGHT OUTER JOIN src1 a ON (a.key = src.key)
 JOIN src1 b ON (b.key+src.key<= 102)
 LIMIT 10
 PREHOOK: type: QUERY
-POSTHOOK: query: -- Chained 4
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT *
 FROM src
 RIGHT OUTER JOIN src1 a ON (a.key = src.key)
@@ -1297,16 +1275,14 @@ POSTHOOK: Input: default@src
 POSTHOOK: Input: default@src1
 #### A masked pattern was here ####
 Warning: Shuffle Join JOIN[8][tables = [$hdt$_0, $hdt$_1]] in Stage 'Stage-1:MAPRED' is a cross product
-PREHOOK: query: -- Chained 5
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT *
 FROM src
 JOIN src1 a ON (a.key+src.key >= 100)
 FULL OUTER JOIN src1 b ON (b.key = src.key)
 LIMIT 10
 PREHOOK: type: QUERY
-POSTHOOK: query: -- Chained 5
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT *
 FROM src
 JOIN src1 a ON (a.key+src.key >= 100)
@@ -1442,16 +1418,14 @@ NULL	NULL	NULL	NULL
 NULL	NULL	NULL	NULL		val_193
 NULL	NULL	NULL	NULL		val_265
 Warning: Shuffle Join JOIN[11][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Stage-2:MAPRED' is a cross product
-PREHOOK: query: -- Chained 6
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT *
 FROM src
 FULL OUTER JOIN src1 a ON (a.key = src.key)
 JOIN src1 b ON (b.key+src.key<= 102)
 LIMIT 10
 PREHOOK: type: QUERY
-POSTHOOK: query: -- Chained 6
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT *
 FROM src
 FULL OUTER JOIN src1 a ON (a.key = src.key)
@@ -1587,8 +1561,7 @@ POSTHOOK: Input: default@src1
 35	val_35	NULL	NULL	66	val_66
 35	val_35	NULL	NULL	66	val_66
 Warning: Shuffle Join JOIN[18][tables = [$hdt$_0, $hdt$_1, $hdt$_2, $hdt$_3]] in Stage 'Stage-1:MAPRED' is a cross product
-PREHOOK: query: -- Right outer join with multiple inner joins and mixed conditions
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT *
 FROM cbo_t1 t1
 RIGHT OUTER JOIN cbo_t1 t2 ON (t2.key = t1.key)
@@ -1597,8 +1570,7 @@ JOIN cbo_t1 t4 ON (t4.key = t2.key or  t2.c_float = t4.c_float and t4.value = t2
 JOIN cbo_t1 t5 ON (t5.key = t2.key or  t2.c_boolean = t4.c_boolean and t5.c_int = 42)
 LIMIT 10
 PREHOOK: type: QUERY
-POSTHOOK: query: -- Right outer join with multiple inner joins and mixed conditions
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT *
 FROM cbo_t1 t1
 RIGHT OUTER JOIN cbo_t1 t2 ON (t2.key = t1.key)

@@ -1,12 +1,6 @@
-PREHOOK: query: -- SORT_QUERY_RESULTS
-
--- data setup
-DROP TABLE IF EXISTS part_subq
+PREHOOK: query: DROP TABLE IF EXISTS part_subq
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: -- SORT_QUERY_RESULTS
-
--- data setup
-DROP TABLE IF EXISTS part_subq
+POSTHOOK: query: DROP TABLE IF EXISTS part_subq
 POSTHOOK: type: DROPTABLE
 PREHOOK: query: CREATE TABLE part_subq( 
     p_partkey INT,
@@ -44,15 +38,13 @@ POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/part_tiny.txt' overwri
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@part_subq
-PREHOOK: query: -- non agg, non corr
-explain
+PREHOOK: query: explain
  select key, count(*) 
 from src 
 group by key
 having count(*) in (select count(*) from src s1 where s1.key > '9' group by s1.key )
 PREHOOK: type: QUERY
-POSTHOOK: query: -- non agg, non corr
-explain
+POSTHOOK: query: explain
  select key, count(*) 
 from src 
 group by key
@@ -266,15 +258,13 @@ POSTHOOK: Input: default@src
 5	3
 70	3
 90	3
-PREHOOK: query: -- non agg, corr
-explain
+PREHOOK: query: explain
  select key, value, count(*) 
 from src b
 group by key, value
 having count(*) in (select count(*) from src s1 where s1.key > '9'  and s1.value = b.value group by s1.key )
 PREHOOK: type: QUERY
-POSTHOOK: query: -- non agg, corr
-explain
+POSTHOOK: query: explain
  select key, value, count(*) 
 from src b
 group by key, value
@@ -521,8 +511,7 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: -- agg, non corr
-explain
+PREHOOK: query: explain
 select p_mfgr, avg(p_size)
 from part_subq b
 group by b.p_mfgr
@@ -533,8 +522,7 @@ having b.p_mfgr in
     having max(p_size) - min(p_size) < 20
    )
 PREHOOK: type: QUERY
-POSTHOOK: query: -- agg, non corr
-explain
+POSTHOOK: query: explain
 select p_mfgr, avg(p_size)
 from part_subq b
 group by b.p_mfgr
@@ -675,8 +663,7 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: -- agg, non corr
-explain
+PREHOOK: query: explain
 select p_mfgr, avg(p_size)
 from part_subq b
 group by b.p_mfgr
@@ -687,8 +674,7 @@ having b.p_mfgr in
     having max(p_size) - min(p_size) < 20
    )
 PREHOOK: type: QUERY
-POSTHOOK: query: -- agg, non corr
-explain
+POSTHOOK: query: explain
 select p_mfgr, avg(p_size)
 from part_subq b
 group by b.p_mfgr
@@ -813,8 +799,7 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: -- join on agg
-select b.key, min(b.value)
+PREHOOK: query: select b.key, min(b.value)
 from src b
 group by b.key
 having b.key in ( select a.key
@@ -824,8 +809,7 @@ having b.key in ( select a.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
-POSTHOOK: query: -- join on agg
-select b.key, min(b.value)
+POSTHOOK: query: select b.key, min(b.value)
 from src b
 group by b.key
 having b.key in ( select a.key
@@ -841,26 +825,14 @@ POSTHOOK: Input: default@src
 96	val_96
 97	val_97
 98	val_98
-PREHOOK: query: -- where and having
--- Plan is:
--- Stage 1: b semijoin sq1:src (subquery in where)
--- Stage 2: group by Stage 1 o/p
--- Stage 5: group by on sq2:src (subquery in having)
--- Stage 6: Stage 2 o/p semijoin Stage 5
-explain
+PREHOOK: query: explain
 select key, value, count(*) 
 from src b
 where b.key in (select key from src where src.key > '8')
 group by key, value
 having count(*) in (select count(*) from src s1 where s1.key > '9' group by s1.key )
 PREHOOK: type: QUERY
-POSTHOOK: query: -- where and having
--- Plan is:
--- Stage 1: b semijoin sq1:src (subquery in where)
--- Stage 2: group by Stage 1 o/p
--- Stage 5: group by on sq2:src (subquery in having)
--- Stage 6: Stage 2 o/p semijoin Stage 5
-explain
+POSTHOOK: query: explain
 select key, value, count(*) 
 from src b
 where b.key in (select key from src where src.key > '8')
@@ -1123,28 +1095,14 @@ POSTHOOK: Input: default@src
 96	val_96	1
 97	val_97	2
 98	val_98	2
-PREHOOK: query: -- Plan is:
--- Stage  5: group by on sq2:src (subquery in having)
--- Stage 10: hashtable for sq1:src (subquery in where)
--- Stage  2: b map-side semijoin Stage 10 o/p
--- Stage  3: Stage 2 semijoin Stage 5
--- Stage  9: construct hastable for Stage 5 o/p
--- Stage  6: Stage 2 map-side semijoin Stage 9
-explain
+PREHOOK: query: explain
 select key, value, count(*) 
 from src b
 where b.key in (select key from src where src.key > '8')
 group by key, value
 having count(*) in (select count(*) from src s1 where s1.key > '9' group by s1.key )
 PREHOOK: type: QUERY
-POSTHOOK: query: -- Plan is:
--- Stage  5: group by on sq2:src (subquery in having)
--- Stage 10: hashtable for sq1:src (subquery in where)
--- Stage  2: b map-side semijoin Stage 10 o/p
--- Stage  3: Stage 2 semijoin Stage 5
--- Stage  9: construct hastable for Stage 5 o/p
--- Stage  6: Stage 2 map-side semijoin Stage 9
-explain
+POSTHOOK: query: explain
 select key, value, count(*) 
 from src b
 where b.key in (select key from src where src.key > '8')
@@ -1377,16 +1335,14 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: -- both having and where corr
-explain
+PREHOOK: query: explain
 select key, value, count(*)
 from src b
 where b.key in (select key from src where src.value = b.value)
 group by key, value
 having count(*) in (select count(*) from src s1 where s1.key > '9' and s1.value = b.value group by s1.key )
 PREHOOK: type: QUERY
-POSTHOOK: query: -- both having and where corr
-explain
+POSTHOOK: query: explain
 select key, value, count(*)
 from src b
 where b.key in (select key from src where src.value = b.value)
@@ -1969,16 +1925,14 @@ POSTHOOK: Input: default@src
 96	val_96	1
 97	val_97	2
 98	val_98	2
-PREHOOK: query: -- non agg, non corr, windowing
-explain
+PREHOOK: query: explain
 select p_mfgr, p_name, avg(p_size) 
 from part_subq 
 group by p_mfgr, p_name
 having p_name in 
   (select first_value(p_name) over(partition by p_mfgr order by p_size) from part_subq)
 PREHOOK: type: QUERY
-POSTHOOK: query: -- non agg, non corr, windowing
-explain
+POSTHOOK: query: explain
 select p_mfgr, p_name, avg(p_size) 
 from part_subq 
 group by p_mfgr, p_name

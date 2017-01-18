@@ -106,8 +106,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
 1.03225806	-23.64516129	13.0	-49.0	-0.12903226	0.06451613	-0.09677419	0.03225806	3.7E-7	3.7E-7	3.94959677	1.0	1.0	1.0	1.0	1.0	1.0	1.03225806	1.03225806	1.03225806	1.03225806	1.03225806	1.03225806	1.03225806
-PREHOOK: query: --test timestamp format
-select
+PREHOOK: query: select
   months_between(cast('1995-02-02 00:00:00' as timestamp), cast('1995-01-01 00:00:00' as timestamp)),
   months_between(cast('2003-07-17 00:00:00' as timestamp), cast('2005-07-06 00:00:00' as timestamp)),
   months_between(cast('2001-06-30 00:00:00' as timestamp), cast('2000-05-31 00:00:00' as timestamp)),
@@ -130,8 +129,7 @@ select
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
-POSTHOOK: query: --test timestamp format
-select
+POSTHOOK: query: select
   months_between(cast('1995-02-02 00:00:00' as timestamp), cast('1995-01-01 00:00:00' as timestamp)),
   months_between(cast('2003-07-17 00:00:00' as timestamp), cast('2005-07-06 00:00:00' as timestamp)),
   months_between(cast('2001-06-30 00:00:00' as timestamp), cast('2000-05-31 00:00:00' as timestamp)),
@@ -155,8 +153,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
 1.03225806	-23.64516129	13.0	-49.0	-0.12903226	0.06451613	-0.09677419	0.03225806	3.7E-7	3.7E-7	3.94959677	1.0	1.0	1.0	1.0	1.0	1.0
-PREHOOK: query: --test date format
-select
+PREHOOK: query: select
   months_between(cast('1995-02-02' as date), cast('1995-01-01' as date)),
   months_between(cast('2003-07-17' as date), cast('2005-07-06' as date)),
   months_between(cast('2001-06-30' as date), cast('2000-05-31' as date)),
@@ -168,8 +165,7 @@ select
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
-POSTHOOK: query: --test date format
-select
+POSTHOOK: query: select
   months_between(cast('1995-02-02' as date), cast('1995-01-01' as date)),
   months_between(cast('2003-07-17' as date), cast('2005-07-06' as date)),
   months_between(cast('2001-06-30' as date), cast('2000-05-31' as date)),
@@ -182,8 +178,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
 1.03225806	-23.64516129	13.0	-49.0	-0.12903226	0.06451613	-0.09677419	0.03225806
-PREHOOK: query: --test misc with null
-select
+PREHOOK: query: select
   months_between(cast(null as string), '2012-03-01'),
   months_between('2012-02-31', cast(null as timestamp)),
   months_between(cast(null as timestamp), cast(null as date)),
@@ -203,8 +198,7 @@ select
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
-POSTHOOK: query: --test misc with null
-select
+POSTHOOK: query: select
   months_between(cast(null as string), '2012-03-01'),
   months_between('2012-02-31', cast(null as timestamp)),
   months_between(cast(null as timestamp), cast(null as date)),

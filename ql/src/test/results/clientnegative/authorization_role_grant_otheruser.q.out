@@ -17,7 +17,6 @@ PREHOOK: type: SHOW_ROLE_GRANT
 POSTHOOK: query: show role grant user ruser2
 POSTHOOK: type: SHOW_ROLE_GRANT
 public	false	-1	
-PREHOOK: query: --  show role grant for another user as non admin user should fail
-show role grant user ruser2
+PREHOOK: query: show role grant user ruser2
 PREHOOK: type: SHOW_ROLE_GRANT
 FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. Error getting role grant information for user ruser2: User : ruser1 is not allowed check privileges of another user : ruser2. User has to belong to ADMIN role and have it as current role, for this action.

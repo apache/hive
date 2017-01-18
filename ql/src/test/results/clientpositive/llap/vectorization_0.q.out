@@ -1,7 +1,4 @@
-PREHOOK: query: -- SORT_QUERY_RESULTS
-
--- Use ORDER BY clauses to generate 2 stages.
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT MIN(ctinyint) as c1,
        MAX(ctinyint),
        COUNT(ctinyint),
@@ -9,10 +6,7 @@ SELECT MIN(ctinyint) as c1,
 FROM   alltypesorc
 ORDER BY c1
 PREHOOK: type: QUERY
-POSTHOOK: query: -- SORT_QUERY_RESULTS
-
--- Use ORDER BY clauses to generate 2 stages.
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT MIN(ctinyint) as c1,
        MAX(ctinyint),
        COUNT(ctinyint),
@@ -29927,14 +29921,12 @@ POSTHOOK: query: select ctinyint, csmallint, cint, cbigint, cdouble, cdouble, cs
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
-PREHOOK: query: --test to make sure multi and/or expressions are being vectorized
-explain extended select * from alltypesorc where
+PREHOOK: query: explain extended select * from alltypesorc where
                      (cint=49 and  cfloat=3.5) or
                      (cint=47  and  cfloat=2.09) or
                      (cint=45  and  cfloat=3.02)
 PREHOOK: type: QUERY
-POSTHOOK: query: --test to make sure multi and/or expressions are being vectorized
-explain extended select * from alltypesorc where
+POSTHOOK: query: explain extended select * from alltypesorc where
                      (cint=49 and  cfloat=3.5) or
                      (cint=47  and  cfloat=2.09) or
                      (cint=45  and  cfloat=3.02)
@@ -30210,13 +30202,11 @@ POSTHOOK: Input: default@cast_string_to_int_1
 POSTHOOK: Output: default@cast_string_to_int_2
 POSTHOOK: Lineage: cast_string_to_int_2.i EXPRESSION [(cast_string_to_int_1)cast_string_to_int_1.FieldSchema(name:_c0, type:string, comment:null), ]
 POSTHOOK: Lineage: cast_string_to_int_2.s SIMPLE [(cast_string_to_int_1)cast_string_to_int_1.FieldSchema(name:value, type:string, comment:null), ]
-PREHOOK: query: --moving ALL_1 system test here
-select all key from src
+PREHOOK: query: select all key from src
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
-POSTHOOK: query: --moving ALL_1 system test here
-select all key from src
+POSTHOOK: query: select all key from src
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####

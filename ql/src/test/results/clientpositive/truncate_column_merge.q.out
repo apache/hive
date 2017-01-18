@@ -1,12 +1,8 @@
-PREHOOK: query: -- Tests truncating a column from a table with multiple files, then merging those files
-
-CREATE TABLE test_tab (key STRING, value STRING) STORED AS RCFILE
+PREHOOK: query: CREATE TABLE test_tab (key STRING, value STRING) STORED AS RCFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@test_tab
-POSTHOOK: query: -- Tests truncating a column from a table with multiple files, then merging those files
-
-CREATE TABLE test_tab (key STRING, value STRING) STORED AS RCFILE
+POSTHOOK: query: CREATE TABLE test_tab (key STRING, value STRING) STORED AS RCFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_tab
@@ -30,13 +26,11 @@ POSTHOOK: Input: default@src
 POSTHOOK: Output: default@test_tab
 POSTHOOK: Lineage: test_tab.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: test_tab.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: -- The value should be 2 indicating the table has 2 files
-SELECT COUNT(DISTINCT INPUT__FILE__NAME) FROM test_tab
+PREHOOK: query: SELECT COUNT(DISTINCT INPUT__FILE__NAME) FROM test_tab
 PREHOOK: type: QUERY
 PREHOOK: Input: default@test_tab
 #### A masked pattern was here ####
-POSTHOOK: query: -- The value should be 2 indicating the table has 2 files
-SELECT COUNT(DISTINCT INPUT__FILE__NAME) FROM test_tab
+POSTHOOK: query: SELECT COUNT(DISTINCT INPUT__FILE__NAME) FROM test_tab
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test_tab
 #### A masked pattern was here ####
@@ -57,13 +51,11 @@ POSTHOOK: query: ALTER TABLE test_tab CONCATENATE
 POSTHOOK: type: ALTER_TABLE_MERGE
 POSTHOOK: Input: default@test_tab
 POSTHOOK: Output: default@test_tab
-PREHOOK: query: -- The first column (key) should be null for all 10 rows
-SELECT * FROM test_tab ORDER BY value
+PREHOOK: query: SELECT * FROM test_tab ORDER BY value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@test_tab
 #### A masked pattern was here ####
-POSTHOOK: query: -- The first column (key) should be null for all 10 rows
-SELECT * FROM test_tab ORDER BY value
+POSTHOOK: query: SELECT * FROM test_tab ORDER BY value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test_tab
 #### A masked pattern was here ####
@@ -77,13 +69,11 @@ NULL	val_311
 NULL	val_311
 NULL	val_86
 NULL	val_86
-PREHOOK: query: -- The value should be 1 indicating the table has 1 file
-SELECT COUNT(DISTINCT INPUT__FILE__NAME) FROM test_tab
+PREHOOK: query: SELECT COUNT(DISTINCT INPUT__FILE__NAME) FROM test_tab
 PREHOOK: type: QUERY
 PREHOOK: Input: default@test_tab
 #### A masked pattern was here ####
-POSTHOOK: query: -- The value should be 1 indicating the table has 1 file
-SELECT COUNT(DISTINCT INPUT__FILE__NAME) FROM test_tab
+POSTHOOK: query: SELECT COUNT(DISTINCT INPUT__FILE__NAME) FROM test_tab
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test_tab
 #### A masked pattern was here ####

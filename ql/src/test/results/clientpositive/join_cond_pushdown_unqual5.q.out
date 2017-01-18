@@ -1,10 +1,8 @@
-PREHOOK: query: -- outer join is not qualified for pushing down of where to join condition
-CREATE TABLE ltable (index int, la int, lk1 string, lk2 string) ROW FORMAT DELIMITED FIELDS TERMINATED BY ','
+PREHOOK: query: CREATE TABLE ltable (index int, la int, lk1 string, lk2 string) ROW FORMAT DELIMITED FIELDS TERMINATED BY ','
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@ltable
-POSTHOOK: query: -- outer join is not qualified for pushing down of where to join condition
-CREATE TABLE ltable (index int, la int, lk1 string, lk2 string) ROW FORMAT DELIMITED FIELDS TERMINATED BY ','
+POSTHOOK: query: CREATE TABLE ltable (index int, la int, lk1 string, lk2 string) ROW FORMAT DELIMITED FIELDS TERMINATED BY ','
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@ltable

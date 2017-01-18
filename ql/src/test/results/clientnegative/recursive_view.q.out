@@ -1,10 +1,6 @@
-PREHOOK: query: -- Can't have recursive views
-
-drop table t
+PREHOOK: query: drop table t
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: -- Can't have recursive views
-
-drop table t
+POSTHOOK: query: drop table t
 POSTHOOK: type: DROPTABLE
 PREHOOK: query: drop view r0
 PREHOOK: type: DROPVIEW

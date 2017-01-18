@@ -1,9 +1,7 @@
-PREHOOK: query: -- ensure that drop database cascade works
-create database dba1
+PREHOOK: query: create database dba1
 PREHOOK: type: CREATEDATABASE
 PREHOOK: Output: database:dba1
-POSTHOOK: query: -- ensure that drop database cascade works
-create database dba1
+POSTHOOK: query: create database dba1
 POSTHOOK: type: CREATEDATABASE
 POSTHOOK: Output: database:dba1
 PREHOOK: query: create table dba1.tab1(i int)
@@ -24,12 +22,10 @@ POSTHOOK: type: DROPDATABASE
 POSTHOOK: Input: database:dba1
 POSTHOOK: Output: database:dba1
 POSTHOOK: Output: dba1@tab1
-PREHOOK: query: -- check if drop database fails if the db has a table for which user does not have permission
-create database dba2
+PREHOOK: query: create database dba2
 PREHOOK: type: CREATEDATABASE
 PREHOOK: Output: database:dba2
-POSTHOOK: query: -- check if drop database fails if the db has a table for which user does not have permission
-create database dba2
+POSTHOOK: query: create database dba2
 POSTHOOK: type: CREATEDATABASE
 POSTHOOK: Output: database:dba2
 PREHOOK: query: create table dba2.tab2(i int)

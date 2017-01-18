@@ -1,12 +1,8 @@
-PREHOOK: query: -- small 1 part, 2 bucket & big 2 part, 4 bucket
-
-CREATE TABLE bucket_small (key string, value string) partitioned by (ds string) CLUSTERED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE
+PREHOOK: query: CREATE TABLE bucket_small (key string, value string) partitioned by (ds string) CLUSTERED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@bucket_small
-POSTHOOK: query: -- small 1 part, 2 bucket & big 2 part, 4 bucket
-
-CREATE TABLE bucket_small (key string, value string) partitioned by (ds string) CLUSTERED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE
+POSTHOOK: query: CREATE TABLE bucket_small (key string, value string) partitioned by (ds string) CLUSTERED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@bucket_small
@@ -385,17 +381,9 @@ POSTHOOK: Input: default@bucket_small
 POSTHOOK: Input: default@bucket_small@ds=2008-04-08
 #### A masked pattern was here ####
 38
-PREHOOK: query: -- Since size is being used to find the big table, the order of the tables in the join does not matter
--- The tables are only bucketed and not sorted, the join should not be converted
--- Currenly, a join is only converted to a sort-merge join without a hint, automatic conversion to
--- bucketized mapjoin is not done
-explain extended select count(*) FROM bucket_small a JOIN bucket_big b ON a.key = b.key
+PREHOOK: query: explain extended select count(*) FROM bucket_small a JOIN bucket_big b ON a.key = b.key
 PREHOOK: type: QUERY
-POSTHOOK: query: -- Since size is being used to find the big table, the order of the tables in the join does not matter
--- The tables are only bucketed and not sorted, the join should not be converted
--- Currenly, a join is only converted to a sort-merge join without a hint, automatic conversion to
--- bucketized mapjoin is not done
-explain extended select count(*) FROM bucket_small a JOIN bucket_big b ON a.key = b.key
+POSTHOOK: query: explain extended select count(*) FROM bucket_small a JOIN bucket_big b ON a.key = b.key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -677,11 +665,9 @@ POSTHOOK: Input: default@bucket_small
 POSTHOOK: Input: default@bucket_small@ds=2008-04-08
 #### A masked pattern was here ####
 38
-PREHOOK: query: -- The join is converted to a bucketed mapjoin with a mapjoin hint
-explain extended select /*+ mapjoin(a) */ count(*) FROM bucket_small a JOIN bucket_big b ON a.key = b.key
+PREHOOK: query: explain extended select /*+ mapjoin(a) */ count(*) FROM bucket_small a JOIN bucket_big b ON a.key = b.key
 PREHOOK: type: QUERY
-POSTHOOK: query: -- The join is converted to a bucketed mapjoin with a mapjoin hint
-explain extended select /*+ mapjoin(a) */ count(*) FROM bucket_small a JOIN bucket_big b ON a.key = b.key
+POSTHOOK: query: explain extended select /*+ mapjoin(a) */ count(*) FROM bucket_small a JOIN bucket_big b ON a.key = b.key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -955,11 +941,9 @@ POSTHOOK: Input: default@bucket_small
 POSTHOOK: Input: default@bucket_small@ds=2008-04-08
 #### A masked pattern was here ####
 38
-PREHOOK: query: -- HIVE-7023
-explain extended select /* + MAPJOIN(a,b) */ count(*) FROM bucket_small a JOIN bucket_big b ON a.key = b.key JOIN bucket_big c ON a.key = c.key
+PREHOOK: query: explain extended select /* + MAPJOIN(a,b) */ count(*) FROM bucket_small a JOIN bucket_big b ON a.key = b.key JOIN bucket_big c ON a.key = c.key
 PREHOOK: type: QUERY
-POSTHOOK: query: -- HIVE-7023
-explain extended select /* + MAPJOIN(a,b) */ count(*) FROM bucket_small a JOIN bucket_big b ON a.key = b.key JOIN bucket_big c ON a.key = c.key
+POSTHOOK: query: explain extended select /* + MAPJOIN(a,b) */ count(*) FROM bucket_small a JOIN bucket_big b ON a.key = b.key JOIN bucket_big c ON a.key = c.key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage

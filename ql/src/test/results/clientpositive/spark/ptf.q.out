@@ -1,7 +1,4 @@
-PREHOOK: query: -- SORT_QUERY_RESULTS
-
---1. test1
-explain
+PREHOOK: query: explain
 select p_mfgr, p_name, p_size,
 rank() over (partition by p_mfgr order by p_name) as r,
 dense_rank() over (partition by p_mfgr order by p_name) as dr,
@@ -11,10 +8,7 @@ from noop(on part
   order by p_name
   )
 PREHOOK: type: QUERY
-POSTHOOK: query: -- SORT_QUERY_RESULTS
-
---1. test1
-explain
+POSTHOOK: query: explain
 select p_mfgr, p_name, p_size,
 rank() over (partition by p_mfgr order by p_name) as r,
 dense_rank() over (partition by p_mfgr order by p_name) as dr,
@@ -179,16 +173,14 @@ Manufacturer#5	almond antique medium spring khaki	6	2	2	3401.35
 Manufacturer#5	almond antique sky peru orange	2	3	3	5190.08
 Manufacturer#5	almond aquamarine dodger light gainsboro	46	4	4	6208.18
 Manufacturer#5	almond azure blanched chiffon midnight	23	5	5	7672.66
-PREHOOK: query: -- 2. testJoinWithNoop
-explain
+PREHOOK: query: explain
 select p_mfgr, p_name,
 p_size, p_size - lag(p_size,1,p_size) over (partition by p_mfgr order by p_name) as deltaSz
 from noop (on (select p1.* from part p1 join part p2 on p1.p_partkey = p2.p_partkey) j
 distribute by j.p_mfgr
 sort by j.p_name)
 PREHOOK: type: QUERY
-POSTHOOK: query: -- 2. testJoinWithNoop
-explain
+POSTHOOK: query: explain
 select p_mfgr, p_name,
 p_size, p_size - lag(p_size,1,p_size) over (partition by p_mfgr order by p_name) as deltaSz
 from noop (on (select p1.* from part p1 join part p2 on p1.p_partkey = p2.p_partkey) j
@@ -366,15 +358,13 @@ Manufacturer#5	almond antique medium spring khaki	6	-25
 Manufacturer#5	almond antique sky peru orange	2	-4
 Manufacturer#5	almond aquamarine dodger light gainsboro	46	44
 Manufacturer#5	almond azure blanched chiffon midnight	23	-23
-PREHOOK: query: -- 3. testOnlyPTF
-explain
+PREHOOK: query: explain
 select p_mfgr, p_name, p_size
 from noop(on part
 partition by p_mfgr
 order by p_name)
 PREHOOK: type: QUERY
-POSTHOOK: query: -- 3. testOnlyPTF
-explain
+POSTHOOK: query: explain
 select p_mfgr, p_name, p_size
 from noop(on part
 partition by p_mfgr
@@ -480,8 +470,7 @@ Manufacturer#5	almond antique medium spring khaki	6
 Manufacturer#5	almond antique sky peru orange	2
 Manufacturer#5	almond aquamarine dodger light gainsboro	46
 Manufacturer#5	almond azure blanched chiffon midnight	23
-PREHOOK: query: -- 4. testPTFAlias
-explain
+PREHOOK: query: explain
 select p_mfgr, p_name, p_size,
 rank() over (partition by p_mfgr order by p_name) as r,
 dense_rank() over (partition by p_mfgr order by p_name) as dr,
@@ -491,8 +480,7 @@ from noop(on part
   order by p_name
   ) abc
 PREHOOK: type: QUERY
-POSTHOOK: query: -- 4. testPTFAlias
-explain
+POSTHOOK: query: explain
 select p_mfgr, p_name, p_size,
 rank() over (partition by p_mfgr order by p_name) as r,
 dense_rank() over (partition by p_mfgr order by p_name) as dr,
@@ -657,8 +645,7 @@ Manufacturer#5	almond antique medium spring khaki	6	2	2	3401.35
 Manufacturer#5	almond antique sky peru orange	2	3	3	5190.08
 Manufacturer#5	almond aquamarine dodger light gainsboro	46	4	4	6208.18
 Manufacturer#5	almond azure blanched chiffon midnight	23	5	5	7672.66
-PREHOOK: query: -- 5. testPTFAndWhereWithWindowing
-explain
+PREHOOK: query: explain
 select p_mfgr, p_name, p_size, 
 rank() over (partition by p_mfgr order by p_name) as r, 
 dense_rank() over (partition by p_mfgr order by p_name) as dr, 
@@ -668,8 +655,7 @@ from noop(on part
           order by p_name 
           )
 PREHOOK: type: QUERY
-POSTHOOK: query: -- 5. testPTFAndWhereWithWindowing
-explain
+POSTHOOK: query: explain
 select p_mfgr, p_name, p_size, 
 rank() over (partition by p_mfgr order by p_name) as r, 
 dense_rank() over (partition by p_mfgr order by p_name) as dr, 
@@ -835,8 +821,7 @@ Manufacturer#5	almond antique medium spring khaki	6	2	2	6	-25
 Manufacturer#5	almond antique sky peru orange	2	3	3	2	-4
 Manufacturer#5	almond aquamarine dodger light gainsboro	46	4	4	46	44
 Manufacturer#5	almond azure blanched chiffon midnight	23	5	5	23	-23
-PREHOOK: query: -- 6. testSWQAndPTFAndGBy
-explain
+PREHOOK: query: explain
 select p_mfgr, p_name, p_size, 
 rank() over (partition by p_mfgr order by p_name) as r, 
 dense_rank() over (partition by p_mfgr order by p_name) as dr, 
@@ -847,8 +832,7 @@ from noop(on part
           ) 
 group by p_mfgr, p_name, p_size
 PREHOOK: type: QUERY
-POSTHOOK: query: -- 6. testSWQAndPTFAndGBy
-explain
+POSTHOOK: query: explain
 select p_mfgr, p_name, p_size, 
 rank() over (partition by p_mfgr order by p_name) as r, 
 dense_rank() over (partition by p_mfgr order by p_name) as dr, 
@@ -1025,16 +1009,14 @@ Manufacturer#5	almond antique medium spring khaki	6	2	2	6	-25
 Manufacturer#5	almond antique sky peru orange	2	3	3	2	-4
 Manufacturer#5	almond aquamarine dodger light gainsboro	46	4	4	46	44
 Manufacturer#5	almond azure blanched chiffon midnight	23	5	5	23	-23
-PREHOOK: query: -- 7. testJoin
-explain
+PREHOOK: query: explain
 select abc.* 
 from noop(on part 
 partition by p_mfgr 
 order by p_name 
 ) abc join part p1 on abc.p_partkey = p1.p_partkey
 PREHOOK: type: QUERY
-POSTHOOK: query: -- 7. testJoin
-explain
+POSTHOOK: query: explain
 select abc.* 
 from noop(on part 
 partition by p_mfgr 
@@ -1174,16 +1156,14 @@ POSTHOOK: Input: default@part
 85768	almond antique chartreuse lavender yellow	Manufacturer#1	Brand#12	LARGE BRUSHED STEEL	34	SM BAG	1753.76	refull
 86428	almond aquamarine burnished black steel	Manufacturer#1	Brand#12	STANDARD ANODIZED STEEL	28	WRAP BAG	1414.42	arefully 
 90681	almond antique chartreuse khaki white	Manufacturer#3	Brand#31	MEDIUM BURNISHED TIN	17	SM CASE	1671.68	are slyly after the sl
-PREHOOK: query: -- 8. testJoinRight
-explain
+PREHOOK: query: explain
 select abc.* 
 from part p1 join noop(on part 
 partition by p_mfgr 
 order by p_name 
 ) abc on abc.p_partkey = p1.p_partkey
 PREHOOK: type: QUERY
-POSTHOOK: query: -- 8. testJoinRight
-explain
+POSTHOOK: query: explain
 select abc.* 
 from part p1 join noop(on part 
 partition by p_mfgr 
@@ -1327,16 +1307,14 @@ POSTHOOK: Input: default@part
 85768	almond antique chartreuse lavender yellow	Manufacturer#1	Brand#12	LARGE BRUSHED STEEL	34	SM BAG	1753.76	refull
 86428	almond aquamarine burnished black steel	Manufacturer#1	Brand#12	STANDARD ANODIZED STEEL	28	WRAP BAG	1414.42	arefully 
 90681	almond antique chartreuse khaki white	Manufacturer#3	Brand#31	MEDIUM BURNISHED TIN	17	SM CASE	1671.68	are slyly after the sl
-PREHOOK: query: -- 9. testNoopWithMap
-explain
+PREHOOK: query: explain
 select p_mfgr, p_name, p_size, 
 rank() over (partition by p_mfgr order by p_name, p_size desc) as r
 from noopwithmap(on part
 partition by p_mfgr
 order by p_name, p_size desc)
 PREHOOK: type: QUERY
-POSTHOOK: query: -- 9. testNoopWithMap
-explain
+POSTHOOK: query: explain
 select p_mfgr, p_name, p_size, 
 rank() over (partition by p_mfgr order by p_name, p_size desc) as r
 from noopwithmap(on part
@@ -1494,8 +1472,7 @@ Manufacturer#5	almond antique medium spring khaki	6	2
 Manufacturer#5	almond antique sky peru orange	2	3
 Manufacturer#5	almond aquamarine dodger light gainsboro	46	4
 Manufacturer#5	almond azure blanched chiffon midnight	23	5
-PREHOOK: query: -- 10. testNoopWithMapWithWindowing 
-explain 
+PREHOOK: query: explain 
 select p_mfgr, p_name, p_size,
 rank() over (partition by p_mfgr order by p_name) as r,
 dense_rank() over (partition by p_mfgr order by p_name) as dr,
@@ -1504,8 +1481,7 @@ from noopwithmap(on part
   partition by p_mfgr
   order by p_name)
 PREHOOK: type: QUERY
-POSTHOOK: query: -- 10. testNoopWithMapWithWindowing 
-explain 
+POSTHOOK: query: explain 
 select p_mfgr, p_name, p_size,
 rank() over (partition by p_mfgr order by p_name) as r,
 dense_rank() over (partition by p_mfgr order by p_name) as dr,
@@ -1684,8 +1660,7 @@ Manufacturer#5	almond antique medium spring khaki	6	2	2	3401.35
 Manufacturer#5	almond antique sky peru orange	2	3	3	5190.08
 Manufacturer#5	almond aquamarine dodger light gainsboro	46	4	4	6208.18
 Manufacturer#5	almond azure blanched chiffon midnight	23	5	5	7672.66
-PREHOOK: query: -- 11. testHavingWithWindowingPTFNoGBY
-explain
+PREHOOK: query: explain
 select p_mfgr, p_name, p_size,
 rank() over (partition by p_mfgr order by p_name) as r,
 dense_rank() over (partition by p_mfgr order by p_name) as dr,
@@ -1694,8 +1669,7 @@ from noop(on part
 partition by p_mfgr
 order by p_name)
 PREHOOK: type: QUERY
-POSTHOOK: query: -- 11. testHavingWithWindowingPTFNoGBY
-explain
+POSTHOOK: query: explain
 select p_mfgr, p_name, p_size,
 rank() over (partition by p_mfgr order by p_name) as r,
 dense_rank() over (partition by p_mfgr order by p_name) as dr,
@@ -1857,8 +1831,7 @@ Manufacturer#5	almond antique medium spring khaki	6	2	2	3401.35
 Manufacturer#5	almond antique sky peru orange	2	3	3	5190.08
 Manufacturer#5	almond aquamarine dodger light gainsboro	46	4	4	6208.18
 Manufacturer#5	almond azure blanched chiffon midnight	23	5	5	7672.66
-PREHOOK: query: -- 12. testFunctionChain
-explain
+PREHOOK: query: explain
 select p_mfgr, p_name, p_size, 
 rank() over (partition by p_mfgr order by p_name) as r, 
 dense_rank() over (partition by p_mfgr order by p_name) as dr, 
@@ -1868,8 +1841,7 @@ partition by p_mfgr
 order by p_mfgr DESC, p_name
 )))
 PREHOOK: type: QUERY
-POSTHOOK: query: -- 12. testFunctionChain
-explain
+POSTHOOK: query: explain
 select p_mfgr, p_name, p_size, 
 rank() over (partition by p_mfgr order by p_name) as r, 
 dense_rank() over (partition by p_mfgr order by p_name) as dr, 
@@ -2092,8 +2064,7 @@ Manufacturer#5	almond antique medium spring khaki	6	2	2	3401.35
 Manufacturer#5	almond antique sky peru orange	2	3	3	5190.08
 Manufacturer#5	almond aquamarine dodger light gainsboro	46	4	4	6208.18
 Manufacturer#5	almond azure blanched chiffon midnight	23	5	5	7672.66
-PREHOOK: query: -- 13. testPTFAndWindowingInSubQ
-explain
+PREHOOK: query: explain
 select p_mfgr, p_name, 
 sub1.cd, sub1.s1 
 from (select p_mfgr, p_name, 
@@ -2106,8 +2077,7 @@ order by p_name)
 window w1 as (partition by p_mfgr order by p_name rows between 2 preceding and 2 following) 
 ) sub1
 PREHOOK: type: QUERY
-POSTHOOK: query: -- 13. testPTFAndWindowingInSubQ
-explain
+POSTHOOK: query: explain
 select p_mfgr, p_name, 
 sub1.cd, sub1.s1 
 from (select p_mfgr, p_name, 
@@ -2273,8 +2243,7 @@ Manufacturer#5	almond antique medium spring khaki	2	6208.18
 Manufacturer#5	almond antique sky peru orange	3	7672.66
 Manufacturer#5	almond aquamarine dodger light gainsboro	4	5882.97
 Manufacturer#5	almond azure blanched chiffon midnight	5	4271.31
-PREHOOK: query: -- 14. testPTFJoinWithWindowingWithCount
-explain
+PREHOOK: query: explain
 select abc.p_mfgr, abc.p_name, 
 rank() over (distribute by abc.p_mfgr sort by abc.p_name) as r, 
 dense_rank() over (distribute by abc.p_mfgr sort by abc.p_name) as dr, 
@@ -2286,8 +2255,7 @@ partition by p_mfgr
 order by p_name 
 ) abc join part p1 on abc.p_partkey = p1.p_partkey
 PREHOOK: type: QUERY
-POSTHOOK: query: -- 14. testPTFJoinWithWindowingWithCount
-explain
+POSTHOOK: query: explain
 select abc.p_mfgr, abc.p_name, 
 rank() over (distribute by abc.p_mfgr sort by abc.p_name) as r, 
 dense_rank() over (distribute by abc.p_mfgr sort by abc.p_name) as dr, 
@@ -2506,15 +2474,13 @@ Manufacturer#5	almond antique medium spring khaki	2	2	2	1611.66	3401.35	6	-25
 Manufacturer#5	almond antique sky peru orange	3	3	3	1788.73	5190.08	2	-4
 Manufacturer#5	almond aquamarine dodger light gainsboro	4	4	4	1018.1	6208.18	46	44
 Manufacturer#5	almond azure blanched chiffon midnight	5	5	5	1464.48	7672.66	23	-23
-PREHOOK: query: -- 15. testDistinctInSelectWithPTF
-explain
+PREHOOK: query: explain
 select DISTINCT p_mfgr, p_name, p_size 
 from noop(on part 
 partition by p_mfgr 
 order by p_name)
 PREHOOK: type: QUERY
-POSTHOOK: query: -- 15. testDistinctInSelectWithPTF
-explain
+POSTHOOK: query: explain
 select DISTINCT p_mfgr, p_name, p_size 
 from noop(on part 
 partition by p_mfgr 
@@ -2637,8 +2603,7 @@ Manufacturer#5	almond antique medium spring khaki	6
 Manufacturer#5	almond antique sky peru orange	2
 Manufacturer#5	almond aquamarine dodger light gainsboro	46
 Manufacturer#5	almond azure blanched chiffon midnight	23
-PREHOOK: query: -- 16. testViewAsTableInputToPTF
-create view IF NOT EXISTS mfgr_price_view as 
+PREHOOK: query: create view IF NOT EXISTS mfgr_price_view as 
 select p_mfgr, p_brand, 
 round(sum(p_retailprice),2) as s
 from part 
@@ -2647,8 +2612,7 @@ PREHOOK: type: CREATEVIEW
 PREHOOK: Input: default@part
 PREHOOK: Output: database:default
 PREHOOK: Output: default@mfgr_price_view
-POSTHOOK: query: -- 16. testViewAsTableInputToPTF
-create view IF NOT EXISTS mfgr_price_view as 
+POSTHOOK: query: create view IF NOT EXISTS mfgr_price_view as 
 select p_mfgr, p_brand, 
 round(sum(p_retailprice),2) as s
 from part 
@@ -2818,8 +2782,7 @@ Manufacturer#4	Brand#42	2581.68	7337.62
 Manufacturer#5	Brand#51	1611.66	1611.66
 Manufacturer#5	Brand#52	3254.17	4865.83
 Manufacturer#5	Brand#53	2806.83	7672.66
-PREHOOK: query: -- 17. testMultipleInserts2SWQsWithPTF
-CREATE TABLE part_4( 
+PREHOOK: query: CREATE TABLE part_4( 
 p_mfgr STRING, 
 p_name STRING, 
 p_size INT, 
@@ -2829,8 +2792,7 @@ s DOUBLE)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@part_4
-POSTHOOK: query: -- 17. testMultipleInserts2SWQsWithPTF
-CREATE TABLE part_4( 
+POSTHOOK: query: CREATE TABLE part_4( 
 p_mfgr STRING, 
 p_name STRING, 
 p_size INT, 
@@ -3265,8 +3227,7 @@ Manufacturer#5	almond antique medium spring khaki	6	8	2	2	0.4	31
 Manufacturer#5	almond antique sky peru orange	2	2	3	3	0.6	31
 Manufacturer#5	almond aquamarine dodger light gainsboro	46	46	4	4	0.8	6
 Manufacturer#5	almond azure blanched chiffon midnight	23	23	5	5	1.0	2
-PREHOOK: query: -- 18. testMulti2OperatorsFunctionChainWithMap
-explain
+PREHOOK: query: explain
 select p_mfgr, p_name,  
 rank() over (partition by p_mfgr,p_name) as r, 
 dense_rank() over (partition by p_mfgr,p_name) as dr, 
@@ -3283,8 +3244,7 @@ from noop(on
         partition by p_mfgr,p_name  
         order by p_mfgr,p_name)
 PREHOOK: type: QUERY
-POSTHOOK: query: -- 18. testMulti2OperatorsFunctionChainWithMap
-explain
+POSTHOOK: query: explain
 select p_mfgr, p_name,  
 rank() over (partition by p_mfgr,p_name) as r, 
 dense_rank() over (partition by p_mfgr,p_name) as dr, 
@@ -3535,8 +3495,7 @@ Manufacturer#5	almond antique medium spring khaki	1	1	6	6
 Manufacturer#5	almond antique sky peru orange	1	1	2	2
 Manufacturer#5	almond aquamarine dodger light gainsboro	1	1	46	46
 Manufacturer#5	almond azure blanched chiffon midnight	1	1	23	23
-PREHOOK: query: -- 19. testMulti3OperatorsFunctionChain
-explain
+PREHOOK: query: explain
 select p_mfgr, p_name,  
 rank() over (partition by p_mfgr order by p_name) as r, 
 dense_rank() over (partition by p_mfgr order by p_name) as dr, 
@@ -3553,8 +3512,7 @@ from noop(on
         partition by p_mfgr  
         order by p_mfgr )
 PREHOOK: type: QUERY
-POSTHOOK: query: -- 19. testMulti3OperatorsFunctionChain
-explain
+POSTHOOK: query: explain
 select p_mfgr, p_name,  
 rank() over (partition by p_mfgr order by p_name) as r, 
 dense_rank() over (partition by p_mfgr order by p_name) as dr, 
@@ -3801,8 +3759,7 @@ Manufacturer#5	almond antique medium spring khaki	2	2	6	37
 Manufacturer#5	almond antique sky peru orange	3	3	2	39
 Manufacturer#5	almond aquamarine dodger light gainsboro	4	4	46	85
 Manufacturer#5	almond azure blanched chiffon midnight	5	5	23	108
-PREHOOK: query: -- 20. testMultiOperatorChainWithNoWindowing
-explain
+PREHOOK: query: explain
 select p_mfgr, p_name,  
 rank() over (partition by p_mfgr order by p_name) as r, 
 dense_rank() over (partition by p_mfgr order by p_name) as dr, 
@@ -3817,8 +3774,7 @@ from noop(on
           partition by p_mfgr 
           order by p_mfgr))
 PREHOOK: type: QUERY
-POSTHOOK: query: -- 20. testMultiOperatorChainWithNoWindowing
-explain
+POSTHOOK: query: explain
 select p_mfgr, p_name,  
 rank() over (partition by p_mfgr order by p_name) as r, 
 dense_rank() over (partition by p_mfgr order by p_name) as dr, 
@@ -4039,8 +3995,7 @@ Manufacturer#5	almond antique medium spring khaki	2	2	6	37
 Manufacturer#5	almond antique sky peru orange	3	3	2	39
 Manufacturer#5	almond aquamarine dodger light gainsboro	4	4	46	85
 Manufacturer#5	almond azure blanched chiffon midnight	5	5	23	108
-PREHOOK: query: -- 21. testMultiOperatorChainEndsWithNoopMap
-explain
+PREHOOK: query: explain
 select p_mfgr, p_name,  
 rank() over (partition by p_mfgr,p_name) as r, 
 dense_rank() over (partition by p_mfgr,p_name) as dr, 
@@ -4057,8 +4012,7 @@ from noopwithmap(on
           partition by p_mfgr,p_name 
           order by p_mfgr,p_name)
 PREHOOK: type: QUERY
-POSTHOOK: query: -- 21. testMultiOperatorChainEndsWithNoopMap
-explain
+POSTHOOK: query: explain
 select p_mfgr, p_name,  
 rank() over (partition by p_mfgr,p_name) as r, 
 dense_rank() over (partition by p_mfgr,p_name) as dr, 
@@ -4322,8 +4276,7 @@ Manufacturer#5	almond antique medium spring khaki	1	1	6	6
 Manufacturer#5	almond antique sky peru orange	1	1	2	2
 Manufacturer#5	almond aquamarine dodger light gainsboro	1	1	46	46
 Manufacturer#5	almond azure blanched chiffon midnight	1	1	23	23
-PREHOOK: query: -- 22. testMultiOperatorChainWithDiffPartitionForWindow1
-explain
+PREHOOK: query: explain
 select p_mfgr, p_name,  
 rank() over (partition by p_mfgr,p_name order by p_mfgr,p_name) as r, 
 dense_rank() over (partition by p_mfgr,p_name order by p_mfgr,p_name) as dr, 
@@ -4339,8 +4292,7 @@ from noop(on
           order by p_mfgr
           ))
 PREHOOK: type: QUERY
-POSTHOOK: query: -- 22. testMultiOperatorChainWithDiffPartitionForWindow1
-explain
+POSTHOOK: query: explain
 select p_mfgr, p_name,  
 rank() over (partition by p_mfgr,p_name order by p_mfgr,p_name) as r, 
 dense_rank() over (partition by p_mfgr,p_name order by p_mfgr,p_name) as dr, 
@@ -4581,8 +4533,7 @@ Manufacturer#5	almond antique medium spring khaki	1	1	6	6	6
 Manufacturer#5	almond antique sky peru orange	1	1	2	2	2
 Manufacturer#5	almond aquamarine dodger light gainsboro	1	1	46	46	46
 Manufacturer#5	almond azure blanched chiffon midnight	1	1	23	23	23
-PREHOOK: query: -- 23. testMultiOperatorChainWithDiffPartitionForWindow2
-explain
+PREHOOK: query: explain
 select p_mfgr, p_name,  
 rank() over (partition by p_mfgr order by p_name) as r, 
 dense_rank() over (partition by p_mfgr order by p_name) as dr, 
@@ -4596,8 +4547,7 @@ from noopwithmap(on
               order by p_mfgr, p_name) 
           ))
 PREHOOK: type: QUERY
-POSTHOOK: query: -- 23. testMultiOperatorChainWithDiffPartitionForWindow2
-explain
+POSTHOOK: query: explain
 select p_mfgr, p_name,  
 rank() over (partition by p_mfgr order by p_name) as r, 
 dense_rank() over (partition by p_mfgr order by p_name) as dr, 

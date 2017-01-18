@@ -135,12 +135,10 @@ POSTHOOK: query: SHOW VIEWS 'shtb_*'
 POSTHOOK: type: SHOWVIEWS
 shtb_test1_view1
 shtb_test2_view2
-PREHOOK: query: -- SHOW VIEWS basic syntax tests
-USE default
+PREHOOK: query: USE default
 PREHOOK: type: SWITCHDATABASE
 PREHOOK: Input: database:default
-POSTHOOK: query: -- SHOW VIEWS basic syntax tests
-USE default
+POSTHOOK: query: USE default
 POSTHOOK: type: SWITCHDATABASE
 POSTHOOK: Input: database:default
 PREHOOK: query: SHOW VIEWS FROM test1
@@ -175,12 +173,10 @@ PREHOOK: query: SHOW VIEWS IN test2 LIKE "nomatch"
 PREHOOK: type: SHOWVIEWS
 POSTHOOK: query: SHOW VIEWS IN test2 LIKE "nomatch"
 POSTHOOK: type: SHOWVIEWS
-PREHOOK: query: -- SHOW VIEWS from a database with a name that requires escaping
-CREATE DATABASE `database`
+PREHOOK: query: CREATE DATABASE `database`
 PREHOOK: type: CREATEDATABASE
 PREHOOK: Output: database:database
-POSTHOOK: query: -- SHOW VIEWS from a database with a name that requires escaping
-CREATE DATABASE `database`
+POSTHOOK: query: CREATE DATABASE `database`
 POSTHOOK: type: CREATEDATABASE
 POSTHOOK: Output: database:database
 PREHOOK: query: USE `database`

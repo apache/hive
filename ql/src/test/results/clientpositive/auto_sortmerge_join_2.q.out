@@ -1,10 +1,8 @@
-PREHOOK: query: -- small 1 part, 4 bucket & big 2 part, 2 bucket
-CREATE TABLE bucket_small (key string, value string) partitioned by (ds string) CLUSTERED BY (key) SORTED BY (key) INTO 4 BUCKETS STORED AS TEXTFILE
+PREHOOK: query: CREATE TABLE bucket_small (key string, value string) partitioned by (ds string) CLUSTERED BY (key) SORTED BY (key) INTO 4 BUCKETS STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@bucket_small
-POSTHOOK: query: -- small 1 part, 4 bucket & big 2 part, 2 bucket
-CREATE TABLE bucket_small (key string, value string) partitioned by (ds string) CLUSTERED BY (key) SORTED BY (key) INTO 4 BUCKETS STORED AS TEXTFILE
+POSTHOOK: query: CREATE TABLE bucket_small (key string, value string) partitioned by (ds string) CLUSTERED BY (key) SORTED BY (key) INTO 4 BUCKETS STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@bucket_small
@@ -83,11 +81,9 @@ POSTHOOK: query: load data local inpath '../../data/files/srcsortbucket2outof4.t
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@bucket_big@ds=2008-04-09
-PREHOOK: query: -- Since the leftmost table is assumed as the big table, arrange the tables in the join accordingly
-explain extended select count(*) FROM bucket_big a JOIN bucket_small b ON a.key = b.key
+PREHOOK: query: explain extended select count(*) FROM bucket_big a JOIN bucket_small b ON a.key = b.key
 PREHOOK: type: QUERY
-POSTHOOK: query: -- Since the leftmost table is assumed as the big table, arrange the tables in the join accordingly
-explain extended select count(*) FROM bucket_big a JOIN bucket_small b ON a.key = b.key
+POSTHOOK: query: explain extended select count(*) FROM bucket_big a JOIN bucket_small b ON a.key = b.key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -278,11 +274,9 @@ POSTHOOK: Input: default@bucket_small
 POSTHOOK: Input: default@bucket_small@ds=2008-04-08
 #### A masked pattern was here ####
 38
-PREHOOK: query: -- The mapjoin should fail resulting in the sort-merge join
-explain extended select count(*) FROM bucket_big a JOIN bucket_small b ON a.key = b.key
+PREHOOK: query: explain extended select count(*) FROM bucket_big a JOIN bucket_small b ON a.key = b.key
 PREHOOK: type: QUERY
-POSTHOOK: query: -- The mapjoin should fail resulting in the sort-merge join
-explain extended select count(*) FROM bucket_big a JOIN bucket_small b ON a.key = b.key
+POSTHOOK: query: explain extended select count(*) FROM bucket_big a JOIN bucket_small b ON a.key = b.key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-5 is a root stage , consists of Stage-6, Stage-7, Stage-1

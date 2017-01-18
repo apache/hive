@@ -1,16 +1,10 @@
-PREHOOK: query: -- this test creates a Parquet table from a structure with an unannotated
--- repeated structure of int32s
-
-CREATE TABLE parquet_array_of_unannotated_ints (
+PREHOOK: query: CREATE TABLE parquet_array_of_unannotated_ints (
     list_of_ints ARRAY<INT>
 ) STORED AS PARQUET
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@parquet_array_of_unannotated_ints
-POSTHOOK: query: -- this test creates a Parquet table from a structure with an unannotated
--- repeated structure of int32s
-
-CREATE TABLE parquet_array_of_unannotated_ints (
+POSTHOOK: query: CREATE TABLE parquet_array_of_unannotated_ints (
     list_of_ints ARRAY<INT>
 ) STORED AS PARQUET
 POSTHOOK: type: CREATETABLE

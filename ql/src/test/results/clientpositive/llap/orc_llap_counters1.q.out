@@ -104,15 +104,11 @@ POSTHOOK: Lineage: orc_ppd_staging.si SIMPLE [(staging)staging.FieldSchema(name:
 POSTHOOK: Lineage: orc_ppd_staging.t SIMPLE [(staging)staging.FieldSchema(name:t, type:tinyint, comment:null), ]
 POSTHOOK: Lineage: orc_ppd_staging.ts SIMPLE [(staging)staging.FieldSchema(name:ts, type:timestamp, comment:null), ]
 POSTHOOK: Lineage: orc_ppd_staging.v EXPRESSION [(staging)staging.FieldSchema(name:s, type:string, comment:null), ]
-PREHOOK: query: -- just to introduce a gap in min/max range for bloom filters. The dataset has contiguous values
--- which makes it hard to test bloom filters
-insert into orc_ppd_staging select -10,-321,-65680,-4294967430,-97.94,-13.07,true,"aaa","aaa","aaa","1990-03-11","1990-03-11 10:11:58.703308",-71.54,"aaa" from staging limit 1
+PREHOOK: query: insert into orc_ppd_staging select -10,-321,-65680,-4294967430,-97.94,-13.07,true,"aaa","aaa","aaa","1990-03-11","1990-03-11 10:11:58.703308",-71.54,"aaa" from staging limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@staging
 PREHOOK: Output: default@orc_ppd_staging
-POSTHOOK: query: -- just to introduce a gap in min/max range for bloom filters. The dataset has contiguous values
--- which makes it hard to test bloom filters
-insert into orc_ppd_staging select -10,-321,-65680,-4294967430,-97.94,-13.07,true,"aaa","aaa","aaa","1990-03-11","1990-03-11 10:11:58.703308",-71.54,"aaa" from staging limit 1
+POSTHOOK: query: insert into orc_ppd_staging select -10,-321,-65680,-4294967430,-97.94,-13.07,true,"aaa","aaa","aaa","1990-03-11","1990-03-11 10:11:58.703308",-71.54,"aaa" from staging limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@staging
 POSTHOOK: Output: default@orc_ppd_staging
@@ -259,13 +255,7 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: -- Row group statistics for column t:
--- Entry 0: count: 994 hasNull: true min: -10 max: 54 sum: 26014 positions: 0,0,0,0,0,0,0
--- Entry 1: count: 1000 hasNull: false min: 54 max: 118 sum: 86812 positions: 0,2,124,0,0,116,11
--- Entry 2: count: 100 hasNull: false min: 118 max: 127 sum: 12151 positions: 0,4,119,0,0,244,19
-
--- INPUT_RECORDS: 2100 (all row groups)
-select count(*) from orc_ppd where t > -100
+PREHOOK: query: select count(*) from orc_ppd where t > -100
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_ppd
 #### A masked pattern was here ####
@@ -291,8 +281,7 @@ Stage-1 LLAP IO COUNTERS:
    ROWS_EMITTED: 2100
    SELECTED_ROWGROUPS: 3
 2094
-PREHOOK: query: -- 100% LLAP cache hit
-select count(*) from orc_ppd where t > -100
+PREHOOK: query: select count(*) from orc_ppd where t > -100
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_ppd
 #### A masked pattern was here ####

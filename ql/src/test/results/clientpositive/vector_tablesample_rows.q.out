@@ -167,12 +167,10 @@ POSTHOOK: query: drop table decimal_2
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@decimal_2
 POSTHOOK: Output: default@decimal_2
-PREHOOK: query: -- Dummy tables HIVE-13190
-explain
+PREHOOK: query: explain
 select count(1) from (select * from (Select 1 a) x order by x.a) y
 PREHOOK: type: QUERY
-POSTHOOK: query: -- Dummy tables HIVE-13190
-explain
+POSTHOOK: query: explain
 select count(1) from (select * from (Select 1 a) x order by x.a) y
 POSTHOOK: type: QUERY
 Explain

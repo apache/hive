@@ -1,12 +1,6 @@
-PREHOOK: query: -- File Schema { "name" : "val", "type" : [ "null", "int" ] }
--- Record Schema { "name" : "val", "type" : [ "long", "null" ] }
-
-DROP TABLE IF EXISTS avro_type_evolution
+PREHOOK: query: DROP TABLE IF EXISTS avro_type_evolution
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: -- File Schema { "name" : "val", "type" : [ "null", "int" ] }
--- Record Schema { "name" : "val", "type" : [ "long", "null" ] }
-
-DROP TABLE IF EXISTS avro_type_evolution
+POSTHOOK: query: DROP TABLE IF EXISTS avro_type_evolution
 POSTHOOK: type: DROPTABLE
 PREHOOK: query: CREATE TABLE avro_type_evolution (val bigint) STORED AS AVRO
 TBLPROPERTIES (

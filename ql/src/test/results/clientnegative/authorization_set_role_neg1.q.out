@@ -1,5 +1,3 @@
-PREHOOK: query: -- an error should be thrown if 'set role ' is done for role that does not exist
-
-set role nosuchroleexists
+PREHOOK: query: set role nosuchroleexists
 PREHOOK: type: SHOW_ROLES
 FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. hive_test_user doesn't belong to role nosuchroleexists

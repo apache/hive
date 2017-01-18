@@ -14,13 +14,11 @@ POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/T1.txt' INTO TABLE tmp
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@tmpt1
-PREHOOK: query: -- testing skew on other data types - int
-CREATE TABLE T1(key INT, val STRING) SKEWED BY (key) ON ((2))
+PREHOOK: query: CREATE TABLE T1(key INT, val STRING) SKEWED BY (key) ON ((2))
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@T1
-POSTHOOK: query: -- testing skew on other data types - int
-CREATE TABLE T1(key INT, val STRING) SKEWED BY (key) ON ((2))
+POSTHOOK: query: CREATE TABLE T1(key INT, val STRING) SKEWED BY (key) ON ((2))
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@T1
@@ -68,26 +66,10 @@ POSTHOOK: Input: default@tmpt2
 POSTHOOK: Output: default@t2
 POSTHOOK: Lineage: t2.key EXPRESSION [(tmpt2)tmpt2.FieldSchema(name:key, type:string, comment:null), ]
 POSTHOOK: Lineage: t2.val SIMPLE [(tmpt2)tmpt2.FieldSchema(name:val, type:string, comment:null), ]
-PREHOOK: query: -- copy from skewjoinopt15
--- test compile time skew join and auto map join
--- The skewed key is a integer column.
--- Otherwise this test is similar to skewjoinopt1.q
--- Both the joined tables are skewed, and the joined column
--- is an integer
--- adding a order by at the end to make the results deterministic
-
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT a.*, b.* FROM T1 a JOIN T2 b ON a.key = b.key
 PREHOOK: type: QUERY
-POSTHOOK: query: -- copy from skewjoinopt15
--- test compile time skew join and auto map join
--- The skewed key is a integer column.
--- Otherwise this test is similar to skewjoinopt1.q
--- Both the joined tables are skewed, and the joined column
--- is an integer
--- adding a order by at the end to make the results deterministic
-
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT a.*, b.* FROM T1 a JOIN T2 b ON a.key = b.key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -221,14 +203,10 @@ POSTHOOK: Input: default@t2
 8	18	8	18
 8	28	8	18
 8	28	8	18
-PREHOOK: query: -- test outer joins also
-
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT a.*, b.* FROM T1 a RIGHT OUTER JOIN T2 b ON a.key = b.key
 PREHOOK: type: QUERY
-POSTHOOK: query: -- test outer joins also
-
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT a.*, b.* FROM T1 a RIGHT OUTER JOIN T2 b ON a.key = b.key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -364,14 +342,10 @@ NULL	NULL	5	15
 8	18	8	18
 8	28	8	18
 8	28	8	18
-PREHOOK: query: -- an aggregation at the end should not change anything
-
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT count(1) FROM T1 a JOIN T2 b ON a.key = b.key
 PREHOOK: type: QUERY
-POSTHOOK: query: -- an aggregation at the end should not change anything
-
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT count(1) FROM T1 a JOIN T2 b ON a.key = b.key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:

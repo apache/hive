@@ -1,6 +1,4 @@
-PREHOOK: query: -- SORT_QUERY_RESULTS
-
-SELECT VAR_POP(ctinyint),
+PREHOOK: query: SELECT VAR_POP(ctinyint),
        (VAR_POP(ctinyint) / -26.28),
        SUM(cfloat),
        (-1.389 + SUM(cfloat)),
@@ -22,9 +20,7 @@ WHERE  (((cdouble > ctinyint)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
-POSTHOOK: query: -- SORT_QUERY_RESULTS
-
-SELECT VAR_POP(ctinyint),
+POSTHOOK: query: SELECT VAR_POP(ctinyint),
        (VAR_POP(ctinyint) / -26.28),
        SUM(cfloat),
        (-1.389 + SUM(cfloat)),

@@ -1,10 +1,4 @@
-PREHOOK: query: -- Ensure skewed value map has escaped directory name
-
--- INCLUDE_HADOOP_MAJOR_VERSIONS(0.23)
--- SORT_QUERY_RESULTS
-
--- test where the skewed values are more than 1 say columns no. 2 and 4 in a table with 5 columns
-create table list_bucketing_mul_col (col1 String, col2 String, col3 String, col4 String, col5 string) 
+PREHOOK: query: create table list_bucketing_mul_col (col1 String, col2 String, col3 String, col4 String, col5 string) 
     partitioned by (ds String, hr String) 
     skewed by (col2, col4) on (('466','val_466'),('287','val_287'),('82','val_82'))
     stored as DIRECTORIES
@@ -12,13 +6,7 @@ create table list_bucketing_mul_col (col1 String, col2 String, col3 String, col4
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@list_bucketing_mul_col
-POSTHOOK: query: -- Ensure skewed value map has escaped directory name
-
--- INCLUDE_HADOOP_MAJOR_VERSIONS(0.23)
--- SORT_QUERY_RESULTS
-
--- test where the skewed values are more than 1 say columns no. 2 and 4 in a table with 5 columns
-create table list_bucketing_mul_col (col1 String, col2 String, col3 String, col4 String, col5 string) 
+POSTHOOK: query: create table list_bucketing_mul_col (col1 String, col2 String, col3 String, col4 String, col5 string) 
     partitioned by (ds String, hr String) 
     skewed by (col2, col4) on (('466','val_466'),('287','val_287'),('82','val_82'))
     stored as DIRECTORIES
@@ -26,13 +14,11 @@ create table list_bucketing_mul_col (col1 String, col2 String, col3 String, col4
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@list_bucketing_mul_col
-PREHOOK: query: -- list bucketing DML 
-explain extended
+PREHOOK: query: explain extended
 insert overwrite table list_bucketing_mul_col partition (ds = '2008-04-08',  hr = '2013-01-23+18:00:99')
 select 1, key, 1, value, 1 from src
 PREHOOK: type: QUERY
-POSTHOOK: query: -- list bucketing DML 
-explain extended
+POSTHOOK: query: explain extended
 insert overwrite table list_bucketing_mul_col partition (ds = '2008-04-08',  hr = '2013-01-23+18:00:99')
 select 1, key, 1, value, 1 from src
 POSTHOOK: type: QUERY
@@ -178,12 +164,10 @@ POSTHOOK: Lineage: list_bucketing_mul_col PARTITION(ds=2008-04-08,hr=2013-01-23+
 POSTHOOK: Lineage: list_bucketing_mul_col PARTITION(ds=2008-04-08,hr=2013-01-23+18:00:99).col3 EXPRESSION []
 POSTHOOK: Lineage: list_bucketing_mul_col PARTITION(ds=2008-04-08,hr=2013-01-23+18:00:99).col4 SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: list_bucketing_mul_col PARTITION(ds=2008-04-08,hr=2013-01-23+18:00:99).col5 EXPRESSION []
-PREHOOK: query: -- check DML result
-show partitions list_bucketing_mul_col
+PREHOOK: query: show partitions list_bucketing_mul_col
 PREHOOK: type: SHOWPARTITIONS
 PREHOOK: Input: default@list_bucketing_mul_col
-POSTHOOK: query: -- check DML result
-show partitions list_bucketing_mul_col
+POSTHOOK: query: show partitions list_bucketing_mul_col
 POSTHOOK: type: SHOWPARTITIONS
 POSTHOOK: Input: default@list_bucketing_mul_col
 ds=2008-04-08/hr=2013-01-23+18%3A00%3A99

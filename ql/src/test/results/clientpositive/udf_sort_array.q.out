@@ -4,13 +4,9 @@ PREHOOK: Input: database:default
 POSTHOOK: query: use default
 POSTHOOK: type: SWITCHDATABASE
 POSTHOOK: Input: database:default
-PREHOOK: query: -- Test sort_array() UDF
-
-DESCRIBE FUNCTION sort_array
+PREHOOK: query: DESCRIBE FUNCTION sort_array
 PREHOOK: type: DESCFUNCTION
-POSTHOOK: query: -- Test sort_array() UDF
-
-DESCRIBE FUNCTION sort_array
+POSTHOOK: query: DESCRIBE FUNCTION sort_array
 POSTHOOK: type: DESCFUNCTION
 sort_array(array(obj1, obj2,...)) - Sorts the input array in ascending order according to the natural ordering of the array elements.
 PREHOOK: query: DESCRIBE FUNCTION EXTENDED sort_array
@@ -137,8 +133,7 @@ CREATE TABLE dest1 (
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@dest1
-POSTHOOK: query: -- Test it against data in a table.
-CREATE TABLE dest1 (
+POSTHOOK: query: CREATE TABLE dest1 (
 	tinyints ARRAY<TINYINT>,
 	smallints ARRAY<SMALLINT>,
 	ints ARRAY<INT>,

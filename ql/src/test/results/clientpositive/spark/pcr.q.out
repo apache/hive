@@ -4414,11 +4414,9 @@ POSTHOOK: query: drop table pcr_t3
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@pcr_t3
 POSTHOOK: Output: default@pcr_t3
-PREHOOK: query: -- Test cases when a non-boolean ds expression has same and different values for all possible ds values: 
-drop table pcr_foo
+PREHOOK: query: drop table pcr_foo
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: -- Test cases when a non-boolean ds expression has same and different values for all possible ds values: 
-drop table pcr_foo
+POSTHOOK: query: drop table pcr_foo
 POSTHOOK: type: DROPTABLE
 PREHOOK: query: create table pcr_foo (key int, value string) partitioned by (ds int)
 PREHOOK: type: CREATETABLE
@@ -4458,16 +4456,14 @@ POSTHOOK: Input: default@src
 POSTHOOK: Output: default@pcr_foo@ds=7
 POSTHOOK: Lineage: pcr_foo PARTITION(ds=7).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: pcr_foo PARTITION(ds=7).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: -- the condition is 'true' for all the 3 partitions (ds=3,5,7):
-select key, value, ds from pcr_foo where (ds % 2 == 1)
+PREHOOK: query: select key, value, ds from pcr_foo where (ds % 2 == 1)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@pcr_foo
 PREHOOK: Input: default@pcr_foo@ds=3
 PREHOOK: Input: default@pcr_foo@ds=5
 PREHOOK: Input: default@pcr_foo@ds=7
 #### A masked pattern was here ####
-POSTHOOK: query: -- the condition is 'true' for all the 3 partitions (ds=3,5,7):
-select key, value, ds from pcr_foo where (ds % 2 == 1)
+POSTHOOK: query: select key, value, ds from pcr_foo where (ds % 2 == 1)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@pcr_foo
 POSTHOOK: Input: default@pcr_foo@ds=3
@@ -4504,15 +4500,13 @@ POSTHOOK: Input: default@pcr_foo@ds=7
 5	val_5	7
 8	val_8	7
 9	val_9	7
-PREHOOK: query: -- the condition is 'true' for partitions (ds=3,5) but 'false' of partition ds=7:
-select key, value, ds from pcr_foo where (ds / 3 < 2)
+PREHOOK: query: select key, value, ds from pcr_foo where (ds / 3 < 2)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@pcr_foo
 PREHOOK: Input: default@pcr_foo@ds=3
 PREHOOK: Input: default@pcr_foo@ds=5
 #### A masked pattern was here ####
-POSTHOOK: query: -- the condition is 'true' for partitions (ds=3,5) but 'false' of partition ds=7:
-select key, value, ds from pcr_foo where (ds / 3 < 2)
+POSTHOOK: query: select key, value, ds from pcr_foo where (ds / 3 < 2)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@pcr_foo
 POSTHOOK: Input: default@pcr_foo@ds=3
@@ -4546,18 +4540,14 @@ POSTHOOK: query: drop table pcr_foo
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@pcr_foo
 POSTHOOK: Output: default@pcr_foo
-PREHOOK: query: -- Cover org.apache.hadoop.hive.ql.optimizer.pcr.PcrExprProcFactory.FieldExprProcessor.
--- Create a table with a struct data:
-create table ab(strct struct<a:int, b:string>)
+PREHOOK: query: create table ab(strct struct<a:int, b:string>)
 row format delimited
   fields terminated by '\t'
   collection items terminated by '\001'
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@ab
-POSTHOOK: query: -- Cover org.apache.hadoop.hive.ql.optimizer.pcr.PcrExprProcFactory.FieldExprProcessor.
--- Create a table with a struct data:
-create table ab(strct struct<a:int, b:string>)
+POSTHOOK: query: create table ab(strct struct<a:int, b:string>)
 row format delimited
   fields terminated by '\t'
   collection items terminated by '\001'
@@ -4574,11 +4564,9 @@ overwrite into table ab
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@ab
-PREHOOK: query: -- Create partitioned table with struct data:
-drop table foo_field
+PREHOOK: query: drop table foo_field
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: -- Create partitioned table with struct data:
-drop table foo_field
+POSTHOOK: query: drop table foo_field
 POSTHOOK: type: DROPTABLE
 PREHOOK: query: create table foo_field (s struct<a:int,b:string>) partitioned by (ds int)
 PREHOOK: type: CREATETABLE

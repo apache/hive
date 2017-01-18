@@ -1,11 +1,7 @@
-PREHOOK: query: -- SORT_QUERY_RESULTS
-
-explain extended
+PREHOOK: query: explain extended
 select * from srcpart a where a.ds='2008-04-08'
 PREHOOK: type: QUERY
-POSTHOOK: query: -- SORT_QUERY_RESULTS
-
-explain extended
+POSTHOOK: query: explain extended
 select * from srcpart a where a.ds='2008-04-08'
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:

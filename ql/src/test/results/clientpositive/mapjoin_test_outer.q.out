@@ -1,16 +1,8 @@
-PREHOOK: query: -- SORT_QUERY_RESULTS
-
---HIVE-2101 mapjoin sometimes gives wrong results if there is a filter in the on condition
-
-create table dest_1 (key STRING, value STRING) stored as textfile
+PREHOOK: query: create table dest_1 (key STRING, value STRING) stored as textfile
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@dest_1
-POSTHOOK: query: -- SORT_QUERY_RESULTS
-
---HIVE-2101 mapjoin sometimes gives wrong results if there is a filter in the on condition
-
-create table dest_1 (key STRING, value STRING) stored as textfile
+POSTHOOK: query: create table dest_1 (key STRING, value STRING) stored as textfile
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@dest_1

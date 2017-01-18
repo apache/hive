@@ -2,9 +2,7 @@ PREHOOK: query: drop table if exists testAvro
 PREHOOK: type: DROPTABLE
 POSTHOOK: query: drop table if exists testAvro
 POSTHOOK: type: DROPTABLE
-#### A masked pattern was here ####
-
-create table testAvro
+PREHOOK: query: create table testAvro
    ROW FORMAT SERDE                                                                      
      'org.apache.hadoop.hive.serde2.avro.AvroSerDe'                                      
    STORED AS INPUTFORMAT                                                                 
@@ -15,9 +13,7 @@ create table testAvro
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@testAvro
-#### A masked pattern was here ####
-
-create table testAvro
+POSTHOOK: query: create table testAvro
    ROW FORMAT SERDE                                                                      
      'org.apache.hadoop.hive.serde2.avro.AvroSerDe'                                      
    STORED AS INPUTFORMAT                                                                 

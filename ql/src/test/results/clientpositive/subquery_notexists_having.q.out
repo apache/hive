@@ -1,5 +1,4 @@
-PREHOOK: query: -- no agg, corr
-explain
+PREHOOK: query: explain
 select * 
 from src b 
 group by key, value
@@ -9,8 +8,7 @@ having not exists
   where b.value = a.value  and a.key = b.key and a.value > 'val_12'
   )
 PREHOOK: type: QUERY
-POSTHOOK: query: -- no agg, corr
-explain
+POSTHOOK: query: explain
 select * 
 from src b 
 group by key, value
@@ -253,8 +251,7 @@ POSTHOOK: Input: default@src
 118	val_118
 119	val_119
 12	val_12
-PREHOOK: query: -- distinct, corr
-explain
+PREHOOK: query: explain
 select * 
 from src b 
 group by key, value
@@ -264,8 +261,7 @@ having not exists
   where b.value = a.value and a.value > 'val_12'
   )
 PREHOOK: type: QUERY
-POSTHOOK: query: -- distinct, corr
-explain
+POSTHOOK: query: explain
 select * 
 from src b 
 group by key, value

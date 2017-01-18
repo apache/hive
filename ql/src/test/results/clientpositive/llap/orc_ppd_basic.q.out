@@ -104,15 +104,11 @@ POSTHOOK: Lineage: orc_ppd_staging.si SIMPLE [(staging)staging.FieldSchema(name:
 POSTHOOK: Lineage: orc_ppd_staging.t SIMPLE [(staging)staging.FieldSchema(name:t, type:tinyint, comment:null), ]
 POSTHOOK: Lineage: orc_ppd_staging.ts SIMPLE [(staging)staging.FieldSchema(name:ts, type:timestamp, comment:null), ]
 POSTHOOK: Lineage: orc_ppd_staging.v EXPRESSION [(staging)staging.FieldSchema(name:s, type:string, comment:null), ]
-PREHOOK: query: -- just to introduce a gap in min/max range for bloom filters. The dataset has contiguous values
--- which makes it hard to test bloom filters
-insert into orc_ppd_staging select -10,-321,-65680,-4294967430,-97.94,-13.07,true,"aaa","aaa","aaa","1990-03-11","1990-03-11 10:11:58.703308",-71.54,"aaa" from staging limit 1
+PREHOOK: query: insert into orc_ppd_staging select -10,-321,-65680,-4294967430,-97.94,-13.07,true,"aaa","aaa","aaa","1990-03-11","1990-03-11 10:11:58.703308",-71.54,"aaa" from staging limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@staging
 PREHOOK: Output: default@orc_ppd_staging
-POSTHOOK: query: -- just to introduce a gap in min/max range for bloom filters. The dataset has contiguous values
--- which makes it hard to test bloom filters
-insert into orc_ppd_staging select -10,-321,-65680,-4294967430,-97.94,-13.07,true,"aaa","aaa","aaa","1990-03-11","1990-03-11 10:11:58.703308",-71.54,"aaa" from staging limit 1
+POSTHOOK: query: insert into orc_ppd_staging select -10,-321,-65680,-4294967430,-97.94,-13.07,true,"aaa","aaa","aaa","1990-03-11","1990-03-11 10:11:58.703308",-71.54,"aaa" from staging limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@staging
 POSTHOOK: Output: default@orc_ppd_staging
@@ -210,13 +206,7 @@ POSTHOOK: Lineage: orc_ppd.si SIMPLE [(orc_ppd_staging)orc_ppd_staging.FieldSche
 POSTHOOK: Lineage: orc_ppd.t SIMPLE [(orc_ppd_staging)orc_ppd_staging.FieldSchema(name:t, type:tinyint, comment:null), ]
 POSTHOOK: Lineage: orc_ppd.ts SIMPLE [(orc_ppd_staging)orc_ppd_staging.FieldSchema(name:ts, type:timestamp, comment:null), ]
 POSTHOOK: Lineage: orc_ppd.v EXPRESSION [(orc_ppd_staging)orc_ppd_staging.FieldSchema(name:s, type:string, comment:null), ]
-PREHOOK: query: -- Row group statistics for column t:
--- Entry 0: count: 994 hasNull: true min: -10 max: 54 sum: 26014 positions: 0,0,0,0,0,0,0
--- Entry 1: count: 1000 hasNull: false min: 54 max: 118 sum: 86812 positions: 0,2,124,0,0,116,11
--- Entry 2: count: 100 hasNull: false min: 118 max: 127 sum: 12151 positions: 0,4,119,0,0,244,19
-
--- INPUT_RECORDS: 2100 (all row groups)
-select count(*) from orc_ppd
+PREHOOK: query: select count(*) from orc_ppd
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_ppd
 #### A masked pattern was here ####
@@ -239,8 +229,7 @@ Stage-1 LLAP IO COUNTERS:
    ROWS_EMITTED: 2100
    SELECTED_ROWGROUPS: 3
 2100
-PREHOOK: query: -- INPUT_RECORDS: 0 (no row groups)
-select count(*) from orc_ppd where t > 127
+PREHOOK: query: select count(*) from orc_ppd where t > 127
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_ppd
 #### A masked pattern was here ####
@@ -254,8 +243,7 @@ Stage-1 HIVE COUNTERS:
    CREATED_FILES: 1
    RECORDS_OUT_0: 1
 0
-PREHOOK: query: -- INPUT_RECORDS: 1000 (1 row group)
-select count(*) from orc_ppd where t = 55
+PREHOOK: query: select count(*) from orc_ppd where t = 55
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_ppd
 #### A masked pattern was here ####
@@ -332,8 +320,7 @@ Stage-1 LLAP IO COUNTERS:
    ROWS_EMITTED: 1000
    SELECTED_ROWGROUPS: 1
 16
-PREHOOK: query: -- INPUT_RECORDS: 2000 (2 row groups)
-select count(*) from orc_ppd where t = "54"
+PREHOOK: query: select count(*) from orc_ppd where t = "54"
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_ppd
 #### A masked pattern was here ####
@@ -358,8 +345,7 @@ Stage-1 LLAP IO COUNTERS:
    ROWS_EMITTED: 2000
    SELECTED_ROWGROUPS: 2
 18
-PREHOOK: query: -- INPUT_RECORDS: 1000 (1 row group)
-select count(*) from orc_ppd where t = -10.0
+PREHOOK: query: select count(*) from orc_ppd where t = -10.0
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_ppd
 #### A masked pattern was here ####
@@ -384,8 +370,7 @@ Stage-1 LLAP IO COUNTERS:
    ROWS_EMITTED: 1000
    SELECTED_ROWGROUPS: 1
 1
-PREHOOK: query: -- INPUT_RECORDS: 1000 (1 row group)
-select count(*) from orc_ppd where t = cast(53 as float)
+PREHOOK: query: select count(*) from orc_ppd where t = cast(53 as float)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_ppd
 #### A masked pattern was here ####
@@ -435,8 +420,7 @@ Stage-1 LLAP IO COUNTERS:
    ROWS_EMITTED: 1000
    SELECTED_ROWGROUPS: 1
 32
-PREHOOK: query: -- INPUT_RECORDS: 2000 (2 row groups)
-select count(*) from orc_ppd where t < 100
+PREHOOK: query: select count(*) from orc_ppd where t < 100
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_ppd
 #### A masked pattern was here ####
@@ -461,8 +445,7 @@ Stage-1 LLAP IO COUNTERS:
    ROWS_EMITTED: 2000
    SELECTED_ROWGROUPS: 2
 1697
-PREHOOK: query: -- INPUT_RECORDS: 1000 (1 row group)
-select count(*) from orc_ppd where t < 100 and t > 98
+PREHOOK: query: select count(*) from orc_ppd where t < 100 and t > 98
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_ppd
 #### A masked pattern was here ####
@@ -487,8 +470,7 @@ Stage-1 LLAP IO COUNTERS:
    ROWS_EMITTED: 1000
    SELECTED_ROWGROUPS: 1
 12
-PREHOOK: query: -- INPUT_RECORDS: 2000 (2 row groups)
-select count(*) from orc_ppd where t <= 100
+PREHOOK: query: select count(*) from orc_ppd where t <= 100
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_ppd
 #### A masked pattern was here ####
@@ -513,8 +495,7 @@ Stage-1 LLAP IO COUNTERS:
    ROWS_EMITTED: 2000
    SELECTED_ROWGROUPS: 2
 1713
-PREHOOK: query: -- INPUT_RECORDS: 1000 (1 row group)
-select count(*) from orc_ppd where t is null
+PREHOOK: query: select count(*) from orc_ppd where t is null
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_ppd
 #### A masked pattern was here ####
@@ -539,8 +520,7 @@ Stage-1 LLAP IO COUNTERS:
    ROWS_EMITTED: 1000
    SELECTED_ROWGROUPS: 1
 6
-PREHOOK: query: -- INPUT_RECORDS: 1100 (2 row groups)
-select count(*) from orc_ppd where t in (5, 120)
+PREHOOK: query: select count(*) from orc_ppd where t in (5, 120)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_ppd
 #### A masked pattern was here ####
@@ -565,8 +545,7 @@ Stage-1 LLAP IO COUNTERS:
    ROWS_EMITTED: 1100
    SELECTED_ROWGROUPS: 2
 50
-PREHOOK: query: -- INPUT_RECORDS: 1000 (1 row group)
-select count(*) from orc_ppd where t between 60 and 80
+PREHOOK: query: select count(*) from orc_ppd where t between 60 and 80
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_ppd
 #### A masked pattern was here ####
@@ -591,9 +570,7 @@ Stage-1 LLAP IO COUNTERS:
    ROWS_EMITTED: 1000
    SELECTED_ROWGROUPS: 1
 318
-PREHOOK: query: -- bloom filter tests
--- INPUT_RECORDS: 0
-select count(*) from orc_ppd where t = -100
+PREHOOK: query: select count(*) from orc_ppd where t = -100
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_ppd
 #### A masked pattern was here ####
@@ -661,13 +638,7 @@ Stage-1 LLAP IO COUNTERS:
    METADATA_CACHE_HIT: 2
    SELECTED_ROWGROUPS: 0
 0
-PREHOOK: query: -- Row group statistics for column s:
--- Entry 0: count: 1000 hasNull: false min:  max: zach young sum: 12907 positions: 0,0,0
--- Entry 1: count: 1000 hasNull: false min: alice allen max: zach zipper sum: 12704 positions: 0,1611,191
--- Entry 2: count: 100 hasNull: false min: bob davidson max: zzz sum: 1281 positions: 0,3246,373
-
--- INPUT_RECORDS: 0 (no row groups)
-select count(*) from orc_ppd where s > "zzz"
+PREHOOK: query: select count(*) from orc_ppd where s > "zzz"
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_ppd
 #### A masked pattern was here ####
@@ -681,8 +652,7 @@ Stage-1 HIVE COUNTERS:
    CREATED_FILES: 1
    RECORDS_OUT_0: 1
 0
-PREHOOK: query: -- INPUT_RECORDS: 1000 (1 row group)
-select count(*) from orc_ppd where s = "zach young"
+PREHOOK: query: select count(*) from orc_ppd where s = "zach young"
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_ppd
 #### A masked pattern was here ####
@@ -760,8 +730,7 @@ Stage-1 LLAP IO COUNTERS:
    ROWS_EMITTED: 1000
    SELECTED_ROWGROUPS: 1
 6
-PREHOOK: query: -- INPUT_RECORDS: 0
-select count(*) from orc_ppd where s is null
+PREHOOK: query: select count(*) from orc_ppd where s is null
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_ppd
 #### A masked pattern was here ####
@@ -775,8 +744,7 @@ Stage-1 HIVE COUNTERS:
    CREATED_FILES: 1
    RECORDS_OUT_0: 1
 0
-PREHOOK: query: -- INPUT_RECORDS: 2100
-select count(*) from orc_ppd where s is not null
+PREHOOK: query: select count(*) from orc_ppd where s is not null
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_ppd
 #### A masked pattern was here ####
@@ -801,8 +769,7 @@ Stage-1 LLAP IO COUNTERS:
    ROWS_EMITTED: 2100
    SELECTED_ROWGROUPS: 3
 2100
-PREHOOK: query: -- INPUT_RECORDS: 0
-select count(*) from orc_ppd where s = cast("zach young" as char(50))
+PREHOOK: query: select count(*) from orc_ppd where s = cast("zach young" as char(50))
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_ppd
 #### A masked pattern was here ####
@@ -822,8 +789,7 @@ Stage-1 LLAP IO COUNTERS:
    METADATA_CACHE_HIT: 2
    SELECTED_ROWGROUPS: 0
 0
-PREHOOK: query: -- INPUT_RECORDS: 1000 (1 row group)
-select count(*) from orc_ppd where s = cast("zach young" as char(10))
+PREHOOK: query: select count(*) from orc_ppd where s = cast("zach young" as char(10))
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_ppd
 #### A masked pattern was here ####
@@ -898,8 +864,7 @@ Stage-1 LLAP IO COUNTERS:
    ROWS_EMITTED: 1000
    SELECTED_ROWGROUPS: 1
 2
-PREHOOK: query: -- INPUT_RECORDS: 2000 (2 row groups)
-select count(*) from orc_ppd where s < "b"
+PREHOOK: query: select count(*) from orc_ppd where s < "b"
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_ppd
 #### A masked pattern was here ####
@@ -924,8 +889,7 @@ Stage-1 LLAP IO COUNTERS:
    ROWS_EMITTED: 2000
    SELECTED_ROWGROUPS: 2
 81
-PREHOOK: query: -- INPUT_RECORDS: 2000 (2 row groups)
-select count(*) from orc_ppd where s > "alice" and s < "bob"
+PREHOOK: query: select count(*) from orc_ppd where s > "alice" and s < "bob"
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_ppd
 #### A masked pattern was here ####
@@ -950,8 +914,7 @@ Stage-1 LLAP IO COUNTERS:
    ROWS_EMITTED: 2000
    SELECTED_ROWGROUPS: 2
 74
-PREHOOK: query: -- INPUT_RECORDS: 2000 (2 row groups)
-select count(*) from orc_ppd where s in ("alice allen", "")
+PREHOOK: query: select count(*) from orc_ppd where s in ("alice allen", "")
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_ppd
 #### A masked pattern was here ####
@@ -976,8 +939,7 @@ Stage-1 LLAP IO COUNTERS:
    ROWS_EMITTED: 2000
    SELECTED_ROWGROUPS: 2
 12
-PREHOOK: query: -- INPUT_RECORDS: 2000 (2 row groups)
-select count(*) from orc_ppd where s between "" and "alice allen"
+PREHOOK: query: select count(*) from orc_ppd where s between "" and "alice allen"
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_ppd
 #### A masked pattern was here ####
@@ -1002,8 +964,7 @@ Stage-1 LLAP IO COUNTERS:
    ROWS_EMITTED: 2000
    SELECTED_ROWGROUPS: 2
 13
-PREHOOK: query: -- INPUT_RECORDS: 100 (1 row group)
-select count(*) from orc_ppd where s between "zz" and "zzz"
+PREHOOK: query: select count(*) from orc_ppd where s between "zz" and "zzz"
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_ppd
 #### A masked pattern was here ####
@@ -1028,8 +989,7 @@ Stage-1 LLAP IO COUNTERS:
    ROWS_EMITTED: 100
    SELECTED_ROWGROUPS: 1
 1
-PREHOOK: query: -- INPUT_RECORDS: 1100 (2 row groups)
-select count(*) from orc_ppd where s between "zach zipper" and "zzz"
+PREHOOK: query: select count(*) from orc_ppd where s between "zach zipper" and "zzz"
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_ppd
 #### A masked pattern was here ####
@@ -1054,9 +1014,7 @@ Stage-1 LLAP IO COUNTERS:
    ROWS_EMITTED: 1100
    SELECTED_ROWGROUPS: 2
 7
-PREHOOK: query: -- bloom filter tests
--- INPUT_RECORDS: 0
-select count(*) from orc_ppd where s = "hello world"
+PREHOOK: query: select count(*) from orc_ppd where s = "hello world"
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_ppd
 #### A masked pattern was here ####
@@ -1116,8 +1074,7 @@ Stage-1 LLAP IO COUNTERS:
    METADATA_CACHE_HIT: 2
    SELECTED_ROWGROUPS: 0
 0
-PREHOOK: query: -- INPUT_RECORDS: 100
-select count(*) from orc_ppd where s = "sarah ovid"
+PREHOOK: query: select count(*) from orc_ppd where s = "sarah ovid"
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_ppd
 #### A masked pattern was here ####
@@ -1142,8 +1099,7 @@ Stage-1 LLAP IO COUNTERS:
    ROWS_EMITTED: 100
    SELECTED_ROWGROUPS: 1
 2
-PREHOOK: query: -- INPUT_RECORDS: 1100
-select count(*) from orc_ppd where s = "wendy king"
+PREHOOK: query: select count(*) from orc_ppd where s = "wendy king"
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_ppd
 #### A masked pattern was here ####
@@ -1168,8 +1124,7 @@ Stage-1 LLAP IO COUNTERS:
    ROWS_EMITTED: 1100
    SELECTED_ROWGROUPS: 2
 6
-PREHOOK: query: -- INPUT_RECORDS: 1000
-select count(*) from orc_ppd where s = "wendy king" and t < 0
+PREHOOK: query: select count(*) from orc_ppd where s = "wendy king" and t < 0
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_ppd
 #### A masked pattern was here ####
@@ -1194,8 +1149,7 @@ Stage-1 LLAP IO COUNTERS:
    ROWS_EMITTED: 1000
    SELECTED_ROWGROUPS: 1
 2
-PREHOOK: query: -- INPUT_RECORDS: 100
-select count(*) from orc_ppd where s = "wendy king" and t > 100
+PREHOOK: query: select count(*) from orc_ppd where s = "wendy king" and t > 100
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_ppd
 #### A masked pattern was here ####
@@ -1220,8 +1174,7 @@ Stage-1 LLAP IO COUNTERS:
    ROWS_EMITTED: 100
    SELECTED_ROWGROUPS: 1
 2
-PREHOOK: query: -- when cbo is disabled constant gets converted to HiveDecimal
-select count(*) from orc_ppd where f=74.72
+PREHOOK: query: select count(*) from orc_ppd where f=74.72
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_ppd
 #### A masked pattern was here ####

@@ -1,10 +1,6 @@
-PREHOOK: query: -- SORT_QUERY_RESULTS
-
-drop table if exists alter_table_src
+PREHOOK: query: drop table if exists alter_table_src
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: -- SORT_QUERY_RESULTS
-
-drop table if exists alter_table_src
+POSTHOOK: query: drop table if exists alter_table_src
 POSTHOOK: type: DROPTABLE
 PREHOOK: query: drop table if exists alter_table_cascade
 PREHOOK: type: DROPTABLE
@@ -144,21 +140,13 @@ Snow	__HIVE_DEFAULT_PARTITION__	123
 Tom	__HIVE_DEFAULT_PARTITION__	123
 Tom	__HIVE_DEFAULT_PARTITION__	123
 Tom	__HIVE_DEFAULT_PARTITION__	123
-PREHOOK: query: -- add columns c2 by replace columns (for HIVE-6131)
--- reload data to existing partition __HIVE_DEFAULT_PARTITION__
--- load data to a new partition xyz
--- querying data (form new or existing partition) should return non-NULL values for the new column
-alter table alter_table_cascade replace columns (c1 string, c2 string) cascade
+PREHOOK: query: alter table alter_table_cascade replace columns (c1 string, c2 string) cascade
 PREHOOK: type: ALTERTABLE_REPLACECOLS
 PREHOOK: Input: default@alter_table_cascade
 PREHOOK: Output: default@alter_table_cascade
 PREHOOK: Output: default@alter_table_cascade@p1=__HIVE_DEFAULT_PARTITION__/p2=123
 PREHOOK: Output: default@alter_table_cascade@p1=abc/p2=123
-POSTHOOK: query: -- add columns c2 by replace columns (for HIVE-6131)
--- reload data to existing partition __HIVE_DEFAULT_PARTITION__
--- load data to a new partition xyz
--- querying data (form new or existing partition) should return non-NULL values for the new column
-alter table alter_table_cascade replace columns (c1 string, c2 string) cascade
+POSTHOOK: query: alter table alter_table_cascade replace columns (c1 string, c2 string) cascade
 POSTHOOK: type: ALTERTABLE_REPLACECOLS
 POSTHOOK: Input: default@alter_table_cascade
 POSTHOOK: Output: default@alter_table_cascade
@@ -305,18 +293,14 @@ Snow	55.71	__HIVE_DEFAULT_PARTITION__	123
 Tom	-12.25	__HIVE_DEFAULT_PARTITION__	123
 Tom	19.00	__HIVE_DEFAULT_PARTITION__	123
 Tom	234.79	__HIVE_DEFAULT_PARTITION__	123
-PREHOOK: query: -- Change c2 to decimal(10,0), the change should cascaded to all partitions
--- the c2 value returned should be in decimal(10,0)
-alter table alter_table_cascade change c2 c2 decimal(10,0) comment "change datatype" cascade
+PREHOOK: query: alter table alter_table_cascade change c2 c2 decimal(10,0) comment "change datatype" cascade
 PREHOOK: type: ALTERTABLE_RENAMECOL
 PREHOOK: Input: default@alter_table_cascade
 PREHOOK: Output: default@alter_table_cascade
 PREHOOK: Output: default@alter_table_cascade@p1=__HIVE_DEFAULT_PARTITION__/p2=123
 PREHOOK: Output: default@alter_table_cascade@p1=abc/p2=123
 PREHOOK: Output: default@alter_table_cascade@p1=xyz/p2=123
-POSTHOOK: query: -- Change c2 to decimal(10,0), the change should cascaded to all partitions
--- the c2 value returned should be in decimal(10,0)
-alter table alter_table_cascade change c2 c2 decimal(10,0) comment "change datatype" cascade
+POSTHOOK: query: alter table alter_table_cascade change c2 c2 decimal(10,0) comment "change datatype" cascade
 POSTHOOK: type: ALTERTABLE_RENAMECOL
 POSTHOOK: Input: default@alter_table_cascade
 POSTHOOK: Output: default@alter_table_cascade
@@ -447,16 +431,14 @@ Snow	56	__HIVE_DEFAULT_PARTITION__	123
 Tom	-12	__HIVE_DEFAULT_PARTITION__	123
 Tom	19	__HIVE_DEFAULT_PARTITION__	123
 Tom	235	__HIVE_DEFAULT_PARTITION__	123
-PREHOOK: query: -- rename c1 to c2fromc1 and move it to after c2, the change should cascaded to all partitions
-alter table alter_table_cascade change c1 c2fromc1 string comment "change position after" after c2 cascade
+PREHOOK: query: alter table alter_table_cascade change c1 c2fromc1 string comment "change position after" after c2 cascade
 PREHOOK: type: ALTERTABLE_RENAMECOL
 PREHOOK: Input: default@alter_table_cascade
 PREHOOK: Output: default@alter_table_cascade
 PREHOOK: Output: default@alter_table_cascade@p1=__HIVE_DEFAULT_PARTITION__/p2=123
 PREHOOK: Output: default@alter_table_cascade@p1=abc/p2=123
 PREHOOK: Output: default@alter_table_cascade@p1=xyz/p2=123
-POSTHOOK: query: -- rename c1 to c2fromc1 and move it to after c2, the change should cascaded to all partitions
-alter table alter_table_cascade change c1 c2fromc1 string comment "change position after" after c2 cascade
+POSTHOOK: query: alter table alter_table_cascade change c1 c2fromc1 string comment "change position after" after c2 cascade
 POSTHOOK: type: ALTERTABLE_RENAMECOL
 POSTHOOK: Input: default@alter_table_cascade
 POSTHOOK: Output: default@alter_table_cascade
@@ -527,16 +509,14 @@ p2                  	string
 	 	 
 p1                  	string              	                    
 p2                  	string              	                    
-PREHOOK: query: -- rename c2fromc1 back to c1 and move to first as c1, the change should cascaded to all partitions
-alter table alter_table_cascade change c2fromc1 c1 string comment "change position first" first cascade
+PREHOOK: query: alter table alter_table_cascade change c2fromc1 c1 string comment "change position first" first cascade
 PREHOOK: type: ALTERTABLE_RENAMECOL
 PREHOOK: Input: default@alter_table_cascade
 PREHOOK: Output: default@alter_table_cascade
 PREHOOK: Output: default@alter_table_cascade@p1=__HIVE_DEFAULT_PARTITION__/p2=123
 PREHOOK: Output: default@alter_table_cascade@p1=abc/p2=123
 PREHOOK: Output: default@alter_table_cascade@p1=xyz/p2=123
-POSTHOOK: query: -- rename c2fromc1 back to c1 and move to first as c1, the change should cascaded to all partitions
-alter table alter_table_cascade change c2fromc1 c1 string comment "change position first" first cascade
+POSTHOOK: query: alter table alter_table_cascade change c2fromc1 c1 string comment "change position first" first cascade
 POSTHOOK: type: ALTERTABLE_RENAMECOL
 POSTHOOK: Input: default@alter_table_cascade
 POSTHOOK: Output: default@alter_table_cascade
@@ -607,16 +587,14 @@ p2                  	string
 	 	 
 p1                  	string              	                    
 p2                  	string              	                    
-PREHOOK: query: -- Try out replace columns, the change should cascaded to all partitions
-alter table alter_table_cascade replace columns (c1 string) cascade
+PREHOOK: query: alter table alter_table_cascade replace columns (c1 string) cascade
 PREHOOK: type: ALTERTABLE_REPLACECOLS
 PREHOOK: Input: default@alter_table_cascade
 PREHOOK: Output: default@alter_table_cascade
 PREHOOK: Output: default@alter_table_cascade@p1=__HIVE_DEFAULT_PARTITION__/p2=123
 PREHOOK: Output: default@alter_table_cascade@p1=abc/p2=123
 PREHOOK: Output: default@alter_table_cascade@p1=xyz/p2=123
-POSTHOOK: query: -- Try out replace columns, the change should cascaded to all partitions
-alter table alter_table_cascade replace columns (c1 string) cascade
+POSTHOOK: query: alter table alter_table_cascade replace columns (c1 string) cascade
 POSTHOOK: type: ALTERTABLE_REPLACECOLS
 POSTHOOK: Input: default@alter_table_cascade
 POSTHOOK: Output: default@alter_table_cascade
@@ -743,16 +721,14 @@ Snow	__HIVE_DEFAULT_PARTITION__	123
 Tom	__HIVE_DEFAULT_PARTITION__	123
 Tom	__HIVE_DEFAULT_PARTITION__	123
 Tom	__HIVE_DEFAULT_PARTITION__	123
-PREHOOK: query: -- Try add columns, the change should cascaded to all partitions
-alter table alter_table_cascade add columns (c2 decimal(14,4)) cascade
+PREHOOK: query: alter table alter_table_cascade add columns (c2 decimal(14,4)) cascade
 PREHOOK: type: ALTERTABLE_ADDCOLS
 PREHOOK: Input: default@alter_table_cascade
 PREHOOK: Output: default@alter_table_cascade
 PREHOOK: Output: default@alter_table_cascade@p1=__HIVE_DEFAULT_PARTITION__/p2=123
 PREHOOK: Output: default@alter_table_cascade@p1=abc/p2=123
 PREHOOK: Output: default@alter_table_cascade@p1=xyz/p2=123
-POSTHOOK: query: -- Try add columns, the change should cascaded to all partitions
-alter table alter_table_cascade add columns (c2 decimal(14,4)) cascade
+POSTHOOK: query: alter table alter_table_cascade add columns (c2 decimal(14,4)) cascade
 POSTHOOK: type: ALTERTABLE_ADDCOLS
 POSTHOOK: Input: default@alter_table_cascade
 POSTHOOK: Output: default@alter_table_cascade
@@ -883,13 +859,9 @@ Snow	55.7100	__HIVE_DEFAULT_PARTITION__	123
 Tom	-12.2500	__HIVE_DEFAULT_PARTITION__	123
 Tom	19.0000	__HIVE_DEFAULT_PARTITION__	123
 Tom	234.7900	__HIVE_DEFAULT_PARTITION__	123
-PREHOOK: query: -- 
-
-drop table if exists alter_table_restrict
+PREHOOK: query: drop table if exists alter_table_restrict
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: -- 
-
-drop table if exists alter_table_restrict
+POSTHOOK: query: drop table if exists alter_table_restrict
 POSTHOOK: type: DROPTABLE
 PREHOOK: query: create table alter_table_restrict (c1 string) partitioned by (p1 string, p2 string)
 PREHOOK: type: CREATETABLE
@@ -1009,17 +981,11 @@ Snow	__HIVE_DEFAULT_PARTITION__	123
 Tom	__HIVE_DEFAULT_PARTITION__	123
 Tom	__HIVE_DEFAULT_PARTITION__	123
 Tom	__HIVE_DEFAULT_PARTITION__	123
-PREHOOK: query: -- add columns c2 by replace columns (for HIVE-6131) without cascade
--- only table column definition has changed, partitions do not
--- after replace, only new partition xyz return the value to new added columns but not existing partitions abc and __HIVE_DEFAULT_PARTITION__
-alter table alter_table_restrict replace columns (c1 string, c2 string) restrict
+PREHOOK: query: alter table alter_table_restrict replace columns (c1 string, c2 string) restrict
 PREHOOK: type: ALTERTABLE_REPLACECOLS
 PREHOOK: Input: default@alter_table_restrict
 PREHOOK: Output: default@alter_table_restrict
-POSTHOOK: query: -- add columns c2 by replace columns (for HIVE-6131) without cascade
--- only table column definition has changed, partitions do not
--- after replace, only new partition xyz return the value to new added columns but not existing partitions abc and __HIVE_DEFAULT_PARTITION__
-alter table alter_table_restrict replace columns (c1 string, c2 string) restrict
+POSTHOOK: query: alter table alter_table_restrict replace columns (c1 string, c2 string) restrict
 POSTHOOK: type: ALTERTABLE_REPLACECOLS
 POSTHOOK: Input: default@alter_table_restrict
 POSTHOOK: Output: default@alter_table_restrict
@@ -1170,13 +1136,11 @@ Snow	NULL	__HIVE_DEFAULT_PARTITION__	123
 Tom	NULL	__HIVE_DEFAULT_PARTITION__	123
 Tom	NULL	__HIVE_DEFAULT_PARTITION__	123
 Tom	NULL	__HIVE_DEFAULT_PARTITION__	123
-PREHOOK: query: -- Change c2 to decimal(10,0), only limited to table and new partition
-alter table alter_table_restrict change c2 c2 decimal(10,0) restrict
+PREHOOK: query: alter table alter_table_restrict change c2 c2 decimal(10,0) restrict
 PREHOOK: type: ALTERTABLE_RENAMECOL
 PREHOOK: Input: default@alter_table_restrict
 PREHOOK: Output: default@alter_table_restrict
-POSTHOOK: query: -- Change c2 to decimal(10,0), only limited to table and new partition
-alter table alter_table_restrict change c2 c2 decimal(10,0) restrict
+POSTHOOK: query: alter table alter_table_restrict change c2 c2 decimal(10,0) restrict
 POSTHOOK: type: ALTERTABLE_RENAMECOL
 POSTHOOK: Input: default@alter_table_restrict
 POSTHOOK: Output: default@alter_table_restrict
@@ -1242,13 +1206,11 @@ p2                  	string
 	 	 
 p1                  	string              	                    
 p2                  	string              	                    
-PREHOOK: query: -- Try out replace columns, only limited to table and new partition
-alter table alter_table_restrict replace columns (c1 string)
+PREHOOK: query: alter table alter_table_restrict replace columns (c1 string)
 PREHOOK: type: ALTERTABLE_REPLACECOLS
 PREHOOK: Input: default@alter_table_restrict
 PREHOOK: Output: default@alter_table_restrict
-POSTHOOK: query: -- Try out replace columns, only limited to table and new partition
-alter table alter_table_restrict replace columns (c1 string)
+POSTHOOK: query: alter table alter_table_restrict replace columns (c1 string)
 POSTHOOK: type: ALTERTABLE_REPLACECOLS
 POSTHOOK: Input: default@alter_table_restrict
 POSTHOOK: Output: default@alter_table_restrict
@@ -1313,13 +1275,11 @@ p2                  	string
 	 	 
 p1                  	string              	                    
 p2                  	string              	                    
-PREHOOK: query: -- Try add columns, only limited to table and new partition
-alter table alter_table_restrict add columns (c2 decimal(14,4))
+PREHOOK: query: alter table alter_table_restrict add columns (c2 decimal(14,4))
 PREHOOK: type: ALTERTABLE_ADDCOLS
 PREHOOK: Input: default@alter_table_restrict
 PREHOOK: Output: default@alter_table_restrict
-POSTHOOK: query: -- Try add columns, only limited to table and new partition
-alter table alter_table_restrict add columns (c2 decimal(14,4))
+POSTHOOK: query: alter table alter_table_restrict add columns (c2 decimal(14,4))
 POSTHOOK: type: ALTERTABLE_ADDCOLS
 POSTHOOK: Input: default@alter_table_restrict
 POSTHOOK: Output: default@alter_table_restrict

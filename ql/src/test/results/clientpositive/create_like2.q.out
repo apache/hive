@@ -1,14 +1,8 @@
-PREHOOK: query: -- Tests the copying over of Table Parameters according to a HiveConf setting
--- when doing a CREATE TABLE LIKE.
-
-CREATE TABLE table1(a INT, b STRING)
+PREHOOK: query: CREATE TABLE table1(a INT, b STRING)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@table1
-POSTHOOK: query: -- Tests the copying over of Table Parameters according to a HiveConf setting
--- when doing a CREATE TABLE LIKE.
-
-CREATE TABLE table1(a INT, b STRING)
+POSTHOOK: query: CREATE TABLE table1(a INT, b STRING)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@table1

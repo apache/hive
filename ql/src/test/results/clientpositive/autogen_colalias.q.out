@@ -124,11 +124,9 @@ POSTHOOK: query: describe dest_grouped_new2
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@dest_grouped_new2
 key                 	string              	                    
-PREHOOK: query: -- Drop the temporary function at the end till HIVE-3160 gets fixed
-DROP TEMPORARY FUNCTION test_max
+PREHOOK: query: DROP TEMPORARY FUNCTION test_max
 PREHOOK: type: DROPFUNCTION
 PREHOOK: Output: test_max
-POSTHOOK: query: -- Drop the temporary function at the end till HIVE-3160 gets fixed
-DROP TEMPORARY FUNCTION test_max
+POSTHOOK: query: DROP TEMPORARY FUNCTION test_max
 POSTHOOK: type: DROPFUNCTION
 POSTHOOK: Output: test_max

@@ -1,12 +1,8 @@
-PREHOOK: query: -- SORT_QUERY_RESULTS
-
-create table count_case_groupby (key string, bool boolean) STORED AS orc
+PREHOOK: query: create table count_case_groupby (key string, bool boolean) STORED AS orc
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@count_case_groupby
-POSTHOOK: query: -- SORT_QUERY_RESULTS
-
-create table count_case_groupby (key string, bool boolean) STORED AS orc
+POSTHOOK: query: create table count_case_groupby (key string, bool boolean) STORED AS orc
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@count_case_groupby

@@ -24,8 +24,7 @@ POSTHOOK: Lineage: char_udf_1.c1 SIMPLE [(src)src.FieldSchema(name:key, type:str
 POSTHOOK: Lineage: char_udf_1.c2 SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: char_udf_1.c3 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: char_udf_1.c4 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: -- UDFs with char support
-select 
+PREHOOK: query: select 
   concat(c1, c2),
   concat(c3, c4),
   concat(c1, c2) = concat(c3, c4)
@@ -33,8 +32,7 @@ from char_udf_1 limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@char_udf_1
 #### A masked pattern was here ####
-POSTHOOK: query: -- UDFs with char support
-select 
+POSTHOOK: query: select 
   concat(c1, c2),
   concat(c3, c4),
   concat(c1, c2) = concat(c3, c4)
@@ -77,8 +75,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@char_udf_1
 #### A masked pattern was here ####
 val_238	val_238             	true
-PREHOOK: query: -- Scalar UDFs
-select
+PREHOOK: query: select
   ascii(c2),
   ascii(c4),
   ascii(c2) = ascii(c4)
@@ -86,8 +83,7 @@ from char_udf_1 limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@char_udf_1
 #### A masked pattern was here ####
-POSTHOOK: query: -- Scalar UDFs
-select
+POSTHOOK: query: select
   ascii(c2),
   ascii(c4),
   ascii(c2) = ascii(c4)
@@ -215,10 +211,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@char_udf_1
 #### A masked pattern was here ####
 val_238	val_238	true
-PREHOOK: query: -- In hive wiki page https://cwiki.apache.org/confluence/display/Hive/LanguageManual+UDF
--- we only allow A regexp B, not regexp (A,B).
-
-select
+PREHOOK: query: select
   c2 regexp 'val',
   c4 regexp 'val',
   (c2 regexp 'val') = (c4 regexp 'val')
@@ -226,10 +219,7 @@ from char_udf_1 limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@char_udf_1
 #### A masked pattern was here ####
-POSTHOOK: query: -- In hive wiki page https://cwiki.apache.org/confluence/display/Hive/LanguageManual+UDF
--- we only allow A regexp B, not regexp (A,B).
-
-select
+POSTHOOK: query: select
   c2 regexp 'val',
   c4 regexp 'val',
   (c2 regexp 'val') = (c4 regexp 'val')
@@ -402,16 +392,14 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@char_udf_1
 #### A masked pattern was here ####
 val_238	val_238	true
-PREHOOK: query: -- Aggregate Functions
-select
+PREHOOK: query: select
   compute_stats(c2, 16),
   compute_stats(c4, 16)
 from char_udf_1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@char_udf_1
 #### A masked pattern was here ####
-POSTHOOK: query: -- Aggregate Functions
-select
+POSTHOOK: query: select
   compute_stats(c2, 16),
   compute_stats(c4, 16)
 from char_udf_1

@@ -1,14 +1,8 @@
-PREHOOK: query: -- test analyze table ... compute statistics noscan
-
--- 1. test full spec
-create table analyze_srcpart like srcpart
+PREHOOK: query: create table analyze_srcpart like srcpart
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@analyze_srcpart
-POSTHOOK: query: -- test analyze table ... compute statistics noscan
-
--- 1. test full spec
-create table analyze_srcpart like srcpart
+POSTHOOK: query: create table analyze_srcpart like srcpart
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@analyze_srcpart
@@ -76,12 +70,10 @@ POSTHOOK: Input: default@analyze_srcpart
 POSTHOOK: Input: default@analyze_srcpart@ds=2008-04-08/hr=12
 POSTHOOK: Output: default@analyze_srcpart
 POSTHOOK: Output: default@analyze_srcpart@ds=2008-04-08/hr=12
-PREHOOK: query: -- confirm result
-describe formatted analyze_srcpart PARTITION(ds='2008-04-08',hr=11)
+PREHOOK: query: describe formatted analyze_srcpart PARTITION(ds='2008-04-08',hr=11)
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@analyze_srcpart
-POSTHOOK: query: -- confirm result
-describe formatted analyze_srcpart PARTITION(ds='2008-04-08',hr=11)
+POSTHOOK: query: describe formatted analyze_srcpart PARTITION(ds='2008-04-08',hr=11)
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@analyze_srcpart
 # col_name            	data_type           	comment             
@@ -272,13 +264,11 @@ POSTHOOK: query: drop table analyze_srcpart
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@analyze_srcpart
 POSTHOOK: Output: default@analyze_srcpart
-PREHOOK: query: -- 2. test partial spec
-create table analyze_srcpart_partial like srcpart
+PREHOOK: query: create table analyze_srcpart_partial like srcpart
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@analyze_srcpart_partial
-POSTHOOK: query: -- 2. test partial spec
-create table analyze_srcpart_partial like srcpart
+POSTHOOK: query: create table analyze_srcpart_partial like srcpart
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@analyze_srcpart_partial
@@ -338,12 +328,10 @@ POSTHOOK: Input: default@analyze_srcpart_partial@ds=2008-04-08/hr=12
 POSTHOOK: Output: default@analyze_srcpart_partial
 POSTHOOK: Output: default@analyze_srcpart_partial@ds=2008-04-08/hr=11
 POSTHOOK: Output: default@analyze_srcpart_partial@ds=2008-04-08/hr=12
-PREHOOK: query: -- confirm result
-describe formatted analyze_srcpart_partial PARTITION(ds='2008-04-08',hr=11)
+PREHOOK: query: describe formatted analyze_srcpart_partial PARTITION(ds='2008-04-08',hr=11)
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@analyze_srcpart_partial
-POSTHOOK: query: -- confirm result
-describe formatted analyze_srcpart_partial PARTITION(ds='2008-04-08',hr=11)
+POSTHOOK: query: describe formatted analyze_srcpart_partial PARTITION(ds='2008-04-08',hr=11)
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@analyze_srcpart_partial
 # col_name            	data_type           	comment             

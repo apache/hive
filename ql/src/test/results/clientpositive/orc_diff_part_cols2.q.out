@@ -1,19 +1,9 @@
-PREHOOK: query: -- Create a table with one column, write to it, then add an additional column
--- This can break reads
-
--- SORT_QUERY_RESULTS
-
-CREATE TABLE test_orc (key STRING)
+PREHOOK: query: CREATE TABLE test_orc (key STRING)
 STORED AS ORC
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@test_orc
-POSTHOOK: query: -- Create a table with one column, write to it, then add an additional column
--- This can break reads
-
--- SORT_QUERY_RESULTS
-
-CREATE TABLE test_orc (key STRING)
+POSTHOOK: query: CREATE TABLE test_orc (key STRING)
 STORED AS ORC
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default

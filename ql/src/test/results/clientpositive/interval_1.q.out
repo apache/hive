@@ -36,15 +36,13 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 10-11	10-11	10-11	10-11	true
-PREHOOK: query: -- Test normalization of interval values
-select
+PREHOOK: query: select
   interval '49' month
 from src limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
-POSTHOOK: query: -- Test normalization of interval values
-select
+POSTHOOK: query: select
   interval '49' month
 from src limit 1
 POSTHOOK: type: QUERY
@@ -95,8 +93,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 2 01:02:03.000000000	2 01:02:03.000000000	2 01:02:03.000000000	2 01:02:03.000000000	true
-PREHOOK: query: -- Test normalization of interval values
-select
+PREHOOK: query: select
   interval '49' hour,
   interval '1470' minute,
   interval '90061.111111111' second
@@ -104,8 +101,7 @@ from src limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
-POSTHOOK: query: -- Test normalization of interval values
-select
+POSTHOOK: query: select
   interval '49' hour,
   interval '1470' minute,
   interval '90061.111111111' second

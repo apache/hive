@@ -1,8 +1,6 @@
-PREHOOK: query: --HIVE-2608 Do not require AS a,b,c part in LATERAL VIEW
-EXPLAIN SELECT myTab.* from src LATERAL VIEW explode(map('key1', 100, 'key2', 200)) myTab limit 2
+PREHOOK: query: EXPLAIN SELECT myTab.* from src LATERAL VIEW explode(map('key1', 100, 'key2', 200)) myTab limit 2
 PREHOOK: type: QUERY
-POSTHOOK: query: --HIVE-2608 Do not require AS a,b,c part in LATERAL VIEW
-EXPLAIN SELECT myTab.* from src LATERAL VIEW explode(map('key1', 100, 'key2', 200)) myTab limit 2
+POSTHOOK: query: EXPLAIN SELECT myTab.* from src LATERAL VIEW explode(map('key1', 100, 'key2', 200)) myTab limit 2
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
@@ -100,14 +98,12 @@ POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 key1	100
 key2	200
-PREHOOK: query: -- view
-create view lv_noalias as SELECT myTab.* from src LATERAL VIEW explode(map('key1', 100, 'key2', 200)) myTab limit 2
+PREHOOK: query: create view lv_noalias as SELECT myTab.* from src LATERAL VIEW explode(map('key1', 100, 'key2', 200)) myTab limit 2
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: default@src
 PREHOOK: Output: database:default
 PREHOOK: Output: default@lv_noalias
-POSTHOOK: query: -- view
-create view lv_noalias as SELECT myTab.* from src LATERAL VIEW explode(map('key1', 100, 'key2', 200)) myTab limit 2
+POSTHOOK: query: create view lv_noalias as SELECT myTab.* from src LATERAL VIEW explode(map('key1', 100, 'key2', 200)) myTab limit 2
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default

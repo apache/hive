@@ -1,10 +1,8 @@
-PREHOOK: query: -- check cluster/distribute/partitionBy
-SELECT * FROM SRC x where x.key = 20 CLUSTER BY (key,value)
+PREHOOK: query: SELECT * FROM SRC x where x.key = 20 CLUSTER BY (key,value)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
-POSTHOOK: query: -- check cluster/distribute/partitionBy
-SELECT * FROM SRC x where x.key = 20 CLUSTER BY (key,value)
+POSTHOOK: query: SELECT * FROM SRC x where x.key = 20 CLUSTER BY (key,value)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
@@ -45,8 +43,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 20	val_20
-PREHOOK: query: -- HIVE-6950
-SELECT tab1.key,
+PREHOOK: query: SELECT tab1.key,
        tab1.value,
        SUM(1)
 FROM src as tab1
@@ -56,8 +53,7 @@ GROUPING SETS ((tab1.key, tab1.value))
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
-POSTHOOK: query: -- HIVE-6950
-SELECT tab1.key,
+POSTHOOK: query: SELECT tab1.key,
        tab1.value,
        SUM(1)
 FROM src as tab1

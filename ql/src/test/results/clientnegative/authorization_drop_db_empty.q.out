@@ -1,9 +1,7 @@
-#### A masked pattern was here ####
-create database dba1
+PREHOOK: query: create database dba1
 PREHOOK: type: CREATEDATABASE
 PREHOOK: Output: database:dba1
-#### A masked pattern was here ####
-create database dba1
+POSTHOOK: query: create database dba1
 POSTHOOK: type: CREATEDATABASE
 POSTHOOK: Output: database:dba1
 PREHOOK: query: set role ADMIN
@@ -29,11 +27,9 @@ POSTHOOK: query: drop database dba1
 POSTHOOK: type: DROPDATABASE
 POSTHOOK: Input: database:dba1
 POSTHOOK: Output: database:dba1
-PREHOOK: query: -- check if dropping db as another user fails
-show current roles
+PREHOOK: query: show current roles
 PREHOOK: type: SHOW_ROLES
-POSTHOOK: query: -- check if dropping db as another user fails
-show current roles
+POSTHOOK: query: show current roles
 POSTHOOK: type: SHOW_ROLES
 public
 PREHOOK: query: create database dba2

@@ -1,20 +1,8 @@
-PREHOOK: query: -- union10.q
-
- 
-
--- union case: all subqueries are a map-reduce jobs, 3 way union, same input for all sub-queries, followed by filesink
-
-create table tmptable(key string, value int)
+PREHOOK: query: create table tmptable(key string, value int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@tmptable
-POSTHOOK: query: -- union10.q
-
- 
-
--- union case: all subqueries are a map-reduce jobs, 3 way union, same input for all sub-queries, followed by filesink
-
-create table tmptable(key string, value int)
+POSTHOOK: query: create table tmptable(key string, value int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tmptable
@@ -262,26 +250,14 @@ POSTHOOK: Input: default@tmptable
 tst1	500
 tst2	500
 tst3	500
-PREHOOK: query: -- union11.q
-
- 
--- SORT_BEFORE_DIFF
--- union case: all subqueries are a map-reduce jobs, 3 way union, same input for all sub-queries, followed by reducesink
-
-explain 
+PREHOOK: query: explain 
   select unionsrc.key, count(1) FROM (select 'tst1' as key, count(1) as value from src s1
                                         UNION DISTINCT  
                                             select 'tst2' as key, count(1) as value from src s2
                                         UNION DISTINCT
                                             select 'tst3' as key, count(1) as value from src s3) unionsrc group by unionsrc.key
 PREHOOK: type: QUERY
-POSTHOOK: query: -- union11.q
-
- 
--- SORT_BEFORE_DIFF
--- union case: all subqueries are a map-reduce jobs, 3 way union, same input for all sub-queries, followed by reducesink
-
-explain 
+POSTHOOK: query: explain 
   select unionsrc.key, count(1) FROM (select 'tst1' as key, count(1) as value from src s1
                                         UNION DISTINCT  
                                             select 'tst2' as key, count(1) as value from src s2
@@ -497,23 +473,11 @@ POSTHOOK: Input: default@src
 tst1	1
 tst2	1
 tst3	1
-PREHOOK: query: -- union12.q
-
- 
-
--- union case: all subqueries are a map-reduce jobs, 3 way union, different inputs for all sub-queries, followed by filesink
-
-create table tmptable12(key string, value int)
+PREHOOK: query: create table tmptable12(key string, value int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@tmptable12
-POSTHOOK: query: -- union12.q
-
- 
-
--- union case: all subqueries are a map-reduce jobs, 3 way union, different inputs for all sub-queries, followed by filesink
-
-create table tmptable12(key string, value int)
+POSTHOOK: query: create table tmptable12(key string, value int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tmptable12
@@ -765,21 +729,11 @@ POSTHOOK: Input: default@tmptable12
 tst1	500
 tst2	25
 tst3	1000
-PREHOOK: query: -- union13.q
-
--- SORT_BEFORE_DIFF
--- union case: both subqueries are a map-only jobs, same input, followed by filesink
-
-explain 
+PREHOOK: query: explain 
   select unionsrc.key, unionsrc.value FROM (select s1.key as key, s1.value as value from src s1 UNION DISTINCT  
                                             select s2.key as key, s2.value as value from src s2) unionsrc
 PREHOOK: type: QUERY
-POSTHOOK: query: -- union13.q
-
--- SORT_BEFORE_DIFF
--- union case: both subqueries are a map-only jobs, same input, followed by filesink
-
-explain 
+POSTHOOK: query: explain 
   select unionsrc.key, unionsrc.value FROM (select s1.key as key, s1.value as value from src s1 UNION DISTINCT  
                                             select s2.key as key, s2.value as value from src s2) unionsrc
 POSTHOOK: type: QUERY
@@ -1182,25 +1136,13 @@ POSTHOOK: Input: default@src
 96	val_96
 97	val_97
 98	val_98
-PREHOOK: query: -- union14.q
-
- 
--- SORT_BEFORE_DIFF
--- union case: 1 subquery is a map-reduce job, different inputs for sub-queries, followed by reducesink
-
-explain 
+PREHOOK: query: explain 
   select unionsrc.key, count(1) FROM (select s2.key as key, s2.value as value from src1 s2
                                         UNION DISTINCT  
                                       select 'tst1' as key, cast(count(1) as string) as value from src s1) 
   unionsrc group by unionsrc.key
 PREHOOK: type: QUERY
-POSTHOOK: query: -- union14.q
-
- 
--- SORT_BEFORE_DIFF
--- union case: 1 subquery is a map-reduce job, different inputs for sub-queries, followed by reducesink
-
-explain 
+POSTHOOK: query: explain 
   select unionsrc.key, count(1) FROM (select s2.key as key, s2.value as value from src1 s2
                                         UNION DISTINCT  
                                       select 'tst1' as key, cast(count(1) as string) as value from src s1) 
@@ -1348,26 +1290,14 @@ POSTHOOK: Input: default@src1
 66	1
 98	1
 tst1	1
-PREHOOK: query: -- union15.q
-
- 
--- SORT_BEFORE_DIFF
--- union case: 1 subquery is a map-reduce job, different inputs for sub-queries, followed by reducesink
-
-explain 
+PREHOOK: query: explain 
   select unionsrc.key, count(1) FROM (select 'tst1' as key, cast(count(1) as string) as value from src s1
                                         UNION DISTINCT  
                                             select s2.key as key, s2.value as value from src1 s2
                                         UNION DISTINCT  
                                             select s3.key as key, s3.value as value from src1 s3) unionsrc group by unionsrc.key
 PREHOOK: type: QUERY
-POSTHOOK: query: -- union15.q
-
- 
--- SORT_BEFORE_DIFF
--- union case: 1 subquery is a map-reduce job, different inputs for sub-queries, followed by reducesink
-
-explain 
+POSTHOOK: query: explain 
   select unionsrc.key, count(1) FROM (select 'tst1' as key, cast(count(1) as string) as value from src s1
                                         UNION DISTINCT  
                                             select s2.key as key, s2.value as value from src1 s2
@@ -1561,10 +1491,7 @@ POSTHOOK: Input: default@src1
 66	1
 98	1
 tst1	1
-PREHOOK: query: -- union16.q
-
--- SORT_BEFORE_DIFF
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT count(1) FROM (
   SELECT key, value FROM src UNION DISTINCT
   SELECT key, value FROM src UNION DISTINCT
@@ -1596,10 +1523,7 @@ SELECT count(1) FROM (
   SELECT key, value FROM src UNION DISTINCT
   SELECT key, value FROM src) src
 PREHOOK: type: QUERY
-POSTHOOK: query: -- union16.q
-
--- SORT_BEFORE_DIFF
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT count(1) FROM (
   SELECT key, value FROM src UNION DISTINCT
   SELECT key, value FROM src UNION DISTINCT
@@ -2787,15 +2711,11 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 309
-PREHOOK: query: -- union17.q
-
-CREATE TABLE DEST1(key STRING, value STRING) STORED AS TEXTFILE
+PREHOOK: query: CREATE TABLE DEST1(key STRING, value STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@DEST1
-POSTHOOK: query: -- union17.q
-
-CREATE TABLE DEST1(key STRING, value STRING) STORED AS TEXTFILE
+POSTHOOK: query: CREATE TABLE DEST1(key STRING, value STRING) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@DEST1
@@ -2807,20 +2727,14 @@ POSTHOOK: query: CREATE TABLE DEST2(key STRING, val1 STRING, val2 STRING) STORED
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@DEST2
-PREHOOK: query: -- SORT_BEFORE_DIFF
--- union case:map-reduce sub-queries followed by multi-table insert
-
-explain 
+PREHOOK: query: explain 
 FROM (select 'tst1' as key, cast(count(1) as string) as value from src s1
                          UNION DISTINCT  
       select s2.key as key, s2.value as value from src s2) unionsrc
 INSERT OVERWRITE TABLE DEST1 SELECT unionsrc.key, COUNT(DISTINCT SUBSTR(unionsrc.value,5)) GROUP BY unionsrc.key
 INSERT OVERWRITE TABLE DEST2 SELECT unionsrc.key, unionsrc.value, COUNT(DISTINCT SUBSTR(unionsrc.value,5)) GROUP BY unionsrc.key, unionsrc.value
 PREHOOK: type: QUERY
-POSTHOOK: query: -- SORT_BEFORE_DIFF
--- union case:map-reduce sub-queries followed by multi-table insert
-
-explain 
+POSTHOOK: query: explain 
 FROM (select 'tst1' as key, cast(count(1) as string) as value from src s1
                          UNION DISTINCT  
       select s2.key as key, s2.value as value from src s2) unionsrc
@@ -3652,15 +3566,11 @@ POSTHOOK: Input: default@dest2
 97	val_97	1
 98	val_98	1
 tst1	500	1
-PREHOOK: query: -- union18.q
-
-CREATE TABLE DEST118(key STRING, value STRING) STORED AS TEXTFILE
+PREHOOK: query: CREATE TABLE DEST118(key STRING, value STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@DEST118
-POSTHOOK: query: -- union18.q
-
-CREATE TABLE DEST118(key STRING, value STRING) STORED AS TEXTFILE
+POSTHOOK: query: CREATE TABLE DEST118(key STRING, value STRING) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@DEST118
@@ -3672,18 +3582,14 @@ POSTHOOK: query: CREATE TABLE DEST218(key STRING, val1 STRING, val2 STRING) STOR
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@DEST218
-PREHOOK: query: -- union case:map-reduce sub-queries followed by multi-table insert 
-
-explain 
+PREHOOK: query: explain 
 FROM (select 'tst1' as key, cast(count(1) as string) as value from src s1
                          UNION DISTINCT  
       select s2.key as key, s2.value as value from src s2) unionsrc
 INSERT OVERWRITE TABLE DEST118 SELECT unionsrc.key, unionsrc.value
 INSERT OVERWRITE TABLE DEST218 SELECT unionsrc.key, unionsrc.value, unionsrc.value
 PREHOOK: type: QUERY
-POSTHOOK: query: -- union case:map-reduce sub-queries followed by multi-table insert 
-
-explain 
+POSTHOOK: query: explain 
 FROM (select 'tst1' as key, cast(count(1) as string) as value from src s1
                          UNION DISTINCT  
       select s2.key as key, s2.value as value from src s2) unionsrc
@@ -4488,21 +4394,11 @@ POSTHOOK: Input: default@dest218
 97	val_97	val_97
 98	val_98	val_98
 tst1	500	500
-PREHOOK: query: -- union19.q
-
-
-
-
-CREATE TABLE DEST119(key STRING, value STRING) STORED AS TEXTFILE
+PREHOOK: query: CREATE TABLE DEST119(key STRING, value STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@DEST119
-POSTHOOK: query: -- union19.q
-
-
-
-
-CREATE TABLE DEST119(key STRING, value STRING) STORED AS TEXTFILE
+POSTHOOK: query: CREATE TABLE DEST119(key STRING, value STRING) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@DEST119
@@ -4514,18 +4410,14 @@ POSTHOOK: query: CREATE TABLE DEST219(key STRING, val1 STRING, val2 STRING) STOR
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@DEST219
-PREHOOK: query: -- union case:map-reduce sub-queries followed by multi-table insert
-
-explain 
+PREHOOK: query: explain 
 FROM (select 'tst1' as key, cast(count(1) as string) as value from src s1
                          UNION DISTINCT  
       select s2.key as key, s2.value as value from src s2) unionsrc
 INSERT OVERWRITE TABLE DEST119 SELECT unionsrc.key, count(unionsrc.value) group by unionsrc.key
 INSERT OVERWRITE TABLE DEST219 SELECT unionsrc.key, unionsrc.value, unionsrc.value
 PREHOOK: type: QUERY
-POSTHOOK: query: -- union case:map-reduce sub-queries followed by multi-table insert
-
-explain 
+POSTHOOK: query: explain 
 FROM (select 'tst1' as key, cast(count(1) as string) as value from src s1
                          UNION DISTINCT  
       select s2.key as key, s2.value as value from src s2) unionsrc
@@ -5336,21 +5228,11 @@ POSTHOOK: Input: default@dest219
 97	val_97	val_97
 98	val_98	val_98
 tst1	500	500
-PREHOOK: query: -- union2.q
-
--- SORT_BEFORE_DIFF
--- union case: both subqueries are map-reduce jobs on same input, followed by reduce sink
-
-explain 
+PREHOOK: query: explain 
   select count(1) FROM (select s1.key as key, s1.value as value from src s1 UNION DISTINCT  
                         select s2.key as key, s2.value as value from src s2) unionsrc
 PREHOOK: type: QUERY
-POSTHOOK: query: -- union2.q
-
--- SORT_BEFORE_DIFF
--- union case: both subqueries are map-reduce jobs on same input, followed by reduce sink
-
-explain 
+POSTHOOK: query: explain 
   select count(1) FROM (select s1.key as key, s1.value as value from src s1 UNION DISTINCT  
                         select s2.key as key, s2.value as value from src s2) unionsrc
 POSTHOOK: type: QUERY
@@ -5465,12 +5347,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 309
-PREHOOK: query: -- union20.q
-
--- SORT_BEFORE_DIFF
--- union :map-reduce sub-queries followed by join
-
-explain 
+PREHOOK: query: explain 
 SELECT unionsrc1.key, unionsrc1.value, unionsrc2.key, unionsrc2.value
 FROM (select 'tst1' as key, cast(count(1) as string) as value from src s1
                          UNION DISTINCT  
@@ -5481,12 +5358,7 @@ JOIN
       select s4.key as key, s4.value as value from src s4 where s4.key < 10) unionsrc2
 ON (unionsrc1.key = unionsrc2.key)
 PREHOOK: type: QUERY
-POSTHOOK: query: -- union20.q
-
--- SORT_BEFORE_DIFF
--- union :map-reduce sub-queries followed by join
-
-explain 
+POSTHOOK: query: explain 
 SELECT unionsrc1.key, unionsrc1.value, unionsrc2.key, unionsrc2.value
 FROM (select 'tst1' as key, cast(count(1) as string) as value from src s1
                          UNION DISTINCT  
@@ -5727,12 +5599,7 @@ POSTHOOK: Input: default@src
 8	val_8	8	val_8
 9	val_9	9	val_9
 tst1	500	tst1	500
-PREHOOK: query: -- union21.q
-
--- SORT_BEFORE_DIFF
--- union of constants, udf outputs, and columns from text table and thrift table
-
-explain
+PREHOOK: query: explain
 SELECT key, count(1)
 FROM (
   SELECT '1' as key from src
@@ -5747,12 +5614,7 @@ FROM (
 ) union_output
 GROUP BY key
 PREHOOK: type: QUERY
-POSTHOOK: query: -- union21.q
-
--- SORT_BEFORE_DIFF
--- union of constants, udf outputs, and columns from text table and thrift table
-
-explain
+POSTHOOK: query: explain
 SELECT key, count(1)
 FROM (
   SELECT '1' as key from src
@@ -6552,19 +6414,11 @@ record_6	1
 record_7	1
 record_8	1
 record_9	1
-PREHOOK: query: -- union22.q
-
--- SORT_QUERY_RESULTS
-
-create table dst_union22(k1 string, k2 string, k3 string, k4 string) partitioned by (ds string)
+PREHOOK: query: create table dst_union22(k1 string, k2 string, k3 string, k4 string) partitioned by (ds string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@dst_union22
-POSTHOOK: query: -- union22.q
-
--- SORT_QUERY_RESULTS
-
-create table dst_union22(k1 string, k2 string, k3 string, k4 string) partitioned by (ds string)
+POSTHOOK: query: create table dst_union22(k1 string, k2 string, k3 string, k4 string) partitioned by (ds string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@dst_union22
@@ -6606,9 +6460,7 @@ POSTHOOK: Lineage: dst_union22_delta PARTITION(ds=1).k2 SIMPLE [(src)src.FieldSc
 POSTHOOK: Lineage: dst_union22_delta PARTITION(ds=1).k3 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: dst_union22_delta PARTITION(ds=1).k4 SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: dst_union22_delta PARTITION(ds=1).k5 SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: -- Since the inputs are small, it should be automatically converted to mapjoin
-
-explain extended
+PREHOOK: query: explain extended
 insert overwrite table dst_union22 partition (ds='2')
 select * from
 (
@@ -6621,9 +6473,7 @@ where a.k1 > 20
 )
 subq
 PREHOOK: type: QUERY
-POSTHOOK: query: -- Since the inputs are small, it should be automatically converted to mapjoin
-
-explain extended
+POSTHOOK: query: explain extended
 insert overwrite table dst_union22 partition (ds='2')
 select * from
 (
@@ -7351,9 +7201,7 @@ POSTHOOK: Input: default@dst_union22@ds=2
 96	val_96	96	val_96	2
 97	val_97	97	val_97	2
 98	val_98	98	val_98	2
-PREHOOK: query: -- union23.q
-
-explain
+PREHOOK: query: explain
 select s.key2, s.value2
 from (
   select transform(key, value) using 'cat' as (key2, value2)
@@ -7361,9 +7209,7 @@ from (
   UNION DISTINCT 
   select key as key2, value as value2 from src) s
 PREHOOK: type: QUERY
-POSTHOOK: query: -- union23.q
-
-explain
+POSTHOOK: query: explain
 select s.key2, s.value2
 from (
   select transform(key, value) using 'cat' as (key2, value2)
@@ -7783,20 +7629,12 @@ POSTHOOK: Input: default@src
 96	val_96
 97	val_97
 98	val_98
-PREHOOK: query: -- union24.q
-
--- SORT_QUERY_RESULTS
-
-create table src2 as select key, count(1) as count from src group by key
+PREHOOK: query: create table src2 as select key, count(1) as count from src group by key
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@src
 PREHOOK: Output: database:default
 PREHOOK: Output: default@src2
-POSTHOOK: query: -- union24.q
-
--- SORT_QUERY_RESULTS
-
-create table src2 as select key, count(1) as count from src group by key
+POSTHOOK: query: create table src2 as select key, count(1) as count from src group by key
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
@@ -9273,15 +9111,11 @@ POSTHOOK: Input: default@src5
 5	3
 8	1
 9	1
-PREHOOK: query: -- union25.q
-
-create table tmp_srcpart like srcpart
+PREHOOK: query: create table tmp_srcpart like srcpart
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@tmp_srcpart
-POSTHOOK: query: -- union25.q
-
-create table tmp_srcpart like srcpart
+POSTHOOK: query: create table tmp_srcpart like srcpart
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tmp_srcpart
@@ -9500,12 +9334,7 @@ STAGE PLANS:
           hdfs directory: true
 #### A masked pattern was here ####
 
-PREHOOK: query: -- union26.q
-
--- SORT_QUERY_RESULTS
-
-
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT 
 count(1) as counts,
 key,
@@ -9527,12 +9356,7 @@ WHERE ds='2008-04-08' and hr='11'
 ) a
 group by key, value
 PREHOOK: type: QUERY
-POSTHOOK: query: -- union26.q
-
--- SORT_QUERY_RESULTS
-
-
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT 
 count(1) as counts,
 key,
@@ -10778,18 +10602,12 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 1	96	val_96
 1	97	val_97
 1	98	val_98
-PREHOOK: query: -- union27.q
-
--- SORT_BEFORE_DIFF
-create table jackson_sev_same as select * from src
+PREHOOK: query: create table jackson_sev_same as select * from src
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@src
 PREHOOK: Output: database:default
 PREHOOK: Output: default@jackson_sev_same
-POSTHOOK: query: -- union27.q
-
--- SORT_BEFORE_DIFF
-create table jackson_sev_same as select * from src
+POSTHOOK: query: create table jackson_sev_same as select * from src
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
@@ -10957,15 +10775,11 @@ POSTHOOK: Input: default@jackson_sev_same
 #### A masked pattern was here ####
 97	val_97
 97	val_97
-PREHOOK: query: -- union28.q
-
-create table union_subq_union(key int, value string)
+PREHOOK: query: create table union_subq_union(key int, value string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@union_subq_union
-POSTHOOK: query: -- union28.q
-
-create table union_subq_union(key int, value string)
+POSTHOOK: query: create table union_subq_union(key int, value string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@union_subq_union
@@ -11239,15 +11053,11 @@ POSTHOOK: Input: default@union_subq_union
 28	val_28
 30	val_30
 33	val_33
-PREHOOK: query: -- union29.q
-
-create table union_subq_union29(key int, value string)
+PREHOOK: query: create table union_subq_union29(key int, value string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@union_subq_union29
-POSTHOOK: query: -- union29.q
-
-create table union_subq_union29(key int, value string)
+POSTHOOK: query: create table union_subq_union29(key int, value string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@union_subq_union29
@@ -11475,11 +11285,7 @@ POSTHOOK: Input: default@union_subq_union29
 28	val_28
 30	val_30
 33	val_33
-PREHOOK: query: -- union3.q
-
--- SORT_BEFORE_DIFF
-
-explain
+PREHOOK: query: explain
 SELECT *
 FROM (
   SELECT 1 AS id
@@ -11496,11 +11302,7 @@ FROM (
   CLUSTER BY id
 ) a
 PREHOOK: type: QUERY
-POSTHOOK: query: -- union3.q
-
--- SORT_BEFORE_DIFF
-
-explain
+POSTHOOK: query: explain
 SELECT *
 FROM (
   SELECT 1 AS id
@@ -11798,15 +11600,11 @@ POSTHOOK: Input: default@union_out
 2
 3
 4
-PREHOOK: query: -- union30.q
-
-create table union_subq_union30(key int, value string)
+PREHOOK: query: create table union_subq_union30(key int, value string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@union_subq_union30
-POSTHOOK: query: -- union30.q
-
-create table union_subq_union30(key int, value string)
+POSTHOOK: query: create table union_subq_union30(key int, value string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@union_subq_union30
@@ -12151,17 +11949,9 @@ POSTHOOK: Input: default@union_subq_union30
 28	val_28
 30	val_30
 33	val_33
-PREHOOK: query: -- union31.q
-
--- SORT_QUERY_RESULTS
-
-drop table t1
+PREHOOK: query: drop table t1
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: -- union31.q
-
--- SORT_QUERY_RESULTS
-
-drop table t1
+POSTHOOK: query: drop table t1
 POSTHOOK: type: DROPTABLE
 PREHOOK: query: drop table t2
 PREHOOK: type: DROPTABLE
@@ -13055,25 +12845,11 @@ POSTHOOK: Input: default@t8
 5	1
 8	1
 9	1
-PREHOOK: query: -- union32.q
-
--- SORT_QUERY_RESULTS
-
--- This tests various union queries which have columns on one side of the query
--- being of double type and those on the other side another
-
-drop table if exists t1
+PREHOOK: query: drop table if exists t1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@t1
 PREHOOK: Output: default@t1
-POSTHOOK: query: -- union32.q
-
--- SORT_QUERY_RESULTS
-
--- This tests various union queries which have columns on one side of the query
--- being of double type and those on the other side another
-
-drop table if exists t1
+POSTHOOK: query: drop table if exists t1
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@t1
 POSTHOOK: Output: default@t1
@@ -13109,15 +12885,13 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t2
 POSTHOOK: Lineage: t2.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: t2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: -- Test simple union with double
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT * FROM 
 (SELECT CAST(key AS DOUBLE) AS key FROM t1
 UNION DISTINCT
 SELECT CAST(key AS BIGINT) AS key FROM t2) a
 PREHOOK: type: QUERY
-POSTHOOK: query: -- Test simple union with double
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT * FROM 
 (SELECT CAST(key AS DOUBLE) AS key FROM t1
 UNION DISTINCT
@@ -13225,15 +12999,13 @@ POSTHOOK: Input: default@t2
 5.0
 8.0
 9.0
-PREHOOK: query: -- Test union with join on the left
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT * FROM 
 (SELECT CAST(a.key AS BIGINT) AS key FROM t1 a JOIN t2 b ON a.key = b.key
 UNION DISTINCT
 SELECT CAST(key AS DOUBLE) AS key FROM t2) a
 PREHOOK: type: QUERY
-POSTHOOK: query: -- Test union with join on the left
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT * FROM 
 (SELECT CAST(a.key AS BIGINT) AS key FROM t1 a JOIN t2 b ON a.key = b.key
 UNION DISTINCT
@@ -13377,15 +13149,13 @@ POSTHOOK: Input: default@t2
 5.0
 8.0
 9.0
-PREHOOK: query: -- Test union with join on the right
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT * FROM 
 (SELECT CAST(key AS DOUBLE) AS key FROM t2
 UNION DISTINCT
 SELECT CAST(a.key AS BIGINT) AS key FROM t1 a JOIN t2 b ON a.key = b.key) a
 PREHOOK: type: QUERY
-POSTHOOK: query: -- Test union with join on the right
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT * FROM 
 (SELECT CAST(key AS DOUBLE) AS key FROM t2
 UNION DISTINCT
@@ -13529,15 +13299,13 @@ POSTHOOK: Input: default@t2
 5.0
 8.0
 9.0
-PREHOOK: query: -- Test union with join on the left selecting multiple columns
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT * FROM 
 (SELECT CAST(a.key AS BIGINT) AS key, CAST(b.key AS STRING) AS value FROM t1 a JOIN t2 b ON a.key = b.key
 UNION DISTINCT
 SELECT CAST(key AS DOUBLE) AS key, CAST(key AS STRING) AS value FROM t2) a
 PREHOOK: type: QUERY
-POSTHOOK: query: -- Test union with join on the left selecting multiple columns
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT * FROM 
 (SELECT CAST(a.key AS BIGINT) AS key, CAST(b.key AS STRING) AS value FROM t1 a JOIN t2 b ON a.key = b.key
 UNION DISTINCT
@@ -13578,179 +13346,6 @@ STAGE PLANS:
                         outputColumnNames: _col0, _col1
                         input vertices:
                           1 Map 4
-                        Statistics: Num rows: 11 Data size: 77 Basic stats: COMPLETE Column stats: NONE
-                        Select Operator
-                          expressions: UDFToDouble(UDFToLong(_col0)) (type: double), UDFToString(CAST( _col1 AS varchar(20))) (type: string)
-                          outputColumnNames: _col0, _col1
-                          Statistics: Num rows: 11 Data size: 77 Basic stats: COMPLETE Column stats: NONE
-                          Group By Operator
-                            keys: _col0 (type: double), _col1 (type: string)
-                            mode: hash
-                            outputColumnNames: _col0, _col1
-                            Statistics: Num rows: 21 Data size: 147 Basic stats: COMPLETE Column stats: NONE
-                            Reduce Output Operator
-                              key expressions: _col0 (type: double), _col1 (type: string)
-                              sort order: ++
-                              Map-reduce partition columns: _col0 (type: double), _col1 (type: string)
-                              Statistics: Num rows: 21 Data size: 147 Basic stats: COMPLETE Column stats: NONE
-            Execution mode: llap
-            LLAP IO: no inputs
-        Map 4 
-            Map Operator Tree:
-                TableScan
-                  alias: b
-                  Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
-                  Filter Operator
-                    predicate: key is not null (type: boolean)
-                    Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
-                    Select Operator
-                      expressions: key (type: string)
-                      outputColumnNames: _col0
-                      Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
-                      Reduce Output Operator
-                        key expressions: _col0 (type: string)
-                        sort order: +
-                        Map-reduce partition columns: _col0 (type: string)
-                        Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
-            Execution mode: llap
-            LLAP IO: no inputs
-        Map 5 
-            Map Operator Tree:
-                TableScan
-                  alias: t2
-                  Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
-                  Select Operator
-                    expressions: UDFToDouble(key) (type: double), key (type: string)
-                    outputColumnNames: _col0, _col1
-                    Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
-                    Group By Operator
-                      keys: _col0 (type: double), _col1 (type: string)
-                      mode: hash
-                      outputColumnNames: _col0, _col1
-                      Statistics: Num rows: 21 Data size: 147 Basic stats: COMPLETE Column stats: NONE
-                      Reduce Output Operator
-                        key expressions: _col0 (type: double), _col1 (type: string)
-                        sort order: ++
-                        Map-reduce partition columns: _col0 (type: double), _col1 (type: string)
-                        Statistics: Num rows: 21 Data size: 147 Basic stats: COMPLETE Column stats: NONE
-            Execution mode: llap
-            LLAP IO: no inputs
-        Reducer 3 
-            Execution mode: llap
-            Reduce Operator Tree:
-              Group By Operator
-                keys: KEY._col0 (type: double), KEY._col1 (type: string)
-                mode: mergepartial
-                outputColumnNames: _col0, _col1
-                Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
-                File Output Operator
-                  compressed: false
-                  Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
-                  table:
-                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-        Union 2 
-            Vertex: Union 2
-
-  Stage: Stage-0
-    Fetch Operator
-      limit: -1
-      Processor Tree:
-        ListSink
-
-PREHOOK: query: SELECT * FROM 
-(SELECT CAST(a.key AS BIGINT) AS key, CAST(b.key AS CHAR(20)) AS value FROM t1 a JOIN t2 b ON a.key = b.key
-UNION DISTINCT
-SELECT CAST(key AS DOUBLE) AS key, CAST(key AS STRING) AS value FROM t2) a
-PREHOOK: type: QUERY
-PREHOOK: Input: default@t1
-PREHOOK: Input: default@t2
-#### A masked pattern was here ####
-POSTHOOK: query: SELECT * FROM 
-(SELECT CAST(a.key AS BIGINT) AS key, CAST(b.key AS CHAR(20)) AS value FROM t1 a JOIN t2 b ON a.key = b.key
-UNION DISTINCT
-SELECT CAST(key AS DOUBLE) AS key, CAST(key AS STRING) AS value FROM t2) a
-POSTHOOK: type: QUERY
-POSTHOOK: Input: default@t1
-POSTHOOK: Input: default@t2
-#### A masked pattern was here ####
-0.0	0
-2.0	2
-4.0	4
-5.0	5
-8.0	8
-9.0	9
-PREHOOK: query: -- Test union with join on the right selecting multiple columns
-EXPLAIN
-SELECT * FROM 
-(SELECT CAST(key AS DOUBLE) AS key, CAST(key AS STRING) AS value FROM t2
-UNION DISTINCT
-SELECT CAST(a.key AS BIGINT) AS key, CAST(b.key AS VARCHAR(20)) AS value FROM t1 a JOIN t2 b ON a.key = b.key) a
-PREHOOK: type: QUERY
-POSTHOOK: query: -- Test union with join on the right selecting multiple columns
-EXPLAIN
-SELECT * FROM 
-(SELECT CAST(key AS DOUBLE) AS key, CAST(key AS STRING) AS value FROM t2
-UNION DISTINCT
-SELECT CAST(a.key AS BIGINT) AS key, CAST(b.key AS VARCHAR(20)) AS value FROM t1 a JOIN t2 b ON a.key = b.key) a
-POSTHOOK: type: QUERY
-STAGE DEPENDENCIES:
-  Stage-1 is a root stage
-  Stage-0 depends on stages: Stage-1
-
-STAGE PLANS:
-  Stage: Stage-1
-    Tez
-#### A masked pattern was here ####
-      Edges:
-        Map 1 <- Union 2 (CONTAINS)
-        Map 4 <- Map 5 (BROADCAST_EDGE), Union 2 (CONTAINS)
-        Reducer 3 <- Union 2 (SIMPLE_EDGE)
-#### A masked pattern was here ####
-      Vertices:
-        Map 1 
-            Map Operator Tree:
-                TableScan
-                  alias: t2
-                  Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
-                  Select Operator
-                    expressions: UDFToDouble(key) (type: double), key (type: string)
-                    outputColumnNames: _col0, _col1
-                    Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
-                    Group By Operator
-                      keys: _col0 (type: double), _col1 (type: string)
-                      mode: hash
-                      outputColumnNames: _col0, _col1
-                      Statistics: Num rows: 21 Data size: 147 Basic stats: COMPLETE Column stats: NONE
-                      Reduce Output Operator
-                        key expressions: _col0 (type: double), _col1 (type: string)
-                        sort order: ++
-                        Map-reduce partition columns: _col0 (type: double), _col1 (type: string)
-                        Statistics: Num rows: 21 Data size: 147 Basic stats: COMPLETE Column stats: NONE
-            Execution mode: llap
-            LLAP IO: no inputs
-        Map 4 
-            Map Operator Tree:
-                TableScan
-                  alias: a
-                  Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
-                  Filter Operator
-                    predicate: key is not null (type: boolean)
-                    Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
-                    Select Operator
-                      expressions: key (type: string)
-                      outputColumnNames: _col0
-                      Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
-                      Map Join Operator
-                        condition map:
-                             Inner Join 0 to 1
-                        keys:
-                          0 _col0 (type: string)
-                          1 _col0 (type: string)
-                        outputColumnNames: _col0, _col1
-                        input vertices:
-                          1 Map 5
                         Statistics: Num rows: 11 Data size: 77 Basic stats: COMPLETE Column stats: NONE
                         Select Operator
                           expressions: UDFToDouble(UDFToLong(_col0)) (type: double), _col1 (type: string)
@@ -13768,6 +13363,177 @@ STAGE PLANS:
                               Statistics: Num rows: 21 Data size: 147 Basic stats: COMPLETE Column stats: NONE
             Execution mode: llap
             LLAP IO: no inputs
+        Map 4 
+            Map Operator Tree:
+                TableScan
+                  alias: b
+                  Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: key is not null (type: boolean)
+                    Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: key (type: string)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: llap
+            LLAP IO: no inputs
+        Map 5 
+            Map Operator Tree:
+                TableScan
+                  alias: t2
+                  Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: UDFToDouble(key) (type: double), key (type: string)
+                    outputColumnNames: _col0, _col1
+                    Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
+                    Group By Operator
+                      keys: _col0 (type: double), _col1 (type: string)
+                      mode: hash
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 21 Data size: 147 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: double), _col1 (type: string)
+                        sort order: ++
+                        Map-reduce partition columns: _col0 (type: double), _col1 (type: string)
+                        Statistics: Num rows: 21 Data size: 147 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: llap
+            LLAP IO: no inputs
+        Reducer 3 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Group By Operator
+                keys: KEY._col0 (type: double), KEY._col1 (type: string)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+        Union 2 
+            Vertex: Union 2
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SELECT * FROM 
+(SELECT CAST(a.key AS BIGINT) AS key, CAST(b.key AS CHAR(20)) AS value FROM t1 a JOIN t2 b ON a.key = b.key
+UNION DISTINCT
+SELECT CAST(key AS DOUBLE) AS key, CAST(key AS STRING) AS value FROM t2) a
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+PREHOOK: Input: default@t2
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM 
+(SELECT CAST(a.key AS BIGINT) AS key, CAST(b.key AS CHAR(20)) AS value FROM t1 a JOIN t2 b ON a.key = b.key
+UNION DISTINCT
+SELECT CAST(key AS DOUBLE) AS key, CAST(key AS STRING) AS value FROM t2) a
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t2
+#### A masked pattern was here ####
+0.0	0
+2.0	2
+4.0	4
+5.0	5
+8.0	8
+9.0	9
+PREHOOK: query: EXPLAIN
+SELECT * FROM 
+(SELECT CAST(key AS DOUBLE) AS key, CAST(key AS STRING) AS value FROM t2
+UNION DISTINCT
+SELECT CAST(a.key AS BIGINT) AS key, CAST(b.key AS VARCHAR(20)) AS value FROM t1 a JOIN t2 b ON a.key = b.key) a
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+SELECT * FROM 
+(SELECT CAST(key AS DOUBLE) AS key, CAST(key AS STRING) AS value FROM t2
+UNION DISTINCT
+SELECT CAST(a.key AS BIGINT) AS key, CAST(b.key AS VARCHAR(20)) AS value FROM t1 a JOIN t2 b ON a.key = b.key) a
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Map 1 <- Union 2 (CONTAINS)
+        Map 4 <- Map 5 (BROADCAST_EDGE), Union 2 (CONTAINS)
+        Reducer 3 <- Union 2 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: t2
+                  Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: UDFToDouble(key) (type: double), key (type: string)
+                    outputColumnNames: _col0, _col1
+                    Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
+                    Group By Operator
+                      keys: _col0 (type: double), _col1 (type: string)
+                      mode: hash
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 21 Data size: 147 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: double), _col1 (type: string)
+                        sort order: ++
+                        Map-reduce partition columns: _col0 (type: double), _col1 (type: string)
+                        Statistics: Num rows: 21 Data size: 147 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: llap
+            LLAP IO: no inputs
+        Map 4 
+            Map Operator Tree:
+                TableScan
+                  alias: a
+                  Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: key is not null (type: boolean)
+                    Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: key (type: string)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
+                      Map Join Operator
+                        condition map:
+                             Inner Join 0 to 1
+                        keys:
+                          0 _col0 (type: string)
+                          1 _col0 (type: string)
+                        outputColumnNames: _col0, _col1
+                        input vertices:
+                          1 Map 5
+                        Statistics: Num rows: 11 Data size: 77 Basic stats: COMPLETE Column stats: NONE
+                        Select Operator
+                          expressions: UDFToDouble(UDFToLong(_col0)) (type: double), UDFToString(CAST( _col1 AS varchar(20))) (type: string)
+                          outputColumnNames: _col0, _col1
+                          Statistics: Num rows: 11 Data size: 77 Basic stats: COMPLETE Column stats: NONE
+                          Group By Operator
+                            keys: _col0 (type: double), _col1 (type: string)
+                            mode: hash
+                            outputColumnNames: _col0, _col1
+                            Statistics: Num rows: 21 Data size: 147 Basic stats: COMPLETE Column stats: NONE
+                            Reduce Output Operator
+                              key expressions: _col0 (type: double), _col1 (type: string)
+                              sort order: ++
+                              Map-reduce partition columns: _col0 (type: double), _col1 (type: string)
+                              Statistics: Num rows: 21 Data size: 147 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: llap
+            LLAP IO: no inputs
         Map 5 
             Map Operator Tree:
                 TableScan
@@ -13833,21 +13599,9 @@ POSTHOOK: Input: default@t2
 5.0	5
 8.0	8
 9.0	9
-PREHOOK: query: -- union33.q
-
--- SORT_BEFORE_DIFF
--- This tests that a UNION DISTINCT with a map only subquery on one side and a 
--- subquery involving two map reduce jobs on the other runs correctly.
-
-drop table if exists test_src
+PREHOOK: query: drop table if exists test_src
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: -- union33.q
-
--- SORT_BEFORE_DIFF
--- This tests that a UNION DISTINCT with a map only subquery on one side and a 
--- subquery involving two map reduce jobs on the other runs correctly.
-
-drop table if exists test_src
+POSTHOOK: query: drop table if exists test_src
 POSTHOOK: type: DROPTABLE
 PREHOOK: query: CREATE TABLE test_src (key STRING, value STRING)
 PREHOOK: type: CREATETABLE
@@ -14299,18 +14053,14 @@ POSTHOOK: query: analyze table src10_4 compute statistics
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src10_4
 POSTHOOK: Output: default@src10_4
-PREHOOK: query: -- When we convert the Join of sub1 and sub0 into a MapJoin,
--- we can use a single MR job to evaluate this entire query.
-explain
+PREHOOK: query: explain
 SELECT * FROM (
   SELECT sub1.key,sub1.value FROM (SELECT * FROM src10_1) sub1 JOIN (SELECT * FROM src10_2) sub0 ON (sub0.key = sub1.key)
   UNION DISTINCT
   SELECT key,value FROM (SELECT * FROM (SELECT * FROM src10_3) sub2 UNION DISTINCT SELECT * FROM src10_4 ) alias0
 ) alias1
 PREHOOK: type: QUERY
-POSTHOOK: query: -- When we convert the Join of sub1 and sub0 into a MapJoin,
--- we can use a single MR job to evaluate this entire query.
-explain
+POSTHOOK: query: explain
 SELECT * FROM (
   SELECT sub1.key,sub1.value FROM (SELECT * FROM src10_1) sub1 JOIN (SELECT * FROM src10_2) sub0 ON (sub0.key = sub1.key)
   UNION DISTINCT
@@ -14504,22 +14254,14 @@ POSTHOOK: Input: default@src10_4
 484	val_484
 86	val_86
 98	val_98
-PREHOOK: query: -- When we do not convert the Join of sub1 and sub0 into a MapJoin,
--- we need to use two MR jobs to evaluate this query.
--- The first job is for the Join of sub1 and sub2. The second job
--- is for the UNION DISTINCT and ORDER BY.
-explain
+PREHOOK: query: explain
 SELECT * FROM (
   SELECT sub1.key,sub1.value FROM (SELECT * FROM src10_1) sub1 JOIN (SELECT * FROM src10_2) sub0 ON (sub0.key = sub1.key)
   UNION DISTINCT
   SELECT key,value FROM (SELECT * FROM (SELECT * FROM src10_3) sub2 UNION DISTINCT SELECT * FROM src10_4 ) alias0
 ) alias1
 PREHOOK: type: QUERY
-POSTHOOK: query: -- When we do not convert the Join of sub1 and sub0 into a MapJoin,
--- we need to use two MR jobs to evaluate this query.
--- The first job is for the Join of sub1 and sub2. The second job
--- is for the UNION DISTINCT and ORDER BY.
-explain
+POSTHOOK: query: explain
 SELECT * FROM (
   SELECT sub1.key,sub1.value FROM (SELECT * FROM src10_1) sub1 JOIN (SELECT * FROM src10_2) sub0 ON (sub0.key = sub1.key)
   UNION DISTINCT
@@ -14720,23 +14462,11 @@ POSTHOOK: Input: default@src10_4
 484	val_484
 86	val_86
 98	val_98
-PREHOOK: query: -- union4.q
-
- 
-
--- union case: both subqueries are map-reduce jobs on same input, followed by filesink
-
-drop table if exists tmptable
+PREHOOK: query: drop table if exists tmptable
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@tmptable
 PREHOOK: Output: default@tmptable
-POSTHOOK: query: -- union4.q
-
- 
-
--- union case: both subqueries are map-reduce jobs on same input, followed by filesink
-
-drop table if exists tmptable
+POSTHOOK: query: drop table if exists tmptable
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@tmptable
 POSTHOOK: Output: default@tmptable
@@ -14921,24 +14651,12 @@ POSTHOOK: Input: default@tmptable
 #### A masked pattern was here ####
 tst1	500
 tst2	500
-PREHOOK: query: -- union5.q
-
- 
--- SORT_BEFORE_DIFF
--- union case: both subqueries are map-reduce jobs on same input, followed by reduce sink
-
-explain 
+PREHOOK: query: explain 
   select unionsrc.key, count(1) FROM (select 'tst1' as key, count(1) as value from src s1
                                     UNION DISTINCT  
                                       select 'tst2' as key, count(1) as value from src s2) unionsrc group by unionsrc.key
 PREHOOK: type: QUERY
-POSTHOOK: query: -- union5.q
-
- 
--- SORT_BEFORE_DIFF
--- union case: both subqueries are map-reduce jobs on same input, followed by reduce sink
-
-explain 
+POSTHOOK: query: explain 
   select unionsrc.key, count(1) FROM (select 'tst1' as key, count(1) as value from src s1
                                     UNION DISTINCT  
                                       select 'tst2' as key, count(1) as value from src s2) unionsrc group by unionsrc.key
@@ -15085,23 +14803,11 @@ POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 tst1	1
 tst2	1
-PREHOOK: query: -- union6.q
-
- 
-
--- union case: 1 subquery is a map-reduce job, different inputs for sub-queries, followed by filesink
-
-drop table if exists tmptable
+PREHOOK: query: drop table if exists tmptable
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@tmptable
 PREHOOK: Output: default@tmptable
-POSTHOOK: query: -- union6.q
-
- 
-
--- union case: 1 subquery is a map-reduce job, different inputs for sub-queries, followed by filesink
-
-drop table if exists tmptable
+POSTHOOK: query: drop table if exists tmptable
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@tmptable
 POSTHOOK: Output: default@tmptable
@@ -15286,26 +14992,12 @@ POSTHOOK: Input: default@tmptable
 66	val_66
 98	val_98
 tst1	500
-PREHOOK: query: -- union7.q
-
- 
-
--- SORT_BEFORE_DIFF
--- union case: 1 subquery is a map-reduce job, different inputs for sub-queries, followed by reducesink
-
-explain 
+PREHOOK: query: explain 
   select unionsrc.key, count(1) FROM (select 'tst1' as key, cast(count(1) as string) as value from src s1
                                         UNION DISTINCT  
                                             select s2.key as key, s2.value as value from src1 s2) unionsrc group by unionsrc.key
 PREHOOK: type: QUERY
-POSTHOOK: query: -- union7.q
-
- 
-
--- SORT_BEFORE_DIFF
--- union case: 1 subquery is a map-reduce job, different inputs for sub-queries, followed by reducesink
-
-explain 
+POSTHOOK: query: explain 
   select unionsrc.key, count(1) FROM (select 'tst1' as key, cast(count(1) as string) as value from src s1
                                         UNION DISTINCT  
                                             select s2.key as key, s2.value as value from src1 s2) unionsrc group by unionsrc.key
@@ -15450,22 +15142,12 @@ POSTHOOK: Input: default@src1
 66	1
 98	1
 tst1	1
-PREHOOK: query: -- union8.q
-
--- SORT_BEFORE_DIFF
--- union case: all subqueries are a map-only jobs, 3 way union, same input for all sub-queries, followed by filesink
-
-explain 
+PREHOOK: query: explain 
   select unionsrc.key, unionsrc.value FROM (select s1.key as key, s1.value as value from src s1 UNION DISTINCT  
                                             select s2.key as key, s2.value as value from src s2 UNION DISTINCT  
                                             select s3.key as key, s3.value as value from src s3) unionsrc
 PREHOOK: type: QUERY
-POSTHOOK: query: -- union8.q
-
--- SORT_BEFORE_DIFF
--- union case: all subqueries are a map-only jobs, 3 way union, same input for all sub-queries, followed by filesink
-
-explain 
+POSTHOOK: query: explain 
   select unionsrc.key, unionsrc.value FROM (select s1.key as key, s1.value as value from src s1 UNION DISTINCT  
                                             select s2.key as key, s2.value as value from src s2 UNION DISTINCT  
                                             select s3.key as key, s3.value as value from src s3) unionsrc
@@ -15914,22 +15596,12 @@ POSTHOOK: Input: default@src
 96	val_96
 97	val_97
 98	val_98
-PREHOOK: query: -- union9.q
-
--- SORT_BEFORE_DIFF
--- union case: all subqueries are a map-only jobs, 3 way union, same input for all sub-queries, followed by reducesink
-
-explain 
+PREHOOK: query: explain 
   select count(1) FROM (select s1.key as key, s1.value as value from src s1 UNION DISTINCT  
                         select s2.key as key, s2.value as value from src s2 UNION DISTINCT
                         select s3.key as key, s3.value as value from src s3) unionsrc
 PREHOOK: type: QUERY
-POSTHOOK: query: -- union9.q
-
--- SORT_BEFORE_DIFF
--- union case: all subqueries are a map-only jobs, 3 way union, same input for all sub-queries, followed by reducesink
-
-explain 
+POSTHOOK: query: explain 
   select count(1) FROM (select s1.key as key, s1.value as value from src s1 UNION DISTINCT  
                         select s2.key as key, s2.value as value from src s2 UNION DISTINCT
                         select s3.key as key, s3.value as value from src s3) unionsrc

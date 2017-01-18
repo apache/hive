@@ -60,13 +60,11 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: -- (-∞‥+∞)
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT `__time`
 FROM druid_table_1
 PREHOOK: type: QUERY
-POSTHOOK: query: -- (-∞‥+∞)
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT `__time`
 FROM druid_table_1
 POSTHOOK: type: QUERY
@@ -90,14 +88,12 @@ STAGE PLANS:
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             ListSink
 
-PREHOOK: query: -- (-∞‥2012-03-01 00:00:00)
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT `__time`
 FROM druid_table_1
 WHERE `__time` < '2012-03-01 00:00:00'
 PREHOOK: type: QUERY
-POSTHOOK: query: -- (-∞‥2012-03-01 00:00:00)
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT `__time`
 FROM druid_table_1
 WHERE `__time` < '2012-03-01 00:00:00'
@@ -122,14 +118,12 @@ STAGE PLANS:
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             ListSink
 
-PREHOOK: query: -- [2010-01-01 00:00:00‥2012-03-01 00:00:00)
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT `__time`
 FROM druid_table_1
 WHERE `__time` >= '2010-01-01 00:00:00' AND `__time` <= '2012-03-01 00:00:00'
 PREHOOK: type: QUERY
-POSTHOOK: query: -- [2010-01-01 00:00:00‥2012-03-01 00:00:00)
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT `__time`
 FROM druid_table_1
 WHERE `__time` >= '2010-01-01 00:00:00' AND `__time` <= '2012-03-01 00:00:00'
@@ -154,15 +148,13 @@ STAGE PLANS:
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             ListSink
 
-PREHOOK: query: -- [2010-01-01 00:00:00‥2011-01-01 00:00:00)
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT `__time`
 FROM druid_table_1
 WHERE `__time` >= '2010-01-01 00:00:00' AND `__time` <= '2012-03-01 00:00:00'
     AND `__time` < '2011-01-01 00:00:00'
 PREHOOK: type: QUERY
-POSTHOOK: query: -- [2010-01-01 00:00:00‥2011-01-01 00:00:00)
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT `__time`
 FROM druid_table_1
 WHERE `__time` >= '2010-01-01 00:00:00' AND `__time` <= '2012-03-01 00:00:00'
@@ -188,14 +180,12 @@ STAGE PLANS:
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             ListSink
 
-PREHOOK: query: -- [2010-01-01 00:00:00‥2011-01-01 00:00:00]
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT `__time`
 FROM druid_table_1
 WHERE `__time` BETWEEN '2010-01-01 00:00:00' AND '2011-01-01 00:00:00'
 PREHOOK: type: QUERY
-POSTHOOK: query: -- [2010-01-01 00:00:00‥2011-01-01 00:00:00]
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT `__time`
 FROM druid_table_1
 WHERE `__time` BETWEEN '2010-01-01 00:00:00' AND '2011-01-01 00:00:00'
@@ -220,15 +210,13 @@ STAGE PLANS:
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             ListSink
 
-PREHOOK: query: -- [2010-01-01 00:00:00‥2011-01-01 00:00:00],[2012-01-01 00:00:00‥2013-01-01 00:00:00]
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT `__time`
 FROM druid_table_1
 WHERE (`__time` BETWEEN '2010-01-01 00:00:00' AND '2011-01-01 00:00:00')
     OR (`__time` BETWEEN '2012-01-01 00:00:00' AND '2013-01-01 00:00:00')
 PREHOOK: type: QUERY
-POSTHOOK: query: -- [2010-01-01 00:00:00‥2011-01-01 00:00:00],[2012-01-01 00:00:00‥2013-01-01 00:00:00]
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT `__time`
 FROM druid_table_1
 WHERE (`__time` BETWEEN '2010-01-01 00:00:00' AND '2011-01-01 00:00:00')
@@ -254,15 +242,13 @@ STAGE PLANS:
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             ListSink
 
-PREHOOK: query: -- OVERLAP [2010-01-01 00:00:00‥2012-01-01 00:00:00]
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT `__time`
 FROM druid_table_1
 WHERE (`__time` BETWEEN '2010-01-01 00:00:00' AND '2011-01-01 00:00:00')
     OR (`__time` BETWEEN '2010-06-01 00:00:00' AND '2012-01-01 00:00:00')
 PREHOOK: type: QUERY
-POSTHOOK: query: -- OVERLAP [2010-01-01 00:00:00‥2012-01-01 00:00:00]
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT `__time`
 FROM druid_table_1
 WHERE (`__time` BETWEEN '2010-01-01 00:00:00' AND '2011-01-01 00:00:00')
@@ -288,14 +274,12 @@ STAGE PLANS:
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             ListSink
 
-PREHOOK: query: -- IN: MULTIPLE INTERVALS [2010-01-01 00:00:00‥2010-01-01 00:00:00),[2011-01-01 00:00:00‥2011-01-01 00:00:00)
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT `__time`
 FROM druid_table_1
 WHERE `__time` IN ('2010-01-01 00:00:00','2011-01-01 00:00:00')
 PREHOOK: type: QUERY
-POSTHOOK: query: -- IN: MULTIPLE INTERVALS [2010-01-01 00:00:00‥2010-01-01 00:00:00),[2011-01-01 00:00:00‥2011-01-01 00:00:00)
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT `__time`
 FROM druid_table_1
 WHERE `__time` IN ('2010-01-01 00:00:00','2011-01-01 00:00:00')

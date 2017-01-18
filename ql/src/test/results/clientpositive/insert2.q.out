@@ -1,11 +1,7 @@
-PREHOOK: query: -- SORT_QUERY_RESULTS
-
-USE default
+PREHOOK: query: USE default
 PREHOOK: type: SWITCHDATABASE
 PREHOOK: Input: database:default
-POSTHOOK: query: -- SORT_QUERY_RESULTS
-
-USE default
+POSTHOOK: query: USE default
 POSTHOOK: type: SWITCHDATABASE
 POSTHOOK: Input: database:default
 PREHOOK: query: CREATE DATABASE db1

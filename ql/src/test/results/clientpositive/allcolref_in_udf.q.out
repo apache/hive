@@ -57,18 +57,12 @@ POSTHOOK: Input: default@src
 17val_17	["17","val_17"]
 0val_0	["0","val_0"]
 57val_57	["57","val_57"]
-PREHOOK: query: -- The order of columns is decided by row schema of prev operator
--- Like join which has two or more aliases, it's from left most aias to right aliases.
-
-explain
+PREHOOK: query: explain
 select stack(2, *) as (e1,e2,e3) from (
   select concat(*), concat(a.*), concat(b.*), concat(a.*, b.key), concat(a.key, b.*)
   from src a join src b on a.key+1=b.key where a.key < 100) x limit 10
 PREHOOK: type: QUERY
-POSTHOOK: query: -- The order of columns is decided by row schema of prev operator
--- Like join which has two or more aliases, it's from left most aias to right aliases.
-
-explain
+POSTHOOK: query: explain
 select stack(2, *) as (e1,e2,e3) from (
   select concat(*), concat(a.*), concat(b.*), concat(a.*, b.key), concat(a.key, b.*)
   from src a join src b on a.key+1=b.key where a.key < 100) x limit 10
@@ -172,14 +166,12 @@ POSTHOOK: Input: default@src
 8val_89	NULL	9val_9
 9val_910val_10	9val_9	10val_10
 9val_910	NULL	10val_10
-PREHOOK: query: -- HIVE-4181 TOK_FUNCTIONSTAR for UDTF
-create table allcolref as select array(key, value) from src
+PREHOOK: query: create table allcolref as select array(key, value) from src
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@src
 PREHOOK: Output: database:default
 PREHOOK: Output: default@allcolref
-POSTHOOK: query: -- HIVE-4181 TOK_FUNCTIONSTAR for UDTF
-create table allcolref as select array(key, value) from src
+POSTHOOK: query: create table allcolref as select array(key, value) from src
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default

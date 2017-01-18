@@ -1,15 +1,9 @@
-PREHOOK: query: -- This test is used for testing EXPLAIN LOGICAL command
-
--- Create some views
-CREATE VIEW V1 AS SELECT key, value from src
+PREHOOK: query: CREATE VIEW V1 AS SELECT key, value from src
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: default@src
 PREHOOK: Output: database:default
 PREHOOK: Output: default@V1
-POSTHOOK: query: -- This test is used for testing EXPLAIN LOGICAL command
-
--- Create some views
-CREATE VIEW V1 AS SELECT key, value from src
+POSTHOOK: query: CREATE VIEW V1 AS SELECT key, value from src
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
@@ -62,12 +56,10 @@ POSTHOOK: Input: default@v1
 POSTHOOK: Input: default@v2
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@V4
-PREHOOK: query: -- Simple select queries, union queries and join queries
-EXPLAIN LOGICAL 
+PREHOOK: query: EXPLAIN LOGICAL 
   SELECT key, count(1) FROM srcpart WHERE ds IS NOT NULL GROUP BY key
 PREHOOK: type: QUERY
-POSTHOOK: query: -- Simple select queries, union queries and join queries
-EXPLAIN LOGICAL 
+POSTHOOK: query: EXPLAIN LOGICAL 
   SELECT key, count(1) FROM srcpart WHERE ds IS NOT NULL GROUP BY key
 POSTHOOK: type: QUERY
 LOGICAL PLAN:
@@ -253,11 +245,9 @@ $hdt$_1:s2
             outputColumnNames: _col0, _col2
             Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
 
-PREHOOK: query: -- With views
-EXPLAIN LOGICAL SELECT * FROM V1
+PREHOOK: query: EXPLAIN LOGICAL SELECT * FROM V1
 PREHOOK: type: QUERY
-POSTHOOK: query: -- With views
-EXPLAIN LOGICAL SELECT * FROM V1
+POSTHOOK: query: EXPLAIN LOGICAL SELECT * FROM V1
 POSTHOOK: type: QUERY
 LOGICAL PLAN:
 src 
@@ -462,16 +452,12 @@ $hdt$_2:src3
             outputColumnNames: _col1, _col2, _col4
             Statistics: Num rows: 4400 Data size: 46745 Basic stats: COMPLETE Column stats: NONE
 
-PREHOOK: query: -- The table should show up in the explain logical even if none
--- of the partitions are selected.
-CREATE VIEW V5 as SELECT * FROM srcpart where ds = '10'
+PREHOOK: query: CREATE VIEW V5 as SELECT * FROM srcpart where ds = '10'
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: default@srcpart
 PREHOOK: Output: database:default
 PREHOOK: Output: default@V5
-POSTHOOK: query: -- The table should show up in the explain logical even if none
--- of the partitions are selected.
-CREATE VIEW V5 as SELECT * FROM srcpart where ds = '10'
+POSTHOOK: query: CREATE VIEW V5 as SELECT * FROM srcpart where ds = '10'
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@srcpart
 POSTHOOK: Output: database:default

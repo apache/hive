@@ -22,15 +22,11 @@ FIELDS TERMINATED BY '|'
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@parquet_mixed_fileformat
-PREHOOK: query: ---- partition dateint=20140330 is stored as TEXTFILE
-
-LOAD DATA LOCAL INPATH '../../data/files/parquet_partitioned.txt' OVERWRITE INTO TABLE parquet_mixed_fileformat PARTITION (dateint=20140330)
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/parquet_partitioned.txt' OVERWRITE INTO TABLE parquet_mixed_fileformat PARTITION (dateint=20140330)
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
 PREHOOK: Output: default@parquet_mixed_fileformat
-POSTHOOK: query: ---- partition dateint=20140330 is stored as TEXTFILE
-
-LOAD DATA LOCAL INPATH '../../data/files/parquet_partitioned.txt' OVERWRITE INTO TABLE parquet_mixed_fileformat PARTITION (dateint=20140330)
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/parquet_partitioned.txt' OVERWRITE INTO TABLE parquet_mixed_fileformat PARTITION (dateint=20140330)
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@parquet_mixed_fileformat
@@ -88,15 +84,11 @@ Sort Columns:       	[]
 Storage Desc Params:	 	 
 	field.delim         	|                   
 	serialization.format	|                   
-PREHOOK: query: ---change table serde and file format to PARQUET----
-
-ALTER TABLE parquet_mixed_fileformat set SERDE 'org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe'
+PREHOOK: query: ALTER TABLE parquet_mixed_fileformat set SERDE 'org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe'
 PREHOOK: type: ALTERTABLE_SERIALIZER
 PREHOOK: Input: default@parquet_mixed_fileformat
 PREHOOK: Output: default@parquet_mixed_fileformat
-POSTHOOK: query: ---change table serde and file format to PARQUET----
-
-ALTER TABLE parquet_mixed_fileformat set SERDE 'org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe'
+POSTHOOK: query: ALTER TABLE parquet_mixed_fileformat set SERDE 'org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe'
 POSTHOOK: type: ALTERTABLE_SERIALIZER
 POSTHOOK: Input: default@parquet_mixed_fileformat
 POSTHOOK: Output: default@parquet_mixed_fileformat

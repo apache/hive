@@ -794,14 +794,12 @@ POSTHOOK: Input: default@src
 76	val_76	2
 74	val_74	1
 72	val_72	2
-PREHOOK: query: -- NOT APPLICABLE
-explain
+PREHOOK: query: explain
 select value, avg(key + 1) myavg from src
 group by value
 order by myavg, value desc limit 20
 PREHOOK: type: QUERY
-POSTHOOK: query: -- NOT APPLICABLE
-explain
+POSTHOOK: query: explain
 select value, avg(key + 1) myavg from src
 group by value
 order by myavg, value desc limit 20
@@ -911,14 +909,12 @@ val_27	28.0
 val_28	29.0
 val_30	31.0
 val_33	34.0
-PREHOOK: query: -- NOT APPLICABLE
-explain
+PREHOOK: query: explain
 select key, value, avg(key + 1) from src
 group by value, key with rollup
 order by key, value limit 20
 PREHOOK: type: QUERY
-POSTHOOK: query: -- NOT APPLICABLE
-explain
+POSTHOOK: query: explain
 select key, value, avg(key + 1) from src
 group by value, key with rollup
 order by key, value limit 20

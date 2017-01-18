@@ -23,9 +23,7 @@ GROUP BY CAST(key AS INT) DIV 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
-POSTHOOK: query: -- SORT_QUERY_RESULTS
-
-SELECT CAST(key AS INT) DIV 10,
+POSTHOOK: query: SELECT CAST(key AS INT) DIV 10,
        count(distinct(value)),
        percentile(CAST(substr(value, 5) AS INT), 0.0),
        percentile(CAST(substr(value, 5) AS INT), 0.5),

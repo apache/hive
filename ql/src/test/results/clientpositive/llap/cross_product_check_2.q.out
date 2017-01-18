@@ -1,14 +1,10 @@
-PREHOOK: query: -- SORT_QUERY_RESULTS
-
-create table A as
+PREHOOK: query: create table A as
 select * from src
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@src
 PREHOOK: Output: database:default
 PREHOOK: Output: default@A
-POSTHOOK: query: -- SORT_QUERY_RESULTS
-
-create table A as
+POSTHOOK: query: create table A as
 select * from src
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src

@@ -30,16 +30,14 @@ POSTHOOK: Lineage: varchar_udf_1.d1 SIMPLE []
 POSTHOOK: Lineage: varchar_udf_1.d2 SIMPLE []
 POSTHOOK: Lineage: varchar_udf_1.d3 EXPRESSION []
 POSTHOOK: Lineage: varchar_udf_1.d4 EXPRESSION []
-PREHOOK: query: -- UDFs with varchar support
-explain
+PREHOOK: query: explain
 select 
   concat(c1, c2),
   concat(c3, c4),
   concat(c1, c2) = concat(c3, c4)
 from varchar_udf_1 limit 1
 PREHOOK: type: QUERY
-POSTHOOK: query: -- UDFs with varchar support
-explain
+POSTHOOK: query: explain
 select 
   concat(c1, c2),
   concat(c3, c4),
@@ -236,16 +234,14 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@varchar_udf_1
 #### A masked pattern was here ####
 val_238	val_238	true
-PREHOOK: query: -- Scalar UDFs
-explain
+PREHOOK: query: explain
 select
   ascii(c2),
   ascii(c4),
   ascii(c2) = ascii(c4)
 from varchar_udf_1 limit 1
 PREHOOK: type: QUERY
-POSTHOOK: query: -- Scalar UDFs
-explain
+POSTHOOK: query: explain
 select
   ascii(c2),
   ascii(c4),
@@ -1790,15 +1786,13 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@varchar_udf_1
 #### A masked pattern was here ####
 val_238	val_238	true
-PREHOOK: query: -- Aggregate Functions
-explain
+PREHOOK: query: explain
 select
   compute_stats(c2, 16),
   compute_stats(c4, 16)
 from varchar_udf_1
 PREHOOK: type: QUERY
-POSTHOOK: query: -- Aggregate Functions
-explain
+POSTHOOK: query: explain
 select
   compute_stats(c2, 16),
   compute_stats(c4, 16)

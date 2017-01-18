@@ -76,12 +76,10 @@ POSTHOOK: type: SHOWTABLES
 POSTHOOK: Input: database:default
 shtb_test1
 shtb_test2
-PREHOOK: query: -- SHOW TABLES FROM/IN database
-CREATE DATABASE test_db
+PREHOOK: query: CREATE DATABASE test_db
 PREHOOK: type: CREATEDATABASE
 PREHOOK: Output: database:test_db
-POSTHOOK: query: -- SHOW TABLES FROM/IN database
-CREATE DATABASE test_db
+POSTHOOK: query: CREATE DATABASE test_db
 POSTHOOK: type: CREATEDATABASE
 POSTHOOK: Output: database:test_db
 PREHOOK: query: USE test_db
@@ -114,12 +112,10 @@ POSTHOOK: query: CREATE TABLE baz(a INT)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:test_db
 POSTHOOK: Output: test_db@baz
-PREHOOK: query: -- SHOW TABLES basic syntax tests
-USE default
+PREHOOK: query: USE default
 PREHOOK: type: SWITCHDATABASE
 PREHOOK: Input: database:default
-POSTHOOK: query: -- SHOW TABLES basic syntax tests
-USE default
+POSTHOOK: query: USE default
 POSTHOOK: type: SWITCHDATABASE
 POSTHOOK: Input: database:default
 PREHOOK: query: SHOW TABLES FROM test_db
@@ -198,11 +194,9 @@ PREHOOK: Input: database:test_db
 POSTHOOK: query: SHOW TABLES IN test_db LIKE "nomatch"
 POSTHOOK: type: SHOWTABLES
 POSTHOOK: Input: database:test_db
-PREHOOK: query: -- SHOW TABLE EXTENDED basic syntax tests and wildcard
-SHOW TABLE EXTENDED IN test_db LIKE foo
+PREHOOK: query: SHOW TABLE EXTENDED IN test_db LIKE foo
 PREHOOK: type: SHOW_TABLESTATUS
-POSTHOOK: query: -- SHOW TABLE EXTENDED basic syntax tests and wildcard
-SHOW TABLE EXTENDED IN test_db LIKE foo
+POSTHOOK: query: SHOW TABLE EXTENDED IN test_db LIKE foo
 POSTHOOK: type: SHOW_TABLESTATUS
 tableName:foo
 #### A masked pattern was here ####
@@ -358,12 +352,10 @@ maxFileSize:0
 minFileSize:0
 #### A masked pattern was here ####
 
-PREHOOK: query: -- SHOW TABLES from a database with a name that requires escaping
-CREATE DATABASE `database`
+PREHOOK: query: CREATE DATABASE `database`
 PREHOOK: type: CREATEDATABASE
 PREHOOK: Output: database:database
-POSTHOOK: query: -- SHOW TABLES from a database with a name that requires escaping
-CREATE DATABASE `database`
+POSTHOOK: query: CREATE DATABASE `database`
 POSTHOOK: type: CREATEDATABASE
 POSTHOOK: Output: database:database
 PREHOOK: query: USE `database`

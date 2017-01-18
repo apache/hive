@@ -1,30 +1,8 @@
-PREHOOK: query: -- SORT_QUERY_RESULTS
---
--- We currently do not support null safes (i.e the <=> operator) in native vector map join.
--- The explain output will show vectorized execution for both.  We verify the query
--- results are the same (HIVE-10628 shows native will produce the wrong results
--- otherwise).
---
--- This query for "HIVE-3315 join predicate transitive" triggers HIVE-10640-
--- explain select * from myinput1 a join myinput1 b on a.key<=>b.value AND a.key is NULL;
--- select * from myinput1 a join myinput1 b on a.key<=>b.value AND a.key is NULL;
---
-CREATE TABLE myinput1_txt(key int, value int)
+PREHOOK: query: CREATE TABLE myinput1_txt(key int, value int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@myinput1_txt
-POSTHOOK: query: -- SORT_QUERY_RESULTS
---
--- We currently do not support null safes (i.e the <=> operator) in native vector map join.
--- The explain output will show vectorized execution for both.  We verify the query
--- results are the same (HIVE-10628 shows native will produce the wrong results
--- otherwise).
---
--- This query for "HIVE-3315 join predicate transitive" triggers HIVE-10640-
--- explain select * from myinput1 a join myinput1 b on a.key<=>b.value AND a.key is NULL;
--- select * from myinput1 a join myinput1 b on a.key<=>b.value AND a.key is NULL;
---
-CREATE TABLE myinput1_txt(key int, value int)
+POSTHOOK: query: CREATE TABLE myinput1_txt(key int, value int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@myinput1_txt
@@ -48,11 +26,9 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@myinput1
 POSTHOOK: Lineage: myinput1.key SIMPLE [(myinput1_txt)myinput1_txt.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: myinput1.value SIMPLE [(myinput1_txt)myinput1_txt.FieldSchema(name:value, type:int, comment:null), ]
-PREHOOK: query: -- merging
-explain select * from myinput1 a join myinput1 b on a.key<=>b.value
+PREHOOK: query: explain select * from myinput1 a join myinput1 b on a.key<=>b.value
 PREHOOK: type: QUERY
-POSTHOOK: query: -- merging
-explain select * from myinput1 a join myinput1 b on a.key<=>b.value
+POSTHOOK: query: explain select * from myinput1 a join myinput1 b on a.key<=>b.value
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -540,13 +516,11 @@ POSTHOOK: Input: default@myinput1
 100	100	100	100	100	100
 NULL	10	10	NULL	NULL	10
 NULL	NULL	NULL	NULL	NULL	NULL
-PREHOOK: query: -- outer joins
-SELECT * FROM myinput1 a LEFT OUTER JOIN myinput1 b ON a.key<=>b.value
+PREHOOK: query: SELECT * FROM myinput1 a LEFT OUTER JOIN myinput1 b ON a.key<=>b.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@myinput1
 #### A masked pattern was here ####
-POSTHOOK: query: -- outer joins
-SELECT * FROM myinput1 a LEFT OUTER JOIN myinput1 b ON a.key<=>b.value
+POSTHOOK: query: SELECT * FROM myinput1 a LEFT OUTER JOIN myinput1 b ON a.key<=>b.value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@myinput1
 #### A masked pattern was here ####
@@ -603,13 +577,11 @@ NULL	NULL	10	NULL
 NULL	NULL	48	NULL
 NULL	NULL	NULL	35
 NULL	NULL	NULL	NULL
-PREHOOK: query: -- map joins
-SELECT /*+ MAPJOIN(a) */ * FROM myinput1 a JOIN myinput1 b ON a.key<=>b.value
+PREHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM myinput1 a JOIN myinput1 b ON a.key<=>b.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@myinput1
 #### A masked pattern was here ####
-POSTHOOK: query: -- map joins
-SELECT /*+ MAPJOIN(a) */ * FROM myinput1 a JOIN myinput1 b ON a.key<=>b.value
+POSTHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM myinput1 a JOIN myinput1 b ON a.key<=>b.value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@myinput1
 #### A masked pattern was here ####
@@ -643,11 +615,9 @@ NULL	35	NULL	NULL
 NULL	NULL	10	NULL
 NULL	NULL	48	NULL
 NULL	NULL	NULL	NULL
-PREHOOK: query: -- merging
-explain select * from myinput1 a join myinput1 b on a.key<=>b.value
+PREHOOK: query: explain select * from myinput1 a join myinput1 b on a.key<=>b.value
 PREHOOK: type: QUERY
-POSTHOOK: query: -- merging
-explain select * from myinput1 a join myinput1 b on a.key<=>b.value
+POSTHOOK: query: explain select * from myinput1 a join myinput1 b on a.key<=>b.value
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -1135,13 +1105,11 @@ POSTHOOK: Input: default@myinput1
 100	100	100	100	100	100
 NULL	10	10	NULL	NULL	10
 NULL	NULL	NULL	NULL	NULL	NULL
-PREHOOK: query: -- outer joins
-SELECT * FROM myinput1 a LEFT OUTER JOIN myinput1 b ON a.key<=>b.value
+PREHOOK: query: SELECT * FROM myinput1 a LEFT OUTER JOIN myinput1 b ON a.key<=>b.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@myinput1
 #### A masked pattern was here ####
-POSTHOOK: query: -- outer joins
-SELECT * FROM myinput1 a LEFT OUTER JOIN myinput1 b ON a.key<=>b.value
+POSTHOOK: query: SELECT * FROM myinput1 a LEFT OUTER JOIN myinput1 b ON a.key<=>b.value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@myinput1
 #### A masked pattern was here ####
@@ -1198,13 +1166,11 @@ NULL	NULL	10	NULL
 NULL	NULL	48	NULL
 NULL	NULL	NULL	35
 NULL	NULL	NULL	NULL
-PREHOOK: query: -- map joins
-SELECT /*+ MAPJOIN(a) */ * FROM myinput1 a JOIN myinput1 b ON a.key<=>b.value
+PREHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM myinput1 a JOIN myinput1 b ON a.key<=>b.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@myinput1
 #### A masked pattern was here ####
-POSTHOOK: query: -- map joins
-SELECT /*+ MAPJOIN(a) */ * FROM myinput1 a JOIN myinput1 b ON a.key<=>b.value
+POSTHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM myinput1 a JOIN myinput1 b ON a.key<=>b.value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@myinput1
 #### A masked pattern was here ####

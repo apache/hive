@@ -4,13 +4,9 @@ PREHOOK: Input: database:default
 POSTHOOK: query: use default
 POSTHOOK: type: SWITCHDATABASE
 POSTHOOK: Input: database:default
-PREHOOK: query: -- Test sort_array_by() UDF
-
-DESCRIBE FUNCTION sort_array_by
+PREHOOK: query: DESCRIBE FUNCTION sort_array_by
 PREHOOK: type: DESCFUNCTION
-POSTHOOK: query: -- Test sort_array_by() UDF
-
-DESCRIBE FUNCTION sort_array_by
+POSTHOOK: query: DESCRIBE FUNCTION sort_array_by
 POSTHOOK: type: DESCFUNCTION
 sort_array_by(array(obj1, obj2,...),'f1','f2',...,['ASC','DESC']) - Sorts the input tuple array in user specified order(ASC,DESC) by desired field[s] name If sorting order is not mentioned by user then dafault sorting order is ascending
 PREHOOK: query: DESCRIBE FUNCTION EXTENDED sort_array_by
@@ -108,47 +104,40 @@ POSTHOOK: Output: default@sort_array_by_table
 POSTHOOK: Lineage: sort_array_by_table.company EXPRESSION []
 POSTHOOK: Lineage: sort_array_by_table.country EXPRESSION []
 POSTHOOK: Lineage: sort_array_by_table.employee EXPRESSION []
-PREHOOK: query: --Sort tuple array by field name:salary(single column) by default ascending order
-select company,country,sort_array_by(employee,'salary') as single_field_sort from sort_array_by_table
+PREHOOK: query: select company,country,sort_array_by(employee,'salary') as single_field_sort from sort_array_by_table
 PREHOOK: type: QUERY
 PREHOOK: Input: default@sort_array_by_table
 #### A masked pattern was here ####
-POSTHOOK: query: --Sort tuple array by field name:salary(single column) by default ascending order
-select company,country,sort_array_by(employee,'salary') as single_field_sort from sort_array_by_table
+POSTHOOK: query: select company,country,sort_array_by(employee,'salary') as single_field_sort from sort_array_by_table
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@sort_array_by_table
 #### A masked pattern was here ####
 Google	IN	[{"empid":76,"name":"Hary","age":87,"salary":10000},{"empid":900,"name":"Hary","age":21,"salary":50000},{"empid":100,"name":"Boo","age":21,"salary":70000},{"empid":756,"name":"Able","age":23,"salary":76889},{"empid":130,"name":"Boo","age":22,"salary":79000},{"empid":800,"name":"Able","age":28,"salary":80000}]
 Facebook	US	[{"empid":310,"name":"Ben","age":31,"salary":21000},{"empid":700,"name":"Aron","age":21,"salary":50000},{"empid":390,"name":"Ben","age":21,"salary":70000},{"empid":320,"name":"Aron","age":18,"salary":70000},{"empid":200,"name":"Keiko","age":28,"salary":80000},{"empid":206,"name":"Keiko","age":41,"salary":80500}]
 Microsoft	UK	[{"empid":730,"name":"Eden","age":45,"salary":20300},{"empid":313,"name":"James","age":11,"salary":30000},{"empid":260,"name":"Eden","age":31,"salary":50020},{"empid":600,"name":"James","age":21,"salary":70000},{"empid":900,"name":"Spiro","age":28,"salary":80000},{"empid":300,"name":"Spiro","age":38,"salary":80300}]
-PREHOOK: query: --Sort tuple array by field name:salary(single column) by ascending order
-select company,country,sort_array_by(employee,'salary','ASC') as single_field_sort from sort_array_by_table
+PREHOOK: query: select company,country,sort_array_by(employee,'salary','ASC') as single_field_sort from sort_array_by_table
 PREHOOK: type: QUERY
 PREHOOK: Input: default@sort_array_by_table
 #### A masked pattern was here ####
-POSTHOOK: query: --Sort tuple array by field name:salary(single column) by ascending order
-select company,country,sort_array_by(employee,'salary','ASC') as single_field_sort from sort_array_by_table
+POSTHOOK: query: select company,country,sort_array_by(employee,'salary','ASC') as single_field_sort from sort_array_by_table
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@sort_array_by_table
 #### A masked pattern was here ####
 Google	IN	[{"empid":76,"name":"Hary","age":87,"salary":10000},{"empid":900,"name":"Hary","age":21,"salary":50000},{"empid":100,"name":"Boo","age":21,"salary":70000},{"empid":756,"name":"Able","age":23,"salary":76889},{"empid":130,"name":"Boo","age":22,"salary":79000},{"empid":800,"name":"Able","age":28,"salary":80000}]
 Facebook	US	[{"empid":310,"name":"Ben","age":31,"salary":21000},{"empid":700,"name":"Aron","age":21,"salary":50000},{"empid":390,"name":"Ben","age":21,"salary":70000},{"empid":320,"name":"Aron","age":18,"salary":70000},{"empid":200,"name":"Keiko","age":28,"salary":80000},{"empid":206,"name":"Keiko","age":41,"salary":80500}]
 Microsoft	UK	[{"empid":730,"name":"Eden","age":45,"salary":20300},{"empid":313,"name":"James","age":11,"salary":30000},{"empid":260,"name":"Eden","age":31,"salary":50020},{"empid":600,"name":"James","age":21,"salary":70000},{"empid":900,"name":"Spiro","age":28,"salary":80000},{"empid":300,"name":"Spiro","age":38,"salary":80300}]
-PREHOOK: query: --Sort tuple array by field name:salary(single column) by descending order
-select company,country,sort_array_by(employee,'salary','desc') as single_field_sort from sort_array_by_table
+PREHOOK: query: select company,country,sort_array_by(employee,'salary','desc') as single_field_sort from sort_array_by_table
 PREHOOK: type: QUERY
 PREHOOK: Input: default@sort_array_by_table
 #### A masked pattern was here ####
-POSTHOOK: query: --Sort tuple array by field name:salary(single column) by descending order
-select company,country,sort_array_by(employee,'salary','desc') as single_field_sort from sort_array_by_table
+POSTHOOK: query: select company,country,sort_array_by(employee,'salary','desc') as single_field_sort from sort_array_by_table
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@sort_array_by_table
 #### A masked pattern was here ####
 Google	IN	[{"empid":800,"name":"Able","age":28,"salary":80000},{"empid":130,"name":"Boo","age":22,"salary":79000},{"empid":756,"name":"Able","age":23,"salary":76889},{"empid":100,"name":"Boo","age":21,"salary":70000},{"empid":900,"name":"Hary","age":21,"salary":50000},{"empid":76,"name":"Hary","age":87,"salary":10000}]
 Facebook	US	[{"empid":206,"name":"Keiko","age":41,"salary":80500},{"empid":200,"name":"Keiko","age":28,"salary":80000},{"empid":390,"name":"Ben","age":21,"salary":70000},{"empid":320,"name":"Aron","age":18,"salary":70000},{"empid":700,"name":"Aron","age":21,"salary":50000},{"empid":310,"name":"Ben","age":31,"salary":21000}]
 Microsoft	UK	[{"empid":300,"name":"Spiro","age":38,"salary":80300},{"empid":900,"name":"Spiro","age":28,"salary":80000},{"empid":600,"name":"James","age":21,"salary":70000},{"empid":260,"name":"Eden","age":31,"salary":50020},{"empid":313,"name":"James","age":11,"salary":30000},{"empid":730,"name":"Eden","age":45,"salary":20300}]
-PREHOOK: query: --Above three in one query
-select company,country,
+PREHOOK: query: select company,country,
 sort_array_by(employee,'salary') as single_field_sort,
 sort_array_by(employee,'salary','ASC') as single_field_sort_asc,
 sort_array_by(employee,'salary','DESC') as single_field_sort_desc
@@ -156,8 +145,7 @@ from sort_array_by_table
 PREHOOK: type: QUERY
 PREHOOK: Input: default@sort_array_by_table
 #### A masked pattern was here ####
-POSTHOOK: query: --Above three in one query
-select company,country,
+POSTHOOK: query: select company,country,
 sort_array_by(employee,'salary') as single_field_sort,
 sort_array_by(employee,'salary','ASC') as single_field_sort_asc,
 sort_array_by(employee,'salary','DESC') as single_field_sort_desc
@@ -168,47 +156,40 @@ POSTHOOK: Input: default@sort_array_by_table
 Google	IN	[{"empid":76,"name":"Hary","age":87,"salary":10000},{"empid":900,"name":"Hary","age":21,"salary":50000},{"empid":100,"name":"Boo","age":21,"salary":70000},{"empid":756,"name":"Able","age":23,"salary":76889},{"empid":130,"name":"Boo","age":22,"salary":79000},{"empid":800,"name":"Able","age":28,"salary":80000}]	[{"empid":76,"name":"Hary","age":87,"salary":10000},{"empid":900,"name":"Hary","age":21,"salary":50000},{"empid":100,"name":"Boo","age":21,"salary":70000},{"empid":756,"name":"Able","age":23,"salary":76889},{"empid":130,"name":"Boo","age":22,"salary":79000},{"empid":800,"name":"Able","age":28,"salary":80000}]	[{"empid":800,"name":"Able","age":28,"salary":80000},{"empid":130,"name":"Boo","age":22,"salary":79000},{"empid":756,"name":"Able","age":23,"salary":76889},{"empid":100,"name":"Boo","age":21,"salary":70000},{"empid":900,"name":"Hary","age":21,"salary":50000},{"empid":76,"name":"Hary","age":87,"salary":10000}]
 Facebook	US	[{"empid":310,"name":"Ben","age":31,"salary":21000},{"empid":700,"name":"Aron","age":21,"salary":50000},{"empid":390,"name":"Ben","age":21,"salary":70000},{"empid":320,"name":"Aron","age":18,"salary":70000},{"empid":200,"name":"Keiko","age":28,"salary":80000},{"empid":206,"name":"Keiko","age":41,"salary":80500}]	[{"empid":310,"name":"Ben","age":31,"salary":21000},{"empid":700,"name":"Aron","age":21,"salary":50000},{"empid":390,"name":"Ben","age":21,"salary":70000},{"empid":320,"name":"Aron","age":18,"salary":70000},{"empid":200,"name":"Keiko","age":28,"salary":80000},{"empid":206,"name":"Keiko","age":41,"salary":80500}]	[{"empid":206,"name":"Keiko","age":41,"salary":80500},{"empid":200,"name":"Keiko","age":28,"salary":80000},{"empid":390,"name":"Ben","age":21,"salary":70000},{"empid":320,"name":"Aron","age":18,"salary":70000},{"empid":700,"name":"Aron","age":21,"salary":50000},{"empid":310,"name":"Ben","age":31,"salary":21000}]
 Microsoft	UK	[{"empid":730,"name":"Eden","age":45,"salary":20300},{"empid":313,"name":"James","age":11,"salary":30000},{"empid":260,"name":"Eden","age":31,"salary":50020},{"empid":600,"name":"James","age":21,"salary":70000},{"empid":900,"name":"Spiro","age":28,"salary":80000},{"empid":300,"name":"Spiro","age":38,"salary":80300}]	[{"empid":730,"name":"Eden","age":45,"salary":20300},{"empid":313,"name":"James","age":11,"salary":30000},{"empid":260,"name":"Eden","age":31,"salary":50020},{"empid":600,"name":"James","age":21,"salary":70000},{"empid":900,"name":"Spiro","age":28,"salary":80000},{"empid":300,"name":"Spiro","age":38,"salary":80300}]	[{"empid":300,"name":"Spiro","age":38,"salary":80300},{"empid":900,"name":"Spiro","age":28,"salary":80000},{"empid":600,"name":"James","age":21,"salary":70000},{"empid":260,"name":"Eden","age":31,"salary":50020},{"empid":313,"name":"James","age":11,"salary":30000},{"empid":730,"name":"Eden","age":45,"salary":20300}]
-PREHOOK: query: --Sort tuple array by field names : name,salary(multiple columns) by default ascending order
-select company,country,sort_array_by(employee,'name','salary') as multiple_field_sort from sort_array_by_table
+PREHOOK: query: select company,country,sort_array_by(employee,'name','salary') as multiple_field_sort from sort_array_by_table
 PREHOOK: type: QUERY
 PREHOOK: Input: default@sort_array_by_table
 #### A masked pattern was here ####
-POSTHOOK: query: --Sort tuple array by field names : name,salary(multiple columns) by default ascending order
-select company,country,sort_array_by(employee,'name','salary') as multiple_field_sort from sort_array_by_table
+POSTHOOK: query: select company,country,sort_array_by(employee,'name','salary') as multiple_field_sort from sort_array_by_table
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@sort_array_by_table
 #### A masked pattern was here ####
 Google	IN	[{"empid":756,"name":"Able","age":23,"salary":76889},{"empid":800,"name":"Able","age":28,"salary":80000},{"empid":100,"name":"Boo","age":21,"salary":70000},{"empid":130,"name":"Boo","age":22,"salary":79000},{"empid":76,"name":"Hary","age":87,"salary":10000},{"empid":900,"name":"Hary","age":21,"salary":50000}]
 Facebook	US	[{"empid":700,"name":"Aron","age":21,"salary":50000},{"empid":320,"name":"Aron","age":18,"salary":70000},{"empid":310,"name":"Ben","age":31,"salary":21000},{"empid":390,"name":"Ben","age":21,"salary":70000},{"empid":200,"name":"Keiko","age":28,"salary":80000},{"empid":206,"name":"Keiko","age":41,"salary":80500}]
 Microsoft	UK	[{"empid":730,"name":"Eden","age":45,"salary":20300},{"empid":260,"name":"Eden","age":31,"salary":50020},{"empid":313,"name":"James","age":11,"salary":30000},{"empid":600,"name":"James","age":21,"salary":70000},{"empid":900,"name":"Spiro","age":28,"salary":80000},{"empid":300,"name":"Spiro","age":38,"salary":80300}]
-PREHOOK: query: --Sort tuple array by field names : name,salary(multiple columns) ascending order
-select company,country,sort_array_by(employee,'name','salary','asc') as multiple_field_sort from sort_array_by_table
+PREHOOK: query: select company,country,sort_array_by(employee,'name','salary','asc') as multiple_field_sort from sort_array_by_table
 PREHOOK: type: QUERY
 PREHOOK: Input: default@sort_array_by_table
 #### A masked pattern was here ####
-POSTHOOK: query: --Sort tuple array by field names : name,salary(multiple columns) ascending order
-select company,country,sort_array_by(employee,'name','salary','asc') as multiple_field_sort from sort_array_by_table
+POSTHOOK: query: select company,country,sort_array_by(employee,'name','salary','asc') as multiple_field_sort from sort_array_by_table
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@sort_array_by_table
 #### A masked pattern was here ####
 Google	IN	[{"empid":756,"name":"Able","age":23,"salary":76889},{"empid":800,"name":"Able","age":28,"salary":80000},{"empid":100,"name":"Boo","age":21,"salary":70000},{"empid":130,"name":"Boo","age":22,"salary":79000},{"empid":76,"name":"Hary","age":87,"salary":10000},{"empid":900,"name":"Hary","age":21,"salary":50000}]
 Facebook	US	[{"empid":700,"name":"Aron","age":21,"salary":50000},{"empid":320,"name":"Aron","age":18,"salary":70000},{"empid":310,"name":"Ben","age":31,"salary":21000},{"empid":390,"name":"Ben","age":21,"salary":70000},{"empid":200,"name":"Keiko","age":28,"salary":80000},{"empid":206,"name":"Keiko","age":41,"salary":80500}]
 Microsoft	UK	[{"empid":730,"name":"Eden","age":45,"salary":20300},{"empid":260,"name":"Eden","age":31,"salary":50020},{"empid":313,"name":"James","age":11,"salary":30000},{"empid":600,"name":"James","age":21,"salary":70000},{"empid":900,"name":"Spiro","age":28,"salary":80000},{"empid":300,"name":"Spiro","age":38,"salary":80300}]
-PREHOOK: query: --Sort tuple array by field names : name,salary(multiple columns) descending order
-select company,country,sort_array_by(employee,'name',"salary","DESC") as multiple_field_sort from sort_array_by_table
+PREHOOK: query: select company,country,sort_array_by(employee,'name',"salary","DESC") as multiple_field_sort from sort_array_by_table
 PREHOOK: type: QUERY
 PREHOOK: Input: default@sort_array_by_table
 #### A masked pattern was here ####
-POSTHOOK: query: --Sort tuple array by field names : name,salary(multiple columns) descending order
-select company,country,sort_array_by(employee,'name',"salary","DESC") as multiple_field_sort from sort_array_by_table
+POSTHOOK: query: select company,country,sort_array_by(employee,'name',"salary","DESC") as multiple_field_sort from sort_array_by_table
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@sort_array_by_table
 #### A masked pattern was here ####
 Google	IN	[{"empid":900,"name":"Hary","age":21,"salary":50000},{"empid":76,"name":"Hary","age":87,"salary":10000},{"empid":130,"name":"Boo","age":22,"salary":79000},{"empid":100,"name":"Boo","age":21,"salary":70000},{"empid":800,"name":"Able","age":28,"salary":80000},{"empid":756,"name":"Able","age":23,"salary":76889}]
 Facebook	US	[{"empid":206,"name":"Keiko","age":41,"salary":80500},{"empid":200,"name":"Keiko","age":28,"salary":80000},{"empid":390,"name":"Ben","age":21,"salary":70000},{"empid":310,"name":"Ben","age":31,"salary":21000},{"empid":320,"name":"Aron","age":18,"salary":70000},{"empid":700,"name":"Aron","age":21,"salary":50000}]
 Microsoft	UK	[{"empid":300,"name":"Spiro","age":38,"salary":80300},{"empid":900,"name":"Spiro","age":28,"salary":80000},{"empid":600,"name":"James","age":21,"salary":70000},{"empid":313,"name":"James","age":11,"salary":30000},{"empid":260,"name":"Eden","age":31,"salary":50020},{"empid":730,"name":"Eden","age":45,"salary":20300}]
-PREHOOK: query: --Above three in one query
-select company,country,
+PREHOOK: query: select company,country,
 sort_array_by(employee,'name','salary') as multiple_field_sort,
 sort_array_by(employee,'name','salary','ASC') as multiple_field_sort_asc,
 sort_array_by(employee,'name',"salary","DESC") as multiple_field_sort_desc
@@ -216,8 +197,7 @@ from sort_array_by_table
 PREHOOK: type: QUERY
 PREHOOK: Input: default@sort_array_by_table
 #### A masked pattern was here ####
-POSTHOOK: query: --Above three in one query
-select company,country,
+POSTHOOK: query: select company,country,
 sort_array_by(employee,'name','salary') as multiple_field_sort,
 sort_array_by(employee,'name','salary','ASC') as multiple_field_sort_asc,
 sort_array_by(employee,'name',"salary","DESC") as multiple_field_sort_desc
@@ -228,11 +208,9 @@ POSTHOOK: Input: default@sort_array_by_table
 Google	IN	[{"empid":756,"name":"Able","age":23,"salary":76889},{"empid":800,"name":"Able","age":28,"salary":80000},{"empid":100,"name":"Boo","age":21,"salary":70000},{"empid":130,"name":"Boo","age":22,"salary":79000},{"empid":76,"name":"Hary","age":87,"salary":10000},{"empid":900,"name":"Hary","age":21,"salary":50000}]	[{"empid":756,"name":"Able","age":23,"salary":76889},{"empid":800,"name":"Able","age":28,"salary":80000},{"empid":100,"name":"Boo","age":21,"salary":70000},{"empid":130,"name":"Boo","age":22,"salary":79000},{"empid":76,"name":"Hary","age":87,"salary":10000},{"empid":900,"name":"Hary","age":21,"salary":50000}]	[{"empid":900,"name":"Hary","age":21,"salary":50000},{"empid":76,"name":"Hary","age":87,"salary":10000},{"empid":130,"name":"Boo","age":22,"salary":79000},{"empid":100,"name":"Boo","age":21,"salary":70000},{"empid":800,"name":"Able","age":28,"salary":80000},{"empid":756,"name":"Able","age":23,"salary":76889}]
 Facebook	US	[{"empid":700,"name":"Aron","age":21,"salary":50000},{"empid":320,"name":"Aron","age":18,"salary":70000},{"empid":310,"name":"Ben","age":31,"salary":21000},{"empid":390,"name":"Ben","age":21,"salary":70000},{"empid":200,"name":"Keiko","age":28,"salary":80000},{"empid":206,"name":"Keiko","age":41,"salary":80500}]	[{"empid":700,"name":"Aron","age":21,"salary":50000},{"empid":320,"name":"Aron","age":18,"salary":70000},{"empid":310,"name":"Ben","age":31,"salary":21000},{"empid":390,"name":"Ben","age":21,"salary":70000},{"empid":200,"name":"Keiko","age":28,"salary":80000},{"empid":206,"name":"Keiko","age":41,"salary":80500}]	[{"empid":206,"name":"Keiko","age":41,"salary":80500},{"empid":200,"name":"Keiko","age":28,"salary":80000},{"empid":390,"name":"Ben","age":21,"salary":70000},{"empid":310,"name":"Ben","age":31,"salary":21000},{"empid":320,"name":"Aron","age":18,"salary":70000},{"empid":700,"name":"Aron","age":21,"salary":50000}]
 Microsoft	UK	[{"empid":730,"name":"Eden","age":45,"salary":20300},{"empid":260,"name":"Eden","age":31,"salary":50020},{"empid":313,"name":"James","age":11,"salary":30000},{"empid":600,"name":"James","age":21,"salary":70000},{"empid":900,"name":"Spiro","age":28,"salary":80000},{"empid":300,"name":"Spiro","age":38,"salary":80300}]	[{"empid":730,"name":"Eden","age":45,"salary":20300},{"empid":260,"name":"Eden","age":31,"salary":50020},{"empid":313,"name":"James","age":11,"salary":30000},{"empid":600,"name":"James","age":21,"salary":70000},{"empid":900,"name":"Spiro","age":28,"salary":80000},{"empid":300,"name":"Spiro","age":38,"salary":80300}]	[{"empid":300,"name":"Spiro","age":38,"salary":80300},{"empid":900,"name":"Spiro","age":28,"salary":80000},{"empid":600,"name":"James","age":21,"salary":70000},{"empid":313,"name":"James","age":11,"salary":30000},{"empid":260,"name":"Eden","age":31,"salary":50020},{"empid":730,"name":"Eden","age":45,"salary":20300}]
-PREHOOK: query: -- Test for order name ('ASC' and 'DESC') as tuple field names and and order name
-DROP TABLE IF EXISTS sort_array_by_order_name
+PREHOOK: query: DROP TABLE IF EXISTS sort_array_by_order_name
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: -- Test for order name ('ASC' and 'DESC') as tuple field names and and order name
-DROP TABLE IF EXISTS sort_array_by_order_name
+POSTHOOK: query: DROP TABLE IF EXISTS sort_array_by_order_name
 POSTHOOK: type: DROPTABLE
 PREHOOK: query: CREATE TABLE sort_array_by_order_name
 STORED AS TEXTFILE
@@ -262,8 +240,7 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@sort_array_by_order_name
 POSTHOOK: Lineage: sort_array_by_order_name.company SIMPLE []
 POSTHOOK: Lineage: sort_array_by_order_name.employee EXPRESSION []
-PREHOOK: query: -- select asc,desc as filed name with default sorting
-select
+PREHOOK: query: select
 company,
 sort_array_by(employee,'asc') as col1,
 sort_array_by(employee,'DESC') as col2
@@ -271,8 +248,7 @@ from sort_array_by_order_name
 PREHOOK: type: QUERY
 PREHOOK: Input: default@sort_array_by_order_name
 #### A masked pattern was here ####
-POSTHOOK: query: -- select asc,desc as filed name with default sorting
-select
+POSTHOOK: query: select
 company,
 sort_array_by(employee,'asc') as col1,
 sort_array_by(employee,'DESC') as col2
@@ -281,10 +257,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@sort_array_by_order_name
 #### A masked pattern was here ####
 Google	[{"asc":"Able","desc":"Keiko","salary":28},{"asc":"Boo","desc":"Aron","salary":70000},{"asc":"Hary","desc":"James","salary":50000}]	[{"asc":"Boo","desc":"Aron","salary":70000},{"asc":"Hary","desc":"James","salary":50000},{"asc":"Able","desc":"Keiko","salary":28}]
-PREHOOK: query: --select asc,desc as field name and explicitly provided sorting ordering.
---If argument length's size are more than two (first: tuple list,second: desired minimum a field name)
---then we always check whether the last argument is any sorting order name(ASC or DESC)
-select
+PREHOOK: query: select
 company,
 sort_array_by(employee,'asc','ASC') as col1,
 sort_array_by(employee,'DESC','desc') as col2
@@ -293,10 +266,7 @@ sort_array_by_order_name
 PREHOOK: type: QUERY
 PREHOOK: Input: default@sort_array_by_order_name
 #### A masked pattern was here ####
-POSTHOOK: query: --select asc,desc as field name and explicitly provided sorting ordering.
---If argument length's size are more than two (first: tuple list,second: desired minimum a field name)
---then we always check whether the last argument is any sorting order name(ASC or DESC)
-select
+POSTHOOK: query: select
 company,
 sort_array_by(employee,'asc','ASC') as col1,
 sort_array_by(employee,'DESC','desc') as col2
@@ -306,13 +276,9 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@sort_array_by_order_name
 #### A masked pattern was here ####
 Google	[{"asc":"Able","desc":"Keiko","salary":28},{"asc":"Boo","desc":"Aron","salary":70000},{"asc":"Hary","desc":"James","salary":50000}]	[{"asc":"Able","desc":"Keiko","salary":28},{"asc":"Hary","desc":"James","salary":50000},{"asc":"Boo","desc":"Aron","salary":70000}]
-PREHOOK: query: -- similarity of sorting order check between this UDF and LATERAL VIEW explode(array).
-
-DROP TABLE IF EXISTS sort_array_by_table_order
+PREHOOK: query: DROP TABLE IF EXISTS sort_array_by_table_order
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: -- similarity of sorting order check between this UDF and LATERAL VIEW explode(array).
-
-DROP TABLE IF EXISTS sort_array_by_table_order
+POSTHOOK: query: DROP TABLE IF EXISTS sort_array_by_table_order
 POSTHOOK: type: DROPTABLE
 PREHOOK: query: CREATE TABLE sort_array_by_table_order
 STORED AS TEXTFILE

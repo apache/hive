@@ -1,8 +1,6 @@
-PREHOOK: query: -- simple query with multiple reduce stages
-EXPLAIN SELECT key, count(value) as cnt FROM src GROUP BY key ORDER BY cnt
+PREHOOK: query: EXPLAIN SELECT key, count(value) as cnt FROM src GROUP BY key ORDER BY cnt
 PREHOOK: type: QUERY
-POSTHOOK: query: -- simple query with multiple reduce stages
-EXPLAIN SELECT key, count(value) as cnt FROM src GROUP BY key ORDER BY cnt
+POSTHOOK: query: EXPLAIN SELECT key, count(value) as cnt FROM src GROUP BY key ORDER BY cnt
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage

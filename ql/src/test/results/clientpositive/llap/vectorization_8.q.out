@@ -1,6 +1,4 @@
-PREHOOK: query: -- SORT_QUERY_RESULTS
-
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT ctimestamp1,
        cdouble,
        cboolean1,
@@ -25,9 +23,7 @@ WHERE  (((cstring2 IS NOT NULL)
 ORDER BY ctimestamp1, cdouble, cboolean1, cstring1, cfloat, c1, c2, c3, c4, c5, c6, c7, c8, c9
 LIMIT 20
 PREHOOK: type: QUERY
-POSTHOOK: query: -- SORT_QUERY_RESULTS
-
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT ctimestamp1,
        cdouble,
        cboolean1,
@@ -179,8 +175,7 @@ POSTHOOK: Input: default@alltypesorc
 1969-12-31 15:59:43.783	-200.0	NULL	NULL	-11.0	200.0	-5438.15	51400.0	NULL	1.2116287E7	200.0	9.611	11.0	NULL
 1969-12-31 15:59:43.807	-7196.0	NULL	NULL	42.0	7196.0	1557.8500000000004	1849372.0	NULL	-5.98226333E8	7196.0	-43.389	-42.0	NULL
 1969-12-31 15:59:43.82	-7196.0	NULL	NULL	-30.0	7196.0	1557.8500000000004	1849372.0	NULL	1.329550715E9	7196.0	28.611	30.0	NULL
-PREHOOK: query: -- double compare timestamp
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT ctimestamp1,
        cdouble,
        cboolean1,
@@ -205,8 +200,7 @@ WHERE  (((cstring2 IS NOT NULL)
 ORDER BY ctimestamp1, cdouble, cboolean1, cstring1, cfloat, c1, c2, c3, c4, c5, c6, c7, c8, c9
 LIMIT 20
 PREHOOK: type: QUERY
-POSTHOOK: query: -- double compare timestamp
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT ctimestamp1,
        cdouble,
        cboolean1,

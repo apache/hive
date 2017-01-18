@@ -190,15 +190,11 @@ POSTHOOK: Input: default@total_ordered
 86	val_86
 98	val_98
 98	val_98
-PREHOOK: query: -- rolling back to single task in case that the number of sample is not enough
-
-drop table total_ordered
+PREHOOK: query: drop table total_ordered
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@total_ordered
 PREHOOK: Output: default@total_ordered
-POSTHOOK: query: -- rolling back to single task in case that the number of sample is not enough
-
-drop table total_ordered
+POSTHOOK: query: drop table total_ordered
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@total_ordered
 POSTHOOK: Output: default@total_ordered

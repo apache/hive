@@ -13,8 +13,7 @@ POSTHOOK: query: alter table alter_partition_change_col_dup_col add partition (p
 POSTHOOK: type: ALTERTABLE_ADDPARTS
 POSTHOOK: Output: default@alter_partition_change_col_dup_col
 POSTHOOK: Output: default@alter_partition_change_col_dup_col@p1=abc
-PREHOOK: query: -- should fail because of duplicate name c1
-alter table alter_partition_change_col_dup_col change c2 c1 decimal(14,4)
+PREHOOK: query: alter table alter_partition_change_col_dup_col change c2 c1 decimal(14,4)
 PREHOOK: type: ALTERTABLE_RENAMECOL
 PREHOOK: Input: default@alter_partition_change_col_dup_col
 PREHOOK: Output: default@alter_partition_change_col_dup_col

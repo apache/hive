@@ -1,22 +1,8 @@
-PREHOOK: query: -- SORT_QUERY_RESULTS
---
--- FILE VARIATION: TEXT, Non-Vectorized, MapWork, Partitioned
---
---
--- SECTION VARIATION: ALTER TABLE ADD COLUMNS ... STATIC INSERT
----
-CREATE TABLE partitioned1(a INT, b STRING) PARTITIONED BY(part INT) STORED AS TEXTFILE
+PREHOOK: query: CREATE TABLE partitioned1(a INT, b STRING) PARTITIONED BY(part INT) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@partitioned1
-POSTHOOK: query: -- SORT_QUERY_RESULTS
---
--- FILE VARIATION: TEXT, Non-Vectorized, MapWork, Partitioned
---
---
--- SECTION VARIATION: ALTER TABLE ADD COLUMNS ... STATIC INSERT
----
-CREATE TABLE partitioned1(a INT, b STRING) PARTITIONED BY(part INT) STORED AS TEXTFILE
+POSTHOOK: query: CREATE TABLE partitioned1(a INT, b STRING) PARTITIONED BY(part INT) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@partitioned1
@@ -210,13 +196,11 @@ col_name	data_type	min	max	num_nulls	distinct_count	avg_col_len	max_col_len	num_
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
 	 	 	 	 	 	 	 	 	 	 
 a                   	int                 	1                   	4                   	0                   	5                   	                    	                    	                    	                    	from deserializer   
-PREHOOK: query: -- Table-Non-Cascade ADD COLUMNS ...
-alter table partitioned1 add columns(c int, d string)
+PREHOOK: query: alter table partitioned1 add columns(c int, d string)
 PREHOOK: type: ALTERTABLE_ADDCOLS
 PREHOOK: Input: default@partitioned1
 PREHOOK: Output: default@partitioned1
-POSTHOOK: query: -- Table-Non-Cascade ADD COLUMNS ...
-alter table partitioned1 add columns(c int, d string)
+POSTHOOK: query: alter table partitioned1 add columns(c int, d string)
 POSTHOOK: type: ALTERTABLE_ADDCOLS
 POSTHOOK: Input: default@partitioned1
 POSTHOOK: Output: default@partitioned1

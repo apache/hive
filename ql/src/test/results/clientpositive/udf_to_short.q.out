@@ -1,10 +1,8 @@
-PREHOOK: query: -- Conversion of main primitive types to Short type:
-SELECT CAST(NULL AS SMALLINT) FROM src tablesample (1 rows)
+PREHOOK: query: SELECT CAST(NULL AS SMALLINT) FROM src tablesample (1 rows)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
-POSTHOOK: query: -- Conversion of main primitive types to Short type:
-SELECT CAST(NULL AS SMALLINT) FROM src tablesample (1 rows)
+POSTHOOK: query: SELECT CAST(NULL AS SMALLINT) FROM src tablesample (1 rows)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####

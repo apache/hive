@@ -1,12 +1,8 @@
-PREHOOK: query: -- SORT_QUERY_RESULTS
-
-create table join_rc1(key string, value string) stored as RCFile
+PREHOOK: query: create table join_rc1(key string, value string) stored as RCFile
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@join_rc1
-POSTHOOK: query: -- SORT_QUERY_RESULTS
-
-create table join_rc1(key string, value string) stored as RCFile
+POSTHOOK: query: create table join_rc1(key string, value string) stored as RCFile
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@join_rc1

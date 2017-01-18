@@ -26,13 +26,11 @@ POSTHOOK: Input: default@alltypesorc
 POSTHOOK: Output: default@orc_partitioned@ds=tomorrow
 POSTHOOK: Lineage: orc_partitioned PARTITION(ds=tomorrow).a SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
 POSTHOOK: Lineage: orc_partitioned PARTITION(ds=tomorrow).b SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
-PREHOOK: query: -- Use the old change the SERDE trick to avoid ORC DDL checks... and remove a column on the end.
-ALTER TABLE orc_partitioned SET SERDE 'org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe'
+PREHOOK: query: ALTER TABLE orc_partitioned SET SERDE 'org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe'
 PREHOOK: type: ALTERTABLE_SERIALIZER
 PREHOOK: Input: default@orc_partitioned
 PREHOOK: Output: default@orc_partitioned
-POSTHOOK: query: -- Use the old change the SERDE trick to avoid ORC DDL checks... and remove a column on the end.
-ALTER TABLE orc_partitioned SET SERDE 'org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe'
+POSTHOOK: query: ALTER TABLE orc_partitioned SET SERDE 'org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe'
 POSTHOOK: type: ALTERTABLE_SERIALIZER
 POSTHOOK: Input: default@orc_partitioned
 POSTHOOK: Output: default@orc_partitioned

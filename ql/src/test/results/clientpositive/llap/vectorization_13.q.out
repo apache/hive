@@ -1,6 +1,4 @@
-PREHOOK: query: -- SORT_QUERY_RESULTS
-
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT   cboolean1,
          ctinyint,
          ctimestamp1,
@@ -33,9 +31,7 @@ GROUP BY cboolean1, ctinyint, ctimestamp1, cfloat, cstring1
 ORDER BY cboolean1, ctinyint, ctimestamp1, cfloat, cstring1, c1, c2, c3, c4, c5, c6, c7, c8, c9, c10, c11, c12, c13, c14, c15, c16
 LIMIT 40
 PREHOOK: type: QUERY
-POSTHOOK: query: -- SORT_QUERY_RESULTS
-
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT   cboolean1,
          ctinyint,
          ctimestamp1,
@@ -257,8 +253,7 @@ NULL	-63	1969-12-31 16:00:15.436	-63.0	NULL	63	-63	0	-63.0	-0.0	63.0	-5011.839	0
 NULL	-64	1969-12-31 16:00:11.912	-64.0	NULL	64	-64	0	-64.0	-0.0	64.0	-5091.392	0.0	64.0	0.0	-10.175	-64.0	0.410625	-64.0	0.0	-64
 NULL	-64	1969-12-31 16:00:12.339	-64.0	NULL	64	-64	0	-64.0	-0.0	64.0	-5091.392	0.0	64.0	0.0	-10.175	-64.0	0.410625	-64.0	0.0	-64
 NULL	-64	1969-12-31 16:00:13.274	-64.0	NULL	64	-64	0	-64.0	-0.0	64.0	-5091.392	0.0	64.0	0.0	-10.175	-64.0	0.410625	-64.0	0.0	-64
-PREHOOK: query: -- double compare timestamp
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT   cboolean1,
          ctinyint,
          ctimestamp1,
@@ -291,8 +286,7 @@ GROUP BY cboolean1, ctinyint, ctimestamp1, cfloat, cstring1
 ORDER BY cboolean1, ctinyint, ctimestamp1, cfloat, cstring1, c1, c2, c3, c4, c5, c6, c7, c8, c9, c10, c11, c12, c13, c14, c15, c16
 LIMIT 40
 PREHOOK: type: QUERY
-POSTHOOK: query: -- double compare timestamp
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT   cboolean1,
          ctinyint,
          ctimestamp1,

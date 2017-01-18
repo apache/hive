@@ -40,20 +40,14 @@ POSTHOOK: query: load data local inpath '../../data/files/over1k' into table ove
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@over1k
-PREHOOK: query: -- Pass non-strings for the first and third arguments to test argument conversion
-
--- Integers
-select lpad(t, 4, ' '),
+PREHOOK: query: select lpad(t, 4, ' '),
        lpad(si, 2, ' '),
        lpad(i, 9, 'z'),
        lpad(b, 2, 'a') from over1k limit 5
 PREHOOK: type: QUERY
 PREHOOK: Input: default@over1k
 #### A masked pattern was here ####
-POSTHOOK: query: -- Pass non-strings for the first and third arguments to test argument conversion
-
--- Integers
-select lpad(t, 4, ' '),
+POSTHOOK: query: select lpad(t, 4, ' '),
        lpad(si, 2, ' '),
        lpad(i, 9, 'z'),
        lpad(b, 2, 'a') from over1k limit 5
@@ -84,16 +78,14 @@ POSTHOOK: Input: default@over1k
 35353535oh	3873my	656196561other	429496745one
 11111111oh	3723my	656566565other	429496731one
 54545454oh	3173my	655476554other	429496740one
-PREHOOK: query: -- Integers
-select rpad(t, 4, ' '),
+PREHOOK: query: select rpad(t, 4, ' '),
        rpad(si, 2, ' '),
        rpad(i, 9, 'z'),
        rpad(b, 2, 'a') from over1k limit 5
 PREHOOK: type: QUERY
 PREHOOK: Input: default@over1k
 #### A masked pattern was here ####
-POSTHOOK: query: -- Integers
-select rpad(t, 4, ' '),
+POSTHOOK: query: select rpad(t, 4, ' '),
        rpad(si, 2, ' '),
        rpad(i, 9, 'z'),
        rpad(b, 2, 'a') from over1k limit 5
@@ -124,8 +116,7 @@ oh19191919	my4424	other655536555	one429496738
 oh35353535	my3873	other656196561	one429496745
 oh11111111	my3723	other656566565	one429496731
 oh54545454	my3173	other655476554	one429496740
-PREHOOK: query: -- More
-select lpad(f, 4, ' '),
+PREHOOK: query: select lpad(f, 4, ' '),
        lpad(d, 2, ' '),
        lpad(bo, 9, 'z'),
        lpad(ts, 2, 'a'),
@@ -134,8 +125,7 @@ select lpad(f, 4, ' '),
 PREHOOK: type: QUERY
 PREHOOK: Input: default@over1k
 #### A masked pattern was here ####
-POSTHOOK: query: -- More
-select lpad(f, 4, ' '),
+POSTHOOK: query: select lpad(f, 4, ' '),
        lpad(d, 2, ' '),
        lpad(bo, 9, 'z'),
        lpad(ts, 2, 'a'),

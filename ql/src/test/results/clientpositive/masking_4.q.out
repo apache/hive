@@ -64,15 +64,11 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: --should mask masking_test
-
-explain
+PREHOOK: query: explain
 with q1 as ( select * from masking_test where key = '5')
 select * from q1
 PREHOOK: type: QUERY
-POSTHOOK: query: --should mask masking_test
-
-explain
+POSTHOOK: query: explain
 with q1 as ( select * from masking_test where key = '5')
 select * from q1
 POSTHOOK: type: QUERY
@@ -108,15 +104,11 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: --should not mask masking_test_subq
-
-explain
+PREHOOK: query: explain
 with masking_test_subq as ( select * from masking_test where key = '5')
 select * from masking_test_subq
 PREHOOK: type: QUERY
-POSTHOOK: query: --should not mask masking_test_subq
-
-explain
+POSTHOOK: query: explain
 with masking_test_subq as ( select * from masking_test where key = '5')
 select * from masking_test_subq
 POSTHOOK: type: QUERY
@@ -152,15 +144,11 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: --should mask masking_test_subq
-
-explain
+PREHOOK: query: explain
 with q1 as ( select * from masking_test where key = '5')
 select * from masking_test_subq
 PREHOOK: type: QUERY
-POSTHOOK: query: --should mask masking_test_subq
-
-explain
+POSTHOOK: query: explain
 with q1 as ( select * from masking_test where key = '5')
 select * from masking_test_subq
 POSTHOOK: type: QUERY

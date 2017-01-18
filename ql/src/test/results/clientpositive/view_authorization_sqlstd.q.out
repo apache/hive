@@ -1,12 +1,8 @@
-PREHOOK: query: -- Test view authorization , and 'show grant' variants
-
-create table t1(i int, j int, k int)
+PREHOOK: query: create table t1(i int, j int, k int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@t1
-POSTHOOK: query: -- Test view authorization , and 'show grant' variants
-
-create table t1(i int, j int, k int)
+POSTHOOK: query: create table t1(i int, j int, k int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t1
@@ -24,26 +20,22 @@ default	t1			user1	USER	DELETE	true	-1	user1
 default	t1			user1	USER	INSERT	true	-1	user1
 default	t1			user1	USER	SELECT	true	-1	user1
 default	t1			user1	USER	UPDATE	true	-1	user1
-PREHOOK: query: -- protecting certain columns
-create view vt1 as select i,k from t1
+PREHOOK: query: create view vt1 as select i,k from t1
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: default@t1
 PREHOOK: Output: database:default
 PREHOOK: Output: default@vt1
-POSTHOOK: query: -- protecting certain columns
-create view vt1 as select i,k from t1
+POSTHOOK: query: create view vt1 as select i,k from t1
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@t1
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@vt1
-PREHOOK: query: -- protecting certain rows
-create view vt2 as select * from t1 where i > 1
+PREHOOK: query: create view vt2 as select * from t1 where i > 1
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: default@t1
 PREHOOK: Output: database:default
 PREHOOK: Output: default@vt2
-POSTHOOK: query: -- protecting certain rows
-create view vt2 as select * from t1 where i > 1
+POSTHOOK: query: create view vt2 as select * from t1 where i > 1
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@t1
 POSTHOOK: Output: database:default
@@ -64,16 +56,10 @@ default	vt2			user1	USER	DELETE	true	-1	user1
 default	vt2			user1	USER	INSERT	true	-1	user1
 default	vt2			user1	USER	SELECT	true	-1	user1
 default	vt2			user1	USER	UPDATE	true	-1	user1
-PREHOOK: query: --view grant to user
--- try with and without table keyword
-
-grant select on vt1 to user user2
+PREHOOK: query: grant select on vt1 to user user2
 PREHOOK: type: GRANT_PRIVILEGE
 PREHOOK: Output: default@vt1
-POSTHOOK: query: --view grant to user
--- try with and without table keyword
-
-grant select on vt1 to user user2
+POSTHOOK: query: grant select on vt1 to user user2
 POSTHOOK: type: GRANT_PRIVILEGE
 POSTHOOK: Output: default@vt1
 PREHOOK: query: grant insert on table vt1 to user user3
@@ -125,16 +111,12 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 POSTHOOK: Input: default@vt1
 #### A masked pattern was here ####
-PREHOOK: query: -- verify input objects required does not include table
--- even if view is within a sub query
-select * from (select * from vt1) a
+PREHOOK: query: select * from (select * from vt1) a
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
 PREHOOK: Input: default@vt1
 #### A masked pattern was here ####
-POSTHOOK: query: -- verify input objects required does not include table
--- even if view is within a sub query
-select * from (select * from vt1) a
+POSTHOOK: query: select * from (select * from vt1) a
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 POSTHOOK: Input: default@vt1
@@ -218,11 +200,9 @@ default	vt3			user2	USER	DELETE	true	-1	user1
 default	vt3			user2	USER	INSERT	true	-1	user1
 default	vt3			user2	USER	SELECT	true	-1	user1
 default	vt3			user2	USER	UPDATE	true	-1	user1
-PREHOOK: query: -- grant privileges on roles for view, after next statement
-show grant user user3 on table vt1
+PREHOOK: query: show grant user user3 on table vt1
 PREHOOK: type: SHOW_GRANT
-POSTHOOK: query: -- grant privileges on roles for view, after next statement
-show grant user user3 on table vt1
+POSTHOOK: query: show grant user user3 on table vt1
 POSTHOOK: type: SHOW_GRANT
 default	vt1			user3	USER	INSERT	false	-1	user1
 PREHOOK: query: show current roles

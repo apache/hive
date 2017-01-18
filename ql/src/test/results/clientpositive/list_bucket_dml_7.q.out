@@ -1,20 +1,4 @@
-PREHOOK: query: -- INCLUDE_HADOOP_MAJOR_VERSIONS(0.23)
--- SORT_QUERY_RESULTS
-
--- list bucketing DML : dynamic partition (one level) , merge , one skewed column
--- DML without merge files mixed with small and big files:
--- ds=2008-04-08/hr=a1/HIVE_DEFAULT_LIST_BUCKETING_DIR_NAME/
--- 155 000000_0
--- ds=2008-04-08/hr=b1/key=484
--- 87 000000_0
--- 87 000001_0
--- ds=2008-04-08/hr=b1/HIVE_DEFAULT_LIST_BUCKETING_DIR_NAME/
--- 5201 000000_0
--- 5201 000001_0
--- DML with merge will merge small files
-
--- skewed table
-CREATE TABLE list_bucketing_dynamic_part (key String, value STRING)
+PREHOOK: query: CREATE TABLE list_bucketing_dynamic_part (key String, value STRING)
     PARTITIONED BY (ds string, hr string)
     skewed by (key) on ('484')
     stored as DIRECTORIES
@@ -22,23 +6,7 @@ CREATE TABLE list_bucketing_dynamic_part (key String, value STRING)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@list_bucketing_dynamic_part
-POSTHOOK: query: -- INCLUDE_HADOOP_MAJOR_VERSIONS(0.23)
--- SORT_QUERY_RESULTS
-
--- list bucketing DML : dynamic partition (one level) , merge , one skewed column
--- DML without merge files mixed with small and big files:
--- ds=2008-04-08/hr=a1/HIVE_DEFAULT_LIST_BUCKETING_DIR_NAME/
--- 155 000000_0
--- ds=2008-04-08/hr=b1/key=484
--- 87 000000_0
--- 87 000001_0
--- ds=2008-04-08/hr=b1/HIVE_DEFAULT_LIST_BUCKETING_DIR_NAME/
--- 5201 000000_0
--- 5201 000001_0
--- DML with merge will merge small files
-
--- skewed table
-CREATE TABLE list_bucketing_dynamic_part (key String, value STRING)
+POSTHOOK: query: CREATE TABLE list_bucketing_dynamic_part (key String, value STRING)
     PARTITIONED BY (ds string, hr string)
     skewed by (key) on ('484')
     stored as DIRECTORIES
@@ -46,13 +14,11 @@ CREATE TABLE list_bucketing_dynamic_part (key String, value STRING)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@list_bucketing_dynamic_part
-PREHOOK: query: -- list bucketing DML without merge. use bucketize to generate a few small files.
-explain extended
+PREHOOK: query: explain extended
 insert overwrite table list_bucketing_dynamic_part partition (ds = '2008-04-08', hr)
 select key, value, if(key % 100 == 0, 'a1', 'b1') from srcpart where ds = '2008-04-08'
 PREHOOK: type: QUERY
-POSTHOOK: query: -- list bucketing DML without merge. use bucketize to generate a few small files.
-explain extended
+POSTHOOK: query: explain extended
 insert overwrite table list_bucketing_dynamic_part partition (ds = '2008-04-08', hr)
 select key, value, if(key % 100 == 0, 'a1', 'b1') from srcpart where ds = '2008-04-08'
 POSTHOOK: type: QUERY
@@ -251,12 +217,10 @@ POSTHOOK: Lineage: list_bucketing_dynamic_part PARTITION(ds=2008-04-08,hr=a1).ke
 POSTHOOK: Lineage: list_bucketing_dynamic_part PARTITION(ds=2008-04-08,hr=a1).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: list_bucketing_dynamic_part PARTITION(ds=2008-04-08,hr=b1).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: list_bucketing_dynamic_part PARTITION(ds=2008-04-08,hr=b1).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: -- check DML result
-show partitions list_bucketing_dynamic_part
+PREHOOK: query: show partitions list_bucketing_dynamic_part
 PREHOOK: type: SHOWPARTITIONS
 PREHOOK: Input: default@list_bucketing_dynamic_part
-POSTHOOK: query: -- check DML result
-show partitions list_bucketing_dynamic_part
+POSTHOOK: query: show partitions list_bucketing_dynamic_part
 POSTHOOK: type: SHOWPARTITIONS
 POSTHOOK: Input: default@list_bucketing_dynamic_part
 ds=2008-04-08/hr=a1
@@ -349,13 +313,11 @@ Skewed Values:      	[[484]]
 Skewed Value to Truncated Path:	{[484]=/list_bucketing_dynamic_part/ds=2008-04-08/hr=b1/key=484}	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: -- list bucketing DML with merge. use bucketize to generate a few small files.
-explain extended
+PREHOOK: query: explain extended
 insert overwrite table list_bucketing_dynamic_part partition (ds = '2008-04-08', hr)
 select key, value, if(key % 100 == 0, 'a1', 'b1') from srcpart where ds = '2008-04-08'
 PREHOOK: type: QUERY
-POSTHOOK: query: -- list bucketing DML with merge. use bucketize to generate a few small files.
-explain extended
+POSTHOOK: query: explain extended
 insert overwrite table list_bucketing_dynamic_part partition (ds = '2008-04-08', hr)
 select key, value, if(key % 100 == 0, 'a1', 'b1') from srcpart where ds = '2008-04-08'
 POSTHOOK: type: QUERY
@@ -672,12 +634,10 @@ POSTHOOK: Lineage: list_bucketing_dynamic_part PARTITION(ds=2008-04-08,hr=a1).ke
 POSTHOOK: Lineage: list_bucketing_dynamic_part PARTITION(ds=2008-04-08,hr=a1).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: list_bucketing_dynamic_part PARTITION(ds=2008-04-08,hr=b1).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: list_bucketing_dynamic_part PARTITION(ds=2008-04-08,hr=b1).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: -- check DML result
-show partitions list_bucketing_dynamic_part
+PREHOOK: query: show partitions list_bucketing_dynamic_part
 PREHOOK: type: SHOWPARTITIONS
 PREHOOK: Input: default@list_bucketing_dynamic_part
-POSTHOOK: query: -- check DML result
-show partitions list_bucketing_dynamic_part
+POSTHOOK: query: show partitions list_bucketing_dynamic_part
 POSTHOOK: type: SHOWPARTITIONS
 POSTHOOK: Input: default@list_bucketing_dynamic_part
 ds=2008-04-08/hr=a1
@@ -933,13 +893,11 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 #### A masked pattern was here ####
 484	val_484	2008-04-08	11
 484	val_484	2008-04-08	12
-PREHOOK: query: -- clean up
-drop table list_bucketing_dynamic_part
+PREHOOK: query: drop table list_bucketing_dynamic_part
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@list_bucketing_dynamic_part
 PREHOOK: Output: default@list_bucketing_dynamic_part
-POSTHOOK: query: -- clean up
-drop table list_bucketing_dynamic_part
+POSTHOOK: query: drop table list_bucketing_dynamic_part
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@list_bucketing_dynamic_part
 POSTHOOK: Output: default@list_bucketing_dynamic_part

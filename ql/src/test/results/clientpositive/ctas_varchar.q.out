@@ -30,28 +30,24 @@ POSTHOOK: Input: default@src
 POSTHOOK: Output: default@ctas_varchar_1
 POSTHOOK: Lineage: ctas_varchar_1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: ctas_varchar_1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: -- create table as with varchar column
-create table ctas_varchar_2 as select key, value from ctas_varchar_1
+PREHOOK: query: create table ctas_varchar_2 as select key, value from ctas_varchar_1
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@ctas_varchar_1
 PREHOOK: Output: database:default
 PREHOOK: Output: default@ctas_varchar_2
-POSTHOOK: query: -- create table as with varchar column
-create table ctas_varchar_2 as select key, value from ctas_varchar_1
+POSTHOOK: query: create table ctas_varchar_2 as select key, value from ctas_varchar_1
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@ctas_varchar_1
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@ctas_varchar_2
 POSTHOOK: Lineage: ctas_varchar_2.key SIMPLE [(ctas_varchar_1)ctas_varchar_1.FieldSchema(name:key, type:varchar(10), comment:null), ]
 POSTHOOK: Lineage: ctas_varchar_2.value SIMPLE [(ctas_varchar_1)ctas_varchar_1.FieldSchema(name:value, type:string, comment:null), ]
-PREHOOK: query: -- view with varchar column
-create view ctas_varchar_3 as select key, value from ctas_varchar_2
+PREHOOK: query: create view ctas_varchar_3 as select key, value from ctas_varchar_2
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: default@ctas_varchar_2
 PREHOOK: Output: database:default
 PREHOOK: Output: default@ctas_varchar_3
-POSTHOOK: query: -- view with varchar column
-create view ctas_varchar_3 as select key, value from ctas_varchar_2
+POSTHOOK: query: create view ctas_varchar_3 as select key, value from ctas_varchar_2
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@ctas_varchar_2
 POSTHOOK: Output: database:default

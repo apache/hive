@@ -30,9 +30,7 @@ POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/inventory' OVERWRITE I
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@inventory_txt
-PREHOOK: query: -- No column change case
-
-create table inventory_part_0(
+PREHOOK: query: create table inventory_part_0(
     inv_date_sk             int,
     inv_item_sk             int,
     inv_warehouse_sk        int,
@@ -41,9 +39,7 @@ partitioned by (par string) stored as orc
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@inventory_part_0
-POSTHOOK: query: -- No column change case
-
-create table inventory_part_0(
+POSTHOOK: query: create table inventory_part_0(
     inv_date_sk             int,
     inv_item_sk             int,
     inv_warehouse_sk        int,
@@ -149,9 +145,7 @@ POSTHOOK: Input: default@inventory_part_0@par=1
 POSTHOOK: Input: default@inventory_part_0@par=2
 #### A masked pattern was here ####
 105970
-PREHOOK: query: -- Additional column for 2nd partition...
-
-create table inventory_part_1(
+PREHOOK: query: create table inventory_part_1(
     inv_date_sk             int,
     inv_item_sk             int,
     inv_warehouse_sk        int,
@@ -160,9 +154,7 @@ partitioned by (par string) stored as orc
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@inventory_part_1
-POSTHOOK: query: -- Additional column for 2nd partition...
-
-create table inventory_part_1(
+POSTHOOK: query: create table inventory_part_1(
     inv_date_sk             int,
     inv_item_sk             int,
     inv_warehouse_sk        int,
@@ -277,10 +269,7 @@ POSTHOOK: Input: default@inventory_part_1@par=4cols
 POSTHOOK: Input: default@inventory_part_1@par=5cols
 #### A masked pattern was here ####
 105970
-PREHOOK: query: -- Verify we do not vectorize when a partition column name is different.
--- Currently, we do not attempt the actual select because non-vectorized ORC table reader gets a cast exception.
-
-create table inventory_part_2a(
+PREHOOK: query: create table inventory_part_2a(
     inv_date_sk             int,
     inv_item_sk             int,
     inv_warehouse_sk        int,
@@ -289,10 +278,7 @@ partitioned by (par string) stored as orc
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@inventory_part_2a
-POSTHOOK: query: -- Verify we do not vectorize when a partition column name is different.
--- Currently, we do not attempt the actual select because non-vectorized ORC table reader gets a cast exception.
-
-create table inventory_part_2a(
+POSTHOOK: query: create table inventory_part_2a(
     inv_date_sk             int,
     inv_item_sk             int,
     inv_warehouse_sk        int,
@@ -505,10 +491,7 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: -- Verify we do not vectorize when a partition column type is different.
--- Currently, we do not attempt the actual select because non-vectorized ORC table reader gets a cast exception.
-
-create table inventory_part_3(
+PREHOOK: query: create table inventory_part_3(
     inv_date_sk             int,
     inv_item_sk             int,
     inv_warehouse_sk        int,
@@ -517,10 +500,7 @@ partitioned by (par string) stored as orc
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@inventory_part_3
-POSTHOOK: query: -- Verify we do not vectorize when a partition column type is different.
--- Currently, we do not attempt the actual select because non-vectorized ORC table reader gets a cast exception.
-
-create table inventory_part_3(
+POSTHOOK: query: create table inventory_part_3(
     inv_date_sk             int,
     inv_item_sk             int,
     inv_warehouse_sk        int,

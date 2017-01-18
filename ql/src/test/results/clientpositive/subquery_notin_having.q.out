@@ -10,9 +10,7 @@ having key not in
     where s1.key > '12'
   )
 PREHOOK: type: QUERY
-POSTHOOK: query: -- non agg, non corr
-
-explain
+POSTHOOK: query: explain
 select key, count(*) 
 from src 
 group by key
@@ -220,8 +218,7 @@ having b.p_mfgr not in
   where min(p_retailprice) = l and r - l > 600
   )
 PREHOOK: type: QUERY
-POSTHOOK: query: -- non agg, corr
-explain
+POSTHOOK: query: explain
 select b.p_mfgr, min(p_retailprice) 
 from part b 
 group by b.p_mfgr
@@ -822,8 +819,7 @@ having b.p_mfgr not in
   having max(p_retailprice) - min(p_retailprice) > 600
   )
 PREHOOK: type: QUERY
-POSTHOOK: query: -- agg, non corr
-explain
+POSTHOOK: query: explain
 select b.p_mfgr, min(p_retailprice) 
 from part b 
 group by b.p_mfgr

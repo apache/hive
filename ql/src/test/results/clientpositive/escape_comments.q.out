@@ -11,13 +11,13 @@ POSTHOOK: query: use escape_comments_db
 POSTHOOK: type: SWITCHDATABASE
 POSTHOOK: Input: database:escape_comments_db
 PREHOOK: query: create table escape_comments_tbl1
-(col1 string comment 'a\nb\';') comment 'a\nb'
+(col1 string comment 'a\nb\'\;') comment 'a\nb'
 partitioned by (p1 string comment 'a\nb')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:escape_comments_db
 PREHOOK: Output: escape_comments_db@escape_comments_tbl1
 POSTHOOK: query: create table escape_comments_tbl1
-(col1 string comment 'a\nb\';') comment 'a\nb'
+(col1 string comment 'a\nb\'\;') comment 'a\nb'
 partitioned by (p1 string comment 'a\nb')
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:escape_comments_db

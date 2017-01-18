@@ -1,12 +1,8 @@
-PREHOOK: query: -- SORT_QUERY_RESULTS
-
-CREATE TABLE DEST1(key STRING, value STRING) STORED AS TEXTFILE
+PREHOOK: query: CREATE TABLE DEST1(key STRING, value STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@DEST1
-POSTHOOK: query: -- SORT_QUERY_RESULTS
-
-CREATE TABLE DEST1(key STRING, value STRING) STORED AS TEXTFILE
+POSTHOOK: query: CREATE TABLE DEST1(key STRING, value STRING) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@DEST1
@@ -18,18 +14,14 @@ POSTHOOK: query: CREATE TABLE DEST2(key STRING, val1 STRING, val2 STRING) STORED
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@DEST2
-PREHOOK: query: -- union case:map-reduce sub-queries followed by multi-table insert
-
-explain 
+PREHOOK: query: explain 
 FROM (select 'tst1' as key, cast(count(1) as string) as value from src s1
                          UNION  ALL  
       select s2.key as key, s2.value as value from src s2) unionsrc
 INSERT OVERWRITE TABLE DEST1 SELECT unionsrc.key, count(unionsrc.value) group by unionsrc.key
 INSERT OVERWRITE TABLE DEST2 SELECT unionsrc.key, unionsrc.value, unionsrc.value
 PREHOOK: type: QUERY
-POSTHOOK: query: -- union case:map-reduce sub-queries followed by multi-table insert
-
-explain 
+POSTHOOK: query: explain 
 FROM (select 'tst1' as key, cast(count(1) as string) as value from src s1
                          UNION  ALL  
       select s2.key as key, s2.value as value from src s2) unionsrc

@@ -1,10 +1,10 @@
 PREHOOK: query: from src
-select transform('aa;') using 'cat' as a  limit 1
+select transform('aa\;') using 'cat' as a  limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: from src
-select transform('aa;') using 'cat' as a  limit 1
+select transform('aa\;') using 'cat' as a  limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####

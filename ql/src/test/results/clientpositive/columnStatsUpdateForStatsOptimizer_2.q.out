@@ -150,14 +150,10 @@ POSTHOOK: query: ALTER TABLE calendar CHANGE year year1 INT
 POSTHOOK: type: ALTERTABLE_RENAMECOL
 POSTHOOK: Input: default@calendar
 POSTHOOK: Output: default@calendar
-PREHOOK: query: --after patch, should be old stats rather than -1
-
-desc formatted calendar
+PREHOOK: query: desc formatted calendar
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@calendar
-POSTHOOK: query: --after patch, should be old stats rather than -1
-
-desc formatted calendar
+POSTHOOK: query: desc formatted calendar
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@calendar
 # col_name            	data_type           	comment             
@@ -189,13 +185,9 @@ Bucket Columns:     	[month]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: --but basic/column stats can not be used by optimizer
-
-explain select max(month) from calendar
+PREHOOK: query: explain select max(month) from calendar
 PREHOOK: type: QUERY
-POSTHOOK: query: --but basic/column stats can not be used by optimizer
-
-explain select max(month) from calendar
+POSTHOOK: query: explain select max(month) from calendar
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -311,14 +303,10 @@ PREHOOK: Output: default@calendar
 POSTHOOK: query: truncate table calendar
 POSTHOOK: type: TRUNCATETABLE
 POSTHOOK: Output: default@calendar
-PREHOOK: query: --after patch, should be 0 
-
-desc formatted calendar
+PREHOOK: query: desc formatted calendar
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@calendar
-POSTHOOK: query: --after patch, should be 0 
-
-desc formatted calendar
+POSTHOOK: query: desc formatted calendar
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@calendar
 # col_name            	data_type           	comment             
@@ -351,13 +339,9 @@ Bucket Columns:     	[month]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: --but column stats can not be used by optimizer
-
-explain select max(month) from calendar
+PREHOOK: query: explain select max(month) from calendar
 PREHOOK: type: QUERY
-POSTHOOK: query: --but column stats can not be used by optimizer
-
-explain select max(month) from calendar
+POSTHOOK: query: explain select max(month) from calendar
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -412,13 +396,9 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@calendar
 #### A masked pattern was here ####
 NULL
-PREHOOK: query: --basic stats can be used by optimizer
-
-explain select count(1) from calendar
+PREHOOK: query: explain select count(1) from calendar
 PREHOOK: type: QUERY
-POSTHOOK: query: --basic stats can be used by optimizer
-
-explain select count(1) from calendar
+POSTHOOK: query: explain select count(1) from calendar
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-0 is a root stage

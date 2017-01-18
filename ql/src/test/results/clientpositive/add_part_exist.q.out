@@ -99,12 +99,10 @@ src_thrift
 srcbucket
 srcbucket2
 srcpart
-PREHOOK: query: -- Test ALTER TABLE ADD PARTITION in non-default Database
-CREATE DATABASE add_part_test_db
+PREHOOK: query: CREATE DATABASE add_part_test_db
 PREHOOK: type: CREATEDATABASE
 PREHOOK: Output: database:add_part_test_db
-POSTHOOK: query: -- Test ALTER TABLE ADD PARTITION in non-default Database
-CREATE DATABASE add_part_test_db
+POSTHOOK: query: CREATE DATABASE add_part_test_db
 POSTHOOK: type: CREATEDATABASE
 POSTHOOK: Output: database:add_part_test_db
 PREHOOK: query: CREATE TABLE add_part_test_db.add_part_test (key STRING, value STRING) PARTITIONED BY (ds STRING)

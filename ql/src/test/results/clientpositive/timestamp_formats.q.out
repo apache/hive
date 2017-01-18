@@ -57,13 +57,11 @@ POSTHOOK: Input: default@timestamp_formats
 2029-07-07 19:19:19.191919191	2029-07-07 19:19:19.191919191	2029-07-07T19:19:19.191919191	NULL	2029-07-07T19:19:19	NULL
 2030-08-08 20:20:20.202020202	2030-08-08 20:20:20.202020202	2030-08-08T20:20:20.202020202	NULL	2030-08-08T20:20:20	NULL
 2031-09-09 21:21:21.212121212	2031-09-09 21:21:21.212121212	2031-09-09T21:21:21.212121212	NULL	2031-09-09T21:21:21	NULL
-PREHOOK: query: -- Add single timestamp format. This should allow c3_ts to parse
-ALTER TABLE timestamp_formats SET SERDEPROPERTIES ("timestamp.formats"="yyyy-MM-dd'T'HH:mm:ss")
+PREHOOK: query: ALTER TABLE timestamp_formats SET SERDEPROPERTIES ("timestamp.formats"="yyyy-MM-dd'T'HH:mm:ss")
 PREHOOK: type: ALTERTABLE_SERDEPROPERTIES
 PREHOOK: Input: default@timestamp_formats
 PREHOOK: Output: default@timestamp_formats
-POSTHOOK: query: -- Add single timestamp format. This should allow c3_ts to parse
-ALTER TABLE timestamp_formats SET SERDEPROPERTIES ("timestamp.formats"="yyyy-MM-dd'T'HH:mm:ss")
+POSTHOOK: query: ALTER TABLE timestamp_formats SET SERDEPROPERTIES ("timestamp.formats"="yyyy-MM-dd'T'HH:mm:ss")
 POSTHOOK: type: ALTERTABLE_SERDEPROPERTIES
 POSTHOOK: Input: default@timestamp_formats
 POSTHOOK: Output: default@timestamp_formats
@@ -96,13 +94,11 @@ POSTHOOK: Input: default@timestamp_formats
 2029-07-07 19:19:19.191919191	2029-07-07 19:19:19.191919191	2029-07-07T19:19:19.191919191	NULL	2029-07-07T19:19:19	2029-07-07 19:19:19
 2030-08-08 20:20:20.202020202	2030-08-08 20:20:20.202020202	2030-08-08T20:20:20.202020202	NULL	2030-08-08T20:20:20	2030-08-08 20:20:20
 2031-09-09 21:21:21.212121212	2031-09-09 21:21:21.212121212	2031-09-09T21:21:21.212121212	NULL	2031-09-09T21:21:21	2031-09-09 21:21:21
-PREHOOK: query: -- Add another format, to allow c2_ts to parse
-ALTER TABLE timestamp_formats SET SERDEPROPERTIES ("timestamp.formats"="yyyy-MM-dd'T'HH:mm:ss,yyyy-MM-dd'T'HH:mm:ss.SSSSSSSSS")
+PREHOOK: query: ALTER TABLE timestamp_formats SET SERDEPROPERTIES ("timestamp.formats"="yyyy-MM-dd'T'HH:mm:ss,yyyy-MM-dd'T'HH:mm:ss.SSSSSSSSS")
 PREHOOK: type: ALTERTABLE_SERDEPROPERTIES
 PREHOOK: Input: default@timestamp_formats
 PREHOOK: Output: default@timestamp_formats
-POSTHOOK: query: -- Add another format, to allow c2_ts to parse
-ALTER TABLE timestamp_formats SET SERDEPROPERTIES ("timestamp.formats"="yyyy-MM-dd'T'HH:mm:ss,yyyy-MM-dd'T'HH:mm:ss.SSSSSSSSS")
+POSTHOOK: query: ALTER TABLE timestamp_formats SET SERDEPROPERTIES ("timestamp.formats"="yyyy-MM-dd'T'HH:mm:ss,yyyy-MM-dd'T'HH:mm:ss.SSSSSSSSS")
 POSTHOOK: type: ALTERTABLE_SERDEPROPERTIES
 POSTHOOK: Input: default@timestamp_formats
 POSTHOOK: Output: default@timestamp_formats

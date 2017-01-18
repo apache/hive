@@ -1,5 +1,4 @@
-PREHOOK: query: -- First try with regular mergejoin
-explain
+PREHOOK: query: explain
 select
   *
 from alltypesorc a join alltypesorc b on a.cint = b.cint
@@ -7,8 +6,7 @@ where
   a.cint between 1000000 and 3000000 and b.cbigint is not null
 order by a.cint
 PREHOOK: type: QUERY
-POSTHOOK: query: -- First try with regular mergejoin
-explain
+POSTHOOK: query: explain
 select
   *
 from alltypesorc a join alltypesorc b on a.cint = b.cint
@@ -239,8 +237,7 @@ POSTHOOK: Input: default@alltypesorc
 -3799	1
 10782	1
 NULL	6
-PREHOOK: query: -- Try with dynamically partitioned hashjoin
-explain
+PREHOOK: query: explain
 select
   *
 from alltypesorc a join alltypesorc b on a.cint = b.cint
@@ -248,8 +245,7 @@ where
   a.cint between 1000000 and 3000000 and b.cbigint is not null
 order by a.cint
 PREHOOK: type: QUERY
-POSTHOOK: query: -- Try with dynamically partitioned hashjoin
-explain
+POSTHOOK: query: explain
 select
   *
 from alltypesorc a join alltypesorc b on a.cint = b.cint
@@ -481,14 +477,12 @@ POSTHOOK: Input: default@alltypesorc
 10782	1
 NULL	6
 Warning: Shuffle Join MERGEJOIN[9][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
-PREHOOK: query: -- Left outer join with residual
-explain
+PREHOOK: query: explain
 select *
 from alltypesorc a left outer join alltypesorc b
 on a.cint = b.cint or a.csmallint between 1 and 10
 PREHOOK: type: QUERY
-POSTHOOK: query: -- Left outer join with residual
-explain
+POSTHOOK: query: explain
 select *
 from alltypesorc a left outer join alltypesorc b
 on a.cint = b.cint or a.csmallint between 1 and 10

@@ -34,12 +34,10 @@ POSTHOOK: Input: default@src
 POSTHOOK: Output: default@tbl2
 POSTHOOK: Lineage: tbl2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: tbl2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: -- Since tbl1 is the bigger table, tbl1 Left Outer Join tbl2 can be performed
-explain
+PREHOOK: query: explain
 select count(*) FROM tbl1 a LEFT OUTER JOIN tbl2 b ON a.key = b.key
 PREHOOK: type: QUERY
-POSTHOOK: query: -- Since tbl1 is the bigger table, tbl1 Left Outer Join tbl2 can be performed
-explain
+POSTHOOK: query: explain
 select count(*) FROM tbl1 a LEFT OUTER JOIN tbl2 b ON a.key = b.key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -143,12 +141,10 @@ POSTHOOK: Input: default@src
 POSTHOOK: Output: default@tbl2
 POSTHOOK: Lineage: tbl2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: tbl2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: -- Since tbl2 is the bigger table, tbl1 Right Outer Join tbl2 can be performed
-explain
+PREHOOK: query: explain
 select count(*) FROM tbl1 a RIGHT OUTER JOIN tbl2 b ON a.key = b.key
 PREHOOK: type: QUERY
-POSTHOOK: query: -- Since tbl2 is the bigger table, tbl1 Right Outer Join tbl2 can be performed
-explain
+POSTHOOK: query: explain
 select count(*) FROM tbl1 a RIGHT OUTER JOIN tbl2 b ON a.key = b.key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:

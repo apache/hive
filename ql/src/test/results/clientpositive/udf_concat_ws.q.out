@@ -76,8 +76,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest1
 #### A masked pattern was here ####
 xyzabc8675309	abc,xyz,8675309	NULL	abc**8675309
-PREHOOK: query: -- evalutes function for array of strings
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT concat_ws('.', array('www', 'face', 'book', 'com'), '1234'),
        concat_ws('-', 'www', array('face', 'book', 'com'), '1234'),
        concat_ws('F', 'www', array('face', 'book', 'com', '1234')),
@@ -86,8 +85,7 @@ SELECT concat_ws('.', array('www', 'face', 'book', 'com'), '1234'),
        concat_ws('[]', array('www'), 'face', array('book', 'com', '1234')),
        concat_ws('AAA', array('www'), array('face', 'book', 'com'), '1234') FROM dest1 tablesample (1 rows)
 PREHOOK: type: QUERY
-POSTHOOK: query: -- evalutes function for array of strings
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT concat_ws('.', array('www', 'face', 'book', 'com'), '1234'),
        concat_ws('-', 'www', array('face', 'book', 'com'), '1234'),
        concat_ws('F', 'www', array('face', 'book', 'com', '1234')),

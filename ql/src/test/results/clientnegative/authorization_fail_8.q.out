@@ -17,12 +17,10 @@ PREHOOK: type: SHOW_GRANT
 POSTHOOK: query: SHOW GRANT USER user2 ON TABLE authorization_fail
 POSTHOOK: type: SHOW_GRANT
 default	authorization_fail			user2	USER	SELECT	true	-1	user1
-PREHOOK: query: -- user2 current has grant option, this should work
-GRANT SELECT ON authorization_fail TO USER user3
+PREHOOK: query: GRANT SELECT ON authorization_fail TO USER user3
 PREHOOK: type: GRANT_PRIVILEGE
 PREHOOK: Output: default@authorization_fail
-POSTHOOK: query: -- user2 current has grant option, this should work
-GRANT SELECT ON authorization_fail TO USER user3
+POSTHOOK: query: GRANT SELECT ON authorization_fail TO USER user3
 POSTHOOK: type: GRANT_PRIVILEGE
 POSTHOOK: Output: default@authorization_fail
 PREHOOK: query: REVOKE SELECT ON authorization_fail FROM USER user3
@@ -42,8 +40,7 @@ PREHOOK: type: SHOW_GRANT
 POSTHOOK: query: SHOW GRANT USER user2 ON TABLE authorization_fail
 POSTHOOK: type: SHOW_GRANT
 default	authorization_fail			user2	USER	SELECT	false	-1	user1
-PREHOOK: query: -- Now that grant option has been revoked, granting to other users should fail
-GRANT SELECT ON authorization_fail TO USER user3
+PREHOOK: query: GRANT SELECT ON authorization_fail TO USER user3
 PREHOOK: type: GRANT_PRIVILEGE
 PREHOOK: Output: default@authorization_fail
 FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. Permission denied: Principal [name=user2, type=USER] does not have following privileges for operation GRANT_PRIVILEGE [[SELECT with grant] on Object [type=TABLE_OR_VIEW, name=default.authorization_fail]]

@@ -1,11 +1,9 @@
 #### A masked pattern was here ####
-PREHOOK: query: -- check export on partition
-create table auth_import_ptn(i int) partitioned by (j int)
+PREHOOK: query: create table auth_import_ptn(i int) partitioned by (j int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@auth_import_ptn
-POSTHOOK: query: -- check export on partition
-create table auth_import_ptn(i int) partitioned by (j int)
+POSTHOOK: query: create table auth_import_ptn(i int) partitioned by (j int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@auth_import_ptn

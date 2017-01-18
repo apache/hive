@@ -1,10 +1,8 @@
-PREHOOK: query: -- This test checks that a join with tables with two different buckets send the right bucket info to each table.
-create table acidjoin1(name varchar(50), age int) clustered by (age) into 2 buckets stored as orc TBLPROPERTIES ("transactional"="true")
+PREHOOK: query: create table acidjoin1(name varchar(50), age int) clustered by (age) into 2 buckets stored as orc TBLPROPERTIES ("transactional"="true")
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@acidjoin1
-POSTHOOK: query: -- This test checks that a join with tables with two different buckets send the right bucket info to each table.
-create table acidjoin1(name varchar(50), age int) clustered by (age) into 2 buckets stored as orc TBLPROPERTIES ("transactional"="true")
+POSTHOOK: query: create table acidjoin1(name varchar(50), age int) clustered by (age) into 2 buckets stored as orc TBLPROPERTIES ("transactional"="true")
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@acidjoin1

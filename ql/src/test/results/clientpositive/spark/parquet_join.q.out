@@ -61,17 +61,9 @@ POSTHOOK: Output: default@parquet_jointable2
 POSTHOOK: Lineage: parquet_jointable2._c1 EXPRESSION [(staging)staging.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: parquet_jointable2.key SIMPLE [(staging)staging.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: parquet_jointable2.myvalue EXPRESSION [(staging)staging.FieldSchema(name:value, type:string, comment:null), ]
-PREHOOK: query: -- SORT_QUERY_RESULTS
-
--- MR join
-
-explain select p2.myvalue from parquet_jointable1 p1 join parquet_jointable2 p2 on p1.key=p2.key
+PREHOOK: query: explain select p2.myvalue from parquet_jointable1 p1 join parquet_jointable2 p2 on p1.key=p2.key
 PREHOOK: type: QUERY
-POSTHOOK: query: -- SORT_QUERY_RESULTS
-
--- MR join
-
-explain select p2.myvalue from parquet_jointable1 p1 join parquet_jointable2 p2 on p1.key=p2.key
+POSTHOOK: query: explain select p2.myvalue from parquet_jointable1 p1 join parquet_jointable2 p2 on p1.key=p2.key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -159,21 +151,9 @@ POSTHOOK: Input: default@parquet_jointable2
 #### A masked pattern was here ####
 val_0value
 val_10value
-PREHOOK: query: -- The two tables involved in the join have differing number of columns(table1-2,table2-3). In case of Map and SMB join,
--- when the second table is loaded, the column indices in hive.io.file.readcolumn.ids refer to columns of both the first and the second table
--- and hence the parquet schema/types passed to ParquetInputSplit should contain only the column indexes belonging to second/current table
-
--- Map join
-
-explain select p2.myvalue from parquet_jointable1 p1 join parquet_jointable2 p2 on p1.key=p2.key
+PREHOOK: query: explain select p2.myvalue from parquet_jointable1 p1 join parquet_jointable2 p2 on p1.key=p2.key
 PREHOOK: type: QUERY
-POSTHOOK: query: -- The two tables involved in the join have differing number of columns(table1-2,table2-3). In case of Map and SMB join,
--- when the second table is loaded, the column indices in hive.io.file.readcolumn.ids refer to columns of both the first and the second table
--- and hence the parquet schema/types passed to ParquetInputSplit should contain only the column indexes belonging to second/current table
-
--- Map join
-
-explain select p2.myvalue from parquet_jointable1 p1 join parquet_jointable2 p2 on p1.key=p2.key
+POSTHOOK: query: explain select p2.myvalue from parquet_jointable1 p1 join parquet_jointable2 p2 on p1.key=p2.key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
@@ -262,15 +242,11 @@ POSTHOOK: Input: default@parquet_jointable2
 #### A masked pattern was here ####
 val_0value
 val_10value
-PREHOOK: query: -- SMB join
-
-create table parquet_jointable1_bucketed_sorted (key int,value string) clustered by (key) sorted by (key ASC) INTO 1 BUCKETS stored as parquet
+PREHOOK: query: create table parquet_jointable1_bucketed_sorted (key int,value string) clustered by (key) sorted by (key ASC) INTO 1 BUCKETS stored as parquet
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@parquet_jointable1_bucketed_sorted
-POSTHOOK: query: -- SMB join
-
-create table parquet_jointable1_bucketed_sorted (key int,value string) clustered by (key) sorted by (key ASC) INTO 1 BUCKETS stored as parquet
+POSTHOOK: query: create table parquet_jointable1_bucketed_sorted (key int,value string) clustered by (key) sorted by (key ASC) INTO 1 BUCKETS stored as parquet
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@parquet_jointable1_bucketed_sorted

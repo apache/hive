@@ -128,16 +128,12 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: -- SORT_QUERY_RESULTS
-
-select t1.v1, t1.a, t2.c, t2.v2 from orc_table_1 t1 left outer join orc_table_2 t2 on t1.a = t2.c
+PREHOOK: query: select t1.v1, t1.a, t2.c, t2.v2 from orc_table_1 t1 left outer join orc_table_2 t2 on t1.a = t2.c
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_table_1
 PREHOOK: Input: default@orc_table_2
 #### A masked pattern was here ####
-POSTHOOK: query: -- SORT_QUERY_RESULTS
-
-select t1.v1, t1.a, t2.c, t2.v2 from orc_table_1 t1 left outer join orc_table_2 t2 on t1.a = t2.c
+POSTHOOK: query: select t1.v1, t1.a, t2.c, t2.v2 from orc_table_1 t1 left outer join orc_table_2 t2 on t1.a = t2.c
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orc_table_1
 POSTHOOK: Input: default@orc_table_2
@@ -218,16 +214,12 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: -- SORT_QUERY_RESULTS
-
-select t1.v1, t1.a, t2.c, t2.v2 from orc_table_1 t1 right outer join orc_table_2 t2 on t1.a = t2.c
+PREHOOK: query: select t1.v1, t1.a, t2.c, t2.v2 from orc_table_1 t1 right outer join orc_table_2 t2 on t1.a = t2.c
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_table_1
 PREHOOK: Input: default@orc_table_2
 #### A masked pattern was here ####
-POSTHOOK: query: -- SORT_QUERY_RESULTS
-
-select t1.v1, t1.a, t2.c, t2.v2 from orc_table_1 t1 right outer join orc_table_2 t2 on t1.a = t2.c
+POSTHOOK: query: select t1.v1, t1.a, t2.c, t2.v2 from orc_table_1 t1 right outer join orc_table_2 t2 on t1.a = t2.c
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orc_table_1
 POSTHOOK: Input: default@orc_table_2

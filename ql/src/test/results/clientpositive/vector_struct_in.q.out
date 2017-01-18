@@ -1,14 +1,8 @@
-PREHOOK: query: -- SORT_QUERY_RESULTS
-
--- 2 Strings
-create table test_1 (`id` string, `lineid` string) stored as orc
+PREHOOK: query: create table test_1 (`id` string, `lineid` string) stored as orc
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@test_1
-POSTHOOK: query: -- SORT_QUERY_RESULTS
-
--- 2 Strings
-create table test_1 (`id` string, `lineid` string) stored as orc
+POSTHOOK: query: create table test_1 (`id` string, `lineid` string) stored as orc
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_1
@@ -203,13 +197,11 @@ POSTHOOK: Input: default@test_1
 #### A masked pattern was here ####
 one	1	true
 seven	1	true
-PREHOOK: query: -- 2 Integers
-create table test_2 (`id` int, `lineid` int) stored as orc
+PREHOOK: query: create table test_2 (`id` int, `lineid` int) stored as orc
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@test_2
-POSTHOOK: query: -- 2 Integers
-create table test_2 (`id` int, `lineid` int) stored as orc
+POSTHOOK: query: create table test_2 (`id` int, `lineid` int) stored as orc
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_2
@@ -404,13 +396,11 @@ POSTHOOK: Input: default@test_2
 #### A masked pattern was here ####
 1	1	true
 7	1	true
-PREHOOK: query: -- 1 String and 1 Integer
-create table test_3 (`id` string, `lineid` int) stored as orc
+PREHOOK: query: create table test_3 (`id` string, `lineid` int) stored as orc
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@test_3
-POSTHOOK: query: -- 1 String and 1 Integer
-create table test_3 (`id` string, `lineid` int) stored as orc
+POSTHOOK: query: create table test_3 (`id` string, `lineid` int) stored as orc
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_3
@@ -605,13 +595,11 @@ POSTHOOK: Input: default@test_3
 #### A masked pattern was here ####
 one	1	true
 seven	1	true
-PREHOOK: query: -- 1 Integer and 1 String and 1 Double
-create table test_4 (`my_bigint` bigint, `my_string` string, `my_double` double) stored as orc
+PREHOOK: query: create table test_4 (`my_bigint` bigint, `my_string` string, `my_double` double) stored as orc
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@test_4
-POSTHOOK: query: -- 1 Integer and 1 String and 1 Double
-create table test_4 (`my_bigint` bigint, `my_string` string, `my_double` double) stored as orc
+POSTHOOK: query: create table test_4 (`my_bigint` bigint, `my_string` string, `my_double` double) stored as orc
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_4

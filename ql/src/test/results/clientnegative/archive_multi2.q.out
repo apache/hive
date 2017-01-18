@@ -1,12 +1,6 @@
-PREHOOK: query: -- Tests trying to unarchive a non-archived partition group
--- EXCLUDE_HADOOP_MAJOR_VERSIONS(0.17, 0.18, 0.19)
-
-drop table tstsrcpart
+PREHOOK: query: drop table tstsrcpart
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: -- Tests trying to unarchive a non-archived partition group
--- EXCLUDE_HADOOP_MAJOR_VERSIONS(0.17, 0.18, 0.19)
-
-drop table tstsrcpart
+POSTHOOK: query: drop table tstsrcpart
 POSTHOOK: type: DROPTABLE
 PREHOOK: query: create table tstsrcpart like srcpart
 PREHOOK: type: CREATETABLE

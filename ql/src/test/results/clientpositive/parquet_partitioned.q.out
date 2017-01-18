@@ -1,10 +1,6 @@
-PREHOOK: query: -- SORT_QUERY_RESULTS
-
-DROP TABLE parquet_partitioned_staging
+PREHOOK: query: DROP TABLE parquet_partitioned_staging
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: -- SORT_QUERY_RESULTS
-
-DROP TABLE parquet_partitioned_staging
+POSTHOOK: query: DROP TABLE parquet_partitioned_staging
 POSTHOOK: type: DROPTABLE
 PREHOOK: query: DROP TABLE parquet_partitioned
 PREHOOK: type: DROPTABLE

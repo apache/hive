@@ -1,36 +1,4 @@
-PREHOOK: query: -- SORT_QUERY_RESULTS
-
--- If you look at ql/src/test/org/apache/hadoop/hive/ql/exec/vector/util/OrcFileGenerator.java
--- which is the data generation class you'll see that those values are specified in the
--- initializeFixedPointValues for each data type. When I created the queries I usedthose values
--- where I needed scalar values to ensure that when the queries executed their predicates would be
--- filtering on values that are guaranteed to exist.
-
--- Beyond those values, all the other data in the alltypesorc file is random, but there is a
--- specific pattern to the data that is important for coverage. In orc and subsequently
--- vectorization there are a number of optimizations for certain data patterns: AllValues, NoNulls,
--- RepeatingValue, RepeatingNull. The data in alltypesorc is generated such that each column has
--- exactly 3 batches of each data pattern. This gives us coverage for the vector expression
--- optimizations and ensure the metadata in appropriately set on the row batch object which are
--- reused across batches. 
-
--- For the queries themselves in order to efficiently cover as much of the new vectorization
--- functionality as I could I used a number of different techniques to create the
--- vectorization_short_regress.q test suite, primarily equivalence classes, and pairwise
--- combinations.
-
--- First I divided the search space into a number of dimensions such as type, aggregate function,
--- filter operation, arithmetic operation, etc. The types were explored as equivalence classes of
--- long, double, time, string, and bool. Also, rather than creating a very large number of small
--- queries the resulting vectors were grouped by compatible dimensions to reduce the number of
--- queries.
-
--- TargetTypeClasses: Long, Timestamp, Double, String, Bool
--- Functions: Avg, Sum, StDevP, StDev, Var, Min, Count
--- ArithmeticOps: Add, Multiply, Subtract, Divide
--- FilterOps: Equal, NotEqual, GreaterThan, LessThan, LessThanOrEqual
--- GroupBy: NoGroupByProjectAggs
-EXPLAIN SELECT AVG(cint),
+PREHOOK: query: EXPLAIN SELECT AVG(cint),
        (AVG(cint) + -3728),
        (-((AVG(cint) + -3728))),
        (-((-((AVG(cint) + -3728))))),
@@ -66,39 +34,7 @@ WHERE  ((762 = cbigint)
                     AND ((79.553 != cint)
                          AND (cboolean2 != cboolean1)))))
 PREHOOK: type: QUERY
-POSTHOOK: query: -- SORT_QUERY_RESULTS
-
--- If you look at ql/src/test/org/apache/hadoop/hive/ql/exec/vector/util/OrcFileGenerator.java
--- which is the data generation class you'll see that those values are specified in the
--- initializeFixedPointValues for each data type. When I created the queries I usedthose values
--- where I needed scalar values to ensure that when the queries executed their predicates would be
--- filtering on values that are guaranteed to exist.
-
--- Beyond those values, all the other data in the alltypesorc file is random, but there is a
--- specific pattern to the data that is important for coverage. In orc and subsequently
--- vectorization there are a number of optimizations for certain data patterns: AllValues, NoNulls,
--- RepeatingValue, RepeatingNull. The data in alltypesorc is generated such that each column has
--- exactly 3 batches of each data pattern. This gives us coverage for the vector expression
--- optimizations and ensure the metadata in appropriately set on the row batch object which are
--- reused across batches. 
-
--- For the queries themselves in order to efficiently cover as much of the new vectorization
--- functionality as I could I used a number of different techniques to create the
--- vectorization_short_regress.q test suite, primarily equivalence classes, and pairwise
--- combinations.
-
--- First I divided the search space into a number of dimensions such as type, aggregate function,
--- filter operation, arithmetic operation, etc. The types were explored as equivalence classes of
--- long, double, time, string, and bool. Also, rather than creating a very large number of small
--- queries the resulting vectors were grouped by compatible dimensions to reduce the number of
--- queries.
-
--- TargetTypeClasses: Long, Timestamp, Double, String, Bool
--- Functions: Avg, Sum, StDevP, StDev, Var, Min, Count
--- ArithmeticOps: Add, Multiply, Subtract, Divide
--- FilterOps: Equal, NotEqual, GreaterThan, LessThan, LessThanOrEqual
--- GroupBy: NoGroupByProjectAggs
-EXPLAIN SELECT AVG(cint),
+POSTHOOK: query: EXPLAIN SELECT AVG(cint),
        (AVG(cint) + -3728),
        (-((AVG(cint) + -3728))),
        (-((-((AVG(cint) + -3728))))),
@@ -272,12 +208,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 1.6000018929276082E8	1.5999646129276082E8	-1.5999646129276082E8	1.5999646129276082E8	2.5598867626205912E16	-8706342.964000002	-1.6000018929276082E8	5.481251832900256E8	4.095728233294762E24	8549.657499338187	-5.481251832900256E8	3.8812872199726474E8	2.12743126884874112E17	3.0054786945575034E17	-5.700752675298234	-3.0054786945575034E17	3.0054786945575034E17	973579.3664121237	5.48222463472403E8	-973579.3664121237	-18.377427808018613	-64	2044	-6.573680812059066E-5	18.377427808018613
-PREHOOK: query: -- TargetTypeClasses: Long, Bool, Double, String, Timestamp
--- Functions: Max, VarP, StDevP, Avg, Min, StDev, Var
--- ArithmeticOps: Divide, Multiply, Remainder, Subtract
--- FilterOps: LessThan, LessThanOrEqual, GreaterThan, GreaterThanOrEqual, Like, RLike
--- GroupBy: NoGroupByProjectAggs
-EXPLAIN SELECT MAX(cint),
+PREHOOK: query: EXPLAIN SELECT MAX(cint),
        (MAX(cint) / -3728),
        (MAX(cint) * -3728),
        VAR_POP(cbigint),
@@ -310,12 +241,7 @@ WHERE  (((cbigint <= 197)
            OR ((cfloat > 79.553)
                AND (cstring2 LIKE '10%')))
 PREHOOK: type: QUERY
-POSTHOOK: query: -- TargetTypeClasses: Long, Bool, Double, String, Timestamp
--- Functions: Max, VarP, StDevP, Avg, Min, StDev, Var
--- ArithmeticOps: Divide, Multiply, Remainder, Subtract
--- FilterOps: LessThan, LessThanOrEqual, GreaterThan, GreaterThanOrEqual, Like, RLike
--- GroupBy: NoGroupByProjectAggs
-EXPLAIN SELECT MAX(cint),
+POSTHOOK: query: EXPLAIN SELECT MAX(cint),
        (MAX(cint) / -3728),
        (MAX(cint) * -3728),
        VAR_POP(cbigint),
@@ -480,12 +406,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 -20301111	5445.576984978541	-1626869520	7.9684972882908944E16	1626869520	NULL	-563	NULL	NULL	NULL	-8.935323383084578	NULL	-1069736047	NULL	NULL	NULL	NULL	NULL	-5445.576984978541	511	5454.512308361625	1626869520	7.2647256545687792E16
-PREHOOK: query: -- TargetTypeClasses: String, Long, Bool, Double, Timestamp
--- Functions: VarP, Count, Max, StDevP, StDev, Avg
--- ArithmeticOps: Subtract, Remainder, Multiply, Add
--- FilterOps: Equal, LessThanOrEqual, GreaterThan, Like, LessThan
--- GroupBy: NoGroupByProjectAggs
-EXPLAIN SELECT VAR_POP(cbigint),
+PREHOOK: query: EXPLAIN SELECT VAR_POP(cbigint),
        (-(VAR_POP(cbigint))),
        (VAR_POP(cbigint) - (-(VAR_POP(cbigint)))),
        COUNT(*),
@@ -517,12 +438,7 @@ WHERE  ((ctimestamp1 = ctimestamp2)
                   AND ((ctimestamp2 IS NOT NULL)
                        AND (cstring2 > 'a'))))
 PREHOOK: type: QUERY
-POSTHOOK: query: -- TargetTypeClasses: String, Long, Bool, Double, Timestamp
--- Functions: VarP, Count, Max, StDevP, StDev, Avg
--- ArithmeticOps: Subtract, Remainder, Multiply, Add
--- FilterOps: Equal, LessThanOrEqual, GreaterThan, Like, LessThan
--- GroupBy: NoGroupByProjectAggs
-EXPLAIN SELECT VAR_POP(cbigint),
+POSTHOOK: query: EXPLAIN SELECT VAR_POP(cbigint),
        (-(VAR_POP(cbigint))),
        (VAR_POP(cbigint) - (-(VAR_POP(cbigint)))),
        COUNT(*),
@@ -685,12 +601,7 @@ POSTHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 2.5109214708345636E18	-2.5109214708345636E18	5.0218429416691272E18	2780	75.198	62	2.5109214708345661E18	2.5109214708345636E18	-1.0	2780	-2780	9460.675803068349	-2.5109214708345636E18	-2118360	1072872630	-2118298	-2.5109214697616911E18	185935.34910862707	0	758	-1.733509234828496	-3728
 WARNING: Comparing a bigint and a double may result in a loss of precision.
-PREHOOK: query: -- TargetTypeClasses: String, Bool, Timestamp, Long, Double
--- Functions: Avg, Max, StDev, VarP
--- ArithmeticOps: Add, Divide, Remainder, Multiply
--- FilterOps: LessThanOrEqual, NotEqual, GreaterThanOrEqual, LessThan, Equal
--- GroupBy: NoGroupByProjectAggs
-EXPLAIN SELECT AVG(ctinyint),
+PREHOOK: query: EXPLAIN SELECT AVG(ctinyint),
        (AVG(ctinyint) + 6981),
        ((AVG(ctinyint) + 6981) + AVG(ctinyint)),
        MAX(cbigint),
@@ -712,12 +623,7 @@ WHERE  (((ctimestamp2 <= ctimestamp1)
             AND (ctimestamp1 >= 0))
            OR (cfloat = 17))
 PREHOOK: type: QUERY
-POSTHOOK: query: -- TargetTypeClasses: String, Bool, Timestamp, Long, Double
--- Functions: Avg, Max, StDev, VarP
--- ArithmeticOps: Add, Divide, Remainder, Multiply
--- FilterOps: LessThanOrEqual, NotEqual, GreaterThanOrEqual, LessThan, Equal
--- GroupBy: NoGroupByProjectAggs
-EXPLAIN SELECT AVG(ctinyint),
+POSTHOOK: query: EXPLAIN SELECT AVG(ctinyint),
        (AVG(ctinyint) + 6981),
        ((AVG(ctinyint) + 6981) + AVG(ctinyint)),
        MAX(cbigint),
@@ -850,12 +756,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 -0.5934409161894847	6980.406559083811	6979.813118167622	2141851355	-11761.597368421053	-6980.406559083811	1.5852855222071937E8	-0.5934409161894847	2.5099887741860852E16	1.52140608502098816E18	-2141851355	-13.510823917813237	79.553	-3.998255191435157E19
-PREHOOK: query: -- TargetTypeClasses: Timestamp, String, Long, Double, Bool
--- Functions: Max, Avg, Min, Var, StDev, Count, StDevP, Sum
--- ArithmeticOps: Multiply, Subtract, Add, Divide
--- FilterOps: Like, NotEqual, LessThan, GreaterThanOrEqual, GreaterThan, RLike
--- GroupBy: NoGroupByProjectColumns
-EXPLAIN SELECT cint,
+PREHOOK: query: EXPLAIN SELECT cint,
        cdouble,
        ctimestamp2,
        cstring1,
@@ -891,12 +792,7 @@ WHERE  (((cstring1 RLIKE 'a.*')
 ORDER BY cint, cdouble, ctimestamp2, cstring1, cboolean2, ctinyint, cfloat, ctimestamp1, csmallint, cbigint, c1, c2, c3, c4, c5, c6, c7, c8, c9, c10, c11, c12, c13
 LIMIT 50
 PREHOOK: type: QUERY
-POSTHOOK: query: -- TargetTypeClasses: Timestamp, String, Long, Double, Bool
--- Functions: Max, Avg, Min, Var, StDev, Count, StDevP, Sum
--- ArithmeticOps: Multiply, Subtract, Add, Divide
--- FilterOps: Like, NotEqual, LessThan, GreaterThanOrEqual, GreaterThan, RLike
--- GroupBy: NoGroupByProjectColumns
-EXPLAIN SELECT cint,
+POSTHOOK: query: EXPLAIN SELECT cint,
        cdouble,
        ctimestamp2,
        cstring1,
@@ -1113,12 +1009,7 @@ NULL	-7196.0	1969-12-31 15:59:58.174	NULL	false	-64	-64.0	1969-12-31 15:59:56.04
 NULL	-7196.0	1969-12-31 15:59:58.174	NULL	false	-64	-64.0	1969-12-31 16:00:01.785	-7196	-1639157869	6110780535632	NULL	NULL	7196	-14392	-7196	NULL	NULL	64.0	6.4051596E8	-6.471915929812072E-5	64	-1.2430156
 NULL	-7196.0	1969-12-31 15:59:58.174	NULL	false	-64	-64.0	1969-12-31 16:00:11.912	-7196	-1615920595	6024151978160	NULL	NULL	7196	-14392	-7196	NULL	NULL	64.0	6.4051596E8	-6.471915929812072E-5	64	-1.2430156
 NULL	-7196.0	1969-12-31 15:59:58.174	NULL	false	-64	-64.0	1969-12-31 16:00:12.339	-7196	1805860756	-6732248898368	NULL	NULL	7196	-14392	-7196	NULL	NULL	64.0	6.4051596E8	-6.471915929812072E-5	64	-1.2430156
-PREHOOK: query: -- TargetTypeClasses: Long, String, Double, Bool, Timestamp
--- Functions: VarP, Var, StDev, StDevP, Max, Sum
--- ArithmeticOps: Divide, Remainder, Subtract, Multiply
--- FilterOps: Equal, LessThanOrEqual, LessThan, Like, GreaterThanOrEqual, NotEqual, GreaterThan
--- GroupBy: NoGroupByProjectColumns
-EXPLAIN SELECT cint,
+PREHOOK: query: EXPLAIN SELECT cint,
        cbigint,
        cstring1,
        cboolean1,
@@ -1153,12 +1044,7 @@ WHERE  (((197 > ctinyint)
 ORDER BY cint, cbigint, cstring1, cboolean1, cfloat, cdouble, ctimestamp2, csmallint, cstring2, cboolean2, c1, c2, c3, c4, c5, c6, c7, c8, c9, c10, c11, c12, c13, c14, c15
 LIMIT 25
 PREHOOK: type: QUERY
-POSTHOOK: query: -- TargetTypeClasses: Long, String, Double, Bool, Timestamp
--- Functions: VarP, Var, StDev, StDevP, Max, Sum
--- ArithmeticOps: Divide, Remainder, Subtract, Multiply
--- FilterOps: Equal, LessThanOrEqual, LessThan, Like, GreaterThanOrEqual, NotEqual, GreaterThan
--- GroupBy: NoGroupByProjectColumns
-EXPLAIN SELECT cint,
+POSTHOOK: query: EXPLAIN SELECT cint,
        cbigint,
        cstring1,
        cboolean1,
@@ -1325,12 +1211,7 @@ POSTHOOK: Input: default@alltypesorc
 -462839731	988888	ss	false	-51.0	NULL	NULL	NULL	Lml5J2QBU77	false	-468.04059812638036	44.210	468.04059812638036	10.175	51.0	-102.0	-102.0	NULL	NULL	-988888	417.04059812638036	NULL	3569	NULL	NULL
 -635141101	-89010	ss	false	-51.0	NULL	NULL	NULL	rVWAj4N1MCg8Scyp7wj2C	true	7135.6151106617235	-69.746	-7135.6151106617235	10.175	51.0	-102.0	-102.0	NULL	NULL	89010	-7186.6151106617235	NULL	3569	NULL	NULL
 WARNING: Comparing a bigint and a double may result in a loss of precision.
-PREHOOK: query: -- TargetTypeClasses: String, Bool, Double, Long, Timestamp
--- Functions: Sum, Max, Avg, Var, StDevP, VarP
--- ArithmeticOps: Add, Subtract, Divide, Multiply, Remainder
--- FilterOps: NotEqual, GreaterThanOrEqual, Like, LessThanOrEqual, Equal, GreaterThan
--- GroupBy: NoGroupByProjectColumns
-EXPLAIN SELECT   cint,
+PREHOOK: query: EXPLAIN SELECT   cint,
          cstring1,
          cboolean2,
          ctimestamp2,
@@ -1364,12 +1245,7 @@ WHERE    (((csmallint > -26.28)
 ORDER BY cboolean1, cstring1, ctimestamp2, cfloat, cbigint, cstring1, cdouble, cint, csmallint, cdouble, c1, c2, c3, c4, c5, c6, c7, c8, c9, c10, c11, c12, c13
 LIMIT 75
 PREHOOK: type: QUERY
-POSTHOOK: query: -- TargetTypeClasses: String, Bool, Double, Long, Timestamp
--- Functions: Sum, Max, Avg, Var, StDevP, VarP
--- ArithmeticOps: Add, Subtract, Divide, Multiply, Remainder
--- FilterOps: NotEqual, GreaterThanOrEqual, Like, LessThanOrEqual, Equal, GreaterThan
--- GroupBy: NoGroupByProjectColumns
-EXPLAIN SELECT   cint,
+POSTHOOK: query: EXPLAIN SELECT   cint,
          cstring1,
          cboolean2,
          ctimestamp2,
@@ -1607,12 +1483,7 @@ NULL	NULL	true	1969-12-31 15:59:58.456	15601.0	-62.0	667693308	15601	NULL	NULL	6
 NULL	NULL	true	1969-12-31 15:59:58.456	15601.0	-63.0	-200542601	15601	NULL	NULL	-200542538	200542601	63.0	-401085139	1.0	-15601.0	NULL	-2.00558202E8	0.0220476	-7347.0	-15601	NULL
 NULL	NULL	true	1969-12-31 15:59:58.456	15601.0	-63.0	-721244708	15601	NULL	NULL	-721244645	721244708	63.0	-1442489353	1.0	-15601.0	NULL	-7.21260309E8	0.0220476	-10478.0	-15601	NULL
 NULL	NULL	true	1969-12-31 15:59:58.456	15601.0	-64.0	-1809291815	15601	NULL	NULL	-1809291751	1809291815	64.0	-3618583566	1.0	-15601.0	NULL	-1.809307416E9	0.0217031	-12643.0	-15601	NULL
-PREHOOK: query: -- TargetTypeClasses: Long, String, Double, Timestamp
--- Functions: Avg, Min, StDevP, Sum, Var
--- ArithmeticOps: Divide, Subtract, Multiply, Remainder
--- FilterOps: GreaterThan, LessThan, LessThanOrEqual, GreaterThanOrEqual, Like
--- GroupBy: NoGroupByProjectColumns
-EXPLAIN SELECT   ctimestamp1,
+PREHOOK: query: EXPLAIN SELECT   ctimestamp1,
          cstring2,
          cdouble,
          cfloat,
@@ -1639,12 +1510,7 @@ WHERE    (((-1.389 >= cint)
 ORDER BY csmallint, cstring2, cdouble, cfloat, cbigint, c1, c2, c3, c4, c5, c6, c7, c8, c9, c10
 LIMIT 45
 PREHOOK: type: QUERY
-POSTHOOK: query: -- TargetTypeClasses: Long, String, Double, Timestamp
--- Functions: Avg, Min, StDevP, Sum, Var
--- ArithmeticOps: Divide, Subtract, Multiply, Remainder
--- FilterOps: GreaterThan, LessThan, LessThanOrEqual, GreaterThanOrEqual, Like
--- GroupBy: NoGroupByProjectColumns
-EXPLAIN SELECT   ctimestamp1,
+POSTHOOK: query: EXPLAIN SELECT   ctimestamp1,
          cstring2,
          cdouble,
          cfloat,
@@ -1830,12 +1696,7 @@ POSTHOOK: Input: default@alltypesorc
 NULL	4hA4KQj2vD3fI6gX82220d	12329.0	NULL	-1887561756	12329	-528876.9279910339	-12586	NULL	-12329.0	125447.57500000001	NULL	NULL	-3104	-12329.0	-1.52004241E8
 NULL	4hA4KQj2vD3fI6gX82220d	477.0	NULL	-1887561756	477	-528876.9279910339	-734	NULL	-477.0	4853.475	NULL	NULL	-326	-477.0	-227529.0
 NULL	xH7445Rals48VOulSyR5F	10221.0	NULL	-1645852809	10221	-461152.37013168953	-10478	NULL	-10221.0	103998.675	NULL	NULL	5022	-10221.0	-1.04468841E8
-PREHOOK: query: -- TargetTypeClasses: Double, String, Long
--- Functions: StDev, Sum, VarP, Count
--- ArithmeticOps: Remainder, Divide, Subtract
--- FilterOps: GreaterThanOrEqual, Equal, LessThanOrEqual
--- GroupBy: GroupBy
-EXPLAIN SELECT   csmallint,
+PREHOOK: query: EXPLAIN SELECT   csmallint,
          (csmallint % -75) as c1,
          STDDEV_SAMP(csmallint) as c2,
          (-1.389 / csmallint) as c3,
@@ -1855,12 +1716,7 @@ GROUP BY csmallint
 ORDER BY csmallint, c1, c2, c3, c4, c5, c6, c7, c8, c9, c10
 LIMIT 20
 PREHOOK: type: QUERY
-POSTHOOK: query: -- TargetTypeClasses: Double, String, Long
--- Functions: StDev, Sum, VarP, Count
--- ArithmeticOps: Remainder, Divide, Subtract
--- FilterOps: GreaterThanOrEqual, Equal, LessThanOrEqual
--- GroupBy: GroupBy
-EXPLAIN SELECT   csmallint,
+POSTHOOK: query: EXPLAIN SELECT   csmallint,
          (csmallint % -75) as c1,
          STDDEV_SAMP(csmallint) as c2,
          (-1.389 / csmallint) as c3,
@@ -2026,12 +1882,7 @@ POSTHOOK: Input: default@alltypesorc
 -89	-14	0.0	0.015606742	NULL	NULL	14	0.0	-14	1	89011
 -95	-20	0.0	0.014621053	NULL	NULL	20	0.0	-20	1	89011
 WARNING: Comparing a bigint and a double may result in a loss of precision.
-PREHOOK: query: -- TargetTypeClasses: Long, Double, Timestamp
--- Functions: Var, Count, Sum, VarP, StDevP
--- ArithmeticOps: Multiply, Add, Subtract, Remainder
--- FilterOps: GreaterThan, LessThan, Equal, LessThanOrEqual, GreaterThanOrEqual
--- GroupBy: GroupBy
-EXPLAIN SELECT   cdouble,
+PREHOOK: query: EXPLAIN SELECT   cdouble,
          VAR_SAMP(cdouble),
          (2563.58 * VAR_SAMP(cdouble)),
          (-(VAR_SAMP(cdouble))),
@@ -2058,12 +1909,7 @@ WHERE    (((cdouble > 2563.58))
 GROUP BY cdouble
 ORDER BY cdouble
 PREHOOK: type: QUERY
-POSTHOOK: query: -- TargetTypeClasses: Long, Double, Timestamp
--- Functions: Var, Count, Sum, VarP, StDevP
--- ArithmeticOps: Multiply, Add, Subtract, Remainder
--- FilterOps: GreaterThan, LessThan, Equal, LessThanOrEqual, GreaterThanOrEqual
--- GroupBy: GroupBy
-EXPLAIN SELECT   cdouble,
+POSTHOOK: query: EXPLAIN SELECT   cdouble,
          VAR_SAMP(cdouble),
          (2563.58 * VAR_SAMP(cdouble)),
          (-(VAR_SAMP(cdouble))),
@@ -2227,12 +2073,7 @@ ORDER BY cdouble
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
-PREHOOK: query: -- TargetTypeClasses: Bool, Timestamp, String, Double, Long
--- Functions: StDevP, Avg, Count, Min, Var, VarP, Sum
--- ArithmeticOps: Multiply, Subtract, Add, Divide, Remainder
--- FilterOps: NotEqual, LessThan, Like, Equal, RLike
--- GroupBy: GroupBy
-EXPLAIN SELECT   ctimestamp1,
+PREHOOK: query: EXPLAIN SELECT   ctimestamp1,
          cstring1,
          STDDEV_POP(cint) as c1,
          (STDDEV_POP(cint) * 10.175) as c2,
@@ -2287,12 +2128,7 @@ GROUP BY ctimestamp1, cstring1
 ORDER BY ctimestamp1, cstring1, c1, c2, c3, c4, c5, c6, c7, c8, c9, c10, c11, c12, c13, c14, c15, c16, c17, c18, c19, c20, c21, c22, c23, c24, c25, c26, c27, c28, c29, c30, c31, c32, c33, c34, c35, c36, c37
 LIMIT 50
 PREHOOK: type: QUERY
-POSTHOOK: query: -- TargetTypeClasses: Bool, Timestamp, String, Double, Long
--- Functions: StDevP, Avg, Count, Min, Var, VarP, Sum
--- ArithmeticOps: Multiply, Subtract, Add, Divide, Remainder
--- FilterOps: NotEqual, LessThan, Like, Equal, RLike
--- GroupBy: GroupBy
-EXPLAIN SELECT   ctimestamp1,
+POSTHOOK: query: EXPLAIN SELECT   ctimestamp1,
          cstring1,
          STDDEV_POP(cint) as c1,
          (STDDEV_POP(cint) * 10.175) as c2,
@@ -2592,12 +2428,7 @@ POSTHOOK: Input: default@alltypesorc
 1969-12-31 15:59:46.82	NULL	NULL	NULL	NULL	15601.0	NULL	NULL	1	-1	NULL	-46	NULL	NULL	0.0	NULL	NULL	NULL	0.0	6.522017819370554E-4	NULL	0.0	NULL	NULL	-46.0	NULL	6.522017819364598E-4	46	15601.0	0.0	NULL	NULL	-0.571304	0.0	NULL	NULL	1	1	NULL
 1969-12-31 15:59:46.847	NULL	NULL	NULL	NULL	-7196.0	NULL	NULL	1	-1	NULL	-26	NULL	NULL	0.0	NULL	NULL	NULL	0.0	-0.0014139799888827128	NULL	0.0	NULL	NULL	-26.0	NULL	0.001413979988882123	26	-7196.0	0.0	NULL	NULL	-1.010769	0.0	NULL	NULL	1	1	NULL
 1969-12-31 15:59:46.915	NULL	NULL	NULL	NULL	-200.0	NULL	NULL	1	-1	NULL	-25	NULL	NULL	0.0	NULL	NULL	NULL	0.0	-0.050875000000000004	NULL	0.0	NULL	NULL	-25.0	NULL	0.0	25	-200.0	0.0	NULL	NULL	-1.051200	0.0	NULL	NULL	1	1	NULL
-PREHOOK: query: -- TargetTypeClasses: Double, Long, String, Timestamp, Bool
--- Functions: Max, Sum, Var, Avg, Min, VarP, StDev, StDevP
--- ArithmeticOps: Divide, Subtract, Remainder, Add, Multiply
--- FilterOps: GreaterThan, LessThanOrEqual, Equal, LessThan, GreaterThanOrEqual, NotEqual, Like, RLike
--- GroupBy: GroupBy
-EXPLAIN SELECT   cboolean1,
+PREHOOK: query: EXPLAIN SELECT   cboolean1,
          MAX(cfloat),
          (-(MAX(cfloat))),
          (-26.28 / MAX(cfloat)),
@@ -2637,12 +2468,7 @@ WHERE    (((cboolean1 IS NOT NULL))
 GROUP BY cboolean1
 ORDER BY cboolean1
 PREHOOK: type: QUERY
-POSTHOOK: query: -- TargetTypeClasses: Double, Long, String, Timestamp, Bool
--- Functions: Max, Sum, Var, Avg, Min, VarP, StDev, StDevP
--- ArithmeticOps: Divide, Subtract, Remainder, Add, Multiply
--- FilterOps: GreaterThan, LessThanOrEqual, Equal, LessThan, GreaterThanOrEqual, NotEqual, Like, RLike
--- GroupBy: GroupBy
-EXPLAIN SELECT   cboolean1,
+POSTHOOK: query: EXPLAIN SELECT   cboolean1,
          MAX(cfloat),
          (-(MAX(cfloat))),
          (-26.28 / MAX(cfloat)),
@@ -2846,13 +2672,11 @@ POSTHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 false	11.0	-11.0	-2.389090909090909	-17881597706	-17881597716.175	3.8953387713327066E17	6.0	-0.8249998	-2454.8879999999995	3.8953385925167296E17	-2145884705	1.66288903197104486E18	0.8249998	4.7840233756130287E-17	4.098424268084119E-17	0.8249998	-1051696618	28.692556844886422	2980633855.245	-4032330473.245	85.79562278396777	4032330473.245	-3983699.3106060605	3983699.3106060605	4.1896430920933255E15
 true	79.553	-79.553	-0.33034580136836733	-401322621137	-401322621147.175	7.9255373737244976E16	34.727455139160156	-69.378	4856.6352637899645	7.9254972414623824E16	-2130544867	2.30133924842409523E18	69.378	3.456813247089758E-17	2.0387240975807185E-18	69.378	2182477964777	34.654968050508266	2959326820.263	2179518637956.737	9461.197516216069	-2179518637956.737	4.592756659884259E8	-4.592756659884259E8	1.002359020778021E21
-PREHOOK: query: -- These tests verify COUNT on empty or null colulmns work correctly.
-create table test_count(i int) stored as orc
+PREHOOK: query: create table test_count(i int) stored as orc
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@test_count
-POSTHOOK: query: -- These tests verify COUNT on empty or null colulmns work correctly.
-create table test_count(i int) stored as orc
+POSTHOOK: query: create table test_count(i int) stored as orc
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_count

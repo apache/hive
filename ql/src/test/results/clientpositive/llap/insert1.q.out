@@ -1,12 +1,8 @@
-PREHOOK: query: -- SORT_QUERY_RESULTS
-
-create table insert1(key int, value string) stored as textfile
+PREHOOK: query: create table insert1(key int, value string) stored as textfile
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@insert1
-POSTHOOK: query: -- SORT_QUERY_RESULTS
-
-create table insert1(key int, value string) stored as textfile
+POSTHOOK: query: create table insert1(key int, value string) stored as textfile
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@insert1
@@ -136,12 +132,10 @@ STAGE PLANS:
   Stage: Stage-3
     Stats-Aggr Operator
 
-PREHOOK: query: -- HIVE-3465
-create database x
+PREHOOK: query: create database x
 PREHOOK: type: CREATEDATABASE
 PREHOOK: Output: database:x
-POSTHOOK: query: -- HIVE-3465
-create database x
+POSTHOOK: query: create database x
 POSTHOOK: type: CREATEDATABASE
 POSTHOOK: Output: database:x
 PREHOOK: query: create table x.insert1(key int, value string) stored as textfile
@@ -350,12 +344,10 @@ STAGE PLANS:
   Stage: Stage-5
     Stats-Aggr Operator
 
-PREHOOK: query: -- HIVE-3676
-CREATE DATABASE db2
+PREHOOK: query: CREATE DATABASE db2
 PREHOOK: type: CREATEDATABASE
 PREHOOK: Output: database:db2
-POSTHOOK: query: -- HIVE-3676
-CREATE DATABASE db2
+POSTHOOK: query: CREATE DATABASE db2
 POSTHOOK: type: CREATEDATABASE
 POSTHOOK: Output: database:db2
 PREHOOK: query: USE db2

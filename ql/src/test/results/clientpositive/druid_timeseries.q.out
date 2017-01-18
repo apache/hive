@@ -60,13 +60,11 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: -- GRANULARITY: ALL
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT max(added), sum(variation)
 FROM druid_table_1
 PREHOOK: type: QUERY
-POSTHOOK: query: -- GRANULARITY: ALL
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT max(added), sum(variation)
 FROM druid_table_1
 POSTHOOK: type: QUERY
@@ -90,14 +88,12 @@ STAGE PLANS:
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             ListSink
 
-PREHOOK: query: -- GRANULARITY: NONE
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT `__time`, max(added), sum(variation)
 FROM druid_table_1
 GROUP BY `__time`
 PREHOOK: type: QUERY
-POSTHOOK: query: -- GRANULARITY: NONE
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT `__time`, max(added), sum(variation)
 FROM druid_table_1
 GROUP BY `__time`
@@ -122,14 +118,12 @@ STAGE PLANS:
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             ListSink
 
-PREHOOK: query: -- GRANULARITY: YEAR
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT floor_year(`__time`), max(added), sum(variation)
 FROM druid_table_1
 GROUP BY floor_year(`__time`)
 PREHOOK: type: QUERY
-POSTHOOK: query: -- GRANULARITY: YEAR
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT floor_year(`__time`), max(added), sum(variation)
 FROM druid_table_1
 GROUP BY floor_year(`__time`)
@@ -154,14 +148,12 @@ STAGE PLANS:
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             ListSink
 
-PREHOOK: query: -- GRANULARITY: QUARTER
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT floor_quarter(`__time`), max(added), sum(variation)
 FROM druid_table_1
 GROUP BY floor_quarter(`__time`)
 PREHOOK: type: QUERY
-POSTHOOK: query: -- GRANULARITY: QUARTER
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT floor_quarter(`__time`), max(added), sum(variation)
 FROM druid_table_1
 GROUP BY floor_quarter(`__time`)
@@ -186,14 +178,12 @@ STAGE PLANS:
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             ListSink
 
-PREHOOK: query: -- GRANULARITY: MONTH
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT floor_month(`__time`), max(added), sum(variation)
 FROM druid_table_1
 GROUP BY floor_month(`__time`)
 PREHOOK: type: QUERY
-POSTHOOK: query: -- GRANULARITY: MONTH
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT floor_month(`__time`), max(added), sum(variation)
 FROM druid_table_1
 GROUP BY floor_month(`__time`)
@@ -218,14 +208,12 @@ STAGE PLANS:
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             ListSink
 
-PREHOOK: query: -- GRANULARITY: WEEK
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT floor_week(`__time`), max(added), sum(variation)
 FROM druid_table_1
 GROUP BY floor_week(`__time`)
 PREHOOK: type: QUERY
-POSTHOOK: query: -- GRANULARITY: WEEK
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT floor_week(`__time`), max(added), sum(variation)
 FROM druid_table_1
 GROUP BY floor_week(`__time`)
@@ -250,14 +238,12 @@ STAGE PLANS:
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             ListSink
 
-PREHOOK: query: -- GRANULARITY: DAY
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT floor_day(`__time`), max(added), sum(variation)
 FROM druid_table_1
 GROUP BY floor_day(`__time`)
 PREHOOK: type: QUERY
-POSTHOOK: query: -- GRANULARITY: DAY
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT floor_day(`__time`), max(added), sum(variation)
 FROM druid_table_1
 GROUP BY floor_day(`__time`)
@@ -282,14 +268,12 @@ STAGE PLANS:
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             ListSink
 
-PREHOOK: query: -- GRANULARITY: HOUR
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT floor_hour(`__time`), max(added), sum(variation)
 FROM druid_table_1
 GROUP BY floor_hour(`__time`)
 PREHOOK: type: QUERY
-POSTHOOK: query: -- GRANULARITY: HOUR
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT floor_hour(`__time`), max(added), sum(variation)
 FROM druid_table_1
 GROUP BY floor_hour(`__time`)
@@ -314,14 +298,12 @@ STAGE PLANS:
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             ListSink
 
-PREHOOK: query: -- GRANULARITY: MINUTE
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT floor_minute(`__time`), max(added), sum(variation)
 FROM druid_table_1
 GROUP BY floor_minute(`__time`)
 PREHOOK: type: QUERY
-POSTHOOK: query: -- GRANULARITY: MINUTE
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT floor_minute(`__time`), max(added), sum(variation)
 FROM druid_table_1
 GROUP BY floor_minute(`__time`)
@@ -346,14 +328,12 @@ STAGE PLANS:
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             ListSink
 
-PREHOOK: query: -- GRANULARITY: SECOND
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT floor_second(`__time`), max(added), sum(variation)
 FROM druid_table_1
 GROUP BY floor_second(`__time`)
 PREHOOK: type: QUERY
-POSTHOOK: query: -- GRANULARITY: SECOND
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT floor_second(`__time`), max(added), sum(variation)
 FROM druid_table_1
 GROUP BY floor_second(`__time`)
@@ -378,15 +358,13 @@ STAGE PLANS:
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             ListSink
 
-PREHOOK: query: -- WITH FILTER ON DIMENSION
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT floor_hour(`__time`), max(added), sum(variation)
 FROM druid_table_1
 WHERE robot='1'
 GROUP BY floor_hour(`__time`)
 PREHOOK: type: QUERY
-POSTHOOK: query: -- WITH FILTER ON DIMENSION
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT floor_hour(`__time`), max(added), sum(variation)
 FROM druid_table_1
 WHERE robot='1'
@@ -412,8 +390,7 @@ STAGE PLANS:
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             ListSink
 
-PREHOOK: query: -- WITH FILTER ON TIME
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT floor_hour(`__time`), max(added), sum(variation)
 FROM druid_table_1
 WHERE floor_hour(`__time`)
@@ -421,8 +398,7 @@ WHERE floor_hour(`__time`)
         AND CAST('2014-01-01 00:00:00' AS TIMESTAMP)
 GROUP BY floor_hour(`__time`)
 PREHOOK: type: QUERY
-POSTHOOK: query: -- WITH FILTER ON TIME
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT floor_hour(`__time`), max(added), sum(variation)
 FROM druid_table_1
 WHERE floor_hour(`__time`)
@@ -485,8 +461,7 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: -- WITH FILTER ON TIME
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT subq.h, subq.m, subq.s
 FROM
 (
@@ -497,8 +472,7 @@ FROM
 WHERE subq.h BETWEEN CAST('2010-01-01 00:00:00' AS TIMESTAMP)
         AND CAST('2014-01-01 00:00:00' AS TIMESTAMP)
 PREHOOK: type: QUERY
-POSTHOOK: query: -- WITH FILTER ON TIME
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT subq.h, subq.m, subq.s
 FROM
 (

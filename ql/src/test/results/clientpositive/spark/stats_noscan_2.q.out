@@ -1,12 +1,8 @@
-PREHOOK: query: -- test analyze table compute statistiscs [noscan] on external table 
--- 1 test table
 #### A masked pattern was here ####
 PREHOOK: type: CREATETABLE
 #### A masked pattern was here ####
 PREHOOK: Output: database:default
 PREHOOK: Output: default@anaylyze_external
-POSTHOOK: query: -- test analyze table compute statistiscs [noscan] on external table 
--- 1 test table
 #### A masked pattern was here ####
 POSTHOOK: type: CREATETABLE
 #### A masked pattern was here ####
@@ -118,15 +114,11 @@ POSTHOOK: query: drop table anaylyze_external
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@anaylyze_external
 POSTHOOK: Output: default@anaylyze_external
-PREHOOK: query: -- 2 test partition
--- prepare data
-create table texternal(key string, val string) partitioned by (insertdate string)
+PREHOOK: query: create table texternal(key string, val string) partitioned by (insertdate string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@texternal
-POSTHOOK: query: -- 2 test partition
--- prepare data
-create table texternal(key string, val string) partitioned by (insertdate string)
+POSTHOOK: query: create table texternal(key string, val string) partitioned by (insertdate string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@texternal
@@ -158,13 +150,11 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@texternal
 #### A masked pattern was here ####
 500
-PREHOOK: query: -- create external table
 #### A masked pattern was here ####
 PREHOOK: type: CREATETABLE
 #### A masked pattern was here ####
 PREHOOK: Output: database:default
 PREHOOK: Output: default@anaylyze_external
-POSTHOOK: query: -- create external table
 #### A masked pattern was here ####
 POSTHOOK: type: CREATETABLE
 #### A masked pattern was here ####
@@ -190,15 +180,13 @@ POSTHOOK: Input: default@anaylyze_external
 POSTHOOK: Input: default@anaylyze_external@insertdate=2008-01-01
 #### A masked pattern was here ####
 500
-PREHOOK: query: -- analyze
-analyze table anaylyze_external PARTITION (insertdate='2008-01-01') compute statistics noscan
+PREHOOK: query: analyze table anaylyze_external PARTITION (insertdate='2008-01-01') compute statistics noscan
 PREHOOK: type: QUERY
 PREHOOK: Input: default@anaylyze_external
 PREHOOK: Input: default@anaylyze_external@insertdate=2008-01-01
 PREHOOK: Output: default@anaylyze_external
 PREHOOK: Output: default@anaylyze_external@insertdate=2008-01-01
-POSTHOOK: query: -- analyze
-analyze table anaylyze_external PARTITION (insertdate='2008-01-01') compute statistics noscan
+POSTHOOK: query: analyze table anaylyze_external PARTITION (insertdate='2008-01-01') compute statistics noscan
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@anaylyze_external
 POSTHOOK: Input: default@anaylyze_external@insertdate=2008-01-01

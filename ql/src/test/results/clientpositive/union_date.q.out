@@ -1,10 +1,6 @@
-PREHOOK: query: -- SORT_QUERY_RESULTS
-
-drop table union_date_1
+PREHOOK: query: drop table union_date_1
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: -- SORT_QUERY_RESULTS
-
-drop table union_date_1
+POSTHOOK: query: drop table union_date_1
 POSTHOOK: type: DROPTABLE
 PREHOOK: query: drop table union_date_2
 PREHOOK: type: DROPTABLE

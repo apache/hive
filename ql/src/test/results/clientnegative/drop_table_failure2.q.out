@@ -8,8 +8,7 @@ POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@xxx6
-PREHOOK: query: -- Can't use DROP TABLE on a view
-DROP TABLE xxx6
+PREHOOK: query: DROP TABLE xxx6
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@xxx6
 PREHOOK: Output: default@xxx6

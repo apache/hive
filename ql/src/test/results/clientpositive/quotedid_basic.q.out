@@ -1,10 +1,8 @@
-PREHOOK: query: -- basic
-create table t1(`x+1` string, `y&y` string, `!@#$%^&*()_q` string)
+PREHOOK: query: create table t1(`x+1` string, `y&y` string, `!@#$%^&*()_q` string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@t1
-POSTHOOK: query: -- basic
-create table t1(`x+1` string, `y&y` string, `!@#$%^&*()_q` string)
+POSTHOOK: query: create table t1(`x+1` string, `y&y` string, `!@#$%^&*()_q` string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t1
@@ -240,12 +238,10 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: -- case insensitive
-explain select `X+1`, `Y&y`, `!@#$%^&*()_Q`, rank() over(partition by `!@#$%^&*()_q` order by  `y&y`)  
+PREHOOK: query: explain select `X+1`, `Y&y`, `!@#$%^&*()_Q`, rank() over(partition by `!@#$%^&*()_q` order by  `y&y`)  
 from t1 where `!@#$%^&*()_q` = '1' group by `x+1`, `y&Y`, `!@#$%^&*()_q` having `!@#$%^&*()_Q` = '1'
 PREHOOK: type: QUERY
-POSTHOOK: query: -- case insensitive
-explain select `X+1`, `Y&y`, `!@#$%^&*()_Q`, rank() over(partition by `!@#$%^&*()_q` order by  `y&y`)  
+POSTHOOK: query: explain select `X+1`, `Y&y`, `!@#$%^&*()_Q`, rank() over(partition by `!@#$%^&*()_q` order by  `y&y`)  
 from t1 where `!@#$%^&*()_q` = '1' group by `x+1`, `y&Y`, `!@#$%^&*()_q` having `!@#$%^&*()_Q` = '1'
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -344,13 +340,11 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: -- escaped back ticks
-create table t4(`x+1``` string, `y&y` string)
+PREHOOK: query: create table t4(`x+1``` string, `y&y` string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@t4
-POSTHOOK: query: -- escaped back ticks
-create table t4(`x+1``` string, `y&y` string)
+POSTHOOK: query: create table t4(`x+1``` string, `y&y` string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t4
@@ -383,16 +377,14 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t4
 #### A masked pattern was here ####
 10	val_10	1
-PREHOOK: query: -- view
-create view v1 as 
+PREHOOK: query: create view v1 as 
 select `x+1```, `y&y`
 from t4 where `x+1``` < '200'
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: default@t4
 PREHOOK: Output: database:default
 PREHOOK: Output: default@v1
-POSTHOOK: query: -- view
-create view v1 as 
+POSTHOOK: query: create view v1 as 
 select `x+1```, `y&y`
 from t4 where `x+1``` < '200'
 POSTHOOK: type: CREATEVIEW

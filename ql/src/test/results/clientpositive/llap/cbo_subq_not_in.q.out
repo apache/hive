@@ -1,6 +1,4 @@
-PREHOOK: query: -- 16. SubQueries Not In
--- non agg, non corr
-select * 
+PREHOOK: query: select * 
 from src_cbo 
 where src_cbo.key not in  
   ( select key  from src_cbo s1 
@@ -9,9 +7,7 @@ where src_cbo.key not in
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_cbo
 #### A masked pattern was here ####
-POSTHOOK: query: -- 16. SubQueries Not In
--- non agg, non corr
-select * 
+POSTHOOK: query: select * 
 from src_cbo 
 where src_cbo.key not in  
   ( select key  from src_cbo s1 
@@ -139,8 +135,7 @@ POSTHOOK: Input: default@src_cbo
 199	val_199
 199	val_199
 2	val_2
-PREHOOK: query: -- non agg, corr
-select p_mfgr, b.p_name, p_size 
+PREHOOK: query: select p_mfgr, b.p_name, p_size 
 from part b 
 where b.p_name not in 
   (select p_name 
@@ -150,8 +145,7 @@ where b.p_name not in
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part
 #### A masked pattern was here ####
-POSTHOOK: query: -- non agg, corr
-select p_mfgr, b.p_name, p_size 
+POSTHOOK: query: select p_mfgr, b.p_name, p_size 
 from part b 
 where b.p_name not in 
   (select p_name 
@@ -179,8 +173,7 @@ Manufacturer#4	almond antique violet mint lemon	39
 Manufacturer#5	almond azure blanched chiffon midnight	23
 Manufacturer#5	almond antique blue firebrick mint	31
 Manufacturer#5	almond aquamarine dodger light gainsboro	46
-PREHOOK: query: -- agg, non corr
-select p_name, p_size 
+PREHOOK: query: select p_name, p_size 
 from 
 part where part.p_size not in 
   (select avg(p_size) 
@@ -190,8 +183,7 @@ part where part.p_size not in
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part
 #### A masked pattern was here ####
-POSTHOOK: query: -- agg, non corr
-select p_name, p_size 
+POSTHOOK: query: select p_name, p_size 
 from 
 part where part.p_size not in 
   (select avg(p_size) 
@@ -227,8 +219,7 @@ almond aquamarine sandy cyan gainsboro	18
 almond aquamarine yellow dodger mint	7
 almond azure aquamarine papaya violet	12
 almond azure blanched chiffon midnight	23
-PREHOOK: query: -- agg, corr
-select p_mfgr, p_name, p_size 
+PREHOOK: query: select p_mfgr, p_name, p_size 
 from part b where b.p_size not in 
   (select min(p_size) 
   from (select p_mfgr, p_size from part) a 
@@ -237,8 +228,7 @@ from part b where b.p_size not in
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part
 #### A masked pattern was here ####
-POSTHOOK: query: -- agg, corr
-select p_mfgr, p_name, p_size 
+POSTHOOK: query: select p_mfgr, p_name, p_size 
 from part b where b.p_size not in 
   (select min(p_size) 
   from (select p_mfgr, p_size from part) a 
@@ -267,8 +257,7 @@ Manufacturer#2	almond aquamarine rose maroon antique	25
 Manufacturer#2	almond aquamarine sandy cyan gainsboro	18
 Manufacturer#4	almond azure aquamarine papaya violet	12
 Manufacturer#5	almond azure blanched chiffon midnight	23
-PREHOOK: query: -- non agg, non corr, Group By in Parent Query
-select li.l_partkey, count(*) 
+PREHOOK: query: select li.l_partkey, count(*) 
 from lineitem li 
 where li.l_linenumber = 1 and 
   li.l_orderkey not in (select l_orderkey from lineitem where l_shipmode = 'AIR') 
@@ -276,8 +265,7 @@ group by li.l_partkey order by li.l_partkey
 PREHOOK: type: QUERY
 PREHOOK: Input: default@lineitem
 #### A masked pattern was here ####
-POSTHOOK: query: -- non agg, non corr, Group By in Parent Query
-select li.l_partkey, count(*) 
+POSTHOOK: query: select li.l_partkey, count(*) 
 from lineitem li 
 where li.l_linenumber = 1 and 
   li.l_orderkey not in (select l_orderkey from lineitem where l_shipmode = 'AIR') 
@@ -301,10 +289,7 @@ POSTHOOK: Input: default@lineitem
 139636	1
 175839	1
 182052	1
-PREHOOK: query: -- add null check test from sq_notin.q once HIVE-7721 resolved.
-
--- non agg, corr, having
-select b.p_mfgr, min(p_retailprice) 
+PREHOOK: query: select b.p_mfgr, min(p_retailprice) 
 from part b 
 group by b.p_mfgr
 having b.p_mfgr not in 
@@ -316,10 +301,7 @@ having b.p_mfgr not in
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part
 #### A masked pattern was here ####
-POSTHOOK: query: -- add null check test from sq_notin.q once HIVE-7721 resolved.
-
--- non agg, corr, having
-select b.p_mfgr, min(p_retailprice) 
+POSTHOOK: query: select b.p_mfgr, min(p_retailprice) 
 from part b 
 group by b.p_mfgr
 having b.p_mfgr not in 
@@ -333,8 +315,7 @@ POSTHOOK: Input: default@part
 #### A masked pattern was here ####
 Manufacturer#1	1173.15
 Manufacturer#2	1690.68
-PREHOOK: query: -- agg, non corr, having
-select b.p_mfgr, min(p_retailprice) 
+PREHOOK: query: select b.p_mfgr, min(p_retailprice) 
 from part b 
 group by b.p_mfgr
 having b.p_mfgr not in 
@@ -347,8 +328,7 @@ having b.p_mfgr not in
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part
 #### A masked pattern was here ####
-POSTHOOK: query: -- agg, non corr, having
-select b.p_mfgr, min(p_retailprice) 
+POSTHOOK: query: select b.p_mfgr, min(p_retailprice) 
 from part b 
 group by b.p_mfgr
 having b.p_mfgr not in 
