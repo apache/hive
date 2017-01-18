@@ -492,6 +492,9 @@ public class TezSessionPoolManager {
   /** Closes a running (expired) pool session and reopens it. */
   private void closeAndReopenPoolSession(TezSessionPoolSession oldSession) throws Exception {
     String queueName = oldSession.getQueueName();
+    if (queueName == null) {
+      LOG.warn("Pool session has a null queue: " + oldSession);
+    }
     HiveConf conf = oldSession.getConf();
     Path scratchDir = oldSession.getTezScratchDir();
     boolean isDefault = oldSession.isDefault();
@@ -501,6 +504,8 @@ public class TezSessionPoolManager {
       defaultQueuePool.remove(oldSession);  // Make sure it's removed.
     } finally {
       TezSessionPoolSession newSession = createAndInitSession(queueName, isDefault);
+      // There's some bogus code that can modify the queue name. Force-set it for pool sessions.
+      conf.set(TezConfiguration.TEZ_QUEUE_NAME, queueName);
       newSession.open(conf, additionalFiles, scratchDir);
       defaultQueuePool.put(newSession);
     }
