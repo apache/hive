@@ -189,6 +189,11 @@
       <artifactId>calcite-druid</artifactId>
       <version>${calcite.version}</version>
     </dependency>
+    <dependency>
+      <groupId>joda-time</groupId>
+      <artifactId>joda-time</artifactId>
+      <version>2.8.2</version>
+    </dependency>
     <!-- test inter-project -->
     <dependency>
       <groupId>junit</groupId>
