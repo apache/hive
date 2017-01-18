@@ -1669,6 +1669,7 @@ public class QTestUtil {
           out.write(line);
           out.write("\n");
           lastWasMasked = true;
+          partialMaskWasMatched = false;
         }
       } else {
         out.write(line);
