@@ -216,17 +216,13 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: -- SORT_QUERY_RESULTS
-
-create table acid_uami(i int,
+PREHOOK: query: create table acid_uami(i int,
                  de decimal(5,2),
                  vc varchar(128)) clustered by (i) into 2 buckets stored as orc TBLPROPERTIES ('transactional'='true')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@acid_uami
-POSTHOOK: query: -- SORT_QUERY_RESULTS
-
-create table acid_uami(i int,
+POSTHOOK: query: create table acid_uami(i int,
                  de decimal(5,2),
                  vc varchar(128)) clustered by (i) into 2 buckets stored as orc TBLPROPERTIES ('transactional'='true')
 POSTHOOK: type: CREATETABLE

@@ -1,5 +1,4 @@
-PREHOOK: query: -- start query 1 in stream 0 using template query83.tpl and seed 1930872976
-explain with sr_items as
+PREHOOK: query: explain with sr_items as
  (select i_item_id item_id,
         sum(sr_return_quantity) sr_item_qty
  from store_returns,
@@ -64,8 +63,7 @@ explain with sr_items as
          ,sr_item_qty
  limit 100
 PREHOOK: type: QUERY
-POSTHOOK: query: -- start query 1 in stream 0 using template query83.tpl and seed 1930872976
-explain with sr_items as
+POSTHOOK: query: explain with sr_items as
  (select i_item_id item_id,
         sum(sr_return_quantity) sr_item_qty
  from store_returns,

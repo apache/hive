@@ -16,8 +16,7 @@ order by a.cint
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
-PREHOOK: query: -- First try with regular mergejoin
-explain analyze
+PREHOOK: query: explain analyze
 select
   *
 from alltypesorc a join alltypesorc b on a.cint = b.cint
@@ -25,8 +24,7 @@ where
   a.cint between 1000000 and 3000000 and b.cbigint is not null
 order by a.cint
 PREHOOK: type: QUERY
-POSTHOOK: query: -- First try with regular mergejoin
-explain analyze
+POSTHOOK: query: explain analyze
 select
   *
 from alltypesorc a join alltypesorc b on a.cint = b.cint
@@ -307,8 +305,7 @@ order by a.cint
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
-PREHOOK: query: -- Try with dynamically partitioned hashjoin
-explain analyze
+PREHOOK: query: explain analyze
 select
   *
 from alltypesorc a join alltypesorc b on a.cint = b.cint
@@ -316,8 +313,7 @@ where
   a.cint between 1000000 and 3000000 and b.cbigint is not null
 order by a.cint
 PREHOOK: type: QUERY
-POSTHOOK: query: -- Try with dynamically partitioned hashjoin
-explain analyze
+POSTHOOK: query: explain analyze
 select
   *
 from alltypesorc a join alltypesorc b on a.cint = b.cint
