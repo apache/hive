@@ -19,7 +19,10 @@ package org.apache.hive.service.cli.session;
 
 import org.apache.hadoop.hive.cli.CliSessionState;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.ql.QueryDisplay;
+import org.apache.hadoop.hive.ql.metadata.Hive;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hive.service.cli.OperationHandle;
@@ -45,13 +48,17 @@ public class TestQueryDisplay {
 
 
   @Before
-  public void setup() {
+  public void setup() throws Exception {
     conf = new HiveConf();
     conf.set("hive.support.concurrency", "false");
 
     HiveServer2 dummyHs2 = new HiveServer2();
     sessionManager = new SessionManager(dummyHs2);
     sessionManager.init(conf);
+    // this is a hack to guarantee that we have calls to the MSC in the compilation phase
+    // without it the second test in the class will fail as the MSC#getAllFunctions() is called
+    // only once when Hive class is loaded
+    Hive.get(conf).getMSC();
   }
 
   /**
