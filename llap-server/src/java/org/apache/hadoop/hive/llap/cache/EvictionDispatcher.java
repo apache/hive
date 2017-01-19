@@ -27,11 +27,16 @@ import org.apache.hadoop.hive.llap.io.metadata.OrcStripeMetadata;
  */
 public final class EvictionDispatcher implements EvictionListener {
   private final LowLevelCache dataCache;
+  private final SerDeLowLevelCacheImpl serdeCache;
   private final OrcMetadataCache metadataCache;
+  private final EvictionAwareAllocator allocator;
 
-  public EvictionDispatcher(LowLevelCache dataCache, OrcMetadataCache metadataCache) {
+  public EvictionDispatcher(LowLevelCache dataCache, SerDeLowLevelCacheImpl serdeCache,
+      OrcMetadataCache metadataCache, EvictionAwareAllocator allocator) {
     this.dataCache = dataCache;
     this.metadataCache = metadataCache;
+    this.serdeCache = serdeCache;
+    this.allocator = allocator;
   }
 
   @Override
@@ -40,7 +45,11 @@ public final class EvictionDispatcher implements EvictionListener {
   }
 
   public void notifyEvicted(LlapDataBuffer buffer) {
+    // Note: we don't know which cache this is from, so we notify both. They can noop if they
+    //       want to find the buffer in their structures and can't.
     dataCache.notifyEvicted(buffer);
+    serdeCache.notifyEvicted(buffer);
+    allocator.deallocateEvicted(buffer);
   }
 
   public void notifyEvicted(OrcFileMetadata buffer) {

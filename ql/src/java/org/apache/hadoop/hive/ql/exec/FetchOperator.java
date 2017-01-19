@@ -225,7 +225,7 @@ public class FetchOperator implements Serializable {
             + inputFormatClass.getName() + " as specified in mapredWork!", e);
       }
     }
-    return HiveInputFormat.wrapForLlap(format, conf);
+    return format;
   }
 
   private StructObjectInspector getPartitionKeyOI(TableDesc tableDesc) throws Exception {

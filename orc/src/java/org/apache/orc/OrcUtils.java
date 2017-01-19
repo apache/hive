@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import org.apache.orc.OrcProto.Type.Builder;
 import org.apache.orc.impl.ReaderImpl;
 
 import com.google.common.collect.Lists;
@@ -537,5 +538,87 @@ public class OrcUtils {
       result.add(new ReaderImpl.StripeInformationImpl(info));
     }
     return result;
+  }
+
+  public static List<TypeDescription> setTypeBuilderFromSchema(
+      OrcProto.Type.Builder type, TypeDescription schema) {
+    List<TypeDescription> children = schema.getChildren();
+    switch (schema.getCategory()) {
+      case BOOLEAN:
+        type.setKind(OrcProto.Type.Kind.BOOLEAN);
+        break;
+      case BYTE:
+        type.setKind(OrcProto.Type.Kind.BYTE);
+        break;
+      case SHORT:
+        type.setKind(OrcProto.Type.Kind.SHORT);
+        break;
+      case INT:
+        type.setKind(OrcProto.Type.Kind.INT);
+        break;
+      case LONG:
+        type.setKind(OrcProto.Type.Kind.LONG);
+        break;
+      case FLOAT:
+        type.setKind(OrcProto.Type.Kind.FLOAT);
+        break;
+      case DOUBLE:
+        type.setKind(OrcProto.Type.Kind.DOUBLE);
+        break;
+      case STRING:
+        type.setKind(OrcProto.Type.Kind.STRING);
+        break;
+      case CHAR:
+        type.setKind(OrcProto.Type.Kind.CHAR);
+        type.setMaximumLength(schema.getMaxLength());
+        break;
+      case VARCHAR:
+        type.setKind(OrcProto.Type.Kind.VARCHAR);
+        type.setMaximumLength(schema.getMaxLength());
+        break;
+      case BINARY:
+        type.setKind(OrcProto.Type.Kind.BINARY);
+        break;
+      case TIMESTAMP:
+        type.setKind(OrcProto.Type.Kind.TIMESTAMP);
+        break;
+      case DATE:
+        type.setKind(OrcProto.Type.Kind.DATE);
+        break;
+      case DECIMAL:
+        type.setKind(OrcProto.Type.Kind.DECIMAL);
+        type.setPrecision(schema.getPrecision());
+        type.setScale(schema.getScale());
+        break;
+      case LIST:
+        type.setKind(OrcProto.Type.Kind.LIST);
+        type.addSubtypes(children.get(0).getId());
+        break;
+      case MAP:
+        type.setKind(OrcProto.Type.Kind.MAP);
+        for(TypeDescription t: children) {
+          type.addSubtypes(t.getId());
+        }
+        break;
+      case STRUCT:
+        type.setKind(OrcProto.Type.Kind.STRUCT);
+        for(TypeDescription t: children) {
+          type.addSubtypes(t.getId());
+        }
+        for(String field: schema.getFieldNames()) {
+          type.addFieldNames(field);
+        }
+        break;
+      case UNION:
+        type.setKind(OrcProto.Type.Kind.UNION);
+        for(TypeDescription t: children) {
+          type.addSubtypes(t.getId());
+        }
+        break;
+      default:
+        throw new IllegalArgumentException("Unknown category: " +
+          schema.getCategory());
+    }
+    return children;
   }
 }

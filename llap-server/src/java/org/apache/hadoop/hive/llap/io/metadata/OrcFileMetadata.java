@@ -41,7 +41,8 @@ import org.apache.orc.impl.ReaderImpl;
  * of ORC use different info. Ideally we would get rid of protobuf structs in code beyond reading,
  * or instead use protobuf structs everywhere instead of the mix of things like now.
  */
-public final class OrcFileMetadata extends LlapCacheableBuffer implements FileMetadata {
+public final class OrcFileMetadata extends LlapCacheableBuffer
+    implements FileMetadata, ConsumerFileMetadata {
   private final List<StripeInformation> stripes;
   private final List<Integer> versionList;
   private final List<OrcProto.StripeStatistics> stripeStats;
@@ -223,6 +224,11 @@ public final class OrcFileMetadata extends LlapCacheableBuffer implements FileMe
   @Override
   public List<OrcProto.ColumnStatistics> getFileStats() {
     return fileStats;
+  }
+
+  @Override
+  public int getStripeCount() {
+    return stripes.size();
   }
 
   public TypeDescription getSchema() {

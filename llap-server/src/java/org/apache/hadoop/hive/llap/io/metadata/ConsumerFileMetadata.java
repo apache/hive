@@ -15,16 +15,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.hive.llap.io.decode;
+package org.apache.hadoop.hive.llap.io.metadata;
 
-import java.util.concurrent.Callable;
+import java.util.List;
 
-import org.apache.hadoop.hive.llap.ConsumerFeedback;
-import org.apache.hadoop.hive.llap.io.api.impl.ColumnVectorBatch;
+import org.apache.orc.CompressionKind;
+import org.apache.orc.OrcProto.Type;
 import org.apache.orc.TypeDescription;
 
-public interface ReadPipeline extends ConsumerFeedback<ColumnVectorBatch> {
-  public Callable<Void> getReadCallable();
-  TypeDescription getFileSchema(); // TODO: this is ORC-specific and should be removed
-  boolean[] getIncludedColumns();
+public interface ConsumerFileMetadata {
+  int getStripeCount();
+  CompressionKind getCompressionKind();
+  List<Type> getTypes();
+  TypeDescription getSchema();
 }

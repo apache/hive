@@ -63,7 +63,7 @@ public class VectorPartitionDesc  {
     LAZY_BINARY
   }
 
-  private final VectorMapOperatorReadType vectorMapOperatorReadType;
+  private VectorMapOperatorReadType vectorMapOperatorReadType;
   private final VectorDeserializeType vectorDeserializeType;
 
   private final String rowDeserializerClassName;
@@ -210,5 +210,9 @@ public class VectorPartitionDesc  {
       throw new RuntimeException("Unexpected vector map operator read type " + vectorMapOperatorReadType.name());
     }
     return sb.toString();
+  }
+
+  public void setVectorMapOperatorReadType(VectorMapOperatorReadType val) {
+    this.vectorMapOperatorReadType = val;
   }
 }

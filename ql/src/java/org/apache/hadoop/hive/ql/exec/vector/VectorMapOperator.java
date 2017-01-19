@@ -755,7 +755,6 @@ public class VectorMapOperator extends AbstractMapOperator {
       // The child operators cleanup if input file has changed
       cleanUpInputFileChanged();
     }
-
     if (!oneRootOperator.getDone()) {
 
       /*

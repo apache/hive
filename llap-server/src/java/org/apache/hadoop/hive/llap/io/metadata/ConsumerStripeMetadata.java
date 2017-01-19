@@ -15,16 +15,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.hive.llap.io.decode;
+package org.apache.hadoop.hive.llap.io.metadata;
 
-import java.util.concurrent.Callable;
+import java.util.List;
 
-import org.apache.hadoop.hive.llap.ConsumerFeedback;
-import org.apache.hadoop.hive.llap.io.api.impl.ColumnVectorBatch;
-import org.apache.orc.TypeDescription;
+import org.apache.orc.OrcProto;
+import org.apache.orc.OrcProto.ColumnEncoding;
+import org.apache.orc.OrcProto.RowIndex;
+import org.apache.orc.OrcProto.RowIndexEntry;
 
-public interface ReadPipeline extends ConsumerFeedback<ColumnVectorBatch> {
-  public Callable<Void> getReadCallable();
-  TypeDescription getFileSchema(); // TODO: this is ORC-specific and should be removed
-  boolean[] getIncludedColumns();
+public interface ConsumerStripeMetadata {
+  int getStripeIx();
+  long getRowCount();
+  List<ColumnEncoding> getEncodings();
+  String getWriterTimezone();
+  RowIndexEntry getRowIndexEntry(int colIx, int rgIx); // TODO: remove?
+  RowIndex[] getRowIndexes();
+  boolean supportsRowIndexes();
 }

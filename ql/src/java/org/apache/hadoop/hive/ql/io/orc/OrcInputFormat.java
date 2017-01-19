@@ -358,6 +358,28 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
     return result;
   }
 
+  public static boolean[] genIncludedColumns(TypeDescription readerSchema,
+                                             List<Integer> included) {
+
+    boolean[] result = new boolean[readerSchema.getMaximumId() + 1];
+    if (included == null) {
+      Arrays.fill(result, true);
+      return result;
+    }
+    result[0] = true;
+    List<TypeDescription> children = readerSchema.getChildren();
+    for (int columnNumber = 0; columnNumber < children.size(); ++columnNumber) {
+      if (included.contains(columnNumber)) {
+        TypeDescription child = children.get(columnNumber);
+        for(int col = child.getId(); col <= child.getMaximumId(); ++col) {
+          result[col] = true;
+        }
+      }
+    }
+    return result;
+  }
+
+
   /**
    * Take the configuration and figure out which columns we need to include.
    * @param types the types for the file

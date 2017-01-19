@@ -232,6 +232,11 @@ public class RecordReaderImpl implements RecordReader {
     public long getNext() {
       return entry.getPositions(index++);
     }
+
+    @Override
+    public String toString() {
+      return "{" + entry.getPositionsList() + "; " + index + "}";
+    }
   }
 
   public OrcProto.StripeFooter readStripeFooter(StripeInformation stripe
