@@ -24,8 +24,10 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.Properties;
 
 import org.apache.hadoop.conf.Configuration;
@@ -37,12 +39,23 @@ import org.apache.hadoop.hive.druid.serde.DruidSerDe;
 import org.apache.hadoop.hive.druid.serde.DruidTimeseriesQueryRecordReader;
 import org.apache.hadoop.hive.druid.serde.DruidTopNQueryRecordReader;
 import org.apache.hadoop.hive.druid.serde.DruidWritable;
+import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.SerDeUtils;
+import org.apache.hadoop.hive.serde2.io.ByteWritable;
+import org.apache.hadoop.hive.serde2.io.DoubleWritable;
+import org.apache.hadoop.hive.serde2.io.ShortWritable;
 import org.apache.hadoop.hive.serde2.io.TimestampWritable;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
+import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.io.FloatWritable;
+import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
@@ -52,6 +65,9 @@ import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.base.Function;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Lists;
 
 import io.druid.data.input.Row;
 import io.druid.jackson.DefaultObjectMapper;
@@ -478,7 +494,7 @@ public class TestDruidSerDe {
    * @throws NoSuchMethodException
    */
   @Test
-  public void testDruidSerDe()
+  public void testDruidDeserializer()
           throws SerDeException, JsonParseException, JsonMappingException,
           NoSuchFieldException, SecurityException, IllegalArgumentException,
           IllegalAccessException, IOException, InterruptedException,
@@ -622,4 +638,104 @@ public class TestDruidSerDe {
     assertEquals(pos, records.length);
   }
 
+
+  private static final String COLUMN_NAMES = "__time,c0,c1,c2,c3,c4,c5,c6";
+  private static final String COLUMN_TYPES = "timestamp,string,double,float,bigint,int,smallint,tinyint";
+  private static final Object[] ROW_OBJECT = new Object[] {
+      new TimestampWritable(new Timestamp(1377907200000L)),
+      new Text("dim1_val"),
+      new DoubleWritable(10669D),
+      new FloatWritable(10669F),
+      new LongWritable(1113939),
+      new IntWritable(1112123),
+      new ShortWritable((short) 12),
+      new ByteWritable((byte) 0),
+      new TimestampWritable(new Timestamp(1377907200000L)) // granularity
+  };
+  private static final DruidWritable DRUID_WRITABLE = new DruidWritable(
+      ImmutableMap.<String, Object>builder()
+          .put("__time", 1377907200000L)
+          .put("c0", "dim1_val")
+          .put("c1", 10669D)
+          .put("c2", 10669F)
+          .put("c3", 1113939L)
+          .put("c4", 1112123)
+          .put("c5", (short) 12)
+          .put("c6", (byte) 0)
+          .put("__time_granularity", 1377907200000L)
+          .build());
+
+  /**
+   * Test the default behavior of the objects and object inspectors.
+   * @throws IOException
+   * @throws IllegalAccessException
+   * @throws IllegalArgumentException
+   * @throws SecurityException
+   * @throws NoSuchFieldException
+   * @throws JsonMappingException
+   * @throws JsonParseException
+   * @throws InvocationTargetException
+   * @throws NoSuchMethodException
+   */
+  @Test
+  public void testDruidSerializer()
+          throws SerDeException, JsonParseException, JsonMappingException,
+          NoSuchFieldException, SecurityException, IllegalArgumentException,
+          IllegalAccessException, IOException, InterruptedException,
+          NoSuchMethodException, InvocationTargetException {
+    // Create, initialize, and test the SerDe
+    DruidSerDe serDe = new DruidSerDe();
+    Configuration conf = new Configuration();
+    Properties tbl;
+    // Mixed source (all types)
+    tbl = createPropertiesSource(COLUMN_NAMES, COLUMN_TYPES);
+    SerDeUtils.initializeSerDe(serDe, conf, tbl, null);
+    serializeObject(tbl, serDe, ROW_OBJECT, DRUID_WRITABLE);
+  }
+
+  private static Properties createPropertiesSource(String columnNames, String columnTypes) {
+    Properties tbl = new Properties();
+
+    // Set the configuration parameters
+    tbl.setProperty(serdeConstants.LIST_COLUMNS, columnNames);
+    tbl.setProperty(serdeConstants.LIST_COLUMN_TYPES, columnTypes);
+    return tbl;
+  }
+
+  private static void serializeObject(Properties properties, DruidSerDe serDe,
+      Object[] rowObject, DruidWritable druidWritable) throws SerDeException {
+    // Build OI with timestamp granularity column
+    final List<String> columnNames = new ArrayList<>();
+    final List<PrimitiveTypeInfo> columnTypes = new ArrayList<>();
+    List<ObjectInspector> inspectors = new ArrayList<>();
+    columnNames.addAll(Utilities.getColumnNames(properties));
+    columnNames.add(Constants.DRUID_TIMESTAMP_GRANULARITY_COL_NAME);
+    columnTypes.addAll(Lists.transform(Utilities.getColumnTypes(properties),
+            new Function<String, PrimitiveTypeInfo>() {
+              @Override
+              public PrimitiveTypeInfo apply(String type) {
+                return TypeInfoFactory.getPrimitiveTypeInfo(type);
+              }
+            }
+    ));
+    columnTypes.add(TypeInfoFactory.getPrimitiveTypeInfo("timestamp"));
+    inspectors.addAll(Lists.transform(columnTypes,
+            new Function<PrimitiveTypeInfo, ObjectInspector>() {
+              @Override
+              public ObjectInspector apply(PrimitiveTypeInfo type) {
+                return PrimitiveObjectInspectorFactory
+                        .getPrimitiveWritableObjectInspector(type);
+              }
+            }
+    ));
+    ObjectInspector inspector = ObjectInspectorFactory
+            .getStandardStructObjectInspector(columnNames, inspectors);
+    // Serialize
+    DruidWritable writable = (DruidWritable) serDe.serialize(rowObject, inspector);
+    // Check result
+    assertEquals(DRUID_WRITABLE.getValue().size(), writable.getValue().size());
+    for (Entry<String, Object> e: DRUID_WRITABLE.getValue().entrySet()) {
+      assertEquals(e.getValue(), writable.getValue().get(e.getKey()));
+    }
+  }
 }
