@@ -22,10 +22,7 @@ PREHOOK: query: drop table if exists varchar_serde_orc
 PREHOOK: type: DROPTABLE
 POSTHOOK: query: drop table if exists varchar_serde_orc
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: --
--- RegexSerDe
---
-create table  varchar_serde_regex (
+PREHOOK: query: create table  varchar_serde_regex (
   key varchar(10),
   value varchar(20)
 )
@@ -37,10 +34,7 @@ stored as textfile
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@varchar_serde_regex
-POSTHOOK: query: --
--- RegexSerDe
---
-create table  varchar_serde_regex (
+POSTHOOK: query: create table  varchar_serde_regex (
   key varchar(10),
   value varchar(20)
 )
@@ -86,20 +80,14 @@ val_1	2
 val_10	1
 val_100	2
 val_101	2
-PREHOOK: query: --
--- LazyBinary
---
-create table  varchar_serde_lb (
+PREHOOK: query: create table  varchar_serde_lb (
   key varchar(10),
   value varchar(20)
 )
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@varchar_serde_lb
-POSTHOOK: query: --
--- LazyBinary
---
-create table  varchar_serde_lb (
+POSTHOOK: query: create table  varchar_serde_lb (
   key varchar(10),
   value varchar(20)
 )
@@ -152,20 +140,14 @@ val_1	2
 val_10	1
 val_100	2
 val_101	2
-PREHOOK: query: --
--- LazySimple
---
-create table  varchar_serde_ls (
+PREHOOK: query: create table  varchar_serde_ls (
   key varchar(10),
   value varchar(20)
 )
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@varchar_serde_ls
-POSTHOOK: query: --
--- LazySimple
---
-create table  varchar_serde_ls (
+POSTHOOK: query: create table  varchar_serde_ls (
   key varchar(10),
   value varchar(20)
 )
@@ -218,20 +200,14 @@ val_1	2
 val_10	1
 val_100	2
 val_101	2
-PREHOOK: query: --
--- Columnar
---
-create table  varchar_serde_c (
+PREHOOK: query: create table  varchar_serde_c (
   key varchar(10),
   value varchar(20)
 ) stored as rcfile
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@varchar_serde_c
-POSTHOOK: query: --
--- Columnar
---
-create table  varchar_serde_c (
+POSTHOOK: query: create table  varchar_serde_c (
   key varchar(10),
   value varchar(20)
 ) stored as rcfile
@@ -284,20 +260,14 @@ val_1	2
 val_10	1
 val_100	2
 val_101	2
-PREHOOK: query: --
--- LazyBinaryColumnar
---
-create table varchar_serde_lbc (
+PREHOOK: query: create table varchar_serde_lbc (
   key varchar(10),
   value varchar(20)
 ) stored as rcfile
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@varchar_serde_lbc
-POSTHOOK: query: --
--- LazyBinaryColumnar
---
-create table varchar_serde_lbc (
+POSTHOOK: query: create table varchar_serde_lbc (
   key varchar(10),
   value varchar(20)
 ) stored as rcfile
@@ -350,20 +320,14 @@ val_1	2
 val_10	1
 val_100	2
 val_101	2
-PREHOOK: query: --
--- ORC
---
-create table varchar_serde_orc (
+PREHOOK: query: create table varchar_serde_orc (
   key varchar(10),
   value varchar(20)
 ) stored as orc
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@varchar_serde_orc
-POSTHOOK: query: --
--- ORC
---
-create table varchar_serde_orc (
+POSTHOOK: query: create table varchar_serde_orc (
   key varchar(10),
   value varchar(20)
 ) stored as orc

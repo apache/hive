@@ -1,12 +1,8 @@
-PREHOOK: query: -- SORT_QUERY_RESULTS
-
-create table `c/b/o_t1`(key string, value string, c_int int, c_float float, c_boolean boolean)  partitioned by (dt string) row format delimited fields terminated by ',' STORED AS TEXTFILE
+PREHOOK: query: create table `c/b/o_t1`(key string, value string, c_int int, c_float float, c_boolean boolean)  partitioned by (dt string) row format delimited fields terminated by ',' STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@c/b/o_t1
-POSTHOOK: query: -- SORT_QUERY_RESULTS
-
-create table `c/b/o_t1`(key string, value string, c_int int, c_float float, c_boolean boolean)  partitioned by (dt string) row format delimited fields terminated by ',' STORED AS TEXTFILE
+POSTHOOK: query: create table `c/b/o_t1`(key string, value string, c_int int, c_float float, c_boolean boolean)  partitioned by (dt string) row format delimited fields terminated by ',' STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@c/b/o_t1
@@ -376,15 +372,11 @@ POSTHOOK: Input: default@cbo_/t3////
 #### A masked pattern was here ####
 1	12	6
 1	2	6
-PREHOOK: query: -- 21. Test groupby is empty and there is no other cols in aggr
-
-select unionsrc.key FROM (select 'tst1' as key, count(1) as value from src) unionsrc
+PREHOOK: query: select unionsrc.key FROM (select 'tst1' as key, count(1) as value from src) unionsrc
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
-POSTHOOK: query: -- 21. Test groupby is empty and there is no other cols in aggr
-
-select unionsrc.key FROM (select 'tst1' as key, count(1) as value from src) unionsrc
+POSTHOOK: query: select unionsrc.key FROM (select 'tst1' as key, count(1) as value from src) unionsrc
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
@@ -479,22 +471,14 @@ POSTHOOK: Input: default@cbo_/t3////
 avg	1
 max	1
 min	1
-PREHOOK: query: -- SORT_QUERY_RESULTS
-
--- 4. Test Select + Join + TS
-
-select `c/b/o_t1`.c_int, `//cbo_t2`.c_int from `c/b/o_t1` join             `//cbo_t2` on `c/b/o_t1`.key=`//cbo_t2`.key
+PREHOOK: query: select `c/b/o_t1`.c_int, `//cbo_t2`.c_int from `c/b/o_t1` join             `//cbo_t2` on `c/b/o_t1`.key=`//cbo_t2`.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@//cbo_t2
 PREHOOK: Input: default@//cbo_t2@dt=2014
 PREHOOK: Input: default@c/b/o_t1
 PREHOOK: Input: default@c/b/o_t1@dt=2014
 #### A masked pattern was here ####
-POSTHOOK: query: -- SORT_QUERY_RESULTS
-
--- 4. Test Select + Join + TS
-
-select `c/b/o_t1`.c_int, `//cbo_t2`.c_int from `c/b/o_t1` join             `//cbo_t2` on `c/b/o_t1`.key=`//cbo_t2`.key
+POSTHOOK: query: select `c/b/o_t1`.c_int, `//cbo_t2`.c_int from `c/b/o_t1` join             `//cbo_t2` on `c/b/o_t1`.key=`//cbo_t2`.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@//cbo_t2
 POSTHOOK: Input: default@//cbo_t2@dt=2014
@@ -7453,18 +7437,14 @@ NULL	NULL	NULL	NULL
 NULL	NULL	NULL	NULL
 NULL	NULL	NULL	NULL
 NULL	NULL	NULL	NULL
-PREHOOK: query: -- 5. Test Select + Join + FIL + TS
-
-select `c/b/o_t1`.c_int, `//cbo_t2`.c_int from `c/b/o_t1` join `//cbo_t2` on `c/b/o_t1`.key=`//cbo_t2`.key where (`c/b/o_t1`.c_int + `//cbo_t2`.c_int == 2) and (`c/b/o_t1`.c_int > 0 or `//cbo_t2`.c_float >= 0)
+PREHOOK: query: select `c/b/o_t1`.c_int, `//cbo_t2`.c_int from `c/b/o_t1` join `//cbo_t2` on `c/b/o_t1`.key=`//cbo_t2`.key where (`c/b/o_t1`.c_int + `//cbo_t2`.c_int == 2) and (`c/b/o_t1`.c_int > 0 or `//cbo_t2`.c_float >= 0)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@//cbo_t2
 PREHOOK: Input: default@//cbo_t2@dt=2014
 PREHOOK: Input: default@c/b/o_t1
 PREHOOK: Input: default@c/b/o_t1@dt=2014
 #### A masked pattern was here ####
-POSTHOOK: query: -- 5. Test Select + Join + FIL + TS
-
-select `c/b/o_t1`.c_int, `//cbo_t2`.c_int from `c/b/o_t1` join `//cbo_t2` on `c/b/o_t1`.key=`//cbo_t2`.key where (`c/b/o_t1`.c_int + `//cbo_t2`.c_int == 2) and (`c/b/o_t1`.c_int > 0 or `//cbo_t2`.c_float >= 0)
+POSTHOOK: query: select `c/b/o_t1`.c_int, `//cbo_t2`.c_int from `c/b/o_t1` join `//cbo_t2` on `c/b/o_t1`.key=`//cbo_t2`.key where (`c/b/o_t1`.c_int + `//cbo_t2`.c_int == 2) and (`c/b/o_t1`.c_int > 0 or `//cbo_t2`.c_float >= 0)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@//cbo_t2
 POSTHOOK: Input: default@//cbo_t2@dt=2014
@@ -15513,16 +15493,12 @@ POSTHOOK: Input: default@cbo_/t3////
 1	1	1 	1.0	1
 1	1	1 	1.0	1
 1	1	1 	1.0	1
-PREHOOK: query: -- 7. Test Select + TS + Join + Fil + GB + GB Having + Limit
-
-select key, (c_int+1)+2 as x, sum(c_int) from `c/b/o_t1` group by c_float, `c/b/o_t1`.c_int, key order by x limit 1
+PREHOOK: query: select key, (c_int+1)+2 as x, sum(c_int) from `c/b/o_t1` group by c_float, `c/b/o_t1`.c_int, key order by x limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@c/b/o_t1
 PREHOOK: Input: default@c/b/o_t1@dt=2014
 #### A masked pattern was here ####
-POSTHOOK: query: -- 7. Test Select + TS + Join + Fil + GB + GB Having + Limit
-
-select key, (c_int+1)+2 as x, sum(c_int) from `c/b/o_t1` group by c_float, `c/b/o_t1`.c_int, key order by x limit 1
+POSTHOOK: query: select key, (c_int+1)+2 as x, sum(c_int) from `c/b/o_t1` group by c_float, `c/b/o_t1`.c_int, key order by x limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@c/b/o_t1
 POSTHOOK: Input: default@c/b/o_t1@dt=2014
@@ -15605,18 +15581,14 @@ POSTHOOK: Input: default@cbo_/t3////
 #### A masked pattern was here ####
 1	12	6
 1	2	6
-PREHOOK: query: -- 12. SemiJoin
-
-select `c/b/o_t1`.c_int           from `c/b/o_t1` left semi join   `//cbo_t2` on `c/b/o_t1`.key=`//cbo_t2`.key
+PREHOOK: query: select `c/b/o_t1`.c_int           from `c/b/o_t1` left semi join   `//cbo_t2` on `c/b/o_t1`.key=`//cbo_t2`.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@//cbo_t2
 PREHOOK: Input: default@//cbo_t2@dt=2014
 PREHOOK: Input: default@c/b/o_t1
 PREHOOK: Input: default@c/b/o_t1@dt=2014
 #### A masked pattern was here ####
-POSTHOOK: query: -- 12. SemiJoin
-
-select `c/b/o_t1`.c_int           from `c/b/o_t1` left semi join   `//cbo_t2` on `c/b/o_t1`.key=`//cbo_t2`.key
+POSTHOOK: query: select `c/b/o_t1`.c_int           from `c/b/o_t1` left semi join   `//cbo_t2` on `c/b/o_t1`.key=`//cbo_t2`.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@//cbo_t2
 POSTHOOK: Input: default@//cbo_t2@dt=2014
@@ -16047,16 +16019,12 @@ POSTHOOK: Input: default@cbo_/t3////
  1 	2	1
 1	12	1
 1 	2	1
-PREHOOK: query: -- 1. Test Select + TS
-
-select * from `c/b/o_t1`
+PREHOOK: query: select * from `c/b/o_t1`
 PREHOOK: type: QUERY
 PREHOOK: Input: default@c/b/o_t1
 PREHOOK: Input: default@c/b/o_t1@dt=2014
 #### A masked pattern was here ####
-POSTHOOK: query: -- 1. Test Select + TS
-
-select * from `c/b/o_t1`
+POSTHOOK: query: select * from `c/b/o_t1`
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@c/b/o_t1
 POSTHOOK: Input: default@c/b/o_t1@dt=2014
@@ -16181,16 +16149,12 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@c/b/o_t1
 POSTHOOK: Input: default@c/b/o_t1@dt=2014
 #### A masked pattern was here ####
-PREHOOK: query: -- 2. Test Select + TS + FIL
-
-select * from `c/b/o_t1` where `c/b/o_t1`.c_int >= 0
+PREHOOK: query: select * from `c/b/o_t1` where `c/b/o_t1`.c_int >= 0
 PREHOOK: type: QUERY
 PREHOOK: Input: default@c/b/o_t1
 PREHOOK: Input: default@c/b/o_t1@dt=2014
 #### A masked pattern was here ####
-POSTHOOK: query: -- 2. Test Select + TS + FIL
-
-select * from `c/b/o_t1` where `c/b/o_t1`.c_int >= 0
+POSTHOOK: query: select * from `c/b/o_t1` where `c/b/o_t1`.c_int >= 0
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@c/b/o_t1
 POSTHOOK: Input: default@c/b/o_t1@dt=2014
@@ -16297,16 +16261,12 @@ POSTHOOK: Input: default@c/b/o_t1@dt=2014
 1	1	25.0
 1 	1	25.0
 1 	1	25.0
-PREHOOK: query: -- 3 Test Select + Select + TS + FIL
-
-select * from (select * from `c/b/o_t1` where `c/b/o_t1`.c_int >= 0) as `c/b/o_t1`
+PREHOOK: query: select * from (select * from `c/b/o_t1` where `c/b/o_t1`.c_int >= 0) as `c/b/o_t1`
 PREHOOK: type: QUERY
 PREHOOK: Input: default@c/b/o_t1
 PREHOOK: Input: default@c/b/o_t1@dt=2014
 #### A masked pattern was here ####
-POSTHOOK: query: -- 3 Test Select + Select + TS + FIL
-
-select * from (select * from `c/b/o_t1` where `c/b/o_t1`.c_int >= 0) as `c/b/o_t1`
+POSTHOOK: query: select * from (select * from `c/b/o_t1` where `c/b/o_t1`.c_int >= 0) as `c/b/o_t1`
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@c/b/o_t1
 POSTHOOK: Input: default@c/b/o_t1@dt=2014
@@ -16749,15 +16709,11 @@ POSTHOOK: Input: default@c/b/o_t1@dt=2014
 2.0	1	25.0
 2.0	1	25.0
 2.0	1	25.0
-PREHOOK: query: -- 13. null expr in select list
-
-select null from `cbo_/t3////`
+PREHOOK: query: select null from `cbo_/t3////`
 PREHOOK: type: QUERY
 PREHOOK: Input: default@cbo_/t3////
 #### A masked pattern was here ####
-POSTHOOK: query: -- 13. null expr in select list
-
-select null from `cbo_/t3////`
+POSTHOOK: query: select null from `cbo_/t3////`
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@cbo_/t3////
 #### A masked pattern was here ####
@@ -16781,32 +16737,24 @@ NULL
 NULL
 NULL
 NULL
-PREHOOK: query: -- 14. unary operator
-
-select key from `c/b/o_t1` where c_int = -6  or c_int = +6
+PREHOOK: query: select key from `c/b/o_t1` where c_int = -6  or c_int = +6
 PREHOOK: type: QUERY
 PREHOOK: Input: default@c/b/o_t1
 PREHOOK: Input: default@c/b/o_t1@dt=2014
 #### A masked pattern was here ####
-POSTHOOK: query: -- 14. unary operator
-
-select key from `c/b/o_t1` where c_int = -6  or c_int = +6
+POSTHOOK: query: select key from `c/b/o_t1` where c_int = -6  or c_int = +6
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@c/b/o_t1
 POSTHOOK: Input: default@c/b/o_t1@dt=2014
 #### A masked pattern was here ####
-PREHOOK: query: -- 15. query referencing only partition columns
-
-select count(`c/b/o_t1`.dt) from `c/b/o_t1` join `//cbo_t2` on `c/b/o_t1`.dt  = `//cbo_t2`.dt  where `c/b/o_t1`.dt = '2014'
+PREHOOK: query: select count(`c/b/o_t1`.dt) from `c/b/o_t1` join `//cbo_t2` on `c/b/o_t1`.dt  = `//cbo_t2`.dt  where `c/b/o_t1`.dt = '2014'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@//cbo_t2
 PREHOOK: Input: default@//cbo_t2@dt=2014
 PREHOOK: Input: default@c/b/o_t1
 PREHOOK: Input: default@c/b/o_t1@dt=2014
 #### A masked pattern was here ####
-POSTHOOK: query: -- 15. query referencing only partition columns
-
-select count(`c/b/o_t1`.dt) from `c/b/o_t1` join `//cbo_t2` on `c/b/o_t1`.dt  = `//cbo_t2`.dt  where `c/b/o_t1`.dt = '2014'
+POSTHOOK: query: select count(`c/b/o_t1`.dt) from `c/b/o_t1` join `//cbo_t2` on `c/b/o_t1`.dt  = `//cbo_t2`.dt  where `c/b/o_t1`.dt = '2014'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@//cbo_t2
 POSTHOOK: Input: default@//cbo_t2@dt=2014
@@ -16814,27 +16762,19 @@ POSTHOOK: Input: default@c/b/o_t1
 POSTHOOK: Input: default@c/b/o_t1@dt=2014
 #### A masked pattern was here ####
 400
-PREHOOK: query: -- 20. Test get stats with empty partition list
-
-select `c/b/o_t1`.value from `c/b/o_t1` join `//cbo_t2` on `c/b/o_t1`.key = `//cbo_t2`.key where `c/b/o_t1`.dt = '10' and `c/b/o_t1`.c_boolean = true
+PREHOOK: query: select `c/b/o_t1`.value from `c/b/o_t1` join `//cbo_t2` on `c/b/o_t1`.key = `//cbo_t2`.key where `c/b/o_t1`.dt = '10' and `c/b/o_t1`.c_boolean = true
 PREHOOK: type: QUERY
 PREHOOK: Input: default@//cbo_t2
 PREHOOK: Input: default@//cbo_t2@dt=2014
 PREHOOK: Input: default@c/b/o_t1
 #### A masked pattern was here ####
-POSTHOOK: query: -- 20. Test get stats with empty partition list
-
-select `c/b/o_t1`.value from `c/b/o_t1` join `//cbo_t2` on `c/b/o_t1`.key = `//cbo_t2`.key where `c/b/o_t1`.dt = '10' and `c/b/o_t1`.c_boolean = true
+POSTHOOK: query: select `c/b/o_t1`.value from `c/b/o_t1` join `//cbo_t2` on `c/b/o_t1`.key = `//cbo_t2`.key where `c/b/o_t1`.dt = '10' and `c/b/o_t1`.c_boolean = true
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@//cbo_t2
 POSTHOOK: Input: default@//cbo_t2@dt=2014
 POSTHOOK: Input: default@c/b/o_t1
 #### A masked pattern was here ####
-PREHOOK: query: -- 18. SubQueries Not Exists
-
--- distinct, corr
-
-select * 
+PREHOOK: query: select * 
 
 from `src/_/cbo` b 
 
@@ -16850,11 +16790,7 @@ where not exists
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src/_/cbo
 #### A masked pattern was here ####
-POSTHOOK: query: -- 18. SubQueries Not Exists
-
--- distinct, corr
-
-select * 
+POSTHOOK: query: select * 
 
 from `src/_/cbo` b 
 
@@ -16989,9 +16925,7 @@ POSTHOOK: Input: default@src/_/cbo
 199	val_199
 199	val_199
 2	val_2
-PREHOOK: query: -- no agg, corr, having
-
-select * 
+PREHOOK: query: select * 
 
 from `src/_/cbo` b 
 
@@ -17009,9 +16943,7 @@ having not exists
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src/_/cbo
 #### A masked pattern was here ####
-POSTHOOK: query: -- no agg, corr, having
-
-select * 
+POSTHOOK: query: select * 
 
 from `src/_/cbo` b 
 
@@ -17043,11 +16975,7 @@ POSTHOOK: Input: default@src/_/cbo
 118	val_118
 119	val_119
 12	val_12
-PREHOOK: query: -- 19. SubQueries Exists
-
--- view test
-
-create view cv1 as 
+PREHOOK: query: create view cv1 as 
 
 select * 
 
@@ -17064,11 +16992,7 @@ PREHOOK: type: CREATEVIEW
 PREHOOK: Input: default@src/_/cbo
 PREHOOK: Output: database:default
 PREHOOK: Output: default@cv1
-POSTHOOK: query: -- 19. SubQueries Exists
-
--- view test
-
-create view cv1 as 
+POSTHOOK: query: create view cv1 as 
 
 select * 
 
@@ -17106,9 +17030,7 @@ POSTHOOK: Input: default@src/_/cbo
 97	val_97
 98	val_98
 98	val_98
-PREHOOK: query: -- sq in from
-
-select * 
+PREHOOK: query: select * 
 
 from (select * 
 
@@ -17126,9 +17048,7 @@ from (select *
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src/_/cbo
 #### A masked pattern was here ####
-POSTHOOK: query: -- sq in from
-
-select * 
+POSTHOOK: query: select * 
 
 from (select * 
 
@@ -17157,9 +17077,7 @@ POSTHOOK: Input: default@src/_/cbo
 97	val_97
 98	val_98
 98	val_98
-PREHOOK: query: -- sq in from, having
-
-select *
+PREHOOK: query: select *
 
 from (select b.key, count(*) 
 
@@ -17181,9 +17099,7 @@ from (select b.key, count(*)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src/_/cbo
 #### A masked pattern was here ####
-POSTHOOK: query: -- sq in from, having
-
-select *
+POSTHOOK: query: select *
 
 from (select b.key, count(*) 
 
@@ -17211,11 +17127,7 @@ POSTHOOK: Input: default@src/_/cbo
 96	1
 97	2
 98	2
-PREHOOK: query: -- 17. SubQueries In
-
--- non agg, non corr
-
-select * 
+PREHOOK: query: select * 
 
 from `src/_/cbo` 
 
@@ -17223,11 +17135,7 @@ where `src/_/cbo`.key in (select key from `src/_/cbo` s1 where s1.key > '9') ord
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src/_/cbo
 #### A masked pattern was here ####
-POSTHOOK: query: -- 17. SubQueries In
-
--- non agg, non corr
-
-select * 
+POSTHOOK: query: select * 
 
 from `src/_/cbo` 
 
@@ -17246,15 +17154,7 @@ POSTHOOK: Input: default@src/_/cbo
 97	val_97
 98	val_98
 98	val_98
-PREHOOK: query: -- agg, corr
-
--- add back once rank issue fixed for cbo
-
-
-
--- distinct, corr
-
-select * 
+PREHOOK: query: select * 
 
 from `src/_/cbo` b 
 
@@ -17270,15 +17170,7 @@ where b.key in
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src/_/cbo
 #### A masked pattern was here ####
-POSTHOOK: query: -- agg, corr
-
--- add back once rank issue fixed for cbo
-
-
-
--- distinct, corr
-
-select * 
+POSTHOOK: query: select * 
 
 from `src/_/cbo` b 
 
@@ -17305,9 +17197,7 @@ POSTHOOK: Input: default@src/_/cbo
 97	val_97
 98	val_98
 98	val_98
-PREHOOK: query: -- non agg, corr, with join in Parent Query
-
-select p.p_partkey, li.l_suppkey 
+PREHOOK: query: select p.p_partkey, li.l_suppkey 
 
 from (select distinct l_partkey as p_partkey from `line/item`) p join `line/item` li on p.p_partkey = li.l_partkey 
 
@@ -17319,9 +17209,7 @@ where li.l_linenumber = 1 and
 PREHOOK: type: QUERY
 PREHOOK: Input: default@line/item
 #### A masked pattern was here ####
-POSTHOOK: query: -- non agg, corr, with join in Parent Query
-
-select p.p_partkey, li.l_suppkey 
+POSTHOOK: query: select p.p_partkey, li.l_suppkey 
 
 from (select distinct l_partkey as p_partkey from `line/item`) p join `line/item` li on p.p_partkey = li.l_partkey 
 
@@ -17335,19 +17223,7 @@ POSTHOOK: Input: default@line/item
 #### A masked pattern was here ####
 108570	8571
 4297	1798
-PREHOOK: query: -- where and having
-
--- Plan is:
-
--- Stage 1: b semijoin sq1:`src/_/cbo` (subquery in where)
-
--- Stage 2: group by Stage 1 o/p
-
--- Stage 5: group by on sq2:`src/_/cbo` (subquery in having)
-
--- Stage 6: Stage 2 o/p semijoin Stage 5
-
-select key, value, count(*) 
+PREHOOK: query: select key, value, count(*) 
 
 from `src/_/cbo` b
 
@@ -17359,19 +17235,7 @@ having count(*) in (select count(*) from `src/_/cbo` s1 where s1.key > '9' group
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src/_/cbo
 #### A masked pattern was here ####
-POSTHOOK: query: -- where and having
-
--- Plan is:
-
--- Stage 1: b semijoin sq1:`src/_/cbo` (subquery in where)
-
--- Stage 2: group by Stage 1 o/p
-
--- Stage 5: group by on sq2:`src/_/cbo` (subquery in having)
-
--- Stage 6: Stage 2 o/p semijoin Stage 5
-
-select key, value, count(*) 
+POSTHOOK: query: select key, value, count(*) 
 
 from `src/_/cbo` b
 
@@ -17397,9 +17261,7 @@ POSTHOOK: Input: default@src/_/cbo
 96	val_96	1
 97	val_97	2
 98	val_98	2
-PREHOOK: query: -- non agg, non corr, windowing
-
-select p_mfgr, p_name, avg(p_size) 
+PREHOOK: query: select p_mfgr, p_name, avg(p_size) 
 
 from `p/a/r/t` 
 
@@ -17411,9 +17273,7 @@ having p_name in
 PREHOOK: type: QUERY
 PREHOOK: Input: default@p/a/r/t
 #### A masked pattern was here ####
-POSTHOOK: query: -- non agg, non corr, windowing
-
-select p_mfgr, p_name, avg(p_size) 
+POSTHOOK: query: select p_mfgr, p_name, avg(p_size) 
 
 from `p/a/r/t` 
 
@@ -17430,11 +17290,7 @@ Manufacturer#2	almond aquamarine midnight light salmon	2.0
 Manufacturer#3	almond antique misty red olive	1.0
 Manufacturer#4	almond aquamarine yellow dodger mint	7.0
 Manufacturer#5	almond antique sky peru orange	2.0
-PREHOOK: query: -- 16. SubQueries Not In
-
--- non agg, non corr
-
-select * 
+PREHOOK: query: select * 
 
 from `src/_/cbo` 
 
@@ -17448,11 +17304,7 @@ where `src/_/cbo`.key not in
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src/_/cbo
 #### A masked pattern was here ####
-POSTHOOK: query: -- 16. SubQueries Not In
-
--- non agg, non corr
-
-select * 
+POSTHOOK: query: select * 
 
 from `src/_/cbo` 
 
@@ -17585,9 +17437,7 @@ POSTHOOK: Input: default@src/_/cbo
 199	val_199
 199	val_199
 2	val_2
-PREHOOK: query: -- non agg, corr
-
-select p_mfgr, b.p_name, p_size 
+PREHOOK: query: select p_mfgr, b.p_name, p_size 
 
 from `p/a/r/t` b 
 
@@ -17603,9 +17453,7 @@ where b.p_name not in
 PREHOOK: type: QUERY
 PREHOOK: Input: default@p/a/r/t
 #### A masked pattern was here ####
-POSTHOOK: query: -- non agg, corr
-
-select p_mfgr, b.p_name, p_size 
+POSTHOOK: query: select p_mfgr, b.p_name, p_size 
 
 from `p/a/r/t` b 
 
@@ -17639,9 +17487,7 @@ Manufacturer#4	almond azure aquamarine papaya violet	12
 Manufacturer#5	almond antique blue firebrick mint	31
 Manufacturer#5	almond aquamarine dodger light gainsboro	46
 Manufacturer#5	almond azure blanched chiffon midnight	23
-PREHOOK: query: -- agg, non corr
-
-select p_name, p_size 
+PREHOOK: query: select p_name, p_size 
 
 from 
 
@@ -17657,9 +17503,7 @@ from
 PREHOOK: type: QUERY
 PREHOOK: Input: default@p/a/r/t
 #### A masked pattern was here ####
-POSTHOOK: query: -- agg, non corr
-
-select p_name, p_size 
+POSTHOOK: query: select p_name, p_size 
 
 from 
 
@@ -17701,9 +17545,7 @@ almond aquamarine sandy cyan gainsboro	18
 almond aquamarine yellow dodger mint	7
 almond azure aquamarine papaya violet	12
 almond azure blanched chiffon midnight	23
-PREHOOK: query: -- agg, corr
-
-select p_mfgr, p_name, p_size 
+PREHOOK: query: select p_mfgr, p_name, p_size 
 
 from `p/a/r/t` b where b.p_size not in 
 
@@ -17717,9 +17559,7 @@ from `p/a/r/t` b where b.p_size not in
 PREHOOK: type: QUERY
 PREHOOK: Input: default@p/a/r/t
 #### A masked pattern was here ####
-POSTHOOK: query: -- agg, corr
-
-select p_mfgr, p_name, p_size 
+POSTHOOK: query: select p_mfgr, p_name, p_size 
 
 from `p/a/r/t` b where b.p_size not in 
 
@@ -17753,9 +17593,7 @@ Manufacturer#5	almond antique blue firebrick mint	31
 Manufacturer#5	almond antique medium spring khaki	6
 Manufacturer#5	almond aquamarine dodger light gainsboro	46
 Manufacturer#5	almond azure blanched chiffon midnight	23
-PREHOOK: query: -- non agg, non corr, Group By in Parent Query
-
-select li.l_partkey, count(*) 
+PREHOOK: query: select li.l_partkey, count(*) 
 
 from `line/item` li 
 
@@ -17767,9 +17605,7 @@ group by li.l_partkey order by li.l_partkey
 PREHOOK: type: QUERY
 PREHOOK: Input: default@line/item
 #### A masked pattern was here ####
-POSTHOOK: query: -- non agg, non corr, Group By in Parent Query
-
-select li.l_partkey, count(*) 
+POSTHOOK: query: select li.l_partkey, count(*) 
 
 from `line/item` li 
 
@@ -17797,13 +17633,7 @@ POSTHOOK: Input: default@line/item
 85951	1
 88035	1
 88362	1
-PREHOOK: query: -- add null check test from sq_notin.q once HIVE-7721 resolved.
-
-
-
--- non agg, corr, having
-
-select b.p_mfgr, min(p_retailprice) 
+PREHOOK: query: select b.p_mfgr, min(p_retailprice) 
 
 from `p/a/r/t` b 
 
@@ -17823,13 +17653,7 @@ having b.p_mfgr not in
 PREHOOK: type: QUERY
 PREHOOK: Input: default@p/a/r/t
 #### A masked pattern was here ####
-POSTHOOK: query: -- add null check test from sq_notin.q once HIVE-7721 resolved.
-
-
-
--- non agg, corr, having
-
-select b.p_mfgr, min(p_retailprice) 
+POSTHOOK: query: select b.p_mfgr, min(p_retailprice) 
 
 from `p/a/r/t` b 
 
@@ -17851,9 +17675,7 @@ POSTHOOK: Input: default@p/a/r/t
 #### A masked pattern was here ####
 Manufacturer#1	1173.15
 Manufacturer#2	1690.68
-PREHOOK: query: -- agg, non corr, having
-
-select b.p_mfgr, min(p_retailprice) 
+PREHOOK: query: select b.p_mfgr, min(p_retailprice) 
 
 from `p/a/r/t` b 
 
@@ -17875,9 +17697,7 @@ having b.p_mfgr not in
 PREHOOK: type: QUERY
 PREHOOK: Input: default@p/a/r/t
 #### A masked pattern was here ####
-POSTHOOK: query: -- agg, non corr, having
-
-select b.p_mfgr, min(p_retailprice) 
+POSTHOOK: query: select b.p_mfgr, min(p_retailprice) 
 
 from `p/a/r/t` b 
 
@@ -17901,24 +17721,12 @@ POSTHOOK: Input: default@p/a/r/t
 #### A masked pattern was here ####
 Manufacturer#1	1173.15
 Manufacturer#2	1690.68
-PREHOOK: query: -- SORT_QUERY_RESULTS
-
-
-
--- 8. Test UDF/UDAF
-
-select count(*), count(c_int), sum(c_int), avg(c_int), max(c_int), min(c_int) from `c/b/o_t1`
+PREHOOK: query: select count(*), count(c_int), sum(c_int), avg(c_int), max(c_int), min(c_int) from `c/b/o_t1`
 PREHOOK: type: QUERY
 PREHOOK: Input: default@c/b/o_t1
 PREHOOK: Input: default@c/b/o_t1@dt=2014
 #### A masked pattern was here ####
-POSTHOOK: query: -- SORT_QUERY_RESULTS
-
-
-
--- 8. Test UDF/UDAF
-
-select count(*), count(c_int), sum(c_int), avg(c_int), max(c_int), min(c_int) from `c/b/o_t1`
+POSTHOOK: query: select count(*), count(c_int), sum(c_int), avg(c_int), max(c_int), min(c_int) from `c/b/o_t1`
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@c/b/o_t1
 POSTHOOK: Input: default@c/b/o_t1@dt=2014
@@ -18032,26 +17840,14 @@ POSTHOOK: Input: default@c/b/o_t1@dt=2014
 #### A masked pattern was here ####
 0	NULL
 1	1.0
-PREHOOK: query: -- SORT_QUERY_RESULTS
-
-
-
--- 11. Union All
-
-select * from (select * from `c/b/o_t1` order by key, c_boolean, value, dt)a union all select * from (select * from `//cbo_t2` order by key, c_boolean, value, dt)b
+PREHOOK: query: select * from (select * from `c/b/o_t1` order by key, c_boolean, value, dt)a union all select * from (select * from `//cbo_t2` order by key, c_boolean, value, dt)b
 PREHOOK: type: QUERY
 PREHOOK: Input: default@//cbo_t2
 PREHOOK: Input: default@//cbo_t2@dt=2014
 PREHOOK: Input: default@c/b/o_t1
 PREHOOK: Input: default@c/b/o_t1@dt=2014
 #### A masked pattern was here ####
-POSTHOOK: query: -- SORT_QUERY_RESULTS
-
-
-
--- 11. Union All
-
-select * from (select * from `c/b/o_t1` order by key, c_boolean, value, dt)a union all select * from (select * from `//cbo_t2` order by key, c_boolean, value, dt)b
+POSTHOOK: query: select * from (select * from `c/b/o_t1` order by key, c_boolean, value, dt)a union all select * from (select * from `//cbo_t2` order by key, c_boolean, value, dt)b
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@//cbo_t2
 POSTHOOK: Input: default@//cbo_t2@dt=2014
@@ -18958,16 +18754,12 @@ POSTHOOK: Input: default@cbo_/t3////
 3
 3
 3
-PREHOOK: query: -- 10. Test views
-
-create view v1 as select c_int, value, c_boolean, dt from `c/b/o_t1`
+PREHOOK: query: create view v1 as select c_int, value, c_boolean, dt from `c/b/o_t1`
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: default@c/b/o_t1
 PREHOOK: Output: database:default
 PREHOOK: Output: default@v1
-POSTHOOK: query: -- 10. Test views
-
-create view v1 as select c_int, value, c_boolean, dt from `c/b/o_t1`
+POSTHOOK: query: create view v1 as select c_int, value, c_boolean, dt from `c/b/o_t1`
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@c/b/o_t1
 POSTHOOK: Output: database:default
@@ -19213,24 +19005,12 @@ POSTHOOK: query: drop view v4
 POSTHOOK: type: DROPVIEW
 POSTHOOK: Input: default@v4
 POSTHOOK: Output: default@v4
-PREHOOK: query: -- 9. Test Windowing Functions
-
--- SORT_QUERY_RESULTS
-
-
-
-select count(c_int) over() from `c/b/o_t1`
+PREHOOK: query: select count(c_int) over() from `c/b/o_t1`
 PREHOOK: type: QUERY
 PREHOOK: Input: default@c/b/o_t1
 PREHOOK: Input: default@c/b/o_t1@dt=2014
 #### A masked pattern was here ####
-POSTHOOK: query: -- 9. Test Windowing Functions
-
--- SORT_QUERY_RESULTS
-
-
-
-select count(c_int) over() from `c/b/o_t1`
+POSTHOOK: query: select count(c_int) over() from `c/b/o_t1`
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@c/b/o_t1
 POSTHOOK: Input: default@c/b/o_t1@dt=2014

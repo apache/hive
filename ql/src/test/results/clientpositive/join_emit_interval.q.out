@@ -36,14 +36,12 @@ POSTHOOK: Output: default@test2
 POSTHOOK: Lineage: test2.col_2 SIMPLE [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
 POSTHOOK: Lineage: test2.key EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 POSTHOOK: Lineage: test2.value EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
-PREHOOK: query: -- Equi-condition and condition on one input (left outer join)
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT *
 FROM test1 LEFT OUTER JOIN test2
 ON (test1.value=test2.value AND test1.key between 100 and 102)
 PREHOOK: type: QUERY
-POSTHOOK: query: -- Equi-condition and condition on one input (left outer join)
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT *
 FROM test1 LEFT OUTER JOIN test2
 ON (test1.value=test2.value AND test1.key between 100 and 102)
@@ -130,14 +128,12 @@ NULL	NULL	None	NULL	NULL	NULL
 101	2	Car	102	2	Del
 99	2	Mat	NULL	NULL	NULL
 Warning: Shuffle Join JOIN[6][tables = [$hdt$_0, $hdt$_1]] in Stage 'Stage-1:MAPRED' is a cross product
-PREHOOK: query: -- Condition on one input (left outer join)
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT *
 FROM test1 LEFT OUTER JOIN test2
 ON (test1.key between 100 and 102)
 PREHOOK: type: QUERY
-POSTHOOK: query: -- Condition on one input (left outer join)
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT *
 FROM test1 LEFT OUTER JOIN test2
 ON (test1.key between 100 and 102)

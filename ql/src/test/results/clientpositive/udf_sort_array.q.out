@@ -19,12 +19,10 @@ Example:
   'a', 'b', 'c', 'd'
 Function class:org.apache.hadoop.hive.ql.udf.generic.GenericUDFSortArray
 Function type:BUILTIN
-PREHOOK: query: -- Evaluate function against STRING valued keys
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT sort_array(array("b", "d", "c", "a")) FROM src tablesample (1 rows)
 PREHOOK: type: QUERY
-POSTHOOK: query: -- Evaluate function against STRING valued keys
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT sort_array(array("b", "d", "c", "a")) FROM src tablesample (1 rows)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -63,63 +61,52 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 ["enterprise databases","hadoop distributed file system","hadoop map-reduce"]
-PREHOOK: query: -- Evaluate function against INT valued keys
-SELECT sort_array(array(2, 9, 7, 3, 5, 4, 1, 6, 8)) FROM src tablesample (1 rows)
+PREHOOK: query: SELECT sort_array(array(2, 9, 7, 3, 5, 4, 1, 6, 8)) FROM src tablesample (1 rows)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
-POSTHOOK: query: -- Evaluate function against INT valued keys
-SELECT sort_array(array(2, 9, 7, 3, 5, 4, 1, 6, 8)) FROM src tablesample (1 rows)
+POSTHOOK: query: SELECT sort_array(array(2, 9, 7, 3, 5, 4, 1, 6, 8)) FROM src tablesample (1 rows)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 [1,2,3,4,5,6,7,8,9]
-PREHOOK: query: -- Evaluate function against FLOAT valued keys
-SELECT sort_array(sort_array(array(2.333, 9, 1.325, 2.003, 0.777, -3.445, 1))) FROM src tablesample (1 rows)
+PREHOOK: query: SELECT sort_array(sort_array(array(2.333, 9, 1.325, 2.003, 0.777, -3.445, 1))) FROM src tablesample (1 rows)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
-POSTHOOK: query: -- Evaluate function against FLOAT valued keys
-SELECT sort_array(sort_array(array(2.333, 9, 1.325, 2.003, 0.777, -3.445, 1))) FROM src tablesample (1 rows)
+POSTHOOK: query: SELECT sort_array(sort_array(array(2.333, 9, 1.325, 2.003, 0.777, -3.445, 1))) FROM src tablesample (1 rows)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 [-3.445,0.777,1,1.325,2.003,2.333,9]
-PREHOOK: query: -- Evaluate function against LIST valued keys
-SELECT sort_array(array(array(2, 9, 7), array(3, 5, 4), array(1, 6, 8))) FROM src tablesample (1 rows)
+PREHOOK: query: SELECT sort_array(array(array(2, 9, 7), array(3, 5, 4), array(1, 6, 8))) FROM src tablesample (1 rows)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
-POSTHOOK: query: -- Evaluate function against LIST valued keys
-SELECT sort_array(array(array(2, 9, 7), array(3, 5, 4), array(1, 6, 8))) FROM src tablesample (1 rows)
+POSTHOOK: query: SELECT sort_array(array(array(2, 9, 7), array(3, 5, 4), array(1, 6, 8))) FROM src tablesample (1 rows)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 [[1,6,8],[2,9,7],[3,5,4]]
-PREHOOK: query: -- Evaluate function against STRUCT valued keys
-SELECT sort_array(array(struct(2, 9, 7), struct(3, 5, 4), struct(1, 6, 8))) FROM src tablesample (1 rows)
+PREHOOK: query: SELECT sort_array(array(struct(2, 9, 7), struct(3, 5, 4), struct(1, 6, 8))) FROM src tablesample (1 rows)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
-POSTHOOK: query: -- Evaluate function against STRUCT valued keys
-SELECT sort_array(array(struct(2, 9, 7), struct(3, 5, 4), struct(1, 6, 8))) FROM src tablesample (1 rows)
+POSTHOOK: query: SELECT sort_array(array(struct(2, 9, 7), struct(3, 5, 4), struct(1, 6, 8))) FROM src tablesample (1 rows)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 [{"col1":1,"col2":6,"col3":8},{"col1":2,"col2":9,"col3":7},{"col1":3,"col2":5,"col3":4}]
-PREHOOK: query: -- Evaluate function against MAP valued keys
-SELECT sort_array(array(map("b", 2, "a", 9, "c", 7), map("c", 3, "b", 5, "a", 1), map("a", 1, "c", 6, "b", 8))) FROM src tablesample (1 rows)
+PREHOOK: query: SELECT sort_array(array(map("b", 2, "a", 9, "c", 7), map("c", 3, "b", 5, "a", 1), map("a", 1, "c", 6, "b", 8))) FROM src tablesample (1 rows)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
-POSTHOOK: query: -- Evaluate function against MAP valued keys
-SELECT sort_array(array(map("b", 2, "a", 9, "c", 7), map("c", 3, "b", 5, "a", 1), map("a", 1, "c", 6, "b", 8))) FROM src tablesample (1 rows)
+POSTHOOK: query: SELECT sort_array(array(map("b", 2, "a", 9, "c", 7), map("c", 3, "b", 5, "a", 1), map("a", 1, "c", 6, "b", 8))) FROM src tablesample (1 rows)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 [{"a":1,"b":5,"c":3},{"a":1,"b":8,"c":6},{"a":9,"b":2,"c":7}]
-PREHOOK: query: -- Test it against data in a table.
-CREATE TABLE dest1 (
+PREHOOK: query: CREATE TABLE dest1 (
 	tinyints ARRAY<TINYINT>,
 	smallints ARRAY<SMALLINT>,
 	ints ARRAY<INT>,

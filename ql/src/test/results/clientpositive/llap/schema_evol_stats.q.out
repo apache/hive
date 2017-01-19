@@ -14,13 +14,11 @@ POSTHOOK: type: QUERY
 POSTHOOK: Output: default@partitioned1@part=1
 POSTHOOK: Lineage: partitioned1 PARTITION(part=1).a EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 POSTHOOK: Lineage: partitioned1 PARTITION(part=1).b SIMPLE [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
-PREHOOK: query: -- Table-Non-Cascade ADD COLUMNS ...
-alter table partitioned1 add columns(c int, d string)
+PREHOOK: query: alter table partitioned1 add columns(c int, d string)
 PREHOOK: type: ALTERTABLE_ADDCOLS
 PREHOOK: Input: default@partitioned1
 PREHOOK: Output: default@partitioned1
-POSTHOOK: query: -- Table-Non-Cascade ADD COLUMNS ...
-alter table partitioned1 add columns(c int, d string)
+POSTHOOK: query: alter table partitioned1 add columns(c int, d string)
 POSTHOOK: type: ALTERTABLE_ADDCOLS
 POSTHOOK: Input: default@partitioned1
 POSTHOOK: Output: default@partitioned1
@@ -210,13 +208,11 @@ POSTHOOK: type: QUERY
 POSTHOOK: Output: default@partitioned1@part=1
 POSTHOOK: Lineage: partitioned1 PARTITION(part=1).a EXPRESSION [(values__tmp__table__3)values__tmp__table__3.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 POSTHOOK: Lineage: partitioned1 PARTITION(part=1).b SIMPLE [(values__tmp__table__3)values__tmp__table__3.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
-PREHOOK: query: -- Table-Non-Cascade ADD COLUMNS ...
-alter table partitioned1 add columns(c int, d string)
+PREHOOK: query: alter table partitioned1 add columns(c int, d string)
 PREHOOK: type: ALTERTABLE_ADDCOLS
 PREHOOK: Input: default@partitioned1
 PREHOOK: Output: default@partitioned1
-POSTHOOK: query: -- Table-Non-Cascade ADD COLUMNS ...
-alter table partitioned1 add columns(c int, d string)
+POSTHOOK: query: alter table partitioned1 add columns(c int, d string)
 POSTHOOK: type: ALTERTABLE_ADDCOLS
 POSTHOOK: Input: default@partitioned1
 POSTHOOK: Output: default@partitioned1

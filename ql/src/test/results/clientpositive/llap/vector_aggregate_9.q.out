@@ -161,15 +161,11 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: -- SORT_QUERY_RESULTS
-
-select min(dc), max(dc), sum(dc), avg(dc) from vectortab2korc
+PREHOOK: query: select min(dc), max(dc), sum(dc), avg(dc) from vectortab2korc
 PREHOOK: type: QUERY
 PREHOOK: Input: default@vectortab2korc
 #### A masked pattern was here ####
-POSTHOOK: query: -- SORT_QUERY_RESULTS
-
-select min(dc), max(dc), sum(dc), avg(dc) from vectortab2korc
+POSTHOOK: query: select min(dc), max(dc), sum(dc), avg(dc) from vectortab2korc
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@vectortab2korc
 #### A masked pattern was here ####

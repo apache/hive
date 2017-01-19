@@ -1,12 +1,8 @@
-PREHOOK: query: -- EXCLUDE_HADOOP_MAJOR_VERSIONS(0.17, 0.18, 0.19)
-
-create table srcpartbucket (key string, value string) partitioned by (ds string, hr string) clustered by (key) into 4 buckets
+PREHOOK: query: create table srcpartbucket (key string, value string) partitioned by (ds string, hr string) clustered by (key) into 4 buckets
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@srcpartbucket
-POSTHOOK: query: -- EXCLUDE_HADOOP_MAJOR_VERSIONS(0.17, 0.18, 0.19)
-
-create table srcpartbucket (key string, value string) partitioned by (ds string, hr string) clustered by (key) into 4 buckets
+POSTHOOK: query: create table srcpartbucket (key string, value string) partitioned by (ds string, hr string) clustered by (key) into 4 buckets
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@srcpartbucket

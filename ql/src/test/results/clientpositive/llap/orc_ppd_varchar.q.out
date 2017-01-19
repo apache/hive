@@ -18,13 +18,11 @@ POSTHOOK: Lineage: newtypesorc.c EXPRESSION []
 POSTHOOK: Lineage: newtypesorc.d EXPRESSION []
 POSTHOOK: Lineage: newtypesorc.da EXPRESSION []
 POSTHOOK: Lineage: newtypesorc.v EXPRESSION []
-PREHOOK: query: -- varchar data types (EQUAL, NOT_EQUAL, LESS_THAN, LESS_THAN_EQUALS, IN, BETWEEN tests)
-select sum(hash(*)) from newtypesorc where v="bee"
+PREHOOK: query: select sum(hash(*)) from newtypesorc where v="bee"
 PREHOOK: type: QUERY
 PREHOOK: Input: default@newtypesorc
 #### A masked pattern was here ####
-POSTHOOK: query: -- varchar data types (EQUAL, NOT_EQUAL, LESS_THAN, LESS_THAN_EQUALS, IN, BETWEEN tests)
-select sum(hash(*)) from newtypesorc where v="bee"
+POSTHOOK: query: select sum(hash(*)) from newtypesorc where v="bee"
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@newtypesorc
 #### A masked pattern was here ####

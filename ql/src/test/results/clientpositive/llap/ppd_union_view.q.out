@@ -1,10 +1,6 @@
-PREHOOK: query: -- test predicate pushdown on a view with a union
-
-drop view v
+PREHOOK: query: drop view v
 PREHOOK: type: DROPVIEW
-POSTHOOK: query: -- test predicate pushdown on a view with a union
-
-drop view v
+POSTHOOK: query: drop view v
 POSTHOOK: type: DROPVIEW
 PREHOOK: query: create table t1_new (key string, value string) partitioned by (ds string)
 PREHOOK: type: CREATETABLE

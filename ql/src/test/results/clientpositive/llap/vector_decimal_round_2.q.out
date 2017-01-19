@@ -24,32 +24,14 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_tbl_1_orc
 #### A masked pattern was here ####
 55555.000000000000000000
-PREHOOK: query: -- EXPLAIN
--- SELECT dec, round(null), round(null, 0), round(125, null), 
--- round(1.0/0.0, 0), round(power(-1.0,0.5), 0)
--- FROM decimal_tbl_1_orc ORDER BY dec;
-
--- SELECT dec, round(null), round(null, 0), round(125, null), 
--- round(1.0/0.0, 0), round(power(-1.0,0.5), 0)
--- FROM decimal_tbl_1_orc ORDER BY dec;
-
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT
   round(dec) as d, round(dec, 0), round(dec, 1), round(dec, 2), round(dec, 3),
   round(dec, -1), round(dec, -2), round(dec, -3), round(dec, -4),
   round(dec, -5), round(dec, -6), round(dec, -7), round(dec, -8)
 FROM decimal_tbl_1_orc ORDER BY d
 PREHOOK: type: QUERY
-POSTHOOK: query: -- EXPLAIN
--- SELECT dec, round(null), round(null, 0), round(125, null), 
--- round(1.0/0.0, 0), round(power(-1.0,0.5), 0)
--- FROM decimal_tbl_1_orc ORDER BY dec;
-
--- SELECT dec, round(null), round(null, 0), round(125, null), 
--- round(1.0/0.0, 0), round(power(-1.0,0.5), 0)
--- FROM decimal_tbl_1_orc ORDER BY dec;
-
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT
   round(dec) as d, round(dec, 0), round(dec, 1), round(dec, 2), round(dec, 3),
   round(dec, -1), round(dec, -2), round(dec, -3), round(dec, -4),

@@ -28,8 +28,7 @@ OK
  1234567891
 Function class:org.apache.hadoop.hive.ql.udf.generic.GenericUDFTrunc
 Function type:BUILTIN
-PREHOOK: query: --test string with 'MM' as format
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT
       TRUNC('2014-01-01', 'MM'),
       TRUNC('2014-01-14', 'MM'),

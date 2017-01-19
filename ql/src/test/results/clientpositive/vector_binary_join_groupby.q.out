@@ -6,8 +6,7 @@ PREHOOK: query: DROP TABLE hundredorc
 PREHOOK: type: DROPTABLE
 POSTHOOK: query: DROP TABLE hundredorc
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: -- data setup
-CREATE TABLE over1k(t tinyint,
+PREHOOK: query: CREATE TABLE over1k(t tinyint,
            si smallint,
            i int,
            b bigint,
@@ -23,8 +22,7 @@ STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@over1k
-POSTHOOK: query: -- data setup
-CREATE TABLE over1k(t tinyint,
+POSTHOOK: query: CREATE TABLE over1k(t tinyint,
            si smallint,
            i int,
            b bigint,
@@ -302,15 +300,11 @@ POSTHOOK: Input: default@hundredorc
 3	xylophone band
 2	yard duty
 3	zync studies
-PREHOOK: query: -- HIVE-14045: Involve a binary vector scratch column for small table result (Native Vector MapJoin).
-
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT t1.i, t1.bin, t2.bin
 FROM hundredorc t1 JOIN hundredorc t2 ON t1.i = t2.i
 PREHOOK: type: QUERY
-POSTHOOK: query: -- HIVE-14045: Involve a binary vector scratch column for small table result (Native Vector MapJoin).
-
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT t1.i, t1.bin, t2.bin
 FROM hundredorc t1 JOIN hundredorc t2 ON t1.i = t2.i
 POSTHOOK: type: QUERY

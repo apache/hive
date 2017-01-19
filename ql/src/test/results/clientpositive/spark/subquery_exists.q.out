@@ -404,8 +404,7 @@ STAGE PLANS:
         ListSink
 
 Warning: Shuffle Join JOIN[12][tables = [$hdt$_0, $hdt$_1]] in Work 'Reducer 2' is a cross product
-PREHOOK: query: -- uncorr exists
-explain
+PREHOOK: query: explain
 select *
 from src b
 where exists
@@ -414,8 +413,7 @@ where exists
   where a.value > 'val_9'
   )
 PREHOOK: type: QUERY
-POSTHOOK: query: -- uncorr exists
-explain
+POSTHOOK: query: explain
 select *
 from src b
 where exists

@@ -128,16 +128,14 @@ POSTHOOK: Input: default@windowing_distinct
 117.5	38.71	NULL	NULL	1.362157918703306E9	34.5000
 117.5	38.71	NULL	NULL	1.362157918703306E9	34.5000
 117.5	38.71	NULL	NULL	1.362157918703306E9	34.5000
-PREHOOK: query: -- count
-select index, f, count(distinct f) over (partition by index order by f rows between 2 preceding and 1 preceding),
+PREHOOK: query: select index, f, count(distinct f) over (partition by index order by f rows between 2 preceding and 1 preceding),
                  count(distinct f) over (partition by index order by f rows between unbounded preceding and 1 preceding),
                  count(distinct f) over (partition by index order by f rows between 1 following and 2 following),
                  count(distinct f) over (partition by index order by f rows between unbounded preceding and 1 following) from windowing_distinct
 PREHOOK: type: QUERY
 PREHOOK: Input: default@windowing_distinct
 #### A masked pattern was here ####
-POSTHOOK: query: -- count
-select index, f, count(distinct f) over (partition by index order by f rows between 2 preceding and 1 preceding),
+POSTHOOK: query: select index, f, count(distinct f) over (partition by index order by f rows between 2 preceding and 1 preceding),
                  count(distinct f) over (partition by index order by f rows between unbounded preceding and 1 preceding),
                  count(distinct f) over (partition by index order by f rows between 1 following and 2 following),
                  count(distinct f) over (partition by index order by f rows between unbounded preceding and 1 following) from windowing_distinct
@@ -150,16 +148,14 @@ POSTHOOK: Input: default@windowing_distinct
 2	13.01	0	0	1	2
 2	74.72	1	1	1	2
 2	74.72	2	2	0	2
-PREHOOK: query: -- sum
-select index, f, sum(distinct f) over (partition by index order by f rows between 2 preceding and 1 preceding),
+PREHOOK: query: select index, f, sum(distinct f) over (partition by index order by f rows between 2 preceding and 1 preceding),
                  sum(distinct f) over (partition by index order by f rows between unbounded preceding and 1 preceding),
                  sum(distinct f) over (partition by index order by f rows between 1 following and 2 following),
                  sum(distinct f) over (partition by index order by f rows between unbounded preceding and 1 following) from windowing_distinct
 PREHOOK: type: QUERY
 PREHOOK: Input: default@windowing_distinct
 #### A masked pattern was here ####
-POSTHOOK: query: -- sum
-select index, f, sum(distinct f) over (partition by index order by f rows between 2 preceding and 1 preceding),
+POSTHOOK: query: select index, f, sum(distinct f) over (partition by index order by f rows between 2 preceding and 1 preceding),
                  sum(distinct f) over (partition by index order by f rows between unbounded preceding and 1 preceding),
                  sum(distinct f) over (partition by index order by f rows between 1 following and 2 following),
                  sum(distinct f) over (partition by index order by f rows between unbounded preceding and 1 following) from windowing_distinct
@@ -172,16 +168,14 @@ POSTHOOK: Input: default@windowing_distinct
 2	13.01	NULL	NULL	74.72000122070312	87.73000144958496
 2	74.72	13.010000228881836	13.010000228881836	74.72000122070312	87.73000144958496
 2	74.72	87.73000144958496	87.73000144958496	NULL	87.73000144958496
-PREHOOK: query: -- avg
-select index, f, avg(distinct f) over (partition by index order by f rows between 2 preceding and 1 preceding),
+PREHOOK: query: select index, f, avg(distinct f) over (partition by index order by f rows between 2 preceding and 1 preceding),
                  avg(distinct f) over (partition by index order by f rows between unbounded preceding and 1 preceding),
                  avg(distinct f) over (partition by index order by f rows between 1 following and 2 following),
                  avg(distinct f) over (partition by index order by f rows between unbounded preceding and 1 following) from windowing_distinct
 PREHOOK: type: QUERY
 PREHOOK: Input: default@windowing_distinct
 #### A masked pattern was here ####
-POSTHOOK: query: -- avg
-select index, f, avg(distinct f) over (partition by index order by f rows between 2 preceding and 1 preceding),
+POSTHOOK: query: select index, f, avg(distinct f) over (partition by index order by f rows between 2 preceding and 1 preceding),
                  avg(distinct f) over (partition by index order by f rows between unbounded preceding and 1 preceding),
                  avg(distinct f) over (partition by index order by f rows between 1 following and 2 following),
                  avg(distinct f) over (partition by index order by f rows between unbounded preceding and 1 following) from windowing_distinct

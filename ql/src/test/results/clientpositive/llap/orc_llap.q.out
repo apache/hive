@@ -122,12 +122,10 @@ POSTHOOK: Lineage: orc_llap_small.cint SIMPLE [(alltypesorc)alltypesorc.FieldSch
 POSTHOOK: Lineage: orc_llap_small.csmallint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:csmallint, type:smallint, comment:null), ]
 POSTHOOK: Lineage: orc_llap_small.ctinyint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctinyint, type:tinyint, comment:null), ]
 Warning: Map Join MAPJOIN[14][bigTable=?] in task 'Map 1' is a cross product
-PREHOOK: query: -- Cross join with no projection - do it on small table
-explain
+PREHOOK: query: explain
 select count(1) from orc_llap_small y join orc_llap_small x
 PREHOOK: type: QUERY
-POSTHOOK: query: -- Cross join with no projection - do it on small table
-explain
+POSTHOOK: query: explain
 select count(1) from orc_llap_small y join orc_llap_small x
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -214,34 +212,28 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orc_llap_small
 #### A masked pattern was here ####
 225
-PREHOOK: query: -- All row groups selected, no projection
-select count(*) from orc_llap_small
+PREHOOK: query: select count(*) from orc_llap_small
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_llap_small
 #### A masked pattern was here ####
-POSTHOOK: query: -- All row groups selected, no projection
-select count(*) from orc_llap_small
+POSTHOOK: query: select count(*) from orc_llap_small
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orc_llap_small
 #### A masked pattern was here ####
 15
-PREHOOK: query: -- All row groups pruned
-select count(*) from orc_llap_small where cint < 60000000
+PREHOOK: query: select count(*) from orc_llap_small where cint < 60000000
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_llap_small
 #### A masked pattern was here ####
-POSTHOOK: query: -- All row groups pruned
-select count(*) from orc_llap_small where cint < 60000000
+POSTHOOK: query: select count(*) from orc_llap_small where cint < 60000000
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orc_llap_small
 #### A masked pattern was here ####
 0
-PREHOOK: query: -- Hash cannot be vectorized, but now we have row-by-row reader, so the subquery runs in llap but with row-by-row reader
-explain
+PREHOOK: query: explain
 select sum(hash(*)) from (select cint, csmallint, cbigint from orc_llap where cint > 10 and cbigint is not null) t
 PREHOOK: type: QUERY
-POSTHOOK: query: -- Hash cannot be vectorized, but now we have row-by-row reader, so the subquery runs in llap but with row-by-row reader
-explain
+POSTHOOK: query: explain
 select sum(hash(*)) from (select cint, csmallint, cbigint from orc_llap where cint > 10 and cbigint is not null) t
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -669,16 +661,14 @@ POSTHOOK: Input: default@orc_llap
 #### A masked pattern was here ####
 -735462183586256
 Warning: Map Join MAPJOIN[10][bigTable=?] in task 'Map 1' is a cross product
-PREHOOK: query: -- multi-stripe test
-insert into table orc_llap
+PREHOOK: query: insert into table orc_llap
 select ctinyint + i, csmallint + i, cint + i, cbigint + i, cfloat + i, cdouble + i, cstring1, cstring2, ctimestamp1, ctimestamp2, cboolean1, cboolean2
 from alltypesorc cross join cross_numbers
 PREHOOK: type: QUERY
 PREHOOK: Input: default@alltypesorc
 PREHOOK: Input: default@cross_numbers
 PREHOOK: Output: default@orc_llap
-POSTHOOK: query: -- multi-stripe test
-insert into table orc_llap
+POSTHOOK: query: insert into table orc_llap
 select ctinyint + i, csmallint + i, cint + i, cbigint + i, cfloat + i, cdouble + i, cstring1, cstring2, ctimestamp1, ctimestamp2, cboolean1, cboolean2
 from alltypesorc cross join cross_numbers
 POSTHOOK: type: QUERY

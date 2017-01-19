@@ -1,31 +1,9 @@
-PREHOOK: query: -- SORT_QUERY_RESULTS
---
--- FILE VARIATION: TEXTFILE, Non-Vectorized, MapWork, Partitioned --> all primitive conversions
--- NOTE: the use of hive.vectorized.use.vector.serde.deserialize above which enables doing
---  vectorized reading of TEXTFILE format files using the vector SERDE methods.
---
-------------------------------------------------------------------------------------------
--- SECTION: ALTER TABLE CHANGE COLUMNS Various --> Various
---
---
-
-CREATE TABLE schema_evolution_data(insert_num int, boolean1 boolean, tinyint1 tinyint, smallint1 smallint, int1 int, bigint1 bigint, decimal1 decimal(38,18), float1 float, double1 double, string1 string, string2 string, date1 date, timestamp1 timestamp, boolean_str string, tinyint_str string, smallint_str string, int_str string, bigint_str string, decimal_str string, float_str string, double_str string, date_str string, timestamp_str string, filler string)
+PREHOOK: query: CREATE TABLE schema_evolution_data(insert_num int, boolean1 boolean, tinyint1 tinyint, smallint1 smallint, int1 int, bigint1 bigint, decimal1 decimal(38,18), float1 float, double1 double, string1 string, string2 string, date1 date, timestamp1 timestamp, boolean_str string, tinyint_str string, smallint_str string, int_str string, bigint_str string, decimal_str string, float_str string, double_str string, date_str string, timestamp_str string, filler string)
 row format delimited fields terminated by '|' stored as textfile
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@schema_evolution_data
-POSTHOOK: query: -- SORT_QUERY_RESULTS
---
--- FILE VARIATION: TEXTFILE, Non-Vectorized, MapWork, Partitioned --> all primitive conversions
--- NOTE: the use of hive.vectorized.use.vector.serde.deserialize above which enables doing
---  vectorized reading of TEXTFILE format files using the vector SERDE methods.
---
-------------------------------------------------------------------------------------------
--- SECTION: ALTER TABLE CHANGE COLUMNS Various --> Various
---
---
-
-CREATE TABLE schema_evolution_data(insert_num int, boolean1 boolean, tinyint1 tinyint, smallint1 smallint, int1 int, bigint1 bigint, decimal1 decimal(38,18), float1 float, double1 double, string1 string, string2 string, date1 date, timestamp1 timestamp, boolean_str string, tinyint_str string, smallint_str string, int_str string, bigint_str string, decimal_str string, float_str string, double_str string, date_str string, timestamp_str string, filler string)
+POSTHOOK: query: CREATE TABLE schema_evolution_data(insert_num int, boolean1 boolean, tinyint1 tinyint, smallint1 smallint, int1 int, bigint1 bigint, decimal1 decimal(38,18), float1 float, double1 double, string1 string, string2 string, date1 date, timestamp1 timestamp, boolean_str string, tinyint_str string, smallint_str string, int_str string, bigint_str string, decimal_str string, float_str string, double_str string, date_str string, timestamp_str string, filler string)
 row format delimited fields terminated by '|' stored as textfile
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
@@ -56,15 +34,7 @@ POSTHOOK: query: load data local inpath '../../data/files/schema_evolution/schem
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@schema_evolution_data_2
-PREHOOK: query: --
--- SUBSECTION: ALTER TABLE CHANGE COLUMNS for Various --> Various:
---            (BYTE, SHORT, INT, LONG, FLOAT, DOUBLE, DECIMAL, STRING, TIMESTAMP) --> BOOLEAN and
---            (BOOLEAN, SHORT, INT, LONG, FLOAT, DOUBLE, DECIMAL, STRING, CHAR, VARCHAR, TIMESTAMP) --> BYTE   128 and a maximum value of 127 and
---            (BOOLEAN, TINYINT, INT, LONG, FLOAT, DOUBLE, DECIMAL, STRING, CHAR, VARCHAR, TIMESTAMP) --> SMALLINT   -32768 and a maximum value of 32767 and
---            (BOOLEAN, TINYINT, SMALLINT, LONG, FLOAT, DOUBLE, DECIMAL, STRING, CHAR, VARCHAR, TIMESTAMP) --> INT    –2147483648 to 2147483647 and
---            (BOOLEAN, TINYINT, SMALLINT, INT, FLOAT, DOUBLE, DECIMAL, STRING, CHAR, VARCHAR, TIMESTAMP) --> BIGINT   -9223372036854775808 to 9223372036854775807
---
-CREATE TABLE part_change_various_various_boolean_to_bigint(insert_num int,
+PREHOOK: query: CREATE TABLE part_change_various_various_boolean_to_bigint(insert_num int,
               c1 TINYINT, c2 SMALLINT, c3 INT, c4 BIGINT, c5 FLOAT, c6 DOUBLE, c7 DECIMAL(38,18), c8 STRING, c9 TIMESTAMP,
               c10 BOOLEAN, c11 SMALLINT, c12 INT, c13 BIGINT, c14 FLOAT, c15 DOUBLE, c16 DECIMAL(38,18), c17 STRING, c18 CHAR(25), c19 VARCHAR(25), c20 TIMESTAMP,
               c21 BOOLEAN, c22 TINYINT, c23 INT, c24 BIGINT, c25 FLOAT, c26 DOUBLE, c27 DECIMAL(38,18), c28 STRING, c29 CHAR(25), c30 VARCHAR(25), c31 TIMESTAMP,
@@ -74,15 +44,7 @@ CREATE TABLE part_change_various_various_boolean_to_bigint(insert_num int,
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@part_change_various_various_boolean_to_bigint
-POSTHOOK: query: --
--- SUBSECTION: ALTER TABLE CHANGE COLUMNS for Various --> Various:
---            (BYTE, SHORT, INT, LONG, FLOAT, DOUBLE, DECIMAL, STRING, TIMESTAMP) --> BOOLEAN and
---            (BOOLEAN, SHORT, INT, LONG, FLOAT, DOUBLE, DECIMAL, STRING, CHAR, VARCHAR, TIMESTAMP) --> BYTE   128 and a maximum value of 127 and
---            (BOOLEAN, TINYINT, INT, LONG, FLOAT, DOUBLE, DECIMAL, STRING, CHAR, VARCHAR, TIMESTAMP) --> SMALLINT   -32768 and a maximum value of 32767 and
---            (BOOLEAN, TINYINT, SMALLINT, LONG, FLOAT, DOUBLE, DECIMAL, STRING, CHAR, VARCHAR, TIMESTAMP) --> INT    –2147483648 to 2147483647 and
---            (BOOLEAN, TINYINT, SMALLINT, INT, FLOAT, DOUBLE, DECIMAL, STRING, CHAR, VARCHAR, TIMESTAMP) --> BIGINT   -9223372036854775808 to 9223372036854775807
---
-CREATE TABLE part_change_various_various_boolean_to_bigint(insert_num int,
+POSTHOOK: query: CREATE TABLE part_change_various_various_boolean_to_bigint(insert_num int,
               c1 TINYINT, c2 SMALLINT, c3 INT, c4 BIGINT, c5 FLOAT, c6 DOUBLE, c7 DECIMAL(38,18), c8 STRING, c9 TIMESTAMP,
               c10 BOOLEAN, c11 SMALLINT, c12 INT, c13 BIGINT, c14 FLOAT, c15 DOUBLE, c16 DECIMAL(38,18), c17 STRING, c18 CHAR(25), c19 VARCHAR(25), c20 TIMESTAMP,
               c21 BOOLEAN, c22 TINYINT, c23 INT, c24 BIGINT, c25 FLOAT, c26 DOUBLE, c27 DECIMAL(38,18), c28 STRING, c29 CHAR(25), c30 VARCHAR(25), c31 TIMESTAMP,
@@ -184,8 +146,7 @@ insert_num	part	c1	c2	c3	c4	c5	c6	c7	c8	c9	c10	c11	c12	c13	c14	c15	c16	c17	c18	c
 103	1	NULL	NULL	NULL	NULL	NULL	NULL	NULL		NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL		                         		NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL		                         		NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL		                         		NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL		                         		NULL	original
 104	1	23	834	203332	888888857923222	-100.35978	30.774	66475.561431000000000000	true	1978-08-02 06:34:14	NULL	834	203332	888888857923222	-100.35978	30.774	66475.561431000000000000	23	23                       	23	1978-08-02 06:34:14	NULL	23	203332	888888857923222	-100.35978	30.774	66475.561431000000000000	834	834                      	834	1978-08-02 06:34:14	NULL	23	834	888888857923222	-100.35978	30.774	66475.561431000000000000	203332	203332                   	203332	1978-08-02 06:34:14	NULL	23	834	203332	-100.35978	30.774	66475.561431000000000000	888888857923222	888888857923222          	888888857923222	1978-08-02 06:34:14	original
 105	1	-99	-28300	-999992	-222282153733	NULL	46114.28	9250340.750000000000000000	false	1991-01-06 16:20:39.72036854	false	-28300	-999992	-222282153733	NULL	46114.28	9250340.750000000000000000	-99	-99                      	-99	1991-01-06 16:20:39.72036854	false	-99	-999992	-222282153733	NULL	46114.28	9250340.750000000000000000	-28300	-28300                   	-28300	1991-01-06 16:20:39.72036854	false	-99	-28300	-222282153733	NULL	46114.28	9250340.750000000000000000	-999992	-999992                  	-999992	1991-01-06 16:20:39.72036854	false	-99	-28300	-999992	NULL	46114.28	9250340.750000000000000000	-222282153733	-222282153733            	-222282153733	1991-01-06 16:20:39.72036854	original
-PREHOOK: query: -- Table-Non-Cascade CHANGE COLUMNS ...
-alter table part_change_various_various_boolean_to_bigint replace columns (insert_num int,
+PREHOOK: query: alter table part_change_various_various_boolean_to_bigint replace columns (insert_num int,
              c1 BOOLEAN, c2 BOOLEAN, c3 BOOLEAN, c4 BOOLEAN, c5 BOOLEAN, c6 BOOLEAN, c7 BOOLEAN, c8 BOOLEAN, c9 BOOLEAN,
              c10 TINYINT, c11 TINYINT, c12 TINYINT, c13 TINYINT, c14 TINYINT, c15 TINYINT, c16 TINYINT, c17 TINYINT, c18 TINYINT, c19 TINYINT, c20 TINYINT,
              c21 SMALLINT, c22 SMALLINT, c23 SMALLINT, c24 SMALLINT, c25 SMALLINT, c26 SMALLINT, c27 SMALLINT, c28 SMALLINT, c29 SMALLINT, c30 SMALLINT, c31 SMALLINT,
@@ -195,8 +156,7 @@ alter table part_change_various_various_boolean_to_bigint replace columns (inser
 PREHOOK: type: ALTERTABLE_REPLACECOLS
 PREHOOK: Input: default@part_change_various_various_boolean_to_bigint
 PREHOOK: Output: default@part_change_various_various_boolean_to_bigint
-POSTHOOK: query: -- Table-Non-Cascade CHANGE COLUMNS ...
-alter table part_change_various_various_boolean_to_bigint replace columns (insert_num int,
+POSTHOOK: query: alter table part_change_various_various_boolean_to_bigint replace columns (insert_num int,
              c1 BOOLEAN, c2 BOOLEAN, c3 BOOLEAN, c4 BOOLEAN, c5 BOOLEAN, c6 BOOLEAN, c7 BOOLEAN, c8 BOOLEAN, c9 BOOLEAN,
              c10 TINYINT, c11 TINYINT, c12 TINYINT, c13 TINYINT, c14 TINYINT, c15 TINYINT, c16 TINYINT, c17 TINYINT, c18 TINYINT, c19 TINYINT, c20 TINYINT,
              c21 SMALLINT, c22 SMALLINT, c23 SMALLINT, c24 SMALLINT, c25 SMALLINT, c26 SMALLINT, c27 SMALLINT, c28 SMALLINT, c29 SMALLINT, c30 SMALLINT, c31 SMALLINT,
@@ -331,13 +291,7 @@ POSTHOOK: query: drop table part_change_various_various_boolean_to_bigint
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@part_change_various_various_boolean_to_bigint
 POSTHOOK: Output: default@part_change_various_various_boolean_to_bigint
-PREHOOK: query: --
--- SUBSECTION: ALTER TABLE CHANGE COLUMNS for Various --> Various:
---          (BOOLEAN, TINYINT, SMALLINT, INT, LONG, FLOAT, DOUBLE, STRING, CHAR, VARCHAR, TIMESTAMP) --> DECIMAL
---          (BOOLEAN, TINYINT, SMALLINT, INT, LONG, DOUBLE, DECIMAL, STRING, CHAR, VARCHAR, TIMESTAMP) --> FLOAT and
---          (BOOLEAN, TINYINT, SMALLINT, INT, LONG, FLOAT, DECIMAL, STRING, CHAR, VARCHAR, TIMESTAMP) --> DOUBLE and
---
-CREATE TABLE part_change_various_various_decimal_to_double(insert_num int,
+PREHOOK: query: CREATE TABLE part_change_various_various_decimal_to_double(insert_num int,
             c1 BOOLEAN, c2 TINYINT, c3 SMALLINT, c4 INT, c5 BIGINT, c6 FLOAT, c7 DOUBLE, c8 STRING, c9 CHAR(25), c10 VARCHAR(25), c11 TIMESTAMP,
             c12 BOOLEAN, c13 TINYINT, c14 SMALLINT, c15 INT, c16 BIGINT, c17 DECIMAL(38,18), c18 DOUBLE, c19 STRING, c20 CHAR(25), c21 VARCHAR(25), c22 TIMESTAMP,
             c23 BOOLEAN, c24 TINYINT, c25 SMALLINT, c26 INT, c27 BIGINT, c28 DECIMAL(38,18), c29 FLOAT, c30 STRING, c31 CHAR(25), c32 VARCHAR(25), c33 TIMESTAMP,
@@ -345,13 +299,7 @@ CREATE TABLE part_change_various_various_decimal_to_double(insert_num int,
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@part_change_various_various_decimal_to_double
-POSTHOOK: query: --
--- SUBSECTION: ALTER TABLE CHANGE COLUMNS for Various --> Various:
---          (BOOLEAN, TINYINT, SMALLINT, INT, LONG, FLOAT, DOUBLE, STRING, CHAR, VARCHAR, TIMESTAMP) --> DECIMAL
---          (BOOLEAN, TINYINT, SMALLINT, INT, LONG, DOUBLE, DECIMAL, STRING, CHAR, VARCHAR, TIMESTAMP) --> FLOAT and
---          (BOOLEAN, TINYINT, SMALLINT, INT, LONG, FLOAT, DECIMAL, STRING, CHAR, VARCHAR, TIMESTAMP) --> DOUBLE and
---
-CREATE TABLE part_change_various_various_decimal_to_double(insert_num int,
+POSTHOOK: query: CREATE TABLE part_change_various_various_decimal_to_double(insert_num int,
             c1 BOOLEAN, c2 TINYINT, c3 SMALLINT, c4 INT, c5 BIGINT, c6 FLOAT, c7 DOUBLE, c8 STRING, c9 CHAR(25), c10 VARCHAR(25), c11 TIMESTAMP,
             c12 BOOLEAN, c13 TINYINT, c14 SMALLINT, c15 INT, c16 BIGINT, c17 DECIMAL(38,18), c18 DOUBLE, c19 STRING, c20 CHAR(25), c21 VARCHAR(25), c22 TIMESTAMP,
             c23 BOOLEAN, c24 TINYINT, c25 SMALLINT, c26 INT, c27 BIGINT, c28 DECIMAL(38,18), c29 FLOAT, c30 STRING, c31 CHAR(25), c32 VARCHAR(25), c33 TIMESTAMP,
@@ -427,8 +375,7 @@ insert_num	part	c1	c2	c3	c4	c5	c6	c7	c8	c9	c10	c11	c12	c13	c14	c15	c16	c17	c18	c
 103	1	NULL	NULL	NULL	NULL	NULL	NULL	NULL		                         		NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL		                         		NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL		                         		NULL	original
 104	1	NULL	23	834	203332	888888857923222	-100.35978	30.774	66475.561431	66475.561431             	66475.561431	1978-08-02 06:34:14	NULL	23	834	203332	888888857923222	66475.561431000000000000	30.774	-100.3597812	-100.3597812             	-100.3597812	1978-08-02 06:34:14	NULL	23	834	203332	888888857923222	66475.561431000000000000	-100.35978	30.774	30.774                   	30.774	1978-08-02 06:34:14	original
 105	1	false	-99	-28300	-999992	-222282153733	NULL	46114.28	9250340.75	9250340.75               	9250340.75	1991-01-06 16:20:39.72036854	false	-99	-28300	-999992	-222282153733	9250340.750000000000000000	46114.28	–32768	–32768                   	–32768	1991-01-06 16:20:39.72036854	false	-99	-28300	-999992	-222282153733	9250340.750000000000000000	NULL	46114.28	46114.28                 	46114.28	1991-01-06 16:20:39.72036854	original
-PREHOOK: query: -- Table-Non-Cascade CHANGE COLUMNS ...
-alter table part_change_various_various_decimal_to_double replace columns (insert_num int,
+PREHOOK: query: alter table part_change_various_various_decimal_to_double replace columns (insert_num int,
              c1 DECIMAL(38,18), c2 DECIMAL(38,18), c3 DECIMAL(38,18), c4 DECIMAL(38,18), c5 DECIMAL(38,18), c6 DECIMAL(38,18), c7 DECIMAL(38,18), c8 DECIMAL(38,18), c9 DECIMAL(38,18), c10 DECIMAL(38,18), c11 DECIMAL(38,18), 
              c12 FLOAT, c13 FLOAT, c14 FLOAT, c15 FLOAT, c16 FLOAT, c17 FLOAT, c18 FLOAT, c19 FLOAT, c20 FLOAT, c21 FLOAT, c22 FLOAT,
              c23 DOUBLE, c24 DOUBLE, c25 DOUBLE, c26 DOUBLE, c27 DOUBLE, c28 DOUBLE, c29 DOUBLE, c30 DOUBLE, c31 DOUBLE, c32 DOUBLE, c33 DOUBLE,
@@ -436,8 +383,7 @@ alter table part_change_various_various_decimal_to_double replace columns (inser
 PREHOOK: type: ALTERTABLE_REPLACECOLS
 PREHOOK: Input: default@part_change_various_various_decimal_to_double
 PREHOOK: Output: default@part_change_various_various_decimal_to_double
-POSTHOOK: query: -- Table-Non-Cascade CHANGE COLUMNS ...
-alter table part_change_various_various_decimal_to_double replace columns (insert_num int,
+POSTHOOK: query: alter table part_change_various_various_decimal_to_double replace columns (insert_num int,
              c1 DECIMAL(38,18), c2 DECIMAL(38,18), c3 DECIMAL(38,18), c4 DECIMAL(38,18), c5 DECIMAL(38,18), c6 DECIMAL(38,18), c7 DECIMAL(38,18), c8 DECIMAL(38,18), c9 DECIMAL(38,18), c10 DECIMAL(38,18), c11 DECIMAL(38,18), 
              c12 FLOAT, c13 FLOAT, c14 FLOAT, c15 FLOAT, c16 FLOAT, c17 FLOAT, c18 FLOAT, c19 FLOAT, c20 FLOAT, c21 FLOAT, c22 FLOAT,
              c23 DOUBLE, c24 DOUBLE, c25 DOUBLE, c26 DOUBLE, c27 DOUBLE, c28 DOUBLE, c29 DOUBLE, c30 DOUBLE, c31 DOUBLE, c32 DOUBLE, c33 DOUBLE,
@@ -542,17 +488,11 @@ POSTHOOK: query: drop table part_change_various_various_decimal_to_double
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@part_change_various_various_decimal_to_double
 POSTHOOK: Output: default@part_change_various_various_decimal_to_double
-PREHOOK: query: --
--- SUBSECTION: ALTER TABLE CHANGE COLUMNS for Various --> Various: (BOOLEAN, TINYINT, SMALLINT, INT, LONG, FLOAT, DOUBLE, DECIMAL(38,18), STRING, CHAR, VARCHAR, DATE) --> TIMESTAMP
---
-CREATE TABLE part_change_various_various_timestamp(insert_num int, c1 BOOLEAN, c2 TINYINT, c3 SMALLINT, c4 INT, c5 BIGINT, c6 FLOAT, c7 DOUBLE, c8 DECIMAL(38,18), c9 STRING, c10 CHAR(25), c11 VARCHAR(25), c12 DATE, b STRING) PARTITIONED BY(part INT)
+PREHOOK: query: CREATE TABLE part_change_various_various_timestamp(insert_num int, c1 BOOLEAN, c2 TINYINT, c3 SMALLINT, c4 INT, c5 BIGINT, c6 FLOAT, c7 DOUBLE, c8 DECIMAL(38,18), c9 STRING, c10 CHAR(25), c11 VARCHAR(25), c12 DATE, b STRING) PARTITIONED BY(part INT)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@part_change_various_various_timestamp
-POSTHOOK: query: --
--- SUBSECTION: ALTER TABLE CHANGE COLUMNS for Various --> Various: (BOOLEAN, TINYINT, SMALLINT, INT, LONG, FLOAT, DOUBLE, DECIMAL(38,18), STRING, CHAR, VARCHAR, DATE) --> TIMESTAMP
---
-CREATE TABLE part_change_various_various_timestamp(insert_num int, c1 BOOLEAN, c2 TINYINT, c3 SMALLINT, c4 INT, c5 BIGINT, c6 FLOAT, c7 DOUBLE, c8 DECIMAL(38,18), c9 STRING, c10 CHAR(25), c11 VARCHAR(25), c12 DATE, b STRING) PARTITIONED BY(part INT)
+POSTHOOK: query: CREATE TABLE part_change_various_various_timestamp(insert_num int, c1 BOOLEAN, c2 TINYINT, c3 SMALLINT, c4 INT, c5 BIGINT, c6 FLOAT, c7 DOUBLE, c8 DECIMAL(38,18), c9 STRING, c10 CHAR(25), c11 VARCHAR(25), c12 DATE, b STRING) PARTITIONED BY(part INT)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@part_change_various_various_timestamp
@@ -595,13 +535,11 @@ insert_num	part	c1	c2	c3	c4	c5	c6	c7	c8	c9	c10	c11	c12	b
 103	1	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL		                         		NULL	original
 104	1	NULL	23	834	203332	888888857923222	-100.35978	30.774	66475.561431000000000000	1978-08-02 06:34:14	1978-08-02 06:34:14      	1978-08-02 06:34:14	2021-09-24	original
 105	1	false	-99	-28300	-999992	-222282153733	NULL	46114.28	9250340.750000000000000000	1991-01-06 16:20:39.72036854	1991-01-06 16:20:39.72036	1991-01-06 16:20:39.72036	2024-11-11	original
-PREHOOK: query: -- Table-Non-Cascade CHANGE COLUMNS ...
-alter table part_change_various_various_timestamp replace columns (insert_num int, c1 TIMESTAMP, c2 TIMESTAMP, c3 TIMESTAMP, c4 TIMESTAMP, c5 TIMESTAMP, c6 TIMESTAMP, c7 TIMESTAMP, c8 TIMESTAMP, c9 TIMESTAMP, c10 TIMESTAMP, c11 TIMESTAMP, c12 TIMESTAMP, b STRING)
+PREHOOK: query: alter table part_change_various_various_timestamp replace columns (insert_num int, c1 TIMESTAMP, c2 TIMESTAMP, c3 TIMESTAMP, c4 TIMESTAMP, c5 TIMESTAMP, c6 TIMESTAMP, c7 TIMESTAMP, c8 TIMESTAMP, c9 TIMESTAMP, c10 TIMESTAMP, c11 TIMESTAMP, c12 TIMESTAMP, b STRING)
 PREHOOK: type: ALTERTABLE_REPLACECOLS
 PREHOOK: Input: default@part_change_various_various_timestamp
 PREHOOK: Output: default@part_change_various_various_timestamp
-POSTHOOK: query: -- Table-Non-Cascade CHANGE COLUMNS ...
-alter table part_change_various_various_timestamp replace columns (insert_num int, c1 TIMESTAMP, c2 TIMESTAMP, c3 TIMESTAMP, c4 TIMESTAMP, c5 TIMESTAMP, c6 TIMESTAMP, c7 TIMESTAMP, c8 TIMESTAMP, c9 TIMESTAMP, c10 TIMESTAMP, c11 TIMESTAMP, c12 TIMESTAMP, b STRING)
+POSTHOOK: query: alter table part_change_various_various_timestamp replace columns (insert_num int, c1 TIMESTAMP, c2 TIMESTAMP, c3 TIMESTAMP, c4 TIMESTAMP, c5 TIMESTAMP, c6 TIMESTAMP, c7 TIMESTAMP, c8 TIMESTAMP, c9 TIMESTAMP, c10 TIMESTAMP, c11 TIMESTAMP, c12 TIMESTAMP, b STRING)
 POSTHOOK: type: ALTERTABLE_REPLACECOLS
 POSTHOOK: Input: default@part_change_various_various_timestamp
 POSTHOOK: Output: default@part_change_various_various_timestamp
@@ -673,17 +611,11 @@ POSTHOOK: query: drop table part_change_various_various_timestamp
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@part_change_various_various_timestamp
 POSTHOOK: Output: default@part_change_various_various_timestamp
-PREHOOK: query: --
--- SUBSECTION: ALTER TABLE CHANGE COLUMNS for Various --> Various: (STRING, CHAR, VARCHAR, TIMESTAMP --> DATE
---
-CREATE TABLE part_change_various_various_date(insert_num int, c1 STRING, c2 CHAR(25), c3 VARCHAR(25), c4 TIMESTAMP, b STRING) PARTITIONED BY(part INT)
+PREHOOK: query: CREATE TABLE part_change_various_various_date(insert_num int, c1 STRING, c2 CHAR(25), c3 VARCHAR(25), c4 TIMESTAMP, b STRING) PARTITIONED BY(part INT)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@part_change_various_various_date
-POSTHOOK: query: --
--- SUBSECTION: ALTER TABLE CHANGE COLUMNS for Various --> Various: (STRING, CHAR, VARCHAR, TIMESTAMP --> DATE
---
-CREATE TABLE part_change_various_various_date(insert_num int, c1 STRING, c2 CHAR(25), c3 VARCHAR(25), c4 TIMESTAMP, b STRING) PARTITIONED BY(part INT)
+POSTHOOK: query: CREATE TABLE part_change_various_various_date(insert_num int, c1 STRING, c2 CHAR(25), c3 VARCHAR(25), c4 TIMESTAMP, b STRING) PARTITIONED BY(part INT)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@part_change_various_various_date
@@ -718,13 +650,11 @@ insert_num	part	c1	c2	c3	c4	b
 103	1		                         		NULL	original
 104	1	2021-09-24	2021-09-24               	2021-09-24	1978-08-02 06:34:14	original
 105	1	2024-11-11	2024-11-11               	2024-11-11	1991-01-06 16:20:39.72036854	original
-PREHOOK: query: -- Table-Non-Cascade CHANGE COLUMNS ...
-alter table part_change_various_various_date replace columns (insert_num int, c1 DATE, c2 DATE, c3 DATE, c4 DATE, b STRING)
+PREHOOK: query: alter table part_change_various_various_date replace columns (insert_num int, c1 DATE, c2 DATE, c3 DATE, c4 DATE, b STRING)
 PREHOOK: type: ALTERTABLE_REPLACECOLS
 PREHOOK: Input: default@part_change_various_various_date
 PREHOOK: Output: default@part_change_various_various_date
-POSTHOOK: query: -- Table-Non-Cascade CHANGE COLUMNS ...
-alter table part_change_various_various_date replace columns (insert_num int, c1 DATE, c2 DATE, c3 DATE, c4 DATE, b STRING)
+POSTHOOK: query: alter table part_change_various_various_date replace columns (insert_num int, c1 DATE, c2 DATE, c3 DATE, c4 DATE, b STRING)
 POSTHOOK: type: ALTERTABLE_REPLACECOLS
 POSTHOOK: Input: default@part_change_various_various_date
 POSTHOOK: Output: default@part_change_various_various_date
@@ -788,17 +718,11 @@ POSTHOOK: query: drop table part_change_various_various_date
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@part_change_various_various_date
 POSTHOOK: Output: default@part_change_various_various_date
-PREHOOK: query: --
--- SUBSECTION: ALTER TABLE CHANGE COLUMNS for Same Type (CHAR, VARCHAR, DECIMAL) --> Different maxLength or precision/scale
---
-CREATE TABLE part_change_same_type_different_params(insert_num int, c1 CHAR(12), c2 CHAR(25), c3 VARCHAR(25), c4 VARCHAR(10), c5 DECIMAL(12,4), c6 DECIMAL(20,10), b STRING) PARTITIONED BY(part INT)
+PREHOOK: query: CREATE TABLE part_change_same_type_different_params(insert_num int, c1 CHAR(12), c2 CHAR(25), c3 VARCHAR(25), c4 VARCHAR(10), c5 DECIMAL(12,4), c6 DECIMAL(20,10), b STRING) PARTITIONED BY(part INT)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@part_change_same_type_different_params
-POSTHOOK: query: --
--- SUBSECTION: ALTER TABLE CHANGE COLUMNS for Same Type (CHAR, VARCHAR, DECIMAL) --> Different maxLength or precision/scale
---
-CREATE TABLE part_change_same_type_different_params(insert_num int, c1 CHAR(12), c2 CHAR(25), c3 VARCHAR(25), c4 VARCHAR(10), c5 DECIMAL(12,4), c6 DECIMAL(20,10), b STRING) PARTITIONED BY(part INT)
+POSTHOOK: query: CREATE TABLE part_change_same_type_different_params(insert_num int, c1 CHAR(12), c2 CHAR(25), c3 VARCHAR(25), c4 VARCHAR(10), c5 DECIMAL(12,4), c6 DECIMAL(20,10), b STRING) PARTITIONED BY(part INT)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@part_change_same_type_different_params
@@ -855,13 +779,11 @@ insert_num	part	c1	c2	c3	c4	c5	c6	b
 3	1	hibernation 	country detox coyotes    	ball pulse candle	direct	1413570.3000	8.3095808155	original
 4	1	aquarium    	encounter existent amuse 	fuse light headlock	bumper adm	5475414.6500	25937.6752563004	original
 5	1	123456789012	1234567890123456789012345	1234567890123456789012345	1234567890	12345678.1234	1234567890.0987654321	original
-PREHOOK: query: -- Table-Non-Cascade CHANGE COLUMNS ...
-alter table part_change_same_type_different_params replace columns (insert_num int, c1 CHAR(8), c2 CHAR(32), c3 VARCHAR(15), c4 VARCHAR(18), c5 DECIMAL(10,2), c6 DECIMAL(25,15), b STRING)
+PREHOOK: query: alter table part_change_same_type_different_params replace columns (insert_num int, c1 CHAR(8), c2 CHAR(32), c3 VARCHAR(15), c4 VARCHAR(18), c5 DECIMAL(10,2), c6 DECIMAL(25,15), b STRING)
 PREHOOK: type: ALTERTABLE_REPLACECOLS
 PREHOOK: Input: default@part_change_same_type_different_params
 PREHOOK: Output: default@part_change_same_type_different_params
-POSTHOOK: query: -- Table-Non-Cascade CHANGE COLUMNS ...
-alter table part_change_same_type_different_params replace columns (insert_num int, c1 CHAR(8), c2 CHAR(32), c3 VARCHAR(15), c4 VARCHAR(18), c5 DECIMAL(10,2), c6 DECIMAL(25,15), b STRING)
+POSTHOOK: query: alter table part_change_same_type_different_params replace columns (insert_num int, c1 CHAR(8), c2 CHAR(32), c3 VARCHAR(15), c4 VARCHAR(18), c5 DECIMAL(10,2), c6 DECIMAL(25,15), b STRING)
 POSTHOOK: type: ALTERTABLE_REPLACECOLS
 POSTHOOK: Input: default@part_change_same_type_different_params
 POSTHOOK: Output: default@part_change_same_type_different_params

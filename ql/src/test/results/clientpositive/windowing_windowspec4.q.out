@@ -1,10 +1,6 @@
-PREHOOK: query: --Test small dataset with larger windowing
-
-drop table if exists smalltable_windowing
+PREHOOK: query: drop table if exists smalltable_windowing
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: --Test small dataset with larger windowing
-
-drop table if exists smalltable_windowing
+POSTHOOK: query: drop table if exists smalltable_windowing
 POSTHOOK: type: DROPTABLE
 PREHOOK: query: create table smalltable_windowing(
       i int,

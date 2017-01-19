@@ -1,14 +1,12 @@
 Warning: Map Join MAPJOIN[35][bigTable=?] in task 'Stage-8:MAPRED' is a cross product
-PREHOOK: query: -- HIVE-12738 -- We are checking if a MapJoin after a GroupBy will work properly.
-explain
+PREHOOK: query: explain
 select *
 from src
 where not key in
 (select key from src)
 order by key
 PREHOOK: type: QUERY
-POSTHOOK: query: -- HIVE-12738 -- We are checking if a MapJoin after a GroupBy will work properly.
-explain
+POSTHOOK: query: explain
 select *
 from src
 where not key in

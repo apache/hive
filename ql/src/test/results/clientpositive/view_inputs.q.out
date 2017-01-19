@@ -1,13 +1,9 @@
-PREHOOK: query: -- Tests that selecting from a view and another view that selects from that same view
-
-CREATE VIEW test_view1 AS SELECT * FROM src
+PREHOOK: query: CREATE VIEW test_view1 AS SELECT * FROM src
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: default@src
 PREHOOK: Output: database:default
 PREHOOK: Output: default@test_view1
-POSTHOOK: query: -- Tests that selecting from a view and another view that selects from that same view
-
-CREATE VIEW test_view1 AS SELECT * FROM src
+POSTHOOK: query: CREATE VIEW test_view1 AS SELECT * FROM src
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default

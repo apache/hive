@@ -1,17 +1,11 @@
-PREHOOK: query: -- SORT_QUERY_RESULTS
-
--- top level
-explain
+PREHOOK: query: explain
 select * from (select key, 0 as value from src where key % 3 == 0 limit 3)a
 union all
 select * from (select key, 1 as value from src where key % 3 == 1 limit 3)b
 union all
 select * from (select key, 2 as value from src where key % 3 == 2 limit 3)c
 PREHOOK: type: QUERY
-POSTHOOK: query: -- SORT_QUERY_RESULTS
-
--- top level
-explain
+POSTHOOK: query: explain
 select * from (select key, 0 as value from src where key % 3 == 0 limit 3)a
 union all
 select * from (select key, 1 as value from src where key % 3 == 1 limit 3)b
@@ -419,8 +413,7 @@ POSTHOOK: Input: default@src
 0	val_0
 10	val_10
 10	val_10
-PREHOOK: query: -- ctas
-explain
+PREHOOK: query: explain
 create table union_top as
 select * from (select key, 0 as value from src where key % 3 == 0 limit 3)a
 union all
@@ -428,8 +421,7 @@ select * from (select key, 1 as value from src where key % 3 == 1 limit 3)b
 union all
 select * from (select key, 2 as value from src where key % 3 == 2 limit 3)c
 PREHOOK: type: CREATETABLE_AS_SELECT
-POSTHOOK: query: -- ctas
-explain
+POSTHOOK: query: explain
 create table union_top as
 select * from (select key, 0 as value from src where key % 3 == 0 limit 3)a
 union all
@@ -655,8 +647,7 @@ PREHOOK: Output: default@union_top
 POSTHOOK: query: truncate table union_top
 POSTHOOK: type: TRUNCATETABLE
 POSTHOOK: Output: default@union_top
-PREHOOK: query: -- insert into
-explain
+PREHOOK: query: explain
 insert into table union_top
 select * from (select key, 0 as value from src where key % 3 == 0 limit 3)a
 union all
@@ -664,8 +655,7 @@ select * from (select key, 1 as value from src where key % 3 == 1 limit 3)b
 union all
 select * from (select key, 2 as value from src where key % 3 == 2 limit 3)c
 PREHOOK: type: QUERY
-POSTHOOK: query: -- insert into
-explain
+POSTHOOK: query: explain
 insert into table union_top
 select * from (select key, 0 as value from src where key % 3 == 0 limit 3)a
 union all
@@ -1097,8 +1087,7 @@ POSTHOOK: Input: default@union_top
 409	1
 484	1
 86	2
-PREHOOK: query: -- create view
-explain
+PREHOOK: query: explain
 create view union_top_view as
 select * from (select key, 0 as value from src where key % 3 == 0 limit 3)a
 union all
@@ -1106,8 +1095,7 @@ select * from (select key, 1 as value from src where key % 3 == 1 limit 3)b
 union all
 select * from (select key, 2 as value from src where key % 3 == 2 limit 3)c
 PREHOOK: type: CREATEVIEW
-POSTHOOK: query: -- create view
-explain
+POSTHOOK: query: explain
 create view union_top_view as
 select * from (select key, 0 as value from src where key % 3 == 0 limit 3)a
 union all

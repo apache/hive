@@ -1,7 +1,4 @@
-PREHOOK: query: -- SORT_QUERY_RESULTS
-
--- exists test
-create view cv1 as 
+PREHOOK: query: create view cv1 as 
 select * 
 from src b 
 where exists
@@ -12,10 +9,7 @@ PREHOOK: type: CREATEVIEW
 PREHOOK: Input: default@src
 PREHOOK: Output: database:default
 PREHOOK: Output: default@cv1
-POSTHOOK: query: -- SORT_QUERY_RESULTS
-
--- exists test
-create view cv1 as 
+POSTHOOK: query: create view cv1 as 
 select * 
 from src b 
 where exists
@@ -63,8 +57,7 @@ POSTHOOK: Input: default@src
 97	val_97
 98	val_98
 98	val_98
-PREHOOK: query: -- not in test
-create view cv2 as 
+PREHOOK: query: create view cv2 as 
 select * 
 from src b 
 where b.key not in
@@ -76,8 +69,7 @@ PREHOOK: type: CREATEVIEW
 PREHOOK: Input: default@src
 PREHOOK: Output: database:default
 PREHOOK: Output: default@cv2
-POSTHOOK: query: -- not in test
-create view cv2 as 
+POSTHOOK: query: create view cv2 as 
 select * 
 from src b 
 where b.key not in
@@ -805,8 +797,7 @@ POSTHOOK: Input: default@src
 104	val_104
 104	val_104
 105	val_105
-PREHOOK: query: -- in where + having
-create view cv3 as
+PREHOOK: query: create view cv3 as
 select key, value, count(*) 
 from src b
 where b.key in (select key from src where src.key > '8')
@@ -816,8 +807,7 @@ PREHOOK: type: CREATEVIEW
 PREHOOK: Input: default@src
 PREHOOK: Output: database:default
 PREHOOK: Output: default@cv3
-POSTHOOK: query: -- in where + having
-create view cv3 as
+POSTHOOK: query: create view cv3 as
 select key, value, count(*) 
 from src b
 where b.key in (select key from src where src.key > '8')
@@ -870,8 +860,7 @@ POSTHOOK: Input: default@src
 96	val_96	1
 97	val_97	2
 98	val_98	2
-PREHOOK: query: -- join of subquery views
-select *
+PREHOOK: query: select *
 from cv3
 where cv3.key in (select key from cv1)
 PREHOOK: type: QUERY
@@ -879,8 +868,7 @@ PREHOOK: Input: default@cv1
 PREHOOK: Input: default@cv3
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
-POSTHOOK: query: -- join of subquery views
-select *
+POSTHOOK: query: select *
 from cv3
 where cv3.key in (select key from cv1)
 POSTHOOK: type: QUERY

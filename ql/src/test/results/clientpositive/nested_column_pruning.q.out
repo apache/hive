@@ -1,8 +1,6 @@
-PREHOOK: query: -- First, create source tables
-DROP TABLE IF EXISTS dummy
+PREHOOK: query: DROP TABLE IF EXISTS dummy
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: -- First, create source tables
-DROP TABLE IF EXISTS dummy
+POSTHOOK: query: DROP TABLE IF EXISTS dummy
 POSTHOOK: type: DROPTABLE
 PREHOOK: query: CREATE TABLE dummy (i int)
 PREHOOK: type: CREATETABLE
@@ -121,13 +119,9 @@ POSTHOOK: Lineage: nested_tbl_2.s3 EXPRESSION []
 POSTHOOK: Lineage: nested_tbl_2.s4 EXPRESSION []
 POSTHOOK: Lineage: nested_tbl_2.s5 EXPRESSION []
 POSTHOOK: Lineage: nested_tbl_2.s6 EXPRESSION []
-PREHOOK: query: -- Testing only select statements
-
-EXPLAIN SELECT a FROM nested_tbl_1
+PREHOOK: query: EXPLAIN SELECT a FROM nested_tbl_1
 PREHOOK: type: QUERY
-POSTHOOK: query: -- Testing only select statements
-
-EXPLAIN SELECT a FROM nested_tbl_1
+POSTHOOK: query: EXPLAIN SELECT a FROM nested_tbl_1
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -253,11 +247,9 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@nested_tbl_1
 #### A masked pattern was here ####
 false	foo
-PREHOOK: query: -- In this case 's1.f3' and 's1.f3.f4' should be merged
-EXPLAIN SELECT s1.f3, s1.f3.f4 FROM nested_tbl_1
+PREHOOK: query: EXPLAIN SELECT s1.f3, s1.f3.f4 FROM nested_tbl_1
 PREHOOK: type: QUERY
-POSTHOOK: query: -- In this case 's1.f3' and 's1.f3.f4' should be merged
-EXPLAIN SELECT s1.f3, s1.f3.f4 FROM nested_tbl_1
+POSTHOOK: query: EXPLAIN SELECT s1.f3, s1.f3.f4 FROM nested_tbl_1
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -298,11 +290,9 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@nested_tbl_1
 #### A masked pattern was here ####
 {"f4":4,"f5":5.0}	4
-PREHOOK: query: -- Testing select array and index shifting
-EXPLAIN SELECT s1.f3.f5 FROM nested_tbl_1
+PREHOOK: query: EXPLAIN SELECT s1.f3.f5 FROM nested_tbl_1
 PREHOOK: type: QUERY
-POSTHOOK: query: -- Testing select array and index shifting
-EXPLAIN SELECT s1.f3.f5 FROM nested_tbl_1
+POSTHOOK: query: EXPLAIN SELECT s1.f3.f5 FROM nested_tbl_1
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -343,11 +333,9 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@nested_tbl_1
 #### A masked pattern was here ####
 5.0
-PREHOOK: query: -- Testing select from multiple structs
-EXPLAIN SELECT s1.f3.f4, s2.f8.f9 FROM nested_tbl_1
+PREHOOK: query: EXPLAIN SELECT s1.f3.f4, s2.f8.f9 FROM nested_tbl_1
 PREHOOK: type: QUERY
-POSTHOOK: query: -- Testing select from multiple structs
-EXPLAIN SELECT s1.f3.f4, s2.f8.f9 FROM nested_tbl_1
+POSTHOOK: query: EXPLAIN SELECT s1.f3.f4, s2.f8.f9 FROM nested_tbl_1
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -388,13 +376,9 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@nested_tbl_1
 #### A masked pattern was here ####
 4	true
-PREHOOK: query: -- Testing select with filter
-
-EXPLAIN SELECT s1.f2 FROM nested_tbl_1 WHERE s1.f1 = FALSE
+PREHOOK: query: EXPLAIN SELECT s1.f2 FROM nested_tbl_1 WHERE s1.f1 = FALSE
 PREHOOK: type: QUERY
-POSTHOOK: query: -- Testing select with filter
-
-EXPLAIN SELECT s1.f2 FROM nested_tbl_1 WHERE s1.f1 = FALSE
+POSTHOOK: query: EXPLAIN SELECT s1.f2 FROM nested_tbl_1 WHERE s1.f1 = FALSE
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -530,15 +514,11 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@nested_tbl_1
 #### A masked pattern was here ####
 {"f9":true,"f10":[10,11],"f11":{"key1":true,"key2":false}}
-PREHOOK: query: -- Testing lateral view
-
-EXPLAIN SELECT col1, col2 FROM nested_tbl_1
+PREHOOK: query: EXPLAIN SELECT col1, col2 FROM nested_tbl_1
 LATERAL VIEW explode(s2.f8.f10) tbl1 AS col1
 LATERAL VIEW explode(s3.f12) tbl2 AS col2
 PREHOOK: type: QUERY
-POSTHOOK: query: -- Testing lateral view
-
-EXPLAIN SELECT col1, col2 FROM nested_tbl_1
+POSTHOOK: query: EXPLAIN SELECT col1, col2 FROM nested_tbl_1
 LATERAL VIEW explode(s2.f8.f10) tbl1 AS col1
 LATERAL VIEW explode(s3.f12) tbl2 AS col2
 POSTHOOK: type: QUERY
@@ -678,11 +658,9 @@ POSTHOOK: Input: default@nested_tbl_1
 10	{"f13":"bar","f14":28}
 11	{"f13":"foo","f14":14}
 11	{"f13":"bar","f14":28}
-PREHOOK: query: -- Testing UDFs
-EXPLAIN SELECT pmod(s2.f8.f10[1], s1.f3.f4) FROM nested_tbl_1
+PREHOOK: query: EXPLAIN SELECT pmod(s2.f8.f10[1], s1.f3.f4) FROM nested_tbl_1
 PREHOOK: type: QUERY
-POSTHOOK: query: -- Testing UDFs
-EXPLAIN SELECT pmod(s2.f8.f10[1], s1.f3.f4) FROM nested_tbl_1
+POSTHOOK: query: EXPLAIN SELECT pmod(s2.f8.f10[1], s1.f3.f4) FROM nested_tbl_1
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -723,13 +701,9 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@nested_tbl_1
 #### A masked pattern was here ####
 3
-PREHOOK: query: -- Testing aggregations
-
-EXPLAIN SELECT s1.f3.f5, count(s1.f3.f4) FROM nested_tbl_1 GROUP BY s1.f3.f5
+PREHOOK: query: EXPLAIN SELECT s1.f3.f5, count(s1.f3.f4) FROM nested_tbl_1 GROUP BY s1.f3.f5
 PREHOOK: type: QUERY
-POSTHOOK: query: -- Testing aggregations
-
-EXPLAIN SELECT s1.f3.f5, count(s1.f3.f4) FROM nested_tbl_1 GROUP BY s1.f3.f5
+POSTHOOK: query: EXPLAIN SELECT s1.f3.f5, count(s1.f3.f4) FROM nested_tbl_1 GROUP BY s1.f3.f5
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -935,16 +909,12 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@nested_tbl_1
 #### A masked pattern was here ####
 {"f4":4,"f5":5.0}	1
-PREHOOK: query: -- Testing joins
-
-EXPLAIN SELECT t1.s1.f3.f5, t2.s2.f8
+PREHOOK: query: EXPLAIN SELECT t1.s1.f3.f5, t2.s2.f8
 FROM nested_tbl_1 t1 JOIN nested_tbl_2 t2
 ON t1.s1.f3.f4 = t2.s1.f6
 WHERE t2.s2.f8.f9 == FALSE
 PREHOOK: type: QUERY
-POSTHOOK: query: -- Testing joins
-
-EXPLAIN SELECT t1.s1.f3.f5, t2.s2.f8
+POSTHOOK: query: EXPLAIN SELECT t1.s1.f3.f5, t2.s2.f8
 FROM nested_tbl_1 t1 JOIN nested_tbl_2 t2
 ON t1.s1.f3.f4 = t2.s1.f6
 WHERE t2.s2.f8.f9 == FALSE
@@ -1119,13 +1089,9 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@nested_tbl_1
 #### A masked pattern was here ####
 5.0	{"f9":true,"f10":[10,11],"f11":{"key1":true,"key2":false}}
-PREHOOK: query: -- Testing insert with aliases
-
-DROP TABLE IF EXISTS nested_tbl_3
+PREHOOK: query: DROP TABLE IF EXISTS nested_tbl_3
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: -- Testing insert with aliases
-
-DROP TABLE IF EXISTS nested_tbl_3
+POSTHOOK: query: DROP TABLE IF EXISTS nested_tbl_3
 POSTHOOK: type: DROPTABLE
 PREHOOK: query: CREATE TABLE nested_tbl_3 (f1 boolean, f2 string) PARTITIONED BY (f3 int) STORED AS PARQUET
 PREHOOK: type: CREATETABLE
@@ -1160,16 +1126,12 @@ POSTHOOK: Input: default@nested_tbl_3
 POSTHOOK: Input: default@nested_tbl_3@f3=4
 #### A masked pattern was here ####
 false	foo	4
-PREHOOK: query: -- Testing select struct field from elements in array or map
-
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT count(s1.f6), s3.f12[0].f14
 FROM nested_tbl_1
 GROUP BY s3.f12[0].f14
 PREHOOK: type: QUERY
-POSTHOOK: query: -- Testing select struct field from elements in array or map
-
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT count(s1.f6), s3.f12[0].f14
 FROM nested_tbl_1
 GROUP BY s3.f12[0].f14

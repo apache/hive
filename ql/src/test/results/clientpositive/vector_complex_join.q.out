@@ -1,12 +1,8 @@
-PREHOOK: query: -- From HIVE-10729.  Not expected to vectorize this query.
---
-CREATE TABLE test (a INT, b MAP<INT, STRING>) STORED AS ORC
+PREHOOK: query: CREATE TABLE test (a INT, b MAP<INT, STRING>) STORED AS ORC
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@test
-POSTHOOK: query: -- From HIVE-10729.  Not expected to vectorize this query.
---
-CREATE TABLE test (a INT, b MAP<INT, STRING>) STORED AS ORC
+POSTHOOK: query: CREATE TABLE test (a INT, b MAP<INT, STRING>) STORED AS ORC
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test

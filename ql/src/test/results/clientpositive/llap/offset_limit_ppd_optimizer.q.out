@@ -271,12 +271,10 @@ val_145	146.0
 val_146	294.0
 val_149	300.0
 val_15	32.0
-PREHOOK: query: -- deduped RS
-explain
+PREHOOK: query: explain
 select value,avg(key + 1) from src group by value order by value limit 10,20
 PREHOOK: type: QUERY
-POSTHOOK: query: -- deduped RS
-explain
+POSTHOOK: query: explain
 select value,avg(key + 1) from src group by value order by value limit 10,20
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -370,12 +368,10 @@ val_145	146.0
 val_146	147.0
 val_149	150.0
 val_15	16.0
-PREHOOK: query: -- distincts
-explain
+PREHOOK: query: explain
 select distinct(cdouble) as dis from alltypesorc order by dis limit 10,20
 PREHOOK: type: QUERY
-POSTHOOK: query: -- distincts
-explain
+POSTHOOK: query: explain
 select distinct(cdouble) as dis from alltypesorc order by dis limit 10,20
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -664,12 +660,10 @@ POSTHOOK: Input: default@alltypesorc
 -38	31
 -37	20
 -36	26
-PREHOOK: query: -- multi distinct
-explain
+PREHOOK: query: explain
 select ctinyint, count(distinct(cstring1)), count(distinct(cstring2)) from alltypesorc group by ctinyint order by ctinyint limit 10,20
 PREHOOK: type: QUERY
-POSTHOOK: query: -- multi distinct
-explain
+POSTHOOK: query: explain
 select ctinyint, count(distinct(cstring1)), count(distinct(cstring2)) from alltypesorc group by ctinyint order by ctinyint limit 10,20
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -762,12 +756,10 @@ POSTHOOK: Input: default@alltypesorc
 -38	3	19
 -37	3	27
 -36	3	18
-PREHOOK: query: -- limit zero
-explain
+PREHOOK: query: explain
 select key,value from src order by key limit 0,0
 PREHOOK: type: QUERY
-POSTHOOK: query: -- limit zero
-explain
+POSTHOOK: query: explain
 select key,value from src order by key limit 0,0
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -788,12 +780,10 @@ POSTHOOK: query: select key,value from src order by key limit 0,0
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
-PREHOOK: query: -- 2MR (applied to last RS)
-explain
+PREHOOK: query: explain
 select value, sum(key) as sum from src group by value order by sum limit 10,20
 PREHOOK: type: QUERY
-POSTHOOK: query: -- 2MR (applied to last RS)
-explain
+POSTHOOK: query: explain
 select value, sum(key) as sum from src group by value order by sum limit 10,20
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -900,12 +890,10 @@ val_54	54.0
 val_57	57.0
 val_64	64.0
 val_65	65.0
-PREHOOK: query: -- map aggregation disabled
-explain
+PREHOOK: query: explain
 select value, sum(key) as sum from src group by value order by value limit 10,20
 PREHOOK: type: QUERY
-POSTHOOK: query: -- map aggregation disabled
-explain
+POSTHOOK: query: explain
 select value, sum(key) as sum from src group by value order by value limit 10,20
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -993,12 +981,10 @@ val_145	145.0
 val_146	292.0
 val_149	298.0
 val_15	30.0
-PREHOOK: query: -- flush for order-by
-explain
+PREHOOK: query: explain
 select key,value,value,value,value,value,value,value,value from src order by key limit 30,70
 PREHOOK: type: QUERY
-POSTHOOK: query: -- flush for order-by
-explain
+POSTHOOK: query: explain
 select key,value,value,value,value,value,value,value,value from src order by key limit 30,70
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -1133,12 +1119,10 @@ POSTHOOK: Input: default@src
 187	val_187	val_187	val_187	val_187	val_187	val_187	val_187	val_187
 187	val_187	val_187	val_187	val_187	val_187	val_187	val_187	val_187
 187	val_187	val_187	val_187	val_187	val_187	val_187	val_187	val_187
-PREHOOK: query: -- flush for group-by
-explain
+PREHOOK: query: explain
 select sum(key) as sum from src group by concat(key,value,value,value,value,value,value,value,value,value) order by sum limit 30,70
 PREHOOK: type: QUERY
-POSTHOOK: query: -- flush for group-by
-explain
+POSTHOOK: query: explain
 select sum(key) as sum from src group by concat(key,value,value,value,value,value,value,value,value,value) order by sum limit 30,70
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -1292,16 +1276,14 @@ POSTHOOK: Input: default@src
 226.0
 226.0
 228.0
-PREHOOK: query: -- subqueries
-explain
+PREHOOK: query: explain
 select * from
 (select key, count(1) from src group by key order by key limit 10,20) subq
 join
 (select key, count(1) from src group by key limit 20,20) subq2
 on subq.key=subq2.key limit 3,5
 PREHOOK: type: QUERY
-POSTHOOK: query: -- subqueries
-explain
+POSTHOOK: query: explain
 select * from
 (select key, count(1) from src group by key order by key limit 10,20) subq
 join

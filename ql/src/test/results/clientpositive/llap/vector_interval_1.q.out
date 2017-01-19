@@ -38,16 +38,14 @@ POSTHOOK: Lineage: vector_interval_1.dt EXPRESSION []
 POSTHOOK: Lineage: vector_interval_1.str1 EXPRESSION []
 POSTHOOK: Lineage: vector_interval_1.str2 EXPRESSION []
 POSTHOOK: Lineage: vector_interval_1.ts EXPRESSION []
-PREHOOK: query: -- constants/cast from string
-explain
+PREHOOK: query: explain
 select
   str1,
   interval '1-2' year to month, interval_year_month(str1),
   interval '1 2:3:4' day to second, interval_day_time(str2)
 from vector_interval_1 order by str1
 PREHOOK: type: QUERY
-POSTHOOK: query: -- constants/cast from string
-explain
+POSTHOOK: query: explain
 select
   str1,
   interval '1-2' year to month, interval_year_month(str1),
@@ -121,8 +119,7 @@ POSTHOOK: Input: default@vector_interval_1
 #### A masked pattern was here ####
 NULL	1-2	NULL	1 02:03:04.000000000	NULL
 1-2	1-2	1-2	1 02:03:04.000000000	1 02:03:04.000000000
-PREHOOK: query: -- interval arithmetic
-explain
+PREHOOK: query: explain
 select
   dt,
   interval '1-2' year to month + interval '1-2' year to month,
@@ -133,8 +130,7 @@ select
   interval '1-2' year to month - interval_year_month(str1)
 from vector_interval_1 order by dt
 PREHOOK: type: QUERY
-POSTHOOK: query: -- interval arithmetic
-explain
+POSTHOOK: query: explain
 select
   dt,
   interval '1-2' year to month + interval '1-2' year to month,
@@ -317,8 +313,7 @@ POSTHOOK: Input: default@vector_interval_1
 #### A masked pattern was here ####
 NULL	2 04:06:08.000000000	NULL	NULL	0 00:00:00.000000000	NULL	NULL
 2001-01-01	2 04:06:08.000000000	2 04:06:08.000000000	2 04:06:08.000000000	0 00:00:00.000000000	0 00:00:00.000000000	0 00:00:00.000000000
-PREHOOK: query: -- date-interval arithmetic
-explain
+PREHOOK: query: explain
 select
   dt,
   dt + interval '1-2' year to month,
@@ -335,8 +330,7 @@ select
   dt - interval_day_time(str2)
 from vector_interval_1 order by dt
 PREHOOK: type: QUERY
-POSTHOOK: query: -- date-interval arithmetic
-explain
+POSTHOOK: query: explain
 select
   dt,
   dt + interval '1-2' year to month,
@@ -440,8 +434,7 @@ POSTHOOK: Input: default@vector_interval_1
 #### A masked pattern was here ####
 NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
 2001-01-01	2002-03-01	2002-03-01	2002-03-01	2002-03-01	1999-11-01	1999-11-01	2001-01-02 02:03:04	2001-01-02 02:03:04	2001-01-02 02:03:04	2001-01-02 02:03:04	2000-12-30 21:56:56	2000-12-30 21:56:56
-PREHOOK: query: -- timestamp-interval arithmetic
-explain
+PREHOOK: query: explain
 select
   ts,
   ts + interval '1-2' year to month,
@@ -458,8 +451,7 @@ select
   ts - interval_day_time(str2)
 from vector_interval_1 order by ts
 PREHOOK: type: QUERY
-POSTHOOK: query: -- timestamp-interval arithmetic
-explain
+POSTHOOK: query: explain
 select
   ts,
   ts + interval '1-2' year to month,
@@ -563,8 +555,7 @@ POSTHOOK: Input: default@vector_interval_1
 #### A masked pattern was here ####
 NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
 2001-01-01 01:02:03	2002-03-01 01:02:03	2002-03-01 01:02:03	2002-03-01 01:02:03	2002-03-01 01:02:03	1999-11-01 01:02:03	1999-11-01 01:02:03	2001-01-02 03:05:07	2001-01-02 03:05:07	2001-01-02 03:05:07	2001-01-02 03:05:07	2000-12-30 22:58:59	2000-12-30 22:58:59
-PREHOOK: query: -- timestamp-timestamp arithmetic
-explain
+PREHOOK: query: explain
 select
   ts,
   ts - ts,
@@ -572,8 +563,7 @@ select
   ts - timestamp '2001-01-01 01:02:03'
 from vector_interval_1 order by ts
 PREHOOK: type: QUERY
-POSTHOOK: query: -- timestamp-timestamp arithmetic
-explain
+POSTHOOK: query: explain
 select
   ts,
   ts - ts,
@@ -650,8 +640,7 @@ POSTHOOK: Input: default@vector_interval_1
 #### A masked pattern was here ####
 NULL	NULL	NULL	NULL
 2001-01-01 01:02:03	0 00:00:00.000000000	0 00:00:00.000000000	0 00:00:00.000000000
-PREHOOK: query: -- date-date arithmetic
-explain
+PREHOOK: query: explain
 select
   dt,
   dt - dt,
@@ -659,8 +648,7 @@ select
   dt - date '2001-01-01'
 from vector_interval_1 order by dt
 PREHOOK: type: QUERY
-POSTHOOK: query: -- date-date arithmetic
-explain
+POSTHOOK: query: explain
 select
   dt,
   dt - dt,
@@ -737,8 +725,7 @@ POSTHOOK: Input: default@vector_interval_1
 #### A masked pattern was here ####
 NULL	NULL	NULL	NULL
 2001-01-01	0 00:00:00.000000000	0 00:00:00.000000000	0 00:00:00.000000000
-PREHOOK: query: -- date-timestamp arithmetic
-explain
+PREHOOK: query: explain
 select
   dt,
   ts - dt,
@@ -749,8 +736,7 @@ select
   date '2001-01-01' - ts
 from vector_interval_1 order by dt
 PREHOOK: type: QUERY
-POSTHOOK: query: -- date-timestamp arithmetic
-explain
+POSTHOOK: query: explain
 select
   dt,
   ts - dt,

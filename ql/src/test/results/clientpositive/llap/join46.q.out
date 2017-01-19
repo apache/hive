@@ -36,14 +36,12 @@ POSTHOOK: Output: default@test2
 POSTHOOK: Lineage: test2.col_2 SIMPLE [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
 POSTHOOK: Lineage: test2.key EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 POSTHOOK: Lineage: test2.value EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
-PREHOOK: query: -- Basic outer join
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT *
 FROM test1 LEFT OUTER JOIN test2
 ON (test1.value=test2.value)
 PREHOOK: type: QUERY
-POSTHOOK: query: -- Basic outer join
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT *
 FROM test1 LEFT OUTER JOIN test2
 ON (test1.value=test2.value)
@@ -141,16 +139,14 @@ NULL	NULL	None	NULL	NULL	NULL
 99	2	Mat	103	2	Ema
 101	2	Car	102	2	Del
 101	2	Car	103	2	Ema
-PREHOOK: query: -- Conjunction with pred on multiple inputs and single inputs (left outer join)
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT *
 FROM test1 LEFT OUTER JOIN test2
 ON (test1.value=test2.value
   AND test1.key between 100 and 102
   AND test2.key between 100 and 102)
 PREHOOK: type: QUERY
-POSTHOOK: query: -- Conjunction with pred on multiple inputs and single inputs (left outer join)
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT *
 FROM test1 LEFT OUTER JOIN test2
 ON (test1.value=test2.value
@@ -259,15 +255,13 @@ NULL	NULL	None	NULL	NULL	NULL
 99	2	Mat	NULL	NULL	NULL
 101	2	Car	102	2	Del
 Warning: Shuffle Join MERGEJOIN[11][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
-PREHOOK: query: -- Conjunction with pred on single inputs (left outer join)
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT *
 FROM test1 LEFT OUTER JOIN test2
 ON (test1.key between 100 and 102
   AND test2.key between 100 and 102)
 PREHOOK: type: QUERY
-POSTHOOK: query: -- Conjunction with pred on single inputs (left outer join)
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT *
 FROM test1 LEFT OUTER JOIN test2
 ON (test1.key between 100 and 102
@@ -369,14 +363,12 @@ NULL	NULL	None	NULL	NULL	NULL
 99	2	Mat	NULL	NULL	NULL
 100	1	Bob	102	2	Del
 101	2	Car	102	2	Del
-PREHOOK: query: -- Conjunction with pred on multiple inputs and none (left outer join)
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT *
 FROM test1 RIGHT OUTER JOIN test2
 ON (test1.value=test2.value AND true)
 PREHOOK: type: QUERY
-POSTHOOK: query: -- Conjunction with pred on multiple inputs and none (left outer join)
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT *
 FROM test1 RIGHT OUTER JOIN test2
 ON (test1.value=test2.value AND true)
@@ -473,14 +465,12 @@ NULL	NULL	NULL	105	NULL	None
 101	2	Car	103	2	Ema
 NULL	NULL	NULL	104	3	Fli
 Warning: Shuffle Join MERGEJOIN[9][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
-PREHOOK: query: -- Condition on one input (left outer join)
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT *
 FROM test1 LEFT OUTER JOIN test2
 ON (test1.key between 100 and 102)
 PREHOOK: type: QUERY
-POSTHOOK: query: -- Condition on one input (left outer join)
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT *
 FROM test1 LEFT OUTER JOIN test2
 ON (test1.key between 100 and 102)
@@ -583,16 +573,14 @@ NULL	NULL	None	NULL	NULL	NULL
 101	2	Car	104	3	Fli
 101	2	Car	105	NULL	None
 Warning: Shuffle Join MERGEJOIN[9][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
-PREHOOK: query: -- Disjunction with pred on multiple inputs and single inputs (left outer join)
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT *
 FROM test1 LEFT OUTER JOIN test2
 ON (test1.value=test2.value
   OR test1.key between 100 and 102
   OR test2.key between 100 and 102)
 PREHOOK: type: QUERY
-POSTHOOK: query: -- Disjunction with pred on multiple inputs and single inputs (left outer join)
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT *
 FROM test1 LEFT OUTER JOIN test2
 ON (test1.value=test2.value
@@ -700,15 +688,13 @@ NULL	NULL	None	102	2	Del
 101	2	Car	104	3	Fli
 101	2	Car	105	NULL	None
 Warning: Shuffle Join MERGEJOIN[9][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
-PREHOOK: query: -- Disjunction with pred on multiple inputs and left input (left outer join)
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT *
 FROM test1 LEFT OUTER JOIN test2
 ON (test1.value=test2.value
   OR test1.key between 100 and 102)
 PREHOOK: type: QUERY
-POSTHOOK: query: -- Disjunction with pred on multiple inputs and left input (left outer join)
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT *
 FROM test1 LEFT OUTER JOIN test2
 ON (test1.value=test2.value
@@ -813,15 +799,13 @@ NULL	NULL	None	NULL	NULL	NULL
 101	2	Car	104	3	Fli
 101	2	Car	105	NULL	None
 Warning: Shuffle Join MERGEJOIN[9][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
-PREHOOK: query: -- Disjunction with pred on multiple inputs and right input (left outer join)
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT *
 FROM test1 LEFT OUTER JOIN test2
 ON (test1.value=test2.value
   OR test2.key between 100 and 102)
 PREHOOK: type: QUERY
-POSTHOOK: query: -- Disjunction with pred on multiple inputs and right input (left outer join)
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT *
 FROM test1 LEFT OUTER JOIN test2
 ON (test1.value=test2.value
@@ -920,16 +904,14 @@ NULL	NULL	None	102	2	Del
 100	1	Bob	102	2	Del
 101	2	Car	102	2	Del
 101	2	Car	103	2	Ema
-PREHOOK: query: -- Keys plus residual (left outer join)
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT *
 FROM test1 LEFT OUTER JOIN test2
 ON (test1.value=test2.value
   AND (test1.key between 100 and 102
     OR test2.key between 100 and 102))
 PREHOOK: type: QUERY
-POSTHOOK: query: -- Keys plus residual (left outer join)
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT *
 FROM test1 LEFT OUTER JOIN test2
 ON (test1.value=test2.value
@@ -1034,15 +1016,13 @@ NULL	NULL	None	NULL	NULL	NULL
 101	2	Car	102	2	Del
 101	2	Car	103	2	Ema
 Warning: Shuffle Join MERGEJOIN[9][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
-PREHOOK: query: -- Complex condition, projecting columns
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT col_1, col_2
 FROM test1 LEFT OUTER JOIN test2
 ON (test1.value=test2.value
       OR test1.key=test2.key)
 PREHOOK: type: QUERY
-POSTHOOK: query: -- Complex condition, projecting columns
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT col_1, col_2
 FROM test1 LEFT OUTER JOIN test2
 ON (test1.value=test2.value
@@ -1146,16 +1126,14 @@ Bob	NULL
 Car	Del
 Car	Ema
 Warning: Shuffle Join MERGEJOIN[9][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
-PREHOOK: query: -- Disjunction with pred on multiple inputs and single inputs (right outer join)
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT *
 FROM test1 RIGHT OUTER JOIN test2
 ON (test1.value=test2.value
   OR test1.key between 100 and 102
   OR test2.key between 100 and 102)
 PREHOOK: type: QUERY
-POSTHOOK: query: -- Disjunction with pred on multiple inputs and single inputs (right outer join)
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT *
 FROM test1 RIGHT OUTER JOIN test2
 ON (test1.value=test2.value
@@ -1263,15 +1241,13 @@ NULL	NULL	None	102	2	Del
 101	2	Car	104	3	Fli
 101	2	Car	105	NULL	None
 Warning: Shuffle Join MERGEJOIN[9][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
-PREHOOK: query: -- Disjunction with pred on multiple inputs and left input (right outer join)
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT *
 FROM test1 RIGHT OUTER JOIN test2
 ON (test1.value=test2.value
   OR test1.key between 100 and 102)
 PREHOOK: type: QUERY
-POSTHOOK: query: -- Disjunction with pred on multiple inputs and left input (right outer join)
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT *
 FROM test1 RIGHT OUTER JOIN test2
 ON (test1.value=test2.value
@@ -1373,15 +1349,13 @@ POSTHOOK: Input: default@test2
 101	2	Car	104	3	Fli
 101	2	Car	105	NULL	None
 Warning: Shuffle Join MERGEJOIN[9][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
-PREHOOK: query: -- Disjunction with pred on multiple inputs and right input (right outer join)
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT *
 FROM test1 RIGHT OUTER JOIN test2
 ON (test1.value=test2.value
   OR test2.key between 100 and 102)
 PREHOOK: type: QUERY
-POSTHOOK: query: -- Disjunction with pred on multiple inputs and right input (right outer join)
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT *
 FROM test1 RIGHT OUTER JOIN test2
 ON (test1.value=test2.value
@@ -1482,16 +1456,14 @@ NULL	NULL	None	102	2	Del
 101	2	Car	103	2	Ema
 NULL	NULL	NULL	104	3	Fli
 NULL	NULL	NULL	105	NULL	None
-PREHOOK: query: -- Keys plus residual (right outer join)
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT *
 FROM test1 RIGHT OUTER JOIN test2
 ON (test1.value=test2.value
   AND (test1.key between 100 and 102
     OR test2.key between 100 and 102))
 PREHOOK: type: QUERY
-POSTHOOK: query: -- Keys plus residual (right outer join)
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT *
 FROM test1 RIGHT OUTER JOIN test2
 ON (test1.value=test2.value
@@ -1594,16 +1566,14 @@ NULL	NULL	NULL	105	NULL	None
 101	2	Car	103	2	Ema
 NULL	NULL	NULL	104	3	Fli
 Warning: Shuffle Join MERGEJOIN[9][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
-PREHOOK: query: -- Disjunction with pred on multiple inputs and single inputs (full outer join)
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT *
 FROM test1 FULL OUTER JOIN test2
 ON (test1.value=test2.value
   OR test1.key between 100 and 102
   OR test2.key between 100 and 102)
 PREHOOK: type: QUERY
-POSTHOOK: query: -- Disjunction with pred on multiple inputs and single inputs (full outer join)
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT *
 FROM test1 FULL OUTER JOIN test2
 ON (test1.value=test2.value
@@ -1711,15 +1681,13 @@ NULL	NULL	None	102	2	Del
 101	2	Car	104	3	Fli
 101	2	Car	105	NULL	None
 Warning: Shuffle Join MERGEJOIN[9][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
-PREHOOK: query: -- Disjunction with pred on multiple inputs and left input (full outer join)
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT *
 FROM test1 FULL OUTER JOIN test2
 ON (test1.value=test2.value
   OR test1.key between 100 and 102)
 PREHOOK: type: QUERY
-POSTHOOK: query: -- Disjunction with pred on multiple inputs and left input (full outer join)
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT *
 FROM test1 FULL OUTER JOIN test2
 ON (test1.value=test2.value
@@ -1824,15 +1792,13 @@ NULL	NULL	None	NULL	NULL	NULL
 101	2	Car	104	3	Fli
 101	2	Car	105	NULL	None
 Warning: Shuffle Join MERGEJOIN[9][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
-PREHOOK: query: -- Disjunction with pred on multiple inputs and right input (full outer join)
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT *
 FROM test1 FULL OUTER JOIN test2
 ON (test1.value=test2.value
   OR test2.key between 100 and 102)
 PREHOOK: type: QUERY
-POSTHOOK: query: -- Disjunction with pred on multiple inputs and right input (full outer join)
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT *
 FROM test1 FULL OUTER JOIN test2
 ON (test1.value=test2.value
@@ -1933,16 +1899,14 @@ NULL	NULL	None	102	2	Del
 101	2	Car	103	2	Ema
 NULL	NULL	NULL	104	3	Fli
 NULL	NULL	NULL	105	NULL	None
-PREHOOK: query: -- Keys plus residual (full outer join)
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT *
 FROM test1 FULL OUTER JOIN test2
 ON (test1.value=test2.value
   AND (test1.key between 100 and 102
     OR test2.key between 100 and 102))
 PREHOOK: type: QUERY
-POSTHOOK: query: -- Keys plus residual (full outer join)
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT *
 FROM test1 FULL OUTER JOIN test2
 ON (test1.value=test2.value
@@ -2049,8 +2013,7 @@ NULL	NULL	None	NULL	NULL	NULL
 101	2	Car	103	2	Ema
 NULL	NULL	NULL	104	3	Fli
 Warning: Shuffle Join MERGEJOIN[26][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 3' is a cross product
-PREHOOK: query: -- Mixed ( FOJ (ROJ, LOJ) ) 
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT *
 FROM (
   SELECT test1.key AS key1, test1.value AS value1, test1.col_1 AS col_1,
@@ -2070,8 +2033,7 @@ FULL OUTER JOIN (
   ) sq2
 ON (sq1.value1 is null or sq2.value4 is null and sq2.value3 != sq1.value2)
 PREHOOK: type: QUERY
-POSTHOOK: query: -- Mixed ( FOJ (ROJ, LOJ) ) 
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT *
 FROM (
   SELECT test1.key AS key1, test1.value AS value1, test1.col_1 AS col_1,

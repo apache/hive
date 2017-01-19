@@ -151,16 +151,12 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: -- SORT_QUERY_RESULTS
-
-select t1.dec, t2.dec from t1 join t2 on (t1.dec=t2.dec)
+PREHOOK: query: select t1.dec, t2.dec from t1 join t2 on (t1.dec=t2.dec)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
 PREHOOK: Input: default@t2
 #### A masked pattern was here ####
-POSTHOOK: query: -- SORT_QUERY_RESULTS
-
-select t1.dec, t2.dec from t1 join t2 on (t1.dec=t2.dec)
+POSTHOOK: query: select t1.dec, t2.dec from t1 join t2 on (t1.dec=t2.dec)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 POSTHOOK: Input: default@t2

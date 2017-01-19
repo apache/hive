@@ -16,10 +16,7 @@ Example:
   '16'
 Function class:org.apache.hadoop.hive.ql.udf.UDFConv
 Function type:BUILTIN
-PREHOOK: query: -- conv must work on both strings and integers up to 64-bit precision
-
--- Some simple conversions to test different bases
-SELECT
+PREHOOK: query: SELECT
   conv('4521', 10, 36),
   conv('22', 10, 10),
   conv('110011', 2, 16),

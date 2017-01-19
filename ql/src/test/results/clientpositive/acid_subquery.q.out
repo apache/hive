@@ -36,8 +36,7 @@ POSTHOOK: Lineage: target PARTITION(p=1,q=3).a EXPRESSION [(values__tmp__table__
 POSTHOOK: Lineage: target PARTITION(p=1,q=3).b EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
 POSTHOOK: Lineage: target PARTITION(p=2,q=2).a EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 POSTHOOK: Lineage: target PARTITION(p=2,q=2).b EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
-PREHOOK: query: -- the intent here is to record the set of ReadEntity and WriteEntity objects for these 2 update statements
-update target set b = 1 where p in (select t.q1 from source t where t.a1=5)
+PREHOOK: query: update target set b = 1 where p in (select t.q1 from source t where t.a1=5)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@source
 PREHOOK: Input: default@target
@@ -47,8 +46,7 @@ PREHOOK: Input: default@target@p=2/q=2
 PREHOOK: Output: default@target@p=1/q=2
 PREHOOK: Output: default@target@p=1/q=3
 PREHOOK: Output: default@target@p=2/q=2
-POSTHOOK: query: -- the intent here is to record the set of ReadEntity and WriteEntity objects for these 2 update statements
-update target set b = 1 where p in (select t.q1 from source t where t.a1=5)
+POSTHOOK: query: update target set b = 1 where p in (select t.q1 from source t where t.a1=5)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@source
 POSTHOOK: Input: default@target
@@ -70,8 +68,7 @@ POSTHOOK: Input: default@source
 POSTHOOK: Input: default@target
 POSTHOOK: Input: default@target@p=2/q=2
 POSTHOOK: Output: default@source
-PREHOOK: query: -- the extra predicates in when matched clause match 1 partition
-merge into target t using source s on t.a = s.a1 when matched and p = 1 and q = 2 then update set b = 1 when matched and p = 2 and q = 2 then delete when not matched and a1 > 100 then insert values(s.a1,s.b1,s.p1, s.q1)
+PREHOOK: query: merge into target t using source s on t.a = s.a1 when matched and p = 1 and q = 2 then update set b = 1 when matched and p = 2 and q = 2 then delete when not matched and a1 > 100 then insert values(s.a1,s.b1,s.p1, s.q1)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@source
 PREHOOK: Input: default@target
@@ -85,8 +82,7 @@ PREHOOK: Output: default@target@p=1/q=3
 PREHOOK: Output: default@target@p=1/q=3
 PREHOOK: Output: default@target@p=2/q=2
 PREHOOK: Output: default@target@p=2/q=2
-POSTHOOK: query: -- the extra predicates in when matched clause match 1 partition
-merge into target t using source s on t.a = s.a1 when matched and p = 1 and q = 2 then update set b = 1 when matched and p = 2 and q = 2 then delete when not matched and a1 > 100 then insert values(s.a1,s.b1,s.p1, s.q1)
+POSTHOOK: query: merge into target t using source s on t.a = s.a1 when matched and p = 1 and q = 2 then update set b = 1 when matched and p = 2 and q = 2 then delete when not matched and a1 > 100 then insert values(s.a1,s.b1,s.p1, s.q1)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@source
 POSTHOOK: Input: default@target

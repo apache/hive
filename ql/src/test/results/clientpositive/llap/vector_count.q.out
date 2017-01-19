@@ -1,12 +1,8 @@
-PREHOOK: query: -- SORT_QUERY_RESULTS
-
-create table abcd_txt (a int, b int, c int, d int)
+PREHOOK: query: create table abcd_txt (a int, b int, c int, d int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@abcd_txt
-POSTHOOK: query: -- SORT_QUERY_RESULTS
-
-create table abcd_txt (a int, b int, c int, d int)
+POSTHOOK: query: create table abcd_txt (a int, b int, c int, d int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@abcd_txt

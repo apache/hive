@@ -1,5 +1,4 @@
-PREHOOK: query: -- SORT_QUERY_RESULTS
-CREATE TABLE tbl_pred(t tinyint,
+PREHOOK: query: CREATE TABLE tbl_pred(t tinyint,
            si smallint,
            i int,
            b bigint,
@@ -14,8 +13,7 @@ STORED AS PARQUET
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@tbl_pred
-POSTHOOK: query: -- SORT_QUERY_RESULTS
-CREATE TABLE tbl_pred(t tinyint,
+POSTHOOK: query: CREATE TABLE tbl_pred(t tinyint,
            si smallint,
            i int,
            b bigint,
@@ -89,15 +87,11 @@ POSTHOOK: Lineage: tbl_pred.s SIMPLE [(staging)staging.FieldSchema(name:s, type:
 POSTHOOK: Lineage: tbl_pred.si SIMPLE [(staging)staging.FieldSchema(name:si, type:smallint, comment:null), ]
 POSTHOOK: Lineage: tbl_pred.t SIMPLE [(staging)staging.FieldSchema(name:t, type:tinyint, comment:null), ]
 POSTHOOK: Lineage: tbl_pred.ts SIMPLE [(staging)staging.FieldSchema(name:ts, type:timestamp, comment:null), ]
-PREHOOK: query: -- no predicate case. the explain plan should not have filter expression in table scan operator
-
-SELECT SUM(HASH(t)) FROM tbl_pred
+PREHOOK: query: SELECT SUM(HASH(t)) FROM tbl_pred
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tbl_pred
 #### A masked pattern was here ####
-POSTHOOK: query: -- no predicate case. the explain plan should not have filter expression in table scan operator
-
-SELECT SUM(HASH(t)) FROM tbl_pred
+POSTHOOK: query: SELECT SUM(HASH(t)) FROM tbl_pred
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tbl_pred
 #### A masked pattern was here ####
@@ -227,19 +221,11 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: -- all the following queries have predicates which are pushed down to table scan operator if
--- hive.optimize.index.filter is set to true. the explain plan should show filter expression
--- in table scan operator.
-
-SELECT * FROM tbl_pred WHERE t<2 limit 1
+PREHOOK: query: SELECT * FROM tbl_pred WHERE t<2 limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tbl_pred
 #### A masked pattern was here ####
-POSTHOOK: query: -- all the following queries have predicates which are pushed down to table scan operator if
--- hive.optimize.index.filter is set to true. the explain plan should show filter expression
--- in table scan operator.
-
-SELECT * FROM tbl_pred WHERE t<2 limit 1
+POSTHOOK: query: SELECT * FROM tbl_pred WHERE t<2 limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tbl_pred
 #### A masked pattern was here ####

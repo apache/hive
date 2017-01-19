@@ -1,6 +1,4 @@
-PREHOOK: query: -- SORT_QUERY_RESULTS
-
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT cboolean1,
        cbigint,
        csmallint,
@@ -27,9 +25,7 @@ WHERE  ((ctinyint != 0)
 ORDER BY cboolean1, cbigint, csmallint, ctinyint, ctimestamp1, cstring1, c1, c2, c3, c4, c5, c6, c7, c8, c9
 LIMIT 25
 PREHOOK: type: QUERY
-POSTHOOK: query: -- SORT_QUERY_RESULTS
-
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT cboolean1,
        cbigint,
        csmallint,
@@ -183,8 +179,7 @@ NULL	NULL	-7196	-61	1969-12-31 15:59:44.823	NULL	NULL	0	7196	61	78	NULL	NULL	61	
 NULL	NULL	-7196	1	1969-12-31 15:59:48.361	NULL	NULL	0	7196	-1	16	NULL	NULL	-1	0
 NULL	NULL	-7196	14	1969-12-31 15:59:50.291	NULL	NULL	0	7196	-14	3	NULL	NULL	-14	0
 NULL	NULL	-7196	22	1969-12-31 15:59:52.699	NULL	NULL	0	7196	-22	-5	NULL	NULL	-22	0
-PREHOOK: query: -- double compare timestamp
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT cboolean1,
        cbigint,
        csmallint,
@@ -211,8 +206,7 @@ WHERE  ((ctinyint != 0)
 ORDER BY cboolean1, cbigint, csmallint, ctinyint, ctimestamp1, cstring1, c1, c2, c3, c4, c5, c6, c7, c8, c9
 LIMIT 25
 PREHOOK: type: QUERY
-POSTHOOK: query: -- double compare timestamp
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT cboolean1,
        cbigint,
        csmallint,

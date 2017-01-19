@@ -1,16 +1,6 @@
-PREHOOK: query: -- HIVE-2340 deduplicate RS followed by RS
--- hive.optimize.reducededuplication : wherther using this optimization
--- hive.optimize.reducededuplication.min.reducer : number of reducer of deduped RS should be this at least
-
--- RS-mGBY-RS-rGBY
-explain select key, sum(key) from (select * from src distribute by key sort by key, value) Q1 group by key
+PREHOOK: query: explain select key, sum(key) from (select * from src distribute by key sort by key, value) Q1 group by key
 PREHOOK: type: QUERY
-POSTHOOK: query: -- HIVE-2340 deduplicate RS followed by RS
--- hive.optimize.reducededuplication : wherther using this optimization
--- hive.optimize.reducededuplication.min.reducer : number of reducer of deduped RS should be this at least
-
--- RS-mGBY-RS-rGBY
-explain select key, sum(key) from (select * from src distribute by key sort by key, value) Q1 group by key
+POSTHOOK: query: explain select key, sum(key) from (select * from src distribute by key sort by key, value) Q1 group by key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -195,11 +185,9 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: -- mGBY-RS-rGBY-RS
-explain select key, sum(key) as value from src group by key order by key
+PREHOOK: query: explain select key, sum(key) as value from src group by key order by key
 PREHOOK: type: QUERY
-POSTHOOK: query: -- mGBY-RS-rGBY-RS
-explain select key, sum(key) as value from src group by key order by key
+POSTHOOK: query: explain select key, sum(key) as value from src group by key order by key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -259,11 +247,9 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: -- RS-JOIN-mGBY-RS-rGBY
-explain select src.key, sum(src.key) FROM src JOIN src1 ON src.key = src1.key group by src.key, src.value
+PREHOOK: query: explain select src.key, sum(src.key) FROM src JOIN src1 ON src.key = src1.key group by src.key, src.value
 PREHOOK: type: QUERY
-POSTHOOK: query: -- RS-JOIN-mGBY-RS-rGBY
-explain select src.key, sum(src.key) FROM src JOIN src1 ON src.key = src1.key group by src.key, src.value
+POSTHOOK: query: explain select src.key, sum(src.key) FROM src JOIN src1 ON src.key = src1.key group by src.key, src.value
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -367,11 +353,9 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: -- RS-JOIN-RS
-explain select src.key, src.value FROM src JOIN src1 ON src.key = src1.key order by src.key, src.value
+PREHOOK: query: explain select src.key, src.value FROM src JOIN src1 ON src.key = src1.key order by src.key, src.value
 PREHOOK: type: QUERY
-POSTHOOK: query: -- RS-JOIN-RS
-explain select src.key, src.value FROM src JOIN src1 ON src.key = src1.key order by src.key, src.value
+POSTHOOK: query: explain select src.key, src.value FROM src JOIN src1 ON src.key = src1.key order by src.key, src.value
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -461,11 +445,9 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: -- mGBY-RS-rGBY-mGBY-RS-rGBY
-explain from (select key, value from src group by key, value) s select s.key group by s.key
+PREHOOK: query: explain from (select key, value from src group by key, value) s select s.key group by s.key
 PREHOOK: type: QUERY
-POSTHOOK: query: -- mGBY-RS-rGBY-mGBY-RS-rGBY
-explain from (select key, value from src group by key, value) s select s.key group by s.key
+POSTHOOK: query: explain from (select key, value from src group by key, value) s select s.key group by s.key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -2575,11 +2557,9 @@ POSTHOOK: Input: default@src
 96	1
 97	1
 98	1
-PREHOOK: query: -- RS-RS-GBY
-explain select key, sum(key) from (select * from src distribute by key sort by key, value) Q1 group by key
+PREHOOK: query: explain select key, sum(key) from (select * from src distribute by key sort by key, value) Q1 group by key
 PREHOOK: type: QUERY
-POSTHOOK: query: -- RS-RS-GBY
-explain select key, sum(key) from (select * from src distribute by key sort by key, value) Q1 group by key
+POSTHOOK: query: explain select key, sum(key) from (select * from src distribute by key sort by key, value) Q1 group by key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -2764,11 +2744,9 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: -- RS-GBY-RS
-explain select key, sum(key) as value from src group by key order by key
+PREHOOK: query: explain select key, sum(key) as value from src group by key order by key
 PREHOOK: type: QUERY
-POSTHOOK: query: -- RS-GBY-RS
-explain select key, sum(key) as value from src group by key order by key
+POSTHOOK: query: explain select key, sum(key) as value from src group by key order by key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -2821,11 +2799,9 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: -- RS-JOIN-RS-GBY
-explain select src.key, sum(src.key) FROM src JOIN src1 ON src.key = src1.key group by src.key, src.value
+PREHOOK: query: explain select src.key, sum(src.key) FROM src JOIN src1 ON src.key = src1.key group by src.key, src.value
 PREHOOK: type: QUERY
-POSTHOOK: query: -- RS-JOIN-RS-GBY
-explain select src.key, sum(src.key) FROM src JOIN src1 ON src.key = src1.key group by src.key, src.value
+POSTHOOK: query: explain select src.key, sum(src.key) FROM src JOIN src1 ON src.key = src1.key group by src.key, src.value
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -2922,11 +2898,9 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: -- RS-JOIN-RS
-explain select src.key, src.value FROM src JOIN src1 ON src.key = src1.key order by src.key, src.value
+PREHOOK: query: explain select src.key, src.value FROM src JOIN src1 ON src.key = src1.key order by src.key, src.value
 PREHOOK: type: QUERY
-POSTHOOK: query: -- RS-JOIN-RS
-explain select src.key, src.value FROM src JOIN src1 ON src.key = src1.key order by src.key, src.value
+POSTHOOK: query: explain select src.key, src.value FROM src JOIN src1 ON src.key = src1.key order by src.key, src.value
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -3016,11 +2990,9 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: -- RS-GBY-RS-GBY
-explain from (select key, value from src group by key, value) s select s.key group by s.key
+PREHOOK: query: explain from (select key, value from src group by key, value) s select s.key group by s.key
 PREHOOK: type: QUERY
-POSTHOOK: query: -- RS-GBY-RS-GBY
-explain from (select key, value from src group by key, value) s select s.key group by s.key
+POSTHOOK: query: explain from (select key, value from src group by key, value) s select s.key group by s.key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage

@@ -1,12 +1,8 @@
-PREHOOK: query: -- This is to test the union remove optimization with stats optimization
-
-create table inputSrcTbl1(key string, val int) stored as textfile
+PREHOOK: query: create table inputSrcTbl1(key string, val int) stored as textfile
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@inputSrcTbl1
-POSTHOOK: query: -- This is to test the union remove optimization with stats optimization
-
-create table inputSrcTbl1(key string, val int) stored as textfile
+POSTHOOK: query: create table inputSrcTbl1(key string, val int) stored as textfile
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@inputSrcTbl1
@@ -104,13 +100,11 @@ POSTHOOK: Input: default@inputsrctbl3
 POSTHOOK: Output: default@inputtbl3
 POSTHOOK: Lineage: inputtbl3.key SIMPLE [(inputsrctbl3)inputsrctbl3.FieldSchema(name:key, type:string, comment:null), ]
 POSTHOOK: Lineage: inputtbl3.val SIMPLE [(inputsrctbl3)inputsrctbl3.FieldSchema(name:val, type:int, comment:null), ]
-PREHOOK: query: --- union remove optimization effects, stats optimization does not though it is on since inputTbl2 column stats is not available
-analyze table inputTbl1 compute statistics for columns
+PREHOOK: query: analyze table inputTbl1 compute statistics for columns
 PREHOOK: type: QUERY
 PREHOOK: Input: default@inputtbl1
 #### A masked pattern was here ####
-POSTHOOK: query: --- union remove optimization effects, stats optimization does not though it is on since inputTbl2 column stats is not available
-analyze table inputTbl1 compute statistics for columns
+POSTHOOK: query: analyze table inputTbl1 compute statistics for columns
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@inputtbl1
 #### A masked pattern was here ####
@@ -285,13 +279,11 @@ POSTHOOK: Input: default@inputtbl2
 POSTHOOK: Input: default@inputtbl3
 #### A masked pattern was here ####
 3
-PREHOOK: query: --- union remove optimization and stats optimization are effective after inputTbl2 column stats is calculated
-analyze table inputTbl2 compute statistics for columns
+PREHOOK: query: analyze table inputTbl2 compute statistics for columns
 PREHOOK: type: QUERY
 PREHOOK: Input: default@inputtbl2
 #### A masked pattern was here ####
-POSTHOOK: query: --- union remove optimization and stats optimization are effective after inputTbl2 column stats is calculated
-analyze table inputTbl2 compute statistics for columns
+POSTHOOK: query: analyze table inputTbl2 compute statistics for columns
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@inputtbl2
 #### A masked pattern was here ####
@@ -342,16 +334,14 @@ POSTHOOK: Input: default@inputtbl2
 POSTHOOK: Input: default@inputtbl3
 #### A masked pattern was here ####
 3
-PREHOOK: query: --- union remove optimization effects but stats optimization does not (with group by) though it is on
-explain
+PREHOOK: query: explain
   SELECT key, count(1) as rowcnt, min(val) as ms, max(val) as mx from inputTbl1 group by key
   UNION ALL
   SELECT key, count(1) as rowcnt, min(val) as ms, max(val) as mx from inputTbl2 group by key
   UNION ALL
   SELECT key, count(1) as rowcnt, min(val) as ms, max(val) as mx from inputTbl3 group by key
 PREHOOK: type: QUERY
-POSTHOOK: query: --- union remove optimization effects but stats optimization does not (with group by) though it is on
-explain
+POSTHOOK: query: explain
   SELECT key, count(1) as rowcnt, min(val) as ms, max(val) as mx from inputTbl1 group by key
   UNION ALL
   SELECT key, count(1) as rowcnt, min(val) as ms, max(val) as mx from inputTbl2 group by key

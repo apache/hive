@@ -1,6 +1,5 @@
 Warning: Shuffle Join MERGEJOIN[29][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
-PREHOOK: query: -- non agg, non corr
-explain
+PREHOOK: query: explain
 select * 
 from src 
 where src.key not in  
@@ -8,8 +7,7 @@ where src.key not in
     where s1.key > '2'
   )
 PREHOOK: type: QUERY
-POSTHOOK: query: -- non agg, non corr
-explain
+POSTHOOK: query: explain
 select * 
 from src 
 where src.key not in  
@@ -299,8 +297,7 @@ POSTHOOK: Input: default@src
 199	val_199
 199	val_199
 2	val_2
-PREHOOK: query: -- non agg, corr
-explain
+PREHOOK: query: explain
 select p_mfgr, b.p_name, p_size 
 from part b 
 where b.p_name not in 
@@ -309,8 +306,7 @@ where b.p_name not in
   where r <= 2 and b.p_mfgr = a.p_mfgr 
   )
 PREHOOK: type: QUERY
-POSTHOOK: query: -- non agg, corr
-explain
+POSTHOOK: query: explain
 select p_mfgr, b.p_name, p_size 
 from part b 
 where b.p_name not in 
@@ -745,8 +741,7 @@ Manufacturer#5	almond antique blue firebrick mint	31
 Manufacturer#5	almond aquamarine dodger light gainsboro	46
 Manufacturer#5	almond azure blanched chiffon midnight	23
 Warning: Shuffle Join MERGEJOIN[49][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
-PREHOOK: query: -- agg, non corr
-explain
+PREHOOK: query: explain
 select p_name, p_size 
 from 
 part where part.p_size not in 
@@ -755,8 +750,7 @@ part where part.p_size not in
   where r <= 2
   )
 PREHOOK: type: QUERY
-POSTHOOK: query: -- agg, non corr
-explain
+POSTHOOK: query: explain
 select p_name, p_size 
 from 
 part where part.p_size not in 
@@ -1057,8 +1051,7 @@ almond aquamarine sandy cyan gainsboro	18
 almond aquamarine yellow dodger mint	7
 almond azure aquamarine papaya violet	12
 almond azure blanched chiffon midnight	23
-PREHOOK: query: -- agg, corr
-explain
+PREHOOK: query: explain
 select p_mfgr, p_name, p_size 
 from part b where b.p_size not in 
   (select min(p_size) 
@@ -1066,8 +1059,7 @@ from part b where b.p_size not in
   where r <= 2 and b.p_mfgr = a.p_mfgr
   )
 PREHOOK: type: QUERY
-POSTHOOK: query: -- agg, corr
-explain
+POSTHOOK: query: explain
 select p_mfgr, p_name, p_size 
 from part b where b.p_size not in 
   (select min(p_size) 
@@ -1533,8 +1525,7 @@ Manufacturer#5	almond azure blanched chiffon midnight	23
 Manufacturer#5	almond antique blue firebrick mint	31
 Manufacturer#5	almond aquamarine dodger light gainsboro	46
 Warning: Shuffle Join MERGEJOIN[35][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
-PREHOOK: query: -- non agg, non corr, Group By in Parent Query
-select li.l_partkey, count(*)
+PREHOOK: query: select li.l_partkey, count(*)
 from lineitem li
 where li.l_linenumber = 1 and
   li.l_orderkey not in (select l_orderkey from lineitem where l_shipmode = 'AIR')
@@ -1542,8 +1533,7 @@ group by li.l_partkey
 PREHOOK: type: QUERY
 PREHOOK: Input: default@lineitem
 #### A masked pattern was here ####
-POSTHOOK: query: -- non agg, non corr, Group By in Parent Query
-select li.l_partkey, count(*)
+POSTHOOK: query: select li.l_partkey, count(*)
 from lineitem li
 where li.l_linenumber = 1 and
   li.l_orderkey not in (select l_orderkey from lineitem where l_shipmode = 'AIR')
@@ -1568,16 +1558,14 @@ POSTHOOK: Input: default@lineitem
 175839	1
 182052	1
 Warning: Shuffle Join MERGEJOIN[31][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
-PREHOOK: query: -- alternate not in syntax
-select * 
+PREHOOK: query: select * 
 from src 
 where not src.key in  ( select key from src s1 where s1.key > '2')
 order by key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
-POSTHOOK: query: -- alternate not in syntax
-select * 
+POSTHOOK: query: select * 
 from src 
 where not src.key in  ( select key from src s1 where s1.key > '2')
 order by key
@@ -1703,15 +1691,13 @@ POSTHOOK: Input: default@src
 199	val_199
 199	val_199
 2	val_2
-PREHOOK: query: -- null check
-create view T1_v as 
+PREHOOK: query: create view T1_v as 
 select key from src where key <'11'
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: default@src
 PREHOOK: Output: database:default
 PREHOOK: Output: default@T1_v
-POSTHOOK: query: -- null check
-create view T1_v as 
+POSTHOOK: query: create view T1_v as 
 select key from src where key <'11'
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@src
@@ -1916,11 +1902,9 @@ POSTHOOK: Input: default@src
 POSTHOOK: Input: default@t1_v
 POSTHOOK: Input: default@t2_v
 #### A masked pattern was here ####
-PREHOOK: query: --where has multiple conjuction
-explain select * from part where p_brand <> 'Brand#14' AND p_size NOT IN (select min(p_size) from part p where p.p_type = part.p_type group by p_type) AND p_size <> 340
+PREHOOK: query: explain select * from part where p_brand <> 'Brand#14' AND p_size NOT IN (select min(p_size) from part p where p.p_type = part.p_type group by p_type) AND p_size <> 340
 PREHOOK: type: QUERY
-POSTHOOK: query: --where has multiple conjuction
-explain select * from part where p_brand <> 'Brand#14' AND p_size NOT IN (select min(p_size) from part p where p.p_type = part.p_type group by p_type) AND p_size <> 340
+POSTHOOK: query: explain select * from part where p_brand <> 'Brand#14' AND p_size NOT IN (select min(p_size) from part p where p.p_type = part.p_type group by p_type) AND p_size <> 340
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -2301,11 +2285,9 @@ POSTHOOK: Input: default@part
 #### A masked pattern was here ####
 192697	almond antique blue firebrick mint	Manufacturer#5	Brand#52	MEDIUM BURNISHED TIN	31	LG DRUM	1789.69	ickly ir
 Warning: Shuffle Join MERGEJOIN[36][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
-PREHOOK: query: --lhs contains non-simple expression
-explain select * from part  where (p_size-1) NOT IN (select min(p_size) from part group by p_type)
+PREHOOK: query: explain select * from part  where (p_size-1) NOT IN (select min(p_size) from part group by p_type)
 PREHOOK: type: QUERY
-POSTHOOK: query: --lhs contains non-simple expression
-explain select * from part  where (p_size-1) NOT IN (select min(p_size) from part group by p_type)
+POSTHOOK: query: explain select * from part  where (p_size-1) NOT IN (select min(p_size) from part group by p_type)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -2775,11 +2757,9 @@ POSTHOOK: Input: default@part
 192697	almond antique blue firebrick mint	Manufacturer#5	Brand#52	MEDIUM BURNISHED TIN	31	LG DRUM	1789.69	ickly ir
 144293	almond antique olive coral navajo	Manufacturer#3	Brand#34	STANDARD POLISHED STEEL	45	JUMBO CAN	1337.29	ag furiously about 
 191709	almond antique violet turquoise frosted	Manufacturer#2	Brand#22	ECONOMY POLISHED STEEL	40	MED BOX	1800.7	 haggle
-PREHOOK: query: --lhs contains non-simple expression, corr
-explain select count(*) as c from part as e where p_size + 100 NOT IN (select p_partkey from part where p_name = e.p_name)
+PREHOOK: query: explain select count(*) as c from part as e where p_size + 100 NOT IN (select p_partkey from part where p_name = e.p_name)
 PREHOOK: type: QUERY
-POSTHOOK: query: --lhs contains non-simple expression, corr
-explain select count(*) as c from part as e where p_size + 100 NOT IN (select p_partkey from part where p_name = e.p_name)
+POSTHOOK: query: explain select count(*) as c from part as e where p_size + 100 NOT IN (select p_partkey from part where p_name = e.p_name)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -3117,11 +3097,9 @@ POSTHOOK: Input: default@part
 #### A masked pattern was here ####
 26
 Warning: Shuffle Join MERGEJOIN[35][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
-PREHOOK: query: -- lhs contains udf expression
-explain select * from part  where floor(p_retailprice) NOT IN (select floor(min(p_retailprice)) from part group by p_type)
+PREHOOK: query: explain select * from part  where floor(p_retailprice) NOT IN (select floor(min(p_retailprice)) from part group by p_type)
 PREHOOK: type: QUERY
-POSTHOOK: query: -- lhs contains udf expression
-explain select * from part  where floor(p_retailprice) NOT IN (select floor(min(p_retailprice)) from part group by p_type)
+POSTHOOK: query: explain select * from part  where floor(p_retailprice) NOT IN (select floor(min(p_retailprice)) from part group by p_type)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -3680,11 +3658,9 @@ POSTHOOK: Input: default@part
 17927	almond aquamarine yellow dodger mint	Manufacturer#4	Brand#41	ECONOMY BRUSHED COPPER	7	SM PKG	1844.92	ites. eve
 33357	almond azure aquamarine papaya violet	Manufacturer#4	Brand#41	STANDARD ANODIZED TIN	12	WRAP CASE	1290.35	reful
 78486	almond azure blanched chiffon midnight	Manufacturer#5	Brand#52	LARGE BRUSHED BRASS	23	MED BAG	1464.48	hely blith
-PREHOOK: query: -- correlated query, multiple correlated variables referring to different outer var
-explain select * from part where p_name NOT IN (select p_name from part p where p.p_size = part.p_size AND part.p_partkey= p.p_partkey )
+PREHOOK: query: explain select * from part where p_name NOT IN (select p_name from part p where p.p_size = part.p_size AND part.p_partkey= p.p_partkey )
 PREHOOK: type: QUERY
-POSTHOOK: query: -- correlated query, multiple correlated variables referring to different outer var
-explain select * from part where p_name NOT IN (select p_name from part p where p.p_size = part.p_size AND part.p_partkey= p.p_partkey )
+POSTHOOK: query: explain select * from part where p_name NOT IN (select p_name from part p where p.p_size = part.p_size AND part.p_partkey= p.p_partkey )
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -4003,11 +3979,9 @@ POSTHOOK: query: select * from part where p_name NOT IN (select p_name from part
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
-PREHOOK: query: -- correlated var refers to outer table alias
-explain select p_name from (select p_name, p_type, p_brand as brand from part) fpart where fpart.p_type NOT IN (select p_type from part where part.p_brand = fpart.brand)
+PREHOOK: query: explain select p_name from (select p_name, p_type, p_brand as brand from part) fpart where fpart.p_type NOT IN (select p_type from part where part.p_brand = fpart.brand)
 PREHOOK: type: QUERY
-POSTHOOK: query: -- correlated var refers to outer table alias
-explain select p_name from (select p_name, p_type, p_brand as brand from part) fpart where fpart.p_type NOT IN (select p_type from part where part.p_brand = fpart.brand)
+POSTHOOK: query: explain select p_name from (select p_name, p_type, p_brand as brand from part) fpart where fpart.p_type NOT IN (select p_type from part where part.p_brand = fpart.brand)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -4326,11 +4300,9 @@ POSTHOOK: query: select p_name from (select p_name, p_type, p_brand as brand fro
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
-PREHOOK: query: -- correlated var refers to outer table alias which is an expression 
-explain select p_name from (select p_name, p_type, p_size+1 as size from part) fpart where fpart.p_type NOT IN (select p_type from part where (part.p_size+1) = fpart.size)
+PREHOOK: query: explain select p_name from (select p_name, p_type, p_size+1 as size from part) fpart where fpart.p_type NOT IN (select p_type from part where (part.p_size+1) = fpart.size)
 PREHOOK: type: QUERY
-POSTHOOK: query: -- correlated var refers to outer table alias which is an expression 
-explain select p_name from (select p_name, p_type, p_size+1 as size from part) fpart where fpart.p_type NOT IN (select p_type from part where (part.p_size+1) = fpart.size)
+POSTHOOK: query: explain select p_name from (select p_name, p_type, p_size+1 as size from part) fpart where fpart.p_type NOT IN (select p_type from part where (part.p_size+1) = fpart.size)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -4658,11 +4630,9 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
 Warning: Shuffle Join MERGEJOIN[55][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
-PREHOOK: query: -- where plus having
-explain select key, count(*) from src where value NOT IN (select value from src) group by key having count(*) in (select count(*) from src s1 where s1.key = '90' group by s1.key )
+PREHOOK: query: explain select key, count(*) from src where value NOT IN (select value from src) group by key having count(*) in (select count(*) from src s1 where s1.key = '90' group by s1.key )
 PREHOOK: type: QUERY
-POSTHOOK: query: -- where plus having
-explain select key, count(*) from src where value NOT IN (select value from src) group by key having count(*) in (select count(*) from src s1 where s1.key = '90' group by s1.key )
+POSTHOOK: query: explain select key, count(*) from src where value NOT IN (select value from src) group by key having count(*) in (select count(*) from src s1 where s1.key = '90' group by s1.key )
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -4921,11 +4891,9 @@ POSTHOOK: query: select key, count(*) from src where value NOT IN (select value 
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
-PREHOOK: query: -- where with having, correlated
-explain select key, count(*) from src where value NOT IN (select value from src sc where sc.key = src.key ) group by key having count(*) in (select count(*) from src s1 where s1.key = '90' group by s1.key )
+PREHOOK: query: explain select key, count(*) from src where value NOT IN (select value from src sc where sc.key = src.key ) group by key having count(*) in (select count(*) from src s1 where s1.key = '90' group by s1.key )
 PREHOOK: type: QUERY
-POSTHOOK: query: -- where with having, correlated
-explain select key, count(*) from src where value NOT IN (select value from src sc where sc.key = src.key ) group by key having count(*) in (select count(*) from src s1 where s1.key = '90' group by s1.key )
+POSTHOOK: query: explain select key, count(*) from src where value NOT IN (select value from src sc where sc.key = src.key ) group by key having count(*) in (select count(*) from src s1 where s1.key = '90' group by s1.key )
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -5353,11 +5321,9 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 Warning: Shuffle Join MERGEJOIN[38][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
-PREHOOK: query: -- subquery with order by
-explain select * from part  where (p_size-1) NOT IN (select min(p_size) from part group by p_type) order by p_brand
+PREHOOK: query: explain select * from part  where (p_size-1) NOT IN (select min(p_size) from part group by p_type) order by p_brand
 PREHOOK: type: QUERY
-POSTHOOK: query: -- subquery with order by
-explain select * from part  where (p_size-1) NOT IN (select min(p_size) from part group by p_type) order by p_brand
+POSTHOOK: query: explain select * from part  where (p_size-1) NOT IN (select min(p_size) from part group by p_type) order by p_brand
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -5600,11 +5566,9 @@ POSTHOOK: Input: default@part
 192697	almond antique blue firebrick mint	Manufacturer#5	Brand#52	MEDIUM BURNISHED TIN	31	LG DRUM	1789.69	ickly ir
 78486	almond azure blanched chiffon midnight	Manufacturer#5	Brand#52	LARGE BRUSHED BRASS	23	MED BAG	1464.48	hely blith
 Warning: Shuffle Join MERGEJOIN[39][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
-PREHOOK: query: --order by with limit
-explain select * from part  where (p_size-1) NOT IN (select min(p_size) from part group by p_type) order by p_brand limit 4
+PREHOOK: query: explain select * from part  where (p_size-1) NOT IN (select min(p_size) from part group by p_type) order by p_brand limit 4
 PREHOOK: type: QUERY
-POSTHOOK: query: --order by with limit
-explain select * from part  where (p_size-1) NOT IN (select min(p_size) from part group by p_type) order by p_brand limit 4
+POSTHOOK: query: explain select * from part  where (p_size-1) NOT IN (select min(p_size) from part group by p_type) order by p_brand limit 4
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -5839,11 +5803,9 @@ POSTHOOK: Input: default@part
 110592	almond antique salmon chartreuse burlywood	Manufacturer#1	Brand#15	PROMO BURNISHED NICKEL	6	JUMBO PKG	1602.59	 to the furiously
 105685	almond antique violet chocolate turquoise	Manufacturer#2	Brand#22	MEDIUM ANODIZED COPPER	14	MED CAN	1690.68	ly pending requ
 Warning: Shuffle Join MERGEJOIN[37][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
-PREHOOK: query: -- union, uncorr
-explain select * from src where key NOT IN (select p_name from part UNION ALL select p_brand from part)
+PREHOOK: query: explain select * from src where key NOT IN (select p_name from part UNION ALL select p_brand from part)
 PREHOOK: type: QUERY
-POSTHOOK: query: -- union, uncorr
-explain select * from src where key NOT IN (select p_name from part UNION ALL select p_brand from part)
+POSTHOOK: query: explain select * from src where key NOT IN (select p_name from part UNION ALL select p_brand from part)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -6890,13 +6852,11 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
 26
-PREHOOK: query: --nullability tests
-CREATE TABLE t1 (c1 INT, c2 CHAR(100))
+PREHOOK: query: CREATE TABLE t1 (c1 INT, c2 CHAR(100))
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@t1
-POSTHOOK: query: --nullability tests
-CREATE TABLE t1 (c1 INT, c2 CHAR(100))
+POSTHOOK: query: CREATE TABLE t1 (c1 INT, c2 CHAR(100))
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t1
@@ -6924,11 +6884,9 @@ POSTHOOK: type: QUERY
 POSTHOOK: Output: default@t2
 POSTHOOK: Lineage: t2.c1 EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 Warning: Shuffle Join MERGEJOIN[26][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
-PREHOOK: query: -- uncorr
-explain SELECT c1 FROM t1 WHERE c1 NOT IN (SELECT c1 FROM t2)
+PREHOOK: query: explain SELECT c1 FROM t1 WHERE c1 NOT IN (SELECT c1 FROM t2)
 PREHOOK: type: QUERY
-POSTHOOK: query: -- uncorr
-explain SELECT c1 FROM t1 WHERE c1 NOT IN (SELECT c1 FROM t2)
+POSTHOOK: query: explain SELECT c1 FROM t1 WHERE c1 NOT IN (SELECT c1 FROM t2)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -7087,11 +7045,9 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 POSTHOOK: Input: default@t2
 #### A masked pattern was here ####
-PREHOOK: query: -- corr
-explain SELECT c1 FROM t1 WHERE c1 NOT IN (SELECT c1 FROM t2 where t1.c2=t2.c1)
+PREHOOK: query: explain SELECT c1 FROM t1 WHERE c1 NOT IN (SELECT c1 FROM t2 where t1.c2=t2.c1)
 PREHOOK: type: QUERY
-POSTHOOK: query: -- corr
-explain SELECT c1 FROM t1 WHERE c1 NOT IN (SELECT c1 FROM t2 where t1.c2=t2.c1)
+POSTHOOK: query: explain SELECT c1 FROM t1 WHERE c1 NOT IN (SELECT c1 FROM t2 where t1.c2=t2.c1)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -7428,13 +7384,11 @@ POSTHOOK: query: DROP TABLE t2
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@t2
 POSTHOOK: Output: default@t2
-PREHOOK: query: -- corr, nullability, should not produce any result
-create table t1(a int, b int)
+PREHOOK: query: create table t1(a int, b int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@t1
-POSTHOOK: query: -- corr, nullability, should not produce any result
-create table t1(a int, b int)
+POSTHOOK: query: create table t1(a int, b int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t1
@@ -7801,13 +7755,11 @@ POSTHOOK: query: drop table t2
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@t2
 POSTHOOK: Output: default@t2
-PREHOOK: query: -- coor, nullability, should produce result
-create table t7(i int, j int)
+PREHOOK: query: create table t7(i int, j int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@t7
-POSTHOOK: query: -- coor, nullability, should produce result
-create table t7(i int, j int)
+POSTHOOK: query: create table t7(i int, j int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t7
@@ -8187,11 +8139,9 @@ POSTHOOK: type: QUERY
 POSTHOOK: Output: default@t
 POSTHOOK: Lineage: t.i EXPRESSION [(values__tmp__table__7)values__tmp__table__7.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 POSTHOOK: Lineage: t.j EXPRESSION [(values__tmp__table__7)values__tmp__table__7.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
-PREHOOK: query: -- case with empty inner result (t1.j=t.j=NULL) and null subquery key(t.j = NULL)
-explain select t.i from t where t.j NOT IN (select t1.i from t t1 where t1.j=t.j)
+PREHOOK: query: explain select t.i from t where t.j NOT IN (select t1.i from t t1 where t1.j=t.j)
 PREHOOK: type: QUERY
-POSTHOOK: query: -- case with empty inner result (t1.j=t.j=NULL) and null subquery key(t.j = NULL)
-explain select t.i from t where t.j NOT IN (select t1.i from t t1 where t1.j=t.j)
+POSTHOOK: query: explain select t.i from t where t.j NOT IN (select t1.i from t t1 where t1.j=t.j)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -8509,11 +8459,9 @@ POSTHOOK: Input: default@t
 7
 1
 4
-PREHOOK: query: -- case with empty inner result (t1.j=t.j=NULL) and non-null subquery key(t.i is never null)
-explain select t.i from t where t.i NOT IN (select t1.i from t t1 where t1.j=t.j)
+PREHOOK: query: explain select t.i from t where t.i NOT IN (select t1.i from t t1 where t1.j=t.j)
 PREHOOK: type: QUERY
-POSTHOOK: query: -- case with empty inner result (t1.j=t.j=NULL) and non-null subquery key(t.i is never null)
-explain select t.i from t where t.i NOT IN (select t1.i from t t1 where t1.j=t.j)
+POSTHOOK: query: explain select t.i from t where t.i NOT IN (select t1.i from t t1 where t1.j=t.j)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -8830,11 +8778,9 @@ POSTHOOK: Input: default@t
 #### A masked pattern was here ####
 7
 Warning: Shuffle Join MERGEJOIN[26][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
-PREHOOK: query: -- case with non-empty inner result and null subquery key(t.j is null)
-explain select t.i from t where t.j NOT IN (select t1.i from t t1 )
+PREHOOK: query: explain select t.i from t where t.j NOT IN (select t1.i from t t1 )
 PREHOOK: type: QUERY
-POSTHOOK: query: -- case with non-empty inner result and null subquery key(t.j is null)
-explain select t.i from t where t.j NOT IN (select t1.i from t t1 )
+POSTHOOK: query: explain select t.i from t where t.j NOT IN (select t1.i from t t1 )
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -8997,11 +8943,9 @@ POSTHOOK: Input: default@t
 1
 4
 Warning: Shuffle Join MERGEJOIN[26][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
-PREHOOK: query: -- case with non-empty inner result and non-null subquery key(t.i is never null)
-explain select t.i from t where t.i NOT IN (select t1.i from t t1 )
+PREHOOK: query: explain select t.i from t where t.i NOT IN (select t1.i from t t1 )
 PREHOOK: type: QUERY
-POSTHOOK: query: -- case with non-empty inner result and non-null subquery key(t.i is never null)
-explain select t.i from t where t.i NOT IN (select t1.i from t t1 )
+POSTHOOK: query: explain select t.i from t where t.i NOT IN (select t1.i from t t1 )
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -9167,8 +9111,7 @@ POSTHOOK: query: drop table t1
 POSTHOOK: type: DROPTABLE
 Warning: Shuffle Join MERGEJOIN[70][tables = [$hdt$_1, $hdt$_2]] in Stage 'Reducer 5' is a cross product
 Warning: Shuffle Join MERGEJOIN[72][tables = [$hdt$_2, $hdt$_3]] in Stage 'Reducer 10' is a cross product
-PREHOOK: query: -- corr predicate is not equi
-explain select *
+PREHOOK: query: explain select *
 from src b
 where b.key not in
         (select a.key
@@ -9176,8 +9119,7 @@ where b.key not in
          where b.value > a.value and a.key > '9'
         )
 PREHOOK: type: QUERY
-POSTHOOK: query: -- corr predicate is not equi
-explain select *
+POSTHOOK: query: explain select *
 from src b
 where b.key not in
         (select a.key

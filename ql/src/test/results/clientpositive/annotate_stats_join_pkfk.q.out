@@ -415,11 +415,9 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: -- widening cast: inferred PK-FK, thus same row count as previous query
-explain select s.s_store_sk from store_bigint s join store_sales ss on (s.s_store_sk = ss.ss_store_sk)
+PREHOOK: query: explain select s.s_store_sk from store_bigint s join store_sales ss on (s.s_store_sk = ss.ss_store_sk)
 PREHOOK: type: QUERY
-POSTHOOK: query: -- widening cast: inferred PK-FK, thus same row count as previous query
-explain select s.s_store_sk from store_bigint s join store_sales ss on (s.s_store_sk = ss.ss_store_sk)
+POSTHOOK: query: explain select s.s_store_sk from store_bigint s join store_sales ss on (s.s_store_sk = ss.ss_store_sk)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage

@@ -62,11 +62,9 @@ Stage-0
         TableScan [TS_0]
           Output:["key","value"]
 
-PREHOOK: query: -- Scans without limit (should be Fetch task now)
-explain select concat(key, value)  from src
+PREHOOK: query: explain select concat(key, value)  from src
 PREHOOK: type: QUERY
-POSTHOOK: query: -- Scans without limit (should be Fetch task now)
-explain select concat(key, value)  from src
+POSTHOOK: query: explain select concat(key, value)  from src
 POSTHOOK: type: QUERY
 Plan optimized by CBO.
 
@@ -78,11 +76,9 @@ Stage-0
       TableScan [TS_0]
         Output:["key","value"]
 
-PREHOOK: query: -- from HIVE-7397, limit + partition pruning filter
-explain select * from srcpart where ds='2008-04-08' AND hr='11' limit 10
+PREHOOK: query: explain select * from srcpart where ds='2008-04-08' AND hr='11' limit 10
 PREHOOK: type: QUERY
-POSTHOOK: query: -- from HIVE-7397, limit + partition pruning filter
-explain select * from srcpart where ds='2008-04-08' AND hr='11' limit 10
+POSTHOOK: query: explain select * from srcpart where ds='2008-04-08' AND hr='11' limit 10
 POSTHOOK: type: QUERY
 Plan optimized by CBO.
 
@@ -112,11 +108,9 @@ Stage-0
         TableScan [TS_0]
           Output:["key","value"]
 
-PREHOOK: query: -- Scans without limit (should not be Fetch task now)
-explain select concat(key, value)  from src
+PREHOOK: query: explain select concat(key, value)  from src
 PREHOOK: type: QUERY
-POSTHOOK: query: -- Scans without limit (should not be Fetch task now)
-explain select concat(key, value)  from src
+POSTHOOK: query: explain select concat(key, value)  from src
 POSTHOOK: type: QUERY
 Plan optimized by CBO.
 
@@ -131,11 +125,9 @@ Stage-0
           TableScan [TS_0] (rows=500 width=178)
             default@src,src,Tbl:COMPLETE,Col:COMPLETE,Output:["key","value"]
 
-PREHOOK: query: -- Simple Scans without limit (will be  Fetch task now)
-explain select key, value  from src
+PREHOOK: query: explain select key, value  from src
 PREHOOK: type: QUERY
-POSTHOOK: query: -- Simple Scans without limit (will be  Fetch task now)
-explain select key, value  from src
+POSTHOOK: query: explain select key, value  from src
 POSTHOOK: type: QUERY
 Plan optimized by CBO.
 

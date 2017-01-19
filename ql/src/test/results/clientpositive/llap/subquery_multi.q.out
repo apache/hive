@@ -75,15 +75,9 @@ POSTHOOK: Lineage: part_null.p_partkey EXPRESSION [(values__tmp__table__2)values
 POSTHOOK: Lineage: part_null.p_retailprice EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col8, type:string, comment:), ]
 POSTHOOK: Lineage: part_null.p_size EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col6, type:string, comment:), ]
 POSTHOOK: Lineage: part_null.p_type SIMPLE [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col5, type:string, comment:), ]
-PREHOOK: query: -- multiple subquery
-
--- Both IN are always true so should return all rows
-explain select * from part_null where p_size IN (select p_size from part_null) AND p_brand IN (select p_brand from part_null)
+PREHOOK: query: explain select * from part_null where p_size IN (select p_size from part_null) AND p_brand IN (select p_brand from part_null)
 PREHOOK: type: QUERY
-POSTHOOK: query: -- multiple subquery
-
--- Both IN are always true so should return all rows
-explain select * from part_null where p_size IN (select p_size from part_null) AND p_brand IN (select p_brand from part_null)
+POSTHOOK: query: explain select * from part_null where p_size IN (select p_size from part_null) AND p_brand IN (select p_brand from part_null)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -255,11 +249,9 @@ POSTHOOK: Input: default@part_null
 155733	almond antique sky peru orange	Manufacturer#5	Brand#53	SMALL PLATED BRASS	2	WRAP DRUM	1788.73	furiously. bra
 15103	almond aquamarine dodger light gainsboro	Manufacturer#5	Brand#53	ECONOMY BURNISHED STEEL	46	LG PACK	1018.1	packages hinder carefu
 Warning: Shuffle Join MERGEJOIN[40][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 3' is a cross product
-PREHOOK: query: -- NOT IN has null value so should return 0 rows
-explain select * from part_null where p_name IN (select p_name from part_null) AND p_brand NOT IN (select p_name from part_null)
+PREHOOK: query: explain select * from part_null where p_name IN (select p_name from part_null) AND p_brand NOT IN (select p_name from part_null)
 PREHOOK: type: QUERY
-POSTHOOK: query: -- NOT IN has null value so should return 0 rows
-explain select * from part_null where p_name IN (select p_name from part_null) AND p_brand NOT IN (select p_name from part_null)
+POSTHOOK: query: explain select * from part_null where p_name IN (select p_name from part_null) AND p_brand NOT IN (select p_name from part_null)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -466,11 +458,9 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part_null
 #### A masked pattern was here ####
 Warning: Shuffle Join MERGEJOIN[40][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 3' is a cross product
-PREHOOK: query: -- NOT IN is always true and IN is false for where p_name is NULL, hence should return all but one row
-explain select * from part_null where p_name IN (select p_name from part_null) AND p_brand NOT IN (select p_type from part_null)
+PREHOOK: query: explain select * from part_null where p_name IN (select p_name from part_null) AND p_brand NOT IN (select p_type from part_null)
 PREHOOK: type: QUERY
-POSTHOOK: query: -- NOT IN is always true and IN is false for where p_name is NULL, hence should return all but one row
-explain select * from part_null where p_name IN (select p_name from part_null) AND p_brand NOT IN (select p_type from part_null)
+POSTHOOK: query: explain select * from part_null where p_name IN (select p_name from part_null) AND p_brand NOT IN (select p_type from part_null)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -703,11 +693,9 @@ POSTHOOK: Input: default@part_null
 155733	almond antique sky peru orange	Manufacturer#5	Brand#53	SMALL PLATED BRASS	2	WRAP DRUM	1788.73	furiously. bra
 15103	almond aquamarine dodger light gainsboro	Manufacturer#5	Brand#53	ECONOMY BURNISHED STEEL	46	LG PACK	1018.1	packages hinder carefu
 Warning: Shuffle Join MERGEJOIN[40][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 3' is a cross product
-PREHOOK: query: -- NOT IN has one NULL value so this whole query should not return any row
-explain select * from part_null where p_brand IN (select p_brand from part_null) AND p_brand NOT IN (select p_name from part_null)
+PREHOOK: query: explain select * from part_null where p_brand IN (select p_brand from part_null) AND p_brand NOT IN (select p_name from part_null)
 PREHOOK: type: QUERY
-POSTHOOK: query: -- NOT IN has one NULL value so this whole query should not return any row
-explain select * from part_null where p_brand IN (select p_brand from part_null) AND p_brand NOT IN (select p_name from part_null)
+POSTHOOK: query: explain select * from part_null where p_brand IN (select p_brand from part_null) AND p_brand NOT IN (select p_name from part_null)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -914,13 +902,9 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part_null
 #### A masked pattern was here ####
 Warning: Shuffle Join MERGEJOIN[42][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
-PREHOOK: query: -- NOT IN is always true irrespective of p_name being null/non-null since inner query is empty
--- second query is always true so this should return all rows
-explain select * from part_null where p_name NOT IN (select c from tempty) AND p_brand IN (select p_brand from part_null)
+PREHOOK: query: explain select * from part_null where p_name NOT IN (select c from tempty) AND p_brand IN (select p_brand from part_null)
 PREHOOK: type: QUERY
-POSTHOOK: query: -- NOT IN is always true irrespective of p_name being null/non-null since inner query is empty
--- second query is always true so this should return all rows
-explain select * from part_null where p_name NOT IN (select c from tempty) AND p_brand IN (select p_brand from part_null)
+POSTHOOK: query: explain select * from part_null where p_name NOT IN (select c from tempty) AND p_brand IN (select p_brand from part_null)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -1156,11 +1140,9 @@ POSTHOOK: Input: default@tempty
 15103	almond aquamarine dodger light gainsboro	Manufacturer#5	Brand#53	ECONOMY BURNISHED STEEL	46	LG PACK	1018.1	packages hinder carefu
 155733	almond antique sky peru orange	Manufacturer#5	Brand#53	SMALL PLATED BRASS	2	WRAP DRUM	1788.73	furiously. bra
 Warning: Shuffle Join MERGEJOIN[28][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 3' is a cross product
-PREHOOK: query: -- IN, EXISTS
-explain select * from part_null where p_name IN (select p_name from part_null) AND EXISTS (select c from tnull)
+PREHOOK: query: explain select * from part_null where p_name IN (select p_name from part_null) AND EXISTS (select c from tnull)
 PREHOOK: type: QUERY
-POSTHOOK: query: -- IN, EXISTS
-explain select * from part_null where p_name IN (select p_name from part_null) AND EXISTS (select c from tnull)
+POSTHOOK: query: explain select * from part_null where p_name IN (select p_name from part_null) AND EXISTS (select c from tnull)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -1667,11 +1649,9 @@ POSTHOOK: Input: default@tempty
 78486	almond azure blanched chiffon midnight	Manufacturer#5	Brand#52	LARGE BRUSHED BRASS	23	MED BAG	1464.48	hely blith
 Warning: Shuffle Join MERGEJOIN[187][tables = [$hdt$_4, $hdt$_5]] in Stage 'Reducer 18' is a cross product
 Warning: Shuffle Join MERGEJOIN[190][tables = [$hdt$_4, $hdt$_5]] in Stage 'Reducer 23' is a cross product
-PREHOOK: query: -- corr, mix of IN/NOT IN
-explain select * from part_null where p_name IN ( select p_name from part where part.p_type = part_null.p_type) AND p_brand NOT IN (select p_container from part where part.p_type = part_null.p_type AND p_brand IN (select p_brand from part pp where part.p_type = pp.p_type))
+PREHOOK: query: explain select * from part_null where p_name IN ( select p_name from part where part.p_type = part_null.p_type) AND p_brand NOT IN (select p_container from part where part.p_type = part_null.p_type AND p_brand IN (select p_brand from part pp where part.p_type = pp.p_type))
 PREHOOK: type: QUERY
-POSTHOOK: query: -- corr, mix of IN/NOT IN
-explain select * from part_null where p_name IN ( select p_name from part where part.p_type = part_null.p_type) AND p_brand NOT IN (select p_container from part where part.p_type = part_null.p_type AND p_brand IN (select p_brand from part pp where part.p_type = pp.p_type))
+POSTHOOK: query: explain select * from part_null where p_name IN ( select p_name from part where part.p_type = part_null.p_type) AND p_brand NOT IN (select p_container from part where part.p_type = part_null.p_type AND p_brand IN (select p_brand from part pp where part.p_type = pp.p_type))
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -2460,11 +2440,9 @@ POSTHOOK: Input: default@part_null
 192697	almond antique blue firebrick mint	Manufacturer#5	Brand#52	MEDIUM BURNISHED TIN	31	LG DRUM	1789.69	ickly ir
 15103	almond aquamarine dodger light gainsboro	Manufacturer#5	Brand#53	ECONOMY BURNISHED STEEL	46	LG PACK	1018.1	packages hinder carefu
 155733	almond antique sky peru orange	Manufacturer#5	Brand#53	SMALL PLATED BRASS	2	WRAP DRUM	1788.73	furiously. bra
-PREHOOK: query: -- mix of corr and uncorr
-explain select * from part_null where p_name IN ( select p_name from part) AND p_brand IN (select p_brand from part where part.p_type = part_null.p_type)
+PREHOOK: query: explain select * from part_null where p_name IN ( select p_name from part) AND p_brand IN (select p_brand from part where part.p_type = part_null.p_type)
 PREHOOK: type: QUERY
-POSTHOOK: query: -- mix of corr and uncorr
-explain select * from part_null where p_name IN ( select p_name from part) AND p_brand IN (select p_brand from part where part.p_type = part_null.p_type)
+POSTHOOK: query: explain select * from part_null where p_name IN ( select p_name from part) AND p_brand IN (select p_brand from part where part.p_type = part_null.p_type)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -2756,11 +2734,9 @@ POSTHOOK: Input: default@part_null
 155733	almond antique sky peru orange	Manufacturer#5	Brand#53	SMALL PLATED BRASS	2	WRAP DRUM	1788.73	furiously. bra
 Warning: Shuffle Join MERGEJOIN[187][tables = [$hdt$_4, $hdt$_5]] in Stage 'Reducer 18' is a cross product
 Warning: Shuffle Join MERGEJOIN[190][tables = [$hdt$_4, $hdt$_5]] in Stage 'Reducer 23' is a cross product
-PREHOOK: query: -- one query has multiple corr
-explain select * from part_null where p_name IN ( select p_name from part where part.p_type = part_null.p_type AND part.p_container=part_null.p_container) AND p_brand NOT IN (select p_container from part where part.p_type = part_null.p_type AND p_brand IN (select p_brand from part pp where part.p_type = pp.p_type))
+PREHOOK: query: explain select * from part_null where p_name IN ( select p_name from part where part.p_type = part_null.p_type AND part.p_container=part_null.p_container) AND p_brand NOT IN (select p_container from part where part.p_type = part_null.p_type AND p_brand IN (select p_brand from part pp where part.p_type = pp.p_type))
 PREHOOK: type: QUERY
-POSTHOOK: query: -- one query has multiple corr
-explain select * from part_null where p_name IN ( select p_name from part where part.p_type = part_null.p_type AND part.p_container=part_null.p_container) AND p_brand NOT IN (select p_container from part where part.p_type = part_null.p_type AND p_brand IN (select p_brand from part pp where part.p_type = pp.p_type))
+POSTHOOK: query: explain select * from part_null where p_name IN ( select p_name from part where part.p_type = part_null.p_type AND part.p_container=part_null.p_container) AND p_brand NOT IN (select p_container from part where part.p_type = part_null.p_type AND p_brand IN (select p_brand from part pp where part.p_type = pp.p_type))
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -3549,11 +3525,9 @@ POSTHOOK: Input: default@part_null
 42669	almond antique medium spring khaki	Manufacturer#5	Brand#51	STANDARD BURNISHED TIN	6	MED CAN	1611.66	sits haggl
 195606	almond aquamarine sandy cyan gainsboro	Manufacturer#2	Brand#25	STANDARD PLATED TIN	18	SM PKG	1701.6	ic de
 144293	almond antique olive coral navajo	Manufacturer#3	Brand#34	STANDARD POLISHED STEEL	45	JUMBO CAN	1337.29	ag furiously about 
-PREHOOK: query: --diff corr var (all reffering to diff outer var)
-explain select * from part_null where p_name IN (select p_name from part where part.p_type = part_null.p_type) AND p_brand NOT IN (select p_type from part where part.p_size = part_null.p_size)
+PREHOOK: query: explain select * from part_null where p_name IN (select p_name from part where part.p_type = part_null.p_type) AND p_brand NOT IN (select p_type from part where part.p_size = part_null.p_size)
 PREHOOK: type: QUERY
-POSTHOOK: query: --diff corr var (all reffering to diff outer var)
-explain select * from part_null where p_name IN (select p_name from part where part.p_type = part_null.p_type) AND p_brand NOT IN (select p_type from part where part.p_size = part_null.p_size)
+POSTHOOK: query: explain select * from part_null where p_name IN (select p_name from part where part.p_type = part_null.p_type) AND p_brand NOT IN (select p_type from part where part.p_size = part_null.p_size)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -4002,13 +3976,9 @@ POSTHOOK: Input: default@part_null
 192697	almond antique blue firebrick mint	Manufacturer#5	Brand#52	MEDIUM BURNISHED TIN	31	LG DRUM	1789.69	ickly ir
 155733	almond antique sky peru orange	Manufacturer#5	Brand#53	SMALL PLATED BRASS	2	WRAP DRUM	1788.73	furiously. bra
 15103	almond aquamarine dodger light gainsboro	Manufacturer#5	Brand#53	ECONOMY BURNISHED STEEL	46	LG PACK	1018.1	packages hinder carefu
-PREHOOK: query: -- NESTED QUERIES
--- both queries are correlated
-explain select * from part_null where p_name IN (select p_name from part where part.p_type = part_null.p_type AND p_brand IN (select p_brand from part pp where part.p_type = pp.p_type))
+PREHOOK: query: explain select * from part_null where p_name IN (select p_name from part where part.p_type = part_null.p_type AND p_brand IN (select p_brand from part pp where part.p_type = pp.p_type))
 PREHOOK: type: QUERY
-POSTHOOK: query: -- NESTED QUERIES
--- both queries are correlated
-explain select * from part_null where p_name IN (select p_name from part where part.p_type = part_null.p_type AND p_brand IN (select p_brand from part pp where part.p_type = pp.p_type))
+POSTHOOK: query: explain select * from part_null where p_name IN (select p_name from part where part.p_type = part_null.p_type AND p_brand IN (select p_brand from part pp where part.p_type = pp.p_type))
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -4295,14 +4265,12 @@ POSTHOOK: Input: default@part_null
 33357	almond azure aquamarine papaya violet	Manufacturer#4	Brand#41	STANDARD ANODIZED TIN	12	WRAP CASE	1290.35	reful
 78486	almond azure blanched chiffon midnight	Manufacturer#5	Brand#52	LARGE BRUSHED BRASS	23	MED BAG	1464.48	hely blith
 Warning: Shuffle Join MERGEJOIN[100][tables = [$hdt$_2, $hdt$_3, $hdt$_4]] in Stage 'Reducer 8' is a cross product
-PREHOOK: query: -- in, not in corr
-explain select p.p_partkey, li.l_suppkey
+PREHOOK: query: explain select p.p_partkey, li.l_suppkey
 from (select distinct l_partkey as p_partkey from lineitem) p join lineitem li on p.p_partkey = li.l_partkey
 where li.l_linenumber = 1 and
  li.l_orderkey in (select l_orderkey from lineitem where l_shipmode = 'AIR' and l_linenumber = li.l_linenumber AND l_quantity NOT IN (select avg(l_quantity) from lineitem))
 PREHOOK: type: QUERY
-POSTHOOK: query: -- in, not in corr
-explain select p.p_partkey, li.l_suppkey
+POSTHOOK: query: explain select p.p_partkey, li.l_suppkey
 from (select distinct l_partkey as p_partkey from lineitem) p join lineitem li on p.p_partkey = li.l_partkey
 where li.l_linenumber = 1 and
  li.l_orderkey in (select l_orderkey from lineitem where l_shipmode = 'AIR' and l_linenumber = li.l_linenumber AND l_quantity NOT IN (select avg(l_quantity) from lineitem))
@@ -5405,11 +5373,9 @@ POSTHOOK: Input: default@src
 430	val_430	3
 417	val_417	3
 Warning: Shuffle Join MERGEJOIN[30][tables = [$hdt$_1, $hdt$_2]] in Stage 'Reducer 4' is a cross product
-PREHOOK: query: -- subquery pred only refer to parent query column
-explain select * from part where p_name IN (select p_name from part p where part.p_type <> '1')
+PREHOOK: query: explain select * from part where p_name IN (select p_name from part p where part.p_type <> '1')
 PREHOOK: type: QUERY
-POSTHOOK: query: -- subquery pred only refer to parent query column
-explain select * from part where p_name IN (select p_name from part p where part.p_type <> '1')
+POSTHOOK: query: explain select * from part where p_name IN (select p_name from part p where part.p_type <> '1')
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage

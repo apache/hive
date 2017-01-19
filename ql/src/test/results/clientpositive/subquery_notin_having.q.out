@@ -1,7 +1,5 @@
 Warning: Shuffle Join JOIN[23][tables = [$hdt$_0, $hdt$_1]] in Stage 'Stage-2:MAPRED' is a cross product
-PREHOOK: query: -- non agg, non corr
-
-explain
+PREHOOK: query: explain
 select key, count(*) 
 from src 
 group by key
@@ -207,8 +205,7 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: -- non agg, corr
-explain
+PREHOOK: query: explain
 select b.p_mfgr, min(p_retailprice) 
 from part b 
 group by b.p_mfgr
@@ -807,8 +804,7 @@ POSTHOOK: Input: default@part
 Manufacturer#1	1173.15
 Manufacturer#2	1690.68
 Warning: Shuffle Join JOIN[32][tables = [$hdt$_0, $hdt$_1]] in Stage 'Stage-2:MAPRED' is a cross product
-PREHOOK: query: -- agg, non corr
-explain
+PREHOOK: query: explain
 select b.p_mfgr, min(p_retailprice) 
 from part b 
 group by b.p_mfgr
@@ -1096,13 +1092,11 @@ POSTHOOK: Input: default@part
 #### A masked pattern was here ####
 Manufacturer#1	1173.15
 Manufacturer#2	1690.68
-PREHOOK: query: --nullability tests
-CREATE TABLE t1 (c1 INT, c2 CHAR(100))
+PREHOOK: query: CREATE TABLE t1 (c1 INT, c2 CHAR(100))
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@t1
-POSTHOOK: query: --nullability tests
-CREATE TABLE t1 (c1 INT, c2 CHAR(100))
+POSTHOOK: query: CREATE TABLE t1 (c1 INT, c2 CHAR(100))
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t1

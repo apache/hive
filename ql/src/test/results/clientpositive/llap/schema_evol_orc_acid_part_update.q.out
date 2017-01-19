@@ -1,23 +1,9 @@
-PREHOOK: query: -- SORT_QUERY_RESULTS
---
--- FILE VARIATION: ORC, ACID Non-Vectorized, MapWork, Partitioned
--- *IMPORTANT NOTE* We set hive.exec.schema.evolution=false above since schema evolution is always used for ACID.
--- Also, we don't do EXPLAINs on ACID files because the transaction id causes Q file statistics differences...
---
-
-CREATE TABLE schema_evolution_data(insert_num int, boolean1 boolean, tinyint1 tinyint, smallint1 smallint, int1 int, bigint1 bigint, decimal1 decimal(38,18), float1 float, double1 double, string1 string, string2 string, date1 date, timestamp1 timestamp, boolean_str string, tinyint_str string, smallint_str string, int_str string, bigint_str string, decimal_str string, float_str string, double_str string, date_str string, timestamp_str string, filler string)
+PREHOOK: query: CREATE TABLE schema_evolution_data(insert_num int, boolean1 boolean, tinyint1 tinyint, smallint1 smallint, int1 int, bigint1 bigint, decimal1 decimal(38,18), float1 float, double1 double, string1 string, string2 string, date1 date, timestamp1 timestamp, boolean_str string, tinyint_str string, smallint_str string, int_str string, bigint_str string, decimal_str string, float_str string, double_str string, date_str string, timestamp_str string, filler string)
 row format delimited fields terminated by '|' stored as textfile
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@schema_evolution_data
-POSTHOOK: query: -- SORT_QUERY_RESULTS
---
--- FILE VARIATION: ORC, ACID Non-Vectorized, MapWork, Partitioned
--- *IMPORTANT NOTE* We set hive.exec.schema.evolution=false above since schema evolution is always used for ACID.
--- Also, we don't do EXPLAINs on ACID files because the transaction id causes Q file statistics differences...
---
-
-CREATE TABLE schema_evolution_data(insert_num int, boolean1 boolean, tinyint1 tinyint, smallint1 smallint, int1 int, bigint1 bigint, decimal1 decimal(38,18), float1 float, double1 double, string1 string, string2 string, date1 date, timestamp1 timestamp, boolean_str string, tinyint_str string, smallint_str string, int_str string, bigint_str string, decimal_str string, float_str string, double_str string, date_str string, timestamp_str string, filler string)
+POSTHOOK: query: CREATE TABLE schema_evolution_data(insert_num int, boolean1 boolean, tinyint1 tinyint, smallint1 smallint, int1 int, bigint1 bigint, decimal1 decimal(38,18), float1 float, double1 double, string1 string, string2 string, date1 date, timestamp1 timestamp, boolean_str string, tinyint_str string, smallint_str string, int_str string, bigint_str string, decimal_str string, float_str string, double_str string, date_str string, timestamp_str string, filler string)
 row format delimited fields terminated by '|' stored as textfile
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
@@ -48,19 +34,11 @@ POSTHOOK: query: load data local inpath '../../data/files/schema_evolution/schem
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@schema_evolution_data_2
-PREHOOK: query: --
---
--- SECTION VARIATION: ALTER TABLE ADD COLUMNS ... UPDATE New Columns
----
-CREATE TABLE partitioned_update_1(insert_num int, a INT, b STRING) PARTITIONED BY(part INT) clustered by (a) into 2 buckets STORED AS ORC TBLPROPERTIES ('transactional'='true')
+PREHOOK: query: CREATE TABLE partitioned_update_1(insert_num int, a INT, b STRING) PARTITIONED BY(part INT) clustered by (a) into 2 buckets STORED AS ORC TBLPROPERTIES ('transactional'='true')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@partitioned_update_1
-POSTHOOK: query: --
---
--- SECTION VARIATION: ALTER TABLE ADD COLUMNS ... UPDATE New Columns
----
-CREATE TABLE partitioned_update_1(insert_num int, a INT, b STRING) PARTITIONED BY(part INT) clustered by (a) into 2 buckets STORED AS ORC TBLPROPERTIES ('transactional'='true')
+POSTHOOK: query: CREATE TABLE partitioned_update_1(insert_num int, a INT, b STRING) PARTITIONED BY(part INT) clustered by (a) into 2 buckets STORED AS ORC TBLPROPERTIES ('transactional'='true')
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@partitioned_update_1
@@ -76,13 +54,11 @@ POSTHOOK: Lineage: partitioned_update_1 PARTITION(part=1).a SIMPLE [(schema_evol
 POSTHOOK: Lineage: partitioned_update_1 PARTITION(part=1).b SIMPLE []
 POSTHOOK: Lineage: partitioned_update_1 PARTITION(part=1).insert_num SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:insert_num, type:int, comment:null), ]
 insert_num	int1	_c2
-PREHOOK: query: -- Table-Non-Cascade ADD COLUMNS ...
-alter table partitioned_update_1 add columns(c int, d string)
+PREHOOK: query: alter table partitioned_update_1 add columns(c int, d string)
 PREHOOK: type: ALTERTABLE_ADDCOLS
 PREHOOK: Input: default@partitioned_update_1
 PREHOOK: Output: default@partitioned_update_1
-POSTHOOK: query: -- Table-Non-Cascade ADD COLUMNS ...
-alter table partitioned_update_1 add columns(c int, d string)
+POSTHOOK: query: alter table partitioned_update_1 add columns(c int, d string)
 POSTHOOK: type: ALTERTABLE_ADDCOLS
 POSTHOOK: Input: default@partitioned_update_1
 POSTHOOK: Output: default@partitioned_update_1
@@ -142,16 +118,14 @@ insert_num	part	a	b	c	d
 113	1	40000	new	40000	Delaware
 114	1	-128	new	-128	smaller than Scotland
 115	1	32768	new	32768	major glaciation
-PREHOOK: query: -- UPDATE New Columns
-update partitioned_update_1 set c=99
+PREHOOK: query: update partitioned_update_1 set c=99
 PREHOOK: type: QUERY
 PREHOOK: Input: default@partitioned_update_1
 PREHOOK: Input: default@partitioned_update_1@part=1
 PREHOOK: Input: default@partitioned_update_1@part=2
 PREHOOK: Output: default@partitioned_update_1@part=1
 PREHOOK: Output: default@partitioned_update_1@part=2
-POSTHOOK: query: -- UPDATE New Columns
-update partitioned_update_1 set c=99
+POSTHOOK: query: update partitioned_update_1 set c=99
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@partitioned_update_1
 POSTHOOK: Input: default@partitioned_update_1@part=1
@@ -231,19 +205,11 @@ POSTHOOK: query: DROP TABLE partitioned_update_1
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@partitioned_update_1
 POSTHOOK: Output: default@partitioned_update_1
-PREHOOK: query: --
---
--- SECTION VARIATION: ALTER TABLE ADD COLUMNS ... DELETE where old column
----
-CREATE TABLE partitioned_delete_1(insert_num int, a INT, b STRING) PARTITIONED BY(part INT) clustered by (a) into 2 buckets STORED AS ORC TBLPROPERTIES ('transactional'='true')
+PREHOOK: query: CREATE TABLE partitioned_delete_1(insert_num int, a INT, b STRING) PARTITIONED BY(part INT) clustered by (a) into 2 buckets STORED AS ORC TBLPROPERTIES ('transactional'='true')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@partitioned_delete_1
-POSTHOOK: query: --
---
--- SECTION VARIATION: ALTER TABLE ADD COLUMNS ... DELETE where old column
----
-CREATE TABLE partitioned_delete_1(insert_num int, a INT, b STRING) PARTITIONED BY(part INT) clustered by (a) into 2 buckets STORED AS ORC TBLPROPERTIES ('transactional'='true')
+POSTHOOK: query: CREATE TABLE partitioned_delete_1(insert_num int, a INT, b STRING) PARTITIONED BY(part INT) clustered by (a) into 2 buckets STORED AS ORC TBLPROPERTIES ('transactional'='true')
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@partitioned_delete_1
@@ -259,13 +225,11 @@ POSTHOOK: Lineage: partitioned_delete_1 PARTITION(part=1).a SIMPLE [(schema_evol
 POSTHOOK: Lineage: partitioned_delete_1 PARTITION(part=1).b SIMPLE []
 POSTHOOK: Lineage: partitioned_delete_1 PARTITION(part=1).insert_num SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:insert_num, type:int, comment:null), ]
 insert_num	int1	_c2
-PREHOOK: query: -- Table-Non-Cascade ADD COLUMNS ...
-alter table partitioned_delete_1 add columns(c int, d string)
+PREHOOK: query: alter table partitioned_delete_1 add columns(c int, d string)
 PREHOOK: type: ALTERTABLE_ADDCOLS
 PREHOOK: Input: default@partitioned_delete_1
 PREHOOK: Output: default@partitioned_delete_1
-POSTHOOK: query: -- Table-Non-Cascade ADD COLUMNS ...
-alter table partitioned_delete_1 add columns(c int, d string)
+POSTHOOK: query: alter table partitioned_delete_1 add columns(c int, d string)
 POSTHOOK: type: ALTERTABLE_ADDCOLS
 POSTHOOK: Input: default@partitioned_delete_1
 POSTHOOK: Output: default@partitioned_delete_1
@@ -325,16 +289,14 @@ part	a	b	c	d
 2	17	new	17	feather weight
 2	400	new	400	window  
 2	NULL	new	NULL	baffling
-PREHOOK: query: -- DELETE where old column
-delete from partitioned_delete_1 where insert_num = 102 or insert_num = 104 or insert_num = 106
+PREHOOK: query: delete from partitioned_delete_1 where insert_num = 102 or insert_num = 104 or insert_num = 106
 PREHOOK: type: QUERY
 PREHOOK: Input: default@partitioned_delete_1
 PREHOOK: Input: default@partitioned_delete_1@part=1
 PREHOOK: Input: default@partitioned_delete_1@part=2
 PREHOOK: Output: default@partitioned_delete_1@part=1
 PREHOOK: Output: default@partitioned_delete_1@part=2
-POSTHOOK: query: -- DELETE where old column
-delete from partitioned_delete_1 where insert_num = 102 or insert_num = 104 or insert_num = 106
+POSTHOOK: query: delete from partitioned_delete_1 where insert_num = 102 or insert_num = 104 or insert_num = 106
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@partitioned_delete_1
 POSTHOOK: Input: default@partitioned_delete_1@part=1
@@ -408,19 +370,11 @@ POSTHOOK: query: DROP TABLE partitioned_delete_1
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@partitioned_delete_1
 POSTHOOK: Output: default@partitioned_delete_1
-PREHOOK: query: --
---
--- SECTION VARIATION: ALTER TABLE ADD COLUMNS ... DELETE where new column
----
-CREATE TABLE partitioned_delete_2(insert_num int, a INT, b STRING) PARTITIONED BY(part INT) clustered by (a) into 2 buckets STORED AS ORC TBLPROPERTIES ('transactional'='true')
+PREHOOK: query: CREATE TABLE partitioned_delete_2(insert_num int, a INT, b STRING) PARTITIONED BY(part INT) clustered by (a) into 2 buckets STORED AS ORC TBLPROPERTIES ('transactional'='true')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@partitioned_delete_2
-POSTHOOK: query: --
---
--- SECTION VARIATION: ALTER TABLE ADD COLUMNS ... DELETE where new column
----
-CREATE TABLE partitioned_delete_2(insert_num int, a INT, b STRING) PARTITIONED BY(part INT) clustered by (a) into 2 buckets STORED AS ORC TBLPROPERTIES ('transactional'='true')
+POSTHOOK: query: CREATE TABLE partitioned_delete_2(insert_num int, a INT, b STRING) PARTITIONED BY(part INT) clustered by (a) into 2 buckets STORED AS ORC TBLPROPERTIES ('transactional'='true')
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@partitioned_delete_2
@@ -436,13 +390,11 @@ POSTHOOK: Lineage: partitioned_delete_2 PARTITION(part=1).a SIMPLE [(schema_evol
 POSTHOOK: Lineage: partitioned_delete_2 PARTITION(part=1).b SIMPLE []
 POSTHOOK: Lineage: partitioned_delete_2 PARTITION(part=1).insert_num SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:insert_num, type:int, comment:null), ]
 insert_num	int1	_c2
-PREHOOK: query: -- Table-Non-Cascade ADD COLUMNS ...
-alter table partitioned_delete_2 add columns(c int, d string)
+PREHOOK: query: alter table partitioned_delete_2 add columns(c int, d string)
 PREHOOK: type: ALTERTABLE_ADDCOLS
 PREHOOK: Input: default@partitioned_delete_2
 PREHOOK: Output: default@partitioned_delete_2
-POSTHOOK: query: -- Table-Non-Cascade ADD COLUMNS ...
-alter table partitioned_delete_2 add columns(c int, d string)
+POSTHOOK: query: alter table partitioned_delete_2 add columns(c int, d string)
 POSTHOOK: type: ALTERTABLE_ADDCOLS
 POSTHOOK: Input: default@partitioned_delete_2
 POSTHOOK: Output: default@partitioned_delete_2
@@ -502,16 +454,14 @@ insert_num	part	a	b	c	d
 113	1	40000	new	40000	Delaware
 114	1	-128	new	-128	smaller than Scotland
 115	1	32768	new	32768	major glaciation
-PREHOOK: query: -- DELETE where new column
-delete from partitioned_delete_2 where insert_num = 108 or insert_num > 113
+PREHOOK: query: delete from partitioned_delete_2 where insert_num = 108 or insert_num > 113
 PREHOOK: type: QUERY
 PREHOOK: Input: default@partitioned_delete_2
 PREHOOK: Input: default@partitioned_delete_2@part=1
 PREHOOK: Input: default@partitioned_delete_2@part=2
 PREHOOK: Output: default@partitioned_delete_2@part=1
 PREHOOK: Output: default@partitioned_delete_2@part=2
-POSTHOOK: query: -- DELETE where new column
-delete from partitioned_delete_2 where insert_num = 108 or insert_num > 113
+POSTHOOK: query: delete from partitioned_delete_2 where insert_num = 108 or insert_num > 113
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@partitioned_delete_2
 POSTHOOK: Input: default@partitioned_delete_2@part=1
@@ -585,11 +535,9 @@ POSTHOOK: query: DROP TABLE partitioned_delete_2
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@partitioned_delete_2
 POSTHOOK: Output: default@partitioned_delete_2
-PREHOOK: query: --following tests is moved from system tests
-drop table if exists missing_ddl_2
+PREHOOK: query: drop table if exists missing_ddl_2
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: --following tests is moved from system tests
-drop table if exists missing_ddl_2
+POSTHOOK: query: drop table if exists missing_ddl_2
 POSTHOOK: type: DROPTABLE
 PREHOOK: query: create table missing_ddl_2(name string, age int)
 PREHOOK: type: CREATETABLE
@@ -1694,11 +1642,9 @@ POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=0).s SIMPLE [(alltypesor
 POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=0).si SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:csmallint, type:smallint, comment:null), ]
 POSTHOOK: Lineage: all100kjson_textfile_orc PARTITION(t=0).ts SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]
 csmallint	cint	cbigint	cfloat	cdouble	cstring1	cboolean1	ctimestamp1	ctinyint
-PREHOOK: query: -- HIVE-11977: Hive should handle an external avro table with zero length files present
-DROP TABLE IF EXISTS emptyavro
+PREHOOK: query: DROP TABLE IF EXISTS emptyavro
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: -- HIVE-11977: Hive should handle an external avro table with zero length files present
-DROP TABLE IF EXISTS emptyavro
+POSTHOOK: query: DROP TABLE IF EXISTS emptyavro
 POSTHOOK: type: DROPTABLE
 PREHOOK: query: CREATE TABLE emptyavro (i int)
                PARTITIONED BY (s string)

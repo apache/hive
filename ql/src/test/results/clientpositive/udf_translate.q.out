@@ -22,13 +22,11 @@ For example,
 translate('abcdef', 'ada', '192') returns '1bc9ef' replaces 'a' with '1' and 'd' with '9' ignoring the second occurence of 'a' in the from string mapping it to '2'
 Function class:org.apache.hadoop.hive.ql.udf.generic.GenericUDFTranslate
 Function type:BUILTIN
-PREHOOK: query: -- Create some tables to serve some input data
-CREATE TABLE table_input(input STRING)
+PREHOOK: query: CREATE TABLE table_input(input STRING)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@table_input
-POSTHOOK: query: -- Create some tables to serve some input data
-CREATE TABLE table_input(input STRING)
+POSTHOOK: query: CREATE TABLE table_input(input STRING)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@table_input

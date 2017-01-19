@@ -1,23 +1,9 @@
-PREHOOK: query: -- SORT_QUERY_RESULTS
---
--- FILE VARIATION: ORC, ACID Non-Vectorized, MapWork, Table
--- *IMPORTANT NOTE* We set hive.exec.schema.evolution=false above since schema evolution is always used for ACID.
--- Also, we don't do EXPLAINs on ACID files because the transaction id causes Q file statistics differences...
---
-
-CREATE TABLE schema_evolution_data(insert_num int, boolean1 boolean, tinyint1 tinyint, smallint1 smallint, int1 int, bigint1 bigint, decimal1 decimal(38,18), float1 float, double1 double, string1 string, string2 string, date1 date, timestamp1 timestamp, boolean_str string, tinyint_str string, smallint_str string, int_str string, bigint_str string, decimal_str string, float_str string, double_str string, date_str string, timestamp_str string, filler string)
+PREHOOK: query: CREATE TABLE schema_evolution_data(insert_num int, boolean1 boolean, tinyint1 tinyint, smallint1 smallint, int1 int, bigint1 bigint, decimal1 decimal(38,18), float1 float, double1 double, string1 string, string2 string, date1 date, timestamp1 timestamp, boolean_str string, tinyint_str string, smallint_str string, int_str string, bigint_str string, decimal_str string, float_str string, double_str string, date_str string, timestamp_str string, filler string)
 row format delimited fields terminated by '|' stored as textfile
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@schema_evolution_data
-POSTHOOK: query: -- SORT_QUERY_RESULTS
---
--- FILE VARIATION: ORC, ACID Non-Vectorized, MapWork, Table
--- *IMPORTANT NOTE* We set hive.exec.schema.evolution=false above since schema evolution is always used for ACID.
--- Also, we don't do EXPLAINs on ACID files because the transaction id causes Q file statistics differences...
---
-
-CREATE TABLE schema_evolution_data(insert_num int, boolean1 boolean, tinyint1 tinyint, smallint1 smallint, int1 int, bigint1 bigint, decimal1 decimal(38,18), float1 float, double1 double, string1 string, string2 string, date1 date, timestamp1 timestamp, boolean_str string, tinyint_str string, smallint_str string, int_str string, bigint_str string, decimal_str string, float_str string, double_str string, date_str string, timestamp_str string, filler string)
+POSTHOOK: query: CREATE TABLE schema_evolution_data(insert_num int, boolean1 boolean, tinyint1 tinyint, smallint1 smallint, int1 int, bigint1 bigint, decimal1 decimal(38,18), float1 float, double1 double, string1 string, string2 string, date1 date, timestamp1 timestamp, boolean_str string, tinyint_str string, smallint_str string, int_str string, bigint_str string, decimal_str string, float_str string, double_str string, date_str string, timestamp_str string, filler string)
 row format delimited fields terminated by '|' stored as textfile
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
@@ -48,19 +34,11 @@ POSTHOOK: query: load data local inpath '../../data/files/schema_evolution/schem
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@schema_evolution_data_2
-PREHOOK: query: --
---
--- SECTION VARIATION: ALTER TABLE ADD COLUMNS ... UPDATE New Columns
----
-CREATE TABLE table5(insert_num int, a INT, b STRING) clustered by (a) into 2 buckets STORED AS ORC TBLPROPERTIES ('transactional'='true')
+PREHOOK: query: CREATE TABLE table5(insert_num int, a INT, b STRING) clustered by (a) into 2 buckets STORED AS ORC TBLPROPERTIES ('transactional'='true')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@table5
-POSTHOOK: query: --
---
--- SECTION VARIATION: ALTER TABLE ADD COLUMNS ... UPDATE New Columns
----
-CREATE TABLE table5(insert_num int, a INT, b STRING) clustered by (a) into 2 buckets STORED AS ORC TBLPROPERTIES ('transactional'='true')
+POSTHOOK: query: CREATE TABLE table5(insert_num int, a INT, b STRING) clustered by (a) into 2 buckets STORED AS ORC TBLPROPERTIES ('transactional'='true')
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@table5
@@ -76,13 +54,11 @@ POSTHOOK: Lineage: table5.a SIMPLE [(schema_evolution_data)schema_evolution_data
 POSTHOOK: Lineage: table5.b SIMPLE []
 POSTHOOK: Lineage: table5.insert_num SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:insert_num, type:int, comment:null), ]
 insert_num	int1	_c2
-PREHOOK: query: -- Table-Non-Cascade ADD COLUMNS ...
-alter table table5 add columns(c int, d string)
+PREHOOK: query: alter table table5 add columns(c int, d string)
 PREHOOK: type: ALTERTABLE_ADDCOLS
 PREHOOK: Input: default@table5
 PREHOOK: Output: default@table5
-POSTHOOK: query: -- Table-Non-Cascade ADD COLUMNS ...
-alter table table5 add columns(c int, d string)
+POSTHOOK: query: alter table table5 add columns(c int, d string)
 POSTHOOK: type: ALTERTABLE_ADDCOLS
 POSTHOOK: Input: default@table5
 POSTHOOK: Output: default@table5
@@ -124,13 +100,11 @@ a	b	c	d
 82153733	new	82153733	Antarctic peninsula
 NULL	new	NULL	baffling
 NULL	original	NULL	NULL
-PREHOOK: query: -- UPDATE New Columns
-update table5 set c=99
+PREHOOK: query: update table5 set c=99
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table5
 PREHOOK: Output: default@table5
-POSTHOOK: query: -- UPDATE New Columns
-update table5 set c=99
+POSTHOOK: query: update table5 set c=99
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table5
 POSTHOOK: Output: default@table5
@@ -195,19 +169,11 @@ POSTHOOK: query: DROP TABLE table5
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@table5
 POSTHOOK: Output: default@table5
-PREHOOK: query: --
---
--- SECTION VARIATION: ALTER TABLE ADD COLUMNS ... DELETE where old column
----
-CREATE TABLE table6(insert_num int, a INT, b STRING) clustered by (a) into 2 buckets STORED AS ORC TBLPROPERTIES ('transactional'='true')
+PREHOOK: query: CREATE TABLE table6(insert_num int, a INT, b STRING) clustered by (a) into 2 buckets STORED AS ORC TBLPROPERTIES ('transactional'='true')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@table6
-POSTHOOK: query: --
---
--- SECTION VARIATION: ALTER TABLE ADD COLUMNS ... DELETE where old column
----
-CREATE TABLE table6(insert_num int, a INT, b STRING) clustered by (a) into 2 buckets STORED AS ORC TBLPROPERTIES ('transactional'='true')
+POSTHOOK: query: CREATE TABLE table6(insert_num int, a INT, b STRING) clustered by (a) into 2 buckets STORED AS ORC TBLPROPERTIES ('transactional'='true')
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@table6
@@ -223,13 +189,11 @@ POSTHOOK: Lineage: table6.a SIMPLE [(schema_evolution_data)schema_evolution_data
 POSTHOOK: Lineage: table6.b SIMPLE []
 POSTHOOK: Lineage: table6.insert_num SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:insert_num, type:int, comment:null), ]
 insert_num	int1	_c2
-PREHOOK: query: -- Table-Non-Cascade ADD COLUMNS ...
-alter table table6 add columns(c int, d string)
+PREHOOK: query: alter table table6 add columns(c int, d string)
 PREHOOK: type: ALTERTABLE_ADDCOLS
 PREHOOK: Input: default@table6
 PREHOOK: Output: default@table6
-POSTHOOK: query: -- Table-Non-Cascade ADD COLUMNS ...
-alter table table6 add columns(c int, d string)
+POSTHOOK: query: alter table table6 add columns(c int, d string)
 POSTHOOK: type: ALTERTABLE_ADDCOLS
 POSTHOOK: Input: default@table6
 POSTHOOK: Output: default@table6
@@ -285,13 +249,11 @@ a	b	c	d
 82153733	new	82153733	Antarctic peninsula
 NULL	new	NULL	baffling
 NULL	original	NULL	NULL
-PREHOOK: query: -- DELETE where old column
-delete from table6 where insert_num = 102 or insert_num = 104 or insert_num = 106
+PREHOOK: query: delete from table6 where insert_num = 102 or insert_num = 104 or insert_num = 106
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table6
 PREHOOK: Output: default@table6
-POSTHOOK: query: -- DELETE where old column
-delete from table6 where insert_num = 102 or insert_num = 104 or insert_num = 106
+POSTHOOK: query: delete from table6 where insert_num = 102 or insert_num = 104 or insert_num = 106
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table6
 POSTHOOK: Output: default@table6
@@ -350,19 +312,11 @@ POSTHOOK: query: DROP TABLE table6
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@table6
 POSTHOOK: Output: default@table6
-PREHOOK: query: --
---
--- SECTION VARIATION: ALTER TABLE ADD COLUMNS ... DELETE where new column
----
-CREATE TABLE table7(insert_num int, a INT, b STRING) clustered by (a) into 2 buckets STORED AS ORC TBLPROPERTIES ('transactional'='true')
+PREHOOK: query: CREATE TABLE table7(insert_num int, a INT, b STRING) clustered by (a) into 2 buckets STORED AS ORC TBLPROPERTIES ('transactional'='true')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@table7
-POSTHOOK: query: --
---
--- SECTION VARIATION: ALTER TABLE ADD COLUMNS ... DELETE where new column
----
-CREATE TABLE table7(insert_num int, a INT, b STRING) clustered by (a) into 2 buckets STORED AS ORC TBLPROPERTIES ('transactional'='true')
+POSTHOOK: query: CREATE TABLE table7(insert_num int, a INT, b STRING) clustered by (a) into 2 buckets STORED AS ORC TBLPROPERTIES ('transactional'='true')
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@table7
@@ -378,13 +332,11 @@ POSTHOOK: Lineage: table7.a SIMPLE [(schema_evolution_data)schema_evolution_data
 POSTHOOK: Lineage: table7.b SIMPLE []
 POSTHOOK: Lineage: table7.insert_num SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:insert_num, type:int, comment:null), ]
 insert_num	int1	_c2
-PREHOOK: query: -- Table-Non-Cascade ADD COLUMNS ...
-alter table table7 add columns(c int, d string)
+PREHOOK: query: alter table table7 add columns(c int, d string)
 PREHOOK: type: ALTERTABLE_ADDCOLS
 PREHOOK: Input: default@table7
 PREHOOK: Output: default@table7
-POSTHOOK: query: -- Table-Non-Cascade ADD COLUMNS ...
-alter table table7 add columns(c int, d string)
+POSTHOOK: query: alter table table7 add columns(c int, d string)
 POSTHOOK: type: ALTERTABLE_ADDCOLS
 POSTHOOK: Input: default@table7
 POSTHOOK: Output: default@table7
@@ -440,13 +392,11 @@ a	b	c	d
 82153733	new	82153733	Antarctic peninsula
 NULL	new	NULL	baffling
 NULL	original	NULL	NULL
-PREHOOK: query: -- DELETE where new column
-delete from table7 where insert_num = 107 or insert_num >= 110
+PREHOOK: query: delete from table7 where insert_num = 107 or insert_num >= 110
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table7
 PREHOOK: Output: default@table7
-POSTHOOK: query: -- DELETE where new column
-delete from table7 where insert_num = 107 or insert_num >= 110
+POSTHOOK: query: delete from table7 where insert_num = 107 or insert_num >= 110
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table7
 POSTHOOK: Output: default@table7

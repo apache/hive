@@ -656,8 +656,7 @@ POSTHOOK: Input: default@src
 199	val_199
 2	val_2
 Warning: Shuffle Join JOIN[13][tables = [$hdt$_1, $hdt$_2]] in Stage 'Stage-2:MAPRED' is a cross product
-PREHOOK: query: -- non equi predicate
-explain
+PREHOOK: query: explain
 select *
 from src b
 where not exists
@@ -666,8 +665,7 @@ where not exists
   where b.value <> a.value  and a.key > b.key and a.value > 'val_2'
   )
 PREHOOK: type: QUERY
-POSTHOOK: query: -- non equi predicate
-explain
+POSTHOOK: query: explain
 select *
 from src b
 where not exists

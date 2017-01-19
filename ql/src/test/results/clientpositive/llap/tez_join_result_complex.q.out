@@ -374,9 +374,7 @@ STAGE PLANS:
           hdfs directory: true
 #### A masked pattern was here ####
 
-PREHOOK: query: -- SORT_QUERY_RESULTS
-
-create table ct_events1_test
+PREHOOK: query: create table ct_events1_test
 as select  a.*,
 b.svcrqst_id,
 b.svcrqct_cds,
@@ -394,9 +392,7 @@ PREHOOK: Input: default@ct_events_clean
 PREHOOK: Input: default@service_request_clean
 PREHOOK: Output: database:default
 PREHOOK: Output: default@ct_events1_test
-POSTHOOK: query: -- SORT_QUERY_RESULTS
-
-create table ct_events1_test
+POSTHOOK: query: create table ct_events1_test
 as select  a.*,
 b.svcrqst_id,
 b.svcrqct_cds,
@@ -1358,9 +1354,7 @@ STAGE PLANS:
           hdfs directory: true
 #### A masked pattern was here ####
 
-PREHOOK: query: -- SORT_QUERY_RESULTS
-
-create table ct_events1_test
+PREHOOK: query: create table ct_events1_test
 as select  a.*,
 b.svcrqst_id,
 b.svcrqct_cds,
@@ -1378,9 +1372,7 @@ PREHOOK: Input: default@ct_events_clean
 PREHOOK: Input: default@service_request_clean
 PREHOOK: Output: database:default
 PREHOOK: Output: default@ct_events1_test
-POSTHOOK: query: -- SORT_QUERY_RESULTS
-
-create table ct_events1_test
+POSTHOOK: query: create table ct_events1_test
 as select  a.*,
 b.svcrqst_id,
 b.svcrqct_cds,

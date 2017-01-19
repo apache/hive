@@ -10,9 +10,7 @@ POSTHOOK: type: DESCFUNCTION
 percentile(expr, pc) - Returns the percentile(s) of expr at pc (range: [0,1]).pc can be a double or double array
 Function class:org.apache.hadoop.hive.ql.udf.UDAFPercentile
 Function type:BUILTIN
-PREHOOK: query: -- SORT_QUERY_RESULTS
-
-SELECT CAST(key AS INT) DIV 10,
+PREHOOK: query: SELECT CAST(key AS INT) DIV 10,
        count(distinct(value)),
        percentile(CAST(substr(value, 5) AS INT), 0.0),
        percentile(CAST(substr(value, 5) AS INT), 0.5),

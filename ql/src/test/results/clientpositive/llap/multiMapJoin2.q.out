@@ -1,13 +1,11 @@
-PREHOOK: query: -- we will generate one MR job.
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT tmp.key
 FROM (SELECT x1.key AS key FROM src x1 JOIN src1 y1 ON (x1.key = y1.key)
       UNION ALL
       SELECT x2.key AS key FROM src x2 JOIN src1 y2 ON (x2.key = y2.key)) tmp
 ORDER BY tmp.key
 PREHOOK: type: QUERY
-POSTHOOK: query: -- we will generate one MR job.
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT tmp.key
 FROM (SELECT x1.key AS key FROM src x1 JOIN src1 y1 ON (x1.key = y1.key)
       UNION ALL
@@ -238,28 +236,14 @@ RUN: Stage-1:MAPRED
 98
 98
 98
-PREHOOK: query: -- Check if the total size of local tables will be
--- larger than the limit that
--- we set through hive.auto.convert.join.noconditionaltask.size (right now, it is
--- 400 bytes). If so, do not merge.
--- For this query, we will merge the MapJoin of x2 and y2 into the MR job
--- for UNION ALL and ORDER BY. But, the MapJoin of x1 and y2 will not be merged
--- into that MR job.
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT tmp.key
 FROM (SELECT x1.key AS key FROM src x1 JOIN src1 y1 ON (x1.key = y1.key)
       UNION ALL
       SELECT x2.key AS key FROM src x2 JOIN src1 y2 ON (x2.key = y2.key)) tmp
 ORDER BY tmp.key
 PREHOOK: type: QUERY
-POSTHOOK: query: -- Check if the total size of local tables will be
--- larger than the limit that
--- we set through hive.auto.convert.join.noconditionaltask.size (right now, it is
--- 400 bytes). If so, do not merge.
--- For this query, we will merge the MapJoin of x2 and y2 into the MR job
--- for UNION ALL and ORDER BY. But, the MapJoin of x1 and y2 will not be merged
--- into that MR job.
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT tmp.key
 FROM (SELECT x1.key AS key FROM src x1 JOIN src1 y1 ON (x1.key = y1.key)
       UNION ALL
@@ -502,22 +486,14 @@ RUN: Stage-1:MAPRED
 98
 98
 98
-PREHOOK: query: -- We will use two jobs.
--- We will generate one MR job for GROUP BY
--- on x1, one MR job for both the MapJoin of x2 and y2, the UNION ALL, and the
--- ORDER BY.
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT tmp.key
 FROM (SELECT x1.key AS key FROM src1 x1 GROUP BY x1.key
       UNION ALL
       SELECT x2.key AS key FROM src x2 JOIN src1 y2 ON (x2.key = y2.key)) tmp
 ORDER BY tmp.key
 PREHOOK: type: QUERY
-POSTHOOK: query: -- We will use two jobs.
--- We will generate one MR job for GROUP BY
--- on x1, one MR job for both the MapJoin of x2 and y2, the UNION ALL, and the
--- ORDER BY.
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT tmp.key
 FROM (SELECT x1.key AS key FROM src1 x1 GROUP BY x1.key
       UNION ALL
@@ -713,14 +689,7 @@ RUN: Stage-1:MAPRED
 98
 98
 98
-PREHOOK: query: -- When Correlation Optimizer is disabled,
--- we will use 5 jobs.
--- We will generate one MR job to evaluate the sub-query tmp1,
--- one MR job to evaluate the sub-query tmp2,
--- one MR job for the Join of tmp1 and tmp2,
--- one MR job for aggregation on the result of the Join of tmp1 and tmp2,
--- and one MR job for the ORDER BY.
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT tmp1.key as key, count(*) as cnt
 FROM (SELECT x1.key AS key
       FROM src x1 JOIN src1 y1 ON (x1.key = y1.key)
@@ -732,14 +701,7 @@ ON (tmp1.key = tmp2.key)
 GROUP BY tmp1.key
 ORDER BY key, cnt
 PREHOOK: type: QUERY
-POSTHOOK: query: -- When Correlation Optimizer is disabled,
--- we will use 5 jobs.
--- We will generate one MR job to evaluate the sub-query tmp1,
--- one MR job to evaluate the sub-query tmp2,
--- one MR job for the Join of tmp1 and tmp2,
--- one MR job for aggregation on the result of the Join of tmp1 and tmp2,
--- and one MR job for the ORDER BY.
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT tmp1.key as key, count(*) as cnt
 FROM (SELECT x1.key AS key
       FROM src x1 JOIN src1 y1 ON (x1.key = y1.key)
@@ -995,11 +957,7 @@ RUN: Stage-1:MAPRED
 406	1
 66	1
 98	1
-PREHOOK: query: -- When Correlation Optimizer is enabled,
--- we will use two jobs. This first MR job will evaluate sub-queries of tmp1, tmp2,
--- the Join of tmp1 and tmp2, and the aggregation on the result of the Join of
--- tmp1 and tmp2. The second job will do the ORDER BY.
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT tmp1.key as key, count(*) as cnt
 FROM (SELECT x1.key AS key
       FROM src x1 JOIN src1 y1 ON (x1.key = y1.key)
@@ -1011,11 +969,7 @@ ON (tmp1.key = tmp2.key)
 GROUP BY tmp1.key
 ORDER BY key, cnt
 PREHOOK: type: QUERY
-POSTHOOK: query: -- When Correlation Optimizer is enabled,
--- we will use two jobs. This first MR job will evaluate sub-queries of tmp1, tmp2,
--- the Join of tmp1 and tmp2, and the aggregation on the result of the Join of
--- tmp1 and tmp2. The second job will do the ORDER BY.
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT tmp1.key as key, count(*) as cnt
 FROM (SELECT x1.key AS key
       FROM src x1 JOIN src1 y1 ON (x1.key = y1.key)
@@ -1271,14 +1225,7 @@ RUN: Stage-1:MAPRED
 406	1
 66	1
 98	1
-PREHOOK: query: -- When Correlation Optimizer is disabled,
--- we will use five jobs.
--- We will generate one MR job to evaluate the sub-query tmp1,
--- one MR job to evaluate the sub-query tmp2,
--- one MR job for the Join of tmp1 and tmp2,
--- one MR job for aggregation on the result of the Join of tmp1 and tmp2,
--- and one MR job for the ORDER BY.
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT tmp1.key as key, count(*) as cnt
 FROM (SELECT x1.key AS key
       FROM src1 x1
@@ -1290,14 +1237,7 @@ ON (tmp1.key = tmp2.key)
 GROUP BY tmp1.key
 ORDER BY key, cnt
 PREHOOK: type: QUERY
-POSTHOOK: query: -- When Correlation Optimizer is disabled,
--- we will use five jobs.
--- We will generate one MR job to evaluate the sub-query tmp1,
--- one MR job to evaluate the sub-query tmp2,
--- one MR job for the Join of tmp1 and tmp2,
--- one MR job for aggregation on the result of the Join of tmp1 and tmp2,
--- and one MR job for the ORDER BY.
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT tmp1.key as key, count(*) as cnt
 FROM (SELECT x1.key AS key
       FROM src1 x1
@@ -1519,11 +1459,7 @@ RUN: Stage-1:MAPRED
 406	1
 66	1
 98	1
-PREHOOK: query: -- When Correlation Optimizer is enabled,
--- we will use two job. This first MR job will evaluate sub-queries of tmp1, tmp2,
--- the Join of tmp1 and tmp2, and the aggregation on the result of the Join of
--- tmp1 and tmp2. The second job will do the ORDER BY.
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT tmp1.key as key, count(*) as cnt
 FROM (SELECT x1.key AS key
       FROM src1 x1
@@ -1535,11 +1471,7 @@ ON (tmp1.key = tmp2.key)
 GROUP BY tmp1.key
 ORDER BY key, cnt
 PREHOOK: type: QUERY
-POSTHOOK: query: -- When Correlation Optimizer is enabled,
--- we will use two job. This first MR job will evaluate sub-queries of tmp1, tmp2,
--- the Join of tmp1 and tmp2, and the aggregation on the result of the Join of
--- tmp1 and tmp2. The second job will do the ORDER BY.
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT tmp1.key as key, count(*) as cnt
 FROM (SELECT x1.key AS key
       FROM src1 x1
@@ -1761,13 +1693,11 @@ RUN: Stage-1:MAPRED
 406	1
 66	1
 98	1
-PREHOOK: query: -- Check if we can correctly handle partitioned table.
-CREATE TABLE part_table(key string, value string) PARTITIONED BY (partitionId int)
+PREHOOK: query: CREATE TABLE part_table(key string, value string) PARTITIONED BY (partitionId int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@part_table
-POSTHOOK: query: -- Check if we can correctly handle partitioned table.
-CREATE TABLE part_table(key string, value string) PARTITIONED BY (partitionId int)
+POSTHOOK: query: CREATE TABLE part_table(key string, value string) PARTITIONED BY (partitionId int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@part_table
@@ -1916,9 +1846,7 @@ POSTHOOK: Input: default@src1
 #### A masked pattern was here ####
 RUN: Stage-1:MAPRED
 121
-PREHOOK: query: -- HIVE-5891 Alias conflict when merging multiple mapjoin tasks into their common
--- child mapred task
-EXPLAIN   
+PREHOOK: query: EXPLAIN   
 SELECT * FROM (
   SELECT c.key FROM
     (SELECT a.key FROM src a JOIN src b ON a.key=b.key GROUP BY a.key) tmp
@@ -1929,9 +1857,7 @@ SELECT * FROM (
     JOIN src c ON tmp.key=c.key
 ) x
 PREHOOK: type: QUERY
-POSTHOOK: query: -- HIVE-5891 Alias conflict when merging multiple mapjoin tasks into their common
--- child mapred task
-EXPLAIN   
+POSTHOOK: query: EXPLAIN   
 SELECT * FROM (
   SELECT c.key FROM
     (SELECT a.key FROM src a JOIN src b ON a.key=b.key GROUP BY a.key) tmp

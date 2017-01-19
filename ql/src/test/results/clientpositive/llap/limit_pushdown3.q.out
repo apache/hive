@@ -282,12 +282,10 @@ val_126	127.0
 val_128	387.0
 val_129	260.0
 val_131	132.0
-PREHOOK: query: -- deduped RS
-explain
+PREHOOK: query: explain
 select value,avg(key + 1) from src group by value order by value limit 20
 PREHOOK: type: QUERY
-POSTHOOK: query: -- deduped RS
-explain
+POSTHOOK: query: explain
 select value,avg(key + 1) from src group by value order by value limit 20
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -394,12 +392,10 @@ val_126	127.0
 val_128	129.0
 val_129	130.0
 val_131	132.0
-PREHOOK: query: -- distincts
-explain
+PREHOOK: query: explain
 select distinct(cdouble) as dis from alltypesorc order by dis limit 20
 PREHOOK: type: QUERY
-POSTHOOK: query: -- distincts
-explain
+POSTHOOK: query: explain
 select distinct(cdouble) as dis from alltypesorc order by dis limit 20
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -726,12 +722,10 @@ NULL	2932
 -48	29
 -47	22
 -46	24
-PREHOOK: query: -- multi distinct
-explain
+PREHOOK: query: explain
 select ctinyint, count(distinct(cstring1)), count(distinct(cstring2)) from alltypesorc group by ctinyint order by ctinyint limit 20
 PREHOOK: type: QUERY
-POSTHOOK: query: -- multi distinct
-explain
+POSTHOOK: query: explain
 select ctinyint, count(distinct(cstring1)), count(distinct(cstring2)) from alltypesorc group by ctinyint order by ctinyint limit 20
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -837,12 +831,10 @@ NULL	3065	3
 -48	3	27
 -47	3	23
 -46	3	19
-PREHOOK: query: -- limit zero
-explain
+PREHOOK: query: explain
 select key,value from src order by key limit 0
 PREHOOK: type: QUERY
-POSTHOOK: query: -- limit zero
-explain
+POSTHOOK: query: explain
 select key,value from src order by key limit 0
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -863,12 +855,10 @@ POSTHOOK: query: select key,value from src order by key limit 0
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
-PREHOOK: query: -- 2MR (applied to last RS)
-explain
+PREHOOK: query: explain
 select value, sum(key) as sum from src group by value order by sum limit 20
 PREHOOK: type: QUERY
-POSTHOOK: query: -- 2MR (applied to last RS)
-explain
+POSTHOOK: query: explain
 select value, sum(key) as sum from src group by value order by sum limit 20
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -974,12 +964,10 @@ val_33	33.0
 val_34	34.0
 val_18	36.0
 val_41	41.0
-PREHOOK: query: -- map aggregation disabled
-explain
+PREHOOK: query: explain
 select value, sum(key) as sum from src group by value order by value limit 20
 PREHOOK: type: QUERY
-POSTHOOK: query: -- map aggregation disabled
-explain
+POSTHOOK: query: explain
 select value, sum(key) as sum from src group by value order by value limit 20
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -1080,12 +1068,10 @@ val_126	126.0
 val_128	384.0
 val_129	258.0
 val_131	131.0
-PREHOOK: query: -- flush for order-by
-explain
+PREHOOK: query: explain
 select key,value,value,value,value,value,value,value,value from src order by key limit 100
 PREHOOK: type: QUERY
-POSTHOOK: query: -- flush for order-by
-explain
+POSTHOOK: query: explain
 select key,value,value,value,value,value,value,value,value from src order by key limit 100
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -1249,12 +1235,10 @@ POSTHOOK: Input: default@src
 187	val_187	val_187	val_187	val_187	val_187	val_187	val_187	val_187
 187	val_187	val_187	val_187	val_187	val_187	val_187	val_187	val_187
 187	val_187	val_187	val_187	val_187	val_187	val_187	val_187	val_187
-PREHOOK: query: -- flush for group-by
-explain
+PREHOOK: query: explain
 select sum(key) as sum from src group by concat(key,value,value,value,value,value,value,value,value,value) order by sum limit 100
 PREHOOK: type: QUERY
-POSTHOOK: query: -- flush for group-by
-explain
+POSTHOOK: query: explain
 select sum(key) as sum from src group by concat(key,value,value,value,value,value,value,value,value,value) order by sum limit 100
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:

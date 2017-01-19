@@ -48,14 +48,12 @@ Sort Columns:       	[]
 View Original Text: 	select * from srcpart	 
 View Expanded Text: 	select `srcpart`.`key`, `srcpart`.`value`, `srcpart`.`ds`, `srcpart`.`hr` from `default`.`srcpart`	 
 View Rewrite Enabled:	No                  	 
-PREHOOK: query: -- modifying definition of unpartitioned view
-create or replace view vt.v partitioned on (ds, hr) as select * from srcpart
+PREHOOK: query: create or replace view vt.v partitioned on (ds, hr) as select * from srcpart
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: default@srcpart
 PREHOOK: Output: database:vt
 PREHOOK: Output: vt@v
-POSTHOOK: query: -- modifying definition of unpartitioned view
-create or replace view vt.v partitioned on (ds, hr) as select * from srcpart
+POSTHOOK: query: create or replace view vt.v partitioned on (ds, hr) as select * from srcpart
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@srcpart
 POSTHOOK: Output: database:vt
