@@ -1383,58 +1383,53 @@ public class VectorizationContext {
     return ve;
   }
 
+  private void freeNonColumns(VectorExpression[] vectorChildren) {
+    if (vectorChildren == null) {
+      return;
+    }
+    for (VectorExpression v : vectorChildren) {
+      if (!(v instanceof IdentityExpression)) {
+        ocm.freeOutputColumn(v.getOutputColumn());
+      }
+    }
+  }
+
   private VectorExpression getCoalesceExpression(List<ExprNodeDesc> childExpr, TypeInfo returnType)
       throws HiveException {
     int[] inputColumns = new int[childExpr.size()];
-    VectorExpression[] vectorChildren = null;
-    try {
-      vectorChildren = getVectorExpressions(childExpr, Mode.PROJECTION);
+    VectorExpression[] vectorChildren =
+        getVectorExpressions(childExpr, VectorExpressionDescriptor.Mode.PROJECTION);
 
-      int i = 0;
-      for (VectorExpression ve : vectorChildren) {
-        inputColumns[i++] = ve.getOutputColumn();
-      }
-
-      int outColumn = ocm.allocateOutputColumn(returnType);
-      VectorCoalesce vectorCoalesce = new VectorCoalesce(inputColumns, outColumn);
-      vectorCoalesce.setOutputType(returnType.getTypeName());
-      vectorCoalesce.setChildExpressions(vectorChildren);
-      return vectorCoalesce;
-    } finally {
-      // Free the output columns of the child expressions.
-      if (vectorChildren != null) {
-        for (VectorExpression v : vectorChildren) {
-          ocm.freeOutputColumn(v.getOutputColumn());
-        }
-      }
+    int i = 0;
+    for (VectorExpression ve : vectorChildren) {
+      inputColumns[i++] = ve.getOutputColumn();
     }
+
+    int outColumn = ocm.allocateOutputColumn(returnType);
+    VectorCoalesce vectorCoalesce = new VectorCoalesce(inputColumns, outColumn);
+    vectorCoalesce.setOutputType(returnType.getTypeName());
+    vectorCoalesce.setChildExpressions(vectorChildren);
+    freeNonColumns(vectorChildren);
+    return vectorCoalesce;
   }
 
   private VectorExpression getEltExpression(List<ExprNodeDesc> childExpr, TypeInfo returnType)
       throws HiveException {
     int[] inputColumns = new int[childExpr.size()];
-    VectorExpression[] vectorChildren = null;
-    try {
-      vectorChildren = getVectorExpressions(childExpr, Mode.PROJECTION);
+    VectorExpression[] vectorChildren =
+        getVectorExpressions(childExpr, VectorExpressionDescriptor.Mode.PROJECTION);
 
-      int i = 0;
-      for (VectorExpression ve : vectorChildren) {
-        inputColumns[i++] = ve.getOutputColumn();
-      }
-
-      int outColumn = ocm.allocateOutputColumn(returnType);
-      VectorElt vectorElt = new VectorElt(inputColumns, outColumn);
-      vectorElt.setOutputType(returnType.getTypeName());
-      vectorElt.setChildExpressions(vectorChildren);
-      return vectorElt;
-    } finally {
-      // Free the output columns of the child expressions.
-      if (vectorChildren != null) {
-        for (VectorExpression v : vectorChildren) {
-          ocm.freeOutputColumn(v.getOutputColumn());
-        }
-      }
+    int i = 0;
+    for (VectorExpression ve : vectorChildren) {
+      inputColumns[i++] = ve.getOutputColumn();
     }
+
+    int outColumn = ocm.allocateOutputColumn(returnType);
+    VectorElt vectorElt = new VectorElt(inputColumns, outColumn);
+    vectorElt.setOutputType(returnType.getTypeName());
+    vectorElt.setChildExpressions(vectorChildren);
+    freeNonColumns(vectorChildren);
+    return vectorElt;
   }
 
   public enum InConstantType {
