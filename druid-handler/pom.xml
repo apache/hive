@@ -250,6 +250,10 @@
                   <shadedPattern>org.apache.hive.druid.io.netty</shadedPattern>
                 </relocation>
                 <relocation>
+                  <pattern>org.apache.calcite</pattern>
+                  <shadedPattern>org.apache.hive.druid.org.apache.calcite</shadedPattern>
+                </relocation>
+                <relocation>
                   <pattern>org.jboss.netty</pattern>
                   <shadedPattern>org.apache.hive.druid.org.jboss.netty</shadedPattern>
                 </relocation>
@@ -268,6 +272,7 @@
                   <include>io.druid.extensions:*</include>
                   <include>com.metamx:*</include>
                   <include>io.netty:*</include>
+                  <include>org.apache.calcite:*</include>
                   <include>com.fasterxml.jackson.core:*</include>
                   <include>com.fasterxml.jackson.datatype:*</include>
                   <include>com.fasterxml.jackson.dataformat:*</include>
