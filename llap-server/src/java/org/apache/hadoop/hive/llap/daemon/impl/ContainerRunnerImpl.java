@@ -22,6 +22,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.hadoop.conf.Configuration;
@@ -54,6 +55,7 @@ import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.Terminate
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.VertexOrBinary;
 import org.apache.hadoop.hive.llap.metrics.LlapDaemonExecutorMetrics;
 import org.apache.hadoop.hive.llap.security.LlapSignerImpl;
+import org.apache.hadoop.hive.llap.security.LlapTokenIdentifier;
 import org.apache.hadoop.hive.llap.tez.Converters;
 import org.apache.hadoop.hive.llap.tezplugins.LlapTezUtils;
 import org.apache.hadoop.io.DataInputBuffer;
@@ -171,7 +173,13 @@ public class ContainerRunnerImpl extends CompositeService implements ContainerRu
 
   @Override
   public SubmitWorkResponseProto submitWork(SubmitWorkRequestProto request) throws IOException {
-    LlapTokenInfo tokenInfo = LlapTokenChecker.getTokenInfo(clusterId);
+    LlapTokenInfo tokenInfo = null;
+    try {
+      tokenInfo = LlapTokenChecker.getTokenInfo(clusterId);
+    } catch (SecurityException ex) {
+      logSecurityErrorRarely(null);
+      throw ex;
+    }
     SignableVertexSpec vertex = extractVertexSpec(request, tokenInfo);
     TezEvent initialEvent = extractInitialEvent(request, tokenInfo);
 
@@ -296,10 +304,16 @@ public class ContainerRunnerImpl extends CompositeService implements ContainerRu
     NotTezEvent initialEvent = NotTezEvent.parseFrom(initialEventBytes);
     if (tokenInfo.isSigningRequired) {
       if (!request.hasInitialEventSignature()) {
+        logSecurityErrorRarely(tokenInfo.userName);
         throw new SecurityException("Unsigned initial event is not allowed");
       }
       byte[] signatureBytes = request.getInitialEventSignature().toByteArray();
-      signer.checkSignature(initialEventBytes, signatureBytes, initialEvent.getKeyId());
+      try {
+        signer.checkSignature(initialEventBytes, signatureBytes, initialEvent.getKeyId());
+      } catch (SecurityException ex) {
+        logSecurityErrorRarely(tokenInfo.userName);
+        throw ex;
+      }
     }
     return NotTezEventHelper.toTezEvent(initialEvent);
   }
@@ -307,6 +321,7 @@ public class ContainerRunnerImpl extends CompositeService implements ContainerRu
   private void checkSignature(SignableVertexSpec vertex, ByteString vertexBinary,
       SubmitWorkRequestProto request, String tokenUserName) throws SecurityException, IOException {
     if (!request.hasWorkSpecSignature()) {
+      logSecurityErrorRarely(tokenUserName);
       throw new SecurityException("Unsigned fragment not allowed");
     }
     if (vertexBinary == null) {
@@ -314,12 +329,34 @@ public class ContainerRunnerImpl extends CompositeService implements ContainerRu
       vertex.writeTo(os);
       vertexBinary = os.toByteString();
     }
-    signer.checkSignature(vertexBinary.toByteArray(),
-        request.getWorkSpecSignature().toByteArray(), (int)vertex.getSignatureKeyId());
+    try {
+      signer.checkSignature(vertexBinary.toByteArray(),
+          request.getWorkSpecSignature().toByteArray(), (int)vertex.getSignatureKeyId());
+    } catch (SecurityException ex) {
+      logSecurityErrorRarely(tokenUserName);
+      throw ex;
+    }
     if (!vertex.hasUser() || !vertex.getUser().equals(tokenUserName)) {
+      logSecurityErrorRarely(tokenUserName);
       throw new SecurityException("LLAP token is for " + tokenUserName
           + " but the fragment is for " + (vertex.hasUser() ? vertex.getUser() : null));
     }
+  }
+
+  private final AtomicLong lastLoggedError = new AtomicLong(0);
+  private void logSecurityErrorRarely(String userName) {
+    if (!LOG.isWarnEnabled()) return;
+    long time = System.nanoTime();
+    long oldTime = lastLoggedError.get();
+    if (oldTime != 0 && (time - oldTime) < 1000000000L) return; // 1 second
+    if (!lastLoggedError.compareAndSet(oldTime, time)) return;
+    String tokens = null;
+    try {
+      tokens = "" + LlapTokenChecker.getLlapTokens(UserGroupInformation.getCurrentUser(), null);
+    } catch (Exception e) {
+      tokens = "error: " + e.getMessage();
+    }
+    LOG.warn("Security error from " + userName + "; cluster " + clusterId + "; tokens " + tokens);
   }
 
   @Override
