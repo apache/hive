@@ -83,4 +83,8 @@ public class CacheChunk extends DiskRangeList {
   public void reset() {
     init(null, -1, -1);
   }
+
+  public void adjustEnd(long l) {
+    this.end += l;
+  }
 }

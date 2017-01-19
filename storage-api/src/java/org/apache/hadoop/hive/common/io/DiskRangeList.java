@@ -216,4 +216,10 @@ public class DiskRangeList extends DiskRange {
       return result;
     }
   }
+
+  public void setEnd(long newEnd) {
+    assert newEnd >= this.offset;
+    assert this.next == null || this.next.offset >= newEnd;
+    this.end = newEnd;
+  }
 }

@@ -332,6 +332,10 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
                                              List<Integer> included) {
 
     boolean[] result = new boolean[readerSchema.getMaximumId() + 1];
+    if (included == null) {
+      Arrays.fill(result, true);
+      return result;
+    }
     result[0] = true;
     List<TypeDescription> children = readerSchema.getChildren();
     for (int columnNumber = 0; columnNumber < children.size(); ++columnNumber) {

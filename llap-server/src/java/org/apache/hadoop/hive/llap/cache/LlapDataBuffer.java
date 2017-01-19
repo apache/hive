@@ -139,4 +139,11 @@ public final class LlapDataBuffer extends LlapCacheableBuffer implements MemoryB
     int refCount = this.refCount.get();
     return "0x" + Integer.toHexString(System.identityHashCode(this)) + "(" + refCount + ")";
   }
+
+  public static String toDataString(MemoryBuffer s) {
+    if (s == null || s.getByteBufferRaw().remaining() == 0) return "" + s;
+    byte b = s.getByteBufferRaw().get(s.getByteBufferRaw().position());
+    int i = (b < 0) ? -b : b;
+    return s + " (0x" + Integer.toHexString(i) + ")";
+  }
 }

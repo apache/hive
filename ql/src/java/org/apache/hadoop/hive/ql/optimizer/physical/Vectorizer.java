@@ -1398,6 +1398,9 @@ public class Vectorizer implements PhysicalPlanResolver {
     useRowDeserialize =
         HiveConf.getBoolVar(hiveConf,
             HiveConf.ConfVars.HIVE_VECTORIZATION_USE_ROW_DESERIALIZE);
+    // TODO: we could also vectorize some formats based on hive.llap.io.encode.formats if LLAP IO
+    //       is enabled and we are going to run in LLAP. However, we don't know if we end up in
+    //       LLAP or not at this stage, so don't do this now. We may need to add a 'force' option.
 
     isSchemaEvolution =
         HiveConf.getBoolVar(hiveConf,

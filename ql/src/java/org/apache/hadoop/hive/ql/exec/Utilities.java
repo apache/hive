@@ -335,7 +335,7 @@ public final class Utilities {
     return null;
   }
 
-  public static BaseWork getMergeWork(JobConf jconf) {
+  public static BaseWork getMergeWork(Configuration jconf) {
     if ((jconf.get(DagUtils.TEZ_MERGE_CURRENT_MERGE_FILE_PREFIX) == null)
         || (jconf.get(DagUtils.TEZ_MERGE_CURRENT_MERGE_FILE_PREFIX).isEmpty())) {
       return null;
@@ -343,7 +343,7 @@ public final class Utilities {
     return getMergeWork(jconf, jconf.get(DagUtils.TEZ_MERGE_CURRENT_MERGE_FILE_PREFIX));
   }
 
-  public static BaseWork getMergeWork(JobConf jconf, String prefix) {
+  public static BaseWork getMergeWork(Configuration jconf, String prefix) {
     if (prefix == null || prefix.isEmpty()) {
       return null;
     }

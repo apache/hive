@@ -16,16 +16,17 @@
 package org.apache.hadoop.hive.llap.io.decode;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 import org.apache.hadoop.hive.common.io.encoded.EncodedColumnBatch;
-import org.apache.hadoop.hive.common.io.encoded.EncodedColumnBatch.ColumnStreamData;
 import org.apache.hadoop.hive.llap.counters.LlapIOCounters;
 import org.apache.hadoop.hive.llap.counters.QueryFragmentCounters;
 import org.apache.hadoop.hive.llap.io.api.impl.ColumnVectorBatch;
-import org.apache.hadoop.hive.llap.io.metadata.OrcFileMetadata;
-import org.apache.hadoop.hive.llap.io.metadata.OrcStripeMetadata;
+import org.apache.hadoop.hive.llap.io.api.impl.LlapIoImpl;
+import org.apache.hadoop.hive.llap.io.metadata.ConsumerFileMetadata;
+import org.apache.hadoop.hive.llap.io.metadata.ConsumerStripeMetadata;
 import org.apache.hadoop.hive.llap.metrics.LlapDaemonIOMetrics;
 import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
@@ -40,7 +41,6 @@ import org.apache.hadoop.hive.ql.exec.vector.UnionColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.orc.CompressionCodec;
 import org.apache.orc.impl.PositionProvider;
-import org.apache.orc.OrcProto.RowIndexEntry;
 import org.apache.hadoop.hive.ql.io.orc.encoded.Consumer;
 import org.apache.hadoop.hive.ql.io.orc.encoded.EncodedTreeReaderFactory;
 import org.apache.hadoop.hive.ql.io.orc.encoded.EncodedTreeReaderFactory.SettableTreeReader;
@@ -53,21 +53,21 @@ import org.apache.orc.impl.PhysicalFsWriter;
 import org.apache.orc.impl.TreeReaderFactory;
 import org.apache.orc.impl.TreeReaderFactory.StructTreeReader;
 import org.apache.orc.impl.TreeReaderFactory.TreeReader;
-import org.apache.hadoop.hive.ql.io.orc.WriterImpl;
 import org.apache.orc.OrcProto;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.collect.Lists;
+
 
 public class OrcEncodedDataConsumer
   extends EncodedDataConsumer<OrcBatchKey, OrcEncodedColumnBatch> {
-  public static final Logger LOG = LoggerFactory.getLogger(OrcEncodedDataConsumer.class);
   private TreeReaderFactory.TreeReader[] columnReaders;
   private int[] columnMapping; // Mapping from columnReaders (by index) to columns in file schema.
   private int previousStripeIndex = -1;
-  private OrcFileMetadata fileMetadata; // We assume one request is only for one file.
+  private ConsumerFileMetadata fileMetadata; // We assume one request is only for one file.
   private CompressionCodec codec;
-  private OrcStripeMetadata[] stripes;
+  private List<ConsumerStripeMetadata> stripes;
   private final boolean skipCorrupt; // TODO: get rid of this
   private final QueryFragmentCounters counters;
   private boolean[] includedColumns;
@@ -82,16 +82,21 @@ public class OrcEncodedDataConsumer
     this.counters = counters;
   }
 
-  public void setFileMetadata(OrcFileMetadata f) {
+  public void setFileMetadata(ConsumerFileMetadata f) {
     assert fileMetadata == null;
     fileMetadata = f;
-    stripes = new OrcStripeMetadata[f.getStripes().size()];
-    codec = PhysicalFsWriter.createCodec(fileMetadata.getCompressionKind());
+    stripes = new ArrayList<>(f.getStripeCount());
+    codec = PhysicalFsWriter.createCodec(f.getCompressionKind());
   }
 
-  public void setStripeMetadata(OrcStripeMetadata m) {
+  public void setStripeMetadata(ConsumerStripeMetadata m) {
     assert stripes != null;
-    stripes[m.getStripeIx()] = m;
+    int newIx = m.getStripeIx();
+    for (int i = stripes.size(); i <= newIx; ++i) {
+      stripes.add(null);
+    }
+    assert stripes.get(newIx) == null;
+    stripes.set(newIx, m);
   }
 
   @Override
@@ -103,14 +108,14 @@ public class OrcEncodedDataConsumer
     boolean sameStripe = currentStripeIndex == previousStripeIndex;
 
     try {
-      OrcStripeMetadata stripeMetadata = stripes[currentStripeIndex];
+      ConsumerStripeMetadata stripeMetadata = stripes.get(currentStripeIndex);
       // Get non null row count from root column, to get max vector batches
       int rgIdx = batch.getBatchKey().rgIx;
       long nonNullRowCount = -1;
       if (rgIdx == OrcEncodedColumnBatch.ALL_RGS) {
         nonNullRowCount = stripeMetadata.getRowCount();
       } else {
-        OrcProto.RowIndexEntry rowIndex = stripeMetadata.getRowIndexes()[0].getEntry(rgIdx);
+        OrcProto.RowIndexEntry rowIndex = stripeMetadata.getRowIndexEntry(0, rgIdx);
         nonNullRowCount = getRowCount(rowIndex);
       }
       int maxBatchesRG = (int) ((nonNullRowCount / VectorizedRowBatch.DEFAULT_SIZE) + 1);
@@ -155,6 +160,7 @@ public class OrcEncodedDataConsumer
         downstreamConsumer.consumeData(cvb);
         counters.incrCounter(LlapIOCounters.ROWS_EMITTED, batchSize);
       }
+      LlapIoImpl.ORC_LOGGER.debug("Done with decode");
       counters.incrTimeCounter(LlapIOCounters.DECODE_TIME_NS, startTime);
       counters.incrCounter(LlapIOCounters.NUM_VECTOR_BATCHES, maxBatchesRG);
       counters.incrCounter(LlapIOCounters.NUM_DECODED_BATCHES);
@@ -214,7 +220,7 @@ public class OrcEncodedDataConsumer
   }
 
   private void positionInStreams(TreeReaderFactory.TreeReader[] columnReaders,
-      EncodedColumnBatch<OrcBatchKey> batch, OrcStripeMetadata stripeMetadata) throws IOException {
+      EncodedColumnBatch<OrcBatchKey> batch, ConsumerStripeMetadata stripeMetadata) throws IOException {
     PositionProvider[] pps = createPositionProviders(columnReaders, batch, stripeMetadata);
     if (pps == null) return;
     for (int i = 0; i < columnReaders.length; i++) {
@@ -224,7 +230,7 @@ public class OrcEncodedDataConsumer
 
   private void repositionInStreams(TreeReaderFactory.TreeReader[] columnReaders,
       EncodedColumnBatch<OrcBatchKey> batch, boolean sameStripe,
-      OrcStripeMetadata stripeMetadata) throws IOException {
+      ConsumerStripeMetadata stripeMetadata) throws IOException {
     PositionProvider[] pps = createPositionProviders(columnReaders, batch, stripeMetadata);
     if (pps == null) return;
     for (int i = 0; i < columnReaders.length; i++) {
@@ -240,20 +246,46 @@ public class OrcEncodedDataConsumer
     }
   }
 
-  private PositionProvider[] createPositionProviders(TreeReaderFactory.TreeReader[] columnReaders,
-      EncodedColumnBatch<OrcBatchKey> batch, OrcStripeMetadata stripeMetadata) throws IOException {
-    if (columnReaders.length == 0) return null;
-    int rowGroupIndex = batch.getBatchKey().rgIx;
-    if (rowGroupIndex == OrcEncodedColumnBatch.ALL_RGS) {
-      throw new IOException("Cannot position readers without RG information");
+  /**
+   * Position provider used in absence of indexes, e.g. for serde-based reader, where each stream
+   * is in its own physical 'container', always starting at 0, and there are no RGs.
+   */
+  private final static class IndexlessPositionProvider implements PositionProvider {
+    @Override
+    public long getNext() {
+      return 0;
     }
-    // TODO: this assumes indexes in getRowIndexes would match column IDs
-    OrcProto.RowIndex[] ris = stripeMetadata.getRowIndexes();
-    PositionProvider[] pps = new PositionProvider[ris.length];
-    for (int i = 0; i < ris.length; ++i) {
-      OrcProto.RowIndex ri = ris[i];
-      if (ri == null) continue;
-      pps[i] = new RecordReaderImpl.PositionProviderImpl(ri.getEntry(rowGroupIndex));
+
+    @Override
+    public String toString() {
+      return "indexes not supported";
+    }
+  }
+
+  private PositionProvider[] createPositionProviders(
+      TreeReaderFactory.TreeReader[] columnReaders, EncodedColumnBatch<OrcBatchKey> batch,
+      ConsumerStripeMetadata stripeMetadata) throws IOException {
+    if (columnReaders.length == 0) return null;
+    PositionProvider[] pps = null;
+    if (!stripeMetadata.supportsRowIndexes()) {
+      PositionProvider singleRgPp = new IndexlessPositionProvider();
+      pps = new PositionProvider[stripeMetadata.getEncodings().size()];
+      for (int i = 0; i < pps.length; ++i) {
+        pps[i] = singleRgPp;
+      }
+    } else {
+      int rowGroupIndex = batch.getBatchKey().rgIx;
+      if (rowGroupIndex == OrcEncodedColumnBatch.ALL_RGS) {
+        throw new IOException("Cannot position readers without RG information");
+      }
+      // TODO: this assumes indexes in getRowIndexes would match column IDs
+      OrcProto.RowIndex[] ris = stripeMetadata.getRowIndexes();
+      pps = new PositionProvider[ris.length];
+      for (int i = 0; i < ris.length; ++i) {
+        OrcProto.RowIndex ri = ris[i];
+        if (ri == null) continue;
+        pps[i] = new RecordReaderImpl.PositionProviderImpl(ri.getEntry(rowGroupIndex));
+      }
     }
     return pps;
   }

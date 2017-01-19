@@ -361,7 +361,7 @@ public class LowLevelLrfuCachePolicy implements LowLevelCachePolicy {
   private LlapCacheableBuffer evictHeapElementUnderLock(long time, int ix) {
     LlapCacheableBuffer result = heap[ix];
     if (LlapIoImpl.CACHE_LOGGER.isTraceEnabled()) {
-      LlapIoImpl.CACHE_LOGGER.info("Evicting {} at {}", result, time);
+      LlapIoImpl.CACHE_LOGGER.trace("Evicting {} at {}", result, time);
     }
     result.indexInHeap = LlapCacheableBuffer.NOT_IN_CACHE;
     --heapSize;

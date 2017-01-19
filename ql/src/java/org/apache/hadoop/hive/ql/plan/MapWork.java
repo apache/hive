@@ -245,6 +245,7 @@ public class MapWork extends BaseWork {
   }
 
   public void deriveLlap(Configuration conf, boolean isExecDriver) {
+    // TODO# HiveConf.getBoolVar(conf, ConfVars.LLAP_IO_NONVECTOR_WRAPPER_ENABLED)
     boolean hasLlap = false, hasNonLlap = false, hasAcid = false;
     // Assume the IO is enabled on the daemon by default. We cannot reasonably check it here.
     boolean isLlapOn = HiveConf.getBoolVar(conf, ConfVars.LLAP_IO_ENABLED, llapMode);

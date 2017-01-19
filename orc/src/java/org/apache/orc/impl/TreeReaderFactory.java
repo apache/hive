@@ -1239,6 +1239,7 @@ public class TreeReaderFactory {
     }
   }
 
+  private static org.slf4j.Logger LOG = org.slf4j.LoggerFactory.getLogger(TreeReaderFactory.class);
   // This class collects together very similar methods for reading an ORC vector of byte arrays and
   // creating the BytesColumnVector.
   //

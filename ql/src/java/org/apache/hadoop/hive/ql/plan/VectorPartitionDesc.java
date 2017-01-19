@@ -22,6 +22,8 @@ import java.util.Arrays;
 import java.util.List;
 
 import com.google.common.base.Strings;
+
+import org.apache.hadoop.hive.ql.plan.VectorPartitionDesc.VectorMapOperatorReadType;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 
 /**
@@ -64,7 +66,7 @@ public class VectorPartitionDesc  {
     LAZY_BINARY
   }
 
-  private final VectorMapOperatorReadType vectorMapOperatorReadType;
+  private VectorMapOperatorReadType vectorMapOperatorReadType;
   private final VectorDeserializeType vectorDeserializeType;
 
   private final String rowDeserializerClassName;
@@ -244,5 +246,9 @@ public class VectorPartitionDesc  {
       throw new RuntimeException("Unexpected vector map operator read type " + vectorMapOperatorReadType.name());
     }
     return sb.toString();
+  }
+
+  public void setVectorMapOperatorReadType(VectorMapOperatorReadType val) {
+    this.vectorMapOperatorReadType = val;
   }
 }

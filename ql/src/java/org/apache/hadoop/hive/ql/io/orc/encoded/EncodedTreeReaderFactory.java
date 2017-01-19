@@ -1775,7 +1775,7 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
       LOG.debug("columnIndex: {} columnType: {} streamBuffers.length: {} columnEncoding: {}" +
           " present: {} data: {} dictionary: {} lengths: {} secondary: {} tz: {}",
           columnIndex, schema, streamBuffers.length, columnEncoding, present != null,
-          data != null, dictionary != null, lengths != null, secondary != null, tz);
+          data, dictionary != null, lengths != null, secondary != null, tz);
     }
     switch (schema.getCategory()) {
       case BINARY:

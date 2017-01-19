@@ -34,33 +34,45 @@ import org.apache.hadoop.hive.common.io.DataCache.BooleanRef;
 import org.apache.hadoop.hive.common.io.DataCache.DiskRangeListFactory;
 import org.apache.hadoop.hive.common.io.DiskRangeList.MutateHelper;
 import org.apache.hadoop.hive.common.io.encoded.MemoryBuffer;
-import org.apache.hadoop.hive.llap.DebugUtils;
 import org.apache.hadoop.hive.llap.io.api.impl.LlapIoImpl;
 import org.apache.hadoop.hive.llap.metrics.LlapDaemonCacheMetrics;
+import org.apache.hive.common.util.Ref;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Function;
 
 public class LowLevelCacheImpl implements LowLevelCache, BufferUsageManager, LlapOomDebugDump {
   private static final int DEFAULT_CLEANUP_INTERVAL = 600;
-  private final EvictionAwareAllocator allocator;
+  private final Allocator allocator;
   private final AtomicInteger newEvictions = new AtomicInteger(0);
   private Thread cleanupThread = null;
-  private final ConcurrentHashMap<Object, FileCache> cache =
-      new ConcurrentHashMap<Object, FileCache>();
+  // TODO: given the specific data and lookups, perhaps the nested thing should not be a map
+  //       In fact, CSLM has slow single-threaded operation, and one file is probably often read
+  //       by just one (or few) threads, so a much more simple DS with locking might be better.
+  //       Let's use CSLM for now, since it's available.
+  private final ConcurrentHashMap<Object,
+      FileCache<ConcurrentSkipListMap<Long, LlapDataBuffer>>> cache = new ConcurrentHashMap<>();
   private final LowLevelCachePolicy cachePolicy;
   private final long cleanupInterval;
   private final LlapDaemonCacheMetrics metrics;
   private final boolean doAssumeGranularBlocks;
 
+  private static final Function<Void, ConcurrentSkipListMap<Long, LlapDataBuffer>> CACHE_CTOR =
+      new Function<Void, ConcurrentSkipListMap<Long, LlapDataBuffer>>() {
+        @Override
+        public ConcurrentSkipListMap<Long, LlapDataBuffer> apply(Void input) {
+          return new ConcurrentSkipListMap<>();
+        }
+      };
+
   public LowLevelCacheImpl(LlapDaemonCacheMetrics metrics, LowLevelCachePolicy cachePolicy,
-      EvictionAwareAllocator allocator, boolean doAssumeGranularBlocks) {
+      Allocator allocator, boolean doAssumeGranularBlocks) {
     this(metrics, cachePolicy, allocator, doAssumeGranularBlocks, DEFAULT_CLEANUP_INTERVAL);
   }
 
   @VisibleForTesting
   LowLevelCacheImpl(LlapDaemonCacheMetrics metrics, LowLevelCachePolicy cachePolicy,
-      EvictionAwareAllocator allocator, boolean doAssumeGranularBlocks, long cleanupInterval) {
-
+      Allocator allocator, boolean doAssumeGranularBlocks, long cleanupInterval) {
     LlapIoImpl.LOG.info("Low level cache; cleanup interval {} sec", cleanupInterval);
     this.cachePolicy = cachePolicy;
     this.allocator = allocator;
@@ -71,7 +83,7 @@ public class LowLevelCacheImpl implements LowLevelCache, BufferUsageManager, Lla
 
   public void startThreads() {
     if (cleanupInterval < 0) return;
-    cleanupThread = new CleanupThread(cleanupInterval);
+    cleanupThread = new CleanupThread(cache, newEvictions, cleanupInterval);
     cleanupThread.start();
   }
 
@@ -80,7 +92,7 @@ public class LowLevelCacheImpl implements LowLevelCache, BufferUsageManager, Lla
       DiskRangeListFactory factory, LowLevelCacheCounters qfCounters, BooleanRef gotAllData) {
     if (ranges == null) return null;
     DiskRangeList prev = ranges.prev;
-    FileCache subCache = cache.get(fileKey);
+    FileCache<ConcurrentSkipListMap<Long, LlapDataBuffer>> subCache = cache.get(fileKey);
     if (subCache == null || !subCache.incRef()) {
       long totalMissed = ranges.getTotalLength();
       metrics.incrCacheRequestedBytes(totalMissed);
@@ -104,7 +116,7 @@ public class LowLevelCacheImpl implements LowLevelCache, BufferUsageManager, Lla
         metrics.incrCacheRequestedBytes(current.getLength());
         // We assume ranges in "ranges" are non-overlapping; thus, we will save next in advance.
         DiskRangeList next = current.next;
-        getOverlappingRanges(baseOffset, current, subCache.cache, factory, gotAllData);
+        getOverlappingRanges(baseOffset, current, subCache.getCache(), factory, gotAllData);
         current = next;
       }
     } finally {
@@ -146,7 +158,7 @@ public class LowLevelCacheImpl implements LowLevelCache, BufferUsageManager, Lla
       if (subCache != null && subCache.incRef()) {
         try {
           invalidMsg.append("; cache ranges (not necessarily consistent) are ");
-          for (Map.Entry<Long, LlapDataBuffer> e : subCache.cache.entrySet()) {
+          for (Map.Entry<Long, LlapDataBuffer> e : subCache.getCache().entrySet()) {
             long start = e.getKey(), end = start + e.getValue().declaredCachedLength;
             invalidMsg.append("[").append(start).append(", ").append(end).append("), ");
           }
@@ -271,7 +283,8 @@ public class LowLevelCacheImpl implements LowLevelCache, BufferUsageManager, Lla
       long baseOffset, Priority priority, LowLevelCacheCounters qfCounters) {
     long[] result = null;
     assert buffers.length == ranges.length;
-    FileCache subCache = getOrAddFileSubCache(fileKey);
+    FileCache<ConcurrentSkipListMap<Long, LlapDataBuffer>> subCache =
+        FileCache.getOrAddFileSubCache(cache, fileKey, CACHE_CTOR);
     try {
       for (int i = 0; i < ranges.length; ++i) {
         LlapDataBuffer buffer = (LlapDataBuffer)buffers[i];
@@ -284,7 +297,7 @@ public class LowLevelCacheImpl implements LowLevelCache, BufferUsageManager, Lla
         assert buffer.declaredCachedLength == LlapDataBuffer.UNKNOWN_CACHED_LENGTH;
         buffer.declaredCachedLength = ranges[i].getLength();
         while (true) { // Overwhelmingly executes once, or maybe twice (replacing stale value).
-          LlapDataBuffer oldVal = subCache.cache.putIfAbsent(offset, buffer);
+          LlapDataBuffer oldVal = subCache.getCache().putIfAbsent(offset, buffer);
           if (oldVal == null) {
             // Cached successfully, add to policy.
             cachePolicy.cache(buffer, priority);
@@ -324,45 +337,13 @@ public class LowLevelCacheImpl implements LowLevelCache, BufferUsageManager, Lla
             break;
           }
           // We found some old value but couldn't incRef it; remove it.
-          subCache.cache.remove(offset, oldVal);
+          subCache.getCache().remove(offset, oldVal);
         }
       }
     } finally {
       subCache.decRef();
     }
     return result;
-  }
-
-  /**
-   * All this mess is necessary because we want to be able to remove sub-caches for fully
-   * evicted files. It may actually be better to have non-nested map with object keys?
-   */
-  private FileCache getOrAddFileSubCache(Object fileKey) {
-    FileCache newSubCache = null;
-    while (true) { // Overwhelmingly executes once.
-      FileCache subCache = cache.get(fileKey);
-      if (subCache != null) {
-        if (subCache.incRef()) return subCache; // Main path - found it, incRef-ed it.
-        if (newSubCache == null) {
-          newSubCache = new FileCache();
-          newSubCache.incRef();
-        }
-        // Found a stale value we cannot incRef; try to replace it with new value.
-        if (cache.replace(fileKey, subCache, newSubCache)) return newSubCache;
-        continue; // Someone else replaced/removed a stale value, try again.
-      }
-      // No value found.
-      if (newSubCache == null) {
-        newSubCache = new FileCache();
-        newSubCache.incRef();
-      }
-      FileCache oldSubCache = cache.putIfAbsent(fileKey, newSubCache);
-      if (oldSubCache == null) return newSubCache; // Main path 2 - created a new file cache.
-      if (oldSubCache.incRef()) return oldSubCache; // Someone created one in parallel.
-      // Someone created one in parallel and then it went stale.
-      if (cache.replace(fileKey, oldSubCache, newSubCache)) return newSubCache;
-      // Someone else replaced/removed a parallel-added stale value, try again. Max confusion.
-    }
   }
 
   private static int align64(int number) {
@@ -407,134 +388,44 @@ public class LowLevelCacheImpl implements LowLevelCache, BufferUsageManager, Lla
 
   @Override
   public final void notifyEvicted(MemoryBuffer buffer) {
-    allocator.deallocateEvicted(buffer);
     newEvictions.incrementAndGet();
   }
 
-  private static class FileCache {
-    private static final int EVICTED_REFCOUNT = -1, EVICTING_REFCOUNT = -2;
-    // TODO: given the specific data and lookups, perhaps the nested thing should not be a map
-    //       In fact, CSLM has slow single-threaded operation, and one file is probably often read
-    //       by just one (or few) threads, so a much more simple DS with locking might be better.
-    //       Let's use CSLM for now, since it's available.
-    private final ConcurrentSkipListMap<Long, LlapDataBuffer> cache
-      = new ConcurrentSkipListMap<Long, LlapDataBuffer>();
-    private final AtomicInteger refCount = new AtomicInteger(0);
+  private static final class CleanupThread
+    extends FileCacheCleanupThread<ConcurrentSkipListMap<Long, LlapDataBuffer>> {
 
-    boolean incRef() {
-      while (true) {
-        int value = refCount.get();
-        if (value == EVICTED_REFCOUNT) return false;
-        if (value == EVICTING_REFCOUNT) continue; // spin until it resolves; extremely rare
-        assert value >= 0;
-        if (refCount.compareAndSet(value, value + 1)) return true;
-      }
-    }
-
-    void decRef() {
-      int value = refCount.decrementAndGet();
-      if (value < 0) {
-        throw new AssertionError("Unexpected refCount " + value);
-      }
-    }
-
-    boolean startEvicting() {
-      while (true) {
-        int value = refCount.get();
-        if (value != 1) return false;
-        if (refCount.compareAndSet(value, EVICTING_REFCOUNT)) return true;
-      }
-    }
-
-    void commitEvicting() {
-      boolean result = refCount.compareAndSet(EVICTING_REFCOUNT, EVICTED_REFCOUNT);
-      assert result;
-    }
-
-    void abortEvicting() {
-      boolean result = refCount.compareAndSet(EVICTING_REFCOUNT, 0);
-      assert result;
-    }
-  }
-
-  private final class CleanupThread extends Thread {
-    private final long approxCleanupIntervalSec;
-
-    public CleanupThread(long cleanupInterval) {
-      super("Llap low level cache cleanup thread");
-      this.approxCleanupIntervalSec = cleanupInterval;
-      setDaemon(true);
-      setPriority(1);
+    public CleanupThread(ConcurrentHashMap<Object,
+        FileCache<ConcurrentSkipListMap<Long, LlapDataBuffer>>> fileMap,
+        AtomicInteger newEvictions, long cleanupInterval) {
+      super("Llap low level cache cleanup thread", fileMap, newEvictions, cleanupInterval);
     }
 
     @Override
-    public void run() {
-      while (true) {
-        try {
-          doOneCleanupRound();
-        } catch (InterruptedException ex) {
-          LlapIoImpl.LOG.warn("Cleanup thread has been interrupted");
-          Thread.currentThread().interrupt();
-          break;
-        } catch (Throwable t) {
-          LlapIoImpl.LOG.error("Cleanup has failed; the thread will now exit", t);
-          break;
-        }
-      }
+    protected int getCacheSize( FileCache<ConcurrentSkipListMap<Long, LlapDataBuffer>> fc) {
+      return fc.getCache().size();
     }
 
-    private void doOneCleanupRound() throws InterruptedException {
-      while (true) {
-        int evictionsSinceLast = newEvictions.getAndSet(0);
-        if (evictionsSinceLast > 0) break;
-        synchronized (newEvictions) {
-          newEvictions.wait(10000);
-        }
-      }
-      // Duration is an estimate; if the size of the map changes, it can be very different.
-      long endTime = System.nanoTime() + approxCleanupIntervalSec * 1000000000L;
-      int leftToCheck = 0; // approximate
-      for (FileCache fc : cache.values()) {
-        leftToCheck += fc.cache.size();
-      }
-      // Iterate thru all the filecaches. This is best-effort.
-      // If these super-long-lived iterators affect the map in some bad way,
-      // we'd need to sleep once per round instead.
-      Iterator<Map.Entry<Object, FileCache>> iter = cache.entrySet().iterator();
-      boolean isPastEndTime = false;
-      while (iter.hasNext()) {
-        FileCache fc = iter.next().getValue();
-        if (!fc.incRef()) {
-          throw new AssertionError("Something other than cleanup is removing elements from map");
-        }
-        // Iterate thru the file cache. This is best-effort.
-        Iterator<Map.Entry<Long, LlapDataBuffer>> subIter = fc.cache.entrySet().iterator();
-        boolean isEmpty = true;
-        while (subIter.hasNext()) {
-          long time = -1;
-          isPastEndTime = isPastEndTime || ((time = System.nanoTime()) >= endTime);
-          Thread.sleep(((leftToCheck <= 0) || isPastEndTime)
-              ? 1 : (endTime - time) / (1000000L * leftToCheck));
-          if (subIter.next().getValue().isInvalid()) {
-            subIter.remove();
-          } else {
-            isEmpty = false;
-          }
-          --leftToCheck;
-        }
-        if (!isEmpty) {
-          fc.decRef();
-          continue;
-        }
-        // FileCache might be empty; see if we can remove it. "tryWriteLock"
-        if (!fc.startEvicting()) continue;
-        if (fc.cache.isEmpty()) {
-          fc.commitEvicting();
-          iter.remove();
+    @Override
+    public int cleanUpOneFileCache(
+        FileCache<ConcurrentSkipListMap<Long, LlapDataBuffer>> fc,
+        int leftToCheck, long endTime, Ref<Boolean> isPastEndTime)
+        throws InterruptedException {
+      // Iterate thru the file cache. This is best-effort.
+      Iterator<Map.Entry<Long, LlapDataBuffer>> subIter = fc.getCache().entrySet().iterator();
+      boolean isEmpty = true;
+      while (subIter.hasNext()) {
+        long time = -1;
+        isPastEndTime.value = isPastEndTime.value || ((time = System.nanoTime()) >= endTime);
+        Thread.sleep(((leftToCheck <= 0) || isPastEndTime.value)
+            ? 1 : (endTime - time) / (1000000L * leftToCheck));
+        if (subIter.next().getValue().isInvalid()) {
+          subIter.remove();
         } else {
-          fc.abortEvicting();
+          isEmpty = false;
         }
+        --leftToCheck;
       }
+      return leftToCheck;
     }
   }
 
@@ -553,11 +444,12 @@ public class LowLevelCacheImpl implements LowLevelCache, BufferUsageManager, Lla
   @Override
   public String debugDumpForOom() {
     StringBuilder sb = new StringBuilder("File cache state ");
-    for (Map.Entry<Object, FileCache> e : cache.entrySet()) {
+    for (Map.Entry<Object, FileCache<ConcurrentSkipListMap<Long, LlapDataBuffer>>> e :
+      cache.entrySet()) {
       if (!e.getValue().incRef()) continue;
       try {
         sb.append("\n  file " + e.getKey());
-        for (Map.Entry<Long, LlapDataBuffer> e2 : e.getValue().cache.entrySet()) {
+        for (Map.Entry<Long, LlapDataBuffer> e2 : e.getValue().getCache().entrySet()) {
           if (e2.getValue().incRef() < 0) continue;
           try {
             sb.append("\n    [").append(e2.getKey()).append(", ")
