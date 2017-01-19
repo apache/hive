@@ -220,8 +220,13 @@ public class DruidQueryBasedInputFormat extends InputFormat<NullWritable, DruidW
     } finally {
       lifecycle.stop();
     }
-    if (metadataList == null || metadataList.isEmpty()) {
+    if (metadataList == null) {
       throw new IOException("Connected to Druid but could not retrieve datasource information");
+    }
+    if (metadataList.isEmpty()) {
+      // There are no rows for that time range, we can submit query as it is
+      return new HiveDruidSplit[] { new HiveDruidSplit(
+              address, DruidStorageHandlerUtils.JSON_MAPPER.writeValueAsString(query), dummyPath) };
     }
     if (metadataList.size() != 1) {
       throw new IOException("Information about segments should have been merged");
