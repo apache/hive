@@ -90,16 +90,21 @@ public abstract class DruidQueryRecordReader<T extends BaseQuery<R>, R extends C
     HttpClient client = HttpClientInit.createClient(
             HttpClientConfig.builder().withReadTimeout(readTimeout.toStandardDuration())
                     .withNumConnections(numConnection).build(), lifecycle);
-
     try {
       lifecycle.start();
     } catch (Exception e) {
       LOG.error("Issues with lifecycle start", e);
     }
-    InputStream response = DruidStorageHandlerUtils.submitRequest(client,
-            DruidStorageHandlerUtils.createRequest(hiveDruidSplit.getAddress(), query)
-    );
-    lifecycle.stop();
+    InputStream response;
+    try {
+      response = DruidStorageHandlerUtils.submitRequest(client,
+              DruidStorageHandlerUtils.createRequest(hiveDruidSplit.getAddress(), query)
+      );
+    } catch (Exception e) {
+      lifecycle.stop();
+      throw new IOException(org.apache.hadoop.util.StringUtils.stringifyException(e));
+    }
+
     // Retrieve results
     List<R> resultsList;
     try {
@@ -107,6 +112,8 @@ public abstract class DruidQueryRecordReader<T extends BaseQuery<R>, R extends C
     } catch (IOException e) {
       response.close();
       throw e;
+    } finally {
+      lifecycle.stop();
     }
     if (resultsList == null || resultsList.isEmpty()) {
       return;

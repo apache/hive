@@ -188,7 +188,7 @@ public class DruidQueryBasedInputFormat extends InputFormat<NullWritable, DruidW
     metadataBuilder.merge(true);
     metadataBuilder.analysisTypes();
     SegmentMetadataQuery metadataQuery = metadataBuilder.build();
-    final Lifecycle lifecycle = new Lifecycle();
+    Lifecycle lifecycle = new Lifecycle();
     HttpClient client = HttpClientInit.createClient(
             HttpClientConfig.builder().withNumConnections(numConnection)
                     .withReadTimeout(readTimeout.toStandardDuration()).build(), lifecycle);
@@ -203,9 +203,8 @@ public class DruidQueryBasedInputFormat extends InputFormat<NullWritable, DruidW
               DruidStorageHandlerUtils.createRequest(address, metadataQuery)
       );
     } catch (Exception e) {
-      throw new IOException(org.apache.hadoop.util.StringUtils.stringifyException(e));
-    } finally {
       lifecycle.stop();
+      throw new IOException(org.apache.hadoop.util.StringUtils.stringifyException(e));
     }
 
     // Retrieve results
@@ -218,6 +217,8 @@ public class DruidQueryBasedInputFormat extends InputFormat<NullWritable, DruidW
     } catch (Exception e) {
       response.close();
       throw new IOException(org.apache.hadoop.util.StringUtils.stringifyException(e));
+    } finally {
+      lifecycle.stop();
     }
     if (metadataList == null || metadataList.isEmpty()) {
       throw new IOException("Connected to Druid but could not retrieve datasource information");
@@ -248,11 +249,26 @@ public class DruidQueryBasedInputFormat extends InputFormat<NullWritable, DruidW
       timeBuilder.dataSource(query.getDataSource());
       TimeBoundaryQuery timeQuery = timeBuilder.build();
 
+      lifecycle = new Lifecycle();
+      client = HttpClientInit.createClient(
+              HttpClientConfig.builder().withNumConnections(numConnection)
+                      .withReadTimeout(readTimeout.toStandardDuration()).build(), lifecycle);
+      try {
+        lifecycle.start();
+      } catch (Exception e) {
+        LOG.error("Lifecycle start issue", e);
+      }
+      try {
+        lifecycle.start();
+      } catch (Exception e) {
+        LOG.error("Lifecycle start issue", e);
+      }
       try {
         response = DruidStorageHandlerUtils.submitRequest(client,
                 DruidStorageHandlerUtils.createRequest(address, timeQuery)
         );
       } catch (Exception e) {
+        lifecycle.stop();
         throw new IOException(org.apache.hadoop.util.StringUtils.stringifyException(e));
       }
 
@@ -266,6 +282,8 @@ public class DruidQueryBasedInputFormat extends InputFormat<NullWritable, DruidW
       } catch (Exception e) {
         response.close();
         throw new IOException(org.apache.hadoop.util.StringUtils.stringifyException(e));
+      } finally {
+        lifecycle.stop();
       }
       if (timeList == null || timeList.isEmpty()) {
         throw new IOException(
