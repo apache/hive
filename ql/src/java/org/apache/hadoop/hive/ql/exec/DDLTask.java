@@ -697,6 +697,9 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     task.initialize(queryState, getQueryPlan(), driverCxt, opContext);
     subtask = task;
     int ret = task.execute(driverCxt);
+    if (subtask.getException() != null) {
+      setException(subtask.getException());
+    }
     return ret;
   }
 
@@ -4435,7 +4438,11 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       taskExec.setWork(truncateWork);
       taskExec.setQueryPlan(this.getQueryPlan());
       subtask = taskExec;
-      return taskExec.execute(driverCxt);
+      int ret = taskExec.execute(driverCxt);
+      if (subtask.getException() != null) {
+        setException(subtask.getException());
+      }
+      return ret;
     }
 
     String tableName = truncateTableDesc.getTableName();
