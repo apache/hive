@@ -1,10 +1,8 @@
-PREHOOK: query: -- HIVE-4375 Single sourced multi insert consists of native and non-native table mixed throws NPE
-CREATE TABLE src_x1(key string, value string)
+PREHOOK: query: CREATE TABLE src_x1(key string, value string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@src_x1
-POSTHOOK: query: -- HIVE-4375 Single sourced multi insert consists of native and non-native table mixed throws NPE
-CREATE TABLE src_x1(key string, value string)
+POSTHOOK: query: CREATE TABLE src_x1(key string, value string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@src_x1

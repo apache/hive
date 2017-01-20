@@ -78,19 +78,13 @@ POSTHOOK: Input: default@base64_test
 2	val_2
 5	val_5
 9	val_9
-PREHOOK: query: -- Base64TextInput/OutputFormat supports signature (a prefix to check the validity of
--- the data). These queries test that prefix capabilities.
-
-FROM src
+PREHOOK: query: FROM src
 INSERT OVERWRITE TABLE base64_test
 SELECT key, value WHERE key < 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Output: default@base64_test
-POSTHOOK: query: -- Base64TextInput/OutputFormat supports signature (a prefix to check the validity of
--- the data). These queries test that prefix capabilities.
-
-FROM src
+POSTHOOK: query: FROM src
 INSERT OVERWRITE TABLE base64_test
 SELECT key, value WHERE key < 10
 POSTHOOK: type: QUERY

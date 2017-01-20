@@ -1,8 +1,6 @@
-PREHOOK: query: -- Create a simple source table;
-DROP TABLE table1
+PREHOOK: query: DROP TABLE table1
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: -- Create a simple source table;
-DROP TABLE table1
+POSTHOOK: query: DROP TABLE table1
 POSTHOOK: type: DROPTABLE
 PREHOOK: query: CREATE TABLE table1 (id int, key string) ROW FORMAT DELIMITED FIELDS TERMINATED BY ','
 PREHOOK: type: CREATETABLE
@@ -28,28 +26,24 @@ POSTHOOK: type: QUERY
 POSTHOOK: Output: default@table1
 POSTHOOK: Lineage: table1.id EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 POSTHOOK: Lineage: table1.key SIMPLE [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
-PREHOOK: query: -- Write and verify data on the directory;
-INSERT OVERWRITE DIRECTORY '### test.blobstore.path ###/table1.dir/' SELECT * FROM table1
+PREHOOK: query: INSERT OVERWRITE DIRECTORY '### test.blobstore.path ###/table1.dir/' SELECT * FROM table1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table1
 PREHOOK: Output: ### test.blobstore.path ###/table1.dir
-POSTHOOK: query: -- Write and verify data on the directory;
-INSERT OVERWRITE DIRECTORY '### test.blobstore.path ###/table1.dir/' SELECT * FROM table1
+POSTHOOK: query: INSERT OVERWRITE DIRECTORY '### test.blobstore.path ###/table1.dir/' SELECT * FROM table1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table1
 POSTHOOK: Output: ### test.blobstore.path ###/table1.dir
 1k1
 2k2
-PREHOOK: query: -- Write and verify data using FROM ... INSERT OVERWRITE DIRECTORY;
-FROM table1
+PREHOOK: query: FROM table1
 INSERT OVERWRITE DIRECTORY '### test.blobstore.path ###/table1.dir/' SELECT id
 INSERT OVERWRITE DIRECTORY '### test.blobstore.path ###/table2.dir/' SELECT key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table1
 PREHOOK: Output: ### test.blobstore.path ###/table1.dir
 PREHOOK: Output: ### test.blobstore.path ###/table2.dir
-POSTHOOK: query: -- Write and verify data using FROM ... INSERT OVERWRITE DIRECTORY;
-FROM table1
+POSTHOOK: query: FROM table1
 INSERT OVERWRITE DIRECTORY '### test.blobstore.path ###/table1.dir/' SELECT id
 INSERT OVERWRITE DIRECTORY '### test.blobstore.path ###/table2.dir/' SELECT key
 POSTHOOK: type: QUERY
@@ -60,11 +54,9 @@ POSTHOOK: Output: ### test.blobstore.path ###/table2.dir
 2
 k1
 k2
-PREHOOK: query: -- Verify plan is optimizedl
-EXPLAIN EXTENDED INSERT OVERWRITE DIRECTORY '### test.blobstore.path ###/table1.dir/' SELECT * FROM table1
+PREHOOK: query: EXPLAIN EXTENDED INSERT OVERWRITE DIRECTORY '### test.blobstore.path ###/table1.dir/' SELECT * FROM table1
 PREHOOK: type: QUERY
-POSTHOOK: query: -- Verify plan is optimizedl
-EXPLAIN EXTENDED INSERT OVERWRITE DIRECTORY '### test.blobstore.path ###/table1.dir/' SELECT * FROM table1
+POSTHOOK: query: EXPLAIN EXTENDED INSERT OVERWRITE DIRECTORY '### test.blobstore.path ###/table1.dir/' SELECT * FROM table1
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage

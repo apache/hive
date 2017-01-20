@@ -1,24 +1,16 @@
-PREHOOK: query: -- Test that the when multiple MR jobs are created for a query, that only the FSOP from the last job writes to S3
-
--- Drop tables
-DROP TABLE IF EXISTS hdfs_table
+PREHOOK: query: DROP TABLE IF EXISTS hdfs_table
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: -- Test that the when multiple MR jobs are created for a query, that only the FSOP from the last job writes to S3
-
--- Drop tables
-DROP TABLE IF EXISTS hdfs_table
+POSTHOOK: query: DROP TABLE IF EXISTS hdfs_table
 POSTHOOK: type: DROPTABLE
 PREHOOK: query: DROP TABLE IF EXISTS blobstore_table
 PREHOOK: type: DROPTABLE
 POSTHOOK: query: DROP TABLE IF EXISTS blobstore_table
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: -- Create a table one table on HDFS and another on S3
-CREATE TABLE hdfs_table(key INT)
+PREHOOK: query: CREATE TABLE hdfs_table(key INT)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@hdfs_table
-POSTHOOK: query: -- Create a table one table on HDFS and another on S3
-CREATE TABLE hdfs_table(key INT)
+POSTHOOK: query: CREATE TABLE hdfs_table(key INT)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@hdfs_table
@@ -446,13 +438,11 @@ STAGE PLANS:
     Stats-Aggr Operator
       Stats Aggregation Key Prefix: ### BLOBSTORE_STAGING_PATH ###
 
-PREHOOK: query: -- Drop tables
-DROP TABLE hdfs_table
+PREHOOK: query: DROP TABLE hdfs_table
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@hdfs_table
 PREHOOK: Output: default@hdfs_table
-POSTHOOK: query: -- Drop tables
-DROP TABLE hdfs_table
+POSTHOOK: query: DROP TABLE hdfs_table
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@hdfs_table
 POSTHOOK: Output: default@hdfs_table

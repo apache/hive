@@ -37,11 +37,9 @@ POSTHOOK: query: INSERT INTO TABLE ctas_hdfs_table_src VALUES (1), (2), (3)
 POSTHOOK: type: QUERY
 POSTHOOK: Output: default@ctas_hdfs_table_src
 POSTHOOK: Lineage: ctas_hdfs_table_src.col EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-PREHOOK: query: -- Test select from a Blobstore and write to HDFS
-DROP TABLE IF EXISTS ctas_hdfs_table_dst
+PREHOOK: query: DROP TABLE IF EXISTS ctas_hdfs_table_dst
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: -- Test select from a Blobstore and write to HDFS
-DROP TABLE IF EXISTS ctas_hdfs_table_dst
+POSTHOOK: query: DROP TABLE IF EXISTS ctas_hdfs_table_dst
 POSTHOOK: type: DROPTABLE
 PREHOOK: query: EXPLAIN EXTENDED CREATE TABLE ctas_hdfs_table_dst AS SELECT * FROM ctas_blobstore_table_src
 PREHOOK: type: CREATETABLE_AS_SELECT
@@ -301,11 +299,9 @@ POSTHOOK: Input: default@ctas_hdfs_table_dst
 1
 2
 3
-PREHOOK: query: -- Test select from HDFS and write to a Blobstore
-DROP TABLE IF EXISTS ctas_blobstore_table_dst
+PREHOOK: query: DROP TABLE IF EXISTS ctas_blobstore_table_dst
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: -- Test select from HDFS and write to a Blobstore
-DROP TABLE IF EXISTS ctas_blobstore_table_dst
+POSTHOOK: query: DROP TABLE IF EXISTS ctas_blobstore_table_dst
 POSTHOOK: type: DROPTABLE
 #### A masked pattern was here ####
 PREHOOK: type: CREATETABLE_AS_SELECT
@@ -573,13 +569,11 @@ POSTHOOK: Input: default@ctas_blobstore_table_dst
 1
 2
 3
-PREHOOK: query: -- Test select from a Blobstore and write to a Blobstore
-DROP TABLE IF EXISTS ctas_blobstore_table_dst
+PREHOOK: query: DROP TABLE IF EXISTS ctas_blobstore_table_dst
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@ctas_blobstore_table_dst
 PREHOOK: Output: default@ctas_blobstore_table_dst
-POSTHOOK: query: -- Test select from a Blobstore and write to a Blobstore
-DROP TABLE IF EXISTS ctas_blobstore_table_dst
+POSTHOOK: query: DROP TABLE IF EXISTS ctas_blobstore_table_dst
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@ctas_blobstore_table_dst
 POSTHOOK: Output: default@ctas_blobstore_table_dst
