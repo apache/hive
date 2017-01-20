@@ -1,16 +1,8 @@
-PREHOOK: query: -- This tests inferring how data is bucketed/sorted from the operators in the reducer
--- and populating that information in partitions' metadata.  In particular, those cases
--- where dynamic partitioning is used.
-
-CREATE TABLE test_table LIKE srcpart
+PREHOOK: query: CREATE TABLE test_table LIKE srcpart
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@test_table
-POSTHOOK: query: -- This tests inferring how data is bucketed/sorted from the operators in the reducer
--- and populating that information in partitions' metadata.  In particular, those cases
--- where dynamic partitioning is used.
-
-CREATE TABLE test_table LIKE srcpart
+POSTHOOK: query: CREATE TABLE test_table LIKE srcpart
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_table
@@ -22,9 +14,7 @@ POSTHOOK: query: ALTER TABLE test_table SET FILEFORMAT RCFILE
 POSTHOOK: type: ALTERTABLE_FILEFORMAT
 POSTHOOK: Input: default@test_table
 POSTHOOK: Output: default@test_table
-PREHOOK: query: -- Simple case, this should not be bucketed or sorted
-
-INSERT OVERWRITE TABLE test_table PARTITION (ds, hr)
+PREHOOK: query: INSERT OVERWRITE TABLE test_table PARTITION (ds, hr)
 SELECT key, value, ds, hr FROM srcpart
 WHERE ds = '2008-04-08'
 PREHOOK: type: QUERY
@@ -32,9 +22,7 @@ PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 PREHOOK: Output: default@test_table
-POSTHOOK: query: -- Simple case, this should not be bucketed or sorted
-
-INSERT OVERWRITE TABLE test_table PARTITION (ds, hr)
+POSTHOOK: query: INSERT OVERWRITE TABLE test_table PARTITION (ds, hr)
 SELECT key, value, ds, hr FROM srcpart
 WHERE ds = '2008-04-08'
 POSTHOOK: type: QUERY
@@ -127,10 +115,7 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: -- This should not be bucketed or sorted since the partition keys are in the set of bucketed
--- and sorted columns for the output 
-
-INSERT OVERWRITE TABLE test_table PARTITION (ds, hr)
+PREHOOK: query: INSERT OVERWRITE TABLE test_table PARTITION (ds, hr)
 SELECT key, COUNT(*), ds, hr FROM srcpart
 WHERE ds = '2008-04-08'
 GROUP BY key, ds, hr
@@ -139,10 +124,7 @@ PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 PREHOOK: Output: default@test_table
-POSTHOOK: query: -- This should not be bucketed or sorted since the partition keys are in the set of bucketed
--- and sorted columns for the output 
-
-INSERT OVERWRITE TABLE test_table PARTITION (ds, hr)
+POSTHOOK: query: INSERT OVERWRITE TABLE test_table PARTITION (ds, hr)
 SELECT key, COUNT(*), ds, hr FROM srcpart
 WHERE ds = '2008-04-08'
 GROUP BY key, ds, hr
@@ -236,9 +218,7 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: -- Both partitions should be bucketed and sorted by key
-
-INSERT OVERWRITE TABLE test_table PARTITION (ds, hr)
+PREHOOK: query: INSERT OVERWRITE TABLE test_table PARTITION (ds, hr)
 SELECT key, value, '2008-04-08', IF (key % 2 == 0, '11', '12') FROM
 (SELECT key, COUNT(*) AS value FROM srcpart
 WHERE ds = '2008-04-08'
@@ -248,9 +228,7 @@ PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 PREHOOK: Output: default@test_table
-POSTHOOK: query: -- Both partitions should be bucketed and sorted by key
-
-INSERT OVERWRITE TABLE test_table PARTITION (ds, hr)
+POSTHOOK: query: INSERT OVERWRITE TABLE test_table PARTITION (ds, hr)
 SELECT key, value, '2008-04-08', IF (key % 2 == 0, '11', '12') FROM
 (SELECT key, COUNT(*) AS value FROM srcpart
 WHERE ds = '2008-04-08'
@@ -430,24 +408,14 @@ POSTHOOK: Lineage: srcpart_merge_dp_rc PARTITION(ds=2008-04-08,hr=11).key SIMPLE
 POSTHOOK: Lineage: srcpart_merge_dp_rc PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart_merge_dp)srcpart_merge_dp.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: srcpart_merge_dp_rc PARTITION(ds=2008-04-08,hr=12).key SIMPLE [(srcpart_merge_dp)srcpart_merge_dp.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: srcpart_merge_dp_rc PARTITION(ds=2008-04-08,hr=12).value SIMPLE [(srcpart_merge_dp)srcpart_merge_dp.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: -- Tests dynamic partitions where bucketing/sorting can be inferred, but some partitions are
--- merged and some are moved.  Currently neither should be bucketed or sorted, in the future,
--- (ds='2008-04-08', hr='12') may be bucketed and sorted, (ds='2008-04-08', hr='11') should
--- definitely not be.
-
-EXPLAIN
+PREHOOK: query: EXPLAIN
 INSERT OVERWRITE TABLE test_table PARTITION (ds = '2008-04-08', hr)
 SELECT key, value, IF (key % 100 == 0, '11', '12') FROM
 (SELECT key, COUNT(*) AS value FROM srcpart
 WHERE ds = '2008-04-08'
 GROUP BY key) a
 PREHOOK: type: QUERY
-POSTHOOK: query: -- Tests dynamic partitions where bucketing/sorting can be inferred, but some partitions are
--- merged and some are moved.  Currently neither should be bucketed or sorted, in the future,
--- (ds='2008-04-08', hr='12') may be bucketed and sorted, (ds='2008-04-08', hr='11') should
--- definitely not be.
-
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 INSERT OVERWRITE TABLE test_table PARTITION (ds = '2008-04-08', hr)
 SELECT key, value, IF (key % 100 == 0, '11', '12') FROM
 (SELECT key, COUNT(*) AS value FROM srcpart

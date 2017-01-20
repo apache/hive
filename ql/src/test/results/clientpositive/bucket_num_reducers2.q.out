@@ -1,14 +1,8 @@
-PREHOOK: query: -- This test sets the maximum number of reduce tasks to 2 for overwriting a
--- table with 3 buckets, and uses a post-hook to confirm that 1 reducer was used
-
-CREATE TABLE test_table(key int, value string) CLUSTERED BY (key) INTO 3 BUCKETS
+PREHOOK: query: CREATE TABLE test_table(key int, value string) CLUSTERED BY (key) INTO 3 BUCKETS
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@test_table
-POSTHOOK: query: -- This test sets the maximum number of reduce tasks to 2 for overwriting a
--- table with 3 buckets, and uses a post-hook to confirm that 1 reducer was used
-
-CREATE TABLE test_table(key int, value string) CLUSTERED BY (key) INTO 3 BUCKETS
+POSTHOOK: query: CREATE TABLE test_table(key int, value string) CLUSTERED BY (key) INTO 3 BUCKETS
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_table

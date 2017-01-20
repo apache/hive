@@ -18,12 +18,9 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@encrypted_table
 Encryption key created: 'key_128'
 Encryption zone created: '/build/ql/test/data/warehouse/encrypted_table' using key: 'key_128'
-PREHOOK: query: -- create database encrypted_db in its default warehouse location {hiveconf:hive.metastore.warehouse.dir}/encrypted_db.db
 #### A masked pattern was here ####
 PREHOOK: type: CREATEDATABASE
 PREHOOK: Output: database:encrypted_db
-#### A masked pattern was here ####
-POSTHOOK: query: -- create database encrypted_db in its default warehouse location {hiveconf:hive.metastore.warehouse.dir}/encrypted_db.db
 #### A masked pattern was here ####
 POSTHOOK: type: CREATEDATABASE
 POSTHOOK: Output: database:encrypted_db
@@ -48,8 +45,7 @@ POSTHOOK: type: SHOWTABLES
 POSTHOOK: Input: database:default
 encrypted_table
 src
-PREHOOK: query: -- should fail, since they are in different encryption zones
-ALTER TABLE default.encrypted_table RENAME TO encrypted_db.encrypted_table_2
+PREHOOK: query: ALTER TABLE default.encrypted_table RENAME TO encrypted_db.encrypted_table_2
 PREHOOK: type: ALTERTABLE_RENAME
 PREHOOK: Input: default@encrypted_table
 PREHOOK: Output: default@encrypted_table
@@ -62,13 +58,11 @@ POSTHOOK: type: SHOWTABLES
 POSTHOOK: Input: database:default
 encrypted_table
 src
-PREHOOK: query: -- should succeed in Hadoop 2.7 but fail in 2.6  (HDFS-7530)
-ALTER TABLE default.encrypted_table RENAME TO default.plain_table
+PREHOOK: query: ALTER TABLE default.encrypted_table RENAME TO default.plain_table
 PREHOOK: type: ALTERTABLE_RENAME
 PREHOOK: Input: default@encrypted_table
 PREHOOK: Output: default@encrypted_table
-POSTHOOK: query: -- should succeed in Hadoop 2.7 but fail in 2.6  (HDFS-7530)
-ALTER TABLE default.encrypted_table RENAME TO default.plain_table
+POSTHOOK: query: ALTER TABLE default.encrypted_table RENAME TO default.plain_table
 POSTHOOK: type: ALTERTABLE_RENAME
 POSTHOOK: Input: default@encrypted_table
 POSTHOOK: Output: default@encrypted_table
@@ -81,15 +75,11 @@ POSTHOOK: type: SHOWTABLES
 POSTHOOK: Input: database:default
 plain_table
 src
-PREHOOK: query: -- create table encrypted_table_outloc under default database but in a specified location other than the default db location in the warehouse
--- rename should succeed since it does not need to move data (HIVE-14909), otherwise, it would fail.
 #### A masked pattern was here ####
 PREHOOK: type: CREATETABLE
 #### A masked pattern was here ####
 PREHOOK: Output: database:default
 PREHOOK: Output: default@encrypted_table_outloc
-POSTHOOK: query: -- create table encrypted_table_outloc under default database but in a specified location other than the default db location in the warehouse
--- rename should succeed since it does not need to move data (HIVE-14909), otherwise, it would fail.
 #### A masked pattern was here ####
 POSTHOOK: type: CREATETABLE
 #### A masked pattern was here ####
@@ -115,12 +105,9 @@ POSTHOOK: Input: database:default
 plain_table
 renamed_encrypted_table_outloc
 src
-PREHOOK: query: -- create database encrypted_db_outloc in a specified location other than its default in warehouse
 #### A masked pattern was here ####
 PREHOOK: type: CREATEDATABASE
 PREHOOK: Output: database:encrypted_db_outloc
-#### A masked pattern was here ####
-POSTHOOK: query: -- create database encrypted_db_outloc in a specified location other than its default in warehouse
 #### A masked pattern was here ####
 POSTHOOK: type: CREATEDATABASE
 POSTHOOK: Output: database:encrypted_db_outloc
@@ -160,17 +147,14 @@ POSTHOOK: type: ALTERTABLE_RENAME
 POSTHOOK: Input: encrypted_db_outloc@encrypted_table
 POSTHOOK: Output: encrypted_db_outloc@encrypted_table
 POSTHOOK: Output: encrypted_db_outloc@renamed_encrypted_table
-PREHOOK: query: -- should succeed since data moves within specified_db_location
-SHOW TABLES
+PREHOOK: query: SHOW TABLES
 PREHOOK: type: SHOWTABLES
 PREHOOK: Input: database:encrypted_db_outloc
-POSTHOOK: query: -- should succeed since data moves within specified_db_location
-SHOW TABLES
+POSTHOOK: query: SHOW TABLES
 POSTHOOK: type: SHOWTABLES
 POSTHOOK: Input: database:encrypted_db_outloc
 renamed_encrypted_table
-PREHOOK: query: -- should fail, since they are in different encryption zones
-ALTER TABLE encrypted_db_outloc.renamed_encrypted_table RENAME TO default.plain_table_2
+PREHOOK: query: ALTER TABLE encrypted_db_outloc.renamed_encrypted_table RENAME TO default.plain_table_2
 PREHOOK: type: ALTERTABLE_RENAME
 PREHOOK: Input: encrypted_db_outloc@renamed_encrypted_table
 PREHOOK: Output: encrypted_db_outloc@renamed_encrypted_table
