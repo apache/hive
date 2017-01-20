@@ -38,6 +38,7 @@ import org.apache.hadoop.hive.ql.exec.GroupByOperator;
 import org.apache.hadoop.hive.ql.exec.HashTableDummyOperator;
 import org.apache.hadoop.hive.ql.exec.JoinOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
+import org.apache.hadoop.hive.ql.exec.OperatorUtils;
 import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
 import org.apache.hadoop.hive.ql.exec.SMBMapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.SerializationUtilities;
@@ -573,7 +574,7 @@ public class GenSparkUtils {
    */
   public BaseWork getEnclosingWork(Operator<?> op, GenSparkProcContext procCtx) {
     List<Operator<?>> ops = new ArrayList<Operator<?>>();
-    findRoots(op, ops);
+    OperatorUtils.findRoots(op, ops);
     for (Operator<?> r : ops) {
       BaseWork work = procCtx.rootToWorkMap.get(r);
       if (work != null) {
@@ -581,38 +582,5 @@ public class GenSparkUtils {
       }
     }
     return null;
-  }
-
-  /*
-   * findRoots returns all root operators (in ops) that result in operator op
-   */
-  private void findRoots(Operator<?> op, List<Operator<?>> ops) {
-    List<Operator<?>> parents = op.getParentOperators();
-    if (parents == null || parents.isEmpty()) {
-      ops.add(op);
-      return;
-    }
-    for (Operator<?> p : parents) {
-      findRoots(p, ops);
-    }
-  }
-
-  /**
-   * Remove the branch that contains the specified operator. Do nothing if there's no branching,
-   * i.e. all the upstream operators have only one child.
-   */
-  public static void removeBranch(Operator<?> op) {
-    Operator<?> child = op;
-    Operator<?> curr = op;
-
-    while (curr.getChildOperators().size() <= 1) {
-      child = curr;
-      if (curr.getParentOperators() == null || curr.getParentOperators().isEmpty()) {
-        return;
-      }
-      curr = curr.getParentOperators().get(0);
-    }
-
-    curr.removeChild(child);
   }
 }
