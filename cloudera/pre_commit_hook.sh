@@ -33,7 +33,7 @@ export PATH=${JAVA_HOME}/bin:${PATH}
 
 # WORKSPACE is an environment variable created by Jenkins, and it is the directory where the build is executed.
 # If not set, then default to $HOME
-MVN_REPO_LOCAL=${WORKSPACE:-$HOME}/.m2/repository
+MVN_REPO_LOCAL=`readlink -f ${WORKSPACE:-$HOME}`/.m2/repository
 
 # Add any test to be excluded in alphabetical order to keep readability, starting with files, and
 # then directories.
