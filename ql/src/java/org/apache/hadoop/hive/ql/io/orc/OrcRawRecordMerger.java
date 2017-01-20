@@ -455,7 +455,6 @@ public class OrcRawRecordMerger implements AcidInputFormat.RawReader<OrcStruct>{
       ReaderKey key = new ReaderKey();
       if (isOriginal) {
         options = options.clone();
-        options.range(options.getOffset(), Long.MAX_VALUE);
         pair = new OriginalReaderPair(key, reader, bucket, minKey, maxKey,
                                       options);
       } else {
