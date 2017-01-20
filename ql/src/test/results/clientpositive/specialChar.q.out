@@ -76,21 +76,21 @@ POSTHOOK: query: INSERT INTO ts VALUES ("Mozilla\'\\/5.0 ;;;\";;\";(iPhone; CPU 
 POSTHOOK: type: QUERY
 POSTHOOK: Output: default@ts
 POSTHOOK: Lineage: ts.s EXPRESSION [(values__tmp__table__10)values__tmp__table__10.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-PREHOOK: query: select * from ts
+PREHOOK: query: select * from ts order by s
 PREHOOK: type: QUERY
 PREHOOK: Input: default@ts
 #### A masked pattern was here ####
-POSTHOOK: query: select * from ts
+POSTHOOK: query: select * from ts order by s
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@ts
 #### A masked pattern was here ####
+"
+'
+Mozilla"'/5.0 "(iPhone; CPU iPhone OS 5_0 like Mac OS X) AppleWebKit/534.46 (KHTML, like Gecko) Version/5.1 Mobile/9A334 Safari/7534.48.3
+Mozilla'"/5.0 '(iPhone; CPU iPhone OS 5_0 like Mac OS X) AppleWebKit/534.46 (KHTML, like Gecko) Version/5.1 Mobile/9A334 Safari/7534.48.3
+Mozilla'\/5.0 ;;;";;";(iPhone; CPU iPhone OS 5_0 like Mac OS X) AppleWebKit/534.46 (KHTML, like Gecko) Version/5.1 Mobile/9A334 Safari/7534.48.3
+Mozilla/5.0 (iPhone/; ///;CPU ;;;iPhone OS 5_0 like Mac OS X) AppleWebKit/534.46 (KHTML, like Gecko) Version/5.1 Mobile/9A334 Safari/7534.48.3
 Mozilla/5.0 (iPhone; CPU iPhone OS 5_0 like Mac OS X) AppleWebKit/534.46 (KHTML, like Gecko) Version/5.1 Mobile/9A334 Safari/7534.48.3
 Mozilla/5.0 (iPhone; CPU iPhone OS 5_0 like Mac OS X) AppleWebKit/534.46 (KHTML, like Gecko) Version/5.1 Mobile/9A334 Safari/7534.48.3
 Mozilla/5.0 (iPhone; \; \;CPU iPhone OS 5_0 like Mac OS X) AppleWebKit/534.46 (KHTML, like Gecko) Version/5.1 Mobile/9A334 Safari/7534.48.3
-Mozilla/5.0 (iPhone/; ///;CPU ;;;iPhone OS 5_0 like Mac OS X) AppleWebKit/534.46 (KHTML, like Gecko) Version/5.1 Mobile/9A334 Safari/7534.48.3
-'
-"
-Mozilla"'/5.0 "(iPhone; CPU iPhone OS 5_0 like Mac OS X) AppleWebKit/534.46 (KHTML, like Gecko) Version/5.1 Mobile/9A334 Safari/7534.48.3
-Mozilla'"/5.0 '(iPhone; CPU iPhone OS 5_0 like Mac OS X) AppleWebKit/534.46 (KHTML, like Gecko) Version/5.1 Mobile/9A334 Safari/7534.48.3
 Mozilla\"/5.0 ;;;;;;(iPhone; CPU iPhone OS 5_0 like Mac OS X) AppleWebKit/534.46 (KHTML, like Gecko) Version/5.1 Mobile/9A334 Safari/7534.48.3
-Mozilla'\/5.0 ;;;";;";(iPhone; CPU iPhone OS 5_0 like Mac OS X) AppleWebKit/534.46 (KHTML, like Gecko) Version/5.1 Mobile/9A334 Safari/7534.48.3
