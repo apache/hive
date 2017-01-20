@@ -41,7 +41,6 @@
     <module>hbase-handler</module>
     <module>hcatalog</module>
     <module>hplsql</module>
-    <module>hwi</module>
     <module>jdbc</module>
     <module>metastore</module>
     <module>orc</module>

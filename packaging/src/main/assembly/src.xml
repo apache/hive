@@ -73,7 +73,6 @@
         <include>hbase-handler/**/*</include>
         <include>hcatalog/**/*</include>
         <include>hplsql/**/*</include>
-        <include>hwi/**/*</include>
         <include>itests/**/*</include>
         <include>jdbc/**/*</include>
         <include>contrib/**/*</include>

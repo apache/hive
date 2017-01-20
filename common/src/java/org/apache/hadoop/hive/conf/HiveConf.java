@@ -1228,12 +1228,6 @@ public class HiveConf extends Configuration {
         "Read from a binary stream and treat each hive.binary.record.max.length bytes as a record. \n" +
         "The last record before the end of stream can have less than hive.binary.record.max.length bytes"),
 
-    // HWI
-    HIVEHWILISTENHOST("hive.hwi.listen.host", "0.0.0.0", "This is the host address the Hive Web Interface will listen on"),
-    HIVEHWILISTENPORT("hive.hwi.listen.port", "9999", "This is the port the Hive Web Interface will listen on"),
-    HIVEHWIWARFILE("hive.hwi.war.file", "${env:HWI_WAR_FILE}",
-        "This sets the path to the HWI war file, relative to ${HIVE_HOME}. "),
-
     HIVEHADOOPMAXMEM("hive.mapred.local.mem", 0, "mapper/reducer memory in local mode"),
 
     //small table file size
