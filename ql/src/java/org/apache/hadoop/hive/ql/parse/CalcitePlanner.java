@@ -2391,29 +2391,6 @@ public class CalcitePlanner extends SemanticAnalyzer {
       return filterRel;
     }
 
-    private boolean topLevelConjunctCheck(ASTNode searchCond, ObjectPair<Boolean, Integer> subqInfo) {
-      if( searchCond.getType() == HiveParser.KW_OR) {
-        subqInfo.setFirst(Boolean.TRUE);
-        if(subqInfo.getSecond() > 1) {
-          return false;
-        }
-      }
-      if( searchCond.getType() == HiveParser.TOK_SUBQUERY_EXPR) {
-        subqInfo.setSecond(subqInfo.getSecond() + 1);
-        if(subqInfo.getSecond()> 1 && subqInfo.getFirst()) {
-          return false;
-        }
-        return true;
-      }
-      for(int i=0; i<searchCond.getChildCount(); i++){
-          boolean validSubQuery = topLevelConjunctCheck((ASTNode)searchCond.getChild(i), subqInfo);
-          if(!validSubQuery) {
-            return false;
-          }
-      }
-      return true;
-    }
-
     private void subqueryRestrictionCheck(QB qb, ASTNode searchCond, RelNode srcRel,
                                          boolean forHavingClause,
                                           Set<ASTNode> corrScalarQueries) throws SemanticException {
@@ -2434,15 +2411,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
           Boolean orInSubquery = new Boolean(false);
           Integer subqueryCount = new Integer(0);
           ObjectPair<Boolean, Integer> subqInfo = new ObjectPair<Boolean, Integer>(false, 0);
-          if(!topLevelConjunctCheck(clonedSearchCond, subqInfo)){
-          /*
-           *  Restriction.7.h :: SubQuery predicates can appear only as top level conjuncts.
-           */
 
-            throw new CalciteSubquerySemanticException(ErrorMsg.UNSUPPORTED_SUBQUERY_EXPRESSION.getMsg(
-                    subQueryAST, "Only SubQuery expressions that are top level conjuncts are allowed"));
-
-          }
           ASTNode outerQueryExpr = (ASTNode) subQueryAST.getChild(2);
 
           if (outerQueryExpr != null && outerQueryExpr.getType() == HiveParser.TOK_SUBQUERY_EXPR ) {
