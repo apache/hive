@@ -56,6 +56,7 @@ import com.google.common.collect.Sets;
 import com.google.common.util.concurrent.Futures;
 import org.apache.commons.lang.mutable.MutableInt;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.common.JvmPauseMonitor;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.llap.metrics.LlapMetricsSystem;
@@ -67,7 +68,6 @@ import org.apache.hadoop.hive.llap.registry.impl.LlapRegistryService;
 import org.apache.hadoop.hive.llap.tezplugins.helpers.MonotonicClock;
 import org.apache.hadoop.hive.llap.tezplugins.scheduler.LoggingFutureCallback;
 import org.apache.hadoop.hive.llap.tezplugins.metrics.LlapTaskSchedulerMetrics;
-import org.apache.hadoop.util.JvmPauseMonitor;
 import org.apache.hadoop.yarn.api.records.Container;
 import org.apache.hadoop.yarn.api.records.ContainerId;
 import org.apache.hadoop.yarn.api.records.NodeId;
@@ -283,7 +283,6 @@ public class LlapTaskSchedulerService extends TaskScheduler {
       this.metrics.setNumExecutors(executorsPerInstance);
       this.metrics.setMemoryPerInstance(memoryPerInstance * 1024L * 1024L);
       this.metrics.setCpuCoresPerInstance(coresPerExecutor);
-      this.metrics.getJvmMetrics().setPauseMonitor(pauseMonitor);
     } else {
       this.metrics = null;
       this.pauseMonitor = null;
