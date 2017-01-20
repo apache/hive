@@ -22,7 +22,7 @@ import org.apache.hadoop.hive.ql.io.HiveKey;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.spark.api.java.JavaPairRDD;
 
-public class ReduceTran extends CacheTran<HiveKey, Iterable<BytesWritable>, HiveKey, BytesWritable> {
+public class ReduceTran extends CacheTran<HiveKey, BytesWritable, HiveKey, BytesWritable> {
   private HiveReduceFunction reduceFunc;
   private String name = "Reduce";
 
@@ -36,7 +36,7 @@ public class ReduceTran extends CacheTran<HiveKey, Iterable<BytesWritable>, Hive
 
   @Override
   public JavaPairRDD<HiveKey, BytesWritable> doTransform(
-      JavaPairRDD<HiveKey, Iterable<BytesWritable>> input) {
+      JavaPairRDD<HiveKey, BytesWritable> input) {
     return input.mapPartitionsToPair(reduceFunc);
   }
 

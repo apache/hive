@@ -26,7 +26,7 @@ import org.apache.hadoop.io.BytesWritable;
 import scala.Tuple2;
 
 public class HiveReduceFunction extends HivePairFlatMapFunction<
-  Iterator<Tuple2<HiveKey, Iterable<BytesWritable>>>, HiveKey, BytesWritable> {
+  Iterator<Tuple2<HiveKey, BytesWritable>>, HiveKey, BytesWritable> {
 
   private static final long serialVersionUID = 1L;
 
@@ -37,7 +37,7 @@ public class HiveReduceFunction extends HivePairFlatMapFunction<
   @SuppressWarnings("unchecked")
   @Override
   public Iterator<Tuple2<HiveKey, BytesWritable>>
-  call(Iterator<Tuple2<HiveKey, Iterable<BytesWritable>>> it) throws Exception {
+  call(Iterator<Tuple2<HiveKey, BytesWritable>> it) throws Exception {
     initJobConf();
 
     SparkReduceRecordHandler reducerRecordhandler = new SparkReduceRecordHandler();

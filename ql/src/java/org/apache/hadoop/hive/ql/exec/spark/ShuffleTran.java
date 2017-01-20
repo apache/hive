@@ -23,7 +23,7 @@ import org.apache.hadoop.io.BytesWritable;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.storage.StorageLevel;
 
-public class ShuffleTran implements SparkTran<HiveKey, BytesWritable, HiveKey, Iterable<BytesWritable>> {
+public class ShuffleTran implements SparkTran<HiveKey, BytesWritable, HiveKey, BytesWritable> {
   private final SparkShuffler shuffler;
   private final int numOfPartitions;
   private final boolean toCache;
@@ -42,8 +42,8 @@ public class ShuffleTran implements SparkTran<HiveKey, BytesWritable, HiveKey, I
   }
 
   @Override
-  public JavaPairRDD<HiveKey, Iterable<BytesWritable>> transform(JavaPairRDD<HiveKey, BytesWritable> input) {
-    JavaPairRDD<HiveKey, Iterable<BytesWritable>> result = shuffler.shuffle(input, numOfPartitions);
+  public JavaPairRDD<HiveKey, BytesWritable> transform(JavaPairRDD<HiveKey, BytesWritable> input) {
+    JavaPairRDD<HiveKey, BytesWritable> result = shuffler.shuffle(input, numOfPartitions);
     if (toCache) {
       sparkPlan.addCachedRDDId(result.id());
       result = result.persist(StorageLevel.MEMORY_AND_DISK());
