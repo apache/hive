@@ -16,6 +16,14 @@
  */
 package org.apache.hadoop.hive.llap.ext;
 
+import org.apache.hadoop.io.Writable;
+
+import java.util.HashSet;
+
+import org.apache.hadoop.hive.llap.protocol.LlapTaskUmbilicalProtocol.TezAttemptArray;
+
+import org.apache.hadoop.io.ArrayWritable;
+
 import java.io.Closeable;
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -222,9 +230,15 @@ public class LlapTaskUmbilicalExternalClient extends AbstractService implements 
     }
   }
 
-  private void updateHeartbeatInfo(String hostname, String uniqueId, int port) {
+  private void updateHeartbeatInfo(
+      String hostname, String uniqueId, int port, TezAttemptArray tasks) {
     int updateCount = 0;
+    HashSet<TezTaskAttemptID> attempts = new HashSet<>();
+    for (Writable w : tasks.get()) {
+      attempts.add((TezTaskAttemptID)w);
+    }
 
+    String error = "";
     for (String key : pendingEvents.keySet()) {
       PendingEventData pendingEventData = pendingEvents.get(key);
       if (pendingEventData != null) {
@@ -232,8 +246,13 @@ public class LlapTaskUmbilicalExternalClient extends AbstractService implements 
         String thiUniqueId = thi.uniqueNodeId;
         if (thi.hostname.equals(hostname) && thi.port == port
             && (thiUniqueId != null && thiUniqueId.equals(uniqueId))) {
-          thi.lastHeartbeat.set(System.currentTimeMillis());
-          updateCount++;
+          TezTaskAttemptID ta = TezTaskAttemptID.fromString(thi.taskAttemptId);
+          if (attempts.contains(ta)) {
+            thi.lastHeartbeat.set(System.currentTimeMillis());
+            updateCount++;
+          } else {
+            error += (thi.taskAttemptId + ", ");
+          }
         }
       }
     }
@@ -244,10 +263,18 @@ public class LlapTaskUmbilicalExternalClient extends AbstractService implements 
         String thiUniqueId = thi.uniqueNodeId;
         if (thi.hostname.equals(hostname) && thi.port == port
             && (thiUniqueId != null && thiUniqueId.equals(uniqueId))) {
-          thi.lastHeartbeat.set(System.currentTimeMillis());
-          updateCount++;
+          TezTaskAttemptID ta = TezTaskAttemptID.fromString(thi.taskAttemptId);
+          if (attempts.contains(ta)) {
+            thi.lastHeartbeat.set(System.currentTimeMillis());
+            updateCount++;
+          } else {
+            error += (thi.taskAttemptId + ", ");
+          }
         }
       }
+    }
+    if (!error.isEmpty()) {
+      LOG.info("The tasks we expected to be on the node are not there: " + error);
     }
 
     if (updateCount == 0) {
@@ -395,8 +422,9 @@ public class LlapTaskUmbilicalExternalClient extends AbstractService implements 
     }
 
     @Override
-    public void nodeHeartbeat(Text hostname, Text uniqueId, int port) throws IOException {
-      updateHeartbeatInfo(hostname.toString(), uniqueId.toString(), port);
+    public void nodeHeartbeat(
+        Text hostname, Text uniqueId, int port, TezAttemptArray aw) throws IOException {
+      updateHeartbeatInfo(hostname.toString(), uniqueId.toString(), port, aw);
       // No need to propagate to this to the responder
     }
 
