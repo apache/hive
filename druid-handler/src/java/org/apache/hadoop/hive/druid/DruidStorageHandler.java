@@ -55,6 +55,7 @@ import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.ql.metadata.DefaultStorageHandler;
+import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.serde2.AbstractSerDe;
@@ -476,7 +477,9 @@ public class DruidStorageHandler extends DefaultStorageHandler implements HiveMe
 
   @Override
   public void preInsertTable(Table table, boolean overwrite) throws MetaException {
-    //do nothing
+    if (!overwrite) {
+      throw new MetaException("INSERT INTO statement is not allowed by druid storage handler");
+    }
   }
 
   @Override

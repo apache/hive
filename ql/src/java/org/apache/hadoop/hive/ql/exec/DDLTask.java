@@ -138,6 +138,7 @@ import org.apache.hadoop.hive.ql.parse.AlterTablePartMergeFilesDesc;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.DDLSemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.ExplainConfiguration.AnalyzeState;
+import org.apache.hadoop.hive.ql.parse.PreInsertTableDesc;
 import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.AbortTxnsDesc;
@@ -567,11 +568,24 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       if (insertTableDesc != null) {
         return insertCommitWork(db, insertTableDesc);
       }
+      PreInsertTableDesc preInsertTableDesc = work.getPreInsertTableDesc();
+      if (preInsertTableDesc != null) {
+        return preInsertWork(db, preInsertTableDesc);
+      }
     } catch (Throwable e) {
       failed(e);
       return 1;
     }
     assert false;
+    return 0;
+  }
+
+  private int preInsertWork(Hive db, PreInsertTableDesc preInsertTableDesc) throws HiveException {
+    try{
+      db.getMSC().preInsertTable(preInsertTableDesc.getTable(), preInsertTableDesc.isOverwrite());
+    } catch (MetaException e) {
+      throw new HiveException(e);
+    }
     return 0;
   }
 
@@ -4434,7 +4448,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         HiveMaterializedViewsRegistry.get().addMaterializedView(tbl);
       }
       addIfAbsentByName(new WriteEntity(tbl, WriteEntity.WriteType.DDL_NO_LOCK));
-      
+
       //set lineage info
       DataContainer dc = new DataContainer(tbl.getTTable());
       SessionState.get().getLineageState().setLineage(new Path(crtView.getViewName()), dc, tbl.getCols());

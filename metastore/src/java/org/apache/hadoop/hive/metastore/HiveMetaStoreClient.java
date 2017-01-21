@@ -2216,6 +2216,16 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
   }
 
   @Override
+  public void preInsertTable(Table table, boolean overwrite) throws MetaException {
+    HiveMetaHook hook = getHook(table);
+    if (hook == null || !(hook instanceof HiveMetaHookV2)) {
+      return;
+    }
+    HiveMetaHookV2 hiveMetaHook = (HiveMetaHookV2) hook;
+    hiveMetaHook.preInsertTable(table, overwrite);
+  }
+
+  @Override
   public void insertTable(Table table, boolean overwrite) throws MetaException {
     boolean failed = true;
     HiveMetaHook hook = getHook(table);
@@ -2224,9 +2234,10 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
     }
     HiveMetaHookV2 hiveMetaHook = (HiveMetaHookV2) hook;
     try {
-      hiveMetaHook.preInsertTable(table, overwrite);
       hiveMetaHook.commitInsertTable(table, overwrite);
-    } finally {
+      failed = false;
+    }
+    finally {
       if (failed) {
         hiveMetaHook.rollbackInsertTable(table, overwrite);
       }

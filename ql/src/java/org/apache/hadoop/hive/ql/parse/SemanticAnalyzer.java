@@ -6771,7 +6771,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         // This is a non-native table.
         // We need to set stats as inaccurate.
         setStatsForNonNativeTable(dest_tab);
-        createInsertDesc(dest_tab, !qb.getParseInfo().isInsertIntoTable(dest_tab.getTableName()));
+        // true if it is insert overwrite.
+        boolean overwrite = !qb.getParseInfo().isInsertIntoTable(
+                String.format("%s.%s", dest_tab.getDbName(), dest_tab.getTableName()));
+        createInsertDesc(dest_tab, overwrite);
       }
 
       WriteEntity output = null;
@@ -7193,7 +7196,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   private void createInsertDesc(Table table, boolean overwrite) {
     Task<? extends Serializable>[] tasks = new Task[this.rootTasks.size()];
     tasks = this.rootTasks.toArray(tasks);
+    PreInsertTableDesc preInsertTableDesc = new PreInsertTableDesc(table.getTTable(), overwrite);
     InsertTableDesc insertTableDesc = new InsertTableDesc(table.getTTable(), overwrite);
+    this.rootTasks
+            .add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), preInsertTableDesc), conf));
     TaskFactory
             .getAndMakeChild(new DDLWork(getInputs(), getOutputs(), insertTableDesc), conf, tasks);
   }
