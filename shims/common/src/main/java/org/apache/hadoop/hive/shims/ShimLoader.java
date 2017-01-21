@@ -51,17 +51,6 @@ public abstract class ShimLoader {
   }
 
   /**
-   * The names of the classes for shimming Jetty for each major version of
-   * Hadoop.
-   */
-  private static final HashMap<String, String> JETTY_SHIM_CLASSES =
-      new HashMap<String, String>();
-
-  static {
-    JETTY_SHIM_CLASSES.put(HADOOP23VERSIONNAME, "org.apache.hadoop.hive.shims.Jetty23Shims");
-  }
-
-  /**
    * The names of the classes for shimming Hadoop's event counter
    */
   private static final HashMap<String, String> EVENT_COUNTER_SHIM_CLASSES =
@@ -105,17 +94,6 @@ public abstract class ShimLoader {
       }
     }
     return hadoopShims;
-  }
-
-  /**
-   * Factory method to get an instance of JettyShims based on the version
-   * of Hadoop on the classpath.
-   */
-  public static synchronized JettyShims getJettyShims() {
-    if (jettyShims == null) {
-      jettyShims = loadShims(JETTY_SHIM_CLASSES, JettyShims.class);
-    }
-    return jettyShims;
   }
 
   public static synchronized AppenderSkeleton getEventCounter() {
