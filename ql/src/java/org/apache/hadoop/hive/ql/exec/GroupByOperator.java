@@ -893,7 +893,11 @@ public class GroupByOperator extends Operator<GroupByDesc> {
       usedMemory = isLlap ? usedMemory / numExecutors : usedMemory;
       rate = (float) usedMemory / (float) maxMemory;
       if(rate > memoryThreshold){
-        return true;
+        if (isTez && numEntriesHashTable == 0) {
+          return false;
+        } else {
+          return true;
+        }
       }
       for (Integer pos : keyPositionsSize) {
         Object key = newKeys.getKeyArray()[pos.intValue()];
