@@ -275,7 +275,7 @@ Plan optimized by CBO.
 
 Vertex dependency in root stage
 Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 4 (SIMPLE_EDGE)
-Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
+Reducer 3 <- Reducer 2 (CUSTOM_SIMPLE_EDGE)
 
 Stage-0
   Fetch Operator
@@ -285,8 +285,8 @@ Stage-0
       File Output Operator [FS_13]
         Group By Operator [GBY_11] (rows=1/1 width=8)
           Output:["_col0"],aggregations:["count()"]
-        <-Reducer 2 [SIMPLE_EDGE]
-          SHUFFLE [RS_10]
+        <-Reducer 2 [CUSTOM_SIMPLE_EDGE]
+          PARTITION_ONLY_SHUFFLE [RS_10]
             Merge Join Operator [MERGEJOIN_18] (rows=382/0 width=8)
               Conds:RS_6._col0=RS_7._col0(Inner)
             <-Map 1 [SIMPLE_EDGE]
@@ -324,7 +324,7 @@ Plan optimized by CBO.
 
 Vertex dependency in root stage
 Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 4 (SIMPLE_EDGE)
-Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
+Reducer 3 <- Reducer 2 (CUSTOM_SIMPLE_EDGE)
 
 Stage-0
   Fetch Operator
@@ -334,8 +334,8 @@ Stage-0
       File Output Operator [FS_13]
         Group By Operator [GBY_11] (rows=1/1 width=8)
           Output:["_col0"],aggregations:["count()"]
-        <-Reducer 2 [SIMPLE_EDGE]
-          SHUFFLE [RS_10]
+        <-Reducer 2 [CUSTOM_SIMPLE_EDGE]
+          PARTITION_ONLY_SHUFFLE [RS_10]
             Merge Join Operator [MERGEJOIN_18] (rows=399/1019 width=8)
               Conds:RS_6._col0=RS_7._col0(Inner)
             <-Map 1 [SIMPLE_EDGE]

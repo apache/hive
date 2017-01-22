@@ -52,7 +52,7 @@ Reducer 12 <- Map 11 (SIMPLE_EDGE), Map 16 (SIMPLE_EDGE)
 Reducer 13 <- Reducer 12 (SIMPLE_EDGE)
 Reducer 14 <- Reducer 13 (SIMPLE_EDGE), Reducer 19 (SIMPLE_EDGE)
 Reducer 15 <- Reducer 14 (SIMPLE_EDGE)
-Reducer 18 <- Map 17 (SIMPLE_EDGE), Map 20 (SIMPLE_EDGE), Reducer 23 (SIMPLE_EDGE)
+Reducer 18 <- Map 17 (CUSTOM_SIMPLE_EDGE), Map 20 (CUSTOM_SIMPLE_EDGE), Reducer 23 (CUSTOM_SIMPLE_EDGE)
 Reducer 19 <- Reducer 18 (SIMPLE_EDGE)
 Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 8 (SIMPLE_EDGE)
 Reducer 22 <- Map 21 (SIMPLE_EDGE), Map 24 (SIMPLE_EDGE)
@@ -143,18 +143,18 @@ Stage-0
                                           Output:["_col0"],keys:_col3
                                           Merge Join Operator [MERGEJOIN_119] (rows=4317954130560000000 width=2)
                                             Conds:(Inner),(Inner),Output:["_col3"]
-                                          <-Map 17 [SIMPLE_EDGE]
-                                            SHUFFLE [RS_52]
+                                          <-Map 17 [CUSTOM_SIMPLE_EDGE]
+                                            PARTITION_ONLY_SHUFFLE [RS_52]
                                               Select Operator [SEL_35] (rows=80000000 width=4)
                                                 TableScan [TS_34] (rows=80000000 width=860)
                                                   default@customer,customer,Tbl:COMPLETE,Col:COMPLETE
-                                          <-Map 20 [SIMPLE_EDGE]
-                                            SHUFFLE [RS_53]
+                                          <-Map 20 [CUSTOM_SIMPLE_EDGE]
+                                            PARTITION_ONLY_SHUFFLE [RS_53]
                                               Select Operator [SEL_37] (rows=1704 width=4)
                                                 TableScan [TS_36] (rows=1704 width=1910)
                                                   default@store,store,Tbl:COMPLETE,Col:COMPLETE
-                                          <-Reducer 23 [SIMPLE_EDGE]
-                                            SHUFFLE [RS_54]
+                                          <-Reducer 23 [CUSTOM_SIMPLE_EDGE]
+                                            PARTITION_ONLY_SHUFFLE [RS_54]
                                               Select Operator [SEL_51] (rows=31675133 width=77)
                                                 Output:["_col1"]
                                                 Group By Operator [GBY_50] (rows=31675133 width=77)

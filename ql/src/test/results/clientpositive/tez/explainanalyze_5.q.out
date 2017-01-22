@@ -46,7 +46,7 @@ PREHOOK: type: QUERY
 POSTHOOK: query: explain analyze analyze table src_stats compute statistics for columns
 POSTHOOK: type: QUERY
 Vertex dependency in root stage
-Reducer 2 <- Map 1 (SIMPLE_EDGE)
+Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
 
 Stage-2
   Column Stats Work{}
@@ -55,8 +55,8 @@ Stage-2
       File Output Operator [FS_5]
         Group By Operator [GBY_3] (rows=1/1 width=960)
           Output:["_col0","_col1"],aggregations:["compute_stats(VALUE._col0, 16)","compute_stats(VALUE._col2, 16)"]
-        <-Map 1 [SIMPLE_EDGE]
-          SHUFFLE [RS_2]
+        <-Map 1 [CUSTOM_SIMPLE_EDGE]
+          PARTITION_ONLY_SHUFFLE [RS_2]
             Select Operator [SEL_1] (rows=500/500 width=10)
               Output:["key","value"]
               TableScan [TS_0] (rows=500/500 width=10)
@@ -95,7 +95,7 @@ Map 1 <- Union 2 (CONTAINS)
 Map 6 <- Union 2 (CONTAINS)
 Reducer 3 <- Union 2 (SIMPLE_EDGE)
 Reducer 4 <- Map 7 (SIMPLE_EDGE), Reducer 3 (SIMPLE_EDGE)
-Reducer 5 <- Reducer 4 (SIMPLE_EDGE)
+Reducer 5 <- Reducer 4 (CUSTOM_SIMPLE_EDGE)
 
 Stage-4
   Column Stats Work{}
@@ -111,7 +111,7 @@ Stage-4
                   File Output Operator [FS_5]
                     Group By Operator [GBY_3] (rows=1/1 width=960)
                       Output:["_col0","_col1"],aggregations:["compute_stats(VALUE._col0, 16)","compute_stats(VALUE._col2, 16)"]
-                    <-Reducer 4 [SIMPLE_EDGE]
+                    <-Reducer 4 [CUSTOM_SIMPLE_EDGE]
                       File Output Operator [FS_19]
                         table:{"name:":"default.src_multi2"}
                         Select Operator [SEL_18] (rows=1280/508 width=178)
@@ -153,7 +153,7 @@ Stage-4
                                           predicate:key is not null
                                           TableScan [TS_3] (rows=25/25 width=175)
                                             Output:["key","value"]
-                      SHUFFLE [RS_2]
+                      PARTITION_ONLY_SHUFFLE [RS_2]
                         Select Operator [SEL_1] (rows=1280/508 width=178)
                           Output:["key","value"]
                            Please refer to the previous Select Operator [SEL_18]

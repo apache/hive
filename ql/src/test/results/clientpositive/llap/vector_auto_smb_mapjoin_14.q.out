@@ -51,7 +51,7 @@ POSTHOOK: type: QUERY
 Plan optimized by CBO.
 
 Vertex dependency in root stage
-Reducer 2 <- Map 1 (SIMPLE_EDGE)
+Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
 
 Stage-0
   Fetch Operator
@@ -61,8 +61,8 @@ Stage-0
       File Output Operator [FS_22]
         Group By Operator [GBY_21] (rows=1 width=8)
           Output:["_col0"],aggregations:["count(VALUE._col0)"]
-        <-Map 1 [SIMPLE_EDGE] llap
-          SHUFFLE [RS_11]
+        <-Map 1 [CUSTOM_SIMPLE_EDGE] llap
+          PARTITION_ONLY_SHUFFLE [RS_11]
             Group By Operator [GBY_10] (rows=1 width=8)
               Output:["_col0"],aggregations:["count()"]
               Merge Join Operator [MERGEJOIN_19] (rows=11 width=93)
@@ -119,7 +119,7 @@ Plan optimized by CBO.
 
 Vertex dependency in root stage
 Reducer 2 <- Map 1 (SIMPLE_EDGE)
-Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
+Reducer 3 <- Reducer 2 (CUSTOM_SIMPLE_EDGE)
 
 Stage-0
   Fetch Operator
@@ -129,8 +129,8 @@ Stage-0
       File Output Operator [FS_31]
         Group By Operator [GBY_30] (rows=1 width=8)
           Output:["_col0"],aggregations:["count(VALUE._col0)"]
-        <-Reducer 2 [SIMPLE_EDGE] vectorized, llap
-          SHUFFLE [RS_29]
+        <-Reducer 2 [CUSTOM_SIMPLE_EDGE] vectorized, llap
+          PARTITION_ONLY_SHUFFLE [RS_29]
             Group By Operator [GBY_28] (rows=1 width=8)
               Output:["_col0"],aggregations:["count()"]
               Select Operator [SEL_27] (rows=5 width=93)
@@ -342,7 +342,7 @@ POSTHOOK: type: QUERY
 Plan optimized by CBO.
 
 Vertex dependency in root stage
-Reducer 2 <- Map 1 (SIMPLE_EDGE)
+Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
 
 Stage-0
   Fetch Operator
@@ -352,8 +352,8 @@ Stage-0
       File Output Operator [FS_22]
         Group By Operator [GBY_21] (rows=1 width=8)
           Output:["_col0"],aggregations:["count(VALUE._col0)"]
-        <-Map 1 [SIMPLE_EDGE] llap
-          SHUFFLE [RS_11]
+        <-Map 1 [CUSTOM_SIMPLE_EDGE] llap
+          PARTITION_ONLY_SHUFFLE [RS_11]
             Group By Operator [GBY_10] (rows=1 width=8)
               Output:["_col0"],aggregations:["count()"]
               Merge Join Operator [MERGEJOIN_19] (rows=3 width=102)
@@ -417,7 +417,7 @@ POSTHOOK: type: QUERY
 Plan optimized by CBO.
 
 Vertex dependency in root stage
-Reducer 2 <- Map 1 (SIMPLE_EDGE)
+Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
 
 Stage-0
   Fetch Operator
@@ -427,8 +427,8 @@ Stage-0
       File Output Operator [FS_22]
         Group By Operator [GBY_21] (rows=1 width=8)
           Output:["_col0"],aggregations:["count(VALUE._col0)"]
-        <-Map 1 [SIMPLE_EDGE] llap
-          SHUFFLE [RS_11]
+        <-Map 1 [CUSTOM_SIMPLE_EDGE] llap
+          PARTITION_ONLY_SHUFFLE [RS_11]
             Group By Operator [GBY_10] (rows=1 width=8)
               Output:["_col0"],aggregations:["count()"]
               Merge Join Operator [MERGEJOIN_19] (rows=1 width=102)
@@ -516,7 +516,7 @@ POSTHOOK: type: QUERY
 Plan optimized by CBO.
 
 Vertex dependency in root stage
-Reducer 2 <- Map 1 (SIMPLE_EDGE)
+Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
 
 Stage-0
   Fetch Operator
@@ -526,8 +526,8 @@ Stage-0
       File Output Operator [FS_22]
         Group By Operator [GBY_21] (rows=1 width=8)
           Output:["_col0"],aggregations:["count(VALUE._col0)"]
-        <-Map 1 [SIMPLE_EDGE] llap
-          SHUFFLE [RS_11]
+        <-Map 1 [CUSTOM_SIMPLE_EDGE] llap
+          PARTITION_ONLY_SHUFFLE [RS_11]
             Group By Operator [GBY_10] (rows=1 width=8)
               Output:["_col0"],aggregations:["count()"]
               Merge Join Operator [MERGEJOIN_19] (rows=1 width=102)
@@ -603,7 +603,7 @@ POSTHOOK: type: QUERY
 Plan optimized by CBO.
 
 Vertex dependency in root stage
-Reducer 2 <- Map 1 (SIMPLE_EDGE)
+Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
 
 Stage-0
   Fetch Operator
@@ -613,8 +613,8 @@ Stage-0
       File Output Operator [FS_22]
         Group By Operator [GBY_21] (rows=1 width=8)
           Output:["_col0"],aggregations:["count(VALUE._col0)"]
-        <-Map 1 [SIMPLE_EDGE] llap
-          SHUFFLE [RS_11]
+        <-Map 1 [CUSTOM_SIMPLE_EDGE] llap
+          PARTITION_ONLY_SHUFFLE [RS_11]
             Group By Operator [GBY_10] (rows=1 width=8)
               Output:["_col0"],aggregations:["count()"]
               Merge Join Operator [MERGEJOIN_19] (rows=3 width=102)
@@ -669,7 +669,7 @@ Plan optimized by CBO.
 
 Vertex dependency in root stage
 Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 4 (SIMPLE_EDGE)
-Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
+Reducer 3 <- Reducer 2 (CUSTOM_SIMPLE_EDGE)
 
 Stage-0
   Fetch Operator
@@ -679,8 +679,8 @@ Stage-0
       File Output Operator [FS_29]
         Group By Operator [GBY_28] (rows=1 width=8)
           Output:["_col0"],aggregations:["count(VALUE._col0)"]
-        <-Reducer 2 [SIMPLE_EDGE] llap
-          SHUFFLE [RS_11]
+        <-Reducer 2 [CUSTOM_SIMPLE_EDGE] llap
+          PARTITION_ONLY_SHUFFLE [RS_11]
             Group By Operator [GBY_10] (rows=1 width=8)
               Output:["_col0"],aggregations:["count()"]
               Merge Join Operator [MERGEJOIN_21] (rows=11 width=93)
@@ -736,7 +736,7 @@ POSTHOOK: type: QUERY
 Plan optimized by CBO.
 
 Vertex dependency in root stage
-Reducer 2 <- Map 1 (SIMPLE_EDGE)
+Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
 
 Stage-0
   Fetch Operator
@@ -746,8 +746,8 @@ Stage-0
       File Output Operator [FS_22]
         Group By Operator [GBY_21] (rows=1 width=8)
           Output:["_col0"],aggregations:["count(VALUE._col0)"]
-        <-Map 1 [SIMPLE_EDGE] llap
-          SHUFFLE [RS_11]
+        <-Map 1 [CUSTOM_SIMPLE_EDGE] llap
+          PARTITION_ONLY_SHUFFLE [RS_11]
             Group By Operator [GBY_10] (rows=1 width=8)
               Output:["_col0"],aggregations:["count()"]
               Merge Join Operator [MERGEJOIN_19] (rows=3 width=102)
@@ -803,7 +803,7 @@ POSTHOOK: type: QUERY
 Plan optimized by CBO.
 
 Vertex dependency in root stage
-Reducer 2 <- Map 1 (SIMPLE_EDGE)
+Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
 
 Stage-0
   Fetch Operator
@@ -813,8 +813,8 @@ Stage-0
       File Output Operator [FS_32]
         Group By Operator [GBY_31] (rows=1 width=8)
           Output:["_col0"],aggregations:["count(VALUE._col0)"]
-        <-Map 1 [SIMPLE_EDGE] llap
-          SHUFFLE [RS_15]
+        <-Map 1 [CUSTOM_SIMPLE_EDGE] llap
+          PARTITION_ONLY_SHUFFLE [RS_15]
             Group By Operator [GBY_14] (rows=1 width=8)
               Output:["_col0"],aggregations:["count()"]
               Merge Join Operator [MERGEJOIN_28] (rows=6 width=102)
@@ -892,7 +892,7 @@ POSTHOOK: type: QUERY
 Plan optimized by CBO.
 
 Vertex dependency in root stage
-Reducer 2 <- Map 1 (SIMPLE_EDGE)
+Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
 
 Stage-0
   Fetch Operator
@@ -902,8 +902,8 @@ Stage-0
       File Output Operator [FS_22]
         Group By Operator [GBY_21] (rows=1 width=8)
           Output:["_col0"],aggregations:["count(VALUE._col0)"]
-        <-Map 1 [SIMPLE_EDGE] llap
-          SHUFFLE [RS_11]
+        <-Map 1 [CUSTOM_SIMPLE_EDGE] llap
+          PARTITION_ONLY_SHUFFLE [RS_11]
             Group By Operator [GBY_10] (rows=1 width=8)
               Output:["_col0"],aggregations:["count()"]
               Merge Join Operator [MERGEJOIN_19] (rows=1 width=102)

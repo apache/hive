@@ -6,7 +6,7 @@ Plan optimized by CBO.
 
 Vertex dependency in root stage
 Reducer 2 <- Map 1 (SIMPLE_EDGE), Reducer 7 (SIMPLE_EDGE)
-Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
+Reducer 3 <- Reducer 2 (CUSTOM_SIMPLE_EDGE)
 Reducer 5 <- Map 4 (SIMPLE_EDGE), Map 8 (SIMPLE_EDGE)
 Reducer 6 <- Map 9 (SIMPLE_EDGE), Reducer 5 (SIMPLE_EDGE)
 Reducer 7 <- Map 10 (SIMPLE_EDGE), Reducer 6 (SIMPLE_EDGE)
@@ -19,8 +19,8 @@ Stage-0
       File Output Operator [FS_35]
         Group By Operator [GBY_33] (rows=1 width=8)
           Output:["_col0"],aggregations:["sum(VALUE._col0)"]
-        <-Reducer 2 [SIMPLE_EDGE]
-          SHUFFLE [RS_32]
+        <-Reducer 2 [CUSTOM_SIMPLE_EDGE]
+          PARTITION_ONLY_SHUFFLE [RS_32]
             Group By Operator [GBY_31] (rows=1 width=8)
               Output:["_col0"],aggregations:["sum(_col6)"]
               Merge Join Operator [MERGEJOIN_58] (rows=15616946 width=88)

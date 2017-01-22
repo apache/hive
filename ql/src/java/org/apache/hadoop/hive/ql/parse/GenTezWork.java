@@ -452,7 +452,7 @@ public class GenTezWork implements NodeProcessor {
         if (!context.connectedReduceSinks.contains(rs)) {
           // add dependency between the two work items
           TezEdgeProperty edgeProp;
-          EdgeType edgeType = utils.determineEdgeType(work, followingWork);
+          EdgeType edgeType = GenTezUtils.determineEdgeType(work, followingWork, rs);
           if (rWork.isAutoReduceParallelism()) {
             edgeProp =
                 new TezEdgeProperty(context.conf, edgeType, true,

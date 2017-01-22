@@ -861,7 +861,7 @@ Vertex dependency in root stage
 Map 1 <- Union 2 (CONTAINS)
 Map 6 <- Union 2 (CONTAINS)
 Reducer 3 <- Map 7 (SIMPLE_EDGE), Union 2 (SIMPLE_EDGE)
-Reducer 4 <- Reducer 3 (SIMPLE_EDGE)
+Reducer 4 <- Reducer 3 (CUSTOM_SIMPLE_EDGE)
 
 Stage-0
   Fetch Operator
@@ -871,8 +871,8 @@ Stage-0
       File Output Operator [FS_25]
         Group By Operator [GBY_23] (rows=1/1 width=8)
           Output:["_col0"],aggregations:["count()"]
-        <-Reducer 3 [SIMPLE_EDGE]
-          SHUFFLE [RS_22]
+        <-Reducer 3 [CUSTOM_SIMPLE_EDGE]
+          PARTITION_ONLY_SHUFFLE [RS_22]
             Merge Join Operator [MERGEJOIN_38] (rows=558/1646 width=18)
               Conds:Union 2._col0=RS_19._col0(Inner)
             <-Map 7 [SIMPLE_EDGE]
@@ -950,7 +950,7 @@ Vertex dependency in root stage
 Map 8 <- Union 3 (CONTAINS)
 Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 7 (SIMPLE_EDGE), Union 3 (CONTAINS)
 Reducer 4 <- Map 9 (SIMPLE_EDGE), Union 3 (SIMPLE_EDGE)
-Reducer 5 <- Reducer 4 (SIMPLE_EDGE)
+Reducer 5 <- Reducer 4 (CUSTOM_SIMPLE_EDGE)
 
 Stage-0
   Fetch Operator
@@ -960,8 +960,8 @@ Stage-0
       File Output Operator [FS_31]
         Group By Operator [GBY_29] (rows=1/1 width=8)
           Output:["_col0"],aggregations:["count()"]
-        <-Reducer 4 [SIMPLE_EDGE]
-          SHUFFLE [RS_28]
+        <-Reducer 4 [CUSTOM_SIMPLE_EDGE]
+          PARTITION_ONLY_SHUFFLE [RS_28]
             Merge Join Operator [MERGEJOIN_50] (rows=587/3768 width=18)
               Conds:Union 3._col0=RS_25._col0(Inner)
             <-Map 9 [SIMPLE_EDGE]
@@ -1765,7 +1765,7 @@ Plan optimized by CBO.
 
 Vertex dependency in root stage
 Map 6 <- Union 3 (CONTAINS)
-Reducer 2 <- Map 1 (SIMPLE_EDGE), Union 3 (CONTAINS)
+Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE), Union 3 (CONTAINS)
 Reducer 4 <- Union 3 (SIMPLE_EDGE)
 Reducer 5 <- Reducer 4 (SIMPLE_EDGE)
 
@@ -1802,8 +1802,8 @@ Stage-4
                             Output:["_col0","_col1"]
                             Group By Operator [GBY_4] (rows=1/1 width=8)
                               Output:["_col0"],aggregations:["count(1)"]
-                            <-Map 1 [SIMPLE_EDGE]
-                              SHUFFLE [RS_3]
+                            <-Map 1 [CUSTOM_SIMPLE_EDGE]
+                              PARTITION_ONLY_SHUFFLE [RS_3]
                                 Select Operator [SEL_1] (rows=500/500 width=10)
                                   TableScan [TS_0] (rows=500/500 width=10)
                                     default@src,s1,Tbl:COMPLETE,Col:COMPLETE
@@ -1993,7 +1993,7 @@ Plan optimized by CBO.
 Vertex dependency in root stage
 Map 6 <- Union 3 (CONTAINS)
 Map 7 <- Union 3 (CONTAINS)
-Reducer 2 <- Map 1 (SIMPLE_EDGE), Union 3 (CONTAINS)
+Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE), Union 3 (CONTAINS)
 Reducer 4 <- Union 3 (SIMPLE_EDGE)
 Reducer 5 <- Union 3 (SIMPLE_EDGE)
 
@@ -2038,8 +2038,8 @@ Stage-4
                         Output:["_col0","_col1"]
                         Group By Operator [GBY_4] (rows=1/1 width=8)
                           Output:["_col0"],aggregations:["count(1)"]
-                        <-Map 1 [SIMPLE_EDGE]
-                          SHUFFLE [RS_3]
+                        <-Map 1 [CUSTOM_SIMPLE_EDGE]
+                          PARTITION_ONLY_SHUFFLE [RS_3]
                             Select Operator [SEL_1] (rows=500/500 width=10)
                               TableScan [TS_0] (rows=500/500 width=10)
                                 default@src,s1,Tbl:COMPLETE,Col:COMPLETE
@@ -2107,7 +2107,7 @@ Plan optimized by CBO.
 
 Vertex dependency in root stage
 Map 6 <- Union 3 (CONTAINS)
-Reducer 2 <- Map 1 (SIMPLE_EDGE), Union 3 (CONTAINS)
+Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE), Union 3 (CONTAINS)
 Reducer 4 <- Union 3 (SIMPLE_EDGE)
 Reducer 5 <- Union 3 (SIMPLE_EDGE)
 
@@ -2142,8 +2142,8 @@ Stage-4
                         Output:["_col0","_col1"]
                         Group By Operator [GBY_4] (rows=1/1 width=8)
                           Output:["_col0"],aggregations:["count(1)"]
-                        <-Map 1 [SIMPLE_EDGE]
-                          SHUFFLE [RS_3]
+                        <-Map 1 [CUSTOM_SIMPLE_EDGE]
+                          PARTITION_ONLY_SHUFFLE [RS_3]
                             Select Operator [SEL_1] (rows=500/500 width=10)
                               TableScan [TS_0] (rows=500/500 width=10)
                                 default@src,s1,Tbl:COMPLETE,Col:COMPLETE

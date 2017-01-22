@@ -102,31 +102,31 @@ Plan optimized by CBO.
 Vertex dependency in root stage
 Reducer 11 <- Map 10 (SIMPLE_EDGE), Map 15 (SIMPLE_EDGE)
 Reducer 12 <- Reducer 11 (SIMPLE_EDGE), Reducer 18 (SIMPLE_EDGE)
-Reducer 13 <- Reducer 12 (SIMPLE_EDGE), Reducer 23 (SIMPLE_EDGE)
+Reducer 13 <- Reducer 12 (CUSTOM_SIMPLE_EDGE), Reducer 23 (CUSTOM_SIMPLE_EDGE)
 Reducer 14 <- Reducer 13 (SIMPLE_EDGE)
-Reducer 17 <- Map 16 (SIMPLE_EDGE), Map 19 (SIMPLE_EDGE), Map 20 (SIMPLE_EDGE)
+Reducer 17 <- Map 16 (CUSTOM_SIMPLE_EDGE), Map 19 (CUSTOM_SIMPLE_EDGE), Map 20 (CUSTOM_SIMPLE_EDGE)
 Reducer 18 <- Reducer 17 (SIMPLE_EDGE)
 Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 8 (SIMPLE_EDGE)
-Reducer 22 <- Map 21 (SIMPLE_EDGE), Map 24 (SIMPLE_EDGE), Map 25 (SIMPLE_EDGE)
+Reducer 22 <- Map 21 (CUSTOM_SIMPLE_EDGE), Map 24 (CUSTOM_SIMPLE_EDGE), Map 25 (CUSTOM_SIMPLE_EDGE)
 Reducer 23 <- Reducer 22 (SIMPLE_EDGE)
 Reducer 27 <- Map 26 (SIMPLE_EDGE), Map 31 (SIMPLE_EDGE)
 Reducer 28 <- Reducer 27 (SIMPLE_EDGE), Reducer 34 (SIMPLE_EDGE)
-Reducer 29 <- Reducer 28 (SIMPLE_EDGE), Reducer 39 (SIMPLE_EDGE)
+Reducer 29 <- Reducer 28 (CUSTOM_SIMPLE_EDGE), Reducer 39 (CUSTOM_SIMPLE_EDGE)
 Reducer 3 <- Map 9 (SIMPLE_EDGE), Reducer 2 (SIMPLE_EDGE)
 Reducer 30 <- Reducer 29 (SIMPLE_EDGE)
-Reducer 33 <- Map 32 (SIMPLE_EDGE), Map 35 (SIMPLE_EDGE), Map 36 (SIMPLE_EDGE)
+Reducer 33 <- Map 32 (CUSTOM_SIMPLE_EDGE), Map 35 (CUSTOM_SIMPLE_EDGE), Map 36 (CUSTOM_SIMPLE_EDGE)
 Reducer 34 <- Reducer 33 (SIMPLE_EDGE)
-Reducer 38 <- Map 37 (SIMPLE_EDGE), Map 40 (SIMPLE_EDGE), Map 41 (SIMPLE_EDGE)
+Reducer 38 <- Map 37 (CUSTOM_SIMPLE_EDGE), Map 40 (CUSTOM_SIMPLE_EDGE), Map 41 (CUSTOM_SIMPLE_EDGE)
 Reducer 39 <- Reducer 38 (SIMPLE_EDGE)
 Reducer 4 <- Reducer 14 (SIMPLE_EDGE), Reducer 3 (SIMPLE_EDGE), Reducer 30 (SIMPLE_EDGE)
 Reducer 43 <- Map 42 (SIMPLE_EDGE), Map 47 (SIMPLE_EDGE)
 Reducer 44 <- Reducer 43 (SIMPLE_EDGE), Reducer 50 (SIMPLE_EDGE)
-Reducer 45 <- Reducer 44 (SIMPLE_EDGE), Reducer 55 (SIMPLE_EDGE)
+Reducer 45 <- Reducer 44 (CUSTOM_SIMPLE_EDGE), Reducer 55 (CUSTOM_SIMPLE_EDGE)
 Reducer 46 <- Reducer 45 (SIMPLE_EDGE)
-Reducer 49 <- Map 48 (SIMPLE_EDGE), Map 51 (SIMPLE_EDGE), Map 52 (SIMPLE_EDGE)
+Reducer 49 <- Map 48 (CUSTOM_SIMPLE_EDGE), Map 51 (CUSTOM_SIMPLE_EDGE), Map 52 (CUSTOM_SIMPLE_EDGE)
 Reducer 5 <- Reducer 4 (SIMPLE_EDGE), Reducer 46 (SIMPLE_EDGE)
 Reducer 50 <- Reducer 49 (SIMPLE_EDGE)
-Reducer 54 <- Map 53 (SIMPLE_EDGE), Map 56 (SIMPLE_EDGE), Map 57 (SIMPLE_EDGE)
+Reducer 54 <- Map 53 (CUSTOM_SIMPLE_EDGE), Map 56 (CUSTOM_SIMPLE_EDGE), Map 57 (CUSTOM_SIMPLE_EDGE)
 Reducer 55 <- Reducer 54 (SIMPLE_EDGE)
 Reducer 6 <- Reducer 5 (SIMPLE_EDGE)
 Reducer 7 <- Reducer 6 (SIMPLE_EDGE)
@@ -183,8 +183,8 @@ Stage-0
                                                 Output:["_col0"],keys:_col6
                                                 Merge Join Operator [MERGEJOIN_273] (rows=9223372036854775807 width=1)
                                                   Conds:(Inner),Output:["_col6"]
-                                                <-Reducer 12 [SIMPLE_EDGE]
-                                                  SHUFFLE [RS_51]
+                                                <-Reducer 12 [CUSTOM_SIMPLE_EDGE]
+                                                  PARTITION_ONLY_SHUFFLE [RS_51]
                                                     Merge Join Operator [MERGEJOIN_272] (rows=5072854730221289472 width=1)
                                                       Conds:RS_48._col1=RS_49._col0(Inner)
                                                     <-Reducer 11 [SIMPLE_EDGE]
@@ -222,24 +222,24 @@ Stage-0
                                                               Output:["_col0"],keys:_col2
                                                               Merge Join Operator [MERGEJOIN_261] (rows=9223372036854775807 width=1)
                                                                 Conds:(Inner),(Inner),Output:["_col2"]
-                                                              <-Map 16 [SIMPLE_EDGE]
-                                                                SHUFFLE [RS_21]
+                                                              <-Map 16 [CUSTOM_SIMPLE_EDGE]
+                                                                PARTITION_ONLY_SHUFFLE [RS_21]
                                                                   Select Operator [SEL_16] (rows=40000000 width=4)
                                                                     TableScan [TS_15] (rows=40000000 width=1014)
                                                                       default@customer_address,ca,Tbl:COMPLETE,Col:COMPLETE
-                                                              <-Map 19 [SIMPLE_EDGE]
-                                                                SHUFFLE [RS_22]
+                                                              <-Map 19 [CUSTOM_SIMPLE_EDGE]
+                                                                PARTITION_ONLY_SHUFFLE [RS_22]
                                                                   Select Operator [SEL_18] (rows=1861800 width=4)
                                                                     TableScan [TS_17] (rows=1861800 width=385)
                                                                       default@customer_demographics,customer_demographics,Tbl:COMPLETE,Col:COMPLETE
-                                                              <-Map 20 [SIMPLE_EDGE]
-                                                                SHUFFLE [RS_23]
+                                                              <-Map 20 [CUSTOM_SIMPLE_EDGE]
+                                                                PARTITION_ONLY_SHUFFLE [RS_23]
                                                                   Select Operator [SEL_20] (rows=80000000 width=860)
                                                                     Output:["_col0"]
                                                                     TableScan [TS_19] (rows=80000000 width=860)
                                                                       default@customer,c,Tbl:COMPLETE,Col:NONE,Output:["c_customer_sk"]
-                                                <-Reducer 23 [SIMPLE_EDGE]
-                                                  SHUFFLE [RS_52]
+                                                <-Reducer 23 [CUSTOM_SIMPLE_EDGE]
+                                                  PARTITION_ONLY_SHUFFLE [RS_52]
                                                     Group By Operator [GBY_43] (rows=4611686018427387903 width=1)
                                                       Output:["_col0"],keys:KEY._col0
                                                     <-Reducer 22 [SIMPLE_EDGE]
@@ -249,18 +249,18 @@ Stage-0
                                                           Output:["_col0"],keys:_col2
                                                           Merge Join Operator [MERGEJOIN_262] (rows=9223372036854775807 width=1)
                                                             Conds:(Inner),(Inner),Output:["_col2"]
-                                                          <-Map 21 [SIMPLE_EDGE]
-                                                            SHUFFLE [RS_36]
+                                                          <-Map 21 [CUSTOM_SIMPLE_EDGE]
+                                                            PARTITION_ONLY_SHUFFLE [RS_36]
                                                               Select Operator [SEL_31] (rows=40000000 width=4)
                                                                 TableScan [TS_30] (rows=40000000 width=1014)
                                                                   default@customer_address,ca,Tbl:COMPLETE,Col:COMPLETE
-                                                          <-Map 24 [SIMPLE_EDGE]
-                                                            SHUFFLE [RS_37]
+                                                          <-Map 24 [CUSTOM_SIMPLE_EDGE]
+                                                            PARTITION_ONLY_SHUFFLE [RS_37]
                                                               Select Operator [SEL_33] (rows=1861800 width=4)
                                                                 TableScan [TS_32] (rows=1861800 width=385)
                                                                   default@customer_demographics,customer_demographics,Tbl:COMPLETE,Col:COMPLETE
-                                                          <-Map 25 [SIMPLE_EDGE]
-                                                            SHUFFLE [RS_38]
+                                                          <-Map 25 [CUSTOM_SIMPLE_EDGE]
+                                                            PARTITION_ONLY_SHUFFLE [RS_38]
                                                               Select Operator [SEL_35] (rows=80000000 width=860)
                                                                 Output:["_col0"]
                                                                 TableScan [TS_34] (rows=80000000 width=860)
@@ -314,8 +314,8 @@ Stage-0
                                               Output:["_col0"],keys:_col6
                                               Merge Join Operator [MERGEJOIN_275] (rows=9223372036854775807 width=1)
                                                 Conds:(Inner),Output:["_col6"]
-                                              <-Reducer 28 [SIMPLE_EDGE]
-                                                SHUFFLE [RS_101]
+                                              <-Reducer 28 [CUSTOM_SIMPLE_EDGE]
+                                                PARTITION_ONLY_SHUFFLE [RS_101]
                                                   Merge Join Operator [MERGEJOIN_274] (rows=5072854730221289472 width=1)
                                                     Conds:RS_98._col1=RS_99._col0(Inner)
                                                   <-Reducer 27 [SIMPLE_EDGE]
@@ -353,24 +353,24 @@ Stage-0
                                                             Output:["_col0"],keys:_col2
                                                             Merge Join Operator [MERGEJOIN_263] (rows=9223372036854775807 width=1)
                                                               Conds:(Inner),(Inner),Output:["_col2"]
-                                                            <-Map 32 [SIMPLE_EDGE]
-                                                              SHUFFLE [RS_71]
+                                                            <-Map 32 [CUSTOM_SIMPLE_EDGE]
+                                                              PARTITION_ONLY_SHUFFLE [RS_71]
                                                                 Select Operator [SEL_66] (rows=40000000 width=4)
                                                                   TableScan [TS_65] (rows=40000000 width=1014)
                                                                     default@customer_address,ca,Tbl:COMPLETE,Col:COMPLETE
-                                                            <-Map 35 [SIMPLE_EDGE]
-                                                              SHUFFLE [RS_72]
+                                                            <-Map 35 [CUSTOM_SIMPLE_EDGE]
+                                                              PARTITION_ONLY_SHUFFLE [RS_72]
                                                                 Select Operator [SEL_68] (rows=1861800 width=4)
                                                                   TableScan [TS_67] (rows=1861800 width=385)
                                                                     default@customer_demographics,customer_demographics,Tbl:COMPLETE,Col:COMPLETE
-                                                            <-Map 36 [SIMPLE_EDGE]
-                                                              SHUFFLE [RS_73]
+                                                            <-Map 36 [CUSTOM_SIMPLE_EDGE]
+                                                              PARTITION_ONLY_SHUFFLE [RS_73]
                                                                 Select Operator [SEL_70] (rows=80000000 width=860)
                                                                   Output:["_col0"]
                                                                   TableScan [TS_69] (rows=80000000 width=860)
                                                                     default@customer,c,Tbl:COMPLETE,Col:NONE,Output:["c_customer_sk"]
-                                              <-Reducer 39 [SIMPLE_EDGE]
-                                                SHUFFLE [RS_102]
+                                              <-Reducer 39 [CUSTOM_SIMPLE_EDGE]
+                                                PARTITION_ONLY_SHUFFLE [RS_102]
                                                   Group By Operator [GBY_93] (rows=4611686018427387903 width=1)
                                                     Output:["_col0"],keys:KEY._col0
                                                   <-Reducer 38 [SIMPLE_EDGE]
@@ -380,18 +380,18 @@ Stage-0
                                                         Output:["_col0"],keys:_col2
                                                         Merge Join Operator [MERGEJOIN_264] (rows=9223372036854775807 width=1)
                                                           Conds:(Inner),(Inner),Output:["_col2"]
-                                                        <-Map 37 [SIMPLE_EDGE]
-                                                          SHUFFLE [RS_86]
+                                                        <-Map 37 [CUSTOM_SIMPLE_EDGE]
+                                                          PARTITION_ONLY_SHUFFLE [RS_86]
                                                             Select Operator [SEL_81] (rows=40000000 width=4)
                                                               TableScan [TS_80] (rows=40000000 width=1014)
                                                                 default@customer_address,ca,Tbl:COMPLETE,Col:COMPLETE
-                                                        <-Map 40 [SIMPLE_EDGE]
-                                                          SHUFFLE [RS_87]
+                                                        <-Map 40 [CUSTOM_SIMPLE_EDGE]
+                                                          PARTITION_ONLY_SHUFFLE [RS_87]
                                                             Select Operator [SEL_83] (rows=1861800 width=4)
                                                               TableScan [TS_82] (rows=1861800 width=385)
                                                                 default@customer_demographics,customer_demographics,Tbl:COMPLETE,Col:COMPLETE
-                                                        <-Map 41 [SIMPLE_EDGE]
-                                                          SHUFFLE [RS_88]
+                                                        <-Map 41 [CUSTOM_SIMPLE_EDGE]
+                                                          PARTITION_ONLY_SHUFFLE [RS_88]
                                                             Select Operator [SEL_85] (rows=80000000 width=860)
                                                               Output:["_col0"]
                                                               TableScan [TS_84] (rows=80000000 width=860)
@@ -410,8 +410,8 @@ Stage-0
                                       Output:["_col0"],keys:_col6
                                       Merge Join Operator [MERGEJOIN_278] (rows=9223372036854775807 width=1)
                                         Conds:(Inner),Output:["_col6"]
-                                      <-Reducer 44 [SIMPLE_EDGE]
-                                        SHUFFLE [RS_164]
+                                      <-Reducer 44 [CUSTOM_SIMPLE_EDGE]
+                                        PARTITION_ONLY_SHUFFLE [RS_164]
                                           Merge Join Operator [MERGEJOIN_277] (rows=5072854730221289472 width=1)
                                             Conds:RS_161._col1=RS_162._col0(Inner)
                                           <-Reducer 43 [SIMPLE_EDGE]
@@ -449,24 +449,24 @@ Stage-0
                                                     Output:["_col0"],keys:_col2
                                                     Merge Join Operator [MERGEJOIN_265] (rows=9223372036854775807 width=1)
                                                       Conds:(Inner),(Inner),Output:["_col2"]
-                                                    <-Map 48 [SIMPLE_EDGE]
-                                                      SHUFFLE [RS_134]
+                                                    <-Map 48 [CUSTOM_SIMPLE_EDGE]
+                                                      PARTITION_ONLY_SHUFFLE [RS_134]
                                                         Select Operator [SEL_129] (rows=40000000 width=4)
                                                           TableScan [TS_128] (rows=40000000 width=1014)
                                                             default@customer_address,ca,Tbl:COMPLETE,Col:COMPLETE
-                                                    <-Map 51 [SIMPLE_EDGE]
-                                                      SHUFFLE [RS_135]
+                                                    <-Map 51 [CUSTOM_SIMPLE_EDGE]
+                                                      PARTITION_ONLY_SHUFFLE [RS_135]
                                                         Select Operator [SEL_131] (rows=1861800 width=4)
                                                           TableScan [TS_130] (rows=1861800 width=385)
                                                             default@customer_demographics,customer_demographics,Tbl:COMPLETE,Col:COMPLETE
-                                                    <-Map 52 [SIMPLE_EDGE]
-                                                      SHUFFLE [RS_136]
+                                                    <-Map 52 [CUSTOM_SIMPLE_EDGE]
+                                                      PARTITION_ONLY_SHUFFLE [RS_136]
                                                         Select Operator [SEL_133] (rows=80000000 width=860)
                                                           Output:["_col0"]
                                                           TableScan [TS_132] (rows=80000000 width=860)
                                                             default@customer,c,Tbl:COMPLETE,Col:NONE,Output:["c_customer_sk"]
-                                      <-Reducer 55 [SIMPLE_EDGE]
-                                        SHUFFLE [RS_165]
+                                      <-Reducer 55 [CUSTOM_SIMPLE_EDGE]
+                                        PARTITION_ONLY_SHUFFLE [RS_165]
                                           Group By Operator [GBY_156] (rows=4611686018427387903 width=1)
                                             Output:["_col0"],keys:KEY._col0
                                           <-Reducer 54 [SIMPLE_EDGE]
@@ -476,18 +476,18 @@ Stage-0
                                                 Output:["_col0"],keys:_col2
                                                 Merge Join Operator [MERGEJOIN_266] (rows=9223372036854775807 width=1)
                                                   Conds:(Inner),(Inner),Output:["_col2"]
-                                                <-Map 53 [SIMPLE_EDGE]
-                                                  SHUFFLE [RS_149]
+                                                <-Map 53 [CUSTOM_SIMPLE_EDGE]
+                                                  PARTITION_ONLY_SHUFFLE [RS_149]
                                                     Select Operator [SEL_144] (rows=40000000 width=4)
                                                       TableScan [TS_143] (rows=40000000 width=1014)
                                                         default@customer_address,ca,Tbl:COMPLETE,Col:COMPLETE
-                                                <-Map 56 [SIMPLE_EDGE]
-                                                  SHUFFLE [RS_150]
+                                                <-Map 56 [CUSTOM_SIMPLE_EDGE]
+                                                  PARTITION_ONLY_SHUFFLE [RS_150]
                                                     Select Operator [SEL_146] (rows=1861800 width=4)
                                                       TableScan [TS_145] (rows=1861800 width=385)
                                                         default@customer_demographics,customer_demographics,Tbl:COMPLETE,Col:COMPLETE
-                                                <-Map 57 [SIMPLE_EDGE]
-                                                  SHUFFLE [RS_151]
+                                                <-Map 57 [CUSTOM_SIMPLE_EDGE]
+                                                  PARTITION_ONLY_SHUFFLE [RS_151]
                                                     Select Operator [SEL_148] (rows=80000000 width=860)
                                                       Output:["_col0"]
                                                       TableScan [TS_147] (rows=80000000 width=860)

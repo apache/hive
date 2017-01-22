@@ -156,7 +156,7 @@ STAGE PLANS:
 #### A masked pattern was here ####
       Edges:
         Reducer 2 <- Map 1 (SIMPLE_EDGE), Reducer 4 (SIMPLE_EDGE)
-        Reducer 4 <- Map 3 (SIMPLE_EDGE)
+        Reducer 4 <- Map 3 (CUSTOM_SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -259,8 +259,8 @@ STAGE PLANS:
     Tez
 #### A masked pattern was here ####
       Edges:
-        Reducer 2 <- Map 1 (SIMPLE_EDGE), Union 3 (CONTAINS)
-        Reducer 5 <- Map 4 (SIMPLE_EDGE), Union 3 (CONTAINS)
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE), Union 3 (CONTAINS)
+        Reducer 5 <- Map 4 (CUSTOM_SIMPLE_EDGE), Union 3 (CONTAINS)
 #### A masked pattern was here ####
       Vertices:
         Map 1 

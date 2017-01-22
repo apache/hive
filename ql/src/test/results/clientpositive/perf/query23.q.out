@@ -110,15 +110,15 @@ Reducer 11 <- Reducer 10 (SIMPLE_EDGE)
 Reducer 15 <- Map 14 (SIMPLE_EDGE), Map 22 (SIMPLE_EDGE)
 Reducer 16 <- Map 23 (SIMPLE_EDGE), Reducer 15 (SIMPLE_EDGE)
 Reducer 17 <- Reducer 16 (SIMPLE_EDGE)
-Reducer 18 <- Reducer 17 (SIMPLE_EDGE)
-Reducer 19 <- Reducer 18 (SIMPLE_EDGE), Reducer 28 (SIMPLE_EDGE)
+Reducer 18 <- Reducer 17 (CUSTOM_SIMPLE_EDGE)
+Reducer 19 <- Reducer 18 (CUSTOM_SIMPLE_EDGE), Reducer 28 (CUSTOM_SIMPLE_EDGE)
 Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 7 (SIMPLE_EDGE)
-Reducer 20 <- Reducer 19 (SIMPLE_EDGE), Reducer 33 (SIMPLE_EDGE)
+Reducer 20 <- Reducer 19 (CUSTOM_SIMPLE_EDGE), Reducer 33 (CUSTOM_SIMPLE_EDGE)
 Reducer 21 <- Reducer 20 (SIMPLE_EDGE)
 Reducer 25 <- Map 24 (SIMPLE_EDGE), Map 29 (SIMPLE_EDGE)
 Reducer 26 <- Map 30 (SIMPLE_EDGE), Reducer 25 (SIMPLE_EDGE)
 Reducer 27 <- Reducer 26 (SIMPLE_EDGE)
-Reducer 28 <- Reducer 27 (SIMPLE_EDGE)
+Reducer 28 <- Reducer 27 (CUSTOM_SIMPLE_EDGE)
 Reducer 3 <- Reducer 11 (SIMPLE_EDGE), Reducer 2 (SIMPLE_EDGE)
 Reducer 32 <- Map 31 (SIMPLE_EDGE), Map 34 (SIMPLE_EDGE)
 Reducer 33 <- Reducer 32 (SIMPLE_EDGE)
@@ -132,15 +132,15 @@ Reducer 43 <- Reducer 42 (SIMPLE_EDGE)
 Reducer 47 <- Map 46 (SIMPLE_EDGE), Map 54 (SIMPLE_EDGE)
 Reducer 48 <- Map 55 (SIMPLE_EDGE), Reducer 47 (SIMPLE_EDGE)
 Reducer 49 <- Reducer 48 (SIMPLE_EDGE)
-Reducer 50 <- Reducer 49 (SIMPLE_EDGE)
-Reducer 51 <- Reducer 50 (SIMPLE_EDGE), Reducer 60 (SIMPLE_EDGE)
-Reducer 52 <- Reducer 51 (SIMPLE_EDGE), Reducer 65 (SIMPLE_EDGE)
+Reducer 50 <- Reducer 49 (CUSTOM_SIMPLE_EDGE)
+Reducer 51 <- Reducer 50 (CUSTOM_SIMPLE_EDGE), Reducer 60 (CUSTOM_SIMPLE_EDGE)
+Reducer 52 <- Reducer 51 (CUSTOM_SIMPLE_EDGE), Reducer 65 (CUSTOM_SIMPLE_EDGE)
 Reducer 53 <- Reducer 52 (SIMPLE_EDGE)
 Reducer 57 <- Map 56 (SIMPLE_EDGE), Map 61 (SIMPLE_EDGE)
 Reducer 58 <- Map 62 (SIMPLE_EDGE), Reducer 57 (SIMPLE_EDGE)
 Reducer 59 <- Reducer 58 (SIMPLE_EDGE)
-Reducer 6 <- Union 5 (SIMPLE_EDGE)
-Reducer 60 <- Reducer 59 (SIMPLE_EDGE)
+Reducer 6 <- Union 5 (CUSTOM_SIMPLE_EDGE)
+Reducer 60 <- Reducer 59 (CUSTOM_SIMPLE_EDGE)
 Reducer 64 <- Map 63 (SIMPLE_EDGE), Map 66 (SIMPLE_EDGE)
 Reducer 65 <- Reducer 64 (SIMPLE_EDGE)
 Reducer 9 <- Map 12 (SIMPLE_EDGE), Map 8 (SIMPLE_EDGE)
@@ -155,7 +155,7 @@ Stage-0
           Number of rows:100
           Group By Operator [GBY_255] (rows=1 width=112)
             Output:["_col0"],aggregations:["sum(VALUE._col0)"]
-          <-Union 5 [SIMPLE_EDGE]
+          <-Union 5 [CUSTOM_SIMPLE_EDGE]
             <-Reducer 38 [CONTAINS]
               Reduce Output Operator [RS_254]
                 Group By Operator [GBY_253] (rows=1 width=112)
@@ -262,19 +262,19 @@ Stage-0
                                   predicate:(_col3 > (0.95 * _col1))
                                   Merge Join Operator [MERGEJOIN_383] (rows=316797606 width=322)
                                     Conds:(Inner),Output:["_col1","_col2","_col3"]
-                                  <-Reducer 51 [SIMPLE_EDGE]
-                                    SHUFFLE [RS_231]
+                                  <-Reducer 51 [CUSTOM_SIMPLE_EDGE]
+                                    PARTITION_ONLY_SHUFFLE [RS_231]
                                       Merge Join Operator [MERGEJOIN_382] (rows=1 width=233)
                                         Conds:(Left Outer),Output:["_col1"]
-                                      <-Reducer 50 [SIMPLE_EDGE]
-                                        SHUFFLE [RS_228]
+                                      <-Reducer 50 [CUSTOM_SIMPLE_EDGE]
+                                        PARTITION_ONLY_SHUFFLE [RS_228]
                                           Select Operator [SEL_186] (rows=1 width=8)
                                             Filter Operator [FIL_185] (rows=1 width=8)
                                               predicate:(sq_count_check(_col0) <= 1)
                                               Group By Operator [GBY_183] (rows=1 width=8)
                                                 Output:["_col0"],aggregations:["count(VALUE._col0)"]
-                                              <-Reducer 49 [SIMPLE_EDGE]
-                                                SHUFFLE [RS_182]
+                                              <-Reducer 49 [CUSTOM_SIMPLE_EDGE]
+                                                PARTITION_ONLY_SHUFFLE [RS_182]
                                                   Group By Operator [GBY_181] (rows=1 width=8)
                                                     Output:["_col0"],aggregations:["count()"]
                                                     Select Operator [SEL_178] (rows=348477374 width=88)
@@ -321,12 +321,12 @@ Stage-0
                                                                           predicate:((d_year) IN (1999, 2000, 2001, 2002) and d_date_sk is not null)
                                                                           TableScan [TS_161] (rows=73049 width=1119)
                                                                             default@date_dim,date_dim,Tbl:COMPLETE,Col:NONE,Output:["d_date_sk","d_year"]
-                                      <-Reducer 60 [SIMPLE_EDGE]
-                                        SHUFFLE [RS_229]
+                                      <-Reducer 60 [CUSTOM_SIMPLE_EDGE]
+                                        PARTITION_ONLY_SHUFFLE [RS_229]
                                           Group By Operator [GBY_211] (rows=1 width=224)
                                             Output:["_col0"],aggregations:["max(VALUE._col0)"]
-                                          <-Reducer 59 [SIMPLE_EDGE]
-                                            SHUFFLE [RS_210]
+                                          <-Reducer 59 [CUSTOM_SIMPLE_EDGE]
+                                            PARTITION_ONLY_SHUFFLE [RS_210]
                                               Group By Operator [GBY_209] (rows=1 width=224)
                                                 Output:["_col0"],aggregations:["max(_col1)"]
                                                 Select Operator [SEL_207] (rows=348477374 width=88)
@@ -374,8 +374,8 @@ Stage-0
                                                                       predicate:((d_year) IN (1999, 2000, 2001, 2002) and d_date_sk is not null)
                                                                       TableScan [TS_190] (rows=73049 width=1119)
                                                                         default@date_dim,date_dim,Tbl:COMPLETE,Col:NONE,Output:["d_date_sk","d_year"]
-                                  <-Reducer 65 [SIMPLE_EDGE]
-                                    SHUFFLE [RS_232]
+                                  <-Reducer 65 [CUSTOM_SIMPLE_EDGE]
+                                    PARTITION_ONLY_SHUFFLE [RS_232]
                                       Group By Operator [GBY_226] (rows=316797606 width=88)
                                         Output:["_col0","_col1"],aggregations:["sum(VALUE._col0)"],keys:KEY._col0
                                       <-Reducer 64 [SIMPLE_EDGE]
@@ -429,19 +429,19 @@ Stage-0
                                   predicate:(_col3 > (0.95 * _col1))
                                   Merge Join Operator [MERGEJOIN_380] (rows=316797606 width=322)
                                     Conds:(Inner),Output:["_col1","_col2","_col3"]
-                                  <-Reducer 19 [SIMPLE_EDGE]
-                                    SHUFFLE [RS_106]
+                                  <-Reducer 19 [CUSTOM_SIMPLE_EDGE]
+                                    PARTITION_ONLY_SHUFFLE [RS_106]
                                       Merge Join Operator [MERGEJOIN_379] (rows=1 width=233)
                                         Conds:(Left Outer),Output:["_col1"]
-                                      <-Reducer 18 [SIMPLE_EDGE]
-                                        SHUFFLE [RS_103]
+                                      <-Reducer 18 [CUSTOM_SIMPLE_EDGE]
+                                        PARTITION_ONLY_SHUFFLE [RS_103]
                                           Select Operator [SEL_61] (rows=1 width=8)
                                             Filter Operator [FIL_60] (rows=1 width=8)
                                               predicate:(sq_count_check(_col0) <= 1)
                                               Group By Operator [GBY_58] (rows=1 width=8)
                                                 Output:["_col0"],aggregations:["count(VALUE._col0)"]
-                                              <-Reducer 17 [SIMPLE_EDGE]
-                                                SHUFFLE [RS_57]
+                                              <-Reducer 17 [CUSTOM_SIMPLE_EDGE]
+                                                PARTITION_ONLY_SHUFFLE [RS_57]
                                                   Group By Operator [GBY_56] (rows=1 width=8)
                                                     Output:["_col0"],aggregations:["count()"]
                                                     Select Operator [SEL_53] (rows=348477374 width=88)
@@ -488,12 +488,12 @@ Stage-0
                                                                           predicate:((d_year) IN (1999, 2000, 2001, 2002) and d_date_sk is not null)
                                                                           TableScan [TS_36] (rows=73049 width=1119)
                                                                             default@date_dim,date_dim,Tbl:COMPLETE,Col:NONE,Output:["d_date_sk","d_year"]
-                                      <-Reducer 28 [SIMPLE_EDGE]
-                                        SHUFFLE [RS_104]
+                                      <-Reducer 28 [CUSTOM_SIMPLE_EDGE]
+                                        PARTITION_ONLY_SHUFFLE [RS_104]
                                           Group By Operator [GBY_86] (rows=1 width=224)
                                             Output:["_col0"],aggregations:["max(VALUE._col0)"]
-                                          <-Reducer 27 [SIMPLE_EDGE]
-                                            SHUFFLE [RS_85]
+                                          <-Reducer 27 [CUSTOM_SIMPLE_EDGE]
+                                            PARTITION_ONLY_SHUFFLE [RS_85]
                                               Group By Operator [GBY_84] (rows=1 width=224)
                                                 Output:["_col0"],aggregations:["max(_col1)"]
                                                 Select Operator [SEL_82] (rows=348477374 width=88)
@@ -541,8 +541,8 @@ Stage-0
                                                                       predicate:((d_year) IN (1999, 2000, 2001, 2002) and d_date_sk is not null)
                                                                       TableScan [TS_65] (rows=73049 width=1119)
                                                                         default@date_dim,date_dim,Tbl:COMPLETE,Col:NONE,Output:["d_date_sk","d_year"]
-                                  <-Reducer 33 [SIMPLE_EDGE]
-                                    SHUFFLE [RS_107]
+                                  <-Reducer 33 [CUSTOM_SIMPLE_EDGE]
+                                    PARTITION_ONLY_SHUFFLE [RS_107]
                                       Group By Operator [GBY_101] (rows=316797606 width=88)
                                         Output:["_col0","_col1"],aggregations:["sum(VALUE._col0)"],keys:KEY._col0
                                       <-Reducer 32 [SIMPLE_EDGE]

@@ -133,8 +133,8 @@ explain select * from part  where (p_size-1) NOT IN (select min(p_size) from par
 select * from part  where (p_size-1) NOT IN (select min(p_size) from part group by p_type) order by p_brand;
 
 --order by with limit
-explain select * from part  where (p_size-1) NOT IN (select min(p_size) from part group by p_type) order by p_brand limit 4;
-select * from part  where (p_size-1) NOT IN (select min(p_size) from part group by p_type) order by p_brand limit 4;
+explain select * from part  where (p_size-1) NOT IN (select min(p_size) from part group by p_type) order by p_brand, p_partkey limit 4;
+select * from part  where (p_size-1) NOT IN (select min(p_size) from part group by p_type) order by p_brand, p_partkey limit 4;
 
 -- union, uncorr
 explain select * from src where key NOT IN (select p_name from part UNION ALL select p_brand from part);

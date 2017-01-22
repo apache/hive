@@ -737,15 +737,17 @@ public class TestTxnCommands {
     Assert.assertEquals(stringifyValues(resultVals), r);
   }
   
-  @Ignore("HIVE-14707")
   @Test
-  public void testMergeInsertOnly() throws Exception {
+  public void testMergeOnTezEdges() throws Exception {
     String query = "merge into " + Table.ACIDTBL +
       " as t using " + Table.NONACIDORCTBL + " s ON t.a = s.a " +
+      "WHEN MATCHED AND s.a > 8 THEN DELETE " +
+      "WHEN MATCHED THEN UPDATE SET b = 7 " +
       "WHEN NOT MATCHED THEN INSERT VALUES(s.a, s.b) ";
     d.destroy();
     HiveConf hc = new HiveConf(hiveConf);
     hc.setVar(HiveConf.ConfVars.HIVE_EXECUTION_ENGINE, "tez");
+    hc.setBoolVar(HiveConf.ConfVars.HIVE_EXPLAIN_USER, false);
     d = new Driver(hc);
     d.setMaxRows(10000);
 
@@ -755,6 +757,15 @@ public class TestTxnCommands {
       sb.append(s).append('\n');
     }
     LOG.info("Explain1: " + sb);
+    for(int i = 0; i < explain.size(); i++) {
+      if(explain.get(i).contains("Edges:")) {
+        Assert.assertTrue(explain.get(i + 1).contains("Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 6 (SIMPLE_EDGE)"));
+        Assert.assertTrue(explain.get(i + 2).contains("Reducer 3 <- Reducer 2 (SIMPLE_EDGE)"));
+        Assert.assertTrue(explain.get(i + 3).contains("Reducer 4 <- Reducer 2 (SIMPLE_EDGE)"));
+        Assert.assertTrue(explain.get(i + 4).contains("Reducer 5 <- Reducer 2 (CUSTOM_SIMPLE_EDGE)"));
+        break;
+      }
+    }
   }
   @Test
   public void testMergeUpdateDelete() throws Exception {

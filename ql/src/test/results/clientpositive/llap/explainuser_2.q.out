@@ -1878,7 +1878,7 @@ Vertex dependency in root stage
 Map 1 <- Union 2 (CONTAINS)
 Map 6 <- Union 2 (CONTAINS)
 Reducer 3 <- Map 7 (SIMPLE_EDGE), Union 2 (SIMPLE_EDGE)
-Reducer 4 <- Reducer 3 (SIMPLE_EDGE)
+Reducer 4 <- Reducer 3 (CUSTOM_SIMPLE_EDGE)
 
 Stage-0
   Fetch Operator
@@ -1888,8 +1888,8 @@ Stage-0
       File Output Operator [FS_26]
         Group By Operator [GBY_24] (rows=1 width=8)
           Output:["_col0"],aggregations:["count(VALUE._col0)"]
-        <-Reducer 3 [SIMPLE_EDGE] llap
-          SHUFFLE [RS_23]
+        <-Reducer 3 [CUSTOM_SIMPLE_EDGE] llap
+          PARTITION_ONLY_SHUFFLE [RS_23]
             Group By Operator [GBY_22] (rows=1 width=8)
               Output:["_col0"],aggregations:["count()"]
               Merge Join Operator [MERGEJOIN_39] (rows=558 width=10)
@@ -1949,7 +1949,7 @@ Vertex dependency in root stage
 Map 8 <- Union 3 (CONTAINS)
 Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 7 (SIMPLE_EDGE), Union 3 (CONTAINS)
 Reducer 4 <- Map 9 (SIMPLE_EDGE), Union 3 (SIMPLE_EDGE)
-Reducer 5 <- Reducer 4 (SIMPLE_EDGE)
+Reducer 5 <- Reducer 4 (CUSTOM_SIMPLE_EDGE)
 
 Stage-0
   Fetch Operator
@@ -1959,8 +1959,8 @@ Stage-0
       File Output Operator [FS_32]
         Group By Operator [GBY_30] (rows=1 width=8)
           Output:["_col0"],aggregations:["count(VALUE._col0)"]
-        <-Reducer 4 [SIMPLE_EDGE] llap
-          SHUFFLE [RS_29]
+        <-Reducer 4 [CUSTOM_SIMPLE_EDGE] llap
+          PARTITION_ONLY_SHUFFLE [RS_29]
             Group By Operator [GBY_28] (rows=1 width=8)
               Output:["_col0"],aggregations:["count()"]
               Merge Join Operator [MERGEJOIN_51] (rows=587 width=10)
@@ -3941,7 +3941,7 @@ Plan optimized by CBO.
 
 Vertex dependency in root stage
 Map 6 <- Union 3 (CONTAINS)
-Reducer 2 <- Map 1 (SIMPLE_EDGE), Union 3 (CONTAINS)
+Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE), Union 3 (CONTAINS)
 Reducer 4 <- Union 3 (SIMPLE_EDGE)
 Reducer 5 <- Reducer 4 (SIMPLE_EDGE)
 
@@ -3984,8 +3984,8 @@ Stage-4
                                 Output:["_col0","_col1"]
                                 Group By Operator [GBY_5] (rows=1 width=8)
                                   Output:["_col0"],aggregations:["count(VALUE._col0)"]
-                                <-Map 1 [SIMPLE_EDGE] llap
-                                  SHUFFLE [RS_4]
+                                <-Map 1 [CUSTOM_SIMPLE_EDGE] llap
+                                  PARTITION_ONLY_SHUFFLE [RS_4]
                                     Group By Operator [GBY_3] (rows=1 width=8)
                                       Output:["_col0"],aggregations:["count(1)"]
                                       Select Operator [SEL_1] (rows=500 width=10)
@@ -4113,7 +4113,7 @@ Plan optimized by CBO.
 Vertex dependency in root stage
 Map 6 <- Union 3 (CONTAINS)
 Map 7 <- Union 3 (CONTAINS)
-Reducer 2 <- Map 1 (SIMPLE_EDGE), Union 3 (CONTAINS)
+Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE), Union 3 (CONTAINS)
 Reducer 4 <- Union 3 (SIMPLE_EDGE)
 Reducer 5 <- Union 3 (SIMPLE_EDGE)
 
@@ -4168,8 +4168,8 @@ Stage-4
                           Output:["_col0","_col1"]
                           Group By Operator [GBY_5] (rows=1 width=8)
                             Output:["_col0"],aggregations:["count(VALUE._col0)"]
-                          <-Map 1 [SIMPLE_EDGE] llap
-                            SHUFFLE [RS_4]
+                          <-Map 1 [CUSTOM_SIMPLE_EDGE] llap
+                            PARTITION_ONLY_SHUFFLE [RS_4]
                               Group By Operator [GBY_3] (rows=1 width=8)
                                 Output:["_col0"],aggregations:["count(1)"]
                                 Select Operator [SEL_1] (rows=500 width=10)
@@ -4217,7 +4217,7 @@ Plan optimized by CBO.
 
 Vertex dependency in root stage
 Map 6 <- Union 3 (CONTAINS)
-Reducer 2 <- Map 1 (SIMPLE_EDGE), Union 3 (CONTAINS)
+Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE), Union 3 (CONTAINS)
 Reducer 4 <- Union 3 (SIMPLE_EDGE)
 Reducer 5 <- Union 3 (SIMPLE_EDGE)
 
@@ -4258,8 +4258,8 @@ Stage-4
                           Output:["_col0","_col1"]
                           Group By Operator [GBY_5] (rows=1 width=8)
                             Output:["_col0"],aggregations:["count(VALUE._col0)"]
-                          <-Map 1 [SIMPLE_EDGE] llap
-                            SHUFFLE [RS_4]
+                          <-Map 1 [CUSTOM_SIMPLE_EDGE] llap
+                            PARTITION_ONLY_SHUFFLE [RS_4]
                               Group By Operator [GBY_3] (rows=1 width=8)
                                 Output:["_col0"],aggregations:["count(1)"]
                                 Select Operator [SEL_1] (rows=500 width=10)

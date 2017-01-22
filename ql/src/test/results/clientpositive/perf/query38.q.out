@@ -55,7 +55,7 @@ Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 8 (SIMPLE_EDGE)
 Reducer 3 <- Map 9 (SIMPLE_EDGE), Reducer 2 (SIMPLE_EDGE)
 Reducer 4 <- Reducer 3 (SIMPLE_EDGE), Union 5 (CONTAINS)
 Reducer 6 <- Union 5 (SIMPLE_EDGE)
-Reducer 7 <- Reducer 6 (SIMPLE_EDGE)
+Reducer 7 <- Reducer 6 (CUSTOM_SIMPLE_EDGE)
 
 Stage-0
   Fetch Operator
@@ -67,8 +67,8 @@ Stage-0
           Number of rows:100
           Group By Operator [GBY_89] (rows=1 width=16)
             Output:["_col0"],aggregations:["count(VALUE._col0)"]
-          <-Reducer 6 [SIMPLE_EDGE]
-            SHUFFLE [RS_88]
+          <-Reducer 6 [CUSTOM_SIMPLE_EDGE]
+            PARTITION_ONLY_SHUFFLE [RS_88]
               Group By Operator [GBY_87] (rows=1 width=16)
                 Output:["_col0"],aggregations:["count()"]
                 Select Operator [SEL_85] (rows=1 width=108)

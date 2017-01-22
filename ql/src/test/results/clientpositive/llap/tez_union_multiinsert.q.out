@@ -55,7 +55,7 @@ STAGE PLANS:
       Edges:
         Map 6 <- Union 3 (CONTAINS)
         Map 7 <- Union 3 (CONTAINS)
-        Reducer 2 <- Map 1 (SIMPLE_EDGE), Union 3 (CONTAINS)
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE), Union 3 (CONTAINS)
         Reducer 4 <- Union 3 (SIMPLE_EDGE)
         Reducer 5 <- Union 3 (SIMPLE_EDGE)
 #### A masked pattern was here ####
@@ -956,7 +956,7 @@ STAGE PLANS:
         Map 7 <- Union 2 (CONTAINS)
         Reducer 3 <- Union 2 (SIMPLE_EDGE)
         Reducer 4 <- Union 2 (SIMPLE_EDGE)
-        Reducer 6 <- Map 5 (SIMPLE_EDGE), Union 2 (CONTAINS)
+        Reducer 6 <- Map 5 (CUSTOM_SIMPLE_EDGE), Union 2 (CONTAINS)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -1851,7 +1851,7 @@ STAGE PLANS:
         Map 7 <- Union 2 (CONTAINS)
         Reducer 3 <- Union 2 (SIMPLE_EDGE)
         Reducer 4 <- Union 2 (SIMPLE_EDGE)
-        Reducer 6 <- Map 5 (SIMPLE_EDGE), Union 2 (CONTAINS)
+        Reducer 6 <- Map 5 (CUSTOM_SIMPLE_EDGE), Union 2 (CONTAINS)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -2735,7 +2735,7 @@ STAGE PLANS:
 #### A masked pattern was here ####
       Edges:
         Map 6 <- Union 3 (CONTAINS)
-        Reducer 2 <- Map 1 (SIMPLE_EDGE), Union 3 (CONTAINS)
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE), Union 3 (CONTAINS)
         Reducer 4 <- Union 3 (SIMPLE_EDGE)
         Reducer 5 <- Union 3 (SIMPLE_EDGE)
 #### A masked pattern was here ####
@@ -3582,7 +3582,7 @@ STAGE PLANS:
 #### A masked pattern was here ####
       Edges:
         Map 6 <- Union 3 (CONTAINS)
-        Reducer 2 <- Map 1 (SIMPLE_EDGE), Union 3 (CONTAINS)
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE), Union 3 (CONTAINS)
         Reducer 4 <- Union 3 (SIMPLE_EDGE)
         Reducer 5 <- Reducer 4 (SIMPLE_EDGE)
 #### A masked pattern was here ####

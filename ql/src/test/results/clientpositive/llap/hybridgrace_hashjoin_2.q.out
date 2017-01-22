@@ -36,7 +36,7 @@ STAGE PLANS:
 #### A masked pattern was here ####
       Edges:
         Map 2 <- Map 1 (BROADCAST_EDGE), Map 4 (BROADCAST_EDGE)
-        Reducer 3 <- Map 2 (SIMPLE_EDGE)
+        Reducer 3 <- Map 2 (CUSTOM_SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -167,7 +167,7 @@ STAGE PLANS:
 #### A masked pattern was here ####
       Edges:
         Map 2 <- Map 1 (BROADCAST_EDGE), Map 4 (BROADCAST_EDGE)
-        Reducer 3 <- Map 2 (SIMPLE_EDGE)
+        Reducer 3 <- Map 2 (CUSTOM_SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -309,7 +309,7 @@ STAGE PLANS:
 #### A masked pattern was here ####
       Edges:
         Map 2 <- Map 1 (BROADCAST_EDGE), Map 4 (BROADCAST_EDGE), Map 5 (BROADCAST_EDGE)
-        Reducer 3 <- Map 2 (SIMPLE_EDGE)
+        Reducer 3 <- Map 2 (CUSTOM_SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -462,7 +462,7 @@ STAGE PLANS:
 #### A masked pattern was here ####
       Edges:
         Map 2 <- Map 1 (BROADCAST_EDGE), Map 4 (BROADCAST_EDGE), Map 5 (BROADCAST_EDGE)
-        Reducer 3 <- Map 2 (SIMPLE_EDGE)
+        Reducer 3 <- Map 2 (CUSTOM_SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -631,9 +631,9 @@ STAGE PLANS:
       Edges:
         Map 2 <- Map 1 (BROADCAST_EDGE), Map 6 (BROADCAST_EDGE)
         Map 8 <- Map 10 (BROADCAST_EDGE), Map 7 (BROADCAST_EDGE)
-        Reducer 3 <- Map 2 (SIMPLE_EDGE), Union 4 (CONTAINS)
+        Reducer 3 <- Map 2 (CUSTOM_SIMPLE_EDGE), Union 4 (CONTAINS)
         Reducer 5 <- Union 4 (SIMPLE_EDGE)
-        Reducer 9 <- Map 8 (SIMPLE_EDGE), Union 4 (CONTAINS)
+        Reducer 9 <- Map 8 (CUSTOM_SIMPLE_EDGE), Union 4 (CONTAINS)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -881,9 +881,9 @@ STAGE PLANS:
       Edges:
         Map 2 <- Map 1 (BROADCAST_EDGE), Map 6 (BROADCAST_EDGE)
         Map 8 <- Map 10 (BROADCAST_EDGE), Map 7 (BROADCAST_EDGE)
-        Reducer 3 <- Map 2 (SIMPLE_EDGE), Union 4 (CONTAINS)
+        Reducer 3 <- Map 2 (CUSTOM_SIMPLE_EDGE), Union 4 (CONTAINS)
         Reducer 5 <- Union 4 (SIMPLE_EDGE)
-        Reducer 9 <- Map 8 (SIMPLE_EDGE), Union 4 (CONTAINS)
+        Reducer 9 <- Map 8 (CUSTOM_SIMPLE_EDGE), Union 4 (CONTAINS)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -1141,7 +1141,7 @@ STAGE PLANS:
 #### A masked pattern was here ####
       Edges:
         Map 2 <- Map 1 (BROADCAST_EDGE), Map 4 (BROADCAST_EDGE), Map 5 (BROADCAST_EDGE), Map 6 (BROADCAST_EDGE)
-        Reducer 3 <- Map 2 (SIMPLE_EDGE)
+        Reducer 3 <- Map 2 (CUSTOM_SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -1336,7 +1336,7 @@ STAGE PLANS:
 #### A masked pattern was here ####
       Edges:
         Map 2 <- Map 1 (BROADCAST_EDGE), Map 4 (BROADCAST_EDGE), Map 5 (BROADCAST_EDGE), Map 6 (BROADCAST_EDGE)
-        Reducer 3 <- Map 2 (SIMPLE_EDGE)
+        Reducer 3 <- Map 2 (CUSTOM_SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 

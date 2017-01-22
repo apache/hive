@@ -18,7 +18,7 @@ STAGE PLANS:
 #### A masked pattern was here ####
       Edges:
         Map 5 <- Union 3 (CONTAINS)
-        Reducer 2 <- Map 1 (SIMPLE_EDGE), Union 3 (CONTAINS)
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE), Union 3 (CONTAINS)
         Reducer 4 <- Union 3 (SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
