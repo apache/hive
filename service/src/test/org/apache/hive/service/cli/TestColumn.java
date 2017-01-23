@@ -17,19 +17,154 @@
  */
 package org.apache.hive.service.cli;
 
+import org.junit.Assert;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
+import java.nio.ByteBuffer;
 import java.util.Arrays;
+import java.util.BitSet;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
+import java.util.Set;
+import java.util.concurrent.ThreadLocalRandom;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 
+@RunWith(Parameterized.class)
 public class TestColumn {
+
+  private static final int NUM_VARS = 100;
+  private static final int NUM_NULLS = 30;
+  private static final Set<Integer> nullIndices = new HashSet<>();
+
+  private final Type type;
+  private final Object vars;
+
+  @Parameterized.Parameters
+  public static Collection<Object[]> types() {
+    return Arrays.asList(new Object[][]{
+            {Type.BOOLEAN_TYPE},
+            {Type.TINYINT_TYPE},
+            {Type.SMALLINT_TYPE},
+            {Type.INT_TYPE},
+            {Type.BIGINT_TYPE},
+            {Type.DOUBLE_TYPE},
+            {Type.FLOAT_TYPE},
+            {Type.BINARY_TYPE},
+            {Type.STRING_TYPE}
+        }
+    );
+  }
+
+  public TestColumn(Type type) {
+    this.type = type;
+    switch (type) {
+      case BOOLEAN_TYPE:
+        vars = new boolean[NUM_VARS];
+        break;
+      case TINYINT_TYPE:
+        vars = new byte[NUM_VARS];
+        break;
+      case SMALLINT_TYPE:
+        vars = new short[NUM_VARS];
+        break;
+      case INT_TYPE:
+        vars = new int[NUM_VARS];
+        break;
+      case BIGINT_TYPE:
+        vars = new long[NUM_VARS];
+        break;
+      case DOUBLE_TYPE:
+      case FLOAT_TYPE:
+        vars = new double[NUM_VARS];
+        break;
+      case BINARY_TYPE:
+        vars = Arrays.asList(new ByteBuffer[NUM_VARS]);
+        break;
+      case STRING_TYPE:
+        vars = Arrays.asList(new String[NUM_VARS]);
+        break;
+      default:
+        throw new IllegalArgumentException("Invalid type " + type);
+    }
+  }
+
+  private static void prepareNullIndices() {
+    nullIndices.clear();
+    Random random = ThreadLocalRandom.current();
+    while (nullIndices.size() != NUM_NULLS) {
+      nullIndices.add(random.nextInt(NUM_VARS));
+    }
+  }
+
+  /**
+   * Test if the nulls BitSet is maintained properly when we extract subset from ColumnBuffer.
+   * E.g. suppose we have a ColumnBuffer with nulls [0, 0, 1, 0]. When we split it evenly into
+   * two subsets, the subsets should have nulls [0, 0] and [1, 0] respectively.
+   */
   @Test
-  public void testAllIntegerTypeValues() {
+  public void testNullsInSubset() {
+    prepareNullIndices();
+    BitSet nulls = new BitSet(NUM_VARS);
+    for (int index : nullIndices) {
+      nulls.set(index);
+    }
+
+    Column columnBuffer = new Column(type, nulls, vars);
+    Random random = ThreadLocalRandom.current();
+
+    int remaining = NUM_VARS;
+    while (remaining > 0) {
+      int toExtract = random.nextInt(remaining) + 1;
+      Column subset = columnBuffer.extractSubset(toExtract);
+      verifyNulls(subset, NUM_VARS - remaining);
+      remaining -= toExtract;
+    }
+  }
+
+  private static void verifyNulls(Column buffer, int shift) {
+    BitSet nulls = buffer.getNulls();
+    for (int i = 0; i < buffer.size(); i++) {
+      Assert.assertEquals("BitSet in parent and subset not the same.",
+          nullIndices.contains(i + shift), nulls.get(i));
+    }
+  }
+
+  @Test
+  public void testAddValues() {
+    switch (type) {
+      case BOOLEAN_TYPE:
+        testBooleanValues();
+        break;
+      case TINYINT_TYPE:
+      case SMALLINT_TYPE:
+      case INT_TYPE:
+      case BIGINT_TYPE:
+        testAllIntegerTypeValues();
+        break;
+      case DOUBLE_TYPE:
+      case FLOAT_TYPE:
+        testFloatAndDoubleValues();
+        break;
+      case BINARY_TYPE:
+        testBinaryValues();
+        break;
+      case STRING_TYPE:
+        testStringValues();
+        break;
+      default:
+        throw new IllegalArgumentException("Invalid type " + type);
+    }
+  }
+
+  private void testAllIntegerTypeValues() {
     Map<Type, List<Object>> integerTypesAndValues = new LinkedHashMap<Type, List<Object>>();
 
     // Add TINYINT values
@@ -71,8 +206,8 @@ public class TestColumn {
     }
   }
 
-  @Test
-  public void testFloatAndDoubleValues() {
+
+  private void testFloatAndDoubleValues() {
     Column floatColumn = new Column(Type.FLOAT_TYPE);
     floatColumn.addValue(Type.FLOAT_TYPE, 1.1f);
     floatColumn.addValue(Type.FLOAT_TYPE, 2.033f);
@@ -93,8 +228,8 @@ public class TestColumn {
     assertEquals(2.033, doubleColumn.get(1));
   }
 
-  @Test
-  public void testBooleanValues() {
+
+  private void testBooleanValues() {
     Column boolColumn = new Column(Type.BOOLEAN_TYPE);
     boolColumn.addValue(Type.BOOLEAN_TYPE, true);
     boolColumn.addValue(Type.BOOLEAN_TYPE, false);
@@ -105,8 +240,8 @@ public class TestColumn {
     assertEquals(false, boolColumn.get(1));
   }
 
-  @Test
-  public void testStringValues() {
+
+  private void testStringValues() {
     Column stringColumn = new Column(Type.STRING_TYPE);
     stringColumn.addValue(Type.STRING_TYPE, "12abc456");
     stringColumn.addValue(Type.STRING_TYPE, "~special$&string");
@@ -117,8 +252,8 @@ public class TestColumn {
     assertEquals("~special$&string", stringColumn.get(1));
   }
 
-  @Test
-  public void testBinaryValues() {
+
+  private void testBinaryValues() {
     Column binaryColumn = new Column(Type.BINARY_TYPE);
     binaryColumn.addValue(Type.BINARY_TYPE, new byte[]{-1, 0, 3, 4});
 

@@ -87,7 +87,7 @@ public class ColumnBasedSet implements RowSet {
 
     List<Column> subset = new ArrayList<Column>();
     for (int i = 0; i < columns.size(); i++) {
-      subset.add(columns.get(i).extractSubset(0, numRows));
+      subset.add(columns.get(i).extractSubset(numRows));
     }
     ColumnBasedSet result = new ColumnBasedSet(types, subset, startOffset);
     startOffset += numRows;

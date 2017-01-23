@@ -25,6 +25,7 @@ import java.util.Arrays;
 import java.util.BitSet;
 import java.util.List;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.primitives.Booleans;
 import com.google.common.primitives.Bytes;
 import com.google.common.primitives.Doubles;
@@ -80,7 +81,7 @@ public class Column extends AbstractList {
     } else if (type == Type.BIGINT_TYPE) {
       longVars = (long[]) values;
       size = longVars.length;
-    } else if (type == Type.DOUBLE_TYPE) {
+    } else if (type == Type.DOUBLE_TYPE || type == Type.FLOAT_TYPE) {
       doubleVars = (double[]) values;
       size = doubleVars.length;
     } else if (type == Type.BINARY_TYPE) {
@@ -173,65 +174,75 @@ public class Column extends AbstractList {
     }
   }
 
-  public Column extractSubset(int start, int end) {
-    BitSet subNulls = nulls.get(start, end);
+  /**
+   * Get a subset of this ColumnBuffer, starting from the 1st value.
+   *
+   * @param end index after the last value to include
+   */
+  public Column extractSubset(int end) {
+    BitSet subNulls = nulls.get(0, end);
     if (type == Type.BOOLEAN_TYPE) {
-      Column subset = new Column(type, subNulls, Arrays.copyOfRange(boolVars, start, end));
+      Column subset = new Column(type, subNulls, Arrays.copyOfRange(boolVars, 0, end));
       boolVars = Arrays.copyOfRange(boolVars, end, size);
-      nulls = nulls.get(start, size);
+      nulls = nulls.get(end, size);
       size = boolVars.length;
       return subset;
     }
     if (type == Type.TINYINT_TYPE) {
-      Column subset = new Column(type, subNulls, Arrays.copyOfRange(byteVars, start, end));
+      Column subset = new Column(type, subNulls, Arrays.copyOfRange(byteVars, 0, end));
       byteVars = Arrays.copyOfRange(byteVars, end, size);
-      nulls = nulls.get(start, size);
+      nulls = nulls.get(end, size);
       size = byteVars.length;
       return subset;
     }
     if (type == Type.SMALLINT_TYPE) {
-      Column subset = new Column(type, subNulls, Arrays.copyOfRange(shortVars, start, end));
+      Column subset = new Column(type, subNulls, Arrays.copyOfRange(shortVars, 0, end));
       shortVars = Arrays.copyOfRange(shortVars, end, size);
-      nulls = nulls.get(start, size);
+      nulls = nulls.get(end, size);
       size = shortVars.length;
       return subset;
     }
     if (type == Type.INT_TYPE) {
-      Column subset = new Column(type, subNulls, Arrays.copyOfRange(intVars, start, end));
+      Column subset = new Column(type, subNulls, Arrays.copyOfRange(intVars, 0, end));
       intVars = Arrays.copyOfRange(intVars, end, size);
-      nulls = nulls.get(start, size);
+      nulls = nulls.get(end, size);
       size = intVars.length;
       return subset;
     }
     if (type == Type.BIGINT_TYPE) {
-      Column subset = new Column(type, subNulls, Arrays.copyOfRange(longVars, start, end));
+      Column subset = new Column(type, subNulls, Arrays.copyOfRange(longVars, 0, end));
       longVars = Arrays.copyOfRange(longVars, end, size);
-      nulls = nulls.get(start, size);
+      nulls = nulls.get(end, size);
       size = longVars.length;
       return subset;
     }
-    if (type == Type.DOUBLE_TYPE) {
-      Column subset = new Column(type, subNulls, Arrays.copyOfRange(doubleVars, start, end));
+    if (type == Type.DOUBLE_TYPE || type == Type.FLOAT_TYPE) {
+      Column subset = new Column(type, subNulls, Arrays.copyOfRange(doubleVars, 0, end));
       doubleVars = Arrays.copyOfRange(doubleVars, end, size);
-      nulls = nulls.get(start, size);
+      nulls = nulls.get(end, size);
       size = doubleVars.length;
       return subset;
     }
     if (type == Type.BINARY_TYPE) {
-      Column subset = new Column(type, subNulls, binaryVars.subList(start, end));
+      Column subset = new Column(type, subNulls, binaryVars.subList(0, end));
       binaryVars = binaryVars.subList(end, binaryVars.size());
-      nulls = nulls.get(start, size);
+      nulls = nulls.get(end, size);
       size = binaryVars.size();
       return subset;
     }
     if (type == Type.STRING_TYPE) {
-      Column subset = new Column(type, subNulls, stringVars.subList(start, end));
+      Column subset = new Column(type, subNulls, stringVars.subList(0, end));
       stringVars = stringVars.subList(end, stringVars.size());
-      nulls = nulls.get(start, size);
+      nulls = nulls.get(end, size);
       size = stringVars.size();
       return subset;
     }
     throw new IllegalStateException("invalid union object");
+  }
+
+  @VisibleForTesting
+  BitSet getNulls() {
+    return nulls;
   }
 
   private static final byte[] MASKS = new byte[] {
