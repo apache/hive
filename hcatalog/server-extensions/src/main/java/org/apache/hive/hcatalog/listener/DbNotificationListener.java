@@ -228,7 +228,11 @@ public class DbNotificationListener extends MetaStoreEventListener {
         throw new RuntimeException(e);
       }
     }
-    
+
+    @Override
+    public void remove() {
+      throw new UnsupportedOperationException();
+    }
   }
   class PartitionFilesIterator implements Iterator<PartitionFiles> {
 
@@ -257,7 +261,11 @@ public class DbNotificationListener extends MetaStoreEventListener {
         throw new RuntimeException(e);
       }
     }
-    
+
+    @Override
+    public void remove() {
+      throw new UnsupportedOperationException();
+    }
   }
   /**
    * @param partitionEvent partition event
@@ -424,6 +432,11 @@ public class DbNotificationListener extends MetaStoreEventListener {
       String result = encodeFileUri(files.get(i), chksums != null? chksums.get(i) : null);
       i++;
       return result;
+    }
+
+    @Override
+    public void remove() {
+      throw new UnsupportedOperationException();
     }
   }
   @Override
