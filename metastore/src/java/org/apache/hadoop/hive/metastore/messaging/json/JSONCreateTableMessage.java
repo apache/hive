@@ -19,10 +19,15 @@
 
 package org.apache.hadoop.hive.metastore.messaging.json;
 
+import java.util.Iterator;
+import java.util.List;
+
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.messaging.CreateTableMessage;
 import org.apache.thrift.TException;
 import org.codehaus.jackson.annotate.JsonProperty;
+
+import com.google.common.collect.Lists;
 
 /**
  * JSON implementation of CreateTableMessage.
@@ -33,6 +38,8 @@ public class JSONCreateTableMessage extends CreateTableMessage {
   String server, servicePrincipal, db, table, tableObjJson;
   @JsonProperty
   Long timestamp;
+  @JsonProperty
+  List<String> files;
 
   /**
    * Default constructor, needed for Jackson.
@@ -51,13 +58,14 @@ public class JSONCreateTableMessage extends CreateTableMessage {
   }
 
   public JSONCreateTableMessage(String server, String servicePrincipal, Table tableObj,
-      Long timestamp) {
+      Iterator<String> fileIter, Long timestamp) {
     this(server, servicePrincipal, tableObj.getDbName(), tableObj.getTableName(), timestamp);
     try {
       this.tableObjJson = JSONMessageFactory.createTableObjJson(tableObj);
     } catch (TException e) {
       throw new IllegalArgumentException("Could not serialize: ", e);
     }
+    this.files = Lists.newArrayList(fileIter);
   }
 
   @Override
@@ -101,5 +109,10 @@ public class JSONCreateTableMessage extends CreateTableMessage {
     } catch (Exception exception) {
       throw new IllegalArgumentException("Could not serialize: ", exception);
     }
+  }
+
+  @Override
+  public Iterable<String> getFiles() {
+    return files;
   }
 }

@@ -17,13 +17,22 @@
  */
 package org.apache.hive.hcatalog.listener;
 
+import java.io.IOException;
+import java.util.Iterator;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileChecksum;
+import org.apache.hadoop.fs.FileStatus;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.MetaStoreEventListener;
 import org.apache.hadoop.hive.metastore.RawStore;
 import org.apache.hadoop.hive.metastore.RawStoreProxy;
+import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.Function;
 import org.apache.hadoop.hive.metastore.api.Index;
@@ -49,8 +58,12 @@ import org.apache.hadoop.hive.metastore.events.InsertEvent;
 import org.apache.hadoop.hive.metastore.events.LoadPartitionDoneEvent;
 import org.apache.hadoop.hive.metastore.messaging.EventMessage.EventType;
 import org.apache.hadoop.hive.metastore.messaging.MessageFactory;
+import org.apache.hadoop.hive.metastore.messaging.PartitionFiles;
+import org.apache.hadoop.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.google.common.collect.Lists;
 
 /**
  * An implementation of {@link org.apache.hadoop.hive.metastore.MetaStoreEventListener} that
@@ -127,7 +140,7 @@ public class DbNotificationListener extends MetaStoreEventListener {
     Table t = tableEvent.getTable();
     NotificationEvent event =
         new NotificationEvent(0, now(), EventType.CREATE_TABLE.toString(), msgFactory
-            .buildCreateTableMessage(t).toString());
+            .buildCreateTableMessage(t, new FileIterator(t.getSd().getLocation())).toString());
     event.setDbName(t.getDbName());
     event.setTableName(t.getTableName());
     process(event);
@@ -164,6 +177,88 @@ public class DbNotificationListener extends MetaStoreEventListener {
     process(event);
   }
 
+  class FileIterator implements Iterator<String> {
+    /***
+     * Filter for valid files only (no dir, no hidden)
+     */
+    PathFilter VALID_FILES_FILTER = new PathFilter() {
+      @Override
+      public boolean accept(Path p) {
+        try {
+          if (!fs.isFile(p)) {
+            return false;
+          }
+          String name = p.getName();
+          return !name.startsWith("_") && !name.startsWith(".");
+        } catch (IOException e) {
+          throw new RuntimeException(e);
+        }
+      }
+    };
+    private FileSystem fs;
+    private FileStatus[] files;
+    private int i = 0;
+    FileIterator(String locString) {
+      try {
+        if (locString != null) {
+          Path loc = new Path(locString);
+          fs = loc.getFileSystem(hiveConf);
+          files = fs.listStatus(loc, VALID_FILES_FILTER);
+        }
+      } catch (IOException e) {
+        throw new RuntimeException(e);
+      }
+    }
+
+    @Override
+    public boolean hasNext() {
+      if (files == null) {
+        return false;
+      }
+      return i<files.length;
+    }
+
+    @Override
+    public String next() {
+      try {
+        FileStatus file = files[i];
+        i++;
+        return buildFileWithChksum(file.getPath(), fs);
+      } catch (IOException e) {
+        throw new RuntimeException(e);
+      }
+    }
+    
+  }
+  class PartitionFilesIterator implements Iterator<PartitionFiles> {
+
+    private Iterator<Partition> partitionIter;
+    private Table t;
+
+    PartitionFilesIterator(Iterator<Partition> partitionIter, Table t) {
+      this.partitionIter = partitionIter;
+      this.t = t;
+    }
+    @Override
+    public boolean hasNext() {
+      return partitionIter.hasNext();
+    }
+
+    @Override
+    public PartitionFiles next() {
+      try {
+        Partition p = partitionIter.next();
+        List<String> files = Lists.newArrayList(new FileIterator(p.getSd().getLocation()));
+        PartitionFiles partitionFiles =
+            new PartitionFiles(Warehouse.makePartName(t.getPartitionKeys(), p.getValues()),
+            files.iterator());
+        return partitionFiles;
+      } catch (MetaException e) {
+        throw new RuntimeException(e);
+      }
+    }
+    
+  }
   /**
    * @param partitionEvent partition event
    * @throws MetaException
@@ -172,7 +267,8 @@ public class DbNotificationListener extends MetaStoreEventListener {
   public void onAddPartition(AddPartitionEvent partitionEvent) throws MetaException {
     Table t = partitionEvent.getTable();
     String msg = msgFactory
-        .buildAddPartitionMessage(t, partitionEvent.getPartitionIterator()).toString();
+        .buildAddPartitionMessage(t, partitionEvent.getPartitionIterator(),
+            new PartitionFilesIterator(partitionEvent.getPartitionIterator(), t)).toString();
     NotificationEvent event =
         new NotificationEvent(0, now(), EventType.ADD_PARTITION.toString(), msg);
     event.setDbName(t.getDbName());
@@ -310,12 +406,33 @@ public class DbNotificationListener extends MetaStoreEventListener {
     process(event);
   }
 
+  class FileChksumIterator implements Iterator<String> {
+    private List<String> files;
+    private List<String> chksums;
+    int i = 0;
+    FileChksumIterator(List<String> files, List<String> chksums) {
+      this.files = files;
+      this.chksums = chksums;
+    }
+    @Override
+    public boolean hasNext() {
+      return i< files.size();
+    }
+
+    @Override
+    public String next() {
+      String result = encodeFileUri(files.get(i), chksums != null? chksums.get(i) : null);
+      i++;
+      return result;
+    }
+  }
   @Override
   public void onInsert(InsertEvent insertEvent) throws MetaException {
     NotificationEvent event =
         new NotificationEvent(0, now(), EventType.INSERT.toString(), msgFactory.buildInsertMessage(
             insertEvent.getDb(), insertEvent.getTable(), insertEvent.getPartitionKeyValues(),
-            insertEvent.getFiles(), insertEvent.getFileChecksums()).toString());
+            new FileChksumIterator(insertEvent.getFiles(), insertEvent.getFileChecksums()))
+            .toString());
     event.setDbName(insertEvent.getDb());
     event.setTableName(insertEvent.getTable());
     process(event);
@@ -390,4 +507,23 @@ public class DbNotificationListener extends MetaStoreEventListener {
 
   }
 
+  String buildFileWithChksum(Path p, FileSystem fs) throws IOException {
+    FileChecksum cksum = fs.getFileChecksum(p);
+    String chksumString = null;
+    if (cksum != null) {
+      chksumString =
+          StringUtils.byteToHexString(cksum.getBytes(), 0, cksum.getLength());
+    }
+    return encodeFileUri(p.toString(), chksumString);
+  }
+
+  // TODO: this needs to be enhanced once change management based filesystem is implemented
+  // Currently using fileuri#checksum as the format
+  private String encodeFileUri(String fileUriStr, String fileChecksum) {
+    if (fileChecksum != null) {
+      return fileUriStr + "#" + fileChecksum;
+    } else {
+      return fileUriStr;
+    }
+  }
 }

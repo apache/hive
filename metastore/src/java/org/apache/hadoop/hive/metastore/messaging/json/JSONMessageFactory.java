@@ -19,9 +19,6 @@
 
 package org.apache.hadoop.hive.metastore.messaging.json;
 
-import java.nio.ByteBuffer;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -30,6 +27,7 @@ import java.util.Map;
 import javax.annotation.Nullable;
 
 import com.google.common.collect.Iterables;
+
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.Function;
 import org.apache.hadoop.hive.metastore.api.Index;
@@ -52,6 +50,7 @@ import org.apache.hadoop.hive.metastore.messaging.DropTableMessage;
 import org.apache.hadoop.hive.metastore.messaging.InsertMessage;
 import org.apache.hadoop.hive.metastore.messaging.MessageDeserializer;
 import org.apache.hadoop.hive.metastore.messaging.MessageFactory;
+import org.apache.hadoop.hive.metastore.messaging.PartitionFiles;
 import org.apache.thrift.TBase;
 import org.apache.thrift.TDeserializer;
 import org.apache.thrift.TException;
@@ -61,7 +60,6 @@ import org.codehaus.jackson.JsonFactory;
 import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.JsonParser;
 import org.codehaus.jackson.map.ObjectMapper;
-import org.codehaus.jackson.node.ArrayNode;
 import org.codehaus.jackson.node.ObjectNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -106,8 +104,8 @@ public class JSONMessageFactory extends MessageFactory {
   }
 
   @Override
-  public CreateTableMessage buildCreateTableMessage(Table table) {
-    return new JSONCreateTableMessage(MS_SERVER_URL, MS_SERVICE_PRINCIPAL, table, now());
+  public CreateTableMessage buildCreateTableMessage(Table table, Iterator<String> fileIter) {
+    return new JSONCreateTableMessage(MS_SERVER_URL, MS_SERVICE_PRINCIPAL, table, fileIter, now());
   }
 
   @Override
@@ -123,9 +121,9 @@ public class JSONMessageFactory extends MessageFactory {
 
   @Override
   public AddPartitionMessage buildAddPartitionMessage(Table table,
-      Iterator<Partition> partitionsIterator) {
+      Iterator<Partition> partitionsIterator, Iterator<PartitionFiles> partitionFileIter) {
     return new JSONAddPartitionMessage(MS_SERVER_URL, MS_SERVICE_PRINCIPAL, table,
-        partitionsIterator, now());
+        partitionsIterator, partitionFileIter, now());
   }
 
   @Override
@@ -169,16 +167,9 @@ public class JSONMessageFactory extends MessageFactory {
 
   @Override
   public InsertMessage buildInsertMessage(String db, String table, Map<String, String> partKeyVals,
-      List<String> files) {
+      Iterator<String> fileIter) {
     return new JSONInsertMessage(MS_SERVER_URL, MS_SERVICE_PRINCIPAL, db, table, partKeyVals,
-        files, now());
-  }
-
-  @Override
-  public InsertMessage buildInsertMessage(String db, String table, Map<String, String> partKeyVals,
-      List<String> files, List<String> fileChecksums) {
-    return new JSONInsertMessage(MS_SERVER_URL, MS_SERVICE_PRINCIPAL, db, table, partKeyVals,
-        files, fileChecksums, now());
+        fileIter, now());
   }
 
   private long now() {
