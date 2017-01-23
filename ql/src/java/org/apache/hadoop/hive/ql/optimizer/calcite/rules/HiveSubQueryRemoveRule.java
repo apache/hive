@@ -346,10 +346,17 @@ public abstract class HiveSubQueryRemoveRule extends RelOptRule{
                         b = null;
                         // fall through
                     case UNKNOWN_AS_TRUE:
-                        operands.add(
+                        RexNode bLiteral = null;
+                        if(b == null){
+                            bLiteral = e.rel.getCluster().getRexBuilder().makeNullLiteral(SqlTypeName.BOOLEAN);
+                        }
+                        else {
+                            bLiteral = builder.literal(b);
+                        }
+                    operands.add(
                                 builder.call(SqlStdOperatorTable.LESS_THAN,
                                         builder.field("ct", "ck"), builder.field("ct", "c")),
-                                builder.literal(b));
+                                bLiteral);
                         break;
                 }
                 operands.add(builder.literal(false));

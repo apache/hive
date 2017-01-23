@@ -78,7 +78,7 @@ Stage-0
               Select Operator [SEL_80] (rows=435393727038609152 width=2)
                 Output:["_col0"]
                 Filter Operator [FIL_79] (rows=435393727038609152 width=2)
-                  predicate:(_col2 > CASE WHEN (_col8 is null) THEN (null) ELSE (_col7) END)
+                  predicate:(_col2 > CAST( CASE WHEN (_col8 is null) THEN (null) ELSE (_col7) END AS decimal(30,15)))
                   Merge Join Operator [MERGEJOIN_125] (rows=1306181181115827456 width=2)
                     Conds:RS_75._col1=RS_76._col2(Left Outer),Output:["_col2","_col6","_col7","_col8"]
                   <-Reducer 15 [SIMPLE_EDGE]

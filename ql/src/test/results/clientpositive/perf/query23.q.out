@@ -1,7 +1,7 @@
-Warning: Shuffle Join MERGEJOIN[379][tables = [$hdt$_1, $hdt$_2]] in Stage 'Reducer 19' is a cross product
-Warning: Shuffle Join MERGEJOIN[380][tables = [$hdt$_1, $hdt$_2, $hdt$_0]] in Stage 'Reducer 20' is a cross product
 Warning: Shuffle Join MERGEJOIN[382][tables = [$hdt$_1, $hdt$_2]] in Stage 'Reducer 51' is a cross product
 Warning: Shuffle Join MERGEJOIN[383][tables = [$hdt$_1, $hdt$_2, $hdt$_0]] in Stage 'Reducer 52' is a cross product
+Warning: Shuffle Join MERGEJOIN[379][tables = [$hdt$_1, $hdt$_2]] in Stage 'Reducer 19' is a cross product
+Warning: Shuffle Join MERGEJOIN[380][tables = [$hdt$_1, $hdt$_2, $hdt$_0]] in Stage 'Reducer 20' is a cross product
 PREHOOK: query: explain with frequent_ss_items as 
  (select substr(i_item_desc,1,30) itemdesc,i_item_sk item_sk,d_date solddate,count(*) cnt
   from store_sales
@@ -259,7 +259,7 @@ Stage-0
                               Select Operator [SEL_235] (rows=105599202 width=322)
                                 Output:["_col2"]
                                 Filter Operator [FIL_234] (rows=105599202 width=322)
-                                  predicate:(_col3 > (0.95 * _col1))
+                                  predicate:(_col3 > CAST( (0.95 * UDFToDouble(_col1)) AS decimal(38,12)))
                                   Merge Join Operator [MERGEJOIN_383] (rows=316797606 width=322)
                                     Conds:(Inner),Output:["_col1","_col2","_col3"]
                                   <-Reducer 51 [SIMPLE_EDGE]
@@ -426,7 +426,7 @@ Stage-0
                               Select Operator [SEL_110] (rows=105599202 width=322)
                                 Output:["_col2"]
                                 Filter Operator [FIL_109] (rows=105599202 width=322)
-                                  predicate:(_col3 > (0.95 * _col1))
+                                  predicate:(_col3 > CAST( (0.95 * UDFToDouble(_col1)) AS decimal(38,12)))
                                   Merge Join Operator [MERGEJOIN_380] (rows=316797606 width=322)
                                     Conds:(Inner),Output:["_col1","_col2","_col3"]
                                   <-Reducer 19 [SIMPLE_EDGE]

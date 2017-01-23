@@ -1082,26 +1082,32 @@ POSTHOOK: Input: default@src
 97	val_97
 98	val_98
 98	val_98
-PREHOOK: query: create table t(i int)
+PREHOOK: query: -- uncorr, aggregate in sub which produces result irrespective of zero rows
+create table t(i int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@t
-POSTHOOK: query: create table t(i int)
+POSTHOOK: query: -- uncorr, aggregate in sub which produces result irrespective of zero rows
+create table t(i int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t
 PREHOOK: query: insert into t values(1)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@values__tmp__table__1
 PREHOOK: Output: default@t
 POSTHOOK: query: insert into t values(1)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@values__tmp__table__1
 POSTHOOK: Output: default@t
 POSTHOOK: Lineage: t.i EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 PREHOOK: query: insert into t values(0)
 PREHOOK: type: QUERY
+PREHOOK: Input: default@values__tmp__table__2
 PREHOOK: Output: default@t
 POSTHOOK: query: insert into t values(0)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: default@values__tmp__table__2
 POSTHOOK: Output: default@t
 POSTHOOK: Lineage: t.i EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 Warning: Shuffle Join JOIN[18][tables = [$hdt$_0, $hdt$_1]] in Stage 'Stage-1:MAPRED' is a cross product

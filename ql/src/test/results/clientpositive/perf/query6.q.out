@@ -99,7 +99,7 @@ Stage-0
                       Select Operator [SEL_120] (rows=1125328347493258069 width=1)
                         Output:["_col1"]
                         Filter Operator [FIL_119] (rows=1125328347493258069 width=1)
-                          predicate:(_col10 > (1.2 * CASE WHEN (_col15 is null) THEN (null) ELSE (_col14) END))
+                          predicate:(_col10 > CAST( (1.2 * UDFToDouble(CASE WHEN (_col15 is null) THEN (null) ELSE (_col14) END)) AS decimal(20,15)))
                           Select Operator [SEL_118] (rows=3375985042479774208 width=1)
                             Output:["_col1","_col10","_col14","_col15"]
                             Merge Join Operator [MERGEJOIN_203] (rows=3375985042479774208 width=1)
