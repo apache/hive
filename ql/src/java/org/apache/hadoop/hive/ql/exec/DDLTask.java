@@ -4341,6 +4341,10 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 
       db.createTable(tbl, crtView.getIfNotExists());
       addIfAbsentByName(new WriteEntity(tbl, WriteEntity.WriteType.DDL_NO_LOCK));
+      
+      //set lineage info
+      DataContainer dc = new DataContainer(tbl.getTTable());
+      SessionState.get().getLineageState().setLineage(new Path(crtView.getViewName()), dc, tbl.getCols());
     }
     return 0;
   }

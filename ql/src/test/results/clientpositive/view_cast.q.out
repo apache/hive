@@ -63,6 +63,13 @@ POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@atab
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@aa_view_tw
+POSTHOOK: Lineage: aa_view_tw.act SIMPLE [(atab)atab.FieldSchema(name:act, type:string, comment:null), ]
+POSTHOOK: Lineage: aa_view_tw.act_date EXPRESSION [(atab)atab.FieldSchema(name:tstamp, type:string, comment:null), ]
+POSTHOOK: Lineage: aa_view_tw.at_ks_uid SIMPLE [(atab)atab.FieldSchema(name:at_ks_uid, type:bigint, comment:null), ]
+POSTHOOK: Lineage: aa_view_tw.at_sr_uid SIMPLE [(atab)atab.FieldSchema(name:at_sr_uid, type:string, comment:null), ]
+POSTHOOK: Lineage: aa_view_tw.content_creation_date EXPRESSION [(atab)atab.FieldSchema(name:original_tstamp, type:string, comment:null), ]
+POSTHOOK: Lineage: aa_view_tw.ks_uid SIMPLE [(atab)atab.FieldSchema(name:ks_uid, type:bigint, comment:null), ]
+POSTHOOK: Lineage: aa_view_tw.sr_id SIMPLE [(atab)atab.FieldSchema(name:sr_id, type:string, comment:null), ]
 PREHOOK: query: DROP VIEW IF EXISTS joined_aa_view_tw
 PREHOOK: type: DROPVIEW
 POSTHOOK: query: DROP VIEW IF EXISTS joined_aa_view_tw
@@ -81,6 +88,15 @@ POSTHOOK: Input: default@atab
 POSTHOOK: Input: default@mstab
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@joined_aa_view_tw
+POSTHOOK: Lineage: joined_aa_view_tw.act SIMPLE [(atab)atab.FieldSchema(name:act, type:string, comment:null), ]
+POSTHOOK: Lineage: joined_aa_view_tw.act_date EXPRESSION [(atab)atab.FieldSchema(name:tstamp, type:string, comment:null), ]
+POSTHOOK: Lineage: joined_aa_view_tw.at_ks_uid SIMPLE [(atab)atab.FieldSchema(name:at_ks_uid, type:bigint, comment:null), ]
+POSTHOOK: Lineage: joined_aa_view_tw.at_ksc EXPRESSION [(mstab)mstab.FieldSchema(name:csc, type:int, comment:null), ]
+POSTHOOK: Lineage: joined_aa_view_tw.at_sr_uid SIMPLE [(atab)atab.FieldSchema(name:at_sr_uid, type:string, comment:null), ]
+POSTHOOK: Lineage: joined_aa_view_tw.content_creation_date EXPRESSION [(atab)atab.FieldSchema(name:original_tstamp, type:string, comment:null), ]
+POSTHOOK: Lineage: joined_aa_view_tw.ks_uid SIMPLE [(atab)atab.FieldSchema(name:ks_uid, type:bigint, comment:null), ]
+POSTHOOK: Lineage: joined_aa_view_tw.self_ksc EXPRESSION [(mstab)mstab.FieldSchema(name:csc, type:int, comment:null), ]
+POSTHOOK: Lineage: joined_aa_view_tw.sr_id SIMPLE [(atab)atab.FieldSchema(name:sr_id, type:string, comment:null), ]
 PREHOOK: query: SELECT * FROM joined_aa_view_tw
 PREHOOK: type: QUERY
 PREHOOK: Input: default@aa_view_tw

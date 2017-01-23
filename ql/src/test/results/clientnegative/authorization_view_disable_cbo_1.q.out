@@ -20,6 +20,8 @@ POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@src_autho_test
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@v
+POSTHOOK: Lineage: v.key SIMPLE [(src_autho_test)src_autho_test.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: v.value SIMPLE [(src_autho_test)src_autho_test.FieldSchema(name:value, type:string, comment:null), ]
 PREHOOK: query: --table grant to user
 
 grant select(key) on table src_autho_test to user hive_test_user

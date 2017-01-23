@@ -205,6 +205,8 @@ POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@src_cbo
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@cv1
+POSTHOOK: Lineage: cv1.key SIMPLE [(src_cbo)b.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cv1.value SIMPLE [(src_cbo)b.FieldSchema(name:value, type:string, comment:null), ]
 PREHOOK: query: select * from cv1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@cv1

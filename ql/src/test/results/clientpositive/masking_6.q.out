@@ -12,6 +12,9 @@ POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@masking_test
+POSTHOOK: Lineage: masking_test._c2 SIMPLE []
+POSTHOOK: Lineage: masking_test.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: masking_test.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: explain select * from masking_test
 PREHOOK: type: QUERY
 POSTHOOK: query: explain select * from masking_test
@@ -135,6 +138,18 @@ POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@masking_test
+POSTHOOK: Lineage: masking_test._c1 SIMPLE []
+POSTHOOK: Lineage: masking_test._c10 SIMPLE []
+POSTHOOK: Lineage: masking_test._c11 SIMPLE []
+POSTHOOK: Lineage: masking_test._c2 SIMPLE []
+POSTHOOK: Lineage: masking_test._c3 SIMPLE []
+POSTHOOK: Lineage: masking_test._c4 SIMPLE []
+POSTHOOK: Lineage: masking_test._c5 SIMPLE []
+POSTHOOK: Lineage: masking_test._c6 SIMPLE []
+POSTHOOK: Lineage: masking_test._c7 SIMPLE []
+POSTHOOK: Lineage: masking_test._c8 SIMPLE []
+POSTHOOK: Lineage: masking_test._c9 SIMPLE []
+POSTHOOK: Lineage: masking_test.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 PREHOOK: query: explain select * from masking_test
 PREHOOK: type: QUERY
 POSTHOOK: query: explain select * from masking_test

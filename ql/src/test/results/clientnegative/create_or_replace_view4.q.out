@@ -16,4 +16,6 @@ POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@srcpart
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@v
+POSTHOOK: Lineage: v.key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: v.value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 FAILED: SemanticException [Error 10092]: At least one non-partitioning column must be present in view

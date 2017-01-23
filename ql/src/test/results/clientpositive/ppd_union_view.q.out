@@ -132,6 +132,8 @@ POSTHOOK: Input: default@t1_new
 POSTHOOK: Input: default@t1_old
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t1
+POSTHOOK: Lineage: t1.key EXPRESSION [(t1_new)t1_new.FieldSchema(name:key, type:string, comment:null), (t1_mapping)t1_mapping.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: t1.value EXPRESSION [(t1_new)t1_new.FieldSchema(name:value, type:string, comment:null), (t1_old)t1_old.FieldSchema(name:value, type:string, comment:null), ]
 PREHOOK: query: explain extended
 select * from t1 where ds = '2011-10-13'
 PREHOOK: type: QUERY

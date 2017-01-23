@@ -56,6 +56,8 @@ POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@ctas_varchar_2
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@ctas_varchar_3
+POSTHOOK: Lineage: ctas_varchar_3.key SIMPLE [(ctas_varchar_2)ctas_varchar_2.FieldSchema(name:key, type:varchar(10), comment:null), ]
+POSTHOOK: Lineage: ctas_varchar_3.value SIMPLE [(ctas_varchar_2)ctas_varchar_2.FieldSchema(name:value, type:string, comment:null), ]
 PREHOOK: query: select key, value from ctas_varchar_1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@ctas_varchar_1

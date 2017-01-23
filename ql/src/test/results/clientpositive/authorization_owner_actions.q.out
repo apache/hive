@@ -42,6 +42,7 @@ POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@t1
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@vt1
+POSTHOOK: Lineage: vt1.i SIMPLE [(t1)t1.FieldSchema(name:i, type:int, comment:null), ]
 PREHOOK: query: drop view vt1
 PREHOOK: type: DROPVIEW
 PREHOOK: Input: default@vt1

@@ -16,4 +16,6 @@ POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@srcpart
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@v1
+POSTHOOK: Lineage: v1.key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: v1.value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 FAILED: SemanticException Recursive view default.v1 detected (cycle: default.v1 -> default.v1).

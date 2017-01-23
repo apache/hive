@@ -342,6 +342,8 @@ POSTHOOK: Input: default@u2
 POSTHOOK: Input: default@u3
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@v
+POSTHOOK: Lineage: v.key EXPRESSION [(u1)u1.FieldSchema(name:key, type:string, comment:null), (u2)u2.FieldSchema(name:key, type:string, comment:null), (u3)u3.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: v.value EXPRESSION [(u1)u1.FieldSchema(name:value, type:string, comment:null), (u2)u2.FieldSchema(name:value, type:string, comment:null), (u3)u3.FieldSchema(name:value, type:string, comment:null), ]
 PREHOOK: query: describe extended v
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@v
@@ -416,6 +418,8 @@ POSTHOOK: Input: default@u1
 POSTHOOK: Input: default@u2
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@v
+POSTHOOK: Lineage: v.key EXPRESSION [(u1)u1.FieldSchema(name:key, type:string, comment:null), (u2)u2.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: v.value EXPRESSION [(u1)u1.FieldSchema(name:value, type:string, comment:null), (u2)u2.FieldSchema(name:value, type:string, comment:null), ]
 PREHOOK: query: describe extended v
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@v
@@ -481,6 +485,8 @@ POSTHOOK: Input: default@u1
 POSTHOOK: Input: default@u2
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@v
+POSTHOOK: Lineage: v.key EXPRESSION [(u1)u1.FieldSchema(name:key, type:string, comment:null), (u2)u2.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: v.value EXPRESSION [(u1)u1.FieldSchema(name:value, type:string, comment:null), (u2)u2.FieldSchema(name:value, type:string, comment:null), ]
 PREHOOK: query: describe extended v
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@v

@@ -399,6 +399,8 @@ POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@t4
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@v1
+POSTHOOK: Lineage: v1.x+1` SIMPLE [(t4)t4.FieldSchema(name:x+1`, type:string, comment:null), ]
+POSTHOOK: Lineage: v1.y&y SIMPLE [(t4)t4.FieldSchema(name:y&y, type:string, comment:null), ]
 PREHOOK: query: select `x+1```, `y&y`, rank() over(partition by `x+1``` order by  `y&y`)
 from v1
 group by `x+1```, `y&y`

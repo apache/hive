@@ -14,6 +14,7 @@ POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@xxx4
+POSTHOOK: Lineage: xxx4.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 PREHOOK: query: CREATE TABLE xxx4(key int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default

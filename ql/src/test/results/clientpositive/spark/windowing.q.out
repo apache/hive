@@ -998,6 +998,9 @@ POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@part
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@mfgr_price_view
+POSTHOOK: Lineage: mfgr_price_view.p_brand SIMPLE [(part)part.FieldSchema(name:p_brand, type:string, comment:null), ]
+POSTHOOK: Lineage: mfgr_price_view.p_mfgr SIMPLE [(part)part.FieldSchema(name:p_mfgr, type:string, comment:null), ]
+POSTHOOK: Lineage: mfgr_price_view.s EXPRESSION [(part)part.FieldSchema(name:p_retailprice, type:double, comment:null), ]
 PREHOOK: query: select * 
 from (
 select p_mfgr, p_brand, s, 
@@ -1090,6 +1093,9 @@ POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@part
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@mfgr_brand_price_view
+POSTHOOK: Lineage: mfgr_brand_price_view.p_brand SIMPLE [(part)part.FieldSchema(name:p_brand, type:string, comment:null), ]
+POSTHOOK: Lineage: mfgr_brand_price_view.p_mfgr SIMPLE [(part)part.FieldSchema(name:p_mfgr, type:string, comment:null), ]
+POSTHOOK: Lineage: mfgr_brand_price_view.s SCRIPT [(part)part.FieldSchema(name:p_partkey, type:int, comment:null), (part)part.FieldSchema(name:p_name, type:string, comment:null), (part)part.FieldSchema(name:p_mfgr, type:string, comment:null), (part)part.FieldSchema(name:p_brand, type:string, comment:null), (part)part.FieldSchema(name:p_type, type:string, comment:null), (part)part.FieldSchema(name:p_size, type:int, comment:null), (part)part.FieldSchema(name:p_container, type:string, comment:null), (part)part.FieldSchema(name:p_retailprice, type:double, comment:null), (part)part.FieldSchema(name:p_comment, type:string, comment:null), ]
 PREHOOK: query: select * from mfgr_brand_price_view
 PREHOOK: type: QUERY
 PREHOOK: Input: default@mfgr_brand_price_view

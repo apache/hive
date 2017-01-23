@@ -28,6 +28,10 @@ POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@lv_table
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@lv_view
+POSTHOOK: Lineage: lv_view.c1 SIMPLE [(lv_table)lv_table.FieldSchema(name:c1, type:string, comment:null), ]
+POSTHOOK: Lineage: lv_view.c2 SIMPLE [(lv_table)lv_table.FieldSchema(name:c2, type:array<int>, comment:null), ]
+POSTHOOK: Lineage: lv_view.c3 SIMPLE [(lv_table)lv_table.FieldSchema(name:c3, type:int, comment:null), ]
+POSTHOOK: Lineage: lv_view.c4 SIMPLE [(lv_table)lv_table.FieldSchema(name:c4, type:char(1), comment:null), ]
 PREHOOK: query: EXPLAIN SELECT * FROM lv_view LATERAL VIEW explode(array(1,2,3)) myTable AS myCol SORT BY c1 ASC, myCol ASC LIMIT 1
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN SELECT * FROM lv_view LATERAL VIEW explode(array(1,2,3)) myTable AS myCol SORT BY c1 ASC, myCol ASC LIMIT 1

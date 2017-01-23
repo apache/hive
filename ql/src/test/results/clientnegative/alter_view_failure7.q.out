@@ -18,4 +18,5 @@ POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@srcpart
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@xxx8
+POSTHOOK: Lineage: xxx8.key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
 FAILED: ValidationFailureSemanticException partition spec {ds=2011-01-01} doesn't contain all (2) partition columns

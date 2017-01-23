@@ -18,4 +18,5 @@ POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@t1
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@v1
+POSTHOOK: Lineage: v1.i SIMPLE [(t1)t1.FieldSchema(name:i, type:int, comment:null), ]
 FAILED: HiveAccessControlException Permission denied: Principal [name=user1, type=USER] does not have following privileges for operation QUERY [[SELECT] on Object [type=TABLE_OR_VIEW, name=default.v1]]

@@ -20,6 +20,8 @@ POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@src_autho_test
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@v
+POSTHOOK: Lineage: v.key SIMPLE [(src_autho_test)src_autho_test.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: v.value SIMPLE [(src_autho_test)src_autho_test.FieldSchema(name:value, type:string, comment:null), ]
 PREHOOK: query: create view v1 as select * from src_autho_test
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: default@src_autho_test
@@ -30,6 +32,8 @@ POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@src_autho_test
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@v1
+POSTHOOK: Lineage: v1.key SIMPLE [(src_autho_test)src_autho_test.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: v1.value SIMPLE [(src_autho_test)src_autho_test.FieldSchema(name:value, type:string, comment:null), ]
 PREHOOK: query: create view v2 as select * from src_autho_test
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: default@src_autho_test
@@ -40,6 +44,8 @@ POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@src_autho_test
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@v2
+POSTHOOK: Lineage: v2.key SIMPLE [(src_autho_test)src_autho_test.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: v2.value SIMPLE [(src_autho_test)src_autho_test.FieldSchema(name:value, type:string, comment:null), ]
 PREHOOK: query: --table grant to user
 
 grant select on table src_autho_test to user hive_test_user

@@ -20,6 +20,8 @@ POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@v1
+POSTHOOK: Lineage: v1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: v1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: create view v2 as select * from v1
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: default@src
@@ -32,6 +34,8 @@ POSTHOOK: Input: default@src
 POSTHOOK: Input: default@v1
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@v2
+POSTHOOK: Lineage: v2.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: v2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: --table grant to user
 
 grant select on table v2 to user hive_test_user
