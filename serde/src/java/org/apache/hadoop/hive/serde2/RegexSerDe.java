@@ -121,8 +121,9 @@ public class RegexSerDe extends AbstractSerDe {
           "This table does not have serde property \"input.regex\"!");
     }
 
-
-    List<String> columnNames = Arrays.asList(columnNameProperty.split(","));
+    final String columnNameDelimiter = tbl.containsKey(serdeConstants.COLUMN_NAME_DELIMITER) ? tbl
+        .getProperty(serdeConstants.COLUMN_NAME_DELIMITER) : String.valueOf(SerDeUtils.COMMA);
+    List<String> columnNames = Arrays.asList(columnNameProperty.split(columnNameDelimiter));
     columnTypes = TypeInfoUtils
         .getTypeInfosFromTypeString(columnTypeProperty);
     assert columnNames.size() == columnTypes.size();

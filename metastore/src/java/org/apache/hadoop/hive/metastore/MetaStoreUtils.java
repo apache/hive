@@ -1050,9 +1050,10 @@ public class MetaStoreUtils {
     StringBuilder colComment = new StringBuilder();
 
     boolean first = true;
+    String columnNameDelimiter = getColumnNameDelimiter(cols);
     for (FieldSchema col : cols) {
       if (!first) {
-        colNameBuf.append(",");
+        colNameBuf.append(columnNameDelimiter);
         colTypeBuf.append(":");
         colComment.append('\0');
       }
@@ -1064,6 +1065,7 @@ public class MetaStoreUtils {
     schema.setProperty(
         org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_COLUMNS,
         colNameBuf.toString());
+    schema.setProperty(serdeConstants.COLUMN_NAME_DELIMITER, columnNameDelimiter);
     String colTypes = colTypeBuf.toString();
     schema.setProperty(
         org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_COLUMN_TYPES,
@@ -1177,15 +1179,25 @@ public class MetaStoreUtils {
     return addCols(getSchemaWithoutCols(sd, tblsd, parameters, databaseName, tableName, partitionKeys), tblsd.getCols());
   }
 
+  public static String getColumnNameDelimiter(List<FieldSchema> fieldSchemas) {
+    // we first take a look if any fieldSchemas contain COMMA
+    for (int i = 0; i < fieldSchemas.size(); i++) {
+      if (fieldSchemas.get(i).getName().contains(",")) {
+        return String.valueOf(SerDeUtils.COLUMN_COMMENTS_DELIMITER);
+      }
+    }
+    return String.valueOf(SerDeUtils.COMMA);
+  }
+  
   /**
    * Convert FieldSchemas to columnNames.
    */
-  public static String getColumnNamesFromFieldSchema(
-      List<FieldSchema> fieldSchemas) {
+  public static String getColumnNamesFromFieldSchema(List<FieldSchema> fieldSchemas) {
+    String delimiter = getColumnNameDelimiter(fieldSchemas);
     StringBuilder sb = new StringBuilder();
     for (int i = 0; i < fieldSchemas.size(); i++) {
       if (i > 0) {
-        sb.append(",");
+        sb.append(delimiter);
       }
       sb.append(fieldSchemas.get(i).getName());
     }

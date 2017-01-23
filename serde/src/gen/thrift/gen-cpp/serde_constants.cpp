@@ -99,6 +99,8 @@ serdeConstants::serdeConstants() {
 
   TIMESTAMP_FORMATS = "timestamp.formats";
 
+  COLUMN_NAME_DELIMITER = "column.name.delimiter";
+
   PrimitiveTypes.insert("void");
   PrimitiveTypes.insert("boolean");
   PrimitiveTypes.insert("tinyint");

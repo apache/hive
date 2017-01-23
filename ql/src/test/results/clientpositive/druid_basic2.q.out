@@ -269,6 +269,7 @@ STAGE PLANS:
               COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
               EXTERNAL TRUE
               bucket_count -1
+              column.name.delimiter ,
               columns __time,robot,namespace,anonymous,unpatrolled,page,language,newpage,user,count,added,delta,variation,deleted
               columns.comments 'from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer'
               columns.types timestamp:string:string:string:string:string:string:string:string:float:float:float:float:float
@@ -294,6 +295,7 @@ STAGE PLANS:
                 COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                 EXTERNAL TRUE
                 bucket_count -1
+                column.name.delimiter ,
                 columns __time,robot,namespace,anonymous,unpatrolled,page,language,newpage,user,count,added,delta,variation,deleted
                 columns.comments 'from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer'
                 columns.types timestamp:string:string:string:string:string:string:string:string:float:float:float:float:float
@@ -435,6 +437,7 @@ STAGE PLANS:
               COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
               EXTERNAL TRUE
               bucket_count -1
+              column.name.delimiter ,
               columns __time,robot,namespace,anonymous,unpatrolled,page,language,newpage,user,count,added,delta,variation,deleted
               columns.comments 'from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer'
               columns.types timestamp:string:string:string:string:string:string:string:string:float:float:float:float:float
@@ -460,6 +463,7 @@ STAGE PLANS:
                 COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                 EXTERNAL TRUE
                 bucket_count -1
+                column.name.delimiter ,
                 columns __time,robot,namespace,anonymous,unpatrolled,page,language,newpage,user,count,added,delta,variation,deleted
                 columns.comments 'from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer'
                 columns.types timestamp:string:string:string:string:string:string:string:string:float:float:float:float:float

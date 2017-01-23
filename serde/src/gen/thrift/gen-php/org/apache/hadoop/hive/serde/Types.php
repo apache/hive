@@ -62,6 +62,7 @@ final class Constant extends \Thrift\Type\TConstant {
   static protected $LIST_COLUMNS;
   static protected $LIST_COLUMN_TYPES;
   static protected $TIMESTAMP_FORMATS;
+  static protected $COLUMN_NAME_DELIMITER;
   static protected $PrimitiveTypes;
   static protected $CollectionTypes;
   static protected $IntegralTypes;
@@ -240,6 +241,10 @@ final class Constant extends \Thrift\Type\TConstant {
 
   static protected function init_TIMESTAMP_FORMATS() {
     return "timestamp.formats";
+  }
+
+  static protected function init_COLUMN_NAME_DELIMITER() {
+    return "column.name.delimiter";
   }
 
   static protected function init_PrimitiveTypes() {

@@ -85,6 +85,7 @@ STAGE PLANS:
                               properties:
                                 COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                                 bucket_count -1
+                                column.name.delimiter ,
                                 columns key,cnt
                                 columns.comments 
                                 columns.types int:int
@@ -116,6 +117,7 @@ STAGE PLANS:
                     SORTBUCKETCOLSPREFIX TRUE
                     bucket_count 2
                     bucket_field_name key
+                    column.name.delimiter ,
                     columns key,val
                     columns.comments 
                     columns.types string:string
@@ -138,6 +140,7 @@ STAGE PLANS:
                       SORTBUCKETCOLSPREFIX TRUE
                       bucket_count 2
                       bucket_field_name key
+                      column.name.delimiter ,
                       columns key,val
                       columns.comments 
                       columns.types string:string
@@ -168,6 +171,7 @@ STAGE PLANS:
               properties:
                 COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                 bucket_count -1
+                column.name.delimiter ,
                 columns key,cnt
                 columns.comments 
                 columns.types int:int
@@ -279,6 +283,7 @@ STAGE PLANS:
                     SORTBUCKETCOLSPREFIX TRUE
                     bucket_count 2
                     bucket_field_name key
+                    column.name.delimiter ,
                     columns key,val
                     columns.comments 
                     columns.types string:string
@@ -301,6 +306,7 @@ STAGE PLANS:
                       SORTBUCKETCOLSPREFIX TRUE
                       bucket_count 2
                       bucket_field_name key
+                      column.name.delimiter ,
                       columns key,val
                       columns.comments 
                       columns.types string:string
@@ -345,6 +351,7 @@ STAGE PLANS:
                         properties:
                           COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                           bucket_count -1
+                          column.name.delimiter ,
                           columns key1,key2,cnt
                           columns.comments 
                           columns.types int:string:int
@@ -375,6 +382,7 @@ STAGE PLANS:
               properties:
                 COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                 bucket_count -1
+                column.name.delimiter ,
                 columns key1,key2,cnt
                 columns.comments 
                 columns.types int:string:int
@@ -473,6 +481,7 @@ STAGE PLANS:
                               properties:
                                 COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                                 bucket_count -1
+                                column.name.delimiter ,
                                 columns key,cnt
                                 columns.comments 
                                 columns.types int:int
@@ -504,6 +513,7 @@ STAGE PLANS:
                     SORTBUCKETCOLSPREFIX TRUE
                     bucket_count 2
                     bucket_field_name key
+                    column.name.delimiter ,
                     columns key,val
                     columns.comments 
                     columns.types string:string
@@ -526,6 +536,7 @@ STAGE PLANS:
                       SORTBUCKETCOLSPREFIX TRUE
                       bucket_count 2
                       bucket_field_name key
+                      column.name.delimiter ,
                       columns key,val
                       columns.comments 
                       columns.types string:string
@@ -556,6 +567,7 @@ STAGE PLANS:
               properties:
                 COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                 bucket_count -1
+                column.name.delimiter ,
                 columns key,cnt
                 columns.comments 
                 columns.types int:int
@@ -652,6 +664,7 @@ STAGE PLANS:
                               properties:
                                 COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                                 bucket_count -1
+                                column.name.delimiter ,
                                 columns key,cnt
                                 columns.comments 
                                 columns.types int:int
@@ -683,6 +696,7 @@ STAGE PLANS:
                     SORTBUCKETCOLSPREFIX TRUE
                     bucket_count 2
                     bucket_field_name key
+                    column.name.delimiter ,
                     columns key,val
                     columns.comments 
                     columns.types string:string
@@ -705,6 +719,7 @@ STAGE PLANS:
                       SORTBUCKETCOLSPREFIX TRUE
                       bucket_count 2
                       bucket_field_name key
+                      column.name.delimiter ,
                       columns key,val
                       columns.comments 
                       columns.types string:string
@@ -735,6 +750,7 @@ STAGE PLANS:
               properties:
                 COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                 bucket_count -1
+                column.name.delimiter ,
                 columns key,cnt
                 columns.comments 
                 columns.types int:int
@@ -839,6 +855,7 @@ STAGE PLANS:
                               properties:
                                 COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                                 bucket_count -1
+                                column.name.delimiter ,
                                 columns key1,key2,cnt
                                 columns.comments 
                                 columns.types int:int:int
@@ -870,6 +887,7 @@ STAGE PLANS:
                     SORTBUCKETCOLSPREFIX TRUE
                     bucket_count 2
                     bucket_field_name key
+                    column.name.delimiter ,
                     columns key,val
                     columns.comments 
                     columns.types string:string
@@ -892,6 +910,7 @@ STAGE PLANS:
                       SORTBUCKETCOLSPREFIX TRUE
                       bucket_count 2
                       bucket_field_name key
+                      column.name.delimiter ,
                       columns key,val
                       columns.comments 
                       columns.types string:string
@@ -922,6 +941,7 @@ STAGE PLANS:
               properties:
                 COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                 bucket_count -1
+                column.name.delimiter ,
                 columns key1,key2,cnt
                 columns.comments 
                 columns.types int:int:int
@@ -1034,6 +1054,7 @@ STAGE PLANS:
                     SORTBUCKETCOLSPREFIX TRUE
                     bucket_count 2
                     bucket_field_name key
+                    column.name.delimiter ,
                     columns key,val
                     columns.comments 
                     columns.types string:string
@@ -1056,6 +1077,7 @@ STAGE PLANS:
                       SORTBUCKETCOLSPREFIX TRUE
                       bucket_count 2
                       bucket_field_name key
+                      column.name.delimiter ,
                       columns key,val
                       columns.comments 
                       columns.types string:string
@@ -1100,6 +1122,7 @@ STAGE PLANS:
                         properties:
                           COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                           bucket_count -1
+                          column.name.delimiter ,
                           columns key1,key2,key3,cnt
                           columns.comments 
                           columns.types int:int:string:int
@@ -1130,6 +1153,7 @@ STAGE PLANS:
               properties:
                 COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                 bucket_count -1
+                column.name.delimiter ,
                 columns key1,key2,key3,cnt
                 columns.comments 
                 columns.types int:int:string:int
@@ -1236,6 +1260,7 @@ STAGE PLANS:
                     SORTBUCKETCOLSPREFIX TRUE
                     bucket_count 2
                     bucket_field_name key
+                    column.name.delimiter ,
                     columns key,val
                     columns.comments 
                     columns.types string:string
@@ -1258,6 +1283,7 @@ STAGE PLANS:
                       SORTBUCKETCOLSPREFIX TRUE
                       bucket_count 2
                       bucket_field_name key
+                      column.name.delimiter ,
                       columns key,val
                       columns.comments 
                       columns.types string:string
@@ -1302,6 +1328,7 @@ STAGE PLANS:
                         properties:
                           COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                           bucket_count -1
+                          column.name.delimiter ,
                           columns key1,key2,cnt
                           columns.comments 
                           columns.types int:int:int
@@ -1332,6 +1359,7 @@ STAGE PLANS:
               properties:
                 COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                 bucket_count -1
+                column.name.delimiter ,
                 columns key1,key2,cnt
                 columns.comments 
                 columns.types int:int:int
@@ -1450,6 +1478,7 @@ STAGE PLANS:
                     SORTBUCKETCOLSPREFIX TRUE
                     bucket_count 2
                     bucket_field_name key
+                    column.name.delimiter ,
                     columns key,val
                     columns.comments 
                     columns.types string:string
@@ -1472,6 +1501,7 @@ STAGE PLANS:
                       SORTBUCKETCOLSPREFIX TRUE
                       bucket_count 2
                       bucket_field_name key
+                      column.name.delimiter ,
                       columns key,val
                       columns.comments 
                       columns.types string:string
@@ -1516,6 +1546,7 @@ STAGE PLANS:
                         properties:
                           COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                           bucket_count -1
+                          column.name.delimiter ,
                           columns key,cnt
                           columns.comments 
                           columns.types int:int
@@ -1546,6 +1577,7 @@ STAGE PLANS:
               properties:
                 COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                 bucket_count -1
+                column.name.delimiter ,
                 columns key,cnt
                 columns.comments 
                 columns.types int:int
@@ -1654,6 +1686,7 @@ STAGE PLANS:
                               properties:
                                 COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                                 bucket_count -1
+                                column.name.delimiter ,
                                 columns key,cnt
                                 columns.comments 
                                 columns.types int:int
@@ -1685,6 +1718,7 @@ STAGE PLANS:
                     SORTBUCKETCOLSPREFIX TRUE
                     bucket_count 2
                     bucket_field_name key
+                    column.name.delimiter ,
                     columns key,val
                     columns.comments 
                     columns.types string:string
@@ -1707,6 +1741,7 @@ STAGE PLANS:
                       SORTBUCKETCOLSPREFIX TRUE
                       bucket_count 2
                       bucket_field_name key
+                      column.name.delimiter ,
                       columns key,val
                       columns.comments 
                       columns.types string:string
@@ -1758,6 +1793,7 @@ STAGE PLANS:
                               properties:
                                 COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                                 bucket_count -1
+                                column.name.delimiter ,
                                 columns key,cnt
                                 columns.comments 
                                 columns.types int:int
@@ -1789,6 +1825,7 @@ STAGE PLANS:
                     SORTBUCKETCOLSPREFIX TRUE
                     bucket_count 2
                     bucket_field_name key
+                    column.name.delimiter ,
                     columns key,val
                     columns.comments 
                     columns.types string:string
@@ -1811,6 +1848,7 @@ STAGE PLANS:
                       SORTBUCKETCOLSPREFIX TRUE
                       bucket_count 2
                       bucket_field_name key
+                      column.name.delimiter ,
                       columns key,val
                       columns.comments 
                       columns.types string:string
@@ -1841,6 +1879,7 @@ STAGE PLANS:
               properties:
                 COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                 bucket_count -1
+                column.name.delimiter ,
                 columns key,cnt
                 columns.comments 
                 columns.types int:int
@@ -1960,6 +1999,7 @@ STAGE PLANS:
                               properties:
                                 COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                                 bucket_count -1
+                                column.name.delimiter ,
                                 columns key,cnt
                                 columns.comments 
                                 columns.types int:int
@@ -1991,6 +2031,7 @@ STAGE PLANS:
                     SORTBUCKETCOLSPREFIX TRUE
                     bucket_count 2
                     bucket_field_name key
+                    column.name.delimiter ,
                     columns key,val
                     columns.comments 
                     columns.types string:string
@@ -2013,6 +2054,7 @@ STAGE PLANS:
                       SORTBUCKETCOLSPREFIX TRUE
                       bucket_count 2
                       bucket_field_name key
+                      column.name.delimiter ,
                       columns key,val
                       columns.comments 
                       columns.types string:string
@@ -2069,6 +2111,7 @@ STAGE PLANS:
                     SORTBUCKETCOLSPREFIX TRUE
                     bucket_count 2
                     bucket_field_name key
+                    column.name.delimiter ,
                     columns key,val
                     columns.comments 
                     columns.types string:string
@@ -2091,6 +2134,7 @@ STAGE PLANS:
                       SORTBUCKETCOLSPREFIX TRUE
                       bucket_count 2
                       bucket_field_name key
+                      column.name.delimiter ,
                       columns key,val
                       columns.comments 
                       columns.types string:string
@@ -2139,6 +2183,7 @@ STAGE PLANS:
                           properties:
                             COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                             bucket_count -1
+                            column.name.delimiter ,
                             columns key,cnt
                             columns.comments 
                             columns.types int:int
@@ -2169,6 +2214,7 @@ STAGE PLANS:
               properties:
                 COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                 bucket_count -1
+                column.name.delimiter ,
                 columns key,cnt
                 columns.comments 
                 columns.types int:int
@@ -2297,6 +2343,7 @@ STAGE PLANS:
                     SORTBUCKETCOLSPREFIX TRUE
                     bucket_count 2
                     bucket_field_name key
+                    column.name.delimiter ,
                     columns key,val
                     columns.comments 
                     columns.types string:string
@@ -2319,6 +2366,7 @@ STAGE PLANS:
                       SORTBUCKETCOLSPREFIX TRUE
                       bucket_count 2
                       bucket_field_name key
+                      column.name.delimiter ,
                       columns key,val
                       columns.comments 
                       columns.types string:string
@@ -2379,6 +2427,7 @@ STAGE PLANS:
                     SORTBUCKETCOLSPREFIX TRUE
                     bucket_count 2
                     bucket_field_name key
+                    column.name.delimiter ,
                     columns key,val
                     columns.comments 
                     columns.types string:string
@@ -2401,6 +2450,7 @@ STAGE PLANS:
                       SORTBUCKETCOLSPREFIX TRUE
                       bucket_count 2
                       bucket_field_name key
+                      column.name.delimiter ,
                       columns key,val
                       columns.comments 
                       columns.types string:string
@@ -2447,6 +2497,7 @@ STAGE PLANS:
                         properties:
                           COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                           bucket_count -1
+                          column.name.delimiter ,
                           columns key,cnt
                           columns.comments 
                           columns.types int:int
@@ -2477,6 +2528,7 @@ STAGE PLANS:
               properties:
                 COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                 bucket_count -1
+                column.name.delimiter ,
                 columns key,cnt
                 columns.comments 
                 columns.types int:int
@@ -2598,6 +2650,7 @@ STAGE PLANS:
                     SORTBUCKETCOLSPREFIX TRUE
                     bucket_count 2
                     bucket_field_name key
+                    column.name.delimiter ,
                     columns key,val
                     columns.comments 
                     columns.types string:string
@@ -2620,6 +2673,7 @@ STAGE PLANS:
                       SORTBUCKETCOLSPREFIX TRUE
                       bucket_count 2
                       bucket_field_name key
+                      column.name.delimiter ,
                       columns key,val
                       columns.comments 
                       columns.types string:string
@@ -2680,6 +2734,7 @@ STAGE PLANS:
                     SORTBUCKETCOLSPREFIX TRUE
                     bucket_count 2
                     bucket_field_name key
+                    column.name.delimiter ,
                     columns key,val
                     columns.comments 
                     columns.types string:string
@@ -2702,6 +2757,7 @@ STAGE PLANS:
                       SORTBUCKETCOLSPREFIX TRUE
                       bucket_count 2
                       bucket_field_name key
+                      column.name.delimiter ,
                       columns key,val
                       columns.comments 
                       columns.types string:string
@@ -2857,6 +2913,7 @@ STAGE PLANS:
                     SORTBUCKETCOLSPREFIX TRUE
                     bucket_count 2
                     bucket_field_name key
+                    column.name.delimiter ,
                     columns key,val
                     columns.comments 
                     columns.types string:string
@@ -2879,6 +2936,7 @@ STAGE PLANS:
                       SORTBUCKETCOLSPREFIX TRUE
                       bucket_count 2
                       bucket_field_name key
+                      column.name.delimiter ,
                       columns key,val
                       columns.comments 
                       columns.types string:string
@@ -2923,6 +2981,7 @@ STAGE PLANS:
                         properties:
                           COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                           bucket_count -1
+                          column.name.delimiter ,
                           columns key,cnt
                           columns.comments 
                           columns.types int:int
@@ -2953,6 +3012,7 @@ STAGE PLANS:
               properties:
                 COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                 bucket_count -1
+                column.name.delimiter ,
                 columns key,cnt
                 columns.comments 
                 columns.types int:int
@@ -3049,6 +3109,7 @@ STAGE PLANS:
                               properties:
                                 COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                                 bucket_count -1
+                                column.name.delimiter ,
                                 columns key1,key2,key3,cnt
                                 columns.comments 
                                 columns.types int:int:string:int
@@ -3080,6 +3141,7 @@ STAGE PLANS:
                     SORTBUCKETCOLSPREFIX TRUE
                     bucket_count 2
                     bucket_field_name key
+                    column.name.delimiter ,
                     columns key,val
                     columns.comments 
                     columns.types string:string
@@ -3102,6 +3164,7 @@ STAGE PLANS:
                       SORTBUCKETCOLSPREFIX TRUE
                       bucket_count 2
                       bucket_field_name key
+                      column.name.delimiter ,
                       columns key,val
                       columns.comments 
                       columns.types string:string
@@ -3132,6 +3195,7 @@ STAGE PLANS:
               properties:
                 COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                 bucket_count -1
+                column.name.delimiter ,
                 columns key1,key2,key3,cnt
                 columns.comments 
                 columns.types int:int:string:int
@@ -3239,6 +3303,7 @@ STAGE PLANS:
                               properties:
                                 COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                                 bucket_count -1
+                                column.name.delimiter ,
                                 columns key1,key2,key3,key4,cnt
                                 columns.comments 
                                 columns.types int:int:string:int:int
@@ -3270,6 +3335,7 @@ STAGE PLANS:
                     SORTBUCKETCOLSPREFIX TRUE
                     bucket_count 2
                     bucket_field_name key
+                    column.name.delimiter ,
                     columns key,val
                     columns.comments 
                     columns.types string:string
@@ -3292,6 +3358,7 @@ STAGE PLANS:
                       SORTBUCKETCOLSPREFIX TRUE
                       bucket_count 2
                       bucket_field_name key
+                      column.name.delimiter ,
                       columns key,val
                       columns.comments 
                       columns.types string:string
@@ -3322,6 +3389,7 @@ STAGE PLANS:
               properties:
                 COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                 bucket_count -1
+                column.name.delimiter ,
                 columns key1,key2,key3,key4,cnt
                 columns.comments 
                 columns.types int:int:string:int:int
@@ -3428,6 +3496,7 @@ STAGE PLANS:
                               properties:
                                 COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                                 bucket_count -1
+                                column.name.delimiter ,
                                 columns key1,key2,key3,cnt
                                 columns.comments 
                                 columns.types int:int:string:int
@@ -3459,6 +3528,7 @@ STAGE PLANS:
                     SORTBUCKETCOLSPREFIX TRUE
                     bucket_count 2
                     bucket_field_name key
+                    column.name.delimiter ,
                     columns key,val
                     columns.comments 
                     columns.types string:string
@@ -3481,6 +3551,7 @@ STAGE PLANS:
                       SORTBUCKETCOLSPREFIX TRUE
                       bucket_count 2
                       bucket_field_name key
+                      column.name.delimiter ,
                       columns key,val
                       columns.comments 
                       columns.types string:string
@@ -3511,6 +3582,7 @@ STAGE PLANS:
               properties:
                 COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                 bucket_count -1
+                column.name.delimiter ,
                 columns key1,key2,key3,cnt
                 columns.comments 
                 columns.types int:int:string:int
@@ -3624,6 +3696,7 @@ STAGE PLANS:
                               properties:
                                 COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                                 bucket_count -1
+                                column.name.delimiter ,
                                 columns key1,key2,key3,cnt
                                 columns.comments 
                                 columns.types int:int:string:int
@@ -3655,6 +3728,7 @@ STAGE PLANS:
                     SORTBUCKETCOLSPREFIX TRUE
                     bucket_count 2
                     bucket_field_name key
+                    column.name.delimiter ,
                     columns key,val
                     columns.comments 
                     columns.types string:string
@@ -3677,6 +3751,7 @@ STAGE PLANS:
                       SORTBUCKETCOLSPREFIX TRUE
                       bucket_count 2
                       bucket_field_name key
+                      column.name.delimiter ,
                       columns key,val
                       columns.comments 
                       columns.types string:string
@@ -3707,6 +3782,7 @@ STAGE PLANS:
               properties:
                 COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                 bucket_count -1
+                column.name.delimiter ,
                 columns key1,key2,key3,cnt
                 columns.comments 
                 columns.types int:int:string:int

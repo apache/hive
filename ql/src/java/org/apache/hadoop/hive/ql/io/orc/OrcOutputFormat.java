@@ -36,7 +36,9 @@ import org.apache.hadoop.hive.ql.io.IOConstants;
 import org.apache.hadoop.hive.ql.io.RecordUpdater;
 import org.apache.hadoop.hive.ql.io.StatsProvidingRecordWriter;
 import org.apache.hadoop.hive.ql.io.orc.OrcSerde.OrcSerdeRow;
+import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.SerDeStats;
+import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
@@ -141,11 +143,12 @@ public class OrcOutputFormat extends FileOutputFormat<NullWritable, OrcSerdeRow>
           !columnTypeProperty.isEmpty()) {
         List<String> columnNames;
         List<TypeInfo> columnTypes;
-
+        final String columnNameDelimiter = props.containsKey(serdeConstants.COLUMN_NAME_DELIMITER) ? props
+            .getProperty(serdeConstants.COLUMN_NAME_DELIMITER) : String.valueOf(SerDeUtils.COMMA);
         if (columnNameProperty.length() == 0) {
           columnNames = new ArrayList<String>();
         } else {
-          columnNames = Arrays.asList(columnNameProperty.split(","));
+          columnNames = Arrays.asList(columnNameProperty.split(columnNameDelimiter));
         }
 
         if (columnTypeProperty.length() == 0) {

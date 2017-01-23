@@ -117,6 +117,7 @@ STAGE PLANS:
             properties:
               COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"d_date":"true"}}
               bucket_count -1
+              column.name.delimiter ,
               columns d_date
               columns.comments 
               columns.types date
@@ -138,6 +139,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
               properties:
                 bucket_count -1
+                column.name.delimiter ,
                 columns d_date
                 columns.comments 
                 columns.types date
@@ -160,6 +162,7 @@ STAGE PLANS:
             properties:
               COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"d_date":"true"}}
               bucket_count -1
+              column.name.delimiter ,
               columns d_date
               columns.comments 
               columns.types date
@@ -181,6 +184,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
               properties:
                 bucket_count -1
+                column.name.delimiter ,
                 columns d_date
                 columns.comments 
                 columns.types date
@@ -203,6 +207,7 @@ STAGE PLANS:
             properties:
               COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"d_date":"true"}}
               bucket_count -1
+              column.name.delimiter ,
               columns d_date
               columns.comments 
               columns.types date
@@ -224,6 +229,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
               properties:
                 bucket_count -1
+                column.name.delimiter ,
                 columns d_date
                 columns.comments 
                 columns.types date
@@ -246,6 +252,7 @@ STAGE PLANS:
             properties:
               COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
               bucket_count -1
+              column.name.delimiter ,
               columns d_date
               columns.comments 
               columns.types date
@@ -267,6 +274,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
               properties:
                 bucket_count -1
+                column.name.delimiter ,
                 columns d_date
                 columns.comments 
                 columns.types date

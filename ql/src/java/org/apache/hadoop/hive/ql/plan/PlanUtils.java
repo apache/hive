@@ -469,6 +469,7 @@ public final class PlanUtils {
         SequenceFileInputFormat.class, SequenceFileOutputFormat.class,
         Utilities.makeProperties(serdeConstants.LIST_COLUMNS, MetaStoreUtils
         .getColumnNamesFromFieldSchema(fieldSchemas),
+        serdeConstants.COLUMN_NAME_DELIMITER, MetaStoreUtils.getColumnNameDelimiter(fieldSchemas),
         serdeConstants.LIST_COLUMN_TYPES, MetaStoreUtils
         .getColumnTypesFromFieldSchema(fieldSchemas),
         serdeConstants.SERIALIZATION_SORT_ORDER, order,
@@ -496,6 +497,7 @@ public final class PlanUtils {
           SequenceFileInputFormat.class, SequenceFileOutputFormat.class,
           Utilities.makeProperties(serdeConstants.LIST_COLUMNS, MetaStoreUtils
               .getColumnNamesFromFieldSchema(fieldSchemas),
+              serdeConstants.COLUMN_NAME_DELIMITER, MetaStoreUtils.getColumnNameDelimiter(fieldSchemas),
               serdeConstants.LIST_COLUMN_TYPES, MetaStoreUtils
               .getColumnTypesFromFieldSchema(fieldSchemas),
               serdeConstants.SERIALIZATION_SORT_ORDER, order.toString(),
@@ -521,6 +523,7 @@ public final class PlanUtils {
           SequenceFileOutputFormat.class, Utilities.makeProperties(
               serdeConstants.LIST_COLUMNS, MetaStoreUtils
               .getColumnNamesFromFieldSchema(fieldSchemas),
+              serdeConstants.COLUMN_NAME_DELIMITER, MetaStoreUtils.getColumnNameDelimiter(fieldSchemas),
               serdeConstants.LIST_COLUMN_TYPES, MetaStoreUtils
               .getColumnTypesFromFieldSchema(fieldSchemas),
               serdeConstants.ESCAPE_CHAR, "\\",
@@ -536,6 +539,8 @@ public final class PlanUtils {
         SequenceFileOutputFormat.class, Utilities.makeProperties(
         serdeConstants.LIST_COLUMNS, MetaStoreUtils
         .getColumnNamesFromFieldSchema(fieldSchemas),
+        serdeConstants.COLUMN_NAME_DELIMITER, MetaStoreUtils.getColumnNameDelimiter(fieldSchemas),
+        serdeConstants.COLUMN_NAME_DELIMITER, MetaStoreUtils.getColumnNameDelimiter(fieldSchemas),
         serdeConstants.LIST_COLUMN_TYPES, MetaStoreUtils
         .getColumnTypesFromFieldSchema(fieldSchemas),
         serdeConstants.ESCAPE_CHAR, "\\",

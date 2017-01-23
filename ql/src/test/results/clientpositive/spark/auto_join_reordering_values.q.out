@@ -128,6 +128,7 @@ STAGE PLANS:
                   properties:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                     bucket_count -1
+                    column.name.delimiter ,
                     columns dealid,date,time,cityid,userid
                     columns.comments 
                     columns.types int:string:string:int:int
@@ -148,6 +149,7 @@ STAGE PLANS:
                     properties:
                       COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                       bucket_count -1
+                      column.name.delimiter ,
                       columns dealid,date,time,cityid,userid
                       columns.comments 
                       columns.types int:string:string:int:int
@@ -199,6 +201,7 @@ STAGE PLANS:
                   properties:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                     bucket_count -1
+                    column.name.delimiter ,
                     columns dealid,date,time,cityid,userid
                     columns.comments 
                     columns.types int:string:string:int:int
@@ -219,6 +222,7 @@ STAGE PLANS:
                     properties:
                       COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                       bucket_count -1
+                      column.name.delimiter ,
                       columns dealid,date,time,cityid,userid
                       columns.comments 
                       columns.types int:string:string:int:int
@@ -270,6 +274,7 @@ STAGE PLANS:
                   properties:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                     bucket_count -1
+                    column.name.delimiter ,
                     columns dealid,date,time,cityid,userid
                     columns.comments 
                     columns.types int:string:string:int:int
@@ -290,6 +295,7 @@ STAGE PLANS:
                     properties:
                       COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                       bucket_count -1
+                      column.name.delimiter ,
                       columns dealid,date,time,cityid,userid
                       columns.comments 
                       columns.types int:string:string:int:int
@@ -341,6 +347,7 @@ STAGE PLANS:
                   properties:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                     bucket_count -1
+                    column.name.delimiter ,
                     columns dealid,date,time,cityid,userid
                     columns.comments 
                     columns.types int:string:string:int:int
@@ -361,6 +368,7 @@ STAGE PLANS:
                     properties:
                       COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                       bucket_count -1
+                      column.name.delimiter ,
                       columns dealid,date,time,cityid,userid
                       columns.comments 
                       columns.types int:string:string:int:int
@@ -412,6 +420,7 @@ STAGE PLANS:
                   properties:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                     bucket_count -1
+                    column.name.delimiter ,
                     columns userid
                     columns.comments 
                     columns.types int
@@ -432,6 +441,7 @@ STAGE PLANS:
                     properties:
                       COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                       bucket_count -1
+                      column.name.delimiter ,
                       columns userid
                       columns.comments 
                       columns.types int

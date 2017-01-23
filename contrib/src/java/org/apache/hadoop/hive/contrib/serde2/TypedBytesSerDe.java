@@ -109,8 +109,9 @@ public class TypedBytesSerDe extends AbstractSerDe {
     // Read the configuration parameters
     String columnNameProperty = tbl.getProperty(serdeConstants.LIST_COLUMNS);
     String columnTypeProperty = tbl.getProperty(serdeConstants.LIST_COLUMN_TYPES);
-
-    columnNames = Arrays.asList(columnNameProperty.split(","));
+    final String columnNameDelimiter = tbl.containsKey(serdeConstants.COLUMN_NAME_DELIMITER) ? tbl
+        .getProperty(serdeConstants.COLUMN_NAME_DELIMITER) : String.valueOf(SerDeUtils.COMMA);
+    columnNames = Arrays.asList(columnNameProperty.split(columnNameDelimiter));
     columnTypes = null;
     if (columnTypeProperty.length() == 0) {
       columnTypes = new ArrayList<TypeInfo>();

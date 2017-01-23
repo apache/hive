@@ -1,0 +1,56 @@
+PREHOOK: query: create table test (`x,y` int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test
+POSTHOOK: query: create table test (`x,y` int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test
+PREHOOK: query: insert into test values (1),(2)
+PREHOOK: type: QUERY
+PREHOOK: Output: default@test
+POSTHOOK: query: insert into test values (1),(2)
+POSTHOOK: type: QUERY
+POSTHOOK: Output: default@test
+POSTHOOK: Lineage: test.x,y EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+PREHOOK: query: select `x,y` from test where `x,y` >=2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test
+#### A masked pattern was here ####
+POSTHOOK: query: select `x,y` from test where `x,y` >=2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test
+#### A masked pattern was here ####
+2
+PREHOOK: query: drop table test
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@test
+PREHOOK: Output: default@test
+POSTHOOK: query: drop table test
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@test
+POSTHOOK: Output: default@test
+PREHOOK: query: create table test (`x,y` int) stored as orc
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test
+POSTHOOK: query: create table test (`x,y` int) stored as orc
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test
+PREHOOK: query: insert into test values (1),(2)
+PREHOOK: type: QUERY
+PREHOOK: Output: default@test
+POSTHOOK: query: insert into test values (1),(2)
+POSTHOOK: type: QUERY
+POSTHOOK: Output: default@test
+POSTHOOK: Lineage: test.x,y EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+PREHOOK: query: select `x,y` from test where `x,y` <2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test
+#### A masked pattern was here ####
+POSTHOOK: query: select `x,y` from test where `x,y` <2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test
+#### A masked pattern was here ####
+1

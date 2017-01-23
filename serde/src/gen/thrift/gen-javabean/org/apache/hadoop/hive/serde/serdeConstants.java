@@ -124,6 +124,8 @@ public class serdeConstants {
 
   public static final String TIMESTAMP_FORMATS = "timestamp.formats";
 
+  public static final String COLUMN_NAME_DELIMITER = "column.name.delimiter";
+
   public static final Set<String> PrimitiveTypes = new HashSet<String>();
   static {
     PrimitiveTypes.add("void");

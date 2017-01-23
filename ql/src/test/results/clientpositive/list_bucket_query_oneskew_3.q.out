@@ -171,6 +171,7 @@ STAGE PLANS:
               ds 1
             properties:
               bucket_count -1
+              column.name.delimiter ,
               columns x,y,z
               columns.comments 
               columns.types int:string:string
@@ -191,6 +192,7 @@ STAGE PLANS:
               properties:
                 EXTERNAL TRUE
                 bucket_count -1
+                column.name.delimiter ,
                 columns x,y,z
                 columns.comments 
                 columns.types int:string:string

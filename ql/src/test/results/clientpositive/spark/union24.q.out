@@ -126,6 +126,7 @@ STAGE PLANS:
                   properties:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                     bucket_count -1
+                    column.name.delimiter ,
                     columns key,count
                     columns.comments 
                     columns.types string:bigint
@@ -146,6 +147,7 @@ STAGE PLANS:
                     properties:
                       COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                       bucket_count -1
+                      column.name.delimiter ,
                       columns key,count
                       columns.comments 
                       columns.types string:bigint
@@ -211,6 +213,7 @@ STAGE PLANS:
                   properties:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                     bucket_count -1
+                    column.name.delimiter ,
                     columns key,count
                     columns.comments 
                     columns.types string:bigint
@@ -231,6 +234,7 @@ STAGE PLANS:
                     properties:
                       COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                       bucket_count -1
+                      column.name.delimiter ,
                       columns key,count
                       columns.comments 
                       columns.types string:bigint
@@ -296,6 +300,7 @@ STAGE PLANS:
                   properties:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                     bucket_count -1
+                    column.name.delimiter ,
                     columns key,count
                     columns.comments 
                     columns.types string:bigint
@@ -316,6 +321,7 @@ STAGE PLANS:
                     properties:
                       COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                       bucket_count -1
+                      column.name.delimiter ,
                       columns key,count
                       columns.comments 
                       columns.types string:bigint
@@ -374,6 +380,7 @@ STAGE PLANS:
                   properties:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                     bucket_count -1
+                    column.name.delimiter ,
                     columns key,count
                     columns.comments 
                     columns.types string:bigint
@@ -394,6 +401,7 @@ STAGE PLANS:
                     properties:
                       COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                       bucket_count -1
+                      column.name.delimiter ,
                       columns key,count
                       columns.comments 
                       columns.types string:bigint
@@ -580,6 +588,7 @@ STAGE PLANS:
                   properties:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                     bucket_count -1
+                    column.name.delimiter ,
                     columns key,count
                     columns.comments 
                     columns.types string:bigint
@@ -600,6 +609,7 @@ STAGE PLANS:
                     properties:
                       COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                       bucket_count -1
+                      column.name.delimiter ,
                       columns key,count
                       columns.comments 
                       columns.types string:bigint
@@ -665,6 +675,7 @@ STAGE PLANS:
                   properties:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                     bucket_count -1
+                    column.name.delimiter ,
                     columns key,count
                     columns.comments 
                     columns.types string:bigint
@@ -685,6 +696,7 @@ STAGE PLANS:
                     properties:
                       COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                       bucket_count -1
+                      column.name.delimiter ,
                       columns key,count
                       columns.comments 
                       columns.types string:bigint
@@ -736,6 +748,7 @@ STAGE PLANS:
                   properties:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                     bucket_count -1
+                    column.name.delimiter ,
                     columns key,count
                     columns.comments 
                     columns.types string:bigint
@@ -756,6 +769,7 @@ STAGE PLANS:
                     properties:
                       COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                       bucket_count -1
+                      column.name.delimiter ,
                       columns key,count
                       columns.comments 
                       columns.types string:bigint
@@ -808,6 +822,7 @@ STAGE PLANS:
                   properties:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                     bucket_count -1
+                    column.name.delimiter ,
                     columns key,count
                     columns.comments 
                     columns.types string:bigint
@@ -828,6 +843,7 @@ STAGE PLANS:
                     properties:
                       COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                       bucket_count -1
+                      column.name.delimiter ,
                       columns key,count
                       columns.comments 
                       columns.types string:bigint
@@ -1008,6 +1024,7 @@ STAGE PLANS:
                   properties:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                     bucket_count -1
+                    column.name.delimiter ,
                     columns key,count
                     columns.comments 
                     columns.types string:bigint
@@ -1028,6 +1045,7 @@ STAGE PLANS:
                     properties:
                       COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                       bucket_count -1
+                      column.name.delimiter ,
                       columns key,count
                       columns.comments 
                       columns.types string:bigint
@@ -1093,6 +1111,7 @@ STAGE PLANS:
                   properties:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                     bucket_count -1
+                    column.name.delimiter ,
                     columns key,count
                     columns.comments 
                     columns.types string:bigint
@@ -1113,6 +1132,7 @@ STAGE PLANS:
                     properties:
                       COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                       bucket_count -1
+                      column.name.delimiter ,
                       columns key,count
                       columns.comments 
                       columns.types string:bigint
@@ -1164,6 +1184,7 @@ STAGE PLANS:
                   properties:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                     bucket_count -1
+                    column.name.delimiter ,
                     columns key,count
                     columns.comments 
                     columns.types string:bigint
@@ -1184,6 +1205,7 @@ STAGE PLANS:
                     properties:
                       COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                       bucket_count -1
+                      column.name.delimiter ,
                       columns key,count
                       columns.comments 
                       columns.types string:bigint
@@ -1235,6 +1257,7 @@ STAGE PLANS:
                   properties:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                     bucket_count -1
+                    column.name.delimiter ,
                     columns key,count
                     columns.comments 
                     columns.types string:bigint
@@ -1255,6 +1278,7 @@ STAGE PLANS:
                     properties:
                       COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                       bucket_count -1
+                      column.name.delimiter ,
                       columns key,count
                       columns.comments 
                       columns.types string:bigint

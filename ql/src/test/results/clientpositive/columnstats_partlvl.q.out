@@ -138,6 +138,7 @@ STAGE PLANS:
               employeesalary 2000.0
             properties:
               bucket_count -1
+              column.name.delimiter ,
               columns employeeid,employeename
               columns.comments 
               columns.types int:string
@@ -160,6 +161,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
                 bucket_count -1
+                column.name.delimiter ,
                 columns employeeid,employeename
                 columns.comments 
                 columns.types int:string
@@ -338,6 +340,7 @@ STAGE PLANS:
               employeesalary 4000.0
             properties:
               bucket_count -1
+              column.name.delimiter ,
               columns employeeid,employeename
               columns.comments 
               columns.types int:string
@@ -360,6 +363,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
                 bucket_count -1
+                column.name.delimiter ,
                 columns employeeid,employeename
                 columns.comments 
                 columns.types int:string

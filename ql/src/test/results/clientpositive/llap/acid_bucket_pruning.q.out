@@ -88,6 +88,7 @@ STAGE PLANS:
                   properties:
                     bucket_count 16
                     bucket_field_name a
+                    column.name.delimiter ,
                     columns a
                     columns.comments 
                     columns.types int
@@ -110,6 +111,7 @@ STAGE PLANS:
                     properties:
                       bucket_count 16
                       bucket_field_name a
+                      column.name.delimiter ,
                       columns a
                       columns.comments 
                       columns.types int
