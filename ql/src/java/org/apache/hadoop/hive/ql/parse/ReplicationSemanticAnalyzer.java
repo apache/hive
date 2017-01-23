@@ -993,7 +993,7 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
         String actualTblName = ((tblName == null) || tblName.isEmpty() ? dropTableMessage.getTable() : tblName);
         DropTableDesc dropTableDesc = new DropTableDesc(
             actualDbName + "." + actualTblName,
-            null, true, true,
+            false, true, true,
             getNewEventOnlyReplicationSpec(String.valueOf(dmd.getEventFrom())));
         Task<DDLWork> dropTableTask = TaskFactory.get(new DDLWork(inputs, outputs, dropTableDesc), conf);
         if (precursor != null){
@@ -1017,7 +1017,7 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
           if (partSpecs.size() > 0) {
             DropTableDesc dropPtnDesc = new DropTableDesc(
                 actualDbName + "." + actualTblName,
-                partSpecs, null, true,
+                partSpecs, false, true,
                 getNewEventOnlyReplicationSpec(String.valueOf(dmd.getEventFrom())));
             Task<DDLWork> dropPtnTask =
                 TaskFactory.get(new DDLWork(inputs, outputs, dropPtnDesc), conf);
