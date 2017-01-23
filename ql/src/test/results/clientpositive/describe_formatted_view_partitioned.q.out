@@ -22,6 +22,7 @@ POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@view_partitioned
+POSTHOOK: Lineage: view_partitioned.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 PREHOOK: query: ALTER VIEW view_partitioned
 ADD PARTITION (value='val_86')
 PREHOOK: type: ALTERTABLE_ADDPARTS

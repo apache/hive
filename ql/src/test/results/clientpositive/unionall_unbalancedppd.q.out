@@ -532,6 +532,8 @@ POSTHOOK: Input: default@map_json1
 POSTHOOK: Input: default@map_json2
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@explode
+POSTHOOK: Lineage: explode.id EXPRESSION [(map_json1)map_json1.FieldSchema(name:id, type:int, comment:null), (map_json2)map_json2.FieldSchema(name:id, type:int, comment:null), (map_json)map_json.FieldSchema(name:id, type:int, comment:null), ]
+POSTHOOK: Lineage: explode.l SCRIPT [(map_json1)map_json1.FieldSchema(name:val, type:array<string>, comment:null), (map_json2)map_json2.FieldSchema(name:val, type:array<string>, comment:null), (map_json)map_json.FieldSchema(name:val, type:array<string>, comment:null), ]
 PREHOOK: query: select count(*) from explode where get_json_object(l, '$') is NOT NULL
 PREHOOK: type: QUERY
 PREHOOK: Input: default@explode

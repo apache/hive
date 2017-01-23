@@ -93,6 +93,7 @@ POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@view1
+POSTHOOK: Lineage: view1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: CREATE VIEW view2 AS SELECT * FROM src
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: default@src
@@ -103,6 +104,8 @@ POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@view2
+POSTHOOK: Lineage: view2.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: view2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: CREATE VIEW view3(valoo) 
 TBLPROPERTIES ("fear" = "factor")
 AS SELECT upper(value) FROM src WHERE key=86
@@ -117,6 +120,7 @@ POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@view3
+POSTHOOK: Lineage: view3.valoo EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: SELECT * from view1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
@@ -479,6 +483,7 @@ POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@table1
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@view4
+POSTHOOK: Lineage: view4.key SIMPLE [(table1)table1.FieldSchema(name:key, type:int, comment:null), ]
 PREHOOK: query: SELECT * FROM view4
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table1
@@ -554,6 +559,8 @@ POSTHOOK: Input: default@table1
 POSTHOOK: Input: default@view4
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@view5
+POSTHOOK: Lineage: view5.key1 SIMPLE [(table1)table1.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: view5.key2 SIMPLE [(table1)table1.FieldSchema(name:key, type:int, comment:null), ]
 Warning: Shuffle Join JOIN[6][tables = [$hdt$_0, $hdt$_1]] in Stage 'Stage-1:MAPRED' is a cross product
 PREHOOK: query: SELECT * FROM view5
 PREHOOK: type: QUERY
@@ -588,6 +595,7 @@ POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@view6
+POSTHOOK: Lineage: view6.valoo EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: DESCRIBE view6
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@view6
@@ -613,6 +621,8 @@ POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@view7
+POSTHOOK: Lineage: view7.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: view7.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: SELECT * FROM view7
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
@@ -710,6 +720,7 @@ POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@table1
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@view8
+POSTHOOK: Lineage: view8.c EXPRESSION []
 PREHOOK: query: DESCRIBE EXTENDED view8
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@view8
@@ -787,6 +798,7 @@ POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@view9
+POSTHOOK: Lineage: view9.m EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: DESCRIBE EXTENDED view9
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@view9
@@ -864,6 +876,7 @@ POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@view9
+POSTHOOK: Lineage: view9.m EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: DESCRIBE EXTENDED view9
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@view9
@@ -931,6 +944,8 @@ POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@view10
+POSTHOOK: Lineage: view10.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: view10.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: DESCRIBE EXTENDED view10
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@view10
@@ -1006,6 +1021,7 @@ POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@table1
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@view11
+POSTHOOK: Lineage: view11.boom SCRIPT []
 PREHOOK: query: DESCRIBE EXTENDED view11
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@view11
@@ -1075,6 +1091,9 @@ POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@view12
+POSTHOOK: Lineage: view12.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: view12.mycol SCRIPT []
+POSTHOOK: Lineage: view12.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: DESCRIBE EXTENDED view12
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@view12
@@ -1159,6 +1178,7 @@ POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@srcbucket
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@view13
+POSTHOOK: Lineage: view13.key SIMPLE [(srcbucket)s.FieldSchema(name:key, type:int, comment:null), ]
 PREHOOK: query: DESCRIBE EXTENDED view13
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@view13
@@ -1257,6 +1277,10 @@ POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@view14
+POSTHOOK: Lineage: view14.k1 EXPRESSION [(src)s2.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: view14.k2 EXPRESSION [(src)s4.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: view14.v1 EXPRESSION [(src)s1.null, (src)s2.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: view14.v2 EXPRESSION [(src)s3.null, (src)s4.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: DESCRIBE EXTENDED view14
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@view14
@@ -1390,6 +1414,8 @@ POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@view15
+POSTHOOK: Lineage: view15.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: view15.value_count EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: DESCRIBE EXTENDED view15
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@view15
@@ -1478,6 +1504,7 @@ POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@view16
+POSTHOOK: Lineage: view16.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: DESCRIBE EXTENDED view16
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@view16

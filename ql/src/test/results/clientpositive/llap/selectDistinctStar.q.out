@@ -1366,6 +1366,8 @@ POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@sdi
+POSTHOOK: Lineage: sdi.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: sdi.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: describe extended sdi
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@sdi
@@ -3828,6 +3830,8 @@ POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@sdi
+POSTHOOK: Lineage: sdi.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: sdi.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: describe extended sdi
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@sdi

@@ -327,6 +327,9 @@ POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@emps
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@v
+POSTHOOK: Lineage: v.deptno EXPRESSION [(emps)emps.FieldSchema(name:deptno, type:int, comment:null), ]
+POSTHOOK: Lineage: v.empname EXPRESSION [(emps)emps.FieldSchema(name:empname, type:string, comment:null), ]
+POSTHOOK: Lineage: v.empno EXPRESSION [(emps)emps.FieldSchema(name:empno, type:int, comment:null), ]
 PREHOOK: query: select * from v
 PREHOOK: type: QUERY
 PREHOOK: Input: default@emps

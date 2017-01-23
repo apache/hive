@@ -20,6 +20,8 @@ POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@cv1
+POSTHOOK: Lineage: cv1.key SIMPLE [(src)b.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: cv1.value SIMPLE [(src)b.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: describe extended cv1
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@cv1
@@ -81,6 +83,8 @@ POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@cv2
+POSTHOOK: Lineage: cv2.key SIMPLE [(src)b.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: cv2.value SIMPLE [(src)b.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: describe extended cv2
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@cv2
@@ -817,6 +821,9 @@ POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@cv3
+POSTHOOK: Lineage: cv3._c2 EXPRESSION [(src)b.null, ]
+POSTHOOK: Lineage: cv3.key SIMPLE [(src)b.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: cv3.value SIMPLE [(src)b.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: describe extended cv3
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@cv3
@@ -917,6 +924,7 @@ POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@tc
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tcv
+POSTHOOK: Lineage: tcv.@d SIMPLE [(tc)b.FieldSchema(name:@d, type:int, comment:null), ]
 PREHOOK: query: describe extended tcv
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@tcv

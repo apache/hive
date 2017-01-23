@@ -12,6 +12,8 @@ POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@v
+POSTHOOK: Lineage: v._c1 SIMPLE []
+POSTHOOK: Lineage: v.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 PREHOOK: query: desc formatted v
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@v
@@ -77,6 +79,8 @@ POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@v
+POSTHOOK: Lineage: v._c1 SIMPLE []
+POSTHOOK: Lineage: v.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 PREHOOK: query: desc formatted v
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@v
@@ -142,6 +146,9 @@ POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@v
+POSTHOOK: Lineage: v._c2 SIMPLE []
+POSTHOOK: Lineage: v.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: v.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: desc formatted v
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@v
@@ -208,6 +215,9 @@ POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@v
+POSTHOOK: Lineage: v._c121 SIMPLE []
+POSTHOOK: Lineage: v.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: v.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: desc formatted v
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@v
@@ -274,6 +284,8 @@ POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@v
+POSTHOOK: Lineage: v._c1 EXPRESSION [(src)src.null, ]
+POSTHOOK: Lineage: v.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 PREHOOK: query: desc formatted v
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@v
@@ -377,6 +389,13 @@ POSTHOOK: Input: default@a
 POSTHOOK: Input: default@b
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@v
+POSTHOOK: Lineage: v._c0 SIMPLE []
+POSTHOOK: Lineage: v._c3 SIMPLE []
+POSTHOOK: Lineage: v._c6 SIMPLE []
+POSTHOOK: Lineage: v.ca SIMPLE [(a)a.FieldSchema(name:ca, type:string, comment:null), ]
+POSTHOOK: Lineage: v.caa SIMPLE [(a)a.FieldSchema(name:caa, type:string, comment:null), ]
+POSTHOOK: Lineage: v.cb SIMPLE [(b)b.FieldSchema(name:cb, type:string, comment:null), ]
+POSTHOOK: Lineage: v.cbb SIMPLE [(b)b.FieldSchema(name:cbb, type:string, comment:null), ]
 PREHOOK: query: desc formatted v
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@v

@@ -34,6 +34,7 @@ POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: unicode_comments_db@unicode_comments_tbl1
 POSTHOOK: Output: database:unicode_comments_db
 POSTHOOK: Output: unicode_comments_db@unicode_comments_view1
+POSTHOOK: Lineage: unicode_comments_view1.col1 SIMPLE [(unicode_comments_tbl1)unicode_comments_tbl1.FieldSchema(name:col1, type:string, comment:第一列), ]
 PREHOOK: query: create index index2 on table unicode_comments_tbl1(col1) as 'COMPACT' with deferred rebuild comment '索引'
 PREHOOK: type: CREATEINDEX
 PREHOOK: Input: unicode_comments_db@unicode_comments_tbl1

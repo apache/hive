@@ -1230,6 +1230,7 @@ POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@T1_v
+POSTHOOK: Lineage: T1_v.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 PREHOOK: query: create view T2_v as 
 select case when key > '104' then null else key end as key from T1_v
 PREHOOK: type: CREATEVIEW
@@ -1244,6 +1245,7 @@ POSTHOOK: Input: default@src
 POSTHOOK: Input: default@t1_v
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@T2_v
+POSTHOOK: Lineage: T2_v.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 Warning: Shuffle Join MERGEJOIN[33][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: explain
 select * 

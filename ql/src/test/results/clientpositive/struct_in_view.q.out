@@ -20,6 +20,8 @@ POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@testreserved
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@testreservedview
+POSTHOOK: Lineage: testreservedview.data_end EXPRESSION [(testreserved)testreserved.FieldSchema(name:data, type:struct<end:string,id:string>, comment:null), ]
+POSTHOOK: Lineage: testreservedview.data_id EXPRESSION [(testreserved)testreserved.FieldSchema(name:data, type:struct<end:string,id:string>, comment:null), ]
 PREHOOK: query: describe extended testreservedview
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@testreservedview
@@ -72,6 +74,7 @@ POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@s
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@vs1
+POSTHOOK: Lineage: vs1.key EXPRESSION [(s)s.FieldSchema(name:default, type:struct<src:struct<end:struct<key:string>,id:string>,id:string>, comment:null), ]
 PREHOOK: query: describe extended vs1
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@vs1
@@ -91,6 +94,7 @@ POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@s
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@vs2
+POSTHOOK: Lineage: vs2.end EXPRESSION [(s)s.FieldSchema(name:default, type:struct<src:struct<end:struct<key:string>,id:string>,id:string>, comment:null), ]
 PREHOOK: query: describe extended vs2
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@vs2
@@ -126,6 +130,7 @@ POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@v
+POSTHOOK: Lineage: v.key EXPRESSION []
 PREHOOK: query: desc extended v
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@v
@@ -175,6 +180,7 @@ POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@v
+POSTHOOK: Lineage: v.end EXPRESSION []
 PREHOOK: query: desc extended v
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@v

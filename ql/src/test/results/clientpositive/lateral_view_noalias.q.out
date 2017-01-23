@@ -108,6 +108,8 @@ POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@lv_noalias
+POSTHOOK: Lineage: lv_noalias.key SCRIPT []
+POSTHOOK: Lineage: lv_noalias.value SCRIPT []
 PREHOOK: query: explain select * from lv_noalias a join lv_noalias b on a.key=b.key
 PREHOOK: type: QUERY
 POSTHOOK: query: explain select * from lv_noalias a join lv_noalias b on a.key=b.key

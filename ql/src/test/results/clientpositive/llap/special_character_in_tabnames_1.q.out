@@ -17009,6 +17009,8 @@ POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@src/_/cbo
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@cv1
+POSTHOOK: Lineage: cv1.key SIMPLE [(src/_/cbo)b.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: cv1.value SIMPLE [(src/_/cbo)b.FieldSchema(name:value, type:string, comment:null), ]
 PREHOOK: query: select * from cv1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@cv1
@@ -18764,6 +18766,10 @@ POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@c/b/o_t1
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@v1
+POSTHOOK: Lineage: v1.c_boolean SIMPLE [(c/b/o_t1)c/b/o_t1.FieldSchema(name:c_boolean, type:boolean, comment:null), ]
+POSTHOOK: Lineage: v1.c_int SIMPLE [(c/b/o_t1)c/b/o_t1.FieldSchema(name:c_int, type:int, comment:null), ]
+POSTHOOK: Lineage: v1.dt SIMPLE [(c/b/o_t1)c/b/o_t1.FieldSchema(name:dt, type:string, comment:null), ]
+POSTHOOK: Lineage: v1.value SIMPLE [(c/b/o_t1)c/b/o_t1.FieldSchema(name:value, type:string, comment:null), ]
 PREHOOK: query: create view v2 as select c_int, value from `//cbo_t2`
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: default@//cbo_t2
@@ -18774,6 +18780,8 @@ POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@//cbo_t2
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@v2
+POSTHOOK: Lineage: v2.c_int SIMPLE [(//cbo_t2)//cbo_t2.FieldSchema(name:c_int, type:int, comment:null), ]
+POSTHOOK: Lineage: v2.value SIMPLE [(//cbo_t2)//cbo_t2.FieldSchema(name:value, type:string, comment:null), ]
 PREHOOK: query: select value from v1 where c_boolean=false
 PREHOOK: type: QUERY
 PREHOOK: Input: default@c/b/o_t1
@@ -18864,6 +18872,7 @@ POSTHOOK: Input: default@c/b/o_t1
 POSTHOOK: Input: default@v1
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@v3
+POSTHOOK: Lineage: v3.val SIMPLE [(c/b/o_t1)c/b/o_t1.FieldSchema(name:value, type:string, comment:null), ]
 PREHOOK: query: select count(val) from v3 where val != '1'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@c/b/o_t1
@@ -18929,6 +18938,8 @@ POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@c/b/o_t1
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@v4
+POSTHOOK: Lineage: v4.c_int SIMPLE [(c/b/o_t1)c/b/o_t1.FieldSchema(name:c_int, type:int, comment:null), ]
+POSTHOOK: Lineage: v4.key SIMPLE [(c/b/o_t1)c/b/o_t1.FieldSchema(name:key, type:string, comment:null), ]
 PREHOOK: query: with q1 as ( select c_int from q2 where c_boolean = false),
 
 q2 as ( select c_int,c_boolean from v1  where value = '1')

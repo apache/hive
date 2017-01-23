@@ -118,6 +118,7 @@ POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@v1
+POSTHOOK: Lineage: v1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 PREHOOK: query: select * from v1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
@@ -153,6 +154,7 @@ POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@v1
+POSTHOOK: Lineage: v1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 PREHOOK: query: with q1 as ( select key from src where key = '4')
 select * from v1
 PREHOOK: type: QUERY
@@ -190,6 +192,8 @@ POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@alltypesorc
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@view_3
+POSTHOOK: Lineage: view_3._c1 EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
+POSTHOOK: Lineage: view_3.cstring2 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring2, type:string, comment:null), ]
 PREHOOK: query: drop view if exists view_4
 PREHOOK: type: DROPVIEW
 POSTHOOK: query: drop view if exists view_4
@@ -204,3 +208,5 @@ POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@alltypesorc
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@view_4
+POSTHOOK: Lineage: view_4.cstring1 SIMPLE [(alltypesorc)s.FieldSchema(name:cstring1, type:string, comment:null), ]
+POSTHOOK: Lineage: view_4.ctimestamp1 SIMPLE [(alltypesorc)v.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), ]

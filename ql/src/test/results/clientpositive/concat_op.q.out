@@ -172,6 +172,7 @@ POSTHOOK: Input: default@ct1
 POSTHOOK: Input: default@ct2
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@ct_v1
+POSTHOOK: Lineage: ct_v1.c EXPRESSION [(ct1)ct1.FieldSchema(name:c, type:int, comment:null), (ct2)ct2.FieldSchema(name:c, type:int, comment:null), ]
 PREHOOK: query: select c,c * c + c || 'x', 'c+c=' || c+c || ', c*c=' || c*c || ', (c&c)=' || (c & c) from ct_v1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@ct1

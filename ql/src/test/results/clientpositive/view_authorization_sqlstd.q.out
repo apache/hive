@@ -30,6 +30,8 @@ POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@t1
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@vt1
+POSTHOOK: Lineage: vt1.i SIMPLE [(t1)t1.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: vt1.k SIMPLE [(t1)t1.FieldSchema(name:k, type:int, comment:null), ]
 PREHOOK: query: create view vt2 as select * from t1 where i > 1
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: default@t1
@@ -40,6 +42,9 @@ POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@t1
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@vt2
+POSTHOOK: Lineage: vt2.i SIMPLE [(t1)t1.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: vt2.j SIMPLE [(t1)t1.FieldSchema(name:j, type:int, comment:null), ]
+POSTHOOK: Lineage: vt2.k SIMPLE [(t1)t1.FieldSchema(name:k, type:int, comment:null), ]
 PREHOOK: query: show grant user user1 on all
 PREHOOK: type: SHOW_GRANT
 POSTHOOK: query: show grant user user1 on all
@@ -83,6 +88,8 @@ POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@t1
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@vt3
+POSTHOOK: Lineage: vt3.i SIMPLE [(t1)t1.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: vt3.k SIMPLE [(t1)t1.FieldSchema(name:k, type:int, comment:null), ]
 PREHOOK: query: show grant user user3 on table vt1
 PREHOOK: type: SHOW_GRANT
 POSTHOOK: query: show grant user user3 on table vt1

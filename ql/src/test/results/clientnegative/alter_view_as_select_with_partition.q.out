@@ -16,6 +16,7 @@ POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@testViewPart
+POSTHOOK: Lineage: testViewPart.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 PREHOOK: query: ALTER VIEW testViewPart 
 ADD PARTITION (value='val_86') PARTITION (value='val_xyz')
 PREHOOK: type: ALTERTABLE_ADDPARTS

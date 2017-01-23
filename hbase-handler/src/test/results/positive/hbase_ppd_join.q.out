@@ -50,6 +50,12 @@ POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@hive1_tbl_data_hbase1
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@hive1_view_data_hbase1
+POSTHOOK: Lineage: hive1_view_data_hbase1.col_updated_date SIMPLE [(hive1_tbl_data_hbase1)hive1_tbl_data_hbase1.FieldSchema(name:col_updated_date, type:timestamp, comment:), ]
+POSTHOOK: Lineage: hive1_view_data_hbase1.columid SIMPLE [(hive1_tbl_data_hbase1)hive1_tbl_data_hbase1.FieldSchema(name:columid, type:string, comment:), ]
+POSTHOOK: Lineage: hive1_view_data_hbase1.column_fn SIMPLE [(hive1_tbl_data_hbase1)hive1_tbl_data_hbase1.FieldSchema(name:column_fn, type:string, comment:), ]
+POSTHOOK: Lineage: hive1_view_data_hbase1.column_ln SIMPLE [(hive1_tbl_data_hbase1)hive1_tbl_data_hbase1.FieldSchema(name:column_ln, type:string, comment:), ]
+POSTHOOK: Lineage: hive1_view_data_hbase1.email SIMPLE [(hive1_tbl_data_hbase1)hive1_tbl_data_hbase1.FieldSchema(name:email, type:string, comment:), ]
+POSTHOOK: Lineage: hive1_view_data_hbase1.pk_colum SIMPLE [(hive1_tbl_data_hbase1)hive1_tbl_data_hbase1.FieldSchema(name:pk_colum, type:string, comment:), ]
 PREHOOK: query: insert into table hive1_tbl_data_hbase1 select '00001','john','doe','john@hotmail.com','2014-01-01 12:01:02','4000-10000' from src where key = 100
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
@@ -90,6 +96,12 @@ POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@hive1_tbl_data_hbase2
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@hive1_view_data_hbase2
+POSTHOOK: Lineage: hive1_view_data_hbase2.col_updated_date SIMPLE [(hive1_tbl_data_hbase2)hive1_tbl_data_hbase2.FieldSchema(name:col_updated_date, type:timestamp, comment:), ]
+POSTHOOK: Lineage: hive1_view_data_hbase2.columid SIMPLE [(hive1_tbl_data_hbase2)hive1_tbl_data_hbase2.FieldSchema(name:columid, type:string, comment:), ]
+POSTHOOK: Lineage: hive1_view_data_hbase2.column_fn SIMPLE [(hive1_tbl_data_hbase2)hive1_tbl_data_hbase2.FieldSchema(name:column_fn, type:string, comment:), ]
+POSTHOOK: Lineage: hive1_view_data_hbase2.column_ln SIMPLE [(hive1_tbl_data_hbase2)hive1_tbl_data_hbase2.FieldSchema(name:column_ln, type:string, comment:), ]
+POSTHOOK: Lineage: hive1_view_data_hbase2.email SIMPLE [(hive1_tbl_data_hbase2)hive1_tbl_data_hbase2.FieldSchema(name:email, type:string, comment:), ]
+POSTHOOK: Lineage: hive1_view_data_hbase2.pk_colum SIMPLE [(hive1_tbl_data_hbase2)hive1_tbl_data_hbase2.FieldSchema(name:pk_colum, type:string, comment:), ]
 PREHOOK: query: insert into table hive1_tbl_data_hbase2 select '00001','john','doe','john@hotmail.com','2014-01-01 12:01:02','00001' from src where key = 100
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src

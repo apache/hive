@@ -4106,6 +4106,9 @@ POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@part_orc
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@mfgr_price_view
+POSTHOOK: Lineage: mfgr_price_view.p_brand SIMPLE [(part_orc)part_orc.FieldSchema(name:p_brand, type:string, comment:null), ]
+POSTHOOK: Lineage: mfgr_price_view.p_mfgr SIMPLE [(part_orc)part_orc.FieldSchema(name:p_mfgr, type:string, comment:null), ]
+POSTHOOK: Lineage: mfgr_price_view.s EXPRESSION [(part_orc)part_orc.FieldSchema(name:p_retailprice, type:double, comment:null), ]
 PREHOOK: query: explain extended
 select p_mfgr, p_brand, s, 
 round(sum(s) over w1,2) as s1
