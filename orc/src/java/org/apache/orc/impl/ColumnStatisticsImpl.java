@@ -670,17 +670,17 @@ public class ColumnStatisticsImpl implements ColumnStatistics {
 
     @Override
     public HiveDecimal getMinimum() {
-      return minimum.getHiveDecimal();
+      return minimum == null ? null : minimum.getHiveDecimal();
     }
 
     @Override
     public HiveDecimal getMaximum() {
-      return maximum.getHiveDecimal();
+      return maximum == null ? null : maximum.getHiveDecimal();
     }
 
     @Override
     public HiveDecimal getSum() {
-      return sum.getHiveDecimal();
+      return sum == null ? null : sum.getHiveDecimal();
     }
 
     @Override

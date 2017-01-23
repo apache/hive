@@ -587,6 +587,9 @@ public class TestOrcFile {
     assertEquals(2, stats[0].getNumberOfValues());
     assertEquals(0, stats[1].getNumberOfValues());
     assertEquals(true, stats[1].hasNull());
+    assertNull(((DecimalColumnStatistics)stats[1]).getMinimum());
+    assertNull(((DecimalColumnStatistics)stats[1]).getMaximum());
+    assertEquals(new HiveDecimalWritable(0).getHiveDecimal(), ((DecimalColumnStatistics)stats[1]).getSum());
   }
 
   @Test
