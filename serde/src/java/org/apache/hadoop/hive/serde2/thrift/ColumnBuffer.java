@@ -25,6 +25,7 @@ import java.util.Arrays;
 import java.util.BitSet;
 import java.util.List;
 
+import com.google.common.annotations.VisibleForTesting;
 import org.apache.hive.service.rpc.thrift.TBinaryColumn;
 import org.apache.hive.service.rpc.thrift.TBoolColumn;
 import org.apache.hive.service.rpc.thrift.TByteColumn;
@@ -177,71 +178,81 @@ public class ColumnBuffer extends AbstractList {
     }
   }
 
-  public ColumnBuffer extractSubset(int start, int end) {
-    BitSet subNulls = nulls.get(start, end);
+  /**
+   * Get a subset of this ColumnBuffer, starting from the 1st value.
+   *
+   * @param end index after the last value to include
+   */
+  public ColumnBuffer extractSubset(int end) {
+    BitSet subNulls = nulls.get(0, end);
     if (type == Type.BOOLEAN_TYPE) {
       ColumnBuffer subset =
-          new ColumnBuffer(type, subNulls, Arrays.copyOfRange(boolVars, start, end));
+          new ColumnBuffer(type, subNulls, Arrays.copyOfRange(boolVars, 0, end));
       boolVars = Arrays.copyOfRange(boolVars, end, size);
-      nulls = nulls.get(start, size);
+      nulls = nulls.get(end, size);
       size = boolVars.length;
       return subset;
     }
     if (type == Type.TINYINT_TYPE) {
       ColumnBuffer subset =
-          new ColumnBuffer(type, subNulls, Arrays.copyOfRange(byteVars, start, end));
+          new ColumnBuffer(type, subNulls, Arrays.copyOfRange(byteVars, 0, end));
       byteVars = Arrays.copyOfRange(byteVars, end, size);
-      nulls = nulls.get(start, size);
+      nulls = nulls.get(end, size);
       size = byteVars.length;
       return subset;
     }
     if (type == Type.SMALLINT_TYPE) {
       ColumnBuffer subset =
-          new ColumnBuffer(type, subNulls, Arrays.copyOfRange(shortVars, start, end));
+          new ColumnBuffer(type, subNulls, Arrays.copyOfRange(shortVars, 0, end));
       shortVars = Arrays.copyOfRange(shortVars, end, size);
-      nulls = nulls.get(start, size);
+      nulls = nulls.get(end, size);
       size = shortVars.length;
       return subset;
     }
     if (type == Type.INT_TYPE) {
       ColumnBuffer subset =
-          new ColumnBuffer(type, subNulls, Arrays.copyOfRange(intVars, start, end));
+          new ColumnBuffer(type, subNulls, Arrays.copyOfRange(intVars, 0, end));
       intVars = Arrays.copyOfRange(intVars, end, size);
-      nulls = nulls.get(start, size);
+      nulls = nulls.get(end, size);
       size = intVars.length;
       return subset;
     }
     if (type == Type.BIGINT_TYPE) {
       ColumnBuffer subset =
-          new ColumnBuffer(type, subNulls, Arrays.copyOfRange(longVars, start, end));
+          new ColumnBuffer(type, subNulls, Arrays.copyOfRange(longVars, 0, end));
       longVars = Arrays.copyOfRange(longVars, end, size);
-      nulls = nulls.get(start, size);
+      nulls = nulls.get(end, size);
       size = longVars.length;
       return subset;
     }
     if (type == Type.DOUBLE_TYPE || type == Type.FLOAT_TYPE) {
       ColumnBuffer subset =
-          new ColumnBuffer(type, subNulls, Arrays.copyOfRange(doubleVars, start, end));
+          new ColumnBuffer(type, subNulls, Arrays.copyOfRange(doubleVars, 0, end));
       doubleVars = Arrays.copyOfRange(doubleVars, end, size);
-      nulls = nulls.get(start, size);
+      nulls = nulls.get(end, size);
       size = doubleVars.length;
       return subset;
     }
     if (type == Type.BINARY_TYPE) {
-      ColumnBuffer subset = new ColumnBuffer(type, subNulls, binaryVars.subList(start, end));
+      ColumnBuffer subset = new ColumnBuffer(type, subNulls, binaryVars.subList(0, end));
       binaryVars = binaryVars.subList(end, binaryVars.size());
-      nulls = nulls.get(start, size);
+      nulls = nulls.get(end, size);
       size = binaryVars.size();
       return subset;
     }
     if (type == Type.STRING_TYPE) {
-      ColumnBuffer subset = new ColumnBuffer(type, subNulls, stringVars.subList(start, end));
+      ColumnBuffer subset = new ColumnBuffer(type, subNulls, stringVars.subList(0, end));
       stringVars = stringVars.subList(end, stringVars.size());
-      nulls = nulls.get(start, size);
+      nulls = nulls.get(end, size);
       size = stringVars.size();
       return subset;
     }
     throw new IllegalStateException("invalid union object");
+  }
+
+  @VisibleForTesting
+  BitSet getNulls() {
+    return nulls;
   }
 
   private static final byte[] MASKS = new byte[] {
