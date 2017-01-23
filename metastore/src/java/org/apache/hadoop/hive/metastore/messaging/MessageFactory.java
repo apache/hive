@@ -29,7 +29,6 @@ import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.util.ReflectionUtils;
 
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -143,9 +142,10 @@ public abstract class MessageFactory {
   /**
    * Factory method for CreateTableMessage.
    * @param table The Table being created.
+   * @param files Iterator of files
    * @return CreateTableMessage instance.
    */
-  public abstract CreateTableMessage buildCreateTableMessage(Table table);
+  public abstract CreateTableMessage buildCreateTableMessage(Table table, Iterator<String> files);
 
   /**
    * Factory method for AlterTableMessage.  Unlike most of these calls, this one can return null,
@@ -169,9 +169,11 @@ public abstract class MessageFactory {
      * Factory method for AddPartitionMessage.
      * @param table The Table to which the partitions are added.
      * @param partitions The iterator to set of Partitions being added.
+     * @param partitionFiles The iterator of partition files
      * @return AddPartitionMessage instance.
      */
-  public abstract AddPartitionMessage buildAddPartitionMessage(Table table, Iterator<Partition> partitions);
+  public abstract AddPartitionMessage buildAddPartitionMessage(Table table, Iterator<Partition> partitions,
+      Iterator<PartitionFiles> partitionFiles);
 
   /**
    * Factory method for building AlterPartitionMessage
@@ -234,23 +236,9 @@ public abstract class MessageFactory {
    * @param table Name of the table the insert occurred in
    * @param partVals Partition values for the partition that the insert occurred in, may be null if
    *          the insert was done into a non-partitioned table
-   * @param files List of files created as a result of the insert, may be null.
+   * @param files Iterator of file created
    * @return instance of InsertMessage
    */
   public abstract InsertMessage buildInsertMessage(String db, String table,
-      Map<String, String> partVals, List<String> files);
-
-  /**
-   * Factory method for building insert message
-   *
-   * @param db Name of the database the insert occurred in
-   * @param table Name of the table the insert occurred in
-   * @param partVals Partition values for the partition that the insert occurred in, may be null if
-   *          the insert was done into a non-partitioned table
-   * @param files List of files created as a result of the insert, may be null
-   * @param fileChecksums List of checksums corresponding to the files added during insert
-   * @return instance of InsertMessage
-   */
-  public abstract InsertMessage buildInsertMessage(String db, String table,
-      Map<String, String> partVals, List<String> files, List<String> fileChecksums);
+      Map<String, String> partVals, Iterator<String> files);
 }

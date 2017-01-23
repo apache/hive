@@ -885,6 +885,7 @@ public class TestDbNotificationListener {
     String tblOwner = "me";
     String serdeLocation = "file:/tmp";
     String fileAdded = "/warehouse/mytable/b1";
+    String checksumAdded = "1234";
     FieldSchema col1 = new FieldSchema("col1", "int", "no comment");
     List<FieldSchema> cols = new ArrayList<FieldSchema>();
     cols.add(col1);
@@ -902,6 +903,7 @@ public class TestDbNotificationListener {
     InsertEventRequestData insertData = new InsertEventRequestData();
     data.setInsertData(insertData);
     insertData.addToFilesAdded(fileAdded);
+    insertData.addToFilesAddedChecksum(checksumAdded);
     FireEventRequest rqst = new FireEventRequest(true, data);
     rqst.setDbName(defaultDbName);
     rqst.setTableName(tblName);
@@ -928,6 +930,7 @@ public class TestDbNotificationListener {
     String tblOwner = "me";
     String serdeLocation = "file:/tmp";
     String fileAdded = "/warehouse/mytable/b1";
+    String checksumAdded = "1234";
     FieldSchema col1 = new FieldSchema("col1", "int", "no comment");
     List<FieldSchema> cols = new ArrayList<FieldSchema>();
     cols.add(col1);
@@ -955,6 +958,7 @@ public class TestDbNotificationListener {
     InsertEventRequestData insertData = new InsertEventRequestData();
     data.setInsertData(insertData);
     insertData.addToFilesAdded(fileAdded);
+    insertData.addToFilesAddedChecksum(checksumAdded);
     FireEventRequest rqst = new FireEventRequest(true, data);
     rqst.setDbName(defaultDbName);
     rqst.setTableName(tblName);
@@ -1238,9 +1242,9 @@ public class TestDbNotificationListener {
     if (tblName != null){
       assertEquals(tblName, insertMsg.getTable());
     }
-    // Should have list of files
-    List<String> files = insertMsg.getFiles();
-    assertTrue(files.size() > 0);
+    // Should have files
+    Iterator<String> files = insertMsg.getFiles().iterator();
+    assertTrue(files.hasNext());
   }
 
 

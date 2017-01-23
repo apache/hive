@@ -16,36 +16,35 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-
 package org.apache.hadoop.hive.metastore.messaging;
 
-import org.apache.hadoop.hive.metastore.api.Table;
+import java.util.Iterator;
+import java.util.List;
 
-public abstract class CreateTableMessage extends EventMessage {
+import com.google.common.collect.Lists;
 
-  protected CreateTableMessage() {
-    super(EventType.CREATE_TABLE);
+public class PartitionFiles {
+
+  private String partitionName;
+  private List<String> files;
+
+  public PartitionFiles(String partitionName, Iterator<String> files) {
+    this.partitionName = partitionName;
+    this.files = Lists.newArrayList(files);
   }
 
-  /**
-   * Getter for the name of table created
-   * @return Table-name (String).
-   */
-  public abstract String getTable();
+  public PartitionFiles() {
+  }
 
-  public abstract Table getTableObj() throws Exception;
+  public String getPartitionName() {
+    return partitionName;
+  }
 
-  /**
-   * Get list of files created as a result of this DML operation
-   *
-   * @return The iterable of files
-   */
-  public abstract Iterable<String> getFiles();
+  public void setPartitionName(String partitionName) {
+    this.partitionName = partitionName;
+  }
 
-  @Override
-  public EventMessage checkValid() {
-    if (getTable() == null)
-      throw new IllegalStateException("Table name unset.");
-    return super.checkValid();
+  public Iterable<String> getFiles() {
+    return files;
   }
 }

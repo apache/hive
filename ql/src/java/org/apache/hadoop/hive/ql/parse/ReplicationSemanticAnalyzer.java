@@ -40,9 +40,9 @@ import org.apache.hadoop.hive.metastore.messaging.EventUtils;
 import org.apache.hadoop.hive.metastore.messaging.InsertMessage;
 import org.apache.hadoop.hive.metastore.messaging.MessageDeserializer;
 import org.apache.hadoop.hive.metastore.messaging.MessageFactory;
+import org.apache.hadoop.hive.metastore.messaging.PartitionFiles;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.QueryState;
-import org.apache.hadoop.hive.ql.exec.ReplCopyTask;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.exec.Utilities;
@@ -422,10 +422,23 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
             null,
             replicationSpec);
 
-        // FIXME : dump _files should happen at dbnotif time, doing it here is incorrect
-        // we will, however, do so here, now, for dev/debug's sake.
         Path dataPath = new Path(evRoot, "data");
-        rootTasks.add(ReplCopyTask.getDumpCopyTask(replicationSpec, qlMdTable.getPath(), dataPath , conf));
+        Iterable<String> files = ctm.getFiles();
+        if (files != null) {
+          // encoded filename/checksum of files, write into _files
+          FileSystem fs = dataPath.getFileSystem(conf);
+          Path filesPath = new Path(dataPath, EximUtil.FILES_NAME);
+          BufferedWriter fileListWriter = new BufferedWriter(
+              new OutputStreamWriter(fs.create(filesPath)));
+          try {
+            for (String file : files) {
+              fileListWriter.write(file + "\n");
+            }
+          } finally {
+            fileListWriter.close();
+          }
+        }
+
         (new DumpMetaData(evRoot, DUMPTYPE.EVENT_CREATE_TABLE, evid, evid)).write();
         break;
       }
@@ -470,12 +483,25 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
             qlPtns,
             replicationSpec);
 
-        // FIXME : dump _files should ideally happen at dbnotif time, doing it here introduces
-        // rubberbanding. But, till we have support for that, this is our closest equivalent
+        Iterator<PartitionFiles> partitionFilesIter = apm.getPartitionFilesIter().iterator();
         for (Partition qlPtn : qlPtns){
-          Path ptnDataPath = new Path(evRoot, qlPtn.getName());
-          rootTasks.add(ReplCopyTask.getDumpCopyTask(
-              replicationSpec, qlPtn.getPartitionPath(), ptnDataPath, conf));
+          PartitionFiles partitionFiles = partitionFilesIter.next();
+          Iterable<String> files = partitionFiles.getFiles();
+          if (files != null) {
+            // encoded filename/checksum of files, write into _files
+            Path ptnDataPath = new Path(evRoot, qlPtn.getName());
+            FileSystem fs = ptnDataPath.getFileSystem(conf);
+            Path filesPath = new Path(ptnDataPath, EximUtil.FILES_NAME);
+            BufferedWriter fileListWriter = new BufferedWriter(
+                new OutputStreamWriter(fs.create(filesPath)));
+            try {
+              for (String file : files) {
+                fileListWriter.write(file + "\n");
+              }
+            } finally {
+              fileListWriter.close();
+            }
+          }
         }
 
         (new DumpMetaData(evRoot, DUMPTYPE.EVENT_ADD_PARTITION, evid, evid)).write();
@@ -580,21 +606,25 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
         Path metaDataPath = new Path(evRoot, EximUtil.METADATA_NAME);
         EximUtil.createExportDump(metaDataPath.getFileSystem(conf), metaDataPath, qlMdTable, qlPtns,
             replicationSpec);
-        Path dataPath = new Path(evRoot, EximUtil.DATA_PATH_NAME);
-        Path filesPath = new Path(dataPath, EximUtil.FILES_NAME);
-        FileSystem fs = dataPath.getFileSystem(conf);
-        BufferedWriter fileListWriter =
-            new BufferedWriter(new OutputStreamWriter(fs.create(filesPath)));
-        try {
-          // TODO: HIVE-15205: move this metadata generation to a task
-          // Get the encoded filename of files that are being inserted
-          List<String> files = insertMsg.getFiles();
-          for (String fileUriStr : files) {
-            fileListWriter.write(fileUriStr + "\n");
+        Iterable<String> files = insertMsg.getFiles();
+
+        if (files != null) {
+          // encoded filename/checksum of files, write into _files
+          Path dataPath = new Path(evRoot, EximUtil.DATA_PATH_NAME);
+          Path filesPath = new Path(dataPath, EximUtil.FILES_NAME);
+          FileSystem fs = dataPath.getFileSystem(conf);
+          BufferedWriter fileListWriter =
+              new BufferedWriter(new OutputStreamWriter(fs.create(filesPath)));
+
+          try {
+            for (String file : files) {
+              fileListWriter.write(file + "\n");
+            }
+          } finally {
+            fileListWriter.close();
           }
-        } finally {
-          fileListWriter.close();
         }
+
         LOG.info("Processing#{} INSERT message : {}", ev.getEventId(), ev.getMessage());
         DumpMetaData dmd = new DumpMetaData(evRoot, DUMPTYPE.EVENT_INSERT, evid, evid);
         dmd.setPayload(ev.getMessage());
@@ -1370,5 +1400,4 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
       return db.getDatabasesByPattern(dbPattern);
     }
   }
-
 }
