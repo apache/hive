@@ -33,6 +33,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Properties;
 import java.util.UUID;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
@@ -286,6 +288,68 @@ public class TestUtilities {
         if (file.exists()) {
           file.delete();
         }
+      }
+    }
+  }
+
+  /**
+   * Test for {@link Utilities#getInputPaths(JobConf, MapWork, Path, Context, boolean, ExecutorService)} with a single
+   * threaded {@link ExecutorService}.
+   */
+  @Test
+  public void testGetInputPathsWithPool() throws Exception {
+    ExecutorService pool = Executors.newSingleThreadExecutor();
+
+    JobConf jobConf = new JobConf();
+    MapWork mapWork = new MapWork();
+    Path scratchDir = new Path(HiveConf.getVar(jobConf, HiveConf.ConfVars.LOCALSCRATCHDIR));
+
+    String testTableName = "testTable";
+    String testPartitionName = "testPartition";
+
+    Path testTablePath = new Path(testTableName);
+    Path testPartitionPath = new Path(testTablePath, testPartitionName);
+    Path testFileTablePath = new Path(testTablePath, "test.txt");
+    Path testFilePartitionPath = new Path(testPartitionPath, "test.txt");
+
+    TableDesc mockTableDesc = mock(TableDesc.class);
+
+    when(mockTableDesc.isNonNative()).thenReturn(false);
+    when(mockTableDesc.getProperties()).thenReturn(new Properties());
+
+    LinkedHashMap<Path, ArrayList<String>> pathToAliasTable = new LinkedHashMap<>();
+    pathToAliasTable.put(testTablePath, Lists.newArrayList(testTableName));
+    mapWork.setPathToAliases(pathToAliasTable);
+
+    mapWork.getAliasToWork().put(testTableName, (Operator<?>) mock(Operator.class));
+
+    FileSystem fs = FileSystem.getLocal(jobConf);
+    try {
+      fs.mkdirs(testTablePath);
+      fs.create(testFileTablePath).close();
+
+      // Run a test with an un-partitioned table with a single file as the input
+      List<Path> tableInputPaths = Utilities.getInputPaths(jobConf, mapWork, scratchDir, mock(Context.class), false,
+              pool);
+      assertEquals(tableInputPaths.size(), 1);
+      assertEquals(tableInputPaths.get(0), testTablePath);
+
+      LinkedHashMap<Path, ArrayList<String>> pathToAliasPartition = new LinkedHashMap<>();
+      pathToAliasPartition.put(testPartitionPath, Lists.newArrayList(testTableName));
+      mapWork.setPathToAliases(pathToAliasPartition);
+
+      fs.delete(testFileTablePath, false);
+      fs.mkdirs(testPartitionPath);
+      fs.create(testFilePartitionPath).close();
+
+      // Run a test with a partitioned table with a single partition and a single file as the input
+      List<Path> tablePartitionInputPaths = Utilities.getInputPaths(jobConf, mapWork, scratchDir, mock(Context.class),
+              false, pool);
+      assertEquals(tablePartitionInputPaths.size(), 1);
+      assertEquals(tablePartitionInputPaths.get(0), testPartitionPath);
+    } finally {
+      if (fs.exists(testTablePath)) {
+        fs.delete(testTablePath, true);
       }
     }
   }

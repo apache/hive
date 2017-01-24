@@ -19,9 +19,11 @@
 package org.apache.hadoop.hive.ql.exec;
 
 import com.esotericsoftware.kryo.Kryo;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.WordUtils;
@@ -174,6 +176,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -186,8 +189,11 @@ import java.util.Properties;
 import java.util.Random;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -2981,6 +2987,19 @@ public final class Utilities {
   public static List<Path> getInputPaths(JobConf job, MapWork work, Path hiveScratchDir,
       Context ctx, boolean skipDummy) throws Exception {
 
+    int numThreads = job.getInt("mapred.dfsclient.parallelism.max", 0);
+    ExecutorService pool = null;
+    if (numThreads > 1) {
+      pool = Executors.newFixedThreadPool(numThreads,
+              new ThreadFactoryBuilder().setDaemon(true).setNameFormat("Get-Input-Paths-%d").build());
+    }
+    return getInputPaths(job, work, hiveScratchDir, ctx, skipDummy, pool);
+  }
+
+  @VisibleForTesting
+  static List<Path> getInputPaths(JobConf job, MapWork work, Path hiveScratchDir,
+      Context ctx, boolean skipDummy, ExecutorService pool) throws Exception {
+
     Set<Path> pathsProcessed = new HashSet<Path>();
     List<Path> pathsToAdd = new LinkedList<Path>();
     // AliasToWork contains all the aliases
@@ -2988,32 +3007,35 @@ public final class Utilities {
       LOG.info("Processing alias " + alias);
 
       // The alias may not have any path
-      Path path = null;
+      boolean isEmptyTable = true;
       boolean hasLogged = false;
       // Note: this copies the list because createDummyFileForEmptyPartition may modify the map.
       for (Path file : new LinkedList<Path>(work.getPathToAliases().keySet())) {
         List<String> aliases = work.getPathToAliases().get(file);
         if (aliases.contains(alias)) {
-          path = file;
-
-          // Multiple aliases can point to the same path - it should be
-          // processed only once
-          if (pathsProcessed.contains(path)) {
+          if (file != null) {
+            isEmptyTable = false;
+          } else {
+            LOG.warn("Found a null path for alias " + alias);
             continue;
           }
 
-          pathsProcessed.add(path);
+          // Multiple aliases can point to the same path - it should be
+          // processed only once
+          if (pathsProcessed.contains(file)) {
+            continue;
+          }
+
+          pathsProcessed.add(file);
+
           if (LOG.isDebugEnabled()) {
-            LOG.debug("Adding input file " + path);
+            LOG.debug("Adding input file " + file);
           } else if (!hasLogged) {
             hasLogged = true;
             LOG.info("Adding " + work.getPathToAliases().size()
-                + " inputs; the first input is " + path);
+                + " inputs; the first input is " + file);
           }
-          if (!skipDummy && isEmptyPath(job, path, ctx)) {
-            path = createDummyFileForEmptyPartition(path, job, work, hiveScratchDir);
-          }
-          pathsToAdd.add(path);
+          pathsToAdd.add(file);
         }
       }
 
@@ -3025,12 +3047,56 @@ public final class Utilities {
       // T2) x;
       // If T is empty and T2 contains 100 rows, the user expects: 0, 100 (2
       // rows)
-      if (path == null && !skipDummy) {
-        path = createDummyFileForEmptyTable(job, work, hiveScratchDir, alias);
-        pathsToAdd.add(path);
+      if (isEmptyTable && !skipDummy) {
+        pathsToAdd.add(createDummyFileForEmptyTable(job, work, hiveScratchDir, alias));
       }
     }
-    return pathsToAdd;
+
+    List<Path> finalPathsToAdd = new LinkedList<>();
+    List<Future<Path>> futures = new LinkedList<>();
+    for (final Path path : pathsToAdd) {
+      if (pool == null) {
+        finalPathsToAdd.add(new GetInputPathsCallable(path, job, work, hiveScratchDir, ctx, skipDummy).call());
+      } else {
+        futures.add(pool.submit(new GetInputPathsCallable(path, job, work, hiveScratchDir, ctx, skipDummy)));
+      }
+    }
+
+    if (pool != null) {
+      for (Future<Path> future : futures) {
+        finalPathsToAdd.add(future.get());
+      }
+    }
+
+    return finalPathsToAdd;
+  }
+
+  private static class GetInputPathsCallable implements Callable<Path> {
+
+    private final Path path;
+    private final JobConf job;
+    private final MapWork work;
+    private final Path hiveScratchDir;
+    private final Context ctx;
+    private final boolean skipDummy;
+
+    private GetInputPathsCallable(Path path, JobConf job, MapWork work, Path hiveScratchDir,
+      Context ctx, boolean skipDummy) {
+      this.path = path;
+      this.job = job;
+      this.work = work;
+      this.hiveScratchDir = hiveScratchDir;
+      this.ctx = ctx;
+      this.skipDummy = skipDummy;
+    }
+
+    @Override
+    public Path call() throws Exception {
+      if (!this.skipDummy && isEmptyPath(this.job, this.path, this.ctx)) {
+        return createDummyFileForEmptyPartition(this.path, this.job, this.work, this.hiveScratchDir);
+      }
+      return this.path;
+    }
   }
 
   @SuppressWarnings({"rawtypes", "unchecked"})
