@@ -24,6 +24,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.text.DecimalFormat;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.EnumSet;
@@ -945,40 +946,72 @@ public class LlapStatusServiceDriver {
     }
 
     final long refreshInterval = options.getRefreshIntervalMs();
-    final State watchUntilState = options.getWatchUntilState();
+    final boolean watchMode = options.isWatchMode();
     final long watchTimeout = options.getWatchTimeoutMs();
     long numAttempts = watchTimeout / refreshInterval;
+    State launchingState = null;
     State currentState = null;
+    boolean desiredStateAttained = false;
+    final float runningNodesThreshold = options.getRunningNodesThreshold();
     try (OutputStream os = options.getOutputFile() == null ? System.out :
       new BufferedOutputStream(new FileOutputStream(options.getOutputFile()));
          PrintWriter pw = new PrintWriter(os)) {
 
-      LOG.info("Configured refresh interval: {}s. Watch timeout: {}s. Attempts remaining: {}",
+      LOG.info("Configured refresh interval: {}s. Watch timeout: {}s. Attempts remaining: {}." +
+          " Watch mode: {}. Running nodes threshold: {}.",
         TimeUnit.SECONDS.convert(refreshInterval, TimeUnit.MILLISECONDS),
         TimeUnit.SECONDS.convert(watchTimeout, TimeUnit.MILLISECONDS),
-        numAttempts);
+        numAttempts, watchMode, new DecimalFormat("#.###").format(runningNodesThreshold));
       while (numAttempts > 0) {
         try {
           ret = statusServiceDriver.run(options);
           if (ret == ExitCode.SUCCESS.getInt()) {
-            if (watchUntilState != null) {
+            if (watchMode) {
               currentState = statusServiceDriver.appStatusBuilder.state;
-              if (!currentState.equals(watchUntilState)) {
-                LOG.warn("Current state: {}. Desired state: {}. {}/{} instances.", currentState, watchUntilState,
+
+              // slider has started llap application, now if for some reason state changes to COMPLETE then fail fast
+              if (launchingState == null &&
+                (currentState.equals(State.LAUNCHING) || currentState.equals(State.RUNNING_PARTIAL))) {
+                launchingState = currentState;
+              }
+
+              if (launchingState != null && currentState.equals(State.COMPLETE)) {
+                LOG.warn("Application stopped while launching. COMPLETE state reached while waiting for RUNNING state."
+                  + " Failing " + "fast..");
+                break;
+              }
+
+              if (!(currentState.equals(State.RUNNING_PARTIAL) || currentState.equals(State.RUNNING_ALL))) {
+                LOG.warn("Current state: {}. Desired state: {}. {}/{} instances.", currentState,
+                  runningNodesThreshold == 1.0f ? State.RUNNING_ALL : State.RUNNING_PARTIAL,
                   statusServiceDriver.appStatusBuilder.getLiveInstances(),
                   statusServiceDriver.appStatusBuilder.getDesiredInstances());
                 numAttempts--;
                 continue;
               }
+
+              // we have reached RUNNING state, now check if running nodes threshold is met
+              final int liveInstances = statusServiceDriver.appStatusBuilder.getLiveInstances();
+              final int desiredInstances = statusServiceDriver.appStatusBuilder.getDesiredInstances();
+              if (liveInstances > 0 && desiredInstances > 0) {
+                final float ratio = (float) liveInstances / (float) desiredInstances;
+                if (ratio < runningNodesThreshold) {
+                  LOG.warn("Waiting until running nodes threshold is reached. Current: {} Desired: {}." +
+                      " {}/{} instances.", new DecimalFormat("#.###").format(ratio),
+                    new DecimalFormat("#.###").format(runningNodesThreshold),
+                    statusServiceDriver.appStatusBuilder.getLiveInstances(),
+                    statusServiceDriver.appStatusBuilder.getDesiredInstances());
+                  numAttempts--;
+                  continue;
+                } else {
+                  desiredStateAttained = true;
+                }
+              }
             }
-            // desired state attained. print and break out of loop
-            statusServiceDriver.outputJson(pw);
-            os.flush();
-            pw.flush();
           }
           break;
         } finally {
-          if (watchUntilState != null) {
+          if (watchMode) {
             try {
               Thread.sleep(refreshInterval);
             } catch (InterruptedException e) {
@@ -990,9 +1023,13 @@ public class LlapStatusServiceDriver {
           }
         }
       }
-      if (numAttempts == 0 && watchUntilState != null && currentState!= null && !currentState.equals(watchUntilState)) {
-        LOG.info("Watch timeout {}s exhausted before desired state {} is attained.",
-          TimeUnit.SECONDS.convert(watchTimeout, TimeUnit.MILLISECONDS), watchUntilState);
+      // print current state before exiting
+      statusServiceDriver.outputJson(pw);
+      os.flush();
+      pw.flush();
+      if (numAttempts == 0 && watchMode && !desiredStateAttained) {
+        LOG.warn("Watch timeout {}s exhausted before desired state RUNNING is attained.",
+          TimeUnit.SECONDS.convert(watchTimeout, TimeUnit.MILLISECONDS));
       }
     } catch (Throwable t) {
       logError(t);
