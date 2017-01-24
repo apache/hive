@@ -144,6 +144,13 @@ public class SparkTask extends Task<SparkWork> {
       rc = 1;
     } finally {
       startTime = perfLogger.getEndTime(PerfLogger.SPARK_SUBMIT_TO_RUNNING);
+      // The startTime may not be set if the sparkTask finished too fast,
+      // because SparkJobMonitor will sleep for 1 second then check the state,
+      // right after sleep, the spark job may be already completed.
+      // In this case, set startTime the same as submitTime.
+      if (startTime < submitTime) {
+        startTime = submitTime;
+      }
       finishTime = perfLogger.getEndTime(PerfLogger.SPARK_RUN_JOB);
       Utilities.clearWork(conf);
       if (sparkSession != null && sparkSessionManager != null) {
