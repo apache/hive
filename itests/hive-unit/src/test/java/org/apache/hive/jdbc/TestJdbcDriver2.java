@@ -1990,19 +1990,48 @@ public class TestJdbcDriver2 {
       { "jdbc:hive2://server:10000/testdb;user=foo;password=bar;transportMode=binary;httpPath=",
           "server", "10000", "testdb", "binary", "" }, };
 
-@Test
-public void testParseUrlHttpMode() throws SQLException, JdbcUriParseException,
-    ZooKeeperHiveClientException {
-  new HiveDriver();
-  for (String[] testValues : HTTP_URL_PROPERTIES) {
-    JdbcConnectionParams params = Utils.parseURL(testValues[0], new Properties());
-    assertEquals(params.getHost(), testValues[1]);
-    assertEquals(params.getPort(), Integer.parseInt(testValues[2]));
-    assertEquals(params.getDbName(), testValues[3]);
-    assertEquals(params.getSessionVars().get("transportMode"), testValues[4]);
-    assertEquals(params.getSessionVars().get("httpPath"), testValues[5]);
+  @Test
+  public void testParseUrlHttpMode() throws SQLException, JdbcUriParseException,
+      ZooKeeperHiveClientException {
+    new HiveDriver();
+    for (String[] testValues : HTTP_URL_PROPERTIES) {
+      JdbcConnectionParams params = Utils.parseURL(testValues[0], new Properties());
+      assertEquals(params.getHost(), testValues[1]);
+      assertEquals(params.getPort(), Integer.parseInt(testValues[2]));
+      assertEquals(params.getDbName(), testValues[3]);
+      assertEquals(params.getSessionVars().get("transportMode"), testValues[4]);
+      assertEquals(params.getSessionVars().get("httpPath"), testValues[5]);
+    }
   }
-}
+
+  @Test
+  public void testAutoCommit() throws Exception {
+    con.clearWarnings();
+    con.setAutoCommit(true);
+    assertNull(con.getWarnings());
+    con.setAutoCommit(false);
+    SQLWarning warning = con.getWarnings();
+    assertNotNull(warning);
+    assertEquals("Hive does not support autoCommit=false", warning.getMessage());
+    assertNull(warning.getNextWarning());
+    con.clearWarnings();
+  }
+
+  @Test
+  public void setAutoCommitOnClosedConnection() throws Exception {
+    Connection mycon = getConnection("");
+    try {
+      mycon.setAutoCommit(true);
+      mycon.close();
+      thrown.expect(SQLException.class);
+      thrown.expectMessage("Connection is closed");
+      mycon.setAutoCommit(true);
+    } finally {
+      mycon.close();
+    }
+
+  }
+
 
   private static void assertDpi(DriverPropertyInfo dpi, String name,
       String value) {
@@ -2765,33 +2794,6 @@ public void testParseUrlHttpMode() throws SQLException, JdbcUriParseException,
         assertEquals(1, resultSet.getInt(1));
         assertFalse(resultSet.next());
       }
-    }
-  }
-
-  @Test
-  public void testAutoCommit() throws Exception {
-    con.clearWarnings();
-    con.setAutoCommit(true);
-    assertNull(con.getWarnings());
-    con.setAutoCommit(false);
-    SQLWarning warning = con.getWarnings();
-    assertNotNull(warning);
-    assertEquals("Hive does not support autoCommit=false", warning.getMessage());
-    assertNull(warning.getNextWarning());
-    con.clearWarnings();
-  }
-
-  @Test
-  public void setAutoCommitOnClosedConnection() throws Exception {
-    Connection mycon = getConnection("");
-    try {
-      mycon.setAutoCommit(true);
-      mycon.close();
-      thrown.expect(SQLException.class);
-      thrown.expectMessage("Connection is closed");
-      mycon.setAutoCommit(true);
-    } finally {
-      mycon.close();
     }
   }
 
