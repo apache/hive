@@ -16,23 +16,15 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.io.sarg;
+package org.apache.hadoop.hive.ql.exec;
 
-import org.apache.hadoop.conf.Configuration;
+public interface DynamicValueRegistry {
 
-/**
- * A factory for creating SearchArguments, as well as modifying those created by this factory.
- */
-public class SearchArgumentFactory {
-  public static SearchArgument.Builder newBuilder() {
-    return newBuilder(null);
+  // Abstract class to hold info required for the implementation
+  public static abstract class RegistryConf {
   }
 
-  public static SearchArgument.Builder newBuilder(Configuration conf) {
-    return new SearchArgumentImpl.BuilderImpl(conf);
-  }
+  Object getValue(String key) throws Exception;
 
-  public static void setPredicateLeafColumn(PredicateLeaf leaf, String newName) {
-    SearchArgumentImpl.PredicateLeafImpl.setColumnName(leaf, newName);
-  }
+  void init(RegistryConf conf) throws Exception;
 }

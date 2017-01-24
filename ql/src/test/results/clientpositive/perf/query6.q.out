@@ -1,4 +1,4 @@
-Warning: Shuffle Join MERGEJOIN[197][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
+Warning: Shuffle Join MERGEJOIN[196][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 Warning: Shuffle Join MERGEJOIN[193][tables = [$hdt$_5, $hdt$_6]] in Stage 'Reducer 21' is a cross product
 Warning: Shuffle Join MERGEJOIN[194][tables = [$hdt$_5, $hdt$_6, $hdt$_7]] in Stage 'Reducer 22' is a cross product
 Warning: Shuffle Join MERGEJOIN[195][tables = [$hdt$_5, $hdt$_6, $hdt$_7, $hdt$_8, $hdt$_9, $hdt$_10, $hdt$_11]] in Stage 'Reducer 23' is a cross product
@@ -160,7 +160,7 @@ Stage-0
                                                 Output:["_col0","_col1"],aggregations:["avg(_col0)"],keys:_col2
                                                 Select Operator [SEL_87] (rows=5072854730221289472 width=1)
                                                   Output:["_col2","_col0"]
-                                                  Merge Join Operator [MERGEJOIN_196] (rows=5072854730221289472 width=1)
+                                                  Merge Join Operator [MERGEJOIN_198] (rows=5072854730221289472 width=1)
                                                     Conds:RS_84._col1=RS_85._col0(Inner),Output:["_col0","_col2"]
                                                   <-Map 17 [SIMPLE_EDGE]
                                                     SHUFFLE [RS_84]
@@ -264,7 +264,7 @@ Stage-0
                                     <-Reducer 12 [SIMPLE_EDGE]
                                       SHUFFLE [RS_110]
                                         PartitionCols:_col0
-                                        Merge Join Operator [MERGEJOIN_198] (rows=80353 width=1119)
+                                        Merge Join Operator [MERGEJOIN_197] (rows=80353 width=1119)
                                           Conds:RS_27._col1=RS_28._col0(Inner),Output:["_col0"]
                                         <-Map 11 [SIMPLE_EDGE]
                                           SHUFFLE [RS_27]
@@ -294,7 +294,7 @@ Stage-0
                                     <-Reducer 2 [SIMPLE_EDGE]
                                       SHUFFLE [RS_109]
                                         PartitionCols:_col0
-                                        Merge Join Operator [MERGEJOIN_197] (rows=575995635 width=97)
+                                        Merge Join Operator [MERGEJOIN_196] (rows=575995635 width=97)
                                           Conds:(Inner),Output:["_col0","_col1","_col2"]
                                         <-Map 1 [CUSTOM_SIMPLE_EDGE]
                                           PARTITION_ONLY_SHUFFLE [RS_106]

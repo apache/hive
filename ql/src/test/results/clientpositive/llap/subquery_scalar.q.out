@@ -2652,9 +2652,9 @@ POSTHOOK: Input: default@part_null
 42669	almond antique medium spring khaki	Manufacturer#5	Brand#51	STANDARD BURNISHED TIN	6	MED CAN	1611.66	sits haggl
 195606	almond aquamarine sandy cyan gainsboro	Manufacturer#2	Brand#25	STANDARD PLATED TIN	18	SM PKG	1701.6	ic de
 144293	almond antique olive coral navajo	Manufacturer#3	Brand#34	STANDARD POLISHED STEEL	45	JUMBO CAN	1337.29	ag furiously about 
-Warning: Shuffle Join MERGEJOIN[94][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 2' is a cross product
-Warning: Shuffle Join MERGEJOIN[91][tables = [$hdt$_4, $hdt$_5]] in Stage 'Reducer 12' is a cross product
-Warning: Shuffle Join MERGEJOIN[92][tables = [$hdt$_4, $hdt$_5, $hdt$_6]] in Stage 'Reducer 13' is a cross product
+Warning: Shuffle Join MERGEJOIN[91][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 2' is a cross product
+Warning: Shuffle Join MERGEJOIN[92][tables = [$hdt$_4, $hdt$_5]] in Stage 'Reducer 12' is a cross product
+Warning: Shuffle Join MERGEJOIN[93][tables = [$hdt$_4, $hdt$_5, $hdt$_6]] in Stage 'Reducer 13' is a cross product
 PREHOOK: query: explain select * from part where p_brand <> (select min(p_brand) from part ) AND p_size IN (select (p_size) from part p where p.p_type = part.p_type ) AND p_size <> 340
 PREHOOK: type: QUERY
 POSTHOOK: query: explain select * from part where p_brand <> (select min(p_brand) from part ) AND p_size IN (select (p_size) from part p where p.p_type = part.p_type ) AND p_size <> 340
@@ -3020,9 +3020,9 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-Warning: Shuffle Join MERGEJOIN[94][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 2' is a cross product
-Warning: Shuffle Join MERGEJOIN[91][tables = [$hdt$_4, $hdt$_5]] in Stage 'Reducer 12' is a cross product
-Warning: Shuffle Join MERGEJOIN[92][tables = [$hdt$_4, $hdt$_5, $hdt$_6]] in Stage 'Reducer 13' is a cross product
+Warning: Shuffle Join MERGEJOIN[91][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 2' is a cross product
+Warning: Shuffle Join MERGEJOIN[92][tables = [$hdt$_4, $hdt$_5]] in Stage 'Reducer 12' is a cross product
+Warning: Shuffle Join MERGEJOIN[93][tables = [$hdt$_4, $hdt$_5, $hdt$_6]] in Stage 'Reducer 13' is a cross product
 PREHOOK: query: select * from part where p_brand <> (select min(p_brand) from part ) AND p_size IN (select (p_size) from part p where p.p_type = part.p_type ) AND p_size <> 340
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part
@@ -5581,7 +5581,7 @@ POSTHOOK: Input: default@lineitem
 175839	874
 182052	9607
 Warning: Shuffle Join MERGEJOIN[98][tables = [$hdt$_3, $hdt$_4]] in Stage 'Reducer 9' is a cross product
-Warning: Shuffle Join MERGEJOIN[100][tables = [$hdt$_4, $hdt$_5]] in Stage 'Reducer 16' is a cross product
+Warning: Shuffle Join MERGEJOIN[99][tables = [$hdt$_4, $hdt$_5]] in Stage 'Reducer 16' is a cross product
 PREHOOK: query: explain select sum(l_extendedprice) from lineitem, part where p_partkey = l_partkey and l_quantity > (select avg(l_quantity) from lineitem where l_partkey = p_partkey)
 PREHOOK: type: QUERY
 POSTHOOK: query: explain select sum(l_extendedprice) from lineitem, part where p_partkey = l_partkey and l_quantity > (select avg(l_quantity) from lineitem where l_partkey = p_partkey)
@@ -5946,7 +5946,7 @@ STAGE PLANS:
         ListSink
 
 Warning: Shuffle Join MERGEJOIN[98][tables = [$hdt$_3, $hdt$_4]] in Stage 'Reducer 9' is a cross product
-Warning: Shuffle Join MERGEJOIN[100][tables = [$hdt$_4, $hdt$_5]] in Stage 'Reducer 16' is a cross product
+Warning: Shuffle Join MERGEJOIN[99][tables = [$hdt$_4, $hdt$_5]] in Stage 'Reducer 16' is a cross product
 PREHOOK: query: select sum(l_extendedprice) from lineitem, part where p_partkey = l_partkey and l_quantity > (select avg(l_quantity) from lineitem where l_partkey = p_partkey)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@lineitem

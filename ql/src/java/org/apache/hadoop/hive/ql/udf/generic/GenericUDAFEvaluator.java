@@ -262,6 +262,13 @@ public abstract class GenericUDAFEvaluator implements Closeable {
     return null;
   }
 
+  /**
+   * Optional information to add to expression string. Subclasses can override.
+   */
+  public String getExprString() {
+    return "";
+  }
+
   protected BasePartitionEvaluator partitionEvaluator;
 
   /**

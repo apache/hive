@@ -60,7 +60,7 @@ public class FilterOperator extends Operator<FilterDesc> implements
     try {
       heartbeatInterval = HiveConf.getIntVar(hconf,
           HiveConf.ConfVars.HIVESENDHEARTBEAT);
-      conditionEvaluator = ExprNodeEvaluatorFactory.get(conf.getPredicate());
+      conditionEvaluator = ExprNodeEvaluatorFactory.get(conf.getPredicate(), hconf);
       if (HiveConf.getBoolVar(hconf, HiveConf.ConfVars.HIVEEXPREVALUATIONCACHE)) {
         conditionEvaluator = ExprNodeEvaluatorFactory.toCachedEval(conditionEvaluator);
       }

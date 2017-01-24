@@ -65,6 +65,22 @@ public class ObjectCache implements org.apache.hadoop.hive.ql.exec.ObjectCache {
     LOG.info("Releasing key: " + key);
   }
 
+
+  @SuppressWarnings("unchecked")
+  @Override
+  public <T> T retrieve(String key) throws HiveException {
+    T value = null;
+    try {
+      value = (T) registry.get(key);
+      if ( value != null) {
+        LOG.info("Found " + key + " in cache with value: " + value);
+      }
+    } catch (Exception e) {
+      throw new HiveException(e);
+    }
+    return value;
+  }
+
   @SuppressWarnings("unchecked")
   @Override
   public <T> T retrieve(String key, Callable<T> fn) throws HiveException {

@@ -36,6 +36,7 @@ avg
 base64
 between
 bin
+bloom_filter
 bround
 case
 cbrt
@@ -109,6 +110,7 @@ histogram_numeric
 hour
 if
 in
+in_bloom_filter
 in_file
 index
 initcap

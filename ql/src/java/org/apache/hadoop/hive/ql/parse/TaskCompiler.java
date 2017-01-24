@@ -530,6 +530,9 @@ public abstract class TaskCompiler {
     clone.setFetchTask(pCtx.getFetchTask());
     clone.setLineageInfo(pCtx.getLineageInfo());
     clone.setMapJoinOps(pCtx.getMapJoinOps());
+    clone.setRsToRuntimeValuesInfoMap(pCtx.getRsToRuntimeValuesInfoMap());
+    clone.setRsOpToTsOpMap(pCtx.getRsOpToTsOpMap());
+
     return clone;
   }
 

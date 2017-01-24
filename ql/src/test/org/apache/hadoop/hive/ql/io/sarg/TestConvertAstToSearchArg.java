@@ -28,6 +28,7 @@ import java.io.UnsupportedEncodingException;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.ql.exec.SerializationUtilities;
 import org.apache.hadoop.hive.ql.io.parquet.read.ParquetFilterPredicateConverter;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument.TruthValue;
@@ -43,6 +44,8 @@ import com.google.common.collect.Sets;
  * These tests cover the conversion from Hive's AST to SearchArguments.
  */
 public class TestConvertAstToSearchArg {
+
+  private final Configuration conf = new Configuration();
 
   private static void assertNoSharedNodes(ExpressionTree tree,
                                           Set<ExpressionTree> seen
@@ -547,7 +550,7 @@ public class TestConvertAstToSearchArg {
         "</java> \n";
 
     SearchArgumentImpl sarg =
-        (SearchArgumentImpl) ConvertAstToSearchArg.create(getFuncDesc(exprStr));
+        (SearchArgumentImpl) ConvertAstToSearchArg.create(conf, getFuncDesc(exprStr));
     List<PredicateLeaf> leaves = sarg.getLeaves();
     assertEquals(9, leaves.size());
 
@@ -836,7 +839,7 @@ public class TestConvertAstToSearchArg {
         "</java> \n";
 
     SearchArgumentImpl sarg =
-        (SearchArgumentImpl) ConvertAstToSearchArg.create(getFuncDesc(exprStr));
+        (SearchArgumentImpl) ConvertAstToSearchArg.create(conf, getFuncDesc(exprStr));
     List<PredicateLeaf> leaves = sarg.getLeaves();
     assertEquals(4, leaves.size());
 
@@ -1269,7 +1272,7 @@ public class TestConvertAstToSearchArg {
         "</java> \n";
 
     SearchArgumentImpl sarg =
-        (SearchArgumentImpl) ConvertAstToSearchArg.create(getFuncDesc(exprStr));
+        (SearchArgumentImpl) ConvertAstToSearchArg.create(conf, getFuncDesc(exprStr));
     List<PredicateLeaf> leaves = sarg.getLeaves();
     assertEquals(3, leaves.size());
 
@@ -1493,7 +1496,7 @@ public class TestConvertAstToSearchArg {
         "\n";
 
     SearchArgumentImpl sarg =
-        (SearchArgumentImpl) ConvertAstToSearchArg.create(getFuncDesc(exprStr));
+        (SearchArgumentImpl) ConvertAstToSearchArg.create(conf, getFuncDesc(exprStr));
     List<PredicateLeaf> leaves = sarg.getLeaves();
     assertEquals(3, leaves.size());
 
@@ -1763,7 +1766,7 @@ public class TestConvertAstToSearchArg {
         "</java> \n";
 
     SearchArgumentImpl sarg =
-        (SearchArgumentImpl) ConvertAstToSearchArg.create(getFuncDesc(exprStr));
+        (SearchArgumentImpl) ConvertAstToSearchArg.create(conf, getFuncDesc(exprStr));
     List<PredicateLeaf> leaves = sarg.getLeaves();
     assertEquals(1, leaves.size());
 
@@ -2246,7 +2249,7 @@ public class TestConvertAstToSearchArg {
         "</java>";
 
     SearchArgumentImpl sarg =
-        (SearchArgumentImpl) ConvertAstToSearchArg.create(getFuncDesc(exprStr));
+        (SearchArgumentImpl) ConvertAstToSearchArg.create(conf, getFuncDesc(exprStr));
     List<PredicateLeaf> leaves = sarg.getLeaves();
     assertEquals(9, leaves.size());
 
@@ -2405,7 +2408,7 @@ public class TestConvertAstToSearchArg {
         "</java> ";
 
     SearchArgumentImpl sarg =
-        (SearchArgumentImpl) ConvertAstToSearchArg.create(getFuncDesc(exprStr));
+        (SearchArgumentImpl) ConvertAstToSearchArg.create(conf, getFuncDesc(exprStr));
     List<PredicateLeaf> leaves = sarg.getLeaves();
     assertEquals(0, leaves.size());
 
@@ -2538,7 +2541,7 @@ public class TestConvertAstToSearchArg {
         "</java> ";
 
     SearchArgumentImpl sarg =
-        (SearchArgumentImpl) ConvertAstToSearchArg.create(getFuncDesc(exprStr));
+        (SearchArgumentImpl) ConvertAstToSearchArg.create(conf, getFuncDesc(exprStr));
     List<PredicateLeaf> leaves = sarg.getLeaves();
     assertEquals(0, leaves.size());
 
@@ -2663,7 +2666,7 @@ public class TestConvertAstToSearchArg {
         "</java>";
 
     SearchArgumentImpl sarg =
-        (SearchArgumentImpl) ConvertAstToSearchArg.create(getFuncDesc(exprStr));
+        (SearchArgumentImpl) ConvertAstToSearchArg.create(conf, getFuncDesc(exprStr));
     List<PredicateLeaf> leaves = sarg.getLeaves();
     assertEquals(1, leaves.size());
 
@@ -2712,7 +2715,7 @@ public class TestConvertAstToSearchArg {
           "AAABgj0BRVFVQcwBBW9yZy5hcGFjaGUuaGFkb29wLmlvLkJvb2xlYW5Xcml0YWJs5Q" +
           "EAAAECAQFib29sZWHu";
     SearchArgument sarg =
-        new ConvertAstToSearchArg(SerializationUtilities.deserializeExpression(serialAst))
+        new ConvertAstToSearchArg(conf, SerializationUtilities.deserializeExpression(serialAst))
             .buildSearchArgument();
     assertEquals("leaf-0", sarg.getExpression().toString());
     assertEquals(1, sarg.getLeaves().size());
@@ -2731,7 +2734,7 @@ public class TestConvertAstToSearchArg {
             "Y2hlLmhhZG9vcC5oaXZlLnFsLnVkZi5nZW5lcmljLkdlbmVyaWNVREZPUEVxdWHsAQAAAYI9AUVRVUH" +
             "MAQVvcmcuYXBhY2hlLmhhZG9vcC5pby5Cb29sZWFuV3JpdGFibOUBAAABAgEBYm9vbGVh7g==";
     SearchArgument sarg =
-        new ConvertAstToSearchArg(SerializationUtilities.deserializeExpression(serialAst))
+        new ConvertAstToSearchArg(conf, SerializationUtilities.deserializeExpression(serialAst))
             .buildSearchArgument();
     assertEquals("leaf-0", sarg.getExpression().toString());
     assertEquals(1, sarg.getLeaves().size());
@@ -2751,7 +2754,7 @@ public class TestConvertAstToSearchArg {
             "oaXZlLnFsLnVkZi5nZW5lcmljLkdlbmVyaWNVREZPUEVxdWHsAQAAAYI9AUVRVUHMAQZvcmcuYXBhY2" +
             "hlLmhhZG9vcC5pby5Cb29sZWFuV3JpdGFibOUBAAABBAEBYm9vbGVh7g==";
     SearchArgument sarg =
-        new ConvertAstToSearchArg(SerializationUtilities.deserializeExpression(serialAst))
+        new ConvertAstToSearchArg(conf, SerializationUtilities.deserializeExpression(serialAst))
             .buildSearchArgument();
     assertEquals("leaf-0", sarg.getExpression().toString());
     assertEquals(1, sarg.getLeaves().size());
@@ -2771,7 +2774,7 @@ public class TestConvertAstToSearchArg {
             "vb3AuaGl2ZS5xbC51ZGYuZ2VuZXJpYy5HZW5lcmljVURGT1BFcXVh7AEAAAGCPQFFUVVBzAEGb3JnLm" +
             "FwYWNoZS5oYWRvb3AuaW8uQm9vbGVhbldyaXRhYmzlAQAAAQQBAWJvb2xlYe4=";
     SearchArgument sarg =
-        new ConvertAstToSearchArg(SerializationUtilities.deserializeExpression(serialAst))
+        new ConvertAstToSearchArg(conf, SerializationUtilities.deserializeExpression(serialAst))
             .buildSearchArgument();
     assertEquals("leaf-0", sarg.getExpression().toString());
     assertEquals(1, sarg.getLeaves().size());
@@ -2791,7 +2794,7 @@ public class TestConvertAstToSearchArg {
             "lLmhhZG9vcC5oaXZlLnFsLnVkZi5nZW5lcmljLkdlbmVyaWNVREZPUEVxdWHsAQAAAYI9AUVRVUHMAQ" +
             "ZvcmcuYXBhY2hlLmhhZG9vcC5pby5Cb29sZWFuV3JpdGFibOUBAAABBAEBYm9vbGVh7g==";
     SearchArgument sarg =
-        new ConvertAstToSearchArg(SerializationUtilities.deserializeExpression(serialAst))
+        new ConvertAstToSearchArg(conf, SerializationUtilities.deserializeExpression(serialAst))
             .buildSearchArgument();
     assertEquals("leaf-0", sarg.getExpression().toString());
     assertEquals(1, sarg.getLeaves().size());
@@ -2810,7 +2813,7 @@ public class TestConvertAstToSearchArg {
             "dmUucWwudWRmLmdlbmVyaWMuR2VuZXJpY1VERk9QRXF1YewBAAABgj0BRVFVQcwBBW9yZy5hcGFjaGU" +
             "uaGFkb29wLmlvLkJvb2xlYW5Xcml0YWJs5QEAAAECAQFib29sZWHu";
     SearchArgument sarg =
-        new ConvertAstToSearchArg(SerializationUtilities.deserializeExpression(serialAst))
+        new ConvertAstToSearchArg(conf, SerializationUtilities.deserializeExpression(serialAst))
             .buildSearchArgument();
     assertEquals("leaf-0", sarg.getExpression().toString());
     assertEquals(1, sarg.getLeaves().size());
@@ -2831,7 +2834,7 @@ public class TestConvertAstToSearchArg {
             "hlLmhhZG9vcC5pby5Cb29sZWFuV3JpdGFibOUBAAABAwkBAgEBYrIAAAgBAwkBB29yZy5hcGFjaGUua" +
             "GFkb29wLmhpdmUucWwudWRmLmdlbmVyaWMuR2VuZXJpY1VERk9QQW7kAQEGAQAAAQMJ";
     SearchArgument sarg =
-        new ConvertAstToSearchArg(SerializationUtilities.deserializeExpression(serialAst))
+        new ConvertAstToSearchArg(conf, SerializationUtilities.deserializeExpression(serialAst))
             .buildSearchArgument();
     assertEquals("(and leaf-0 leaf-1)", sarg.getExpression().toString());
     assertEquals(2, sarg.getLeaves().size());
@@ -2853,7 +2856,7 @@ public class TestConvertAstToSearchArg {
             "aXZlLnFsLnVkZi5nZW5lcmljLkdlbmVyaWNVREZPUEVxdWHsAQAAAYI9AUVRVUHMAQVvcmcuYXBhY2h" +
             "lLmhhZG9vcC5pby5Cb29sZWFuV3JpdGFibOUBAAABAgEBYm9vbGVh7g==";
     SearchArgument sarg =
-        new ConvertAstToSearchArg(SerializationUtilities.deserializeExpression(serialAst))
+        new ConvertAstToSearchArg(conf, SerializationUtilities.deserializeExpression(serialAst))
             .buildSearchArgument();
     assertEquals("leaf-0", sarg.getExpression().toString());
     assertEquals(1, sarg.getLeaves().size());
@@ -2872,7 +2875,7 @@ public class TestConvertAstToSearchArg {
             "b29wLmhpdmUucWwudWRmLmdlbmVyaWMuR2VuZXJpY1VERk9QRXF1YewBAAABgj0BRVFVQcwBBW9yZy5" +
             "hcGFjaGUuaGFkb29wLmlvLkJvb2xlYW5Xcml0YWJs5QEAAAECAQFib29sZWHu";
     SearchArgument sarg =
-        new ConvertAstToSearchArg(SerializationUtilities.deserializeExpression(serialAst))
+        new ConvertAstToSearchArg(conf, SerializationUtilities.deserializeExpression(serialAst))
             .buildSearchArgument();
     assertEquals("leaf-0", sarg.getExpression().toString());
     assertEquals(1, sarg.getLeaves().size());

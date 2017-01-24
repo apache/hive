@@ -76,7 +76,7 @@ public class TestRecordReaderImpl {
                                                   Object literal,
                                                   List<Object> literalList) {
     return new SearchArgumentImpl.PredicateLeafImpl(operator, type, columnName,
-        literal, literalList);
+        literal, literalList, null);
   }
 
   // can add .verboseLogging() to cause Mockito to log invocations

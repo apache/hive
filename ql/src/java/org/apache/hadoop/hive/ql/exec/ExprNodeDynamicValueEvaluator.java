@@ -18,29 +18,37 @@
 
 package org.apache.hadoop.hive.ql.exec;
 
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.plan.DynamicValue;
+import org.apache.hadoop.hive.ql.plan.ExprNodeDynamicValueDesc;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils.ObjectInspectorCopyOption;
 
 /**
- * Returns evaluation result of other evaluator
+ * ExprNodeDynamicEvaluator.
+ *
  */
-public class ExprNodeEvaluatorRef extends ExprNodeEvaluator {
+public class ExprNodeDynamicValueEvaluator extends ExprNodeEvaluator<ExprNodeDynamicValueDesc> {
 
-  private int counter;
-  private final ExprNodeEvaluator referencing;
+  transient ObjectInspector oi;
 
-  public ExprNodeEvaluatorRef(ExprNodeEvaluator referencing) {
-    super(referencing.getExpr(), referencing.getConf());
-    this.referencing = referencing;
+  public ExprNodeDynamicValueEvaluator(ExprNodeDynamicValueDesc expr, Configuration conf) {
+    super(expr, conf);
+    oi = ObjectInspectorUtils.getStandardObjectInspector(expr.getWritableObjectInspector(), ObjectInspectorCopyOption.WRITABLE);
   }
 
   @Override
   public ObjectInspector initialize(ObjectInspector rowInspector) throws HiveException {
-    return outputOI = referencing.getOutputOI();
+    return oi;
   }
 
   @Override
   protected Object _evaluate(Object row, int version) throws HiveException {
-    return referencing.evaluate(row, version);
+    DynamicValue dynamicValue = expr.getDynamicValue();
+    dynamicValue.setConf(conf);
+    return dynamicValue.getWritableValue();
   }
+
 }

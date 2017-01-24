@@ -51,11 +51,13 @@ import org.apache.hadoop.hive.ql.exec.TezDummyStoreOperator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.mr.ExecMapper.ReportStats;
 import org.apache.hadoop.hive.ql.exec.mr.ExecMapperContext;
+import org.apache.hadoop.hive.ql.exec.tez.DynamicValueRegistryTez.RegistryConfTez;
 import org.apache.hadoop.hive.ql.exec.tez.TezProcessor.TezKVOutputCollector;
 import org.apache.hadoop.hive.ql.exec.tez.tools.KeyValueInputMerger;
 import org.apache.hadoop.hive.ql.exec.vector.VectorMapOperator;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.plan.BaseWork;
+import org.apache.hadoop.hive.ql.plan.DynamicValue;
 import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.serde2.Deserializer;
@@ -88,8 +90,8 @@ public class MapRecordProcessor extends RecordProcessor {
   private final ExecMapperContext execContext;
   private MapWork mapWork;
   List<MapWork> mergeWorkList;
-  List<String> cacheKeys;
-  ObjectCache cache;
+  List<String> cacheKeys, dynamicValueCacheKeys;
+  ObjectCache cache, dynamicValueCache;
   private int nRows;
 
   public MapRecordProcessor(final JobConf jconf, final ProcessorContext context) throws Exception {
@@ -99,9 +101,11 @@ public class MapRecordProcessor extends RecordProcessor {
       setLlapOfFragmentId(context);
     }
     cache = ObjectCacheFactory.getCache(jconf, queryId, true);
+    dynamicValueCache = ObjectCacheFactory.getCache(jconf, queryId, false);
     execContext = new ExecMapperContext(jconf);
     execContext.setJc(jconf);
     cacheKeys = new ArrayList<String>();
+    dynamicValueCacheKeys = new ArrayList<String>();
     nRows = 0;
   }
 
@@ -295,6 +299,21 @@ public class MapRecordProcessor extends RecordProcessor {
 
       mapOp.initializeLocalWork(jconf);
 
+      // Setup values registry
+      checkAbortCondition();
+      String valueRegistryKey = DynamicValue.DYNAMIC_VALUE_REGISTRY_CACHE_KEY;
+      // On LLAP dynamic value registry might already be cached.
+      final DynamicValueRegistryTez registryTez = dynamicValueCache.retrieve(valueRegistryKey,
+          new Callable<DynamicValueRegistryTez>() {
+            @Override
+            public DynamicValueRegistryTez call() {
+              return new DynamicValueRegistryTez();
+            }
+          });
+      dynamicValueCacheKeys.add(valueRegistryKey);
+      RegistryConfTez registryConf = new RegistryConfTez(jconf, mapWork, processorContext, inputs);
+      registryTez.init(registryConf);
+
       checkAbortCondition();
       initializeMapRecordSources();
       mapOp.initializeMapOperator(jconf);
@@ -432,6 +451,12 @@ public class MapRecordProcessor extends RecordProcessor {
     if (cache != null && cacheKeys != null) {
       for (String k: cacheKeys) {
         cache.release(k);
+      }
+    }
+
+    if (dynamicValueCache != null && dynamicValueCacheKeys != null) {
+      for (String k: dynamicValueCacheKeys) {
+        dynamicValueCache.release(k);
       }
     }
 

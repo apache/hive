@@ -47,6 +47,11 @@ public class ObjectCache implements org.apache.hadoop.hive.ql.exec.ObjectCache {
   }
 
   @Override
+  public <T> T retrieve(String key) throws HiveException {
+    return retrieve(key, null);
+  }
+
+  @Override
   public <T> T retrieve(String key, Callable<T> fn) throws HiveException {
     try {
       if (isDebugEnabled) {
