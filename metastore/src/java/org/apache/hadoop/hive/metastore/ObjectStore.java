@@ -1139,6 +1139,9 @@ public class ObjectStore implements RawStore, Configurable {
 
   private List<MConstraint> listAllTableConstraintsWithOptionalConstraintName
     (String dbName, String tableName, String constraintname) {
+    dbName = HiveStringUtils.normalizeIdentifier(dbName);
+    tableName = HiveStringUtils.normalizeIdentifier(tableName);
+    constraintname = constraintname!=null?HiveStringUtils.normalizeIdentifier(constraintname):null;
     List<MConstraint> mConstraints = null;
     List<String> constraintNames = new ArrayList<String>();
     Query query = null;
@@ -8540,10 +8543,12 @@ public class ObjectStore implements RawStore, Configurable {
     }
   }
 
-  protected List<SQLPrimaryKey> getPrimaryKeysInternal(final String db_name,
-    final String tbl_name,
+  protected List<SQLPrimaryKey> getPrimaryKeysInternal(final String db_name_input,
+    final String tbl_name_input,
     boolean allowSql, boolean allowJdo)
   throws MetaException, NoSuchObjectException {
+    final String db_name = HiveStringUtils.normalizeIdentifier(db_name_input);
+    final String tbl_name = HiveStringUtils.normalizeIdentifier(tbl_name_input);
     return new GetListHelper<SQLPrimaryKey>(db_name, tbl_name, allowSql, allowJdo) {
 
       @Override
@@ -8637,9 +8642,13 @@ public class ObjectStore implements RawStore, Configurable {
     }
   }
 
-  protected List<SQLForeignKey> getForeignKeysInternal(final String parent_db_name,
-    final String parent_tbl_name, final String foreign_db_name, final String foreign_tbl_name,
-    boolean allowSql, boolean allowJdo) throws MetaException, NoSuchObjectException {
+  protected List<SQLForeignKey> getForeignKeysInternal(final String parent_db_name_input,
+    final String parent_tbl_name_input, final String foreign_db_name_input,
+    final String foreign_tbl_name_input, boolean allowSql, boolean allowJdo) throws MetaException, NoSuchObjectException {
+    final String parent_db_name = parent_db_name_input;
+    final String parent_tbl_name = parent_tbl_name_input;
+    final String foreign_db_name = foreign_db_name_input;
+    final String foreign_tbl_name = foreign_tbl_name_input;
     return new GetListHelper<SQLForeignKey>(foreign_db_name, foreign_tbl_name, allowSql, allowJdo) {
 
       @Override

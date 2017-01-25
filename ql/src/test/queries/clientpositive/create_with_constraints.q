@@ -57,20 +57,20 @@ DESCRIBE FORMATTED table2;
 DESCRIBE FORMATTED table3;
 DESCRIBE FORMATTED table6;
 
-CREATE DATABASE dbconstraint;
-USE dbconstraint;
-CREATE TABLE table2 (a STRING, b STRING, constraint pk1 primary key (a) disable novalidate);
+CREATE DATABASE DbConstraint;
+USE DbConstraint;
+CREATE TABLE Table2 (a STRING, b STRING, constraint Pk1 primary key (a) disable novalidate);
 USE default;
 
-DESCRIBE EXTENDED dbconstraint.table2;
-DESCRIBE FORMATTED dbconstraint.table2;
+DESCRIBE EXTENDED DbConstraint.Table2;
+DESCRIBE FORMATTED DbConstraint.Table2;
 
-ALTER TABLE dbconstraint.table2 DROP CONSTRAINT pk1;
+ALTER TABLE DbConstraint.Table2 DROP CONSTRAINT Pk1;
 
-DESCRIBE EXTENDED dbconstraint.table2;
-DESCRIBE FORMATTED dbconstraint.table2;
+DESCRIBE EXTENDED DbConstraint.Table2;
+DESCRIBE FORMATTED DbConstraint.Table2;
 
-ALTER TABLE dbconstraint.table2 ADD CONSTRAINT pk1 primary key (a) disable novalidate;
-DESCRIBE FORMATTED dbconstraint.table2;
-ALTER TABLE dbconstraint.table2  ADD CONSTRAINT fkx FOREIGN KEY (b) REFERENCES table1(a)  DISABLE NOVALIDATE;
-DESCRIBE FORMATTED dbconstraint.table2;
+ALTER TABLE DbConstraint.Table2 ADD CONSTRAINT Pk1 primary key (a) disable novalidate;
+DESCRIBE FORMATTED DbConstraint.Table2;
+ALTER TABLE DbConstraint.Table2  ADD CONSTRAINT fkx FOREIGN KEY (b) REFERENCES table1(a)  DISABLE NOVALIDATE;
+DESCRIBE FORMATTED DbConstraint.Table2;

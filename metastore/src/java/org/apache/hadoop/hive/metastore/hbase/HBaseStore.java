@@ -2692,6 +2692,8 @@ public class HBaseStore implements RawStore {
 
   @Override
   public List<SQLPrimaryKey> getPrimaryKeys(String db_name, String tbl_name) throws MetaException {
+    db_name = HiveStringUtils.normalizeIdentifier(db_name);
+    tbl_name = HiveStringUtils.normalizeIdentifier(tbl_name);
     boolean commit = false;
     openTransaction();
     try {
@@ -2710,6 +2712,10 @@ public class HBaseStore implements RawStore {
   public List<SQLForeignKey> getForeignKeys(String parent_db_name, String parent_tbl_name,
                                             String foreign_db_name, String foreign_tbl_name)
       throws MetaException {
+    parent_db_name = parent_db_name!=null?HiveStringUtils.normalizeIdentifier(parent_db_name):null;
+    parent_tbl_name = parent_tbl_name!=null?HiveStringUtils.normalizeIdentifier(parent_tbl_name):null;
+    foreign_db_name = HiveStringUtils.normalizeIdentifier(foreign_db_name);
+    foreign_tbl_name = HiveStringUtils.normalizeIdentifier(foreign_tbl_name);
     boolean commit = false;
     openTransaction();
     try {
@@ -2754,6 +2760,9 @@ public class HBaseStore implements RawStore {
     // This is something of pain, since we have to search both primary key and foreign key to see
     // which they want to drop.
     boolean commit = false;
+    dbName = HiveStringUtils.normalizeIdentifier(dbName);
+    tableName = HiveStringUtils.normalizeIdentifier(tableName);
+    constraintName = HiveStringUtils.normalizeIdentifier(constraintName);
     openTransaction();
     try {
       List<SQLPrimaryKey> pk = getHBase().getPrimaryKey(dbName, tableName);
@@ -2793,6 +2802,12 @@ public class HBaseStore implements RawStore {
   @Override
   public void addPrimaryKeys(List<SQLPrimaryKey> pks) throws InvalidObjectException, MetaException {
     boolean commit = false;
+    for (SQLPrimaryKey pk : pks) {
+      pk.setTable_db(HiveStringUtils.normalizeIdentifier(pk.getTable_db()));
+      pk.setTable_name(HiveStringUtils.normalizeIdentifier(pk.getTable_name()));
+      pk.setColumn_name(HiveStringUtils.normalizeIdentifier(pk.getColumn_name()));
+      pk.setPk_name(HiveStringUtils.normalizeIdentifier(pk.getPk_name()));
+    }
     openTransaction();
     try {
       List<SQLPrimaryKey> currentPk =
@@ -2814,6 +2829,13 @@ public class HBaseStore implements RawStore {
   @Override
   public void addForeignKeys(List<SQLForeignKey> fks) throws InvalidObjectException, MetaException {
     boolean commit = false;
+    for (SQLForeignKey fk : fks) {
+      fk.setPktable_db(HiveStringUtils.normalizeIdentifier(fk.getPktable_db()));
+      fk.setPktable_name(HiveStringUtils.normalizeIdentifier(fk.getPktable_name()));
+      fk.setFktable_db(HiveStringUtils.normalizeIdentifier(fk.getFktable_db()));
+      fk.setFktable_name(HiveStringUtils.normalizeIdentifier(fk.getFktable_name()));
+      fk.setFk_name(HiveStringUtils.normalizeIdentifier(fk.getFk_name()));
+    }
     openTransaction();
     try {
       // Fetch the existing keys (if any) and add in these new ones
