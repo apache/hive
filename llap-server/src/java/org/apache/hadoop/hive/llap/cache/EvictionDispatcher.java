@@ -48,7 +48,9 @@ public final class EvictionDispatcher implements EvictionListener {
     // Note: we don't know which cache this is from, so we notify both. They can noop if they
     //       want to find the buffer in their structures and can't.
     dataCache.notifyEvicted(buffer);
-    serdeCache.notifyEvicted(buffer);
+    if (serdeCache != null) {
+      serdeCache.notifyEvicted(buffer);
+    }
     allocator.deallocateEvicted(buffer);
   }
 

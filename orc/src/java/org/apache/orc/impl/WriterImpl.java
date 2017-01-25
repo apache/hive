@@ -942,7 +942,7 @@ public class WriterImpl implements Writer, MemoryManager.Callback {
     // If the number of keys in a dictionary is greater than this fraction of
     //the total number of non-null rows, turn off dictionary encoding
     private final double dictionaryKeySizeThreshold;
-    protected boolean useDictionaryEncoding = true;
+    protected boolean useDictionaryEncoding;
     private boolean isDirectV2 = true;
     private boolean doneDictionaryCheck;
     private final boolean strideDictionaryCheck;
@@ -970,7 +970,8 @@ public class WriterImpl implements Writer, MemoryManager.Callback {
           OrcConf.DICTIONARY_KEY_SIZE_THRESHOLD.getDouble(conf);
       strideDictionaryCheck =
           OrcConf.ROW_INDEX_STRIDE_DICTIONARY_CHECK.getBoolean(conf);
-      doneDictionaryCheck = false;
+      useDictionaryEncoding =  dictionaryKeySizeThreshold >= 0.000001; // Epsilon.
+      doneDictionaryCheck = !useDictionaryEncoding;
     }
 
     private boolean checkDictionaryEncoding() {

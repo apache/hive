@@ -201,17 +201,16 @@ public class SerDeLowLevelCacheImpl implements BufferUsageManager, LlapOomDebugD
         sb.append("null, ");
         continue;
       }
-      sb.append("[");
+      sb.append("colData [");
       for (int j = 0; j < colData.length; ++j) {
         LlapDataBuffer[] streamData = colData[j];
         if (streamData == null) {
           sb.append("null, ");
           continue;
         }
-        sb.append("[");
+        sb.append("buffers [");
         for (int k = 0; k < streamData.length; ++k) {
-          LlapDataBuffer s = streamData[k];
-          sb.append(LlapDataBuffer.toDataString(s));
+          sb.append(streamData[k]);
         }
         sb.append("], ");
       }
@@ -396,7 +395,10 @@ public class SerDeLowLevelCacheImpl implements BufferUsageManager, LlapOomDebugD
     for (int colIx = 0; colIx < cached.colCount; ++colIx) {
       if (!includes[colIx]) continue;
       if (cStripe.encodings[colIx] == null || cStripe.data[colIx] == null) {
-        assert cStripe.data[colIx] == null; // No encoding => must have no data.
+        if (cStripe.data[colIx] != null) {
+          assert false : cStripe;
+          // No encoding => must have no data.
+        }
         isMissed = true;
         if (gotAllData != null) {
           gotAllData.value = false;

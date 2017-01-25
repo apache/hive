@@ -2930,6 +2930,9 @@ public class HiveConf extends Configuration {
         "Whether LLAP should use fileId (inode)-based path to ensure better consistency for the\n" +
         "cases of file overwrites. This is supported on HDFS."),
     // Restricted to text for now as this is a new feature; only text files can be sliced.
+    LLAP_IO_ENCODE_ENABLED("hive.llap.io.encode.enabled", true,
+        "Whether LLAP should try to re-encode and cache data for non-ORC formats. This is used\n" +
+        "on LLAP Server side to determine if the infrastructure for that is initialized."),
     LLAP_IO_ENCODE_FORMATS("hive.llap.io.encode.formats",
         "org.apache.hadoop.mapred.TextInputFormat,",
         "The table input formats for which LLAP IO should re-encode and cache data.\n" +
@@ -2938,6 +2941,8 @@ public class HiveConf extends Configuration {
         "Allocation size for the buffers used to cache encoded data from non-ORC files. Must\n" +
         "be a power of two between " + LLAP_ALLOCATOR_MIN_ALLOC + " and\n" +
         LLAP_ALLOCATOR_MAX_ALLOC + "."),
+    LLAP_IO_ENCODE_VECTOR_SERDE_ENABLED("hive.llap.io.encode.vector.serde.enabled", true,
+        "Whether LLAP should use vectorized SerDe reader to read text data when re-encoding."),
     LLAP_IO_ENCODE_SLICE_ROW_COUNT("hive.llap.io.encode.slice.row.count", 100000,
         "Row count to use to separate cache slices when reading encoded data from row-based\n" +
         "inputs into LLAP cache, if this feature is enabled."),
