@@ -4650,7 +4650,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       List<ColumnStatisticsObj> statsObjs =  colStats.getStatsObj();
 
       startFunction("write_column_statistics", ":  db=" + dbName
-          + " table=" + tableName + " column=" + colName);
+          + " table=" + tableName);
       for (ColumnStatisticsObj statsObj:statsObjs) {
         colName = statsObj.getColName().toLowerCase();
         statsObj.setColName(colName);
@@ -4697,7 +4697,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
 
       startFunction("write_partition_column_statistics",
           ":  db=" + dbName + " table=" + tableName
-              + " part=" + partName + "column=" + colName);
+              + " part=" + partName);
       for (ColumnStatisticsObj statsObj:statsObjs) {
         colName = statsObj.getColName().toLowerCase();
         statsObj.setColName(colName);
