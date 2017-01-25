@@ -1509,7 +1509,7 @@ public interface IMetaStoreClient {
     throws TException;
 
   /**
-   * Performs the pre/commit/rollback to the metadata storage for insert operator from external storage handler.
+   * Performs the commit/rollback to the metadata storage for insert operator from external storage handler.
    * @param table table name
    * @param overwrite true if the insert is overwrite
    *

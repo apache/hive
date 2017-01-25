@@ -23,6 +23,7 @@ import java.util.HashSet;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.parse.AlterTablePartMergeFilesDesc;
+import org.apache.hadoop.hive.ql.parse.PreInsertTableDesc;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
 /**
@@ -32,6 +33,7 @@ import org.apache.hadoop.hive.ql.plan.Explain.Level;
 public class DDLWork implements Serializable {
   private static final long serialVersionUID = 1L;
 
+  private PreInsertTableDesc preInsertTableDesc;
   private InsertTableDesc insertTableDesc;
   private CreateIndexDesc createIndexDesc;
   private AlterIndexDesc alterIndexDesc;
@@ -530,6 +532,12 @@ public class DDLWork implements Serializable {
           InsertTableDesc insertTableDesc) {
     this(inputs, outputs);
     this.insertTableDesc = insertTableDesc;
+  }
+
+  public DDLWork(HashSet<ReadEntity> inputs, HashSet<WriteEntity> outputs,
+          PreInsertTableDesc preInsertTableDesc) {
+    this(inputs, outputs);
+    this.preInsertTableDesc = preInsertTableDesc;
   }
 
   /**
@@ -1201,5 +1209,14 @@ public class DDLWork implements Serializable {
 
   public void setInsertTableDesc(InsertTableDesc insertTableDesc) {
     this.insertTableDesc = insertTableDesc;
+  }
+
+  @Explain(displayName = "Pre Insert operator", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
+  public PreInsertTableDesc getPreInsertTableDesc() {
+    return preInsertTableDesc;
+  }
+
+  public void setPreInsertTableDesc(PreInsertTableDesc preInsertTableDesc) {
+    this.preInsertTableDesc = preInsertTableDesc;
   }
 }
