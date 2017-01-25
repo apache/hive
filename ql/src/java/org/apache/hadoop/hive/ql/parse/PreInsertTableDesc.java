@@ -16,18 +16,20 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.plan;
+package org.apache.hadoop.hive.ql.parse;
 
 import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.hive.ql.plan.DDLDesc;
+import org.apache.hadoop.hive.ql.plan.Explain;
 
-@Explain(displayName = "Insert", explainLevels = { Explain.Level.USER, Explain.Level.DEFAULT, Explain.Level.EXTENDED })
-public class InsertTableDesc extends DDLDesc {
+@Explain(displayName = "Pre-Insert task", explainLevels = { Explain.Level.USER, Explain.Level.DEFAULT, Explain.Level.EXTENDED })
+public class PreInsertTableDesc extends DDLDesc {
+  private final boolean isOverwrite;
   private final Table table;
-  private final boolean overwrite;
 
-  public InsertTableDesc(Table table, boolean overwrite) {
+  public PreInsertTableDesc(Table table, boolean overwrite) {
     this.table = table;
-    this.overwrite = overwrite;
+    this.isOverwrite = overwrite;
   }
 
   public Table getTable() {
@@ -35,6 +37,6 @@ public class InsertTableDesc extends DDLDesc {
   }
 
   public boolean isOverwrite() {
-    return overwrite;
+    return isOverwrite;
   }
 }

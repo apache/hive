@@ -42,6 +42,7 @@ import io.druid.metadata.storage.postgresql.PostgreSQLConnector;
 import io.druid.segment.loading.SegmentLoadingException;
 import io.druid.timeline.DataSegment;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.Constants;
@@ -49,16 +50,21 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.druid.io.DruidOutputFormat;
 import org.apache.hadoop.hive.druid.io.DruidQueryBasedInputFormat;
 import org.apache.hadoop.hive.druid.serde.DruidSerDe;
-import org.apache.hadoop.hive.metastore.HiveMetaHookV2;
+import org.apache.hadoop.hive.metastore.DefaultHiveMetaHook;
 import org.apache.hadoop.hive.metastore.HiveMetaHook;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.ql.metadata.DefaultStorageHandler;
 import org.apache.hadoop.hive.serde2.SerDe;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.metadata.HiveStorageHandler;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
+import org.apache.hadoop.hive.ql.security.authorization.DefaultHiveAuthorizationProvider;
+import org.apache.hadoop.hive.ql.security.authorization.HiveAuthorizationProvider;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.mapred.InputFormat;
+import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.OutputFormat;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
@@ -79,7 +85,7 @@ import java.util.concurrent.Callable;
  * DruidStorageHandler provides a HiveStorageHandler implementation for Druid.
  */
 @SuppressWarnings({ "deprecation", "rawtypes" })
-public class DruidStorageHandler extends DefaultStorageHandler implements HiveMetaHookV2 {
+public class DruidStorageHandler extends DefaultHiveMetaHook implements HiveStorageHandler {
 
   protected static final Logger LOG = LoggerFactory.getLogger(DruidStorageHandler.class);
 
@@ -98,6 +104,8 @@ public class DruidStorageHandler extends DefaultStorageHandler implements HiveMe
   private String uniqueId = null;
 
   private String rootWorkingDir = null;
+
+  private Configuration conf;
 
   public DruidStorageHandler() {
     //this is the default value in druid
@@ -175,6 +183,17 @@ public class DruidStorageHandler extends DefaultStorageHandler implements HiveMe
   @Override
   public HiveMetaHook getMetaHook() {
     return this;
+  }
+
+  @Override
+  public HiveAuthorizationProvider getAuthorizationProvider() throws HiveException {
+    return new DefaultHiveAuthorizationProvider();
+  }
+
+  @Override
+  public void configureInputJobProperties(TableDesc tableDesc, Map<String, String> jobProperties
+  ) {
+
   }
 
   @Override
@@ -476,7 +495,9 @@ public class DruidStorageHandler extends DefaultStorageHandler implements HiveMe
 
   @Override
   public void preInsertTable(Table table, boolean overwrite) throws MetaException {
-    //do nothing
+    if (!overwrite) {
+      throw new MetaException("INSERT INTO statement is not allowed by druid storage handler");
+    }
   }
 
   @Override
@@ -489,6 +510,27 @@ public class DruidStorageHandler extends DefaultStorageHandler implements HiveMe
   ) {
     jobProperties.put(Constants.DRUID_SEGMENT_VERSION, new DateTime().toString());
     jobProperties.put(Constants.DRUID_JOB_WORKING_DIRECTORY, getStagingWorkingDir().toString());
+  }
+
+  @Override
+  public void configureTableJobProperties(TableDesc tableDesc, Map<String, String> jobProperties
+  ) {
+
+  }
+
+  @Override
+  public void configureJobConf(TableDesc tableDesc, JobConf jobConf) {
+
+  }
+
+  @Override
+  public void setConf(Configuration conf) {
+    this.conf = conf;
+  }
+
+  @Override
+  public Configuration getConf() {
+    return conf;
   }
 
   @Override

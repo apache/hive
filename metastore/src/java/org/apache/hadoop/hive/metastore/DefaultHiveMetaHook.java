@@ -21,7 +21,7 @@ package org.apache.hadoop.hive.metastore;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Table;
 
-public interface HiveMetaHookV2 extends HiveMetaHook {
+public abstract class DefaultHiveMetaHook implements HiveMetaHook {
   /**
    * Called after successfully after INSERT [OVERWRITE] statement is executed.
    * @param table table definition
@@ -29,7 +29,7 @@ public interface HiveMetaHookV2 extends HiveMetaHook {
    *
    * @throws MetaException
    */
-  public void commitInsertTable(Table table, boolean overwrite) throws MetaException;
+  public abstract void commitInsertTable(Table table, boolean overwrite) throws MetaException;
 
   /**
    * called before commit insert method is called
@@ -38,7 +38,7 @@ public interface HiveMetaHookV2 extends HiveMetaHook {
    *
    * @throws MetaException
    */
-  public void preInsertTable(Table table, boolean overwrite) throws MetaException;
+  public abstract void preInsertTable(Table table, boolean overwrite) throws MetaException;
 
   /**
    * called in case pre commit or commit insert fail.
@@ -47,5 +47,5 @@ public interface HiveMetaHookV2 extends HiveMetaHook {
    *
    * @throws MetaException
    */
-  public void rollbackInsertTable(Table table, boolean overwrite) throws MetaException;
+  public abstract void rollbackInsertTable(Table table, boolean overwrite) throws MetaException;
 }

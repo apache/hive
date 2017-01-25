@@ -63,6 +63,8 @@ import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.io.HdfsUtils;
+import org.apache.hadoop.hive.metastore.HiveMetaHook;
+import org.apache.hadoop.hive.metastore.DefaultHiveMetaHook;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.PartitionDropOptions;
 import org.apache.hadoop.hive.metastore.TableType;
@@ -135,6 +137,7 @@ import org.apache.hadoop.hive.ql.metadata.formatting.MetaDataFormatter;
 import org.apache.hadoop.hive.ql.parse.AlterTablePartMergeFilesDesc;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.DDLSemanticAnalyzer;
+import org.apache.hadoop.hive.ql.parse.PreInsertTableDesc;
 import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.AbortTxnsDesc;
@@ -558,6 +561,10 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       if (insertTableDesc != null) {
         return insertCommitWork(db, insertTableDesc);
       }
+      PreInsertTableDesc preInsertTableDesc = work.getPreInsertTableDesc();
+      if (preInsertTableDesc != null) {
+        return preInsertWork(db, preInsertTableDesc);
+      }
     } catch (Throwable e) {
       failed(e);
       return 1;
@@ -566,13 +573,40 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     return 0;
   }
 
-  private int insertCommitWork(Hive db, InsertTableDesc insertTableDesc) throws HiveException {
-    try {
-      db.getMSC().insertTable(insertTableDesc.getTable(), insertTableDesc.isOverwrite());
-      return 0;
+  private int preInsertWork(Hive db, PreInsertTableDesc preInsertTableDesc) throws HiveException {
+    try{
+      HiveMetaHook hook = preInsertTableDesc.getTable().getStorageHandler().getMetaHook();
+      if (hook == null || !(hook instanceof DefaultHiveMetaHook)) {
+        return 0;
+      }
+      DefaultHiveMetaHook hiveMetaHook = (DefaultHiveMetaHook) hook;
+      hiveMetaHook.preInsertTable(preInsertTableDesc.getTable().getTTable(), preInsertTableDesc.isOverwrite());
     } catch (MetaException e) {
       throw new HiveException(e);
     }
+    return 0;
+  }
+
+  private int insertCommitWork(Hive db, InsertTableDesc insertTableDesc) throws MetaException {
+    boolean failed = true;
+    HiveMetaHook hook = insertTableDesc.getTable().getStorageHandler().getMetaHook();
+    if (hook == null || !(hook instanceof DefaultHiveMetaHook)) {
+      return 0;
+    }
+    DefaultHiveMetaHook hiveMetaHook = (DefaultHiveMetaHook) hook;
+    try {
+      hiveMetaHook.commitInsertTable(insertTableDesc.getTable().getTTable(),
+              insertTableDesc.isOverwrite()
+      );
+      failed = false;
+    } finally {
+      if (failed) {
+        hiveMetaHook.rollbackInsertTable(insertTableDesc.getTable().getTTable(),
+                insertTableDesc.isOverwrite()
+        );
+      }
+    }
+    return 0;
   }
 
   private int cacheMetadata(Hive db, CacheMetadataDesc desc) throws HiveException {
@@ -4341,7 +4375,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 
       db.createTable(tbl, crtView.getIfNotExists());
       addIfAbsentByName(new WriteEntity(tbl, WriteEntity.WriteType.DDL_NO_LOCK));
-      
+
       //set lineage info
       DataContainer dc = new DataContainer(tbl.getTTable());
       SessionState.get().getLineageState().setLineage(new Path(crtView.getViewName()), dc, tbl.getCols());
