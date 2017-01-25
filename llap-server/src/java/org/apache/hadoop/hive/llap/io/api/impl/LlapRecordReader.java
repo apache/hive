@@ -87,6 +87,7 @@ class LlapRecordReader
   private final boolean[] includedColumns;
   private final ReadPipeline rp;
   private final ExecutorService executor;
+  private final int columnCount;
 
   private TypeDescription fileSchema;
 
@@ -119,6 +120,14 @@ class LlapRecordReader
     MapWork mapWork = Utilities.getMapWork(job);
     VectorizedRowBatchCtx ctx = mapWork.getVectorizedRowBatchCtx();
     rbCtx = ctx != null ? ctx : LlapInputFormat.createFakeVrbCtx(mapWork);
+    if (includedCols == null) {
+      // Assume including everything means the VRB will have everything.
+      this.columnCount = rbCtx.getRowColumnTypeInfos().length;
+    } else {
+      this.columnCount = columnIds.size();
+    }
+
+
 
     int partitionColumnCount = rbCtx.getPartitionColumnCount();
     if (partitionColumnCount > 0) {
@@ -163,7 +172,8 @@ class LlapRecordReader
 
     SchemaEvolution schemaEvolution = new SchemaEvolution(
         fileSchema, readerSchema, includedColumns);
-    for (Integer colId : columnIds) {
+    for (int i = 0; i < columnCount; ++i) {
+      int colId = columnIds == null ? i : columnIds.get(i);
       if (!schemaEvolution.isPPDSafeConversion(colId)) {
         LlapIoImpl.LOG.warn("Unsupported schema evolution! Disabling Llap IO for {}", split);
         return false;
@@ -201,14 +211,14 @@ class LlapRecordReader
       counters.incrTimeCounter(LlapIOCounters.CONSUMER_TIME_NS, firstReturnTime);
       return false;
     }
-    if (columnIds.size() != cvb.cols.length) {
-      throw new RuntimeException("Unexpected number of columns, VRB has " + columnIds.size()
+    if (columnCount != cvb.cols.length) {
+      throw new RuntimeException("Unexpected number of columns, VRB has " + columnCount
           + " included, but the reader returned " + cvb.cols.length);
     }
     // VRB was created from VrbCtx, so we already have pre-allocated column vectors
     for (int i = 0; i < cvb.cols.length; ++i) {
       // Return old CVs (if any) to caller. We assume these things all have the same schema.
-      cvb.swapColumnVector(i, value.cols, columnIds.get(i));
+      cvb.swapColumnVector(i, value.cols, columnIds == null ? i : columnIds.get(i));
     }
     value.selectedInUse = false;
     value.size = cvb.size;
