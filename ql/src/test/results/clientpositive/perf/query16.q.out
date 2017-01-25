@@ -165,17 +165,17 @@ Stage-0
                               <-Reducer 13 [SIMPLE_EDGE]
                                 SHUFFLE [RS_58]
                                   PartitionCols:_col0
-                                  Select Operator [SEL_18] (rows=7199720 width=106)
+                                  Select Operator [SEL_18] (rows=14399440 width=106)
                                     Output:["_col0","_col1"]
-                                    Group By Operator [GBY_17] (rows=7199720 width=106)
+                                    Group By Operator [GBY_17] (rows=14399440 width=106)
                                       Output:["_col0"],keys:KEY._col0
                                     <-Map 12 [SIMPLE_EDGE]
                                       SHUFFLE [RS_16]
                                         PartitionCols:_col0
-                                        Group By Operator [GBY_15] (rows=14399440 width=106)
+                                        Group By Operator [GBY_15] (rows=28798881 width=106)
                                           Output:["_col0"],keys:cr_order_number
-                                          Filter Operator [FIL_103] (rows=14399440 width=106)
-                                            predicate:(cr_order_number = cr_order_number)
+                                          Filter Operator [FIL_103] (rows=28798881 width=106)
+                                            predicate:cr_order_number is not null
                                             TableScan [TS_12] (rows=28798881 width=106)
                                               default@catalog_returns,cr1,Tbl:COMPLETE,Col:NONE,Output:["cr_order_number"]
                               <-Reducer 4 [SIMPLE_EDGE]
@@ -226,7 +226,7 @@ Stage-0
                                               Select Operator [SEL_5] (rows=8116 width=1119)
                                                 Output:["_col0"]
                                                 Filter Operator [FIL_100] (rows=8116 width=1119)
-                                                  predicate:(d_date BETWEEN '2001-4-01' AND 2001-05-31 01:00:00.0 and d_date_sk is not null)
+                                                  predicate:(CAST( d_date AS TIMESTAMP) BETWEEN 2001-04-01 00:00:00.0 AND 2001-05-31 01:00:00.0 and d_date_sk is not null)
                                                   TableScan [TS_3] (rows=73049 width=1119)
                                                     default@date_dim,date_dim,Tbl:COMPLETE,Col:NONE,Output:["d_date_sk","d_date"]
 

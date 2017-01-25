@@ -165,7 +165,7 @@ public class HiveRelMdPredicates implements MetadataHandler<BuiltInMetadata.Pred
             rexBuilder.makeInputRef(project, expr.i), expr.e));
       }
     }
-    return RelOptPredicateList.of(projectPullUpPredicates);
+    return RelOptPredicateList.of(rexBuilder, projectPullUpPredicates);
   }
 
   /** Infers predicates for a {@link org.apache.calcite.rel.core.Join}. */
@@ -202,6 +202,7 @@ public class HiveRelMdPredicates implements MetadataHandler<BuiltInMetadata.Pred
     final RelNode input = agg.getInput();
     final RelOptPredicateList inputInfo = mq.getPulledUpPredicates(input);
     final List<RexNode> aggPullUpPredicates = new ArrayList<>();
+    final RexBuilder rexBuilder = agg.getCluster().getRexBuilder(); 
 
     ImmutableBitSet groupKeys = agg.getGroupSet();
     Mapping m = Mappings.create(MappingType.PARTIAL_FUNCTION,
@@ -219,7 +220,7 @@ public class HiveRelMdPredicates implements MetadataHandler<BuiltInMetadata.Pred
         aggPullUpPredicates.add(r);
       }
     }
-    return RelOptPredicateList.of(aggPullUpPredicates);
+    return RelOptPredicateList.of(rexBuilder, aggPullUpPredicates);
   }
 
   /**
@@ -271,7 +272,7 @@ public class HiveRelMdPredicates implements MetadataHandler<BuiltInMetadata.Pred
     if (!disjPred.isAlwaysTrue()) {
       preds.add(disjPred);
     }
-    return RelOptPredicateList.of(preds);
+    return RelOptPredicateList.of(rB, preds);
   }
 
   /**
@@ -411,6 +412,7 @@ public class HiveRelMdPredicates implements MetadataHandler<BuiltInMetadata.Pred
       final JoinRelType joinType = joinRel.getJoinType();
       final List<RexNode> leftPreds = ImmutableList.copyOf(RelOptUtil.conjunctions(leftChildPredicates));
       final List<RexNode> rightPreds = ImmutableList.copyOf(RelOptUtil.conjunctions(rightChildPredicates));
+      final RexBuilder rexBuilder = joinRel.getCluster().getRexBuilder();
       switch (joinType) {
       case INNER:
       case LEFT:
@@ -476,13 +478,13 @@ public class HiveRelMdPredicates implements MetadataHandler<BuiltInMetadata.Pred
           pulledUpPredicates = Iterables.concat(leftPreds, rightPreds,
                 RelOptUtil.conjunctions(joinRel.getCondition()), inferredPredicates);
         }
-        return RelOptPredicateList.of(
+        return RelOptPredicateList.of(rexBuilder,
           pulledUpPredicates, leftInferredPredicates, rightInferredPredicates);
       case LEFT:    
-        return RelOptPredicateList.of(    
+        return RelOptPredicateList.of(rexBuilder, 
           leftPreds, EMPTY_LIST, rightInferredPredicates);
       case RIGHT:   
-        return RelOptPredicateList.of(    
+        return RelOptPredicateList.of(rexBuilder,
           rightPreds, leftInferredPredicates, EMPTY_LIST);
       default:
         assert inferredPredicates.size() == 0;

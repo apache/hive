@@ -255,7 +255,7 @@ STAGE PLANS:
             alias: tt2
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
-              predicate: ((timestamp_col_18 = timestamp_col_18) and decimal1911_col_16 is not null) (type: boolean)
+              predicate: (timestamp_col_18 is not null and decimal1911_col_16 is not null) (type: boolean)
               Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
               Select Operator
                 expressions: decimal1911_col_16 (type: decimal(19,11)), timestamp_col_18 (type: timestamp)

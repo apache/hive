@@ -1273,8 +1273,8 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: SelectColumnIsNotNull(col 2)(children: LongColAddLongScalar(col 0, val 1) -> 2:long) -> boolean
-                    predicate: (key + 1) is not null (type: boolean)
+                        predicateExpression: SelectColumnIsNotNull(col 0) -> boolean
+                    predicate: key is not null (type: boolean)
                     Statistics: Num rows: 10 Data size: 930 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: (key + 1) (type: int)
@@ -1316,8 +1316,8 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: SelectColumnIsNotNull(col 2)(children: LongColAddLongScalar(col 0, val 1) -> 2:long) -> boolean
-                    predicate: (key + 1) is not null (type: boolean)
+                        predicateExpression: SelectColumnIsNotNull(col 0) -> boolean
+                    predicate: key is not null (type: boolean)
                     Statistics: Num rows: 10 Data size: 930 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: (key + 1) (type: int)

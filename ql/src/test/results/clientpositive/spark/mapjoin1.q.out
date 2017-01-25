@@ -141,7 +141,7 @@ STAGE PLANS:
                     Spark HashTable Sink Operator
                       filter predicates:
                         0 
-                        1 {((UDFToDouble(_col0) * UDFToDouble(10)) < UDFToDouble('1000'))}
+                        1 {((UDFToDouble(_col0) * 10.0) < 1000.0)}
                       keys:
                         0 _col0 (type: string)
                         1 _col0 (type: string)
@@ -166,7 +166,7 @@ STAGE PLANS:
                            Right Outer Join0 to 1
                       filter predicates:
                         0 
-                        1 {((UDFToDouble(_col0) * UDFToDouble(10)) < UDFToDouble('1000'))}
+                        1 {((UDFToDouble(_col0) * 10.0) < 1000.0)}
                       keys:
                         0 _col0 (type: string)
                         1 _col0 (type: string)
@@ -241,7 +241,7 @@ STAGE PLANS:
                     Spark HashTable Sink Operator
                       filter predicates:
                         0 
-                        1 {(UDFToDouble(_col1.key) > UDFToDouble(200))}
+                        1 {(UDFToDouble(_col1.key) > 200.0)}
                       keys:
                         0 _col0 (type: string)
                         1 _col0 (type: string)
@@ -266,7 +266,7 @@ STAGE PLANS:
                            Right Outer Join0 to 1
                       filter predicates:
                         0 
-                        1 {(UDFToDouble(_col1.key) > UDFToDouble(200))}
+                        1 {(UDFToDouble(_col1.key) > 200.0)}
                       keys:
                         0 _col0 (type: string)
                         1 _col0 (type: string)
@@ -433,7 +433,7 @@ STAGE PLANS:
                     Spark HashTable Sink Operator
                       filter predicates:
                         0 
-                        1 {((UDFToDouble(_col0) * UDFToDouble(10)) < UDFToDouble('1000'))}
+                        1 {((UDFToDouble(_col0) * 10.0) < 1000.0)}
                       keys:
                         0 _col0 (type: string)
                         1 _col0 (type: string)
@@ -458,7 +458,7 @@ STAGE PLANS:
                            Right Outer Join0 to 1
                       filter predicates:
                         0 
-                        1 {((UDFToDouble(_col0) * UDFToDouble(10)) < UDFToDouble('1000'))}
+                        1 {((UDFToDouble(_col0) * 10.0) < 1000.0)}
                       keys:
                         0 _col0 (type: string)
                         1 _col0 (type: string)
@@ -533,7 +533,7 @@ STAGE PLANS:
                     Spark HashTable Sink Operator
                       filter predicates:
                         0 
-                        1 {(UDFToDouble(_col1.key) > UDFToDouble(200))}
+                        1 {(UDFToDouble(_col1.key) > 200.0)}
                       keys:
                         0 _col0 (type: string)
                         1 _col0 (type: string)
@@ -558,7 +558,7 @@ STAGE PLANS:
                            Right Outer Join0 to 1
                       filter predicates:
                         0 
-                        1 {(UDFToDouble(_col1.key) > UDFToDouble(200))}
+                        1 {(UDFToDouble(_col1.key) > 200.0)}
                       keys:
                         0 _col0 (type: string)
                         1 _col0 (type: string)

@@ -34,6 +34,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.apache.calcite.adapter.druid.DruidQuery;
 import org.apache.calcite.adapter.druid.DruidSchema;
 import org.apache.calcite.adapter.druid.DruidTable;
+import org.apache.calcite.adapter.druid.LocalInterval;
 import org.apache.calcite.jdbc.JavaTypeFactoryImpl;
 import org.apache.calcite.plan.RelOptCluster;
 import org.apache.calcite.plan.RelOptMaterialization;
@@ -310,7 +311,7 @@ public final class HiveMaterializedViewsRegistry {
         }
         metrics.add(field.getName());
       }
-      List<Interval> intervals = Arrays.asList(DruidTable.DEFAULT_INTERVAL);
+      List<LocalInterval> intervals = Arrays.asList(DruidTable.DEFAULT_INTERVAL);
 
       DruidTable druidTable = new DruidTable(new DruidSchema(address, address, false),
           dataSource, RelDataTypeImpl.proto(rowType), metrics, DruidTable.DEFAULT_TIMESTAMP_COLUMN, intervals);

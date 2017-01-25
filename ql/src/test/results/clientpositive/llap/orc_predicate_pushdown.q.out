@@ -788,7 +788,7 @@ STAGE PLANS:
                   alias: orc_pred
                   Statistics: Num rows: 1049 Data size: 311170 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((d >= 10.0) and (d < 12.0) and (s like '%son') and (t > 0) and si BETWEEN 300 AND 400 and (not (s like '%car%'))) (type: boolean)
+                    predicate: ((d >= 10.0) and (d < 12.0) and (s like '%son') and (t > 0) and UDFToInteger(si) BETWEEN 300 AND 400 and (not (s like '%car%'))) (type: boolean)
                     Statistics: Num rows: 1 Data size: 296 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: t (type: tinyint), si (type: smallint), d (type: double), s (type: string)
@@ -864,10 +864,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: orc_pred
-                  filterExpr: ((d >= 10.0) and (d < 12.0) and (s like '%son') and (t > 0) and si BETWEEN 300 AND 400 and (not (s like '%car%'))) (type: boolean)
+                  filterExpr: ((d >= 10.0) and (d < 12.0) and (s like '%son') and (t > 0) and UDFToInteger(si) BETWEEN 300 AND 400 and (not (s like '%car%'))) (type: boolean)
                   Statistics: Num rows: 1049 Data size: 311170 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((d >= 10.0) and (d < 12.0) and (s like '%son') and (t > 0) and si BETWEEN 300 AND 400 and (not (s like '%car%'))) (type: boolean)
+                    predicate: ((d >= 10.0) and (d < 12.0) and (s like '%son') and (t > 0) and UDFToInteger(si) BETWEEN 300 AND 400 and (not (s like '%car%'))) (type: boolean)
                     Statistics: Num rows: 1 Data size: 296 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: t (type: tinyint), si (type: smallint), d (type: double), s (type: string)

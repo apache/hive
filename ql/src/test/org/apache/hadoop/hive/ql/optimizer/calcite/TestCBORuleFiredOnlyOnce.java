@@ -61,7 +61,7 @@ public class TestCBORuleFiredOnlyOnce {
 
     // Create rules registry to not trigger a rule more than once
     HiveRulesRegistry registry = new HiveRulesRegistry();
-    HivePlannerContext context = new HivePlannerContext(null, registry, null);
+    HivePlannerContext context = new HivePlannerContext(null, registry, null, null);
     HepPlanner planner = new HepPlanner(programBuilder.build(), context);
 
     // Cluster

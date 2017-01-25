@@ -24,7 +24,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.calcite.adapter.druid.DruidQuery;
-import org.apache.calcite.avatica.util.TimeUnitRange;
 import org.apache.calcite.rel.RelFieldCollation;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.RelVisitor;

@@ -106,57 +106,6 @@ public abstract class HiveFilterJoinRule extends FilterJoinRule {
     }
   }
 
-  /*
-   * Any predicates pushed down to joinFilters that aren't equality conditions:
-   * put them back as aboveFilters because Hive doesn't support not equi join
-   * conditions.
-   */
-  @Override
-  protected void validateJoinFilters(List<RexNode> aboveFilters, List<RexNode> joinFilters,
-      Join join, JoinRelType joinType) {
-    if (joinType.equals(JoinRelType.INNER)) {
-      ListIterator<RexNode> filterIter = joinFilters.listIterator();
-      while (filterIter.hasNext()) {
-        RexNode exp = filterIter.next();
-
-        if (exp instanceof RexCall) {
-          RexCall c = (RexCall) exp;
-          boolean validHiveJoinFilter = false;
-
-          if ((c.getOperator().getKind() == SqlKind.EQUALS)) {
-            validHiveJoinFilter = true;
-            for (RexNode rn : c.getOperands()) {
-              // NOTE: Hive dis-allows projections from both left & right side
-              // of join condition. Example: Hive disallows
-              // (r1.x +r2.x)=(r1.y+r2.y) on join condition.
-              if (filterRefersToBothSidesOfJoin(rn, join)) {
-                validHiveJoinFilter = false;
-                break;
-              }
-            }
-          } else if ((c.getOperator().getKind() == SqlKind.LESS_THAN)
-              || (c.getOperator().getKind() == SqlKind.GREATER_THAN)
-              || (c.getOperator().getKind() == SqlKind.LESS_THAN_OR_EQUAL)
-              || (c.getOperator().getKind() == SqlKind.GREATER_THAN_OR_EQUAL)) {
-            validHiveJoinFilter = true;
-            // NOTE: Hive dis-allows projections from both left & right side of
-            // join in in equality condition. Example: Hive disallows (r1.x <
-            // r2.x) on join condition.
-            if (filterRefersToBothSidesOfJoin(c, join)) {
-              validHiveJoinFilter = false;
-            }
-          }
-
-          if (validHiveJoinFilter)
-            continue;
-        }
-
-        aboveFilters.add(exp);
-        filterIter.remove();
-      }
-    }
-  }
-
   private boolean filterRefersToBothSidesOfJoin(RexNode filter, Join j) {
     boolean refersToBothSides = false;
 

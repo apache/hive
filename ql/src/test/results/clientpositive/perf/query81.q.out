@@ -95,28 +95,28 @@ Stage-0
                   <-Reducer 23 [SIMPLE_EDGE]
                     SHUFFLE [RS_94]
                       PartitionCols:_col2
-                      Select Operator [SEL_92] (rows=8711661 width=106)
+                      Select Operator [SEL_92] (rows=11000000 width=1014)
                         Output:["_col0","_col1","_col2"]
-                        Group By Operator [GBY_91] (rows=8711661 width=106)
+                        Group By Operator [GBY_91] (rows=11000000 width=1014)
                           Output:["_col0","_col1"],aggregations:["avg(_col2)"],keys:_col0
-                          Select Operator [SEL_87] (rows=17423323 width=106)
+                          Select Operator [SEL_87] (rows=22000000 width=1014)
                             Output:["_col0","_col2"]
-                            Group By Operator [GBY_86] (rows=17423323 width=106)
+                            Group By Operator [GBY_86] (rows=22000000 width=1014)
                               Output:["_col0","_col1","_col2"],aggregations:["sum(VALUE._col0)"],keys:KEY._col0, KEY._col1
                             <-Reducer 22 [SIMPLE_EDGE]
                               SHUFFLE [RS_85]
                                 PartitionCols:_col0
-                                Group By Operator [GBY_84] (rows=34846646 width=106)
+                                Group By Operator [GBY_84] (rows=44000000 width=1014)
                                   Output:["_col0","_col1","_col2"],aggregations:["sum(_col3)"],keys:_col7, _col1
-                                  Merge Join Operator [MERGEJOIN_150] (rows=34846646 width=106)
+                                  Merge Join Operator [MERGEJOIN_150] (rows=44000000 width=1014)
                                     Conds:RS_80._col2=RS_81._col0(Inner),Output:["_col1","_col3","_col7"]
                                   <-Map 25 [SIMPLE_EDGE]
                                     SHUFFLE [RS_81]
                                       PartitionCols:_col0
-                                      Select Operator [SEL_76] (rows=20000000 width=1014)
+                                      Select Operator [SEL_76] (rows=40000000 width=1014)
                                         Output:["_col0","_col1"]
-                                        Filter Operator [FIL_143] (rows=20000000 width=1014)
-                                          predicate:((ca_state = ca_state) and ca_address_sk is not null)
+                                        Filter Operator [FIL_143] (rows=40000000 width=1014)
+                                          predicate:(ca_address_sk is not null and ca_state is not null)
                                           TableScan [TS_74] (rows=40000000 width=1014)
                                             default@customer_address,customer_address,Tbl:COMPLETE,Col:NONE,Output:["ca_address_sk","ca_state"]
                                   <-Reducer 21 [SIMPLE_EDGE]
@@ -203,32 +203,32 @@ Stage-0
                             <-Reducer 17 [SIMPLE_EDGE]
                               SHUFFLE [RS_58]
                                 PartitionCols:_col0
-                                Select Operator [SEL_56] (rows=1451943 width=106)
+                                Select Operator [SEL_56] (rows=1833333 width=1014)
                                   Output:["_col0"]
-                                  Filter Operator [FIL_55] (rows=1451943 width=106)
+                                  Filter Operator [FIL_55] (rows=1833333 width=1014)
                                     predicate:(sq_count_check(_col1) <= 1)
-                                    Group By Operator [GBY_54] (rows=4355830 width=106)
+                                    Group By Operator [GBY_54] (rows=5500000 width=1014)
                                       Output:["_col0","_col1"],aggregations:["count()"],keys:_col0
-                                      Group By Operator [GBY_49] (rows=8711661 width=106)
+                                      Group By Operator [GBY_49] (rows=11000000 width=1014)
                                         Output:["_col0"],keys:_col0
-                                        Select Operator [SEL_45] (rows=17423323 width=106)
+                                        Select Operator [SEL_45] (rows=22000000 width=1014)
                                           Output:["_col0"]
-                                          Group By Operator [GBY_44] (rows=17423323 width=106)
+                                          Group By Operator [GBY_44] (rows=22000000 width=1014)
                                             Output:["_col0","_col1","_col2"],aggregations:["sum(VALUE._col0)"],keys:KEY._col0, KEY._col1
                                           <-Reducer 16 [SIMPLE_EDGE]
                                             SHUFFLE [RS_43]
                                               PartitionCols:_col0
-                                              Group By Operator [GBY_42] (rows=34846646 width=106)
+                                              Group By Operator [GBY_42] (rows=44000000 width=1014)
                                                 Output:["_col0","_col1","_col2"],aggregations:["sum(_col3)"],keys:_col7, _col1
-                                                Merge Join Operator [MERGEJOIN_148] (rows=34846646 width=106)
+                                                Merge Join Operator [MERGEJOIN_148] (rows=44000000 width=1014)
                                                   Conds:RS_38._col2=RS_39._col0(Inner),Output:["_col1","_col3","_col7"]
                                                 <-Map 19 [SIMPLE_EDGE]
                                                   SHUFFLE [RS_39]
                                                     PartitionCols:_col0
-                                                    Select Operator [SEL_34] (rows=20000000 width=1014)
+                                                    Select Operator [SEL_34] (rows=40000000 width=1014)
                                                       Output:["_col0","_col1"]
-                                                      Filter Operator [FIL_140] (rows=20000000 width=1014)
-                                                        predicate:((ca_state = ca_state) and ca_address_sk is not null)
+                                                      Filter Operator [FIL_140] (rows=40000000 width=1014)
+                                                        predicate:(ca_address_sk is not null and ca_state is not null)
                                                         TableScan [TS_32] (rows=40000000 width=1014)
                                                           default@customer_address,customer_address,Tbl:COMPLETE,Col:NONE,Output:["ca_address_sk","ca_state"]
                                                 <-Reducer 15 [SIMPLE_EDGE]

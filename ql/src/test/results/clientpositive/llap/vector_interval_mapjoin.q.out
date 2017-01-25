@@ -208,8 +208,8 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterExprAndExpr(children: SelectColumnIsNotNull(col 8) -> boolean, SelectColumnIsNotNull(col 14)(children: DateColSubtractDateColumn(col 12, col 13)(children: CastTimestampToDate(col 10) -> 13:date) -> 14:timestamp) -> boolean) -> boolean
-                    predicate: (s is not null and (dt - CAST( ts AS DATE)) is not null) (type: boolean)
+                        predicateExpression: FilterExprAndExpr(children: SelectColumnIsNotNull(col 8) -> boolean, SelectColumnIsNotNull(col 12) -> boolean, SelectColumnIsNotNull(col 10) -> boolean) -> boolean
+                    predicate: (s is not null and dt is not null and ts is not null) (type: boolean)
                     Statistics: Num rows: 1000 Data size: 460264 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: s (type: string), (dt - CAST( ts AS DATE)) (type: interval_day_time)
@@ -274,8 +274,8 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterExprAndExpr(children: SelectColumnIsNotNull(col 8) -> boolean, SelectColumnIsNotNull(col 14)(children: DateColSubtractDateColumn(col 12, col 13)(children: CastTimestampToDate(col 10) -> 13:date) -> 14:timestamp) -> boolean) -> boolean
-                    predicate: (s is not null and (dt - CAST( ts AS DATE)) is not null) (type: boolean)
+                        predicateExpression: FilterExprAndExpr(children: SelectColumnIsNotNull(col 8) -> boolean, SelectColumnIsNotNull(col 12) -> boolean, SelectColumnIsNotNull(col 10) -> boolean) -> boolean
+                    predicate: (s is not null and dt is not null and ts is not null) (type: boolean)
                     Statistics: Num rows: 1000 Data size: 458448 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: s (type: string), (dt - CAST( ts AS DATE)) (type: interval_day_time)
