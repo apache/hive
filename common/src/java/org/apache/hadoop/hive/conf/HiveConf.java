@@ -3147,6 +3147,8 @@ public class HiveConf extends Configuration {
         "Maximum total data size in dynamic pruning."),
     NWAYJOINREORDER("hive.reorder.nway.joins", true,
       "Runs reordering of tables within single n-way join (i.e.: picks streamtable)"),
+    HIVE_MERGE_NWAY_JOINS("hive.merge.nway.joins", true,
+      "Merge adjacent joins into a single n-way join"),
     HIVE_LOG_N_RECORDS("hive.log.every.n.records", 0L, new RangeValidator(0L, null),
       "If value is greater than 0 logs in fixed intervals of size n rather than exponentially."),
     HIVE_MSCK_PATH_VALIDATION("hive.msck.path.validation", "throw",

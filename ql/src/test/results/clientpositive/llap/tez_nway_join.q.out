@@ -1,0 +1,501 @@
+PREHOOK: query: create temporary table foo (key int) stored as orc
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@foo
+POSTHOOK: query: create temporary table foo (key int) stored as orc
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@foo
+PREHOOK: query: create temporary table bar (key int) stored as orc
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@bar
+POSTHOOK: query: create temporary table bar (key int) stored as orc
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@bar
+PREHOOK: query: insert into foo values(1),(2),(3)
+PREHOOK: type: QUERY
+PREHOOK: Output: default@foo
+POSTHOOK: query: insert into foo values(1),(2),(3)
+POSTHOOK: type: QUERY
+POSTHOOK: Output: default@foo
+POSTHOOK: Lineage: foo.key EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+PREHOOK: query: insert into bar values(2),(4)
+PREHOOK: type: QUERY
+PREHOOK: Output: default@bar
+POSTHOOK: query: insert into bar values(2),(4)
+POSTHOOK: type: QUERY
+POSTHOOK: Output: default@bar
+POSTHOOK: Lineage: bar.key EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+PREHOOK: query: explain select count(*) from foo a join bar b on (a.key = b.key) join bar c on (a.key = c.key)
+PREHOOK: type: QUERY
+POSTHOOK: query: explain select count(*) from foo a join bar b on (a.key = b.key) join bar c on (a.key = c.key)
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Map 1 <- Map 3 (BROADCAST_EDGE), Map 4 (BROADCAST_EDGE)
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: a
+                  Statistics: Num rows: 46 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: key is not null (type: boolean)
+                    Statistics: Num rows: 46 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: key (type: int)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 46 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                      Map Join Operator
+                        condition map:
+                             Inner Join 0 to 1
+                             Inner Join 0 to 2
+                        keys:
+                          0 _col0 (type: int)
+                          1 _col0 (type: int)
+                          2 _col0 (type: int)
+                        input vertices:
+                          1 Map 3
+                          2 Map 4
+                        Statistics: Num rows: 101 Data size: 404 Basic stats: COMPLETE Column stats: NONE
+                        Group By Operator
+                          aggregations: count()
+                          mode: hash
+                          outputColumnNames: _col0
+                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                          Reduce Output Operator
+                            sort order: 
+                            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                            value expressions: _col0 (type: bigint)
+            Execution mode: llap
+            LLAP IO: all inputs
+        Map 3 
+            Map Operator Tree:
+                TableScan
+                  alias: b
+                  Statistics: Num rows: 45 Data size: 183 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: key is not null (type: boolean)
+                    Statistics: Num rows: 45 Data size: 183 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: key (type: int)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 45 Data size: 183 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: int)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: int)
+                        Statistics: Num rows: 45 Data size: 183 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: llap
+            LLAP IO: all inputs
+        Map 4 
+            Map Operator Tree:
+                TableScan
+                  alias: c
+                  Statistics: Num rows: 45 Data size: 183 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: key is not null (type: boolean)
+                    Statistics: Num rows: 45 Data size: 183 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: key (type: int)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 45 Data size: 183 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: int)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: int)
+                        Statistics: Num rows: 45 Data size: 183 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: explain select count(*) from foo a join bar b on (a.key = b.key) join bar c on (a.key = c.key)
+PREHOOK: type: QUERY
+POSTHOOK: query: explain select count(*) from foo a join bar b on (a.key = b.key) join bar c on (a.key = c.key)
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Map 1 <- Map 3 (BROADCAST_EDGE), Map 4 (BROADCAST_EDGE)
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: a
+                  Statistics: Num rows: 46 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: key is not null (type: boolean)
+                    Statistics: Num rows: 46 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: key (type: int)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 46 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                      Map Join Operator
+                        condition map:
+                             Inner Join 0 to 1
+                        keys:
+                          0 _col0 (type: int)
+                          1 _col0 (type: int)
+                        outputColumnNames: _col0
+                        input vertices:
+                          1 Map 3
+                        Statistics: Num rows: 50 Data size: 202 Basic stats: COMPLETE Column stats: NONE
+                        Map Join Operator
+                          condition map:
+                               Inner Join 0 to 1
+                          keys:
+                            0 _col0 (type: int)
+                            1 _col0 (type: int)
+                          input vertices:
+                            1 Map 4
+                          Statistics: Num rows: 55 Data size: 222 Basic stats: COMPLETE Column stats: NONE
+                          Group By Operator
+                            aggregations: count()
+                            mode: hash
+                            outputColumnNames: _col0
+                            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                            Reduce Output Operator
+                              sort order: 
+                              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                              value expressions: _col0 (type: bigint)
+            Execution mode: llap
+            LLAP IO: all inputs
+        Map 3 
+            Map Operator Tree:
+                TableScan
+                  alias: b
+                  Statistics: Num rows: 45 Data size: 183 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: key is not null (type: boolean)
+                    Statistics: Num rows: 45 Data size: 183 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: key (type: int)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 45 Data size: 183 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: int)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: int)
+                        Statistics: Num rows: 45 Data size: 183 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: llap
+            LLAP IO: all inputs
+        Map 4 
+            Map Operator Tree:
+                TableScan
+                  alias: c
+                  Statistics: Num rows: 45 Data size: 183 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: key is not null (type: boolean)
+                    Statistics: Num rows: 45 Data size: 183 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: key (type: int)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 45 Data size: 183 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: int)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: int)
+                        Statistics: Num rows: 45 Data size: 183 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select count(*) from foo a join bar b on (a.key = b.key) join bar c on (a.key = c.key)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@bar
+PREHOOK: Input: default@foo
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from foo a join bar b on (a.key = b.key) join bar c on (a.key = c.key)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@bar
+POSTHOOK: Input: default@foo
+#### A masked pattern was here ####
+1
+PREHOOK: query: select count(*) from foo a join bar b on (a.key = b.key) join bar c on (a.key = c.key)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@bar
+PREHOOK: Input: default@foo
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from foo a join bar b on (a.key = b.key) join bar c on (a.key = c.key)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@bar
+POSTHOOK: Input: default@foo
+#### A masked pattern was here ####
+1
+PREHOOK: query: explain select count(*) from foo a left outer join bar b on (a.key = b.key) left outer join bar c on (a.key = c.key)
+PREHOOK: type: QUERY
+POSTHOOK: query: explain select count(*) from foo a left outer join bar b on (a.key = b.key) left outer join bar c on (a.key = c.key)
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 4 (SIMPLE_EDGE), Map 5 (SIMPLE_EDGE)
+        Reducer 3 <- Reducer 2 (CUSTOM_SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: a
+                  Statistics: Num rows: 46 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: key (type: int)
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 46 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: _col0 (type: int)
+                      sort order: +
+                      Map-reduce partition columns: _col0 (type: int)
+                      Statistics: Num rows: 46 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: llap
+            LLAP IO: all inputs
+        Map 4 
+            Map Operator Tree:
+                TableScan
+                  alias: b
+                  Statistics: Num rows: 45 Data size: 183 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: key (type: int)
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 45 Data size: 183 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: _col0 (type: int)
+                      sort order: +
+                      Map-reduce partition columns: _col0 (type: int)
+                      Statistics: Num rows: 45 Data size: 183 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: llap
+            LLAP IO: all inputs
+        Map 5 
+            Map Operator Tree:
+                TableScan
+                  alias: c
+                  Statistics: Num rows: 45 Data size: 183 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: key (type: int)
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 45 Data size: 183 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: _col0 (type: int)
+                      sort order: +
+                      Map-reduce partition columns: _col0 (type: int)
+                      Statistics: Num rows: 45 Data size: 183 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Left Outer Join0 to 1
+                     Left Outer Join0 to 2
+                keys:
+                  0 _col0 (type: int)
+                  1 _col0 (type: int)
+                  2 _col0 (type: int)
+                Statistics: Num rows: 101 Data size: 404 Basic stats: COMPLETE Column stats: NONE
+                Group By Operator
+                  aggregations: count()
+                  mode: hash
+                  outputColumnNames: _col0
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                  Reduce Output Operator
+                    sort order: 
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                    value expressions: _col0 (type: bigint)
+        Reducer 3 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: explain select count(*) from foo a left outer join bar b on (a.key = b.key) left outer join bar c on (a.key = c.key)
+PREHOOK: type: QUERY
+POSTHOOK: query: explain select count(*) from foo a left outer join bar b on (a.key = b.key) left outer join bar c on (a.key = c.key)
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Map 1 <- Map 3 (BROADCAST_EDGE), Map 4 (BROADCAST_EDGE)
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: a
+                  Statistics: Num rows: 46 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: key (type: int)
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 46 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                    Map Join Operator
+                      condition map:
+                           Left Outer Join0 to 1
+                      keys:
+                        0 _col0 (type: int)
+                        1 _col0 (type: int)
+                      outputColumnNames: _col0
+                      input vertices:
+                        1 Map 3
+                      Statistics: Num rows: 50 Data size: 202 Basic stats: COMPLETE Column stats: NONE
+                      Map Join Operator
+                        condition map:
+                             Left Outer Join0 to 1
+                        keys:
+                          0 _col0 (type: int)
+                          1 _col0 (type: int)
+                        input vertices:
+                          1 Map 4
+                        Statistics: Num rows: 55 Data size: 222 Basic stats: COMPLETE Column stats: NONE
+                        Group By Operator
+                          aggregations: count()
+                          mode: hash
+                          outputColumnNames: _col0
+                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                          Reduce Output Operator
+                            sort order: 
+                            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                            value expressions: _col0 (type: bigint)
+            Execution mode: llap
+            LLAP IO: all inputs
+        Map 3 
+            Map Operator Tree:
+                TableScan
+                  alias: b
+                  Statistics: Num rows: 45 Data size: 183 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: key (type: int)
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 45 Data size: 183 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: _col0 (type: int)
+                      sort order: +
+                      Map-reduce partition columns: _col0 (type: int)
+                      Statistics: Num rows: 45 Data size: 183 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: llap
+            LLAP IO: all inputs
+        Map 4 
+            Map Operator Tree:
+                TableScan
+                  alias: c
+                  Statistics: Num rows: 45 Data size: 183 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: key (type: int)
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 45 Data size: 183 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: _col0 (type: int)
+                      sort order: +
+                      Map-reduce partition columns: _col0 (type: int)
+                      Statistics: Num rows: 45 Data size: 183 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+

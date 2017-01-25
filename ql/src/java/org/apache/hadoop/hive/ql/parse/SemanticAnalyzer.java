@@ -318,6 +318,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   protected boolean partialscan;
 
   protected volatile boolean disableJoinMerge = false;
+  protected final boolean defaultJoinMerge;
 
   /*
    * Capture the CTE definitions in a Query.
@@ -394,6 +395,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     mergeIsDirect = true;
     noscan = partialscan = false;
     tabNameToTabObject = new HashMap<>();
+    defaultJoinMerge = false == HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_MERGE_NWAY_JOINS);
+    disableJoinMerge = defaultJoinMerge;
   }
 
   @Override
@@ -423,7 +426,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     smbMapJoinContext.clear();
     opParseCtx.clear();
     groupOpToInputTables.clear();
-    disableJoinMerge = false;
+    disableJoinMerge = defaultJoinMerge;
     aliasToCTEs.clear();
     topToTable.clear();
     opToPartPruner.clear();
