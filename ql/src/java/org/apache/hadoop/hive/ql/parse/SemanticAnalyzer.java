@@ -1655,6 +1655,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           replaceViewReferenceWithDefinition(qb, tab, tab_name, alias);
           // This is the last time we'll see the Table objects for views, so add it to the inputs
           // now. isInsideView will tell if this view is embedded in another view.
+          // If the view is Inside another view, it should have at least one parent
+          if (qb.isInsideView() && parentInput == null) {
+            parentInput = PlanUtils.getParentViewInfo(getAliasId(alias, qb), viewAliasToInput);
+          }
           ReadEntity viewInput = new ReadEntity(tab, parentInput, !qb.isInsideView());
           viewInput = PlanUtils.addInput(inputs, viewInput);
           aliasToViewInfo.put(alias, new ObjectPair<String, ReadEntity>(fullViewName, viewInput));
