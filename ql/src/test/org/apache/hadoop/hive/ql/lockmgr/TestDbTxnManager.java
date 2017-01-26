@@ -20,11 +20,14 @@ package org.apache.hadoop.hive.ql.lockmgr;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.metastore.api.GetOpenTxnsInfoResponse;
 import org.apache.hadoop.hive.metastore.api.ShowLocksResponse;
 import org.apache.hadoop.hive.metastore.api.ShowLocksResponseElement;
+import org.apache.hadoop.hive.metastore.api.TxnState;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.txn.TxnDbUtil;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
+import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.QueryPlan;
@@ -46,6 +49,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+
+import static junit.framework.Assert.assertEquals;
 
 /**
  * Unit tests for {@link DbTxnManager}.
@@ -229,15 +234,13 @@ public class TestDbTxnManager {
     exception = null;
     ((DbTxnManager) txnMgr).openTxn(ctx, "AlexanderIII", HiveConf.getTimeVar(conf, HiveConf.ConfVars.HIVE_TXN_TIMEOUT, TimeUnit.MILLISECONDS) * 2);
     Thread.sleep(HiveConf.getTimeVar(conf, HiveConf.ConfVars.HIVE_TXN_TIMEOUT, TimeUnit.MILLISECONDS));
-    runReaper();
-    try {
-      txnMgr.rollbackTxn();
-    }
-    catch (LockException ex) {
-      exception = ex;
-    }
-    Assert.assertNotNull("Expected exception2", exception);
-    Assert.assertEquals("Wrong Exception2", ErrorMsg.TXN_ABORTED, exception.getCanonicalErrorMsg());
+    runReaper();//this will abort the txn
+    TxnStore txnHandler = TxnUtils.getTxnStore(conf);
+    GetOpenTxnsInfoResponse txnsInfo = txnHandler.getOpenTxnsInfo();
+    assertEquals(2, txnsInfo.getTxn_high_water_mark());
+    assertEquals(2, txnsInfo.getOpen_txns().size());
+    Assert.assertEquals(TxnState.ABORTED, txnsInfo.getOpen_txns().get(1).getState());
+    txnMgr.rollbackTxn();//this is idempotent
   }
 
   @Test
