@@ -212,7 +212,7 @@ public class GroupByOperator extends Operator<GroupByDesc> {
     keyObjectInspectors = new ObjectInspector[numKeys];
     currentKeyObjectInspectors = new ObjectInspector[numKeys];
     for (int i = 0; i < numKeys; i++) {
-      keyFields[i] = ExprNodeEvaluatorFactory.get(conf.getKeys().get(i));
+      keyFields[i] = ExprNodeEvaluatorFactory.get(conf.getKeys().get(i), hconf);
       keyObjectInspectors[i] = keyFields[i].initialize(rowInspector);
       currentKeyObjectInspectors[i] = ObjectInspectorUtils
         .getStandardObjectInspector(keyObjectInspectors[i],
@@ -258,7 +258,7 @@ public class GroupByOperator extends Operator<GroupByDesc> {
                 new ExprNodeColumnDesc(TypeInfoUtils.getTypeInfoFromObjectInspector(
                 sf.getFieldObjectInspector()),
                 keyField.getFieldName() + "." + sf.getFieldName(), null,
-                false));
+                false), hconf);
               unionExprEval.initialize(rowInspector);
             }
           }
@@ -283,7 +283,7 @@ public class GroupByOperator extends Operator<GroupByDesc> {
       aggregationParameterObjects[i] = new Object[parameters.size()];
       for (int j = 0; j < parameters.size(); j++) {
         aggregationParameterFields[i][j] = ExprNodeEvaluatorFactory
-            .get(parameters.get(j));
+            .get(parameters.get(j), hconf);
         aggregationParameterObjectInspectors[i][j] = aggregationParameterFields[i][j]
             .initialize(rowInspector);
         if (unionExprEval != null) {
@@ -352,6 +352,21 @@ public class GroupByOperator extends Operator<GroupByDesc> {
       }
     }
 
+    // grouping id should be pruned, which is the last of key columns
+    // see ColumnPrunerGroupByProc
+    outputKeyLength = conf.pruneGroupingSetId() ? keyFields.length - 1 : keyFields.length;
+
+    // init objectInspectors
+    ObjectInspector[] objectInspectors =
+            new ObjectInspector[outputKeyLength + aggregationEvaluators.length];
+    for (int i = 0; i < outputKeyLength; i++) {
+      objectInspectors[i] = currentKeyObjectInspectors[i];
+    }
+    for (int i = 0; i < aggregationEvaluators.length; i++) {
+      objectInspectors[outputKeyLength + i] = aggregationEvaluators[i].init(conf.getAggregators()
+              .get(i).getMode(), aggregationParameterObjectInspectors[i]);
+    }
+
     aggregationsParametersLastInvoke = new Object[conf.getAggregators().size()][];
     if ((conf.getMode() != GroupByDesc.Mode.HASH || conf.getBucketGroup()) &&
       (!groupingSetsPresent)) {
@@ -373,21 +388,6 @@ public class GroupByOperator extends Operator<GroupByDesc> {
     }
 
     List<String> fieldNames = new ArrayList<String>(conf.getOutputColumnNames());
-
-    // grouping id should be pruned, which is the last of key columns
-    // see ColumnPrunerGroupByProc
-    outputKeyLength = conf.pruneGroupingSetId() ? keyFields.length - 1 : keyFields.length;
-
-    // init objectInspectors
-    ObjectInspector[] objectInspectors =
-        new ObjectInspector[outputKeyLength + aggregationEvaluators.length];
-    for (int i = 0; i < outputKeyLength; i++) {
-      objectInspectors[i] = currentKeyObjectInspectors[i];
-    }
-    for (int i = 0; i < aggregationEvaluators.length; i++) {
-      objectInspectors[outputKeyLength + i] = aggregationEvaluators[i].init(conf.getAggregators()
-          .get(i).getMode(), aggregationParameterObjectInspectors[i]);
-    }
 
     outputObjInspector = ObjectInspectorFactory
         .getStandardStructObjectInspector(fieldNames, Arrays.asList(objectInspectors));

@@ -60,6 +60,24 @@ public class LlapObjectCache implements org.apache.hadoop.hive.ql.exec.ObjectCac
 
   @SuppressWarnings("unchecked")
   @Override
+  public <T> T retrieve(String key) throws HiveException {
+
+    T value = null;
+
+    lock.lock();
+    try {
+      value = (T) registry.getIfPresent(key);
+      if (value != null && isLogDebugEnabled) {
+        LOG.debug("Found " + key + " in cache");
+      }
+      return value;
+    } finally {
+      lock.unlock();
+    }
+  }
+
+  @SuppressWarnings("unchecked")
+  @Override
   public <T> T retrieve(String key, Callable<T> fn) throws HiveException {
 
     T value = null;

@@ -2802,6 +2802,11 @@ public class HiveConf extends Configuration {
 
     TEZ_DYNAMIC_PARTITION_PRUNING_MAX_DATA_SIZE("hive.tez.dynamic.partition.pruning.max.data.size", 100*1024*1024L,
         "Maximum total data size of events in dynamic pruning."),
+    TEZ_DYNAMIC_SEMIJOIN_REDUCTION("hive.tez.dynamic.semijoin.reduction", true,
+        "When dynamic semijoin is enabled, shuffle joins will perform a leaky semijoin before shuffle. This " +
+        "requires hive.tez.dynamic.partition.pruning to be enabled."),
+    TEZ_MAX_BLOOM_FILTER_ENTRIES("hive.tez.max.bloom.filter.entries", 100000000L,
+            "Bloom filter should be of at max certain size to be effective"),
     TEZ_SMB_NUMBER_WAVES(
         "hive.tez.smb.number.waves",
         (float) 0.5,

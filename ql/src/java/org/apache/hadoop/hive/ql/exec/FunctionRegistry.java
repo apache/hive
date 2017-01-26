@@ -367,6 +367,7 @@ public final class FunctionRegistry {
     system.registerGenericUDF("not", GenericUDFOPNot.class);
     system.registerGenericUDF("!", GenericUDFOPNot.class);
     system.registerGenericUDF("between", GenericUDFBetween.class);
+    system.registerGenericUDF("in_bloom_filter", GenericUDFInBloomFilter.class);
 
     system.registerGenericUDF("ewah_bitmap_and", GenericUDFEWAHBitmapAnd.class);
     system.registerGenericUDF("ewah_bitmap_or", GenericUDFEWAHBitmapOr.class);
@@ -424,6 +425,7 @@ public final class FunctionRegistry {
     system.registerGenericUDAF("ewah_bitmap", new GenericUDAFEWAHBitmap());
 
     system.registerGenericUDAF("compute_stats", new GenericUDAFComputeStats());
+    system.registerGenericUDAF("bloom_filter", new GenericUDAFBloomFilter());
 
     system.registerUDAF("percentile", UDAFPercentile.class);
 

@@ -31,6 +31,8 @@ import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
 
+import org.apache.hadoop.conf.Configuration;
+
 /**
  * The implementation of SearchArguments. Visible for testing only.
  */
@@ -57,27 +59,17 @@ public final class SearchArgumentImpl implements SearchArgument {
                              Type type,
                              String columnName,
                              Object literal,
-                             List<Object> literalList) {
+                             List<Object> literalList, Configuration conf) {
       this.operator = operator;
       this.type = type;
       this.columnName = columnName;
       this.literal = literal;
-      if (literal != null) {
-        if (literal.getClass() != type.getValueClass()) {
-          throw new IllegalArgumentException("Wrong value class " +
-              literal.getClass().getName() + " for " + type + "." + operator +
-              " leaf");
-        }
-      }
+      checkLiteralType(literal, type, conf);
       this.literalList = literalList;
       if (literalList != null) {
         Class valueCls = type.getValueClass();
         for(Object lit: literalList) {
-          if (lit != null && lit.getClass() != valueCls) {
-            throw new IllegalArgumentException("Wrong value class item " +
-                lit.getClass().getName() + " for " + type + "." + operator +
-                " leaf");
-          }
+          checkLiteralType(lit, type, conf);
         }
       }
     }
@@ -99,6 +91,10 @@ public final class SearchArgumentImpl implements SearchArgument {
 
     @Override
     public Object getLiteral() {
+      if (literal instanceof LiteralDelegate) {
+        return ((LiteralDelegate) literal).getLiteral();
+      }
+
       // To get around a kryo 2.22 bug while deserialize a Timestamp into Date
       // (https://github.com/EsotericSoftware/kryo/issues/88)
       // When we see a Date, convert back into Timestamp
@@ -110,6 +106,13 @@ public final class SearchArgumentImpl implements SearchArgument {
 
     @Override
     public List<Object> getLiteralList() {
+      if (literalList != null && literalList.size() > 0 && literalList.get(0) instanceof LiteralDelegate) {
+        List<Object> newLiteraList = new ArrayList<Object>();
+        for (Object litertalObj : literalList) {
+          newLiteraList.add(((LiteralDelegate) litertalObj).getLiteral());
+        }
+        return newLiteraList;
+      }
       return literalList;
     }
 
@@ -169,6 +172,23 @@ public final class SearchArgumentImpl implements SearchArgument {
       assert leaf instanceof PredicateLeafImpl;
       ((PredicateLeafImpl)leaf).columnName = newName;
     }
+
+    protected void checkLiteralType(Object literal, Type type, Configuration conf) {
+      if (literal == null) {
+        return;
+      }
+
+      if (literal instanceof LiteralDelegate) {
+        // Give it a pass. Optionally, have LiteralDelegate provide a getLiteralClass() to check.
+        ((LiteralDelegate) literal).setConf(conf);
+      } else {
+        if (literal.getClass() != type.getValueClass()) {
+          throw new IllegalArgumentException("Wrong value class " +
+              literal.getClass().getName() + " for " + type + "." + operator +
+              " leaf");
+        }
+      }
+    }
   }
 
   private final List<PredicateLeaf> leaves;
@@ -217,6 +237,11 @@ public final class SearchArgumentImpl implements SearchArgument {
   }
 
   static class BuilderImpl implements Builder {
+
+    Configuration conf;
+    public BuilderImpl(Configuration conf) {
+      this.conf = conf;
+    }
 
     // max threshold for CNF conversion. having >8 elements in andList will be
     // converted to maybe
@@ -291,7 +316,7 @@ public final class SearchArgumentImpl implements SearchArgument {
       } else {
         PredicateLeaf leaf =
             new PredicateLeafImpl(PredicateLeaf.Operator.LESS_THAN,
-                type, column, literal, null);
+                type, column, literal, null, conf);
         parent.getChildren().add(new ExpressionTree(addLeaf(leaf)));
       }
       return this;
@@ -306,7 +331,7 @@ public final class SearchArgumentImpl implements SearchArgument {
       } else {
         PredicateLeaf leaf =
             new PredicateLeafImpl(PredicateLeaf.Operator.LESS_THAN_EQUALS,
-                type, column, literal, null);
+                type, column, literal, null, conf);
         parent.getChildren().add(new ExpressionTree(addLeaf(leaf)));
       }
       return this;
@@ -321,7 +346,7 @@ public final class SearchArgumentImpl implements SearchArgument {
       } else {
         PredicateLeaf leaf =
             new PredicateLeafImpl(PredicateLeaf.Operator.EQUALS,
-                type, column, literal, null);
+                type, column, literal, null, conf);
         parent.getChildren().add(new ExpressionTree(addLeaf(leaf)));
       }
       return this;
@@ -336,7 +361,7 @@ public final class SearchArgumentImpl implements SearchArgument {
       } else {
         PredicateLeaf leaf =
             new PredicateLeafImpl(PredicateLeaf.Operator.NULL_SAFE_EQUALS,
-                type, column, literal, null);
+                type, column, literal, null, conf);
         parent.getChildren().add(new ExpressionTree(addLeaf(leaf)));
       }
       return this;
@@ -358,7 +383,7 @@ public final class SearchArgumentImpl implements SearchArgument {
 
         PredicateLeaf leaf =
             new PredicateLeafImpl(PredicateLeaf.Operator.IN,
-                type, column, null, argList);
+                type, column, null, argList, conf);
         parent.getChildren().add(new ExpressionTree(addLeaf(leaf)));
       }
       return this;
@@ -372,7 +397,7 @@ public final class SearchArgumentImpl implements SearchArgument {
       } else {
         PredicateLeaf leaf =
             new PredicateLeafImpl(PredicateLeaf.Operator.IS_NULL,
-                type, column, null, null);
+                type, column, null, null, conf);
         parent.getChildren().add(new ExpressionTree(addLeaf(leaf)));
       }
       return this;
@@ -390,7 +415,7 @@ public final class SearchArgumentImpl implements SearchArgument {
         argList.add(upper);
         PredicateLeaf leaf =
             new PredicateLeafImpl(PredicateLeaf.Operator.BETWEEN,
-                type, column, null, argList);
+                type, column, null, argList, conf);
         parent.getChildren().add(new ExpressionTree(addLeaf(leaf)));
       }
       return this;

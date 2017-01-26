@@ -50,6 +50,7 @@ import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.optimizer.ppr.PartitionPruner;
 import org.apache.hadoop.hive.ql.optimizer.unionproc.UnionProcContext;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer.AnalyzeRewriteContext;
+import org.apache.hadoop.hive.ql.parse.RuntimeValuesInfo;
 import org.apache.hadoop.hive.ql.plan.CreateTableDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
@@ -123,6 +124,11 @@ public class ParseContext {
   private boolean needViewColumnAuthorization;
   private Set<FileSinkDesc> acidFileSinks = Collections.emptySet();
 
+  // Map to store mapping between reduce sink Operator and TS Operator for semijoin
+  private Map<ReduceSinkOperator, TableScanOperator> rsOpToTsOpMap =
+          new HashMap<ReduceSinkOperator, TableScanOperator>();
+  private Map<ReduceSinkOperator, RuntimeValuesInfo> rsToRuntimeValuesInfo =
+          new HashMap<ReduceSinkOperator, RuntimeValuesInfo>();
 
   public ParseContext() {
   }
@@ -645,4 +651,19 @@ public class ParseContext {
     }
   }
 
+  public void setRsToRuntimeValuesInfoMap(Map<ReduceSinkOperator, RuntimeValuesInfo> rsToRuntimeValuesInfo) {
+    this.rsToRuntimeValuesInfo = rsToRuntimeValuesInfo;
+  }
+
+  public Map<ReduceSinkOperator, RuntimeValuesInfo> getRsToRuntimeValuesInfoMap() {
+    return rsToRuntimeValuesInfo;
+  }
+
+  public void setRsOpToTsOpMap(Map<ReduceSinkOperator, TableScanOperator> rsOpToTsOpMap) {
+    this.rsOpToTsOpMap = rsOpToTsOpMap;
+  }
+
+  public Map<ReduceSinkOperator, TableScanOperator> getRsOpToTsOpMap() {
+    return rsOpToTsOpMap;
+  }
 }

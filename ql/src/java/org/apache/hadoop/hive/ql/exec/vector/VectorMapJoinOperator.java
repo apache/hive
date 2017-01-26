@@ -153,7 +153,7 @@ public class VectorMapJoinOperator extends VectorMapJoinBaseOperator {
       VectorExpression vectorExpr = bigTableValueExpressions[i];
 
       // This is a vectorized aware evaluator
-      ExprNodeEvaluator eval = new ExprNodeEvaluator<ExprNodeDesc>(desc) {
+      ExprNodeEvaluator eval = new ExprNodeEvaluator<ExprNodeDesc>(desc, hconf) {
         int columnIndex;
         int writerIndex;
 

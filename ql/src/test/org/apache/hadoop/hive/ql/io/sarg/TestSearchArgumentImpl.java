@@ -79,7 +79,7 @@ public class TestSearchArgumentImpl {
                                                   Object literal,
                                                   List<Object> literalList) {
     return new SearchArgumentImpl.PredicateLeafImpl(operator, type, columnName,
-        literal, literalList);
+        literal, literalList, null);
   }
 
   @Test

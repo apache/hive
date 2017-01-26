@@ -121,14 +121,14 @@ public class JoinUtil {
   }
 
   public static int populateJoinKeyValue(List<ExprNodeEvaluator>[] outMap,
-      Map<Byte, List<ExprNodeDesc>> inputMap, int posBigTableAlias) throws HiveException {
-    return populateJoinKeyValue(outMap, inputMap, null, posBigTableAlias);
+      Map<Byte, List<ExprNodeDesc>> inputMap, int posBigTableAlias, Configuration conf) throws HiveException {
+    return populateJoinKeyValue(outMap, inputMap, null, posBigTableAlias, conf);
   }
 
   public static int populateJoinKeyValue(List<ExprNodeEvaluator>[] outMap,
       Map<Byte, List<ExprNodeDesc>> inputMap,
       Byte[] order,
-      int posBigTableAlias) throws HiveException {
+      int posBigTableAlias, Configuration conf) throws HiveException {
     int total = 0;
     for (Entry<Byte, List<ExprNodeDesc>> e : inputMap.entrySet()) {
       if (e.getValue() == null) {
@@ -140,7 +140,7 @@ public class JoinUtil {
         if (key == (byte) posBigTableAlias) {
           valueFields.add(null);
         } else {
-          valueFields.add(ExprNodeEvaluatorFactory.get(expr));
+          valueFields.add(ExprNodeEvaluatorFactory.get(expr, conf));
         }
       }
       outMap[key] = valueFields;

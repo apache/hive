@@ -18,21 +18,14 @@
 
 package org.apache.hadoop.hive.ql.io.sarg;
 
-import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.conf.Configurable;
 
 /**
- * A factory for creating SearchArguments, as well as modifying those created by this factory.
+ * Interface to retrieve a literal value
  */
-public class SearchArgumentFactory {
-  public static SearchArgument.Builder newBuilder() {
-    return newBuilder(null);
-  }
+public interface LiteralDelegate extends Configurable {
 
-  public static SearchArgument.Builder newBuilder(Configuration conf) {
-    return new SearchArgumentImpl.BuilderImpl(conf);
-  }
+  Object getLiteral();
 
-  public static void setPredicateLeafColumn(PredicateLeaf leaf, String newName) {
-    SearchArgumentImpl.PredicateLeafImpl.setColumnName(leaf, newName);
-  }
+  String getId();
 }

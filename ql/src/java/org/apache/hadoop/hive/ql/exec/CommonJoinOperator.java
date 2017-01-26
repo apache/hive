@@ -251,11 +251,11 @@ public abstract class CommonJoinOperator<T extends JoinDesc> extends
     noOuterJoin = conf.isNoOuterJoin();
 
     totalSz = JoinUtil.populateJoinKeyValue(joinValues, conf.getExprs(),
-        order,NOTSKIPBIGTABLE);
+        order,NOTSKIPBIGTABLE, hconf);
 
     //process join filters
     joinFilters = new List[tagLen];
-    JoinUtil.populateJoinKeyValue(joinFilters, conf.getFilters(),order,NOTSKIPBIGTABLE);
+    JoinUtil.populateJoinKeyValue(joinFilters, conf.getFilters(),order,NOTSKIPBIGTABLE, hconf);
 
 
     joinValuesObjectInspectors = JoinUtil.getObjectInspectorsFromEvaluators(joinValues,

@@ -28,13 +28,8 @@ import java.util.Stack;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
-import org.apache.hadoop.hive.ql.exec.FilterOperator;
-import org.apache.hadoop.hive.ql.exec.GroupByOperator;
-import org.apache.hadoop.hive.ql.exec.Operator;
-import org.apache.hadoop.hive.ql.exec.OperatorFactory;
-import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
-import org.apache.hadoop.hive.ql.exec.SelectOperator;
-import org.apache.hadoop.hive.ql.exec.TableScanOperator;
+import org.apache.hadoop.hive.ql.exec.*;
+import org.apache.hadoop.hive.ql.io.AcidUtils.Operation;
 import org.apache.hadoop.hive.ql.lib.DefaultGraphWalker;
 import org.apache.hadoop.hive.ql.lib.DefaultRuleDispatcher;
 import org.apache.hadoop.hive.ql.lib.Dispatcher;
@@ -50,20 +45,19 @@ import org.apache.hadoop.hive.ql.optimizer.spark.SparkPartitionPruningSinkDesc;
 import org.apache.hadoop.hive.ql.parse.OptimizeTezProcContext;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.PrunedPartitionList;
+import org.apache.hadoop.hive.ql.parse.RuntimeValuesInfo;
+import org.apache.hadoop.hive.ql.parse.SemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.spark.OptimizeSparkProcContext;
-import org.apache.hadoop.hive.ql.plan.AggregationDesc;
-import org.apache.hadoop.hive.ql.plan.DynamicPruningEventDesc;
-import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
-import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
-import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
-import org.apache.hadoop.hive.ql.plan.ExprNodeDescUtils;
-import org.apache.hadoop.hive.ql.plan.ExprNodeDynamicListDesc;
-import org.apache.hadoop.hive.ql.plan.FilterDesc;
-import org.apache.hadoop.hive.ql.plan.GroupByDesc;
-import org.apache.hadoop.hive.ql.plan.OperatorDesc;
-import org.apache.hadoop.hive.ql.plan.PlanUtils;
-import org.apache.hadoop.hive.ql.plan.SelectDesc;
+import org.apache.hadoop.hive.ql.plan.*;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFBloomFilter.GenericUDAFBloomFilterEvaluator;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator.Mode;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
+import org.apache.hadoop.yarn.api.protocolrecords.GetNewApplicationRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -148,15 +142,13 @@ public class DynamicPartitionPruningOptimization implements NodeProcessor {
     FilterOperator filter = (FilterOperator) nd;
     FilterDesc desc = filter.getConf();
 
-    TableScanOperator ts = null;
-
     if (!parseContext.getConf().getBoolVar(ConfVars.TEZ_DYNAMIC_PARTITION_PRUNING) &&
         !parseContext.getConf().getBoolVar(ConfVars.SPARK_DYNAMIC_PARTITION_PRUNING)) {
       // nothing to do when the optimization is off
       return null;
     }
 
-    DynamicPartitionPrunerContext removerContext = new DynamicPartitionPrunerContext();
+    TableScanOperator ts = null;
 
     if (filter.getParentOperators().size() == 1
         && filter.getParentOperators().get(0) instanceof TableScanOperator) {
@@ -169,14 +161,32 @@ public class DynamicPartitionPruningOptimization implements NodeProcessor {
       LOG.debug("TableScan: " + ts);
     }
 
+    DynamicPartitionPrunerContext removerContext = new DynamicPartitionPrunerContext();
+
     // collect the dynamic pruning conditions
     removerContext.dynLists.clear();
     collectDynamicPruningConditions(desc.getPredicate(), removerContext);
 
+    if (ts == null) {
+      // Replace the synthetic predicate with true and bail out
+      for (DynamicListContext ctx : removerContext) {
+        ExprNodeDesc constNode =
+                new ExprNodeConstantDesc(ctx.parent.getTypeInfo(), true);
+        replaceExprNode(ctx, desc, constNode);
+      }
+      return false;
+    }
+
+    final boolean semiJoin = parseContext.getConf().getBoolVar(ConfVars.TEZ_DYNAMIC_SEMIJOIN_REDUCTION);
+
     for (DynamicListContext ctx : removerContext) {
       String column = ExprNodeDescUtils.extractColName(ctx.parent);
+      boolean semiJoinAttempted = false;
 
-      if (ts != null && column != null) {
+      if (column != null) {
+        // Need unique IDs to refer to each min/max key value in the DynamicValueRegistry
+        String keyBaseAlias = "";
+
         Table table = ts.getConf().getTableMetadata();
 
         if (table != null && table.isPartitionKey(column)) {
@@ -203,25 +213,71 @@ public class DynamicPartitionPruningOptimization implements NodeProcessor {
           }
         } else {
           LOG.debug("Column " + column + " is not a partition column");
-        }
-      }
+          if (semiJoin && ts.getConf().getFilterExpr() != null) {
+            LOG.debug("Initiate semijoin reduction for " + column);
+            // Get the table name from which the min-max values will come.
+            Operator<?> op = ctx.generator;
+            while (!(op == null || op instanceof TableScanOperator)) {
+              op = op.getParentOperators().get(0);
+            }
+            String tableAlias = (op == null ? "" : ((TableScanOperator) op).getConf().getAlias());
+            keyBaseAlias = ctx.generator.getOperatorId() + "_" + tableAlias + "_" + column;
 
-      // we always remove the condition by replacing it with "true"
-      ExprNodeDesc constNode = new ExprNodeConstantDesc(ctx.parent.getTypeInfo(), true);
-      if (ctx.grandParent == null) {
-        desc.setPredicate(constNode);
+            semiJoinAttempted = generateSemiJoinOperatorPlan(ctx, parseContext, ts, keyBaseAlias);
+          }
+        }
+
+        // If semijoin is attempted then replace the condition with a min-max filter
+        // and bloom filter else,
+        // we always remove the condition by replacing it with "true"
+        if (semiJoinAttempted) {
+          List<ExprNodeDesc> betweenArgs = new ArrayList<ExprNodeDesc>();
+          betweenArgs.add(new ExprNodeConstantDesc(Boolean.FALSE)); // Do not invert between result
+          // add column expression here
+          betweenArgs.add(ctx.parent.getChildren().get(0));
+          betweenArgs.add(new ExprNodeDynamicValueDesc(new DynamicValue(keyBaseAlias + "_min", ctx.desc.getTypeInfo())));
+          betweenArgs.add(new ExprNodeDynamicValueDesc(new DynamicValue(keyBaseAlias + "_max", ctx.desc.getTypeInfo())));
+          ExprNodeDesc betweenNode = ExprNodeGenericFuncDesc.newInstance(
+                  FunctionRegistry.getFunctionInfo("between").getGenericUDF(), betweenArgs);
+          replaceExprNode(ctx, desc, betweenNode);
+          // add column expression for bloom filter
+          List<ExprNodeDesc> bloomFilterArgs = new ArrayList<ExprNodeDesc>();
+          bloomFilterArgs.add(ctx.parent.getChildren().get(0));
+          bloomFilterArgs.add(new ExprNodeDynamicValueDesc(
+                  new DynamicValue(keyBaseAlias + "_bloom_filter",
+                          TypeInfoFactory.binaryTypeInfo)));
+          ExprNodeDesc bloomFilterNode = ExprNodeGenericFuncDesc.newInstance(
+                  FunctionRegistry.getFunctionInfo("in_bloom_filter").
+                          getGenericUDF(), bloomFilterArgs);
+          // ctx may not have the grandparent but it is set in filterDesc by now.
+          ExprNodeDesc grandParent = ctx.grandParent == null ?
+                  desc.getPredicate() : ctx.grandParent;
+          grandParent.getChildren().add(bloomFilterNode);
+        } else {
+          ExprNodeDesc replaceNode = new ExprNodeConstantDesc(ctx.parent.getTypeInfo(), true);
+          replaceExprNode(ctx, desc, replaceNode);
+        }
       } else {
-        int i = ctx.grandParent.getChildren().indexOf(ctx.parent);
-        ctx.grandParent.getChildren().remove(i);
-        ctx.grandParent.getChildren().add(i, constNode);
+        ExprNodeDesc constNode =
+                new ExprNodeConstantDesc(ctx.parent.getTypeInfo(), true);
+        replaceExprNode(ctx, desc, constNode);
       }
     }
-
     // if we pushed the predicate into the table scan we need to remove the
     // synthetic conditions there.
     cleanTableScanFilters(ts);
 
     return false;
+  }
+
+  private void replaceExprNode(DynamicListContext ctx, FilterDesc desc, ExprNodeDesc node) {
+    if (ctx.grandParent == null) {
+      desc.setPredicate(node);
+    } else {
+      int i = ctx.grandParent.getChildren().indexOf(ctx.parent);
+      ctx.grandParent.getChildren().remove(i);
+      ctx.grandParent.getChildren().add(i, node);
+    }
   }
 
   private void cleanTableScanFilters(TableScanOperator ts) throws SemanticException {
@@ -325,6 +381,228 @@ public class DynamicPartitionPruningOptimization implements NodeProcessor {
       desc.setPartKey(partKey);
       OperatorFactory.getAndMakeChild(desc, groupByOp);
     }
+  }
+
+  // Generates plan for min/max when dynamic partition pruning is ruled out.
+  private boolean generateSemiJoinOperatorPlan(DynamicListContext ctx, ParseContext parseContext,
+      TableScanOperator ts, String keyBaseAlias) throws SemanticException {
+
+    // we will put a fork in the plan at the source of the reduce sink
+    Operator<? extends OperatorDesc> parentOfRS = ctx.generator.getParentOperators().get(0);
+
+    // we need the expr that generated the key of the reduce sink
+    ExprNodeDesc key = ctx.generator.getConf().getKeyCols().get(ctx.desc.getKeyIndex());
+
+    if (parentOfRS instanceof SelectOperator) {
+      // Make sure the semijoin branch is not on parition column.
+      String internalColName = null;
+      ExprNodeDesc exprNodeDesc = key;
+      // Find the ExprNodeColumnDesc
+      while (!(exprNodeDesc instanceof ExprNodeColumnDesc)) {
+        exprNodeDesc = exprNodeDesc.getChildren().get(0);
+      }
+      internalColName = ((ExprNodeColumnDesc) exprNodeDesc).getColumn();
+
+      ExprNodeColumnDesc colExpr = ((ExprNodeColumnDesc)(parentOfRS.
+              getColumnExprMap().get(internalColName)));
+      String colName = ExprNodeDescUtils.extractColName(colExpr);
+
+      // Fetch the TableScan Operator.
+      Operator<?> op = parentOfRS.getParentOperators().get(0);
+      while (op != null && !(op instanceof TableScanOperator)) {
+        op = op.getParentOperators().get(0);
+      }
+      assert op != null;
+
+      Table table = ((TableScanOperator) op).getConf().getTableMetadata();
+      if (table.isPartitionKey(colName)) {
+        // The column is partition column, skip the optimization.
+        return false;
+      }
+    }
+    List<ExprNodeDesc> keyExprs = new ArrayList<ExprNodeDesc>();
+    keyExprs.add(key);
+
+    // group by requires "ArrayList", don't ask.
+    ArrayList<String> outputNames = new ArrayList<String>();
+    outputNames.add(HiveConf.getColumnInternalName(0));
+
+    // project the relevant key column
+    SelectDesc select = new SelectDesc(keyExprs, outputNames);
+    SelectOperator selectOp =
+            (SelectOperator) OperatorFactory.getAndMakeChild(select,
+                    new RowSchema(parentOfRS.getSchema()), parentOfRS);
+
+    // do a group by to aggregate min,max and bloom filter.
+    float groupByMemoryUsage =
+            HiveConf.getFloatVar(parseContext.getConf(), HiveConf.ConfVars.HIVEMAPAGGRHASHMEMORY);
+    float memoryThreshold =
+            HiveConf.getFloatVar(parseContext.getConf(),
+                    HiveConf.ConfVars.HIVEMAPAGGRMEMORYTHRESHOLD);
+
+    ArrayList<ExprNodeDesc> groupByExprs = new ArrayList<ExprNodeDesc>();
+
+    // Add min/max and bloom filter aggregations
+    List<ObjectInspector> aggFnOIs = new ArrayList<ObjectInspector>();
+    aggFnOIs.add(key.getWritableObjectInspector());
+    ArrayList<ExprNodeDesc> params = new ArrayList<ExprNodeDesc>();
+    params.add(
+            new ExprNodeColumnDesc(key.getTypeInfo(), outputNames.get(0),
+                    "", false));
+
+    ArrayList<AggregationDesc> aggs = new ArrayList<AggregationDesc>();
+    try {
+      AggregationDesc min = new AggregationDesc("min",
+              FunctionRegistry.getGenericUDAFEvaluator("min", aggFnOIs, false, false),
+              params, false, Mode.PARTIAL1);
+      AggregationDesc max = new AggregationDesc("max",
+              FunctionRegistry.getGenericUDAFEvaluator("max", aggFnOIs, false, false),
+              params, false, Mode.PARTIAL1);
+      AggregationDesc bloomFilter = new AggregationDesc("bloom_filter",
+              FunctionRegistry.getGenericUDAFEvaluator("bloom_filter", aggFnOIs, false, false),
+              params, false, Mode.PARTIAL1);
+      GenericUDAFBloomFilterEvaluator bloomFilterEval = (GenericUDAFBloomFilterEvaluator) bloomFilter.getGenericUDAFEvaluator();
+      bloomFilterEval.setSourceOperator(selectOp);
+      bloomFilterEval.setMaxEntries(parseContext.getConf().getLongVar(ConfVars.TEZ_MAX_BLOOM_FILTER_ENTRIES));
+      bloomFilter.setGenericUDAFWritableEvaluator(bloomFilterEval);
+      aggs.add(min);
+      aggs.add(max);
+      aggs.add(bloomFilter);
+    } catch (SemanticException e) {
+      LOG.error("Error creating min/max aggregations on key", e);
+      throw new IllegalStateException("Error creating min/max aggregations on key", e);
+    }
+
+    // Create the Group by Operator
+    ArrayList<String> gbOutputNames = new ArrayList<String>();
+    gbOutputNames.add(SemanticAnalyzer.getColumnInternalName(0));
+    gbOutputNames.add(SemanticAnalyzer.getColumnInternalName(1));
+    gbOutputNames.add(SemanticAnalyzer.getColumnInternalName(2));
+    GroupByDesc groupBy = new GroupByDesc(GroupByDesc.Mode.HASH,
+            gbOutputNames, new ArrayList<ExprNodeDesc>(), aggs, false,
+            groupByMemoryUsage, memoryThreshold, null, false, 0, false);
+
+    ArrayList<ColumnInfo> groupbyColInfos = new ArrayList<ColumnInfo>();
+    groupbyColInfos.add(new ColumnInfo(gbOutputNames.get(0), key.getTypeInfo(), "", false));
+    groupbyColInfos.add(new ColumnInfo(gbOutputNames.get(1), key.getTypeInfo(), "", false));
+    groupbyColInfos.add(new ColumnInfo(gbOutputNames.get(2), key.getTypeInfo(), "", false));
+
+    GroupByOperator groupByOp = (GroupByOperator)OperatorFactory.getAndMakeChild(
+            groupBy, new RowSchema(groupbyColInfos), selectOp);
+
+    groupByOp.setColumnExprMap(new HashMap<String, ExprNodeDesc>());
+
+    // Get the column names of the aggregations for reduce sink
+    int colPos = 0;
+    ArrayList<ExprNodeDesc> rsValueCols = new ArrayList<ExprNodeDesc>();
+    for (int i = 0; i < aggs.size() - 1; i++) {
+      ExprNodeColumnDesc colExpr = new ExprNodeColumnDesc(key.getTypeInfo(),
+              gbOutputNames.get(colPos++), "", false);
+      rsValueCols.add(colExpr);
+    }
+
+    // Bloom Filter uses binary
+    ExprNodeColumnDesc colExpr = new ExprNodeColumnDesc(TypeInfoFactory.binaryTypeInfo,
+            gbOutputNames.get(colPos++), "", false);
+    rsValueCols.add(colExpr);
+
+    // Create the reduce sink operator
+    ReduceSinkDesc rsDesc = PlanUtils.getReduceSinkDesc(
+            new ArrayList<ExprNodeDesc>(), rsValueCols, gbOutputNames, false,
+            -1, 0, 1, Operation.NOT_ACID);
+    ReduceSinkOperator rsOp = (ReduceSinkOperator)OperatorFactory.getAndMakeChild(
+            rsDesc, new RowSchema(groupByOp.getSchema()), groupByOp);
+    Map<String, ExprNodeDesc> columnExprMap = new HashMap<String, ExprNodeDesc>();
+    rsOp.setColumnExprMap(columnExprMap);
+
+    // Create the final Group By Operator
+    ArrayList<AggregationDesc> aggsFinal = new ArrayList<AggregationDesc>();
+    try {
+      List<ObjectInspector> minFinalFnOIs = new ArrayList<ObjectInspector>();
+      List<ObjectInspector> maxFinalFnOIs = new ArrayList<ObjectInspector>();
+      List<ObjectInspector> bloomFilterFinalFnOIs = new ArrayList<ObjectInspector>();
+      ArrayList<ExprNodeDesc> minFinalParams = new ArrayList<ExprNodeDesc>();
+      ArrayList<ExprNodeDesc> maxFinalParams = new ArrayList<ExprNodeDesc>();
+      ArrayList<ExprNodeDesc> bloomFilterFinalParams = new ArrayList<ExprNodeDesc>();
+      // Use the expressions from Reduce Sink.
+      minFinalFnOIs.add(rsValueCols.get(0).getWritableObjectInspector());
+      maxFinalFnOIs.add(rsValueCols.get(1).getWritableObjectInspector());
+      bloomFilterFinalFnOIs.add(rsValueCols.get(2).getWritableObjectInspector());
+      // Coming from a ReduceSink the aggregations would be in the form VALUE._col0, VALUE._col1
+      minFinalParams.add(
+              new ExprNodeColumnDesc(
+                      rsValueCols.get(0).getTypeInfo(),
+                      Utilities.ReduceField.VALUE + "." +
+                              gbOutputNames.get(0), "", false));
+      maxFinalParams.add(
+              new ExprNodeColumnDesc(
+                      rsValueCols.get(1).getTypeInfo(),
+                      Utilities.ReduceField.VALUE + "." +
+                              gbOutputNames.get(1), "", false));
+      bloomFilterFinalParams.add(
+              new ExprNodeColumnDesc(
+                      rsValueCols.get(2).getTypeInfo(),
+                      Utilities.ReduceField.VALUE + "." +
+                              gbOutputNames.get(2), "", false));
+
+      AggregationDesc min = new AggregationDesc("min",
+              FunctionRegistry.getGenericUDAFEvaluator("min", minFinalFnOIs,
+                      false, false),
+              minFinalParams, false, Mode.FINAL);
+      AggregationDesc max = new AggregationDesc("max",
+              FunctionRegistry.getGenericUDAFEvaluator("max", maxFinalFnOIs,
+                      false, false),
+              maxFinalParams, false, Mode.FINAL);
+      AggregationDesc bloomFilter = new AggregationDesc("bloom_filter",
+              FunctionRegistry.getGenericUDAFEvaluator("bloom_filter", bloomFilterFinalFnOIs,
+                      false, false),
+              bloomFilterFinalParams, false, Mode.FINAL);
+      GenericUDAFBloomFilterEvaluator bloomFilterEval = (GenericUDAFBloomFilterEvaluator) bloomFilter.getGenericUDAFEvaluator();
+      bloomFilterEval.setSourceOperator(selectOp);
+      bloomFilterEval.setMaxEntries(parseContext.getConf().getLongVar(ConfVars.TEZ_MAX_BLOOM_FILTER_ENTRIES));
+      bloomFilter.setGenericUDAFWritableEvaluator(bloomFilterEval);
+
+      aggsFinal.add(min);
+      aggsFinal.add(max);
+      aggsFinal.add(bloomFilter);
+    } catch (SemanticException e) {
+      LOG.error("Error creating min/max aggregations on key", e);
+      throw new IllegalStateException("Error creating min/max aggregations on key", e);
+    }
+
+    GroupByDesc groupByDescFinal = new GroupByDesc(GroupByDesc.Mode.FINAL,
+            gbOutputNames, new ArrayList<ExprNodeDesc>(), aggsFinal, false,
+            groupByMemoryUsage, memoryThreshold, null, false, 0, false);
+    GroupByOperator groupByOpFinal = (GroupByOperator)OperatorFactory.getAndMakeChild(
+            groupByDescFinal, new RowSchema(rsOp.getSchema()), rsOp);
+    groupByOpFinal.setColumnExprMap(new HashMap<String, ExprNodeDesc>());
+
+    // Create the final Reduce Sink Operator
+    ReduceSinkDesc rsDescFinal = PlanUtils.getReduceSinkDesc(
+            new ArrayList<ExprNodeDesc>(), rsValueCols, gbOutputNames, false,
+            -1, 0, 1, Operation.NOT_ACID);
+    ReduceSinkOperator rsOpFinal = (ReduceSinkOperator)OperatorFactory.getAndMakeChild(
+            rsDescFinal, new RowSchema(groupByOpFinal.getSchema()), groupByOpFinal);
+    rsOpFinal.setColumnExprMap(columnExprMap);
+
+    LOG.debug("DynamicMinMaxPushdown: Saving RS to TS mapping: " + rsOpFinal + ": " + ts);
+    parseContext.getRsOpToTsOpMap().put(rsOpFinal, ts);
+
+    // Save the info that is required at query time to resolve dynamic/runtime values.
+    RuntimeValuesInfo runtimeValuesInfo = new RuntimeValuesInfo();
+    TableDesc rsFinalTableDesc = PlanUtils.getReduceValueTableDesc(
+            PlanUtils.getFieldSchemasFromColumnList(rsValueCols, "_col"));
+    List<String> dynamicValueIDs = new ArrayList<String>();
+    dynamicValueIDs.add(keyBaseAlias + "_min");
+    dynamicValueIDs.add(keyBaseAlias + "_max");
+    dynamicValueIDs.add(keyBaseAlias + "_bloom_filter");
+
+    runtimeValuesInfo.setTableDesc(rsFinalTableDesc);
+    runtimeValuesInfo.setDynamicValueIDs(dynamicValueIDs);
+    runtimeValuesInfo.setColExprs(rsValueCols);
+    parseContext.getRsToRuntimeValuesInfoMap().put(rsOpFinal, runtimeValuesInfo);
+
+    return true;
   }
 
   private Map<Node, Object> collectDynamicPruningConditions(ExprNodeDesc pred, NodeProcessorCtx ctx)

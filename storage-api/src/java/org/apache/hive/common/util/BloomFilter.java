@@ -18,6 +18,8 @@
 
 package org.apache.hive.common.util;
 
+import java.io.*;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -235,6 +237,55 @@ public class BloomFilter {
 
   public void reset() {
     this.bitSet.clear();
+  }
+
+  /**
+   * Serialize a bloom filter
+   * @param out output stream to write to
+   * @param bloomFilter BloomFilter that needs to be seralized
+   */
+  public static void serialize(OutputStream out, BloomFilter bloomFilter) throws IOException {
+    /**
+     * Serialized BloomFilter format:
+     * 1 byte for the number of hash functions.
+     * 1 big endian int(That is how OutputStream works) for the number of longs in the bitset
+     * big endina longs in the BloomFilter bitset
+     */
+    DataOutputStream dataOutputStream = new DataOutputStream(out);
+    dataOutputStream.writeByte(bloomFilter.numHashFunctions);
+    dataOutputStream.writeInt(bloomFilter.numBits);
+    for (long value : bloomFilter.getBitSet()) {
+      dataOutputStream.writeLong(value);
+    }
+  }
+
+  /**
+   * Deserialize a bloom filter
+   * Read a byte stream, which was written by {@linkplain #serialize(OutputStream, BloomFilter)}
+   * into a {@code BloomFilter}
+   * @param in input bytestream
+   * @return deserialized BloomFilter
+   */
+  public static BloomFilter deserialize(InputStream in) throws IOException {
+    if (in == null) {
+      throw new IOException("Input stream is null");
+    }
+
+    try {
+      DataInputStream dataInputStream = new DataInputStream(in);
+      int numHashFunc = dataInputStream.readByte();
+      int numBits = dataInputStream.readInt();
+      int sz = (numBits/Long.SIZE);
+      List<Long> data = new ArrayList<Long>();
+      for (int i = 0; i < sz; i++) {
+        data.add(dataInputStream.readLong());
+      }
+      return new BloomFilter(data, numBits, numHashFunc);
+    } catch (RuntimeException e) {
+      IOException io = new IOException( "Unable to deserialize BloomFilter");
+      io.initCause(e);
+      throw io;
+    }
   }
 
   /**

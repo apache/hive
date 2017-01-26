@@ -77,20 +77,24 @@ public class TestVectorizer {
 
   @Test
   public void testAggregateOnUDF() throws HiveException {
-    AggregationDesc aggDesc = new AggregationDesc();
-    aggDesc.setGenericUDAFName("sum");
-    ExprNodeGenericFuncDesc exprNodeDesc = new ExprNodeGenericFuncDesc();
-    exprNodeDesc.setTypeInfo(TypeInfoFactory.intTypeInfo);
-    ArrayList<ExprNodeDesc> params = new ArrayList<ExprNodeDesc>();
-    params.add(exprNodeDesc);
-    aggDesc.setParameters(params);
-    GenericUDFAbs absUdf = new GenericUDFAbs();
-    exprNodeDesc.setGenericUDF(absUdf);
-    List<ExprNodeDesc> children = new ArrayList<ExprNodeDesc>();
     ExprNodeColumnDesc colExprA = new ExprNodeColumnDesc(Integer.class, "col1", "T", false);
     ExprNodeColumnDesc colExprB = new ExprNodeColumnDesc(Integer.class, "col2", "T", false);
+
+    List<ExprNodeDesc> children = new ArrayList<ExprNodeDesc>();
     children.add(colExprA);
-    exprNodeDesc.setChildren(children);
+    ExprNodeGenericFuncDesc exprNodeDesc = new ExprNodeGenericFuncDesc(TypeInfoFactory.intTypeInfo, new GenericUDFAbs(), children);
+
+    ArrayList<ExprNodeDesc> params = new ArrayList<ExprNodeDesc>();
+    params.add(exprNodeDesc);
+
+    List<ObjectInspector> paramOIs = new ArrayList<ObjectInspector>();
+    paramOIs.add(exprNodeDesc.getWritableObjectInspector());
+
+    AggregationDesc aggDesc = new AggregationDesc("sum",
+        FunctionRegistry.getGenericUDAFEvaluator("sum", paramOIs, false, false),
+        params,
+        false,
+        GenericUDAFEvaluator.Mode.PARTIAL1);
 
     ArrayList<String> outputColumnNames = new ArrayList<String>();
     outputColumnNames.add("_col0");

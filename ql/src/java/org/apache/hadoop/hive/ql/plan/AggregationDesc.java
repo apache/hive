@@ -152,6 +152,13 @@ public class AggregationDesc implements java.io.Serializable {
       }
       sb.append(exp.getExprString());
     }
+
+    String evaluatorExpr = getGenericUDAFEvaluator().getExprString();
+    if (evaluatorExpr != null && !evaluatorExpr.isEmpty()) {
+      sb.append(", ");
+      sb.append(evaluatorExpr);
+    }
+
     sb.append(")");
     return sb.toString();
   }
