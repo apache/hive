@@ -61,7 +61,7 @@ public class PartExprEvalUtils {
     String[] partKeyTypes = pcolTypes.trim().split(":");
 
     if (partSpec.size() != partKeyTypes.length) {
-        throw new HiveException("Internal error : Partition Spec size, " + partProps.size() +
+        throw new HiveException("Internal error : Partition Spec size, " + partSpec.size() +
                 " doesn't match partition key definition size, " + partKeyTypes.length);
     }
     boolean hasVC = vcs != null && !vcs.isEmpty();
