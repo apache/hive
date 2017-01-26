@@ -10,4 +10,4 @@ POSTHOOK: Output: default@external2
 PREHOOK: type: ALTERTABLE_ADDPARTS
 #### A masked pattern was here ####
 PREHOOK: Output: default@external2
-FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. MetaException(message:Got exception: java.io.IOException No FileSystem for scheme: invalidscheme)
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. MetaException(message:MetaException(message:Got exception: java.io.IOException No FileSystem for scheme: invalidscheme))
