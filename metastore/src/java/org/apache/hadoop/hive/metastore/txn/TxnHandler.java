@@ -1395,6 +1395,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     throws MetaException {
     try {
       Connection dbConn = null;
+      Statement stmt = null;
       HeartbeatTxnRangeResponse rsp = new HeartbeatTxnRangeResponse();
       Set<Long> nosuch = new HashSet<Long>();
       Set<Long> aborted = new HashSet<Long>();
@@ -1408,11 +1409,32 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
          * would care about (which would have required SERIALIZABLE)
          */
         dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
+        /*do fast path first (in 1 statement) if doesn't work, rollback and do the long version*/
+        stmt = dbConn.createStatement();
+        List<String> queries = new ArrayList<>();
+        int numTxnsToHeartbeat = (int) (rqst.getMax() - rqst.getMin() + 1);
+        List<Long> txnIds = new ArrayList<>(numTxnsToHeartbeat);
+        for (long txn = rqst.getMin(); txn <= rqst.getMax(); txn++) {
+          txnIds.add(txn);
+        }
+        TxnUtils.buildQueryWithINClause(conf, queries,
+          new StringBuilder("update TXNS set txn_last_heartbeat = " + getDbTime(dbConn) +
+            " where txn_state = " + quoteChar(TXN_OPEN) + " and "),
+          new StringBuilder(""), txnIds, "txn_id", true, false);
+        int updateCnt = 0;
+        for (String query : queries) {
+          LOG.debug("Going to execute update <" + query + ">");
+          updateCnt += stmt.executeUpdate(query);
+        }
+        if (updateCnt == numTxnsToHeartbeat) {
+          //fast pass worked, i.e. all txns we were asked to heartbeat were Open as expected
+          dbConn.commit();
+          return rsp;
+        }
+        //if here, do the slow path so that we can return info txns which were not in expected state
+        dbConn.rollback();
         for (long txn = rqst.getMin(); txn <= rqst.getMax(); txn++) {
           try {
-            //todo: do all updates in 1 SQL statement and check update count
-            //if update count is less than was requested, go into more expensive checks
-            //for each txn
             heartbeatTxn(dbConn, txn);
           } catch (NoSuchTxnException e) {
             nosuch.add(txn);
@@ -1428,7 +1450,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         throw new MetaException("Unable to select from transaction database " +
           StringUtils.stringifyException(e));
       } finally {
-        closeDbConn(dbConn);
+        close(null, stmt, dbConn);
       }
     } catch (RetryException e) {
       return heartbeatTxnRange(rqst);

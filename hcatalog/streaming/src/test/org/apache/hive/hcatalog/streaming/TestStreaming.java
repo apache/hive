@@ -669,6 +669,25 @@ public class TestStreaming {
     Assert.assertEquals("Acquired timestamp didn't match", acquiredAt, lock.getAcquiredat());
     Assert.assertTrue("Expected new heartbeat (" + lock.getLastheartbeat() +
       ") == old heartbeat(" + heartbeatAt +")", lock.getLastheartbeat() == heartbeatAt);
+    txnBatch.close();
+    int txnBatchSize = 200;
+    txnBatch = connection.fetchTransactionBatch(txnBatchSize, writer);
+    for(int i = 0; i < txnBatchSize; i++) {
+      txnBatch.beginNextTransaction();
+      if(i % 47 == 0) {
+        txnBatch.heartbeat();
+      }
+      if(i % 10 == 0) {
+        txnBatch.abort();
+      }
+      else {
+        txnBatch.commit();
+      }
+      if(i % 37 == 0) {
+        txnBatch.heartbeat();
+      }
+    }
+    
   }
   @Test
   public void testTransactionBatchEmptyAbort() throws Exception {
