@@ -90,9 +90,11 @@ public class TestReplicationScenarios {
       WindowsPathUtil.convertPathsFromWindowsToHdfs(hconf);
     }
 
-    System.setProperty(HiveConf.ConfVars.METASTORE_EVENT_LISTENERS.varname,
+    hconf.setVar(HiveConf.ConfVars.METASTORE_EVENT_LISTENERS,
         DBNOTIF_LISTENER_CLASSNAME); // turn on db notification listener on metastore
-    msPort = MetaStoreUtils.startMetaStore();
+    hconf.setBoolVar(HiveConf.ConfVars.REPLCMENABLED, true);
+    hconf.setVar(HiveConf.ConfVars.REPLCMDIR, TEST_PATH + "/cmroot/");
+    msPort = MetaStoreUtils.startMetaStore(hconf);
     hconf.setVar(HiveConf.ConfVars.REPLDIR,TEST_PATH + "/hrepl/");
     hconf.setVar(HiveConf.ConfVars.METASTOREURIS, "thrift://localhost:"
         + msPort);
@@ -190,6 +192,87 @@ public class TestReplicationScenarios {
     verifyRun("SELECT a from " + dbName + "_dupe.ptned WHERE b=2", ptn_data_2);
     verifyRun("SELECT a from " + dbName + ".ptned_empty", empty);
     verifyRun("SELECT * from " + dbName + ".unptned_empty", empty);
+  }
+
+  @Test
+  public void testBasicWithCM() throws Exception {
+
+    String testName = "basic_with_cm";
+    LOG.info("Testing "+testName);
+    String dbName = testName + "_" + tid;
+
+    run("CREATE DATABASE " + dbName);
+    run("CREATE TABLE " + dbName + ".unptned(a string) STORED AS TEXTFILE");
+    run("CREATE TABLE " + dbName + ".ptned(a string) partitioned by (b int) STORED AS TEXTFILE");
+    run("CREATE TABLE " + dbName + ".unptned_empty(a string) STORED AS TEXTFILE");
+    run("CREATE TABLE " + dbName + ".ptned_empty(a string) partitioned by (b int) STORED AS TEXTFILE");
+
+    String[] unptn_data = new String[]{ "eleven" , "twelve" };
+    String[] ptn_data_1 = new String[]{ "thirteen", "fourteen", "fifteen"};
+    String[] ptn_data_2 = new String[]{ "fifteen", "sixteen", "seventeen"};
+    String[] ptn_data_2_later = new String[]{ "eighteen", "nineteen", "twenty"};
+    String[] empty = new String[]{};
+
+    String unptn_locn = new Path(TEST_PATH , testName + "_unptn").toUri().getPath();
+    String ptn_locn_1 = new Path(TEST_PATH , testName + "_ptn1").toUri().getPath();
+    String ptn_locn_2 = new Path(TEST_PATH , testName + "_ptn2").toUri().getPath();
+    String ptn_locn_2_later = new Path(TEST_PATH , testName + "_ptn2_later").toUri().getPath();
+
+    createTestDataFile(unptn_locn, unptn_data);
+    createTestDataFile(ptn_locn_1, ptn_data_1);
+    createTestDataFile(ptn_locn_2, ptn_data_2);
+    createTestDataFile(ptn_locn_2_later, ptn_data_2_later);
+
+    run("LOAD DATA LOCAL INPATH '" + unptn_locn + "' OVERWRITE INTO TABLE " + dbName + ".unptned");
+    run("SELECT * from " + dbName + ".unptned");
+    verifyResults(unptn_data);
+    run("LOAD DATA LOCAL INPATH '" + ptn_locn_1 + "' OVERWRITE INTO TABLE " + dbName + ".ptned PARTITION(b=1)");
+    run("SELECT a from " + dbName + ".ptned WHERE b=1");
+    verifyResults(ptn_data_1);
+    run("LOAD DATA LOCAL INPATH '" + ptn_locn_2 + "' OVERWRITE INTO TABLE " + dbName + ".ptned PARTITION(b=2)");
+    run("SELECT a from " + dbName + ".ptned WHERE b=2");
+    verifyResults(ptn_data_2);
+    run("SELECT a from " + dbName + ".ptned_empty");
+    verifyResults(empty);
+    run("SELECT * from " + dbName + ".unptned_empty");
+    verifyResults(empty);
+
+    advanceDumpDir();
+    run("REPL DUMP " + dbName);
+    String replDumpLocn = getResult(0,0);
+    String replDumpId = getResult(0,1,true);
+
+    // Table dropped after "repl dump"
+    run("DROP TABLE " + dbName + ".unptned");
+    // Partition droppped after "repl dump"
+    run("ALTER TABLE " + dbName + ".ptned " + "DROP PARTITION(b=1)");
+    // File changed after "repl dump"
+    Partition p = metaStoreClient.getPartition(dbName, "ptned", "b=2");
+    Path loc = new Path(p.getSd().getLocation());
+    FileSystem fs = loc.getFileSystem(hconf);
+    Path file = fs.listStatus(loc)[0].getPath();
+    fs.delete(file, false);
+    fs.copyFromLocalFile(new Path(ptn_locn_2_later), file);
+
+    run("EXPLAIN REPL LOAD " + dbName + "_dupe FROM '" + replDumpLocn + "'");
+    printOutput();
+    run("REPL LOAD " + dbName + "_dupe FROM '" + replDumpLocn + "'");
+
+    run("REPL STATUS " + dbName + "_dupe");
+    verifyResults(new String[] {replDumpId});
+
+    run("SELECT * from " + dbName + "_dupe.unptned");
+    verifyResults(unptn_data);
+    run("SELECT a from " + dbName + "_dupe.ptned WHERE b=1");
+    verifyResults(ptn_data_1);
+    // Since partition(b=2) changed manually, Hive cannot find
+    // it in original location and cmroot, thus empty
+    run("SELECT a from " + dbName + "_dupe.ptned WHERE b=2");
+    verifyResults(empty);
+    run("SELECT a from " + dbName + ".ptned_empty");
+    verifyResults(empty);
+    run("SELECT * from " + dbName + ".unptned_empty");
+    verifyResults(empty);
   }
 
   @Test
@@ -319,7 +402,6 @@ public class TestReplicationScenarios {
     run("LOAD DATA LOCAL INPATH '" + ptn_locn_2 + "' OVERWRITE INTO TABLE " + dbName + ".ptned3 PARTITION(b=2)");
     verifySetup("SELECT a from " + dbName + ".ptned2 WHERE b=2", ptn_data_2);
 
-
     // At this point, we've set up all the tables and ptns we're going to test drops across
     // Replicate it first, and then we'll drop it on the source.
 
@@ -390,6 +472,132 @@ public class TestReplicationScenarios {
     }
     assertNotNull(e2);
     assertEquals(NoSuchObjectException.class, e.getClass());
+  }
+
+  @Test
+  public void testDropsWithCM() throws IOException {
+
+    String testName = "drops_with_cm";
+    LOG.info("Testing "+testName);
+    String dbName = testName + "_" + tid;
+
+    run("CREATE DATABASE " + dbName);
+    run("CREATE TABLE " + dbName + ".unptned(a string) STORED AS TEXTFILE");
+    run("CREATE TABLE " + dbName + ".ptned(a string) partitioned by (b string) STORED AS TEXTFILE");
+    run("CREATE TABLE " + dbName + ".ptned2(a string) partitioned by (b string) STORED AS TEXTFILE");
+
+    String[] unptn_data = new String[]{ "eleven" , "twelve" };
+    String[] ptn_data_1 = new String[]{ "thirteen", "fourteen", "fifteen"};
+    String[] ptn_data_2 = new String[]{ "fifteen", "sixteen", "seventeen"};
+    String[] empty = new String[]{};
+
+    String unptn_locn = new Path(TEST_PATH , testName + "_unptn").toUri().getPath();
+    String ptn_locn_1 = new Path(TEST_PATH , testName + "_ptn1").toUri().getPath();
+    String ptn_locn_2 = new Path(TEST_PATH , testName + "_ptn2").toUri().getPath();
+
+    createTestDataFile(unptn_locn, unptn_data);
+    createTestDataFile(ptn_locn_1, ptn_data_1);
+    createTestDataFile(ptn_locn_2, ptn_data_2);
+
+    run("LOAD DATA LOCAL INPATH '" + unptn_locn + "' OVERWRITE INTO TABLE " + dbName + ".unptned");
+    run("SELECT * from " + dbName + ".unptned");
+    verifyResults(unptn_data);
+    run("LOAD DATA LOCAL INPATH '" + ptn_locn_1 + "' OVERWRITE INTO TABLE " + dbName + ".ptned PARTITION(b='1')");
+    run("SELECT a from " + dbName + ".ptned WHERE b='1'");
+    verifyResults(ptn_data_1);
+    run("LOAD DATA LOCAL INPATH '" + ptn_locn_2 + "' OVERWRITE INTO TABLE " + dbName + ".ptned PARTITION(b='2')");
+    run("SELECT a from " + dbName + ".ptned WHERE b='2'");
+    verifyResults(ptn_data_2);
+    run("LOAD DATA LOCAL INPATH '" + ptn_locn_1 + "' OVERWRITE INTO TABLE " + dbName + ".ptned2 PARTITION(b='1')");
+    run("SELECT a from " + dbName + ".ptned2 WHERE b='1'");
+    verifyResults(ptn_data_1);
+    run("LOAD DATA LOCAL INPATH '" + ptn_locn_2 + "' OVERWRITE INTO TABLE " + dbName + ".ptned2 PARTITION(b='2')");
+    run("SELECT a from " + dbName + ".ptned2 WHERE b='2'");
+    verifyResults(ptn_data_2);
+
+    advanceDumpDir();
+    run("REPL DUMP " + dbName);
+    String replDumpLocn = getResult(0,0);
+    String replDumpId = getResult(0,1,true);
+    run("EXPLAIN REPL LOAD " + dbName + "_dupe FROM '" + replDumpLocn + "'");
+    printOutput();
+    run("REPL LOAD " + dbName + "_dupe FROM '" + replDumpLocn + "'");
+
+    run("REPL STATUS " + dbName + "_dupe");
+    verifyResults(new String[] {replDumpId});
+
+    run("SELECT * from " + dbName + "_dupe.unptned");
+    verifyResults(unptn_data);
+    run("SELECT a from " + dbName + "_dupe.ptned WHERE b='1'");
+    verifyResults(ptn_data_1);
+    run("SELECT a from " + dbName + "_dupe.ptned WHERE b='2'");
+    verifyResults(ptn_data_2);
+    run("SELECT a from " + dbName + "_dupe.ptned2 WHERE b='1'");
+    verifyResults(ptn_data_1);
+    run("SELECT a from " + dbName + "_dupe.ptned2 WHERE b='2'");
+    verifyResults(ptn_data_2);
+
+    run("CREATE TABLE " + dbName + ".unptned_copy" + " AS SELECT a FROM " + dbName + ".unptned");
+    run("CREATE TABLE " + dbName + ".ptned_copy" + " LIKE " + dbName + ".ptned");
+    run("INSERT INTO TABLE " + dbName + ".ptned_copy" + " PARTITION(b='1') SELECT a FROM " +
+        dbName + ".ptned WHERE b='1'");
+    run("SELECT a from " + dbName + ".unptned_copy");
+    verifyResults(unptn_data);
+    run("SELECT a from " + dbName + ".ptned_copy");
+    verifyResults(ptn_data_1);
+
+    run("DROP TABLE " + dbName + ".unptned");
+    run("ALTER TABLE " + dbName + ".ptned DROP PARTITION (b='2')");
+    run("DROP TABLE " + dbName + ".ptned2");
+    run("SELECT a from " + dbName + ".ptned WHERE b=2");
+    verifyResults(empty);
+    run("SELECT a from " + dbName + ".ptned");
+    verifyResults(ptn_data_1);
+
+    advanceDumpDir();
+    run("REPL DUMP " + dbName + " FROM " + replDumpId);
+    String postDropReplDumpLocn = getResult(0,0);
+    String postDropReplDumpId = getResult(0,1,true);
+    LOG.info("Dumped to {} with id {}->{}", postDropReplDumpLocn, replDumpId, postDropReplDumpId);
+
+    // Drop table after dump
+    run("DROP TABLE " + dbName + ".unptned_copy");
+    // Drop partition after dump
+    run("ALTER TABLE " + dbName + ".ptned_copy DROP PARTITION(b='1')");
+
+    run("EXPLAIN REPL LOAD " + dbName + "_dupe FROM '" + postDropReplDumpLocn + "'");
+    printOutput();
+    run("REPL LOAD " + dbName + "_dupe FROM '" + postDropReplDumpLocn + "'");
+
+    Exception e = null;
+    try {
+      Table tbl = metaStoreClient.getTable(dbName + "_dupe", "unptned");
+      assertNull(tbl);
+    } catch (TException te) {
+      e = te;
+    }
+    assertNotNull(e);
+    assertEquals(NoSuchObjectException.class, e.getClass());
+
+    run("SELECT a from " + dbName + "_dupe.ptned WHERE b=2");
+    verifyResults(empty);
+    run("SELECT a from " + dbName + "_dupe.ptned");
+    verifyResults(ptn_data_1);
+
+    Exception e2 = null;
+    try {
+      Table tbl = metaStoreClient.getTable(dbName+"_dupe","ptned2");
+      assertNull(tbl);
+    } catch (TException te) {
+      e2 = te;
+    }
+    assertNotNull(e2);
+    assertEquals(NoSuchObjectException.class, e.getClass());
+
+    run("SELECT a from " + dbName + "_dupe.unptned_copy");
+    verifyResults(unptn_data);
+    run("SELECT a from " + dbName + "_dupe.ptned_copy");
+    verifyResults(ptn_data_1);
   }
 
   @Test

@@ -23,7 +23,6 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.FileChecksum;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -32,6 +31,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.MetaStoreEventListener;
 import org.apache.hadoop.hive.metastore.RawStore;
 import org.apache.hadoop.hive.metastore.RawStoreProxy;
+import org.apache.hadoop.hive.metastore.ReplChangeManager;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.Function;
@@ -59,7 +59,6 @@ import org.apache.hadoop.hive.metastore.events.LoadPartitionDoneEvent;
 import org.apache.hadoop.hive.metastore.messaging.EventMessage.EventType;
 import org.apache.hadoop.hive.metastore.messaging.MessageFactory;
 import org.apache.hadoop.hive.metastore.messaging.PartitionFiles;
-import org.apache.hadoop.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -223,7 +222,8 @@ public class DbNotificationListener extends MetaStoreEventListener {
       try {
         FileStatus file = files[i];
         i++;
-        return buildFileWithChksum(file.getPath(), fs);
+        return ReplChangeManager.encodeFileUri(file.getPath().toString(),
+            ReplChangeManager.getChksumString(file.getPath(), fs));
       } catch (IOException e) {
         throw new RuntimeException(e);
       }
@@ -518,16 +518,6 @@ public class DbNotificationListener extends MetaStoreEventListener {
       else ttl = (int)configTtl;
     }
 
-  }
-
-  String buildFileWithChksum(Path p, FileSystem fs) throws IOException {
-    FileChecksum cksum = fs.getFileChecksum(p);
-    String chksumString = null;
-    if (cksum != null) {
-      chksumString =
-          StringUtils.byteToHexString(cksum.getBytes(), 0, cksum.getLength());
-    }
-    return encodeFileUri(p.toString(), chksumString);
   }
 
   // TODO: this needs to be enhanced once change management based filesystem is implemented

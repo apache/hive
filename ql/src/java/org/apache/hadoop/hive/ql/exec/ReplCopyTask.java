@@ -18,6 +18,8 @@
 
 package org.apache.hadoop.hive.ql.exec;
 
+import org.apache.hadoop.hive.metastore.ReplChangeManager;
+import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.ql.parse.EximUtil;
 import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 import org.apache.hadoop.hive.ql.plan.CopyWork;
@@ -126,15 +128,16 @@ public class ReplCopyTask extends Task<ReplCopyWork> implements Serializable {
       for (FileStatus oneSrc : srcFiles) {
         console.printInfo("Copying file: " + oneSrc.getPath().toString());
         LOG.debug("Copying file: " + oneSrc.getPath().toString());
+
+        FileSystem actualSrcFs = null;
+        if (rwork.getReadListFromInput()){
+          // TODO : filesystemcache prevents this from being a perf nightmare, but we
+          // should still probably follow up to see if we need to do something better here.
+          actualSrcFs = oneSrc.getPath().getFileSystem(conf);
+        } else {
+          actualSrcFs = srcFs;
+        }
         if (!rwork.getListFilesOnOutputBehaviour(oneSrc)){
-          FileSystem actualSrcFs = null;
-          if (rwork.getReadListFromInput()){
-            // TODO : filesystemcache prevents this from being a perf nightmare, but we
-            // should still probably follow up to see if we need to do something better here.
-            actualSrcFs = oneSrc.getPath().getFileSystem(conf);
-          } else {
-            actualSrcFs = srcFs;
-          }
 
           LOG.debug("ReplCopyTask :cp:" + oneSrc.getPath() + "=>" + toPath);
           if (!FileUtils.copy(actualSrcFs, oneSrc.getPath(), dstFs, toPath,
@@ -148,7 +151,9 @@ public class ReplCopyTask extends Task<ReplCopyWork> implements Serializable {
         }else{
           LOG.debug("ReplCopyTask _files now tracks:" + oneSrc.getPath().toUri());
           console.printInfo("Tracking file: " + oneSrc.getPath().toUri());
-          listBW.write(oneSrc.getPath().toUri().toString() + "\n");
+          String chksumString = ReplChangeManager.getChksumString(oneSrc.getPath(), actualSrcFs);
+          listBW.write(ReplChangeManager.encodeFileUri
+              (oneSrc.getPath().toUri().toString(), chksumString) + "\n");
         }
       }
 
@@ -183,12 +188,16 @@ public class ReplCopyTask extends Task<ReplCopyWork> implements Serializable {
     String line = null;
     while ( (line = br.readLine()) != null){
       LOG.debug("ReplCopyTask :_filesReadLine:" + line);
-      String fileUriStr = EximUtil.getCMDecodedFileName(line);
-      // TODO HIVE-15490: Add checksum validation here
-      Path p = new Path(fileUriStr);
-      // TODO: again, fs cache should make this okay, but if not, revisit
-      FileSystem srcFs = p.getFileSystem(conf);
-      ret.add(srcFs.getFileStatus(p));
+
+      String[] fileWithChksum = ReplChangeManager.getFileWithChksumFromURI(line);
+      try {
+        FileStatus f = ReplChangeManager.getFileStatus(new Path(fileWithChksum[0]),
+            fileWithChksum[1], conf);
+        ret.add(f);
+      } catch (MetaException e) {
+        // skip and issue warning for missing file
+        LOG.warn("Cannot find " + fileWithChksum[0] + " in source repo or cmroot");
+      }
       // Note - we need srcFs rather than fs, because it is possible that the _files lists files
       // which are from a different filesystem than the fs where the _files file itself was loaded
       // from. Currently, it is possible, for eg., to do REPL LOAD hdfs://<ip>/dir/ and for the _files

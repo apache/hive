@@ -55,6 +55,7 @@ public class ReplChangeManager {
 
   public static final String ORIG_LOC_TAG = "user.original-loc";
   public static final String REMAIN_IN_TRASH_TAG = "user.remain-in-trash";
+  public static final String URI_FRAGMENT_SEPARATOR = "#";
 
   public static ReplChangeManager getInstance(HiveConf hiveConf) throws MetaException {
     if (instance == null) {
@@ -121,7 +122,7 @@ public class ReplChangeManager {
           count += recycle(file.getPath(), ifPurge);
         }
       } else {
-        Path cmPath = getCMPath(path, hiveConf, getCksumString(path, hiveConf));
+        Path cmPath = getCMPath(path, hiveConf, getChksumString(path, fs));
 
         if (LOG.isDebugEnabled()) {
           LOG.debug("Moving " + path.toString() + " to " + cmPath.toString());
@@ -151,7 +152,11 @@ public class ReplChangeManager {
           // Note we currently only track the last known trace as
           // xattr has limited capacity. We shall revisit and store all original
           // locations if orig-loc becomes important
-          fs.setXAttr(cmPath, ORIG_LOC_TAG, path.toString().getBytes());
+          try {
+            fs.setXAttr(cmPath, ORIG_LOC_TAG, path.toString().getBytes());
+          } catch (UnsupportedOperationException e) {
+            LOG.warn("Error setting xattr for " + path.toString());
+          }
 
           count++;
         }
@@ -159,7 +164,11 @@ public class ReplChangeManager {
         // If multiple files share the same content, then
         // any file claim remain in trash would be granted
         if (!ifPurge) {
-          fs.setXAttr(cmPath, REMAIN_IN_TRASH_TAG, new byte[]{0});
+          try {
+            fs.setXAttr(cmPath, REMAIN_IN_TRASH_TAG, new byte[]{0});
+          } catch (UnsupportedOperationException e) {
+            LOG.warn("Error setting xattr for " + cmPath.toString());
+          }
         }
       }
       return count;
@@ -169,14 +178,20 @@ public class ReplChangeManager {
   }
 
   // Get checksum of a file
-  static public String getCksumString(Path path, Configuration conf) throws IOException {
+  static public String getChksumString(Path path, FileSystem fs) throws IOException {
     // TODO: fs checksum only available on hdfs, need to
     //       find a solution for other fs (eg, local fs, s3, etc)
-    FileSystem fs = path.getFileSystem(conf);
+    String checksumString = null;
     FileChecksum checksum = fs.getFileChecksum(path);
-    String checksumString = StringUtils.byteToHexString(
-        checksum.getBytes(), 0, checksum.getLength());
+    if (checksum != null) {
+      checksumString = StringUtils.byteToHexString(
+          checksum.getBytes(), 0, checksum.getLength());
+    }
     return checksumString;
+  }
+
+  static public void setCmRoot(Path cmRoot) {
+    ReplChangeManager.cmroot = cmRoot;
   }
 
   /***
@@ -205,6 +220,69 @@ public class ReplChangeManager {
     return cmPath;
   }
 
+  /***
+   * Get original file specified by src and chksumString. If the file exists and checksum
+   * matches, return the file; otherwise, use chksumString to retrieve it from cmroot
+   * @param src Original file location
+   * @param chksumString Checksum of the original file
+   * @param conf
+   * @return Corresponding FileStatus object
+   * @throws MetaException
+   */
+  static public FileStatus getFileStatus(Path src, String chksumString,
+      HiveConf conf) throws MetaException {
+    try {
+      FileSystem srcFs = src.getFileSystem(conf);
+      if (chksumString == null) {
+        return srcFs.getFileStatus(src);
+      }
+
+      if (!srcFs.exists(src)) {
+        return srcFs.getFileStatus(getCMPath(src, conf, chksumString));
+      }
+
+      String currentChksumString = getChksumString(src, srcFs);
+      if (currentChksumString == null || chksumString.equals(currentChksumString)) {
+        return srcFs.getFileStatus(src);
+      } else {
+        return srcFs.getFileStatus(getCMPath(src, conf, chksumString));
+      }
+    } catch (IOException e) {
+      throw new MetaException(StringUtils.stringifyException(e));
+    }
+  }
+
+  /***
+   * Concatenate filename and checksum with "#"
+   * @param fileUriStr Filename string
+   * @param fileChecksum Checksum string
+   * @return Concatenated Uri string
+   */
+  // TODO: this needs to be enhanced once change management based filesystem is implemented
+  // Currently using fileuri#checksum as the format
+  static public String encodeFileUri(String fileUriStr, String fileChecksum) {
+    if (fileChecksum != null) {
+      return fileUriStr + URI_FRAGMENT_SEPARATOR + fileChecksum;
+    } else {
+      return fileUriStr;
+    }
+  }
+
+  /***
+   * Split uri with fragment into file uri and checksum
+   * @param fileURIStr uri with fragment
+   * @return array of file name and checksum
+   */
+  static public String[] getFileWithChksumFromURI(String fileURIStr) {
+    String[] uriAndFragment = fileURIStr.split(URI_FRAGMENT_SEPARATOR);
+    String[] result = new String[2];
+    result[0] = uriAndFragment[0];
+    if (uriAndFragment.length>1) {
+      result[1] = uriAndFragment[1];
+    }
+    return result;
+  }
+
   /**
    * Thread to clear old files of cmroot recursively
    */
@@ -231,24 +309,28 @@ public class ReplChangeManager {
         for (FileStatus file : files) {
           long modifiedTime = file.getModificationTime();
           if (now - modifiedTime > secRetain*1000) {
-            if (fs.getXAttrs(file.getPath()).containsKey(REMAIN_IN_TRASH_TAG)) {
-              boolean succ = Trash.moveToAppropriateTrash(fs, file.getPath(), hiveConf);
-              if (succ) {
-                if (LOG.isDebugEnabled()) {
-                  LOG.debug("Move " + file.toString() + " to trash");
+            try {
+              if (fs.getXAttrs(file.getPath()).containsKey(REMAIN_IN_TRASH_TAG)) {
+                boolean succ = Trash.moveToAppropriateTrash(fs, file.getPath(), hiveConf);
+                if (succ) {
+                  if (LOG.isDebugEnabled()) {
+                    LOG.debug("Move " + file.toString() + " to trash");
+                  }
+                } else {
+                  LOG.warn("Fail to move " + file.toString() + " to trash");
                 }
               } else {
-                LOG.warn("Fail to move " + file.toString() + " to trash");
-              }
-            } else {
-              boolean succ = fs.delete(file.getPath(), false);
-              if (succ) {
-                if (LOG.isDebugEnabled()) {
-                  LOG.debug("Remove " + file.toString());
+                boolean succ = fs.delete(file.getPath(), false);
+                if (succ) {
+                  if (LOG.isDebugEnabled()) {
+                    LOG.debug("Remove " + file.toString());
+                  }
+                } else {
+                  LOG.warn("Fail to remove " + file.toString());
                 }
-              } else {
-                LOG.warn("Fail to remove " + file.toString());
               }
+            } catch (UnsupportedOperationException e) {
+              LOG.warn("Error getting xattr for " + file.getPath().toString());
             }
           }
         }

@@ -53,6 +53,7 @@ public class TestReplChangeManager {
   private static Warehouse warehouse;
   private static MiniDFSCluster m_dfs;
   private static String cmroot;
+  private static FileSystem fs;
 
   @BeforeClass
   public static void setUp() throws Exception {
@@ -65,6 +66,7 @@ public class TestReplChangeManager {
     hiveConf.set(HiveConf.ConfVars.REPLCMDIR.varname, cmroot);
     hiveConf.setInt(CommonConfigurationKeysPublic.FS_TRASH_INTERVAL_KEY, 60);
     warehouse = new Warehouse(hiveConf);
+    fs = new Path(cmroot).getFileSystem(hiveConf);
     try {
       client = new HiveMetaStoreClient(hiveConf);
     } catch (Throwable e) {
@@ -151,15 +153,15 @@ public class TestReplChangeManager {
 
     Path part1Path = new Path(warehouse.getPartitionPath(db, tblName, ImmutableMap.of("dt", "20160101")), "part");
     createFile(part1Path, "p1");
-    String path1Chksum = ReplChangeManager.getCksumString(part1Path, hiveConf);
+    String path1Chksum = ReplChangeManager.getChksumString(part1Path, fs);
 
     Path part2Path = new Path(warehouse.getPartitionPath(db, tblName, ImmutableMap.of("dt", "20160102")), "part");
     createFile(part2Path, "p2");
-    String path2Chksum = ReplChangeManager.getCksumString(part2Path, hiveConf);
+    String path2Chksum = ReplChangeManager.getChksumString(part2Path, fs);
 
     Path part3Path = new Path(warehouse.getPartitionPath(db, tblName, ImmutableMap.of("dt", "20160103")), "part");
     createFile(part3Path, "p3");
-    String path3Chksum = ReplChangeManager.getCksumString(part3Path, hiveConf);
+    String path3Chksum = ReplChangeManager.getChksumString(part3Path, fs);
 
     Assert.assertTrue(part1Path.getFileSystem(hiveConf).exists(part1Path));
     Assert.assertTrue(part2Path.getFileSystem(hiveConf).exists(part2Path));
@@ -221,15 +223,15 @@ public class TestReplChangeManager {
 
     Path filePath1 = new Path(warehouse.getTablePath(db, tblName), "part1");
     createFile(filePath1, "f1");
-    String fileChksum1 = ReplChangeManager.getCksumString(filePath1, hiveConf);
+    String fileChksum1 = ReplChangeManager.getChksumString(filePath1, fs);
 
     Path filePath2 = new Path(warehouse.getTablePath(db, tblName), "part2");
     createFile(filePath2, "f2");
-    String fileChksum2 = ReplChangeManager.getCksumString(filePath2, hiveConf);
+    String fileChksum2 = ReplChangeManager.getChksumString(filePath2, fs);
 
     Path filePath3 = new Path(warehouse.getTablePath(db, tblName), "part3");
     createFile(filePath3, "f3");
-    String fileChksum3 = ReplChangeManager.getCksumString(filePath3, hiveConf);
+    String fileChksum3 = ReplChangeManager.getChksumString(filePath3, fs);
 
     Assert.assertTrue(filePath1.getFileSystem(hiveConf).exists(filePath1));
     Assert.assertTrue(filePath2.getFileSystem(hiveConf).exists(filePath2));
@@ -267,26 +269,26 @@ public class TestReplChangeManager {
     fs.mkdirs(dirTbl1);
     Path part11 = new Path(dirTbl1, "part1");
     createFile(part11, "testClearer11");
-    String fileChksum11 = ReplChangeManager.getCksumString(part11, hiveConf);
+    String fileChksum11 = ReplChangeManager.getChksumString(part11, fs);
     Path part12 = new Path(dirTbl1, "part2");
     createFile(part12, "testClearer12");
-    String fileChksum12 = ReplChangeManager.getCksumString(part12, hiveConf);
+    String fileChksum12 = ReplChangeManager.getChksumString(part12, fs);
     Path dirTbl2 = new Path(dirDb, "tbl2");
     fs.mkdirs(dirTbl2);
     Path part21 = new Path(dirTbl2, "part1");
     createFile(part21, "testClearer21");
-    String fileChksum21 = ReplChangeManager.getCksumString(part21, hiveConf);
+    String fileChksum21 = ReplChangeManager.getChksumString(part21, fs);
     Path part22 = new Path(dirTbl2, "part2");
     createFile(part22, "testClearer22");
-    String fileChksum22 = ReplChangeManager.getCksumString(part22, hiveConf);
+    String fileChksum22 = ReplChangeManager.getChksumString(part22, fs);
     Path dirTbl3 = new Path(dirDb, "tbl3");
     fs.mkdirs(dirTbl3);
     Path part31 = new Path(dirTbl3, "part1");
     createFile(part31, "testClearer31");
-    String fileChksum31 = ReplChangeManager.getCksumString(part31, hiveConf);
+    String fileChksum31 = ReplChangeManager.getChksumString(part31, fs);
     Path part32 = new Path(dirTbl3, "part2");
     createFile(part32, "testClearer32");
-    String fileChksum32 = ReplChangeManager.getCksumString(part32, hiveConf);
+    String fileChksum32 = ReplChangeManager.getChksumString(part32, fs);
 
     ReplChangeManager.getInstance(hiveConf).recycle(dirTbl1, false);
     ReplChangeManager.getInstance(hiveConf).recycle(dirTbl2, false);
