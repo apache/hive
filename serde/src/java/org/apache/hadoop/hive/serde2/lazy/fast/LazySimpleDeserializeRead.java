@@ -583,6 +583,10 @@ public final class LazySimpleDeserializeRead extends DeserializeRead {
        // U+FFFD will throw this as well
        logExceptionMessage(bytes, fieldStart, fieldLength, primitiveCategories[fieldIndex]);
        return false;
+    } catch (IllegalArgumentException iae) {
+       // E.g. can be thrown by Date.valueOf
+       logExceptionMessage(bytes, fieldStart, fieldLength, primitiveCategories[fieldIndex]);
+       return false;
     }
   }
 
