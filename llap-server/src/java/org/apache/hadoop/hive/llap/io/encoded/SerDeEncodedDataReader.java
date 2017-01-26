@@ -30,6 +30,7 @@ import java.util.Map;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.Pool.PoolObjectHelper;
 import org.apache.hadoop.hive.common.io.DataCache.BooleanRef;
 import org.apache.hadoop.hive.common.io.DiskRangeList;
@@ -48,9 +49,8 @@ import org.apache.hadoop.hive.llap.cache.SerDeLowLevelCacheImpl.FileData;
 import org.apache.hadoop.hive.llap.cache.SerDeLowLevelCacheImpl.StripeData;
 import org.apache.hadoop.hive.llap.counters.LlapIOCounters;
 import org.apache.hadoop.hive.llap.counters.QueryFragmentCounters;
-import org.apache.hadoop.hive.llap.io.api.LlapIo;
 import org.apache.hadoop.hive.llap.io.api.impl.LlapIoImpl;
-import org.apache.hadoop.hive.llap.io.decode.GenericColumnVectorProducer.TextStripeMetadata;
+import org.apache.hadoop.hive.llap.io.decode.GenericColumnVectorProducer.SerDeStripeMetadata;
 import org.apache.hadoop.hive.llap.io.decode.OrcEncodedDataConsumer;
 import org.apache.hadoop.hive.ql.io.HdfsUtils;
 import org.apache.hadoop.hive.ql.io.orc.OrcFile;
@@ -59,9 +59,11 @@ import org.apache.hadoop.hive.ql.io.orc.OrcInputFormat;
 import org.apache.hadoop.hive.ql.io.orc.WriterImpl;
 import org.apache.hadoop.hive.ql.io.orc.encoded.CacheChunk;
 import org.apache.hadoop.hive.ql.io.orc.encoded.Reader.OrcEncodedColumnBatch;
+import org.apache.hadoop.hive.ql.plan.PartitionDesc;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.mapred.FileSplit;
 import org.apache.hadoop.mapred.InputFormat;
@@ -137,12 +139,13 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
 
   private final SerDeLowLevelCacheImpl cache;
   private final BufferUsageManager bufferManager;
-  private final Configuration conf;
+  private final Configuration daemonConf;
   private final FileSplit split;
   private List<Integer> columnIds;
   private final OrcEncodedDataConsumer consumer;
   private final QueryFragmentCounters counters;
   private final UserGroupInformation ugi;
+  private final Map<String, PartitionDesc> parts;
 
   private final Object fileKey;
   private final FileSystem fs;
@@ -157,7 +160,7 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
   private final boolean isLrrEnabled;
 
   private final boolean[] writerIncludes;
-  private WriterImpl orcWriter = null;
+  private EncodingWriter writer = null;
   private CacheWriter cacheWriter = null;
   /**
    * Data from cache currently being processed. We store it here so that we could decref
@@ -165,16 +168,19 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
    * the consumer, at which point the consumer is responsible for it.
    */
   private FileData cachedData;
-  
+
   public SerDeEncodedDataReader(SerDeLowLevelCacheImpl cache,
       BufferUsageManager bufferManager, Configuration daemonConf, FileSplit split,
-      List<Integer> columnIds, OrcEncodedDataConsumer consumer,
-      JobConf jobConf, Reporter reporter, InputFormat<?, ?> sourceInputFormat,
-      Deserializer sourceSerDe, QueryFragmentCounters counters, TypeDescription schema)
+      List<Integer> columnIds, OrcEncodedDataConsumer consumer, JobConf jobConf, Reporter reporter,
+      InputFormat<?, ?> sourceInputFormat, Deserializer sourceSerDe,
+      QueryFragmentCounters counters, TypeDescription schema, Map<String, PartitionDesc> parts)
           throws IOException {
     this.cache = cache;
     this.bufferManager = bufferManager;
-    this.conf = daemonConf;
+    this.parts = parts;
+    this.daemonConf = new Configuration(daemonConf);
+    // Disable dictionary encoding for the writer.
+    this.daemonConf.setDouble(ConfVars.HIVE_ORC_DICTIONARY_KEY_SIZE_THRESHOLD.varname, 0);
     this.split = split;
     this.columnIds = columnIds;
     this.allocSize = determineAllocSize(bufferManager, daemonConf);
@@ -327,13 +333,16 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
     // These are global since ORC reuses objects between stripes.
     private final Map<StreamName, OutStream> streams = new HashMap<>();
     private final Map<Integer, List<CacheOutStream>> colStreams = new HashMap<>();
+    private final boolean doesSourceHaveIncludes;
 
-    public CacheWriter(BufferUsageManager bufferManager, int bufferSize, List<Integer> columnIds,
-        boolean[] writerIncludes) {
+    public CacheWriter(BufferUsageManager bufferManager, int bufferSize,
+        List<Integer> columnIds, boolean[] writerIncludes, boolean doesSourceHaveIncludes) {
       this.bufferManager = bufferManager;
       this.bufferSize = bufferSize;
       this.columnIds = columnIds;
+      assert writerIncludes != null; // Taken care of on higher level.
       this.writerIncludes = writerIncludes;
+      this.doesSourceHaveIncludes = doesSourceHaveIncludes;
       startStripe();
     }
 
@@ -359,10 +368,10 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
     }
 
     public void validateIncludes(OrcProto.Footer footer) throws IOException {
+      if (doesSourceHaveIncludes) return; // Irrelevant.
       boolean[] translatedIncludes = columnIds == null ? null : OrcInputFormat.genIncludedColumns(
           OrcUtils.convertTypeFromProtobuf(footer.getTypesList(), 0), columnIds);
-      if (translatedIncludes == null && writerIncludes == null) return;
-      if (translatedIncludes == null || writerIncludes == null) {
+      if (translatedIncludes == null) {
         throwIncludesMismatchError(translatedIncludes);
       }
       int len = Math.min(translatedIncludes.length, writerIncludes.length);
@@ -465,16 +474,28 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
         LlapIoImpl.LOG.trace(("Finalizing stripe " + footer.build() + " => " + si)
             .replace('\n', ' '));
       }
-      currentStripe.encodings = new ArrayList<>(allEnc);
-      for (int i = 0; i < currentStripe.encodings.size(); ++i) {
-        // Don't record encodings for unneeded columns.
-        if (writerIncludes == null || writerIncludes[i]) continue;
-        currentStripe.encodings.set(i, null);
+      if (doesSourceHaveIncludes) {
+        currentStripe.encodings = new ArrayList<>(writerIncludes.length);
+        for (int i = 0; i < writerIncludes.length; ++i) {
+          currentStripe.encodings.add(null);
+        }
+        currentStripe.encodings.set(0, allEnc.get(0));
+        for (int i = 1; i < allEnc.size(); ++i) {
+          int colIx = getSparseOrcIndexFromDenseDest(i);
+          // LlapIoImpl.LOG.info("Setting enc " + i + "; " + colIx + " to " + allEnc.get(i));
+          currentStripe.encodings.set(colIx, allEnc.get(i));
+        }
+      } else {
+        currentStripe.encodings = new ArrayList<>(allEnc);
+        for (int i = 0; i < currentStripe.encodings.size(); ++i) {
+          // Don't record encodings for unneeded columns.
+          if (writerIncludes[i]) continue;
+          currentStripe.encodings.set(i, null);
+        }
       }
       currentStripe.rowCount = si.getNumberOfRows();
       // ORC writer reuses streams, so we need to clean them here and extract data.
       for (Map.Entry<Integer, List<CacheOutStream>> e : colStreams.entrySet()) {
-        int colIx = e.getKey();
         List<CacheOutStream> streams = e.getValue();
         List<CacheStreamData> data = new ArrayList<>(streams.size());
         for (CacheOutStream stream : streams) {
@@ -488,9 +509,25 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
               buffers == null ? new ArrayList<MemoryBuffer>() : new ArrayList<>(buffers)));
           stream.clear();
         }
+        int colIx = e.getKey();
+        if (doesSourceHaveIncludes) {
+          int newColIx = getSparseOrcIndexFromDenseDest(colIx);
+          if (LlapIoImpl.LOG.isTraceEnabled()) {
+            LlapIoImpl.LOG.trace("Mapping the ORC writer column " + colIx + " to " + newColIx);
+          }
+          colIx = newColIx;
+        }
         currentStripe.colStreams.put(colIx, data);
       }
       startStripe();
+    }
+
+    private int getSparseOrcIndexFromDenseDest(int denseColIx) {
+      // denseColIx is index in ORC writer with includes. We -1 to skip the root column; get the
+      // original text file index; then add the root column again. This makes many assumptions.
+      // Also this only works for primitive types; vectordeserializer only supports these anyway.
+      // The mapping for complex types with sub-cols in ORC would be much more difficult to build.
+      return columnIds.get(denseColIx - 1) + 1;
     }
 
     @Override
@@ -506,7 +543,7 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
     }
 
     private boolean isNeeded(StreamName name) {
-      return writerIncludes == null || writerIncludes[name.getColumn()];
+      return doesSourceHaveIncludes || writerIncludes[name.getColumn()];
     }
 
     @Override
@@ -751,7 +788,8 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
       // have happened, someone should have supplied a split that ends inside the last row, i.e.
       // a few bytes earlier than the current split, which is pretty unlikely. What is more likely
       // is that the split, and the last row, both end at the end of file. Check for this.
-      long size =  split.getPath().getFileSystem(conf).getFileStatus(split.getPath()).getLen();
+      long size =  split.getPath().getFileSystem(
+          daemonConf).getFileStatus(split.getPath()).getLen();
       isUnfortunate = size > endOfSplit;
       if (isUnfortunate) {
         // Log at warn, given how unfortunate this is.
@@ -835,7 +873,7 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
     ColumnEncoding[] cacheEncodings = slice == null ? null : slice.getEncodings();
     LlapDataBuffer[][][] cacheData = slice == null ? null : slice.getData();
     long cacheRowCount = slice == null ? -1L : slice.getRowCount();
-    TextStripeMetadata metadata = new TextStripeMetadata(stripeIx);
+    SerDeStripeMetadata metadata = new SerDeStripeMetadata(stripeIx);
     StripeData sliceToCache = null;
     boolean hasAllData = csd == null;
     if (!hasAllData) {
@@ -979,9 +1017,15 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
       offsetReader = createOffsetReader(sourceReader);
       maySplitTheSplit = maySplitTheSplit && offsetReader.hasOffsets();
 
-      // Column IDs are only used to verify eventual writer includes.
-      cacheWriter = new CacheWriter(bufferManager, allocSize, columnIds, splitIncludes);
-      orcWriter = new WriterImpl(cacheWriter, null, createOrcWriterOptions());
+      // writer writes to orcWriter which writes to cacheWriter
+      // TODO: in due course, writer will also propagate row batches if it's capable
+      StructObjectInspector originalOi = (StructObjectInspector)getOiFromSerDe();
+      writer = VertorDeserializeOrcWriter.create(sourceInputFormat, sourceSerDe, parts,
+          daemonConf, jobConf, split.getPath(), originalOi, columnIds);
+      cacheWriter = new CacheWriter(
+          bufferManager, allocSize, columnIds, splitIncludes, writer.hasIncludes());
+      writer.init(new WriterImpl(cacheWriter, null,
+          createOrcWriterOptions(writer.getDestinationOi())));
 
       int rowsPerSlice = 0;
       long currentKnownTornStart = split.getStart();
@@ -994,15 +1038,11 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
         if (firstStartOffset == Long.MIN_VALUE) {
           firstStartOffset = lastStartOffset;
         }
-        Object row = null;
-        try {
-          row = sourceSerDe.deserialize(value);
-        } catch (SerDeException e) {
-          throw new IOException(e);
-        }
-        orcWriter.addRow(row);
+        writer.writeOneRow(value);
+
         if (maySplitTheSplit && ++rowsPerSlice == targetSliceRowCount) {
           assert offsetReader.hasOffsets();
+          writer.flushIntermediateData();
           long fileOffset = offsetReader.getCurrentRowEndOffset();
           // Must support offsets to be able to split.
           if (firstStartOffset < 0 || lastStartOffset < 0 || fileOffset < 0) {
@@ -1017,7 +1057,7 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
           lastStartOffset = Long.MIN_VALUE;
           firstStartOffset = Long.MIN_VALUE;
           rowsPerSlice = 0;
-          orcWriter.writeIntermediateFooter();
+          writer.writeIntermediateFooter();
         }
       }
       if (rowsPerSlice > 0 || (!maySplitTheSplit && hasData)) {
@@ -1042,8 +1082,8 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
             currentKnownTornStart, firstStartOffset, lastStartOffset, fileOffset);
       }
       // Close the writer to finalize the metadata. No catch since we cannot go on if this throws.
-      orcWriter.close();
-      orcWriter = null;
+      writer.close();
+      writer = null;
     } finally {
       // We don't need the source reader anymore.
       if (offsetReader != null) {
@@ -1063,20 +1103,81 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
     }
   }
 
-  private WriterOptions createOrcWriterOptions() throws IOException {
-    ObjectInspector sourceOi;
-    try {
-      sourceOi = sourceSerDe.getObjectInspector();
-    } catch (SerDeException e) {
-      throw new IOException(e);
+  interface EncodingWriter {
+    void writeOneRow(Writable row) throws IOException;
+    StructObjectInspector getDestinationOi();
+    void init(WriterImpl orcWriter);
+    boolean hasIncludes();
+    void writeIntermediateFooter() throws IOException;
+    void flushIntermediateData() throws IOException;
+    void close() throws IOException;
+  }
+
+  static class DeserialerOrcWriter implements EncodingWriter {
+    private WriterImpl orcWriter;
+    private final Deserializer sourceSerDe;
+    private final StructObjectInspector sourceOi;
+
+    public DeserialerOrcWriter(Deserializer sourceSerDe, StructObjectInspector sourceOi) {
+      this.sourceSerDe = sourceSerDe;
+      this.sourceOi = sourceOi;
     }
 
-    // TODO: ideally, we want to transform the rows to only have the included columns, and
-    //       only write those to the writer, with modified schema; then map back to full set later.
-    return OrcFile.writerOptions(conf).stripeSize(Long.MAX_VALUE).blockSize(Long.MAX_VALUE)
+    @Override
+    public void init(WriterImpl orcWriter) {
+      this.orcWriter = orcWriter;
+    }
+
+    @Override
+    public void close() throws IOException {
+      orcWriter.close();
+    }
+
+    @Override
+    public void writeOneRow(Writable value) throws IOException {
+      Object row = null;
+      try {
+        row = sourceSerDe.deserialize(value);
+      } catch (SerDeException e) {
+        throw new IOException(e);
+      }
+      orcWriter.addRow(row);
+    }
+
+    @Override
+    public void flushIntermediateData() {
+      // No-op.
+    }
+
+    @Override
+    public void writeIntermediateFooter() throws IOException {
+      orcWriter.writeIntermediateFooter();
+    }
+
+    @Override
+    public boolean hasIncludes() {
+      return false; // LazySimpleSerDe doesn't support projection.
+    }
+
+    @Override
+    public StructObjectInspector getDestinationOi() {
+      return sourceOi;
+    }
+  }
+
+  private WriterOptions createOrcWriterOptions(ObjectInspector sourceOi) throws IOException {
+    return OrcFile.writerOptions(daemonConf).stripeSize(Long.MAX_VALUE).blockSize(Long.MAX_VALUE)
         .rowIndexStride(Integer.MAX_VALUE) // For now, do not limit this - one RG per split
         .blockPadding(false).compress(CompressionKind.NONE).version(Version.CURRENT)
         .encodingStrategy(EncodingStrategy.SPEED).bloomFilterColumns(null).inspector(sourceOi);
+  }
+
+  private ObjectInspector getOiFromSerDe() throws IOException {
+    try {
+      return sourceSerDe.getObjectInspector();
+    } catch (SerDeException e) {
+      throw new IOException(e);
+    }
   }
 
   private ReaderWithOffsets createOffsetReader(RecordReader sourceReader) {
@@ -1125,10 +1226,10 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
 
 
   private void cleanupReaders() {
-    if (orcWriter != null) {
+    if (writer != null) {
       try {
-        orcWriter.close();
-        orcWriter = null;
+        writer.close();
+        writer = null;
       } catch (Exception ex) {
         LlapIoImpl.LOG.error("Failed to close ORC writer", ex);
       }

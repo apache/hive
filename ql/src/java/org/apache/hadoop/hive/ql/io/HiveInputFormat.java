@@ -219,12 +219,14 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
     boolean isSupported = inputFormat instanceof LlapWrappableInputFormatInterface;
     boolean isVectorized = Utilities.getUseVectorizedInputFileFormat(conf);
     if (!isVectorized) {
-      // Pretend it's vectorized.
+      // Pretend it's vectorized if the non-vector wrapped is enabled.
       isVectorized = HiveConf.getBoolVar(conf, ConfVars.LLAP_IO_NONVECTOR_WRAPPER_ENABLED)
           && (Utilities.getPlanPath(conf) != null);
     }
     boolean isSerdeBased = false;
-    if (isVectorized && !isSupported) {
+    if (isVectorized && !isSupported
+        && HiveConf.getBoolVar(conf, ConfVars.LLAP_IO_ENCODE_ENABLED)) {
+      // See if we can use re-encoding to read the format thru IO elevator.
       String formatList = HiveConf.getVar(conf, ConfVars.LLAP_IO_ENCODE_FORMATS);
       if (LOG.isDebugEnabled()) {
         LOG.debug("Checking " + ifName + " against " + formatList);
@@ -249,6 +251,7 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
     if (LOG.isDebugEnabled()) {
       LOG.debug("Wrapping " + ifName);
     }
+
     @SuppressWarnings("unchecked")
     LlapIo<VectorizedRowBatch> llapIo = LlapProxy.getIo();
     if (llapIo == null) {
@@ -277,7 +280,11 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
         throw new HiveException("Error creating SerDe for LLAP IO", e);
       }
     }
-    return castInputFormat(llapIo.getInputFormat(inputFormat, serde));
+    InputFormat<?, ?> wrappedIf = llapIo.getInputFormat(inputFormat, serde);
+    if (wrappedIf == null) {
+      return inputFormat; // We cannot wrap; the cause is logged inside.
+    }
+    return castInputFormat(wrappedIf);
   }
 
 

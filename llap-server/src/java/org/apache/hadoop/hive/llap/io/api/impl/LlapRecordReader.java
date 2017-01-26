@@ -23,6 +23,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.llap.ConsumerFeedback;
@@ -42,6 +44,7 @@ import org.apache.hadoop.hive.ql.io.sarg.ConvertAstToSearchArg;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.MapWork;
+import org.apache.hadoop.hive.ql.plan.PartitionDesc;
 import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.io.NullWritable;
@@ -131,7 +134,8 @@ class LlapRecordReader
 
     // Create the consumer of encoded data; it will coordinate decoding to CVBs.
     feedback = rp = cvp.createReadPipeline(this, split, columnIds, sarg, columnNames,
-        counters, schema, sourceInputFormat, sourceSerDe, reporter, job);
+        counters, schema, sourceInputFormat, sourceSerDe, reporter, job,
+        mapWork.getPathToPartitionInfo());
     fileSchema = rp.getFileSchema();
     includedColumns = rp.getIncludedColumns();
   }

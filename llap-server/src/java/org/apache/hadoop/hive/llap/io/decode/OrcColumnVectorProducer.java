@@ -20,8 +20,10 @@ package org.apache.hadoop.hive.llap.io.decode;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.llap.cache.BufferUsageManager;
 import org.apache.hadoop.hive.llap.cache.LowLevelCache;
@@ -32,8 +34,10 @@ import org.apache.hadoop.hive.llap.io.encoded.OrcEncodedDataReader;
 import org.apache.hadoop.hive.llap.io.metadata.OrcMetadataCache;
 import org.apache.hadoop.hive.llap.metrics.LlapDaemonCacheMetrics;
 import org.apache.hadoop.hive.llap.metrics.LlapDaemonIOMetrics;
+import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatchCtx;
 import org.apache.hadoop.hive.ql.io.orc.encoded.Consumer;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
+import org.apache.hadoop.hive.ql.plan.PartitionDesc;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.mapred.FileSplit;
 import org.apache.hadoop.mapred.InputFormat;
@@ -69,8 +73,8 @@ public class OrcColumnVectorProducer implements ColumnVectorProducer {
   public ReadPipeline createReadPipeline(
       Consumer<ColumnVectorBatch> consumer, FileSplit split, List<Integer> columnIds,
       SearchArgument sarg, String[] columnNames, QueryFragmentCounters counters,
-      TypeDescription readerSchema, InputFormat<?, ?> sourceInputFormat, Deserializer sourceSerDe,
-      Reporter reporter, JobConf job) throws IOException {
+      TypeDescription readerSchema, InputFormat<?, ?> unused0, Deserializer unused1,
+      Reporter reporter, JobConf job, Map<String, PartitionDesc> unused2) throws IOException {
     cacheMetrics.incrCacheReadRequests();
     OrcEncodedDataConsumer edc = new OrcEncodedDataConsumer(consumer, columnIds.size(),
         _skipCorrupt, counters, ioMetrics);

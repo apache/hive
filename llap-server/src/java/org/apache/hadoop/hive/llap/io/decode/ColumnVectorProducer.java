@@ -20,11 +20,14 @@ package org.apache.hadoop.hive.llap.io.decode;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.llap.counters.QueryFragmentCounters;
 import org.apache.hadoop.hive.llap.io.api.impl.ColumnVectorBatch;
 import org.apache.hadoop.hive.ql.io.orc.encoded.Consumer;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
+import org.apache.hadoop.hive.ql.plan.PartitionDesc;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.mapred.FileSplit;
 import org.apache.hadoop.mapred.InputFormat;
@@ -40,5 +43,5 @@ public interface ColumnVectorProducer {
       List<Integer> columnIds, SearchArgument sarg, String[] columnNames,
       QueryFragmentCounters counters, TypeDescription readerSchema,
       InputFormat<?, ?> sourceInputFormat, Deserializer sourceSerDe, Reporter reporter,
-      JobConf job) throws IOException;
+      JobConf job, Map<String, PartitionDesc> parts) throws IOException;
 }

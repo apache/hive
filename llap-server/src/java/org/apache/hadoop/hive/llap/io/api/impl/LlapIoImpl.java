@@ -117,6 +117,7 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch> {
     LowLevelCache cache = null;
     SerDeLowLevelCacheImpl serdeCache = null; // TODO: extract interface when needed
     BufferUsageManager bufferManager = null;
+    boolean isEncodeEnabled = HiveConf.getBoolVar(conf, ConfVars.LLAP_IO_ENCODE_ENABLED);
     if (useLowLevelCache) {
       // Memory manager uses cache policy to trigger evictions, so create the policy first.
       boolean useLrfu = HiveConf.getBoolVar(conf, HiveConf.ConfVars.LLAP_USE_LRFU);
@@ -130,15 +131,17 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch> {
       this.allocator = allocator;
       LowLevelCacheImpl cacheImpl = new LowLevelCacheImpl(
           cacheMetrics, cachePolicy, allocator, true);
-      SerDeLowLevelCacheImpl serdeCacheImpl = new SerDeLowLevelCacheImpl(
-          cacheMetrics, cachePolicy, allocator);
       cache = cacheImpl;
-      serdeCache = serdeCacheImpl;
+      if (isEncodeEnabled) {
+        SerDeLowLevelCacheImpl serdeCacheImpl = new SerDeLowLevelCacheImpl(
+            cacheMetrics, cachePolicy, allocator);
+        serdeCache = serdeCacheImpl;
+      }
       boolean useGapCache = HiveConf.getBoolVar(conf, ConfVars.LLAP_CACHE_ENABLE_ORC_GAP_CACHE);
       metadataCache = new OrcMetadataCache(memManager, cachePolicy, useGapCache);
       // And finally cache policy uses cache to notify it of eviction. The cycle is complete!
       cachePolicy.setEvictionListener(new EvictionDispatcher(
-          cache, serdeCacheImpl, metadataCache, allocator));
+          cache, serdeCache, metadataCache, allocator));
       cachePolicy.setParentDebugDumper(cacheImpl);
       cacheImpl.startThreads(); // Start the cache threads.
       bufferManager = cacheImpl; // Cache also serves as buffer manager.
@@ -157,8 +160,8 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch> {
     // TODO: this should depends on input format and be in a map, or something.
     this.orcCvp = new OrcColumnVectorProducer(
         metadataCache, cache, bufferManager, conf, cacheMetrics, ioMetrics);
-    this.genericCvp = new GenericColumnVectorProducer(
-        serdeCache, bufferManager, conf, cacheMetrics, ioMetrics);
+    this.genericCvp = isEncodeEnabled ? new GenericColumnVectorProducer(
+        serdeCache, bufferManager, conf, cacheMetrics, ioMetrics) : null;
     LOG.info("LLAP IO initialized");
 
     registerMXBeans();
@@ -175,6 +178,9 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch> {
     ColumnVectorProducer cvp = genericCvp;
     if (sourceInputFormat instanceof OrcInputFormat) {
       cvp = orcCvp; // Special-case for ORC.
+    } else if (cvp == null) {
+      LOG.warn("LLAP encode is disabled; cannot use for " + sourceInputFormat.getClass());
+      return null;
     }
     return new LlapInputFormat(sourceInputFormat, sourceSerDe, cvp, executor);
   }

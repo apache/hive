@@ -21,9 +21,11 @@ package org.apache.hadoop.hive.llap.io.decode;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.TimeZone;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.llap.cache.BufferUsageManager;
 import org.apache.hadoop.hive.llap.cache.SerDeLowLevelCacheImpl;
 import org.apache.hadoop.hive.llap.counters.QueryFragmentCounters;
@@ -34,9 +36,11 @@ import org.apache.hadoop.hive.llap.io.metadata.ConsumerFileMetadata;
 import org.apache.hadoop.hive.llap.io.metadata.ConsumerStripeMetadata;
 import org.apache.hadoop.hive.llap.metrics.LlapDaemonCacheMetrics;
 import org.apache.hadoop.hive.llap.metrics.LlapDaemonIOMetrics;
+import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatchCtx;
 import org.apache.hadoop.hive.ql.io.orc.OrcInputFormat;
 import org.apache.hadoop.hive.ql.io.orc.encoded.Consumer;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
+import org.apache.hadoop.hive.ql.plan.PartitionDesc;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
@@ -75,13 +79,14 @@ public class GenericColumnVectorProducer implements ColumnVectorProducer {
   public ReadPipeline createReadPipeline(Consumer<ColumnVectorBatch> consumer, FileSplit split,
       List<Integer> columnIds, SearchArgument sarg, String[] columnNames,
       QueryFragmentCounters counters, TypeDescription schema, InputFormat<?, ?> sourceInputFormat,
-      Deserializer sourceSerDe, Reporter reporter, JobConf job) throws IOException {
+      Deserializer sourceSerDe, Reporter reporter, JobConf job, Map<String, PartitionDesc> parts)
+          throws IOException {
     cacheMetrics.incrCacheReadRequests();
     OrcEncodedDataConsumer edc = new OrcEncodedDataConsumer(
         consumer, columnIds.size(), false, counters, ioMetrics);
-    TextFileMetadata fm;
+    SerDeFileMetadata fm;
     try {
-      fm = new TextFileMetadata(sourceSerDe);
+      fm = new SerDeFileMetadata(sourceSerDe);
     } catch (SerDeException e) {
       throw new IOException(e);
     }
@@ -89,7 +94,7 @@ public class GenericColumnVectorProducer implements ColumnVectorProducer {
     // Note that we pass job config to the record reader, but use global config for LLAP IO.
     SerDeEncodedDataReader reader = new SerDeEncodedDataReader(cache,
         bufferManager, conf, split, columnIds, edc, job, reporter, sourceInputFormat,
-        sourceSerDe, counters, fm.getSchema());
+        sourceSerDe, counters, fm.getSchema(), parts);
     edc.init(reader, reader);
     if (LlapIoImpl.LOG.isDebugEnabled()) {
       LlapIoImpl.LOG.debug("Ignoring schema: " + schema);
@@ -98,14 +103,14 @@ public class GenericColumnVectorProducer implements ColumnVectorProducer {
   }
 
 
-  public static final class TextStripeMetadata implements ConsumerStripeMetadata {
+  public static final class SerDeStripeMetadata implements ConsumerStripeMetadata {
     // The writer is local to the process.
     private final String writerTimezone = TimeZone.getDefault().getID();
     private List<ColumnEncoding> encodings;
     private final int stripeIx;
     private long rowCount = -1;
 
-    public TextStripeMetadata(int stripeIx) {
+    public SerDeStripeMetadata(int stripeIx) {
       this.stripeIx = stripeIx;
     }
 
@@ -159,10 +164,10 @@ public class GenericColumnVectorProducer implements ColumnVectorProducer {
   }
 
 
-  private static final class TextFileMetadata implements ConsumerFileMetadata {
+  private static final class SerDeFileMetadata implements ConsumerFileMetadata {
     private final List<Type> orcTypes = new ArrayList<>();
     private final TypeDescription schema;
-    public TextFileMetadata(Deserializer sourceSerDe) throws SerDeException {
+    public SerDeFileMetadata(Deserializer sourceSerDe) throws SerDeException {
       TypeDescription schema = OrcInputFormat.convertTypeInfo(
           TypeInfoUtils.getTypeInfoFromObjectInspector(sourceSerDe.getObjectInspector()));
       this.schema = schema;
