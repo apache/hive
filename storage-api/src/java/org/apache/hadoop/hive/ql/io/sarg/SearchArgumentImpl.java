@@ -59,6 +59,14 @@ public final class SearchArgumentImpl implements SearchArgument {
                              Type type,
                              String columnName,
                              Object literal,
+                             List<Object> literalList) {
+      this(operator, type, columnName, literal, literalList, null);
+    }
+
+    public PredicateLeafImpl(Operator operator,
+                             Type type,
+                             String columnName,
+                             Object literal,
                              List<Object> literalList, Configuration conf) {
       this.operator = operator;
       this.type = type;

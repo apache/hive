@@ -34,11 +34,11 @@ POSTHOOK: query: ALTER TABLE orc_partitioned SET SERDE 'org.apache.hadoop.hive.s
 POSTHOOK: type: ALTERTABLE_SERIALIZER
 POSTHOOK: Input: default@orc_partitioned
 POSTHOOK: Output: default@orc_partitioned
-PREHOOK: query: ALTER TABLE orc_partitioned REPLACE COLUMNS (cint int)
+PREHOOK: query: ALTER TABLE orc_partitioned REPLACE COLUMNS (a int)
 PREHOOK: type: ALTERTABLE_REPLACECOLS
 PREHOOK: Input: default@orc_partitioned
 PREHOOK: Output: default@orc_partitioned
-POSTHOOK: query: ALTER TABLE orc_partitioned REPLACE COLUMNS (cint int)
+POSTHOOK: query: ALTER TABLE orc_partitioned REPLACE COLUMNS (a int)
 POSTHOOK: type: ALTERTABLE_REPLACECOLS
 POSTHOOK: Input: default@orc_partitioned
 POSTHOOK: Output: default@orc_partitioned

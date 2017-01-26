@@ -202,10 +202,11 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
       readerSchema = fileMetadata.getSchema();
     }
     globalIncludes = OrcInputFormat.genIncludedColumns(readerSchema, includedColumnIds);
-    evolution = new SchemaEvolution(fileMetadata.getSchema(), readerSchema, globalIncludes);
+    Reader.Options options = new Reader.Options(conf).include(globalIncludes);
+    evolution = new SchemaEvolution(fileMetadata.getSchema(), readerSchema, options);
     consumer.setFileMetadata(fileMetadata);
     consumer.setIncludedColumns(globalIncludes);
-    consumer.setReaderSchema(readerSchema);
+    consumer.setSchemaEvolution(evolution);
   }
 
   @Override
@@ -274,9 +275,6 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
     try {
       if (sarg != null && stride != 0) {
         // TODO: move this to a common method
-        TypeDescription schema = OrcUtils.convertTypeFromProtobuf(fileMetadata.getTypes(), 0);
-        SchemaEvolution evolution = new SchemaEvolution(schema,
-            null, globalIncludes);
         int[] filterColumns = RecordReaderImpl.mapSargColumnsToOrcInternalColIdx(
           sarg.getLeaves(), evolution);
         // included will not be null, row options will fill the array with trues if null
@@ -369,7 +367,8 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
             ensureMetadataReader();
             long startTimeHdfs = counters.startTimeCounter();
             stripeMetadata = new OrcStripeMetadata(new OrcBatchKey(fileKey, stripeIx, 0),
-                metadataReader, stripe, globalIncludes, sargColumns);
+                metadataReader, stripe, globalIncludes, sargColumns,
+                orcReader.getSchema(), orcReader.getWriterVersion());
             counters.incrTimeCounter(LlapIOCounters.HDFS_TIME_NS, startTimeHdfs);
             if (hasFileId && metadataCache != null) {
               stripeMetadata = metadataCache.putStripeMetadata(stripeMetadata);
@@ -625,7 +624,8 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
         if (value == null) {
           long startTime = counters.startTimeCounter();
           value = new OrcStripeMetadata(new OrcBatchKey(fileKey, stripeIx, 0),
-              metadataReader, si, globalInc, sargColumns);
+              metadataReader, si, globalInc, sargColumns, orcReader.getSchema(),
+              orcReader.getWriterVersion());
           counters.incrTimeCounter(LlapIOCounters.HDFS_TIME_NS, startTime);
           if (hasFileId && metadataCache != null) {
             value = metadataCache.putStripeMetadata(value);
@@ -700,10 +700,9 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
       List<OrcProto.Type> types = fileMetadata.getTypes();
       String[] colNamesForSarg = OrcInputFormat.getSargColumnNames(
           columnNames, types, globalIncludes, fileMetadata.isOriginalFormat());
-      TypeDescription schema = OrcUtils.convertTypeFromProtobuf(types, 0);
-      SchemaEvolution schemaEvolution = new SchemaEvolution(schema, globalIncludes);
       sargApp = new RecordReaderImpl.SargApplier(sarg, colNamesForSarg,
-          rowIndexStride, schemaEvolution);
+          rowIndexStride, evolution,
+          OrcFile.WriterVersion.from(fileMetadata.getWriterVersionNum()));
     }
     boolean hasAnyData = false;
     // readState should have been initialized by this time with an empty array.
@@ -715,6 +714,7 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
       if (sargApp != null) {
         OrcStripeMetadata stripeMetadata = metadata.get(stripeIxMod);
         rgsToRead = sargApp.pickRowGroups(stripe, stripeMetadata.getRowIndexes(),
+            stripeMetadata.getBloomFilterKinds(),
             stripeMetadata.getBloomFilterIndexes(), true);
       }
       boolean isNone = rgsToRead == RecordReaderImpl.SargApplier.READ_NO_RGS,
@@ -914,14 +914,19 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
 
     @Override
     public OrcIndex readRowIndex(StripeInformation stripe,
+                                 TypeDescription fileSchema,
                                  OrcProto.StripeFooter footer,
+                                 boolean ignoreNonUtf8BloomFilter,
                                  boolean[] included,
                                  OrcProto.RowIndex[] indexes,
                                  boolean[] sargColumns,
+                                 org.apache.orc.OrcFile.WriterVersion version,
+                                 OrcProto.Stream.Kind[] bloomFilterKinds,
                                  OrcProto.BloomFilterIndex[] bloomFilterIndices
                                  ) throws IOException {
-      return orcDataReader.readRowIndex(stripe, footer, included, indexes,
-          sargColumns, bloomFilterIndices);
+      return orcDataReader.readRowIndex(stripe, fileSchema, footer,
+          ignoreNonUtf8BloomFilter, included, indexes,
+          sargColumns, version, bloomFilterKinds, bloomFilterIndices);
     }
 
     @Override

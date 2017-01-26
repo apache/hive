@@ -37,7 +37,7 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorDeserializeRow;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatchCtx;
 import org.apache.hadoop.hive.ql.io.HiveFileFormatUtils;
-import org.apache.hadoop.hive.ql.io.orc.WriterImpl;
+import org.apache.hadoop.hive.ql.io.orc.Writer;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
 import org.apache.hadoop.hive.serde.serdeConstants;
@@ -58,7 +58,7 @@ import org.apache.hadoop.mapred.TextInputFormat;
 
 /** The class that writes rows from a text reader to an ORC writer using VectorDeserializeRow. */
 class VertorDeserializeOrcWriter implements EncodingWriter {
-  private WriterImpl orcWriter;
+  private Writer orcWriter;
   private final LazySimpleDeserializeRead deserializeRead;
   private final VectorDeserializeRow<?> vectorDeserializeRow;
   private final VectorizedRowBatch sourceBatch, destinationBatch;
@@ -255,7 +255,7 @@ class VertorDeserializeOrcWriter implements EncodingWriter {
   }
 
   @Override
-  public void init(WriterImpl orcWriter) {
+  public void init(Writer orcWriter) {
     this.orcWriter = orcWriter;
   }
 }

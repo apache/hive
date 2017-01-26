@@ -29,6 +29,8 @@ import java.util.LinkedHashSet;
 
 import org.apache.hadoop.hive.common.io.DiskRangeList;
 import org.apache.orc.DataReader;
+import org.apache.orc.OrcFile;
+import org.apache.orc.TypeDescription;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.llap.IncrementalObjectSizeEstimator;
@@ -59,11 +61,19 @@ public class TestIncrementalObjectSizeEstimator {
 
     @Override
     public OrcIndex readRowIndex(StripeInformation stripe,
-                              OrcProto.StripeFooter footer,
-        boolean[] included, OrcProto.RowIndex[] indexes, boolean[] sargColumns,
-        OrcProto.BloomFilterIndex[] bloomFilterIndices) throws IOException {
+                                 TypeDescription fileSchema,
+                                 OrcProto.StripeFooter footer,
+                                 boolean ignoreNonUtf8BloomFilter,
+                                 boolean[] included,
+                                 OrcProto.RowIndex[] indexes,
+                                 boolean[] sargColumns,
+                                 OrcFile.WriterVersion version,
+                                 OrcProto.Stream.Kind[] bloomFilterKinds,
+                                 OrcProto.BloomFilterIndex[] bloomFilterIndices
+                                 ) throws IOException {
       if (isEmpty) {
         return new OrcIndex(new OrcProto.RowIndex[] { },
+            bloomFilterKinds,
             new OrcProto.BloomFilterIndex[] { });
       }
       OrcProto.ColumnStatistics cs = OrcProto.ColumnStatistics.newBuilder()
@@ -102,7 +112,9 @@ public class TestIncrementalObjectSizeEstimator {
         bfi = OrcProto.BloomFilterIndex.newBuilder().mergeFrom(baos.toByteArray()).build();
       }
       return new OrcIndex(
-          new OrcProto.RowIndex[] { ri, ri2 }, new OrcProto.BloomFilterIndex[] { bfi });
+          new OrcProto.RowIndex[] { ri, ri2 },
+          bloomFilterKinds,
+          new OrcProto.BloomFilterIndex[] { bfi });
     }
 
     @Override
@@ -166,20 +178,20 @@ public class TestIncrementalObjectSizeEstimator {
     mr.isEmpty = true;
     StripeInformation si = Mockito.mock(StripeInformation.class);
     Mockito.when(si.getNumberOfRows()).thenReturn(0L);
-    osm = new OrcStripeMetadata(stripeKey, mr, si, null, null);
+    osm = new OrcStripeMetadata(stripeKey, mr, si, null, null, null, null);
     LOG.info("Estimated " + root.estimate(osm, map) + " for an empty OSM");
     mr.doStreamStep = true;
-    osm = new OrcStripeMetadata(stripeKey, mr, si, null, null);
+    osm = new OrcStripeMetadata(stripeKey, mr, si, null, null, null, null);
     LOG.info("Estimated " + root.estimate(osm, map) + " for an empty OSM after serde");
 
     mr.isEmpty = false;
     stripeKey = new OrcBatchKey(0, 0, 0);
-    osm = new OrcStripeMetadata(stripeKey, mr, si, null, null);
+    osm = new OrcStripeMetadata(stripeKey, mr, si, null, null, null, null);
     LOG.info("Estimated " + root.estimate(osm, map) + " for a test OSM");
     osm.resetRowIndex();
     LOG.info("Estimated " + root.estimate(osm, map) + " for a test OSM w/o row index");
     mr.doStreamStep = true;
-    osm = new OrcStripeMetadata(stripeKey, mr, si, null, null);
+    osm = new OrcStripeMetadata(stripeKey, mr, si, null, null, null, null);
     LOG.info("Estimated " + root.estimate(osm, map) + " for a test OSM after serde");
     osm.resetRowIndex();
     LOG.info("Estimated " + root.estimate(osm, map) + " for a test OSM w/o row index after serde");

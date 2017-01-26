@@ -501,7 +501,7 @@ PREHOOK: Input: default@orcfile_merge1@ds=1/part=0
 #### A masked pattern was here ####
 -- BEGIN ORC FILE DUMP --
 #### A masked pattern was here ####
-File Version: 0.12 with HIVE_13083
+File Version: 0.12 with ORC_101
 Rows: 242
 Compression: SNAPPY
 Compression size: 4096
@@ -540,13 +540,13 @@ Stripes:
       Entry 0: count: 152 hasNull: false min: 0 max: 497 sum: 38034 positions: 0,0,0
     Row group indices for column 2:
       Entry 0: count: 152 hasNull: false min: val_0 max: val_97 sum: 1034 positions: 0,0,0
-  Stripe: offset: 1140 data: 616 rows: 90 tail: 61 index: 76
+  Stripe: offset: 1140 data: 613 rows: 90 tail: 61 index: 76
     Stream: column 0 section ROW_INDEX start: 1140 length 11
     Stream: column 1 section ROW_INDEX start: 1151 length 27
     Stream: column 2 section ROW_INDEX start: 1178 length 38
     Stream: column 1 section DATA start: 1216 length 185
     Stream: column 2 section DATA start: 1401 length 377
-    Stream: column 2 section LENGTH start: 1778 length 54
+    Stream: column 2 section LENGTH start: 1778 length 51
     Encoding column 0: DIRECT
     Encoding column 1: DIRECT_V2
     Encoding column 2: DIRECT_V2
@@ -557,7 +557,7 @@ Stripes:
     Row group indices for column 2:
       Entry 0: count: 90 hasNull: false min: val_0 max: val_86 sum: 612 positions: 0,0,0,0,0
 
-File length: 2137 bytes
+File length: 2134 bytes
 Padding length: 0 bytes
 Padding ratio: 0%
 ________________________________________________________________________________________________________________________
@@ -571,7 +571,7 @@ PREHOOK: Input: default@orcfile_merge1c@ds=1/part=0
 #### A masked pattern was here ####
 -- BEGIN ORC FILE DUMP --
 #### A masked pattern was here ####
-File Version: 0.12 with HIVE_13083
+File Version: 0.12 with ORC_101
 Rows: 242
 Compression: SNAPPY
 Compression size: 4096
@@ -610,13 +610,13 @@ Stripes:
       Entry 0: count: 152 hasNull: false min: 0 max: 497 sum: 38034 positions: 0,0,0
     Row group indices for column 2:
       Entry 0: count: 152 hasNull: false min: val_0 max: val_97 sum: 1034 positions: 0,0,0
-  Stripe: offset: 1140 data: 616 rows: 90 tail: 61 index: 76
+  Stripe: offset: 1140 data: 613 rows: 90 tail: 61 index: 76
     Stream: column 0 section ROW_INDEX start: 1140 length 11
     Stream: column 1 section ROW_INDEX start: 1151 length 27
     Stream: column 2 section ROW_INDEX start: 1178 length 38
     Stream: column 1 section DATA start: 1216 length 185
     Stream: column 2 section DATA start: 1401 length 377
-    Stream: column 2 section LENGTH start: 1778 length 54
+    Stream: column 2 section LENGTH start: 1778 length 51
     Encoding column 0: DIRECT
     Encoding column 1: DIRECT_V2
     Encoding column 2: DIRECT_V2
@@ -627,7 +627,7 @@ Stripes:
     Row group indices for column 2:
       Entry 0: count: 90 hasNull: false min: val_0 max: val_86 sum: 612 positions: 0,0,0,0,0
 
-File length: 2137 bytes
+File length: 2134 bytes
 Padding length: 0 bytes
 Padding ratio: 0%
 ________________________________________________________________________________________________________________________

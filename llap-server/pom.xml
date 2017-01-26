@@ -137,6 +137,10 @@
       </exclusions>
     </dependency>
     <dependency>
+      <groupId>org.apache.orc</groupId>
+      <artifactId>orc-core</artifactId>
+    </dependency>
+    <dependency>
       <groupId>org.apache.tez</groupId>
       <artifactId>tez-runtime-internals</artifactId>
       <version>${tez.version}</version>

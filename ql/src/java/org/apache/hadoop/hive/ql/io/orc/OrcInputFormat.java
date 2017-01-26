@@ -1490,14 +1490,15 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
       stripeStats = orcTail.getStripeStatistics();
       fileTypes = orcTail.getTypes();
       TypeDescription fileSchema = OrcUtils.convertTypeFromProtobuf(fileTypes, 0);
+      Reader.Options readerOptions = new Reader.Options(context.conf);
       if (readerTypes == null) {
         readerIncluded = genIncludedColumns(fileSchema, context.conf);
-        evolution = new SchemaEvolution(fileSchema, readerIncluded);
+        evolution = new SchemaEvolution(fileSchema, readerOptions.include(readerIncluded));
       } else {
         // The reader schema always comes in without ACID columns.
         TypeDescription readerSchema = OrcUtils.convertTypeFromProtobuf(readerTypes, 0);
         readerIncluded = genIncludedColumns(readerSchema, context.conf);
-        evolution = new SchemaEvolution(fileSchema, readerSchema, readerIncluded);
+        evolution = new SchemaEvolution(fileSchema, readerSchema, readerOptions.include(readerIncluded));
         if (!isOriginal) {
           // The SchemaEvolution class has added the ACID metadata columns.  Let's update our
           // readerTypes so PPD code will work correctly.

@@ -44,6 +44,7 @@ import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.Reporter;
 import org.apache.orc.TypeDescription;
+import org.apache.orc.OrcConf;
 
 public class OrcColumnVectorProducer implements ColumnVectorProducer {
 
@@ -64,7 +65,7 @@ public class OrcColumnVectorProducer implements ColumnVectorProducer {
     this.lowLevelCache = lowLevelCache;
     this.bufferManager = bufferManager;
     this.conf = conf;
-    this._skipCorrupt = HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_ORC_SKIP_CORRUPT_DATA);
+    this._skipCorrupt = OrcConf.SKIP_CORRUPT_DATA.getBoolean(conf);
     this.cacheMetrics = cacheMetrics;
     this.ioMetrics = ioMetrics;
   }

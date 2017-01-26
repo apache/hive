@@ -43,7 +43,6 @@
     <module>hplsql</module>
     <module>jdbc</module>
     <module>metastore</module>
-    <module>orc</module>
     <module>ql</module>
     <module>serde</module>
     <module>service-rpc</module>
@@ -173,6 +172,7 @@
     <libthrift.version>0.9.3</libthrift.version>
     <log4j2.version>2.6.2</log4j2.version>
     <opencsv.version>2.3</opencsv.version>
+    <orc.version>1.3.1</orc.version>
     <mockito-all.version>1.9.5</mockito-all.version>
     <mina.version>2.0.0-M5</mina.version>
     <netty.version>4.0.29.Final</netty.version>
@@ -507,6 +507,21 @@
         <artifactId>stax-api</artifactId>
         <version>${stax.version}</version>
       </dependency>
+       <dependency>
+        <groupId>org.apache.orc</groupId>
+        <artifactId>orc-core</artifactId>
+        <version>${orc.version}</version>
+        <exclusions>
+          <exclusion>
+            <groupId>org.apache.hadoop</groupId>
+            <artifactId>hadoop-common</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>org.apache.hive</groupId>
+            <artifactId>hive-storage-api</artifactId>
+          </exclusion>
+        </exclusions>
+      </dependency>
       <dependency>
         <groupId>org.apache.hive</groupId>
         <artifactId>hive-storage-api</artifactId>
@@ -618,11 +633,6 @@
         <groupId>org.datanucleus</groupId>
         <artifactId>javax.jdo</artifactId>
         <version>${datanucleus-jdo.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.iq80.snappy</groupId>
-        <artifactId>snappy</artifactId>
-        <version>${snappy.version}</version>
       </dependency>
       <dependency>
         <groupId>org.json</groupId>

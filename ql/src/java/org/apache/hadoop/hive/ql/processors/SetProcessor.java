@@ -38,6 +38,7 @@ import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Schema;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.orc.OrcConf;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -52,7 +53,19 @@ public class SetProcessor implements CommandProcessor {
   private static final Logger LOG = LoggerFactory.getLogger(SetProcessor.class);
 
   private static final String prefix = "set: ";
-  private static final Set<String> removedConfigs = Sets.newHashSet("hive.mapred.supports.subdirectories","hive.enforce.sorting","hive.enforce.bucketing", "hive.outerjoin.supports.filters");
+  private static final Set<String> removedConfigs =
+      Sets.newHashSet("hive.mapred.supports.subdirectories",
+          "hive.enforce.sorting","hive.enforce.bucketing",
+          "hive.outerjoin.supports.filters");
+  // Allow the user to set the ORC properties without getting an error.
+  static {
+    for(OrcConf var: OrcConf.values()) {
+      String name = var.getHiveConfName();
+      if (name != null && name.startsWith("hive.")) {
+        removedConfigs.add(name);
+      }
+    }
+  }
 
   private static final String[] PASSWORD_STRINGS = new String[] {"password", "paswd", "pswd"};
 
