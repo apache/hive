@@ -46,9 +46,9 @@ public class GenericUDFSQCountCheck extends GenericUDF {
 
   @Override
   public ObjectInspector initialize(ObjectInspector[] arguments) throws UDFArgumentException {
-    if (arguments.length != 1) {
+    if (arguments.length > 2) {
       throw new UDFArgumentLengthException(
-          "Invalid scalar subquery expression. Subquery count check expected one argument but received: " + arguments.length);
+          "Invalid scalar subquery expression. Subquery count check expected two argument but received: " + arguments.length);
     }
 
     converters[0] = ObjectInspectorConverters.getConverter(arguments[0],
@@ -63,11 +63,23 @@ public class GenericUDFSQCountCheck extends GenericUDF {
   public Object evaluate(DeferredObject[] arguments) throws HiveException {
     Object valObject = arguments[0].get();
     assert(valObject != null);
+
     Long val = getLongValue(arguments, 0, converters);
     assert(val >= 0);
-    if(val > 1) {
-      throw new UDFArgumentException(
-              " Scalar subquery expression returns more than one row.");
+
+    switch (arguments.length){
+      case 1: //Scalar queries, should expect value/count less than 1
+        if (val > 1) {
+          throw new UDFArgumentException(
+                  " Scalar subquery expression returns more than one row.");
+        }
+        break;
+      case 2:
+        if (val == 0) { // IN/NOT IN subqueries with aggregate
+          throw new UDFArgumentException(
+                  " IN/NOT IN subquery with aggregate returning zero result. Currently this is not supported.");
+        }
+        break;
     }
 
     resultLong.set(val);

@@ -30,7 +30,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Output: default@tt
 POSTHOOK: Lineage: tt.i EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 POSTHOOK: Lineage: tt.j EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
-PREHOOK: query: select * from t where i IN (select count(i) from tt where tt.j = t.j)
+PREHOOK: query: select * from t where i NOT IN (select count(i) from tt where tt.j = t.j)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t
 PREHOOK: Input: default@tt
