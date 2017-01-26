@@ -122,7 +122,7 @@ public class TestQBSubQuery {
 
     Assert.assertEquals(0, SubQueryUtils.checkAggOrWindowing((ASTNode) select.getChild(0)));
     Assert.assertEquals(1, SubQueryUtils.checkAggOrWindowing((ASTNode) select.getChild(1)));
-    Assert.assertEquals(2, SubQueryUtils.checkAggOrWindowing((ASTNode) select.getChild(2)));
+    Assert.assertEquals(3, SubQueryUtils.checkAggOrWindowing((ASTNode) select.getChild(2)));
   }
 
   private ASTNode where(ASTNode qry) {

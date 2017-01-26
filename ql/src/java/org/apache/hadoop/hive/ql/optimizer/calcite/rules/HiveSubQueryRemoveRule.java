@@ -250,6 +250,34 @@ public abstract class HiveSubQueryRemoveRule extends RelOptRule{
                 switch (e.getKind()) {
                     case IN:
                         fields.addAll(builder.fields());
+                        // Transformation: sq_count_check(count(*), true) FILTER is generated on top
+                        //  of subquery which is then joined (LEFT or INNER) with outer query
+                        //  This transformation is done to add run time check using sq_count_check to
+                        //  throw an error if subquery is producing zero row, since with aggregate this
+                        //  will produce wrong results (because we further rewrite such queries into JOIN)
+                        if(isCorrScalarAgg) {
+                            // returns single row/column
+                            builder.aggregate(builder.groupKey(),
+                                    builder.count(false, "cnt_in"));
+
+                            if (!variablesSet.isEmpty()) {
+                                builder.join(JoinRelType.LEFT, builder.literal(true), variablesSet);
+                            } else {
+                                builder.join(JoinRelType.INNER, builder.literal(true), variablesSet);
+                            }
+
+                            SqlFunction inCountCheck = new SqlFunction("sq_count_check", SqlKind.OTHER_FUNCTION, ReturnTypes.BIGINT,
+                                    InferTypes.RETURN_TYPE, OperandTypes.NUMERIC, SqlFunctionCategory.USER_DEFINED_FUNCTION);
+
+                            // we create FILTER (sq_count_check(count()) > 0) instead of PROJECT because RelFieldTrimmer
+                            //  ends up getting rid of Project since it is not used further up the tree
+                            builder.filter(builder.call(SqlStdOperatorTable.GREATER_THAN,
+                                    //true here indicates that sq_count_check is for IN/NOT IN subqueries
+                                    builder.call(inCountCheck, builder.field("cnt_in"), builder.literal(true)),
+                                    builder.literal(0)));
+                            offset =  offset + 1;
+                            builder.push(e.rel);
+                        }
                 }
 
                 // First, the cross join

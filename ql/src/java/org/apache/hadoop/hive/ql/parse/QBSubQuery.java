@@ -53,11 +53,21 @@ public class QBSubQuery implements ISubQueryJoinInfo {
       }
 
       switch(opNode.getType()) {
+        // opNode's type is always either KW_EXISTS or KW_IN never NOTEXISTS or NOTIN
+        //  to figure this out we need to check it's grand parent's parent
       case HiveParser.KW_EXISTS:
+        if(opNode.getParent().getParent().getParent() != null
+                && opNode.getParent().getParent().getParent().getType() == HiveParser.KW_NOT) {
+          return NOT_EXISTS;
+        }
         return EXISTS;
       case HiveParser.TOK_SUBQUERY_OP_NOTEXISTS:
         return NOT_EXISTS;
       case HiveParser.KW_IN:
+        if(opNode.getParent().getParent().getParent() != null
+                && opNode.getParent().getParent().getParent().getType() == HiveParser.KW_NOT) {
+          return NOT_IN;
+        }
         return IN;
       case HiveParser.TOK_SUBQUERY_OP_NOTIN:
         return NOT_IN;
@@ -544,13 +554,18 @@ public class QBSubQuery implements ISubQueryJoinInfo {
 
     boolean hasAggreateExprs = false;
     boolean hasWindowing = false;
+
+    // we need to know if aggregate is COUNT since IN corr subq with count aggregate
+    // is not special cased later in subquery remove rule
+    boolean hasCount = false;
     for(int i= selectExprStart; i < selectClause.getChildCount(); i++ ) {
 
       ASTNode selectItem = (ASTNode) selectClause.getChild(i);
       int r = SubQueryUtils.checkAggOrWindowing(selectItem);
 
-      hasWindowing = hasWindowing | ( r == 2);
-      hasAggreateExprs = hasAggreateExprs | ( r == 1 );
+      hasWindowing = hasWindowing | ( r == 3);
+      hasAggreateExprs = hasAggreateExprs | ( r == 1 | r== 2 );
+      hasCount = hasCount | ( r == 2 );
     }
 
 
@@ -602,30 +617,47 @@ public class QBSubQuery implements ISubQueryJoinInfo {
      * Specification doc for details.
      * Similarly a not exists on a SubQuery with a implied GBY will always return false.
      */
+      // Following is special cases for different type of subqueries which have aggregate and no implicit group by
+      // and are correlatd
+      // * EXISTS/NOT EXISTS - NOT allowed, throw an error for now. We plan to allow this later
+      // * SCALAR - only allow if it has non equi join predicate. This should return true since later in subquery remove
+      //              rule we need to know about this case.
+      // * IN - always allowed, BUT returns true for cases with aggregate other than COUNT since later in subquery remove
+      //        rule we need to know about this case.
+      // * NOT IN - always allow, but always return true because later subq remove rule will generate diff plan for this case
       if (hasAggreateExprs &&
-              noImplicityGby ) {
+              noImplicityGby) {
 
-        if( hasCorrelation && (operator.getType() == SubQueryType.EXISTS
-                || operator.getType() == SubQueryType.NOT_EXISTS
-                || operator.getType() == SubQueryType.IN
-                || operator.getType() == SubQueryType.NOT_IN)) {
-          throw new CalciteSubquerySemanticException(ErrorMsg.INVALID_SUBQUERY_EXPRESSION.getMsg(
-                subQueryAST,
-                "A predicate on EXISTS/NOT EXISTS/IN/NOT IN SubQuery with implicit Aggregation(no Group By clause) " +
-                        "cannot be rewritten."));
-        }
-        else if(operator.getType() == SubQueryType.SCALAR && hasNonEquiJoinPred) {
-          // throw an error if predicates are not equal
+        if(operator.getType() == SubQueryType.EXISTS
+                || operator.getType() == SubQueryType.NOT_EXISTS) {
+          if(hasCorrelation) {
             throw new CalciteSubquerySemanticException(ErrorMsg.INVALID_SUBQUERY_EXPRESSION.getMsg(
                     subQueryAST,
-                    "Scalar subqueries with aggregate cannot have non-equi join predicate"));
+                    "A predicate on EXISTS/NOT EXISTS SubQuery with implicit Aggregation(no Group By clause) " +
+                            "cannot be rewritten."));
+          }
         }
-        else if(operator.getType() == SubQueryType.SCALAR && hasCorrelation) {
+        else if(operator.getType() == SubQueryType.SCALAR) {
+            if(hasNonEquiJoinPred) {
+              throw new CalciteSubquerySemanticException(ErrorMsg.INVALID_SUBQUERY_EXPRESSION.getMsg(
+                      subQueryAST,
+                      "Scalar subqueries with aggregate cannot have non-equi join predicate"));
+            }
+            if(hasCorrelation) {
+              return true;
+            }
+        }
+        else if(operator.getType() == SubQueryType.IN) {
+          if(hasCount && hasCorrelation) {
             return true;
+          }
         }
-
+        else if (operator.getType() == SubQueryType.NOT_IN) {
+            if(hasCorrelation) {
+              return true;
+            }
+        }
       }
-
     return false;
   }
 
@@ -684,7 +716,7 @@ public class QBSubQuery implements ISubQueryJoinInfo {
       ASTNode selectItem = (ASTNode) selectClause.getChild(i);
       int r = SubQueryUtils.checkAggOrWindowing(selectItem);
 
-      containsWindowing = containsWindowing | ( r == 2);
+      containsWindowing = containsWindowing | ( r == 3);
       containsAggregationExprs = containsAggregationExprs | ( r == 1 );
     }
 

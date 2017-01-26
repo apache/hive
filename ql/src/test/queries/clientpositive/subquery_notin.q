@@ -57,6 +57,24 @@ part where part.p_size not in
 order by p_name, p_size
 ;
 
+-- agg, corr
+explain
+select p_mfgr, p_name, p_size
+from part b where b.p_size not in
+  (select min(p_size)
+  from (select p_mfgr, p_size, rank() over(partition by p_mfgr order by p_size) as r from part) a
+  where r <= 2 and b.p_mfgr = a.p_mfgr
+  )
+;
+
+select p_mfgr, p_name, p_size
+from part b where b.p_size not in
+  (select min(p_size)
+  from (select p_mfgr, p_size, rank() over(partition by p_mfgr order by p_size) as r from part) a
+  where r <= 2 and b.p_mfgr = a.p_mfgr
+  )
+;
+
 -- non agg, non corr, Group By in Parent Query
 select li.l_partkey, count(*)
 from lineitem li
