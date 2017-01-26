@@ -34,6 +34,7 @@ import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.VectorUD
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FuncAbsLongToLong;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.*;
+import org.apache.hadoop.hive.ql.plan.VectorGroupByDesc.ProcessingMode;
 import org.apache.hadoop.hive.ql.udf.generic.*;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
@@ -107,6 +108,7 @@ public class TestVectorizer {
 
     GroupByOperator gbyOp = new GroupByOperator(new CompilationOpContext());
     gbyOp.setConf(desc);
+    desc.setMode(GroupByDesc.Mode.HASH);
 
     Vectorizer v = new Vectorizer();
     Assert.assertTrue(v.validateMapWorkOperator(gbyOp, null, false));
@@ -148,9 +150,9 @@ public class TestVectorizer {
     Assert.assertFalse(v.validateExprNodeDesc(andExprDesc, VectorExpressionDescriptor.Mode.FILTER));
     Assert.assertFalse(v.validateExprNodeDesc(andExprDesc, VectorExpressionDescriptor.Mode.PROJECTION));
   }
- 
+
   /**
-  * prepareAbstractMapJoin prepares a join operator descriptor, used as helper by SMB and Map join tests. 
+  * prepareAbstractMapJoin prepares a join operator descriptor, used as helper by SMB and Map join tests.
   */
   private void prepareAbstractMapJoin(AbstractMapJoinOperator<? extends MapJoinDesc> map, MapJoinDesc mjdesc) {
       mjdesc.setPosBigTable(0);
@@ -189,15 +191,15 @@ public class TestVectorizer {
   public void testValidateMapJoinOperator() {
     MapJoinOperator map = new MapJoinOperator(new CompilationOpContext());
     MapJoinDesc mjdesc = new MapJoinDesc();
-    
+
     prepareAbstractMapJoin(map, mjdesc);
     map.setConf(mjdesc);
- 
+
     Vectorizer vectorizer = new Vectorizer();
     Assert.assertTrue(vectorizer.validateMapWorkOperator(map, null, false));
   }
 
-  
+
   /**
   * testValidateSMBJoinOperator validates that the SMB join operator can be vectorized.
   */
@@ -205,11 +207,11 @@ public class TestVectorizer {
   public void testValidateSMBJoinOperator() {
       SMBMapJoinOperator map = new SMBMapJoinOperator(new CompilationOpContext());
       SMBJoinDesc mjdesc = new SMBJoinDesc();
-      
+
       prepareAbstractMapJoin(map, mjdesc);
       map.setConf(mjdesc);
-    
+
       Vectorizer vectorizer = new Vectorizer();
-      Assert.assertTrue(vectorizer.validateMapWorkOperator(map, null, false)); 
+      Assert.assertTrue(vectorizer.validateMapWorkOperator(map, null, false));
   }
 }

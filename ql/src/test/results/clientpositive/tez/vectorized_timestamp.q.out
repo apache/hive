@@ -132,13 +132,13 @@ Stage-0
     limit:-1
     Stage-1
       Reducer 2 vectorized
-      File Output Operator [FS_6]
-        Select Operator [SEL_5] (rows=1 width=80)
+      File Output Operator [FS_12]
+        Select Operator [SEL_11] (rows=1 width=80)
           Output:["_col0","_col1","_col2"]
-          Group By Operator [GBY_9] (rows=1 width=80)
+          Group By Operator [GBY_10] (rows=1 width=80)
             Output:["_col0","_col1"],aggregations:["min(VALUE._col0)","max(VALUE._col1)"]
           <-Map 1 [SIMPLE_EDGE] vectorized
-            SHUFFLE [RS_3]
+            SHUFFLE [RS_9]
               Group By Operator [GBY_8] (rows=1 width=80)
                 Output:["_col0","_col1"],aggregations:["min(ts)","max(ts)"]
                 Select Operator [SEL_7] (rows=2 width=40)

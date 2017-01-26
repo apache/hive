@@ -20,19 +20,20 @@ package org.apache.hadoop.hive.ql.exec.vector;
 
 import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.VectorAggregateExpression;
 import org.apache.hadoop.hive.ql.plan.GroupByDesc;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator;
 
 class AggregateDefinition {
 
   private String name;
   private VectorExpressionDescriptor.ArgumentType type;
-  private GroupByDesc.Mode mode;
+  private GenericUDAFEvaluator.Mode udafEvaluatorMode;
   private Class<? extends VectorAggregateExpression> aggClass;
 
-  AggregateDefinition(String name, VectorExpressionDescriptor.ArgumentType type, 
-		  GroupByDesc.Mode mode, Class<? extends VectorAggregateExpression> aggClass) {
+  AggregateDefinition(String name, VectorExpressionDescriptor.ArgumentType type,
+      GenericUDAFEvaluator.Mode udafEvaluatorMode, Class<? extends VectorAggregateExpression> aggClass) {
     this.name = name;
     this.type = type;
-    this.mode = mode;
+    this.udafEvaluatorMode = udafEvaluatorMode;
     this.aggClass = aggClass;
   }
 
@@ -42,8 +43,8 @@ class AggregateDefinition {
   VectorExpressionDescriptor.ArgumentType getType() {
     return type;
   }
-  GroupByDesc.Mode getMode() {
-	return mode;
+  GenericUDAFEvaluator.Mode getUdafEvaluatorMode() {
+	return udafEvaluatorMode;
   }
   Class<? extends VectorAggregateExpression> getAggClass() {
     return aggClass;
