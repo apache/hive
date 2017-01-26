@@ -188,12 +188,18 @@ public class TezTask extends Task<TezWork> {
           counters = dagClient.getDAGStatus(statusGetOpts).getDAGCounters();
         } catch (Exception err) {
           // Don't fail execution due to counters - just don't print summary info
-          LOG.error("Failed to get counters: " + err, err);
+          LOG.warn("Failed to get counters. Ignoring, summary info will be incomplete. " + err, err);
           counters = null;
         }
       } finally {
         // We return this to the pool even if it's unusable; reopen is supposed to handle this.
-        TezSessionPoolManager.getInstance().returnSession(session, getWork().getLlapMode());
+        try {
+          TezSessionPoolManager.getInstance()
+              .returnSession(session, getWork().getLlapMode());
+        } catch (Exception e) {
+          LOG.error("Failed to return session: {} to pool", session, e);
+          throw e;
+        }
       }
 
       if (LOG.isInfoEnabled() && counters != null
