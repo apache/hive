@@ -1127,7 +1127,8 @@ public final class PlanUtils {
     // For eg: for a query like 'select * from V3', where V3 -> V2, V2 -> V1, V1 -> T
     // -> implies depends on.
     // T's parent would be V1
-    for (int pos = 0; pos < aliases.length; pos++) {
+    // do not check last alias in the array for parent can not be itself.
+    for (int pos = 0; pos < aliases.length -1; pos++) {
       currentAlias = currentAlias == null ? aliases[pos] : currentAlias + ":" + aliases[pos];
 
       currentAlias = currentAlias.replace(SemanticAnalyzer.SUBQUERY_TAG_1, "")
