@@ -21,21 +21,21 @@ select sum(hash(*)) from src_orc;
 insert overwrite table src_orc2 select * from src;
 select sum(hash(*)) from src_orc2;
 
-alter table src_orc2 replace columns (k smallint, v string);
+alter table src_orc2 replace columns (key smallint, val string);
 select sum(hash(*)) from src_orc2;
 
-alter table src_orc2 replace columns (k int, v string);
+alter table src_orc2 replace columns (key int, val string);
 select sum(hash(*)) from src_orc2;
 
-alter table src_orc2 replace columns (k bigint, v string);
+alter table src_orc2 replace columns (key bigint, val string);
 select sum(hash(*)) from src_orc2;
 
-alter table src_orc2 replace columns (k bigint, v string, z int);
+alter table src_orc2 replace columns (key bigint, val string, z int);
 select sum(hash(*)) from src_orc2;
 
-alter table src_orc2 replace columns (k bigint, v string, z bigint);
+alter table src_orc2 replace columns (key bigint, val string, z bigint);
 select sum(hash(*)) from src_orc2;
 
-alter table src_orc2 replace columns (k bigint, v string, z bigint, y float);
+alter table src_orc2 replace columns (key bigint, val string, z bigint, y float);
 select sum(hash(*)) from src_orc2;
 

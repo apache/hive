@@ -140,11 +140,6 @@
        <version>${commons-lang3.version}</version>
     </dependency>
     <dependency>
-      <groupId>org.iq80.snappy</groupId>
-      <artifactId>snappy</artifactId>
-      <version>${snappy.version}</version>
-    </dependency>
-    <dependency>
       <groupId>commons-lang</groupId>
       <artifactId>commons-lang</artifactId>
       <version>${commons-lang.version}</version>
@@ -290,6 +285,11 @@
       <artifactId>hadoop-yarn-client</artifactId>
       <version>${hadoop.version}</version>
       <optional>true</optional>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.orc</groupId>
+      <artifactId>orc-tools</artifactId>
+      <version>${orc.version}</version>
     </dependency>
 
     <dependency>
@@ -861,14 +861,15 @@
                   <include>com.googlecode.javaewah:JavaEWAH</include>
                   <include>javolution:javolution</include>
                   <include>com.google.protobuf:protobuf-java</include>
-                  <include>org.iq80.snappy:snappy</include>
+                  <include>io.airlift:aircompressor</include>
                   <include>org.codehaus.jackson:jackson-core-asl</include>
                   <include>org.codehaus.jackson:jackson-mapper-asl</include>
                   <include>com.google.guava:guava</include>
                   <include>net.sf.opencsv:opencsv</include>
                   <include>org.apache.hive:spark-client</include>
                   <include>org.apache.hive:hive-storage-api</include>
-                  <include>org.apache.hive:hive-orc</include>
+                  <include>org.apache.orc:orc-core</include>
+                  <include>org.apache.orc:orc-tools</include>
                   <include>joda-time:joda-time</include>
                 </includes>
               </artifactSet>

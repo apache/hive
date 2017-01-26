@@ -85,7 +85,8 @@ public class OrcRecordUpdater implements RecordUpdater {
   private Path deleteEventPath;
   private final FileSystem fs;
   private OrcFile.WriterOptions writerOptions;
-  private Writer writer;
+  private Writer writer = null;
+  private boolean writerClosed = false;
   private Writer deleteEventWriter = null;
   private final FSDataOutputStream flushLengths;
   private final OrcStruct item;
@@ -247,6 +248,14 @@ public class OrcRecordUpdater implements RecordUpdater {
         writerOptions = OrcFile.writerOptions(optionsCloneForDelta.getTableProperties(),
             optionsCloneForDelta.getConfiguration());
       }
+      if (this.acidOperationalProperties.isSplitUpdate()) {
+        // If this is a split-update, we initialize a delete delta file path in anticipation that
+        // they would write update/delete events to that separate file.
+        // This writes to a file in directory which starts with "delete_delta_..."
+        // The actual initialization of a writer only happens if any delete events are written.
+        this.deleteEventPath = AcidUtils.createFilename(path,
+            optionsCloneForDelta.writingDeleteDelta(true));
+      }
 
       // get buffer size and stripe size for base writer
       int baseBufferSizeValue = writerOptions.getBufferSize();
@@ -262,14 +271,6 @@ public class OrcRecordUpdater implements RecordUpdater {
     rowInspector = (StructObjectInspector)options.getInspector();
     writerOptions.inspector(createEventSchema(findRecId(options.getInspector(),
         options.getRecordIdColumn())));
-    this.writer = OrcFile.createWriter(this.path, writerOptions);
-    if (this.acidOperationalProperties.isSplitUpdate()) {
-      // If this is a split-update, we initialize a delete delta file path in anticipation that
-      // they would write update/delete events to that separate file.
-      // This writes to a file in directory which starts with "delete_delta_..."
-      // The actual initialization of a writer only happens if any delete events are written.
-      this.deleteEventPath = AcidUtils.createFilename(path, options.writingDeleteDelta(true));
-    }
     item = new OrcStruct(FIELDS);
     item.setFieldValue(OPERATION, operation);
     item.setFieldValue(CURRENT_TRANSACTION, currentTransaction);
@@ -367,6 +368,9 @@ public class OrcRecordUpdater implements RecordUpdater {
     item.setFieldValue(OrcRecordUpdater.OPERATION, new IntWritable(operation));
     item.setFieldValue(OrcRecordUpdater.ROW, (operation == DELETE_OPERATION ? null : row));
     indexBuilder.addKey(operation, originalTransaction, bucket.get(), rowId);
+    if (writer == null) {
+      writer = OrcFile.createWriter(path, writerOptions);
+    }
     writer.addRow(item);
   }
 
@@ -469,6 +473,9 @@ public class OrcRecordUpdater implements RecordUpdater {
       throw new IllegalStateException("Attempting to flush a RecordUpdater on "
          + path + " with a single transaction.");
     }
+    if (writer == null) {
+      writer = OrcFile.createWriter(path, writerOptions);
+    }
     long len = writer.writeIntermediateFooter();
     flushLengths.writeLong(len);
     OrcInputFormat.SHIMS.hflush(flushLengths);
@@ -480,21 +487,19 @@ public class OrcRecordUpdater implements RecordUpdater {
       if (flushLengths == null) {
         fs.delete(path, false);
       }
-    } else {
-      if (writer != null) {
-        if (acidOperationalProperties.isSplitUpdate()) {
-          // When split-update is enabled, we can choose not to write
-          // any delta files when there are no inserts. In such cases only the delete_deltas
-          // would be written & they are closed separately below.
-          if (indexBuilder.acidStats.inserts > 0) {
-            writer.close(); // normal close, when there are inserts.
-          } else {
-            // Just remove insert delta paths, when there are no insert events.
-            fs.delete(path, false);
-          }
-        } else {
-          writer.close(); // normal close.
+    } else if (!writerClosed) {
+      if (acidOperationalProperties.isSplitUpdate()) {
+        // When split-update is enabled, we can choose not to write
+        // any delta files when there are no inserts. In such cases only the delete_deltas
+        // would be written & they are closed separately below.
+        if (writer != null && indexBuilder.acidStats.inserts > 0) {
+          writer.close(); // normal close, when there are inserts.
         }
+      } else {
+        if (writer == null) {
+          writer = OrcFile.createWriter(path, writerOptions);
+        }
+        writer.close(); // normal close.
       }
       if (deleteEventWriter != null) {
         if (deleteEventIndexBuilder.acidStats.deletes > 0) {
@@ -505,7 +510,6 @@ public class OrcRecordUpdater implements RecordUpdater {
           fs.delete(deleteEventPath, false);
         }
       }
-
     }
     if (flushLengths != null) {
       flushLengths.close();
@@ -513,6 +517,7 @@ public class OrcRecordUpdater implements RecordUpdater {
     }
     writer = null;
     deleteEventWriter = null;
+    writerClosed = true;
   }
 
   @Override
@@ -522,11 +527,6 @@ public class OrcRecordUpdater implements RecordUpdater {
     // Don't worry about setting raw data size diff.  I have no idea how to calculate that
     // without finding the row we are updating or deleting, which would be a mess.
     return stats;
-  }
-
-  @VisibleForTesting
-  Writer getWriter() {
-    return writer;
   }
 
   private static final Charset utf8 = Charset.forName("UTF-8");

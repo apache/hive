@@ -1165,7 +1165,7 @@ public class TestCompactor {
         "'transactional'='true'," +
         "'compactor.mapreduce.map.memory.mb'='2048'," + // 2048 MB memory for compaction map job
         "'compactorthreshold.hive.compactor.delta.num.threshold'='4'," +  // minor compaction if more than 4 delta dirs
-        "'compactorthreshold.hive.compactor.delta.pct.threshold'='0.5'" + // major compaction if more than 50%
+        "'compactorthreshold.hive.compactor.delta.pct.threshold'='0.49'" + // major compaction if more than 49%
         ")", driver);
 
     // Insert 5 rows to both tables

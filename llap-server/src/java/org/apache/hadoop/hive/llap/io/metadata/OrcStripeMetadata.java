@@ -22,27 +22,30 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.TimeZone;
 
 import org.apache.hadoop.hive.llap.IncrementalObjectSizeEstimator;
 import org.apache.hadoop.hive.llap.IncrementalObjectSizeEstimator.ObjectEstimator;
 import org.apache.hadoop.hive.llap.cache.EvictionDispatcher;
 import org.apache.hadoop.hive.llap.cache.LlapCacheableBuffer;
 import org.apache.hadoop.hive.ql.io.SyntheticFileId;
+import org.apache.hadoop.hive.ql.io.orc.OrcFile;
 import org.apache.hadoop.hive.ql.io.orc.encoded.OrcBatchKey;
 import org.apache.orc.DataReader;
 import org.apache.orc.OrcProto;
 import org.apache.orc.OrcProto.RowIndexEntry;
 import org.apache.orc.StripeInformation;
+import org.apache.orc.TypeDescription;
 import org.apache.orc.impl.OrcIndex;
 
 public class OrcStripeMetadata extends LlapCacheableBuffer implements ConsumerStripeMetadata {
+  private final TypeDescription schema;
   private final OrcBatchKey stripeKey;
   private final List<OrcProto.ColumnEncoding> encodings;
   private final List<OrcProto.Stream> streams;
   private final String writerTimezone;
   private final long rowCount;
   private OrcIndex rowIndex;
+  private OrcFile.WriterVersion writerVersion;
 
   private final int estimatedMemUsage;
 
@@ -59,16 +62,20 @@ public class OrcStripeMetadata extends LlapCacheableBuffer implements ConsumerSt
   }
 
   public OrcStripeMetadata(OrcBatchKey stripeKey, DataReader mr, StripeInformation stripe,
-      boolean[] includes, boolean[] sargColumns) throws IOException {
+                           boolean[] includes, boolean[] sargColumns, TypeDescription schema,
+                           OrcFile.WriterVersion writerVersion) throws IOException {
+    this.schema = schema;
     this.stripeKey = stripeKey;
     OrcProto.StripeFooter footer = mr.readStripeFooter(stripe);
     streams = footer.getStreamsList();
     encodings = footer.getColumnsList();
     writerTimezone = footer.getWriterTimezone();
     rowCount = stripe.getNumberOfRows();
-    rowIndex = mr.readRowIndex(stripe, footer, includes, null, sargColumns, null);
+    rowIndex = mr.readRowIndex(stripe, schema, footer, true, includes, null,
+        sargColumns, writerVersion, null, null);
 
     estimatedMemUsage = SIZE_ESTIMATOR.estimate(this, SIZE_ESTIMATORS);
+    this.writerVersion = writerVersion;
   }
 
   private OrcStripeMetadata(Object id) {
@@ -76,6 +83,7 @@ public class OrcStripeMetadata extends LlapCacheableBuffer implements ConsumerSt
     encodings = new ArrayList<>();
     streams = new ArrayList<>();
     writerTimezone = "";
+    schema = TypeDescription.fromString("struct<x:int>");
     rowCount = estimatedMemUsage = 0;
   }
 
@@ -90,7 +98,9 @@ public class OrcStripeMetadata extends LlapCacheableBuffer implements ConsumerSt
     OrcProto.BloomFilterIndex bfi = OrcProto.BloomFilterIndex.newBuilder().addBloomFilter(
         OrcProto.BloomFilter.newBuilder().addBitset(0)).build();
     dummy.rowIndex = new OrcIndex(
-        new OrcProto.RowIndex[] { ri }, new OrcProto.BloomFilterIndex[] { bfi });
+        new OrcProto.RowIndex[] { ri },
+        new OrcProto.Stream.Kind[] { OrcProto.Stream.Kind.BLOOM_FILTER_UTF8 },
+        new OrcProto.BloomFilterIndex[] { bfi });
     return dummy;
   }
 
@@ -113,8 +123,10 @@ public class OrcStripeMetadata extends LlapCacheableBuffer implements ConsumerSt
       superset[i] = superset[i] || (existing[i] != null);
     }
     // TODO: should we save footer to avoid a read here?
-    rowIndex = mr.readRowIndex(stripe, null, superset, rowIndex.getRowGroupIndex(),
-        sargColumns, rowIndex.getBloomFilterIndex());
+    rowIndex = mr.readRowIndex(stripe, schema, null, true, includes,
+        rowIndex.getRowGroupIndex(),
+        sargColumns, writerVersion, rowIndex.getBloomFilterKinds(),
+        rowIndex.getBloomFilterIndex());
     // TODO: theoretically, we should re-estimate memory usage here and update memory manager
   }
 
@@ -124,6 +136,10 @@ public class OrcStripeMetadata extends LlapCacheableBuffer implements ConsumerSt
 
   public OrcProto.RowIndex[] getRowIndexes() {
     return rowIndex.getRowGroupIndex();
+  }
+
+  public OrcProto.Stream.Kind[] getBloomFilterKinds() {
+    return rowIndex.getBloomFilterKinds();
   }
 
   public OrcProto.BloomFilterIndex[] getBloomFilterIndexes() {

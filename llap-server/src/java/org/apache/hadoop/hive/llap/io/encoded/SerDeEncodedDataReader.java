@@ -56,7 +56,8 @@ import org.apache.hadoop.hive.ql.io.HdfsUtils;
 import org.apache.hadoop.hive.ql.io.orc.OrcFile;
 import org.apache.hadoop.hive.ql.io.orc.OrcFile.WriterOptions;
 import org.apache.hadoop.hive.ql.io.orc.OrcInputFormat;
-import org.apache.hadoop.hive.ql.io.orc.WriterImpl;
+import org.apache.hadoop.hive.ql.io.orc.Reader;
+import org.apache.hadoop.hive.ql.io.orc.Writer;
 import org.apache.hadoop.hive.ql.io.orc.encoded.CacheChunk;
 import org.apache.hadoop.hive.ql.io.orc.encoded.Reader.OrcEncodedColumnBatch;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
@@ -77,6 +78,7 @@ import org.apache.hive.common.util.FixedSizedObjectPool;
 import org.apache.hive.common.util.Ref;
 import org.apache.orc.CompressionCodec;
 import org.apache.orc.CompressionKind;
+import org.apache.orc.OrcConf;
 import org.apache.orc.OrcUtils;
 import org.apache.orc.OrcFile.EncodingStrategy;
 import org.apache.orc.OrcFile.Version;
@@ -84,8 +86,9 @@ import org.apache.orc.OrcProto;
 import org.apache.orc.OrcProto.ColumnEncoding;
 import org.apache.orc.TypeDescription;
 import org.apache.orc.impl.OutStream;
-import org.apache.orc.impl.OutStream.OutputReceiver;
-import org.apache.orc.impl.PhysicalWriter;
+import org.apache.orc.PhysicalWriter;
+import org.apache.orc.PhysicalWriter.OutputReceiver;
+import org.apache.orc.impl.SchemaEvolution;
 import org.apache.orc.impl.StreamName;
 import org.apache.tez.common.CallableWithNdc;
 import org.apache.tez.common.counters.TezCounters;
@@ -180,7 +183,7 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
     this.parts = parts;
     this.daemonConf = new Configuration(daemonConf);
     // Disable dictionary encoding for the writer.
-    this.daemonConf.setDouble(ConfVars.HIVE_ORC_DICTIONARY_KEY_SIZE_THRESHOLD.varname, 0);
+    this.daemonConf.setDouble(OrcConf.DICTIONARY_KEY_SIZE_THRESHOLD.name(), 0);
     this.split = split;
     this.columnIds = columnIds;
     this.allocSize = determineAllocSize(bufferManager, daemonConf);
@@ -208,6 +211,9 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
     this.reporter = reporter;
     this.jobConf = jobConf;
     this.writerIncludes = OrcInputFormat.genIncludedColumns(schema, columnIds);
+    SchemaEvolution evolution = new SchemaEvolution(schema,
+        new Reader.Options(jobConf).include(writerIncludes));
+    consumer.setSchemaEvolution(evolution);
   }
 
   private static int determineAllocSize(BufferUsageManager bufferManager, Configuration conf) {
@@ -331,8 +337,8 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
     private final List<Integer> columnIds;
     private final boolean[] writerIncludes;
     // These are global since ORC reuses objects between stripes.
-    private final Map<StreamName, OutStream> streams = new HashMap<>();
-    private final Map<Integer, List<CacheOutStream>> colStreams = new HashMap<>();
+    private final Map<StreamName, OutputReceiver> streams = new HashMap<>();
+    private final Map<Integer, List<CacheOutputReceiver>> colStreams = new HashMap<>();
     private final boolean doesSourceHaveIncludes;
 
     public CacheWriter(BufferUsageManager bufferManager, int bufferSize,
@@ -351,10 +357,6 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
         stripes.add(currentStripe);
       }
       currentStripe = new CacheStripeData();
-    }
-
-    @Override
-    public void initialize() throws IOException {
     }
 
     @Override
@@ -399,7 +401,8 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
     }
 
     @Override
-    public void writePostScript(OrcProto.PostScript.Builder builder) throws IOException {
+    public long writePostScript(OrcProto.PostScript.Builder builder) {
+      return 0;
     }
 
     @Override
@@ -426,41 +429,45 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
     }
 
     @Override
-    public long getPhysicalStripeSize() {
-      return 0; // Always 0, no memory checks.
-    }
-
-    @Override
-    public boolean isCompressed() {
-      return false;
-    }
-
-    @Override
-    public OutStream getOrCreatePhysicalStream(StreamName name) throws IOException {
-      OutStream os = streams.get(name);
-      if (os != null) return os;
+    public OutputReceiver createDataStream(StreamName name) throws IOException {
+      OutputReceiver or = streams.get(name);
+      if (or != null) return or;
       if (isNeeded(name)) {
         if (LlapIoImpl.LOG.isTraceEnabled()) {
           LlapIoImpl.LOG.trace("Creating cache receiver for " + name);
         }
-        CacheOutputReceiver or = new CacheOutputReceiver(bufferManager, name);
-        CacheOutStream cos = new CacheOutStream(name.toString(), bufferSize, null, or);
-        os = cos;
-        List<CacheOutStream> list = colStreams.get(name.getColumn());
+        CacheOutputReceiver cor = new CacheOutputReceiver(bufferManager, name);
+        or = cor;
+        List<CacheOutputReceiver> list = colStreams.get(name.getColumn());
         if (list == null) {
           list = new ArrayList<>();
           colStreams.put(name.getColumn(), list);
         }
-        list.add(cos);
+        list.add(cor);
       } else {
         if (LlapIoImpl.LOG.isTraceEnabled()) {
           LlapIoImpl.LOG.trace("Creating null receiver for " + name);
         }
-        OutputReceiver or = new NullOutputReceiver(name);
-        os = new OutStream(name.toString(), bufferSize, null, or);
+        or = new NullOutputReceiver(name);
       }
-      streams.put(name, os);
-      return os;
+      streams.put(name, or);
+      return or;
+    }
+
+    @Override
+    public void writeHeader() throws IOException {
+
+    }
+
+    @Override
+    public void writeIndex(StreamName name, OrcProto.RowIndex.Builder index, CompressionCodec codec) throws IOException {
+      // TODO: right now we treat each slice as a stripe with a single RG and never bother
+      //       with indexes. In phase 4, we need to add indexing and filtering.
+    }
+
+    @Override
+    public void writeBloomFilter(StreamName name, OrcProto.BloomFilterIndex.Builder bloom, CompressionCodec codec) throws IOException {
+
     }
 
     @Override
@@ -495,21 +502,20 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
       }
       currentStripe.rowCount = si.getNumberOfRows();
       // ORC writer reuses streams, so we need to clean them here and extract data.
-      for (Map.Entry<Integer, List<CacheOutStream>> e : colStreams.entrySet()) {
-        List<CacheOutStream> streams = e.getValue();
+      for (Map.Entry<Integer, List<CacheOutputReceiver>> e : colStreams.entrySet()) {
+        int colIx = e.getKey();
+        List<CacheOutputReceiver> streams = e.getValue();
         List<CacheStreamData> data = new ArrayList<>(streams.size());
-        for (CacheOutStream stream : streams) {
-          stream.flush();
-          List<MemoryBuffer> buffers = stream.receiver.buffers;
+        for (CacheOutputReceiver receiver : streams) {
+          List<MemoryBuffer> buffers = receiver.buffers;
           if (buffers == null) {
             // This can happen e.g. for a data stream when all the values are null.
-            LlapIoImpl.LOG.debug("Buffers are null for " + stream.receiver.name);
+            LlapIoImpl.LOG.debug("Buffers are null for " + receiver.name);
           }
-          data.add(new CacheStreamData(stream.isSuppressed(), stream.receiver.name,
+          data.add(new CacheStreamData(receiver.suppressed, receiver.name,
               buffers == null ? new ArrayList<MemoryBuffer>() : new ArrayList<>(buffers)));
-          stream.clear();
+          receiver.clear();
         }
-        int colIx = e.getKey();
         if (doesSourceHaveIncludes) {
           int newColIx = getSparseOrcIndexFromDenseDest(colIx);
           if (LlapIoImpl.LOG.isTraceEnabled()) {
@@ -530,40 +536,18 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
       return columnIds.get(denseColIx - 1) + 1;
     }
 
-    @Override
-    public long estimateMemory() {
-      return 0; // We never ever use any memory.
-    }
-
-    @Override
-    public void writeIndexStream(StreamName name,
-        OrcProto.RowIndex.Builder rowIndex) throws IOException {
-      // TODO: right now we treat each slice as a stripe with a single RG and never bother
-      //       with indexes. In phase 4, we need to add indexing and filtering.
-    }
-
     private boolean isNeeded(StreamName name) {
       return doesSourceHaveIncludes || writerIncludes[name.getColumn()];
     }
-
-    @Override
-    public void writeBloomFilterStream(StreamName streamName,
-        OrcProto.BloomFilterIndex.Builder bloomFilterIndex) throws IOException {
-    }
-
 
     @Override
     public void flush() throws IOException {
     }
 
     @Override
-    public long getRawWriterPosition() throws IOException {
-      return -1; // Meaningless for this writer.
-    }
-
-    @Override
-    public void appendRawStripe(byte[] stripe, int offset, int length,
-        OrcProto.StripeInformation.Builder dirEntry) throws IOException {
+    public void appendRawStripe(ByteBuffer stripe,
+                                OrcProto.StripeInformation.Builder dirEntry
+                                ) throws IOException {
       throw new UnsupportedOperationException(); // Only used in ACID writer.
     }
 
@@ -586,6 +570,7 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
     private final StreamName name;
     private List<MemoryBuffer> buffers = null;
     private int lastBufferPos = -1;
+    private boolean suppressed = false;
 
     public CacheOutputReceiver(BufferUsageManager bufferManager, StreamName name) {
       this.bufferManager = bufferManager;
@@ -593,6 +578,14 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
     }
 
     public void clear() {
+      buffers = null;
+      lastBufferPos = -1;
+      suppressed = false;
+    }
+
+    @Override
+    public void suppress() {
+      suppressed = true;
       buffers = null;
       lastBufferPos = -1;
     }
@@ -654,6 +647,10 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
 
     @Override
     public void output(ByteBuffer buffer) throws IOException {
+    }
+
+    @Override
+    public void suppress() {
     }
   }
 
@@ -1024,7 +1021,7 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
           daemonConf, jobConf, split.getPath(), originalOi, columnIds);
       cacheWriter = new CacheWriter(
           bufferManager, allocSize, columnIds, splitIncludes, writer.hasIncludes());
-      writer.init(new WriterImpl(cacheWriter, null,
+      writer.init(OrcFile.createWriter(split.getPath(),
           createOrcWriterOptions(writer.getDestinationOi())));
 
       int rowsPerSlice = 0;
@@ -1106,7 +1103,7 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
   interface EncodingWriter {
     void writeOneRow(Writable row) throws IOException;
     StructObjectInspector getDestinationOi();
-    void init(WriterImpl orcWriter);
+    void init(Writer orcWriter);
     boolean hasIncludes();
     void writeIntermediateFooter() throws IOException;
     void flushIntermediateData() throws IOException;
@@ -1114,7 +1111,7 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
   }
 
   static class DeserialerOrcWriter implements EncodingWriter {
-    private WriterImpl orcWriter;
+    private Writer orcWriter;
     private final Deserializer sourceSerDe;
     private final StructObjectInspector sourceOi;
 
@@ -1124,7 +1121,7 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
     }
 
     @Override
-    public void init(WriterImpl orcWriter) {
+    public void init(Writer orcWriter) {
       this.orcWriter = orcWriter;
     }
 
@@ -1169,7 +1166,8 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
     return OrcFile.writerOptions(daemonConf).stripeSize(Long.MAX_VALUE).blockSize(Long.MAX_VALUE)
         .rowIndexStride(Integer.MAX_VALUE) // For now, do not limit this - one RG per split
         .blockPadding(false).compress(CompressionKind.NONE).version(Version.CURRENT)
-        .encodingStrategy(EncodingStrategy.SPEED).bloomFilterColumns(null).inspector(sourceOi);
+        .encodingStrategy(EncodingStrategy.SPEED).bloomFilterColumns(null).inspector(sourceOi)
+        .physicalWriter(cacheWriter);
   }
 
   private ObjectInspector getOiFromSerDe() throws IOException {

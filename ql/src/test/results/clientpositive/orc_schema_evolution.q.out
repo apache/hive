@@ -103,11 +103,11 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_orc2
 #### A masked pattern was here ####
 36214430891
-PREHOOK: query: alter table src_orc2 replace columns (k smallint, v string)
+PREHOOK: query: alter table src_orc2 replace columns (key smallint, val string)
 PREHOOK: type: ALTERTABLE_REPLACECOLS
 PREHOOK: Input: default@src_orc2
 PREHOOK: Output: default@src_orc2
-POSTHOOK: query: alter table src_orc2 replace columns (k smallint, v string)
+POSTHOOK: query: alter table src_orc2 replace columns (key smallint, val string)
 POSTHOOK: type: ALTERTABLE_REPLACECOLS
 POSTHOOK: Input: default@src_orc2
 POSTHOOK: Output: default@src_orc2
@@ -120,11 +120,11 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_orc2
 #### A masked pattern was here ####
 36214430891
-PREHOOK: query: alter table src_orc2 replace columns (k int, v string)
+PREHOOK: query: alter table src_orc2 replace columns (key int, val string)
 PREHOOK: type: ALTERTABLE_REPLACECOLS
 PREHOOK: Input: default@src_orc2
 PREHOOK: Output: default@src_orc2
-POSTHOOK: query: alter table src_orc2 replace columns (k int, v string)
+POSTHOOK: query: alter table src_orc2 replace columns (key int, val string)
 POSTHOOK: type: ALTERTABLE_REPLACECOLS
 POSTHOOK: Input: default@src_orc2
 POSTHOOK: Output: default@src_orc2
@@ -137,11 +137,11 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_orc2
 #### A masked pattern was here ####
 36214430891
-PREHOOK: query: alter table src_orc2 replace columns (k bigint, v string)
+PREHOOK: query: alter table src_orc2 replace columns (key bigint, val string)
 PREHOOK: type: ALTERTABLE_REPLACECOLS
 PREHOOK: Input: default@src_orc2
 PREHOOK: Output: default@src_orc2
-POSTHOOK: query: alter table src_orc2 replace columns (k bigint, v string)
+POSTHOOK: query: alter table src_orc2 replace columns (key bigint, val string)
 POSTHOOK: type: ALTERTABLE_REPLACECOLS
 POSTHOOK: Input: default@src_orc2
 POSTHOOK: Output: default@src_orc2
@@ -154,11 +154,11 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_orc2
 #### A masked pattern was here ####
 36214430891
-PREHOOK: query: alter table src_orc2 replace columns (k bigint, v string, z int)
+PREHOOK: query: alter table src_orc2 replace columns (key bigint, val string, z int)
 PREHOOK: type: ALTERTABLE_REPLACECOLS
 PREHOOK: Input: default@src_orc2
 PREHOOK: Output: default@src_orc2
-POSTHOOK: query: alter table src_orc2 replace columns (k bigint, v string, z int)
+POSTHOOK: query: alter table src_orc2 replace columns (key bigint, val string, z int)
 POSTHOOK: type: ALTERTABLE_REPLACECOLS
 POSTHOOK: Input: default@src_orc2
 POSTHOOK: Output: default@src_orc2
@@ -171,11 +171,11 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_orc2
 #### A masked pattern was here ####
 -586749626187
-PREHOOK: query: alter table src_orc2 replace columns (k bigint, v string, z bigint)
+PREHOOK: query: alter table src_orc2 replace columns (key bigint, val string, z bigint)
 PREHOOK: type: ALTERTABLE_REPLACECOLS
 PREHOOK: Input: default@src_orc2
 PREHOOK: Output: default@src_orc2
-POSTHOOK: query: alter table src_orc2 replace columns (k bigint, v string, z bigint)
+POSTHOOK: query: alter table src_orc2 replace columns (key bigint, val string, z bigint)
 POSTHOOK: type: ALTERTABLE_REPLACECOLS
 POSTHOOK: Input: default@src_orc2
 POSTHOOK: Output: default@src_orc2
@@ -188,11 +188,11 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_orc2
 #### A masked pattern was here ####
 -586749626187
-PREHOOK: query: alter table src_orc2 replace columns (k bigint, v string, z bigint, y float)
+PREHOOK: query: alter table src_orc2 replace columns (key bigint, val string, z bigint, y float)
 PREHOOK: type: ALTERTABLE_REPLACECOLS
 PREHOOK: Input: default@src_orc2
 PREHOOK: Output: default@src_orc2
-POSTHOOK: query: alter table src_orc2 replace columns (k bigint, v string, z bigint, y float)
+POSTHOOK: query: alter table src_orc2 replace columns (key bigint, val string, z bigint, y float)
 POSTHOOK: type: ALTERTABLE_REPLACECOLS
 POSTHOOK: Input: default@src_orc2
 POSTHOOK: Output: default@src_orc2

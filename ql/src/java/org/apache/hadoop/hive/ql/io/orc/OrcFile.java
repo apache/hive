@@ -28,6 +28,7 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.orc.FileMetadata;
+import org.apache.orc.PhysicalWriter;
 import org.apache.orc.impl.MemoryManager;
 import org.apache.orc.TypeDescription;
 import org.apache.orc.impl.OrcTail;
@@ -264,6 +265,11 @@ public final class OrcFile extends org.apache.orc.OrcFile {
 
     protected WriterOptions batchSize(int maxSize) {
       batchSize = maxSize;
+      return this;
+    }
+
+    public WriterOptions physicalWriter(PhysicalWriter writer) {
+      super.physicalWriter(writer);
       return this;
     }
 
