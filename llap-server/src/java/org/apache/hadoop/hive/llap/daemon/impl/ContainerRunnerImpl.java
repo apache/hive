@@ -55,7 +55,6 @@ import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.Terminate
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.VertexOrBinary;
 import org.apache.hadoop.hive.llap.metrics.LlapDaemonExecutorMetrics;
 import org.apache.hadoop.hive.llap.security.LlapSignerImpl;
-import org.apache.hadoop.hive.llap.security.LlapTokenIdentifier;
 import org.apache.hadoop.hive.llap.tez.Converters;
 import org.apache.hadoop.hive.llap.tezplugins.LlapTezUtils;
 import org.apache.hadoop.io.DataInputBuffer;
@@ -183,14 +182,16 @@ public class ContainerRunnerImpl extends CompositeService implements ContainerRu
     SignableVertexSpec vertex = extractVertexSpec(request, tokenInfo);
     TezEvent initialEvent = extractInitialEvent(request, tokenInfo);
 
-    if (LOG.isInfoEnabled()) {
-      LOG.info("Queueing container for execution: " + stringifySubmitRequest(request, vertex));
-    }
-    QueryIdentifierProto qIdProto = vertex.getQueryIdentifier();
     TezTaskAttemptID attemptId =
         Converters.createTaskAttemptId(vertex.getQueryIdentifier(), vertex.getVertexIndex(),
             request.getFragmentNumber(), request.getAttemptNumber());
     String fragmentIdString = attemptId.toString();
+    if (LOG.isInfoEnabled()) {
+      LOG.info("Queueing container for execution: fragemendId={}, {}",
+          fragmentIdString, stringifySubmitRequest(request, vertex));
+    }
+    QueryIdentifierProto qIdProto = vertex.getQueryIdentifier();
+
     HistoryLogger.logFragmentStart(qIdProto.getApplicationIdString(), request.getContainerIdString(),
         localAddress.get().getHostName(), vertex.getDagName(), qIdProto.getDagIndex(),
         vertex.getVertexName(), request.getFragmentNumber(), request.getAttemptNumber());
@@ -478,11 +479,7 @@ public class ContainerRunnerImpl extends CompositeService implements ContainerRu
   public void queryFailed(QueryIdentifier queryIdentifier) {
     LOG.info("Processing query failed notification for {}", queryIdentifier);
     List<QueryFragmentInfo> knownFragments;
-    try {
-      knownFragments = queryTracker.queryComplete(queryIdentifier, -1, true);
-    } catch (IOException e) {
-      throw new RuntimeException(e); // Should never happen here, no permission check.
-    }
+    knownFragments = queryTracker.getRegisteredFragments(queryIdentifier);
     LOG.info("DBG: Pending fragment count for failed query {} = {}", queryIdentifier,
         knownFragments.size());
     for (QueryFragmentInfo fragmentInfo : knownFragments) {
