@@ -29,6 +29,7 @@ import java.util.Properties;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.StringInternUtils;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.io.HiveFileFormatUtils;
@@ -68,7 +69,7 @@ public class PartitionDesc implements Serializable, Cloneable {
   private String baseFileName;
 
   public void setBaseFileName(String baseFileName) {
-    this.baseFileName = baseFileName;
+    this.baseFileName = baseFileName.intern();
   }
 
   public PartitionDesc() {    
@@ -76,13 +77,13 @@ public class PartitionDesc implements Serializable, Cloneable {
 
   public PartitionDesc(final TableDesc table, final LinkedHashMap<String, String> partSpec) {
     this.tableDesc = table;
-    this.partSpec = partSpec;
+    setPartSpec(partSpec);
   }
 
   public PartitionDesc(final Partition part) throws HiveException {
     this.tableDesc = getTableDesc(part.getTable());
     setProperties(part.getMetadataFromPartitionSchema());
-    partSpec = part.getSpec();
+    setPartSpec(part.getSpec());
     setInputFileFormatClass(part.getInputFormatClass());
     setOutputFileFormatClass(part.getOutputFormatClass());
   }
@@ -90,7 +91,7 @@ public class PartitionDesc implements Serializable, Cloneable {
   public PartitionDesc(final Partition part,final TableDesc tblDesc) throws HiveException {
     this.tableDesc = tblDesc;
     setProperties(part.getSchemaFromTableSchema(tblDesc.getProperties())); // each partition maintains a large properties
-    partSpec = part.getSpec();
+    setPartSpec(part.getSpec());
     setOutputFileFormatClass(part.getInputFormatClass());
     setOutputFileFormatClass(part.getOutputFormatClass());
   }
@@ -110,10 +111,11 @@ public class PartitionDesc implements Serializable, Cloneable {
   }
 
   public void setPartSpec(final LinkedHashMap<String, String> partSpec) {
+    StringInternUtils.internValuesInMap(partSpec);
     this.partSpec = partSpec;
   }
 
-    public Class<? extends InputFormat> getInputFileFormatClass() {
+  public Class<? extends InputFormat> getInputFileFormatClass() {
     if (inputFileFormatClass == null && tableDesc != null) {
       setInputFileFormatClass(tableDesc.getInputFileFormatClass());
     }
@@ -254,8 +256,7 @@ public class PartitionDesc implements Serializable, Cloneable {
     ret.tableDesc = (TableDesc) tableDesc.clone();
     // The partition spec is not present
     if (partSpec != null) {
-      ret.partSpec = new java.util.LinkedHashMap<String, String>();
-      ret.partSpec.putAll(partSpec);
+      ret.partSpec = new LinkedHashMap<>(partSpec);
     }
     return ret;
   }
@@ -275,11 +276,11 @@ public class PartitionDesc implements Serializable, Cloneable {
     }
     try {
       Path p = new Path(path);
-      baseFileName = p.getName();
+      baseFileName = p.getName().intern();
     } catch (Exception ex) {
       // don't really care about the exception. the goal is to capture the
       // the last component at the minimum - so set to the complete path
-      baseFileName = path;
+      baseFileName = path.intern();
     }
   }
 

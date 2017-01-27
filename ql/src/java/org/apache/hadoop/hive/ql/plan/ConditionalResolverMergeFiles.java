@@ -317,10 +317,9 @@ public class ConditionalResolverMergeFiles implements ConditionalResolver,
 
   private PartitionDesc generateDPFullPartSpec(DynamicPartitionCtx dpCtx, FileStatus[] status,
       TableDesc tblDesc, int i) {
-    Map<String, String> fullPartSpec = new LinkedHashMap<String, String>(
-        dpCtx.getPartSpec());
+    LinkedHashMap<String, String> fullPartSpec = new LinkedHashMap<>(dpCtx.getPartSpec());
     Warehouse.makeSpecFromName(fullPartSpec, status[i].getPath());
-    PartitionDesc pDesc = new PartitionDesc(tblDesc, (LinkedHashMap) fullPartSpec);
+    PartitionDesc pDesc = new PartitionDesc(tblDesc, fullPartSpec);
     return pDesc;
   }
 

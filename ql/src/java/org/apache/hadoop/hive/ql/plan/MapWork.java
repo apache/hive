@@ -139,7 +139,10 @@ public class MapWork extends BaseWork {
 
   public void setPathToAliases(
       final LinkedHashMap<String, ArrayList<String>> pathToAliases) {
-    this.pathToAliases = pathToAliases;
+    this.pathToAliases = new LinkedHashMap<>(pathToAliases.size());
+    for (Map.Entry<String, ArrayList<String>> e : pathToAliases.entrySet()) {
+      this.pathToAliases.put(e.getKey().intern(), e.getValue());
+    }
   }
 
   /**
@@ -262,6 +265,7 @@ public class MapWork extends BaseWork {
     if (curAliases == null) {
       assert (pathToPartitionInfo.get(path) == null);
       curAliases = new ArrayList<String>();
+      path = path.intern();
       pathToAliases.put(path, curAliases);
       pathToPartitionInfo.put(path, pd);
     } else {
@@ -292,8 +296,9 @@ public class MapWork extends BaseWork {
 
   public void resolveDynamicPartitionStoredAsSubDirsMerge(HiveConf conf, Path path,
       TableDesc tblDesc, ArrayList<String> aliases, PartitionDesc partDesc) {
-    pathToAliases.put(path.toString(), aliases);
-    pathToPartitionInfo.put(path.toString(), partDesc);
+    String pathStr = path.toString().intern();
+    pathToAliases.put(pathStr, aliases);
+    pathToPartitionInfo.put(pathStr, partDesc);
   }
 
   /**
@@ -347,8 +352,10 @@ public class MapWork extends BaseWork {
 
   public void mergeAliasedInput(String alias, String pathDir, PartitionDesc partitionInfo) {
     ArrayList<String> aliases = pathToAliases.get(pathDir);
+    alias = alias.intern();
     if (aliases == null) {
       aliases = new ArrayList<String>(Arrays.asList(alias));
+      pathDir = pathDir.intern();
       pathToAliases.put(pathDir, aliases);
       pathToPartitionInfo.put(pathDir, partitionInfo);
     } else {

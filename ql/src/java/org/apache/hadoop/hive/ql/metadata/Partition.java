@@ -33,6 +33,7 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.FileUtils;
+import org.apache.hadoop.hive.common.StringInternUtils;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.ProtectMode;
 import org.apache.hadoop.hive.metastore.Warehouse;
@@ -181,7 +182,7 @@ public class Partition implements Serializable {
       org.apache.hadoop.hive.metastore.api.Partition tPartition) throws HiveException {
 
     this.table = table;
-    this.tPartition = tPartition;
+    setTPartition(tPartition);
 
     if (table.isView()) {
       return;
@@ -484,6 +485,7 @@ public class Partition implements Serializable {
    */
   public void setTPartition(
       org.apache.hadoop.hive.metastore.api.Partition partition) {
+    StringInternUtils.internStringsInList(partition.getValues());
     tPartition = partition;
   }
 
@@ -535,7 +537,7 @@ public class Partition implements Serializable {
         throw new HiveException(
             "partition spec is invalid. field.getName() does not exist in input.");
       }
-      pvals.add(val);
+      pvals.add(val.intern());
     }
     tPartition.setValues(pvals);
   }

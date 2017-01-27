@@ -75,6 +75,7 @@ public class SymbolicInputFormat implements ReworkMapredInputFormat {
             while ((line = reader.readLine()) != null) {
               // no check for the line? How to check?
               // if the line is invalid for any reason, the job will fail.
+              line = line.intern();
               toAddPathToPart.put(line, partDesc);
               pathToAliases.put(line, aliases);
             }

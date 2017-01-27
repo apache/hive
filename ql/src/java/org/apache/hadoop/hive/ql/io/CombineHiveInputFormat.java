@@ -44,6 +44,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.hive.common.FileUtils;
+import org.apache.hadoop.hive.common.StringInternUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
@@ -347,7 +348,7 @@ public class CombineHiveInputFormat<K extends WritableComparable, V extends Writ
 
     // combine splits only from same tables and same partitions. Do not combine splits from multiple
     // tables or multiple partitions.
-    Path[] paths = combine.getInputPathsShim(job);
+    Path[] paths = StringInternUtils.internUriStringsInPathArray(combine.getInputPathsShim(job));
 
     List<Path> inpDirs = new ArrayList<Path>();
     List<Path> inpFiles = new ArrayList<Path>();
@@ -647,7 +648,7 @@ public class CombineHiveInputFormat<K extends WritableComparable, V extends Writ
   Map<String, ArrayList<String>> removeScheme(Map<String, ArrayList<String>> pathToAliases) {
     Map<String, ArrayList<String>> result = new HashMap<String, ArrayList<String>>();
     for (Map.Entry <String, ArrayList<String>> entry : pathToAliases.entrySet()) {
-      String newKey = new Path(entry.getKey()).toUri().getPath();
+      String newKey = new Path(entry.getKey()).toUri().getPath().intern();
       result.put(newKey, entry.getValue());
     }
     return result;

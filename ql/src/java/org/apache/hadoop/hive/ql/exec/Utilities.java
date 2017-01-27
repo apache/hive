@@ -104,6 +104,7 @@ import org.apache.hadoop.hive.common.HiveInterruptCallback;
 import org.apache.hadoop.hive.common.HiveInterruptUtils;
 import org.apache.hadoop.hive.common.HiveStatsUtils;
 import org.apache.hadoop.hive.common.JavaUtils;
+import org.apache.hadoop.hive.common.StringInternUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.Warehouse;
@@ -3422,8 +3423,8 @@ public final class Utilities {
             continue;
           }
 
+          StringInternUtils.internUriStringsInPath(file);
           pathsProcessed.add(file);
-
           LOG.info("Adding input file " + file);
           pathsToAdd.add(file);
         }
@@ -3524,7 +3525,7 @@ public final class Utilities {
     }
     recWriter.close(false);
 
-    return newPath;
+    return StringInternUtils.internUriStringsInPath(newPath);
   }
 
   @SuppressWarnings("rawtypes")
@@ -3555,7 +3556,7 @@ public final class Utilities {
     }
 
     // update the work
-    String strNewPath = newPath.toString();
+    String strNewPath = newPath.toString().intern();
 
     LinkedHashMap<String, ArrayList<String>> pathToAliases = work.getPathToAliases();
     pathToAliases.put(strNewPath, pathToAliases.get(strPath));
@@ -3594,16 +3595,17 @@ public final class Utilities {
 
     // update the work
 
+    String newPathStr = newPath.toUri().toString().intern();
     LinkedHashMap<String, ArrayList<String>> pathToAliases = work.getPathToAliases();
     ArrayList<String> newList = new ArrayList<String>();
     newList.add(alias);
-    pathToAliases.put(newPath.toUri().toString(), newList);
+    pathToAliases.put(newPathStr, newList);
 
     work.setPathToAliases(pathToAliases);
 
     LinkedHashMap<String, PartitionDesc> pathToPartitionInfo = work.getPathToPartitionInfo();
     PartitionDesc pDesc = work.getAliasToPartnInfo().get(alias).clone();
-    pathToPartitionInfo.put(newPath.toUri().toString(), pDesc);
+    pathToPartitionInfo.put(newPathStr, pDesc);
     work.setPathToPartitionInfo(pathToPartitionInfo);
 
     return newPath;

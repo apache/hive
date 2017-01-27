@@ -100,7 +100,7 @@ public class Entity implements Serializable {
   }
 
   public void setName(String name) {
-    this.name = name;
+    this.name = name.intern();
   }
 
   public Database getDatabase() {
@@ -330,6 +330,10 @@ public class Entity implements Serializable {
   }
 
   private String computeName() {
+    return doComputeName().intern();
+  }
+
+  private String doComputeName() {
     switch (typ) {
     case DATABASE:
       return "database:" + database.getName();

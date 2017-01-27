@@ -246,6 +246,7 @@ public final class GenMapRedUtils {
           TableDesc tt_desc = tt_descLst.get(pos);
           MapWork mWork = plan.getMapWork();
           if (mWork.getPathToAliases().get(taskTmpDir) == null) {
+            taskTmpDir = taskTmpDir.intern();
             mWork.getPathToAliases().put(taskTmpDir,
                 new ArrayList<String>());
             mWork.getPathToAliases().get(taskTmpDir).add(taskTmpDir);
@@ -700,7 +701,7 @@ public final class GenMapRedUtils {
     if (!local) {
       while (iterPath.hasNext()) {
         assert iterPartnDesc.hasNext();
-        String path = iterPath.next().toString();
+        String path = iterPath.next().toString().intern();
 
         PartitionDesc prtDesc = iterPartnDesc.next();
 
@@ -765,6 +766,7 @@ public final class GenMapRedUtils {
     }
 
     if (!local) {
+      path = path.intern();
       if (plan.getPathToAliases().get(path) == null) {
         plan.getPathToAliases().put(path, new ArrayList<String>());
       }
@@ -1499,7 +1501,7 @@ public final class GenMapRedUtils {
     Operator<? extends OperatorDesc> topOp,  FileSinkDesc fsDesc) {
 
     ArrayList<String> aliases = new ArrayList<String>();
-    String inputDir = fsDesc.getFinalDirName().toString();
+    String inputDir = fsDesc.getFinalDirName().toString().intern();
     TableDesc tblDesc = fsDesc.getTableInfo();
     aliases.add(inputDir); // dummy alias: just use the input path
 

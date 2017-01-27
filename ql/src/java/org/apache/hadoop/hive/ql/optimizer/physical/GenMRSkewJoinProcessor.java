@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.optimizer.physical;
 
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.StringInternUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.ConditionalTask;
@@ -265,10 +266,10 @@ public final class GenMRSkewJoinProcessor {
       Operator<? extends OperatorDesc> tblScan_op = parentOps[i];
 
       ArrayList<String> aliases = new ArrayList<String>();
-      String alias = src.toString();
+      String alias = src.toString().intern();
       aliases.add(alias);
       Path bigKeyDirPath = bigKeysDirMap.get(src);
-      newPlan.getPathToAliases().put(bigKeyDirPath.toString(), aliases);
+      newPlan.getPathToAliases().put(bigKeyDirPath.toString().intern(), aliases);
 
       newPlan.getAliasToWork().put(alias, tblScan_op);
       PartitionDesc part = new PartitionDesc(tableDescList.get(src), null);
@@ -392,18 +393,21 @@ public final class GenMRSkewJoinProcessor {
   private static String RESULTS = "results";
 
   static Path getBigKeysDir(Path baseDir, Byte srcTbl) {
-    return new Path(baseDir, skewJoinPrefix + UNDERLINE + BIGKEYS + UNDERLINE + srcTbl);
+    return StringInternUtils.internUriStringsInPath(
+        new Path(baseDir, skewJoinPrefix + UNDERLINE + BIGKEYS + UNDERLINE + srcTbl));
   }
 
   static Path getBigKeysSkewJoinResultDir(Path baseDir, Byte srcTbl) {
-    return new Path(baseDir, skewJoinPrefix + UNDERLINE + BIGKEYS
-        + UNDERLINE + RESULTS + UNDERLINE + srcTbl);
+    return StringInternUtils.internUriStringsInPath(
+        new Path(baseDir, skewJoinPrefix + UNDERLINE + BIGKEYS
+        + UNDERLINE + RESULTS + UNDERLINE + srcTbl));
   }
 
   static Path getSmallKeysDir(Path baseDir, Byte srcTblBigTbl,
       Byte srcTblSmallTbl) {
-    return new Path(baseDir, skewJoinPrefix + UNDERLINE + SMALLKEYS
-        + UNDERLINE + srcTblBigTbl + UNDERLINE + srcTblSmallTbl);
+    return StringInternUtils.internUriStringsInPath(
+        new Path(baseDir, skewJoinPrefix + UNDERLINE + SMALLKEYS
+        + UNDERLINE + srcTblBigTbl + UNDERLINE + srcTblSmallTbl));
   }
 
 }

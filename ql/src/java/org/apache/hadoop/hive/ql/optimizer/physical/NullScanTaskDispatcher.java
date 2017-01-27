@@ -109,8 +109,9 @@ public class NullScanTaskDispatcher implements Dispatcher {
       PartitionDesc newPartition = changePartitionToMetadataOnly(partDesc);
       Path fakePath = new Path(physicalContext.getContext().getMRTmpPath()
           + newPartition.getTableName() + encode(newPartition.getPartSpec()));
-      work.getPathToPartitionInfo().put(fakePath.getName(), newPartition);
-      work.getPathToAliases().put(fakePath.getName(), new ArrayList<String>(allowed));
+      String fakePathName = fakePath.getName().intern();
+      work.getPathToPartitionInfo().put(fakePathName, newPartition);
+      work.getPathToAliases().put(fakePathName, new ArrayList<String>(allowed));
       aliasesAffected.removeAll(allowed);
       if (aliasesAffected.isEmpty()) {
         work.getPathToAliases().remove(path);

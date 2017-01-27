@@ -35,6 +35,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.StringInternUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.io.HiveIOExceptionHandlerUtil;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
@@ -311,6 +312,7 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
 
   Path[] getInputPaths(JobConf job) throws IOException {
     Path[] dirs = FileInputFormat.getInputPaths(job);
+
     if (dirs.length == 0) {
       // on tez we're avoiding to duplicate the file info in FileInputFormat.
       if (HiveConf.getVar(job, HiveConf.ConfVars.HIVE_EXECUTION_ENGINE).equals("tez")) {
@@ -324,7 +326,7 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
         throw new IOException("No input paths specified in job");
       }
     }
-    return dirs;
+    return StringInternUtils.internUriStringsInPathArray(dirs);
   }
 
   public InputSplit[] getSplits(JobConf job, int numSplits) throws IOException {

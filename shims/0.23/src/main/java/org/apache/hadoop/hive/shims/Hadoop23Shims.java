@@ -132,6 +132,27 @@ public class Hadoop23Shims extends HadoopShimsSecure {
 
       @Override
       protected List<FileStatus> listStatus(JobContext job) throws IOException {
+        // NOTE: with a large number of partitions, each call below may consume
+        // a lot of memory, though only for the duration of the call. That's because
+        // internally super.listStatus() calls, in particular
+        //   Path[] dirs = getInputPaths(job);
+        // Each Path instance in turn creates a URI instance, and when there are
+        // many partitions, each of these URIs ends up containing a separate copy
+        // of the same string like host name, protocol name, etc. Furthermore, if
+        // many queries over the same set of partitions run concurrently, we may
+        // end up with a proportionally larger number of duplicate strings flooding
+        // memory in a short burst. There are other calls inside super.listStatus()
+        // as well, that create more chunks of temporary data.
+        // Probably the best way to address this problem would be to add a method in
+        // the superclass called listStatusIterator(), with the idea similar to HDFS
+        // FileSystem.listStatusIterator(). In this way, processing files one by one,
+        // we will avoid the big data burst that happens when temporary data for all
+        // these files is kept in memory at the same time.
+        // I have also tried to serialize calls below, i.e. surround it with
+        // synchronized (staticLockObject) { ... }. But this may have bad performance
+        // implications when memory is not an issue, but there is a really large number
+        // of concurrent calls to listStatus(). So far looks like this optimization is
+        // not absolutely critical.
         List<FileStatus> result = super.listStatus(job);
         Iterator<FileStatus> it = result.iterator();
         while (it.hasNext()) {
