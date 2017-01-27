@@ -114,8 +114,8 @@ public class ThriftHttpServlet extends TServlet {
         ConfVars.HIVE_SERVER2_THRIFT_HTTP_COOKIE_MAX_AGE, TimeUnit.SECONDS);
       this.cookieDomain = hiveConf.getVar(ConfVars.HIVE_SERVER2_THRIFT_HTTP_COOKIE_DOMAIN);
       this.cookiePath = hiveConf.getVar(ConfVars.HIVE_SERVER2_THRIFT_HTTP_COOKIE_PATH);
-      this.isCookieSecure = hiveConf.getBoolVar(
-        ConfVars.HIVE_SERVER2_THRIFT_HTTP_COOKIE_IS_SECURE);
+      // always send secure cookies for SSL mode
+      this.isCookieSecure = hiveConf.getBoolVar(ConfVars.HIVE_SERVER2_USE_SSL);
       this.isHttpOnlyCookie = hiveConf.getBoolVar(
         ConfVars.HIVE_SERVER2_THRIFT_HTTP_COOKIE_IS_HTTPONLY);
     }
