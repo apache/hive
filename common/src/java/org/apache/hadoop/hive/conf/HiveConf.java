@@ -486,6 +486,9 @@ public class HiveConf extends Configuration {
         "Comma-separated list of statistics publishers to be invoked on counters on each job. \n" +
         "A client stats publisher is specified as the name of a Java class which implements the \n" +
         "org.apache.hadoop.hive.ql.stats.ClientStatsPublisher interface."),
+    ATSHOOKQUEUECAPACITY("hive.ats.hook.queue.capacity", 64,
+        "Queue size for the ATS Hook executor. If the number of outstanding submissions \n" +
+        "to the ATS executor exceed this amount, the Hive ATS Hook will not try to log queries to ATS."),
     EXECPARALLEL("hive.exec.parallel", false, "Whether to execute jobs in parallel"),
     EXECPARALLETHREADNUMBER("hive.exec.parallel.thread.number", 8,
         "How many jobs at most can be executed in parallel"),
