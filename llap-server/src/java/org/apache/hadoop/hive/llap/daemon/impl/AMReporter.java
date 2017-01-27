@@ -26,6 +26,8 @@ import java.util.concurrent.DelayQueue;
 import java.util.concurrent.Delayed;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -76,8 +78,6 @@ public class AMReporter extends AbstractService {
   Ignore exceptions when communicating with the AM.
   At a later point, report back saying the AM is dead so that tasks can be removed from the running queue.
 
-  Use a cachedThreadPool so that a few AMs going down does not affect other AppMasters.
-
   Race: When a task completes - it sends out it's message via the regular TaskReporter. The AM after this may run another DAG,
   or may die. This may need to be consolidated with the LlapTaskReporter. Try ensuring there's no race between the two.
 
@@ -104,15 +104,23 @@ public class AMReporter extends AbstractService {
   volatile ListenableFuture<Void> queueLookupFuture;
   private final DaemonId daemonId;
 
-  public AMReporter(AtomicReference<InetSocketAddress> localAddress,
-      QueryFailedHandler queryFailedHandler, Configuration conf, DaemonId daemonId) {
+  public AMReporter(int numExecutors, int maxThreads, AtomicReference<InetSocketAddress>
+      localAddress, QueryFailedHandler queryFailedHandler, Configuration conf, DaemonId daemonId) {
     super(AMReporter.class.getName());
     this.localAddress = localAddress;
     this.queryFailedHandler = queryFailedHandler;
     this.conf = conf;
     this.daemonId = daemonId;
-    ExecutorService rawExecutor = Executors.newCachedThreadPool(
-        new ThreadFactoryBuilder().setDaemon(true).setNameFormat("AMReporter %d").build());
+    if (maxThreads < numExecutors) {
+      maxThreads = numExecutors;
+      LOG.warn("maxThreads={} is less than numExecutors={}. Setting maxThreads=numExecutors",
+          maxThreads, numExecutors);
+    }
+    ExecutorService rawExecutor =
+        new ThreadPoolExecutor(numExecutors, maxThreads,
+            60L, TimeUnit.SECONDS,
+            new LinkedBlockingQueue<Runnable>(),
+            new ThreadFactoryBuilder().setDaemon(true).setNameFormat("AMReporter %d").build());
     this.executor = MoreExecutors.listeningDecorator(rawExecutor);
     ExecutorService rawExecutor2 = Executors.newFixedThreadPool(1,
         new ThreadFactoryBuilder().setDaemon(true).setNameFormat("AMReporterQueueDrainer").build());

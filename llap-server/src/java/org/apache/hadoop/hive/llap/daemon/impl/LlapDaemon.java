@@ -256,7 +256,9 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
     LOG.info("Started LlapMetricsSystem with displayName: " + displayName +
         " sessionId: " + sessionId);
 
-    this.amReporter = new AMReporter(srvAddress, new QueryFailedHandlerProxy(), daemonConf, daemonId);
+    int maxAmReporterThreads = HiveConf.getIntVar(daemonConf, ConfVars.LLAP_DAEMON_AM_REPORTER_MAX_THREADS);
+    this.amReporter = new AMReporter(numExecutors, maxAmReporterThreads, srvAddress,
+        new QueryFailedHandlerProxy(), daemonConf, daemonId);
 
     SecretManager sm = null;
     if (UserGroupInformation.isSecurityEnabled()) {

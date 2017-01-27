@@ -3008,6 +3008,10 @@ public class HiveConf extends Configuration {
     LLAP_DAEMON_NUM_EXECUTORS("hive.llap.daemon.num.executors", 4,
       "Number of executors to use in LLAP daemon; essentially, the number of tasks that can be\n" +
       "executed in parallel.", "llap.daemon.num.executors"),
+    LLAP_DAEMON_AM_REPORTER_MAX_THREADS("hive.llap.daemon.am-reporter.max.threads", 4,
+        "Maximum number of threads to be used for AM reporter. If this is lower than number of\n" +
+        "executors in llap daemon, it would be set to number of executors at runtime.",
+        "llap.daemon.am-reporter.max.threads"),
     LLAP_DAEMON_RPC_PORT("hive.llap.daemon.rpc.port", 0, "The LLAP daemon RPC port.",
       "llap.daemon.rpc.port. A value of 0 indicates a dynamic port"),
     LLAP_DAEMON_MEMORY_PER_INSTANCE_MB("hive.llap.daemon.memory.per.instance.mb", 4096,
