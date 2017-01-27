@@ -3132,7 +3132,7 @@ public class HiveConf extends Configuration {
         "Whether to create the LLAP coordinator; since execution engine and container vs llap\n" +
         "settings are both coming from job configs, we don't know at start whether this should\n" +
         "be created. Default true."),
-    LLAP_DAEMON_LOGGER("hive.llap.daemon.logger", Constants.LLAP_LOGGER_NAME_RFA,
+    LLAP_DAEMON_LOGGER("hive.llap.daemon.logger", Constants.LLAP_LOGGER_NAME_QUERY_ROUTING,
         new StringSet(Constants.LLAP_LOGGER_NAME_QUERY_ROUTING,
             Constants.LLAP_LOGGER_NAME_RFA,
             Constants.LLAP_LOGGER_NAME_CONSOLE),
