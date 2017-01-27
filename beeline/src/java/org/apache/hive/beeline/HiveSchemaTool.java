@@ -815,38 +815,10 @@ public class HiveSchemaTool {
 
   // Generate the beeline args per hive conf and execute the given script
   public void runBeeLine(String sqlScriptFile) throws IOException {
-    List<String> argList = new ArrayList<String>();
-    argList.add("-u");
-    argList.add(HiveSchemaHelper.getValidConfVar(
-        ConfVars.METASTORECONNECTURLKEY, hiveConf));
-    argList.add("-d");
-    argList.add(HiveSchemaHelper.getValidConfVar(
-        ConfVars.METASTORE_CONNECTION_DRIVER, hiveConf));
-    argList.add("-n");
-    argList.add(userName);
-    argList.add("-p");
-    argList.add(passWord);
-    argList.add("-f");
-    argList.add(sqlScriptFile);
-
-    if (LOG.isDebugEnabled()) {
-      LOG.debug("Going to invoke file that contains:");
-      BufferedReader reader = new BufferedReader(new FileReader(sqlScriptFile));
-      try {
-        String line;
-        while ((line = reader.readLine()) != null) {
-          LOG.debug("script: " + line);
-        }
-      } finally {
-        if (reader != null) {
-          reader.close();
-        }
-      }
-    }
+    CommandBuilder builder = new CommandBuilder(hiveConf, userName, passWord, sqlScriptFile);
 
     // run the script using Beeline
-    BeeLine beeLine = new BeeLine();
-    try {
+    try (BeeLine beeLine = new BeeLine()) {
       if (!verbose) {
         beeLine.setOutputStream(new PrintStream(new NullOutputStream()));
         beeLine.getOpts().setSilent(true);
@@ -856,13 +828,53 @@ public class HiveSchemaTool {
       // We can be pretty sure that an entire line can be processed as a single command since
       // we always add a line separator at the end while calling dbCommandParser.buildCommand.
       beeLine.getOpts().setEntireLineAsCommand(true);
-      LOG.debug("Going to run command <" + StringUtils.join(argList, " ") + ">");
-      int status = beeLine.begin(argList.toArray(new String[0]), null);
+      LOG.debug("Going to run command <" + builder.buildToLog() + ">");
+      int status = beeLine.begin(builder.buildToRun(), null);
       if (status != 0) {
         throw new IOException("Schema script failed, errorcode " + status);
       }
-    } finally {
-      beeLine.close();
+    }
+  }
+
+  static class CommandBuilder {
+    private final HiveConf hiveConf;
+    private final String userName;
+    private final String password;
+    private final String sqlScriptFile;
+
+    CommandBuilder(HiveConf hiveConf, String userName, String password, String sqlScriptFile) {
+      this.hiveConf = hiveConf;
+      this.userName = userName;
+      this.password = password;
+      this.sqlScriptFile = sqlScriptFile;
+    }
+
+    String[] buildToRun() throws IOException {
+      return argsWith(password);
+    }
+
+    String buildToLog() throws IOException {
+      logScript();
+      return StringUtils.join(argsWith(BeeLine.PASSWD_MASK), " ");
+    }
+
+    private String[] argsWith(String password) throws IOException {
+      return new String[] { "-u",
+          HiveSchemaHelper.getValidConfVar(ConfVars.METASTORECONNECTURLKEY, hiveConf), "-d",
+          HiveSchemaHelper.getValidConfVar(ConfVars.METASTORE_CONNECTION_DRIVER, hiveConf), "-n",
+          userName, "-p", password, "-f", sqlScriptFile };
+    }
+
+    private void logScript() throws IOException {
+      if (LOG.isDebugEnabled()) {
+        LOG.debug("Going to invoke file that contains:");
+        try (BufferedReader reader = new BufferedReader(new FileReader(sqlScriptFile))) {
+          String line;
+          while ((line = reader.readLine()) != null) {
+            LOG.debug("script: " + line);
+          }
+        }
+      }
     }
   }
 
