@@ -25,6 +25,7 @@ import org.apache.hadoop.hive.llap.log.Log4jQueryCompleteMarker;
 import org.apache.hadoop.hive.llap.log.LogHelpers;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.security.token.Token;
+import org.apache.hadoop.util.StringUtils;
 import org.apache.log4j.MDC;
 import org.apache.logging.slf4j.Log4jMarker;
 import org.apache.tez.common.CallableWithNdc;
@@ -141,14 +142,17 @@ public class QueryTracker extends AbstractService {
       String fragmentIdString, LlapTokenInfo tokenInfo) throws IOException {
 
     ReadWriteLock dagLock = getDagLock(queryIdentifier);
+    // Note: This is a readLock to prevent a race with queryComplete. Operations
+    // and mutations within this lock need to be on concurrent structures.
     dagLock.readLock().lock();
     try {
       if (completedDagMap.contains(queryIdentifier)) {
         // Cleanup the dag lock here, since it may have been created after the query completed
         dagSpecificLocks.remove(queryIdentifier);
-        throw new RuntimeException(
-            "Dag " + dagName + " already complete. Rejecting fragment ["
-                + vertexName + ", " + fragmentNumber + ", " + attemptNumber + "]");
+        String message = "Dag " + dagName + " already complete. Rejecting fragment ["
+            + vertexName + ", " + fragmentNumber + ", " + attemptNumber + "]";
+        LOG.info(message);
+        throw new RuntimeException(message);
       }
       // TODO: for now, we get the secure username out of UGI... after signing, we can take it
       //       out of the request provided that it's signed.
@@ -211,6 +215,22 @@ public class QueryTracker extends AbstractService {
     }
   }
 
+  List<QueryFragmentInfo> getRegisteredFragments(QueryIdentifier queryIdentifier) {
+    ReadWriteLock dagLock = getDagLock(queryIdentifier);
+    dagLock.readLock().lock();
+    try {
+      QueryInfo queryInfo = queryInfoMap.get(queryIdentifier);
+      if (queryInfo == null) {
+        // Race with queryComplete
+        LOG.warn("Unknown query: Returning an empty list of fragments");
+        return Collections.emptyList();
+      }
+      return queryInfo.getRegisteredFragments();
+    } finally {
+      dagLock.readLock().unlock();
+    }
+  }
+
   /**
    * Register completion for a query
    * @param queryIdentifier
@@ -231,8 +251,7 @@ public class QueryTracker extends AbstractService {
           deleteDelay);
       queryInfoMap.remove(queryIdentifier);
       if (queryInfo == null) {
-        // One case where this happens is when a query is killed via an explicit signal, and then
-        // another message is received from teh AMHeartbeater.
+        // Should not happen.
         LOG.warn("Ignoring query complete for unknown dag: {}", queryIdentifier);
         return Collections.emptyList();
       }
