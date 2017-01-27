@@ -85,7 +85,7 @@ def main(args):
 	parser.add_argument("--args", default="")
 	parser.add_argument("--name", default="llap0")
 	parser.add_argument("--loglevel", default="INFO")
-	parser.add_argument("--logger", default="RFA")
+	parser.add_argument("--logger", default="query-routing")
 	parser.add_argument("--chaosmonkey", type=int, default=0)
 	parser.add_argument("--slider-am-container-mb", type=int, default=1024)
 	parser.add_argument("--slider-appconfig-global", nargs='*', type=slider_appconfig_global_property, action='append')
