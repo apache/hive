@@ -8,7 +8,7 @@ PREHOOK: type: DESCFUNCTION
 POSTHOOK: query: desc function extended str_to_map
 POSTHOOK: type: DESCFUNCTION
 str_to_map(text, delimiter1, delimiter2) - Creates a map by parsing text 
-Split text into key-value pairs using two delimiters. The first delimiter separates pairs, and the second delimiter sperates key and value. If only one parameter is given, default delimiters are used: ',' as delimiter1 and '=' as delimiter2.
+Split text into key-value pairs using two delimiters. The first delimiter separates pairs, and the second delimiter sperates key and value. If only one parameter is given, default delimiters are used: ',' as delimiter1 and ':' as delimiter2.
 Function class:org.apache.hadoop.hive.ql.udf.generic.GenericUDFStringToMap
 Function type:BUILTIN
 PREHOOK: query: explain select str_to_map('a=1,b=2,c=3',',','=')['a'] from src limit 3

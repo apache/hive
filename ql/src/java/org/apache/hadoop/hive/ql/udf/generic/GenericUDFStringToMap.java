@@ -44,7 +44,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
     + "Creates a map by parsing text ", extended = "Split text into key-value pairs"
     + " using two delimiters. The first delimiter separates pairs, and the"
     + " second delimiter sperates key and value. If only one parameter is given, default"
-    + " delimiters are used: ',' as delimiter1 and '=' as delimiter2.")
+    + " delimiters are used: ',' as delimiter1 and ':' as delimiter2.")
 public class GenericUDFStringToMap extends GenericUDF {
   // Must be deterministic order map for consistent q-test output across Java versions - see HIVE-9161
   private final LinkedHashMap<Object, Object> ret = new LinkedHashMap<Object, Object>();
