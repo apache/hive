@@ -1,0 +1,7 @@
+PREHOOK: query: CREATE EXTERNAL TABLE druid_table_1
+STORED BY 'org.apache.hadoop.hive.druid.QTestDruidStorageHandler2'
+TBLPROPERTIES ("druid.datasource" = "wikipedia")
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@druid_table_1
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. org.apache.hadoop.hive.ql.metadata.HiveException: Duplicate column name anonymous in the table definition.
