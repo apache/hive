@@ -335,7 +335,7 @@ class SparkClientImpl implements SparkClient {
       Preconditions.checkArgument(master != null, "spark.master is not defined.");
       String deployMode = conf.get("spark.submit.deployMode");
 
-      List<String> argv = Lists.newArrayList();
+      List<String> argv = Lists.newLinkedList();
 
       if (sparkHome != null) {
         argv.add(new File(sparkHome, "bin/spark-submit").getAbsolutePath());
@@ -376,16 +376,6 @@ class SparkClientImpl implements SparkClient {
         argv.add("org.apache.spark.deploy.SparkSubmit");
       }
 
-      if ("kerberos".equals(hiveConf.get(HADOOP_SECURITY_AUTHENTICATION))) {
-          String principal = SecurityUtil.getServerPrincipal(hiveConf.getVar(ConfVars.HIVE_SERVER2_KERBEROS_PRINCIPAL),
-              "0.0.0.0");
-          String keyTabFile = hiveConf.getVar(ConfVars.HIVE_SERVER2_KERBEROS_KEYTAB);
-          argv.add("--principal");
-          argv.add(principal);
-          argv.add("--keytab");
-          argv.add(keyTabFile);
-      }
-
       if (SparkClientUtilities.isYarnClusterMode(master, deployMode)) {
         String executorCores = conf.get("spark.executor.cores");
         if (executorCores != null) {
@@ -403,6 +393,34 @@ class SparkClientImpl implements SparkClient {
         if (numOfExecutors != null) {
           argv.add("--num-executors");
           argv.add(numOfExecutors);
+        }
+      }
+      // The options --principal/--keypad do not work with --proxy-user in spark-submit.sh
+      // (see HIVE-15485, SPARK-5493, SPARK-19143), so Hive could only support doAs or
+      // delegation token renewal, but not both. Since doAs is a more common case, if both
+      // are needed, we choose to favor doAs. So when doAs is enabled, we use kinit command,
+      // otherwise, we pass the principal/keypad to spark to support the token renewal for
+      // long-running application.
+      if ("kerberos".equals(hiveConf.get(HADOOP_SECURITY_AUTHENTICATION))) {
+        String principal = SecurityUtil.getServerPrincipal(hiveConf.getVar(ConfVars.HIVE_SERVER2_KERBEROS_PRINCIPAL),
+            "0.0.0.0");
+        String keyTabFile = hiveConf.getVar(ConfVars.HIVE_SERVER2_KERBEROS_KEYTAB);
+        if (hiveConf.getBoolVar(HiveConf.ConfVars.HIVE_SERVER2_ENABLE_DOAS)) {
+          List<String> kinitArgv = Lists.newLinkedList();
+          kinitArgv.add("kinit");
+          kinitArgv.add(principal);
+          kinitArgv.add("-k");
+          kinitArgv.add("-t");
+          kinitArgv.add(keyTabFile + ";");
+          kinitArgv.addAll(argv);
+          argv = kinitArgv;
+        } else {
+          // if doAs is not enabled, we pass the principal/keypad to spark-submit in order to
+          // support the possible delegation token renewal in Spark
+          argv.add("--principal");
+          argv.add(principal);
+          argv.add("--keytab");
+          argv.add(keyTabFile);
         }
       }
       if (hiveConf.getBoolVar(HiveConf.ConfVars.HIVE_SERVER2_ENABLE_DOAS)) {
