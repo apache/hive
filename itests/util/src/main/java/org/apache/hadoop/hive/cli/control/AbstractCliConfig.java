@@ -409,7 +409,18 @@ public abstract class AbstractCliConfig {
   }
 
   protected void setMetastoreType(MetastoreType mt) {
-    metastoreType=mt;
+    String metaStoreTypeProperty = getSysPropValue("metaStoreType");
+    if (metaStoreTypeProperty != null) {
+      if (metaStoreTypeProperty.equalsIgnoreCase("sql")) {
+        metastoreType = MetastoreType.sql;
+      } else if (metaStoreTypeProperty.equalsIgnoreCase("hbase")) {
+        metastoreType = MetastoreType.hbase;
+      } else {
+        throw new IllegalArgumentException("Unknown metastore type: " + metaStoreTypeProperty);
+      }
+    } else {
+      metastoreType = mt;
+    }
   }
 
   public MetastoreType getMetastoreType() {

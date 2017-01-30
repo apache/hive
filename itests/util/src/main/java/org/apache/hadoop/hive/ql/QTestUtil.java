@@ -51,6 +51,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.Deque;
+import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -143,7 +144,6 @@ public class QTestUtil {
 
   private String testWarehouse;
   private final String testFiles;
-  private final boolean localMode;
   protected final String outDir;
   protected final String logDir;
   private final TreeMap<String, String> qMap;
@@ -383,6 +383,11 @@ public class QTestUtil {
     }
   }
 
+  private enum CoreClusterType {
+    MR,
+    TEZ,
+    SPARK
+  }
 
   public enum FsType {
     local,
@@ -392,17 +397,23 @@ public class QTestUtil {
 
   public enum MiniClusterType {
 
-    mr(FsType.hdfs),
-    tez(FsType.hdfs),
-    spark(FsType.local),
-    miniSparkOnYarn(FsType.hdfs),
-    none(FsType.local);
+    mr(CoreClusterType.MR, FsType.hdfs),
+    tez(CoreClusterType.TEZ, FsType.hdfs),
+    tez_local(CoreClusterType.TEZ, FsType.local),
+    spark(CoreClusterType.SPARK, FsType.local),
+    miniSparkOnYarn(CoreClusterType.SPARK, FsType.hdfs),
+    none(CoreClusterType.MR, FsType.local);
 
-
+    private final CoreClusterType coreClusterType;
     private final FsType defaultFsType;
 
-    MiniClusterType(FsType defaultFsType) {
+    MiniClusterType(CoreClusterType coreClusterType, FsType defaultFsType) {
+      this.coreClusterType = coreClusterType;
       this.defaultFsType = defaultFsType;
+    }
+
+    public CoreClusterType getCoreClusterType() {
+      return coreClusterType;
     }
 
     public FsType getDefaultFsType() {
@@ -410,10 +421,13 @@ public class QTestUtil {
     }
 
     public static MiniClusterType valueForString(String type) {
+      // Replace this with valueOf.
       if (type.equals("miniMR")) {
         return mr;
       } else if (type.equals("tez")) {
         return tez;
+      } else if (type.equals("tez_local")) {
+        return tez_local;
       } else if (type.equals("spark")) {
         return spark;
       } else if (type.equals("miniSparkOnYarn")) {
@@ -434,27 +448,23 @@ public class QTestUtil {
   }
 
   public QTestUtil(String outDir, String logDir, MiniClusterType clusterType,
-                   String confDir, String hadoopVer, String initScript, String cleanupScript)
-      throws Exception {
-    this(outDir, logDir, clusterType, confDir, hadoopVer, initScript, cleanupScript, false, null);
+      String confDir, String hadoopVer, String initScript, String cleanupScript) throws Exception {
+    this(outDir, logDir, clusterType, confDir, hadoopVer, initScript, cleanupScript, null);
   }
 
   public QTestUtil(String outDir, String logDir, MiniClusterType clusterType,
-      String confDir, String hadoopVer, String initScript, String cleanupScript,
-      boolean localMode, FsType fsType)
+      String confDir, String hadoopVer, String initScript, String cleanupScript, FsType fsType)
     throws Exception {
     LOG.info("Setting up QtestUtil with outDir=" + outDir + ", logDir=" + logDir
         + ", clusterType=" + clusterType + ", confDir=" + confDir + ", hadoopVer=" + hadoopVer
         + ", initScript=" + initScript + ", cleanupScript=" + cleanupScript
-        + ", useHbaseMetaStore=false, withLlapIo=false"
-        + ", localMode=" + localMode + ", fsType=" + fsType);
+        + ", useHbaseMetaStore=false, withLlapIo=false" + ", fsType=" + fsType);
     Preconditions.checkNotNull(clusterType, "ClusterType cannot be null");
     if (fsType != null) {
       this.fsType = fsType;
     } else {
       this.fsType = clusterType.getDefaultFsType();
     }
-    this.localMode = localMode;
     this.outDir = outDir;
     this.logDir = logDir;
     this.srcTables=getSrcTables();
@@ -541,22 +551,15 @@ public class QTestUtil {
   private void setupMiniCluster(HadoopShims shims, String confDir) throws
       IOException {
 
-    if (localMode) {
-      Preconditions
-          .checkState(clusterType == MiniClusterType.tez,
-              "localMode can currently only be set for tez or llap");
-    }
-
     String uriString = WindowsPathUtil.getHdfsUriString(fs.getUri().toString());
 
-    if (clusterType == MiniClusterType.tez) {
+    if (clusterType.getCoreClusterType() == CoreClusterType.TEZ) {
       if (confDir != null && !confDir.isEmpty()) {
         conf.addResource(new URL("file://" + new File(confDir).toURI().getPath()
             + "/tez-site.xml"));
       }
-      int numTrackers;
-      numTrackers = 4;
-      if (localMode) {
+      int numTrackers = 4;
+      if (EnumSet.of(MiniClusterType.tez_local).contains(clusterType)) {
         mr = shims.getLocalMiniTezCluster(conf, false);
       } else {
         mr = shims.getMiniTezCluster(conf, numTrackers, uriString, 1);
@@ -574,6 +577,9 @@ public class QTestUtil {
       cleanUp();
     }
 
+    if (clusterType.getCoreClusterType() == CoreClusterType.TEZ) {
+      SessionState.get().getTezSession().close(false);
+    }
     setup.tearDown();
     if (sparkSession != null) {
       try {
@@ -1065,8 +1071,8 @@ public class QTestUtil {
     ss.setIsSilent(true);
     SessionState oldSs = SessionState.get();
 
-    if (oldSs != null && (clusterType == MiniClusterType.tez || clusterType == MiniClusterType.spark
-        || clusterType == MiniClusterType.miniSparkOnYarn)) {
+    if (oldSs != null && (clusterType.getCoreClusterType() == CoreClusterType.TEZ
+        || clusterType.getCoreClusterType() == CoreClusterType.SPARK)) {
       sparkSession = oldSs.getSparkSession();
       ss.setSparkSession(sparkSession);
       oldSs.setSparkSession(null);
@@ -1129,8 +1135,8 @@ public class QTestUtil {
     ss.err = System.out;
 
     SessionState oldSs = SessionState.get();
-    if (oldSs != null && (clusterType == MiniClusterType.tez || clusterType == MiniClusterType.spark
-        || clusterType == MiniClusterType.miniSparkOnYarn)) {
+    if (oldSs != null && (clusterType.getCoreClusterType() == CoreClusterType.TEZ
+        || clusterType.getCoreClusterType() == CoreClusterType.SPARK)) {
       sparkSession = oldSs.getSparkSession();
       ss.setSparkSession(sparkSession);
       oldSs.setSparkSession(null);
