@@ -541,9 +541,9 @@ Stage-0
                                               <-Map 20 [SIMPLE_EDGE]
                                                 SHUFFLE [RS_49]
                                                   PartitionCols:_col0
-                                                  Select Operator [SEL_38] (rows=43200 width=471)
+                                                  Select Operator [SEL_38] (rows=9600 width=471)
                                                     Output:["_col0"]
-                                                    Filter Operator [FIL_111] (rows=43200 width=471)
+                                                    Filter Operator [FIL_111] (rows=9600 width=471)
                                                       predicate:(t_time BETWEEN 49530 AND 78330 and t_time_sk is not null)
                                                       TableScan [TS_36] (rows=86400 width=471)
                                                         default@time_dim,time_dim,Tbl:COMPLETE,Col:NONE,Output:["t_time_sk","t_time"]
@@ -619,9 +619,9 @@ Stage-0
                                               <-Map 10 [SIMPLE_EDGE]
                                                 SHUFFLE [RS_16]
                                                   PartitionCols:_col0
-                                                  Select Operator [SEL_5] (rows=43200 width=471)
+                                                  Select Operator [SEL_5] (rows=9600 width=471)
                                                     Output:["_col0"]
-                                                    Filter Operator [FIL_106] (rows=43200 width=471)
+                                                    Filter Operator [FIL_106] (rows=9600 width=471)
                                                       predicate:(t_time BETWEEN 49530 AND 78330 and t_time_sk is not null)
                                                       TableScan [TS_3] (rows=86400 width=471)
                                                         default@time_dim,time_dim,Tbl:COMPLETE,Col:NONE,Output:["t_time_sk","t_time"]

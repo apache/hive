@@ -131,9 +131,9 @@ Stage-0
         <-Map 2 [BROADCAST_EDGE]
           BROADCAST [RS_6]
             PartitionCols:_col1
-            Select Operator [SEL_4] (rows=2 width=9)
+            Select Operator [SEL_4] (rows=1 width=9)
               Output:["_col0","_col1","_col2"]
-              Filter Operator [FIL_11] (rows=2 width=9)
+              Filter Operator [FIL_11] (rows=1 width=9)
                 predicate:key BETWEEN 100 AND 102
                 TableScan [TS_2] (rows=4 width=9)
                   default@test2,test2,Tbl:COMPLETE,Col:NONE,Output:["key","value","col_2"]
@@ -192,13 +192,13 @@ Stage-0
     Stage-1
       Map 1
       File Output Operator [FS_9]
-        Map Join Operator [MAPJOIN_11] (rows=12 width=19)
+        Map Join Operator [MAPJOIN_11] (rows=6 width=19)
           Conds:(Left Outer),Output:["_col0","_col1","_col2","_col3","_col4","_col5"]
         <-Map 2 [BROADCAST_EDGE]
           BROADCAST [RS_6]
-            Select Operator [SEL_4] (rows=2 width=9)
+            Select Operator [SEL_4] (rows=1 width=9)
               Output:["_col0","_col1","_col2"]
-              Filter Operator [FIL_10] (rows=2 width=9)
+              Filter Operator [FIL_10] (rows=1 width=9)
                 predicate:key BETWEEN 100 AND 102
                 TableScan [TS_2] (rows=4 width=9)
                   default@test2,test2,Tbl:COMPLETE,Col:NONE,Output:["key","value","col_2"]

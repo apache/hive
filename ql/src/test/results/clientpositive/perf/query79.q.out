@@ -70,9 +70,9 @@ Stage-0
                                   <-Map 10 [SIMPLE_EDGE]
                                     SHUFFLE [RS_19]
                                       PartitionCols:_col0
-                                      Select Operator [SEL_11] (rows=852 width=1910)
+                                      Select Operator [SEL_11] (rows=189 width=1910)
                                         Output:["_col0","_col2"]
-                                        Filter Operator [FIL_55] (rows=852 width=1910)
+                                        Filter Operator [FIL_55] (rows=189 width=1910)
                                           predicate:(s_number_employees BETWEEN 200 AND 295 and s_store_sk is not null)
                                           TableScan [TS_9] (rows=1704 width=1910)
                                             default@store,store,Tbl:COMPLETE,Col:NONE,Output:["s_store_sk","s_number_employees","s_city"]
