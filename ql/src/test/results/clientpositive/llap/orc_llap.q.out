@@ -597,7 +597,7 @@ STAGE PLANS:
                             sort order: 
                             Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
                             value expressions: _col0 (type: smallint), _col1 (type: smallint), _col2 (type: binary)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: all inputs
         Map 5 
             Map Operator Tree:
@@ -618,7 +618,7 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: smallint)
                         Statistics: Num rows: 122880 Data size: 29079940 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col2 (type: string)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: all inputs
         Reducer 2 
             Execution mode: llap
@@ -660,7 +660,7 @@ STAGE PLANS:
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
         Reducer 4 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 aggregations: min(VALUE._col0), max(VALUE._col1), bloom_filter(VALUE._col2, expectedEntries=122880)
@@ -1089,7 +1089,7 @@ STAGE PLANS:
                             sort order: 
                             Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
                             value expressions: _col0 (type: smallint), _col1 (type: smallint), _col2 (type: binary)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: all inputs
         Map 5 
             Map Operator Tree:
@@ -1110,7 +1110,7 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: smallint)
                         Statistics: Num rows: 245760 Data size: 58159880 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col2 (type: string)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: all inputs
         Reducer 2 
             Execution mode: llap
@@ -1152,7 +1152,7 @@ STAGE PLANS:
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
         Reducer 4 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 aggregations: min(VALUE._col0), max(VALUE._col1), bloom_filter(VALUE._col2, expectedEntries=245760)

@@ -122,9 +122,15 @@ public class DynamicValueRegistryTez implements DynamicValueRegistry {
           setValue(runtimeValuesInfo.getDynamicValueIDs().get(colIdx), val);
         }
       }
-      // For now, expecting a single row (min/max, aggregated bloom filter)
-      if (rowCount != 1) {
-        throw new IllegalStateException("Expected 1 row from " + inputSourceName + ", got " + rowCount);
+      // For now, expecting a single row (min/max, aggregated bloom filter), or no rows
+      if (rowCount == 0) {
+        LOG.debug("No input rows from " + inputSourceName + ", filling dynamic values with nulls");
+        for (int colIdx = 0; colIdx < colExprEvaluators.size(); ++colIdx) {
+          ExprNodeEvaluator eval = colExprEvaluators.get(colIdx);
+          setValue(runtimeValuesInfo.getDynamicValueIDs().get(colIdx), null);
+        }
+      } else if (rowCount > 1) {
+        throw new IllegalStateException("Expected 0 or 1 rows from " + inputSourceName + ", got " + rowCount);
       }
     }
   }

@@ -24,6 +24,7 @@ import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.serde2.io.DateWritable;
+import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.*;
@@ -71,6 +72,8 @@ public class GenericUDAFBloomFilter implements GenericUDAFResolver2 {
 
     // Bloom filter rest
     private ByteArrayOutputStream result = new ByteArrayOutputStream();
+
+    private transient byte[] scratchBuffer = new byte[HiveDecimal.SCRATCH_BUFFER_LEN_TO_BYTES];
 
     @Override
     public ObjectInspector init(Mode m, ObjectInspector[] parameters) throws HiveException {
@@ -167,9 +170,10 @@ public class GenericUDAFBloomFilter implements GenericUDAFResolver2 {
           bf.addDouble(vDouble);
           break;
         case DECIMAL:
-          HiveDecimal vDecimal = ((HiveDecimalObjectInspector)inputOI).
-                  getPrimitiveJavaObject(parameters[0]);
-          bf.addString(vDecimal.toString());
+          HiveDecimalWritable vDecimal = ((HiveDecimalObjectInspector)inputOI).
+                  getPrimitiveWritableObject(parameters[0]);
+          int startIdx = vDecimal.toBytes(scratchBuffer);
+          bf.addBytes(scratchBuffer, startIdx, scratchBuffer.length - startIdx);
           break;
         case DATE:
           DateWritable vDate = ((DateObjectInspector)inputOI).

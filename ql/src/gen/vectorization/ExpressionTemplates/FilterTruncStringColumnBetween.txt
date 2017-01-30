@@ -163,19 +163,19 @@ public class <ClassName> extends VectorExpression {
     this.colNum = colNum;
   }
 
-  public byte[] getLeft() {
+  public byte[] getLeftValue() {
     return left;
   }
 
-  public void setLeft(byte[] value) {
+  public void setLeftValue(byte[] value) {
     this.left = value;
   }
   
-  public byte[] getRight() {
+  public byte[] getRightValue() {
     return right;
   }
 
-  public void setRight(byte[] value) {
+  public void setRightValue(byte[] value) {
     this.right = value;
   }
   

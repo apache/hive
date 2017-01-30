@@ -292,6 +292,42 @@ public class BloomFilter {
     }
   }
 
+  // Given a byte array consisting of a serialized BloomFilter, gives the offset (from 0)
+  // for the start of the serialized long values that make up the bitset.
+  // NumHashFunctions (1 byte) + NumBits (4 bytes)
+  public static final int START_OF_SERIALIZED_LONGS = 5;
+
+  /**
+   * Merges BloomFilter bf2 into bf1.
+   * Assumes 2 BloomFilters with the same size/hash functions are serialized to byte arrays
+   * @param bf1Bytes
+   * @param bf1Start
+   * @param bf1Length
+   * @param bf2Bytes
+   * @param bf2Start
+   * @param bf2Length
+   */
+  public static void mergeBloomFilterBytes(
+      byte[] bf1Bytes, int bf1Start, int bf1Length,
+      byte[] bf2Bytes, int bf2Start, int bf2Length) {
+    if (bf1Length != bf2Length) {
+      throw new IllegalArgumentException("bf1Length " + bf1Length + " does not match bf2Length " + bf2Length);
+    }
+
+    // Validation on the bitset size/3 hash functions.
+    for (int idx = 0; idx < START_OF_SERIALIZED_LONGS; ++idx) {
+      if (bf1Bytes[bf1Start + idx] != bf2Bytes[bf2Start + idx]) {
+        throw new IllegalArgumentException("bf1 NumHashFunctions/NumBits does not match bf2");
+      }
+    }
+
+    // Just bitwise-OR the bits together - size/# functions should be the same,
+    // rest of the data is serialized long values for the bitset which are supposed to be bitwise-ORed.
+    for (int idx = START_OF_SERIALIZED_LONGS; idx < bf1Length; ++idx) {
+      bf1Bytes[bf1Start + idx] |= bf2Bytes[bf2Start + idx];
+    }
+  }
+
   /**
    * Bare metal bit set implementation. For performance reasons, this implementation does not check
    * for index bounds nor expand the bit set size if the specified index is greater than the size.

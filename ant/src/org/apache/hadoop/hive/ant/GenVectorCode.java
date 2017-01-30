@@ -789,6 +789,15 @@ public class GenVectorCode extends Task {
       {"FilterTimestampColumnBetween", ""},
       {"FilterTimestampColumnBetween", "!"},
 
+      // This is for runtime min/max pushdown - don't need to do NOT BETWEEN
+      {"FilterColumnBetweenDynamicValue", "long", ""},
+      {"FilterColumnBetweenDynamicValue", "double", ""},
+      {"FilterColumnBetweenDynamicValue", "decimal", ""},
+      {"FilterColumnBetweenDynamicValue", "string", ""},
+      {"FilterColumnBetweenDynamicValue", "char", ""},
+      {"FilterColumnBetweenDynamicValue", "varchar", ""},
+      {"FilterColumnBetweenDynamicValue", "timestamp", ""},
+
       {"ColumnCompareColumn", "Equal", "long", "double", "=="},
       {"ColumnCompareColumn", "Equal", "double", "double", "=="},
       {"ColumnCompareColumn", "NotEqual", "long", "double", "!="},
@@ -1164,6 +1173,8 @@ public class GenVectorCode extends Task {
 
       } else if (tdesc[0].equals("FilterColumnBetween")) {
         generateFilterColumnBetween(tdesc);
+      } else if (tdesc[0].equals("FilterColumnBetweenDynamicValue")) {
+        generateFilterColumnBetweenDynamicValue(tdesc);
       } else if (tdesc[0].equals("ScalarArithmeticColumn") || tdesc[0].equals("ScalarDivideColumn")) {
         generateScalarArithmeticColumn(tdesc);
       } else if (tdesc[0].equals("FilterColumnCompareColumn")) {
@@ -1374,6 +1385,72 @@ public class GenVectorCode extends Task {
     templateString = templateString.replaceAll("<InputColumnVectorType>", inputColumnVectorType);
     templateString = templateString.replaceAll("<OperandType>", operandType);
     templateString = templateString.replaceAll("<OptionalNot>", optionalNot);
+
+    writeFile(templateFile.lastModified(), expressionOutputDirectory, expressionClassesDirectory,
+        className, templateString);
+  }
+
+  private void generateFilterColumnBetweenDynamicValue(String[] tdesc) throws Exception {
+    String operandType = tdesc[1];
+    String optionalNot = tdesc[2];
+
+    String className = "Filter" + getCamelCaseType(operandType) + "Column" +
+      (optionalNot.equals("!") ? "Not" : "") + "BetweenDynamicValue";
+
+    String typeName = getCamelCaseType(operandType);
+    String defaultValue;
+    String vectorType;
+    String getPrimitiveMethod;
+    String getValueMethod;
+
+    if (operandType.equals("long")) {
+      defaultValue = "0";
+      vectorType = "long";
+      getPrimitiveMethod = "getLong";
+      getValueMethod = "";
+    } else if (operandType.equals("double")) {
+      defaultValue = "0";
+      vectorType = "double";
+      getPrimitiveMethod = "getDouble";
+      getValueMethod = "";
+    } else if (operandType.equals("decimal")) {
+      defaultValue = "null";
+      vectorType = "HiveDecimal";
+      getPrimitiveMethod = "getHiveDecimal";
+      getValueMethod = "";
+    } else if (operandType.equals("string")) {
+      defaultValue = "null";
+      vectorType = "byte[]";
+      getPrimitiveMethod = "getString";
+      getValueMethod = ".getBytes()";
+    } else if (operandType.equals("char")) {
+      defaultValue = "null";
+      vectorType = "byte[]";
+      getPrimitiveMethod = "getHiveChar";
+      getValueMethod = ".getStrippedValue().getBytes()";  // Does vectorization use stripped char values?
+    } else if (operandType.equals("varchar")) {
+      defaultValue = "null";
+      vectorType = "byte[]";
+      getPrimitiveMethod = "getHiveVarchar";
+      getValueMethod = ".getValue().getBytes()";
+    } else if (operandType.equals("timestamp")) {
+      defaultValue = "null";
+      vectorType = "Timestamp";
+      getPrimitiveMethod = "getTimestamp";
+      getValueMethod = "";
+    } else {
+      throw new IllegalArgumentException("Type " + operandType + " not supported");
+    }
+
+    // Read the template into a string, expand it, and write it.
+    File templateFile = new File(joinPath(this.expressionTemplateDirectory, tdesc[0] + ".txt"));
+    String templateString = readFile(templateFile);
+    templateString = templateString.replaceAll("<ClassName>", className);
+    templateString = templateString.replaceAll("<TypeName>", typeName);
+    templateString = templateString.replaceAll("<DefaultValue>", defaultValue);
+    templateString = templateString.replaceAll("<VectorType>", vectorType);
+    templateString = templateString.replaceAll("<GetPrimitiveMethod>", getPrimitiveMethod);
+    templateString = templateString.replaceAll("<GetValueMethod>", getValueMethod);
 
     writeFile(templateFile.lastModified(), expressionOutputDirectory, expressionClassesDirectory,
         className, templateString);
@@ -3084,6 +3161,12 @@ public class GenVectorCode extends Task {
       return "Timestamp";
     } else if (type.equals("date")) {
       return "Date";
+    } else if (type.equals("string")) {
+      return "String";
+    } else if (type.equals("char")) {
+      return "Char";
+    } else if (type.equals("varchar")) {
+      return "VarChar";
     } else {
       return type;
     }
