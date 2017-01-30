@@ -120,6 +120,8 @@ public class TestTxnCommands2 {
     hiveConf
         .setVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER,
             "org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory");
+    hiveConf.setBoolVar(HiveConf.ConfVars.MERGE_CARDINALITY_VIOLATION_CHECK, true);
+
     TxnDbUtil.setConfValues(hiveConf);
     TxnDbUtil.prepDb();
     File f = new File(TEST_WAREHOUSE_DIR);
