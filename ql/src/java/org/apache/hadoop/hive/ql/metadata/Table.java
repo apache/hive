@@ -54,6 +54,7 @@ import org.apache.hadoop.hive.ql.parse.SemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.serde.serdeConstants;
+import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
@@ -64,6 +65,7 @@ import org.apache.hadoop.io.WritableComparable;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.OutputFormat;
 import org.apache.hadoop.mapred.SequenceFileInputFormat;
+import org.apache.hive.common.util.ReflectionUtil;
 
 /**
  * A Hive Table: is a fundamental unit of data in Hive that shares a common schema/DDL.
@@ -596,11 +598,22 @@ public class Table implements Serializable {
   }
 
   public List<FieldSchema> getCols() {
+    return getColsInternal(false);
+  }
 
+  public List<FieldSchema> getColsForMetastore() {
+    return getColsInternal(true);
+  }
+
+  private List<FieldSchema> getColsInternal(boolean forMs) {
     String serializationLib = getSerializationLib();
     try {
+      // Do the lightweight check for general case.
       if (hasMetastoreBasedSchema(SessionState.getSessionConf(), serializationLib)) {
         return tTable.getSd().getCols();
+      } else if (forMs && !shouldStoreFieldsInMetastore(
+          SessionState.getSessionConf(), serializationLib, tTable.getParameters())) {
+        return Hive.getFieldsFromDeserializerForMsStorage(this, getDeserializer());
       } else {
         return MetaStoreUtils.getFieldsFromDeserializer(getTableName(), getDeserializer());
       }
@@ -934,13 +947,26 @@ public class Table implements Serializable {
     return tTable.isTemporary();
   }
 
-  public static boolean hasMetastoreBasedSchema(HiveConf conf, StorageDescriptor serde) {
-    return hasMetastoreBasedSchema(conf, serde.getSerdeInfo().getSerializationLib());
-  }
-
   public static boolean hasMetastoreBasedSchema(HiveConf conf, String serdeLib) {
     return StringUtils.isEmpty(serdeLib) ||
         conf.getStringCollection(ConfVars.SERDESUSINGMETASTOREFORSCHEMA.varname).contains(serdeLib);
+  }
+
+  public static boolean shouldStoreFieldsInMetastore(
+      HiveConf conf, String serdeLib, Map<String, String> tableParams) {
+    if (hasMetastoreBasedSchema(conf, serdeLib))  return true;
+    // Table may or may not be using metastore. Only the SerDe can tell us.
+    AbstractSerDe deserializer = null;
+    try {
+      Class<?> clazz = conf.getClassByName(serdeLib);
+      if (!AbstractSerDe.class.isAssignableFrom(clazz)) return true; // The default.
+      deserializer = ReflectionUtil.newInstance(
+          conf.getClassByName(serdeLib).asSubclass(AbstractSerDe.class), conf);
+    } catch (Exception ex) {
+      LOG.warn("Cannot initialize SerDe: " + serdeLib + ", ignoring", ex);
+      return true;
+    }
+    return deserializer.shouldStoreFieldsInMetastore(tableParams);
   }
 
   public static void validateColumns(List<FieldSchema> columns, List<FieldSchema> partCols)
@@ -980,6 +1006,10 @@ public class Table implements Serializable {
 
   public void setTableSpec(TableSpec tableSpec) {
     this.tableSpec = tableSpec;
+  }
+
+  public boolean hasDeserializer() {
+    return deserializer != null;
   }
 
 };

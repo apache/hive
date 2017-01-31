@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.serde2.avro;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
 import org.apache.avro.Schema;
@@ -96,8 +97,7 @@ public class AvroSerDe extends AbstractSerDe {
     final String columnTypeProperty = properties.getProperty(serdeConstants.LIST_COLUMN_TYPES);
     final String columnCommentProperty = properties.getProperty(LIST_COLUMN_COMMENTS,"");
 
-    if (properties.getProperty(AvroSerdeUtils.AvroTableProperties.SCHEMA_LITERAL.getPropName()) != null
-        || properties.getProperty(AvroSerdeUtils.AvroTableProperties.SCHEMA_URL.getPropName()) != null
+    if (hasExternalSchema(properties)
         || columnNameProperty == null || columnNameProperty.isEmpty()
         || columnTypeProperty == null || columnTypeProperty.isEmpty()) {
       schema = determineSchemaOrReturnErrorSchema(configuration, properties);
@@ -125,6 +125,16 @@ public class AvroSerDe extends AbstractSerDe {
     this.columnNames = aoig.getColumnNames();
     this.columnTypes = aoig.getColumnTypes();
     this.oi = aoig.getObjectInspector();
+  }
+
+  private boolean hasExternalSchema(Properties properties) {
+    return properties.getProperty(AvroSerdeUtils.AvroTableProperties.SCHEMA_LITERAL.getPropName()) != null
+        || properties.getProperty(AvroSerdeUtils.AvroTableProperties.SCHEMA_URL.getPropName()) != null;
+  }
+
+  private boolean hasExternalSchema(Map<String, String> tableParams) {
+    return tableParams.containsKey(AvroSerdeUtils.AvroTableProperties.SCHEMA_LITERAL.getPropName())
+        || tableParams.containsKey(AvroSerdeUtils.AvroTableProperties.SCHEMA_URL.getPropName());
   }
 
   public static Schema getSchemaFromCols(Properties properties,
@@ -226,5 +236,10 @@ public class AvroSerDe extends AbstractSerDe {
     }
 
     return avroSerializer;
+  }
+
+  @Override
+  public boolean shouldStoreFieldsInMetastore(Map<String, String> tableParams) {
+    return !hasExternalSchema(tableParams);
   }
 }
