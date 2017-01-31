@@ -1808,6 +1808,17 @@ public class TestJdbcDriver2 {
     stmt.close();
   }
 
+  @Test
+  public void testResultSetRowProperties() throws SQLException {
+	  Statement stmt = con.createStatement();
+	  ResultSet res =
+	      stmt.executeQuery("select * from "
+	          + dataTypeTableName + " limit 1");
+	  assertFalse(res.rowDeleted());
+	  assertFalse(res.rowInserted());
+	  assertFalse(res.rowUpdated());
+  }
+
   // [url] [host] [port] [db]
   private static final String[][] URL_PROPERTIES = new String[][] {
     // binary mode
