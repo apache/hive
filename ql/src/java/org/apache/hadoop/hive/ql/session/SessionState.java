@@ -1107,6 +1107,12 @@ public class SessionState {
       LOG.info(info + StringUtils.defaultString(detail));
     }
 
+    public void printInfoNoLog(String info) {
+      if (!getIsSilent()) {
+        getInfoStream().println(info);
+      }
+    }
+
     public void printError(String error) {
       printError(error, null);
     }
