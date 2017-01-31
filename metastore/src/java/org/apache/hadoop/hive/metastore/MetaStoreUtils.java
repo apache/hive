@@ -292,11 +292,14 @@ public class MetaStoreUtils {
       return true;
     }
 
-    if (environmentContext != null
-        && environmentContext.isSetProperties()
-        && StatsSetupConst.TASK.equals(environmentContext.getProperties().get(
-            StatsSetupConst.STATS_GENERATED))) {
-      return true;
+    if (environmentContext != null && environmentContext.isSetProperties()) {
+      String statsType = environmentContext.getProperties().get(StatsSetupConst.STATS_GENERATED);
+      // no matter STATS_GENERATED is USER or TASK, all need to re-calculate the stats:
+      // USER: alter table .. update statistics
+      // TASK: from some sql operation which could collect and compute stats
+      if (StatsSetupConst.TASK.equals(statsType) || StatsSetupConst.USER.equals(statsType)) {
+        return true;
+      }
     }
 
     // requires to calculate stats if new and old have different fast stats

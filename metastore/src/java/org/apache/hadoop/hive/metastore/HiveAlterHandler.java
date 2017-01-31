@@ -729,6 +729,7 @@ public class HiveAlterHandler implements AlterHandler {
       assert (partsColStats.size() <= 1);
       for (ColumnStatistics partColStats : partsColStats) { //actually only at most one loop
         List<ColumnStatisticsObj> statsObjs = partColStats.getStatsObj();
+        List<String> deletedCols = new ArrayList<String>();
         for (ColumnStatisticsObj statsObj : statsObjs) {
           boolean found =false;
           for (FieldSchema newCol : newCols) {
@@ -741,8 +742,10 @@ public class HiveAlterHandler implements AlterHandler {
           if (!found) {
             msdb.deletePartitionColumnStatistics(dbName, tableName, oldPartName, partVals,
                 statsObj.getColName());
+            deletedCols.add(statsObj.getColName());
           }
         }
+        StatsSetupConst.removeColumnStatsState(newPart.getParameters(), deletedCols);
       }
     } catch (NoSuchObjectException nsoe) {
       LOG.debug("Could not find db entry." + nsoe);
@@ -827,6 +830,7 @@ public class HiveAlterHandler implements AlterHandler {
           } else {
             List<ColumnStatisticsObj> statsObjs = colStats.getStatsObj();
             if (statsObjs != null) {
+              List<String> deletedCols = new ArrayList<String>();
               for (ColumnStatisticsObj statsObj : statsObjs) {
                 boolean found = false;
                 for (FieldSchema newCol : newCols) {
@@ -841,11 +845,14 @@ public class HiveAlterHandler implements AlterHandler {
                   if (!newDbName.equals(dbName) || !newTableName.equals(tableName)) {
                     msdb.deleteTableColumnStatistics(dbName, tableName, statsObj.getColName());
                     newStatsObjs.add(statsObj);
+                    deletedCols.add(statsObj.getColName());
                   }
                 } else {
                   msdb.deleteTableColumnStatistics(dbName, tableName, statsObj.getColName());
+                  deletedCols.add(statsObj.getColName());
                 }
               }
+              StatsSetupConst.removeColumnStatsState(newTable.getParameters(), deletedCols);
             }
           }
         }

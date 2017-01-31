@@ -1188,10 +1188,12 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       throws HiveException {
 
     Table tbl = db.getTable(touchDesc.getTableName());
+    EnvironmentContext environmentContext = new EnvironmentContext();
+    environmentContext.putToProperties(StatsSetupConst.DO_NOT_UPDATE_STATS, StatsSetupConst.TRUE);
 
     if (touchDesc.getPartSpec() == null) {
       try {
-        db.alterTable(touchDesc.getTableName(), tbl, null);
+        db.alterTable(touchDesc.getTableName(), tbl, environmentContext);
       } catch (InvalidOperationException e) {
         throw new HiveException("Uable to update table");
       }
@@ -1203,7 +1205,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         throw new HiveException("Specified partition does not exist");
       }
       try {
-        db.alterPartition(touchDesc.getTableName(), part, null);
+        db.alterPartition(touchDesc.getTableName(), part, environmentContext);
       } catch (InvalidOperationException e) {
         throw new HiveException(e);
       }
@@ -3510,6 +3512,16 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 
   private int alterTableOrSinglePartition(AlterTableDesc alterTbl, Table tbl, Partition part)
       throws HiveException {
+    EnvironmentContext environmentContext = alterTbl.getEnvironmentContext();
+    if (environmentContext == null) {
+      environmentContext = new EnvironmentContext();
+      alterTbl.setEnvironmentContext(environmentContext);
+    }
+    // do not need update stats in alter table/partition operations
+    if (environmentContext.getProperties() == null ||
+        environmentContext.getProperties().get(StatsSetupConst.DO_NOT_UPDATE_STATS) == null) {
+      environmentContext.putToProperties(StatsSetupConst.DO_NOT_UPDATE_STATS, StatsSetupConst.TRUE);
+    }
 
     if (alterTbl.getOp() == AlterTableDesc.AlterTableTypes.RENAME) {
       tbl.setDbName(Utilities.getDatabaseName(alterTbl.getNewName()));
@@ -3647,6 +3659,10 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       }
       sd.setCols(alterTbl.getNewCols());
     } else if (alterTbl.getOp() == AlterTableDesc.AlterTableTypes.ADDPROPS) {
+      if (StatsSetupConst.USER.equals(environmentContext.getProperties()
+              .get(StatsSetupConst.STATS_GENERATED))) {
+        environmentContext.getProperties().remove(StatsSetupConst.DO_NOT_UPDATE_STATS);
+      }
       if (part != null) {
         part.getTPartition().getParameters().putAll(alterTbl.getProps());
       } else {
@@ -3654,6 +3670,11 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       }
     } else if (alterTbl.getOp() == AlterTableDesc.AlterTableTypes.DROPPROPS) {
       Iterator<String> keyItr = alterTbl.getProps().keySet().iterator();
+      if (StatsSetupConst.USER.equals(environmentContext.getProperties()
+          .get(StatsSetupConst.STATS_GENERATED))) {
+        // drop a stats parameter, which triggers recompute stats update automatically
+        environmentContext.getProperties().remove(StatsSetupConst.DO_NOT_UPDATE_STATS);
+      }
       while (keyItr.hasNext()) {
         if (part != null) {
           part.getTPartition().getParameters().remove(keyItr.next());
@@ -3747,6 +3768,8 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       } catch (URISyntaxException e) {
         throw new HiveException(e);
       }
+      environmentContext.getProperties().remove(StatsSetupConst.DO_NOT_UPDATE_STATS);
+
     } else if (alterTbl.getOp() == AlterTableDesc.AlterTableTypes.ADDSKEWEDBY) {
       // Validation's been done at compile time. no validation is needed here.
       List<String> skewedColNames = null;
@@ -3792,6 +3815,8 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
           throw new HiveException(e);
         }
       }
+
+      environmentContext.getProperties().remove(StatsSetupConst.DO_NOT_UPDATE_STATS);
     } else if (alterTbl.getOp() == AlterTableTypes.ALTERBUCKETNUM) {
       if (part != null) {
         if (part.getBucketCount() == alterTbl.getNumberBuckets()) {

@@ -232,6 +232,30 @@ public class StatsSetupConst {
     }
   }
 
+  public static void removeColumnStatsState(Map<String, String> params, List<String> colNames) {
+    String statsAcc;
+    if (params != null && (statsAcc = params.get(COLUMN_STATS_ACCURATE)) != null) {
+      // statsAcc may not be jason format, which will throw exception
+      JSONObject stats = parseStatsAcc(statsAcc);
+      try {
+        JSONObject colStats = stats.getJSONObject(COLUMN_STATS);
+        for (String colName : colNames) {
+          if (colStats.has(colName)) {
+            colStats.remove(colName);
+          }
+        }
+        if (colStats.length() != 0) {
+          stats.put(COLUMN_STATS, colStats);
+        } else {
+          stats.remove(COLUMN_STATS);
+        }
+        params.put(COLUMN_STATS_ACCURATE, stats.toString());
+      } catch (JSONException e) {
+        LOG.debug(e.getMessage());
+      }
+    }
+  }
+
   public static void setBasicStatsStateForCreateTable(Map<String, String> params, String setting) {
     if (TRUE.equals(setting)) {
       for (String stat : StatsSetupConst.supportedStats) {

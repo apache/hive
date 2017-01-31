@@ -1361,30 +1361,34 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     HashMap<String, String> mapProp = getProps((ASTNode) (ast.getChild(0))
         .getChild(0));
     EnvironmentContext environmentContext = null;
-    if (queryState.getCommandType()
-        .equals(HiveOperation.ALTERTABLE_UPDATETABLESTATS.getOperationName())
-        || queryState.getCommandType()
-            .equals(HiveOperation.ALTERTABLE_UPDATEPARTSTATS.getOperationName())) {
-      // we need to check if the properties are valid, especially for stats.
-      boolean changeStatsSucceeded = false;
-      for (Entry<String, String> entry : mapProp.entrySet()) {
-        // we make sure that we do not change anything if there is anything
-        // wrong.
-        if (entry.getKey().equals(StatsSetupConst.ROW_COUNT)
-            || entry.getKey().equals(StatsSetupConst.RAW_DATA_SIZE)) {
-          try {
-            Long.parseLong(entry.getValue());
-            changeStatsSucceeded = true;
-          } catch (Exception e) {
-            throw new SemanticException("AlterTable " + entry.getKey() + " failed with value "
-                + entry.getValue());
-          }
-        } else {
+    // we need to check if the properties are valid, especially for stats.
+    // they might be changed via alter table .. update statistics or
+    // alter table .. set tblproperties. If the property is not row_count
+    // or raw_data_size, it could not be changed through update statistics
+    boolean changeStatsSucceeded = false;
+    for (Entry<String, String> entry : mapProp.entrySet()) {
+      // we make sure that we do not change anything if there is anything
+      // wrong.
+      if (entry.getKey().equals(StatsSetupConst.ROW_COUNT)
+          || entry.getKey().equals(StatsSetupConst.RAW_DATA_SIZE)) {
+        try {
+          Long.parseLong(entry.getValue());
+          changeStatsSucceeded = true;
+        } catch (Exception e) {
+          throw new SemanticException("AlterTable " + entry.getKey() + " failed with value "
+              + entry.getValue());
+        }
+      } else {
+        if (queryState.getCommandType()
+            .equals(HiveOperation.ALTERTABLE_UPDATETABLESTATS.getOperationName())
+            || queryState.getCommandType()
+                .equals(HiveOperation.ALTERTABLE_UPDATEPARTSTATS.getOperationName())) {
           throw new SemanticException("AlterTable UpdateStats " + entry.getKey()
-              + " failed because the only valid keys are" + StatsSetupConst.ROW_COUNT + " and "
+              + " failed because the only valid keys are " + StatsSetupConst.ROW_COUNT + " and "
               + StatsSetupConst.RAW_DATA_SIZE);
         }
       }
+
       if (changeStatsSucceeded) {
         environmentContext = new EnvironmentContext();
         environmentContext.putToProperties(StatsSetupConst.STATS_GENERATED, StatsSetupConst.USER);
