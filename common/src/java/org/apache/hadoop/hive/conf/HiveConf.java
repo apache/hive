@@ -2364,7 +2364,14 @@ public class HiveConf extends Configuration {
     HIVE_SERVER2_TEZ_SESSION_MAX_INIT_THREADS("hive.server2.tez.sessions.init.threads", 16,
         "If hive.server2.tez.initialize.default.sessions is enabled, the maximum number of\n" +
         "threads to use to initialize the default sessions."),
-
+    HIVE_SERVER2_TEZ_SESSION_RESTRICTED_CONFIGS("hive.server2.tez.sessions.restricted.configs", "",
+    "The configuration settings that cannot be set when submitting jobs to HiveServer2. If\n" +
+    "any of these are set to values different from those in the server configuration, an\n" +
+    "exception will be thrown."),
+    HIVE_SERVER2_TEZ_SESSION_CUSTOM_QUEUE_ALLOWED("hive.server2.tez.sessions.custom.queue.allowed",
+      "true", new StringSet("true", "false", "ignore"),
+      "Whether Tez session pool should allow submitting queries to custom queues. The options\n" +
+      "are true, false (error out), ignore (accept the query but ignore the queue setting)."),
 
     // Operation log configuration
     HIVE_SERVER2_LOGGING_OPERATION_ENABLED("hive.server2.logging.operation.enabled", true,
@@ -3331,7 +3338,7 @@ public class HiveConf extends Configuration {
             "See HIVE-15121 for details.");
 
     public final String varname;
-    private final String altName;
+    public final String altName;
     private final String defaultExpr;
 
     public final String defaultStrVal;
@@ -3853,6 +3860,11 @@ public class HiveConf extends Configuration {
     assert (var.valClass == String.class) : var.varname;
     return var.altName != null ? conf.get(var.varname, conf.get(var.altName, var.defaultStrVal))
       : conf.get(var.varname, var.defaultStrVal);
+  }
+
+  public static String getVarWithoutType(Configuration conf, ConfVars var) {
+    return var.altName != null ? conf.get(var.varname, conf.get(var.altName, var.defaultExpr))
+      : conf.get(var.varname, var.defaultExpr);
   }
 
   public static String getTrimmedVar(Configuration conf, ConfVars var) {
@@ -4529,5 +4541,27 @@ public class HiveConf extends Configuration {
     return "Hive-on-MR is deprecated in Hive 2 and may not be available in the future versions. "
         + "Consider using a different execution engine (i.e. " + HiveConf.getNonMrEngines()
         + ") or using Hive 1.X releases.";
+  }
+
+  private static final Object reverseMapLock = new Object();
+  private static HashMap<String, ConfVars> reverseMap = null;
+
+  public static HashMap<String, ConfVars> getOrCreateReverseMap() {
+    // This should be called rarely enough; for now it's ok to just lock every time.
+    synchronized (reverseMapLock) {
+      if (reverseMap != null) return reverseMap;
+    }
+    HashMap<String, ConfVars> vars = new HashMap<>();
+    for (ConfVars val : ConfVars.values()) {
+      vars.put(val.varname.toLowerCase(), val);
+      if (val.altName != null && !val.altName.isEmpty()) {
+        vars.put(val.altName.toLowerCase(), val);
+      }
+    }
+    synchronized (reverseMapLock) {
+      if (reverseMap != null) return reverseMap;
+      reverseMap = vars;
+      return reverseMap;
+    }
   }
 }

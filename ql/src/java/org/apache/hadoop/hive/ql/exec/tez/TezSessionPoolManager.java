@@ -36,7 +36,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
-import java.util.Iterator;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
@@ -67,6 +67,12 @@ import org.apache.tez.dag.api.TezException;
  */
 public class TezSessionPoolManager {
 
+  private enum CustomQueueAllowed {
+    TRUE,
+    FALSE,
+    IGNORE
+  }
+
   private static final Logger LOG = LoggerFactory.getLogger(TezSessionPoolManager.class);
   private static final Random rdm = new Random();
 
@@ -80,13 +86,16 @@ public class TezSessionPoolManager {
   private Thread expirationThread;
   private Thread restartThread;
 
-
   private Semaphore llapQueue;
   private HiveConf initConf = null;
   // Config settings.
   private int numConcurrentLlapQueries = -1;
   private long sessionLifetimeMs = 0;
   private long sessionLifetimeJitterMs = 0;
+  private CustomQueueAllowed customQueueAllowed = CustomQueueAllowed.TRUE;
+  private List<ConfVars> restrictedHiveConf = new ArrayList<>();
+  private List<String> restrictedNonHiveConf = new ArrayList<>();
+
   /** A queue for initial sessions that have not been started yet. */
   private Queue<TezSessionPoolSession> initialSessions =
       new ConcurrentLinkedQueue<TezSessionPoolSession>();
@@ -199,6 +208,31 @@ public class TezSessionPoolManager {
     llapQueue = new Semaphore(numConcurrentLlapQueries, true);
 
     this.initConf = conf;
+    String queueAllowedStr = HiveConf.getVar(initConf,
+        ConfVars.HIVE_SERVER2_TEZ_SESSION_CUSTOM_QUEUE_ALLOWED);
+    try {
+      this.customQueueAllowed = CustomQueueAllowed.valueOf(queueAllowedStr.toUpperCase());
+    } catch (Exception ex) {
+      throw new RuntimeException("Invalid value '" + queueAllowedStr + "' for " +
+          ConfVars.HIVE_SERVER2_TEZ_SESSION_CUSTOM_QUEUE_ALLOWED.varname);
+    }
+    String[] restrictedConfigs = HiveConf.getTrimmedStringsVar(initConf,
+        ConfVars.HIVE_SERVER2_TEZ_SESSION_RESTRICTED_CONFIGS);
+    if (restrictedConfigs != null && restrictedConfigs.length > 0) {
+      HashMap<String, ConfVars> confVars = HiveConf.getOrCreateReverseMap();
+      for (String confName : restrictedConfigs) {
+        if (confName == null || confName.isEmpty()) continue;
+        confName = confName.toLowerCase();
+        ConfVars cv = confVars.get(confName);
+        if (cv != null) {
+          restrictedHiveConf.add(cv);
+        } else {
+          LOG.warn("A restricted config " + confName + " is not recognized as a Hive setting.");
+          restrictedNonHiveConf.add(confName);
+        }
+      }
+    }
+    
 
     sessionLifetimeMs = conf.getTimeVar(
         ConfVars.HIVE_SERVER2_TEZ_SESSION_LIFETIME, TimeUnit.MILLISECONDS);
@@ -269,10 +303,33 @@ public class TezSessionPoolManager {
     return sessionState;
   }
 
-  private TezSessionState getSession(HiveConf conf, boolean doOpen,
-      boolean forceCreate)
+  private TezSessionState getSession(HiveConf conf, boolean doOpen)
       throws Exception {
     String queueName = conf.get("tez.queue.name");
+    boolean hasQueue = (queueName != null) && !queueName.isEmpty();
+    if (hasQueue) {
+      switch (customQueueAllowed) {
+      case FALSE: throw new HiveException("Specifying tez.queue.name is not allowed");
+      case IGNORE: {
+        LOG.warn("User has specified " + queueName + " queue; ignoring the setting");
+        queueName = null;
+        hasQueue = false;
+        conf.set("tez.queue.name", null);
+      }
+      default: // All good.
+      }
+    }
+    for (ConfVars var : restrictedHiveConf) {
+      String userValue = HiveConf.getVarWithoutType(conf, var),
+          serverValue = HiveConf.getVarWithoutType(initConf, var);
+      // Note: with some trickery, we could add logic for each type in ConfVars; for now the
+      // potential spurious mismatches (e.g. 0 and 0.0 for float) should be easy to work around.
+      validateRestrictedConfigValues(var.varname, userValue, serverValue);
+    }
+    for (String var : restrictedNonHiveConf) {
+      String userValue = conf.get(var), serverValue = initConf.get(var);
+      validateRestrictedConfigValues(var, userValue, serverValue);
+    }
 
     // TODO Session re-use completely disabled for doAs=true. Always launches a new session.
     boolean nonDefaultUser = conf.getBoolVar(HiveConf.ConfVars.HIVE_SERVER2_ENABLE_DOAS);
@@ -283,11 +340,9 @@ public class TezSessionPoolManager {
      * their own credentials. We expect that with the new security model, things will
      * run as user hive in most cases.
      */
-    if (forceCreate || nonDefaultUser || !hasInitialSessions
-        || ((queueName != null) && !queueName.isEmpty())) {
-      LOG.info("QueueName: {} nonDefaultUser: {} defaultQueuePool: {} hasInitialSessions: {}" +
-              " forceCreate: {}", queueName, nonDefaultUser, defaultQueuePool, hasInitialSessions,
-          forceCreate);
+    if (nonDefaultUser || !hasInitialSessions || hasQueue) {
+      LOG.info("QueueName: {} nonDefaultUser: {} defaultQueuePool: {} hasInitialSessions: {}",
+              queueName, nonDefaultUser, defaultQueuePool, hasInitialSessions);
       return getNewSessionState(conf, queueName, doOpen);
     }
 
@@ -296,6 +351,16 @@ public class TezSessionPoolManager {
       TezSessionPoolSession result = defaultQueuePool.take();
       if (result.tryUse()) return result;
       LOG.info("Couldn't use a session [" + result + "]; attempting another one");
+    }
+  }
+
+  private void validateRestrictedConfigValues(
+      String var, String userValue, String serverValue) throws HiveException {
+    if ((userValue == null) != (serverValue == null)
+        || (userValue != null && !userValue.equals(serverValue))) {
+      String logValue = initConf.isHiddenConfig(var) ? "(hidden)" : serverValue;
+      throw new HiveException(var + " is restricted from being set; server is configured"
+          + " to use " + logValue + ", but the query configuration specifies " + userValue);
     }
   }
 
@@ -407,11 +472,6 @@ public class TezSessionPoolManager {
     return new TezSessionPoolSession(sessionId, this);
   }
 
-  public TezSessionState getSession(TezSessionState session, HiveConf conf, boolean doOpen,
-      boolean llap) throws Exception {
-    return getSession(session, conf, doOpen, false, llap);
-  }
-
   /*
    * This method helps to re-use a session in case there has been no change in
    * the configuration of a session. This will happen only in the case of non-hive-server2
@@ -458,8 +518,8 @@ public class TezSessionPoolManager {
     }
   }
 
-  public TezSessionState getSession(TezSessionState session, HiveConf conf, boolean doOpen,
-      boolean forceCreate, boolean llap) throws Exception {
+  public TezSessionState getSession(
+      TezSessionState session, HiveConf conf, boolean doOpen, boolean llap) throws Exception {
     if (llap && (this.numConcurrentLlapQueries > 0)) {
       llapQueue.acquire(); // blocks if no more llap queries can be submitted.
     }
@@ -472,7 +532,7 @@ public class TezSessionPoolManager {
       closeIfNotDefault(session, false);
     }
 
-    return getSession(conf, doOpen, forceCreate);
+    return getSession(conf, doOpen);
   }
 
   /** Reopens the session that was found to not be running. */
