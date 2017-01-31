@@ -60,11 +60,13 @@ public class LazyBinarySerializeWrite implements SerializeWrite {
   private HiveIntervalYearMonthWritable hiveIntervalYearMonthWritable;
   private HiveIntervalDayTimeWritable hiveIntervalDayTimeWritable;
   private HiveIntervalDayTime hiveIntervalDayTime;
+  private byte[] vLongBytes;
   private long[] scratchLongs;
   private byte[] scratchBuffer;
 
   public LazyBinarySerializeWrite(int fieldCount) {
     this();
+    vLongBytes = new byte[LazyBinaryUtils.VLONG_BYTES_LEN];
     this.fieldCount = fieldCount;
   }
 
@@ -270,7 +272,7 @@ public class LazyBinarySerializeWrite implements SerializeWrite {
     // Set bit in NULL byte when a field is NOT NULL.
     nullByte |= 1 << (fieldIndex % 8);
 
-    LazyBinaryUtils.writeVInt(output, v);
+    writeVInt(v);
 
     fieldIndex++;
 
@@ -301,7 +303,7 @@ public class LazyBinarySerializeWrite implements SerializeWrite {
     // Set bit in NULL byte when a field is NOT NULL.
     nullByte |= 1 << (fieldIndex % 8);
 
-    LazyBinaryUtils.writeVLong(output, v);
+    writeVLong(v);
 
     fieldIndex++;
 
@@ -402,7 +404,7 @@ public class LazyBinarySerializeWrite implements SerializeWrite {
     nullByte |= 1 << (fieldIndex % 8);
 
     int length = v.length;
-    LazyBinaryUtils.writeVInt(output, length);
+    writeVInt(length);
 
     output.write(v, 0, length);
 
@@ -432,7 +434,7 @@ public class LazyBinarySerializeWrite implements SerializeWrite {
     // Set bit in NULL byte when a field is NOT NULL.
     nullByte |= 1 << (fieldIndex % 8);
 
-    LazyBinaryUtils.writeVInt(output, length);
+    writeVInt(length);
 
     output.write(v, start, length);
 
@@ -498,7 +500,7 @@ public class LazyBinarySerializeWrite implements SerializeWrite {
     // Set bit in NULL byte when a field is NOT NULL.
     nullByte |= 1 << (fieldIndex % 8);
 
-    LazyBinaryUtils.writeVInt(output, DateWritable.dateToDays(date));
+    writeVInt(DateWritable.dateToDays(date));
 
     fieldIndex++;
 
@@ -527,7 +529,7 @@ public class LazyBinarySerializeWrite implements SerializeWrite {
     // Set bit in NULL byte when a field is NOT NULL.
     nullByte |= 1 << (fieldIndex % 8);
 
-    LazyBinaryUtils.writeVInt(output, dateAsDays);
+    writeVInt(dateAsDays);
 
     fieldIndex++;
 
@@ -750,5 +752,19 @@ public class LazyBinarySerializeWrite implements SerializeWrite {
       // Write back the final NULL byte before the last fields.
       output.writeByte(nullOffset, nullByte);
     }
+  }
+
+  /*
+   * Write a VInt using our temporary byte buffer instead of paying the thread local performance
+   * cost of LazyBinaryUtils.writeVInt
+   */
+  private void writeVInt(int v) {
+    final int len = LazyBinaryUtils.writeVLongToByteArray(vLongBytes, v);
+    output.write(vLongBytes, 0, len);
+  }
+
+  private void writeVLong(long v) {
+    final int len = LazyBinaryUtils.writeVLongToByteArray(vLongBytes, v);
+    output.write(vLongBytes, 0, len);
   }
 }
