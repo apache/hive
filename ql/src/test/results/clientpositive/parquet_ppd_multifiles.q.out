@@ -1,0 +1,50 @@
+PREHOOK: query: CREATE TABLE parquet_ppd_multifiles (
+  name string,
+  dec decimal(5,0)
+) stored as parquet
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@parquet_ppd_multifiles
+POSTHOOK: query: CREATE TABLE parquet_ppd_multifiles (
+  name string,
+  dec decimal(5,0)
+) stored as parquet
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@parquet_ppd_multifiles
+PREHOOK: query: insert into table parquet_ppd_multifiles values('Jim', 3)
+PREHOOK: type: QUERY
+PREHOOK: Output: default@parquet_ppd_multifiles
+POSTHOOK: query: insert into table parquet_ppd_multifiles values('Jim', 3)
+POSTHOOK: type: QUERY
+POSTHOOK: Output: default@parquet_ppd_multifiles
+POSTHOOK: Lineage: parquet_ppd_multifiles.dec EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+POSTHOOK: Lineage: parquet_ppd_multifiles.name SIMPLE [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+PREHOOK: query: insert into table parquet_ppd_multifiles values('Tom', 5)
+PREHOOK: type: QUERY
+PREHOOK: Output: default@parquet_ppd_multifiles
+POSTHOOK: query: insert into table parquet_ppd_multifiles values('Tom', 5)
+POSTHOOK: type: QUERY
+POSTHOOK: Output: default@parquet_ppd_multifiles
+POSTHOOK: Lineage: parquet_ppd_multifiles.dec EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+POSTHOOK: Lineage: parquet_ppd_multifiles.name SIMPLE [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+PREHOOK: query: select * from parquet_ppd_multifiles where (name = 'Jim' or dec = 5)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@parquet_ppd_multifiles
+#### A masked pattern was here ####
+POSTHOOK: query: select * from parquet_ppd_multifiles where (name = 'Jim' or dec = 5)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@parquet_ppd_multifiles
+#### A masked pattern was here ####
+Jim	3
+Tom	5
+PREHOOK: query: select * from parquet_ppd_multifiles where (name = 'Jim' or dec = 5)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@parquet_ppd_multifiles
+#### A masked pattern was here ####
+POSTHOOK: query: select * from parquet_ppd_multifiles where (name = 'Jim' or dec = 5)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@parquet_ppd_multifiles
+#### A masked pattern was here ####
+Jim	3
+Tom	5
