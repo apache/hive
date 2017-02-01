@@ -20,8 +20,10 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@table_external
 PREHOOK: query: msck repair table table_external
 PREHOOK: type: MSCK
+PREHOOK: Output: default@table_external
 POSTHOOK: query: msck repair table table_external
 POSTHOOK: type: MSCK
+POSTHOOK: Output: default@table_external
 Partitions not in metastore:	table_external:day=¢Bar
 Repair: Cannot add partition table_external:day=Foo due to invalid characters in the name
 Repair: Added partition to metastore table_external:day=¢Bar
