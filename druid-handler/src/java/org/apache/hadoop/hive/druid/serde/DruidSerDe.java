@@ -46,6 +46,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.ByteObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.DoubleObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.FloatObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.HiveDecimalObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.IntObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.LongObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
@@ -417,6 +418,10 @@ public class DruidSerDe extends AbstractSerDe {
         case DOUBLE:
           res = ((DoubleObjectInspector) fields.get(i).getFieldObjectInspector())
                   .get(values.get(i));
+          break;
+        case DECIMAL:
+          res = ((HiveDecimalObjectInspector) fields.get(i).getFieldObjectInspector())
+                  .getPrimitiveJavaObject(values.get(i)).doubleValue();
           break;
         case STRING:
           res = ((StringObjectInspector) fields.get(i).getFieldObjectInspector())

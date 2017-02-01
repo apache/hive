@@ -31,6 +31,7 @@ import java.util.Map.Entry;
 import java.util.Properties;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.druid.serde.DruidGroupByQueryRecordReader;
 import org.apache.hadoop.hive.druid.serde.DruidQueryRecordReader;
@@ -45,6 +46,7 @@ import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
+import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.serde2.io.ShortWritable;
 import org.apache.hadoop.hive.serde2.io.TimestampWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -639,13 +641,14 @@ public class TestDruidSerDe {
   }
 
 
-  private static final String COLUMN_NAMES = "__time,c0,c1,c2,c3,c4,c5,c6";
-  private static final String COLUMN_TYPES = "timestamp,string,double,float,bigint,int,smallint,tinyint";
+  private static final String COLUMN_NAMES = "__time,c0,c1,c2,c3,c4,c5,c6,c7";
+  private static final String COLUMN_TYPES = "timestamp,string,double,float,decimal(38,18),bigint,int,smallint,tinyint";
   private static final Object[] ROW_OBJECT = new Object[] {
       new TimestampWritable(new Timestamp(1377907200000L)),
       new Text("dim1_val"),
-      new DoubleWritable(10669D),
-      new FloatWritable(10669F),
+      new DoubleWritable(10669.3D),
+      new FloatWritable(10669.45F),
+      new HiveDecimalWritable(HiveDecimal.create(1064.34D)),
       new LongWritable(1113939),
       new IntWritable(1112123),
       new ShortWritable((short) 12),
@@ -656,12 +659,13 @@ public class TestDruidSerDe {
       ImmutableMap.<String, Object>builder()
           .put("__time", 1377907200000L)
           .put("c0", "dim1_val")
-          .put("c1", 10669D)
-          .put("c2", 10669F)
-          .put("c3", 1113939L)
-          .put("c4", 1112123)
-          .put("c5", (short) 12)
-          .put("c6", (byte) 0)
+          .put("c1", 10669.3D)
+          .put("c2", 10669.45F)
+          .put("c3", 1064.34D)
+          .put("c4", 1113939L)
+          .put("c5", 1112123)
+          .put("c6", (short) 12)
+          .put("c7", (byte) 0)
           .put("__time_granularity", 1377907200000L)
           .build());
 
