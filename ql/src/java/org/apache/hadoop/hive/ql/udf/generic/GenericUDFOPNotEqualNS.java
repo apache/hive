@@ -18,23 +18,21 @@
 
 package org.apache.hadoop.hive.ql.udf.generic;
 
-import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 
-@Description(name = "<=>", value = "a _FUNC_ b - Returns same result with EQUAL(=) operator " +
-    "for non-null operands, but returns TRUE if both are NULL, FALSE if one of the them is NULL")
-public class GenericUDFOPEqualNS extends GenericUDFOPEqual {
+// this function is for internal use only
+public class GenericUDFOPNotEqualNS extends GenericUDFOPNotEqual {
 
   @Override
   public Object evaluate(DeferredObject[] arguments) throws HiveException {
     Object o0 = arguments[0].get();
     Object o1 = arguments[1].get();
     if (o0 == null && o1 == null) {
-      result.set(true);
+      result.set(false);
       return result;
     }
     if (o0 == null || o1 == null) {
-      result.set(false);
+      result.set(true);
       return result;
     }
     return super.evaluate(arguments);
@@ -42,6 +40,6 @@ public class GenericUDFOPEqualNS extends GenericUDFOPEqual {
 
   @Override
   public GenericUDF negative() {
-      return new GenericUDFOPNotEqualNS();
+      return new GenericUDFOPEqualNS();
   }
 }
