@@ -140,6 +140,7 @@ public class DruidOutputFormat<K, V> implements HiveOutputFormat<K, DruidWritabl
           break;
         case serdeConstants.FLOAT_TYPE_NAME:
         case serdeConstants.DOUBLE_TYPE_NAME:
+        case serdeConstants.DECIMAL_TYPE_NAME:
           af = new DoubleSumAggregatorFactory(columnNames.get(i), columnNames.get(i));
           break;
         default:
