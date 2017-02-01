@@ -596,13 +596,26 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     return 0;
   }
 
-  private int insertCommitWork(Hive db, InsertTableDesc insertTableDesc) throws HiveException {
-    try {
-      db.getMSC().insertTable(insertTableDesc.getTable(), insertTableDesc.isOverwrite());
+  private int insertCommitWork(Hive db, InsertTableDesc insertTableDesc) throws MetaException {
+    boolean failed = true;
+    HiveMetaHook hook = insertTableDesc.getTable().getStorageHandler().getMetaHook();
+    if (hook == null || !(hook instanceof HiveMetaHookV2)) {
       return 0;
-    } catch (MetaException e) {
-      throw new HiveException(e);
     }
+    HiveMetaHookV2 hiveMetaHook = (HiveMetaHookV2) hook;
+    try {
+      hiveMetaHook.commitInsertTable(insertTableDesc.getTable().getTTable(),
+              insertTableDesc.isOverwrite()
+      );
+      failed = false;
+    } finally {
+      if (failed) {
+        hiveMetaHook.rollbackInsertTable(insertTableDesc.getTable().getTTable(),
+                insertTableDesc.isOverwrite()
+        );
+      }
+    }
+    return 0;
   }
 
   private int cacheMetadata(Hive db, CacheMetadataDesc desc) throws HiveException {

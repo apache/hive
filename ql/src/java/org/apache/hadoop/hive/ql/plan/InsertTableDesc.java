@@ -18,7 +18,7 @@
 
 package org.apache.hadoop.hive.ql.plan;
 
-import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.ql.metadata.Table;
 
 @Explain(displayName = "Insert", explainLevels = { Explain.Level.USER, Explain.Level.DEFAULT, Explain.Level.EXTENDED })
 public class InsertTableDesc extends DDLDesc {

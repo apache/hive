@@ -27,7 +27,7 @@ public class PreInsertTableDesc extends DDLDesc {
   private final boolean isOverwrite;
   private final Table table;
 
-  public PreInsertTableDesc(org.apache.hadoop.hive.ql.metadata.Table table, boolean overwrite) {
+  public PreInsertTableDesc(Table table, boolean overwrite) {
     this.table = table;
     this.isOverwrite = overwrite;
   }

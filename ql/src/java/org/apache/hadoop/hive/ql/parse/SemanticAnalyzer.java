@@ -7197,7 +7197,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     Task<? extends Serializable>[] tasks = new Task[this.rootTasks.size()];
     tasks = this.rootTasks.toArray(tasks);
     PreInsertTableDesc preInsertTableDesc = new PreInsertTableDesc(table, overwrite);
-    InsertTableDesc insertTableDesc = new InsertTableDesc(table.getTTable(), overwrite);
+    InsertTableDesc insertTableDesc = new InsertTableDesc(table, overwrite);
     this.rootTasks
             .add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), preInsertTableDesc), conf));
     TaskFactory
