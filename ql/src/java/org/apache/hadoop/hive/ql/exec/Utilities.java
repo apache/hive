@@ -176,7 +176,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -195,9 +194,6 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.Deflater;
@@ -2106,7 +2102,7 @@ public final class Utilities {
 
     long[] summary = {0, 0, 0};
 
-    final List<Path> pathNeedProcess = new ArrayList<>();
+    final Set<Path> pathNeedProcess = new HashSet<>();
 
     // Since multiple threads could call this method concurrently, locking
     // this method will avoid number of threads out of control.
@@ -2135,13 +2131,14 @@ public final class Utilities {
       // Process the case when name node call is needed
       final Map<String, ContentSummary> resultMap = new ConcurrentHashMap<String, ContentSummary>();
       ArrayList<Future<?>> results = new ArrayList<Future<?>>();
-      final ThreadPoolExecutor executor;
+      final ExecutorService executor;
       int maxThreads = ctx.getConf().getInt("mapred.dfsclient.parallelism.max", 0);
       if (pathNeedProcess.size() > 1 && maxThreads > 1) {
         int numExecutors = Math.min(pathNeedProcess.size(), maxThreads);
         LOG.info("Using " + numExecutors + " threads for getContentSummary");
-        executor = new ThreadPoolExecutor(numExecutors, numExecutors, 60, TimeUnit.SECONDS,
-            new LinkedBlockingQueue<Runnable>());
+        executor = Executors.newFixedThreadPool(numExecutors,
+            new ThreadFactoryBuilder().setDaemon(true)
+                .setNameFormat("Get-Input-Summary-%d").build());
       } else {
         executor = null;
       }
@@ -2191,11 +2188,19 @@ public final class Utilities {
                   resultMap.put(pathStr, cs.getContentSummary(p, myJobConf));
                   return;
                 }
-                HiveStorageHandler handler = HiveUtils.getStorageHandler(myConf,
-                    SerDeUtils.createOverlayedProperties(
-                        partDesc.getTableDesc().getProperties(),
-                        partDesc.getProperties())
-                        .getProperty(hive_metastoreConstants.META_TABLE_STORAGE));
+
+                String metaTableStorage = null;
+                if (partDesc.getTableDesc() != null &&
+                    partDesc.getTableDesc().getProperties() != null) {
+                  metaTableStorage = partDesc.getTableDesc().getProperties()
+                      .getProperty(hive_metastoreConstants.META_TABLE_STORAGE, null);
+                }
+                if (partDesc.getProperties() != null) {
+                  metaTableStorage = partDesc.getProperties()
+                      .getProperty(hive_metastoreConstants.META_TABLE_STORAGE, metaTableStorage);
+                }
+
+                HiveStorageHandler handler = HiveUtils.getStorageHandler(myConf, metaTableStorage);
                 if (handler instanceof InputEstimator) {
                   long total = 0;
                   TableDesc tableDesc = partDesc.getTableDesc();
@@ -2207,14 +2212,15 @@ public final class Utilities {
                     Utilities.setColumnTypeList(jobConf, scanOp, true);
                     PlanUtils.configureInputJobPropertiesForStorageHandler(tableDesc);
                     Utilities.copyTableJobPropertiesToConf(tableDesc, jobConf);
-                    total += estimator.estimate(myJobConf, scanOp, -1).getTotalLength();
+                    total += estimator.estimate(jobConf, scanOp, -1).getTotalLength();
                   }
                   resultMap.put(pathStr, new ContentSummary(total, -1, -1));
+                } else {
+                  // todo: should nullify summary for non-native tables,
+                  // not to be selected as a mapjoin target
+                  FileSystem fs = p.getFileSystem(myConf);
+                  resultMap.put(pathStr, fs.getContentSummary(p));
                 }
-                // todo: should nullify summary for non-native tables,
-                // not to be selected as a mapjoin target
-                FileSystem fs = p.getFileSystem(myConf);
-                resultMap.put(pathStr, fs.getContentSummary(p));
               } catch (Exception e) {
                 // We safely ignore this exception for summary data.
                 // We don't update the cache to protect it from polluting other
