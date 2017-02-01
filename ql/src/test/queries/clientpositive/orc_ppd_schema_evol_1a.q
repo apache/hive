@@ -3,6 +3,8 @@ set hive.metastore.disallow.incompatible.col.type.changes=true;
 set hive.optimize.ppd=false;
 set hive.optimize.index.filter=false;
 set hive.input.format=org.apache.hadoop.hive.ql.io.CombineHiveInputFormat;
+SET hive.map.aggr=false;
+-- disabling map side aggregation as that can lead to different intermediate record counts
 
 
 create table unique_1( 
