@@ -571,40 +571,8 @@ public class TezCompiler extends TaskCompiler {
     return;
   }
 
-  private static class SemijoinRemovalContext implements NodeProcessorCtx {
-    List<Operator<?>> parents = new ArrayList<Operator<?>>();
-  }
-
-  private static class SemijoinRemovalProc implements NodeProcessor {
-
-    @Override
-    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
-                          Object... nodeOutputs) throws SemanticException {
-      SemijoinRemovalContext ctx = (SemijoinRemovalContext) procCtx;
-      Operator<?> parent = (Operator<?>) stack.get(stack.size() - 2);
-      ctx.parents.add(parent);
-      return null;
-    }
-  }
-
-  private static void collectSemijoinOps(Operator<?> ts, NodeProcessorCtx ctx) throws SemanticException {
-    // create a walker which walks the tree in a DFS manner while maintaining
-    // the operator stack. The dispatcher
-    // generates the plan from the operator tree
-    Map<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
-    opRules.put(new RuleRegExp("R1", SelectOperator.getOperatorName() + "%" +
-                    TezDummyStoreOperator.getOperatorName() + "%"),
-            new SemijoinRemovalProc());
-    opRules.put(new RuleRegExp("R2", SelectOperator.getOperatorName() + "%" +
-                    CommonMergeJoinOperator.getOperatorName() + "%"),
-            new SemijoinRemovalProc());
-    Dispatcher disp = new DefaultRuleDispatcher(null, opRules, ctx);
-    GraphWalker ogw = new PreOrderOnceWalker(disp);
-    List<Node> startNodes = new ArrayList<Node>();
-    startNodes.add(ts);
-
-    HashMap<Node, Object> outputMap = new HashMap<Node, Object>();
-    ogw.startWalking(startNodes, null);
+  private static class SMBJoinOpProcContext implements NodeProcessorCtx {
+    HashMap<CommonMergeJoinOperator, TableScanOperator> JoinOpToTsOpMap = new HashMap<CommonMergeJoinOperator, TableScanOperator>();
   }
 
   private static class SMBJoinOpProc implements NodeProcessor {
@@ -612,40 +580,9 @@ public class TezCompiler extends TaskCompiler {
     @Override
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
                           Object... nodeOutputs) throws SemanticException {
-      List<TableScanOperator> tsOps = new ArrayList<TableScanOperator>();
-      // Get one top level TS Op directly from the stack
-      tsOps.add((TableScanOperator)stack.get(0));
-
-      // Get the other one by examining Join Op
-      List<Operator<?>> parents = ((CommonMergeJoinOperator) nd).getParentOperators();
-      for (Operator<?> parent : parents) {
-        if (parent instanceof TezDummyStoreOperator) {
-          // already accounted for
-          continue;
-        }
-
-        assert parent instanceof SelectOperator;
-        while(parent != null) {
-          if (parent instanceof TableScanOperator) {
-            tsOps.add((TableScanOperator) parent);
-            break;
-          }
-          parent = parent.getParentOperators().get(0);
-        }
-      }
-
-      // Now the relevant TableScanOperators are known, find if there exists
-      // a semijoin filter on any of them, if so, remove it.
-      ParseContext pctx = ((OptimizeTezProcContext) procCtx).parseContext;
-      for (TableScanOperator ts : tsOps) {
-        for (ReduceSinkOperator rs : pctx.getRsOpToTsOpMap().keySet()) {
-          if (ts == pctx.getRsOpToTsOpMap().get(rs)) {
-            // match!
-            GenTezUtils.removeBranch(rs);
-            GenTezUtils.removeSemiJoinOperator(pctx, rs, ts);
-          }
-        }
-      }
+      SMBJoinOpProcContext ctx = (SMBJoinOpProcContext) procCtx;
+      ctx.JoinOpToTsOpMap.put((CommonMergeJoinOperator) nd,
+              (TableScanOperator) stack.get(0));
       return null;
     }
   }
@@ -664,12 +601,55 @@ public class TezCompiler extends TaskCompiler {
                     CommonMergeJoinOperator.getOperatorName() + "%"),
             new SMBJoinOpProc());
 
+    SMBJoinOpProcContext ctx = new SMBJoinOpProcContext();
     // The dispatcher finds SMB and if there is semijoin optimization before it, removes it.
-    Dispatcher disp = new DefaultRuleDispatcher(null, opRules, procCtx);
+    Dispatcher disp = new DefaultRuleDispatcher(null, opRules, ctx);
     List<Node> topNodes = new ArrayList<Node>();
     topNodes.addAll(procCtx.parseContext.getTopOps().values());
     GraphWalker ogw = new PreOrderOnceWalker(disp);
     ogw.startWalking(topNodes, null);
+
+    // Iterate over the map and remove semijoin optimizations if needed.
+    for (CommonMergeJoinOperator joinOp : ctx.JoinOpToTsOpMap.keySet()) {
+      List<TableScanOperator> tsOps = new ArrayList<TableScanOperator>();
+      // Get one top level TS Op directly from the stack
+      tsOps.add(ctx.JoinOpToTsOpMap.get(joinOp));
+
+      // Get the other one by examining Join Op
+      List<Operator<?>> parents = joinOp.getParentOperators();
+      for (Operator<?> parent : parents) {
+        if (parent instanceof TezDummyStoreOperator) {
+          // already accounted for
+          continue;
+        }
+
+        assert parent instanceof SelectOperator;
+        while(parent != null) {
+          if (parent instanceof TableScanOperator) {
+            tsOps.add((TableScanOperator) parent);
+            break;
+          }
+          parent = parent.getParentOperators().get(0);
+        }
+      }
+
+      // Now the relevant TableScanOperators are known, find if there exists
+      // a semijoin filter on any of them, if so, remove it.
+      ParseContext pctx = procCtx.parseContext;
+      for (TableScanOperator ts : tsOps) {
+        for (ReduceSinkOperator rs : pctx.getRsOpToTsOpMap().keySet()) {
+          if (ts == pctx.getRsOpToTsOpMap().get(rs)) {
+            // match!
+            GenTezUtils.removeBranch(rs);
+            GenTezUtils.removeSemiJoinOperator(pctx, rs, ts);
+          }
+        }
+      }
+    }
+  }
+
+  private static class SemiJoinCycleRemovalDueTOMapsideJoinContext implements NodeProcessorCtx {
+    HashMap<Operator<?>,Operator<?>> childParentMap = new HashMap<Operator<?>,Operator<?>>();
   }
 
   private static class SemiJoinCycleRemovalDueToMapsideJoins implements NodeProcessor {
@@ -677,13 +657,54 @@ public class TezCompiler extends TaskCompiler {
     @Override
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
                           Object... nodeOutputs) throws SemanticException {
-      ParseContext pCtx = ((OptimizeTezProcContext) procCtx).parseContext;
-      Operator<?> childJoin = ((Operator<?>) nd);
-      Operator<?> parentJoin = ((Operator<?>) stack.get(stack.size() - 2));
+
+      SemiJoinCycleRemovalDueTOMapsideJoinContext ctx =
+              (SemiJoinCycleRemovalDueTOMapsideJoinContext) procCtx;
+      ctx.childParentMap.put((Operator<?>)stack.get(stack.size() - 2), (Operator<?>) nd);
+      return null;
+    }
+  }
+
+  private static void removeSemiJoinCyclesDueToMapsideJoins(
+          OptimizeTezProcContext procCtx) throws SemanticException {
+    if (!procCtx.conf.getBoolVar(ConfVars.TEZ_DYNAMIC_SEMIJOIN_REDUCTION) ||
+            procCtx.parseContext.getRsOpToTsOpMap().size() == 0) {
+      return;
+    }
+
+    Map<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
+    opRules.put(
+            new RuleRegExp("R1", MapJoinOperator.getOperatorName() + "%" +
+                    MapJoinOperator.getOperatorName() + "%"),
+            new SemiJoinCycleRemovalDueToMapsideJoins());
+    opRules.put(
+            new RuleRegExp("R2", MapJoinOperator.getOperatorName() + "%" +
+                    CommonMergeJoinOperator.getOperatorName() + "%"),
+            new SemiJoinCycleRemovalDueToMapsideJoins());
+    opRules.put(
+            new RuleRegExp("R3", CommonMergeJoinOperator.getOperatorName() + "%" +
+                    MapJoinOperator.getOperatorName() + "%"),
+            new SemiJoinCycleRemovalDueToMapsideJoins());
+    opRules.put(
+            new RuleRegExp("R4", CommonMergeJoinOperator.getOperatorName() + "%" +
+                    CommonMergeJoinOperator.getOperatorName() + "%"),
+            new SemiJoinCycleRemovalDueToMapsideJoins());
+
+    SemiJoinCycleRemovalDueTOMapsideJoinContext ctx =
+            new SemiJoinCycleRemovalDueTOMapsideJoinContext();
+    Dispatcher disp = new DefaultRuleDispatcher(null, opRules, ctx);
+    List<Node> topNodes = new ArrayList<Node>();
+    topNodes.addAll(procCtx.parseContext.getTopOps().values());
+    GraphWalker ogw = new PreOrderOnceWalker(disp);
+    ogw.startWalking(topNodes, null);
+
+    // process the list
+    ParseContext pCtx = procCtx.parseContext;
+    for (Operator<?> parentJoin : ctx.childParentMap.keySet()) {
+      Operator<?> childJoin = ctx.childParentMap.get(parentJoin);
 
       if (parentJoin.getChildOperators().size() == 1) {
-        // Nothing to do here
-        return null;
+        continue;
       }
 
       for (Operator<?> child : parentJoin.getChildOperators()) {
@@ -723,40 +744,7 @@ public class TezCompiler extends TaskCompiler {
           }
         }
       }
-      return null;
     }
-  }
-
-  private static void removeSemiJoinCyclesDueToMapsideJoins(
-          OptimizeTezProcContext procCtx) throws SemanticException {
-    if (!procCtx.conf.getBoolVar(ConfVars.TEZ_DYNAMIC_SEMIJOIN_REDUCTION) ||
-            procCtx.parseContext.getRsOpToTsOpMap().size() == 0) {
-      return;
-    }
-
-    Map<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
-    opRules.put(
-            new RuleRegExp("R1", MapJoinOperator.getOperatorName() + "%" +
-                    MapJoinOperator.getOperatorName() + "%"),
-            new SemiJoinCycleRemovalDueToMapsideJoins());
-    opRules.put(
-            new RuleRegExp("R2", MapJoinOperator.getOperatorName() + "%" +
-                    CommonMergeJoinOperator.getOperatorName() + "%"),
-            new SemiJoinCycleRemovalDueToMapsideJoins());
-    opRules.put(
-            new RuleRegExp("R3", CommonMergeJoinOperator.getOperatorName() + "%" +
-                    MapJoinOperator.getOperatorName() + "%"),
-            new SemiJoinCycleRemovalDueToMapsideJoins());
-    opRules.put(
-            new RuleRegExp("R4", CommonMergeJoinOperator.getOperatorName() + "%" +
-                    CommonMergeJoinOperator.getOperatorName() + "%"),
-            new SemiJoinCycleRemovalDueToMapsideJoins());
-
-    Dispatcher disp = new DefaultRuleDispatcher(null, opRules, procCtx);
-    List<Node> topNodes = new ArrayList<Node>();
-    topNodes.addAll(procCtx.parseContext.getTopOps().values());
-    GraphWalker ogw = new PreOrderOnceWalker(disp);
-    ogw.startWalking(topNodes, null);
   }
 
   private static class SemiJoinRemovalIfNoStatsProc implements NodeProcessor {
