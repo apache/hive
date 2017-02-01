@@ -54,6 +54,7 @@ import org.apache.hadoop.hive.ql.lib.Rule;
 import org.apache.hadoop.hive.ql.lib.RuleRegExp;
 import org.apache.hadoop.hive.ql.lib.ExpressionWalker;
 import org.apache.hadoop.hive.ql.optimizer.ConstantPropagateProcFactory;
+import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSubquerySemanticException;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.TypeConverter;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnListDesc;
@@ -1400,8 +1401,9 @@ public class TypeCheckProcFactory {
       ASTNode sqNode = (ASTNode) expr.getParent().getChild(1);
 
       if (!ctx.getallowSubQueryExpr())
-        throw new SemanticException(SemanticAnalyzer.generateErrorMessage(sqNode,
-            ErrorMsg.UNSUPPORTED_SUBQUERY_EXPRESSION.getMsg()));
+        throw new CalciteSubquerySemanticException(SemanticAnalyzer.generateErrorMessage(sqNode,
+            ErrorMsg.UNSUPPORTED_SUBQUERY_EXPRESSION.getMsg("Currently SubQuery expressions are only allowed as " +
+                    "Where and Having Clause predicates")));
 
       ExprNodeDesc desc = TypeCheckProcFactory.processGByExpr(nd, procCtx);
       if (desc != null) {
@@ -1427,7 +1429,7 @@ public class TypeCheckProcFactory {
 
       Map<ASTNode, RelNode> subqueryToRelNode = ctx.getSubqueryToRelNode();
       if(subqueryToRelNode == null) {
-        throw new SemanticException(ErrorMsg.UNSUPPORTED_SUBQUERY_EXPRESSION.getMsg(
+        throw new CalciteSubquerySemanticException(ErrorMsg.UNSUPPORTED_SUBQUERY_EXPRESSION.getMsg(
                         " Currently SubQuery expressions are only allowed as " +
                                 "Where and Having Clause predicates"));
       }
@@ -1449,7 +1451,7 @@ public class TypeCheckProcFactory {
       else if(isScalar){
         // only single subquery expr is supported
         if(subqueryRel.getRowType().getFieldCount() != 1) {
-            throw new SemanticException(ErrorMsg.INVALID_SUBQUERY_EXPRESSION.getMsg(
+            throw new CalciteSubquerySemanticException(ErrorMsg.INVALID_SUBQUERY_EXPRESSION.getMsg(
                     "More than one column expression in subquery"));
         }
         // figure out subquery expression column's type

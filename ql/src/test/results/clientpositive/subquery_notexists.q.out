@@ -866,3 +866,931 @@ POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 98	val_98
 98	val_98
+Warning: Shuffle Join JOIN[28][tables = [$hdt$_0, $hdt$_1]] in Stage 'Stage-1:MAPRED' is a cross product
+Warning: Shuffle Join JOIN[12][tables = [$hdt$_3, $hdt$_4]] in Stage 'Stage-6:MAPRED' is a cross product
+PREHOOK: query: explain SELECT p1.p_name FROM part p1 LEFT JOIN (select p_type as p_col from part ) p2 WHERE NOT EXISTS
+                (select pp1.p_type as p_col from part pp1 where pp1.p_partkey = p2.p_col)
+PREHOOK: type: QUERY
+POSTHOOK: query: explain SELECT p1.p_name FROM part p1 LEFT JOIN (select p_type as p_col from part ) p2 WHERE NOT EXISTS
+                (select pp1.p_type as p_col from part pp1 where pp1.p_partkey = p2.p_col)
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-2 depends on stages: Stage-1, Stage-5
+  Stage-6 is a root stage
+  Stage-7 depends on stages: Stage-6
+  Stage-4 depends on stages: Stage-7
+  Stage-5 depends on stages: Stage-4
+  Stage-0 depends on stages: Stage-2
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: p1
+            Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: p_name (type: string)
+              outputColumnNames: _col0
+              Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
+              Reduce Output Operator
+                sort order: 
+                Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
+                value expressions: _col0 (type: string)
+          TableScan
+            alias: part
+            Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: p_type (type: string)
+              outputColumnNames: _col0
+              Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
+              Reduce Output Operator
+                sort order: 
+                Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
+                value expressions: _col0 (type: string)
+      Reduce Operator Tree:
+        Join Operator
+          condition map:
+               Left Outer Join0 to 1
+          keys:
+            0 
+            1 
+          outputColumnNames: _col0, _col1
+          Statistics: Num rows: 676 Data size: 164320 Basic stats: COMPLETE Column stats: NONE
+          File Output Operator
+            compressed: false
+            table:
+                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+
+  Stage: Stage-2
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            Reduce Output Operator
+              key expressions: _col1 (type: string)
+              sort order: +
+              Map-reduce partition columns: _col1 (type: string)
+              Statistics: Num rows: 676 Data size: 164320 Basic stats: COMPLETE Column stats: NONE
+              value expressions: _col0 (type: string)
+          TableScan
+            Reduce Output Operator
+              key expressions: _col0 (type: string)
+              sort order: +
+              Map-reduce partition columns: _col0 (type: string)
+              Statistics: Num rows: 185 Data size: 23367 Basic stats: COMPLETE Column stats: NONE
+              value expressions: _col1 (type: boolean)
+      Reduce Operator Tree:
+        Join Operator
+          condition map:
+               Left Outer Join0 to 1
+          keys:
+            0 _col1 (type: string)
+            1 _col0 (type: string)
+          outputColumnNames: _col0, _col3
+          Statistics: Num rows: 743 Data size: 180752 Basic stats: COMPLETE Column stats: NONE
+          Filter Operator
+            predicate: _col3 is null (type: boolean)
+            Statistics: Num rows: 371 Data size: 90254 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: _col0 (type: string)
+              outputColumnNames: _col0
+              Statistics: Num rows: 371 Data size: 90254 Basic stats: COMPLETE Column stats: NONE
+              File Output Operator
+                compressed: false
+                Statistics: Num rows: 371 Data size: 90254 Basic stats: COMPLETE Column stats: NONE
+                table:
+                    input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-6
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: p1
+            Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: COMPLETE
+            Select Operator
+              Statistics: Num rows: 26 Data size: 104 Basic stats: COMPLETE Column stats: COMPLETE
+              Reduce Output Operator
+                sort order: 
+                Statistics: Num rows: 26 Data size: 104 Basic stats: COMPLETE Column stats: COMPLETE
+          TableScan
+            alias: part
+            Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: p_type (type: string)
+              outputColumnNames: _col0
+              Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
+              Reduce Output Operator
+                sort order: 
+                Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
+                value expressions: _col0 (type: string)
+      Reduce Operator Tree:
+        Join Operator
+          condition map:
+               Left Outer Join0 to 1
+          keys:
+            0 
+            1 
+          outputColumnNames: _col1
+          Statistics: Num rows: 676 Data size: 85202 Basic stats: COMPLETE Column stats: NONE
+          Group By Operator
+            keys: _col1 (type: string)
+            mode: hash
+            outputColumnNames: _col0
+            Statistics: Num rows: 676 Data size: 85202 Basic stats: COMPLETE Column stats: NONE
+            File Output Operator
+              compressed: false
+              table:
+                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+
+  Stage: Stage-7
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            Reduce Output Operator
+              key expressions: _col0 (type: string)
+              sort order: +
+              Map-reduce partition columns: _col0 (type: string)
+              Statistics: Num rows: 676 Data size: 85202 Basic stats: COMPLETE Column stats: NONE
+      Reduce Operator Tree:
+        Group By Operator
+          keys: KEY._col0 (type: string)
+          mode: mergepartial
+          outputColumnNames: _col0
+          Statistics: Num rows: 338 Data size: 42601 Basic stats: COMPLETE Column stats: NONE
+          File Output Operator
+            compressed: false
+            table:
+                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+
+  Stage: Stage-4
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: pp1
+            Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: p_partkey (type: int)
+              outputColumnNames: _col0
+              Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
+              Reduce Output Operator
+                key expressions: UDFToDouble(_col0) (type: double)
+                sort order: +
+                Map-reduce partition columns: UDFToDouble(_col0) (type: double)
+                Statistics: Num rows: 26 Data size: 3147 Basic stats: COMPLETE Column stats: NONE
+          TableScan
+            Reduce Output Operator
+              key expressions: UDFToDouble(_col0) (type: double)
+              sort order: +
+              Map-reduce partition columns: UDFToDouble(_col0) (type: double)
+              Statistics: Num rows: 338 Data size: 42601 Basic stats: COMPLETE Column stats: NONE
+              value expressions: _col0 (type: string)
+      Reduce Operator Tree:
+        Join Operator
+          condition map:
+               Inner Join 0 to 1
+          keys:
+            0 UDFToDouble(_col0) (type: double)
+            1 UDFToDouble(_col0) (type: double)
+          outputColumnNames: _col1
+          Statistics: Num rows: 371 Data size: 46861 Basic stats: COMPLETE Column stats: NONE
+          Group By Operator
+            keys: _col1 (type: string)
+            mode: hash
+            outputColumnNames: _col0
+            Statistics: Num rows: 371 Data size: 46861 Basic stats: COMPLETE Column stats: NONE
+            File Output Operator
+              compressed: false
+              table:
+                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+
+  Stage: Stage-5
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            Reduce Output Operator
+              key expressions: _col0 (type: string)
+              sort order: +
+              Map-reduce partition columns: _col0 (type: string)
+              Statistics: Num rows: 371 Data size: 46861 Basic stats: COMPLETE Column stats: NONE
+      Reduce Operator Tree:
+        Group By Operator
+          keys: KEY._col0 (type: string)
+          mode: mergepartial
+          outputColumnNames: _col0
+          Statistics: Num rows: 185 Data size: 23367 Basic stats: COMPLETE Column stats: NONE
+          Select Operator
+            expressions: _col0 (type: string), true (type: boolean)
+            outputColumnNames: _col0, _col1
+            Statistics: Num rows: 185 Data size: 23367 Basic stats: COMPLETE Column stats: NONE
+            File Output Operator
+              compressed: false
+              table:
+                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+Warning: Shuffle Join JOIN[28][tables = [$hdt$_0, $hdt$_1]] in Stage 'Stage-1:MAPRED' is a cross product
+Warning: Shuffle Join JOIN[12][tables = [$hdt$_3, $hdt$_4]] in Stage 'Stage-6:MAPRED' is a cross product
+PREHOOK: query: SELECT p1.p_name FROM part p1 LEFT JOIN (select p_type as p_col from part ) p2 WHERE NOT EXISTS
+                (select pp1.p_type as p_col from part pp1 where pp1.p_partkey = p2.p_col)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@part
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT p1.p_name FROM part p1 LEFT JOIN (select p_type as p_col from part ) p2 WHERE NOT EXISTS
+                (select pp1.p_type as p_col from part pp1 where pp1.p_partkey = p2.p_col)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part
+#### A masked pattern was here ####
+almond antique metallic orange dim
+almond aquamarine midnight light salmon
+almond antique olive coral navajo
+almond antique blue firebrick mint
+almond antique chartreuse lavender yellow
+almond aquamarine sandy cyan gainsboro
+almond azure aquamarine papaya violet
+almond antique forest lavender goldenrod
+almond aquamarine floral ivory bisque
+almond aquamarine pink moccasin thistle
+almond aquamarine dodger light gainsboro
+almond antique salmon chartreuse burlywood
+almond antique violet turquoise frosted
+almond antique burnished rose metallic
+almond aquamarine yellow dodger mint
+almond antique violet chocolate turquoise
+almond antique sky peru orange
+almond aquamarine rose maroon antique
+almond antique burnished rose metallic
+almond antique chartreuse khaki white
+almond antique violet mint lemon
+almond azure blanched chiffon midnight
+almond antique gainsboro frosted violet
+almond antique misty red olive
+almond aquamarine burnished black steel
+almond antique medium spring khaki
+almond antique salmon chartreuse burlywood
+almond antique blue firebrick mint
+almond aquamarine pink moccasin thistle
+almond aquamarine floral ivory bisque
+almond antique gainsboro frosted violet
+almond aquamarine yellow dodger mint
+almond aquamarine dodger light gainsboro
+almond aquamarine burnished black steel
+almond azure blanched chiffon midnight
+almond antique violet turquoise frosted
+almond antique sky peru orange
+almond antique burnished rose metallic
+almond antique violet chocolate turquoise
+almond antique medium spring khaki
+almond antique chartreuse khaki white
+almond antique burnished rose metallic
+almond aquamarine rose maroon antique
+almond aquamarine midnight light salmon
+almond antique chartreuse lavender yellow
+almond antique olive coral navajo
+almond antique misty red olive
+almond aquamarine sandy cyan gainsboro
+almond antique violet mint lemon
+almond azure aquamarine papaya violet
+almond antique forest lavender goldenrod
+almond antique metallic orange dim
+almond antique salmon chartreuse burlywood
+almond antique blue firebrick mint
+almond antique violet chocolate turquoise
+almond antique burnished rose metallic
+almond antique forest lavender goldenrod
+almond aquamarine midnight light salmon
+almond antique misty red olive
+almond antique gainsboro frosted violet
+almond antique olive coral navajo
+almond antique metallic orange dim
+almond antique chartreuse khaki white
+almond aquamarine yellow dodger mint
+almond antique burnished rose metallic
+almond aquamarine rose maroon antique
+almond aquamarine dodger light gainsboro
+almond antique chartreuse lavender yellow
+almond aquamarine pink moccasin thistle
+almond aquamarine burnished black steel
+almond azure aquamarine papaya violet
+almond antique violet mint lemon
+almond azure blanched chiffon midnight
+almond antique violet turquoise frosted
+almond antique sky peru orange
+almond antique medium spring khaki
+almond aquamarine floral ivory bisque
+almond aquamarine sandy cyan gainsboro
+almond antique violet mint lemon
+almond antique chartreuse lavender yellow
+almond aquamarine burnished black steel
+almond antique blue firebrick mint
+almond antique violet chocolate turquoise
+almond antique burnished rose metallic
+almond aquamarine rose maroon antique
+almond aquamarine yellow dodger mint
+almond aquamarine sandy cyan gainsboro
+almond aquamarine floral ivory bisque
+almond azure aquamarine papaya violet
+almond antique metallic orange dim
+almond antique sky peru orange
+almond antique burnished rose metallic
+almond antique misty red olive
+almond antique olive coral navajo
+almond aquamarine dodger light gainsboro
+almond aquamarine midnight light salmon
+almond aquamarine pink moccasin thistle
+almond antique violet turquoise frosted
+almond antique forest lavender goldenrod
+almond antique chartreuse khaki white
+almond antique medium spring khaki
+almond antique gainsboro frosted violet
+almond azure blanched chiffon midnight
+almond antique salmon chartreuse burlywood
+almond azure aquamarine papaya violet
+almond antique salmon chartreuse burlywood
+almond aquamarine rose maroon antique
+almond antique forest lavender goldenrod
+almond antique metallic orange dim
+almond antique blue firebrick mint
+almond aquamarine pink moccasin thistle
+almond aquamarine yellow dodger mint
+almond aquamarine dodger light gainsboro
+almond antique violet turquoise frosted
+almond antique sky peru orange
+almond antique violet chocolate turquoise
+almond antique chartreuse khaki white
+almond antique burnished rose metallic
+almond antique gainsboro frosted violet
+almond antique burnished rose metallic
+almond antique violet mint lemon
+almond aquamarine burnished black steel
+almond antique medium spring khaki
+almond antique misty red olive
+almond aquamarine midnight light salmon
+almond aquamarine sandy cyan gainsboro
+almond antique olive coral navajo
+almond antique chartreuse lavender yellow
+almond azure blanched chiffon midnight
+almond aquamarine floral ivory bisque
+almond azure blanched chiffon midnight
+almond antique blue firebrick mint
+almond antique chartreuse lavender yellow
+almond azure aquamarine papaya violet
+almond antique chartreuse khaki white
+almond aquamarine midnight light salmon
+almond antique sky peru orange
+almond antique misty red olive
+almond aquamarine yellow dodger mint
+almond antique violet mint lemon
+almond aquamarine pink moccasin thistle
+almond aquamarine sandy cyan gainsboro
+almond antique burnished rose metallic
+almond antique salmon chartreuse burlywood
+almond antique forest lavender goldenrod
+almond antique metallic orange dim
+almond antique violet turquoise frosted
+almond antique violet chocolate turquoise
+almond aquamarine dodger light gainsboro
+almond antique gainsboro frosted violet
+almond antique burnished rose metallic
+almond aquamarine rose maroon antique
+almond antique olive coral navajo
+almond antique medium spring khaki
+almond aquamarine burnished black steel
+almond aquamarine floral ivory bisque
+almond antique metallic orange dim
+almond antique violet chocolate turquoise
+almond antique burnished rose metallic
+almond aquamarine dodger light gainsboro
+almond antique forest lavender goldenrod
+almond antique burnished rose metallic
+almond aquamarine yellow dodger mint
+almond antique misty red olive
+almond antique chartreuse khaki white
+almond antique chartreuse lavender yellow
+almond antique medium spring khaki
+almond azure aquamarine papaya violet
+almond aquamarine sandy cyan gainsboro
+almond aquamarine floral ivory bisque
+almond antique salmon chartreuse burlywood
+almond aquamarine rose maroon antique
+almond antique olive coral navajo
+almond azure blanched chiffon midnight
+almond aquamarine burnished black steel
+almond aquamarine midnight light salmon
+almond antique sky peru orange
+almond antique violet mint lemon
+almond aquamarine pink moccasin thistle
+almond antique violet turquoise frosted
+almond antique gainsboro frosted violet
+almond antique blue firebrick mint
+almond aquamarine midnight light salmon
+almond azure blanched chiffon midnight
+almond antique chartreuse lavender yellow
+almond antique gainsboro frosted violet
+almond aquamarine burnished black steel
+almond antique medium spring khaki
+almond antique blue firebrick mint
+almond antique olive coral navajo
+almond aquamarine dodger light gainsboro
+almond antique violet chocolate turquoise
+almond aquamarine rose maroon antique
+almond antique violet turquoise frosted
+almond antique forest lavender goldenrod
+almond aquamarine floral ivory bisque
+almond aquamarine pink moccasin thistle
+almond antique burnished rose metallic
+almond azure aquamarine papaya violet
+almond aquamarine sandy cyan gainsboro
+almond antique salmon chartreuse burlywood
+almond antique violet mint lemon
+almond aquamarine yellow dodger mint
+almond antique metallic orange dim
+almond antique sky peru orange
+almond antique misty red olive
+almond antique burnished rose metallic
+almond antique chartreuse khaki white
+almond antique sky peru orange
+almond aquamarine floral ivory bisque
+almond azure aquamarine papaya violet
+almond antique olive coral navajo
+almond azure blanched chiffon midnight
+almond aquamarine sandy cyan gainsboro
+almond antique chartreuse lavender yellow
+almond aquamarine burnished black steel
+almond antique medium spring khaki
+almond aquamarine midnight light salmon
+almond antique misty red olive
+almond antique violet chocolate turquoise
+almond antique chartreuse khaki white
+almond antique violet mint lemon
+almond antique burnished rose metallic
+almond antique burnished rose metallic
+almond aquamarine yellow dodger mint
+almond aquamarine pink moccasin thistle
+almond antique violet turquoise frosted
+almond aquamarine dodger light gainsboro
+almond antique forest lavender goldenrod
+almond antique blue firebrick mint
+almond antique gainsboro frosted violet
+almond antique metallic orange dim
+almond antique salmon chartreuse burlywood
+almond aquamarine rose maroon antique
+almond antique chartreuse khaki white
+almond aquamarine pink moccasin thistle
+almond aquamarine floral ivory bisque
+almond antique sky peru orange
+almond aquamarine yellow dodger mint
+almond antique violet mint lemon
+almond antique metallic orange dim
+almond antique burnished rose metallic
+almond antique chartreuse lavender yellow
+almond aquamarine burnished black steel
+almond antique salmon chartreuse burlywood
+almond antique misty red olive
+almond antique violet turquoise frosted
+almond antique blue firebrick mint
+almond antique medium spring khaki
+almond aquamarine rose maroon antique
+almond azure blanched chiffon midnight
+almond antique gainsboro frosted violet
+almond aquamarine sandy cyan gainsboro
+almond antique violet chocolate turquoise
+almond aquamarine midnight light salmon
+almond antique olive coral navajo
+almond antique forest lavender goldenrod
+almond azure aquamarine papaya violet
+almond antique burnished rose metallic
+almond aquamarine dodger light gainsboro
+almond antique salmon chartreuse burlywood
+almond antique salmon chartreuse burlywood
+almond antique chartreuse lavender yellow
+almond aquamarine sandy cyan gainsboro
+almond antique metallic orange dim
+almond antique chartreuse khaki white
+almond antique violet mint lemon
+almond antique gainsboro frosted violet
+almond antique sky peru orange
+almond antique olive coral navajo
+almond antique chartreuse khaki white
+almond antique burnished rose metallic
+almond aquamarine rose maroon antique
+almond antique violet mint lemon
+almond azure blanched chiffon midnight
+almond antique sky peru orange
+almond antique gainsboro frosted violet
+almond antique burnished rose metallic
+almond aquamarine floral ivory bisque
+almond azure blanched chiffon midnight
+almond aquamarine yellow dodger mint
+almond aquamarine rose maroon antique
+almond antique violet turquoise frosted
+almond antique burnished rose metallic
+almond aquamarine yellow dodger mint
+almond aquamarine dodger light gainsboro
+almond aquamarine pink moccasin thistle
+almond antique olive coral navajo
+almond antique violet turquoise frosted
+almond antique blue firebrick mint
+almond aquamarine dodger light gainsboro
+almond azure aquamarine papaya violet
+almond aquamarine pink moccasin thistle
+almond antique forest lavender goldenrod
+almond antique burnished rose metallic
+almond aquamarine floral ivory bisque
+almond antique forest lavender goldenrod
+almond antique blue firebrick mint
+almond antique metallic orange dim
+almond antique violet chocolate turquoise
+almond antique chartreuse lavender yellow
+almond antique violet chocolate turquoise
+almond aquamarine midnight light salmon
+almond aquamarine burnished black steel
+almond antique medium spring khaki
+almond azure aquamarine papaya violet
+almond aquamarine midnight light salmon
+almond antique misty red olive
+almond aquamarine burnished black steel
+almond antique medium spring khaki
+almond aquamarine sandy cyan gainsboro
+almond antique misty red olive
+almond antique metallic orange dim
+almond aquamarine dodger light gainsboro
+almond antique burnished rose metallic
+almond antique misty red olive
+almond antique chartreuse lavender yellow
+almond azure aquamarine papaya violet
+almond antique salmon chartreuse burlywood
+almond antique olive coral navajo
+almond aquamarine burnished black steel
+almond antique sky peru orange
+almond aquamarine pink moccasin thistle
+almond antique gainsboro frosted violet
+almond antique violet chocolate turquoise
+almond antique violet turquoise frosted
+almond antique violet mint lemon
+almond aquamarine midnight light salmon
+almond azure blanched chiffon midnight
+almond aquamarine rose maroon antique
+almond aquamarine floral ivory bisque
+almond aquamarine sandy cyan gainsboro
+almond antique medium spring khaki
+almond antique chartreuse khaki white
+almond aquamarine yellow dodger mint
+almond antique forest lavender goldenrod
+almond antique burnished rose metallic
+almond antique blue firebrick mint
+almond aquamarine dodger light gainsboro
+almond antique metallic orange dim
+almond aquamarine midnight light salmon
+almond aquamarine burnished black steel
+almond antique violet turquoise frosted
+almond antique violet chocolate turquoise
+almond antique burnished rose metallic
+almond antique forest lavender goldenrod
+almond aquamarine rose maroon antique
+almond antique chartreuse khaki white
+almond antique sky peru orange
+almond azure blanched chiffon midnight
+almond antique olive coral navajo
+almond antique misty red olive
+almond aquamarine sandy cyan gainsboro
+almond antique salmon chartreuse burlywood
+almond aquamarine floral ivory bisque
+almond antique blue firebrick mint
+almond antique burnished rose metallic
+almond azure aquamarine papaya violet
+almond aquamarine yellow dodger mint
+almond antique violet mint lemon
+almond antique medium spring khaki
+almond antique chartreuse lavender yellow
+almond aquamarine pink moccasin thistle
+almond antique gainsboro frosted violet
+almond aquamarine dodger light gainsboro
+almond azure blanched chiffon midnight
+almond azure blanched chiffon midnight
+almond aquamarine burnished black steel
+almond aquamarine burnished black steel
+almond antique violet chocolate turquoise
+almond antique salmon chartreuse burlywood
+almond antique salmon chartreuse burlywood
+almond antique blue firebrick mint
+almond aquamarine floral ivory bisque
+almond antique gainsboro frosted violet
+almond aquamarine floral ivory bisque
+almond antique gainsboro frosted violet
+almond antique violet turquoise frosted
+almond antique violet turquoise frosted
+almond antique blue firebrick mint
+almond antique forest lavender goldenrod
+almond antique forest lavender goldenrod
+almond antique burnished rose metallic
+almond antique olive coral navajo
+almond antique burnished rose metallic
+almond antique olive coral navajo
+almond aquamarine rose maroon antique
+almond aquamarine yellow dodger mint
+almond antique violet chocolate turquoise
+almond aquamarine pink moccasin thistle
+almond aquamarine yellow dodger mint
+almond antique violet mint lemon
+almond antique violet mint lemon
+almond aquamarine pink moccasin thistle
+almond aquamarine rose maroon antique
+almond antique misty red olive
+almond antique misty red olive
+almond antique chartreuse khaki white
+almond antique chartreuse khaki white
+almond antique metallic orange dim
+almond antique burnished rose metallic
+almond antique chartreuse lavender yellow
+almond antique chartreuse lavender yellow
+almond aquamarine midnight light salmon
+almond aquamarine midnight light salmon
+almond antique sky peru orange
+almond antique sky peru orange
+almond antique medium spring khaki
+almond antique medium spring khaki
+almond antique burnished rose metallic
+almond antique metallic orange dim
+almond azure aquamarine papaya violet
+almond azure aquamarine papaya violet
+almond aquamarine dodger light gainsboro
+almond aquamarine sandy cyan gainsboro
+almond aquamarine sandy cyan gainsboro
+almond antique chartreuse lavender yellow
+almond aquamarine burnished black steel
+almond antique gainsboro frosted violet
+almond aquamarine sandy cyan gainsboro
+almond antique burnished rose metallic
+almond antique chartreuse khaki white
+almond antique violet turquoise frosted
+almond antique olive coral navajo
+almond aquamarine floral ivory bisque
+almond antique salmon chartreuse burlywood
+almond aquamarine yellow dodger mint
+almond aquamarine pink moccasin thistle
+almond antique sky peru orange
+almond antique burnished rose metallic
+almond antique metallic orange dim
+almond antique violet chocolate turquoise
+almond aquamarine dodger light gainsboro
+almond antique violet mint lemon
+almond azure aquamarine papaya violet
+almond aquamarine midnight light salmon
+almond antique misty red olive
+almond antique medium spring khaki
+almond antique blue firebrick mint
+almond aquamarine rose maroon antique
+almond antique forest lavender goldenrod
+almond azure blanched chiffon midnight
+almond antique sky peru orange
+almond antique metallic orange dim
+almond aquamarine rose maroon antique
+almond antique blue firebrick mint
+almond antique forest lavender goldenrod
+almond aquamarine dodger light gainsboro
+almond aquamarine pink moccasin thistle
+almond aquamarine yellow dodger mint
+almond antique violet turquoise frosted
+almond antique burnished rose metallic
+almond antique chartreuse khaki white
+almond antique misty red olive
+almond antique violet mint lemon
+almond antique medium spring khaki
+almond antique chartreuse lavender yellow
+almond aquamarine burnished black steel
+almond aquamarine midnight light salmon
+almond aquamarine sandy cyan gainsboro
+almond antique violet chocolate turquoise
+almond antique burnished rose metallic
+almond azure aquamarine papaya violet
+almond aquamarine floral ivory bisque
+almond azure blanched chiffon midnight
+almond antique olive coral navajo
+almond antique gainsboro frosted violet
+almond antique salmon chartreuse burlywood
+almond antique gainsboro frosted violet
+almond antique blue firebrick mint
+almond aquamarine pink moccasin thistle
+almond antique violet turquoise frosted
+almond antique sky peru orange
+almond antique violet mint lemon
+almond aquamarine burnished black steel
+almond aquamarine midnight light salmon
+almond antique olive coral navajo
+almond azure blanched chiffon midnight
+almond antique salmon chartreuse burlywood
+almond aquamarine rose maroon antique
+almond azure aquamarine papaya violet
+almond aquamarine floral ivory bisque
+almond antique chartreuse lavender yellow
+almond aquamarine sandy cyan gainsboro
+almond antique misty red olive
+almond antique medium spring khaki
+almond antique burnished rose metallic
+almond antique chartreuse khaki white
+almond aquamarine dodger light gainsboro
+almond aquamarine yellow dodger mint
+almond antique burnished rose metallic
+almond antique forest lavender goldenrod
+almond antique metallic orange dim
+almond antique violet chocolate turquoise
+almond antique burnished rose metallic
+almond azure blanched chiffon midnight
+almond antique olive coral navajo
+almond aquamarine floral ivory bisque
+almond azure aquamarine papaya violet
+almond aquamarine midnight light salmon
+almond aquamarine sandy cyan gainsboro
+almond antique chartreuse lavender yellow
+almond aquamarine burnished black steel
+almond antique gainsboro frosted violet
+almond antique medium spring khaki
+almond antique misty red olive
+almond antique violet mint lemon
+almond antique sky peru orange
+almond antique chartreuse khaki white
+almond antique violet chocolate turquoise
+almond antique burnished rose metallic
+almond antique violet turquoise frosted
+almond aquamarine yellow dodger mint
+almond aquamarine pink moccasin thistle
+almond aquamarine dodger light gainsboro
+almond antique forest lavender goldenrod
+almond antique blue firebrick mint
+almond antique metallic orange dim
+almond antique salmon chartreuse burlywood
+almond aquamarine rose maroon antique
+almond antique burnished rose metallic
+almond aquamarine midnight light salmon
+almond antique sky peru orange
+almond antique salmon chartreuse burlywood
+almond antique burnished rose metallic
+almond aquamarine yellow dodger mint
+almond antique metallic orange dim
+almond antique chartreuse lavender yellow
+almond antique violet turquoise frosted
+almond aquamarine sandy cyan gainsboro
+almond antique medium spring khaki
+almond antique violet chocolate turquoise
+almond antique olive coral navajo
+almond aquamarine rose maroon antique
+almond aquamarine burnished black steel
+almond antique misty red olive
+almond aquamarine pink moccasin thistle
+almond aquamarine floral ivory bisque
+almond antique gainsboro frosted violet
+almond antique forest lavender goldenrod
+almond aquamarine dodger light gainsboro
+almond azure aquamarine papaya violet
+almond azure blanched chiffon midnight
+almond antique violet mint lemon
+almond antique blue firebrick mint
+almond antique chartreuse khaki white
+almond azure blanched chiffon midnight
+almond antique metallic orange dim
+almond aquamarine pink moccasin thistle
+almond aquamarine yellow dodger mint
+almond aquamarine rose maroon antique
+almond antique burnished rose metallic
+almond antique burnished rose metallic
+almond antique salmon chartreuse burlywood
+almond aquamarine floral ivory bisque
+almond aquamarine burnished black steel
+almond antique medium spring khaki
+almond antique chartreuse lavender yellow
+almond aquamarine midnight light salmon
+almond antique gainsboro frosted violet
+almond aquamarine sandy cyan gainsboro
+almond azure aquamarine papaya violet
+almond aquamarine dodger light gainsboro
+almond antique violet turquoise frosted
+almond antique forest lavender goldenrod
+almond antique chartreuse khaki white
+almond antique misty red olive
+almond antique olive coral navajo
+almond antique violet mint lemon
+almond antique blue firebrick mint
+almond antique violet chocolate turquoise
+almond antique sky peru orange
+almond aquamarine sandy cyan gainsboro
+almond aquamarine floral ivory bisque
+almond antique chartreuse lavender yellow
+almond antique metallic orange dim
+almond aquamarine dodger light gainsboro
+almond antique burnished rose metallic
+almond aquamarine pink moccasin thistle
+almond aquamarine rose maroon antique
+almond azure aquamarine papaya violet
+almond antique chartreuse khaki white
+almond aquamarine yellow dodger mint
+almond antique olive coral navajo
+almond antique violet chocolate turquoise
+almond antique salmon chartreuse burlywood
+almond antique blue firebrick mint
+almond antique forest lavender goldenrod
+almond antique sky peru orange
+almond aquamarine burnished black steel
+almond antique burnished rose metallic
+almond azure blanched chiffon midnight
+almond antique medium spring khaki
+almond antique misty red olive
+almond antique violet turquoise frosted
+almond antique gainsboro frosted violet
+almond aquamarine midnight light salmon
+almond antique violet mint lemon
+almond antique burnished rose metallic
+almond aquamarine midnight light salmon
+almond antique chartreuse lavender yellow
+almond aquamarine sandy cyan gainsboro
+almond aquamarine burnished black steel
+almond antique violet mint lemon
+almond antique misty red olive
+almond antique medium spring khaki
+almond antique salmon chartreuse burlywood
+almond antique sky peru orange
+almond antique burnished rose metallic
+almond antique chartreuse khaki white
+almond antique violet turquoise frosted
+almond aquamarine yellow dodger mint
+almond aquamarine dodger light gainsboro
+almond antique violet chocolate turquoise
+almond aquamarine pink moccasin thistle
+almond antique blue firebrick mint
+almond aquamarine rose maroon antique
+almond antique forest lavender goldenrod
+almond azure aquamarine papaya violet
+almond antique gainsboro frosted violet
+almond antique metallic orange dim
+almond azure blanched chiffon midnight
+almond aquamarine floral ivory bisque
+almond antique olive coral navajo
+almond aquamarine rose maroon antique
+almond antique olive coral navajo
+almond antique violet chocolate turquoise
+almond antique chartreuse khaki white
+almond antique violet mint lemon
+almond aquamarine midnight light salmon
+almond azure blanched chiffon midnight
+almond antique blue firebrick mint
+almond antique burnished rose metallic
+almond aquamarine dodger light gainsboro
+almond antique misty red olive
+almond aquamarine floral ivory bisque
+almond antique metallic orange dim
+almond aquamarine yellow dodger mint
+almond antique medium spring khaki
+almond antique chartreuse lavender yellow
+almond aquamarine pink moccasin thistle
+almond aquamarine sandy cyan gainsboro
+almond antique salmon chartreuse burlywood
+almond antique violet turquoise frosted
+almond antique burnished rose metallic
+almond antique forest lavender goldenrod
+almond antique gainsboro frosted violet
+almond aquamarine burnished black steel
+almond azure aquamarine papaya violet
+almond antique sky peru orange
+almond aquamarine floral ivory bisque
+almond antique chartreuse khaki white
+almond antique misty red olive
+almond aquamarine burnished black steel
+almond antique sky peru orange
+almond aquamarine dodger light gainsboro
+almond antique violet mint lemon
+almond antique medium spring khaki
+almond antique forest lavender goldenrod
+almond antique metallic orange dim
+almond antique burnished rose metallic
+almond antique gainsboro frosted violet
+almond azure aquamarine papaya violet
+almond antique blue firebrick mint
+almond antique chartreuse lavender yellow
+almond antique olive coral navajo
+almond antique violet chocolate turquoise
+almond azure blanched chiffon midnight
+almond aquamarine midnight light salmon
+almond antique violet turquoise frosted
+almond aquamarine yellow dodger mint
+almond aquamarine pink moccasin thistle
+almond antique burnished rose metallic
+almond aquamarine rose maroon antique
+almond aquamarine sandy cyan gainsboro
+almond antique salmon chartreuse burlywood
