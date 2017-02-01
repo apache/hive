@@ -43,11 +43,15 @@ import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.OperatorFactory;
 import org.apache.hadoop.hive.ql.exec.OperatorUtils;
 import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
+import org.apache.hadoop.hive.ql.exec.SelectOperator;
+import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.TezDummyStoreOperator;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.lib.NodeProcessor;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
+import org.apache.hadoop.hive.ql.parse.GenTezUtils;
 import org.apache.hadoop.hive.ql.parse.OptimizeTezProcContext;
+import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.CommonMergeJoinDesc;
 import org.apache.hadoop.hive.ql.plan.DynamicPruningEventDesc;
@@ -717,6 +721,7 @@ public class ConvertJoinMapJoin implements NodeProcessor {
     Operator<? extends OperatorDesc> parentBigTableOp =
         mapJoinOp.getParentOperators().get(bigTablePosition);
     if (parentBigTableOp instanceof ReduceSinkOperator) {
+      Operator<?> parentSelectOpOfBigTableOp = parentBigTableOp.getParentOperators().get(0);
       if (removeReduceSink) {
         for (Operator<?> p : parentBigTableOp.getParentOperators()) {
           // we might have generated a dynamic partition operator chain. Since
@@ -759,9 +764,63 @@ public class ConvertJoinMapJoin implements NodeProcessor {
         }
         op.getChildOperators().remove(joinOp);
       }
+
+      // Remove semijoin Op if there is any.
+      if (context.parseContext.getRsOpToTsOpMap().size() > 0) {
+        removeCycleCreatingSemiJoinOps(mapJoinOp, parentSelectOpOfBigTableOp,
+                context.parseContext);
+      }
     }
 
     return mapJoinOp;
+  }
+
+  // Remove any semijoin branch associated with mapjoin's parent's operator
+  // pipeline which can cause a cycle after mapjoin optimization.
+  private void removeCycleCreatingSemiJoinOps(MapJoinOperator mapjoinOp,
+                                              Operator<?> parentSelectOpOfBigTable,
+                                              ParseContext parseContext) throws SemanticException {
+    boolean semiJoinCycle = false;
+    ReduceSinkOperator rs = null;
+    TableScanOperator ts = null;
+    for (Operator<?> op : parentSelectOpOfBigTable.getChildOperators()) {
+      if (!(op instanceof SelectOperator)) {
+        continue;
+      }
+
+      while (op.getChildOperators().size() > 0 ) {
+        op = op.getChildOperators().get(0);
+        if (!(op instanceof ReduceSinkOperator)) {
+          continue;
+        }
+        rs = (ReduceSinkOperator) op;
+        ts = parseContext.getRsOpToTsOpMap().get(rs);
+        if (ts == null) {
+          continue;
+        }
+        for (Operator<?> parent : mapjoinOp.getParentOperators()) {
+          if (!(parent instanceof ReduceSinkOperator)) {
+            continue;
+          }
+
+          Set<TableScanOperator> tsOps = OperatorUtils.findOperatorsUpstream(parent,
+                  TableScanOperator.class);
+          for (TableScanOperator parentTS : tsOps) {
+            // If the parent is same as the ts, then we have a cycle.
+            if (ts == parentTS) {
+              semiJoinCycle = true;
+              break;
+            }
+          }
+        }
+      }
+    }
+
+    // By design there can be atmost 1 such cycle.
+    if (semiJoinCycle) {
+      GenTezUtils.removeBranch(rs);
+      GenTezUtils.removeSemiJoinOperator(parseContext, rs, ts);
+    }
   }
 
   private AppMasterEventOperator findDynamicPartitionBroadcast(Operator<?> parent) {
