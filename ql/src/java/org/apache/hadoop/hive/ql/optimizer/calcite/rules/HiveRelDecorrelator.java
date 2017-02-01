@@ -70,6 +70,7 @@ import org.apache.calcite.sql.SqlOperator;
 import org.apache.calcite.sql.fun.SqlCountAggFunction;
 import org.apache.calcite.sql.fun.SqlSingleValueAggFunction;
 import org.apache.calcite.sql.fun.SqlStdOperatorTable;
+import org.apache.calcite.sql.validate.SqlValidatorUtil;
 import org.apache.calcite.tools.RelBuilder;
 import org.apache.calcite.util.Bug;
 import org.apache.calcite.util.Holder;
@@ -907,7 +908,7 @@ public class HiveRelDecorrelator implements ReflectiveVisitor {
         newPos++;
       }
 
-      RelNode newProject = HiveProject.create(frame.r, Pair.left(projects), Pair.right(projects));
+      RelNode newProject = HiveProject.create(frame.r, Pair.left(projects), SqlValidatorUtil.uniquify(Pair.right(projects)));
 
       return register(rel, newProject, mapOldToNewOutputPos,
               mapCorVarToOutputPos);
