@@ -197,7 +197,7 @@ public class LlapServiceDriver {
     final FileSystem lfs = FileSystem.getLocal(conf).getRawFileSystem();
 
     final ExecutorService executor =
-        Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors() / 2,
+        Executors.newFixedThreadPool(Math.max(1, Runtime.getRuntime().availableProcessors() / 2),
             new ThreadFactoryBuilder().setNameFormat("llap-pkg-%d").build());
     final CompletionService<Void> asyncRunner = new ExecutorCompletionService<Void>(executor);
 
