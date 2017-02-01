@@ -49,7 +49,7 @@ STAGE PLANS:
                   alias: li
                   Statistics: Num rows: 100 Data size: 1600 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((l_linenumber = 1) and l_partkey is not null) (type: boolean)
+                    predicate: ((l_linenumber = 1) and l_partkey is not null and l_orderkey is not null) (type: boolean)
                     Statistics: Num rows: 17 Data size: 272 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: l_orderkey (type: int), l_partkey (type: int), l_suppkey (type: int)
@@ -69,7 +69,7 @@ STAGE PLANS:
                   alias: lineitem
                   Statistics: Num rows: 100 Data size: 9200 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: (l_shipmode = 'AIR') (type: boolean)
+                    predicate: ((l_shipmode = 'AIR') and l_orderkey is not null) (type: boolean)
                     Statistics: Num rows: 14 Data size: 1288 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: l_orderkey (type: int)
