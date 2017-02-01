@@ -7196,7 +7196,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   private void createInsertDesc(Table table, boolean overwrite) {
     Task<? extends Serializable>[] tasks = new Task[this.rootTasks.size()];
     tasks = this.rootTasks.toArray(tasks);
-    PreInsertTableDesc preInsertTableDesc = new PreInsertTableDesc(table.getTTable(), overwrite);
+    PreInsertTableDesc preInsertTableDesc = new PreInsertTableDesc(table, overwrite);
     InsertTableDesc insertTableDesc = new InsertTableDesc(table.getTTable(), overwrite);
     this.rootTasks
             .add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), preInsertTableDesc), conf));

@@ -63,6 +63,8 @@ import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.io.HdfsUtils;
+import org.apache.hadoop.hive.metastore.HiveMetaHook;
+import org.apache.hadoop.hive.metastore.HiveMetaHookV2;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.PartitionDropOptions;
 import org.apache.hadoop.hive.metastore.TableType;
@@ -582,7 +584,12 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 
   private int preInsertWork(Hive db, PreInsertTableDesc preInsertTableDesc) throws HiveException {
     try{
-      db.getMSC().preInsertTable(preInsertTableDesc.getTable(), preInsertTableDesc.isOverwrite());
+      HiveMetaHook hook = preInsertTableDesc.getTable().getStorageHandler().getMetaHook();
+      if (hook == null || !(hook instanceof HiveMetaHookV2)) {
+        return 0;
+      }
+      HiveMetaHookV2 hiveMetaHook = (HiveMetaHookV2) hook;
+      hiveMetaHook.preInsertTable(preInsertTableDesc.getTable().getTTable(), preInsertTableDesc.isOverwrite());
     } catch (MetaException e) {
       throw new HiveException(e);
     }

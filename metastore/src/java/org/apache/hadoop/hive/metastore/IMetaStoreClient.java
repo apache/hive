@@ -1518,15 +1518,6 @@ public interface IMetaStoreClient {
   void insertTable(Table table, boolean overwrite) throws MetaException;
 
   /**
-   * Performs the pre insert operation before the job starts
-   * @param table table name
-   * @param overwrite true if the insert is overwrite
-   *
-   * @throws MetaException
-   */
-  void preInsertTable(Table table, boolean overwrite) throws MetaException;
-
-  /**
    * A filter provided by the client that determines if a given notification event should be
    * returned.
    */

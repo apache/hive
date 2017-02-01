@@ -18,7 +18,7 @@
 
 package org.apache.hadoop.hive.ql.parse;
 
-import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.plan.DDLDesc;
 import org.apache.hadoop.hive.ql.plan.Explain;
 
@@ -27,9 +27,9 @@ public class PreInsertTableDesc extends DDLDesc {
   private final boolean isOverwrite;
   private final Table table;
 
-  public PreInsertTableDesc(Table table, boolean isOverwrite) {
+  public PreInsertTableDesc(org.apache.hadoop.hive.ql.metadata.Table table, boolean overwrite) {
     this.table = table;
-    this.isOverwrite = isOverwrite;
+    this.isOverwrite = overwrite;
   }
 
   public Table getTable() {
