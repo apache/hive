@@ -145,25 +145,25 @@ public class HiveSubQRemoveRelBuilder {
     }
     this.aggregateFactory =
             Util.first(context.unwrap(RelFactories.AggregateFactory.class),
-                    RelFactories.DEFAULT_AGGREGATE_FACTORY);
+                    HiveRelFactories.HIVE_AGGREGATE_FACTORY);
     this.filterFactory =
             Util.first(context.unwrap(RelFactories.FilterFactory.class),
                     HiveRelFactories.HIVE_FILTER_FACTORY);
     this.projectFactory =
             Util.first(context.unwrap(RelFactories.ProjectFactory.class),
-                    RelFactories.DEFAULT_PROJECT_FACTORY);
+                    HiveRelFactories.HIVE_PROJECT_FACTORY);
     this.sortFactory =
             Util.first(context.unwrap(RelFactories.SortFactory.class),
-                    RelFactories.DEFAULT_SORT_FACTORY);
+                    HiveRelFactories.HIVE_SORT_FACTORY);
     this.setOpFactory =
             Util.first(context.unwrap(RelFactories.SetOpFactory.class),
-                    RelFactories.DEFAULT_SET_OP_FACTORY);
+                    HiveRelFactories.HIVE_SET_OP_FACTORY);
     this.joinFactory =
             Util.first(context.unwrap(RelFactories.JoinFactory.class),
-                    RelFactories.DEFAULT_JOIN_FACTORY);
+                    HiveRelFactories.HIVE_JOIN_FACTORY);
     this.semiJoinFactory =
             Util.first(context.unwrap(RelFactories.SemiJoinFactory.class),
-                    RelFactories.DEFAULT_SEMI_JOIN_FACTORY);
+                    HiveRelFactories.HIVE_SEMI_JOIN_FACTORY);
     this.correlateFactory =
             Util.first(context.unwrap(RelFactories.CorrelateFactory.class),
                     RelFactories.DEFAULT_CORRELATE_FACTORY);

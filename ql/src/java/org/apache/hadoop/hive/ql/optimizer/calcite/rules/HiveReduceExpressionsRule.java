@@ -29,6 +29,7 @@ import org.apache.calcite.rex.RexInputRef;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.rex.RexUtil;
 import org.apache.calcite.sql.SqlKind;
+import org.apache.calcite.sql.type.SqlTypeName;
 import org.apache.calcite.tools.RelBuilder;
 import org.apache.calcite.tools.RelBuilderFactory;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelFactories;
@@ -135,6 +136,13 @@ public abstract class HiveReduceExpressionsRule extends ReduceExpressionsRule {
         if (RexUtil.isNullabilityCast(filter.getCluster().getTypeFactory(),
             newConditionExp)) {
           newConditionExp = ((RexCall) newConditionExp).getOperands().get(0);
+        }
+        // reduce might end up creating an expression with null type
+        // e.g condition(null = null) is reduced to condition (null) with null type
+        // since this is a condition which will always be boolean type we cast it to
+        // boolean type
+        if(newConditionExp.getType().getSqlTypeName() == SqlTypeName.NULL) {
+          newConditionExp = call.builder().cast(newConditionExp, SqlTypeName.BOOLEAN);
         }
         call.transformTo(call.builder().
             push(filter.getInput()).filter(newConditionExp).build());

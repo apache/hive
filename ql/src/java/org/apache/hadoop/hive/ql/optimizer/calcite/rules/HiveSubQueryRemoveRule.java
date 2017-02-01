@@ -312,14 +312,14 @@ public abstract class HiveSubQueryRemoveRule extends RelOptRule{
                 switch (logic) {
                     case TRUE:
                         if (fields.isEmpty()) {
-                            builder.project(builder.alias(builder.literal(true), "i"));
+                            builder.project(builder.alias(builder.literal(true), "i" + e.rel.getId()));
                             builder.aggregate(builder.groupKey(0));
                         } else {
                             builder.aggregate(builder.groupKey(fields));
                         }
                         break;
                     default:
-                        fields.add(builder.alias(builder.literal(true), "i"));
+                        fields.add(builder.alias(builder.literal(true), "i" + e.rel.getId()));
                         builder.project(fields);
                         builder.distinct();
                 }
@@ -359,7 +359,7 @@ public abstract class HiveSubQueryRemoveRule extends RelOptRule{
                         operands.add((builder.isNull(builder.field("ct", "c"))), builder.literal(false));
                         break;
                 }
-                operands.add(builder.isNotNull(builder.field("dt", "i")),
+                operands.add(builder.isNotNull(builder.field("dt", "i" + e.rel.getId())),
                         builder.literal(true));
                 if (!keyIsNulls.isEmpty()) {
                     //Calcite creates null literal with Null type here but because HIVE doesn't support null type
