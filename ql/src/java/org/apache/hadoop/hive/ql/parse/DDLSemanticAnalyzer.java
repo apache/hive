@@ -2976,7 +2976,9 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
         tableName = getUnescapedName((ASTNode) ast.getChild(1));
       }
     }
-    List<Map<String, String>> specs = getPartitionSpecs(getTable(tableName), ast);
+    Table tab = getTable(tableName);
+    List<Map<String, String>> specs = getPartitionSpecs(tab, ast);
+    outputs.add(new WriteEntity(tab, WriteEntity.WriteType.DDL_SHARED));
     MsckDesc checkDesc = new MsckDesc(tableName, specs, ctx.getResFile(),
         repair);
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),

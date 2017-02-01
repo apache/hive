@@ -161,9 +161,12 @@ public class Operation2Privilege {
     op2Priv.put(HiveOperationType.DESCFUNCTION, PrivRequirement.newIOPrivRequirement
 (null, null));
 
-    // meta store check command - require admin priv
+    // meta store check command - equivalent to add partition command
+    // no input objects are passed to it currently, but keeping admin priv
+    // requirement on inputs just in case some input object like file
+    // uri is added later
     op2Priv.put(HiveOperationType.MSCK, PrivRequirement.newIOPrivRequirement
-(ADMIN_PRIV_AR, null));
+(ADMIN_PRIV_AR, INS_NOGRANT_AR));
 
 
     //alter table commands require table ownership
