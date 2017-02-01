@@ -1,4 +1,6 @@
-PREHOOK: query: CREATE TABLE staging(t tinyint,
+PREHOOK: query: -- disabling map side aggregation as that can lead to different intermediate record counts
+
+CREATE TABLE staging(t tinyint,
            si smallint,
            i int,
            b bigint,
@@ -14,7 +16,9 @@ STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@staging
-POSTHOOK: query: CREATE TABLE staging(t tinyint,
+POSTHOOK: query: -- disabling map side aggregation as that can lead to different intermediate record counts
+
+CREATE TABLE staging(t tinyint,
            si smallint,
            i int,
            b bigint,
@@ -57,7 +61,6 @@ PREHOOK: query: CREATE TABLE orc_ppd_staging(t tinyint,
            c char(50),
            v varchar(50),
            da date,
-           ts timestamp,
            dec decimal(4,2),
            bin binary)
 STORED AS ORC tblproperties("orc.row.index.stride" = "1000", "orc.bloom.filter.columns"="*")
@@ -75,18 +78,17 @@ POSTHOOK: query: CREATE TABLE orc_ppd_staging(t tinyint,
            c char(50),
            v varchar(50),
            da date,
-           ts timestamp,
            dec decimal(4,2),
            bin binary)
 STORED AS ORC tblproperties("orc.row.index.stride" = "1000", "orc.bloom.filter.columns"="*")
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@orc_ppd_staging
-PREHOOK: query: insert overwrite table orc_ppd_staging select t, si, i, b, f, d, bo, s, cast(s as char(50)), cast(s as varchar(50)), cast(ts as date), ts, dec, bin from staging order by t, s
+PREHOOK: query: insert overwrite table orc_ppd_staging select t, si, i, b, f, d, bo, s, cast(s as char(50)), cast(s as varchar(50)), cast(ts as date), dec, bin from staging order by t, s
 PREHOOK: type: QUERY
 PREHOOK: Input: default@staging
 PREHOOK: Output: default@orc_ppd_staging
-POSTHOOK: query: insert overwrite table orc_ppd_staging select t, si, i, b, f, d, bo, s, cast(s as char(50)), cast(s as varchar(50)), cast(ts as date), ts, dec, bin from staging order by t, s
+POSTHOOK: query: insert overwrite table orc_ppd_staging select t, si, i, b, f, d, bo, s, cast(s as char(50)), cast(s as varchar(50)), cast(ts as date), dec, bin from staging order by t, s
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@staging
 POSTHOOK: Output: default@orc_ppd_staging
@@ -102,17 +104,16 @@ POSTHOOK: Lineage: orc_ppd_staging.i SIMPLE [(staging)staging.FieldSchema(name:i
 POSTHOOK: Lineage: orc_ppd_staging.s SIMPLE [(staging)staging.FieldSchema(name:s, type:string, comment:null), ]
 POSTHOOK: Lineage: orc_ppd_staging.si SIMPLE [(staging)staging.FieldSchema(name:si, type:smallint, comment:null), ]
 POSTHOOK: Lineage: orc_ppd_staging.t SIMPLE [(staging)staging.FieldSchema(name:t, type:tinyint, comment:null), ]
-POSTHOOK: Lineage: orc_ppd_staging.ts SIMPLE [(staging)staging.FieldSchema(name:ts, type:timestamp, comment:null), ]
 POSTHOOK: Lineage: orc_ppd_staging.v EXPRESSION [(staging)staging.FieldSchema(name:s, type:string, comment:null), ]
 PREHOOK: query: -- just to introduce a gap in min/max range for bloom filters. The dataset has contiguous values
 -- which makes it hard to test bloom filters
-insert into orc_ppd_staging select -10,-321,-65680,-4294967430,-97.94,-13.07,true,"aaa","aaa","aaa","1990-03-11","1990-03-11 10:11:58.703308",-71.54,"aaa" from staging limit 1
+insert into orc_ppd_staging select -10,-321,-65680,-4294967430,-97.94,-13.07,true,"aaa","aaa","aaa","1990-03-11",-71.54,"aaa" from staging limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@staging
 PREHOOK: Output: default@orc_ppd_staging
 POSTHOOK: query: -- just to introduce a gap in min/max range for bloom filters. The dataset has contiguous values
 -- which makes it hard to test bloom filters
-insert into orc_ppd_staging select -10,-321,-65680,-4294967430,-97.94,-13.07,true,"aaa","aaa","aaa","1990-03-11","1990-03-11 10:11:58.703308",-71.54,"aaa" from staging limit 1
+insert into orc_ppd_staging select -10,-321,-65680,-4294967430,-97.94,-13.07,true,"aaa","aaa","aaa","1990-03-11",-71.54,"aaa" from staging limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@staging
 POSTHOOK: Output: default@orc_ppd_staging
@@ -128,13 +129,12 @@ POSTHOOK: Lineage: orc_ppd_staging.i EXPRESSION []
 POSTHOOK: Lineage: orc_ppd_staging.s SIMPLE []
 POSTHOOK: Lineage: orc_ppd_staging.si EXPRESSION []
 POSTHOOK: Lineage: orc_ppd_staging.t EXPRESSION []
-POSTHOOK: Lineage: orc_ppd_staging.ts EXPRESSION []
 POSTHOOK: Lineage: orc_ppd_staging.v EXPRESSION []
-PREHOOK: query: insert into orc_ppd_staging select 127,331,65690,4294967440,107.94,23.07,true,"zzz","zzz","zzz","2023-03-11","2023-03-11 10:11:58.703308",71.54,"zzz" from staging limit 1
+PREHOOK: query: insert into orc_ppd_staging select 127,331,65690,4294967440,107.94,23.07,true,"zzz","zzz","zzz","2023-03-11",71.54,"zzz" from staging limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@staging
 PREHOOK: Output: default@orc_ppd_staging
-POSTHOOK: query: insert into orc_ppd_staging select 127,331,65690,4294967440,107.94,23.07,true,"zzz","zzz","zzz","2023-03-11","2023-03-11 10:11:58.703308",71.54,"zzz" from staging limit 1
+POSTHOOK: query: insert into orc_ppd_staging select 127,331,65690,4294967440,107.94,23.07,true,"zzz","zzz","zzz","2023-03-11",71.54,"zzz" from staging limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@staging
 POSTHOOK: Output: default@orc_ppd_staging
@@ -150,7 +150,6 @@ POSTHOOK: Lineage: orc_ppd_staging.i SIMPLE []
 POSTHOOK: Lineage: orc_ppd_staging.s SIMPLE []
 POSTHOOK: Lineage: orc_ppd_staging.si EXPRESSION []
 POSTHOOK: Lineage: orc_ppd_staging.t EXPRESSION []
-POSTHOOK: Lineage: orc_ppd_staging.ts EXPRESSION []
 POSTHOOK: Lineage: orc_ppd_staging.v EXPRESSION []
 PREHOOK: query: CREATE TABLE orc_ppd(t tinyint,
            si smallint,
@@ -163,7 +162,6 @@ PREHOOK: query: CREATE TABLE orc_ppd(t tinyint,
            c char(50),
            v varchar(50),
            da date,
-           ts timestamp,
            dec decimal(4,2),
            bin binary)
 STORED AS ORC tblproperties("orc.row.index.stride" = "1000", "orc.bloom.filter.columns"="*")
@@ -181,18 +179,17 @@ POSTHOOK: query: CREATE TABLE orc_ppd(t tinyint,
            c char(50),
            v varchar(50),
            da date,
-           ts timestamp,
            dec decimal(4,2),
            bin binary)
 STORED AS ORC tblproperties("orc.row.index.stride" = "1000", "orc.bloom.filter.columns"="*")
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@orc_ppd
-PREHOOK: query: insert overwrite table orc_ppd select t, si, i, b, f, d, bo, s, cast(s as char(50)), cast(s as varchar(50)), cast(ts as date), ts, dec, bin from orc_ppd_staging order by t, s
+PREHOOK: query: insert overwrite table orc_ppd select t, si, i, b, f, d, bo, s, cast(s as char(50)), cast(s as varchar(50)), da, dec, bin from orc_ppd_staging order by t, s
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_ppd_staging
 PREHOOK: Output: default@orc_ppd
-POSTHOOK: query: insert overwrite table orc_ppd select t, si, i, b, f, d, bo, s, cast(s as char(50)), cast(s as varchar(50)), cast(ts as date), ts, dec, bin from orc_ppd_staging order by t, s
+POSTHOOK: query: insert overwrite table orc_ppd select t, si, i, b, f, d, bo, s, cast(s as char(50)), cast(s as varchar(50)), da, dec, bin from orc_ppd_staging order by t, s
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orc_ppd_staging
 POSTHOOK: Output: default@orc_ppd
@@ -201,14 +198,13 @@ POSTHOOK: Lineage: orc_ppd.bin SIMPLE [(orc_ppd_staging)orc_ppd_staging.FieldSch
 POSTHOOK: Lineage: orc_ppd.bo SIMPLE [(orc_ppd_staging)orc_ppd_staging.FieldSchema(name:bo, type:boolean, comment:null), ]
 POSTHOOK: Lineage: orc_ppd.c EXPRESSION [(orc_ppd_staging)orc_ppd_staging.FieldSchema(name:s, type:string, comment:null), ]
 POSTHOOK: Lineage: orc_ppd.d SIMPLE [(orc_ppd_staging)orc_ppd_staging.FieldSchema(name:d, type:double, comment:null), ]
-POSTHOOK: Lineage: orc_ppd.da EXPRESSION [(orc_ppd_staging)orc_ppd_staging.FieldSchema(name:ts, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: orc_ppd.da SIMPLE [(orc_ppd_staging)orc_ppd_staging.FieldSchema(name:da, type:date, comment:null), ]
 POSTHOOK: Lineage: orc_ppd.dec SIMPLE [(orc_ppd_staging)orc_ppd_staging.FieldSchema(name:dec, type:decimal(4,2), comment:null), ]
 POSTHOOK: Lineage: orc_ppd.f SIMPLE [(orc_ppd_staging)orc_ppd_staging.FieldSchema(name:f, type:float, comment:null), ]
 POSTHOOK: Lineage: orc_ppd.i SIMPLE [(orc_ppd_staging)orc_ppd_staging.FieldSchema(name:i, type:int, comment:null), ]
 POSTHOOK: Lineage: orc_ppd.s SIMPLE [(orc_ppd_staging)orc_ppd_staging.FieldSchema(name:s, type:string, comment:null), ]
 POSTHOOK: Lineage: orc_ppd.si SIMPLE [(orc_ppd_staging)orc_ppd_staging.FieldSchema(name:si, type:smallint, comment:null), ]
 POSTHOOK: Lineage: orc_ppd.t SIMPLE [(orc_ppd_staging)orc_ppd_staging.FieldSchema(name:t, type:tinyint, comment:null), ]
-POSTHOOK: Lineage: orc_ppd.ts SIMPLE [(orc_ppd_staging)orc_ppd_staging.FieldSchema(name:ts, type:timestamp, comment:null), ]
 POSTHOOK: Lineage: orc_ppd.v EXPRESSION [(orc_ppd_staging)orc_ppd_staging.FieldSchema(name:s, type:string, comment:null), ]
 PREHOOK: query: describe formatted orc_ppd
 PREHOOK: type: DESCTABLE
@@ -229,7 +225,6 @@ s                   	string
 c                   	char(50)            	                    
 v                   	varchar(50)         	                    
 da                  	date                	                    
-ts                  	timestamp           	                    
 dec                 	decimal(4,2)        	                    
 bin                 	binary              	                    
 	 	 
@@ -245,8 +240,8 @@ Table Parameters:
 	numRows             	2100                
 	orc.bloom.filter.columns	*                   
 	orc.row.index.stride	1000                
-	rawDataSize         	1223514             
-	totalSize           	60010               
+	rawDataSize         	1139514             
+	totalSize           	57100               
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -270,7 +265,7 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_ppd
 #### A masked pattern was here ####
 Stage-1 FILE SYSTEM COUNTERS:
-   HDFS_BYTES_READ: 16711
+   HDFS_BYTES_READ: 16677
    HDFS_BYTES_WRITTEN: 104
    HDFS_READ_OPS: 5
    HDFS_LARGE_READ_OPS: 0
@@ -280,7 +275,7 @@ Stage-1 HIVE COUNTERS:
    DESERIALIZE_ERRORS: 0
    RECORDS_IN_Map_1: 2100
    RECORDS_OUT_0: 1
-   RECORDS_OUT_INTERMEDIATE_Map_1: 1
+   RECORDS_OUT_INTERMEDIATE_Map_1: 2100
 Stage-1 LLAP IO COUNTERS:
    METADATA_CACHE_MISS: 2
    NUM_DECODED_BATCHES: 1
@@ -309,7 +304,7 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_ppd
 #### A masked pattern was here ####
 Stage-1 FILE SYSTEM COUNTERS:
-   HDFS_BYTES_READ: 638
+   HDFS_BYTES_READ: 604
    HDFS_BYTES_WRITTEN: 101
    HDFS_READ_OPS: 4
    HDFS_LARGE_READ_OPS: 0
@@ -319,7 +314,7 @@ Stage-1 HIVE COUNTERS:
    DESERIALIZE_ERRORS: 0
    RECORDS_IN_Map_1: 1000
    RECORDS_OUT_0: 1
-   RECORDS_OUT_INTERMEDIATE_Map_1: 1
+   RECORDS_OUT_INTERMEDIATE_Map_1: 8
 Stage-1 LLAP IO COUNTERS:
    ALLOCATED_BYTES: 524288
    ALLOCATED_USED_BYTES: 269
@@ -346,7 +341,7 @@ Stage-1 HIVE COUNTERS:
    DESERIALIZE_ERRORS: 0
    RECORDS_IN_Map_1: 1000
    RECORDS_OUT_0: 1
-   RECORDS_OUT_INTERMEDIATE_Map_1: 1
+   RECORDS_OUT_INTERMEDIATE_Map_1: 22
 Stage-1 LLAP IO COUNTERS:
    CACHE_HIT_BYTES: 249
    CACHE_MISS_BYTES: 0
@@ -371,7 +366,7 @@ Stage-1 HIVE COUNTERS:
    DESERIALIZE_ERRORS: 0
    RECORDS_IN_Map_1: 1000
    RECORDS_OUT_0: 1
-   RECORDS_OUT_INTERMEDIATE_Map_1: 1
+   RECORDS_OUT_INTERMEDIATE_Map_1: 16
 Stage-1 LLAP IO COUNTERS:
    CACHE_HIT_BYTES: 249
    CACHE_MISS_BYTES: 0
@@ -397,7 +392,7 @@ Stage-1 HIVE COUNTERS:
    DESERIALIZE_ERRORS: 0
    RECORDS_IN_Map_1: 2000
    RECORDS_OUT_0: 1
-   RECORDS_OUT_INTERMEDIATE_Map_1: 1
+   RECORDS_OUT_INTERMEDIATE_Map_1: 18
 Stage-1 LLAP IO COUNTERS:
    CACHE_HIT_BYTES: 249
    CACHE_MISS_BYTES: 0
@@ -449,7 +444,7 @@ Stage-1 HIVE COUNTERS:
    DESERIALIZE_ERRORS: 0
    RECORDS_IN_Map_1: 1000
    RECORDS_OUT_0: 1
-   RECORDS_OUT_INTERMEDIATE_Map_1: 1
+   RECORDS_OUT_INTERMEDIATE_Map_1: 32
 Stage-1 LLAP IO COUNTERS:
    CACHE_HIT_BYTES: 249
    CACHE_MISS_BYTES: 0
@@ -474,7 +469,7 @@ Stage-1 HIVE COUNTERS:
    DESERIALIZE_ERRORS: 0
    RECORDS_IN_Map_1: 1000
    RECORDS_OUT_0: 1
-   RECORDS_OUT_INTERMEDIATE_Map_1: 1
+   RECORDS_OUT_INTERMEDIATE_Map_1: 32
 Stage-1 LLAP IO COUNTERS:
    CACHE_HIT_BYTES: 249
    CACHE_MISS_BYTES: 0
@@ -500,7 +495,7 @@ Stage-1 HIVE COUNTERS:
    DESERIALIZE_ERRORS: 0
    RECORDS_IN_Map_1: 2000
    RECORDS_OUT_0: 1
-   RECORDS_OUT_INTERMEDIATE_Map_1: 1
+   RECORDS_OUT_INTERMEDIATE_Map_1: 1697
 Stage-1 LLAP IO COUNTERS:
    CACHE_HIT_BYTES: 249
    CACHE_MISS_BYTES: 0
@@ -526,7 +521,7 @@ Stage-1 HIVE COUNTERS:
    DESERIALIZE_ERRORS: 0
    RECORDS_IN_Map_1: 1000
    RECORDS_OUT_0: 1
-   RECORDS_OUT_INTERMEDIATE_Map_1: 1
+   RECORDS_OUT_INTERMEDIATE_Map_1: 12
 Stage-1 LLAP IO COUNTERS:
    CACHE_HIT_BYTES: 249
    CACHE_MISS_BYTES: 0
@@ -552,7 +547,7 @@ Stage-1 HIVE COUNTERS:
    DESERIALIZE_ERRORS: 0
    RECORDS_IN_Map_1: 2000
    RECORDS_OUT_0: 1
-   RECORDS_OUT_INTERMEDIATE_Map_1: 1
+   RECORDS_OUT_INTERMEDIATE_Map_1: 1713
 Stage-1 LLAP IO COUNTERS:
    CACHE_HIT_BYTES: 249
    CACHE_MISS_BYTES: 0
@@ -578,7 +573,7 @@ Stage-1 HIVE COUNTERS:
    DESERIALIZE_ERRORS: 0
    RECORDS_IN_Map_1: 1000
    RECORDS_OUT_0: 1
-   RECORDS_OUT_INTERMEDIATE_Map_1: 1
+   RECORDS_OUT_INTERMEDIATE_Map_1: 6
 Stage-1 LLAP IO COUNTERS:
    CACHE_HIT_BYTES: 249
    CACHE_MISS_BYTES: 0
@@ -604,7 +599,7 @@ Stage-1 HIVE COUNTERS:
    DESERIALIZE_ERRORS: 0
    RECORDS_IN_Map_1: 1100
    RECORDS_OUT_0: 1
-   RECORDS_OUT_INTERMEDIATE_Map_1: 1
+   RECORDS_OUT_INTERMEDIATE_Map_1: 50
 Stage-1 LLAP IO COUNTERS:
    CACHE_HIT_BYTES: 249
    CACHE_MISS_BYTES: 0
@@ -630,7 +625,7 @@ Stage-1 HIVE COUNTERS:
    DESERIALIZE_ERRORS: 0
    RECORDS_IN_Map_1: 1000
    RECORDS_OUT_0: 1
-   RECORDS_OUT_INTERMEDIATE_Map_1: 1
+   RECORDS_OUT_INTERMEDIATE_Map_1: 318
 Stage-1 LLAP IO COUNTERS:
    CACHE_HIT_BYTES: 249
    CACHE_MISS_BYTES: 0
@@ -710,7 +705,7 @@ Stage-1 HIVE COUNTERS:
    DESERIALIZE_ERRORS: 0
    RECORDS_IN_Map_1: 100
    RECORDS_OUT_0: 1
-   RECORDS_OUT_INTERMEDIATE_Map_1: 1
+   RECORDS_OUT_INTERMEDIATE_Map_1: 0
 Stage-1 LLAP IO COUNTERS:
    CACHE_HIT_BYTES: 249
    CACHE_MISS_BYTES: 0
@@ -746,7 +741,7 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_ppd
 #### A masked pattern was here ####
 Stage-1 FILE SYSTEM COUNTERS:
-   HDFS_BYTES_READ: 4402
+   HDFS_BYTES_READ: 4368
    HDFS_BYTES_WRITTEN: 101
    HDFS_READ_OPS: 4
    HDFS_LARGE_READ_OPS: 0
@@ -756,7 +751,7 @@ Stage-1 HIVE COUNTERS:
    DESERIALIZE_ERRORS: 0
    RECORDS_IN_Map_1: 2100
    RECORDS_OUT_0: 1
-   RECORDS_OUT_INTERMEDIATE_Map_1: 1
+   RECORDS_OUT_INTERMEDIATE_Map_1: 2
 Stage-1 LLAP IO COUNTERS:
    ALLOCATED_BYTES: 786432
    ALLOCATED_USED_BYTES: 11299
@@ -784,7 +779,7 @@ Stage-1 HIVE COUNTERS:
    DESERIALIZE_ERRORS: 0
    RECORDS_IN_Map_1: 1100
    RECORDS_OUT_0: 1
-   RECORDS_OUT_INTERMEDIATE_Map_1: 1
+   RECORDS_OUT_INTERMEDIATE_Map_1: 6
 Stage-1 LLAP IO COUNTERS:
    CACHE_HIT_BYTES: 3980
    CACHE_MISS_BYTES: 0
@@ -809,7 +804,7 @@ Stage-1 HIVE COUNTERS:
    DESERIALIZE_ERRORS: 0
    RECORDS_IN_Map_1: 1000
    RECORDS_OUT_0: 1
-   RECORDS_OUT_INTERMEDIATE_Map_1: 1
+   RECORDS_OUT_INTERMEDIATE_Map_1: 6
 Stage-1 LLAP IO COUNTERS:
    CACHE_HIT_BYTES: 3980
    CACHE_MISS_BYTES: 0
@@ -850,7 +845,7 @@ Stage-1 HIVE COUNTERS:
    DESERIALIZE_ERRORS: 0
    RECORDS_IN_Map_1: 2100
    RECORDS_OUT_0: 1
-   RECORDS_OUT_INTERMEDIATE_Map_1: 1
+   RECORDS_OUT_INTERMEDIATE_Map_1: 2100
 Stage-1 LLAP IO COUNTERS:
    CACHE_HIT_BYTES: 3980
    CACHE_MISS_BYTES: 0
@@ -902,7 +897,7 @@ Stage-1 HIVE COUNTERS:
    DESERIALIZE_ERRORS: 0
    RECORDS_IN_Map_1: 2100
    RECORDS_OUT_0: 1
-   RECORDS_OUT_INTERMEDIATE_Map_1: 1
+   RECORDS_OUT_INTERMEDIATE_Map_1: 2
 Stage-1 LLAP IO COUNTERS:
    CACHE_HIT_BYTES: 3980
    CACHE_MISS_BYTES: 0
@@ -927,7 +922,7 @@ Stage-1 HIVE COUNTERS:
    DESERIALIZE_ERRORS: 0
    RECORDS_IN_Map_1: 2100
    RECORDS_OUT_0: 1
-   RECORDS_OUT_INTERMEDIATE_Map_1: 1
+   RECORDS_OUT_INTERMEDIATE_Map_1: 2
 Stage-1 LLAP IO COUNTERS:
    CACHE_HIT_BYTES: 3980
    CACHE_MISS_BYTES: 0
@@ -952,7 +947,7 @@ Stage-1 HIVE COUNTERS:
    DESERIALIZE_ERRORS: 0
    RECORDS_IN_Map_1: 2100
    RECORDS_OUT_0: 1
-   RECORDS_OUT_INTERMEDIATE_Map_1: 1
+   RECORDS_OUT_INTERMEDIATE_Map_1: 2
 Stage-1 LLAP IO COUNTERS:
    CACHE_HIT_BYTES: 3980
    CACHE_MISS_BYTES: 0
@@ -978,7 +973,7 @@ Stage-1 HIVE COUNTERS:
    DESERIALIZE_ERRORS: 0
    RECORDS_IN_Map_1: 2000
    RECORDS_OUT_0: 1
-   RECORDS_OUT_INTERMEDIATE_Map_1: 1
+   RECORDS_OUT_INTERMEDIATE_Map_1: 81
 Stage-1 LLAP IO COUNTERS:
    CACHE_HIT_BYTES: 3980
    CACHE_MISS_BYTES: 0
@@ -1004,7 +999,7 @@ Stage-1 HIVE COUNTERS:
    DESERIALIZE_ERRORS: 0
    RECORDS_IN_Map_1: 2000
    RECORDS_OUT_0: 1
-   RECORDS_OUT_INTERMEDIATE_Map_1: 1
+   RECORDS_OUT_INTERMEDIATE_Map_1: 74
 Stage-1 LLAP IO COUNTERS:
    CACHE_HIT_BYTES: 3980
    CACHE_MISS_BYTES: 0
@@ -1030,7 +1025,7 @@ Stage-1 HIVE COUNTERS:
    DESERIALIZE_ERRORS: 0
    RECORDS_IN_Map_1: 2000
    RECORDS_OUT_0: 1
-   RECORDS_OUT_INTERMEDIATE_Map_1: 1
+   RECORDS_OUT_INTERMEDIATE_Map_1: 12
 Stage-1 LLAP IO COUNTERS:
    CACHE_HIT_BYTES: 3980
    CACHE_MISS_BYTES: 0
@@ -1056,7 +1051,7 @@ Stage-1 HIVE COUNTERS:
    DESERIALIZE_ERRORS: 0
    RECORDS_IN_Map_1: 2000
    RECORDS_OUT_0: 1
-   RECORDS_OUT_INTERMEDIATE_Map_1: 1
+   RECORDS_OUT_INTERMEDIATE_Map_1: 13
 Stage-1 LLAP IO COUNTERS:
    CACHE_HIT_BYTES: 3980
    CACHE_MISS_BYTES: 0
@@ -1108,7 +1103,7 @@ Stage-1 HIVE COUNTERS:
    DESERIALIZE_ERRORS: 0
    RECORDS_IN_Map_1: 1100
    RECORDS_OUT_0: 1
-   RECORDS_OUT_INTERMEDIATE_Map_1: 1
+   RECORDS_OUT_INTERMEDIATE_Map_1: 7
 Stage-1 LLAP IO COUNTERS:
    CACHE_HIT_BYTES: 3980
    CACHE_MISS_BYTES: 0
@@ -1211,7 +1206,7 @@ Stage-1 HIVE COUNTERS:
    DESERIALIZE_ERRORS: 0
    RECORDS_IN_Map_1: 2100
    RECORDS_OUT_0: 1
-   RECORDS_OUT_INTERMEDIATE_Map_1: 1
+   RECORDS_OUT_INTERMEDIATE_Map_1: 2
 Stage-1 LLAP IO COUNTERS:
    CACHE_HIT_BYTES: 3980
    CACHE_MISS_BYTES: 0
@@ -1237,7 +1232,7 @@ Stage-1 HIVE COUNTERS:
    DESERIALIZE_ERRORS: 0
    RECORDS_IN_Map_1: 2100
    RECORDS_OUT_0: 1
-   RECORDS_OUT_INTERMEDIATE_Map_1: 1
+   RECORDS_OUT_INTERMEDIATE_Map_1: 6
 Stage-1 LLAP IO COUNTERS:
    CACHE_HIT_BYTES: 3980
    CACHE_MISS_BYTES: 0
@@ -1263,7 +1258,7 @@ Stage-1 HIVE COUNTERS:
    DESERIALIZE_ERRORS: 0
    RECORDS_IN_Map_1: 1000
    RECORDS_OUT_0: 1
-   RECORDS_OUT_INTERMEDIATE_Map_1: 1
+   RECORDS_OUT_INTERMEDIATE_Map_1: 2
 Stage-1 LLAP IO COUNTERS:
    CACHE_HIT_BYTES: 4229
    CACHE_MISS_BYTES: 0
@@ -1289,7 +1284,7 @@ Stage-1 HIVE COUNTERS:
    DESERIALIZE_ERRORS: 0
    RECORDS_IN_Map_1: 1100
    RECORDS_OUT_0: 1
-   RECORDS_OUT_INTERMEDIATE_Map_1: 1
+   RECORDS_OUT_INTERMEDIATE_Map_1: 2
 Stage-1 LLAP IO COUNTERS:
    CACHE_HIT_BYTES: 4229
    CACHE_MISS_BYTES: 0

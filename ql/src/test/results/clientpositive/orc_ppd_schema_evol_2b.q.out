@@ -1,4 +1,7 @@
-PREHOOK: query: create table unique_1( 
+PREHOOK: query: -- disabling map side aggregation as that can lead to different intermediate record counts
+
+
+create table unique_1( 
 i int, 
 d string, 
 s string) 
@@ -8,7 +11,10 @@ stored as textfile
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@unique_1
-POSTHOOK: query: create table unique_1( 
+POSTHOOK: query: -- disabling map side aggregation as that can lead to different intermediate record counts
+
+
+create table unique_1( 
 i int, 
 d string, 
 s string) 
