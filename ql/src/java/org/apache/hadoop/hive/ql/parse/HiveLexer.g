@@ -488,8 +488,10 @@ CharSetName
 WS  :  (' '|'\r'|'\t'|'\n') {$channel=HIDDEN;}
     ;
 
-COMMENT
-  : '--' (~('\n'|'\r'))*
-    { $channel=HIDDEN; }
-  ;
+LINE_COMMENT
+    : '--' (~('\n'|'\r'))* { $channel=HIDDEN; }
+    ;
 
+QUERY_HINT
+    : '/*' (options { greedy=false; } : QUERY_HINT|.)* '*/' { if(getText().charAt(2) != '+') { $channel=HIDDEN; } else { setText(getText().substring(3, getText().length() - 2)); } }
+    ;

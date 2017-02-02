@@ -3408,7 +3408,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
       // TODO: Handle Query Hints; currently we ignore them
       boolean selectStar = false;
       int posn = 0;
-      boolean hintPresent = (selExprList.getChild(0).getType() == HiveParser.TOK_HINTLIST);
+      boolean hintPresent = (selExprList.getChild(0).getType() == HiveParser.QUERY_HINT);
       if (hintPresent) {
         String hint = ctx.getTokenRewriteStream().toString(
             selExprList.getChild(0).getTokenStartIndex(),

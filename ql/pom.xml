@@ -761,6 +761,7 @@
           <includes>
             <include>**/HiveLexer.g</include>
             <include>**/HiveParser.g</include>
+            <include>**/HintParser.g</include>
           </includes>
         </configuration>
       </plugin>

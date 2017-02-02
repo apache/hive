@@ -1436,9 +1436,19 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         qbp.setSelExprForClause(ctx_1.dest, ast);
 
         int posn = 0;
-        if (((ASTNode) ast.getChild(0)).getToken().getType() == HiveParser.TOK_HINTLIST) {
-          qbp.setHints((ASTNode) ast.getChild(0));
-          posn++;
+        if (((ASTNode) ast.getChild(0)).getToken().getType() == HiveParser.QUERY_HINT) {
+          ParseDriver pd = new ParseDriver();
+          String queryHintStr = ast.getChild(0).getText();
+          if (LOG.isDebugEnabled()) {
+            LOG.debug("QUERY HINT: "+queryHintStr);
+          }
+          try {
+            ASTNode hintNode = pd.parseHint(queryHintStr);
+            qbp.setHints((ASTNode) hintNode);
+            posn++;
+          } catch (ParseException e) {
+            throw new SemanticException("failed to parse query hint: "+e.getMessage(), e);
+          }
         }
 
         if ((ast.getChild(posn).getChild(0).getType() == HiveParser.TOK_TRANSFORM))
@@ -3940,7 +3950,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           : selectExprs.getChildCount());
       if (selectExprs != null) {
         for (int i = 0; i < selectExprs.getChildCount(); ++i) {
-          if (((ASTNode) selectExprs.getChild(i)).getToken().getType() == HiveParser.TOK_HINTLIST) {
+          if (((ASTNode) selectExprs.getChild(i)).getToken().getType() == HiveParser.QUERY_HINT) {
             continue;
           }
           // table.column AS alias
@@ -4088,7 +4098,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     // SELECT * or SELECT TRANSFORM(*)
     boolean selectStar = false;
     int posn = 0;
-    boolean hintPresent = (selExprList.getChild(0).getType() == HiveParser.TOK_HINTLIST);
+    boolean hintPresent = (selExprList.getChild(0).getType() == HiveParser.QUERY_HINT);
     if (hintPresent) {
       posn++;
     }
@@ -8421,7 +8431,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     ASTNode hints = qb.getParseInfo().getHints();
     for (int pos = 0; pos < hints.getChildCount(); pos++) {
       ASTNode hint = (ASTNode) hints.getChild(pos);
-      if (((ASTNode) hint.getChild(0)).getToken().getType() == HiveParser.TOK_MAPJOIN) {
+      if (((ASTNode) hint.getChild(0)).getToken().getType() == HintParser.TOK_MAPJOIN) {
         // the user has specified to ignore mapjoin hint
         if (!conf.getBoolVar(HiveConf.ConfVars.HIVEIGNOREMAPJOINHINT)
             && !conf.getVar(HiveConf.ConfVars.HIVE_EXECUTION_ENGINE).equals("tez")) {
@@ -8882,7 +8892,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     for (Node hintNode : qb.getParseInfo().getHints().getChildren()) {
       ASTNode hint = (ASTNode) hintNode;
-      if (hint.getChild(0).getType() == HiveParser.TOK_STREAMTABLE) {
+      if (hint.getChild(0).getType() == HintParser.TOK_STREAMTABLE) {
         for (int i = 0; i < hint.getChild(1).getChildCount(); i++) {
           if (streamAliases == null) {
             streamAliases = new ArrayList<String>();
@@ -12288,14 +12298,14 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           isAllCol = false;
           for (int child_pos = 0; child_pos < selectNode.getChildCount(); ++child_pos) {
             ASTNode node = (ASTNode) selectNode.getChild(child_pos).getChild(0);
-            if (node.getToken().getType() == HiveParser.TOK_ALLCOLREF) {
+            if (node != null && node.getToken().getType() == HiveParser.TOK_ALLCOLREF) {
               isAllCol = true;
             }
           }
           for (int child_pos = 0; child_pos < orderbyNode.getChildCount(); ++child_pos) {
             ASTNode colNode = (ASTNode) orderbyNode.getChild(child_pos).getChild(0);
             ASTNode node = (ASTNode) colNode.getChild(0);
-            if (node.getToken().getType() == HiveParser.Number) {
+            if (node != null && node.getToken().getType() == HiveParser.Number) {
               if( isByPos ) {
                 if (!isAllCol) {
                   int pos = Integer.parseInt(node.getText());
@@ -12922,7 +12932,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     for (int i = 0; selectNode != null && i < selectNode.getChildCount(); i++) {
       ASTNode selectExpr = (ASTNode) selectNode.getChild(i);
-      //check for TOK_HINTLIST expressions on ast
+      //check for QUERY_HINT expressions on ast
       if(selectExpr.getType() != HiveParser.TOK_SELEXPR){
         continue;
       }
