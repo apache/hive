@@ -373,16 +373,6 @@ class SparkClientImpl implements SparkClient {
         argv.add("org.apache.spark.deploy.SparkSubmit");
       }
 
-      if ("kerberos".equals(hiveConf.get(HADOOP_SECURITY_AUTHENTICATION))) {
-          String principal = SecurityUtil.getServerPrincipal(hiveConf.getVar(ConfVars.HIVE_SERVER2_KERBEROS_PRINCIPAL),
-              "0.0.0.0");
-          String keyTabFile = hiveConf.getVar(ConfVars.HIVE_SERVER2_KERBEROS_KEYTAB);
-          argv.add("--principal");
-          argv.add(principal);
-          argv.add("--keytab");
-          argv.add(keyTabFile);
-      }
-
       if (master.equals("yarn-cluster")) {
         String executorCores = conf.get("spark.executor.cores");
         if (executorCores != null) {
