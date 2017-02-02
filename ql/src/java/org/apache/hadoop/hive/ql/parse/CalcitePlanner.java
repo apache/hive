@@ -2315,6 +2315,14 @@ public class CalcitePlanner extends SemanticAnalyzer {
                     subQueryAST, "Only SubQuery expressions that are top level conjuncts are allowed"));
 
           }
+          ASTNode outerQueryExpr = (ASTNode) subQueryAST.getChild(2);
+
+          if (outerQueryExpr != null && outerQueryExpr.getType() == HiveParser.TOK_SUBQUERY_EXPR ) {
+
+            throw new CalciteSubquerySemanticException(ErrorMsg.UNSUPPORTED_SUBQUERY_EXPRESSION.getMsg(
+                    outerQueryExpr, "IN/NOT IN subqueries are not allowed in LHS"));
+          }
+
 
           QBSubQuery subQuery = SubQueryUtils.buildSubQuery(qb.getId(), sqIdx, subQueryAST,
                   originalSubQueryAST, ctx);
