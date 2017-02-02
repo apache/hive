@@ -4614,9 +4614,12 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           deleteTableData(tblPath);
           // ok even if the data is not deleted
         }
-        for (MetaStoreEventListener listener : listeners) {
-          DropIndexEvent dropIndexEvent = new DropIndexEvent(index, success, this);
-          listener.onDropIndex(dropIndexEvent);
+        // Skip the event listeners if the index is NULL
+        if (index != null) {
+          for (MetaStoreEventListener listener : listeners) {
+            DropIndexEvent dropIndexEvent = new DropIndexEvent(index, success, this);
+            listener.onDropIndex(dropIndexEvent);
+          }
         }
       }
       return success;
