@@ -1832,6 +1832,11 @@ public class HiveConf extends Configuration {
         "(true), and hive.exec.dynamic.partition.mode (nonstrict).\n" +
         "The default DummyTxnManager replicates pre-Hive-0.13 behavior and provides\n" +
         "no transactions."),
+    HIVE_TXN_STRICT_LOCKING_MODE("hive.txn.strict.locking.mode", true, "In strict mode non-ACID\n" +
+        "resources use standard R/W lock semantics, e.g. INSERT will acquire exclusive lock.\n" +
+        "In nonstrict mode, for non-ACID resources, INSERT will only acquire shared lock, which\n" +
+        "allows two concurrent writes to the same partition but still lets lock manager prevent\n" +
+        "DROP TABLE etc. when the table is being written to"),
     HIVE_TXN_TIMEOUT("hive.txn.timeout", "300s", new TimeValidator(TimeUnit.SECONDS),
         "time after which transactions are declared aborted if the client has not sent a heartbeat."),
     HIVE_TXN_HEARTBEAT_THREADPOOL_SIZE("hive.txn.heartbeat.threadpool.size", 5, "The number of " +
