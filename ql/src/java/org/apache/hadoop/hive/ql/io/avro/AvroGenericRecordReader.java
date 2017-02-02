@@ -32,6 +32,7 @@ import org.apache.avro.mapred.FsInput;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
@@ -146,10 +147,10 @@ public class AvroGenericRecordReader implements
   private boolean pathIsInPartition(Path split, Path partitionPath) {
     boolean schemeless = split.toUri().getScheme() == null;
     if (schemeless) {
-      String schemelessPartitionPath = partitionPath.toUri().getPath();
-      return split.toString().startsWith(schemelessPartitionPath);
+      Path pathNoSchema = Path.getPathWithoutSchemeAndAuthority(partitionPath);
+      return FileUtils.isPathWithinSubtree(split,pathNoSchema);
     } else {
-      return split.toString().startsWith(partitionPath.toString());
+      return FileUtils.isPathWithinSubtree(split,partitionPath);
     }
   }
 

@@ -1,12 +1,8 @@
-PREHOOK: query: -- SORT_QUERY_RESULTS
-
-create table alter_partition_change_col0 (c1 string, c2 string)
+PREHOOK: query: create table alter_partition_change_col0 (c1 string, c2 string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@alter_partition_change_col0
-POSTHOOK: query: -- SORT_QUERY_RESULTS
-
-create table alter_partition_change_col0 (c1 string, c2 string)
+POSTHOOK: query: create table alter_partition_change_col0 (c1 string, c2 string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@alter_partition_change_col0
@@ -93,13 +89,11 @@ Snow	55.71	__HIVE_DEFAULT_PARTITION__	123
 Tom	-12.25	__HIVE_DEFAULT_PARTITION__	123
 Tom	19.00	__HIVE_DEFAULT_PARTITION__	123
 Tom	234.79	__HIVE_DEFAULT_PARTITION__	123
-PREHOOK: query: -- Change c2 to decimal(10,0)
-alter table alter_partition_change_col1 change c2 c2 decimal(10,0)
+PREHOOK: query: alter table alter_partition_change_col1 change c2 c2 decimal(10,0)
 PREHOOK: type: ALTERTABLE_RENAMECOL
 PREHOOK: Input: default@alter_partition_change_col1
 PREHOOK: Output: default@alter_partition_change_col1
-POSTHOOK: query: -- Change c2 to decimal(10,0)
-alter table alter_partition_change_col1 change c2 c2 decimal(10,0)
+POSTHOOK: query: alter table alter_partition_change_col1 change c2 c2 decimal(10,0)
 POSTHOOK: type: ALTERTABLE_RENAMECOL
 POSTHOOK: Input: default@alter_partition_change_col1
 POSTHOOK: Output: default@alter_partition_change_col1
@@ -161,13 +155,11 @@ Snow	56	__HIVE_DEFAULT_PARTITION__	123
 Tom	-12	__HIVE_DEFAULT_PARTITION__	123
 Tom	19	__HIVE_DEFAULT_PARTITION__	123
 Tom	235	__HIVE_DEFAULT_PARTITION__	123
-PREHOOK: query: -- Change the column type at the table level. Table-level describe shows the new type, but the existing partition does not.
-alter table alter_partition_change_col1 change c2 c2 decimal(14,4)
+PREHOOK: query: alter table alter_partition_change_col1 change c2 c2 decimal(14,4)
 PREHOOK: type: ALTERTABLE_RENAMECOL
 PREHOOK: Input: default@alter_partition_change_col1
 PREHOOK: Output: default@alter_partition_change_col1
-POSTHOOK: query: -- Change the column type at the table level. Table-level describe shows the new type, but the existing partition does not.
-alter table alter_partition_change_col1 change c2 c2 decimal(14,4)
+POSTHOOK: query: alter table alter_partition_change_col1 change c2 c2 decimal(14,4)
 POSTHOOK: type: ALTERTABLE_RENAMECOL
 POSTHOOK: Input: default@alter_partition_change_col1
 POSTHOOK: Output: default@alter_partition_change_col1
@@ -243,12 +235,10 @@ Snow	56.0000	__HIVE_DEFAULT_PARTITION__	123
 Tom	-12.0000	__HIVE_DEFAULT_PARTITION__	123
 Tom	19.0000	__HIVE_DEFAULT_PARTITION__	123
 Tom	235.0000	__HIVE_DEFAULT_PARTITION__	123
-PREHOOK: query: -- change the comment on a partition column without changing type or renaming it
-alter table alter_partition_change_col1 partition column (p1 string comment 'Changed comment for p1')
+PREHOOK: query: alter table alter_partition_change_col1 partition column (p1 string comment 'Changed comment for p1')
 PREHOOK: type: ALTERTABLE_PARTCOLTYPE
 PREHOOK: Input: default@alter_partition_change_col1
-POSTHOOK: query: -- change the comment on a partition column without changing type or renaming it
-alter table alter_partition_change_col1 partition column (p1 string comment 'Changed comment for p1')
+POSTHOOK: query: alter table alter_partition_change_col1 partition column (p1 string comment 'Changed comment for p1')
 POSTHOOK: type: ALTERTABLE_PARTCOLTYPE
 POSTHOOK: Input: default@alter_partition_change_col1
 POSTHOOK: Output: default@alter_partition_change_col1
@@ -268,13 +258,11 @@ p2                  	string              	Column p2
 	 	 
 p1                  	string              	Changed comment for p1
 p2                  	string              	Column p2           
-PREHOOK: query: -- now change the column type of the existing partition
-alter table alter_partition_change_col1 partition (p1='abc', p2='123') change c2 c2 decimal(14,4)
+PREHOOK: query: alter table alter_partition_change_col1 partition (p1='abc', p2='123') change c2 c2 decimal(14,4)
 PREHOOK: type: ALTERTABLE_RENAMECOL
 PREHOOK: Input: default@alter_partition_change_col1
 PREHOOK: Output: default@alter_partition_change_col1@p1=abc/p2=123
-POSTHOOK: query: -- now change the column type of the existing partition
-alter table alter_partition_change_col1 partition (p1='abc', p2='123') change c2 c2 decimal(14,4)
+POSTHOOK: query: alter table alter_partition_change_col1 partition (p1='abc', p2='123') change c2 c2 decimal(14,4)
 POSTHOOK: type: ALTERTABLE_RENAMECOL
 POSTHOOK: Input: default@alter_partition_change_col1
 POSTHOOK: Input: default@alter_partition_change_col1@p1=abc/p2=123
@@ -335,13 +323,11 @@ Snow	56.0000	__HIVE_DEFAULT_PARTITION__	123
 Tom	-12.0000	__HIVE_DEFAULT_PARTITION__	123
 Tom	19.0000	__HIVE_DEFAULT_PARTITION__	123
 Tom	235.0000	__HIVE_DEFAULT_PARTITION__	123
-PREHOOK: query: -- change column for default partition value
-alter table alter_partition_change_col1 partition (p1='__HIVE_DEFAULT_PARTITION__', p2='123') change c2 c2 decimal(14,4)
+PREHOOK: query: alter table alter_partition_change_col1 partition (p1='__HIVE_DEFAULT_PARTITION__', p2='123') change c2 c2 decimal(14,4)
 PREHOOK: type: ALTERTABLE_RENAMECOL
 PREHOOK: Input: default@alter_partition_change_col1
 PREHOOK: Output: default@alter_partition_change_col1@p1=__HIVE_DEFAULT_PARTITION__/p2=123
-POSTHOOK: query: -- change column for default partition value
-alter table alter_partition_change_col1 partition (p1='__HIVE_DEFAULT_PARTITION__', p2='123') change c2 c2 decimal(14,4)
+POSTHOOK: query: alter table alter_partition_change_col1 partition (p1='__HIVE_DEFAULT_PARTITION__', p2='123') change c2 c2 decimal(14,4)
 POSTHOOK: type: ALTERTABLE_RENAMECOL
 POSTHOOK: Input: default@alter_partition_change_col1
 POSTHOOK: Input: default@alter_partition_change_col1@p1=__HIVE_DEFAULT_PARTITION__/p2=123
@@ -402,13 +388,11 @@ Snow	55.7100	__HIVE_DEFAULT_PARTITION__	123
 Tom	-12.2500	__HIVE_DEFAULT_PARTITION__	123
 Tom	19.0000	__HIVE_DEFAULT_PARTITION__	123
 Tom	234.7900	__HIVE_DEFAULT_PARTITION__	123
-PREHOOK: query: -- Try out replace columns
-alter table alter_partition_change_col1 partition (p1='abc', p2='123') replace columns (c1 string)
+PREHOOK: query: alter table alter_partition_change_col1 partition (p1='abc', p2='123') replace columns (c1 string)
 PREHOOK: type: ALTERTABLE_REPLACECOLS
 PREHOOK: Input: default@alter_partition_change_col1
 PREHOOK: Output: default@alter_partition_change_col1@p1=abc/p2=123
-POSTHOOK: query: -- Try out replace columns
-alter table alter_partition_change_col1 partition (p1='abc', p2='123') replace columns (c1 string)
+POSTHOOK: query: alter table alter_partition_change_col1 partition (p1='abc', p2='123') replace columns (c1 string)
 POSTHOOK: type: ALTERTABLE_REPLACECOLS
 POSTHOOK: Input: default@alter_partition_change_col1
 POSTHOOK: Input: default@alter_partition_change_col1@p1=abc/p2=123
@@ -547,13 +531,11 @@ Snow	__HIVE_DEFAULT_PARTITION__	123
 Tom	__HIVE_DEFAULT_PARTITION__	123
 Tom	__HIVE_DEFAULT_PARTITION__	123
 Tom	__HIVE_DEFAULT_PARTITION__	123
-PREHOOK: query: -- Try add columns
-alter table alter_partition_change_col1 add columns (c2 decimal(14,4))
+PREHOOK: query: alter table alter_partition_change_col1 add columns (c2 decimal(14,4))
 PREHOOK: type: ALTERTABLE_ADDCOLS
 PREHOOK: Input: default@alter_partition_change_col1
 PREHOOK: Output: default@alter_partition_change_col1
-POSTHOOK: query: -- Try add columns
-alter table alter_partition_change_col1 add columns (c2 decimal(14,4))
+POSTHOOK: query: alter table alter_partition_change_col1 add columns (c2 decimal(14,4))
 POSTHOOK: type: ALTERTABLE_ADDCOLS
 POSTHOOK: Input: default@alter_partition_change_col1
 POSTHOOK: Output: default@alter_partition_change_col1
@@ -693,14 +675,12 @@ Snow	55.7100	__HIVE_DEFAULT_PARTITION__	123
 Tom	-12.2500	__HIVE_DEFAULT_PARTITION__	123
 Tom	19.0000	__HIVE_DEFAULT_PARTITION__	123
 Tom	234.7900	__HIVE_DEFAULT_PARTITION__	123
-PREHOOK: query: -- Try changing column for all partitions at once
-alter table alter_partition_change_col1 partition (p1, p2='123') change column c2 c2 decimal(10,0)
+PREHOOK: query: alter table alter_partition_change_col1 partition (p1, p2='123') change column c2 c2 decimal(10,0)
 PREHOOK: type: ALTERTABLE_RENAMECOL
 PREHOOK: Input: default@alter_partition_change_col1
 PREHOOK: Output: default@alter_partition_change_col1@p1=__HIVE_DEFAULT_PARTITION__/p2=123
 PREHOOK: Output: default@alter_partition_change_col1@p1=abc/p2=123
-POSTHOOK: query: -- Try changing column for all partitions at once
-alter table alter_partition_change_col1 partition (p1, p2='123') change column c2 c2 decimal(10,0)
+POSTHOOK: query: alter table alter_partition_change_col1 partition (p1, p2='123') change column c2 c2 decimal(10,0)
 POSTHOOK: type: ALTERTABLE_RENAMECOL
 POSTHOOK: Input: default@alter_partition_change_col1
 POSTHOOK: Input: default@alter_partition_change_col1@p1=__HIVE_DEFAULT_PARTITION__/p2=123

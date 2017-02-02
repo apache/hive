@@ -20,9 +20,11 @@ argument 2 is the password
 argument 3 is an SQL query to be used in the PreparedStatement
 argument (4-n) The remaining arguments must be primitive and are passed to the PreparedStatement object
 
+Function class:org.apache.hadoop.hive.contrib.genericudf.example.GenericUDFDBOutput
+Function type:TEMPORARY
 PREHOOK: query: EXPLAIN FROM src
 
-SELECT dboutput ( 'jdbc:derby:../build/test_dboutput_db;create=true','','',
+SELECT dboutput ( 'jdbc:derby:../build/test_dboutput_db\;create=true','','',
 'CREATE TABLE app_info ( kkey VARCHAR(255) NOT NULL, vvalue VARCHAR(255) NOT NULL, UNIQUE(kkey))' ),
 
 dboutput('jdbc:derby:../build/test_dboutput_db','','',
@@ -35,7 +37,7 @@ limit 1
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN FROM src
 
-SELECT dboutput ( 'jdbc:derby:../build/test_dboutput_db;create=true','','',
+SELECT dboutput ( 'jdbc:derby:../build/test_dboutput_db\;create=true','','',
 'CREATE TABLE app_info ( kkey VARCHAR(255) NOT NULL, vvalue VARCHAR(255) NOT NULL, UNIQUE(kkey))' ),
 
 dboutput('jdbc:derby:../build/test_dboutput_db','','',
@@ -80,7 +82,7 @@ STAGE PLANS:
 
 PREHOOK: query: FROM src 
 
-SELECT dboutput ( 'jdbc:derby:../build/test_dboutput_db;create=true','','',
+SELECT dboutput ( 'jdbc:derby:../build/test_dboutput_db\;create=true','','',
 'CREATE TABLE app_info ( kkey INTEGER NOT NULL, vvalue VARCHAR(255) NOT NULL, UNIQUE(kkey))' ),
 
 dboutput('jdbc:derby:../build/test_dboutput_db','','',
@@ -95,7 +97,7 @@ PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: FROM src 
 
-SELECT dboutput ( 'jdbc:derby:../build/test_dboutput_db;create=true','','',
+SELECT dboutput ( 'jdbc:derby:../build/test_dboutput_db\;create=true','','',
 'CREATE TABLE app_info ( kkey INTEGER NOT NULL, vvalue VARCHAR(255) NOT NULL, UNIQUE(kkey))' ),
 
 dboutput('jdbc:derby:../build/test_dboutput_db','','',

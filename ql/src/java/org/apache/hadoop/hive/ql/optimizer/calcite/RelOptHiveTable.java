@@ -56,6 +56,8 @@ import org.apache.hadoop.hive.ql.parse.PrunedPartitionList;
 import org.apache.hadoop.hive.ql.plan.ColStatistics;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.Statistics;
+import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
 import org.apache.hadoop.hive.ql.stats.StatsUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -391,6 +393,11 @@ public class RelOptHiveTable extends RelOptAbstractTable {
       noColsMissingStats.getAndAdd(colNamesFailedStats.size());
       if (allowNullColumnForMissingStats) {
         LOG.warn(logMsg);
+        HiveConf conf = SessionState.getSessionConf();
+        if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_CBO_SHOW_WARNINGS)) {
+          LogHelper console = SessionState.getConsole();
+          console.printInfoNoLog(logMsg);
+        }
       } else {
         LOG.error(logMsg);
         throw new RuntimeException(logMsg);
@@ -481,4 +488,18 @@ public class RelOptHiveTable extends RelOptAbstractTable {
   public Map<Integer, ColumnInfo> getNonPartColInfoMap() {
     return hiveNonPartitionColsMap;
   }
+
+  @Override
+  public boolean equals(Object obj) {
+    return obj instanceof RelOptHiveTable
+        && this.rowType.equals(((RelOptHiveTable) obj).getRowType())
+        && this.getHiveTableMD().equals(((RelOptHiveTable) obj).getHiveTableMD());
+  }
+
+  @Override
+  public int hashCode() {
+    return (this.getHiveTableMD() == null)
+        ? super.hashCode() : this.getHiveTableMD().hashCode();
+  }
+
 }

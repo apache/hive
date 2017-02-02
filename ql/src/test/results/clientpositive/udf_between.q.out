@@ -8,6 +8,8 @@ PREHOOK: type: DESCFUNCTION
 POSTHOOK: query: describe function extended between
 POSTHOOK: type: DESCFUNCTION
 between a [NOT] BETWEEN b AND c - evaluate if a is [not] in between b and c
+Function class:org.apache.hadoop.hive.ql.udf.generic.GenericUDFBetween
+Function type:BUILTIN
 PREHOOK: query: explain SELECT * FROM src where key + 100 between (150 + -50) AND (150 + 50) LIMIT 20
 PREHOOK: type: QUERY
 POSTHOOK: query: explain SELECT * FROM src where key + 100 between (150 + -50) AND (150 + 50) LIMIT 20

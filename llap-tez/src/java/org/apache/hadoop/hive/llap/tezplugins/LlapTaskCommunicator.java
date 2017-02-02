@@ -14,6 +14,10 @@
 
 package org.apache.hadoop.hive.llap.tezplugins;
 
+import org.apache.hadoop.io.Writable;
+
+import org.apache.hadoop.hive.llap.protocol.LlapTaskUmbilicalProtocol.TezAttemptArray;
+
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.HashSet;
@@ -310,8 +314,7 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
 
     // Have to register this up front right now. Otherwise, it's possible for the task to start
     // sending out status/DONE/KILLED/FAILED messages before TAImpl knows how to handle them.
-    getContext()
-        .taskStartedRemotely(taskSpec.getTaskAttemptID(), containerId);
+    getContext().taskStartedRemotely(taskSpec.getTaskAttemptID(), containerId);
     communicator.sendSubmitWork(requestProto, host, port,
         new LlapProtocolClientProxy.ExecuteRequestCallback<SubmitWorkResponseProto>() {
           @Override
@@ -330,6 +333,10 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
               // TODO: Provide support for reporting errors
               // This should never happen as server always returns a valid status on success
               throw new RuntimeException("SubmissionState in response is expected!");
+            }
+            if (response.hasUniqueNodeId()) {
+              entityTracker.registerTaskSubmittedToNode(
+                  taskSpec.getTaskAttemptID(), response.getUniqueNodeId());
             }
             LOG.info("Successfully launched task: " + taskSpec.getTaskAttemptID());
           }
@@ -562,17 +569,41 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
 
   private final AtomicLong nodeNotFoundLogTime = new AtomicLong(0);
 
-  void nodePinged(String hostname, int port) {
+  void nodePinged(String hostname, String uniqueId, int port, TezAttemptArray tasks) {
+    // TODO: do we ever need the port? we could just do away with nodeId altogether.
     LlapNodeId nodeId = LlapNodeId.getInstance(hostname, port);
     registerPingingNode(nodeId);
     BiMap<ContainerId, TezTaskAttemptID> biMap =
         entityTracker.getContainerAttemptMapForNode(nodeId);
     if (biMap != null) {
+      HashSet<TezTaskAttemptID> attempts = new HashSet<>();
+      for (Writable w : tasks.get()) {
+        attempts.add((TezTaskAttemptID)w);
+      }
+      String error = "";
       synchronized (biMap) {
         for (Map.Entry<ContainerId, TezTaskAttemptID> entry : biMap.entrySet()) {
-          getContext().taskAlive(entry.getValue());
-          getContext().containerAlive(entry.getKey());
+          // TODO: this is a stopgap fix. We really need to change all mappings by unique node ID,
+          //       or at least (in this case) track the latest unique ID for LlapNode and retry all
+          //       older-node tasks proactively. For now let the heartbeats fail them.
+          TezTaskAttemptID attemptId = entry.getValue();
+          String taskNodeId = entityTracker.getUniqueNodeId(attemptId);
+          // Unique ID is registered based on Submit response. Theoretically, we could get a ping
+          // when the task is valid but we haven't stored the unique ID yet, so taskNodeId is null.
+          // However, the next heartbeat(s) should get the value eventually and mark task as alive.
+          // Also, we prefer a missed heartbeat over a stuck query in case of discrepancy in ET.
+          if (taskNodeId != null && taskNodeId.equals(uniqueId)) {
+            if (attempts.contains(attemptId)) {
+              getContext().taskAlive(entry.getValue());
+            } else {
+              error += (attemptId + ", ");
+            }
+            getContext().containerAlive(entry.getKey());
+          }
         }
+      }
+      if (!error.isEmpty()) {
+        LOG.info("The tasks we expected to be on the node are not there: " + error);
       }
     } else {
       long currentTs = TimeUnit.MILLISECONDS.convert(System.nanoTime(), TimeUnit.NANOSECONDS);
@@ -664,10 +695,11 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
     }
 
     @Override
-    public void nodeHeartbeat(Text hostname, int port) throws IOException {
-      nodePinged(hostname.toString(), port);
+    public void nodeHeartbeat(
+        Text hostname, Text uniqueId, int port, TezAttemptArray aw) throws IOException {
+      nodePinged(hostname.toString(), uniqueId.toString(), port, aw);
       if (LOG.isDebugEnabled()) {
-        LOG.debug("Received heartbeat from [" + hostname + ":" + port +"]");
+        LOG.debug("Received heartbeat from [" + hostname + ":" + port +" (" + uniqueId +")]");
       }
     }
 
@@ -697,12 +729,17 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
    */
   @VisibleForTesting
   static final class EntityTracker {
+    // TODO: need the description of how these maps are kept consistent.
     @VisibleForTesting
     final ConcurrentMap<TezTaskAttemptID, LlapNodeId> attemptToNodeMap = new ConcurrentHashMap<>();
     @VisibleForTesting
     final ConcurrentMap<ContainerId, LlapNodeId> containerToNodeMap = new ConcurrentHashMap<>();
     @VisibleForTesting
     final ConcurrentMap<LlapNodeId, BiMap<ContainerId, TezTaskAttemptID>> nodeMap = new ConcurrentHashMap<>();
+    // TODO: we currently put task info everywhere before we submit it and know the "real" node id.
+    //       Therefore, we are going to store this separately. Ideally, we should roll uniqueness
+    //       into LlapNodeId. We get node info from registry; that should (or can) include it.
+    private final ConcurrentMap<TezTaskAttemptID, String> uniqueNodeMap = new ConcurrentHashMap<>();
 
     void registerTaskAttempt(ContainerId containerId, TezTaskAttemptID taskAttemptId, String host, int port) {
       if (LOG.isDebugEnabled()) {
@@ -726,11 +763,34 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
       nodeMap.putIfAbsent(llapNodeId, usedInstance);
     }
 
+    public String getUniqueNodeId(TezTaskAttemptID attemptId) {
+      return uniqueNodeMap.get(attemptId);
+    }
+
+    public void registerTaskSubmittedToNode(
+        TezTaskAttemptID taskAttemptID, String uniqueNodeId) {
+      synchronized (attemptToNodeMap) {
+        if (attemptToNodeMap.containsKey(taskAttemptID)) {
+          // Register only if the attempt is known. In case an unregister call
+          // came in before the register call.
+          String prev = uniqueNodeMap.putIfAbsent(taskAttemptID, uniqueNodeId);
+          if (prev != null) {
+            LOG.warn("Replaced the unique node mapping for task from " + prev +
+                " to " + uniqueNodeId);
+          }
+        }
+      }
+    }
+
     void unregisterTaskAttempt(TezTaskAttemptID attemptId) {
-      LlapNodeId llapNodeId = attemptToNodeMap.remove(attemptId);
-      if (llapNodeId == null) {
-        // Possible since either container / task can be unregistered.
-        return;
+      uniqueNodeMap.remove(attemptId);
+      LlapNodeId llapNodeId;
+      synchronized (attemptToNodeMap) {
+        llapNodeId = attemptToNodeMap.remove(attemptId);
+        if (llapNodeId == null) {
+          // Possible since either container / task can be unregistered.
+          return;
+        }
       }
 
       BiMap<ContainerId, TezTaskAttemptID> bMap = nodeMap.get(llapNodeId);
@@ -820,6 +880,7 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
       // Remove the container mapping
       if (matched != null) {
         attemptToNodeMap.remove(matched);
+        uniqueNodeMap.remove(matched);
       }
     }
 
@@ -834,8 +895,7 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
      * @return
      */
     BiMap<ContainerId, TezTaskAttemptID> getContainerAttemptMapForNode(LlapNodeId llapNodeId) {
-      BiMap<ContainerId, TezTaskAttemptID> biMap = nodeMap.get(llapNodeId);
-      return biMap;
+      return nodeMap.get(llapNodeId);
     }
 
   }

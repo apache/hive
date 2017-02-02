@@ -1,18 +1,8 @@
-PREHOOK: query: -- SORT_QUERY_RESULTS
-
--- union case: both subqueries are map-reduce jobs on same input, followed by filesink
-
-
-create table tmptable(key string, value int)
+PREHOOK: query: create table tmptable(key string, value int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@tmptable
-POSTHOOK: query: -- SORT_QUERY_RESULTS
-
--- union case: both subqueries are map-reduce jobs on same input, followed by filesink
-
-
-create table tmptable(key string, value int)
+POSTHOOK: query: create table tmptable(key string, value int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tmptable
@@ -39,8 +29,8 @@ STAGE PLANS:
     Tez
 #### A masked pattern was here ####
       Edges:
-        Reducer 2 <- Map 1 (SIMPLE_EDGE), Union 3 (CONTAINS)
-        Reducer 5 <- Map 4 (SIMPLE_EDGE), Union 3 (CONTAINS)
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE), Union 3 (CONTAINS)
+        Reducer 5 <- Map 4 (CUSTOM_SIMPLE_EDGE), Union 3 (CONTAINS)
 #### A masked pattern was here ####
       Vertices:
         Map 1 

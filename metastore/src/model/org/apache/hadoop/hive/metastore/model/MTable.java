@@ -34,6 +34,7 @@ public class MTable {
   private Map<String, String> parameters;
   private String viewOriginalText;
   private String viewExpandedText;
+  private boolean rewriteEnabled;
   private String tableType;
   private long mmNextWriteId;
   private long mmWatermarkWriteId;
@@ -57,7 +58,7 @@ public class MTable {
   public MTable(String tableName, MDatabase database, MStorageDescriptor sd, String owner,
       int createTime, int lastAccessTime, int retention, List<MFieldSchema> partitionKeys,
       Map<String, String> parameters,
-      String viewOriginalText, String viewExpandedText, String tableType, long mmNextWriteId,
+      String viewOriginalText, String viewExpandedText, boolean rewriteEnabled, String tableType, long mmNextWriteId,
       long mmWatermarkWriteId) {
     this.tableName = tableName;
     this.database = database;
@@ -70,6 +71,7 @@ public class MTable {
     this.parameters = parameters;
     this.viewOriginalText = viewOriginalText;
     this.viewExpandedText = viewExpandedText;
+    this.rewriteEnabled = rewriteEnabled;
     this.tableType = tableType;
     this.mmWatermarkWriteId = mmWatermarkWriteId;
     this.mmNextWriteId = mmNextWriteId;
@@ -157,6 +159,20 @@ public class MTable {
    */
   public void setViewExpandedText(String viewExpandedText) {
     this.viewExpandedText = viewExpandedText;
+  }
+
+  /**
+   * @return whether the view can be used for rewriting queries
+   */
+  public boolean isRewriteEnabled() {
+    return rewriteEnabled;
+  }
+
+  /**
+   * @param rewriteEnabled whether the view can be used for rewriting queries
+   */
+  public void setRewriteEnabled(boolean rewriteEnabled) {
+    this.rewriteEnabled = rewriteEnabled;
   }
 
   /**

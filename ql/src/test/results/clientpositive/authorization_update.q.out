@@ -1,12 +1,8 @@
-PREHOOK: query: -- current user has been set (comment line before the set cmd is resulting in parse error!!)
-
-CREATE TABLE t_auth_up(i int, j int) clustered by (i) into 2 buckets stored as orc TBLPROPERTIES ('transactional'='true')
+PREHOOK: query: CREATE TABLE t_auth_up(i int, j int) clustered by (i) into 2 buckets stored as orc TBLPROPERTIES ('transactional'='true')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@t_auth_up
-POSTHOOK: query: -- current user has been set (comment line before the set cmd is resulting in parse error!!)
-
-CREATE TABLE t_auth_up(i int, j int) clustered by (i) into 2 buckets stored as orc TBLPROPERTIES ('transactional'='true')
+POSTHOOK: query: CREATE TABLE t_auth_up(i int, j int) clustered by (i) into 2 buckets stored as orc TBLPROPERTIES ('transactional'='true')
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t_auth_up
@@ -24,12 +20,10 @@ PREHOOK: Output: default@t_select
 POSTHOOK: query: GRANT ALL ON TABLE t_select TO ROLE public
 POSTHOOK: type: GRANT_PRIVILEGE
 POSTHOOK: Output: default@t_select
-PREHOOK: query: -- grant update privilege to another user
-GRANT UPDATE ON t_auth_up TO USER userWIns
+PREHOOK: query: GRANT UPDATE ON t_auth_up TO USER userWIns
 PREHOOK: type: GRANT_PRIVILEGE
 PREHOOK: Output: default@t_auth_up
-POSTHOOK: query: -- grant update privilege to another user
-GRANT UPDATE ON t_auth_up TO USER userWIns
+POSTHOOK: query: GRANT UPDATE ON t_auth_up TO USER userWIns
 POSTHOOK: type: GRANT_PRIVILEGE
 POSTHOOK: Output: default@t_auth_up
 PREHOOK: query: GRANT SELECT ON t_auth_up TO USER userWIns

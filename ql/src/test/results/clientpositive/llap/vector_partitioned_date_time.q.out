@@ -1,10 +1,4 @@
-PREHOOK: query: -- Exclude test on Windows due to space character being escaped in Hive paths on Windows.
--- EXCLUDE_OS_WINDOWS
-
--- Check if vectorization code is handling partitioning on DATE and the other data types.
-
-
-CREATE TABLE flights_tiny (
+PREHOOK: query: CREATE TABLE flights_tiny (
   origin_city_name STRING,
   dest_city_name STRING,
   fl_date DATE,
@@ -14,13 +8,7 @@ CREATE TABLE flights_tiny (
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@flights_tiny
-POSTHOOK: query: -- Exclude test on Windows due to space character being escaped in Hive paths on Windows.
--- EXCLUDE_OS_WINDOWS
-
--- Check if vectorization code is handling partitioning on DATE and the other data types.
-
-
-CREATE TABLE flights_tiny (
+POSTHOOK: query: CREATE TABLE flights_tiny (
   origin_city_name STRING,
   dest_city_name STRING,
   fl_date DATE,

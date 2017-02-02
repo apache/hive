@@ -20,19 +20,15 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@testhbaseb
 PREHOOK: query: insert into table testhbaseb values(1, 'hello')
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__1
 PREHOOK: Output: default@testhbaseb
 POSTHOOK: query: insert into table testhbaseb values(1, 'hello')
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__1
 POSTHOOK: Output: default@testhbaseb
 PREHOOK: query: insert into table testhbaseb values(2, 'hi')
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__2
 PREHOOK: Output: default@testhbaseb
 POSTHOOK: query: insert into table testhbaseb values(2, 'hi')
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__2
 POSTHOOK: Output: default@testhbaseb
 PREHOOK: query: select * from testhbaseb
 PREHOOK: type: QUERY

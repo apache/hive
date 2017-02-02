@@ -24,7 +24,6 @@ import java.util.Set;
 
 import org.apache.calcite.plan.RelOptCluster;
 import org.apache.calcite.plan.RelOptCost;
-import org.apache.calcite.plan.RelOptPlanner;
 import org.apache.calcite.plan.RelTraitSet;
 import org.apache.calcite.rel.InvalidRelException;
 import org.apache.calcite.rel.RelCollation;
@@ -35,7 +34,7 @@ import org.apache.calcite.rel.RelWriter;
 import org.apache.calcite.rel.core.Join;
 import org.apache.calcite.rel.core.JoinRelType;
 import org.apache.calcite.rel.metadata.RelMetadataQuery;
-import org.apache.calcite.rel.type.RelDataType;
+import org.apache.calcite.rel.RelShuttle;
 import org.apache.calcite.rel.type.RelDataTypeField;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.util.ImmutableBitSet;
@@ -44,6 +43,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil.JoinPredicateInfo;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelOptUtil;
+import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelShuttle;
 import org.apache.hadoop.hive.ql.optimizer.calcite.TraitsUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.cost.HiveCostModel.JoinAlgorithm;
 import org.apache.hadoop.hive.ql.optimizer.calcite.cost.HiveDefaultCostModel.DefaultJoinAlgorithm;
@@ -58,7 +58,6 @@ public class HiveJoin extends Join implements HiveRelNode {
     NONE, LEFT_RELATION, RIGHT_RELATION
   }
 
-  private final boolean leftSemiJoin;
   private final RexNode joinFilter;
   private final JoinPredicateInfo joinPredInfo;
   private JoinAlgorithm joinAlgorithm;
@@ -66,11 +65,11 @@ public class HiveJoin extends Join implements HiveRelNode {
 
 
   public static HiveJoin getJoin(RelOptCluster cluster, RelNode left, RelNode right,
-      RexNode condition, JoinRelType joinType, boolean leftSemiJoin) {
+      RexNode condition, JoinRelType joinType) {
     try {
       Set<String> variablesStopped = Collections.emptySet();
       HiveJoin join = new HiveJoin(cluster, null, left, right, condition, joinType, variablesStopped,
-              DefaultJoinAlgorithm.INSTANCE, leftSemiJoin);
+              DefaultJoinAlgorithm.INSTANCE);
       return join;
     } catch (InvalidRelException | CalciteSemanticException e) {
       throw new RuntimeException(e);
@@ -79,7 +78,7 @@ public class HiveJoin extends Join implements HiveRelNode {
 
   protected HiveJoin(RelOptCluster cluster, RelTraitSet traits, RelNode left, RelNode right,
       RexNode condition, JoinRelType joinType, Set<String> variablesStopped,
-      JoinAlgorithm joinAlgo, boolean leftSemiJoin) throws InvalidRelException, CalciteSemanticException {
+      JoinAlgorithm joinAlgo) throws InvalidRelException, CalciteSemanticException {
     super(cluster, TraitsUtil.getDefaultTraitSet(cluster), left, right, condition, joinType,
         variablesStopped);
     final List<RelDataTypeField> systemFieldList = ImmutableList.of();
@@ -92,7 +91,6 @@ public class HiveJoin extends Join implements HiveRelNode {
             this.getCondition(), joinKeyExprs, filterNulls, null);
     this.joinPredInfo = HiveCalciteUtil.JoinPredicateInfo.constructJoinPredicateInfo(this);
     this.joinAlgorithm = joinAlgo;
-    this.leftSemiJoin = leftSemiJoin;
   }
 
   @Override
@@ -105,7 +103,7 @@ public class HiveJoin extends Join implements HiveRelNode {
     try {
       Set<String> variablesStopped = Collections.emptySet();
       HiveJoin join = new HiveJoin(getCluster(), traitSet, left, right, conditionExpr, joinType,
-          variablesStopped, joinAlgorithm, leftSemiJoin);
+          variablesStopped, joinAlgorithm);
       // If available, copy state to registry for optimization rules
       HiveRulesRegistry registry = join.getCluster().getPlanner().getContext().unwrap(HiveRulesRegistry.class);
       if (registry != null) {
@@ -217,18 +215,6 @@ public class HiveJoin extends Join implements HiveRelNode {
     this.joinCost = joinCost;
   }
 
-  public boolean isLeftSemiJoin() {
-    return leftSemiJoin;
-  }
-
-  /**
-   * Model cost of join as size of Inputs.
-   */
-  @Override
-  public RelOptCost computeSelfCost(RelOptPlanner planner, RelMetadataQuery mq) {
-    return mq.getNonCumulativeCost(this);
-  }
-
   @Override
   public RelWriter explainTerms(RelWriter pw) {
     return super.explainTerms(pw)
@@ -238,17 +224,11 @@ public class HiveJoin extends Join implements HiveRelNode {
                 "not available" : joinCost);
   }
 
-  /**
-   * @return returns rowtype representing only the left join input
-   */
-  @Override
-  public RelDataType deriveRowType() {
-    if (leftSemiJoin) {
-      return deriveJoinRowType(left.getRowType(), null, JoinRelType.INNER,
-          getCluster().getTypeFactory(), null,
-          Collections.<RelDataTypeField> emptyList());
+  //required for HiveRelDecorrelator
+  public RelNode accept(RelShuttle shuttle) {
+    if (shuttle instanceof HiveRelShuttle) {
+      return ((HiveRelShuttle)shuttle).visit(this);
     }
-    return super.deriveRowType();
+    return shuttle.visit(this);
   }
-
 }

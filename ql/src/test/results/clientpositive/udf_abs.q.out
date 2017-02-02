@@ -13,6 +13,8 @@ Example:
   0
   > SELECT abs(-5) FROM src LIMIT 1;
   5
+Function class:org.apache.hadoop.hive.ql.udf.generic.GenericUDFAbs
+Function type:BUILTIN
 PREHOOK: query: EXPLAIN SELECT
   abs(0),
   abs(-1),

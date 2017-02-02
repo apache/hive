@@ -12,6 +12,8 @@ POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@v
+POSTHOOK: Lineage: v._c1 SIMPLE []
+POSTHOOK: Lineage: v.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 PREHOOK: query: desc formatted v
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@v
@@ -43,6 +45,7 @@ Sort Columns:       	[]
 # View Information	 	 
 View Original Text: 	select key, '12' from src	 
 View Expanded Text: 	select `src`.`key`, '12' from `default`.`src`	 
+View Rewrite Enabled:	No                  	 
 PREHOOK: query: select * from v order by `_c1` limit 5
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
@@ -76,6 +79,8 @@ POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@v
+POSTHOOK: Lineage: v._c1 SIMPLE []
+POSTHOOK: Lineage: v.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 PREHOOK: query: desc formatted v
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@v
@@ -107,6 +112,7 @@ Sort Columns:       	[]
 # View Information	 	 
 View Original Text: 	select key as _c1, '12' from src	 
 View Expanded Text: 	select `src`.`key` as `_c1`, '12' from `default`.`src`	 
+View Rewrite Enabled:	No                  	 
 PREHOOK: query: select * from v order by `_c1` limit 5
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
@@ -140,6 +146,9 @@ POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@v
+POSTHOOK: Lineage: v._c2 SIMPLE []
+POSTHOOK: Lineage: v.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: v.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: desc formatted v
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@v
@@ -172,6 +181,7 @@ Sort Columns:       	[]
 # View Information	 	 
 View Original Text: 	select *, '12' from src	 
 View Expanded Text: 	select `src`.`key`, `src`.`value`, '12' from `default`.`src`	 
+View Rewrite Enabled:	No                  	 
 PREHOOK: query: select * from v order by `_c2` limit 5
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
@@ -205,6 +215,9 @@ POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@v
+POSTHOOK: Lineage: v._c121 SIMPLE []
+POSTHOOK: Lineage: v.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: v.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: desc formatted v
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@v
@@ -237,6 +250,7 @@ Sort Columns:       	[]
 # View Information	 	 
 View Original Text: 	select *, '12' as _c121 from src	 
 View Expanded Text: 	select `src`.`key`, `src`.`value`, '12' as `_c121` from `default`.`src`	 
+View Rewrite Enabled:	No                  	 
 PREHOOK: query: select * from v order by `_c121` limit 5
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
@@ -270,6 +284,8 @@ POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@v
+POSTHOOK: Lineage: v._c1 EXPRESSION [(src)src.null, ]
+POSTHOOK: Lineage: v.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 PREHOOK: query: desc formatted v
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@v
@@ -301,6 +317,7 @@ Sort Columns:       	[]
 # View Information	 	 
 View Original Text: 	select key, count(*) from src group by key	 
 View Expanded Text: 	select `src`.`key`, count(*) from `default`.`src` group by `src`.`key`	 
+View Rewrite Enabled:	No                  	 
 PREHOOK: query: select * from v order by `_c1` limit 5
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
@@ -372,6 +389,13 @@ POSTHOOK: Input: default@a
 POSTHOOK: Input: default@b
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@v
+POSTHOOK: Lineage: v._c0 SIMPLE []
+POSTHOOK: Lineage: v._c3 SIMPLE []
+POSTHOOK: Lineage: v._c6 SIMPLE []
+POSTHOOK: Lineage: v.ca SIMPLE [(a)a.FieldSchema(name:ca, type:string, comment:null), ]
+POSTHOOK: Lineage: v.caa SIMPLE [(a)a.FieldSchema(name:caa, type:string, comment:null), ]
+POSTHOOK: Lineage: v.cb SIMPLE [(b)b.FieldSchema(name:cb, type:string, comment:null), ]
+POSTHOOK: Lineage: v.cbb SIMPLE [(b)b.FieldSchema(name:cbb, type:string, comment:null), ]
 PREHOOK: query: desc formatted v
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@v
@@ -408,6 +432,7 @@ Sort Columns:       	[]
 # View Information	 	 
 View Original Text: 	select '010', a.*, 121, b.*, 234 from a join b on a.ca = b.cb	 
 View Expanded Text: 	select '010', `a`.`ca`, `a`.`caa`, 121, `b`.`cb`, `b`.`cbb`, 234 from `default`.`a` join `default`.`b` on `a`.`ca` = `b`.`cb`	 
+View Rewrite Enabled:	No                  	 
 PREHOOK: query: select * from v order by `_c3` limit 5
 PREHOOK: type: QUERY
 PREHOOK: Input: default@a

@@ -23,6 +23,8 @@ Syntax not supported that's worth noticing:
   [,] : Union operator
   [start:end:step] : array slice operator
 
+Function class:org.apache.hadoop.hive.ql.udf.UDFJson
+Function type:BUILTIN
 PREHOOK: query: CREATE TABLE dest1(c1 STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -150,15 +152,11 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_json
 #### A masked pattern was here ####
 1234
-PREHOOK: query: -- Verify that get_json_object can handle new lines in JSON values
-
-CREATE TABLE dest2(c1 STRING) STORED AS RCFILE
+PREHOOK: query: CREATE TABLE dest2(c1 STRING) STORED AS RCFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@dest2
-POSTHOOK: query: -- Verify that get_json_object can handle new lines in JSON values
-
-CREATE TABLE dest2(c1 STRING) STORED AS RCFILE
+POSTHOOK: query: CREATE TABLE dest2(c1 STRING) STORED AS RCFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@dest2
@@ -191,8 +189,7 @@ POSTHOOK: Input: default@dest2
 #### A masked pattern was here ####
 b
 c
-PREHOOK: query: --root is array
-SELECT
+PREHOOK: query: SELECT
 get_json_object('[1,2,3]', '$[0]'),
 get_json_object('[1,2,3]', '$.[0]'),
 get_json_object('[1,2,3]', '$.[1]'),
@@ -208,8 +205,7 @@ get_json_object('[{"k1":[{"k11":[1,2,3]}]}]', '$[0].k1[0].k11[1]')
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
-POSTHOOK: query: --root is array
-SELECT
+POSTHOOK: query: SELECT
 get_json_object('[1,2,3]', '$[0]'),
 get_json_object('[1,2,3]', '$.[0]'),
 get_json_object('[1,2,3]', '$.[1]'),
@@ -226,16 +222,14 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
 1	1	2	2	3	[1,2,3]	[1,2,3]	{"k3":"v3"}	v3	[4,5,6]	4	2
-PREHOOK: query: --null
-SELECT
+PREHOOK: query: SELECT
 get_json_object('[1,2,3]', '[2]'),
 get_json_object('[1,2,3]', '$0'),
 get_json_object('[1,2,3]', '$[3]')
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
-POSTHOOK: query: --null
-SELECT
+POSTHOOK: query: SELECT
 get_json_object('[1,2,3]', '[2]'),
 get_json_object('[1,2,3]', '$0'),
 get_json_object('[1,2,3]', '$[3]')

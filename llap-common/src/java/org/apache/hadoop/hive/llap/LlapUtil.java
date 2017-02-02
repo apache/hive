@@ -57,15 +57,44 @@ public class LlapUtil {
     }
   }
 
+  /**
+   * Login using kerberos. But does not change the current logged in user.
+   *
+   * @param principal  - kerberos principal
+   * @param keytabFile - keytab file
+   * @return UGI
+   * @throws IOException - if keytab file cannot be found
+   */
   public static UserGroupInformation loginWithKerberos(
-      String principal, String keytabFile) throws IOException {
-    if (!UserGroupInformation.isSecurityEnabled()) return null;
-    if (principal.isEmpty() || keytabFile.isEmpty()) {
-      throw new RuntimeException("Kerberos principal and/or keytab are empty");
+    String principal, String keytabFile) throws IOException {
+    if (!UserGroupInformation.isSecurityEnabled()) {
+      return null;
     }
-    LOG.info("Logging in as " + principal + " via " + keytabFile);
-    return UserGroupInformation.loginUserFromKeytabAndReturnUGI(
-        SecurityUtil.getServerPrincipal(principal, "0.0.0.0"), keytabFile);
+    if (principal == null || principal.isEmpty() || keytabFile == null || keytabFile.isEmpty()) {
+      throw new RuntimeException("Kerberos principal and/or keytab are null or empty");
+    }
+    final String serverPrincipal = SecurityUtil.getServerPrincipal(principal, "0.0.0.0");
+    LOG.info("Logging in as " + serverPrincipal + " via " + keytabFile);
+    return UserGroupInformation.loginUserFromKeytabAndReturnUGI(serverPrincipal, keytabFile);
+  }
+
+  /**
+   * Login using kerberos and also updates the current logged in user
+   *
+   * @param principal  - kerberos principal
+   * @param keytabFile - keytab file
+   * @throws IOException - if keytab file cannot be found
+   */
+  public static void loginWithKerberosAndUpdateCurrentUser(String principal, String keytabFile) throws IOException {
+    if (!UserGroupInformation.isSecurityEnabled()) {
+      return;
+    }
+    if (principal == null || principal.isEmpty() || keytabFile == null || keytabFile.isEmpty()) {
+      throw new RuntimeException("Kerberos principal and/or keytab is null or empty");
+    }
+    final String serverPrincipal = SecurityUtil.getServerPrincipal(principal, "0.0.0.0");
+    LOG.info("Logging in as " + serverPrincipal + " via " + keytabFile + " and updating current logged in user");
+    UserGroupInformation.loginUserFromKeytab(serverPrincipal, keytabFile);
   }
 
   private final static Pattern hostsRe = Pattern.compile("[^A-Za-z0-9_-]");
@@ -191,5 +220,15 @@ public class LlapUtil {
     InetAddress ia = address.getAddress();
     // getCanonicalHostName would either return FQDN, or an IP.
     return (ia == null) ? address.getHostName() : ia.getCanonicalHostName();
+  }
+
+  public static String humanReadableByteCount(long bytes) {
+    int unit = 1024;
+    if (bytes < unit) {
+      return bytes + "B";
+    }
+    int exp = (int) (Math.log(bytes) / Math.log(unit));
+    String suffix = "KMGTPE".charAt(exp-1) + "";
+    return String.format("%.2f%sB", bytes / Math.pow(unit, exp), suffix);
   }
 }

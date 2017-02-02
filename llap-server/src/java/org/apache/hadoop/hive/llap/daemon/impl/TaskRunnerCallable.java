@@ -17,19 +17,12 @@
  */
 package org.apache.hadoop.hive.llap.daemon.impl;
 
-import java.net.InetSocketAddress;
-import java.nio.ByteBuffer;
-import java.security.PrivilegedExceptionAction;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Stack;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicLong;
-
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Stopwatch;
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Multimap;
+import com.google.common.util.concurrent.FutureCallback;
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.hive.llap.daemon.FragmentCompletionHandler;
@@ -50,7 +43,6 @@ import org.apache.hadoop.security.Credentials;
 import org.apache.hadoop.security.SecurityUtil;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.security.token.Token;
-import org.apache.hadoop.yarn.api.records.ApplicationId;
 import org.apache.log4j.MDC;
 import org.apache.log4j.NDC;
 import org.apache.tez.common.CallableWithNdc;
@@ -58,10 +50,7 @@ import org.apache.tez.common.TezCommonUtils;
 import org.apache.tez.common.security.JobTokenIdentifier;
 import org.apache.tez.common.security.TokenCache;
 import org.apache.tez.dag.api.TezConstants;
-import org.apache.tez.dag.records.TezDAGID;
 import org.apache.tez.dag.records.TezTaskAttemptID;
-import org.apache.tez.dag.records.TezTaskID;
-import org.apache.tez.dag.records.TezVertexID;
 import org.apache.tez.hadoop.shim.HadoopShim;
 import org.apache.tez.runtime.api.ExecutionContext;
 import org.apache.tez.runtime.api.impl.TaskSpec;
@@ -75,15 +64,17 @@ import org.apache.tez.runtime.task.TezTaskRunner2;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Joiner;
-import com.google.common.base.Stopwatch;
-import com.google.common.collect.HashMultimap;
-import com.google.common.collect.Multimap;
-import com.google.common.util.concurrent.FutureCallback;
-import com.google.common.util.concurrent.ListeningExecutorService;
-import com.google.common.util.concurrent.MoreExecutors;
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import java.net.InetSocketAddress;
+import java.nio.ByteBuffer;
+import java.security.PrivilegedExceptionAction;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Stack;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  *
@@ -150,7 +141,7 @@ public class TaskRunnerCallable extends CallableWithNdc<TaskRunner2Result> {
     // Register with the AMReporter when the callable is setup. Unregister once it starts running.
     if (amReporter != null && jobToken != null) {
       this.amReporter.registerTask(request.getAmHost(), request.getAmPort(),
-          vertex.getUser(), jobToken, fragmentInfo.getQueryInfo().getQueryIdentifier());
+          vertex.getUser(), jobToken, fragmentInfo.getQueryInfo().getQueryIdentifier(), attemptId);
     }
     this.metrics = metrics;
     this.requestId = taskSpec.getTaskAttemptID().toString();
@@ -181,11 +172,12 @@ public class TaskRunnerCallable extends CallableWithNdc<TaskRunner2Result> {
       }
 
       // Unregister from the AMReporter, since the task is now running.
-      this.amReporter.unregisterTask(request.getAmHost(), request.getAmPort());
+      TezTaskAttemptID ta = taskSpec.getTaskAttemptID();
+      this.amReporter.unregisterTask(request.getAmHost(), request.getAmPort(), ta);
 
       synchronized (this) {
         if (!shouldRunTask) {
-          LOG.info("Not starting task {} since it was killed earlier", taskSpec.getTaskAttemptID());
+          LOG.info("Not starting task {} since it was killed earlier", ta);
           return new TaskRunner2Result(EndReason.KILL_REQUESTED, null, null, false);
         }
       }
@@ -265,7 +257,7 @@ public class TaskRunnerCallable extends CallableWithNdc<TaskRunner2Result> {
         } finally {
           FileSystem.closeAllForUGI(taskUgi);
           LOG.info("ExecutionTime for Container: " + request.getContainerIdString() + "=" +
-              runtimeWatch.stop().elapsedMillis());
+                  runtimeWatch.stop().elapsedMillis());
           if (LOG.isDebugEnabled()) {
             LOG.debug(
                 "canFinish post completion: " + taskSpec.getTaskAttemptID() + ": " + canFinish());
@@ -299,19 +291,19 @@ public class TaskRunnerCallable extends CallableWithNdc<TaskRunner2Result> {
     if (!isCompleted.get()) {
       if (!killInvoked.getAndSet(true)) {
         synchronized (this) {
-          LOG.info("Kill task requested for id={}, taskRunnerSetup={}", taskSpec.getTaskAttemptID(),
-              (taskRunner != null));
+          TezTaskAttemptID ta = taskSpec.getTaskAttemptID();
+          LOG.info("Kill task requested for id={}, taskRunnerSetup={}", ta, taskRunner != null);
           if (taskRunner != null) {
             killtimerWatch.start();
             LOG.info("Issuing kill to task {}", taskSpec.getTaskAttemptID());
             boolean killed = taskRunner.killTask();
             if (killed) {
               // Sending a kill message to the AM right here. Don't need to wait for the task to complete.
-              LOG.info("Kill request for task {} completed. Informing AM", taskSpec.getTaskAttemptID());
+              LOG.info("Kill request for task {} completed. Informing AM", ta);
               reportTaskKilled();
             } else {
               LOG.info("Kill request for task {} did not complete because the task is already complete",
-                  taskSpec.getTaskAttemptID());
+                  ta);
             }
             shouldRunTask = false;
           } else {
@@ -323,7 +315,7 @@ public class TaskRunnerCallable extends CallableWithNdc<TaskRunner2Result> {
             // If the task hasn't started - inform about fragment completion immediately. It's possible for
             // the callable to never run.
             fragmentCompletionHanler.fragmentComplete(fragmentInfo);
-            this.amReporter.unregisterTask(request.getAmHost(), request.getAmPort());
+            this.amReporter.unregisterTask(request.getAmHost(), request.getAmPort(), ta);
           }
         }
       } else {

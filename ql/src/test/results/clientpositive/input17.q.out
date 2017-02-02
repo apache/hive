@@ -102,15 +102,11 @@ POSTHOOK: Input: default@src_thrift
 POSTHOOK: Output: default@dest1
 POSTHOOK: Lineage: dest1.key SCRIPT [(src_thrift)src_thrift.FieldSchema(name:aint, type:int, comment:from deserializer), (src_thrift)src_thrift.FieldSchema(name:lint, type:array<int>, comment:from deserializer), (src_thrift)src_thrift.FieldSchema(name:lintstring, type:array<struct<myint:int,mystring:string,underscore_int:int>>, comment:from deserializer), ]
 POSTHOOK: Lineage: dest1.value SCRIPT [(src_thrift)src_thrift.FieldSchema(name:aint, type:int, comment:from deserializer), (src_thrift)src_thrift.FieldSchema(name:lint, type:array<int>, comment:from deserializer), (src_thrift)src_thrift.FieldSchema(name:lintstring, type:array<struct<myint:int,mystring:string,underscore_int:int>>, comment:from deserializer), ]
-PREHOOK: query: -- SORT_QUERY_RESULTS
-
-SELECT dest1.* FROM dest1
+PREHOOK: query: SELECT dest1.* FROM dest1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest1
 #### A masked pattern was here ####
-POSTHOOK: query: -- SORT_QUERY_RESULTS
-
-SELECT dest1.* FROM dest1
+POSTHOOK: query: SELECT dest1.* FROM dest1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest1
 #### A masked pattern was here ####

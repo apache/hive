@@ -18,8 +18,10 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
+import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.DecimalColumnVector;
+import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 
 /**
  * To support vectorized cast of decimal to string.
@@ -28,29 +30,28 @@ public class CastDecimalToString extends DecimalToStringUnaryUDF {
 
   private static final long serialVersionUID = 1L;
 
+  // We use a scratch buffer with the HiveDecimalWritable toBytes method so
+  // we don't incur poor performance creating a String result.
+  private byte[] scratchBuffer;
+
   public CastDecimalToString() {
     super();
   }
 
   public CastDecimalToString(int inputColumn, int outputColumn) {
     super(inputColumn, outputColumn);
+    scratchBuffer = new byte[HiveDecimal.SCRATCH_BUFFER_LEN_TO_BYTES];
   }
 
   // The assign method will be overridden for CHAR and VARCHAR.
-  protected void assign(BytesColumnVector outV, int i, byte[] bytes, int length) {
-    outV.setVal(i, bytes, 0, length);
+  protected void assign(BytesColumnVector outV, int i, byte[] bytes, int offset, int length) {
+    outV.setVal(i, bytes, offset, length);
   }
 
   @Override
   protected void func(BytesColumnVector outV, DecimalColumnVector inV, int i) {
-    String s = inV.vector[i].getHiveDecimal().toString();
-    byte[] b = null;
-    try {
-      b = s.getBytes("UTF-8");
-    } catch (Exception e) {
-      // This should never happen. If it does, there is a bug.
-      throw new RuntimeException("Internal error:  unable to convert decimal to string", e);
-    }
-    assign(outV, i, b, b.length);
+    HiveDecimalWritable decWritable = inV.vector[i];
+    final int byteIndex = decWritable.toBytes(scratchBuffer);
+    assign(outV, i, scratchBuffer, byteIndex, HiveDecimal.SCRATCH_BUFFER_LEN_TO_BYTES - byteIndex);
   }
 }

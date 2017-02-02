@@ -59,13 +59,11 @@ import org.apache.hadoop.hive.ql.parse.PTFInvocationSpec.PartitionExpression;
 import org.apache.hadoop.hive.ql.parse.PTFInvocationSpec.PartitionSpec;
 import org.apache.hadoop.hive.ql.parse.PTFInvocationSpec.PartitioningSpec;
 import org.apache.hadoop.hive.ql.parse.WindowingSpec.BoundarySpec;
-import org.apache.hadoop.hive.ql.parse.WindowingSpec.CurrentRowSpec;
 import org.apache.hadoop.hive.ql.parse.WindowingSpec.Direction;
-import org.apache.hadoop.hive.ql.parse.WindowingSpec.RangeBoundarySpec;
-import org.apache.hadoop.hive.ql.parse.WindowingSpec.ValueBoundarySpec;
 import org.apache.hadoop.hive.ql.parse.WindowingSpec.WindowFrameSpec;
 import org.apache.hadoop.hive.ql.parse.WindowingSpec.WindowFunctionSpec;
 import org.apache.hadoop.hive.ql.parse.WindowingSpec.WindowSpec;
+import org.apache.hadoop.hive.ql.parse.WindowingSpec.WindowType;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
@@ -426,38 +424,26 @@ public class ExprNodeConverter extends RexVisitorImpl<ExprNodeDesc> {
 
   private WindowFrameSpec getWindowRange(RexWindow window) {
     // NOTE: in Hive AST Rows->Range(Physical) & Range -> Values (logical)
-
-    WindowFrameSpec windowFrame = new WindowFrameSpec();
-
     BoundarySpec start = null;
     RexWindowBound ub = window.getUpperBound();
     if (ub != null) {
-      start = getWindowBound(ub, window.isRows());
+      start = getWindowBound(ub);
     }
 
     BoundarySpec end = null;
     RexWindowBound lb = window.getLowerBound();
     if (lb != null) {
-      end = getWindowBound(lb, window.isRows());
+      end = getWindowBound(lb);
     }
 
-    if (start != null || end != null) {
-      if (start != null) {
-        windowFrame.setStart(start);
-      }
-      if (end != null) {
-        windowFrame.setEnd(end);
-      }
-    }
-
-    return windowFrame;
+    return new WindowFrameSpec(window.isRows() ? WindowType.ROWS : WindowType.RANGE, start, end);
   }
 
-  private BoundarySpec getWindowBound(RexWindowBound wb, boolean isRows) {
+  private BoundarySpec getWindowBound(RexWindowBound wb) {
     BoundarySpec boundarySpec;
 
     if (wb.isCurrentRow()) {
-      boundarySpec = new CurrentRowSpec();
+      boundarySpec = new BoundarySpec(Direction.CURRENT);
     } else {
       final Direction direction;
       final int amt;
@@ -471,11 +457,8 @@ public class ExprNodeConverter extends RexVisitorImpl<ExprNodeDesc> {
       } else {
         amt = RexLiteral.intValue(wb.getOffset());
       }
-      if (isRows) {
-        boundarySpec = new RangeBoundarySpec(direction, amt);
-      } else {
-        boundarySpec = new ValueBoundarySpec(direction, amt);
-      }
+
+      boundarySpec = new BoundarySpec(direction, amt);
     }
 
     return boundarySpec;

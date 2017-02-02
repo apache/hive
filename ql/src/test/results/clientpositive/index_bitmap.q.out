@@ -1,11 +1,7 @@
-PREHOOK: query: -- SORT_QUERY_RESULTS
-
-DROP INDEX srcpart_index_proj on srcpart
+PREHOOK: query: DROP INDEX srcpart_index_proj on srcpart
 PREHOOK: type: DROPINDEX
 PREHOOK: Input: default@srcpart
-POSTHOOK: query: -- SORT_QUERY_RESULTS
-
-DROP INDEX srcpart_index_proj on srcpart
+POSTHOOK: query: DROP INDEX srcpart_index_proj on srcpart
 POSTHOOK: type: DROPINDEX
 POSTHOOK: Input: default@srcpart
 PREHOOK: query: EXPLAIN

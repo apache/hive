@@ -1,5 +1,4 @@
-PREHOOK: query: -- First try with regular mergejoin
-explain
+PREHOOK: query: explain
 select
   *
 from alltypesorc a join alltypesorc b on a.cint = b.cint
@@ -7,8 +6,7 @@ where
   a.cint between 1000000 and 3000000 and b.cbigint is not null
 order by a.cint
 PREHOOK: type: QUERY
-POSTHOOK: query: -- First try with regular mergejoin
-explain
+POSTHOOK: query: explain
 select
   *
 from alltypesorc a join alltypesorc b on a.cint = b.cint
@@ -158,7 +156,7 @@ STAGE PLANS:
 #### A masked pattern was here ####
       Edges:
         Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 4 (SIMPLE_EDGE)
-        Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
+        Reducer 3 <- Reducer 2 (CUSTOM_SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -411,8 +409,7 @@ POSTHOOK: Input: default@alltypesorc
 -3799	1
 10782	1
 NULL	6
-PREHOOK: query: -- Try with dynamically partitioned hashjoin
-explain
+PREHOOK: query: explain
 select
   *
 from alltypesorc a join alltypesorc b on a.cint = b.cint
@@ -420,8 +417,7 @@ where
   a.cint between 1000000 and 3000000 and b.cbigint is not null
 order by a.cint
 PREHOOK: type: QUERY
-POSTHOOK: query: -- Try with dynamically partitioned hashjoin
-explain
+POSTHOOK: query: explain
 select
   *
 from alltypesorc a join alltypesorc b on a.cint = b.cint
@@ -574,7 +570,7 @@ STAGE PLANS:
 #### A masked pattern was here ####
       Edges:
         Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE), Map 4 (CUSTOM_SIMPLE_EDGE)
-        Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
+        Reducer 3 <- Reducer 2 (CUSTOM_SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 

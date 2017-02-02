@@ -1,10 +1,8 @@
-PREHOOK: query: -- test for NaN (not-a-number)
-create table tstTbl1(n double)
+PREHOOK: query: create table tstTbl1(n double)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@tstTbl1
-POSTHOOK: query: -- test for NaN (not-a-number)
-create table tstTbl1(n double)
+POSTHOOK: query: create table tstTbl1(n double)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tstTbl1
@@ -46,13 +44,11 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tsttbl1
 #### A masked pattern was here ####
 NaN
-PREHOOK: query: -- test for Infinity
-select round(1/0), round(1/0, 2), round(1.0/0.0), round(1.0/0.0, 2) from src tablesample (1 rows)
+PREHOOK: query: select round(1/0), round(1/0, 2), round(1.0/0.0), round(1.0/0.0, 2) from src tablesample (1 rows)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
-POSTHOOK: query: -- test for Infinity
-select round(1/0), round(1/0, 2), round(1.0/0.0), round(1.0/0.0, 2) from src tablesample (1 rows)
+POSTHOOK: query: select round(1/0), round(1/0, 2), round(1.0/0.0), round(1.0/0.0, 2) from src tablesample (1 rows)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####

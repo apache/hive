@@ -3,9 +3,10 @@ set hive.fetch.task.conversion=none;
 
 drop table varchar_udf_1;
 
-create table varchar_udf_1 (c1 string, c2 string, c3 varchar(10), c4 varchar(20)) STORED AS ORC;
+create table varchar_udf_1 (c1 string, c2 string, c3 varchar(10), c4 varchar(20),
+     d1 string, d2 string, d3 varchar(10), d4 varchar(10)) STORED AS ORC;
 insert overwrite table varchar_udf_1
-  select key, value, key, value from src where key = '238' limit 1;
+  select key, value, key, value, '2015-01-14', '2015-01-14', '2017-01-11', '2017-01-11' from src where key = '238' limit 1;
 
 -- UDFs with varchar support
 explain
@@ -98,6 +99,58 @@ select
   instr(c2, '_'),
   instr(c4, '_'),
   instr(c2, '_') = instr(c4, '_')
+from varchar_udf_1 limit 1;
+
+explain
+select
+  replace(c1, '_', c2),
+  replace(c3, '_', c4),
+  replace(c1, '_', c2) = replace(c3, '_', c4)
+from varchar_udf_1 limit 1;
+
+select
+  replace(c1, '_', c2),
+  replace(c3, '_', c4),
+  replace(c1, '_', c2) = replace(c3, '_', c4)
+from varchar_udf_1 limit 1;
+
+explain
+select
+  reverse(c2),
+  reverse(c4),
+  reverse(c2) = reverse(c4)
+from varchar_udf_1 limit 1;
+
+select
+  reverse(c2),
+  reverse(c4),
+  reverse(c2) = reverse(c4)
+from varchar_udf_1 limit 1;
+
+explain
+select
+  next_day(d1, 'TU'),
+  next_day(d4, 'WE'),
+  next_day(d1, 'TU') = next_day(d4, 'WE')
+from varchar_udf_1 limit 1;
+
+select
+  next_day(d1, 'TU'),
+  next_day(d4, 'WE'),
+  next_day(d1, 'TU') = next_day(d4, 'WE')
+from varchar_udf_1 limit 1;
+
+explain
+select
+  months_between(d1, d3),
+  months_between(d2, d4),
+  months_between(d1, d3) = months_between(d2, d4)
+from varchar_udf_1 limit 1;
+
+select
+  months_between(d1, d3),
+  months_between(d2, d4),
+  months_between(d1, d3) = months_between(d2, d4)
 from varchar_udf_1 limit 1;
 
 explain

@@ -1,11 +1,9 @@
-PREHOOK: query: -- non agg, non corr
-explain rewrite
+PREHOOK: query: explain rewrite
  select * 
 from src 
 where src.key in (select key from src s1 where s1.key > '9')
 PREHOOK: type: QUERY
-POSTHOOK: query: -- non agg, non corr
-explain rewrite
+POSTHOOK: query: explain rewrite
  select * 
 from src 
 where src.key in (select key from src s1 where s1.key > '9')
@@ -21,8 +19,7 @@ Rewritten Query:
 select * 
 from src  left semi join (select key from src s1 where s1.key > '9') sq_1  on src.key = sq_1.key 
 where 1 = 1
-PREHOOK: query: -- non agg, corr
-explain rewrite
+PREHOOK: query: explain rewrite
 select * 
 from src b 
 where b.key in
@@ -31,8 +28,7 @@ where b.key in
          where b.value = a.value and a.key > '9'
         )
 PREHOOK: type: QUERY
-POSTHOOK: query: -- non agg, corr
-explain rewrite
+POSTHOOK: query: explain rewrite
 select * 
 from src b 
 where b.key in
@@ -58,8 +54,7 @@ from src b  left semi join (select a.key, a.value as sq_corr_0
          where a.key > '9'
         ) sq_1  on b.value = sq_1.sq_corr_0 and b.key = sq_1.key 
 where 1 = 1
-PREHOOK: query: -- agg, non corr
-explain rewrite
+PREHOOK: query: explain rewrite
 select p_name, p_size 
 from 
 part where part.p_size in 
@@ -68,8 +63,7 @@ part where part.p_size in
 	 where r <= 2
 	)
 PREHOOK: type: QUERY
-POSTHOOK: query: -- agg, non corr
-explain rewrite
+POSTHOOK: query: explain rewrite
 select p_name, p_size 
 from 
 part where part.p_size in 
@@ -95,8 +89,7 @@ part  left semi join (select avg(p_size)
 	 from (select p_size, rank() over(partition by p_mfgr order by p_size) as r from part) a 
 	 where r <= 2
 	) sq_1  on part.p_size = sq_1._c0 where 1 = 1
-PREHOOK: query: -- agg, corr
-explain rewrite
+PREHOOK: query: explain rewrite
 select p_mfgr, p_name, p_size 
 from part b where b.p_size in 
 	(select min(p_size) 
@@ -104,8 +97,7 @@ from part b where b.p_size in
 	 where r <= 2 and b.p_mfgr = a.p_mfgr
 	)
 PREHOOK: type: QUERY
-POSTHOOK: query: -- agg, corr
-explain rewrite
+POSTHOOK: query: explain rewrite
 select p_mfgr, p_name, p_size 
 from part b where b.p_size in 
 	(select min(p_size) 
@@ -129,8 +121,7 @@ from part b  left semi join (select min(p_size), a.p_mfgr as sq_corr_0
 	 from (select p_mfgr, p_size, rank() over(partition by p_mfgr order by p_size) as r from part) a 
 	 where r <= 2
 	 group by a.p_mfgr) sq_1  on b.p_mfgr = sq_1.sq_corr_0 and b.p_size = sq_1._c0 where 1 = 1
-PREHOOK: query: -- distinct, corr
-explain rewrite
+PREHOOK: query: explain rewrite
 select * 
 from src b 
 where b.key in
@@ -139,8 +130,7 @@ where b.key in
          where b.value = a.value and a.key > '9'
         )
 PREHOOK: type: QUERY
-POSTHOOK: query: -- distinct, corr
-explain rewrite
+POSTHOOK: query: explain rewrite
 select * 
 from src b 
 where b.key in
@@ -166,15 +156,13 @@ from src b  left semi join (select distinct a.key, a.value as sq_corr_0
          where a.key > '9'
         ) sq_1  on b.value = sq_1.sq_corr_0 and b.key = sq_1.key 
 where 1 = 1
-PREHOOK: query: -- non agg, non corr, windowing
-explain rewrite
+PREHOOK: query: explain rewrite
 select p_mfgr, p_name, p_size 
 from part 
 where part.p_size in 
   (select first_value(p_size) over(partition by p_mfgr order by p_size) from part)
 PREHOOK: type: QUERY
-POSTHOOK: query: -- non agg, non corr, windowing
-explain rewrite
+POSTHOOK: query: explain rewrite
 select p_mfgr, p_name, p_size 
 from part 
 where part.p_size in 
@@ -191,15 +179,13 @@ Rewritten Query:
 select p_mfgr, p_name, p_size 
 from part  left semi join (select first_value(p_size) over(partition by p_mfgr order by p_size) from part) sq_1  on part.p_size = sq_1.first_value_window_0 
 where 1 = 1
-PREHOOK: query: -- non agg, non corr, with join in Parent Query
-explain rewrite
+PREHOOK: query: explain rewrite
 select p.p_partkey, li.l_suppkey 
 from (select distinct l_partkey as p_partkey from lineitem) p join lineitem li on p.p_partkey = li.l_partkey 
 where li.l_linenumber = 1 and
  li.l_orderkey in (select l_orderkey from lineitem where l_shipmode = 'AIR')
 PREHOOK: type: QUERY
-POSTHOOK: query: -- non agg, non corr, with join in Parent Query
-explain rewrite
+POSTHOOK: query: explain rewrite
 select p.p_partkey, li.l_suppkey 
 from (select distinct l_partkey as p_partkey from lineitem) p join lineitem li on p.p_partkey = li.l_partkey 
 where li.l_linenumber = 1 and
@@ -217,15 +203,13 @@ select p.p_partkey, li.l_suppkey
 from (select distinct l_partkey as p_partkey from lineitem) p join lineitem li on p.p_partkey = li.l_partkey  left semi join (select l_orderkey from lineitem where l_shipmode = 'AIR') sq_1  on li.l_orderkey = sq_1.l_orderkey 
 where li.l_linenumber = 1 and
  1 = 1
-PREHOOK: query: -- non agg, corr, with join in Parent Query
-explain rewrite
+PREHOOK: query: explain rewrite
 select p.p_partkey, li.l_suppkey 
 from (select distinct l_partkey as p_partkey from lineitem) p join lineitem li on p.p_partkey = li.l_partkey 
 where li.l_linenumber = 1 and
  li.l_orderkey in (select l_orderkey from lineitem where l_shipmode = 'AIR' and l_linenumber = li.l_linenumber)
 PREHOOK: type: QUERY
-POSTHOOK: query: -- non agg, corr, with join in Parent Query
-explain rewrite
+POSTHOOK: query: explain rewrite
 select p.p_partkey, li.l_suppkey 
 from (select distinct l_partkey as p_partkey from lineitem) p join lineitem li on p.p_partkey = li.l_partkey 
 where li.l_linenumber = 1 and

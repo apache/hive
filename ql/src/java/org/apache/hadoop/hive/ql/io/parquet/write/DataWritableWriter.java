@@ -517,7 +517,8 @@ public class DataWritableWriter {
     private Binary decimalToBinary(final HiveDecimal hiveDecimal, final DecimalTypeInfo decimalTypeInfo) {
       int prec = decimalTypeInfo.precision();
       int scale = decimalTypeInfo.scale();
-      byte[] decimalBytes = hiveDecimal.setScale(scale).unscaledValue().toByteArray();
+
+      byte[] decimalBytes = hiveDecimal.bigIntegerBytesScaled(scale);
 
       // Estimated number of bytes needed.
       int precToBytes = ParquetHiveSerDe.PRECISION_TO_BYTE_COUNT[prec - 1];

@@ -84,6 +84,16 @@ public class MoveWork implements Serializable {
     this(inputs, outputs, loadTableWork, loadFileWork, checkFileFormat, false);
   }
 
+  public MoveWork(final MoveWork o) {
+    loadTableWork = o.getLoadTableWork();
+    loadFileWork = o.getLoadFileWork();
+    loadMultiFilesWork = o.getLoadMultiFilesWork();
+    checkFileFormat = o.getCheckFileFormat();
+    srcLocal = o.isSrcLocal();
+    inputs = o.getInputs();
+    outputs = o.getOutputs();
+  }
+
   @Explain(displayName = "tables", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public LoadTableDesc getLoadTableWork() {
     return loadTableWork;

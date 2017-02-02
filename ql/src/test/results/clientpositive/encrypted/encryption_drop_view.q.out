@@ -24,6 +24,8 @@ POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@dve_encrypted_table
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@dve_view
+POSTHOOK: Lineage: dve_view.key SIMPLE [(dve_encrypted_table)dve_encrypted_table.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: dve_view.value SIMPLE [(dve_encrypted_table)dve_encrypted_table.FieldSchema(name:value, type:string, comment:null), ]
 PREHOOK: query: DROP VIEW dve_view
 PREHOOK: type: DROPVIEW
 PREHOOK: Input: default@dve_view

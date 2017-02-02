@@ -1,13 +1,9 @@
-PREHOOK: query: -- SORT_QUERY_RESULTS
-
-create table TJOIN1_txt (RNUM int , C1 int, C2 int)
+PREHOOK: query: create table TJOIN1_txt (RNUM int , C1 int, C2 int)
 ROW FORMAT DELIMITED FIELDS TERMINATED BY '|' LINES TERMINATED BY '\n'
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@TJOIN1_txt
-POSTHOOK: query: -- SORT_QUERY_RESULTS
-
-create table TJOIN1_txt (RNUM int , C1 int, C2 int)
+POSTHOOK: query: create table TJOIN1_txt (RNUM int , C1 int, C2 int)
 ROW FORMAT DELIMITED FIELDS TERMINATED BY '|' LINES TERMINATED BY '\n'
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default

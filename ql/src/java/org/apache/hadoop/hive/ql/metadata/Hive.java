@@ -26,13 +26,15 @@ import static org.apache.hadoop.hive.serde.serdeConstants.LINE_DELIM;
 import static org.apache.hadoop.hive.serde.serdeConstants.MAPKEY_DELIM;
 import static org.apache.hadoop.hive.serde.serdeConstants.SERIALIZATION_FORMAT;
 import static org.apache.hadoop.hive.serde.serdeConstants.STRING_TYPE_NAME;
-
+import java.io.ByteArrayOutputStream;
+import java.io.DataOutputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -45,6 +47,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -57,13 +60,15 @@ import com.google.common.collect.ImmutableMap;
 
 import javax.jdo.JDODataStoreException;
 
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
+import org.apache.calcite.plan.RelOptMaterialization;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileChecksum;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
+import org.apache.hadoop.hive.common.BlobStorageUtils;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.common.HiveStatsUtils;
 import org.apache.hadoop.hive.common.ObjectPair;
@@ -82,11 +87,13 @@ import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.PartitionDropOptions;
 import org.apache.hadoop.hive.metastore.RetryingMetaStoreClient;
+import org.apache.hadoop.hive.metastore.SynchronizedMetaStoreClient;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.AggrStats;
 import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
+import org.apache.hadoop.hive.metastore.api.CompactionResponse;
 import org.apache.hadoop.hive.metastore.api.CompactionType;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
@@ -105,8 +112,8 @@ import org.apache.hadoop.hive.metastore.api.HiveObjectType;
 import org.apache.hadoop.hive.metastore.api.Index;
 import org.apache.hadoop.hive.metastore.api.InsertEventRequestData;
 import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
-import org.apache.hadoop.hive.metastore.api.MetadataPpdResult;
 import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.metastore.api.MetadataPpdResult;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.hive.metastore.api.PrimaryKeysRequest;
@@ -127,13 +134,12 @@ import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.FunctionTask;
 import org.apache.hadoop.hive.ql.exec.FunctionUtils;
+import org.apache.hadoop.hive.ql.exec.InPlaceUpdates;
 import org.apache.hadoop.hive.ql.exec.SerializationUtilities;
 import org.apache.hadoop.hive.ql.exec.Utilities;
-import org.apache.hadoop.hive.ql.exec.InPlaceUpdates;
 import org.apache.hadoop.hive.ql.index.HiveIndexHandler;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
-import org.apache.hadoop.hive.metastore.SynchronizedMetaStoreClient;
 import org.apache.hadoop.hive.ql.optimizer.listbucketingpruner.ListBucketingPrunerUtils;
 import org.apache.hadoop.hive.ql.plan.AddPartitionDesc;
 import org.apache.hadoop.hive.ql.plan.DropTableDesc;
@@ -152,6 +158,9 @@ import org.apache.thrift.TException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
@@ -308,7 +317,7 @@ public class Hive {
     Hive db = hiveDB.get();
     if (db == null || !db.isCurrentUserOwner() || needsRefresh
         || (c != null && db.metaStoreClient != null && !isCompatible(db, c, isFastCheck))) {
-      return create(c, false, db, doRegisterAllFns);
+      db = create(c, false, db, doRegisterAllFns);
     }
     if (c != null) {
       db.conf = c;
@@ -1332,6 +1341,27 @@ public class Hive {
   }
 
   /**
+   * Get all tables for the specified database.
+   * @param dbName
+   * @return List of table names
+   * @throws HiveException
+   */
+  public List<Table> getAllTableObjects(String dbName) throws HiveException {
+    try {
+      return Lists.transform(getMSC().getTableObjectsByName(dbName, getMSC().getAllTables(dbName)),
+        new com.google.common.base.Function<org.apache.hadoop.hive.metastore.api.Table, Table>() {
+          @Override
+          public Table apply(org.apache.hadoop.hive.metastore.api.Table table) {
+            return new Table(table);
+          }
+        }
+      );
+    } catch (Exception e) {
+      throw new HiveException(e);
+    }
+  }
+
+  /**
    * Returns all existing tables from default database which match the given
    * pattern. The matching occurs as per Java regular expressions
    *
@@ -1402,6 +1432,55 @@ public class Hive {
           return getMSC().getTables(dbName, ".*");
         }
       }
+    } catch (Exception e) {
+      throw new HiveException(e);
+    }
+  }
+
+  /**
+   * Get the materialized views that have been enabled for rewriting from the
+   * metastore. If the materialized view is in the cache, we do not need to
+   * parse it to generate a logical plan for the rewriting. Instead, we
+   * return the version present in the cache.
+   *
+   * @return the list of materialized views available for rewriting
+   * @throws HiveException
+   */
+  public List<RelOptMaterialization> getRewritingMaterializedViews() throws HiveException {
+    try {
+      // Final result
+      List<RelOptMaterialization> result = new ArrayList<>();
+      for (String dbName : getMSC().getAllDatabases()) {
+        // From metastore (for security)
+        List<String> tables = getMSC().getAllTables(dbName);
+        // Cached views (includes all)
+        Collection<RelOptMaterialization> cachedViews =
+            HiveMaterializedViewsRegistry.get().getRewritingMaterializedViews(dbName);
+        if (cachedViews.isEmpty()) {
+          // Bail out: empty list
+          continue;
+        }
+        Map<String, RelOptMaterialization> qualifiedNameToView =
+            new HashMap<String, RelOptMaterialization>();
+        for (RelOptMaterialization materialization : cachedViews) {
+          qualifiedNameToView.put(materialization.table.getQualifiedName().get(0), materialization);
+        }
+        for (String table : tables) {
+          // Compose qualified name
+          String fullyQualifiedName = dbName;
+          if (fullyQualifiedName != null && !fullyQualifiedName.isEmpty()) {
+            fullyQualifiedName = fullyQualifiedName + "." + table;
+          } else {
+            fullyQualifiedName = table;
+          }
+          RelOptMaterialization materialization = qualifiedNameToView.get(fullyQualifiedName);
+          if (materialization != null) {
+            // Add to final result set
+            result.add(materialization);
+          }
+        }
+      }
+      return result;
     } catch (Exception e) {
       throw new HiveException(e);
     }
@@ -2177,18 +2256,40 @@ private void constructOneLBLocationMap(FileStatus fSta,
     }
     List<Partition> out = new ArrayList<Partition>();
     try {
-      if (!addPartitionDesc.getReplaceMode()){
+      if (!addPartitionDesc.getReplicationSpec().isInReplicationScope()){
         // TODO: normally, the result is not necessary; might make sense to pass false
         for (org.apache.hadoop.hive.metastore.api.Partition outPart
             : getMSC().add_partitions(in, addPartitionDesc.isIfNotExists(), true)) {
           out.add(new Partition(tbl, outPart));
         }
       } else {
-        getMSC().alter_partitions(addPartitionDesc.getDbName(), addPartitionDesc.getTableName(), in, null);
-        List<String> part_names = new ArrayList<String>();
+
+        // For replication add-ptns, we need to follow a insert-if-not-exist, alter-if-exists scenario.
+        // TODO : ideally, we should push this mechanism to the metastore, because, otherwise, we have
+        // no choice but to iterate over the partitions here.
+
+        List<org.apache.hadoop.hive.metastore.api.Partition> partsToAdd = new ArrayList<>();
+        List<org.apache.hadoop.hive.metastore.api.Partition> partsToAlter = new ArrayList<>();
+        List<String> part_names = new ArrayList<>();
         for (org.apache.hadoop.hive.metastore.api.Partition p: in){
           part_names.add(Warehouse.makePartName(tbl.getPartitionKeys(), p.getValues()));
+          try {
+            org.apache.hadoop.hive.metastore.api.Partition ptn =
+                getMSC().getPartition(addPartitionDesc.getDbName(), addPartitionDesc.getTableName(), p.getValues());
+            if (addPartitionDesc.getReplicationSpec().allowReplacementInto(ptn)){
+              partsToAlter.add(p);
+            } // else ptn already exists, but we do nothing with it.
+          } catch (NoSuchObjectException nsoe){
+            // if the object does not exist, we want to add it.
+            partsToAdd.add(p);
+          }
         }
+        for (org.apache.hadoop.hive.metastore.api.Partition outPart
+            : getMSC().add_partitions(partsToAdd, addPartitionDesc.isIfNotExists(), true)) {
+          out.add(new Partition(tbl, outPart));
+        }
+        getMSC().alter_partitions(addPartitionDesc.getDbName(), addPartitionDesc.getTableName(), partsToAlter, null);
+
         for ( org.apache.hadoop.hive.metastore.api.Partition outPart :
         getMSC().getPartitionsByNames(addPartitionDesc.getDbName(), addPartitionDesc.getTableName(),part_names)){
           out.add(new Partition(tbl,outPart));
@@ -2404,29 +2505,40 @@ private void constructOneLBLocationMap(FileStatus fSta,
         LOG.debug("Not firing dml insert event as " + tbl.getTableName() + " is temporary");
         return;
       }
-      FireEventRequestData data = new FireEventRequestData();
-      InsertEventRequestData insertData = new InsertEventRequestData();
-      data.setInsertData(insertData);
-      if (newFiles != null && newFiles.size() > 0) {
-        for (Path p : newFiles) {
-          insertData.addToFilesAdded(p.toString());
-        }
-      } else {
-        insertData.setFilesAdded(new ArrayList<String>());
-      }
-      FireEventRequest rqst = new FireEventRequest(true, data);
-      rqst.setDbName(tbl.getDbName());
-      rqst.setTableName(tbl.getTableName());
-      if (partitionSpec != null && partitionSpec.size() > 0) {
-        List<String> partVals = new ArrayList<String>(partitionSpec.size());
-        for (FieldSchema fs : tbl.getPartitionKeys()) {
-          partVals.add(partitionSpec.get(fs.getName()));
-        }
-        rqst.setPartitionVals(partVals);
-      }
       try {
+        FileSystem fileSystem = tbl.getDataLocation().getFileSystem(conf);
+        FireEventRequestData data = new FireEventRequestData();
+        InsertEventRequestData insertData = new InsertEventRequestData();
+        data.setInsertData(insertData);
+        if (newFiles != null && newFiles.size() > 0) {
+          for (Path p : newFiles) {
+            insertData.addToFilesAdded(p.toString());
+            FileChecksum cksum = fileSystem.getFileChecksum(p);
+            // File checksum is not implemented for local filesystem (RawLocalFileSystem)
+            if (cksum != null) {
+              String checksumString =
+                  StringUtils.byteToHexString(cksum.getBytes(), 0, cksum.getLength());
+              insertData.addToFilesAddedChecksum(checksumString);
+            } else {
+              // Add an empty checksum string for filesystems that don't generate one
+              insertData.addToFilesAddedChecksum("");
+            }
+          }
+        } else {
+          insertData.setFilesAdded(new ArrayList<String>());
+        }
+        FireEventRequest rqst = new FireEventRequest(true, data);
+        rqst.setDbName(tbl.getDbName());
+        rqst.setTableName(tbl.getTableName());
+        if (partitionSpec != null && partitionSpec.size() > 0) {
+          List<String> partVals = new ArrayList<String>(partitionSpec.size());
+          for (FieldSchema fs : tbl.getPartitionKeys()) {
+            partVals.add(partitionSpec.get(fs.getName()));
+          }
+          rqst.setPartitionVals(partVals);
+        }
         getMSC().fireListenerEvent(rqst);
-      } catch (TException e) {
+      } catch (IOException | TException e) {
         throw new HiveException(e);
       }
     }
@@ -2965,36 +3077,16 @@ private void constructOneLBLocationMap(FileStatus fSta,
       for (final FileStatus srcFile : files) {
         final Path srcP = srcFile.getPath();
         final boolean needToCopy = needToCopy(srcP, destf, srcFs, destFs);
-        // Strip off the file type, if any so we don't make:
-        // 000000_0.gz -> 000000_0.gz_copy_1
-        final String name;
-        final String filetype;
-        String itemName = srcP.getName();
-        int index = itemName.lastIndexOf('.');
-        if (index >= 0) {
-          filetype = itemName.substring(index);
-          name = itemName.substring(0, index);
-        } else {
-          name = itemName;
-          filetype = "";
-        }
-        final boolean renameNonLocal = !needToCopy && !isSrcLocal;
+
+        final boolean isRenameAllowed = !needToCopy && !isSrcLocal;
         // If we do a rename for a non-local file, we will be transfering the original
         // file permissions from source to the destination. Else, in case of mvFile() where we
         // copy from source to destination, we will inherit the destination's parent group ownership.
-        final String srcGroup = renameNonLocal ? srcFile.getGroup() :
+        final String srcGroup = isRenameAllowed ? srcFile.getGroup() :
           fullDestStatus.getFileStatus().getGroup();
         if (null == pool) {
-          Path destPath = new Path(destf, srcP.getName());
           try {
-
-            if (renameNonLocal) {
-              for (int counter = 1; !destFs.rename(srcP,destPath); counter++) {
-                destPath = new Path(destf, name + ("_copy_" + counter) + filetype);
-              }
-            } else {
-              destPath = mvFile(conf, srcP, destPath, isSrcLocal, srcFs, destFs, name, filetype);
-            }
+            Path destPath = mvFile(conf, srcFs, srcP, destFs, destf, isSrcLocal, isRenameAllowed);
 
             if (inheritPerms) {
               HdfsUtils.setFullFileStatus(conf, fullDestStatus, srcGroup, destFs, destPath, false);
@@ -3011,14 +3103,8 @@ private void constructOneLBLocationMap(FileStatus fSta,
             @Override
             public ObjectPair<Path, Path> call() throws Exception {
               SessionState.setCurrentSessionState(parentSession);
-              Path destPath = new Path(destf, srcP.getName());
-              if (renameNonLocal) {
-                for (int counter = 1; !destFs.rename(srcP,destPath); counter++) {
-                  destPath = new Path(destf, name + ("_copy_" + counter) + filetype);
-                }
-              } else {
-                destPath = mvFile(conf, srcP, destPath, isSrcLocal, srcFs, destFs, name, filetype);
-              }
+
+              Path destPath = mvFile(conf, srcFs, srcP, destFs, destf, isSrcLocal, isRenameAllowed);
 
               if (inheritPerms) {
                 HdfsUtils.setFullFileStatus(conf, fullDestStatus, srcGroup, destFs, destPath, false);
@@ -3034,12 +3120,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     }
     if (null == pool) {
       if (inheritPerms) {
-        try {
-          HdfsUtils.setFullFileStatus(conf, fullDestStatus, null, destFs, destf, true);
-        } catch (IOException e) {
-          LOG.error("Failed to move: {}", e.getMessage());
-          throw new HiveException(e.getCause());
-        }
+        HdfsUtils.setFullFileStatus(conf, fullDestStatus, null, destFs, destf, true);
       }
     } else {
       pool.shutdown();
@@ -3099,24 +3180,51 @@ private void constructOneLBLocationMap(FileStatus fSta,
     return ShimLoader.getHadoopShims().getPathWithoutSchemeAndAuthority(path);
   }
 
-  private static Path mvFile(HiveConf conf, Path srcf, Path destf, boolean isSrcLocal,
-      FileSystem srcFs, FileSystem destFs, String srcName, String filetype) throws IOException {
+  private static Path mvFile(HiveConf conf, FileSystem sourceFs, Path sourcePath, FileSystem destFs, Path destDirPath,
+                             boolean isSrcLocal, boolean isRenameAllowed) throws IOException {
 
-    for (int counter = 1; destFs.exists(destf); counter++) {
-      destf = new Path(destf.getParent(), srcName + ("_copy_" + counter) + filetype);
+    boolean isBlobStoragePath = BlobStorageUtils.isBlobStoragePath(conf, destDirPath);
+
+    // Strip off the file type, if any so we don't make:
+    // 000000_0.gz -> 000000_0.gz_copy_1
+    final String fullname = sourcePath.getName();
+    final String name = FilenameUtils.getBaseName(sourcePath.getName());
+    final String type = FilenameUtils.getExtension(sourcePath.getName());
+
+    Path destFilePath = new Path(destDirPath, fullname);
+
+    /*
+       * The below loop may perform bad when the destination file already exists and it has too many _copy_
+       * files as well. A desired approach was to call listFiles() and get a complete list of files from
+       * the destination, and check whether the file exists or not on that list. However, millions of files
+       * could live on the destination directory, and on concurrent situations, this can cause OOM problems.
+       *
+       * I'll leave the below loop for now until a better approach is found.
+       */
+
+    int counter = 1;
+    if (!isRenameAllowed || isBlobStoragePath) {
+      while (destFs.exists(destFilePath)) {
+        destFilePath =  new Path(destDirPath, name + ("_copy_" + counter) + (!type.isEmpty() ? "." + type : ""));
+        counter++;
+      }
     }
-    if (isSrcLocal) {
-      // For local src file, copy to hdfs
-      destFs.copyFromLocalFile(srcf, destf);
+
+    if (isRenameAllowed) {
+      while (!destFs.rename(sourcePath, destFilePath)) {
+        destFilePath =  new Path(destDirPath, name + ("_copy_" + counter) + (!type.isEmpty() ? "." + type : ""));
+        counter++;
+      }
+    } else if (isSrcLocal) {
+      destFs.copyFromLocalFile(sourcePath, destFilePath);
     } else {
-      //copy if across file system or encryption zones.
-      LOG.info("Copying source " + srcf + " to " + destf + " because HDFS encryption zones are different.");
-      FileUtils.copy(srcFs, srcf, destFs, destf,
-          true,    // delete source
-          false, // overwrite destination
+      FileUtils.copy(sourceFs, sourcePath, destFs, destFilePath,
+          true,   // delete source
+          false,  // overwrite destination
           conf);
     }
-    return destf;
+
+    return destFilePath;
   }
 
   // Clears the dest dir when src is sub-dir of dest.
@@ -3203,11 +3311,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
         // For local src file, copy to hdfs
         destFs.copyFromLocalFile(srcf, destf);
         if (inheritPerms) {
-          try {
-            HdfsUtils.setFullFileStatus(conf, destStatus, destFs, destf, true);
-          } catch (IOException e) {
-            LOG.warn("Error setting permission of file " + destf + ": "+ e.getMessage(), e);
-          }
+          HdfsUtils.setFullFileStatus(conf, destStatus, destFs, destf, true);
         }
         return true;
       } else {
@@ -3897,30 +4001,38 @@ private void constructOneLBLocationMap(FileStatus fSta,
   }
 
   /**
-   * Enqueue a compaction request.
+   * @deprecated use {@link #compact2(String, String, String, String, Map)}
+   */
+  public void compact(String dbname, String tableName, String partName, String compactType,
+                      Map<String, String> tblproperties) throws HiveException {
+    compact2(dbname, tableName, partName, compactType, tblproperties);
+  }
+  /**
+   * Enqueue a compaction request.  Only 1 compaction for a given resource (db/table/partSpec) can
+   * be scheduled/running at any given time.
    * @param dbname name of the database, if null default will be used.
    * @param tableName name of the table, cannot be null
    * @param partName name of the partition, if null table will be compacted (valid only for
    *                 non-partitioned tables).
    * @param compactType major or minor
    * @param tblproperties the list of tblproperties to overwrite for this compaction
+   * @return id of new request or id already existing request for specified resource
    * @throws HiveException
    */
-  public void compact(String dbname, String tableName, String partName, String compactType,
-                      Map<String, String> tblproperties)
+  public CompactionResponse compact2(String dbname, String tableName, String partName, String compactType,
+                                     Map<String, String> tblproperties)
       throws HiveException {
     try {
       CompactionType cr = null;
       if ("major".equals(compactType)) cr = CompactionType.MAJOR;
       else if ("minor".equals(compactType)) cr = CompactionType.MINOR;
       else throw new RuntimeException("Unknown compaction type " + compactType);
-      getMSC().compact(dbname, tableName, partName, cr, tblproperties);
+      return getMSC().compact2(dbname, tableName, partName, cr, tblproperties);
     } catch (Exception e) {
       LOG.error(StringUtils.stringifyException(e));
       throw new HiveException(e);
     }
   }
-
   public ShowCompactResponse showCompactions() throws HiveException {
     try {
       return getMSC().showCompactions();

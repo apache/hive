@@ -11,6 +11,8 @@ instr(str, substr) - Returns the index of the first occurance of substr in str
 Example:
   > SELECT instr('Facebook', 'boo') FROM src LIMIT 1;
   5
+Function class:org.apache.hadoop.hive.ql.udf.generic.GenericUDFInstr
+Function type:BUILTIN
 PREHOOK: query: EXPLAIN
 SELECT instr('abcd', 'abc'),
        instr('abcabc', 'ccc'),

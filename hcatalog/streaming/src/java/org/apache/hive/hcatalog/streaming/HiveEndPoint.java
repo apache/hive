@@ -562,10 +562,11 @@ public class HiveEndPoint {
     private final RecordWriter recordWriter;
     private final List<Long> txnIds;
 
-    private int currentTxnIndex = -1;
+    //volatile because heartbeat() may be in a "different" thread; updates of this are "piggybacking"
+    private volatile int currentTxnIndex = -1;
     private final String partNameForLock;
-
-    private TxnState state;
+    //volatile because heartbeat() may be in a "different" thread
+    private volatile TxnState state;
     private LockRequest lockRequest = null;
     /**
      * once any operation on this batch encounters a system exception
@@ -945,7 +946,14 @@ public class HiveEndPoint {
       if(isClosed) {
         return;
       }
-      Long first = txnIds.get(currentTxnIndex);
+      if(state != TxnState.OPEN && currentTxnIndex >= txnIds.size() - 1) {
+        //here means last txn in the batch is resolved but the close() hasn't been called yet so
+        //there is nothing to heartbeat
+        return;
+      }
+      //if here after commit()/abort() but before next beginNextTransaction(), currentTxnIndex still
+      //points at the last txn which we don't want to heartbeat
+      Long first = txnIds.get(state == TxnState.OPEN ? currentTxnIndex : currentTxnIndex + 1);
       Long last = txnIds.get(txnIds.size()-1);
       try {
         HeartbeatTxnRangeResponse resp = heartbeaterMSClient.heartbeatTxnRange(first, last);

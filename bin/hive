@@ -87,6 +87,14 @@ if [ "$SERVICE" = "" ] ; then
   fi
 fi
 
+if [[ "$SERVICE" =~ ^(help|version|orcfiledump|rcfilecat|schemaTool|cleardanglingscratchdir|metastore|beeline|llapstatus|llap)$ ]] ; then
+  SKIP_HBASECP=true
+fi
+
+if [[ "$SERVICE" =~ ^(help|schemaTool)$ ]] ; then
+  SKIP_HADOOPVERSION=true
+fi
+
 if [ -f "${HIVE_CONF_DIR}/hive-env.sh" ]; then
   . "${HIVE_CONF_DIR}/hive-env.sh"
 fi

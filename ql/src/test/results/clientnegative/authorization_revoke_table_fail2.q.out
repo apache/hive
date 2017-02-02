@@ -1,21 +1,15 @@
-PREHOOK: query: -- current user has been set (comment line before the set cmd is resulting in parse error!!)
-
-CREATE TABLE table_priv_rfai2(i int)
+PREHOOK: query: CREATE TABLE table_priv_rfai2(i int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@table_priv_rfai2
-POSTHOOK: query: -- current user has been set (comment line before the set cmd is resulting in parse error!!)
-
-CREATE TABLE table_priv_rfai2(i int)
+POSTHOOK: query: CREATE TABLE table_priv_rfai2(i int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@table_priv_rfai2
-PREHOOK: query: -- grant insert to user2
-GRANT INSERT ON table_priv_rfai2 TO USER user2
+PREHOOK: query: GRANT INSERT ON table_priv_rfai2 TO USER user2
 PREHOOK: type: GRANT_PRIVILEGE
 PREHOOK: Output: default@table_priv_rfai2
-POSTHOOK: query: -- grant insert to user2
-GRANT INSERT ON table_priv_rfai2 TO USER user2
+POSTHOOK: query: GRANT INSERT ON table_priv_rfai2 TO USER user2
 POSTHOOK: type: GRANT_PRIVILEGE
 POSTHOOK: Output: default@table_priv_rfai2
 PREHOOK: query: GRANT SELECT ON table_priv_rfai2 TO USER user3 WITH GRANT OPTION
@@ -24,16 +18,13 @@ PREHOOK: Output: default@table_priv_rfai2
 POSTHOOK: query: GRANT SELECT ON table_priv_rfai2 TO USER user3 WITH GRANT OPTION
 POSTHOOK: type: GRANT_PRIVILEGE
 POSTHOOK: Output: default@table_priv_rfai2
-PREHOOK: query: -- grant select as user3 to user 2
-GRANT SELECT ON table_priv_rfai2 TO USER user2
+PREHOOK: query: GRANT SELECT ON table_priv_rfai2 TO USER user2
 PREHOOK: type: GRANT_PRIVILEGE
 PREHOOK: Output: default@table_priv_rfai2
-POSTHOOK: query: -- grant select as user3 to user 2
-GRANT SELECT ON table_priv_rfai2 TO USER user2
+POSTHOOK: query: GRANT SELECT ON table_priv_rfai2 TO USER user2
 POSTHOOK: type: GRANT_PRIVILEGE
 POSTHOOK: Output: default@table_priv_rfai2
-PREHOOK: query: -- try dropping the privilege as user3
-REVOKE INSERT ON TABLE table_priv_rfai2 FROM USER user2
+PREHOOK: query: REVOKE INSERT ON TABLE table_priv_rfai2 FROM USER user2
 PREHOOK: type: REVOKE_PRIVILEGE
 PREHOOK: Output: default@table_priv_rfai2
 FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. Cannot find privilege Privilege [name=INSERT, columns=null] for Principal [name=user2, type=USER] on Object [type=TABLE_OR_VIEW, name=default.table_priv_rfai2] granted by user3

@@ -3,12 +3,10 @@ PREHOOK: type: SHOWDATABASES
 POSTHOOK: query: SHOW DATABASES
 POSTHOOK: type: SHOWDATABASES
 default
-PREHOOK: query: -- Try to drop a non-empty database in restrict mode
-CREATE DATABASE db_drop_non_empty_restrict
+PREHOOK: query: CREATE DATABASE db_drop_non_empty_restrict
 PREHOOK: type: CREATEDATABASE
 PREHOOK: Output: database:db_drop_non_empty_restrict
-POSTHOOK: query: -- Try to drop a non-empty database in restrict mode
-CREATE DATABASE db_drop_non_empty_restrict
+POSTHOOK: query: CREATE DATABASE db_drop_non_empty_restrict
 POSTHOOK: type: CREATEDATABASE
 POSTHOOK: Output: database:db_drop_non_empty_restrict
 PREHOOK: query: USE db_drop_non_empty_restrict

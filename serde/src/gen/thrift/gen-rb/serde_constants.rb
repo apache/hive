@@ -95,6 +95,8 @@ LIST_COLUMN_TYPES = %q"columns.types"
 
 TIMESTAMP_FORMATS = %q"timestamp.formats"
 
+COLUMN_NAME_DELIMITER = %q"column.name.delimiter"
+
 PrimitiveTypes = Set.new([
   %q"void",
   %q"boolean",

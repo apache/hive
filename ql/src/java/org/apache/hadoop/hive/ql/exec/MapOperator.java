@@ -45,6 +45,7 @@ import org.apache.hadoop.hive.ql.plan.PartitionDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.plan.TableScanDesc;
 import org.apache.hadoop.hive.ql.plan.api.OperatorType;
+import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.SerDeStats;
@@ -178,7 +179,6 @@ public class MapOperator extends AbstractMapOperator {
         SerDeUtils.createOverlayedProperties(td.getProperties(), pd.getProperties());
 
     Map<String, String> partSpec = pd.getPartSpec();
-
     opCtx.tableName = String.valueOf(overlayedProps.getProperty("name"));
     opCtx.partName = String.valueOf(partSpec);
     opCtx.deserializer = pd.getDeserializer(hconf);
@@ -279,19 +279,20 @@ public class MapOperator extends AbstractMapOperator {
    * and P1's schema is same as T, whereas P2's scheme is different from T, conversion
    * might be needed for both P1 and P2, since SettableOI might be needed for T
    */
-  private Map<TableDesc, StructObjectInspector> getConvertedOI(Configuration hconf)
+  private Map<TableDesc, StructObjectInspector> getConvertedOI(Map<String, Configuration> tableToConf)
       throws HiveException {
     Map<TableDesc, StructObjectInspector> tableDescOI =
         new HashMap<TableDesc, StructObjectInspector>();
     Set<TableDesc> identityConverterTableDesc = new HashSet<TableDesc>();
+
     try {
       Map<ObjectInspector, Boolean> oiSettableProperties = new HashMap<ObjectInspector, Boolean>();
 
       for (Path onefile : conf.getPathToAliases().keySet()) {
         PartitionDesc pd = conf.getPathToPartitionInfo().get(onefile);
         TableDesc tableDesc = pd.getTableDesc();
+        Configuration hconf = tableToConf.get(tableDesc.getTableName());
         Deserializer partDeserializer = pd.getDeserializer(hconf);
-
         StructObjectInspector partRawRowObjectInspector;
         boolean isAcid = AcidUtils.isTablePropertyTransactional(tableDesc.getProperties());
         if (Utilities.isSchemaEvolutionEnabled(hconf, isAcid) && Utilities.isInputFileFormatSelfDescribing(pd)) {
@@ -329,6 +330,58 @@ public class MapOperator extends AbstractMapOperator {
     return tableDescOI;
   }
 
+  /**
+   * For each source table, combine the nested column pruning information from all its
+   * table scan descriptors and set it in a configuration copy. This is necessary since
+   * the configuration property "READ_NESTED_COLUMN_PATH_CONF_STR" is set on a per-table
+   * basis, so we can't just use a single configuration for all the tables.
+   */
+  private Map<String, Configuration> cloneConfsForNestedColPruning(Configuration hconf) {
+    Map<String, Configuration> tableNameToConf = new HashMap<>();
+
+    for (Map.Entry<Path, ArrayList<String>> e : conf.getPathToAliases().entrySet()) {
+      List<String> aliases = e.getValue();
+      if (aliases == null || aliases.isEmpty()) {
+        continue;
+      }
+
+      String tableName = conf.getPathToPartitionInfo().get(e.getKey()).getTableName();
+      for (String alias: aliases) {
+        Operator<?> rootOp = conf.getAliasToWork().get(alias);
+        if (!(rootOp instanceof TableScanOperator)) {
+          continue;
+        }
+        TableScanDesc tableScanDesc = ((TableScanOperator) rootOp).getConf();
+        List<String> nestedColumnPaths = tableScanDesc.getNeededNestedColumnPaths();
+        if (nestedColumnPaths == null || nestedColumnPaths.isEmpty()) {
+          continue;
+        }
+        if (!tableNameToConf.containsKey(tableName)) {
+          Configuration clonedConf = new Configuration(hconf);
+          clonedConf.unset(ColumnProjectionUtils.READ_NESTED_COLUMN_PATH_CONF_STR);
+          tableNameToConf.put(tableName, clonedConf);
+        }
+        Configuration newConf = tableNameToConf.get(tableName);
+        ColumnProjectionUtils.appendNestedColumnPaths(newConf, nestedColumnPaths);
+      }
+    }
+
+    // Assign tables without nested column pruning info to the default conf
+    for (PartitionDesc pd : conf.getPathToPartitionInfo().values()) {
+      if (!tableNameToConf.containsKey(pd.getTableName())) {
+        tableNameToConf.put(pd.getTableName(), hconf);
+      }
+    }
+
+    for (PartitionDesc pd: conf.getAliasToPartnInfo().values()) {
+      if (!tableNameToConf.containsKey(pd.getTableName())) {
+        tableNameToConf.put(pd.getTableName(), hconf);
+      }
+    }
+
+    return tableNameToConf;
+  }
+
   /*
    * This is the same as the setChildren method below but for empty tables.
    * It takes care of the following:
@@ -339,15 +392,19 @@ public class MapOperator extends AbstractMapOperator {
   public void initEmptyInputChildren(List<Operator<?>> children, Configuration hconf)
     throws SerDeException, Exception {
     setChildOperators(children);
+
+    Map<String, Configuration> tableNameToConf = cloneConfsForNestedColPruning(hconf);
+
     for (Operator<?> child : children) {
       TableScanOperator tsOp = (TableScanOperator) child;
       StructObjectInspector soi = null;
       PartitionDesc partDesc = conf.getAliasToPartnInfo().get(tsOp.getConf().getAlias());
+      Configuration newConf = tableNameToConf.get(partDesc.getTableDesc().getTableName());
       Deserializer serde = partDesc.getTableDesc().getDeserializer();
       partDesc.setProperties(partDesc.getProperties());
       MapOpCtx opCtx = new MapOpCtx(tsOp.getConf().getAlias(), child, partDesc);
       StructObjectInspector tableRowOI = (StructObjectInspector) serde.getObjectInspector();
-      initObjectInspector(hconf, opCtx, tableRowOI);
+      initObjectInspector(newConf, opCtx, tableRowOI);
       soi = opCtx.rowObjectInspector;
       child.getParentOperators().add(this);
       childrenOpToOI.put(child, soi);
@@ -359,12 +416,15 @@ public class MapOperator extends AbstractMapOperator {
     List<Operator<? extends OperatorDesc>> children =
         new ArrayList<Operator<? extends OperatorDesc>>();
 
-    Map<TableDesc, StructObjectInspector> convertedOI = getConvertedOI(hconf);
+    Map<String, Configuration> tableNameToConf = cloneConfsForNestedColPruning(hconf);
+    Map<TableDesc, StructObjectInspector> convertedOI = getConvertedOI(tableNameToConf);
 
     for (Map.Entry<Path, ArrayList<String>> entry : conf.getPathToAliases().entrySet()) {
       Path onefile = entry.getKey();
       List<String> aliases = entry.getValue();
       PartitionDesc partDesc = conf.getPathToPartitionInfo().get(onefile);
+      TableDesc tableDesc = partDesc.getTableDesc();
+      Configuration newConf = tableNameToConf.get(tableDesc.getTableName());
 
       for (String alias : aliases) {
         Operator<? extends OperatorDesc> op = conf.getAliasToWork().get(alias);
@@ -381,7 +441,7 @@ public class MapOperator extends AbstractMapOperator {
         }
         MapOpCtx context = new MapOpCtx(alias, op, partDesc);
         StructObjectInspector tableRowOI = convertedOI.get(partDesc.getTableDesc());
-        contexts.put(op, initObjectInspector(hconf, context, tableRowOI));
+        contexts.put(op, initObjectInspector(newConf, context, tableRowOI));
 
         if (children.contains(op) == false) {
           op.setParentOperators(new ArrayList<Operator<? extends OperatorDesc>>(1));

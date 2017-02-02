@@ -103,6 +103,8 @@ public class MetadataTypedColumnsetSerDe extends AbstractSerDe {
         && serdeName.equals("org.apache.hadoop.hive.serde.thrift.columnsetSerDe")) {
       columnsetSerDe = true;
     }
+    final String columnNameDelimiter = tbl.containsKey(serdeConstants.COLUMN_NAME_DELIMITER) ? tbl
+        .getProperty(serdeConstants.COLUMN_NAME_DELIMITER) : String.valueOf(SerDeUtils.COMMA);
     if (columnProperty == null || columnProperty.length() == 0
         || columnsetSerDe) {
       // Hack for tables with no columns
@@ -111,7 +113,7 @@ public class MetadataTypedColumnsetSerDe extends AbstractSerDe {
           .getReflectionObjectInspector(ColumnSet.class,
           ObjectInspectorFactory.ObjectInspectorOptions.JAVA);
     } else {
-      columnNames = Arrays.asList(columnProperty.split(","));
+      columnNames = Arrays.asList(columnProperty.split(columnNameDelimiter));
       cachedObjectInspector = MetadataListStructObjectInspector
           .getInstance(columnNames);
     }

@@ -1,13 +1,9 @@
-PREHOOK: query: -- Test SHOW CREATE TABLE on an external, clustered and sorted table. Then test the query again after ALTERs.
-
-CREATE EXTERNAL TABLE tmp_showcrt1 (key smallint, value float)
+PREHOOK: query: CREATE EXTERNAL TABLE tmp_showcrt1 (key smallint, value float)
 CLUSTERED BY (key) SORTED BY (value DESC) INTO 5 BUCKETS
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@tmp_showcrt1
-POSTHOOK: query: -- Test SHOW CREATE TABLE on an external, clustered and sorted table. Then test the query again after ALTERs.
-
-CREATE EXTERNAL TABLE tmp_showcrt1 (key smallint, value float)
+POSTHOOK: query: CREATE EXTERNAL TABLE tmp_showcrt1 (key smallint, value float)
 CLUSTERED BY (key) SORTED BY (value DESC) INTO 5 BUCKETS
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
@@ -36,13 +32,11 @@ LOCATION
 #### A masked pattern was here ####
 TBLPROPERTIES (
 #### A masked pattern was here ####
-PREHOOK: query: -- Add a comment to the table, change the EXTERNAL property, and test SHOW CREATE TABLE on the change.
-ALTER TABLE tmp_showcrt1 SET TBLPROPERTIES ('comment'='temporary table', 'EXTERNAL'='FALSE')
+PREHOOK: query: ALTER TABLE tmp_showcrt1 SET TBLPROPERTIES ('comment'='temporary table', 'EXTERNAL'='FALSE')
 PREHOOK: type: ALTERTABLE_PROPERTIES
 PREHOOK: Input: default@tmp_showcrt1
 PREHOOK: Output: default@tmp_showcrt1
-POSTHOOK: query: -- Add a comment to the table, change the EXTERNAL property, and test SHOW CREATE TABLE on the change.
-ALTER TABLE tmp_showcrt1 SET TBLPROPERTIES ('comment'='temporary table', 'EXTERNAL'='FALSE')
+POSTHOOK: query: ALTER TABLE tmp_showcrt1 SET TBLPROPERTIES ('comment'='temporary table', 'EXTERNAL'='FALSE')
 POSTHOOK: type: ALTERTABLE_PROPERTIES
 POSTHOOK: Input: default@tmp_showcrt1
 POSTHOOK: Output: default@tmp_showcrt1
@@ -72,13 +66,11 @@ LOCATION
 TBLPROPERTIES (
   'EXTERNAL'='FALSE', 
 #### A masked pattern was here ####
-PREHOOK: query: -- Alter the table comment, change the EXTERNAL property back and test SHOW CREATE TABLE on the change.
-ALTER TABLE tmp_showcrt1 SET TBLPROPERTIES ('comment'='changed comment', 'EXTERNAL'='TRUE')
+PREHOOK: query: ALTER TABLE tmp_showcrt1 SET TBLPROPERTIES ('comment'='changed comment', 'EXTERNAL'='TRUE')
 PREHOOK: type: ALTERTABLE_PROPERTIES
 PREHOOK: Input: default@tmp_showcrt1
 PREHOOK: Output: default@tmp_showcrt1
-POSTHOOK: query: -- Alter the table comment, change the EXTERNAL property back and test SHOW CREATE TABLE on the change.
-ALTER TABLE tmp_showcrt1 SET TBLPROPERTIES ('comment'='changed comment', 'EXTERNAL'='TRUE')
+POSTHOOK: query: ALTER TABLE tmp_showcrt1 SET TBLPROPERTIES ('comment'='changed comment', 'EXTERNAL'='TRUE')
 POSTHOOK: type: ALTERTABLE_PROPERTIES
 POSTHOOK: Input: default@tmp_showcrt1
 POSTHOOK: Output: default@tmp_showcrt1
@@ -107,13 +99,11 @@ LOCATION
 #### A masked pattern was here ####
 TBLPROPERTIES (
 #### A masked pattern was here ####
-PREHOOK: query: -- Change the 'SORTBUCKETCOLSPREFIX' property and test SHOW CREATE TABLE. The output should not change.
-ALTER TABLE tmp_showcrt1 SET TBLPROPERTIES ('SORTBUCKETCOLSPREFIX'='FALSE')
+PREHOOK: query: ALTER TABLE tmp_showcrt1 SET TBLPROPERTIES ('SORTBUCKETCOLSPREFIX'='FALSE')
 PREHOOK: type: ALTERTABLE_PROPERTIES
 PREHOOK: Input: default@tmp_showcrt1
 PREHOOK: Output: default@tmp_showcrt1
-POSTHOOK: query: -- Change the 'SORTBUCKETCOLSPREFIX' property and test SHOW CREATE TABLE. The output should not change.
-ALTER TABLE tmp_showcrt1 SET TBLPROPERTIES ('SORTBUCKETCOLSPREFIX'='FALSE')
+POSTHOOK: query: ALTER TABLE tmp_showcrt1 SET TBLPROPERTIES ('SORTBUCKETCOLSPREFIX'='FALSE')
 POSTHOOK: type: ALTERTABLE_PROPERTIES
 POSTHOOK: Input: default@tmp_showcrt1
 POSTHOOK: Output: default@tmp_showcrt1
@@ -142,13 +132,11 @@ LOCATION
 #### A masked pattern was here ####
 TBLPROPERTIES (
 #### A masked pattern was here ####
-PREHOOK: query: -- Alter the storage handler of the table, and test SHOW CREATE TABLE.
-ALTER TABLE tmp_showcrt1 SET TBLPROPERTIES ('storage_handler'='org.apache.hadoop.hive.ql.metadata.DefaultStorageHandler')
+PREHOOK: query: ALTER TABLE tmp_showcrt1 SET TBLPROPERTIES ('storage_handler'='org.apache.hadoop.hive.ql.metadata.DefaultStorageHandler')
 PREHOOK: type: ALTERTABLE_PROPERTIES
 PREHOOK: Input: default@tmp_showcrt1
 PREHOOK: Output: default@tmp_showcrt1
-POSTHOOK: query: -- Alter the storage handler of the table, and test SHOW CREATE TABLE.
-ALTER TABLE tmp_showcrt1 SET TBLPROPERTIES ('storage_handler'='org.apache.hadoop.hive.ql.metadata.DefaultStorageHandler')
+POSTHOOK: query: ALTER TABLE tmp_showcrt1 SET TBLPROPERTIES ('storage_handler'='org.apache.hadoop.hive.ql.metadata.DefaultStorageHandler')
 POSTHOOK: type: ALTERTABLE_PROPERTIES
 POSTHOOK: Input: default@tmp_showcrt1
 POSTHOOK: Output: default@tmp_showcrt1

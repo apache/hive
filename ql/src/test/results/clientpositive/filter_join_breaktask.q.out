@@ -1,12 +1,8 @@
-PREHOOK: query: -- SORT_QUERY_RESULTS
-
-CREATE TABLE filter_join_breaktask(key int, value string) partitioned by (ds string)
+PREHOOK: query: CREATE TABLE filter_join_breaktask(key int, value string) partitioned by (ds string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@filter_join_breaktask
-POSTHOOK: query: -- SORT_QUERY_RESULTS
-
-CREATE TABLE filter_join_breaktask(key int, value string) partitioned by (ds string)
+POSTHOOK: query: CREATE TABLE filter_join_breaktask(key int, value string) partitioned by (ds string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@filter_join_breaktask
@@ -95,6 +91,7 @@ STAGE PLANS:
             properties:
               COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
               bucket_count -1
+              column.name.delimiter ,
               columns key,value
               columns.comments 
               columns.types int:string
@@ -116,6 +113,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
                 bucket_count -1
+                column.name.delimiter ,
                 columns key,value
                 columns.comments 
                 columns.types int:string
@@ -151,6 +149,7 @@ STAGE PLANS:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                 properties:
+                  column.name.delimiter ,
                   columns _col0,_col3
                   columns.types int,string
                   escape.delim \
@@ -203,6 +202,7 @@ STAGE PLANS:
             input format: org.apache.hadoop.mapred.SequenceFileInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
             properties:
+              column.name.delimiter ,
               columns _col0,_col3
               columns.types int,string
               escape.delim \
@@ -212,6 +212,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.SequenceFileInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
               properties:
+                column.name.delimiter ,
                 columns _col0,_col3
                 columns.types int,string
                 escape.delim \
@@ -227,6 +228,7 @@ STAGE PLANS:
             properties:
               COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
               bucket_count -1
+              column.name.delimiter ,
               columns key,value
               columns.comments 
               columns.types int:string
@@ -248,6 +250,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
                 bucket_count -1
+                column.name.delimiter ,
                 columns key,value
                 columns.comments 
                 columns.types int:string

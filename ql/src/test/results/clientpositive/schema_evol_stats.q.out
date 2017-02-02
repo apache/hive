@@ -8,11 +8,9 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@partitioned1
 PREHOOK: query: insert into table partitioned1 partition(part=1) values(1, 'original'),(2, 'original'), (3, 'original'),(4, 'original')
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__1
 PREHOOK: Output: default@partitioned1@part=1
 POSTHOOK: query: insert into table partitioned1 partition(part=1) values(1, 'original'),(2, 'original'), (3, 'original'),(4, 'original')
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__1
 POSTHOOK: Output: default@partitioned1@part=1
 POSTHOOK: Lineage: partitioned1 PARTITION(part=1).a EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 POSTHOOK: Lineage: partitioned1 PARTITION(part=1).b SIMPLE [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
@@ -28,11 +26,9 @@ POSTHOOK: Input: default@partitioned1
 POSTHOOK: Output: default@partitioned1
 PREHOOK: query: insert into table partitioned1 partition(part=2) values(1, 'new', 10, 'ten'),(2, 'new', NULL, 'twenty'), (3, 'new', 30, 'thirty'),(4, 'new', 40, 'forty')
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__2
 PREHOOK: Output: default@partitioned1@part=2
 POSTHOOK: query: insert into table partitioned1 partition(part=2) values(1, 'new', 10, 'ten'),(2, 'new', NULL, 'twenty'), (3, 'new', 30, 'thirty'),(4, 'new', 40, 'forty')
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__2
 POSTHOOK: Output: default@partitioned1@part=2
 POSTHOOK: Lineage: partitioned1 PARTITION(part=2).a EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 POSTHOOK: Lineage: partitioned1 PARTITION(part=2).b SIMPLE [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
@@ -208,11 +204,9 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@partitioned1
 PREHOOK: query: insert into table partitioned1 partition(part=1) values(1, 'original'),(2, 'original'), (3, 'original'),(4, 'original')
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__3
 PREHOOK: Output: default@partitioned1@part=1
 POSTHOOK: query: insert into table partitioned1 partition(part=1) values(1, 'original'),(2, 'original'), (3, 'original'),(4, 'original')
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__3
 POSTHOOK: Output: default@partitioned1@part=1
 POSTHOOK: Lineage: partitioned1 PARTITION(part=1).a EXPRESSION [(values__tmp__table__3)values__tmp__table__3.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 POSTHOOK: Lineage: partitioned1 PARTITION(part=1).b SIMPLE [(values__tmp__table__3)values__tmp__table__3.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
@@ -228,11 +222,9 @@ POSTHOOK: Input: default@partitioned1
 POSTHOOK: Output: default@partitioned1
 PREHOOK: query: insert into table partitioned1 partition(part=2) values(1, 'new', 10, 'ten'),(2, 'new', NULL, 'twenty'), (3, 'new', 30, 'thirty'),(4, 'new', 40, 'forty')
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__4
 PREHOOK: Output: default@partitioned1@part=2
 POSTHOOK: query: insert into table partitioned1 partition(part=2) values(1, 'new', 10, 'ten'),(2, 'new', NULL, 'twenty'), (3, 'new', 30, 'thirty'),(4, 'new', 40, 'forty')
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__4
 POSTHOOK: Output: default@partitioned1@part=2
 POSTHOOK: Lineage: partitioned1 PARTITION(part=2).a EXPRESSION [(values__tmp__table__4)values__tmp__table__4.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 POSTHOOK: Lineage: partitioned1 PARTITION(part=2).b SIMPLE [(values__tmp__table__4)values__tmp__table__4.FieldSchema(name:tmp_values_col2, type:string, comment:), ]

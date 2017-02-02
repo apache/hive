@@ -140,7 +140,7 @@ public abstract class TableFunctionEvaluator {
       return transformRawInput(iPart);
     }
     PTFPartitionIterator<Object> pItr = iPart.iterator();
-    PTFOperator.connectLeadLagFunctionsToPartition(ptfDesc, pItr);
+    PTFOperator.connectLeadLagFunctionsToPartition(ptfDesc.getLlInfo(), pItr);
 
     if ( outputPartition == null ) {
       outputPartition = PTFPartition.create(ptfDesc.getCfg(),

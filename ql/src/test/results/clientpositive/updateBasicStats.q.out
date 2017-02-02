@@ -128,11 +128,9 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@calendarp
 PREHOOK: query: insert into table calendarp partition (p=1) values (2010), (2011), (2012)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__1
 PREHOOK: Output: default@calendarp@p=1
 POSTHOOK: query: insert into table calendarp partition (p=1) values (2010), (2011), (2012)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__1
 POSTHOOK: Output: default@calendarp@p=1
 POSTHOOK: Lineage: calendarp PARTITION(p=1).year EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 PREHOOK: query: explain select * from calendarp where p=1

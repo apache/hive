@@ -1,7 +1,4 @@
-PREHOOK: query: -- SORT_BEFORE_DIFF
--- union case: both subqueries are map jobs on same input, followed by filesink
-
-EXPLAIN
+PREHOOK: query: EXPLAIN
 FROM (
   FROM src select src.key, src.value WHERE src.key < 100
   UNION ALL
@@ -9,10 +6,7 @@ FROM (
 ) unioninput
 INSERT OVERWRITE DIRECTORY 'target/warehouse/union.out' SELECT unioninput.*
 PREHOOK: type: QUERY
-POSTHOOK: query: -- SORT_BEFORE_DIFF
--- union case: both subqueries are map jobs on same input, followed by filesink
-
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 FROM (
   FROM src select src.key, src.value WHERE src.key < 100
   UNION ALL

@@ -85,8 +85,6 @@ public class ZooKeeperCleanup extends Thread {
 
   /**
    * Run the cleanup loop.
-   *
-   * @throws IOException
    */
   public void run() {
     CuratorFramework zk = null;
@@ -131,8 +129,6 @@ public class ZooKeeperCleanup extends Thread {
 
   /**
    * Get the list of jobs from JobState
-   *
-   * @throws IOException
    */
   public List<String> getChildList(CuratorFramework zk) {
     try {

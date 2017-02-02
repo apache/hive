@@ -373,6 +373,7 @@ CREATE TABLE "TBLS" (
     "TBL_TYPE" character varying(128) DEFAULT NULL::character varying,
     "VIEW_EXPANDED_TEXT" text,
     "VIEW_ORIGINAL_TEXT" text,
+    "IS_REWRITE_ENABLED" boolean NOT NULL,
     "MM_WATERMARK_WRITE_ID" bigint DEFAULT -1,
     "MM_NEXT_WRITE_ID" bigint DEFAULT 0
 );

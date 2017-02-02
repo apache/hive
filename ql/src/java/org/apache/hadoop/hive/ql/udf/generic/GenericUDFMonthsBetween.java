@@ -35,6 +35,7 @@ import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
+import org.apache.hadoop.hive.serde2.objectinspector.ConstantObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters.Converter;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
@@ -44,7 +45,8 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectIn
  * UDFMonthsBetween.
  *
  */
-@Description(name = "months_between", value = "_FUNC_(date1, date2) - returns number of months between dates date1 and date2",
+@Description(name = "months_between", value = "_FUNC_(date1, date2, roundOff) "
+    + "- returns number of months between dates date1 and date2",
     extended = "If date1 is later than date2, then the result is positive. "
     + "If date1 is earlier than date2, then the result is negative. "
     + "If date1 and date2 are either the same days of the month or both last days of months, "
@@ -53,7 +55,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectIn
     + "month and considers the difference in time components date1 and date2.\n"
     + "date1 and date2 type can be date, timestamp or string in the format "
     + "'yyyy-MM-dd' or 'yyyy-MM-dd HH:mm:ss'. "
-    + "The result is rounded to 8 decimal places.\n"
+    + "The result is rounded to 8 decimal places by default. Set roundOff=false otherwise.\n"
     + " Example:\n"
     + "  > SELECT _FUNC_('1997-02-28 10:30:00', '1996-10-30');\n 3.94959677")
 public class GenericUDFMonthsBetween extends GenericUDF {
@@ -64,13 +66,20 @@ public class GenericUDFMonthsBetween extends GenericUDF {
   private final Calendar cal1 = Calendar.getInstance();
   private final Calendar cal2 = Calendar.getInstance();
   private final DoubleWritable output = new DoubleWritable();
+  private boolean isRoundOffNeeded = true;
 
   @Override
   public ObjectInspector initialize(ObjectInspector[] arguments) throws UDFArgumentException {
-    checkArgsSize(arguments, 2, 2);
+    checkArgsSize(arguments, 2, 3);
 
     checkArgPrimitive(arguments, 0);
     checkArgPrimitive(arguments, 1);
+
+    if (arguments.length == 3) {
+      if (arguments[2] instanceof ConstantObjectInspector) {
+        isRoundOffNeeded = getConstantBooleanValue(arguments, 2);
+      }
+    }
 
     // the function should support both short date and full timestamp format
     // time part of the timestamp should not be skipped
@@ -129,9 +138,11 @@ public class GenericUDFMonthsBetween extends GenericUDF {
     // 1 sec is 0.000000373 months (1/2678400). 1 month is 31 days.
     // there should be no adjustments for leap seconds
     double monBtwDbl = monDiffInt + (sec1 - sec2) / 2678400D;
-    // Round a double to 8 decimal places.
-    double result = BigDecimal.valueOf(monBtwDbl).setScale(8, ROUND_HALF_UP).doubleValue();
-    output.set(result);
+    if (isRoundOffNeeded) {
+      // Round a double to 8 decimal places.
+      monBtwDbl = BigDecimal.valueOf(monBtwDbl).setScale(8, ROUND_HALF_UP).doubleValue();
+    }
+    output.set(monBtwDbl);
     return output;
   }
 

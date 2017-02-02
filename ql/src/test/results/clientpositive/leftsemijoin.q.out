@@ -1,10 +1,6 @@
-PREHOOK: query: -- SORT_QUERY_RESULTS
-
-drop table sales
+PREHOOK: query: drop table sales
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: -- SORT_QUERY_RESULTS
-
-drop table sales
+POSTHOOK: query: drop table sales
 POSTHOOK: type: DROPTABLE
 PREHOOK: query: drop table things
 PREHOOK: type: DROPTABLE

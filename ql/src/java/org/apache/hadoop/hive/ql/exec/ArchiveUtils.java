@@ -87,7 +87,7 @@ public final class ArchiveUtils {
         }
         if (!itrPsKeys.next().toLowerCase().equals(
             fs.getName().toLowerCase())) {
-          throw new HiveException("Invalid partition specifiation: "
+          throw new HiveException("Invalid partition specification: "
               + partSpec);
         }
         prefixFields.add(fs);

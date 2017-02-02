@@ -1,0 +1,275 @@
+PREHOOK: query: create table e1 (key string, count int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@e1
+POSTHOOK: query: create table e1 (key string, count int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@e1
+PREHOOK: query: create table e2 (key string, count int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@e2
+POSTHOOK: query: create table e2 (key string, count int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@e2
+PREHOOK: query: create table e3 (key string, count int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@e3
+POSTHOOK: query: create table e3 (key string, count int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@e3
+PREHOOK: query: explain
+FROM (SELECT key, value FROM src) a
+INSERT OVERWRITE TABLE e1
+    SELECT key, COUNT(*) WHERE key>450 GROUP BY key
+INSERT OVERWRITE TABLE e2
+    SELECT key, COUNT(*) WHERE key>500 GROUP BY key
+INSERT OVERWRITE TABLE e3
+    SELECT key, COUNT(*) WHERE key>490 GROUP BY key
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+FROM (SELECT key, value FROM src) a
+INSERT OVERWRITE TABLE e1
+    SELECT key, COUNT(*) WHERE key>450 GROUP BY key
+INSERT OVERWRITE TABLE e2
+    SELECT key, COUNT(*) WHERE key>500 GROUP BY key
+INSERT OVERWRITE TABLE e3
+    SELECT key, COUNT(*) WHERE key>490 GROUP BY key
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-3 is a root stage
+  Stage-0 depends on stages: Stage-3
+  Stage-4 depends on stages: Stage-0
+  Stage-1 depends on stages: Stage-3
+  Stage-5 depends on stages: Stage-1
+  Stage-2 depends on stages: Stage-3
+  Stage-6 depends on stages: Stage-2
+
+STAGE PLANS:
+  Stage: Stage-3
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: src
+            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: key (type: string)
+              outputColumnNames: _col0
+              Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+              Filter Operator
+                predicate: ((_col0 > 490) or ((_col0 > 500) or (_col0 > 450))) (type: boolean)
+                Statistics: Num rows: 498 Data size: 5290 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col0 (type: string)
+                  sort order: +
+                  Map-reduce partition columns: _col0 (type: string)
+                  Statistics: Num rows: 498 Data size: 5290 Basic stats: COMPLETE Column stats: NONE
+      Reduce Operator Tree:
+        Forward
+          Statistics: Num rows: 498 Data size: 5290 Basic stats: COMPLETE Column stats: NONE
+          Filter Operator
+            predicate: (KEY._col0 > 450) (type: boolean)
+            Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+            Group By Operator
+              aggregations: count()
+              keys: KEY._col0 (type: string)
+              mode: complete
+              outputColumnNames: _col0, _col1
+              Statistics: Num rows: 83 Data size: 881 Basic stats: COMPLETE Column stats: NONE
+              Select Operator
+                expressions: _col0 (type: string), UDFToInteger(_col1) (type: int)
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 83 Data size: 881 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 83 Data size: 881 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      name: default.e1
+          Filter Operator
+            predicate: (KEY._col0 > 500) (type: boolean)
+            Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+            Group By Operator
+              aggregations: count()
+              keys: KEY._col0 (type: string)
+              mode: complete
+              outputColumnNames: _col0, _col1
+              Statistics: Num rows: 83 Data size: 881 Basic stats: COMPLETE Column stats: NONE
+              Select Operator
+                expressions: _col0 (type: string), UDFToInteger(_col1) (type: int)
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 83 Data size: 881 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 83 Data size: 881 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      name: default.e2
+          Filter Operator
+            predicate: (KEY._col0 > 490) (type: boolean)
+            Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+            Group By Operator
+              aggregations: count()
+              keys: KEY._col0 (type: string)
+              mode: complete
+              outputColumnNames: _col0, _col1
+              Statistics: Num rows: 83 Data size: 881 Basic stats: COMPLETE Column stats: NONE
+              Select Operator
+                expressions: _col0 (type: string), UDFToInteger(_col1) (type: int)
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 83 Data size: 881 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 83 Data size: 881 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      name: default.e3
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          replace: true
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.e1
+
+  Stage: Stage-4
+    Stats-Aggr Operator
+
+  Stage: Stage-1
+    Move Operator
+      tables:
+          replace: true
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.e2
+
+  Stage: Stage-5
+    Stats-Aggr Operator
+
+  Stage: Stage-2
+    Move Operator
+      tables:
+          replace: true
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.e3
+
+  Stage: Stage-6
+    Stats-Aggr Operator
+
+PREHOOK: query: FROM (SELECT key, value FROM src) a
+INSERT OVERWRITE TABLE e1
+    SELECT key, COUNT(*) WHERE key>450 GROUP BY key
+INSERT OVERWRITE TABLE e2
+    SELECT key, COUNT(*) WHERE key>500 GROUP BY key
+INSERT OVERWRITE TABLE e3
+    SELECT key, COUNT(*) WHERE key>490 GROUP BY key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@e1
+PREHOOK: Output: default@e2
+PREHOOK: Output: default@e3
+POSTHOOK: query: FROM (SELECT key, value FROM src) a
+INSERT OVERWRITE TABLE e1
+    SELECT key, COUNT(*) WHERE key>450 GROUP BY key
+INSERT OVERWRITE TABLE e2
+    SELECT key, COUNT(*) WHERE key>500 GROUP BY key
+INSERT OVERWRITE TABLE e3
+    SELECT key, COUNT(*) WHERE key>490 GROUP BY key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@e1
+POSTHOOK: Output: default@e2
+POSTHOOK: Output: default@e3
+POSTHOOK: Lineage: e1.count EXPRESSION [(src)src.null, ]
+POSTHOOK: Lineage: e1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: e2.count EXPRESSION [(src)src.null, ]
+POSTHOOK: Lineage: e2.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: e3.count EXPRESSION [(src)src.null, ]
+POSTHOOK: Lineage: e3.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+PREHOOK: query: select * from e1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@e1
+#### A masked pattern was here ####
+POSTHOOK: query: select * from e1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@e1
+#### A masked pattern was here ####
+452	1
+453	1
+454	3
+455	1
+457	1
+458	2
+459	2
+460	1
+462	2
+463	2
+466	3
+467	1
+468	4
+469	5
+470	1
+472	1
+475	1
+477	1
+478	2
+479	1
+480	3
+481	1
+482	1
+483	1
+484	1
+485	1
+487	1
+489	4
+490	1
+491	1
+492	2
+493	1
+494	1
+495	1
+496	1
+497	1
+498	3
+PREHOOK: query: select * from e2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@e2
+#### A masked pattern was here ####
+POSTHOOK: query: select * from e2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@e2
+#### A masked pattern was here ####
+PREHOOK: query: select * from e3
+PREHOOK: type: QUERY
+PREHOOK: Input: default@e3
+#### A masked pattern was here ####
+POSTHOOK: query: select * from e3
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@e3
+#### A masked pattern was here ####
+491	1
+492	2
+493	1
+494	1
+495	1
+496	1
+497	1
+498	3

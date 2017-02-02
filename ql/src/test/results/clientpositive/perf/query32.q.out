@@ -42,7 +42,7 @@ Vertex dependency in root stage
 Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 6 (SIMPLE_EDGE)
 Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
 Reducer 4 <- Map 7 (SIMPLE_EDGE), Reducer 3 (SIMPLE_EDGE), Reducer 9 (SIMPLE_EDGE)
-Reducer 5 <- Reducer 4 (SIMPLE_EDGE)
+Reducer 5 <- Reducer 4 (CUSTOM_SIMPLE_EDGE)
 Reducer 9 <- Map 10 (SIMPLE_EDGE), Map 8 (SIMPLE_EDGE)
 
 Stage-0
@@ -53,8 +53,8 @@ Stage-0
       File Output Operator [FS_38]
         Group By Operator [GBY_36] (rows=1 width=112)
           Output:["_col0"],aggregations:["sum(VALUE._col0)"]
-        <-Reducer 4 [SIMPLE_EDGE]
-          SHUFFLE [RS_35]
+        <-Reducer 4 [CUSTOM_SIMPLE_EDGE]
+          PARTITION_ONLY_SHUFFLE [RS_35]
             Group By Operator [GBY_34] (rows=1 width=112)
               Output:["_col0"],aggregations:["sum(_col1)"]
               Select Operator [SEL_33] (rows=232311810 width=135)

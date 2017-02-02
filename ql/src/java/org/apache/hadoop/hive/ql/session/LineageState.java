@@ -26,6 +26,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
+import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.hooks.LineageInfo;
 import org.apache.hadoop.hive.ql.hooks.LineageInfo.DataContainer;
 import org.apache.hadoop.hive.ql.optimizer.lineage.LineageCtx.Index;
@@ -38,12 +39,12 @@ import org.apache.hadoop.hive.ql.optimizer.lineage.LineageCtx.Index;
 public class LineageState {
 
   /**
-   * Mapping from the directory name to FileSinkOperator. This
+   * Mapping from the directory name to FileSinkOperator (may not be FileSinkOperator for views). This
    * mapping is generated at the filesink operator creation
    * time and is then later used to created the mapping from
    * movetask to the set of filesink operators.
    */
-  private final Map<Path, FileSinkOperator> dirToFop;
+  private final Map<Path, Operator> dirToFop;
 
   /**
    * The lineage context index for this query.
@@ -60,7 +61,7 @@ public class LineageState {
    * Constructor.
    */
   public LineageState() {
-    dirToFop = new HashMap<Path, FileSinkOperator>();
+    dirToFop = new HashMap<Path, Operator>();
     linfo = new LineageInfo();
     index = new Index();
   }
@@ -69,9 +70,9 @@ public class LineageState {
    * Adds a mapping from the load work to the file sink operator.
    *
    * @param dir The directory name.
-   * @param fop The file sink operator.
+   * @param fop The sink operator.
    */
-  public void mapDirToFop(Path dir, FileSinkOperator fop) {
+  public void mapDirToOp(Path dir, Operator fop) {
     dirToFop.put(dir, fop);
   }
 
@@ -85,18 +86,18 @@ public class LineageState {
   public void setLineage(Path dir, DataContainer dc,
       List<FieldSchema> cols) {
     // First lookup the file sink operator from the load work.
-    FileSinkOperator fop = dirToFop.get(dir);
+    Operator<?> op = dirToFop.get(dir);
 
     // Go over the associated fields and look up the dependencies
     // by position in the row schema of the filesink operator.
-    if (fop == null) {
+    if (op == null) {
       return;
     }
 
-    List<ColumnInfo> signature = fop.getSchema().getSignature();
+    List<ColumnInfo> signature = op.getSchema().getSignature();
     int i = 0;
     for (FieldSchema fs : cols) {
-      linfo.putDependency(dc, fs, index.getDependency(fop, signature.get(i++)));
+      linfo.putDependency(dc, fs, index.getDependency(op, signature.get(i++)));
     }
   }
 

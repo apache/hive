@@ -11,6 +11,8 @@ cbrt(double) - Returns the cube root of a double value.
 Example:
  > SELECT cbrt(27.0);
  3.0
+Function class:org.apache.hadoop.hive.ql.udf.generic.GenericUDFCbrt
+Function type:BUILTIN
 PREHOOK: query: explain select cbrt(27.0)
 PREHOOK: type: QUERY
 POSTHOOK: query: explain select cbrt(27.0)

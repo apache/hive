@@ -41,7 +41,6 @@
     <module>hbase-handler</module>
     <module>hcatalog</module>
     <module>hplsql</module>
-    <module>hwi</module>
     <module>jdbc</module>
     <module>metastore</module>
     <module>orc</module>
@@ -136,7 +135,7 @@
     <derby.version>10.10.2.0</derby.version>
     <dropwizard.version>3.1.0</dropwizard.version>
     <dropwizard-metrics-hadoop-metrics2-reporter.version>0.1.2</dropwizard-metrics-hadoop-metrics2-reporter.version>
-    <druid.version>0.9.1.1</druid.version>
+    <druid.version>0.9.2</druid.version>
     <guava.version>14.0.1</guava.version>
     <groovy.version>2.4.4</groovy.version>
     <hadoop.version>2.7.2</hadoop.version>
@@ -183,6 +182,7 @@
     <stax.version>1.0.1</stax.version>
     <slf4j.version>1.7.10</slf4j.version>
     <ST4.version>4.0.4</ST4.version>
+    <storage-api.version>2.3.0-SNAPSHOT</storage-api.version>
     <tez.version>0.8.4</tez.version>
     <slider.version>0.90.2-incubating</slider.version>
     <super-csv.version>2.2.0</super-csv.version>
@@ -506,6 +506,11 @@
         <groupId>stax</groupId>
         <artifactId>stax-api</artifactId>
         <version>${stax.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.hive</groupId>
+        <artifactId>hive-storage-api</artifactId>
+        <version>${storage-api.version}</version>
       </dependency>
       <dependency>
         <groupId>org.apache.pig</groupId>
@@ -1011,6 +1016,7 @@
           <reuseForks>false</reuseForks>
           <failIfNoTests>false</failIfNoTests>
           <argLine>${maven.test.jvm.args}</argLine>
+          <trimStackTrace>false</trimStackTrace>
           <additionalClasspathElements>
             <additionalClasspathElement>${test.conf.dir}</additionalClasspathElement>
             <additionalClasspathElement>${basedir}/${hive.path.to.root}/conf</additionalClasspathElement>
@@ -1116,6 +1122,30 @@
         <groupId>org.jamon</groupId>
         <artifactId>jamon-maven-plugin</artifactId>
         <version>${jamon.plugin.version}</version>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-enforcer-plugin</artifactId>
+        <version>1.4.1</version>
+        <executions>
+          <execution>
+            <id>enforce-banned-dependencies</id>
+            <goals>
+              <goal>enforce</goal>
+            </goals>
+            <configuration>
+              <rules>
+                <bannedDependencies>
+                  <excludes>
+                    <!--LGPL licenced library-->
+                    <exclude>com.google.code.findbugs:annotations</exclude>
+                  </excludes>
+                </bannedDependencies>
+              </rules>
+              <fail>true</fail>
+            </configuration>
+          </execution>
+        </executions>
       </plugin>
     </plugins>
   </build>

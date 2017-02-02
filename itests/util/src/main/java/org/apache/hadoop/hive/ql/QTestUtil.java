@@ -64,6 +64,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import com.google.common.base.Preconditions;
+
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
@@ -1347,7 +1348,7 @@ public class QTestUtil {
   }
 
   private int executeClientInternal(String commands) {
-    String [] cmds = commands.split(";");
+    List<String> cmds = CliDriver.splitSemiColon(commands);
     int rc = 0;
 
     String command = "";
@@ -1470,9 +1471,9 @@ public class QTestUtil {
     StringBuilder newCommands = new StringBuilder(commands.length());
     int lastMatchEnd = 0;
     Matcher commentMatcher = Pattern.compile("^--.*$", Pattern.MULTILINE).matcher(commands);
+    // remove the comments
     while (commentMatcher.find()) {
       newCommands.append(commands.substring(lastMatchEnd, commentMatcher.start()));
-      newCommands.append(commentMatcher.group().replaceAll("(?<!\\\\);", "\\\\;"));
       lastMatchEnd = commentMatcher.end();
     }
     newCommands.append(commands.substring(lastMatchEnd, commands.length()));
@@ -1668,6 +1669,7 @@ public class QTestUtil {
           out.write(line);
           out.write("\n");
           lastWasMasked = true;
+          partialMaskWasMatched = false;
         }
       } else {
         out.write(line);
@@ -1731,7 +1733,7 @@ public class QTestUtil {
 
   /* This list may be modified by specific cli drivers to mask strings that change on every test */
   private List<Pair<Pattern, String>> patternsWithMaskComments = new ArrayList<Pair<Pattern, String>>() {{
-    add(toPatternPair("(s3.?|swift|wasb.?).*hive-staging.*","### BLOBSTORE_STAGING_PATH ###"));
+    add(toPatternPair("(pblob|s3.?|swift|wasb.?).*hive-staging.*","### BLOBSTORE_STAGING_PATH ###"));
   }};
 
   private Pair<Pattern, String> toPatternPair(String patternStr, String maskComment) {

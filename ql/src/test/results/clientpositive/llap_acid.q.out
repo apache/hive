@@ -171,11 +171,9 @@ POSTHOOK: Input: default@orc_llap@csmallint=3
 528534767	3	NULL
 PREHOOK: query: insert into table orc_llap partition (csmallint = 1) values (1, 1, 1, 1)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__1
 PREHOOK: Output: default@orc_llap@csmallint=1
 POSTHOOK: query: insert into table orc_llap partition (csmallint = 1) values (1, 1, 1, 1)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__1
 POSTHOOK: Output: default@orc_llap@csmallint=1
 POSTHOOK: Lineage: orc_llap PARTITION(csmallint=1).cbigint EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
 POSTHOOK: Lineage: orc_llap PARTITION(csmallint=1).cdouble EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col4, type:string, comment:), ]

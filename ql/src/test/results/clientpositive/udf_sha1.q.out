@@ -14,6 +14,8 @@ Example:
   '3c01bdbb26f358bab27f267924aa2c9a03fcfdb8'
   > SELECT sha(binary('ABC'));
   '3c01bdbb26f358bab27f267924aa2c9a03fcfdb8'
+Function class:org.apache.hadoop.hive.ql.udf.UDFSha1
+Function type:BUILTIN
 PREHOOK: query: explain select sha1('ABC')
 PREHOOK: type: QUERY
 POSTHOOK: query: explain select sha1('ABC')

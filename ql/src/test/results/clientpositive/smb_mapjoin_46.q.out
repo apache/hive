@@ -1,0 +1,1657 @@
+PREHOOK: query: CREATE TABLE aux1 (key INT, value INT, col_1 STRING)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@aux1
+POSTHOOK: query: CREATE TABLE aux1 (key INT, value INT, col_1 STRING)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@aux1
+PREHOOK: query: INSERT INTO aux1 VALUES (NULL, NULL, 'None'), (98, NULL, 'None'),
+    (99, 0, 'Alice'), (99, 2, 'Mat'), (100, 1, 'Bob'), (101, 2, 'Car')
+PREHOOK: type: QUERY
+PREHOOK: Output: default@aux1
+POSTHOOK: query: INSERT INTO aux1 VALUES (NULL, NULL, 'None'), (98, NULL, 'None'),
+    (99, 0, 'Alice'), (99, 2, 'Mat'), (100, 1, 'Bob'), (101, 2, 'Car')
+POSTHOOK: type: QUERY
+POSTHOOK: Output: default@aux1
+POSTHOOK: Lineage: aux1.col_1 SIMPLE [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
+POSTHOOK: Lineage: aux1.key EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: aux1.value EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+PREHOOK: query: CREATE TABLE test1 (key INT, value INT, col_1 STRING) CLUSTERED BY (value) SORTED BY (value) INTO 2 BUCKETS
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test1
+POSTHOOK: query: CREATE TABLE test1 (key INT, value INT, col_1 STRING) CLUSTERED BY (value) SORTED BY (value) INTO 2 BUCKETS
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test1
+PREHOOK: query: INSERT OVERWRITE TABLE test1
+SELECT * FROM aux1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@aux1
+PREHOOK: Output: default@test1
+POSTHOOK: query: INSERT OVERWRITE TABLE test1
+SELECT * FROM aux1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@aux1
+POSTHOOK: Output: default@test1
+POSTHOOK: Lineage: test1.col_1 SIMPLE [(aux1)aux1.FieldSchema(name:col_1, type:string, comment:null), ]
+POSTHOOK: Lineage: test1.key SIMPLE [(aux1)aux1.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: test1.value SIMPLE [(aux1)aux1.FieldSchema(name:value, type:int, comment:null), ]
+PREHOOK: query: CREATE TABLE aux2 (key INT, value INT, col_2 STRING)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@aux2
+POSTHOOK: query: CREATE TABLE aux2 (key INT, value INT, col_2 STRING)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@aux2
+PREHOOK: query: INSERT INTO aux2 VALUES (102, 2, 'Del'), (103, 2, 'Ema'),
+    (104, 3, 'Fli'), (105, NULL, 'None')
+PREHOOK: type: QUERY
+PREHOOK: Output: default@aux2
+POSTHOOK: query: INSERT INTO aux2 VALUES (102, 2, 'Del'), (103, 2, 'Ema'),
+    (104, 3, 'Fli'), (105, NULL, 'None')
+POSTHOOK: type: QUERY
+POSTHOOK: Output: default@aux2
+POSTHOOK: Lineage: aux2.col_2 SIMPLE [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
+POSTHOOK: Lineage: aux2.key EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: aux2.value EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+PREHOOK: query: CREATE TABLE test2 (key INT, value INT, col_2 STRING) CLUSTERED BY (value) SORTED BY (value) INTO 2 BUCKETS
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test2
+POSTHOOK: query: CREATE TABLE test2 (key INT, value INT, col_2 STRING) CLUSTERED BY (value) SORTED BY (value) INTO 2 BUCKETS
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test2
+PREHOOK: query: INSERT OVERWRITE TABLE test2
+SELECT * FROM aux2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@aux2
+PREHOOK: Output: default@test2
+POSTHOOK: query: INSERT OVERWRITE TABLE test2
+SELECT * FROM aux2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@aux2
+POSTHOOK: Output: default@test2
+POSTHOOK: Lineage: test2.col_2 SIMPLE [(aux2)aux2.FieldSchema(name:col_2, type:string, comment:null), ]
+POSTHOOK: Lineage: test2.key SIMPLE [(aux2)aux2.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: test2.value SIMPLE [(aux2)aux2.FieldSchema(name:value, type:int, comment:null), ]
+PREHOOK: query: EXPLAIN
+SELECT *
+FROM test1 LEFT OUTER JOIN test2
+ON (test1.value=test2.value)
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+SELECT *
+FROM test1 LEFT OUTER JOIN test2
+ON (test1.value=test2.value)
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: test1
+            Statistics: Num rows: 6 Data size: 56 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: key (type: int), value (type: int), col_1 (type: string)
+              outputColumnNames: _col0, _col1, _col2
+              Statistics: Num rows: 6 Data size: 56 Basic stats: COMPLETE Column stats: NONE
+              Sorted Merge Bucket Map Join Operator
+                condition map:
+                     Left Outer Join0 to 1
+                keys:
+                  0 _col1 (type: int)
+                  1 _col1 (type: int)
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+                File Output Operator
+                  compressed: false
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SELECT *
+FROM test1 LEFT OUTER JOIN test2
+ON (test1.value=test2.value)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test1
+PREHOOK: Input: default@test2
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT *
+FROM test1 LEFT OUTER JOIN test2
+ON (test1.value=test2.value)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test1
+POSTHOOK: Input: default@test2
+#### A masked pattern was here ####
+98	NULL	None	NULL	NULL	NULL
+NULL	NULL	None	NULL	NULL	NULL
+99	0	Alice	NULL	NULL	NULL
+101	2	Car	103	2	Ema
+101	2	Car	102	2	Del
+99	2	Mat	103	2	Ema
+99	2	Mat	102	2	Del
+100	1	Bob	NULL	NULL	NULL
+PREHOOK: query: EXPLAIN
+SELECT *
+FROM test1 LEFT OUTER JOIN test2
+ON (test1.value=test2.value
+  AND test1.key between 100 and 102
+  AND test2.key between 100 and 102)
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+SELECT *
+FROM test1 LEFT OUTER JOIN test2
+ON (test1.value=test2.value
+  AND test1.key between 100 and 102
+  AND test2.key between 100 and 102)
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: test1
+            Statistics: Num rows: 6 Data size: 56 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: key (type: int), value (type: int), col_1 (type: string)
+              outputColumnNames: _col0, _col1, _col2
+              Statistics: Num rows: 6 Data size: 56 Basic stats: COMPLETE Column stats: NONE
+              Sorted Merge Bucket Map Join Operator
+                condition map:
+                     Left Outer Join0 to 1
+                filter predicates:
+                  0 {_col0 BETWEEN 100 AND 102}
+                  1 
+                keys:
+                  0 _col1 (type: int)
+                  1 _col1 (type: int)
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+                File Output Operator
+                  compressed: false
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SELECT *
+FROM test1 LEFT OUTER JOIN test2
+ON (test1.value=test2.value
+  AND test1.key between 100 and 102
+  AND test2.key between 100 and 102)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test1
+PREHOOK: Input: default@test2
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT *
+FROM test1 LEFT OUTER JOIN test2
+ON (test1.value=test2.value
+  AND test1.key between 100 and 102
+  AND test2.key between 100 and 102)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test1
+POSTHOOK: Input: default@test2
+#### A masked pattern was here ####
+98	NULL	None	NULL	NULL	NULL
+NULL	NULL	None	NULL	NULL	NULL
+99	0	Alice	NULL	NULL	NULL
+101	2	Car	102	2	Del
+99	2	Mat	NULL	NULL	NULL
+100	1	Bob	NULL	NULL	NULL
+Warning: Map Join MAPJOIN[11][bigTable=?] in task 'Stage-3:MAPRED' is a cross product
+PREHOOK: query: EXPLAIN
+SELECT *
+FROM test1 LEFT OUTER JOIN test2
+ON (test1.key between 100 and 102
+  AND test2.key between 100 and 102)
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+SELECT *
+FROM test1 LEFT OUTER JOIN test2
+ON (test1.key between 100 and 102
+  AND test2.key between 100 and 102)
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-4 is a root stage
+  Stage-3 depends on stages: Stage-4
+  Stage-0 depends on stages: Stage-3
+
+STAGE PLANS:
+  Stage: Stage-4
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        $hdt$_1:test2 
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        $hdt$_1:test2 
+          TableScan
+            alias: test2
+            Statistics: Num rows: 4 Data size: 38 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: key BETWEEN 100 AND 102 (type: boolean)
+              Statistics: Num rows: 1 Data size: 9 Basic stats: COMPLETE Column stats: NONE
+              Select Operator
+                expressions: key (type: int), value (type: int), col_2 (type: string)
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 1 Data size: 9 Basic stats: COMPLETE Column stats: NONE
+                HashTable Sink Operator
+                  filter predicates:
+                    0 {_col0 BETWEEN 100 AND 102}
+                    1 
+                  keys:
+                    0 
+                    1 
+
+  Stage: Stage-3
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: test1
+            Statistics: Num rows: 6 Data size: 56 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: key (type: int), value (type: int), col_1 (type: string)
+              outputColumnNames: _col0, _col1, _col2
+              Statistics: Num rows: 6 Data size: 56 Basic stats: COMPLETE Column stats: NONE
+              Map Join Operator
+                condition map:
+                     Left Outer Join0 to 1
+                filter predicates:
+                  0 {_col0 BETWEEN 100 AND 102}
+                  1 
+                keys:
+                  0 
+                  1 
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+                Statistics: Num rows: 6 Data size: 116 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 6 Data size: 116 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+      Local Work:
+        Map Reduce Local Work
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+Warning: Map Join MAPJOIN[11][bigTable=?] in task 'Stage-3:MAPRED' is a cross product
+PREHOOK: query: SELECT *
+FROM test1 LEFT OUTER JOIN test2
+ON (test1.key between 100 and 102
+  AND test2.key between 100 and 102)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test1
+PREHOOK: Input: default@test2
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT *
+FROM test1 LEFT OUTER JOIN test2
+ON (test1.key between 100 and 102
+  AND test2.key between 100 and 102)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test1
+POSTHOOK: Input: default@test2
+#### A masked pattern was here ####
+98	NULL	None	NULL	NULL	NULL
+NULL	NULL	None	NULL	NULL	NULL
+99	0	Alice	NULL	NULL	NULL
+101	2	Car	102	2	Del
+99	2	Mat	NULL	NULL	NULL
+100	1	Bob	102	2	Del
+PREHOOK: query: EXPLAIN
+SELECT *
+FROM test1 RIGHT OUTER JOIN test2
+ON (test1.value=test2.value AND true)
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+SELECT *
+FROM test1 RIGHT OUTER JOIN test2
+ON (test1.value=test2.value AND true)
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: test2
+            Statistics: Num rows: 4 Data size: 38 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: key (type: int), value (type: int), col_2 (type: string)
+              outputColumnNames: _col0, _col1, _col2
+              Statistics: Num rows: 4 Data size: 38 Basic stats: COMPLETE Column stats: NONE
+              Sorted Merge Bucket Map Join Operator
+                condition map:
+                     Right Outer Join0 to 1
+                keys:
+                  0 _col1 (type: int)
+                  1 _col1 (type: int)
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+                File Output Operator
+                  compressed: false
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SELECT *
+FROM test1 RIGHT OUTER JOIN test2
+ON (test1.value=test2.value AND true)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test1
+PREHOOK: Input: default@test2
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT *
+FROM test1 RIGHT OUTER JOIN test2
+ON (test1.value=test2.value AND true)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test1
+POSTHOOK: Input: default@test2
+#### A masked pattern was here ####
+NULL	NULL	NULL	105	NULL	None
+101	2	Car	103	2	Ema
+101	2	Car	102	2	Del
+99	2	Mat	103	2	Ema
+99	2	Mat	102	2	Del
+NULL	NULL	NULL	104	3	Fli
+Warning: Map Join MAPJOIN[9][bigTable=?] in task 'Stage-3:MAPRED' is a cross product
+PREHOOK: query: EXPLAIN
+SELECT *
+FROM test1 LEFT OUTER JOIN test2
+ON (test1.key between 100 and 102)
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+SELECT *
+FROM test1 LEFT OUTER JOIN test2
+ON (test1.key between 100 and 102)
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-4 is a root stage
+  Stage-3 depends on stages: Stage-4
+  Stage-0 depends on stages: Stage-3
+
+STAGE PLANS:
+  Stage: Stage-4
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        $hdt$_1:test2 
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        $hdt$_1:test2 
+          TableScan
+            alias: test2
+            Statistics: Num rows: 4 Data size: 38 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: key (type: int), value (type: int), col_2 (type: string)
+              outputColumnNames: _col0, _col1, _col2
+              Statistics: Num rows: 4 Data size: 38 Basic stats: COMPLETE Column stats: NONE
+              HashTable Sink Operator
+                filter predicates:
+                  0 {_col0 BETWEEN 100 AND 102}
+                  1 
+                keys:
+                  0 
+                  1 
+
+  Stage: Stage-3
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: test1
+            Statistics: Num rows: 6 Data size: 56 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: key (type: int), value (type: int), col_1 (type: string)
+              outputColumnNames: _col0, _col1, _col2
+              Statistics: Num rows: 6 Data size: 56 Basic stats: COMPLETE Column stats: NONE
+              Map Join Operator
+                condition map:
+                     Left Outer Join0 to 1
+                filter predicates:
+                  0 {_col0 BETWEEN 100 AND 102}
+                  1 
+                keys:
+                  0 
+                  1 
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+                Statistics: Num rows: 24 Data size: 476 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 24 Data size: 476 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+      Local Work:
+        Map Reduce Local Work
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+Warning: Map Join MAPJOIN[9][bigTable=?] in task 'Stage-3:MAPRED' is a cross product
+PREHOOK: query: SELECT *
+FROM test1 LEFT OUTER JOIN test2
+ON (test1.key between 100 and 102)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test1
+PREHOOK: Input: default@test2
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT *
+FROM test1 LEFT OUTER JOIN test2
+ON (test1.key between 100 and 102)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test1
+POSTHOOK: Input: default@test2
+#### A masked pattern was here ####
+98	NULL	None	NULL	NULL	NULL
+NULL	NULL	None	NULL	NULL	NULL
+99	0	Alice	NULL	NULL	NULL
+101	2	Car	105	NULL	None
+101	2	Car	103	2	Ema
+101	2	Car	102	2	Del
+101	2	Car	104	3	Fli
+99	2	Mat	NULL	NULL	NULL
+100	1	Bob	105	NULL	None
+100	1	Bob	103	2	Ema
+100	1	Bob	102	2	Del
+100	1	Bob	104	3	Fli
+Warning: Map Join MAPJOIN[9][bigTable=?] in task 'Stage-3:MAPRED' is a cross product
+PREHOOK: query: EXPLAIN
+SELECT *
+FROM test1 LEFT OUTER JOIN test2
+ON (test1.value=test2.value
+  OR test1.key between 100 and 102
+  OR test2.key between 100 and 102)
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+SELECT *
+FROM test1 LEFT OUTER JOIN test2
+ON (test1.value=test2.value
+  OR test1.key between 100 and 102
+  OR test2.key between 100 and 102)
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-4 is a root stage
+  Stage-3 depends on stages: Stage-4
+  Stage-0 depends on stages: Stage-3
+
+STAGE PLANS:
+  Stage: Stage-4
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        $hdt$_1:test2 
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        $hdt$_1:test2 
+          TableScan
+            alias: test2
+            Statistics: Num rows: 4 Data size: 38 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: key (type: int), value (type: int), col_2 (type: string)
+              outputColumnNames: _col0, _col1, _col2
+              Statistics: Num rows: 4 Data size: 38 Basic stats: COMPLETE Column stats: NONE
+              HashTable Sink Operator
+                keys:
+                  0 
+                  1 
+
+  Stage: Stage-3
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: test1
+            Statistics: Num rows: 6 Data size: 56 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: key (type: int), value (type: int), col_1 (type: string)
+              outputColumnNames: _col0, _col1, _col2
+              Statistics: Num rows: 6 Data size: 56 Basic stats: COMPLETE Column stats: NONE
+              Map Join Operator
+                condition map:
+                     Left Outer Join0 to 1
+                keys:
+                  0 
+                  1 
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+                residual filter predicates: {((_col1 = _col4) or _col0 BETWEEN 100 AND 102 or _col3 BETWEEN 100 AND 102)}
+                Statistics: Num rows: 24 Data size: 476 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 24 Data size: 476 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+      Local Work:
+        Map Reduce Local Work
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+Warning: Map Join MAPJOIN[9][bigTable=?] in task 'Stage-3:MAPRED' is a cross product
+PREHOOK: query: SELECT *
+FROM test1 LEFT OUTER JOIN test2
+ON (test1.value=test2.value
+  OR test1.key between 100 and 102
+  OR test2.key between 100 and 102)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test1
+PREHOOK: Input: default@test2
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT *
+FROM test1 LEFT OUTER JOIN test2
+ON (test1.value=test2.value
+  OR test1.key between 100 and 102
+  OR test2.key between 100 and 102)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test1
+POSTHOOK: Input: default@test2
+#### A masked pattern was here ####
+98	NULL	None	102	2	Del
+NULL	NULL	None	102	2	Del
+99	0	Alice	102	2	Del
+101	2	Car	105	NULL	None
+101	2	Car	103	2	Ema
+101	2	Car	102	2	Del
+101	2	Car	104	3	Fli
+99	2	Mat	103	2	Ema
+99	2	Mat	102	2	Del
+100	1	Bob	105	NULL	None
+100	1	Bob	103	2	Ema
+100	1	Bob	102	2	Del
+100	1	Bob	104	3	Fli
+Warning: Map Join MAPJOIN[9][bigTable=?] in task 'Stage-3:MAPRED' is a cross product
+PREHOOK: query: EXPLAIN
+SELECT *
+FROM test1 LEFT OUTER JOIN test2
+ON (test1.value=test2.value
+  OR test1.key between 100 and 102)
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+SELECT *
+FROM test1 LEFT OUTER JOIN test2
+ON (test1.value=test2.value
+  OR test1.key between 100 and 102)
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-4 is a root stage
+  Stage-3 depends on stages: Stage-4
+  Stage-0 depends on stages: Stage-3
+
+STAGE PLANS:
+  Stage: Stage-4
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        $hdt$_1:test2 
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        $hdt$_1:test2 
+          TableScan
+            alias: test2
+            Statistics: Num rows: 4 Data size: 38 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: key (type: int), value (type: int), col_2 (type: string)
+              outputColumnNames: _col0, _col1, _col2
+              Statistics: Num rows: 4 Data size: 38 Basic stats: COMPLETE Column stats: NONE
+              HashTable Sink Operator
+                keys:
+                  0 
+                  1 
+
+  Stage: Stage-3
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: test1
+            Statistics: Num rows: 6 Data size: 56 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: key (type: int), value (type: int), col_1 (type: string)
+              outputColumnNames: _col0, _col1, _col2
+              Statistics: Num rows: 6 Data size: 56 Basic stats: COMPLETE Column stats: NONE
+              Map Join Operator
+                condition map:
+                     Left Outer Join0 to 1
+                keys:
+                  0 
+                  1 
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+                residual filter predicates: {((_col1 = _col4) or _col0 BETWEEN 100 AND 102)}
+                Statistics: Num rows: 24 Data size: 476 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 24 Data size: 476 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+      Local Work:
+        Map Reduce Local Work
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+Warning: Map Join MAPJOIN[9][bigTable=?] in task 'Stage-3:MAPRED' is a cross product
+PREHOOK: query: SELECT *
+FROM test1 LEFT OUTER JOIN test2
+ON (test1.value=test2.value
+  OR test1.key between 100 and 102)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test1
+PREHOOK: Input: default@test2
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT *
+FROM test1 LEFT OUTER JOIN test2
+ON (test1.value=test2.value
+  OR test1.key between 100 and 102)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test1
+POSTHOOK: Input: default@test2
+#### A masked pattern was here ####
+98	NULL	None	NULL	NULL	NULL
+NULL	NULL	None	NULL	NULL	NULL
+99	0	Alice	NULL	NULL	NULL
+101	2	Car	105	NULL	None
+101	2	Car	103	2	Ema
+101	2	Car	102	2	Del
+101	2	Car	104	3	Fli
+99	2	Mat	103	2	Ema
+99	2	Mat	102	2	Del
+100	1	Bob	105	NULL	None
+100	1	Bob	103	2	Ema
+100	1	Bob	102	2	Del
+100	1	Bob	104	3	Fli
+Warning: Map Join MAPJOIN[9][bigTable=?] in task 'Stage-3:MAPRED' is a cross product
+PREHOOK: query: EXPLAIN
+SELECT *
+FROM test1 LEFT OUTER JOIN test2
+ON (test1.value=test2.value
+  OR test2.key between 100 and 102)
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+SELECT *
+FROM test1 LEFT OUTER JOIN test2
+ON (test1.value=test2.value
+  OR test2.key between 100 and 102)
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-4 is a root stage
+  Stage-3 depends on stages: Stage-4
+  Stage-0 depends on stages: Stage-3
+
+STAGE PLANS:
+  Stage: Stage-4
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        $hdt$_1:test2 
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        $hdt$_1:test2 
+          TableScan
+            alias: test2
+            Statistics: Num rows: 4 Data size: 38 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: key (type: int), value (type: int), col_2 (type: string)
+              outputColumnNames: _col0, _col1, _col2
+              Statistics: Num rows: 4 Data size: 38 Basic stats: COMPLETE Column stats: NONE
+              HashTable Sink Operator
+                keys:
+                  0 
+                  1 
+
+  Stage: Stage-3
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: test1
+            Statistics: Num rows: 6 Data size: 56 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: key (type: int), value (type: int), col_1 (type: string)
+              outputColumnNames: _col0, _col1, _col2
+              Statistics: Num rows: 6 Data size: 56 Basic stats: COMPLETE Column stats: NONE
+              Map Join Operator
+                condition map:
+                     Left Outer Join0 to 1
+                keys:
+                  0 
+                  1 
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+                residual filter predicates: {((_col1 = _col4) or _col3 BETWEEN 100 AND 102)}
+                Statistics: Num rows: 24 Data size: 476 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 24 Data size: 476 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+      Local Work:
+        Map Reduce Local Work
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+Warning: Map Join MAPJOIN[9][bigTable=?] in task 'Stage-3:MAPRED' is a cross product
+PREHOOK: query: SELECT *
+FROM test1 LEFT OUTER JOIN test2
+ON (test1.value=test2.value
+  OR test2.key between 100 and 102)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test1
+PREHOOK: Input: default@test2
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT *
+FROM test1 LEFT OUTER JOIN test2
+ON (test1.value=test2.value
+  OR test2.key between 100 and 102)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test1
+POSTHOOK: Input: default@test2
+#### A masked pattern was here ####
+98	NULL	None	102	2	Del
+NULL	NULL	None	102	2	Del
+99	0	Alice	102	2	Del
+101	2	Car	103	2	Ema
+101	2	Car	102	2	Del
+99	2	Mat	103	2	Ema
+99	2	Mat	102	2	Del
+100	1	Bob	102	2	Del
+PREHOOK: query: EXPLAIN
+SELECT *
+FROM test1 LEFT OUTER JOIN test2
+ON (test1.value=test2.value
+  AND (test1.key between 100 and 102
+    OR test2.key between 100 and 102))
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+SELECT *
+FROM test1 LEFT OUTER JOIN test2
+ON (test1.value=test2.value
+  AND (test1.key between 100 and 102
+    OR test2.key between 100 and 102))
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: test1
+            Statistics: Num rows: 6 Data size: 56 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: key (type: int), value (type: int), col_1 (type: string)
+              outputColumnNames: _col0, _col1, _col2
+              Statistics: Num rows: 6 Data size: 56 Basic stats: COMPLETE Column stats: NONE
+              Sorted Merge Bucket Map Join Operator
+                condition map:
+                     Left Outer Join0 to 1
+                keys:
+                  0 _col1 (type: int)
+                  1 _col1 (type: int)
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+                residual filter predicates: {(_col0 BETWEEN 100 AND 102 or _col3 BETWEEN 100 AND 102)}
+                File Output Operator
+                  compressed: false
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SELECT *
+FROM test1 LEFT OUTER JOIN test2
+ON (test1.value=test2.value
+  AND (test1.key between 100 and 102
+    OR test2.key between 100 and 102))
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test1
+PREHOOK: Input: default@test2
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT *
+FROM test1 LEFT OUTER JOIN test2
+ON (test1.value=test2.value
+  AND (test1.key between 100 and 102
+    OR test2.key between 100 and 102))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test1
+POSTHOOK: Input: default@test2
+#### A masked pattern was here ####
+98	NULL	None	NULL	NULL	NULL
+NULL	NULL	None	NULL	NULL	NULL
+99	0	Alice	NULL	NULL	NULL
+101	2	Car	103	2	Ema
+101	2	Car	102	2	Del
+99	2	Mat	102	2	Del
+100	1	Bob	NULL	NULL	NULL
+Warning: Map Join MAPJOIN[9][bigTable=?] in task 'Stage-3:MAPRED' is a cross product
+PREHOOK: query: EXPLAIN
+SELECT *
+FROM test1 RIGHT OUTER JOIN test2
+ON (test1.value=test2.value
+  OR test1.key between 100 and 102
+  OR test2.key between 100 and 102)
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+SELECT *
+FROM test1 RIGHT OUTER JOIN test2
+ON (test1.value=test2.value
+  OR test1.key between 100 and 102
+  OR test2.key between 100 and 102)
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-4 is a root stage
+  Stage-3 depends on stages: Stage-4
+  Stage-0 depends on stages: Stage-3
+
+STAGE PLANS:
+  Stage: Stage-4
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        $hdt$_0:test1 
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        $hdt$_0:test1 
+          TableScan
+            alias: test1
+            Statistics: Num rows: 6 Data size: 56 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: key (type: int), value (type: int), col_1 (type: string)
+              outputColumnNames: _col0, _col1, _col2
+              Statistics: Num rows: 6 Data size: 56 Basic stats: COMPLETE Column stats: NONE
+              HashTable Sink Operator
+                keys:
+                  0 
+                  1 
+
+  Stage: Stage-3
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: test2
+            Statistics: Num rows: 4 Data size: 38 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: key (type: int), value (type: int), col_2 (type: string)
+              outputColumnNames: _col0, _col1, _col2
+              Statistics: Num rows: 4 Data size: 38 Basic stats: COMPLETE Column stats: NONE
+              Map Join Operator
+                condition map:
+                     Right Outer Join0 to 1
+                keys:
+                  0 
+                  1 
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+                residual filter predicates: {((_col1 = _col4) or _col0 BETWEEN 100 AND 102 or _col3 BETWEEN 100 AND 102)}
+                Statistics: Num rows: 24 Data size: 476 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 24 Data size: 476 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+      Local Work:
+        Map Reduce Local Work
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+Warning: Map Join MAPJOIN[9][bigTable=?] in task 'Stage-3:MAPRED' is a cross product
+PREHOOK: query: SELECT *
+FROM test1 RIGHT OUTER JOIN test2
+ON (test1.value=test2.value
+  OR test1.key between 100 and 102
+  OR test2.key between 100 and 102)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test1
+PREHOOK: Input: default@test2
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT *
+FROM test1 RIGHT OUTER JOIN test2
+ON (test1.value=test2.value
+  OR test1.key between 100 and 102
+  OR test2.key between 100 and 102)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test1
+POSTHOOK: Input: default@test2
+#### A masked pattern was here ####
+101	2	Car	105	NULL	None
+100	1	Bob	105	NULL	None
+101	2	Car	103	2	Ema
+99	2	Mat	103	2	Ema
+100	1	Bob	103	2	Ema
+98	NULL	None	102	2	Del
+NULL	NULL	None	102	2	Del
+99	0	Alice	102	2	Del
+101	2	Car	102	2	Del
+99	2	Mat	102	2	Del
+100	1	Bob	102	2	Del
+101	2	Car	104	3	Fli
+100	1	Bob	104	3	Fli
+Warning: Map Join MAPJOIN[9][bigTable=?] in task 'Stage-3:MAPRED' is a cross product
+PREHOOK: query: EXPLAIN
+SELECT *
+FROM test1 RIGHT OUTER JOIN test2
+ON (test1.value=test2.value
+  OR test1.key between 100 and 102)
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+SELECT *
+FROM test1 RIGHT OUTER JOIN test2
+ON (test1.value=test2.value
+  OR test1.key between 100 and 102)
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-4 is a root stage
+  Stage-3 depends on stages: Stage-4
+  Stage-0 depends on stages: Stage-3
+
+STAGE PLANS:
+  Stage: Stage-4
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        $hdt$_0:test1 
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        $hdt$_0:test1 
+          TableScan
+            alias: test1
+            Statistics: Num rows: 6 Data size: 56 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: key (type: int), value (type: int), col_1 (type: string)
+              outputColumnNames: _col0, _col1, _col2
+              Statistics: Num rows: 6 Data size: 56 Basic stats: COMPLETE Column stats: NONE
+              HashTable Sink Operator
+                keys:
+                  0 
+                  1 
+
+  Stage: Stage-3
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: test2
+            Statistics: Num rows: 4 Data size: 38 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: key (type: int), value (type: int), col_2 (type: string)
+              outputColumnNames: _col0, _col1, _col2
+              Statistics: Num rows: 4 Data size: 38 Basic stats: COMPLETE Column stats: NONE
+              Map Join Operator
+                condition map:
+                     Right Outer Join0 to 1
+                keys:
+                  0 
+                  1 
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+                residual filter predicates: {((_col1 = _col4) or _col0 BETWEEN 100 AND 102)}
+                Statistics: Num rows: 24 Data size: 476 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 24 Data size: 476 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+      Local Work:
+        Map Reduce Local Work
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+Warning: Map Join MAPJOIN[9][bigTable=?] in task 'Stage-3:MAPRED' is a cross product
+PREHOOK: query: SELECT *
+FROM test1 RIGHT OUTER JOIN test2
+ON (test1.value=test2.value
+  OR test1.key between 100 and 102)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test1
+PREHOOK: Input: default@test2
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT *
+FROM test1 RIGHT OUTER JOIN test2
+ON (test1.value=test2.value
+  OR test1.key between 100 and 102)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test1
+POSTHOOK: Input: default@test2
+#### A masked pattern was here ####
+101	2	Car	105	NULL	None
+100	1	Bob	105	NULL	None
+101	2	Car	103	2	Ema
+99	2	Mat	103	2	Ema
+100	1	Bob	103	2	Ema
+101	2	Car	102	2	Del
+99	2	Mat	102	2	Del
+100	1	Bob	102	2	Del
+101	2	Car	104	3	Fli
+100	1	Bob	104	3	Fli
+Warning: Map Join MAPJOIN[9][bigTable=?] in task 'Stage-3:MAPRED' is a cross product
+PREHOOK: query: EXPLAIN
+SELECT *
+FROM test1 RIGHT OUTER JOIN test2
+ON (test1.value=test2.value
+  OR test2.key between 100 and 102)
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+SELECT *
+FROM test1 RIGHT OUTER JOIN test2
+ON (test1.value=test2.value
+  OR test2.key between 100 and 102)
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-4 is a root stage
+  Stage-3 depends on stages: Stage-4
+  Stage-0 depends on stages: Stage-3
+
+STAGE PLANS:
+  Stage: Stage-4
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        $hdt$_0:test1 
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        $hdt$_0:test1 
+          TableScan
+            alias: test1
+            Statistics: Num rows: 6 Data size: 56 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: key (type: int), value (type: int), col_1 (type: string)
+              outputColumnNames: _col0, _col1, _col2
+              Statistics: Num rows: 6 Data size: 56 Basic stats: COMPLETE Column stats: NONE
+              HashTable Sink Operator
+                keys:
+                  0 
+                  1 
+
+  Stage: Stage-3
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: test2
+            Statistics: Num rows: 4 Data size: 38 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: key (type: int), value (type: int), col_2 (type: string)
+              outputColumnNames: _col0, _col1, _col2
+              Statistics: Num rows: 4 Data size: 38 Basic stats: COMPLETE Column stats: NONE
+              Map Join Operator
+                condition map:
+                     Right Outer Join0 to 1
+                keys:
+                  0 
+                  1 
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+                residual filter predicates: {((_col1 = _col4) or _col3 BETWEEN 100 AND 102)}
+                Statistics: Num rows: 24 Data size: 476 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 24 Data size: 476 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+      Local Work:
+        Map Reduce Local Work
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+Warning: Map Join MAPJOIN[9][bigTable=?] in task 'Stage-3:MAPRED' is a cross product
+PREHOOK: query: SELECT *
+FROM test1 RIGHT OUTER JOIN test2
+ON (test1.value=test2.value
+  OR test2.key between 100 and 102)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test1
+PREHOOK: Input: default@test2
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT *
+FROM test1 RIGHT OUTER JOIN test2
+ON (test1.value=test2.value
+  OR test2.key between 100 and 102)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test1
+POSTHOOK: Input: default@test2
+#### A masked pattern was here ####
+NULL	NULL	NULL	105	NULL	None
+101	2	Car	103	2	Ema
+99	2	Mat	103	2	Ema
+98	NULL	None	102	2	Del
+NULL	NULL	None	102	2	Del
+99	0	Alice	102	2	Del
+101	2	Car	102	2	Del
+99	2	Mat	102	2	Del
+100	1	Bob	102	2	Del
+NULL	NULL	NULL	104	3	Fli
+PREHOOK: query: EXPLAIN
+SELECT *
+FROM test1 RIGHT OUTER JOIN test2
+ON (test1.value=test2.value
+  AND (test1.key between 100 and 102
+    OR test2.key between 100 and 102))
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+SELECT *
+FROM test1 RIGHT OUTER JOIN test2
+ON (test1.value=test2.value
+  AND (test1.key between 100 and 102
+    OR test2.key between 100 and 102))
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: test2
+            Statistics: Num rows: 4 Data size: 38 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: key (type: int), value (type: int), col_2 (type: string)
+              outputColumnNames: _col0, _col1, _col2
+              Statistics: Num rows: 4 Data size: 38 Basic stats: COMPLETE Column stats: NONE
+              Sorted Merge Bucket Map Join Operator
+                condition map:
+                     Right Outer Join0 to 1
+                keys:
+                  0 _col1 (type: int)
+                  1 _col1 (type: int)
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+                residual filter predicates: {(_col0 BETWEEN 100 AND 102 or _col3 BETWEEN 100 AND 102)}
+                File Output Operator
+                  compressed: false
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SELECT *
+FROM test1 RIGHT OUTER JOIN test2
+ON (test1.value=test2.value
+  AND (test1.key between 100 and 102
+    OR test2.key between 100 and 102))
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test1
+PREHOOK: Input: default@test2
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT *
+FROM test1 RIGHT OUTER JOIN test2
+ON (test1.value=test2.value
+  AND (test1.key between 100 and 102
+    OR test2.key between 100 and 102))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test1
+POSTHOOK: Input: default@test2
+#### A masked pattern was here ####
+NULL	NULL	NULL	105	NULL	None
+101	2	Car	103	2	Ema
+101	2	Car	102	2	Del
+99	2	Mat	102	2	Del
+NULL	NULL	NULL	104	3	Fli
+Warning: Shuffle Join JOIN[6][tables = [$hdt$_0, $hdt$_1]] in Stage 'Stage-1:MAPRED' is a cross product
+PREHOOK: query: EXPLAIN
+SELECT *
+FROM test1 FULL OUTER JOIN test2
+ON (test1.value=test2.value
+  OR test1.key between 100 and 102
+  OR test2.key between 100 and 102)
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+SELECT *
+FROM test1 FULL OUTER JOIN test2
+ON (test1.value=test2.value
+  OR test1.key between 100 and 102
+  OR test2.key between 100 and 102)
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: test1
+            Statistics: Num rows: 6 Data size: 56 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: key (type: int), value (type: int), col_1 (type: string)
+              outputColumnNames: _col0, _col1, _col2
+              Statistics: Num rows: 6 Data size: 56 Basic stats: COMPLETE Column stats: NONE
+              Reduce Output Operator
+                sort order: 
+                Statistics: Num rows: 6 Data size: 56 Basic stats: COMPLETE Column stats: NONE
+                value expressions: _col0 (type: int), _col1 (type: int), _col2 (type: string)
+          TableScan
+            alias: test2
+            Statistics: Num rows: 4 Data size: 38 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: key (type: int), value (type: int), col_2 (type: string)
+              outputColumnNames: _col0, _col1, _col2
+              Statistics: Num rows: 4 Data size: 38 Basic stats: COMPLETE Column stats: NONE
+              Reduce Output Operator
+                sort order: 
+                Statistics: Num rows: 4 Data size: 38 Basic stats: COMPLETE Column stats: NONE
+                value expressions: _col0 (type: int), _col1 (type: int), _col2 (type: string)
+      Reduce Operator Tree:
+        Join Operator
+          condition map:
+               Outer Join 0 to 1
+          keys:
+            0 
+            1 
+          outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+          residual filter predicates: {((_col1 = _col4) or _col0 BETWEEN 100 AND 102 or _col3 BETWEEN 100 AND 102)}
+          Statistics: Num rows: 24 Data size: 476 Basic stats: COMPLETE Column stats: NONE
+          File Output Operator
+            compressed: false
+            Statistics: Num rows: 24 Data size: 476 Basic stats: COMPLETE Column stats: NONE
+            table:
+                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+Warning: Shuffle Join JOIN[6][tables = [$hdt$_0, $hdt$_1]] in Stage 'Stage-1:MAPRED' is a cross product
+PREHOOK: query: SELECT *
+FROM test1 FULL OUTER JOIN test2
+ON (test1.value=test2.value
+  OR test1.key between 100 and 102
+  OR test2.key between 100 and 102)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test1
+PREHOOK: Input: default@test2
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT *
+FROM test1 FULL OUTER JOIN test2
+ON (test1.value=test2.value
+  OR test1.key between 100 and 102
+  OR test2.key between 100 and 102)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test1
+POSTHOOK: Input: default@test2
+#### A masked pattern was here ####
+100	1	Bob	102	2	Del
+100	1	Bob	103	2	Ema
+100	1	Bob	105	NULL	None
+100	1	Bob	104	3	Fli
+99	2	Mat	102	2	Del
+99	2	Mat	103	2	Ema
+101	2	Car	102	2	Del
+101	2	Car	103	2	Ema
+101	2	Car	105	NULL	None
+101	2	Car	104	3	Fli
+99	0	Alice	102	2	Del
+NULL	NULL	None	102	2	Del
+98	NULL	None	102	2	Del
+Warning: Shuffle Join JOIN[6][tables = [$hdt$_0, $hdt$_1]] in Stage 'Stage-1:MAPRED' is a cross product
+PREHOOK: query: EXPLAIN
+SELECT *
+FROM test1 FULL OUTER JOIN test2
+ON (test1.value=test2.value
+  OR test1.key between 100 and 102)
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+SELECT *
+FROM test1 FULL OUTER JOIN test2
+ON (test1.value=test2.value
+  OR test1.key between 100 and 102)
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: test1
+            Statistics: Num rows: 6 Data size: 56 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: key (type: int), value (type: int), col_1 (type: string)
+              outputColumnNames: _col0, _col1, _col2
+              Statistics: Num rows: 6 Data size: 56 Basic stats: COMPLETE Column stats: NONE
+              Reduce Output Operator
+                sort order: 
+                Statistics: Num rows: 6 Data size: 56 Basic stats: COMPLETE Column stats: NONE
+                value expressions: _col0 (type: int), _col1 (type: int), _col2 (type: string)
+          TableScan
+            alias: test2
+            Statistics: Num rows: 4 Data size: 38 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: key (type: int), value (type: int), col_2 (type: string)
+              outputColumnNames: _col0, _col1, _col2
+              Statistics: Num rows: 4 Data size: 38 Basic stats: COMPLETE Column stats: NONE
+              Reduce Output Operator
+                sort order: 
+                Statistics: Num rows: 4 Data size: 38 Basic stats: COMPLETE Column stats: NONE
+                value expressions: _col0 (type: int), _col1 (type: int), _col2 (type: string)
+      Reduce Operator Tree:
+        Join Operator
+          condition map:
+               Outer Join 0 to 1
+          keys:
+            0 
+            1 
+          outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+          residual filter predicates: {((_col1 = _col4) or _col0 BETWEEN 100 AND 102)}
+          Statistics: Num rows: 24 Data size: 476 Basic stats: COMPLETE Column stats: NONE
+          File Output Operator
+            compressed: false
+            Statistics: Num rows: 24 Data size: 476 Basic stats: COMPLETE Column stats: NONE
+            table:
+                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+Warning: Shuffle Join JOIN[6][tables = [$hdt$_0, $hdt$_1]] in Stage 'Stage-1:MAPRED' is a cross product
+PREHOOK: query: SELECT *
+FROM test1 FULL OUTER JOIN test2
+ON (test1.value=test2.value
+  OR test1.key between 100 and 102)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test1
+PREHOOK: Input: default@test2
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT *
+FROM test1 FULL OUTER JOIN test2
+ON (test1.value=test2.value
+  OR test1.key between 100 and 102)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test1
+POSTHOOK: Input: default@test2
+#### A masked pattern was here ####
+100	1	Bob	102	2	Del
+100	1	Bob	103	2	Ema
+100	1	Bob	105	NULL	None
+100	1	Bob	104	3	Fli
+99	2	Mat	102	2	Del
+99	2	Mat	103	2	Ema
+101	2	Car	102	2	Del
+101	2	Car	103	2	Ema
+101	2	Car	105	NULL	None
+101	2	Car	104	3	Fli
+99	0	Alice	NULL	NULL	NULL
+NULL	NULL	None	NULL	NULL	NULL
+98	NULL	None	NULL	NULL	NULL
+Warning: Shuffle Join JOIN[6][tables = [$hdt$_0, $hdt$_1]] in Stage 'Stage-1:MAPRED' is a cross product
+PREHOOK: query: EXPLAIN
+SELECT *
+FROM test1 FULL OUTER JOIN test2
+ON (test1.value=test2.value
+  OR test2.key between 100 and 102)
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+SELECT *
+FROM test1 FULL OUTER JOIN test2
+ON (test1.value=test2.value
+  OR test2.key between 100 and 102)
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: test1
+            Statistics: Num rows: 6 Data size: 56 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: key (type: int), value (type: int), col_1 (type: string)
+              outputColumnNames: _col0, _col1, _col2
+              Statistics: Num rows: 6 Data size: 56 Basic stats: COMPLETE Column stats: NONE
+              Reduce Output Operator
+                sort order: 
+                Statistics: Num rows: 6 Data size: 56 Basic stats: COMPLETE Column stats: NONE
+                value expressions: _col0 (type: int), _col1 (type: int), _col2 (type: string)
+          TableScan
+            alias: test2
+            Statistics: Num rows: 4 Data size: 38 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: key (type: int), value (type: int), col_2 (type: string)
+              outputColumnNames: _col0, _col1, _col2
+              Statistics: Num rows: 4 Data size: 38 Basic stats: COMPLETE Column stats: NONE
+              Reduce Output Operator
+                sort order: 
+                Statistics: Num rows: 4 Data size: 38 Basic stats: COMPLETE Column stats: NONE
+                value expressions: _col0 (type: int), _col1 (type: int), _col2 (type: string)
+      Reduce Operator Tree:
+        Join Operator
+          condition map:
+               Outer Join 0 to 1
+          keys:
+            0 
+            1 
+          outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+          residual filter predicates: {((_col1 = _col4) or _col3 BETWEEN 100 AND 102)}
+          Statistics: Num rows: 24 Data size: 476 Basic stats: COMPLETE Column stats: NONE
+          File Output Operator
+            compressed: false
+            Statistics: Num rows: 24 Data size: 476 Basic stats: COMPLETE Column stats: NONE
+            table:
+                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+Warning: Shuffle Join JOIN[6][tables = [$hdt$_0, $hdt$_1]] in Stage 'Stage-1:MAPRED' is a cross product
+PREHOOK: query: SELECT *
+FROM test1 FULL OUTER JOIN test2
+ON (test1.value=test2.value
+  OR test2.key between 100 and 102)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test1
+PREHOOK: Input: default@test2
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT *
+FROM test1 FULL OUTER JOIN test2
+ON (test1.value=test2.value
+  OR test2.key between 100 and 102)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test1
+POSTHOOK: Input: default@test2
+#### A masked pattern was here ####
+100	1	Bob	102	2	Del
+99	2	Mat	102	2	Del
+99	2	Mat	103	2	Ema
+101	2	Car	102	2	Del
+101	2	Car	103	2	Ema
+99	0	Alice	102	2	Del
+NULL	NULL	None	102	2	Del
+98	NULL	None	102	2	Del
+NULL	NULL	NULL	105	NULL	None
+NULL	NULL	NULL	104	3	Fli
+PREHOOK: query: EXPLAIN
+SELECT *
+FROM test1 FULL OUTER JOIN test2
+ON (test1.value=test2.value
+  AND (test1.key between 100 and 102
+    OR test2.key between 100 and 102))
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+SELECT *
+FROM test1 FULL OUTER JOIN test2
+ON (test1.value=test2.value
+  AND (test1.key between 100 and 102
+    OR test2.key between 100 and 102))
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: test1
+            Statistics: Num rows: 6 Data size: 56 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: key (type: int), value (type: int), col_1 (type: string)
+              outputColumnNames: _col0, _col1, _col2
+              Statistics: Num rows: 6 Data size: 56 Basic stats: COMPLETE Column stats: NONE
+              Reduce Output Operator
+                key expressions: _col1 (type: int)
+                sort order: +
+                Map-reduce partition columns: _col1 (type: int)
+                Statistics: Num rows: 6 Data size: 56 Basic stats: COMPLETE Column stats: NONE
+                value expressions: _col0 (type: int), _col2 (type: string)
+          TableScan
+            alias: test2
+            Statistics: Num rows: 4 Data size: 38 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: key (type: int), value (type: int), col_2 (type: string)
+              outputColumnNames: _col0, _col1, _col2
+              Statistics: Num rows: 4 Data size: 38 Basic stats: COMPLETE Column stats: NONE
+              Reduce Output Operator
+                key expressions: _col1 (type: int)
+                sort order: +
+                Map-reduce partition columns: _col1 (type: int)
+                Statistics: Num rows: 4 Data size: 38 Basic stats: COMPLETE Column stats: NONE
+                value expressions: _col0 (type: int), _col2 (type: string)
+      Reduce Operator Tree:
+        Join Operator
+          condition map:
+               Outer Join 0 to 1
+          keys:
+            0 _col1 (type: int)
+            1 _col1 (type: int)
+          outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+          residual filter predicates: {(_col0 BETWEEN 100 AND 102 or _col3 BETWEEN 100 AND 102)}
+          Statistics: Num rows: 6 Data size: 61 Basic stats: COMPLETE Column stats: NONE
+          File Output Operator
+            compressed: false
+            Statistics: Num rows: 6 Data size: 61 Basic stats: COMPLETE Column stats: NONE
+            table:
+                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SELECT *
+FROM test1 FULL OUTER JOIN test2
+ON (test1.value=test2.value
+  AND (test1.key between 100 and 102
+    OR test2.key between 100 and 102))
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test1
+PREHOOK: Input: default@test2
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT *
+FROM test1 FULL OUTER JOIN test2
+ON (test1.value=test2.value
+  AND (test1.key between 100 and 102
+    OR test2.key between 100 and 102))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test1
+POSTHOOK: Input: default@test2
+#### A masked pattern was here ####
+NULL	NULL	None	NULL	NULL	NULL
+98	NULL	None	NULL	NULL	NULL
+NULL	NULL	NULL	105	NULL	None
+99	0	Alice	NULL	NULL	NULL
+100	1	Bob	NULL	NULL	NULL
+99	2	Mat	102	2	Del
+101	2	Car	102	2	Del
+101	2	Car	103	2	Ema
+NULL	NULL	NULL	104	3	Fli

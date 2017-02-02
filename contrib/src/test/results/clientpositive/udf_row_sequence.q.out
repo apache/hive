@@ -1,14 +1,6 @@
-PREHOOK: query: -- The ORDER BY on the outer query will typically have no effect,
--- but there is really no guarantee that the ordering is preserved
--- across various SQL operators.
-
-drop temporary function row_sequence
+PREHOOK: query: drop temporary function row_sequence
 PREHOOK: type: DROPFUNCTION
-POSTHOOK: query: -- The ORDER BY on the outer query will typically have no effect,
--- but there is really no guarantee that the ordering is preserved
--- across various SQL operators.
-
-drop temporary function row_sequence
+POSTHOOK: query: drop temporary function row_sequence
 POSTHOOK: type: DROPFUNCTION
 PREHOOK: query: create temporary function row_sequence as 
 'org.apache.hadoop.hive.contrib.udf.UDFRowSequence'
@@ -23,6 +15,8 @@ PREHOOK: type: DESCFUNCTION
 POSTHOOK: query: DESCRIBE FUNCTION EXTENDED row_sequence
 POSTHOOK: type: DESCFUNCTION
 row_sequence() - Returns a generated row sequence number starting from 1
+Function class:org.apache.hadoop.hive.contrib.udf.UDFRowSequence
+Function type:TEMPORARY
 PREHOOK: query: explain
 select key, row_sequence() as r
 from (select key from src order by key) x
@@ -584,17 +578,13 @@ POSTHOOK: Input: default@src
 400	498
 200	499
 97	500
-PREHOOK: query: -- make sure stateful functions do not get short-circuited away
--- a true result for key=105 would indicate undesired short-circuiting
-select key, (key = 105) and (row_sequence() = 1)
+PREHOOK: query: select key, (key = 105) and (row_sequence() = 1)
 from (select key from src order by key) x
 order by key limit 20
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
-POSTHOOK: query: -- make sure stateful functions do not get short-circuited away
--- a true result for key=105 would indicate undesired short-circuiting
-select key, (key = 105) and (row_sequence() = 1)
+POSTHOOK: query: select key, (key = 105) and (row_sequence() = 1)
 from (select key from src order by key) x
 order by key limit 20
 POSTHOOK: type: QUERY

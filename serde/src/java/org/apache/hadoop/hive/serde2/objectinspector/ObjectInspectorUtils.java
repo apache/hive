@@ -698,6 +698,8 @@ public final class ObjectInspectorUtils {
             .getPrimitiveWritableObject(o);
         return intervalDayTime.hashCode();
       case DECIMAL:
+        // Since getBucketHashCode uses this, HiveDecimal return the old (much slower) but
+        // compatible hash code.
         return ((HiveDecimalObjectInspector) poi).getPrimitiveWritableObject(o).hashCode();
 
       default: {

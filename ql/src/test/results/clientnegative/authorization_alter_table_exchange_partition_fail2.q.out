@@ -1,12 +1,8 @@
-PREHOOK: query: -- create a table owned by user1
-
-create table exchange_partition_test_1(a int) partitioned by (b int)
+PREHOOK: query: create table exchange_partition_test_1(a int) partitioned by (b int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@exchange_partition_test_1
-POSTHOOK: query: -- create a table owned by user1
-
-create table exchange_partition_test_1(a int) partitioned by (b int)
+POSTHOOK: query: create table exchange_partition_test_1(a int) partitioned by (b int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@exchange_partition_test_1
@@ -22,15 +18,11 @@ PREHOOK: query: set role admin
 PREHOOK: type: SHOW_ROLES
 POSTHOOK: query: set role admin
 POSTHOOK: type: SHOW_ROLES
-PREHOOK: query: -- add data to exchange_partition_test_1
-
-insert overwrite table exchange_partition_test_1 partition (b=1) select key from src
+PREHOOK: query: insert overwrite table exchange_partition_test_1 partition (b=1) select key from src
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Output: default@exchange_partition_test_1@b=1
-POSTHOOK: query: -- add data to exchange_partition_test_1
-
-insert overwrite table exchange_partition_test_1 partition (b=1) select key from src
+POSTHOOK: query: insert overwrite table exchange_partition_test_1 partition (b=1) select key from src
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@exchange_partition_test_1@b=1
@@ -39,19 +31,11 @@ PREHOOK: query: set role all
 PREHOOK: type: SHOW_ROLES
 POSTHOOK: query: set role all
 POSTHOOK: type: SHOW_ROLES
-PREHOOK: query: -- switch user
-
--- create a table owned by user2
-
-create table exchange_partition_test_2(a int) partitioned by (b int)
+PREHOOK: query: create table exchange_partition_test_2(a int) partitioned by (b int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@exchange_partition_test_2
-POSTHOOK: query: -- switch user
-
--- create a table owned by user2
-
-create table exchange_partition_test_2(a int) partitioned by (b int)
+POSTHOOK: query: create table exchange_partition_test_2(a int) partitioned by (b int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@exchange_partition_test_2
@@ -63,21 +47,13 @@ default	exchange_partition_test_2			user2	USER	DELETE	true	-1	user1
 default	exchange_partition_test_2			user2	USER	INSERT	true	-1	user1
 default	exchange_partition_test_2			user2	USER	SELECT	true	-1	user1
 default	exchange_partition_test_2			user2	USER	UPDATE	true	-1	user1
-PREHOOK: query: -- switch user
-
-show grant user user1 on table exchange_partition_test_2
+PREHOOK: query: show grant user user1 on table exchange_partition_test_2
 PREHOOK: type: SHOW_GRANT
-POSTHOOK: query: -- switch user
-
-show grant user user1 on table exchange_partition_test_2
+POSTHOOK: query: show grant user user1 on table exchange_partition_test_2
 POSTHOOK: type: SHOW_GRANT
-PREHOOK: query: -- execute alter table exchange partition to add data to exchange_partition_test_2 (this should fail)
-
- explain authorization alter table exchange_partition_test_2 exchange partition (b=1) with table exchange_partition_test_1
+PREHOOK: query: explain authorization alter table exchange_partition_test_2 exchange partition (b=1) with table exchange_partition_test_1
 PREHOOK: type: ALTERTABLE_EXCHANGEPARTITION
-POSTHOOK: query: -- execute alter table exchange partition to add data to exchange_partition_test_2 (this should fail)
-
- explain authorization alter table exchange_partition_test_2 exchange partition (b=1) with table exchange_partition_test_1
+POSTHOOK: query: explain authorization alter table exchange_partition_test_2 exchange partition (b=1) with table exchange_partition_test_1
 POSTHOOK: type: ALTERTABLE_EXCHANGEPARTITION
 INPUTS: 
   default@exchange_partition_test_1

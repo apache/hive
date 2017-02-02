@@ -247,7 +247,7 @@ public final class ListBucketingPrunerUtils {
     String constantValueInFilter = ((ExprNodeConstantDesc) right).getValue().toString();
     assert (skewedCols.contains(columnNameInFilter)) : "List bucketing pruner has a column name "
         + columnNameInFilter
-        + " which is not found in the partiton's skewed column list";
+        + " which is not found in the partition's skewed column list";
     int index = skewedCols.indexOf(columnNameInFilter);
     assert (index < cell.size()) : "GenericUDFOPEqual has a ExprNodeColumnDesc ("
         + columnNameInFilter + ") which is " + index + "th" + "skewed column. "

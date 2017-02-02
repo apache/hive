@@ -71,13 +71,11 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@extract_udf
 #### A masked pattern was here ####
 6
-PREHOOK: query: -- new syntax
-explain
+PREHOOK: query: explain
 select extract(day from t)
 from extract_udf
 PREHOOK: type: QUERY
-POSTHOOK: query: -- new syntax
-explain
+POSTHOOK: query: explain
 select extract(day from t)
 from extract_udf
 POSTHOOK: type: QUERY

@@ -332,8 +332,8 @@ public enum ErrorMsg {
             + "fails to construct aggregation for the partition "),
   ANALYZE_TABLE_PARTIALSCAN_AUTOGATHER(10233, "Analyze partialscan is not allowed " +
             "if hive.stats.autogather is set to false"),
-  PARTITION_VALUE_NOT_CONTINUOUS(10234, "Parition values specifed are not continuous." +
-            " A subpartition value is specified without specififying the parent partition's value"),
+  PARTITION_VALUE_NOT_CONTINUOUS(10234, "Partition values specified are not continuous." +
+            " A subpartition value is specified without specifying the parent partition's value"),
   TABLES_INCOMPATIBLE_SCHEMAS(10235, "Tables have incompatible schemas and their partitions " +
             " cannot be exchanged."),
 
@@ -440,7 +440,7 @@ public enum ErrorMsg {
   CANNOT_DROP_INDEX(10317, "Error while dropping index"),
   INVALID_AST_TREE(10318, "Internal error : Invalid AST"),
   ERROR_SERIALIZE_METASTORE(10319, "Error while serializing the metastore objects"),
-  IO_ERROR(10320, "Error while peforming IO operation "),
+  IO_ERROR(10320, "Error while performing IO operation "),
   ERROR_SERIALIZE_METADATA(10321, "Error while serializing the metadata"),
   INVALID_LOAD_TABLE_FILE_WORK(10322, "Invalid Load Table Work or Load File Work"),
   CLASSPATH_ERROR(10323, "Classpath error"),
@@ -451,6 +451,7 @@ public enum ErrorMsg {
     "Oldest available base: {2}", true),
   INVALID_COLUMN_NAME(10328, "Invalid column name"),
   UNSUPPORTED_SET_OPERATOR(10329, "Unsupported set operator"),
+  LOCK_ACQUIRE_CANCELLED(10330, "Query was cancelled while acquiring locks on the underlying objects. "),
   REPLACE_VIEW_WITH_MATERIALIZED(10400, "Attempt to replace view {0} with materialized view", true),
   REPLACE_MATERIALIZED_WITH_VIEW(10401, "Attempt to replace materialized view {0} with view", true),
   UPDATE_DELETE_VIEW(10402, "You cannot update or delete records in a view"),
@@ -459,7 +460,9 @@ public enum ErrorMsg {
     "requires \"AND <boolean>\" on the 1st WHEN MATCHED clause of <{0}>", true),
   MERGE_TOO_MANY_DELETE(10405, "MERGE statment can have at most 1 WHEN MATCHED ... DELETE clause: <{0}>", true),
   MERGE_TOO_MANY_UPDATE(10406, "MERGE statment can have at most 1 WHEN MATCHED ... UPDATE clause: <{0}>", true),
-  INVALID_JOIN_CONDITION(10407, "Complex condition not supported for (LEFT|RIGHT|FULL) OUTER JOIN"),
+  INVALID_JOIN_CONDITION(10407, "Error parsing condition in outer join"),
+  INVALID_TARGET_COLUMN_IN_SET_CLAUSE(10408, "Target column \"{0}\" of set clause is not found in table \"{1}\".", true),
+  HIVE_GROUPING_FUNCTION_EXPR_NOT_IN_GROUPBY(10409, "Expression in GROUPING function not present in GROUP BY"),
   //========================== 20000 range starts here ========================//
   SCRIPT_INIT_ERROR(20000, "Unable to initialize custom script."),
   SCRIPT_IO_ERROR(20001, "An error occurred while reading or writing to your custom script. "

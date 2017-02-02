@@ -145,12 +145,6 @@ public class HiveSessionImpl implements HiveSession {
     sessionConf.setInt(SerDeUtils.LIST_SINK_OUTPUT_PROTOCOL, protocol.getValue());
   }
 
-  public HiveSessionImpl(TProtocolVersion protocol, String username, String password,
-    HiveConf serverhiveConf, String ipAddress) {
-    this(null, protocol, username, password, serverhiveConf, ipAddress);
-  }
-
-
   @Override
   /**
    * Opens a new HiveServer2 session for the client connection.

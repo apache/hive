@@ -37,8 +37,8 @@ public class CastDecimalToVarChar extends CastDecimalToString implements TruncSt
   }
 
   @Override
-  protected void assign(BytesColumnVector outV, int i, byte[] bytes, int length) {
-    StringExpr.truncate(outV, i, bytes, 0, length, maxLength);
+  protected void assign(BytesColumnVector outV, int i, byte[] bytes, int offset, int length) {
+    StringExpr.truncate(outV, i, bytes, offset, length, maxLength);
   }
 
   @Override

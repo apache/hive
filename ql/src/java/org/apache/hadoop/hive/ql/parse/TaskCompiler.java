@@ -205,7 +205,7 @@ public abstract class TaskCompiler {
       int fetchLimit = HiveConf.getIntVar(conf, HiveConf.ConfVars.HIVELIMITOPTMAXFETCH);
       if (globalLimitCtx.isEnable() && globalLimitCtx.getGlobalLimit() > fetchLimit) {
         LOG.info("For FetchTask, LIMIT " + globalLimitCtx.getGlobalLimit() + " > " + fetchLimit
-            + ". Doesn't qualify limit optimiztion.");
+            + ". Doesn't qualify limit optimization.");
         globalLimitCtx.disableOpt();
 
       }
@@ -556,6 +556,9 @@ public abstract class TaskCompiler {
     clone.setFetchTask(pCtx.getFetchTask());
     clone.setLineageInfo(pCtx.getLineageInfo());
     clone.setMapJoinOps(pCtx.getMapJoinOps());
+    clone.setRsToRuntimeValuesInfoMap(pCtx.getRsToRuntimeValuesInfoMap());
+    clone.setRsOpToTsOpMap(pCtx.getRsOpToTsOpMap());
+
     return clone;
   }
 

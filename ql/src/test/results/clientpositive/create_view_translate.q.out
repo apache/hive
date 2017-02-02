@@ -16,6 +16,7 @@ POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@v
+POSTHOOK: Lineage: v.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 PREHOOK: query: describe formatted v
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@v
@@ -46,6 +47,7 @@ Sort Columns:       	[]
 # View Information	 	 
 View Original Text: 	select cast(key as string) from src	 
 View Expanded Text: 	select `src`.`key` from `default`.`src`	 
+View Rewrite Enabled:	No                  	 
 PREHOOK: query: create view w as select key, value from (
   select key, value from src
 ) a
@@ -60,6 +62,8 @@ POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@w
+POSTHOOK: Lineage: w.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: w.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: describe formatted w
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@w
@@ -95,6 +99,7 @@ View Original Text: 	select key, value from (
 View Expanded Text: 	select `a`.`key`, `a`.`value` from (	 
 	                    	  select `src`.`key`, `src`.`value` from `default`.`src`
 	                    	) `a`               
+View Rewrite Enabled:	No                  	 
 PREHOOK: query: drop view v
 PREHOOK: type: DROPVIEW
 PREHOOK: Input: default@v
@@ -111,15 +116,11 @@ POSTHOOK: query: drop view w
 POSTHOOK: type: DROPVIEW
 POSTHOOK: Input: default@w
 POSTHOOK: Output: default@w
-PREHOOK: query: -- HIVE-4116 Can't use views using map datatype.
-
-CREATE TABLE items (id INT, name STRING, info MAP<STRING,STRING>)
+PREHOOK: query: CREATE TABLE items (id INT, name STRING, info MAP<STRING,STRING>)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@items
-POSTHOOK: query: -- HIVE-4116 Can't use views using map datatype.
-
-CREATE TABLE items (id INT, name STRING, info MAP<STRING,STRING>)
+POSTHOOK: query: CREATE TABLE items (id INT, name STRING, info MAP<STRING,STRING>)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@items
@@ -141,6 +142,7 @@ STAGE PLANS:
           expanded text: SELECT `items`.`id`, `items`.`info`['price'] FROM `default`.`items`
           name: default.priceview
           original text: SELECT items.id, items.info['price'] FROM items
+          rewrite enabled: false
 
 PREHOOK: query: CREATE VIEW priceview AS SELECT items.id, items.info['price'] FROM items
 PREHOOK: type: CREATEVIEW
@@ -152,6 +154,8 @@ POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@items
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@priceview
+POSTHOOK: Lineage: priceview._c1 EXPRESSION [(items)items.FieldSchema(name:info, type:map<string,string>, comment:null), ]
+POSTHOOK: Lineage: priceview.id SIMPLE [(items)items.FieldSchema(name:id, type:int, comment:null), ]
 PREHOOK: query: select * from priceview
 PREHOOK: type: QUERY
 PREHOOK: Input: default@items

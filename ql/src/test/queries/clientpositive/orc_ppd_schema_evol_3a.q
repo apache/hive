@@ -1,6 +1,8 @@
 set hive.mapred.mode=nonstrict;
 SET hive.fetch.task.conversion=none;
 SET hive.cbo.enable=false;
+SET hive.map.aggr=false;
+-- disabling map side aggregation as that can lead to different intermediate record counts
 
 CREATE TABLE staging(t tinyint,
            si smallint,
@@ -30,17 +32,16 @@ CREATE TABLE orc_ppd_staging(t tinyint,
            c char(50),
            v varchar(50),
            da date,
-           ts timestamp,
            dec decimal(4,2),
            bin binary)
 STORED AS ORC tblproperties("orc.row.index.stride" = "1000", "orc.bloom.filter.columns"="*");
 
-insert overwrite table orc_ppd_staging select t, si, i, b, f, d, bo, s, cast(s as char(50)), cast(s as varchar(50)), cast(ts as date), ts, dec, bin from staging order by t, s;
+insert overwrite table orc_ppd_staging select t, si, i, b, f, d, bo, s, cast(s as char(50)), cast(s as varchar(50)), cast(ts as date), dec, bin from staging order by t, s;
 
 -- just to introduce a gap in min/max range for bloom filters. The dataset has contiguous values
 -- which makes it hard to test bloom filters
-insert into orc_ppd_staging select -10,-321,-65680,-4294967430,-97.94,-13.07,true,"aaa","aaa","aaa","1990-03-11","1990-03-11 10:11:58.703308",-71.54,"aaa" from staging limit 1;
-insert into orc_ppd_staging select 127,331,65690,4294967440,107.94,23.07,true,"zzz","zzz","zzz","2023-03-11","2023-03-11 10:11:58.703308",71.54,"zzz" from staging limit 1;
+insert into orc_ppd_staging select -10,-321,-65680,-4294967430,-97.94,-13.07,true,"aaa","aaa","aaa","1990-03-11",-71.54,"aaa" from staging limit 1;
+insert into orc_ppd_staging select 127,331,65690,4294967440,107.94,23.07,true,"zzz","zzz","zzz","2023-03-11",71.54,"zzz" from staging limit 1;
 
 CREATE TABLE orc_ppd(t tinyint,
            si smallint,
@@ -53,12 +54,11 @@ CREATE TABLE orc_ppd(t tinyint,
            c char(50),
            v varchar(50),
            da date,
-           ts timestamp,
            dec decimal(4,2),
            bin binary)
 STORED AS ORC tblproperties("orc.row.index.stride" = "1000", "orc.bloom.filter.columns"="*");
 
-insert overwrite table orc_ppd select t, si, i, b, f, d, bo, s, cast(s as char(50)), cast(s as varchar(50)), cast(ts as date), ts, dec, bin from orc_ppd_staging order by t, s;
+insert overwrite table orc_ppd select t, si, i, b, f, d, bo, s, cast(s as char(50)), cast(s as varchar(50)), da, dec, bin from orc_ppd_staging order by t, s;
 
 SET hive.exec.post.hooks=org.apache.hadoop.hive.ql.hooks.PostExecTezSummaryPrinter;
 SET hive.optimize.index.filter=false;

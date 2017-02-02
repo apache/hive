@@ -217,4 +217,10 @@ public class TestPrimitiveObjectInspectorUtils extends TestCase {
         .getPrimitiveJavaObjectInspector(PrimitiveCategory.TIMESTAMP);
     assertEquals("2015-02-07 15:01:22.123", gmtDateFormat.format(PrimitiveObjectInspectorUtils.getTimestamp(new Timestamp(1423321282123L), timestampOI, true)));
   }
+
+  @Test
+  public void testGetTimestampFromString() {
+    DateFormat localDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
+    assertEquals("2015-02-07 00:00:00.000", localDateFormat.format(PrimitiveObjectInspectorUtils.getTimestampFromString("2015-02-07")));
+  }
 }

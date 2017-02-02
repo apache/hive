@@ -1,6 +1,4 @@
-PREHOOK: query: -- SORT_QUERY_RESULTS
-
-SELECT cboolean1,
+PREHOOK: query: SELECT cboolean1,
        cfloat,
        cstring1,
        (988888 * csmallint),
@@ -22,9 +20,7 @@ WHERE  ((ctinyint != 0)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
-POSTHOOK: query: -- SORT_QUERY_RESULTS
-
-SELECT cboolean1,
+POSTHOOK: query: SELECT cboolean1,
        cfloat,
        cstring1,
        (988888 * csmallint),

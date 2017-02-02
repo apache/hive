@@ -8,6 +8,8 @@ PREHOOK: type: DESCFUNCTION
 POSTHOOK: query: DESCRIBE FUNCTION EXTENDED hash
 POSTHOOK: type: DESCFUNCTION
 hash(a1, a2, ...) - Returns a hash value of the arguments
+Function class:org.apache.hadoop.hive.ql.udf.generic.GenericUDFHash
+Function type:BUILTIN
 PREHOOK: query: EXPLAIN
 SELECT hash(CAST(1 AS TINYINT)), hash(CAST(2 AS SMALLINT)),
        hash(3), hash(CAST('123456789012' AS BIGINT)),

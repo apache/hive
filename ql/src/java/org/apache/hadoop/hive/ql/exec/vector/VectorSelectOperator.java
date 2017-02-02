@@ -113,6 +113,7 @@ public class VectorSelectOperator extends Operator<SelectDesc> implements
 
     projectedColumns = new int [vExpressions.length];
     for (int i = 0; i < projectedColumns.length; i++) {
+      vExpressions[i].init(hconf);
       projectedColumns[i] = vExpressions[i].getOutputColumn();
     }
   }

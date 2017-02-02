@@ -60,11 +60,9 @@ POSTHOOK: query: analyze table loc_orc compute statistics for columns state,loci
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@loc_orc
 #### A masked pattern was here ####
-PREHOOK: query: -- always true
-explain select * from loc_orc where locid < 30
+PREHOOK: query: explain select * from loc_orc where locid < 30
 PREHOOK: type: QUERY
-POSTHOOK: query: -- always true
-explain select * from loc_orc where locid < 30
+POSTHOOK: query: explain select * from loc_orc where locid < 30
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
@@ -83,11 +81,9 @@ STAGE PLANS:
             Statistics: Num rows: 8 Data size: 816 Basic stats: COMPLETE Column stats: COMPLETE
             ListSink
 
-PREHOOK: query: -- always false
-explain select * from loc_orc where locid > 30
+PREHOOK: query: explain select * from loc_orc where locid > 30
 PREHOOK: type: QUERY
-POSTHOOK: query: -- always false
-explain select * from loc_orc where locid > 30
+POSTHOOK: query: explain select * from loc_orc where locid > 30
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -121,11 +117,9 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: -- always true
-explain select * from loc_orc where locid <= 30
+PREHOOK: query: explain select * from loc_orc where locid <= 30
 PREHOOK: type: QUERY
-POSTHOOK: query: -- always true
-explain select * from loc_orc where locid <= 30
+POSTHOOK: query: explain select * from loc_orc where locid <= 30
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
@@ -144,11 +138,9 @@ STAGE PLANS:
             Statistics: Num rows: 8 Data size: 816 Basic stats: COMPLETE Column stats: COMPLETE
             ListSink
 
-PREHOOK: query: -- always false
-explain select * from loc_orc where locid >= 30
+PREHOOK: query: explain select * from loc_orc where locid >= 30
 PREHOOK: type: QUERY
-POSTHOOK: query: -- always false
-explain select * from loc_orc where locid >= 30
+POSTHOOK: query: explain select * from loc_orc where locid >= 30
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -182,11 +174,9 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: -- nothing to do
-explain select * from loc_orc where locid < 6
+PREHOOK: query: explain select * from loc_orc where locid < 6
 PREHOOK: type: QUERY
-POSTHOOK: query: -- nothing to do
-explain select * from loc_orc where locid < 6
+POSTHOOK: query: explain select * from loc_orc where locid < 6
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -220,11 +210,9 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: -- always false
-explain select * from loc_orc where locid > 6
+PREHOOK: query: explain select * from loc_orc where locid > 6
 PREHOOK: type: QUERY
-POSTHOOK: query: -- always false
-explain select * from loc_orc where locid > 6
+POSTHOOK: query: explain select * from loc_orc where locid > 6
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -258,11 +246,9 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: -- always true
-explain select * from loc_orc where locid <= 6
+PREHOOK: query: explain select * from loc_orc where locid <= 6
 PREHOOK: type: QUERY
-POSTHOOK: query: -- always true
-explain select * from loc_orc where locid <= 6
+POSTHOOK: query: explain select * from loc_orc where locid <= 6
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
@@ -281,11 +267,9 @@ STAGE PLANS:
             Statistics: Num rows: 8 Data size: 816 Basic stats: COMPLETE Column stats: COMPLETE
             ListSink
 
-PREHOOK: query: -- nothing to do
-explain select * from loc_orc where locid >= 6
+PREHOOK: query: explain select * from loc_orc where locid >= 6
 PREHOOK: type: QUERY
-POSTHOOK: query: -- nothing to do
-explain select * from loc_orc where locid >= 6
+POSTHOOK: query: explain select * from loc_orc where locid >= 6
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -319,11 +303,9 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: -- always false
-explain select * from loc_orc where locid < 1
+PREHOOK: query: explain select * from loc_orc where locid < 1
 PREHOOK: type: QUERY
-POSTHOOK: query: -- always false
-explain select * from loc_orc where locid < 1
+POSTHOOK: query: explain select * from loc_orc where locid < 1
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -357,11 +339,9 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: -- nothing to do
-explain select * from loc_orc where locid > 1
+PREHOOK: query: explain select * from loc_orc where locid > 1
 PREHOOK: type: QUERY
-POSTHOOK: query: -- nothing to do
-explain select * from loc_orc where locid > 1
+POSTHOOK: query: explain select * from loc_orc where locid > 1
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -395,11 +375,9 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: -- nothing to do
-explain select * from loc_orc where locid <= 1
+PREHOOK: query: explain select * from loc_orc where locid <= 1
 PREHOOK: type: QUERY
-POSTHOOK: query: -- nothing to do
-explain select * from loc_orc where locid <= 1
+POSTHOOK: query: explain select * from loc_orc where locid <= 1
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -433,11 +411,9 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: -- always true
-explain select * from loc_orc where locid >= 1
+PREHOOK: query: explain select * from loc_orc where locid >= 1
 PREHOOK: type: QUERY
-POSTHOOK: query: -- always true
-explain select * from loc_orc where locid >= 1
+POSTHOOK: query: explain select * from loc_orc where locid >= 1
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
@@ -456,11 +432,9 @@ STAGE PLANS:
             Statistics: Num rows: 8 Data size: 816 Basic stats: COMPLETE Column stats: COMPLETE
             ListSink
 
-PREHOOK: query: -- 5 should stay
-explain select * from loc_orc where locid IN (-4,5,30,40)
+PREHOOK: query: explain select * from loc_orc where locid IN (-4,5,30,40)
 PREHOOK: type: QUERY
-POSTHOOK: query: -- 5 should stay
-explain select * from loc_orc where locid IN (-4,5,30,40)
+POSTHOOK: query: explain select * from loc_orc where locid IN (-4,5,30,40)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -494,11 +468,9 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: -- nothing to do
-explain select * from loc_orc where locid IN (5,2,3)
+PREHOOK: query: explain select * from loc_orc where locid IN (5,2,3)
 PREHOOK: type: QUERY
-POSTHOOK: query: -- nothing to do
-explain select * from loc_orc where locid IN (5,2,3)
+POSTHOOK: query: explain select * from loc_orc where locid IN (5,2,3)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -532,11 +504,9 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: -- 1 and 6 should be left
-explain select * from loc_orc where locid IN (1,6,9)
+PREHOOK: query: explain select * from loc_orc where locid IN (1,6,9)
 PREHOOK: type: QUERY
-POSTHOOK: query: -- 1 and 6 should be left
-explain select * from loc_orc where locid IN (1,6,9)
+POSTHOOK: query: explain select * from loc_orc where locid IN (1,6,9)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -570,11 +540,9 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: -- always false
-explain select * from loc_orc where locid IN (40,30)
+PREHOOK: query: explain select * from loc_orc where locid IN (40,30)
 PREHOOK: type: QUERY
-POSTHOOK: query: -- always false
-explain select * from loc_orc where locid IN (40,30)
+POSTHOOK: query: explain select * from loc_orc where locid IN (40,30)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage

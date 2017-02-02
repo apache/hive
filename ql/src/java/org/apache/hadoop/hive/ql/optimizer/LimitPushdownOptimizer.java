@@ -179,15 +179,41 @@ public class LimitPushdownOptimizer extends Transform {
           // Not safe to continue for RS-GBY-GBY-LIM kind of pipelines. See HIVE-10607 for more.
           return false;
         }
-        if (!checkKeys(cRS.getConf().getKeyCols(), pRS.getConf().getKeyCols(), cRS, pRS)) {
-          // Keys are not the same; bail out
-          return false;
+        List<ExprNodeDesc> cKeys = cRS.getConf().getKeyCols();
+        List<ExprNodeDesc> pKeys = pRS.getConf().getKeyCols();
+        if (pRS.getChildren().get(0) instanceof GroupByOperator &&
+                pRS.getChildren().get(0).getChildren().get(0) == cRS) {
+          // RS-GB-RS
+          GroupByOperator gBy = (GroupByOperator) pRS.getChildren().get(0);
+          List<ExprNodeDesc> gKeys = gBy.getConf().getKeys();
+          if (!ExprNodeDescUtils.checkPrefixKeysUpstream(cKeys, pKeys, cRS, pRS)) {
+            // We might still be able to push the limit
+            if (!ExprNodeDescUtils.checkPrefixKeys(cKeys, gKeys, cRS, gBy) ||
+                    !ExprNodeDescUtils.checkPrefixKeys(gKeys, pKeys, gBy, pRS)) {
+              // We cannot push limit; bail out
+              return false;
+            }
+          }
+        } else {
+          if (!ExprNodeDescUtils.checkPrefixKeysUpstream(cKeys, pKeys, cRS, pRS)) {
+            // We cannot push limit; bail out
+            return false;
+          }
         }
         // Copy order
-        StringBuilder order = new StringBuilder(cRS.getConf().getOrder());
-        StringBuilder orderNull = new StringBuilder(cRS.getConf().getNullOrder());
-        order.append(pRS.getConf().getOrder().substring(order.length()));
-        orderNull.append(pRS.getConf().getNullOrder().substring(orderNull.length()));
+        StringBuilder order;
+        StringBuilder orderNull;
+        if (pRS.getConf().getOrder().length() > cRS.getConf().getOrder().length()) {
+          order = new StringBuilder(cRS.getConf().getOrder());
+          orderNull = new StringBuilder(cRS.getConf().getNullOrder());
+          order.append(pRS.getConf().getOrder().substring(order.length()));
+          orderNull.append(pRS.getConf().getNullOrder().substring(orderNull.length()));
+        } else {
+          order = new StringBuilder(cRS.getConf().getOrder().substring(
+                  0, pRS.getConf().getOrder().length()));
+          orderNull = new StringBuilder(cRS.getConf().getNullOrder().substring(
+                  0, pRS.getConf().getNullOrder().length()));
+        }
         pRS.getConf().setOrder(order.toString());
         pRS.getConf().setNullOrder(orderNull.toString());
         // Copy limit
@@ -199,33 +225,6 @@ public class LimitPushdownOptimizer extends Transform {
       }
       return true;
     }
-  }
-
-  private static boolean checkKeys(List<ExprNodeDesc> cKeys, List<ExprNodeDesc> pKeys,
-      ReduceSinkOperator cRS, ReduceSinkOperator pRS) throws SemanticException {
-    if (cKeys == null || cKeys.isEmpty()) {
-      if (pKeys != null && !pKeys.isEmpty()) {
-        return false;
-      }
-      return true;
-    }
-    if (pKeys == null || pKeys.isEmpty()) {
-      return false;
-    }
-    if (cKeys.size() > pKeys.size()) {
-      return false;
-    }
-    for (int i = 0; i < cKeys.size(); i++) {
-      ExprNodeDesc expr = ExprNodeDescUtils.backtrack(cKeys.get(i), cRS, pRS);
-      if (expr == null) {
-        // cKey is not present in parent
-        return false;
-      }
-      if (!expr.isSame(pKeys.get(i))) {
-        return false;
-      }
-    }
-    return true;
   }
 
   private static class LimitPushdownContext implements NodeProcessorCtx {

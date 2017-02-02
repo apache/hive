@@ -71,7 +71,6 @@ PREHOOK: query: insert into table part_add_int_permute_select partition(part=1)
            (3, 3, 'original'),
            (4, 4, 'original')
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__1
 PREHOOK: Output: default@part_add_int_permute_select@part=1
 POSTHOOK: query: insert into table part_add_int_permute_select partition(part=1)
     values (1, 1, 'original'),
@@ -79,7 +78,6 @@ POSTHOOK: query: insert into table part_add_int_permute_select partition(part=1)
            (3, 3, 'original'),
            (4, 4, 'original')
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__1
 POSTHOOK: Output: default@part_add_int_permute_select@part=1
 POSTHOOK: Lineage: part_add_int_permute_select PARTITION(part=1).a EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
 POSTHOOK: Lineage: part_add_int_permute_select PARTITION(part=1).b SIMPLE [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
@@ -139,7 +137,6 @@ PREHOOK: query: insert into table part_add_int_permute_select partition(part=2)
            (7, 3, 'new', 30),
            (8, 4, 'new', 40)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__2
 PREHOOK: Output: default@part_add_int_permute_select@part=2
 POSTHOOK: query: insert into table part_add_int_permute_select partition(part=2)
     values (5, 1, 'new', 10),
@@ -147,7 +144,6 @@ POSTHOOK: query: insert into table part_add_int_permute_select partition(part=2)
            (7, 3, 'new', 30),
            (8, 4, 'new', 40)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__2
 POSTHOOK: Output: default@part_add_int_permute_select@part=2
 POSTHOOK: Lineage: part_add_int_permute_select PARTITION(part=2).a EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
 POSTHOOK: Lineage: part_add_int_permute_select PARTITION(part=2).b SIMPLE [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
@@ -158,13 +154,11 @@ PREHOOK: query: insert into table part_add_int_permute_select partition(part=1)
     values (9, 5, 'new', 100),
            (10, 6, 'new', 200)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__3
 PREHOOK: Output: default@part_add_int_permute_select@part=1
 POSTHOOK: query: insert into table part_add_int_permute_select partition(part=1)
     values (9, 5, 'new', 100),
            (10, 6, 'new', 200)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__3
 POSTHOOK: Output: default@part_add_int_permute_select@part=1
 POSTHOOK: Lineage: part_add_int_permute_select PARTITION(part=1).a EXPRESSION [(values__tmp__table__3)values__tmp__table__3.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
 POSTHOOK: Lineage: part_add_int_permute_select PARTITION(part=1).b SIMPLE [(values__tmp__table__3)values__tmp__table__3.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
@@ -327,7 +321,6 @@ PREHOOK: query: insert into table part_add_int_string_permute_select partition(p
            (3, 3, 'original'),
            (4, 4, 'original')
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__4
 PREHOOK: Output: default@part_add_int_string_permute_select@part=1
 POSTHOOK: query: insert into table part_add_int_string_permute_select partition(part=1)
     values (1, 1, 'original'),
@@ -335,7 +328,6 @@ POSTHOOK: query: insert into table part_add_int_string_permute_select partition(
            (3, 3, 'original'),
            (4, 4, 'original')
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__4
 POSTHOOK: Output: default@part_add_int_string_permute_select@part=1
 POSTHOOK: Lineage: part_add_int_string_permute_select PARTITION(part=1).a EXPRESSION [(values__tmp__table__4)values__tmp__table__4.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
 POSTHOOK: Lineage: part_add_int_string_permute_select PARTITION(part=1).b SIMPLE [(values__tmp__table__4)values__tmp__table__4.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
@@ -396,7 +388,6 @@ PREHOOK: query: insert into table part_add_int_string_permute_select partition(p
            (7, 3, 'new', 30, 'thirty'),
            (8, 4, 'new', 40, 'forty')
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__5
 PREHOOK: Output: default@part_add_int_string_permute_select@part=2
 POSTHOOK: query: insert into table part_add_int_string_permute_select partition(part=2)
     values (5, 1, 'new', 10, 'ten'),
@@ -404,7 +395,6 @@ POSTHOOK: query: insert into table part_add_int_string_permute_select partition(
            (7, 3, 'new', 30, 'thirty'),
            (8, 4, 'new', 40, 'forty')
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__5
 POSTHOOK: Output: default@part_add_int_string_permute_select@part=2
 POSTHOOK: Lineage: part_add_int_string_permute_select PARTITION(part=2).a EXPRESSION [(values__tmp__table__5)values__tmp__table__5.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
 POSTHOOK: Lineage: part_add_int_string_permute_select PARTITION(part=2).b SIMPLE [(values__tmp__table__5)values__tmp__table__5.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
@@ -416,13 +406,11 @@ PREHOOK: query: insert into table part_add_int_string_permute_select partition(p
     values (9, 5, 'new', 100, 'hundred'),
            (10, 6, 'new', 200, 'two hundred')
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__6
 PREHOOK: Output: default@part_add_int_string_permute_select@part=1
 POSTHOOK: query: insert into table part_add_int_string_permute_select partition(part=1)
     values (9, 5, 'new', 100, 'hundred'),
            (10, 6, 'new', 200, 'two hundred')
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__6
 POSTHOOK: Output: default@part_add_int_string_permute_select@part=1
 POSTHOOK: Lineage: part_add_int_string_permute_select PARTITION(part=1).a EXPRESSION [(values__tmp__table__6)values__tmp__table__6.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
 POSTHOOK: Lineage: part_add_int_string_permute_select PARTITION(part=1).b SIMPLE [(values__tmp__table__6)values__tmp__table__6.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
@@ -649,7 +637,6 @@ PREHOOK: query: insert into table part_change_string_group_double partition(part
            (3, '-29.0764', '-29.0764', '-29.0764', 'original'),
            (4, '-10.3', '-10.3', '-10.3', 'original')
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__7
 PREHOOK: Output: default@part_change_string_group_double@part=1
 POSTHOOK: query: insert into table part_change_string_group_double partition(part=1)
     values (1, '753.7028', '753.7028', '753.7028', 'original'),
@@ -657,7 +644,6 @@ POSTHOOK: query: insert into table part_change_string_group_double partition(par
            (3, '-29.0764', '-29.0764', '-29.0764', 'original'),
            (4, '-10.3', '-10.3', '-10.3', 'original')
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__7
 POSTHOOK: Output: default@part_change_string_group_double@part=1
 POSTHOOK: Lineage: part_change_string_group_double PARTITION(part=1).b SIMPLE [(values__tmp__table__7)values__tmp__table__7.FieldSchema(name:tmp_values_col5, type:string, comment:), ]
 POSTHOOK: Lineage: part_change_string_group_double PARTITION(part=1).c1 SIMPLE [(values__tmp__table__7)values__tmp__table__7.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
@@ -681,7 +667,6 @@ PREHOOK: query: insert into table part_change_string_group_double partition(part
            (7, 46114.284799488, 46114.284799488, 46114.284799488, 'new'),
            (8, -66475.561431, -66475.561431, -66475.561431, 'new')
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__8
 PREHOOK: Output: default@part_change_string_group_double@part=2
 POSTHOOK: query: insert into table part_change_string_group_double partition(part=2)
     values (5, 30.774, 30.774, 30.774, 'new'),
@@ -689,7 +674,6 @@ POSTHOOK: query: insert into table part_change_string_group_double partition(par
            (7, 46114.284799488, 46114.284799488, 46114.284799488, 'new'),
            (8, -66475.561431, -66475.561431, -66475.561431, 'new')
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__8
 POSTHOOK: Output: default@part_change_string_group_double@part=2
 POSTHOOK: Lineage: part_change_string_group_double PARTITION(part=2).b SIMPLE [(values__tmp__table__8)values__tmp__table__8.FieldSchema(name:tmp_values_col5, type:string, comment:), ]
 POSTHOOK: Lineage: part_change_string_group_double PARTITION(part=2).c1 EXPRESSION [(values__tmp__table__8)values__tmp__table__8.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
@@ -701,13 +685,11 @@ PREHOOK: query: insert into table part_change_string_group_double partition(part
     values (9, 17808.963785, 17808.963785, 17808.963785, 'new'),
            (10, 9250340.75 , 9250340.75 , 9250340.75 , 'new')
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__9
 PREHOOK: Output: default@part_change_string_group_double@part=1
 POSTHOOK: query: insert into table part_change_string_group_double partition(part=1)
     values (9, 17808.963785, 17808.963785, 17808.963785, 'new'),
            (10, 9250340.75 , 9250340.75 , 9250340.75 , 'new')
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__9
 POSTHOOK: Output: default@part_change_string_group_double@part=1
 POSTHOOK: Lineage: part_change_string_group_double PARTITION(part=1).b SIMPLE [(values__tmp__table__9)values__tmp__table__9.FieldSchema(name:tmp_values_col5, type:string, comment:), ]
 POSTHOOK: Lineage: part_change_string_group_double PARTITION(part=1).c1 EXPRESSION [(values__tmp__table__9)values__tmp__table__9.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
@@ -793,14 +775,12 @@ PREHOOK: query: insert into table part_change_date_group_string_group_timestamp 
            (2, '2024-11-11 16:42:41.101', '2024-11-11 16:42:41.101', '2024-11-11 16:42:41.101', '2024-11-11 16:42:41.101', '2024-11-11 16:42:41.101', 'original'),
            (3, '2021-09-24 03:18:32.413655165', '2021-09-24 03:18:32.413655165', '2021-09-24 03:18:32.413655165', '2021-09-24 03:18:32.413655165', '2021-09-24 03:18:32.413655165', 'original')
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__10
 PREHOOK: Output: default@part_change_date_group_string_group_timestamp@part=1
 POSTHOOK: query: insert into table part_change_date_group_string_group_timestamp partition(part=1)
     values (1, '2000-12-18 08:42:30.000595596', '2000-12-18 08:42:30.000595596', '2000-12-18 08:42:30.000595596', '2000-12-18 08:42:30.000595596', '2000-12-18 08:42:30.000595596', 'original'),
            (2, '2024-11-11 16:42:41.101', '2024-11-11 16:42:41.101', '2024-11-11 16:42:41.101', '2024-11-11 16:42:41.101', '2024-11-11 16:42:41.101', 'original'),
            (3, '2021-09-24 03:18:32.413655165', '2021-09-24 03:18:32.413655165', '2021-09-24 03:18:32.413655165', '2021-09-24 03:18:32.413655165', '2021-09-24 03:18:32.413655165', 'original')
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__10
 POSTHOOK: Output: default@part_change_date_group_string_group_timestamp@part=1
 POSTHOOK: Lineage: part_change_date_group_string_group_timestamp PARTITION(part=1).b SIMPLE [(values__tmp__table__10)values__tmp__table__10.FieldSchema(name:tmp_values_col7, type:string, comment:), ]
 POSTHOOK: Lineage: part_change_date_group_string_group_timestamp PARTITION(part=1).c1 EXPRESSION [(values__tmp__table__10)values__tmp__table__10.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
@@ -826,7 +806,6 @@ PREHOOK: query: insert into table part_change_date_group_string_group_timestamp 
            (6, '2007-02-09 05:17:29.368756876', '2007-02-09 05:17:29.368756876', '2007-02-09 05:17:29.368756876', '2007-02-09 05:17:29.368756876', '2007-02-09 05:17:29.368756876', 'new'),
            (7, '2002-05-10 05:29:48.990818073', '2002-05-10 05:29:48.990818073', '2002-05-10 05:29:48.990818073', '2002-05-10 05:29:48.990818073', '2002-05-10 05:29:48.990818073', 'new')
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__11
 PREHOOK: Output: default@part_change_date_group_string_group_timestamp@part=2
 POSTHOOK: query: insert into table part_change_date_group_string_group_timestamp partition(part=2)
     values (4, '0004-09-22 18:26:29.519542222', '0004-09-22 18:26:29.519542222', '0004-09-22 18:26:29.519542222', '0004-09-22 18:26:29.519542222', '0004-09-22 18:26:29.519542222', 'new'),
@@ -834,7 +813,6 @@ POSTHOOK: query: insert into table part_change_date_group_string_group_timestamp
            (6, '2007-02-09 05:17:29.368756876', '2007-02-09 05:17:29.368756876', '2007-02-09 05:17:29.368756876', '2007-02-09 05:17:29.368756876', '2007-02-09 05:17:29.368756876', 'new'),
            (7, '2002-05-10 05:29:48.990818073', '2002-05-10 05:29:48.990818073', '2002-05-10 05:29:48.990818073', '2002-05-10 05:29:48.990818073', '2002-05-10 05:29:48.990818073', 'new')
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__11
 POSTHOOK: Output: default@part_change_date_group_string_group_timestamp@part=2
 POSTHOOK: Lineage: part_change_date_group_string_group_timestamp PARTITION(part=2).b SIMPLE [(values__tmp__table__11)values__tmp__table__11.FieldSchema(name:tmp_values_col7, type:string, comment:), ]
 POSTHOOK: Lineage: part_change_date_group_string_group_timestamp PARTITION(part=2).c1 SIMPLE [(values__tmp__table__11)values__tmp__table__11.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
@@ -848,13 +826,11 @@ PREHOOK: query: insert into table part_change_date_group_string_group_timestamp 
     values (8, '6229-06-28 02:54:28.970117179', '6229-06-28 02:54:28.970117179', '6229-06-28 02:54:28.970117179', '6229-06-28 02:54:28.970117179', '6229-06-28 02:54:28.970117179', 'new'),
            (9, '5966-07-09 03:30:50.597', '5966-07-09 03:30:50.597', '5966-07-09 03:30:50.597', '5966-07-09 03:30:50.597', '5966-07-09 03:30:50.597', 'new')
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__12
 PREHOOK: Output: default@part_change_date_group_string_group_timestamp@part=1
 POSTHOOK: query: insert into table part_change_date_group_string_group_timestamp partition(part=1)
     values (8, '6229-06-28 02:54:28.970117179', '6229-06-28 02:54:28.970117179', '6229-06-28 02:54:28.970117179', '6229-06-28 02:54:28.970117179', '6229-06-28 02:54:28.970117179', 'new'),
            (9, '5966-07-09 03:30:50.597', '5966-07-09 03:30:50.597', '5966-07-09 03:30:50.597', '5966-07-09 03:30:50.597', '5966-07-09 03:30:50.597', 'new')
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__12
 POSTHOOK: Output: default@part_change_date_group_string_group_timestamp@part=1
 POSTHOOK: Lineage: part_change_date_group_string_group_timestamp PARTITION(part=1).b SIMPLE [(values__tmp__table__12)values__tmp__table__12.FieldSchema(name:tmp_values_col7, type:string, comment:), ]
 POSTHOOK: Lineage: part_change_date_group_string_group_timestamp PARTITION(part=1).c1 SIMPLE [(values__tmp__table__12)values__tmp__table__12.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
@@ -933,14 +909,12 @@ PREHOOK: query: insert into table part_change_date_group_string_group_date parti
            (2, '2024-11-11', '2024-11-11', '2024-11-11', '2024-11-11', '2024-11-11', 'original'),
            (3, '2021-09-24', '2021-09-24', '2021-09-24', '2021-09-24', '2021-09-24', 'original')
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__13
 PREHOOK: Output: default@part_change_date_group_string_group_date@part=1
 POSTHOOK: query: insert into table part_change_date_group_string_group_date partition(part=1)
     values (1, '2000-12-18', '2000-12-18', '2000-12-18', '2000-12-18', '2000-12-18', 'original'),
            (2, '2024-11-11', '2024-11-11', '2024-11-11', '2024-11-11', '2024-11-11', 'original'),
            (3, '2021-09-24', '2021-09-24', '2021-09-24', '2021-09-24', '2021-09-24', 'original')
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__13
 POSTHOOK: Output: default@part_change_date_group_string_group_date@part=1
 POSTHOOK: Lineage: part_change_date_group_string_group_date PARTITION(part=1).b SIMPLE [(values__tmp__table__13)values__tmp__table__13.FieldSchema(name:tmp_values_col7, type:string, comment:), ]
 POSTHOOK: Lineage: part_change_date_group_string_group_date PARTITION(part=1).c1 EXPRESSION [(values__tmp__table__13)values__tmp__table__13.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
@@ -968,7 +942,6 @@ PREHOOK: query: insert into table part_change_date_group_string_group_date parti
            (8, '6229-06-28', '6229-06-28', '6229-06-28', '6229-06-28', '6229-06-28', 'new'),
            (9, '5966-07-09', '5966-07-09', '5966-07-09', '5966-07-09', '5966-07-09', 'new')
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__14
 PREHOOK: Output: default@part_change_date_group_string_group_date@part=2
 POSTHOOK: query: insert into table part_change_date_group_string_group_date partition(part=2)
     values (4, '0004-09-22', '0004-09-22', '0004-09-22', '0004-09-22', '0004-09-22', 'new'),
@@ -978,7 +951,6 @@ POSTHOOK: query: insert into table part_change_date_group_string_group_date part
            (8, '6229-06-28', '6229-06-28', '6229-06-28', '6229-06-28', '6229-06-28', 'new'),
            (9, '5966-07-09', '5966-07-09', '5966-07-09', '5966-07-09', '5966-07-09', 'new')
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__14
 POSTHOOK: Output: default@part_change_date_group_string_group_date@part=2
 POSTHOOK: Lineage: part_change_date_group_string_group_date PARTITION(part=2).b SIMPLE [(values__tmp__table__14)values__tmp__table__14.FieldSchema(name:tmp_values_col7, type:string, comment:), ]
 POSTHOOK: Lineage: part_change_date_group_string_group_date PARTITION(part=2).c1 SIMPLE [(values__tmp__table__14)values__tmp__table__14.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
@@ -1066,7 +1038,6 @@ PREHOOK: query: insert into table part_change_numeric_group_string_group_multi_i
            (3, -255, 4957, 832222222, 9000000000, 'original'),
            (4, 0, 20435, 847492223, -999999999999, 'original')
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__15
 PREHOOK: Output: default@part_change_numeric_group_string_group_multi_ints_string@part=1
 POSTHOOK: query: insert into table part_change_numeric_group_string_group_multi_ints_string partition(part=1)
     values (1, 45, 1000, 483777, -23866739993, 'original'),
@@ -1074,7 +1045,6 @@ POSTHOOK: query: insert into table part_change_numeric_group_string_group_multi_
            (3, -255, 4957, 832222222, 9000000000, 'original'),
            (4, 0, 20435, 847492223, -999999999999, 'original')
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__15
 POSTHOOK: Output: default@part_change_numeric_group_string_group_multi_ints_string@part=1
 POSTHOOK: Lineage: part_change_numeric_group_string_group_multi_ints_string PARTITION(part=1).b SIMPLE [(values__tmp__table__15)values__tmp__table__15.FieldSchema(name:tmp_values_col6, type:string, comment:), ]
 POSTHOOK: Lineage: part_change_numeric_group_string_group_multi_ints_string PARTITION(part=1).c1 EXPRESSION [(values__tmp__table__15)values__tmp__table__15.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
@@ -1116,7 +1086,6 @@ PREHOOK: query: insert into table part_change_numeric_group_string_group_multi_i
            (9, '100', '5000', '5443', '0', 'new', 1),
            (10, '17', '90000', '754072151', '3289094', 'new', 1)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__16
 PREHOOK: Output: default@part_change_numeric_group_string_group_multi_ints_string
 POSTHOOK: query: insert into table part_change_numeric_group_string_group_multi_ints_string partition(part)
     values (5, '2000', '72909', '3244222', '-93222', 'new', 2),
@@ -1126,7 +1095,6 @@ POSTHOOK: query: insert into table part_change_numeric_group_string_group_multi_
            (9, '100', '5000', '5443', '0', 'new', 1),
            (10, '17', '90000', '754072151', '3289094', 'new', 1)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__16
 POSTHOOK: Output: default@part_change_numeric_group_string_group_multi_ints_string@part=1
 POSTHOOK: Output: default@part_change_numeric_group_string_group_multi_ints_string@part=2
 POSTHOOK: Lineage: part_change_numeric_group_string_group_multi_ints_string PARTITION(part=1).b SIMPLE [(values__tmp__table__16)values__tmp__table__16.FieldSchema(name:tmp_values_col6, type:string, comment:), ]
@@ -1213,7 +1181,6 @@ PREHOOK: query: insert into table part_change_numeric_group_string_group_multi_i
            (3, -255, 4957, 832222222, 9000000000, 'original'),
            (4, 0, 20435, 847492223, -999999999999, 'original')
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__17
 PREHOOK: Output: default@part_change_numeric_group_string_group_multi_ints_char@part=1
 POSTHOOK: query: insert into table part_change_numeric_group_string_group_multi_ints_char partition(part=1)
     values (1, 45, 1000, 483777, -23866739993, 'original'),
@@ -1221,7 +1188,6 @@ POSTHOOK: query: insert into table part_change_numeric_group_string_group_multi_
            (3, -255, 4957, 832222222, 9000000000, 'original'),
            (4, 0, 20435, 847492223, -999999999999, 'original')
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__17
 POSTHOOK: Output: default@part_change_numeric_group_string_group_multi_ints_char@part=1
 POSTHOOK: Lineage: part_change_numeric_group_string_group_multi_ints_char PARTITION(part=1).b SIMPLE [(values__tmp__table__17)values__tmp__table__17.FieldSchema(name:tmp_values_col6, type:string, comment:), ]
 POSTHOOK: Lineage: part_change_numeric_group_string_group_multi_ints_char PARTITION(part=1).c1 EXPRESSION [(values__tmp__table__17)values__tmp__table__17.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
@@ -1263,7 +1229,6 @@ PREHOOK: query: insert into table part_change_numeric_group_string_group_multi_i
            (9, '100', '5000', '5443', '0', 'new', 1),
            (10, '17', '90000', '754072151', '3289094', 'new', 1)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__18
 PREHOOK: Output: default@part_change_numeric_group_string_group_multi_ints_char
 POSTHOOK: query: insert into table part_change_numeric_group_string_group_multi_ints_char partition(part)
     values (5, '2000', '72909', '3244222', '-93222', 'new', 2),
@@ -1273,7 +1238,6 @@ POSTHOOK: query: insert into table part_change_numeric_group_string_group_multi_
            (9, '100', '5000', '5443', '0', 'new', 1),
            (10, '17', '90000', '754072151', '3289094', 'new', 1)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__18
 POSTHOOK: Output: default@part_change_numeric_group_string_group_multi_ints_char@part=1
 POSTHOOK: Output: default@part_change_numeric_group_string_group_multi_ints_char@part=2
 POSTHOOK: Lineage: part_change_numeric_group_string_group_multi_ints_char PARTITION(part=1).b SIMPLE [(values__tmp__table__18)values__tmp__table__18.FieldSchema(name:tmp_values_col6, type:string, comment:), ]
@@ -1360,7 +1324,6 @@ PREHOOK: query: insert into table part_change_numeric_group_string_group_multi_i
            (3, -255, 4957, 832222222, 9000000000, 'original'),
            (4, 0, 20435, 847492223, -999999999999, 'original')
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__19
 PREHOOK: Output: default@part_change_numeric_group_string_group_multi_ints_char_trunc@part=1
 POSTHOOK: query: insert into table part_change_numeric_group_string_group_multi_ints_char_trunc partition(part=1)
     values (1, 45, 1000, 483777, -23866739993, 'original'),
@@ -1368,7 +1331,6 @@ POSTHOOK: query: insert into table part_change_numeric_group_string_group_multi_
            (3, -255, 4957, 832222222, 9000000000, 'original'),
            (4, 0, 20435, 847492223, -999999999999, 'original')
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__19
 POSTHOOK: Output: default@part_change_numeric_group_string_group_multi_ints_char_trunc@part=1
 POSTHOOK: Lineage: part_change_numeric_group_string_group_multi_ints_char_trunc PARTITION(part=1).b SIMPLE [(values__tmp__table__19)values__tmp__table__19.FieldSchema(name:tmp_values_col6, type:string, comment:), ]
 POSTHOOK: Lineage: part_change_numeric_group_string_group_multi_ints_char_trunc PARTITION(part=1).c1 EXPRESSION [(values__tmp__table__19)values__tmp__table__19.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
@@ -1410,7 +1372,6 @@ PREHOOK: query: insert into table part_change_numeric_group_string_group_multi_i
            (9, '100', '5000', '5443', '0', 'new', 1),
            (10, '17', '90000', '754072151', '3289094', 'new', 1)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__20
 PREHOOK: Output: default@part_change_numeric_group_string_group_multi_ints_char_trunc
 POSTHOOK: query: insert into table part_change_numeric_group_string_group_multi_ints_char_trunc partition(part)
     values (5, '2000', '72909', '3244222', '-93222', 'new', 2),
@@ -1420,7 +1381,6 @@ POSTHOOK: query: insert into table part_change_numeric_group_string_group_multi_
            (9, '100', '5000', '5443', '0', 'new', 1),
            (10, '17', '90000', '754072151', '3289094', 'new', 1)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__20
 POSTHOOK: Output: default@part_change_numeric_group_string_group_multi_ints_char_trunc@part=1
 POSTHOOK: Output: default@part_change_numeric_group_string_group_multi_ints_char_trunc@part=2
 POSTHOOK: Lineage: part_change_numeric_group_string_group_multi_ints_char_trunc PARTITION(part=1).b SIMPLE [(values__tmp__table__20)values__tmp__table__20.FieldSchema(name:tmp_values_col6, type:string, comment:), ]
@@ -1507,7 +1467,6 @@ PREHOOK: query: insert into table part_change_numeric_group_string_group_multi_i
            (3, -255, 4957, 832222222, 9000000000, 'original'),
            (4, 0, 20435, 847492223, -999999999999, 'original')
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__21
 PREHOOK: Output: default@part_change_numeric_group_string_group_multi_ints_varchar@part=1
 POSTHOOK: query: insert into table part_change_numeric_group_string_group_multi_ints_varchar partition(part=1)
     values (1, 45, 1000, 483777, -23866739993, 'original'),
@@ -1515,7 +1474,6 @@ POSTHOOK: query: insert into table part_change_numeric_group_string_group_multi_
            (3, -255, 4957, 832222222, 9000000000, 'original'),
            (4, 0, 20435, 847492223, -999999999999, 'original')
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__21
 POSTHOOK: Output: default@part_change_numeric_group_string_group_multi_ints_varchar@part=1
 POSTHOOK: Lineage: part_change_numeric_group_string_group_multi_ints_varchar PARTITION(part=1).b SIMPLE [(values__tmp__table__21)values__tmp__table__21.FieldSchema(name:tmp_values_col6, type:string, comment:), ]
 POSTHOOK: Lineage: part_change_numeric_group_string_group_multi_ints_varchar PARTITION(part=1).c1 EXPRESSION [(values__tmp__table__21)values__tmp__table__21.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
@@ -1557,7 +1515,6 @@ PREHOOK: query: insert into table part_change_numeric_group_string_group_multi_i
            (9, '100', '5000', '5443', '0', 'new', 1),
            (10, '17', '90000', '754072151', '3289094', 'new', 1)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__22
 PREHOOK: Output: default@part_change_numeric_group_string_group_multi_ints_varchar
 POSTHOOK: query: insert into table part_change_numeric_group_string_group_multi_ints_varchar partition(part)
     values (5, '2000', '72909', '3244222', '-93222', 'new', 2),
@@ -1567,7 +1524,6 @@ POSTHOOK: query: insert into table part_change_numeric_group_string_group_multi_
            (9, '100', '5000', '5443', '0', 'new', 1),
            (10, '17', '90000', '754072151', '3289094', 'new', 1)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__22
 POSTHOOK: Output: default@part_change_numeric_group_string_group_multi_ints_varchar@part=1
 POSTHOOK: Output: default@part_change_numeric_group_string_group_multi_ints_varchar@part=2
 POSTHOOK: Lineage: part_change_numeric_group_string_group_multi_ints_varchar PARTITION(part=1).b SIMPLE [(values__tmp__table__22)values__tmp__table__22.FieldSchema(name:tmp_values_col6, type:string, comment:), ]
@@ -1654,7 +1610,6 @@ PREHOOK: query: insert into table part_change_numeric_group_string_group_multi_i
            (3, -255, 4957, 832222222, 9000000000, 'original'),
            (4, 0, 20435, 847492223, -999999999999, 'original')
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__23
 PREHOOK: Output: default@part_change_numeric_group_string_group_multi_ints_varchar_trunc@part=1
 POSTHOOK: query: insert into table part_change_numeric_group_string_group_multi_ints_varchar_trunc partition(part=1)
     values (1, 45, 1000, 483777, -23866739993, 'original'),
@@ -1662,7 +1617,6 @@ POSTHOOK: query: insert into table part_change_numeric_group_string_group_multi_
            (3, -255, 4957, 832222222, 9000000000, 'original'),
            (4, 0, 20435, 847492223, -999999999999, 'original')
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__23
 POSTHOOK: Output: default@part_change_numeric_group_string_group_multi_ints_varchar_trunc@part=1
 POSTHOOK: Lineage: part_change_numeric_group_string_group_multi_ints_varchar_trunc PARTITION(part=1).b SIMPLE [(values__tmp__table__23)values__tmp__table__23.FieldSchema(name:tmp_values_col6, type:string, comment:), ]
 POSTHOOK: Lineage: part_change_numeric_group_string_group_multi_ints_varchar_trunc PARTITION(part=1).c1 EXPRESSION [(values__tmp__table__23)values__tmp__table__23.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
@@ -1704,7 +1658,6 @@ PREHOOK: query: insert into table part_change_numeric_group_string_group_multi_i
            (9, '100', '5000', '5443', '0', 'new', 1),
            (10, '17', '90000', '754072151', '3289094', 'new', 1)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__24
 PREHOOK: Output: default@part_change_numeric_group_string_group_multi_ints_varchar_trunc
 POSTHOOK: query: insert into table part_change_numeric_group_string_group_multi_ints_varchar_trunc partition(part)
     values (5, '2000', '72909', '3244222', '-93222', 'new', 2),
@@ -1714,7 +1667,6 @@ POSTHOOK: query: insert into table part_change_numeric_group_string_group_multi_
            (9, '100', '5000', '5443', '0', 'new', 1),
            (10, '17', '90000', '754072151', '3289094', 'new', 1)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__24
 POSTHOOK: Output: default@part_change_numeric_group_string_group_multi_ints_varchar_trunc@part=1
 POSTHOOK: Output: default@part_change_numeric_group_string_group_multi_ints_varchar_trunc@part=2
 POSTHOOK: Lineage: part_change_numeric_group_string_group_multi_ints_varchar_trunc PARTITION(part=1).b SIMPLE [(values__tmp__table__24)values__tmp__table__24.FieldSchema(name:tmp_values_col6, type:string, comment:), ]
@@ -1801,7 +1753,6 @@ PREHOOK: query: insert into table part_change_numeric_group_string_group_floatin
            (3, - 832222222, 255, 4957,'original'),
            (4, 847492223, 0, 20435, 'original')
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__25
 PREHOOK: Output: default@part_change_numeric_group_string_group_floating_string@part=1
 POSTHOOK: query: insert into table part_change_numeric_group_string_group_floating_string partition(part=1)
     values (1, -23866739993, 753.7028, -3651.672121, 'original'),
@@ -1809,7 +1760,6 @@ POSTHOOK: query: insert into table part_change_numeric_group_string_group_floati
            (3, - 832222222, 255, 4957,'original'),
            (4, 847492223, 0, 20435, 'original')
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__25
 POSTHOOK: Output: default@part_change_numeric_group_string_group_floating_string@part=1
 POSTHOOK: Lineage: part_change_numeric_group_string_group_floating_string PARTITION(part=1).b SIMPLE [(values__tmp__table__25)values__tmp__table__25.FieldSchema(name:tmp_values_col5, type:string, comment:), ]
 POSTHOOK: Lineage: part_change_numeric_group_string_group_floating_string PARTITION(part=1).c1 EXPRESSION [(values__tmp__table__25)values__tmp__table__25.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
@@ -1850,7 +1800,6 @@ PREHOOK: query: insert into table part_change_numeric_group_string_group_floatin
            (9, '100', '5000', '5443', 'new', 1),
            (10, '17', '90000', '754072151', 'new', 1)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__26
 PREHOOK: Output: default@part_change_numeric_group_string_group_floating_string
 POSTHOOK: query: insert into table part_change_numeric_group_string_group_floating_string partition(part)
     values (5, '30.774', '20.31', '46114.284799488', 'new', 2),
@@ -1860,7 +1809,6 @@ POSTHOOK: query: insert into table part_change_numeric_group_string_group_floati
            (9, '100', '5000', '5443', 'new', 1),
            (10, '17', '90000', '754072151', 'new', 1)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__26
 POSTHOOK: Output: default@part_change_numeric_group_string_group_floating_string@part=1
 POSTHOOK: Output: default@part_change_numeric_group_string_group_floating_string@part=2
 POSTHOOK: Lineage: part_change_numeric_group_string_group_floating_string PARTITION(part=1).b SIMPLE [(values__tmp__table__26)values__tmp__table__26.FieldSchema(name:tmp_values_col5, type:string, comment:), ]
@@ -1945,7 +1893,6 @@ PREHOOK: query: insert into table part_change_numeric_group_string_group_floatin
            (3,  9000000000, -255, 4957,'original'),
            (4, -999999999999, 0, 20435, 'original')
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__27
 PREHOOK: Output: default@part_change_numeric_group_string_group_floating_char@part=1
 POSTHOOK: query: insert into table part_change_numeric_group_string_group_floating_char partition(part=1)
     values (1, -23866739993, 753.7028, -3651.672121, 'original'),
@@ -1953,7 +1900,6 @@ POSTHOOK: query: insert into table part_change_numeric_group_string_group_floati
            (3,  9000000000, -255, 4957,'original'),
            (4, -999999999999, 0, 20435, 'original')
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__27
 POSTHOOK: Output: default@part_change_numeric_group_string_group_floating_char@part=1
 POSTHOOK: Lineage: part_change_numeric_group_string_group_floating_char PARTITION(part=1).b SIMPLE [(values__tmp__table__27)values__tmp__table__27.FieldSchema(name:tmp_values_col5, type:string, comment:), ]
 POSTHOOK: Lineage: part_change_numeric_group_string_group_floating_char PARTITION(part=1).c1 EXPRESSION [(values__tmp__table__27)values__tmp__table__27.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
@@ -1994,7 +1940,6 @@ PREHOOK: query: insert into table part_change_numeric_group_string_group_floatin
            (9, '100', '5000', '5443', 'new', 1),
            (10, '17', '90000', '754072151', 'new', 1)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__28
 PREHOOK: Output: default@part_change_numeric_group_string_group_floating_char
 POSTHOOK: query: insert into table part_change_numeric_group_string_group_floating_char partition(part)
     values (5, '30.774', '20.31', '46114.284799488', 'new', 2),
@@ -2004,7 +1949,6 @@ POSTHOOK: query: insert into table part_change_numeric_group_string_group_floati
            (9, '100', '5000', '5443', 'new', 1),
            (10, '17', '90000', '754072151', 'new', 1)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__28
 POSTHOOK: Output: default@part_change_numeric_group_string_group_floating_char@part=1
 POSTHOOK: Output: default@part_change_numeric_group_string_group_floating_char@part=2
 POSTHOOK: Lineage: part_change_numeric_group_string_group_floating_char PARTITION(part=1).b SIMPLE [(values__tmp__table__28)values__tmp__table__28.FieldSchema(name:tmp_values_col5, type:string, comment:), ]
@@ -2089,7 +2033,6 @@ PREHOOK: query: insert into table part_change_numeric_group_string_group_floatin
            (3, 832222222, -255, 4957, 'original'),
            (4, 847492223, 0, 20435, 'original')
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__29
 PREHOOK: Output: default@part_change_numeric_group_string_group_floating_char_trunc@part=1
 POSTHOOK: query: insert into table part_change_numeric_group_string_group_floating_char_trunc partition(part=1)
     values (1, -23866739993, 753.7028, -3651.672121, 'original'),
@@ -2097,7 +2040,6 @@ POSTHOOK: query: insert into table part_change_numeric_group_string_group_floati
            (3, 832222222, -255, 4957, 'original'),
            (4, 847492223, 0, 20435, 'original')
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__29
 POSTHOOK: Output: default@part_change_numeric_group_string_group_floating_char_trunc@part=1
 POSTHOOK: Lineage: part_change_numeric_group_string_group_floating_char_trunc PARTITION(part=1).b SIMPLE [(values__tmp__table__29)values__tmp__table__29.FieldSchema(name:tmp_values_col5, type:string, comment:), ]
 POSTHOOK: Lineage: part_change_numeric_group_string_group_floating_char_trunc PARTITION(part=1).c1 EXPRESSION [(values__tmp__table__29)values__tmp__table__29.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
@@ -2138,7 +2080,6 @@ PREHOOK: query: insert into table part_change_numeric_group_string_group_floatin
            (9, '100', '5000', '5443', 'new', 1),
            (10, '17', '90000', '754072151', 'new', 1)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__30
 PREHOOK: Output: default@part_change_numeric_group_string_group_floating_char_trunc
 POSTHOOK: query: insert into table part_change_numeric_group_string_group_floating_char_trunc partition(part)
     values (5, '30.774', '20.31', '46114.284799488', 'new', 2),
@@ -2148,7 +2089,6 @@ POSTHOOK: query: insert into table part_change_numeric_group_string_group_floati
            (9, '100', '5000', '5443', 'new', 1),
            (10, '17', '90000', '754072151', 'new', 1)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__30
 POSTHOOK: Output: default@part_change_numeric_group_string_group_floating_char_trunc@part=1
 POSTHOOK: Output: default@part_change_numeric_group_string_group_floating_char_trunc@part=2
 POSTHOOK: Lineage: part_change_numeric_group_string_group_floating_char_trunc PARTITION(part=1).b SIMPLE [(values__tmp__table__30)values__tmp__table__30.FieldSchema(name:tmp_values_col5, type:string, comment:), ]
@@ -2233,7 +2173,6 @@ PREHOOK: query: insert into table part_change_numeric_group_string_group_floatin
            (3, 9000000000, -255, 4957, 'original'),
            (4, -999999999999, 0, 20435, 'original')
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__31
 PREHOOK: Output: default@part_change_numeric_group_string_group_floating_varchar@part=1
 POSTHOOK: query: insert into table part_change_numeric_group_string_group_floating_varchar partition(part=1)
     values (1, -23866739993, 753.7028, -3651.672121, 'original'),
@@ -2241,7 +2180,6 @@ POSTHOOK: query: insert into table part_change_numeric_group_string_group_floati
            (3, 9000000000, -255, 4957, 'original'),
            (4, -999999999999, 0, 20435, 'original')
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__31
 POSTHOOK: Output: default@part_change_numeric_group_string_group_floating_varchar@part=1
 POSTHOOK: Lineage: part_change_numeric_group_string_group_floating_varchar PARTITION(part=1).b SIMPLE [(values__tmp__table__31)values__tmp__table__31.FieldSchema(name:tmp_values_col5, type:string, comment:), ]
 POSTHOOK: Lineage: part_change_numeric_group_string_group_floating_varchar PARTITION(part=1).c1 EXPRESSION [(values__tmp__table__31)values__tmp__table__31.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
@@ -2282,7 +2220,6 @@ PREHOOK: query: insert into table part_change_numeric_group_string_group_floatin
            (9, '100', '5000', '5443', 'new', 1),
            (10, '17', '90000', '754072151', 'new', 1)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__32
 PREHOOK: Output: default@part_change_numeric_group_string_group_floating_varchar
 POSTHOOK: query: insert into table part_change_numeric_group_string_group_floating_varchar partition(part)
     values (5, '30.774', '20.31', '46114.284799488', 'new', 2),
@@ -2292,7 +2229,6 @@ POSTHOOK: query: insert into table part_change_numeric_group_string_group_floati
            (9, '100', '5000', '5443', 'new', 1),
            (10, '17', '90000', '754072151', 'new', 1)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__32
 POSTHOOK: Output: default@part_change_numeric_group_string_group_floating_varchar@part=1
 POSTHOOK: Output: default@part_change_numeric_group_string_group_floating_varchar@part=2
 POSTHOOK: Lineage: part_change_numeric_group_string_group_floating_varchar PARTITION(part=1).b SIMPLE [(values__tmp__table__32)values__tmp__table__32.FieldSchema(name:tmp_values_col5, type:string, comment:), ]
@@ -2377,7 +2313,6 @@ PREHOOK: query: insert into table part_change_numeric_group_string_group_floatin
            (3, 9000000000, -255, 4957, 'original'),
            (4, -999999999999, 0, 20435, 'original')
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__33
 PREHOOK: Output: default@part_change_numeric_group_string_group_floating_varchar_trunc@part=1
 POSTHOOK: query: insert into table part_change_numeric_group_string_group_floating_varchar_trunc partition(part=1)
     values (1, -23866739993, 753.7028, -3651.672121, 'original'),
@@ -2385,7 +2320,6 @@ POSTHOOK: query: insert into table part_change_numeric_group_string_group_floati
            (3, 9000000000, -255, 4957, 'original'),
            (4, -999999999999, 0, 20435, 'original')
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__33
 POSTHOOK: Output: default@part_change_numeric_group_string_group_floating_varchar_trunc@part=1
 POSTHOOK: Lineage: part_change_numeric_group_string_group_floating_varchar_trunc PARTITION(part=1).b SIMPLE [(values__tmp__table__33)values__tmp__table__33.FieldSchema(name:tmp_values_col5, type:string, comment:), ]
 POSTHOOK: Lineage: part_change_numeric_group_string_group_floating_varchar_trunc PARTITION(part=1).c1 EXPRESSION [(values__tmp__table__33)values__tmp__table__33.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
@@ -2426,7 +2360,6 @@ PREHOOK: query: insert into table part_change_numeric_group_string_group_floatin
            (9, '100', '5000', '5443', 'new', 1),
            (10, '17', '90000', '754072151', 'new', 1)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__34
 PREHOOK: Output: default@part_change_numeric_group_string_group_floating_varchar_trunc
 POSTHOOK: query: insert into table part_change_numeric_group_string_group_floating_varchar_trunc partition(part)
     values (5, '30.774', '20.31', '46114.284799488', 'new', 2),
@@ -2436,7 +2369,6 @@ POSTHOOK: query: insert into table part_change_numeric_group_string_group_floati
            (9, '100', '5000', '5443', 'new', 1),
            (10, '17', '90000', '754072151', 'new', 1)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__34
 POSTHOOK: Output: default@part_change_numeric_group_string_group_floating_varchar_trunc@part=1
 POSTHOOK: Output: default@part_change_numeric_group_string_group_floating_varchar_trunc@part=2
 POSTHOOK: Lineage: part_change_numeric_group_string_group_floating_varchar_trunc PARTITION(part=1).b SIMPLE [(values__tmp__table__34)values__tmp__table__34.FieldSchema(name:tmp_values_col5, type:string, comment:), ]
@@ -2529,7 +2461,6 @@ PREHOOK: query: insert into table part_change_string_group_string_group_string p
            (3, 'dynamic reptile', 'dynamic reptile', 'dynamic reptile', 'dynamic reptile', 'original'),
            (4, 'blank pads   ', 'blank pads   ', 'blank pads   ', 'blank pads   ', 'original')
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__35
 PREHOOK: Output: default@part_change_string_group_string_group_string@part=1
 POSTHOOK: query: insert into table part_change_string_group_string_group_string partition(part=1)
     values (1, 'escapist', 'escapist', 'escapist', 'escapist', 'original'),
@@ -2537,7 +2468,6 @@ POSTHOOK: query: insert into table part_change_string_group_string_group_string 
            (3, 'dynamic reptile', 'dynamic reptile', 'dynamic reptile', 'dynamic reptile', 'original'),
            (4, 'blank pads   ', 'blank pads   ', 'blank pads   ', 'blank pads   ', 'original')
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__35
 POSTHOOK: Output: default@part_change_string_group_string_group_string@part=1
 POSTHOOK: Lineage: part_change_string_group_string_group_string PARTITION(part=1).b SIMPLE [(values__tmp__table__35)values__tmp__table__35.FieldSchema(name:tmp_values_col6, type:string, comment:), ]
 POSTHOOK: Lineage: part_change_string_group_string_group_string PARTITION(part=1).c1 SIMPLE [(values__tmp__table__35)values__tmp__table__35.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
@@ -2579,7 +2509,6 @@ PREHOOK: query: insert into table part_change_string_group_string_group_string p
            (9, 'hangar paralysed companion ', 'hangar paralysed companion ', 'hangar paralysed companion ', 'hangar paralysed companion ', 'new', 1),
            (10, 'bottom  ', 'bottom  ', 'bottom  ', 'bottom  ', 'new', 1)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__36
 PREHOOK: Output: default@part_change_string_group_string_group_string
 POSTHOOK: query: insert into table part_change_string_group_string_group_string partition(part)
     values (5, 'junkyard', 'junkyard', 'junkyard', 'junkyard', 'new', 2),
@@ -2589,7 +2518,6 @@ POSTHOOK: query: insert into table part_change_string_group_string_group_string 
            (9, 'hangar paralysed companion ', 'hangar paralysed companion ', 'hangar paralysed companion ', 'hangar paralysed companion ', 'new', 1),
            (10, 'bottom  ', 'bottom  ', 'bottom  ', 'bottom  ', 'new', 1)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__36
 POSTHOOK: Output: default@part_change_string_group_string_group_string@part=1
 POSTHOOK: Output: default@part_change_string_group_string_group_string@part=2
 POSTHOOK: Lineage: part_change_string_group_string_group_string PARTITION(part=1).b SIMPLE [(values__tmp__table__36)values__tmp__table__36.FieldSchema(name:tmp_values_col6, type:string, comment:), ]
@@ -2676,7 +2604,6 @@ PREHOOK: query: insert into table part_change_string_group_string_group_char par
            (3, 'dynamic reptile', 'dynamic reptile', 'dynamic reptile', 'original'),
            (4, 'blank pads   ', 'blank pads   ', 'blank pads   ', 'original')
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__37
 PREHOOK: Output: default@part_change_string_group_string_group_char@part=1
 POSTHOOK: query: insert into table part_change_string_group_string_group_char partition(part=1)
     values (1, 'escapist', 'escapist', 'escapist', 'original'),
@@ -2684,7 +2611,6 @@ POSTHOOK: query: insert into table part_change_string_group_string_group_char pa
            (3, 'dynamic reptile', 'dynamic reptile', 'dynamic reptile', 'original'),
            (4, 'blank pads   ', 'blank pads   ', 'blank pads   ', 'original')
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__37
 POSTHOOK: Output: default@part_change_string_group_string_group_char@part=1
 POSTHOOK: Lineage: part_change_string_group_string_group_char PARTITION(part=1).b SIMPLE [(values__tmp__table__37)values__tmp__table__37.FieldSchema(name:tmp_values_col5, type:string, comment:), ]
 POSTHOOK: Lineage: part_change_string_group_string_group_char PARTITION(part=1).c1 EXPRESSION [(values__tmp__table__37)values__tmp__table__37.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
@@ -2725,7 +2651,6 @@ PREHOOK: query: insert into table part_change_string_group_string_group_char par
            (9, 'hangar paralysed companion ', 'hangar paralysed companion ', 'hangar paralysed companion ', 'new', 1),
            (10, 'bottom  ', 'bottom  ', 'bottom  ', 'new', 1)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__38
 PREHOOK: Output: default@part_change_string_group_string_group_char
 POSTHOOK: query: insert into table part_change_string_group_string_group_char partition(part)
     values (5, 'junkyard', 'junkyard', 'junkyard', 'new', 2),
@@ -2735,7 +2660,6 @@ POSTHOOK: query: insert into table part_change_string_group_string_group_char pa
            (9, 'hangar paralysed companion ', 'hangar paralysed companion ', 'hangar paralysed companion ', 'new', 1),
            (10, 'bottom  ', 'bottom  ', 'bottom  ', 'new', 1)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__38
 POSTHOOK: Output: default@part_change_string_group_string_group_char@part=1
 POSTHOOK: Output: default@part_change_string_group_string_group_char@part=2
 POSTHOOK: Lineage: part_change_string_group_string_group_char PARTITION(part=1).b SIMPLE [(values__tmp__table__38)values__tmp__table__38.FieldSchema(name:tmp_values_col5, type:string, comment:), ]
@@ -2820,7 +2744,6 @@ PREHOOK: query: insert into table part_change_string_group_string_group_varchar 
            (3, 'dynamic reptile', 'dynamic reptile', 'dynamic reptile', 'original'),
            (4, 'blank pads   ', 'blank pads   ', 'blank pads   ', 'original')
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__39
 PREHOOK: Output: default@part_change_string_group_string_group_varchar@part=1
 POSTHOOK: query: insert into table part_change_string_group_string_group_varchar partition(part=1)
     values (1, 'escapist', 'escapist', 'escapist', 'original'),
@@ -2828,7 +2751,6 @@ POSTHOOK: query: insert into table part_change_string_group_string_group_varchar
            (3, 'dynamic reptile', 'dynamic reptile', 'dynamic reptile', 'original'),
            (4, 'blank pads   ', 'blank pads   ', 'blank pads   ', 'original')
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__39
 POSTHOOK: Output: default@part_change_string_group_string_group_varchar@part=1
 POSTHOOK: Lineage: part_change_string_group_string_group_varchar PARTITION(part=1).b SIMPLE [(values__tmp__table__39)values__tmp__table__39.FieldSchema(name:tmp_values_col5, type:string, comment:), ]
 POSTHOOK: Lineage: part_change_string_group_string_group_varchar PARTITION(part=1).c1 EXPRESSION [(values__tmp__table__39)values__tmp__table__39.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
@@ -2869,7 +2791,6 @@ PREHOOK: query: insert into table part_change_string_group_string_group_varchar 
            (9, 'hangar paralysed companion ', 'hangar paralysed companion ', 'hangar paralysed companion ', 'new', 1),
            (10, 'bottom  ', 'bottom  ', 'bottom  ', 'new', 1)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__40
 PREHOOK: Output: default@part_change_string_group_string_group_varchar
 POSTHOOK: query: insert into table part_change_string_group_string_group_varchar partition(part)
     values (5, 'junkyard', 'junkyard', 'junkyard', 'new', 2),
@@ -2879,7 +2800,6 @@ POSTHOOK: query: insert into table part_change_string_group_string_group_varchar
            (9, 'hangar paralysed companion ', 'hangar paralysed companion ', 'hangar paralysed companion ', 'new', 1),
            (10, 'bottom  ', 'bottom  ', 'bottom  ', 'new', 1)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__40
 POSTHOOK: Output: default@part_change_string_group_string_group_varchar@part=1
 POSTHOOK: Output: default@part_change_string_group_string_group_varchar@part=2
 POSTHOOK: Lineage: part_change_string_group_string_group_varchar PARTITION(part=1).b SIMPLE [(values__tmp__table__40)values__tmp__table__40.FieldSchema(name:tmp_values_col5, type:string, comment:), ]
@@ -2972,7 +2892,6 @@ PREHOOK: query: insert into table part_change_lower_to_higher_numeric_group_tiny
            (3, -255, -255, -255, -255, -255, -255, 'original'),
            (4, 100, 100, 100, 100, 100, 100, 'original')
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__41
 PREHOOK: Output: default@part_change_lower_to_higher_numeric_group_tinyint@part=1
 POSTHOOK: query: insert into table part_change_lower_to_higher_numeric_group_tinyint partition(part=1)
     values (1, 45, 45, 45, 45, 45, 45, 'original'),
@@ -2980,7 +2899,6 @@ POSTHOOK: query: insert into table part_change_lower_to_higher_numeric_group_tin
            (3, -255, -255, -255, -255, -255, -255, 'original'),
            (4, 100, 100, 100, 100, 100, 100, 'original')
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__41
 POSTHOOK: Output: default@part_change_lower_to_higher_numeric_group_tinyint@part=1
 POSTHOOK: Lineage: part_change_lower_to_higher_numeric_group_tinyint PARTITION(part=1).b SIMPLE [(values__tmp__table__41)values__tmp__table__41.FieldSchema(name:tmp_values_col8, type:string, comment:), ]
 POSTHOOK: Lineage: part_change_lower_to_higher_numeric_group_tinyint PARTITION(part=1).c1 EXPRESSION [(values__tmp__table__41)values__tmp__table__41.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
@@ -3024,7 +2942,6 @@ PREHOOK: query: insert into table part_change_lower_to_higher_numeric_group_tiny
            (9, '100', '5000', '5443', '22', '2', '-2', 'new', 1),
            (10, '17', '90000', '754072151', '95', '20', '18', 'new', 1)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__42
 PREHOOK: Output: default@part_change_lower_to_higher_numeric_group_tinyint
 POSTHOOK: query: insert into table part_change_lower_to_higher_numeric_group_tinyint partition(part)
     values (5, '774', '2031', '200', '12', '99', '0', 'new', 2),
@@ -3034,7 +2951,6 @@ POSTHOOK: query: insert into table part_change_lower_to_higher_numeric_group_tin
            (9, '100', '5000', '5443', '22', '2', '-2', 'new', 1),
            (10, '17', '90000', '754072151', '95', '20', '18', 'new', 1)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__42
 POSTHOOK: Output: default@part_change_lower_to_higher_numeric_group_tinyint@part=1
 POSTHOOK: Output: default@part_change_lower_to_higher_numeric_group_tinyint@part=2
 POSTHOOK: Lineage: part_change_lower_to_higher_numeric_group_tinyint PARTITION(part=1).b SIMPLE [(values__tmp__table__42)values__tmp__table__42.FieldSchema(name:tmp_values_col8, type:string, comment:), ]
@@ -3125,7 +3041,6 @@ PREHOOK: query: insert into table part_change_lower_to_higher_numeric_group_smal
            (3, -5000, -5000, -5000, -5000, -5000, 'original'),
            (4, 100, 100, 100, 100, 100, 'original')
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__43
 PREHOOK: Output: default@part_change_lower_to_higher_numeric_group_smallint@part=1
 POSTHOOK: query: insert into table part_change_lower_to_higher_numeric_group_smallint partition(part=1)
     values (1, 2031, 2031, 2031, 2031, 2031, 'original'),
@@ -3133,7 +3048,6 @@ POSTHOOK: query: insert into table part_change_lower_to_higher_numeric_group_sma
            (3, -5000, -5000, -5000, -5000, -5000, 'original'),
            (4, 100, 100, 100, 100, 100, 'original')
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__43
 POSTHOOK: Output: default@part_change_lower_to_higher_numeric_group_smallint@part=1
 POSTHOOK: Lineage: part_change_lower_to_higher_numeric_group_smallint PARTITION(part=1).b SIMPLE [(values__tmp__table__43)values__tmp__table__43.FieldSchema(name:tmp_values_col7, type:string, comment:), ]
 POSTHOOK: Lineage: part_change_lower_to_higher_numeric_group_smallint PARTITION(part=1).c1 EXPRESSION [(values__tmp__table__43)values__tmp__table__43.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
@@ -3176,7 +3090,6 @@ PREHOOK: query: insert into table part_change_lower_to_higher_numeric_group_smal
            (9, '100', '5000', '5443', '22', '2', 'new', 1),
            (10, '17', '90000', '754072151', '95', '20', 'new', 1)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__44
 PREHOOK: Output: default@part_change_lower_to_higher_numeric_group_smallint
 POSTHOOK: query: insert into table part_change_lower_to_higher_numeric_group_smallint partition(part)
     values (5, '774', '2031', '200', '12', '99', 'new', 2),
@@ -3186,7 +3099,6 @@ POSTHOOK: query: insert into table part_change_lower_to_higher_numeric_group_sma
            (9, '100', '5000', '5443', '22', '2', 'new', 1),
            (10, '17', '90000', '754072151', '95', '20', 'new', 1)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__44
 POSTHOOK: Output: default@part_change_lower_to_higher_numeric_group_smallint@part=1
 POSTHOOK: Output: default@part_change_lower_to_higher_numeric_group_smallint@part=2
 POSTHOOK: Lineage: part_change_lower_to_higher_numeric_group_smallint PARTITION(part=1).b SIMPLE [(values__tmp__table__44)values__tmp__table__44.FieldSchema(name:tmp_values_col7, type:string, comment:), ]
@@ -3275,7 +3187,6 @@ PREHOOK: query: insert into table part_change_lower_to_higher_numeric_group_int 
            (3, -5000, -5000, -5000, -5000, 'original'),
            (4, 52927714, 52927714, 52927714, 52927714, 'original')
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__45
 PREHOOK: Output: default@part_change_lower_to_higher_numeric_group_int@part=1
 POSTHOOK: query: insert into table part_change_lower_to_higher_numeric_group_int partition(part=1)
     values (1, 2031, 2031, 2031, 2031, 'original'),
@@ -3283,7 +3194,6 @@ POSTHOOK: query: insert into table part_change_lower_to_higher_numeric_group_int
            (3, -5000, -5000, -5000, -5000, 'original'),
            (4, 52927714, 52927714, 52927714, 52927714, 'original')
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__45
 POSTHOOK: Output: default@part_change_lower_to_higher_numeric_group_int@part=1
 POSTHOOK: Lineage: part_change_lower_to_higher_numeric_group_int PARTITION(part=1).b SIMPLE [(values__tmp__table__45)values__tmp__table__45.FieldSchema(name:tmp_values_col6, type:string, comment:), ]
 POSTHOOK: Lineage: part_change_lower_to_higher_numeric_group_int PARTITION(part=1).c1 EXPRESSION [(values__tmp__table__45)values__tmp__table__45.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
@@ -3325,7 +3235,6 @@ PREHOOK: query: insert into table part_change_lower_to_higher_numeric_group_int 
            (9, '100', '5000', '5443', '22', 'new', 1),
            (10, '17', '90000', '754072151', '95', 'new', 1)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__46
 PREHOOK: Output: default@part_change_lower_to_higher_numeric_group_int
 POSTHOOK: query: insert into table part_change_lower_to_higher_numeric_group_int partition(part)
     values (5, '774', '2031', '200', '12', 'new', 2),
@@ -3335,7 +3244,6 @@ POSTHOOK: query: insert into table part_change_lower_to_higher_numeric_group_int
            (9, '100', '5000', '5443', '22', 'new', 1),
            (10, '17', '90000', '754072151', '95', 'new', 1)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__46
 POSTHOOK: Output: default@part_change_lower_to_higher_numeric_group_int@part=1
 POSTHOOK: Output: default@part_change_lower_to_higher_numeric_group_int@part=2
 POSTHOOK: Lineage: part_change_lower_to_higher_numeric_group_int PARTITION(part=1).b SIMPLE [(values__tmp__table__46)values__tmp__table__46.FieldSchema(name:tmp_values_col6, type:string, comment:), ]
@@ -3422,7 +3330,6 @@ PREHOOK: query: insert into table part_change_lower_to_higher_numeric_group_bigi
            (3, -5000, -5000, -5000, 'original'),
            (4, 52927714, 52927714, 52927714, 'original')
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__47
 PREHOOK: Output: default@part_change_lower_to_higher_numeric_group_bigint@part=1
 POSTHOOK: query: insert into table part_change_lower_to_higher_numeric_group_bigint partition(part=1)
     values (1, 7203778961, 7203778961, 7203778961, 'original'),
@@ -3430,7 +3337,6 @@ POSTHOOK: query: insert into table part_change_lower_to_higher_numeric_group_big
            (3, -5000, -5000, -5000, 'original'),
            (4, 52927714, 52927714, 52927714, 'original')
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__47
 POSTHOOK: Output: default@part_change_lower_to_higher_numeric_group_bigint@part=1
 POSTHOOK: Lineage: part_change_lower_to_higher_numeric_group_bigint PARTITION(part=1).b SIMPLE [(values__tmp__table__47)values__tmp__table__47.FieldSchema(name:tmp_values_col5, type:string, comment:), ]
 POSTHOOK: Lineage: part_change_lower_to_higher_numeric_group_bigint PARTITION(part=1).c1 EXPRESSION [(values__tmp__table__47)values__tmp__table__47.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
@@ -3471,7 +3377,6 @@ PREHOOK: query: insert into table part_change_lower_to_higher_numeric_group_bigi
            (9, '100', '5000', '5443', 'new', 1),
            (10, '17', '90000', '754072151', 'new', 1)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__48
 PREHOOK: Output: default@part_change_lower_to_higher_numeric_group_bigint
 POSTHOOK: query: insert into table part_change_lower_to_higher_numeric_group_bigint partition(part)
     values (5, '774', '2031', '200', 'new', 2),
@@ -3481,7 +3386,6 @@ POSTHOOK: query: insert into table part_change_lower_to_higher_numeric_group_big
            (9, '100', '5000', '5443', 'new', 1),
            (10, '17', '90000', '754072151', 'new', 1)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__48
 POSTHOOK: Output: default@part_change_lower_to_higher_numeric_group_bigint@part=1
 POSTHOOK: Output: default@part_change_lower_to_higher_numeric_group_bigint@part=2
 POSTHOOK: Lineage: part_change_lower_to_higher_numeric_group_bigint PARTITION(part=1).b SIMPLE [(values__tmp__table__48)values__tmp__table__48.FieldSchema(name:tmp_values_col5, type:string, comment:), ]
@@ -3566,7 +3470,6 @@ PREHOOK: query: insert into table part_change_lower_to_higher_numeric_group_deci
            (3, -5000, -5000, 'original'),
            (4, 52927714, 52927714, 'original')
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__49
 PREHOOK: Output: default@part_change_lower_to_higher_numeric_group_decimal@part=1
 POSTHOOK: query: insert into table part_change_lower_to_higher_numeric_group_decimal partition(part=1)
     values (1, -29.0764, -29.0764, 'original'),
@@ -3574,7 +3477,6 @@ POSTHOOK: query: insert into table part_change_lower_to_higher_numeric_group_dec
            (3, -5000, -5000, 'original'),
            (4, 52927714, 52927714, 'original')
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__49
 POSTHOOK: Output: default@part_change_lower_to_higher_numeric_group_decimal@part=1
 POSTHOOK: Lineage: part_change_lower_to_higher_numeric_group_decimal PARTITION(part=1).b SIMPLE [(values__tmp__table__49)values__tmp__table__49.FieldSchema(name:tmp_values_col4, type:string, comment:), ]
 POSTHOOK: Lineage: part_change_lower_to_higher_numeric_group_decimal PARTITION(part=1).c1 EXPRESSION [(values__tmp__table__49)values__tmp__table__49.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
@@ -3614,7 +3516,6 @@ PREHOOK: query: insert into table part_change_lower_to_higher_numeric_group_deci
            (9, '10.0', '0.100', 'new', 1),
            (10, '1.7', '17.8888', 'new', 1)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__50
 PREHOOK: Output: default@part_change_lower_to_higher_numeric_group_decimal
 POSTHOOK: query: insert into table part_change_lower_to_higher_numeric_group_decimal partition(part)
     values (5, '7.74', '22.3', 'new', 2),
@@ -3624,7 +3525,6 @@ POSTHOOK: query: insert into table part_change_lower_to_higher_numeric_group_dec
            (9, '10.0', '0.100', 'new', 1),
            (10, '1.7', '17.8888', 'new', 1)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__50
 POSTHOOK: Output: default@part_change_lower_to_higher_numeric_group_decimal@part=1
 POSTHOOK: Output: default@part_change_lower_to_higher_numeric_group_decimal@part=2
 POSTHOOK: Lineage: part_change_lower_to_higher_numeric_group_decimal PARTITION(part=1).b SIMPLE [(values__tmp__table__50)values__tmp__table__50.FieldSchema(name:tmp_values_col4, type:string, comment:), ]
@@ -3707,7 +3607,6 @@ PREHOOK: query: insert into table part_change_lower_to_higher_numeric_group_floa
            (3, -5000, 'original'),
            (4, 52927714, 'original')
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__51
 PREHOOK: Output: default@part_change_lower_to_higher_numeric_group_float@part=1
 POSTHOOK: query: insert into table part_change_lower_to_higher_numeric_group_float partition(part=1)
     values (1, -29.0764, 'original'),
@@ -3715,7 +3614,6 @@ POSTHOOK: query: insert into table part_change_lower_to_higher_numeric_group_flo
            (3, -5000, 'original'),
            (4, 52927714, 'original')
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__51
 POSTHOOK: Output: default@part_change_lower_to_higher_numeric_group_float@part=1
 POSTHOOK: Lineage: part_change_lower_to_higher_numeric_group_float PARTITION(part=1).b SIMPLE [(values__tmp__table__51)values__tmp__table__51.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
 POSTHOOK: Lineage: part_change_lower_to_higher_numeric_group_float PARTITION(part=1).c1 EXPRESSION [(values__tmp__table__51)values__tmp__table__51.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
@@ -3754,7 +3652,6 @@ PREHOOK: query: insert into table part_change_lower_to_higher_numeric_group_floa
            (9, '100', 'new', 1),
            (10, '17',  'new', 1)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__52
 PREHOOK: Output: default@part_change_lower_to_higher_numeric_group_float
 POSTHOOK: query: insert into table part_change_lower_to_higher_numeric_group_float partition(part)
     values (5, '774', 'new', 2),
@@ -3764,7 +3661,6 @@ POSTHOOK: query: insert into table part_change_lower_to_higher_numeric_group_flo
            (9, '100', 'new', 1),
            (10, '17',  'new', 1)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__52
 POSTHOOK: Output: default@part_change_lower_to_higher_numeric_group_float@part=1
 POSTHOOK: Output: default@part_change_lower_to_higher_numeric_group_float@part=2
 POSTHOOK: Lineage: part_change_lower_to_higher_numeric_group_float PARTITION(part=1).b SIMPLE [(values__tmp__table__52)values__tmp__table__52.FieldSchema(name:tmp_values_col3, type:string, comment:), ]

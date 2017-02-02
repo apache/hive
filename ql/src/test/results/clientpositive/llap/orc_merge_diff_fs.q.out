@@ -1,10 +1,6 @@
-PREHOOK: query: -- SORT_QUERY_RESULTS
-
-DROP TABLE orcfile_merge1
+PREHOOK: query: DROP TABLE orcfile_merge1
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: -- SORT_QUERY_RESULTS
-
-DROP TABLE orcfile_merge1
+POSTHOOK: query: DROP TABLE orcfile_merge1
 POSTHOOK: type: DROPTABLE
 PREHOOK: query: DROP TABLE orcfile_merge1b
 PREHOOK: type: DROPTABLE
@@ -44,14 +40,12 @@ POSTHOOK: query: CREATE TABLE orcfile_merge1c (key INT, value STRING)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@orcfile_merge1c
-PREHOOK: query: -- merge disabled
-EXPLAIN
+PREHOOK: query: EXPLAIN
     INSERT OVERWRITE TABLE orcfile_merge1 PARTITION (ds='1', part)
         SELECT key, value, PMOD(HASH(key), 2) as part
         FROM src
 PREHOOK: type: QUERY
-POSTHOOK: query: -- merge disabled
-EXPLAIN
+POSTHOOK: query: EXPLAIN
     INSERT OVERWRITE TABLE orcfile_merge1 PARTITION (ds='1', part)
         SELECT key, value, PMOD(HASH(key), 2) as part
         FROM src
@@ -125,14 +119,12 @@ POSTHOOK: Lineage: orcfile_merge1 PARTITION(ds=1,part=1).key EXPRESSION [(src)sr
 POSTHOOK: Lineage: orcfile_merge1 PARTITION(ds=1,part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 Found 6 items
 #### A masked pattern was here ####
-PREHOOK: query: -- auto-merge slow way
-EXPLAIN
+PREHOOK: query: EXPLAIN
     INSERT OVERWRITE TABLE orcfile_merge1b PARTITION (ds='1', part)
         SELECT key, value, PMOD(HASH(key), 2) as part
         FROM src
 PREHOOK: type: QUERY
-POSTHOOK: query: -- auto-merge slow way
-EXPLAIN
+POSTHOOK: query: EXPLAIN
     INSERT OVERWRITE TABLE orcfile_merge1b PARTITION (ds='1', part)
         SELECT key, value, PMOD(HASH(key), 2) as part
         FROM src
@@ -256,14 +248,12 @@ POSTHOOK: Lineage: orcfile_merge1b PARTITION(ds=1,part=1).key EXPRESSION [(src)s
 POSTHOOK: Lineage: orcfile_merge1b PARTITION(ds=1,part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 Found 1 items
 #### A masked pattern was here ####
-PREHOOK: query: -- auto-merge fast way
-EXPLAIN
+PREHOOK: query: EXPLAIN
     INSERT OVERWRITE TABLE orcfile_merge1c PARTITION (ds='1', part)
         SELECT key, value, PMOD(HASH(key), 2) as part
         FROM src
 PREHOOK: type: QUERY
-POSTHOOK: query: -- auto-merge fast way
-EXPLAIN
+POSTHOOK: query: EXPLAIN
     INSERT OVERWRITE TABLE orcfile_merge1c PARTITION (ds='1', part)
         SELECT key, value, PMOD(HASH(key), 2) as part
         FROM src
@@ -379,8 +369,7 @@ POSTHOOK: Lineage: orcfile_merge1c PARTITION(ds=1,part=1).key EXPRESSION [(src)s
 POSTHOOK: Lineage: orcfile_merge1c PARTITION(ds=1,part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 Found 1 items
 #### A masked pattern was here ####
-PREHOOK: query: -- Verify
-SELECT SUM(HASH(c)) FROM (
+PREHOOK: query: SELECT SUM(HASH(c)) FROM (
     SELECT TRANSFORM(*) USING 'tr \t _' AS (c)
     FROM orcfile_merge1 WHERE ds='1'
 ) t
@@ -389,8 +378,7 @@ PREHOOK: Input: default@orcfile_merge1
 PREHOOK: Input: default@orcfile_merge1@ds=1/part=0
 PREHOOK: Input: default@orcfile_merge1@ds=1/part=1
 #### A masked pattern was here ####
-POSTHOOK: query: -- Verify
-SELECT SUM(HASH(c)) FROM (
+POSTHOOK: query: SELECT SUM(HASH(c)) FROM (
     SELECT TRANSFORM(*) USING 'tr \t _' AS (c)
     FROM orcfile_merge1 WHERE ds='1'
 ) t

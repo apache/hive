@@ -8,6 +8,7 @@ POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@testView
+POSTHOOK: Lineage: testView.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: ALTER VIEW testView SET TBLPROPERTIES ('propA'='100', 'propB'='200')
 PREHOOK: type: ALTERVIEW_PROPERTIES
 PREHOOK: Input: default@testview

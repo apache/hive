@@ -107,7 +107,7 @@ public class TestDbTxnManager2 {
     checkCmdOnDriver(driver.run("create table if not exists R (a int, b int) clustered by(b) into 2 buckets stored as orc TBLPROPERTIES ('transactional'='true')"));
 
     checkCmdOnDriver(driver.compileAndRespond("delete from S where a in (select a from T where b = 1)"));
-    txnMgr.openTxn("one");
+    txnMgr.openTxn(ctx, "one");
     txnMgr.acquireLocks(driver.getPlan(), ctx, "one");
     List<ShowLocksResponseElement> locks = getLocks();
     Assert.assertEquals("Unexpected lock count", 2, locks.size());
@@ -116,7 +116,7 @@ public class TestDbTxnManager2 {
     txnMgr.rollbackTxn();
 
     checkCmdOnDriver(driver.compileAndRespond("update S set a = 7 where a in (select a from T where b = 1)"));
-    txnMgr.openTxn("one");
+    txnMgr.openTxn(ctx, "one");
     txnMgr.acquireLocks(driver.getPlan(), ctx, "one");
     locks = getLocks();
     Assert.assertEquals("Unexpected lock count", 2, locks.size());
@@ -125,7 +125,7 @@ public class TestDbTxnManager2 {
     txnMgr.rollbackTxn();
 
     checkCmdOnDriver(driver.compileAndRespond("insert into R select * from S where a in (select a from T where b = 1)"));
-    txnMgr.openTxn("three");
+    txnMgr.openTxn(ctx, "three");
     txnMgr.acquireLocks(driver.getPlan(), ctx, "three");
     locks = getLocks();
     Assert.assertEquals("Unexpected lock count", 3, locks.size());
@@ -227,7 +227,7 @@ public class TestDbTxnManager2 {
     checkCmdOnDriver(cpr);
     cpr = driver.compileAndRespond("update temp.T7 set a = 5 where b = 6");
     checkCmdOnDriver(cpr);
-    txnMgr.openTxn("Fifer");
+    txnMgr.openTxn(ctx, "Fifer");
     txnMgr.acquireLocks(driver.getPlan(), ctx, "Fifer");
     checkCmdOnDriver(driver.compileAndRespond("drop database if exists temp"));
     HiveTxnManager txnMgr2 = TxnManagerFactory.getTxnManagerFactory().getTxnManager(conf);
@@ -253,12 +253,12 @@ public class TestDbTxnManager2 {
     checkCmdOnDriver(cpr);
     cpr = driver.compileAndRespond("delete from T8 where b = 89");
     checkCmdOnDriver(cpr);
-    txnMgr.openTxn("Fifer");
+    txnMgr.openTxn(ctx, "Fifer");
     txnMgr.acquireLocks(driver.getPlan(), ctx, "Fifer");//gets SS lock on T8
     cpr = driver.compileAndRespond("select a from T8");//gets S lock on T8
     checkCmdOnDriver(cpr);
     HiveTxnManager txnMgr2 = TxnManagerFactory.getTxnManagerFactory().getTxnManager(conf);
-    txnMgr2.openTxn("Fiddler");
+    txnMgr2.openTxn(ctx, "Fiddler");
     txnMgr2.acquireLocks(driver.getPlan(), ctx, "Fiddler");
     checkCmdOnDriver(driver.compileAndRespond("update T8 set a = 1 where b = 1"));
     ((DbTxnManager) txnMgr2).acquireLocks(driver.getPlan(), ctx, "Practical", false);//waits for SS lock on T8 from fifer
@@ -662,10 +662,10 @@ public class TestDbTxnManager2 {
       "clustered by (na) into 2  buckets stored as orc TBLPROPERTIES ('transactional'='false')"));
     checkCmdOnDriver(driver.run("insert into tab_acid partition(p) (a,b,p) values(1,2,'foo'),(3,4,'bar')"));
     checkCmdOnDriver(driver.run("insert into tab_not_acid partition(np) (na,nb,np) values(1,2,'blah'),(3,4,'doh')"));
-    txnMgr.openTxn("T1");
+    txnMgr.openTxn(ctx, "T1");
     checkCmdOnDriver(driver.compileAndRespond("select * from tab_acid inner join tab_not_acid on a = na"));
     txnMgr.acquireLocks(driver.getPlan(), ctx, "T1");
-    List<ShowLocksResponseElement> locks = getLocks(txnMgr, true);
+    List<ShowLocksResponseElement> locks = getLocks(txnMgr);
     Assert.assertEquals("Unexpected lock count", 6, locks.size());
     checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "tab_acid", null, locks);
     checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "tab_acid", "p=bar", locks);
@@ -675,10 +675,10 @@ public class TestDbTxnManager2 {
     checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "tab_not_acid", "np=doh", locks);
 
     HiveTxnManager txnMgr2 = TxnManagerFactory.getTxnManagerFactory().getTxnManager(conf);
-    txnMgr2.openTxn("T2");
+    txnMgr2.openTxn(ctx, "T2");
     checkCmdOnDriver(driver.compileAndRespond("insert into tab_not_acid partition(np='doh') values(5,6)"));
     LockState ls = ((DbTxnManager)txnMgr2).acquireLocks(driver.getPlan(), ctx, "T2", false);
-    locks = getLocks(txnMgr2, true);
+    locks = getLocks(txnMgr2);
     Assert.assertEquals("Unexpected lock count", 7, locks.size());
     checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "tab_acid", null, locks);
     checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "tab_acid", "p=bar", locks);
@@ -809,85 +809,13 @@ public class TestDbTxnManager2 {
     return s == null ? null : s.toLowerCase();
   }
 
-  /**
-   * @deprecated use {@link #getLocks(boolean)}
-   */
   private List<ShowLocksResponseElement> getLocks() throws Exception {
-    return getLocks(false);
+    return getLocks(txnMgr);
   }
-  private List<ShowLocksResponseElement> getLocks(boolean sorted) throws Exception {
-    return getLocks(this.txnMgr, sorted);
-  }
-  /**
-   * @deprecated use {@link #getLocks(HiveTxnManager, boolean)}
-   */
   private List<ShowLocksResponseElement> getLocks(HiveTxnManager txnMgr) throws Exception {
-    return getLocks(txnMgr, false);
-  }
-
-  /**
-   * for some reason sort order of locks changes across different branches...
-   */
-  private List<ShowLocksResponseElement> getLocks(HiveTxnManager txnMgr, boolean sorted) throws Exception {
     ShowLocksResponse rsp = ((DbLockManager)txnMgr.getLockManager()).getLocks();
-    if(sorted) {
-      Collections.sort(rsp.getLocks(), new LockComparator());
-    }
     return rsp.getLocks();
   }
-  private static class LockComparator implements Comparator<ShowLocksResponseElement> {
-    @Override
-    public boolean equals(Object other) {
-      return other instanceof LockComparator;
-    }
-    //sort is not important except that it's consistent
-    @Override
-    public int compare(ShowLocksResponseElement p1, ShowLocksResponseElement p2) {
-      if(p1 == null && p2 == null) {
-        return 0;
-      }
-      if(p1 == null) {
-        return -1;
-      }
-      if(p2 == null) {
-        return 1;
-      }
-      int v = 0;
-      if((v = compare(p1.getDbname(), p2.getDbname())) != 0) {
-        return v;
-      }
-      if((v = compare(p1.getTablename(), p2.getTablename())) != 0) {
-        return v;
-      }
-      if((v = compare(p1.getPartname(), p2.getPartname())) != 0) {
-        return v;
-      }
-      if((v = p1.getType().getValue() - p2.getType().getValue()) != 0) {
-        return v;
-      }
-      if((v = p1.getState().getValue() - p2.getState().getValue()) != 0) {
-        return v;
-      }
-      //we should never get here (given current code)
-      if(p1.getLockid() == p2.getLockid()) {
-        return (int)(p1.getLockIdInternal() - p2.getLockIdInternal());
-      }
-      return (int)(p1.getLockid() - p2.getLockid());
-    }
-    private static int compare(String s1, String s2) {
-      if(s1 == null && s2 == null) {
-        return 0;
-      }
-      if(s1 == null) {
-        return -1;
-      }
-      if(s2 == null) {
-        return 1;
-      }
-      return s1.compareTo(s2);
-    }
-  }
-
     /**
    * txns update same resource but do not overlap in time - no conflict
    */
@@ -899,12 +827,12 @@ public class TestDbTxnManager2 {
     checkCmdOnDriver(cpr);
 
     checkCmdOnDriver(driver.compileAndRespond("select * from TAB_PART"));
-    txnMgr.openTxn("Nicholas");
+    txnMgr.openTxn(ctx, "Nicholas");
     checkCmdOnDriver(driver.compileAndRespond("update TAB_PART set b = 7 where p = 'blah'"));
     txnMgr.acquireLocks(driver.getPlan(), ctx, "Nicholas");
     HiveTxnManager txnMgr2 = TxnManagerFactory.getTxnManagerFactory().getTxnManager(conf);
     txnMgr.commitTxn();
-    txnMgr2.openTxn("Alexandra");
+    txnMgr2.openTxn(ctx, "Alexandra");
     checkCmdOnDriver(driver.compileAndRespond("update TAB_PART set b = 7 where p = 'blah'"));
     txnMgr2.acquireLocks(driver.getPlan(), ctx, "Nicholas");
     txnMgr2.commitTxn();
@@ -928,10 +856,10 @@ public class TestDbTxnManager2 {
     checkCmdOnDriver(cpr);
 
     HiveTxnManager txnMgr2 = TxnManagerFactory.getTxnManagerFactory().getTxnManager(conf);
-    txnMgr.openTxn("Peter");
+    txnMgr.openTxn(ctx, "Peter");
     checkCmdOnDriver(driver.compileAndRespond("update TAB_PART set b = 7 where p = 'blah'"));
     txnMgr.acquireLocks(driver.getPlan(), ctx, "Peter");
-    txnMgr2.openTxn("Catherine");
+    txnMgr2.openTxn(ctx, "Catherine");
     List<ShowLocksResponseElement> locks = getLocks(txnMgr);
     Assert.assertEquals("Unexpected lock count", 1, locks.size());
     //note that "update" uses dynamic partitioning thus lock is on the table not partition
@@ -953,8 +881,8 @@ public class TestDbTxnManager2 {
     checkCmdOnDriver(driver.run("insert into TAB_PART partition(p='blah') values(1,2)"));
     HiveTxnManager txnMgr2 = TxnManagerFactory.getTxnManagerFactory().getTxnManager(conf);
 
-    long txnId = txnMgr.openTxn("Known");
-    long txnId2 = txnMgr2.openTxn("Unknown");
+    long txnId = txnMgr.openTxn(ctx, "Known");
+    long txnId2 = txnMgr2.openTxn(ctx, "Unknown");
     checkCmdOnDriver(driver.compileAndRespond("update TAB_PART set b = 7 where p = 'blah'"));
     txnMgr.acquireLocks(driver.getPlan(), ctx, "Known");
     List<ShowLocksResponseElement> locks = getLocks(txnMgr);
@@ -1003,7 +931,7 @@ public class TestDbTxnManager2 {
       "clustered by (a) into 2  buckets stored as orc TBLPROPERTIES ('transactional'='true')");
     checkCmdOnDriver(cpr);
     
-    txnMgr.openTxn("Long Running");
+    txnMgr.openTxn(ctx, "Long Running");
     checkCmdOnDriver(driver.compileAndRespond("select a from  TAB_PART where p = 'blah'"));
     txnMgr.acquireLocks(driver.getPlan(), ctx, "Long Running");
     List<ShowLocksResponseElement> locks = getLocks(txnMgr);
@@ -1014,7 +942,7 @@ public class TestDbTxnManager2 {
     checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "TAB_PART", null, locks);
 
     HiveTxnManager txnMgr2 = TxnManagerFactory.getTxnManagerFactory().getTxnManager(conf);
-    txnMgr2.openTxn("Short Running");
+    txnMgr2.openTxn(ctx, "Short Running");
     checkCmdOnDriver(driver.compileAndRespond("update TAB2 set b = 7 where p = 'blah'"));//no such partition
     txnMgr2.acquireLocks(driver.getPlan(), ctx, "Short Running");
     locks = getLocks(txnMgr);
@@ -1031,7 +959,7 @@ public class TestDbTxnManager2 {
     //Short Running updated nothing, so we expect 0 rows in WRITE_SET
     Assert.assertEquals( 0, TxnDbUtil.countQueryAgent("select count(*) from WRITE_SET"));
 
-    txnMgr2.openTxn("T3");
+    txnMgr2.openTxn(ctx, "T3");
     checkCmdOnDriver(driver.compileAndRespond("update TAB2 set b = 7 where p = 'two'"));//pretend this partition exists
     txnMgr2.acquireLocks(driver.getPlan(), ctx, "T3");
     locks = getLocks(txnMgr);
@@ -1080,8 +1008,8 @@ public class TestDbTxnManager2 {
     checkCmdOnDriver(driver.run("insert into TAB_PART partition(p='blah') values(1,2)"));
     HiveTxnManager txnMgr2 = TxnManagerFactory.getTxnManagerFactory().getTxnManager(conf);
 
-    txnMgr.openTxn("Known");
-    long txnId = txnMgr2.openTxn("Unknown");
+    txnMgr.openTxn(ctx, "Known");
+    long txnId = txnMgr2.openTxn(ctx, "Unknown");
     checkCmdOnDriver(driver.compileAndRespond("update TAB_PART set b = 7 where p = 'blah'"));
     txnMgr.acquireLocks(driver.getPlan(), ctx, "Known");
     List<ShowLocksResponseElement> locks = getLocks(txnMgr);
@@ -1119,7 +1047,7 @@ public class TestDbTxnManager2 {
     Assert.assertEquals("Unexpected lock count", 1, locks.size());
     checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "TAB2", null, locks);
     HiveTxnManager txnMgr2 = TxnManagerFactory.getTxnManagerFactory().getTxnManager(conf);
-    txnMgr2.openTxn("Horton");
+    txnMgr2.openTxn(ctx, "Horton");
     checkCmdOnDriver(driver.compileAndRespond("update TAB2 set b = 17 where a = 101"));
     txnMgr2.acquireLocks(driver.getPlan(), ctx, "Horton");
     Assert.assertEquals(0, TxnDbUtil.countQueryAgent("select count(*) from WRITE_SET"));
@@ -1151,7 +1079,7 @@ public class TestDbTxnManager2 {
     HiveTxnManager txnMgr2 = TxnManagerFactory.getTxnManagerFactory().getTxnManager(conf);
 
     //test with predicates such that partition pruning works
-    txnMgr2.openTxn("T2");
+    txnMgr2.openTxn(ctx, "T2");
     checkCmdOnDriver(driver.compileAndRespond("update tab2 set b = 7 where p='two'"));
     txnMgr2.acquireLocks(driver.getPlan(), ctx, "T2");
     List<ShowLocksResponseElement> locks = getLocks(txnMgr2);
@@ -1159,7 +1087,7 @@ public class TestDbTxnManager2 {
     checkLock(LockType.SHARED_WRITE, LockState.ACQUIRED, "default", "TAB2", "p=two", locks);
 
     //now start concurrent txn
-    txnMgr.openTxn("T3");
+    txnMgr.openTxn(ctx, "T3");
     checkCmdOnDriver(driver.compileAndRespond("update tab2 set b = 7 where p='one'"));
     ((DbTxnManager)txnMgr).acquireLocks(driver.getPlan(), ctx, "T3", false);
     locks = getLocks(txnMgr);
@@ -1199,7 +1127,7 @@ public class TestDbTxnManager2 {
       "clustered by (a) into 2  buckets stored as orc TBLPROPERTIES ('transactional'='true')");
     checkCmdOnDriver(cpr);
     checkCmdOnDriver(driver.run("insert into tab1 partition(p)(a,b,p) values(1,1,'one'),(2,2,'two')"));//txnid:4
-    txnMgr2.openTxn("T5");
+    txnMgr2.openTxn(ctx, "T5");
     checkCmdOnDriver(driver.compileAndRespond("update tab1 set b = 7 where b=1"));
     txnMgr2.acquireLocks(driver.getPlan(), ctx, "T5");
     locks = getLocks(txnMgr2);
@@ -1208,7 +1136,7 @@ public class TestDbTxnManager2 {
     checkLock(LockType.SHARED_WRITE, LockState.ACQUIRED, "default", "TAB1", "p=one", locks);
 
     //now start concurrent txn
-    txnMgr.openTxn("T6");
+    txnMgr.openTxn(ctx, "T6");
     checkCmdOnDriver(driver.compileAndRespond("update tab1 set b = 7 where b = 2"));
     ((DbTxnManager)txnMgr).acquireLocks(driver.getPlan(), ctx, "T6", false);
     locks = getLocks(txnMgr);
@@ -1256,7 +1184,7 @@ public class TestDbTxnManager2 {
     checkCmdOnDriver(cpr);
     checkCmdOnDriver(driver.run("insert into tab1 partition(p)(a,b,p) values(1,1,'one'),(2,2,'two')"));//txnid:1
     HiveTxnManager txnMgr2 = TxnManagerFactory.getTxnManagerFactory().getTxnManager(conf);
-    txnMgr2.openTxn("T2");
+    txnMgr2.openTxn(ctx, "T2");
     checkCmdOnDriver(driver.compileAndRespond("update tab1 set b = 7 where b=1"));
     txnMgr2.acquireLocks(driver.getPlan(), ctx, "T2");
     List<ShowLocksResponseElement> locks = getLocks(txnMgr2);
@@ -1265,7 +1193,7 @@ public class TestDbTxnManager2 {
     checkLock(LockType.SHARED_WRITE, LockState.ACQUIRED, "default", "TAB1", "p=one", locks);
 
     //now start concurrent txn
-    txnMgr.openTxn("T3");
+    txnMgr.openTxn(ctx, "T3");
     checkCmdOnDriver(driver.compileAndRespond("update tab1 set b = 7 where p='two'"));
     ((DbTxnManager)txnMgr).acquireLocks(driver.getPlan(), ctx, "T3", false);
     locks = getLocks(txnMgr);
@@ -1310,7 +1238,7 @@ public class TestDbTxnManager2 {
     checkCmdOnDriver(cpr);
     checkCmdOnDriver(driver.run("insert into tab1 partition(p)(a,b,p) values(1,1,'one'),(2,2,'two')"));//txnid:1
     HiveTxnManager txnMgr2 = TxnManagerFactory.getTxnManagerFactory().getTxnManager(conf);
-    txnMgr2.openTxn("T2");
+    txnMgr2.openTxn(ctx, "T2");
     checkCmdOnDriver(driver.compileAndRespond("update tab1 set b = 7 where b=1"));
     txnMgr2.acquireLocks(driver.getPlan(), ctx, "T2");
     List<ShowLocksResponseElement> locks = getLocks(txnMgr2);
@@ -1319,7 +1247,7 @@ public class TestDbTxnManager2 {
     checkLock(LockType.SHARED_WRITE, LockState.ACQUIRED, "default", "TAB1", "p=one", locks);
 
     //now start concurrent txn
-    txnMgr.openTxn("T3");
+    txnMgr.openTxn(ctx, "T3");
     checkCmdOnDriver(driver.compileAndRespond("delete from tab1 where p='two' and b=2"));
     ((DbTxnManager)txnMgr).acquireLocks(driver.getPlan(), ctx, "T3", false);
     locks = getLocks(txnMgr);
@@ -1370,7 +1298,7 @@ public class TestDbTxnManager2 {
     checkCmdOnDriver(cpr);
     checkCmdOnDriver(driver.run("insert into tab1 partition(p)(a,b,p) values(1,1,'one'),(2,2,'two')"));//txnid:1
     HiveTxnManager txnMgr2 = TxnManagerFactory.getTxnManagerFactory().getTxnManager(conf);
-    txnMgr2.openTxn("T2");
+    txnMgr2.openTxn(ctx, "T2");
     checkCmdOnDriver(driver.compileAndRespond("update tab1 set b = 7 where b=2"));
     txnMgr2.acquireLocks(driver.getPlan(), ctx, "T2");
     List<ShowLocksResponseElement> locks = getLocks(txnMgr2);
@@ -1379,7 +1307,7 @@ public class TestDbTxnManager2 {
     checkLock(LockType.SHARED_WRITE, LockState.ACQUIRED, "default", "TAB1", "p=one", locks);
 
     //now start concurrent txn
-    txnMgr.openTxn("T3");
+    txnMgr.openTxn(ctx, "T3");
     checkCmdOnDriver(driver.compileAndRespond("delete from tab1 where p='two' and b=2"));
     ((DbTxnManager)txnMgr).acquireLocks(driver.getPlan(), ctx, "T3", false);
     locks = getLocks(txnMgr);
@@ -1432,7 +1360,7 @@ public class TestDbTxnManager2 {
     checkCmdOnDriver(cpr);
     checkCmdOnDriver(driver.run("insert into tab1 partition(p)(a,b,p) values(1,1,'one'),(2,2,'two')"));//txnid:1
     HiveTxnManager txnMgr2 = TxnManagerFactory.getTxnManagerFactory().getTxnManager(conf);
-    txnMgr2.openTxn("T2");
+    txnMgr2.openTxn(ctx, "T2");
     checkCmdOnDriver(driver.compileAndRespond("delete from tab1 where b=2"));
     txnMgr2.acquireLocks(driver.getPlan(), ctx, "T2");
     List<ShowLocksResponseElement> locks = getLocks(txnMgr2);
@@ -1441,7 +1369,7 @@ public class TestDbTxnManager2 {
     checkLock(LockType.SHARED_WRITE, LockState.ACQUIRED, "default", "TAB1", "p=one", locks);
 
     //now start concurrent txn
-    txnMgr.openTxn("T3");
+    txnMgr.openTxn(ctx, "T3");
     checkCmdOnDriver(driver.compileAndRespond("select * from tab1 where b=1 and p='one'"));
     ((DbTxnManager)txnMgr).acquireLocks(driver.getPlan(), ctx, "T3", false);
     checkCmdOnDriver(driver.compileAndRespond("delete from tab1 where p='two' and b=2"));
@@ -1598,13 +1526,13 @@ public class TestDbTxnManager2 {
       "(9,100,1,2),      (3,4,1,2),               (5,13,1,3),       (7,8,2,2), (14,15,2,1)"));
     
 
-    long txnId1 = txnMgr.openTxn("T1");
+    long txnId1 = txnMgr.openTxn(ctx, "T1");
     checkCmdOnDriver(driver.compileAndRespond("merge into target t using source s on t.a=s.b " +
       "when matched and t.a=5 then update set b=s.b " + //updates p=1/q=3
       "when matched and t.a in (3,7) then delete " + //deletes from p=1/q=2, p=2/q=2
       "when not matched and t.a >= 8 then insert values(s.a, s.b, s.p, s.q)"));//insert p=1/q=2, p=1/q=3 and new part 1/1
     txnMgr.acquireLocks(driver.getPlan(), ctx, "T1");
-    List<ShowLocksResponseElement> locks = getLocks(txnMgr, true);
+    List<ShowLocksResponseElement> locks = getLocks(txnMgr);
     Assert.assertEquals("Unexpected lock count", 5, locks.size());
     checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "target", null, locks);
     checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "source", null, locks);
@@ -1614,13 +1542,13 @@ public class TestDbTxnManager2 {
 
     //start concurrent txn
     DbTxnManager txnMgr2 = (DbTxnManager) TxnManagerFactory.getTxnManagerFactory().getTxnManager(conf);
-    long txnId2 = txnMgr2.openTxn("T2");
+    long txnId2 = txnMgr2.openTxn(ctx, "T2");
     checkCmdOnDriver(driver.compileAndRespond("merge into target t using source2 s on t.a=s.b " +
       "when matched and t.a=" + (cc ? 5 : 9) + " then update set b=s.b " + //if conflict updates p=1/q=3 else update p=1/q=2
       "when matched and t.a in (3,7) then delete " + //deletes from p=1/q=2, p=2/q=2
       "when not matched and t.a >= 8 then insert values(s.a, s.b, s.p, s.q)"));//insert p=1/q=2, p=1/q=3 and new part 1/1
     txnMgr2.acquireLocks(driver.getPlan(), ctx, "T1", false);
-    locks = getLocks(txnMgr2, true);
+    locks = getLocks(txnMgr2);
     Assert.assertEquals("Unexpected lock count", 10, locks.size());
     checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "target", null, locks);
     checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "source", null, locks);
@@ -1691,7 +1619,7 @@ public class TestDbTxnManager2 {
 
     //re-check locks which were in Waiting state - should now be Acquired
     ((DbLockManager)txnMgr2.getLockManager()).checkLock(extLockId);
-    locks = getLocks(txnMgr2, true);
+    locks = getLocks(txnMgr2);
     Assert.assertEquals("Unexpected lock count", 5, locks.size());
     checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "target", null, locks);
     checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "source2", null, locks);
@@ -1806,7 +1734,7 @@ public class TestDbTxnManager2 {
     checkCmdOnDriver(driver.run("insert into target values (1,2), (3,4), (5,6), (7,8)"));
     checkCmdOnDriver(driver.run("create table source (a int, b int)"));
     
-    long txnid1 = txnMgr.openTxn("T1");
+    long txnid1 = txnMgr.openTxn(ctx, "T1");
     if(causeConflict) {
       checkCmdOnDriver(driver.compileAndRespond("update target set b = 2 where a=1"));
     }
@@ -1820,20 +1748,20 @@ public class TestDbTxnManager2 {
       1,//no DP, so it's populated from lock info
       TxnDbUtil.countQueryAgent("select count(*) from TXN_COMPONENTS where tc_txnid=" + txnid1));
 
-    List<ShowLocksResponseElement> locks = getLocks(txnMgr, true);
+    List<ShowLocksResponseElement> locks = getLocks(txnMgr);
     Assert.assertEquals("Unexpected lock count", 1, locks.size());
     checkLock(causeConflict ? LockType.SHARED_WRITE : LockType.SHARED_READ,
       LockState.ACQUIRED, "default", "target", null, locks);
 
     DbTxnManager txnMgr2 = (DbTxnManager) TxnManagerFactory.getTxnManagerFactory().getTxnManager(conf);
     //start a 2nd (overlapping) txn
-    long txnid2 = txnMgr2.openTxn("T2");
+    long txnid2 = txnMgr2.openTxn(ctx, "T2");
     checkCmdOnDriver(driver.compileAndRespond("merge into target t using source s " +
       "on t.a=s.a " +
       "when matched then delete " +
       "when not matched then insert values(s.a,s.b)"));
     txnMgr2.acquireLocks(driver.getPlan(), ctx, "T2", false);
-    locks = getLocks(txnMgr, true);
+    locks = getLocks(txnMgr);
 
     Assert.assertEquals("Unexpected lock count", 3, locks.size());
     checkLock(LockType.SHARED_WRITE, LockState.ACQUIRED, "default", "target", null, locks);
@@ -1853,7 +1781,7 @@ public class TestDbTxnManager2 {
 
     //re-check locks which were in Waiting state - should now be Acquired
     ((DbLockManager)txnMgr2.getLockManager()).checkLock(extLockId);
-    locks = getLocks(txnMgr, true);
+    locks = getLocks(txnMgr);
     Assert.assertEquals("Unexpected lock count", 2, locks.size());
     checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "source", null, locks);
     checkLock(LockType.SHARED_WRITE, LockState.ACQUIRED, "default", "target", null, locks);
@@ -1903,10 +1831,10 @@ public class TestDbTxnManager2 {
     checkCmdOnDriver(driver.run("create table target (a int, b int) " +
       "partitioned by (p int, q int) clustered by (a) into 2  buckets " +
       "stored as orc TBLPROPERTIES ('transactional'='true')"));
-    long txnid1 = txnMgr.openTxn("T1");
+    long txnid1 = txnMgr.openTxn(ctx, "T1");
     checkCmdOnDriver(driver.compileAndRespond("insert into target partition(p=1,q) values (1,2,2), (3,4,2), (5,6,3), (7,8,2)"));
     txnMgr.acquireLocks(driver.getPlan(), ctx, "T1");
-    List<ShowLocksResponseElement> locks = getLocks(txnMgr, true);
+    List<ShowLocksResponseElement> locks = getLocks(txnMgr);
     Assert.assertEquals("Unexpected lock count", 1, locks.size());
     //table is empty, so can only lock the table
     checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "target", null, locks);
@@ -1935,10 +1863,10 @@ public class TestDbTxnManager2 {
       TxnDbUtil.countQueryAgent("select count(*) from COMPLETED_TXN_COMPONENTS where ctc_txnid=" + (txnid1 + 1)));
 
 
-    long txnid2 = txnMgr.openTxn("T1");
+    long txnid2 = txnMgr.openTxn(ctx, "T1");
     checkCmdOnDriver(driver.compileAndRespond("insert into target partition(p=1,q) values (10,2,2), (30,4,2), (50,6,3), (70,8,2)"));
     txnMgr.acquireLocks(driver.getPlan(), ctx, "T1");
-    locks = getLocks(txnMgr, true);
+    locks = getLocks(txnMgr);
     Assert.assertEquals("Unexpected lock count", 1, locks.size());
     //Plan is using DummyPartition, so can only lock the table... unfortunately
     checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "target", null, locks);
@@ -1974,23 +1902,23 @@ public class TestDbTxnManager2 {
     checkCmdOnDriver(driver.run("insert into target partition(p,q) values (1,2,1,2), (3,4,1,2), (5,6,1,3), (7,8,2,2)"));
     checkCmdOnDriver(driver.run("create table source (a1 int, b1 int, p1 int, q1 int)"));
 
-    long txnId1 = txnMgr.openTxn("T1");
+    long txnId1 = txnMgr.openTxn(ctx, "T1");
     checkCmdOnDriver(driver.compileAndRespond("update target set b = 2 where p=1"));
     txnMgr.acquireLocks(driver.getPlan(), ctx, "T1");
-    List<ShowLocksResponseElement> locks = getLocks(txnMgr, true);
+    List<ShowLocksResponseElement> locks = getLocks(txnMgr);
     Assert.assertEquals("Unexpected lock count", 2, locks.size());
     checkLock(LockType.SHARED_WRITE, LockState.ACQUIRED, "default", "target", "p=1/q=2", locks);
     checkLock(LockType.SHARED_WRITE, LockState.ACQUIRED, "default", "target", "p=1/q=3", locks);
 
     DbTxnManager txnMgr2 = (DbTxnManager) TxnManagerFactory.getTxnManagerFactory().getTxnManager(conf);
     //start a 2nd (overlapping) txn
-    long txnid2 = txnMgr2.openTxn("T2");
+    long txnid2 = txnMgr2.openTxn(ctx, "T2");
     checkCmdOnDriver(driver.compileAndRespond("merge into target using source " +
       "on target.p=source.p1 and target.a=source.a1 " +
       "when matched then update set b = 11 " +
       "when not matched then insert values(a1,b1,p1,q1)"));
     txnMgr2.acquireLocks(driver.getPlan(), ctx, "T2", false);
-    locks = getLocks(txnMgr, true);
+    locks = getLocks(txnMgr);
     Assert.assertEquals("Unexpected lock count", 7, locks.size());
     /**
      * W locks from T1 are still there, so all locks from T2 block.
@@ -2034,7 +1962,7 @@ public class TestDbTxnManager2 {
 
     //re-check locks which were in Waiting state - should now be Acquired
     ((DbLockManager)txnMgr2.getLockManager()).checkLock(extLockId);
-    locks = getLocks(txnMgr, true);
+    locks = getLocks(txnMgr);
     Assert.assertEquals("Unexpected lock count", 5, locks.size());
     checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "source", null, locks);
     checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "target", null, locks);
@@ -2098,35 +2026,55 @@ public class TestDbTxnManager2 {
         TxnDbUtil.countQueryAgent("select count(*) from WRITE_SET where ws_txnid=" + txnid2));
     }
   }
-  //https://issues.apache.org/jira/browse/HIVE-15048
   @Test
-  @Ignore("for some reason this fails with NPE in setUp() when run as part of the suite, but not standalone..")
-  public void testUpdateWithSubquery() throws Exception {
-    dropTable(new String[] {"target", "source"});
-    checkCmdOnDriver(driver.run("create table target (a int, b int) " +
-      "partitioned by (p int, q int) clustered by (a) into 2  buckets " +
-      "stored as orc TBLPROPERTIES ('transactional'='true')"));
-    checkCmdOnDriver(driver.run("create table source (a1 int, b1 int, p1 int, q1 int) clustered by (a1) into 2  buckets stored as orc TBLPROPERTIES ('transactional'='true')"));
+  public void testShowTablesLock() throws Exception {
+    dropTable(new String[] {"T, T2"});
+    CommandProcessorResponse cpr = driver.run(
+      "create table if not exists T (a int, b int)");
+    checkCmdOnDriver(cpr);
 
-    checkCmdOnDriver(driver.run("insert into target partition(p,q) values (1,2,1,2), (3,4,1,2), (5,6,1,3), (7,8,2,2)"));
-    
-    checkCmdOnDriver(driver.run(
-"update target set b = 1 where p in (select t.q1 from source t where t.a1=5)"));
-/**
- * So the above query fails with invalid reference 'p' (in subquery)  (as as if u use t.p)
- * But before it fails, here is inputs/outpus before/after UpdateDeleteSemanticAnalyzer
-* Before UDSA
-* inputs:  [default@target, default@target@p=1/q=2, default@target@p=1/q=3, default@target@p=2/q=2]
-* outputs: [default@target]
-* 
-* after UDSA
-* inputs:  [default@target, default@target@p=1/q=2, default@target@p=1/q=3, default@target@p=2/q=2]
-* outputs: [default@target@p=1/q=2, default@target@p=1/q=3, default@target@p=2/q=2]
-* 
-* So it looks like....
-*/
-    checkCmdOnDriver(driver.run(
-      "update source set b1 = 1 where p1 in (select t.q from target t where t.p=2)"));
+    long txnid1 = txnMgr.openTxn(ctx, "Fifer");
+    checkCmdOnDriver(driver.compileAndRespond("insert into T values(1,3)"));
+    txnMgr.acquireLocks(driver.getPlan(), ctx, "Fifer");
+    List<ShowLocksResponseElement> locks = getLocks();
+    Assert.assertEquals("Unexpected lock count", 1, locks.size());
+    checkLock(LockType.EXCLUSIVE, LockState.ACQUIRED, "default", "t", null, locks);
 
+    DbTxnManager txnMgr2 = (DbTxnManager) TxnManagerFactory.getTxnManagerFactory().getTxnManager(conf);
+    checkCmdOnDriver(driver.compileAndRespond("show tables"));
+    txnMgr2.acquireLocks(driver.getPlan(), ctx, "Fidler");
+    locks = getLocks();
+    Assert.assertEquals("Unexpected lock count", 2, locks.size());
+    checkLock(LockType.EXCLUSIVE, LockState.ACQUIRED, "default", "t", null, locks);
+    checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", null, null, locks);
+    txnMgr.commitTxn();
+    txnMgr2.releaseLocks(txnMgr2.getLockManager().getLocks(false, false));
+    Assert.assertEquals("Lock remained", 0, getLocks().size());
+    Assert.assertEquals("Lock remained", 0, getLocks(txnMgr2).size());
+
+
+    cpr = driver.run(
+      "create table if not exists T2 (a int, b int) partitioned by (p int) clustered by (a) " +
+        "into 2  buckets stored as orc TBLPROPERTIES ('transactional'='false')");
+    checkCmdOnDriver(cpr);
+
+    txnid1 = txnMgr.openTxn(ctx, "Fifer");
+    checkCmdOnDriver(driver.compileAndRespond("insert into T2 partition(p=1) values(1,3)"));
+    txnMgr.acquireLocks(driver.getPlan(), ctx, "Fifer");
+    locks = getLocks();
+    Assert.assertEquals("Unexpected lock count", 1, locks.size());
+    checkLock(LockType.EXCLUSIVE, LockState.ACQUIRED, "default", "t2", "p=1", locks);
+
+    txnMgr2 = (DbTxnManager) TxnManagerFactory.getTxnManagerFactory().getTxnManager(conf);
+    checkCmdOnDriver(driver.compileAndRespond("show tables"));
+    ((DbTxnManager)txnMgr2).acquireLocks(driver.getPlan(), ctx, "Fidler", false);
+    locks = getLocks();
+    Assert.assertEquals("Unexpected lock count", 2, locks.size());
+    checkLock(LockType.EXCLUSIVE, LockState.ACQUIRED, "default", "t2", "p=1", locks);
+    checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", null, null, locks);
+    txnMgr.commitTxn();
+    txnMgr2.releaseLocks(txnMgr2.getLockManager().getLocks(false, false));
+    Assert.assertEquals("Lock remained", 0, getLocks().size());
+    Assert.assertEquals("Lock remained", 0, getLocks(txnMgr2).size());
   }
 }

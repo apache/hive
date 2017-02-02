@@ -59,8 +59,8 @@ public class UDFLog extends UDFMath {
       return null;
     }
 
-    double base = baseWritable.getHiveDecimal().bigDecimalValue().doubleValue();
-    double d = writable.getHiveDecimal().bigDecimalValue().doubleValue();
+    double base = baseWritable.doubleValue();
+    double d = writable.doubleValue();
     return log(base, d);
   }
 

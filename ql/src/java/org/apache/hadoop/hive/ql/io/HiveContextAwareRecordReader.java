@@ -244,6 +244,15 @@ public abstract class HiveContextAwareRecordReader<K, V> implements RecordReader
   private int headerCount = 0;
   private int footerCount = 0;
 
+  protected FooterBuffer getFooterBuffer() {
+       return footerBuffer;
+  }
+
+  protected void setFooterBuffer( FooterBuffer buf) {
+    footerBuffer = buf;
+  }
+
+
   public boolean doNext(K key, V value) throws IOException {
     if (this.isSorted) {
       if (this.getIOContext().shouldEndBinarySearch() ||
@@ -308,6 +317,7 @@ public abstract class HiveContextAwareRecordReader<K, V> implements RecordReader
       if (this.ioCxtRef.getCurrentBlockStart() == 0) {
 
         // Check if the table file has header to skip.
+        footerBuffer = null;
         Path filePath = this.ioCxtRef.getInputPath();
         PartitionDesc part = null;
         try {

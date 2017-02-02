@@ -67,12 +67,10 @@ POSTHOOK: Lineage: parquet_create_people.last_name SIMPLE [(parquet_create_peopl
 POSTHOOK: Lineage: parquet_create_people.salary SIMPLE [(parquet_create_people_staging)parquet_create_people_staging.FieldSchema(name:salary, type:decimal(10,0), comment:null), ]
 POSTHOOK: Lineage: parquet_create_people.start_date SIMPLE [(parquet_create_people_staging)parquet_create_people_staging.FieldSchema(name:start_date, type:timestamp, comment:null), ]
 POSTHOOK: Lineage: parquet_create_people.state SIMPLE [(parquet_create_people_staging)parquet_create_people_staging.FieldSchema(name:state, type:string, comment:null), ]
-PREHOOK: query: -- describe the table first. This should contain un-updated stats.
-DESC FORMATTED parquet_create_people
+PREHOOK: query: DESC FORMATTED parquet_create_people
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@parquet_create_people
-POSTHOOK: query: -- describe the table first. This should contain un-updated stats.
-DESC FORMATTED parquet_create_people
+POSTHOOK: query: DESC FORMATTED parquet_create_people
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@parquet_create_people
 # col_name            	data_type           	comment             
@@ -109,13 +107,11 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: -- now run noscan and re-check the stats, and they should be updated.
-ANALYZE TABLE parquet_create_people COMPUTE STATISTICS noscan
+PREHOOK: query: ANALYZE TABLE parquet_create_people COMPUTE STATISTICS noscan
 PREHOOK: type: QUERY
 PREHOOK: Input: default@parquet_create_people
 PREHOOK: Output: default@parquet_create_people
-POSTHOOK: query: -- now run noscan and re-check the stats, and they should be updated.
-ANALYZE TABLE parquet_create_people COMPUTE STATISTICS noscan
+POSTHOOK: query: ANALYZE TABLE parquet_create_people COMPUTE STATISTICS noscan
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@parquet_create_people
 POSTHOOK: Output: default@parquet_create_people
@@ -159,13 +155,11 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: -- clean up
-DROP TABLE parquet_create_people_staging
+PREHOOK: query: DROP TABLE parquet_create_people_staging
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@parquet_create_people_staging
 PREHOOK: Output: default@parquet_create_people_staging
-POSTHOOK: query: -- clean up
-DROP TABLE parquet_create_people_staging
+POSTHOOK: query: DROP TABLE parquet_create_people_staging
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@parquet_create_people_staging
 POSTHOOK: Output: default@parquet_create_people_staging

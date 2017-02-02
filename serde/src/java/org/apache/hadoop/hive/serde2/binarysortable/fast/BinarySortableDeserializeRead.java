@@ -21,10 +21,11 @@ package org.apache.hadoop.hive.serde2.binarysortable.fast;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.util.Arrays;
+import java.nio.charset.StandardCharsets;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.apache.hadoop.hive.common.type.HiveDecimal;
+import org.apache.hadoop.hive.common.type.FastHiveDecimal;
 import org.apache.hadoop.hive.serde2.binarysortable.BinarySortableSerDe;
 import org.apache.hadoop.hive.serde2.binarysortable.InputByteBuffer;
 import org.apache.hadoop.hive.serde2.fast.DeserializeRead;
@@ -391,6 +392,7 @@ public final class BinarySortableDeserializeRead extends DeserializeRead {
           length++;
         } while (true);
 
+        // CONSIDER: Allocate a larger initial size.
         if(tempDecimalBuffer == null || tempDecimalBuffer.length < length) {
           tempDecimalBuffer = new byte[length];
         }
@@ -403,29 +405,30 @@ public final class BinarySortableDeserializeRead extends DeserializeRead {
         // read the null byte again
         inputByteBuffer.read(positive ? invert : !invert);
 
-        String digits = new String(tempDecimalBuffer, 0, length, BinarySortableSerDe.decimalCharSet);
-        BigInteger bi = new BigInteger(digits);
-        HiveDecimal bd = HiveDecimal.create(bi).scaleByPowerOfTen(factor-length);
+        String digits = new String(tempDecimalBuffer, 0, length, StandardCharsets.UTF_8);
 
-        if (!positive) {
-          bd = bd.negate();
+        // Set the value of the writable from the decimal digits that were written with no dot.
+        int scale = length - factor;
+        currentHiveDecimalWritable.setFromDigitsOnlyBytesWithScale(
+            !positive, tempDecimalBuffer, 0, length, scale);
+        boolean decimalIsNull = !currentHiveDecimalWritable.isSet();
+        if (!decimalIsNull) {
+
+          // We have a decimal.  After we enforce precision and scale, will it become a NULL?
+
+          DecimalTypeInfo decimalTypeInfo = (DecimalTypeInfo) typeInfos[fieldIndex];
+
+          int enforcePrecision = decimalTypeInfo.getPrecision();
+          int enforceScale = decimalTypeInfo.getScale();
+
+          decimalIsNull =
+              !currentHiveDecimalWritable.mutateEnforcePrecisionScale(
+                  enforcePrecision, enforceScale);
+
         }
-
-        // We have a decimal.  After we enforce precision and scale, will it become a NULL?
-
-        currentHiveDecimalWritable.set(bd);
-
-        DecimalTypeInfo decimalTypeInfo = (DecimalTypeInfo) typeInfos[fieldIndex];
-
-        int precision = decimalTypeInfo.getPrecision();
-        int scale = decimalTypeInfo.getScale();
-
-        HiveDecimal decimal = currentHiveDecimalWritable.getHiveDecimal(precision, scale);
-        if (decimal == null) {
+        if (decimalIsNull) {
           return false;
         }
-        // Put value back into writable.
-        currentHiveDecimalWritable.set(decimal);
       }
       return true;
     default:

@@ -18,11 +18,9 @@ POSTHOOK: Lineage: acid_vectorized.a SIMPLE [(alltypesorc)alltypesorc.FieldSchem
 POSTHOOK: Lineage: acid_vectorized.b SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
 PREHOOK: query: insert into table acid_vectorized values (1, 'bar')
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__1
 PREHOOK: Output: default@acid_vectorized
 POSTHOOK: query: insert into table acid_vectorized values (1, 'bar')
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__1
 POSTHOOK: Output: default@acid_vectorized
 POSTHOOK: Lineage: acid_vectorized.a EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 POSTHOOK: Lineage: acid_vectorized.b SIMPLE [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]

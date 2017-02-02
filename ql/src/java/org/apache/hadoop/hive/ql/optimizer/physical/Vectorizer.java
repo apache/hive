@@ -67,6 +67,7 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorMapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.vector.VectorMapJoinOuterFilteredOperator;
 import org.apache.hadoop.hive.ql.exec.vector.VectorSMBMapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizationContext;
+import org.apache.hadoop.hive.ql.exec.vector.VectorizationContext.HiveVectorAdaptorUsageMode;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizationContext.InConstantType;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizationContextRegion;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.IdentityExpression;
@@ -240,8 +241,16 @@ public class Vectorizer implements PhysicalPlanResolver {
 
   boolean isSchemaEvolution;
 
+  HiveVectorAdaptorUsageMode hiveVectorAdaptorUsageMode;
+
   public Vectorizer() {
 
+    /*
+     * We check UDFs against the supportedGenericUDFs when
+     * hive.vectorized.adaptor.usage.mode=chosen or none.
+     *
+     * We allow all UDFs for hive.vectorized.adaptor.usage.mode=all.
+     */
     supportedGenericUDFs.add(GenericUDFOPPlus.class);
     supportedGenericUDFs.add(GenericUDFOPMinus.class);
     supportedGenericUDFs.add(GenericUDFOPMultiply.class);
@@ -326,6 +335,7 @@ public class Vectorizer implements PhysicalPlanResolver {
     supportedGenericUDFs.add(GenericUDFNvl.class);
     supportedGenericUDFs.add(GenericUDFElt.class);
     supportedGenericUDFs.add(GenericUDFInitCap.class);
+    supportedGenericUDFs.add(GenericUDFInBloomFilter.class);
 
     // For type casts
     supportedGenericUDFs.add(UDFToLong.class);
@@ -359,6 +369,7 @@ public class Vectorizer implements PhysicalPlanResolver {
     supportedAggregationUdfs.add("stddev");
     supportedAggregationUdfs.add("stddev_pop");
     supportedAggregationUdfs.add("stddev_samp");
+    supportedAggregationUdfs.add("bloom_filter");
   }
 
   private class VectorTaskColumnInfo {
@@ -1389,10 +1400,15 @@ public class Vectorizer implements PhysicalPlanResolver {
     useRowDeserialize =
         HiveConf.getBoolVar(hiveConf,
             HiveConf.ConfVars.HIVE_VECTORIZATION_USE_ROW_DESERIALIZE);
+    // TODO: we could also vectorize some formats based on hive.llap.io.encode.formats if LLAP IO
+    //       is enabled and we are going to run in LLAP. However, we don't know if we end up in
+    //       LLAP or not at this stage, so don't do this now. We may need to add a 'force' option.
 
     isSchemaEvolution =
         HiveConf.getBoolVar(hiveConf,
             HiveConf.ConfVars.HIVE_SCHEMA_EVOLUTION);
+
+    hiveVectorAdaptorUsageMode = HiveVectorAdaptorUsageMode.getHiveConfValue(hiveConf);
 
     // create dispatcher and graph walker
     Dispatcher disp = new VectorizationDispatcher(physicalContext);
@@ -1559,6 +1575,10 @@ public class Vectorizer implements PhysicalPlanResolver {
     List<ExprNodeDesc> smallTableExprs = desc.getExprs().get(posSingleVectorMapJoinSmallTable);
     if (!validateExprNodeDesc(smallTableExprs)) {
       LOG.info("Cannot vectorize map work small table expression");
+      return false;
+    }
+    if (desc.getResidualFilterExprs() != null && !desc.getResidualFilterExprs().isEmpty()) {
+      LOG.info("Cannot vectorize outer join with complex ON clause");
       return false;
     }
     return true;
@@ -1896,13 +1916,17 @@ public class Vectorizer implements PhysicalPlanResolver {
     if (VectorizationContext.isCustomUDF(genericUDFExpr)) {
       return true;
     }
-    GenericUDF genericUDF = genericUDFExpr.getGenericUDF();
-    if (genericUDF instanceof GenericUDFBridge) {
-      Class<? extends UDF> udf = ((GenericUDFBridge) genericUDF).getUdfClass();
-      return supportedGenericUDFs.contains(udf);
-    } else {
-      return supportedGenericUDFs.contains(genericUDF.getClass());
+    if (hiveVectorAdaptorUsageMode == HiveVectorAdaptorUsageMode.NONE ||
+        hiveVectorAdaptorUsageMode == HiveVectorAdaptorUsageMode.CHOSEN) {
+      GenericUDF genericUDF = genericUDFExpr.getGenericUDF();
+      if (genericUDF instanceof GenericUDFBridge) {
+        Class<? extends UDF> udf = ((GenericUDFBridge) genericUDF).getUdfClass();
+        return supportedGenericUDFs.contains(udf);
+      } else {
+        return supportedGenericUDFs.contains(genericUDF.getClass());
+      }
     }
+    return true;
   }
 
   private boolean validateAggregationIsPrimitive(VectorAggregateExpression vectorAggrExpr) {
@@ -1931,7 +1955,7 @@ public class Vectorizer implements PhysicalPlanResolver {
     } catch (Exception e) {
       // We should have already attempted to vectorize in validateAggregationDesc.
       if (LOG.isDebugEnabled()) {
-        LOG.debug("Vectorization of aggreation should have succeeded ", e);
+        LOG.debug("Vectorization of aggregation should have succeeded ", e);
       }
       return new Pair<Boolean,Boolean>(false, false);
     }
@@ -2497,6 +2521,7 @@ public class Vectorizer implements PhysicalPlanResolver {
       case EXTRACT:
       case EVENT:
       case HASHTABLESINK:
+      case SPARKPRUNINGSINK:
         vectorOp = OperatorFactory.getVectorOperator(
             op.getCompilationOpContext(), op.getConf(), vContext);
         break;

@@ -68,14 +68,22 @@ public class RetryingHMSHandler implements InvocationHandler {
       baseHandler.setConf(hiveConf); // tests expect configuration changes applied directly to metastore
     }
     activeConf = baseHandler.getConf();
-
     // This has to be called before initializing the instance of HMSHandler
     // Using the hook on startup ensures that the hook always has priority
     // over settings in *.xml.  The thread local conf needs to be used because at this point
     // it has already been initialized using hiveConf.
     MetaStoreInit.updateConnectionURL(hiveConf, getActiveConf(), null, metaStoreInitData);
-
-    baseHandler.init();
+    try {
+      //invoking init method of baseHandler this way since it adds the retry logic
+      //in case of transient failures in init method
+      invoke(baseHandler, baseHandler.getClass().getDeclaredMethod("init", (Class<?>[]) null),
+          null);
+    } catch (Throwable e) {
+      LOG.error("HMSHandler Fatal error: " + ExceptionUtils.getStackTrace(e));
+      MetaException me = new MetaException(e.getMessage());
+      me.initCause(e);
+      throw me;
+    }
   }
 
   public static IHMSHandler getProxy(HiveConf hiveConf, IHMSHandler baseHandler, boolean local)

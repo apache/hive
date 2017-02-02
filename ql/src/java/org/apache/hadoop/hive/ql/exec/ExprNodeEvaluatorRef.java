@@ -30,7 +30,7 @@ public class ExprNodeEvaluatorRef extends ExprNodeEvaluator {
   private final ExprNodeEvaluator referencing;
 
   public ExprNodeEvaluatorRef(ExprNodeEvaluator referencing) {
-    super(referencing.getExpr());
+    super(referencing.getExpr(), referencing.getConf());
     this.referencing = referencing;
   }
 

@@ -46,6 +46,7 @@ import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.WriteBuffers.ByteSegmentRef;
 import org.apache.hadoop.hive.serde2.lazybinary.fast.LazyBinaryDeserializeRead;
 import org.apache.hadoop.hive.serde2.lazybinary.fast.LazyBinarySerializeWrite;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
@@ -423,7 +424,9 @@ public abstract class VectorMapJoinGenerateResultOperator extends VectorMapJoinC
     List<Integer> noNullsProjectionList = new ArrayList<Integer>();
     for (int i = 0; i < projectionSize; i++) {
       int projectedColumn = projectedColumns.get(i);
-      if (batch.cols[projectedColumn] != null) {
+      if (batch.cols[projectedColumn] != null &&
+          inputObjInspectorsTypeInfos[i].getCategory() == Category.PRIMITIVE) {
+        // Only columns present in the batch and non-complex types.
         typeInfoList.add(inputObjInspectorsTypeInfos[i]);
         noNullsProjectionList.add(projectedColumn);
       }

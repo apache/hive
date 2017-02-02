@@ -23,7 +23,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.calcite.rel.core.Join;
 import org.apache.calcite.rel.core.JoinRelType;
+import org.apache.calcite.rel.core.SemiJoin;
 import org.apache.calcite.rel.metadata.ReflectiveRelMetadataProvider;
 import org.apache.calcite.rel.metadata.RelMdSelectivity;
 import org.apache.calcite.rel.metadata.RelMdUtil;
@@ -61,7 +63,7 @@ public class HiveRelMdSelectivity extends RelMdSelectivity {
     return 1.0;
   }
 
-  public Double getSelectivity(HiveJoin j, RelMetadataQuery mq, RexNode predicate) {
+  public Double getSelectivity(Join j, RelMetadataQuery mq, RexNode predicate) {
     if (j.getJoinType().equals(JoinRelType.INNER)) {
       return computeInnerJoinSelectivity(j, mq, predicate);
     } else if (j.getJoinType().equals(JoinRelType.LEFT) ||
@@ -78,8 +80,7 @@ public class HiveRelMdSelectivity extends RelMdSelectivity {
     return 1.0;
   }
 
-  private Double computeInnerJoinSelectivity(HiveJoin j, RelMetadataQuery mq, RexNode predicate) {
-    double ndvCrossProduct = 1;
+  private Double computeInnerJoinSelectivity(Join j, RelMetadataQuery mq, RexNode predicate) {
     Pair<Boolean, RexNode> predInfo =
         getCombinedPredicateForJoin(j, predicate);
     if (!predInfo.getKey()) {
@@ -120,15 +121,19 @@ public class HiveRelMdSelectivity extends RelMdSelectivity {
     // NDV of the join can not exceed the cardinality of cross join.
     List<JoinLeafPredicateInfo> peLst = jpi.getEquiJoinPredicateElements();
     int noOfPE = peLst.size();
+    double ndvCrossProduct = 1;
     if (noOfPE > 0) {
       ndvCrossProduct = exponentialBackoff(peLst, colStatMap);
 
-      if (j.isLeftSemiJoin())
+      if (j instanceof SemiJoin) {
         ndvCrossProduct = Math.min(mq.getRowCount(j.getLeft()),
             ndvCrossProduct);
-      else
+      }else if (j instanceof HiveJoin){
         ndvCrossProduct = Math.min(mq.getRowCount(j.getLeft())
             * mq.getRowCount(j.getRight()), ndvCrossProduct);
+      } else {
+        throw new RuntimeException("Unexpected Join type: " + j.getClass().getName());
+      }
     }
 
     // 4. Join Selectivity = 1/NDV
@@ -208,7 +213,7 @@ public class HiveRelMdSelectivity extends RelMdSelectivity {
    * @return if predicate is the join condition return (true, joinCond)
    * else return (false, minusPred)
    */
-  private Pair<Boolean,RexNode> getCombinedPredicateForJoin(HiveJoin j, RexNode additionalPredicate) {
+  private Pair<Boolean,RexNode> getCombinedPredicateForJoin(Join j, RexNode additionalPredicate) {
     RexNode minusPred = RelMdUtil.minusPreds(j.getCluster().getRexBuilder(), additionalPredicate,
         j.getCondition());
 

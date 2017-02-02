@@ -31,6 +31,7 @@ import org.apache.hadoop.hive.common.classification.InterfaceStability.Stable;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.SerDeException;
+import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.serde2.lazy.objectinspector.primitive.LazyObjectInspectorParameters;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
@@ -139,9 +140,10 @@ public class LazySerDeParameters implements LazyObjectInspectorParameters {
     String columnTypeProperty = tableProperties.getProperty(serdeConstants.LIST_COLUMN_TYPES);
 
     // Parse the configuration parameters
-
+    String columnNameDelimiter = tableProperties.containsKey(serdeConstants.COLUMN_NAME_DELIMITER) ? tableProperties
+        .getProperty(serdeConstants.COLUMN_NAME_DELIMITER) : String.valueOf(SerDeUtils.COMMA);
     if (columnNameProperty != null && columnNameProperty.length() > 0) {
-      columnNames = Arrays.asList(columnNameProperty.split(","));
+      columnNames = Arrays.asList(columnNameProperty.split(columnNameDelimiter));
     } else {
       columnNames = new ArrayList<String>();
     }

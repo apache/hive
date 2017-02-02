@@ -12,15 +12,15 @@ start_date is a string in the format 'yyyy-MM-dd HH:mm:ss' or 'yyyy-MM-dd'. num_
 Example:
    > SELECT date_add('2009-07-30', 1) FROM src LIMIT 1;
   '2009-07-31'
-PREHOOK: query: -- Test different numeric data types for date_add
-SELECT date_add('1900-01-01', cast(10 as tinyint)),
+Function class:org.apache.hadoop.hive.ql.udf.generic.GenericUDFDateAdd
+Function type:BUILTIN
+PREHOOK: query: SELECT date_add('1900-01-01', cast(10 as tinyint)),
        date_add('1900-01-01', cast(10 as smallint)),
        date_add('1900-01-01', cast(10 as int))
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
-POSTHOOK: query: -- Test different numeric data types for date_add
-SELECT date_add('1900-01-01', cast(10 as tinyint)),
+POSTHOOK: query: SELECT date_add('1900-01-01', cast(10 as tinyint)),
        date_add('1900-01-01', cast(10 as smallint)),
        date_add('1900-01-01', cast(10 as int))
 POSTHOOK: type: QUERY

@@ -14,16 +14,12 @@ POSTHOOK: query: CREATE TABLE dest2(key INT, value STRING, hr STRING, ds STRING)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@dest2
-PREHOOK: query: -- SORT_QUERY_RESULTS
-
-EXPLAIN EXTENDED
+PREHOOK: query: EXPLAIN EXTENDED
 FROM srcpart
 INSERT OVERWRITE TABLE dest1 SELECT srcpart.key, srcpart.value, srcpart.hr, srcpart.ds WHERE srcpart.key < 100 and srcpart.ds = '2008-04-08' and srcpart.hr = '12'
 INSERT OVERWRITE TABLE dest2 SELECT srcpart.key, srcpart.value, srcpart.hr, srcpart.ds WHERE srcpart.key < 100 and srcpart.ds = '2008-04-09' and srcpart.hr = '12'
 PREHOOK: type: QUERY
-POSTHOOK: query: -- SORT_QUERY_RESULTS
-
-EXPLAIN EXTENDED
+POSTHOOK: query: EXPLAIN EXTENDED
 FROM srcpart
 INSERT OVERWRITE TABLE dest1 SELECT srcpart.key, srcpart.value, srcpart.hr, srcpart.ds WHERE srcpart.key < 100 and srcpart.ds = '2008-04-08' and srcpart.hr = '12'
 INSERT OVERWRITE TABLE dest2 SELECT srcpart.key, srcpart.value, srcpart.hr, srcpart.ds WHERE srcpart.key < 100 and srcpart.ds = '2008-04-09' and srcpart.hr = '12'
@@ -74,6 +70,7 @@ STAGE PLANS:
                       properties:
                         COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                         bucket_count -1
+                        column.name.delimiter ,
                         columns key,value,hr,ds
                         columns.comments 
                         columns.types int:string:string:string
@@ -113,6 +110,7 @@ STAGE PLANS:
                       properties:
                         COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                         bucket_count -1
+                        column.name.delimiter ,
                         columns key,value,hr,ds
                         columns.comments 
                         columns.types int:string:string:string
@@ -145,6 +143,7 @@ STAGE PLANS:
             properties:
               COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
               bucket_count -1
+              column.name.delimiter ,
               columns key,value
               columns.comments 'default','default'
               columns.types string:string
@@ -166,6 +165,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
                 bucket_count -1
+                column.name.delimiter ,
                 columns key,value
                 columns.comments 'default','default'
                 columns.types string:string
@@ -191,6 +191,7 @@ STAGE PLANS:
             properties:
               COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
               bucket_count -1
+              column.name.delimiter ,
               columns key,value
               columns.comments 'default','default'
               columns.types string:string
@@ -212,6 +213,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
                 bucket_count -1
+                column.name.delimiter ,
                 columns key,value
                 columns.comments 'default','default'
                 columns.types string:string
@@ -250,6 +252,7 @@ STAGE PLANS:
               properties:
                 COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                 bucket_count -1
+                column.name.delimiter ,
                 columns key,value,hr,ds
                 columns.comments 
                 columns.types int:string:string:string
@@ -286,6 +289,7 @@ STAGE PLANS:
                   properties:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                     bucket_count -1
+                    column.name.delimiter ,
                     columns key,value,hr,ds
                     columns.comments 
                     columns.types int:string:string:string
@@ -315,6 +319,7 @@ STAGE PLANS:
             properties:
               COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
               bucket_count -1
+              column.name.delimiter ,
               columns key,value,hr,ds
               columns.comments 
               columns.types int:string:string:string
@@ -335,6 +340,7 @@ STAGE PLANS:
               properties:
                 COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                 bucket_count -1
+                column.name.delimiter ,
                 columns key,value,hr,ds
                 columns.comments 
                 columns.types int:string:string:string
@@ -370,6 +376,7 @@ STAGE PLANS:
                   properties:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                     bucket_count -1
+                    column.name.delimiter ,
                     columns key,value,hr,ds
                     columns.comments 
                     columns.types int:string:string:string
@@ -399,6 +406,7 @@ STAGE PLANS:
             properties:
               COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
               bucket_count -1
+              column.name.delimiter ,
               columns key,value,hr,ds
               columns.comments 
               columns.types int:string:string:string
@@ -419,6 +427,7 @@ STAGE PLANS:
               properties:
                 COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                 bucket_count -1
+                column.name.delimiter ,
                 columns key,value,hr,ds
                 columns.comments 
                 columns.types int:string:string:string
@@ -464,6 +473,7 @@ STAGE PLANS:
               properties:
                 COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                 bucket_count -1
+                column.name.delimiter ,
                 columns key,value,hr,ds
                 columns.comments 
                 columns.types int:string:string:string
@@ -500,6 +510,7 @@ STAGE PLANS:
                   properties:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                     bucket_count -1
+                    column.name.delimiter ,
                     columns key,value,hr,ds
                     columns.comments 
                     columns.types int:string:string:string
@@ -529,6 +540,7 @@ STAGE PLANS:
             properties:
               COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
               bucket_count -1
+              column.name.delimiter ,
               columns key,value,hr,ds
               columns.comments 
               columns.types int:string:string:string
@@ -549,6 +561,7 @@ STAGE PLANS:
               properties:
                 COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                 bucket_count -1
+                column.name.delimiter ,
                 columns key,value,hr,ds
                 columns.comments 
                 columns.types int:string:string:string
@@ -584,6 +597,7 @@ STAGE PLANS:
                   properties:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                     bucket_count -1
+                    column.name.delimiter ,
                     columns key,value,hr,ds
                     columns.comments 
                     columns.types int:string:string:string
@@ -613,6 +627,7 @@ STAGE PLANS:
             properties:
               COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
               bucket_count -1
+              column.name.delimiter ,
               columns key,value,hr,ds
               columns.comments 
               columns.types int:string:string:string
@@ -633,6 +648,7 @@ STAGE PLANS:
               properties:
                 COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                 bucket_count -1
+                column.name.delimiter ,
                 columns key,value,hr,ds
                 columns.comments 
                 columns.types int:string:string:string

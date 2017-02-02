@@ -63,6 +63,7 @@ STAGE PLANS:
             properties:
               COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
               bucket_count -1
+              column.name.delimiter ,
               columns intcol
               columns.comments 
               columns.types string
@@ -84,6 +85,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
                 bucket_count -1
+                column.name.delimiter ,
                 columns intcol
                 columns.comments 
                 columns.types string
@@ -130,6 +132,7 @@ STAGE PLANS:
             properties:
               COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
               bucket_count -1
+              column.name.delimiter ,
               columns intcol
               columns.comments 
               columns.types string
@@ -151,6 +154,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
                 bucket_count -1
+                column.name.delimiter ,
                 columns intcol
                 columns.comments 
                 columns.types string
@@ -197,6 +201,7 @@ STAGE PLANS:
             properties:
               COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
               bucket_count -1
+              column.name.delimiter ,
               columns intcol
               columns.comments 
               columns.types string
@@ -218,6 +223,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
                 bucket_count -1
+                column.name.delimiter ,
                 columns intcol
                 columns.comments 
                 columns.types string
@@ -241,6 +247,7 @@ STAGE PLANS:
             properties:
               COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
               bucket_count -1
+              column.name.delimiter ,
               columns intcol
               columns.comments 
               columns.types string
@@ -262,6 +269,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
                 bucket_count -1
+                column.name.delimiter ,
                 columns intcol
                 columns.comments 
                 columns.types string

@@ -31,8 +31,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import javolution.util.FastBitSet;
-
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
@@ -64,7 +62,11 @@ import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.io.BytesWritable;
+import org.apache.hadoop.io.IntWritable;
+import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
+
+import javolution.util.FastBitSet;
 
 /**
  * GroupBy operator implementation.
@@ -127,7 +129,7 @@ public class GroupByOperator extends Operator<GroupByDesc> {
   private transient int groupingSetsPosition;         // position of grouping set, generally the last of keys
   private transient List<Integer> groupingSets;       // declared grouping set values
   private transient FastBitSet[] groupingSetsBitSet;  // bitsets acquired from grouping set values
-  private transient Text[] newKeysGroupingSets;
+  private transient IntWritable[] newKeysGroupingSets;
 
   // for these positions, some variable primitive type (String) is used, so size
   // cannot be estimated. sample it at runtime.
@@ -144,6 +146,10 @@ public class GroupByOperator extends Operator<GroupByDesc> {
 
   private transient int countAfterReport;   // report or forward
   private transient int heartbeatInterval;
+
+  private transient boolean isTez;
+  private transient boolean isLlap;
+  private transient int numExecutors;
 
   /**
    * Total amount of memory allowed for JVM heap.
@@ -206,7 +212,7 @@ public class GroupByOperator extends Operator<GroupByDesc> {
     keyObjectInspectors = new ObjectInspector[numKeys];
     currentKeyObjectInspectors = new ObjectInspector[numKeys];
     for (int i = 0; i < numKeys; i++) {
-      keyFields[i] = ExprNodeEvaluatorFactory.get(conf.getKeys().get(i));
+      keyFields[i] = ExprNodeEvaluatorFactory.get(conf.getKeys().get(i), hconf);
       keyObjectInspectors[i] = keyFields[i].initialize(rowInspector);
       currentKeyObjectInspectors[i] = ObjectInspectorUtils
         .getStandardObjectInspector(keyObjectInspectors[i],
@@ -218,13 +224,13 @@ public class GroupByOperator extends Operator<GroupByDesc> {
     if (groupingSetsPresent) {
       groupingSets = conf.getListGroupingSets();
       groupingSetsPosition = conf.getGroupingSetPosition();
-      newKeysGroupingSets = new Text[groupingSets.size()];
+      newKeysGroupingSets = new IntWritable[groupingSets.size()];
       groupingSetsBitSet = new FastBitSet[groupingSets.size()];
 
       int pos = 0;
       for (Integer groupingSet: groupingSets) {
         // Create the mapping corresponding to the grouping set
-        newKeysGroupingSets[pos] = new Text(String.valueOf(groupingSet));
+        newKeysGroupingSets[pos] = new IntWritable(groupingSet);
         groupingSetsBitSet[pos] = groupingSet2BitSet(groupingSet);
         pos++;
       }
@@ -252,7 +258,7 @@ public class GroupByOperator extends Operator<GroupByDesc> {
                 new ExprNodeColumnDesc(TypeInfoUtils.getTypeInfoFromObjectInspector(
                 sf.getFieldObjectInspector()),
                 keyField.getFieldName() + "." + sf.getFieldName(), null,
-                false));
+                false), hconf);
               unionExprEval.initialize(rowInspector);
             }
           }
@@ -277,7 +283,7 @@ public class GroupByOperator extends Operator<GroupByDesc> {
       aggregationParameterObjects[i] = new Object[parameters.size()];
       for (int j = 0; j < parameters.size(); j++) {
         aggregationParameterFields[i][j] = ExprNodeEvaluatorFactory
-            .get(parameters.get(j));
+            .get(parameters.get(j), hconf);
         aggregationParameterObjectInspectors[i][j] = aggregationParameterFields[i][j]
             .initialize(rowInspector);
         if (unionExprEval != null) {
@@ -346,6 +352,21 @@ public class GroupByOperator extends Operator<GroupByDesc> {
       }
     }
 
+    // grouping id should be pruned, which is the last of key columns
+    // see ColumnPrunerGroupByProc
+    outputKeyLength = conf.pruneGroupingSetId() ? keyFields.length - 1 : keyFields.length;
+
+    // init objectInspectors
+    ObjectInspector[] objectInspectors =
+            new ObjectInspector[outputKeyLength + aggregationEvaluators.length];
+    for (int i = 0; i < outputKeyLength; i++) {
+      objectInspectors[i] = currentKeyObjectInspectors[i];
+    }
+    for (int i = 0; i < aggregationEvaluators.length; i++) {
+      objectInspectors[outputKeyLength + i] = aggregationEvaluators[i].init(conf.getAggregators()
+              .get(i).getMode(), aggregationParameterObjectInspectors[i]);
+    }
+
     aggregationsParametersLastInvoke = new Object[conf.getAggregators().size()][];
     if ((conf.getMode() != GroupByDesc.Mode.HASH || conf.getBucketGroup()) &&
       (!groupingSetsPresent)) {
@@ -368,21 +389,6 @@ public class GroupByOperator extends Operator<GroupByDesc> {
 
     List<String> fieldNames = new ArrayList<String>(conf.getOutputColumnNames());
 
-    // grouping id should be pruned, which is the last of key columns
-    // see ColumnPrunerGroupByProc
-    outputKeyLength = conf.pruneGroupingSetId() ? keyFields.length - 1 : keyFields.length;
-
-    // init objectInspectors
-    ObjectInspector[] objectInspectors =
-        new ObjectInspector[outputKeyLength + aggregationEvaluators.length];
-    for (int i = 0; i < outputKeyLength; i++) {
-      objectInspectors[i] = currentKeyObjectInspectors[i];
-    }
-    for (int i = 0; i < aggregationEvaluators.length; i++) {
-      objectInspectors[outputKeyLength + i] = aggregationEvaluators[i].init(conf.getAggregators()
-          .get(i).getMode(), aggregationParameterObjectInspectors[i]);
-    }
-
     outputObjInspector = ObjectInspectorFactory
         .getStandardStructObjectInspector(fieldNames, Arrays.asList(objectInspectors));
 
@@ -390,17 +396,20 @@ public class GroupByOperator extends Operator<GroupByDesc> {
       new KeyWrapperFactory(keyFields, keyObjectInspectors, currentKeyObjectInspectors);
 
     newKeys = keyWrapperFactory.getKeyWrapper();
-
+    isTez = HiveConf.getVar(hconf, HiveConf.ConfVars.HIVE_EXECUTION_ENGINE).equals("tez");
+    isLlap = isTez && HiveConf.getVar(hconf, HiveConf.ConfVars.HIVE_EXECUTION_MODE).equals("llap");
+    numExecutors = isLlap ? HiveConf.getIntVar(hconf, HiveConf.ConfVars.LLAP_DAEMON_NUM_EXECUTORS) : 1;
     firstRow = true;
     // estimate the number of hash table entries based on the size of each
     // entry. Since the size of a entry
     // is not known, estimate that based on the number of entries
     if (hashAggr) {
-      computeMaxEntriesHashAggr(hconf);
+      computeMaxEntriesHashAggr();
     }
     memoryMXBean = ManagementFactory.getMemoryMXBean();
-    maxMemory = memoryMXBean.getHeapMemoryUsage().getMax();
+    maxMemory = isTez ? getConf().getMaxMemoryAvailable() : memoryMXBean.getHeapMemoryUsage().getMax();
     memoryThreshold = this.getConf().getMemoryThreshold();
+    LOG.info("isTez: {} isLlap: {} numExecutors: {} maxMemory: {}", isTez, isLlap, numExecutors, maxMemory);
   }
 
   /**
@@ -412,9 +421,14 @@ public class GroupByOperator extends Operator<GroupByDesc> {
    * @return number of entries that can fit in hash table - useful for map-side
    *         aggregation only
    **/
-  private void computeMaxEntriesHashAggr(Configuration hconf) throws HiveException {
+  private void computeMaxEntriesHashAggr() throws HiveException {
     float memoryPercentage = this.getConf().getGroupByMemoryUsage();
-    maxHashTblMemory = (long) (memoryPercentage * Runtime.getRuntime().maxMemory());
+    if (isTez) {
+      maxHashTblMemory = (long) (memoryPercentage * getConf().getMaxMemoryAvailable());
+    } else {
+      maxHashTblMemory = (long) (memoryPercentage * Runtime.getRuntime().maxMemory());
+    }
+    LOG.info("Max hash table memory: {} bytes", maxHashTblMemory);
     estimateRowSize();
   }
 
@@ -874,9 +888,16 @@ public class GroupByOperator extends Operator<GroupByDesc> {
     if ((numEntriesHashTable == 0) || ((numEntries % NUMROWSESTIMATESIZE) == 0)) {
       //check how much memory left memory
       usedMemory = memoryMXBean.getHeapMemoryUsage().getUsed();
+      // TODO: there is no easy and reliable way to compute the memory used by the executor threads and on-heap cache.
+      // Assuming the used memory is equally divided among all executors.
+      usedMemory = isLlap ? usedMemory / numExecutors : usedMemory;
       rate = (float) usedMemory / (float) maxMemory;
       if(rate > memoryThreshold){
-        return true;
+        if (isTez && numEntriesHashTable == 0) {
+          return false;
+        } else {
+          return true;
+        }
       }
       for (Integer pos : keyPositionsSize) {
         Object key = newKeys.getKeyArray()[pos.intValue()];
@@ -956,7 +977,6 @@ public class GroupByOperator extends Operator<GroupByDesc> {
    * @throws HiveException
    */
   private void flushHashTable(boolean complete) throws HiveException {
-
     countAfterReport = 0;
 
     // Currently, the algorithm flushes 10% of the entries - this can be
@@ -972,7 +992,7 @@ public class GroupByOperator extends Operator<GroupByDesc> {
       hashAggregations.clear();
       hashAggregations = null;
       if (isLogInfoEnabled) {
-	LOG.info("Hash Table completed flushed");
+        LOG.info("Hash Table completed flushed");
       }
       return;
     }
@@ -990,9 +1010,9 @@ public class GroupByOperator extends Operator<GroupByDesc> {
       iter.remove();
       numDel++;
       if (numDel * 10 >= oldSize) {
-	if (isLogInfoEnabled) {
-	  LOG.info("Hash Table flushed: new size = " + hashAggregations.size());
-	}
+        if (isLogInfoEnabled) {
+          LOG.info("Hash Table flushed: new size = " + hashAggregations.size());
+        }
         return;
       }
     }

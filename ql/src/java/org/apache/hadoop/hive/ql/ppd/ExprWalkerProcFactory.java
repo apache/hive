@@ -367,7 +367,14 @@ public final class ExprWalkerProcFactory {
 
     ExprInfo exprInfo = ctx.getExprInfo(expr);
     if (exprInfo != null && exprInfo.isCandidate) {
-      ctx.addFinalCandidate(exprInfo.alias, exprInfo.convertedExpr != null ?
+      String alias = exprInfo.alias;
+      if ((alias == null) && (exprInfo.convertedExpr != null)) {
+    	ExprInfo convertedExprInfo = ctx.getExprInfo(exprInfo.convertedExpr);
+    	if (convertedExprInfo != null) {
+    		alias = convertedExprInfo.alias;
+    	}
+      }
+      ctx.addFinalCandidate(alias, exprInfo.convertedExpr != null ?
               exprInfo.convertedExpr : expr);
       return;
     } else if (!FunctionRegistry.isOpAnd(expr) &&

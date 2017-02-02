@@ -20,11 +20,9 @@ POSTHOOK: Output: database:mydb
 POSTHOOK: Output: mydb@q1
 PREHOOK: query: insert into q1 values (5, 'A')
 PREHOOK: type: QUERY
-PREHOOK: Input: mydb@values__tmp__table__1
 PREHOOK: Output: mydb@q1
 POSTHOOK: query: insert into q1 values (5, 'A')
 POSTHOOK: type: QUERY
-POSTHOOK: Input: mydb@values__tmp__table__1
 POSTHOOK: Output: mydb@q1
 POSTHOOK: Lineage: q1.colnum EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 POSTHOOK: Lineage: q1.colstring SIMPLE [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]

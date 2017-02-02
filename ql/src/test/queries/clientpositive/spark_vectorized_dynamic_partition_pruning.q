@@ -4,6 +4,7 @@ set hive.spark.dynamic.partition.pruning=true;
 set hive.optimize.metadataonly=false;
 set hive.optimize.index.filter=true;
 set hive.vectorized.execution.enabled=true;
+set hive.strict.checks.cartesian.product=false;
 
 
 select distinct ds from srcpart;

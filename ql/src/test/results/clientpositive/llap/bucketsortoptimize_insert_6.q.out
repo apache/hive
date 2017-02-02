@@ -1,11 +1,9 @@
-PREHOOK: query: -- Create two bucketed and sorted tables
-CREATE TABLE test_table1 (key INT, key2 INT, value STRING) PARTITIONED BY (ds STRING)
+PREHOOK: query: CREATE TABLE test_table1 (key INT, key2 INT, value STRING) PARTITIONED BY (ds STRING)
 CLUSTERED BY (key, key2) SORTED BY (key ASC, key2 DESC) INTO 2 BUCKETS
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@test_table1
-POSTHOOK: query: -- Create two bucketed and sorted tables
-CREATE TABLE test_table1 (key INT, key2 INT, value STRING) PARTITIONED BY (ds STRING)
+POSTHOOK: query: CREATE TABLE test_table1 (key INT, key2 INT, value STRING) PARTITIONED BY (ds STRING)
 CLUSTERED BY (key, key2) SORTED BY (key ASC, key2 DESC) INTO 2 BUCKETS
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
@@ -56,17 +54,13 @@ POSTHOOK: Output: default@test_table2@ds=1
 POSTHOOK: Lineage: test_table2 PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: test_table2 PARTITION(ds=1).key2 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: test_table2 PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: -- Insert data into the bucketed table by selecting from another bucketed table
--- This should be a map-only operation, since the sort-order matches
-EXPLAIN
+PREHOOK: query: EXPLAIN
 INSERT OVERWRITE TABLE test_table3 PARTITION (ds = '1')
 SELECT a.key, a.key2, concat(a.value, b.value) 
 FROM test_table1 a JOIN test_table2 b 
 ON a.key = b.key and a.key2 = b.key2 WHERE a.ds = '1' and b.ds = '1'
 PREHOOK: type: QUERY
-POSTHOOK: query: -- Insert data into the bucketed table by selecting from another bucketed table
--- This should be a map-only operation, since the sort-order matches
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 INSERT OVERWRITE TABLE test_table3 PARTITION (ds = '1')
 SELECT a.key, a.key2, concat(a.value, b.value) 
 FROM test_table1 a JOIN test_table2 b 
@@ -240,9 +234,7 @@ POSTHOOK: Input: default@test_table3@ds=1
 5	6	val_5val_5	1
 8	9	val_8val_8	1
 9	10	val_9val_9	1
-PREHOOK: query: -- Insert data into the bucketed table by selecting from another bucketed table
--- This should be a map-only operation, since the sort-order matches
-EXPLAIN
+PREHOOK: query: EXPLAIN
 INSERT OVERWRITE TABLE test_table3 PARTITION (ds = '1')
 SELECT subq1.key, subq1.key2, subq1.value from
 (
@@ -251,9 +243,7 @@ FROM test_table1 a JOIN test_table2 b
 ON a.key = b.key and a.key2 = b.key2 WHERE a.ds = '1' and b.ds = '1'
 )subq1
 PREHOOK: type: QUERY
-POSTHOOK: query: -- Insert data into the bucketed table by selecting from another bucketed table
--- This should be a map-only operation, since the sort-order matches
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 INSERT OVERWRITE TABLE test_table3 PARTITION (ds = '1')
 SELECT subq1.key, subq1.key2, subq1.value from
 (
@@ -436,17 +426,13 @@ POSTHOOK: Input: default@test_table3@ds=1
 5	6	val_5val_5	1
 8	9	val_8val_8	1
 9	10	val_9val_9	1
-PREHOOK: query: -- Insert data into the bucketed table by selecting from another bucketed table
--- This should be a map-reduce operation
-EXPLAIN
+PREHOOK: query: EXPLAIN
 INSERT OVERWRITE TABLE test_table3 PARTITION (ds = '1')
 SELECT a.key2, a.key, concat(a.value, b.value) 
 FROM test_table1 a JOIN test_table2 b 
 ON a.key = b.key and a.key2 = b.key2 WHERE a.ds = '1' and b.ds = '1'
 PREHOOK: type: QUERY
-POSTHOOK: query: -- Insert data into the bucketed table by selecting from another bucketed table
--- This should be a map-reduce operation
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 INSERT OVERWRITE TABLE test_table3 PARTITION (ds = '1')
 SELECT a.key2, a.key, concat(a.value, b.value) 
 FROM test_table1 a JOIN test_table2 b 
@@ -555,9 +541,7 @@ STAGE PLANS:
   Stage: Stage-3
     Stats-Aggr Operator
 
-PREHOOK: query: -- Insert data into the bucketed table by selecting from another bucketed table
--- This should be a map-reduce operation
-EXPLAIN
+PREHOOK: query: EXPLAIN
 INSERT OVERWRITE TABLE test_table3 PARTITION (ds = '1')
 SELECT subq1.key2, subq1.key, subq1.value from
 (
@@ -566,9 +550,7 @@ FROM test_table1 a JOIN test_table2 b
 ON a.key = b.key and a.key2 = b.key2 WHERE a.ds = '1' and b.ds = '1'
 )subq1
 PREHOOK: type: QUERY
-POSTHOOK: query: -- Insert data into the bucketed table by selecting from another bucketed table
--- This should be a map-reduce operation
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 INSERT OVERWRITE TABLE test_table3 PARTITION (ds = '1')
 SELECT subq1.key2, subq1.key, subq1.value from
 (
@@ -680,9 +662,7 @@ STAGE PLANS:
   Stage: Stage-3
     Stats-Aggr Operator
 
-PREHOOK: query: -- Insert data into the bucketed table by selecting from another bucketed table
--- This should be a map-only operation
-EXPLAIN
+PREHOOK: query: EXPLAIN
 INSERT OVERWRITE TABLE test_table3 PARTITION (ds = '1')
 SELECT subq2.key, subq2.key2, subq2.value from
 (
@@ -694,9 +674,7 @@ ON a.key = b.key and a.key2 = b.key2 WHERE a.ds = '1' and b.ds = '1'
 )subq1
 )subq2
 PREHOOK: type: QUERY
-POSTHOOK: query: -- Insert data into the bucketed table by selecting from another bucketed table
--- This should be a map-only operation
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 INSERT OVERWRITE TABLE test_table3 PARTITION (ds = '1')
 SELECT subq2.key, subq2.key2, subq2.value from
 (
@@ -888,9 +866,7 @@ POSTHOOK: Input: default@test_table3@ds=1
 5	6	val_5val_5	1
 8	9	val_8val_8	1
 9	10	val_9val_9	1
-PREHOOK: query: -- Insert data into the bucketed table by selecting from another bucketed table
--- This should be a map-only operation
-EXPLAIN
+PREHOOK: query: EXPLAIN
 INSERT OVERWRITE TABLE test_table3 PARTITION (ds = '1')
 SELECT subq2.k2, subq2.k1, subq2.value from
 (
@@ -902,9 +878,7 @@ ON a.key = b.key and a.key2 = b.key2 WHERE a.ds = '1' and b.ds = '1'
 )subq1
 )subq2
 PREHOOK: type: QUERY
-POSTHOOK: query: -- Insert data into the bucketed table by selecting from another bucketed table
--- This should be a map-only operation
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 INSERT OVERWRITE TABLE test_table3 PARTITION (ds = '1')
 SELECT subq2.k2, subq2.k1, subq2.value from
 (
@@ -1106,9 +1080,7 @@ CLUSTERED BY (key, key2) SORTED BY (key DESC, key2 DESC) INTO 2 BUCKETS
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_table4
-PREHOOK: query: -- Insert data into the bucketed table by selecting from another bucketed table
--- This should be a map-reduce operation
-EXPLAIN
+PREHOOK: query: EXPLAIN
 INSERT OVERWRITE TABLE test_table4 PARTITION (ds = '1')
 SELECT subq2.k2, subq2.k1, subq2.value from
 (
@@ -1120,9 +1092,7 @@ ON a.key = b.key and a.key2 = b.key2 WHERE a.ds = '1' and b.ds = '1'
 )subq1
 )subq2
 PREHOOK: type: QUERY
-POSTHOOK: query: -- Insert data into the bucketed table by selecting from another bucketed table
--- This should be a map-reduce operation
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 INSERT OVERWRITE TABLE test_table4 PARTITION (ds = '1')
 SELECT subq2.k2, subq2.k1, subq2.value from
 (

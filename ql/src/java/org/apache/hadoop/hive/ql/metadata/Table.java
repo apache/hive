@@ -180,7 +180,6 @@ public class Table implements Serializable {
       t.setOwner(SessionState.getUserFromAuthenticator());
       // set create time
       t.setCreateTime((int) (System.currentTimeMillis() / 1000));
-
     }
     return t;
   }
@@ -809,15 +808,31 @@ public class Table implements Serializable {
     return tTable.getViewExpandedText();
   }
 
-  public void clearSerDeInfo() {
-    tTable.getSd().getSerdeInfo().getParameters().clear();
-  }
   /**
    * @param viewExpandedText
    *          the expanded view text to set
    */
   public void setViewExpandedText(String viewExpandedText) {
     tTable.setViewExpandedText(viewExpandedText);
+  }
+
+  /**
+   * @return whether this view can be used for rewriting queries
+   */
+  public boolean isRewriteEnabled() {
+    return tTable.isRewriteEnabled();
+  }
+
+  /**
+   * @param rewriteEnabled
+   *          whether this view can be used for rewriting queries
+   */
+  public void setRewriteEnabled(boolean rewriteEnabled) {
+    tTable.setRewriteEnabled(rewriteEnabled);
+  }
+
+  public void clearSerDeInfo() {
+    tTable.getSd().getSerdeInfo().getParameters().clear();
   }
 
   /**
@@ -861,6 +876,10 @@ public class Table implements Serializable {
 
   public Table copy() throws HiveException {
     return new Table(tTable.deepCopy());
+  }
+
+  public int getCreateTime() {
+    return tTable.getCreateTime();
   }
 
   public void setCreateTime(int createTime) {

@@ -22,11 +22,9 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@emps
 PREHOOK: query: insert into table emps values (1,2,"11"),(1,2,"11"),(3,4,"33"),(1,3,"11"),(2,5,"22"),(2,5,"22")
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__1
 PREHOOK: Output: default@emps
 POSTHOOK: query: insert into table emps values (1,2,"11"),(1,2,"11"),(3,4,"33"),(1,3,"11"),(2,5,"22"),(2,5,"22")
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__1
 POSTHOOK: Output: default@emps
 POSTHOOK: Lineage: emps.deptno EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
 POSTHOOK: Lineage: emps.empname SIMPLE [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col3, type:string, comment:), ]

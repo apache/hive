@@ -20,6 +20,8 @@ POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@src_autho_test
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@v
+POSTHOOK: Lineage: v.key SIMPLE [(src_autho_test)src_autho_test.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: v.value SIMPLE [(src_autho_test)src_autho_test.FieldSchema(name:value, type:string, comment:null), ]
 PREHOOK: query: create view v1 as select * from src_autho_test
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: default@src_autho_test
@@ -30,6 +32,8 @@ POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@src_autho_test
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@v1
+POSTHOOK: Lineage: v1.key SIMPLE [(src_autho_test)src_autho_test.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: v1.value SIMPLE [(src_autho_test)src_autho_test.FieldSchema(name:value, type:string, comment:null), ]
 PREHOOK: query: create view v2 as select * from src_autho_test
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: default@src_autho_test
@@ -40,14 +44,12 @@ POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@src_autho_test
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@v2
-PREHOOK: query: --table grant to user
-
-grant select on table src_autho_test to user hive_test_user
+POSTHOOK: Lineage: v2.key SIMPLE [(src_autho_test)src_autho_test.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: v2.value SIMPLE [(src_autho_test)src_autho_test.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: grant select on table src_autho_test to user hive_test_user
 PREHOOK: type: GRANT_PRIVILEGE
 PREHOOK: Output: default@src_autho_test
-POSTHOOK: query: --table grant to user
-
-grant select on table src_autho_test to user hive_test_user
+POSTHOOK: query: grant select on table src_autho_test to user hive_test_user
 POSTHOOK: type: GRANT_PRIVILEGE
 POSTHOOK: Output: default@src_autho_test
 PREHOOK: query: grant select on table v to user hive_test_user
@@ -140,14 +142,10 @@ PREHOOK: query: show grant user hive_test_user on v(key)
 PREHOOK: type: SHOW_GRANT
 POSTHOOK: query: show grant user hive_test_user on v(key)
 POSTHOOK: type: SHOW_GRANT
-PREHOOK: query: --column grant to user
-
-grant select on table src_autho_test to user hive_test_user
+PREHOOK: query: grant select on table src_autho_test to user hive_test_user
 PREHOOK: type: GRANT_PRIVILEGE
 PREHOOK: Output: default@src_autho_test
-POSTHOOK: query: --column grant to user
-
-grant select on table src_autho_test to user hive_test_user
+POSTHOOK: query: grant select on table src_autho_test to user hive_test_user
 POSTHOOK: type: GRANT_PRIVILEGE
 POSTHOOK: Output: default@src_autho_test
 PREHOOK: query: grant select(key) on table v to user hive_test_user

@@ -195,10 +195,10 @@ public class UDFToDouble extends UDF {
   }
 
   public DoubleWritable evaluate(HiveDecimalWritable i) {
-    if (i == null) {
+    if (i == null || !i.isSet()) {
       return null;
     } else {
-      doubleWritable.set(i.getHiveDecimal().doubleValue());
+      doubleWritable.set(i.doubleValue());
       return doubleWritable;
     }
   }

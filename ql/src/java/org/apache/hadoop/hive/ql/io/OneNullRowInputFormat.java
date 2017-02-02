@@ -48,7 +48,7 @@ public class OneNullRowInputFormat extends NullRowsInputFormat
       super(conf, split);
     }
 
-    private boolean processed;
+    protected boolean processed;
 
     @Override
     public long getPos() throws IOException {

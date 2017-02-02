@@ -11,6 +11,8 @@ concat_ws(separator, [string | array(string)]+) - returns the concatenation of t
 Example:
   > SELECT concat_ws('.', 'www', array('facebook', 'com')) FROM src LIMIT 1;
   'www.facebook.com'
+Function class:org.apache.hadoop.hive.ql.udf.generic.GenericUDFConcatWS
+Function type:BUILTIN
 PREHOOK: query: CREATE TABLE dest1(c1 STRING, c2 STRING, c3 STRING)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -74,8 +76,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest1
 #### A masked pattern was here ####
 xyzabc8675309	abc,xyz,8675309	NULL	abc**8675309
-PREHOOK: query: -- evalutes function for array of strings
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT concat_ws('.', array('www', 'face', 'book', 'com'), '1234'),
        concat_ws('-', 'www', array('face', 'book', 'com'), '1234'),
        concat_ws('F', 'www', array('face', 'book', 'com', '1234')),
@@ -84,8 +85,7 @@ SELECT concat_ws('.', array('www', 'face', 'book', 'com'), '1234'),
        concat_ws('[]', array('www'), 'face', array('book', 'com', '1234')),
        concat_ws('AAA', array('www'), array('face', 'book', 'com'), '1234') FROM dest1 tablesample (1 rows)
 PREHOOK: type: QUERY
-POSTHOOK: query: -- evalutes function for array of strings
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT concat_ws('.', array('www', 'face', 'book', 'com'), '1234'),
        concat_ws('-', 'www', array('face', 'book', 'com'), '1234'),
        concat_ws('F', 'www', array('face', 'book', 'com', '1234')),

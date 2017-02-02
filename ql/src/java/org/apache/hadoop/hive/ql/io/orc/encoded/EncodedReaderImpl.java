@@ -207,7 +207,6 @@ class EncodedReaderImpl implements EncodedReader {
       OrcProto.RowIndex[] indexes, List<OrcProto.ColumnEncoding> encodings, List<OrcProto.Stream> streamList,
       boolean[] included, boolean[][] colRgs,
       Consumer<OrcEncodedColumnBatch> consumer) throws IOException {
-    isTracingEnabled = true;
     // Note: for now we don't have to setError here, caller will setError if we throw.
     // We are also not supposed to call setDone, since we are only part of the operation.
     long stripeOffset = stripe.getOffset();
@@ -216,7 +215,7 @@ class EncodedReaderImpl implements EncodedReader {
     // 1.1. Figure out which columns have a present stream
     boolean[] hasNull = RecordReaderUtils.findPresentStreamsByColumn(streamList, types);
     if (isTracingEnabled) {
-      LOG.error("The following columns have PRESENT streams: " + arrayToString(hasNull));
+      LOG.trace("The following columns have PRESENT streams: " + arrayToString(hasNull));
     }
 
     // We assume stream list is sorted by column and that non-data
@@ -229,7 +228,7 @@ class EncodedReaderImpl implements EncodedReader {
       if (!included[i]) continue;
       colCtxs[i] = new ColumnReadContext(i, encodings.get(i), indexes[i], ++colRgIx);
       if (isTracingEnabled) {
-        LOG.error("Creating context: " + colCtxs[i].toString());
+        LOG.trace("Creating context: " + colCtxs[i].toString());
       }
     }
     boolean isCompressed = (codec != null);
@@ -290,16 +289,17 @@ class EncodedReaderImpl implements EncodedReader {
 
     // 2. Now, read all of the ranges from cache or disk.
     DiskRangeList.MutateHelper toRead = new DiskRangeList.MutateHelper(listToRead.get());
-    if (isTracingEnabled && LOG.isInfoEnabled()) {
-      LOG.trace("Resulting disk ranges to read (file " + fileKey + "): "
+    if (/*isTracingEnabled && */LOG.isInfoEnabled()) {
+      LOG.info("Resulting disk ranges to read (file " + fileKey + "): "
           + RecordReaderUtils.stringifyDiskRanges(toRead.next));
     }
     BooleanRef isAllInCache = new BooleanRef();
     if (hasFileId) {
       cacheWrapper.getFileData(fileKey, toRead.next, stripeOffset, CC_FACTORY, isAllInCache);
-      if (isTracingEnabled && LOG.isInfoEnabled()) {
-        LOG.trace("Disk ranges after cache (file " + fileKey + ", base offset " + stripeOffset
-            + "): " + RecordReaderUtils.stringifyDiskRanges(toRead.next));
+      if (/*isTracingEnabled && */LOG.isInfoEnabled()) {
+        LOG.info("Disk ranges after cache (found everything " + isAllInCache.value + "; file "
+            + fileKey + ", base offset " + stripeOffset  + "): "
+            + RecordReaderUtils.stringifyDiskRanges(toRead.next));
       }
     }
 
@@ -641,10 +641,10 @@ class EncodedReaderImpl implements EncodedReader {
         : prepareRangesForUncompressedRead(
             cOffset, endCOffset, streamOffset, unlockUntilCOffset, current, csd);
     } catch (Exception ex) {
-      LOG.error("Failed " + (isCompressed ? "" : "un") + " compressed read; cOffset " + cOffset
+      LOG.error("Failed " + (isCompressed ? "" : "un") + "compressed read; cOffset " + cOffset
           + ", endCOffset " + endCOffset + ", streamOffset " + streamOffset
           + ", unlockUntilCOffset " + unlockUntilCOffset + "; ranges passed in "
-          + RecordReaderUtils.stringifyDiskRanges(start) + "; ranges passed to prepate "
+          + RecordReaderUtils.stringifyDiskRanges(start) + "; ranges passed to prepare "
           + RecordReaderUtils.stringifyDiskRanges(current)); // Don't log exception here.
       throw (ex instanceof IOException) ? (IOException)ex : new IOException(ex);
     }

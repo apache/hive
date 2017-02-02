@@ -80,7 +80,7 @@ insert overwrite directory '../../data/files/array_table_4'
 ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe'
 WITH SERDEPROPERTIES (
 'serialization.format'= 'org.apache.hadoop.hive.serde2.thrift.TCTLSeparatedProtocol',
-'quote.delim'= '("|\\[|\\])',  'field.delim'=',',
+'quote.delim'= '(\"|\\[|\\])',  'field.delim'=',',
 'serialization.null.format'='-NA-', 'colelction.delim'='#') STORED AS TEXTFILE
 select a, null, b from array_table;
 
@@ -97,7 +97,7 @@ insert overwrite directory '../../data/files/map_table_4'
 ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe'
 WITH SERDEPROPERTIES (
 'serialization.format'= 'org.apache.hadoop.hive.serde2.thrift.TCTLSeparatedProtocol',
-'quote.delim'= '("|\\[|\\])',  'field.delim'=':',
+'quote.delim'= '(\"|\\[|\\])',  'field.delim'=':',
 'serialization.null.format'='-NA-', 'colelction.delim'='#', 'mapkey.delim'='%') STORED AS TEXTFILE
 select foo, null, bar from map_table;
 

@@ -24,6 +24,7 @@ import java.util.Map;
 import java.util.Stack;
 
 import org.apache.calcite.util.Pair;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.FilterOperator;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
@@ -75,16 +76,19 @@ public class RedundantDynamicPruningConditionsRemoval extends Transform {
    */
   @Override
   public ParseContext transform(ParseContext pctx) throws SemanticException {
-    Map<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
-    opRules.put(new RuleRegExp("R1", TableScanOperator.getOperatorName() + "%" +
-        FilterOperator.getOperatorName() + "%"), new FilterTransformer());
+    // Make sure semijoin is not enabled. If it is, then do not remove the dynamic partition pruning predicates.
+    if (!pctx.getConf().getBoolVar(HiveConf.ConfVars.TEZ_DYNAMIC_SEMIJOIN_REDUCTION)) {
+      Map<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
+      opRules.put(new RuleRegExp("R1", TableScanOperator.getOperatorName() + "%" +
+              FilterOperator.getOperatorName() + "%"), new FilterTransformer());
 
-    Dispatcher disp = new DefaultRuleDispatcher(null, opRules, null);
-    GraphWalker ogw = new DefaultGraphWalker(disp);
+      Dispatcher disp = new DefaultRuleDispatcher(null, opRules, null);
+      GraphWalker ogw = new DefaultGraphWalker(disp);
 
-    List<Node> topNodes = new ArrayList<Node>();
-    topNodes.addAll(pctx.getTopOps().values());
-    ogw.startWalking(topNodes, null);
+      List<Node> topNodes = new ArrayList<Node>();
+      topNodes.addAll(pctx.getTopOps().values());
+      ogw.startWalking(topNodes, null);
+    }
     return pctx;
   }
 

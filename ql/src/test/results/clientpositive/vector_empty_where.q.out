@@ -1,9 +1,7 @@
-PREHOOK: query: -- HIVE-
-explain
+PREHOOK: query: explain
 select count (distinct cint) from alltypesorc where cstring1
 PREHOOK: type: QUERY
-POSTHOOK: query: -- HIVE-
-explain
+POSTHOOK: query: explain
 select count (distinct cint) from alltypesorc where cstring1
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:

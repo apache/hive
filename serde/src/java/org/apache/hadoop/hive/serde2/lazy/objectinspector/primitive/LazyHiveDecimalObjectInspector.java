@@ -43,8 +43,13 @@ implements HiveDecimalObjectInspector {
       return null;
     }
 
-    HiveDecimal dec = ((LazyHiveDecimal)o).getWritableObject().getHiveDecimal();
-    return HiveDecimalUtils.enforcePrecisionScale(dec, (DecimalTypeInfo) typeInfo);
+    DecimalTypeInfo decimalTypeInfo = (DecimalTypeInfo) typeInfo;
+    // We do not want to modify the writable provided by the object o since it is not a copy.
+    HiveDecimalWritable decWritable = ((LazyHiveDecimal)o).getWritableObject();
+    HiveDecimalWritable result = HiveDecimalWritable.enforcePrecisionScale(
+        decWritable, decimalTypeInfo.getPrecision(), decimalTypeInfo.getScale());
+
+    return (result != null && result.isSet() ? result.getHiveDecimal() : null);
   }
 
 }

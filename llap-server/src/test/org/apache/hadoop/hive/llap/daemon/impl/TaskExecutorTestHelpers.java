@@ -47,10 +47,10 @@ public class TaskExecutorTestHelpers {
 
   private static final Logger LOG = LoggerFactory.getLogger(TestTaskExecutorService.class);
 
-  public static MockRequest createMockRequest(int fragmentNum, int parallelism, long startTime,
-                                              boolean canFinish, long workTime) {
+  public static MockRequest createMockRequest(int fragmentNum, int parallelism, long firstAttemptStartTime,
+    long currentAttemptStartTime, boolean canFinish, long workTime) {
     SubmitWorkRequestProto
-        request = createSubmitWorkRequestProto(fragmentNum, parallelism, startTime);
+        request = createSubmitWorkRequestProto(fragmentNum, parallelism, firstAttemptStartTime, currentAttemptStartTime);
     return createMockRequest(canFinish, workTime, request);
   }
 
@@ -83,16 +83,16 @@ public class TaskExecutorTestHelpers {
   }
 
   public static SubmitWorkRequestProto createSubmitWorkRequestProto(
-      int fragmentNumber, int selfAndUpstreamParallelism,
-      long attemptStartTime) {
-    return createSubmitWorkRequestProto(fragmentNumber, selfAndUpstreamParallelism, 0,
-        attemptStartTime, 1);
+      int fragmentNumber, int selfAndUpstreamParallelism, long firstAttemptStartTime,
+      long currentAttemptStartTime) {
+    return createSubmitWorkRequestProto(fragmentNumber, selfAndUpstreamParallelism, 0, firstAttemptStartTime,
+      currentAttemptStartTime, 1);
   }
 
   public static SubmitWorkRequestProto createSubmitWorkRequestProto(
       int fragmentNumber, int selfAndUpstreamParallelism,
-      int selfAndUpstreamComplete,
-      long attemptStartTime, int withinDagPriority) {
+      int selfAndUpstreamComplete, long firstAttemptStartTime,
+      long currentAttemptStartTime, int withinDagPriority) {
     ApplicationId appId = ApplicationId.newInstance(9999, 72);
     TezDAGID dagId = TezDAGID.getInstance(appId, 1);
     TezVertexID vId = TezVertexID.getInstance(dagId, 35);
@@ -124,7 +124,8 @@ public class TaskExecutorTestHelpers {
         .setFragmentRuntimeInfo(LlapDaemonProtocolProtos
             .FragmentRuntimeInfo
             .newBuilder()
-            .setFirstAttemptStartTime(attemptStartTime)
+            .setFirstAttemptStartTime(firstAttemptStartTime)
+            .setCurrentAttemptStartTime(currentAttemptStartTime)
             .setNumSelfAndUpstreamTasks(selfAndUpstreamParallelism)
             .setNumSelfAndUpstreamCompletedTasks(selfAndUpstreamComplete)
             .setWithinDagPriority(withinDagPriority)

@@ -11,6 +11,8 @@ a div b - Divide a by b rounded to the long integer
 Example:
   > SELECT 3 div 2 FROM src LIMIT 1;
   1
+Function class:org.apache.hadoop.hive.ql.udf.UDFOPLongDivide
+Function type:BUILTIN
 PREHOOK: query: SELECT 3 DIV 2 FROM SRC tablesample (1 rows)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src

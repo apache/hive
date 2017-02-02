@@ -86,9 +86,7 @@ POSTHOOK: query: CREATE TABLE dest_co3(key INT, val STRING)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@dest_co3
-PREHOOK: query: -- When Correlation Optimizer is turned off, 3 MR jobs are needed.
--- When Correlation Optimizer is turned on, only a single MR job is needed.
-EXPLAIN
+PREHOOK: query: EXPLAIN
 INSERT OVERWRITE TABLE dest_co1
 SELECT b.key, d.val
 FROM
@@ -97,9 +95,7 @@ JOIN
 (SELECT m.key, n.val FROM T3 m JOIN T4 n ON (m.key = n.key)) d
 ON b.key = d.key
 PREHOOK: type: QUERY
-POSTHOOK: query: -- When Correlation Optimizer is turned off, 3 MR jobs are needed.
--- When Correlation Optimizer is turned on, only a single MR job is needed.
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 INSERT OVERWRITE TABLE dest_co1
 SELECT b.key, d.val
 FROM
@@ -495,8 +491,7 @@ POSTHOOK: Input: default@t4
 POSTHOOK: Output: default@dest_co2
 POSTHOOK: Lineage: dest_co2.key SIMPLE [(t1)x.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: dest_co2.val SIMPLE [(t4)n.FieldSchema(name:val, type:string, comment:null), ]
-PREHOOK: query: -- Enable hive.auto.convert.join.
-EXPLAIN
+PREHOOK: query: EXPLAIN
 INSERT OVERWRITE TABLE dest_co3
 SELECT b.key, d.val
 FROM
@@ -505,8 +500,7 @@ JOIN
 (SELECT m.key, n.val FROM T3 m JOIN T4 n ON (m.key = n.key)) d
 ON b.key = d.key
 PREHOOK: type: QUERY
-POSTHOOK: query: -- Enable hive.auto.convert.join.
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 INSERT OVERWRITE TABLE dest_co3
 SELECT b.key, d.val
 FROM
@@ -804,17 +798,11 @@ POSTHOOK: Input: default@t4
 POSTHOOK: Output: default@dest_co3
 POSTHOOK: Lineage: dest_co3.key SIMPLE [(t1)x.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: dest_co3.val SIMPLE [(t4)n.FieldSchema(name:val, type:string, comment:null), ]
-PREHOOK: query: -- dest_co1, dest_co2 and dest_co3 should be same
--- SELECT * FROM dest_co1 x ORDER BY x.key, x.val;
--- SELECT * FROM dest_co2 x ORDER BY x.key, x.val;
-SELECT SUM(HASH(key)), SUM(HASH(val)) FROM dest_co1
+PREHOOK: query: SELECT SUM(HASH(key)), SUM(HASH(val)) FROM dest_co1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest_co1
 #### A masked pattern was here ####
-POSTHOOK: query: -- dest_co1, dest_co2 and dest_co3 should be same
--- SELECT * FROM dest_co1 x ORDER BY x.key, x.val;
--- SELECT * FROM dest_co2 x ORDER BY x.key, x.val;
-SELECT SUM(HASH(key)), SUM(HASH(val)) FROM dest_co1
+POSTHOOK: query: SELECT SUM(HASH(key)), SUM(HASH(val)) FROM dest_co1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest_co1
 #### A masked pattern was here ####

@@ -6,8 +6,7 @@ PREHOOK: query: DROP TABLE hundredorc
 PREHOOK: type: DROPTABLE
 POSTHOOK: query: DROP TABLE hundredorc
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: -- data setup
-CREATE TABLE over1k(t tinyint,
+PREHOOK: query: CREATE TABLE over1k(t tinyint,
            si smallint,
            i int,
            b bigint,
@@ -23,8 +22,7 @@ STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@over1k
-POSTHOOK: query: -- data setup
-CREATE TABLE over1k(t tinyint,
+POSTHOOK: query: CREATE TABLE over1k(t tinyint,
            si smallint,
            i int,
            b bigint,
@@ -115,7 +113,7 @@ STAGE PLANS:
 #### A masked pattern was here ####
       Edges:
         Map 1 <- Map 3 (BROADCAST_EDGE)
-        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -153,7 +151,7 @@ STAGE PLANS:
                               sort order: 
                               Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                               value expressions: _col0 (type: bigint)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: all inputs
         Map 3 
             Map Operator Tree:
@@ -173,7 +171,7 @@ STAGE PLANS:
                         Map-reduce partition columns: _col10 (type: binary)
                         Statistics: Num rows: 100 Data size: 29638 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col0 (type: tinyint), _col1 (type: smallint), _col2 (type: int), _col3 (type: bigint), _col4 (type: float), _col5 (type: double), _col6 (type: boolean), _col7 (type: string), _col8 (type: timestamp), _col9 (type: decimal(4,2))
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: all inputs
         Reducer 2 
             Execution mode: vectorized, llap
@@ -318,15 +316,11 @@ POSTHOOK: Input: default@hundredorc
 3	xylophone band
 2	yard duty
 3	zync studies
-PREHOOK: query: -- HIVE-14045: Involve a binary vector scratch column for small table result (Native Vector MapJoin).
-
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT t1.i, t1.bin, t2.bin
 FROM hundredorc t1 JOIN hundredorc t2 ON t1.i = t2.i
 PREHOOK: type: QUERY
-POSTHOOK: query: -- HIVE-14045: Involve a binary vector scratch column for small table result (Native Vector MapJoin).
-
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT t1.i, t1.bin, t2.bin
 FROM hundredorc t1 JOIN hundredorc t2 ON t1.i = t2.i
 POSTHOOK: type: QUERY

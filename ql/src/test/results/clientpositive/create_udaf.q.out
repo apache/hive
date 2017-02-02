@@ -42,13 +42,11 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest1
 #### A masked pattern was here ####
 7
-PREHOOK: query: -- cover all the other value types:
-SELECT test_max(CAST(length(src.value) AS SMALLINT)) FROM src
+PREHOOK: query: SELECT test_max(CAST(length(src.value) AS SMALLINT)) FROM src
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
-POSTHOOK: query: -- cover all the other value types:
-SELECT test_max(CAST(length(src.value) AS SMALLINT)) FROM src
+POSTHOOK: query: SELECT test_max(CAST(length(src.value) AS SMALLINT)) FROM src
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####

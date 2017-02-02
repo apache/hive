@@ -71,25 +71,11 @@ POSTHOOK: type: LOAD
 POSTHOOK: Output: default@ext_t
 POSTHOOK: Output: default@ext_t@emp_country=us/emp_state=ca
 #### A masked pattern was here ####
-PREHOOK: query: -- verifying difference between normal export of a external table
--- and a replication export of an ext table
--- the replication export will have squashed the "EXTERNAL" flag
--- this is because the destination of all replication exports are
--- managed tables. The managed tables should be similar except
--- for the repl.last.id values
-
-export table managed_t to 'ql/test/data/exports/managed_t'
+PREHOOK: query: export table managed_t to 'ql/test/data/exports/managed_t'
 PREHOOK: type: EXPORT
 PREHOOK: Input: default@managed_t@emp_country=us/emp_state=ca
 #### A masked pattern was here ####
-POSTHOOK: query: -- verifying difference between normal export of a external table
--- and a replication export of an ext table
--- the replication export will have squashed the "EXTERNAL" flag
--- this is because the destination of all replication exports are
--- managed tables. The managed tables should be similar except
--- for the repl.last.id values
-
-export table managed_t to 'ql/test/data/exports/managed_t'
+POSTHOOK: query: export table managed_t to 'ql/test/data/exports/managed_t'
 POSTHOOK: type: EXPORT
 POSTHOOK: Input: default@managed_t@emp_country=us/emp_state=ca
 #### A masked pattern was here ####
@@ -214,13 +200,11 @@ POSTHOOK: Input: default@managed_t_imported@emp_country=us/emp_state=ca
 4	us	ca
 5	us	ca
 6	us	ca
-PREHOOK: query: -- should have repl.last.id
-import table managed_t_r_imported from 'ql/test/data/exports/managed_t_r'
+PREHOOK: query: import table managed_t_r_imported from 'ql/test/data/exports/managed_t_r'
 PREHOOK: type: IMPORT
 #### A masked pattern was here ####
 PREHOOK: Output: default@managed_t_r_imported
-POSTHOOK: query: -- should have repl.last.id
-import table managed_t_r_imported from 'ql/test/data/exports/managed_t_r'
+POSTHOOK: query: import table managed_t_r_imported from 'ql/test/data/exports/managed_t_r'
 POSTHOOK: type: IMPORT
 #### A masked pattern was here ####
 POSTHOOK: Output: default@managed_t_r_imported
@@ -378,15 +362,11 @@ POSTHOOK: Input: default@ext_t_imported@emp_country=us/emp_state=ca
 4	us	ca
 5	us	ca
 6	us	ca
-PREHOOK: query: -- should have repl.last.id
--- also - importing an external table replication export would turn the new table into a managed table
-import table ext_t_r_imported from 'ql/test/data/exports/ext_t_r'
+PREHOOK: query: import table ext_t_r_imported from 'ql/test/data/exports/ext_t_r'
 PREHOOK: type: IMPORT
 #### A masked pattern was here ####
 PREHOOK: Output: default@ext_t_r_imported
-POSTHOOK: query: -- should have repl.last.id
--- also - importing an external table replication export would turn the new table into a managed table
-import table ext_t_r_imported from 'ql/test/data/exports/ext_t_r'
+POSTHOOK: query: import table ext_t_r_imported from 'ql/test/data/exports/ext_t_r'
 POSTHOOK: type: IMPORT
 #### A masked pattern was here ####
 POSTHOOK: Output: default@ext_t_r_imported

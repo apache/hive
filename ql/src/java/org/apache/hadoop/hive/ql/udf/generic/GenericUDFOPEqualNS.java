@@ -40,4 +40,9 @@ public class GenericUDFOPEqualNS extends GenericUDFOPEqual {
     }
     return super.evaluate(arguments);
   }
+
+  @Override
+  public GenericUDF negative() {
+      return new GenericUDFOPNotEqualNS();
+  }
 }

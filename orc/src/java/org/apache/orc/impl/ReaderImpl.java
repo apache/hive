@@ -350,7 +350,7 @@ public class ReaderImpl implements Reader {
     if (fileMetadata != null) {
       this.compressionKind = fileMetadata.getCompressionKind();
       this.bufferSize = fileMetadata.getCompressionBufferSize();
-      this.codec = WriterImpl.createCodec(compressionKind);
+      this.codec = PhysicalFsWriter.createCodec(compressionKind);
       this.metadataSize = fileMetadata.getMetadataSize();
       this.stripeStats = fileMetadata.getStripeStats();
       this.versionList = fileMetadata.getVersionList();
@@ -459,7 +459,7 @@ public class ReaderImpl implements Reader {
     System.arraycopy(buffer.array(), psOffset, psBuffer, 0, psLen);
     OrcProto.PostScript ps = OrcProto.PostScript.parseFrom(psBuffer);
     int footerSize = (int) ps.getFooterLength();
-    CompressionCodec codec = WriterImpl
+    CompressionCodec codec = PhysicalFsWriter
         .createCodec(CompressionKind.valueOf(ps.getCompression().name()));
     OrcProto.Footer footer = extractFooter(buffer,
         (int) (buffer.position() + ps.getMetadataLength()),
@@ -509,7 +509,7 @@ public class ReaderImpl implements Reader {
       int psOffset = readSize - 1 - psLen;
       ps = extractPostScript(buffer, path, psLen, psOffset);
       bufferSize = (int) ps.getCompressionBlockSize();
-      codec = WriterImpl.createCodec(CompressionKind.valueOf(ps.getCompression().name()));
+      codec = PhysicalFsWriter.createCodec(CompressionKind.valueOf(ps.getCompression().name()));
       fileTailBuilder.setPostscriptLength(psLen).setPostscript(ps);
 
       int footerSize = (int) ps.getFooterLength();
@@ -572,13 +572,6 @@ public class ReaderImpl implements Reader {
   @Override
   public RecordReader rows(Options options) throws IOException {
     LOG.info("Reading ORC rows from " + path + " with " + options);
-    boolean[] include = options.getInclude();
-    // if included columns is null, then include all columns
-    if (include == null) {
-      include = new boolean[types.size()];
-      Arrays.fill(include, true);
-      options.include(include);
-    }
     return new RecordReaderImpl(this, options);
   }
 

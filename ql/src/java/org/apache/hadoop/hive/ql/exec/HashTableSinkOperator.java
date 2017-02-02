@@ -143,19 +143,19 @@ public class HashTableSinkOperator extends TerminalOperator<HashTableSinkDesc> i
 
     // process join keys
     joinKeys = new List[tagLen];
-    JoinUtil.populateJoinKeyValue(joinKeys, conf.getKeys(), posBigTableAlias);
+    JoinUtil.populateJoinKeyValue(joinKeys, conf.getKeys(), posBigTableAlias, hconf);
     joinKeysObjectInspectors = JoinUtil.getObjectInspectorsFromEvaluators(joinKeys,
         inputObjInspectors, posBigTableAlias, tagLen);
 
     // process join values
     joinValues = new List[tagLen];
-    JoinUtil.populateJoinKeyValue(joinValues, conf.getExprs(), posBigTableAlias);
+    JoinUtil.populateJoinKeyValue(joinValues, conf.getExprs(), posBigTableAlias, hconf);
     joinValuesObjectInspectors = JoinUtil.getObjectInspectorsFromEvaluators(joinValues,
         inputObjInspectors, posBigTableAlias, tagLen);
 
     // process join filters
     joinFilters = new List[tagLen];
-    JoinUtil.populateJoinKeyValue(joinFilters, conf.getFilters(), posBigTableAlias);
+    JoinUtil.populateJoinKeyValue(joinFilters, conf.getFilters(), posBigTableAlias, hconf);
     joinFilterObjectInspectors = JoinUtil.getObjectInspectorsFromEvaluators(joinFilters,
         inputObjInspectors, posBigTableAlias, tagLen);
 

@@ -23,10 +23,13 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.UndeclaredThrowableException;
 import java.math.BigDecimal;
 import java.util.AbstractMap.SimpleEntry;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.BitSet;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.Deque;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -36,9 +39,11 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.antlr.runtime.ClassicToken;
+import org.antlr.runtime.CommonToken;
 import org.antlr.runtime.tree.TreeVisitor;
 import org.antlr.runtime.tree.TreeVisitorAction;
 import org.apache.calcite.adapter.druid.DruidQuery;
@@ -46,9 +51,9 @@ import org.apache.calcite.adapter.druid.DruidRules;
 import org.apache.calcite.adapter.druid.DruidSchema;
 import org.apache.calcite.adapter.druid.DruidTable;
 import org.apache.calcite.plan.RelOptCluster;
+import org.apache.calcite.plan.RelOptMaterialization;
 import org.apache.calcite.plan.RelOptPlanner;
 import org.apache.calcite.plan.RelOptPlanner.Executor;
-import org.apache.calcite.plan.RelOptQuery;
 import org.apache.calcite.plan.RelOptRule;
 import org.apache.calcite.plan.RelOptSchema;
 import org.apache.calcite.plan.RelOptUtil;
@@ -70,6 +75,7 @@ import org.apache.calcite.rel.core.SetOp;
 import org.apache.calcite.rel.core.TableScan;
 import org.apache.calcite.rel.metadata.CachingRelMetadataProvider;
 import org.apache.calcite.rel.metadata.ChainedRelMetadataProvider;
+import org.apache.calcite.rel.metadata.DefaultRelMetadataProvider;
 import org.apache.calcite.rel.metadata.JaninoRelMetadataProvider;
 import org.apache.calcite.rel.metadata.RelMetadataProvider;
 import org.apache.calcite.rel.metadata.RelMetadataQuery;
@@ -109,6 +115,7 @@ import org.apache.calcite.util.ImmutableBitSet;
 import org.apache.calcite.util.ImmutableIntList;
 import org.apache.calcite.util.Pair;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.ObjectPair;
 import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
@@ -125,19 +132,12 @@ import org.apache.hadoop.hive.ql.exec.OperatorFactory;
 import org.apache.hadoop.hive.ql.exec.RowSchema;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
+import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
-import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException;
+import org.apache.hadoop.hive.ql.optimizer.calcite.*;
 import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException.UnsupportedFeature;
-import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
-import org.apache.hadoop.hive.ql.optimizer.calcite.HiveDefaultRelMetadataProvider;
-import org.apache.hadoop.hive.ql.optimizer.calcite.HivePlannerContext;
-import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelFactories;
-import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRexExecutorImpl;
-import org.apache.hadoop.hive.ql.optimizer.calcite.HiveTypeSystemImpl;
-import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
-import org.apache.hadoop.hive.ql.optimizer.calcite.TraitsUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.cost.HiveAlgorithmsConf;
 import org.apache.hadoop.hive.ql.optimizer.calcite.cost.HiveVolcanoPlanner;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAggregate;
@@ -181,16 +181,20 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveProjectOverIntersec
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveProjectSortTransposeRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveReduceExpressionsRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveReduceExpressionsWithStatsRule;
+import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveRelDecorrelator;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveRelFieldTrimmer;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveRulesRegistry;
+import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveSemiJoinRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveSortJoinReduceRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveSortLimitPullUpConstantsRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveSortMergeRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveSortProjectTransposeRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveSortRemoveRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveSortUnionReduceRule;
+import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveSubQueryRemoveRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveUnionPullUpConstantsRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveWindowingFixRule;
+import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveMaterializedViewFilterScanRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.ASTConverter;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.HiveOpConverter;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.JoinCondTypeCheckProcFactory;
@@ -204,12 +208,11 @@ import org.apache.hadoop.hive.ql.parse.PTFInvocationSpec.OrderSpec;
 import org.apache.hadoop.hive.ql.parse.PTFInvocationSpec.PartitionExpression;
 import org.apache.hadoop.hive.ql.parse.PTFInvocationSpec.PartitionSpec;
 import org.apache.hadoop.hive.ql.parse.QBExpr.Opcode;
-import org.apache.hadoop.hive.ql.parse.QBSubQuery.SubQueryType;
 import org.apache.hadoop.hive.ql.parse.WindowingSpec.BoundarySpec;
-import org.apache.hadoop.hive.ql.parse.WindowingSpec.RangeBoundarySpec;
 import org.apache.hadoop.hive.ql.parse.WindowingSpec.WindowExpressionSpec;
 import org.apache.hadoop.hive.ql.parse.WindowingSpec.WindowFunctionSpec;
 import org.apache.hadoop.hive.ql.parse.WindowingSpec.WindowSpec;
+import org.apache.hadoop.hive.ql.parse.WindowingSpec.WindowType;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
@@ -234,10 +237,12 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.joda.time.Interval;
 
 import com.google.common.base.Function;
+import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Multimap;
 
 public class CalcitePlanner extends SemanticAnalyzer {
 
@@ -273,6 +278,33 @@ public class CalcitePlanner extends SemanticAnalyzer {
     }
   }
 
+  /**
+   * This method is useful if we want to obtain the logical plan after being parsed and
+   * optimized by Calcite.
+   *
+   * @return the Calcite plan for the query, null if it could not be generated
+   */
+  public RelNode genLogicalPlan(ASTNode ast) throws SemanticException {
+    LOG.info("Starting generating logical plan");
+    PreCboCtx cboCtx = new PreCboCtx();
+    if (!genResolvedParseTree(ast, cboCtx)) {
+      return null;
+    }
+    ASTNode queryForCbo = ast;
+    if (cboCtx.type == PreCboCtx.Type.CTAS_OR_MV) {
+      queryForCbo = cboCtx.nodeOfInterest; // nodeOfInterest is the query
+    }
+    runCBO = canCBOHandleAst(queryForCbo, getQB(), cboCtx);
+    if (!runCBO) {
+      return null;
+    }
+    profilesCBO = obtainCBOProfiles(queryProperties);
+    disableJoinMerge = true;
+    final RelNode resPlan = logicalPlan();
+    LOG.info("Finished generating logical plan");
+    return resPlan;
+  }
+
   @Override
   @SuppressWarnings("rawtypes")
   Operator genOPTree(ASTNode ast, PlannerContext plannerCtx) throws SemanticException {
@@ -294,13 +326,21 @@ public class CalcitePlanner extends SemanticAnalyzer {
         queryForCbo = cboCtx.nodeOfInterest; // nodeOfInterest is the query
       }
       runCBO = canCBOHandleAst(queryForCbo, getQB(), cboCtx);
-      profilesCBO = obtainCBOProfiles(queryProperties);
+      if (queryProperties.hasMultiDestQuery()) {
+        handleMultiDestQuery(ast, cboCtx);
+      }
 
       if (runCBO) {
+        profilesCBO = obtainCBOProfiles(queryProperties);
+
         disableJoinMerge = true;
         boolean reAnalyzeAST = false;
         final boolean materializedView = getQB().isMaterializedView();
 
+        // currently semi-join optimization doesn't work with subqueries
+        // so this will be turned off for if we find subqueries and will later be
+        // restored to its original state
+        boolean originalSemiOptVal = this.conf.getBoolVar(ConfVars.SEMIJOIN_CONVERSION);
         try {
           if (this.conf.getBoolVar(HiveConf.ConfVars.HIVE_CBO_RETPATH_HIVEOP)) {
             sinkOp = getOptimizedHiveOPDag();
@@ -345,7 +385,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
             // PartitionList is not evaluated until the run phase.
             getMetaData(getQB());
 
-            disableJoinMerge = false;
+            disableJoinMerge = defaultJoinMerge;
             sinkOp = genPlan(getQB());
             LOG.info("CBO Succeeded; optimized logical plan.");
             this.ctx.setCboInfo("Plan optimized by CBO.");
@@ -376,13 +416,19 @@ public class CalcitePlanner extends SemanticAnalyzer {
               this.ctx.setCboInfo("Plan not optimized by CBO.");
             }
           }
-          if (!conf.getBoolVar(ConfVars.HIVE_IN_TEST) || isMissingStats
-              || e instanceof CalciteSemanticException) {
-            reAnalyzeAST = true;
+          if( e instanceof CalciteSubquerySemanticException) {
+            // non-cbo path retries to execute subqueries and throws completely different exception/error
+            // to eclipse the original error message
+            // so avoid executing subqueries on non-cbo
+            throw new SemanticException(e);
+          }
+          else if (!conf.getBoolVar(ConfVars.HIVE_IN_TEST) || isMissingStats
+              || e instanceof CalciteSemanticException ) {
+              reAnalyzeAST = true;
           } else if (e instanceof SemanticException) {
             // although, its likely to be a valid exception, we will retry
             // with cbo off anyway.
-            reAnalyzeAST = true;
+              reAnalyzeAST = true;
           } else if (e instanceof RuntimeException) {
             throw (RuntimeException) e;
           } else {
@@ -390,7 +436,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
           }
         } finally {
           runCBO = false;
-          disableJoinMerge = false;
+          disableJoinMerge = defaultJoinMerge;
           disableSemJoinReordering = false;
           if (reAnalyzeAST) {
             init(true);
@@ -400,6 +446,8 @@ public class CalcitePlanner extends SemanticAnalyzer {
             super.genResolvedParseTree(ast, new PlannerContext());
             skipCalcitePlan = true;
           }
+          // restore semi-join opt flag
+          this.conf.setBoolVar(ConfVars.SEMIJOIN_CONVERSION, originalSemiOptVal);
         }
       } else {
         this.ctx.setCboInfo("Plan not optimized by CBO.");
@@ -412,6 +460,167 @@ public class CalcitePlanner extends SemanticAnalyzer {
     }
 
     return sinkOp;
+  }
+
+  /*
+   * Tries to optimize FROM clause of multi-insert. No attempt to optimize insert clauses of the query.
+   * Returns true if rewriting is successful, false otherwise.
+   */
+  private void handleMultiDestQuery(ASTNode ast, PreCboCtx cboCtx) throws SemanticException {
+    // Not supported by CBO
+    if (!runCBO) {
+      return;
+    }
+    // Currently, we only optimized the query the content of the FROM clause
+    // for multi-insert queries. Thus, nodeOfInterest is the FROM clause
+    if (isJoinToken(cboCtx.nodeOfInterest)) {
+      // Join clause: rewriting is needed
+      ASTNode subq = rewriteASTForMultiInsert(ast, cboCtx.nodeOfInterest);
+      if (subq != null) {
+        // We could rewrite into a subquery
+        cboCtx.nodeOfInterest = (ASTNode) subq.getChild(0);
+        QB newQB = new QB(null, "", false);
+        Phase1Ctx ctx_1 = initPhase1Ctx();
+        doPhase1(cboCtx.nodeOfInterest, newQB, ctx_1, null);
+        setQB(newQB);
+        getMetaData(getQB());
+      } else {
+        runCBO = false;
+      }
+    } else if (cboCtx.nodeOfInterest.getToken().getType() == HiveParser.TOK_SUBQUERY) {
+      // Subquery: no rewriting needed
+      ASTNode subq = cboCtx.nodeOfInterest;
+      // First child is subquery, second child is alias
+      // We set the node of interest and QB to the subquery
+      // We do not need to generate the QB again, but rather we use it directly
+      cboCtx.nodeOfInterest = (ASTNode) subq.getChild(0);
+      String subQAlias = unescapeIdentifier(subq.getChild(1).getText());
+      final QB newQB = getQB().getSubqForAlias(subQAlias).getQB();
+      newQB.getParseInfo().setAlias("");
+      newQB.getParseInfo().setIsSubQ(false);
+      setQB(newQB);
+    } else {
+      // No need to run CBO (table ref or virtual table) or not supported
+      runCBO = false;
+    }
+  }
+
+  private ASTNode rewriteASTForMultiInsert(ASTNode query, ASTNode nodeOfInterest) {
+    // 1. gather references from original query
+    // This is a map from aliases to references.
+    // We keep all references as we will need to modify them after creating
+    // the subquery
+    final Multimap<String, Object> aliasNodes = ArrayListMultimap.create();
+    // To know if we need to bail out
+    final AtomicBoolean notSupported = new AtomicBoolean(false);
+    TreeVisitorAction action = new TreeVisitorAction() {
+      @Override
+      public Object pre(Object t) {
+        if (!notSupported.get()) {
+          if (ParseDriver.adaptor.getType(t) == HiveParser.TOK_ALLCOLREF) {
+            // TODO: this is a limitation of the AST rewriting approach that we will
+            // not be able to overcome till proper integration of full multi-insert
+            // queries with Calcite is implemented.
+            // The current rewriting gather references from insert clauses and then
+            // updates them with the new subquery references. However, if insert
+            // clauses use * or tab.*, we cannot resolve the columns that we are
+            // referring to. Thus, we just bail out and those queries will not be
+            // currently optimized by Calcite.
+            // An example of such query is:
+            // FROM T_A a LEFT JOIN T_B b ON a.id = b.id
+            // INSERT OVERWRITE TABLE join_result_1
+            // SELECT a.*, b.*
+            // INSERT OVERWRITE TABLE join_result_3
+            // SELECT a.*, b.*;
+            notSupported.set(true);
+          } else if (ParseDriver.adaptor.getType(t) == HiveParser.DOT) {
+            Object c = ParseDriver.adaptor.getChild(t, 0);
+            if (c != null && ParseDriver.adaptor.getType(c) == HiveParser.TOK_TABLE_OR_COL) {
+              aliasNodes.put(((ASTNode) t).toStringTree(), t);
+            }
+          } else if (ParseDriver.adaptor.getType(t) == HiveParser.TOK_TABLE_OR_COL) {
+            Object p = ParseDriver.adaptor.getParent(t);
+            if (p == null || ParseDriver.adaptor.getType(p) != HiveParser.DOT) {
+              aliasNodes.put(((ASTNode) t).toStringTree(), t);
+            }
+          }
+        }
+        return t;
+      }
+      @Override
+      public Object post(Object t) {
+        return t;
+      }
+    };
+    TreeVisitor tv = new TreeVisitor(ParseDriver.adaptor);
+    // We will iterate through the children: if it is an INSERT, we will traverse
+    // the subtree to gather the references
+    for (int i = 0; i < query.getChildCount(); i++) {
+      ASTNode child = (ASTNode) query.getChild(i);
+      if (ParseDriver.adaptor.getType(child) != HiveParser.TOK_INSERT) {
+        // If it is not an INSERT, we do not need to anything
+        continue;
+      }
+      tv.visit(child, action);
+    }
+    if (notSupported.get()) {
+      // Bail out
+      return null;
+    }
+    // 2. rewrite into query
+    //  TOK_QUERY
+    //     TOK_FROM
+    //        join
+    //     TOK_INSERT
+    //        TOK_DESTINATION
+    //           TOK_DIR
+    //              TOK_TMP_FILE
+    //        TOK_SELECT
+    //           refs
+    ASTNode from = new ASTNode(new CommonToken(HiveParser.TOK_FROM, "TOK_FROM"));
+    from.addChild((ASTNode) ParseDriver.adaptor.dupTree(nodeOfInterest));
+    ASTNode destination = new ASTNode(new CommonToken(HiveParser.TOK_DESTINATION, "TOK_DESTINATION"));
+    ASTNode dir = new ASTNode(new CommonToken(HiveParser.TOK_DIR, "TOK_DIR"));
+    ASTNode tmpFile = new ASTNode(new CommonToken(HiveParser.TOK_TMP_FILE, "TOK_TMP_FILE"));
+    dir.addChild(tmpFile);
+    destination.addChild(dir);
+    ASTNode select = new ASTNode(new CommonToken(HiveParser.TOK_SELECT, "TOK_SELECT"));
+    int num = 0;
+    for (Collection<Object> selectIdentifier : aliasNodes.asMap().values()) {
+      Iterator<Object> it = selectIdentifier.iterator();
+      ASTNode node = (ASTNode) it.next();
+      // Add select expression
+      ASTNode selectExpr = new ASTNode(new CommonToken(HiveParser.TOK_SELEXPR, "TOK_SELEXPR"));
+      selectExpr.addChild((ASTNode) ParseDriver.adaptor.dupTree(node)); // Identifier
+      String colAlias = "col" + num;
+      selectExpr.addChild(new ASTNode(new CommonToken(HiveParser.Identifier, colAlias))); // Alias
+      select.addChild(selectExpr);
+      // Rewrite all INSERT references (all the node values for this key)
+      ASTNode colExpr = new ASTNode(new CommonToken(HiveParser.TOK_TABLE_OR_COL, "TOK_TABLE_OR_COL"));
+      colExpr.addChild(new ASTNode(new CommonToken(HiveParser.Identifier, colAlias)));
+      replaceASTChild(node, colExpr);
+      while (it.hasNext()) {
+        // Loop to rewrite rest of INSERT references
+        node = (ASTNode) it.next();
+        colExpr = new ASTNode(new CommonToken(HiveParser.TOK_TABLE_OR_COL, "TOK_TABLE_OR_COL"));
+        colExpr.addChild(new ASTNode(new CommonToken(HiveParser.Identifier, colAlias)));
+        replaceASTChild(node, colExpr);
+      }
+      num++;
+    }
+    ASTNode insert = new ASTNode(new CommonToken(HiveParser.TOK_INSERT, "TOK_INSERT"));
+    insert.addChild(destination);
+    insert.addChild(select);
+    ASTNode newQuery = new ASTNode(new CommonToken(HiveParser.TOK_QUERY, "TOK_QUERY"));
+    newQuery.addChild(from);
+    newQuery.addChild(insert);
+    // 3. create subquery
+    ASTNode subq = new ASTNode(new CommonToken(HiveParser.TOK_SUBQUERY, "TOK_SUBQUERY"));
+    subq.addChild(newQuery);
+    subq.addChild(new ASTNode(new CommonToken(HiveParser.Identifier, "subq")));
+    replaceASTChild(nodeOfInterest, subq);
+    // 4. return subquery
+    return subq;
   }
 
   /**
@@ -436,7 +645,8 @@ public class CalcitePlanner extends SemanticAnalyzer {
         || qb.isCTAS() || qb.isMaterializedView();
     // Queries without a source table currently are not supported by CBO
     boolean isSupportedType = (qb.getIsQuery() && !qb.containsQueryWithoutSourceTable())
-        || qb.isCTAS() || qb.isMaterializedView() || cboCtx.type == PreCboCtx.Type.INSERT;
+        || qb.isCTAS() || qb.isMaterializedView() || cboCtx.type == PreCboCtx.Type.INSERT
+        || cboCtx.type == PreCboCtx.Type.MULTI_INSERT;
     boolean noBadTokens = HiveCalciteUtil.validateASTForUnsupportedTokens(ast);
     boolean result = isSupportedRoot && isSupportedType
         && (getCreateViewDesc() == null || getCreateViewDesc().isMaterialized())
@@ -502,7 +712,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
     if (!queryProperties.hasClusterBy() && !queryProperties.hasDistributeBy()
         && !queryProperties.hasSortBy() && !queryProperties.hasPTF() && !queryProperties.usesScript()
-        && !queryProperties.hasMultiDestQuery() && !queryProperties.hasLateralViews()) {
+        && !queryProperties.hasLateralViews()) {
       // Ok to run CBO.
       return null;
     }
@@ -520,8 +730,6 @@ public class CalcitePlanner extends SemanticAnalyzer {
         msg += "has PTF; ";
       if (queryProperties.usesScript())
         msg += "uses scripts; ";
-      if (queryProperties.hasMultiDestQuery())
-        msg += "is a multi-destination query; ";
       if (queryProperties.hasLateralViews())
         msg += "has lateral views; ";
 
@@ -624,7 +832,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
    */
   static class PreCboCtx extends PlannerContext {
     enum Type {
-      NONE, INSERT, CTAS_OR_MV, UNEXPECTED
+      NONE, INSERT, MULTI_INSERT, CTAS_OR_MV, UNEXPECTED
     }
 
     private ASTNode nodeOfInterest;
@@ -651,6 +859,17 @@ public class CalcitePlanner extends SemanticAnalyzer {
       if (!isTmpFileDest) {
         set(PreCboCtx.Type.INSERT, ast);
       }
+    }
+
+    @Override
+    void setMultiInsertToken(ASTNode child) {
+      set(PreCboCtx.Type.MULTI_INSERT, child);
+    }
+
+    @Override
+    void resetToken() {
+      this.type = Type.NONE;
+      this.nodeOfInterest = null;
     }
   }
 
@@ -680,6 +899,12 @@ public class CalcitePlanner extends SemanticAnalyzer {
       }
       replaceASTChild(newDest, cboCtx.nodeOfInterest);
       return newAst;
+    }
+
+    case MULTI_INSERT: {
+      // Patch the optimized query back into original FROM clause.
+      replaceASTChild(cboCtx.nodeOfInterest, newAst);
+      return originalAst;
     }
 
     default:
@@ -755,13 +980,12 @@ public class CalcitePlanner extends SemanticAnalyzer {
   }
 
   /**
-   * Get Optimized AST for the given QB tree in the semAnalyzer.
+   * Get optimized logical plan for the given QB tree in the semAnalyzer.
    *
-   * @return Optimized operator tree translated in to Hive AST
+   * @return
    * @throws SemanticException
    */
-  ASTNode getOptimizedAST() throws SemanticException {
-    ASTNode optiqOptimizedAST = null;
+  RelNode logicalPlan() throws SemanticException {
     RelNode optimizedOptiqPlan = null;
 
     CalcitePlannerAction calcitePlannerAction = null;
@@ -777,9 +1001,19 @@ public class CalcitePlanner extends SemanticAnalyzer {
       rethrowCalciteException(e);
       throw new AssertionError("rethrowCalciteException didn't throw for " + e.getMessage());
     }
-    optiqOptimizedAST = ASTConverter.convert(optimizedOptiqPlan, resultSchema,
-            HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_COLUMN_ALIGNMENT));
+    return optimizedOptiqPlan;
+  }
 
+  /**
+   * Get Optimized AST for the given QB tree in the semAnalyzer.
+   *
+   * @return Optimized operator tree translated in to Hive AST
+   * @throws SemanticException
+   */
+  ASTNode getOptimizedAST() throws SemanticException {
+    RelNode optimizedOptiqPlan = logicalPlan();
+    ASTNode optiqOptimizedAST = ASTConverter.convert(optimizedOptiqPlan, resultSchema,
+            HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_COLUMN_ALIGNMENT));
     return optiqOptimizedAST;
   }
 
@@ -960,6 +1194,14 @@ public class CalcitePlanner extends SemanticAnalyzer {
     private final ColumnAccessInfo columnAccessInfo;
     private Map<HiveProject, Table> viewProjectToTableSchema;
 
+    //correlated vars across subqueries within same query needs to have different ID
+    // this will be used in RexNodeConverter to create cor var
+    private int subqueryId;
+
+    // this is to keep track if a subquery is correlated and contains aggregate
+    // since this is special cased when it is rewritten in SubqueryRemoveRule
+    Set<RelNode> corrScalarRexSQWithAgg = new HashSet<RelNode>();
+
     // TODO: Do we need to keep track of RR, ColNameToPosMap for every op or
     // just last one.
     LinkedHashMap<RelNode, RowResolver>                   relToHiveRR                   = new LinkedHashMap<RelNode, RowResolver>();
@@ -975,6 +1217,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
       RelNode calciteGenPlan = null;
       RelNode calcitePreCboPlan = null;
       RelNode calciteOptimizedPlan = null;
+      subqueryId = 0;
 
       /*
        * recreate cluster, so that it picks up the additional traitDef
@@ -985,13 +1228,12 @@ public class CalcitePlanner extends SemanticAnalyzer {
               conf, HiveConf.ConfVars.HIVECONVERTJOINNOCONDITIONALTASKTHRESHOLD);
       HiveAlgorithmsConf algorithmsConf = new HiveAlgorithmsConf(maxSplitSize, maxMemory);
       HiveRulesRegistry registry = new HiveRulesRegistry();
-      HivePlannerContext confContext = new HivePlannerContext(algorithmsConf, registry);
+      HivePlannerContext confContext = new HivePlannerContext(algorithmsConf, registry, corrScalarRexSQWithAgg);
       RelOptPlanner planner = HiveVolcanoPlanner.createPlanner(confContext);
-      final RelOptQuery query = new RelOptQuery(planner);
       final RexBuilder rexBuilder = cluster.getRexBuilder();
-      cluster = query.createCluster(rexBuilder.getTypeFactory(), rexBuilder);
+      final RelOptCluster optCluster = RelOptCluster.create(planner, rexBuilder);
 
-      this.cluster = cluster;
+      this.cluster = optCluster;
       this.relOptSchema = relOptSchema;
 
       PerfLogger perfLogger = SessionState.getPerfLogger();
@@ -999,7 +1241,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
       // 1. Gen Calcite Plan
       perfLogger.PerfLogBegin(this.getClass().getName(), PerfLogger.OPTIMIZER);
       try {
-        calciteGenPlan = genLogicalPlan(getQB(), true);
+        calciteGenPlan = genLogicalPlan(getQB(), true, null, null);
         resultSchema = SemanticAnalyzer.convertRowSchemaToResultSetSchema(
             relToHiveRR.get(calciteGenPlan),
             HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_RESULTSET_USE_UNIQUE_COLUMN_NAMES));
@@ -1011,7 +1253,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
       // We need to get the ColumnAccessInfo and viewToTableSchema for views.
       HiveRelFieldTrimmer fieldTrimmer = new HiveRelFieldTrimmer(null,
-          HiveRelFactories.HIVE_BUILDER.create(cluster, null), this.columnAccessInfo,
+          HiveRelFactories.HIVE_BUILDER.create(optCluster, null), this.columnAccessInfo,
           this.viewProjectToTableSchema);
       fieldTrimmer.trim(calciteGenPlan);
 
@@ -1021,7 +1263,16 @@ public class CalcitePlanner extends SemanticAnalyzer {
               JaninoRelMetadataProvider.of(mdProvider.getMetadataProvider()));
 
       // Create executor
-      Executor executorProvider = new HiveRexExecutorImpl(cluster);
+      Executor executorProvider = new HiveRexExecutorImpl(optCluster);
+
+      //Remove subquery
+      LOG.debug("Plan before removing subquery:\n" + RelOptUtil.toString(calciteGenPlan));
+      calciteGenPlan = hepPlan(calciteGenPlan, false, mdProvider.getMetadataProvider(), null,
+              HiveSubQueryRemoveRule.FILTER);
+      LOG.debug("Plan just after removing subquery:\n" + RelOptUtil.toString(calciteGenPlan));
+
+      calciteGenPlan = HiveRelDecorrelator.decorrelateQuery(calciteGenPlan);
+      LOG.debug("Plan after decorrelation:\n" + RelOptUtil.toString(calciteGenPlan));
 
       // 2. Apply pre-join order optimizations
       calcitePreCboPlan = applyPreJoinOrderingTransforms(calciteGenPlan,
@@ -1035,7 +1286,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
         try {
           List<RelMetadataProvider> list = Lists.newArrayList();
           list.add(mdProvider.getMetadataProvider());
-          RelTraitSet desiredTraits = cluster
+          RelTraitSet desiredTraits = optCluster
               .traitSetOf(HiveRelNode.CONVENTION, RelCollations.EMPTY);
 
           HepProgramBuilder hepPgmBldr = new HepProgramBuilder().addMatchOrder(HepMatchOrder.BOTTOM_UP);
@@ -1047,7 +1298,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
           hepPlanner.registerMetadataProviders(list);
           RelMetadataProvider chainedProvider = ChainedRelMetadataProvider.of(list);
-          cluster.setMetadataProvider(new CachingRelMetadataProvider(chainedProvider, hepPlanner));
+          optCluster.setMetadataProvider(new CachingRelMetadataProvider(chainedProvider, hepPlanner));
 
           RelNode rootRel = calcitePreCboPlan;
           hepPlanner.setRoot(rootRel);
@@ -1082,27 +1333,70 @@ public class CalcitePlanner extends SemanticAnalyzer {
               HiveJoinCommuteRule.INSTANCE);
       perfLogger.PerfLogEnd(this.getClass().getName(), PerfLogger.OPTIMIZER, "Calcite: Optimizations without stats");
 
-      // 5. Run aggregate-join transpose (cost based)
+      // 5. Materialized view based rewriting
+      // We disable it for CTAS and MV creation queries (trying to avoid any problem
+      // due to data freshness)
+      if (conf.getBoolVar(ConfVars.HIVE_MATERIALIZED_VIEW_ENABLE_AUTO_REWRITING) &&
+              !getQB().isMaterializedView() && !getQB().isCTAS()) {
+        perfLogger.PerfLogBegin(this.getClass().getName(), PerfLogger.OPTIMIZER);
+        // Use Calcite cost model for view rewriting
+        RelMetadataProvider calciteMdProvider = DefaultRelMetadataProvider.INSTANCE;
+        RelMetadataQuery.THREAD_PROVIDERS.set(JaninoRelMetadataProvider.of(calciteMdProvider));
+        planner.registerMetadataProviders(Lists.newArrayList(calciteMdProvider));
+        // Add views to planner
+        List<RelOptMaterialization> materializations = new ArrayList<>();
+        try {
+          materializations = Hive.get().getRewritingMaterializedViews();
+          // We need to use the current cluster for the scan operator on views,
+          // otherwise the planner will throw an Exception (different planners)
+          materializations = Lists.transform(materializations,
+              new Function<RelOptMaterialization, RelOptMaterialization>() {
+                @Override
+                public RelOptMaterialization apply(RelOptMaterialization materialization) {
+                  final RelNode viewScan = materialization.tableRel;
+                  final RelNode newViewScan;
+                  if (viewScan instanceof DruidQuery) {
+                    final DruidQuery dq = (DruidQuery) viewScan;
+                    newViewScan = DruidQuery.create(optCluster, optCluster.traitSetOf(HiveRelNode.CONVENTION),
+                        (RelOptHiveTable) viewScan.getTable(), dq.getDruidTable(),
+                        ImmutableList.<RelNode>of(dq.getTableScan()));
+                  } else {
+                    newViewScan = new HiveTableScan(optCluster, optCluster.traitSetOf(HiveRelNode.CONVENTION),
+                        (RelOptHiveTable) viewScan.getTable(), viewScan.getTable().getQualifiedName().get(0),
+                        null, false, false);
+                  }
+                  return new RelOptMaterialization(newViewScan, materialization.queryRel, null);
+                }
+              }
+          );
+        } catch (HiveException e) {
+          LOG.warn("Exception loading materialized views", e);
+        }
+        if (!materializations.isEmpty()) {
+          for (RelOptMaterialization materialization : materializations) {
+            planner.addMaterialization(materialization);
+          }
+          // Add view-based rewriting rules to planner
+          planner.addRule(HiveMaterializedViewFilterScanRule.INSTANCE);
+          // Optimize plan
+          planner.setRoot(calciteOptimizedPlan);
+          calciteOptimizedPlan = planner.findBestExp();
+          // Remove view-based rewriting rules from planner
+          planner.clear();
+        }
+        // Restore default cost model
+        RelMetadataQuery.THREAD_PROVIDERS.set(JaninoRelMetadataProvider.of(mdProvider.getMetadataProvider()));
+        perfLogger.PerfLogEnd(this.getClass().getName(), PerfLogger.OPTIMIZER, "Calcite: View-based rewriting");
+      }
+
+      // 6. Run aggregate-join transpose (cost based)
       //    If it failed because of missing stats, we continue with
       //    the rest of optimizations
       if (conf.getBoolVar(ConfVars.AGGR_JOIN_TRANSPOSE)) {
         perfLogger.PerfLogBegin(this.getClass().getName(), PerfLogger.OPTIMIZER);
         try {
-          HepProgramBuilder hepPgmBldr = new HepProgramBuilder().addMatchOrder(HepMatchOrder.BOTTOM_UP);
-          hepPgmBldr.addRuleInstance(HiveAggregateJoinTransposeRule.INSTANCE);
-
-          HepProgram hepPgm = hepPgmBldr.build();
-          HepPlanner hepPlanner = new HepPlanner(hepPgm);
-
-          List<RelMetadataProvider> list = Lists.newArrayList();
-          list.add(mdProvider.getMetadataProvider());
-          hepPlanner.registerMetadataProviders(list);
-          RelMetadataProvider chainedProvider = ChainedRelMetadataProvider.of(list);
-          cluster.setMetadataProvider(new CachingRelMetadataProvider(chainedProvider, hepPlanner));
-
-          hepPlanner.setRoot(calciteOptimizedPlan);
-
-          calciteOptimizedPlan = hepPlanner.findBestExp();
+          calciteOptimizedPlan = hepPlan(calciteOptimizedPlan, false, mdProvider.getMetadataProvider(), null,
+                  HepMatchOrder.BOTTOM_UP, HiveAggregateJoinTransposeRule.INSTANCE);
         } catch (Exception e) {
           boolean isMissingStats = noColsMissingStats.get() > 0;
           if (isMissingStats) {
@@ -1115,7 +1409,16 @@ public class CalcitePlanner extends SemanticAnalyzer {
         perfLogger.PerfLogEnd(this.getClass().getName(), PerfLogger.OPTIMIZER, "Calcite: Aggregate join transpose");
       }
 
-      // 7. Run rule to fix windowing issue when it is done over
+      // 7.convert Join + GBy to semijoin
+      // run this rule at later stages, since many calcite rules cant deal with semijoin
+      if (conf.getBoolVar(ConfVars.SEMIJOIN_CONVERSION)) {
+        perfLogger.PerfLogBegin(this.getClass().getName(), PerfLogger.OPTIMIZER);
+        calciteOptimizedPlan = hepPlan(calciteOptimizedPlan, false, mdProvider.getMetadataProvider(), null, HiveSemiJoinRule.INSTANCE);
+        perfLogger.PerfLogEnd(this.getClass().getName(), PerfLogger.OPTIMIZER, "Calcite: Semijoin conversion");
+      }
+
+
+      // 8. Run rule to fix windowing issue when it is done over
       // aggregation columns (HIVE-10627)
       if (profilesCBO.contains(ExtendedCBOProfile.WINDOWING_POSTPROCESSING)) {
         perfLogger.PerfLogBegin(this.getClass().getName(), PerfLogger.OPTIMIZER);
@@ -1124,7 +1427,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
         perfLogger.PerfLogEnd(this.getClass().getName(), PerfLogger.OPTIMIZER, "Calcite: Window fixing rule");
       }
 
-      // 8. Apply Druid transformation rules
+      // 9. Apply Druid transformation rules
       perfLogger.PerfLogBegin(this.getClass().getName(), PerfLogger.OPTIMIZER);
       calciteOptimizedPlan = hepPlan(calciteOptimizedPlan, false, mdProvider.getMetadataProvider(), null,
               HepMatchOrder.BOTTOM_UP, DruidRules.FILTER, DruidRules.PROJECT_AGGREGATE,
@@ -1132,10 +1435,10 @@ public class CalcitePlanner extends SemanticAnalyzer {
               DruidRules.SORT, DruidRules.SORT_PROJECT);
       perfLogger.PerfLogEnd(this.getClass().getName(), PerfLogger.OPTIMIZER, "Calcite: Druid transformation rules");
 
-      // 9. Run rules to aid in translation from Calcite tree to Hive tree
+      // 10. Run rules to aid in translation from Calcite tree to Hive tree
       if (HiveConf.getBoolVar(conf, ConfVars.HIVE_CBO_RETPATH_HIVEOP)) {
         perfLogger.PerfLogBegin(this.getClass().getName(), PerfLogger.OPTIMIZER);
-        // 9.1. Merge join into multijoin operators (if possible)
+        // 10.1. Merge join into multijoin operators (if possible)
         calciteOptimizedPlan = hepPlan(calciteOptimizedPlan, true, mdProvider.getMetadataProvider(), null,
                 HepMatchOrder.BOTTOM_UP, HiveJoinProjectTransposeRule.BOTH_PROJECT_INCLUDE_OUTER,
                 HiveJoinProjectTransposeRule.LEFT_PROJECT_INCLUDE_OUTER,
@@ -1144,7 +1447,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
         // The previous rules can pull up projections through join operators,
         // thus we run the field trimmer again to push them back down
         fieldTrimmer = new HiveRelFieldTrimmer(null,
-            HiveRelFactories.HIVE_BUILDER.create(cluster, null));
+            HiveRelFactories.HIVE_BUILDER.create(optCluster, null));
         calciteOptimizedPlan = fieldTrimmer.trim(calciteOptimizedPlan);
         calciteOptimizedPlan = hepPlan(calciteOptimizedPlan, false, mdProvider.getMetadataProvider(), null,
                 HepMatchOrder.BOTTOM_UP, ProjectRemoveRule.INSTANCE,
@@ -1153,7 +1456,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
                 HiveFilterProjectTSTransposeRule.INSTANCE, HiveFilterProjectTSTransposeRule.INSTANCE_DRUID,
                 HiveProjectFilterPullUpConstantsRule.INSTANCE);
 
-        // 9.2.  Introduce exchange operators below join/multijoin operators
+        // 10.2.  Introduce exchange operators below join/multijoin operators
         calciteOptimizedPlan = hepPlan(calciteOptimizedPlan, false, mdProvider.getMetadataProvider(), null,
                 HepMatchOrder.BOTTOM_UP, HiveInsertExchange4JoinRule.EXCHANGE_BELOW_JOIN,
                 HiveInsertExchange4JoinRule.EXCHANGE_BELOW_MULTIJOIN);
@@ -1187,7 +1490,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
       // TODO: Decorelation of subquery should be done before attempting
       // Partition Pruning; otherwise Expression evaluation may try to execute
       // corelated sub query.
-      
+
       PerfLogger perfLogger = SessionState.getPerfLogger();
 
       final int maxCNFNodeCount = conf.getIntVar(HiveConf.ConfVars.HIVE_CBO_CNF_NODES_LIMIT);
@@ -1312,7 +1615,8 @@ public class CalcitePlanner extends SemanticAnalyzer {
       // 7. Projection Pruning (this introduces select above TS & hence needs to be run last due to PP)
       perfLogger.PerfLogBegin(this.getClass().getName(), PerfLogger.OPTIMIZER);
       HiveRelFieldTrimmer fieldTrimmer = new HiveRelFieldTrimmer(null,
-          HiveRelFactories.HIVE_BUILDER.create(cluster, null));
+          HiveRelFactories.HIVE_BUILDER.create(cluster, null),
+          profilesCBO.contains(ExtendedCBOProfile.JOIN_REORDERING));
       basePlan = fieldTrimmer.trim(basePlan);
       perfLogger.PerfLogEnd(this.getClass().getName(), PerfLogger.OPTIMIZER,
         "Calcite: Prejoin ordering transformation, Projection Pruning");
@@ -1650,8 +1954,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
           LOG.warn("Duplicates detected when adding columns to RR: see previous message");
         }
       } else {
-        topRel = HiveJoin.getJoin(cluster, leftRel, rightRel, calciteJoinCond, calciteJoinType,
-            leftSemiJoin);
+        topRel = HiveJoin.getJoin(cluster, leftRel, rightRel, calciteJoinCond, calciteJoinType);
         topRR = RowResolver.getCombinedRR(leftRR, rightRR);
       }
 
@@ -1928,8 +2231,10 @@ public class CalcitePlanner extends SemanticAnalyzer {
     }
 
     private RelNode genFilterRelNode(ASTNode filterExpr, RelNode srcRel,
+            ImmutableMap<String, Integer> outerNameToPosMap, RowResolver outerRR,
             boolean useCaching) throws SemanticException {
-      ExprNodeDesc filterCondn = genExprNodeDesc(filterExpr, relToHiveRR.get(srcRel), useCaching);
+      ExprNodeDesc filterCondn = genExprNodeDesc(filterExpr, relToHiveRR.get(srcRel),
+              outerRR, null, useCaching);
       if (filterCondn instanceof ExprNodeConstantDesc
           && !filterCondn.getTypeString().equals(serdeConstants.BOOLEAN_TYPE_NAME)) {
         // queries like select * from t1 where 'foo';
@@ -1945,7 +2250,8 @@ public class CalcitePlanner extends SemanticAnalyzer {
       ImmutableMap<String, Integer> hiveColNameCalcitePosMap = this.relToHiveColNameCalcitePosMap
           .get(srcRel);
       RexNode convertedFilterExpr = new RexNodeConverter(cluster, srcRel.getRowType(),
-          hiveColNameCalcitePosMap, 0, true).convert(filterCondn);
+          outerNameToPosMap, hiveColNameCalcitePosMap, relToHiveRR.get(srcRel), outerRR,
+              0, true, subqueryId).convert(filterCondn);
       RexNode factoredFilterExpr = RexUtil
           .pullFactors(cluster.getRexBuilder(), convertedFilterExpr);
       RelNode filterRel = new HiveFilter(cluster, cluster.traitSetOf(HiveRelNode.CONVENTION),
@@ -1957,66 +2263,64 @@ public class CalcitePlanner extends SemanticAnalyzer {
       return filterRel;
     }
 
-    private RelNode genFilterRelNode(QB qb, ASTNode searchCond, RelNode srcRel,
-        Map<String, RelNode> aliasToRel, boolean forHavingClause) throws SemanticException {
-      /*
-       * Handle Subquery predicates.
-       *
-       * Notes (8/22/14 hb): Why is this a copy of the code from {@link
-       * #genFilterPlan} - for now we will support the same behavior as non CBO
-       * route. - but plan to allow nested SubQueries(Restriction.9.m) and
-       * multiple SubQuery expressions(Restriction.8.m). This requires use to
-       * utilize Calcite's Decorrelation mechanics, and for Calcite to fix/flush
-       * out Null semantics(CALCITE-373) - besides only the driving code has
-       * been copied. Most of the code which is SubQueryUtils and QBSubQuery is
-       * reused.
-       */
-      int numSrcColumns = srcRel.getRowType().getFieldCount();
-      List<ASTNode> subQueriesInOriginalTree = SubQueryUtils.findSubQueries(searchCond);
-      if (subQueriesInOriginalTree.size() > 0) {
-
-        /*
-         * Restriction.9.m :: disallow nested SubQuery expressions.
-         */
-        if (qb.getSubQueryPredicateDef() != null) {
-          throw new SemanticException(ErrorMsg.UNSUPPORTED_SUBQUERY_EXPRESSION.getMsg(
-              subQueriesInOriginalTree.get(0), "Nested SubQuery expressions are not supported."));
+    private boolean topLevelConjunctCheck(ASTNode searchCond, ObjectPair<Boolean, Integer> subqInfo) {
+      if( searchCond.getType() == HiveParser.KW_OR) {
+        subqInfo.setFirst(Boolean.TRUE);
+        if(subqInfo.getSecond() > 1) {
+          return false;
         }
-
-        /*
-         * Restriction.8.m :: We allow only 1 SubQuery expression per Query.
-         */
-        if (subQueriesInOriginalTree.size() > 1) {
-
-          throw new SemanticException(ErrorMsg.UNSUPPORTED_SUBQUERY_EXPRESSION.getMsg(
-              subQueriesInOriginalTree.get(1), "Only 1 SubQuery expression is supported."));
+      }
+      if( searchCond.getType() == HiveParser.TOK_SUBQUERY_EXPR) {
+        subqInfo.setSecond(subqInfo.getSecond() + 1);
+        if(subqInfo.getSecond()> 1 && subqInfo.getFirst()) {
+          return false;
         }
+        return true;
+      }
+      for(int i=0; i<searchCond.getChildCount(); i++){
+          boolean validSubQuery = topLevelConjunctCheck((ASTNode)searchCond.getChild(i), subqInfo);
+          if(!validSubQuery) {
+            return false;
+          }
+      }
+      return true;
+    }
 
-        /*
-         * Clone the Search AST; apply all rewrites on the clone.
-         */
+    private void subqueryRestrictionCheck(QB qb, ASTNode searchCond, RelNode srcRel,
+                                         boolean forHavingClause, Map<String, RelNode> aliasToRel,
+                                          Set<ASTNode> corrScalarQueries) throws SemanticException {
+        List<ASTNode> subQueriesInOriginalTree = SubQueryUtils.findSubQueries(searchCond);
+
         ASTNode clonedSearchCond = (ASTNode) SubQueryUtils.adaptor.dupTree(searchCond);
         List<ASTNode> subQueries = SubQueryUtils.findSubQueries(clonedSearchCond);
-
-        RowResolver inputRR = relToHiveRR.get(srcRel);
-        RowResolver outerQBRR = inputRR;
-        ImmutableMap<String, Integer> outerQBPosMap = relToHiveColNameCalcitePosMap.get(srcRel);
-
-        for (int i = 0; i < subQueries.size(); i++) {
-          ASTNode subQueryAST = subQueries.get(i);
+        for(int i=0; i<subQueriesInOriginalTree.size(); i++){
+          //we do not care about the transformation or rewriting of AST
+          // which following statement does
+          // we only care about the restriction checks they perform.
+          // We plan to get rid of these restrictions later
+          int sqIdx = qb.incrNumSubQueryPredicates();
           ASTNode originalSubQueryAST = subQueriesInOriginalTree.get(i);
 
-          int sqIdx = qb.incrNumSubQueryPredicates();
-          clonedSearchCond = SubQueryUtils.rewriteParentQueryWhere(clonedSearchCond, subQueryAST);
+          ASTNode subQueryAST = subQueries.get(i);
+          //SubQueryUtils.rewriteParentQueryWhere(clonedSearchCond, subQueryAST);
+          Boolean orInSubquery = new Boolean(false);
+          Integer subqueryCount = new Integer(0);
+          ObjectPair<Boolean, Integer> subqInfo = new ObjectPair<Boolean, Integer>(false, 0);
+          if(!topLevelConjunctCheck(clonedSearchCond, subqInfo)){
+          /*
+           *  Restriction.7.h :: SubQuery predicates can appear only as top level conjuncts.
+           */
+
+            throw new CalciteSubquerySemanticException(ErrorMsg.UNSUPPORTED_SUBQUERY_EXPRESSION.getMsg(
+                    subQueryAST, "Only SubQuery expressions that are top level conjuncts are allowed"));
+
+          }
 
           QBSubQuery subQuery = SubQueryUtils.buildSubQuery(qb.getId(), sqIdx, subQueryAST,
-              originalSubQueryAST, ctx);
+                  originalSubQueryAST, ctx);
 
-          if (!forHavingClause) {
-            qb.setWhereClauseSubQueryPredicate(subQuery);
-          } else {
-            qb.setHavingClauseSubQueryPredicate(subQuery);
-          }
+          RowResolver inputRR = relToHiveRR.get(srcRel);
+
           String havingInputAlias = null;
 
           if (forHavingClause) {
@@ -2024,79 +2328,93 @@ public class CalcitePlanner extends SemanticAnalyzer {
             aliasToRel.put(havingInputAlias, srcRel);
           }
 
-          subQuery.validateAndRewriteAST(inputRR, forHavingClause, havingInputAlias,
-              aliasToRel.keySet());
-
-          QB qbSQ = new QB(subQuery.getOuterQueryId(), subQuery.getAlias(), true);
-          qbSQ.setSubQueryDef(subQuery.getSubQuery());
-          Phase1Ctx ctx_1 = initPhase1Ctx();
-          doPhase1(subQuery.getSubQueryAST(), qbSQ, ctx_1, null);
-          getMetaData(qbSQ);
-          RelNode subQueryRelNode = genLogicalPlan(qbSQ, false);
-          aliasToRel.put(subQuery.getAlias(), subQueryRelNode);
-          RowResolver sqRR = relToHiveRR.get(subQueryRelNode);
-
-          /*
-           * Check.5.h :: For In and Not In the SubQuery must implicitly or
-           * explicitly only contain one select item.
-           */
-          if (subQuery.getOperator().getType() != SubQueryType.EXISTS
-              && subQuery.getOperator().getType() != SubQueryType.NOT_EXISTS
-              && sqRR.getColumnInfos().size() - subQuery.getNumOfCorrelationExprsAddedToSQSelect() > 1) {
-            throw new SemanticException(ErrorMsg.INVALID_SUBQUERY_EXPRESSION.getMsg(subQueryAST,
-                "SubQuery can contain only 1 item in Select List."));
+          boolean isCorrScalarWithAgg = subQuery.subqueryRestrictionsCheck(inputRR, forHavingClause, havingInputAlias);
+          if(isCorrScalarWithAgg) {
+            corrScalarQueries.add(originalSubQueryAST);
           }
-
-          /*
-           * If this is a Not In SubQuery Predicate then Join in the Null Check
-           * SubQuery. See QBSubQuery.NotInCheck for details on why and how this
-           * is constructed.
-           */
-          if (subQuery.getNotInCheck() != null) {
-            QBSubQuery.NotInCheck notInCheck = subQuery.getNotInCheck();
-            notInCheck.setSQRR(sqRR);
-            QB qbSQ_nic = new QB(subQuery.getOuterQueryId(), notInCheck.getAlias(), true);
-            qbSQ_nic.setSubQueryDef(notInCheck.getSubQuery());
-            ctx_1 = initPhase1Ctx();
-            doPhase1(notInCheck.getSubQueryAST(), qbSQ_nic, ctx_1, null);
-            getMetaData(qbSQ_nic);
-            RelNode subQueryNICRelNode = genLogicalPlan(qbSQ_nic, false);
-            aliasToRel.put(notInCheck.getAlias(), subQueryNICRelNode);
-            srcRel = genJoinRelNode(srcRel, subQueryNICRelNode,
-            // set explicitly to inner until we figure out SemiJoin use
-            // notInCheck.getJoinType(),
-                JoinType.INNER, notInCheck.getJoinConditionAST());
-            inputRR = relToHiveRR.get(srcRel);
-            if (forHavingClause) {
-              aliasToRel.put(havingInputAlias, srcRel);
-            }
-          }
-
-          /*
-           * Gen Join between outer Operator and SQ op
-           */
-          subQuery.buildJoinCondition(inputRR, sqRR, forHavingClause, havingInputAlias);
-          srcRel = genJoinRelNode(srcRel, subQueryRelNode, subQuery.getJoinType(),
-              subQuery.getJoinConditionAST());
-          searchCond = subQuery.updateOuterQueryFilter(clonedSearchCond);
-
-          srcRel = genFilterRelNode(searchCond, srcRel, forHavingClause);
-
-          /*
-           * For Not Exists and Not In, add a projection on top of the Left
-           * Outer Join.
-           */
-          if (subQuery.getOperator().getType() != SubQueryType.NOT_EXISTS
-              || subQuery.getOperator().getType() != SubQueryType.NOT_IN) {
-            srcRel = projectLeftOuterSide(srcRel, numSrcColumns);
-          }
-        }
-        relToHiveRR.put(srcRel, outerQBRR);
-        relToHiveColNameCalcitePosMap.put(srcRel, outerQBPosMap);
-        return srcRel;
       }
+    }
+    private boolean genSubQueryRelNode(QB qb, ASTNode node, RelNode srcRel, boolean forHavingClause,
+                                       Map<ASTNode, RelNode> subQueryToRelNode,
+                                       Map<String, RelNode> aliasToRel) throws SemanticException {
 
-      return genFilterRelNode(searchCond, srcRel, forHavingClause);
+        Set<ASTNode> corrScalarQueriesWithAgg = new HashSet<ASTNode>();
+        //disallow subqueries which HIVE doesn't currently support
+        subqueryRestrictionCheck(qb, node, srcRel, forHavingClause, aliasToRel, corrScalarQueriesWithAgg);
+        Deque<ASTNode> stack = new ArrayDeque<ASTNode>();
+        stack.push(node);
+
+        boolean isSubQuery = false;
+
+        while (!stack.isEmpty()) {
+          ASTNode next = stack.pop();
+
+          switch(next.getType()) {
+            case HiveParser.TOK_SUBQUERY_EXPR:
+              /*
+               * Restriction 2.h Subquery isnot allowed in LHS
+               */
+              if(next.getChildren().size() == 3
+                      && next.getChild(2).getType() == HiveParser.TOK_SUBQUERY_EXPR){
+                throw new CalciteSemanticException(ErrorMsg.UNSUPPORTED_SUBQUERY_EXPRESSION.getMsg(
+                         next.getChild(2),
+                        "SubQuery in LHS expressions are not supported."));
+              }
+              String sbQueryAlias = "sq_" + qb.incrNumSubQueryPredicates();
+              QB qbSQ = new QB(qb.getId(), sbQueryAlias, true);
+              Phase1Ctx ctx1 = initPhase1Ctx();
+              doPhase1((ASTNode)next.getChild(1), qbSQ, ctx1, null);
+              getMetaData(qbSQ);
+              RelNode subQueryRelNode = genLogicalPlan(qbSQ, false,  relToHiveColNameCalcitePosMap.get(srcRel),
+                      relToHiveRR.get(srcRel));
+              subQueryToRelNode.put(next, subQueryRelNode);
+              //keep track of subqueries which are scalar, correlated and contains aggregate
+              // subquery expression. This will later be special cased in Subquery remove rule
+              if(corrScalarQueriesWithAgg.contains(next)) {
+                  corrScalarRexSQWithAgg.add(subQueryRelNode);
+              }
+              isSubQuery = true;
+              break;
+            default:
+              int childCount = next.getChildCount();
+              for(int i = childCount - 1; i >= 0; i--) {
+                stack.push((ASTNode) next.getChild(i));
+              }
+          }
+      }
+      return isSubQuery;
+    }
+    private RelNode genFilterRelNode(QB qb, ASTNode searchCond, RelNode srcRel,
+        Map<String, RelNode> aliasToRel, ImmutableMap<String, Integer> outerNameToPosMap,
+        RowResolver outerRR, boolean forHavingClause) throws SemanticException {
+
+      Map<ASTNode, RelNode> subQueryToRelNode = new HashMap<>();
+      boolean isSubQuery = genSubQueryRelNode(qb, searchCond, srcRel, forHavingClause,
+                                                subQueryToRelNode, aliasToRel);
+      if(isSubQuery) {
+        ExprNodeDesc subQueryExpr = genExprNodeDesc(searchCond, relToHiveRR.get(srcRel),
+                outerRR, subQueryToRelNode, forHavingClause);
+
+        ImmutableMap<String, Integer> hiveColNameCalcitePosMap = this.relToHiveColNameCalcitePosMap
+                .get(srcRel);
+        RexNode convertedFilterLHS = new RexNodeConverter(cluster, srcRel.getRowType(),
+                outerNameToPosMap, hiveColNameCalcitePosMap, relToHiveRR.get(srcRel),
+                outerRR, 0, true, subqueryId).convert(subQueryExpr);
+
+        RelNode filterRel = new HiveFilter(cluster, cluster.traitSetOf(HiveRelNode.CONVENTION),
+                srcRel, convertedFilterLHS);
+
+        this.relToHiveColNameCalcitePosMap.put(filterRel, this.relToHiveColNameCalcitePosMap
+                .get(srcRel));
+        relToHiveRR.put(filterRel, relToHiveRR.get(srcRel));
+        this.subqueryId++;
+
+        // semi-join opt doesn't work with subqueries
+        conf.setBoolVar(ConfVars.SEMIJOIN_CONVERSION, false);
+        return filterRel;
+      } else {
+        return genFilterRelNode(searchCond, srcRel, outerNameToPosMap, outerRR, forHavingClause);
+      }
     }
 
     private RelNode projectLeftOuterSide(RelNode srcRel, int numColumns) throws SemanticException {
@@ -2123,14 +2441,15 @@ public class CalcitePlanner extends SemanticAnalyzer {
     }
 
     private RelNode genFilterLogicalPlan(QB qb, RelNode srcRel, Map<String, RelNode> aliasToRel,
-        boolean forHavingClause) throws SemanticException {
+              ImmutableMap<String, Integer> outerNameToPosMap, RowResolver outerRR,
+                                         boolean forHavingClause) throws SemanticException {
       RelNode filterRel = null;
 
       Iterator<ASTNode> whereClauseIterator = getQBParseInfo(qb).getDestToWhereExpr().values()
           .iterator();
       if (whereClauseIterator.hasNext()) {
         filterRel = genFilterRelNode(qb, (ASTNode) whereClauseIterator.next().getChild(0), srcRel,
-            aliasToRel, forHavingClause);
+            aliasToRel, outerNameToPosMap, outerRR, forHavingClause);
       }
 
       return filterRel;
@@ -2912,10 +3231,9 @@ public class CalcitePlanner extends SemanticAnalyzer {
         WindowSpec wndSpec = ((WindowFunctionSpec) wExpSpec).getWindowSpec();
         List<RexNode> partitionKeys = getPartitionKeys(wndSpec.getPartition(), converter, inputRR);
         List<RexFieldCollation> orderKeys = getOrderKeys(wndSpec.getOrder(), converter, inputRR);
-        RexWindowBound upperBound = getBound(wndSpec.getWindowFrame().start, converter);
-        RexWindowBound lowerBound = getBound(wndSpec.getWindowFrame().end, converter);
-        boolean isRows = ((wndSpec.getWindowFrame().start instanceof RangeBoundarySpec) || (wndSpec.getWindowFrame().end instanceof RangeBoundarySpec)) ? true
-            : false;
+        RexWindowBound upperBound = getBound(wndSpec.getWindowFrame().getStart(), converter);
+        RexWindowBound lowerBound = getBound(wndSpec.getWindowFrame().getEnd(), converter);
+        boolean isRows = wndSpec.getWindowFrame().getWindowType() == WindowType.ROWS;
 
         w = cluster.getRexBuilder().makeOver(calciteAggFnRetType, calciteAggFn, calciteAggFnArgs,
             partitionKeys, ImmutableList.<RexFieldCollation> copyOf(orderKeys), lowerBound,
@@ -2954,7 +3272,16 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
       // 4. Walk through Window Expressions & Construct RexNodes for those,
       // Update out_rwsch
+      final QBParseInfo qbp = getQBParseInfo(qb);
+      final String selClauseName = qbp.getClauseNames().iterator().next();
+      final boolean cubeRollupGrpSetPresent = (!qbp.getDestRollups().isEmpty()
+              || !qbp.getDestGroupingSets().isEmpty() || !qbp.getDestCubes().isEmpty());
       for (WindowExpressionSpec wExprSpec : windowExpressions) {
+        if (cubeRollupGrpSetPresent) {
+          // Special handling of grouping function
+          wExprSpec.setExpression(rewriteGroupingFunctionAST(
+                  getGroupByForClause(qbp, selClauseName), wExprSpec.getExpression()));
+        }
         if (out_rwsch.getExpression(wExprSpec.getExpression()) == null) {
           Pair<RexNode, TypeInfo> wtp = genWindowingProj(qb, wExprSpec, srcRel);
           projsForWindowSelOp.add(wtp.getKey());
@@ -3056,6 +3383,9 @@ public class CalcitePlanner extends SemanticAnalyzer {
       QBParseInfo qbp = getQBParseInfo(qb);
       String selClauseName = qbp.getClauseNames().iterator().next();
       ASTNode selExprList = qbp.getSelForClause(selClauseName);
+
+      final boolean cubeRollupGrpSetPresent = (!qbp.getDestRollups().isEmpty()
+              || !qbp.getDestGroupingSets().isEmpty() || !qbp.getDestCubes().isEmpty());
 
       // 2.Row resolvers for input, output
       RowResolver out_rwsch = new RowResolver();
@@ -3221,13 +3551,17 @@ public class CalcitePlanner extends SemanticAnalyzer {
         } else if (ParseUtils.containsTokenOfType(expr, HiveParser.TOK_FUNCTIONDI)
             && !(srcRel instanceof HiveAggregate)) {
           // Likely a malformed query eg, select hash(distinct c1) from t1;
-          throw new CalciteSemanticException("Distinct without an aggreggation.",
+          throw new CalciteSemanticException("Distinct without an aggregation.",
               UnsupportedFeature.Distinct_without_an_aggreggation);
         } else {
           // Case when this is an expression
           TypeCheckCtx tcCtx = new TypeCheckCtx(inputRR);
           // We allow stateful functions in the SELECT list (but nowhere else)
           tcCtx.setAllowStatefulFunctions(true);
+          if (cubeRollupGrpSetPresent) {
+            // Special handling of grouping function
+            expr = rewriteGroupingFunctionAST(getGroupByForClause(qbp, selClauseName), expr);
+          }
           ExprNodeDesc exp = genExprNodeDesc(expr, inputRR, tcCtx);
           String recommended = recommendName(exp, colAlias);
           if (recommended != null && out_rwsch.get(null, recommended) == null) {
@@ -3393,7 +3727,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
       for (ColumnInfo ci : rs.getSignature()) {
         argTypeBldr.add(TypeConverter.convert(ci.getType(), dtFactory));
       }
- 
+
       SqlOperator calciteOp = SqlFunctionConverter.getCalciteOperator(genericUDTFName, genericUDTF,
              argTypeBldr.build(), retType);
 
@@ -3415,7 +3749,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
     private RelNode genLogicalPlan(QBExpr qbexpr) throws SemanticException {
       switch (qbexpr.getOpcode()) {
       case NULLOP:
-        return genLogicalPlan(qbexpr.getQB(), false);
+        return genLogicalPlan(qbexpr.getQB(), false, null, null);
       case UNION:
       case INTERSECT:
       case INTERSECTALL:
@@ -3430,7 +3764,9 @@ public class CalcitePlanner extends SemanticAnalyzer {
       }
     }
 
-    private RelNode genLogicalPlan(QB qb, boolean outerMostQB) throws SemanticException {
+    private RelNode genLogicalPlan(QB qb, boolean outerMostQB,
+                                   ImmutableMap<String, Integer> outerNameToPosMap,
+                                   RowResolver outerRR) throws SemanticException {
       RelNode srcRel = null;
       RelNode filterRel = null;
       RelNode gbRel = null;
@@ -3503,7 +3839,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
       }
 
       // 2. Build Rel for where Clause
-      filterRel = genFilterLogicalPlan(qb, srcRel, aliasToRel, false);
+      filterRel = genFilterLogicalPlan(qb, srcRel, aliasToRel, outerNameToPosMap, outerRR, false);
       srcRel = (filterRel == null) ? srcRel : filterRel;
       RelNode starSrcRel = srcRel;
 
@@ -3594,6 +3930,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
         throws SemanticException {
       RelNode gbFilter = null;
       QBParseInfo qbp = getQBParseInfo(qb);
+      String destClauseName = qbp.getClauseNames().iterator().next();
       ASTNode havingClause = qbp.getHavingForClause(qbp.getClauseNames().iterator().next());
 
       if (havingClause != null) {
@@ -3602,9 +3939,15 @@ public class CalcitePlanner extends SemanticAnalyzer {
           throw new CalciteSemanticException("Having clause without any group-by.",
               UnsupportedFeature.Having_clause_without_any_groupby);
         }
-        validateNoHavingReferenceToAlias(qb, (ASTNode) havingClause.getChild(0));
-        gbFilter = genFilterRelNode(qb, (ASTNode) havingClause.getChild(0), srcRel, aliasToRel,
-            true);
+        ASTNode targetNode = (ASTNode) havingClause.getChild(0);
+        validateNoHavingReferenceToAlias(qb, targetNode);
+        final boolean cubeRollupGrpSetPresent = (!qbp.getDestRollups().isEmpty()
+                || !qbp.getDestGroupingSets().isEmpty() || !qbp.getDestCubes().isEmpty());
+        if (cubeRollupGrpSetPresent) {
+          // Special handling of grouping function
+          targetNode = rewriteGroupingFunctionAST(getGroupByForClause(qbp, destClauseName), targetNode);
+        }
+        gbFilter = genFilterRelNode(qb, targetNode, srcRel, aliasToRel, null, null, true);
       }
 
       return gbFilter;
@@ -3693,14 +4036,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
     }
 
     private QBParseInfo getQBParseInfo(QB qb) throws CalciteSemanticException {
-      QBParseInfo qbp = qb.getParseInfo();
-      if (qbp.getClauseNames().size() > 1) {
-        String msg = String.format("Multi Insert is currently not supported in CBO,"
-            + " turn off cbo to use Multi Insert.");
-        LOG.debug(msg);
-        throw new CalciteSemanticException(msg, UnsupportedFeature.Multi_insert);
-      }
-      return qbp;
+      return qb.getParseInfo();
     }
 
     private List<String> getTabAliases(RowResolver inputRR) {

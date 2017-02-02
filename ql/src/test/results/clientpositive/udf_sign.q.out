@@ -62,6 +62,8 @@ sign(x) - returns the sign of x )
 Example:
    > SELECT sign(40) FROM src LIMIT 1;
   1
+Function class:org.apache.hadoop.hive.ql.udf.UDFSign
+Function type:BUILTIN
 PREHOOK: query: explain 
 select sign(0) FROM src tablesample (1 rows)
 PREHOOK: type: QUERY
@@ -126,3 +128,5 @@ sign(x) - returns the sign of x )
 Example:
    > SELECT sign(40) FROM src LIMIT 1;
   1
+Function class:org.apache.hadoop.hive.ql.udf.UDFSign
+Function type:BUILTIN

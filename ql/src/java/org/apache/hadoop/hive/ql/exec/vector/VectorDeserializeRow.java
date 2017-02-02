@@ -534,8 +534,9 @@ public final class VectorDeserializeRow<T extends DeserializeRead> {
           }
           break;
         case DECIMAL:
+          // The DecimalColumnVector set method will quickly copy the deserialized decimal writable fields.
           ((DecimalColumnVector) batch.cols[projectionColumnNum]).set(
-              batchIndex, deserializeRead.currentHiveDecimalWritable.getHiveDecimal());
+              batchIndex, deserializeRead.currentHiveDecimalWritable);
           break;
         case INTERVAL_YEAR_MONTH:
           ((LongColumnVector) batch.cols[projectionColumnNum]).vector[batchIndex] =

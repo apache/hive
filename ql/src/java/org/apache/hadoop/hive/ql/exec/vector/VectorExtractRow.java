@@ -306,12 +306,14 @@ public class VectorExtractRow {
                 maxLengths[logicalColumnIndex]);
 
             HiveCharWritable hiveCharWritable = (HiveCharWritable) primitiveWritable;
-            hiveCharWritable.set(new String(bytes, start, adjustedLength, Charsets.UTF_8), -1);
+            hiveCharWritable.set(new String(bytes, start, adjustedLength, Charsets.UTF_8),
+                maxLengths[logicalColumnIndex]);
             return primitiveWritable;
           }
         case DECIMAL:
+          // The HiveDecimalWritable set method will quickly copy the deserialized decimal writable fields.
           ((HiveDecimalWritable) primitiveWritable).set(
-              ((DecimalColumnVector) batch.cols[projectionColumnNum]).vector[adjustedIndex].getHiveDecimal());
+              ((DecimalColumnVector) batch.cols[projectionColumnNum]).vector[adjustedIndex]);
           return primitiveWritable;
         case INTERVAL_YEAR_MONTH:
           ((HiveIntervalYearMonthWritable) primitiveWritable).set(

@@ -16,4 +16,5 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@table_external
 PREHOOK: query: msck repair table table_external
 PREHOOK: type: MSCK
+PREHOOK: Output: default@table_external
 FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask

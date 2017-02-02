@@ -333,8 +333,9 @@ class SparkClientImpl implements SparkClient {
       // SparkSubmit will take care of that for us.
       String master = conf.get("spark.master");
       Preconditions.checkArgument(master != null, "spark.master is not defined.");
+      String deployMode = conf.get("spark.submit.deployMode");
 
-      List<String> argv = Lists.newArrayList();
+      List<String> argv = Lists.newLinkedList();
 
       if (sparkHome != null) {
         argv.add(new File(sparkHome, "bin/spark-submit").getAbsolutePath());
@@ -342,7 +343,9 @@ class SparkClientImpl implements SparkClient {
         LOG.info("No spark.home provided, calling SparkSubmit directly.");
         argv.add(new File(System.getProperty("java.home"), "bin/java").getAbsolutePath());
 
-        if (master.startsWith("local") || master.startsWith("mesos") || master.endsWith("-client") || master.startsWith("spark")) {
+        if (master.startsWith("local") || master.startsWith("mesos") ||
+            SparkClientUtilities.isYarnClientMode(master, deployMode) ||
+            master.startsWith("spark")) {
           String mem = conf.get("spark.driver.memory");
           if (mem != null) {
             argv.add("-Xms" + mem);
@@ -373,17 +376,7 @@ class SparkClientImpl implements SparkClient {
         argv.add("org.apache.spark.deploy.SparkSubmit");
       }
 
-      if ("kerberos".equals(hiveConf.get(HADOOP_SECURITY_AUTHENTICATION))) {
-          String principal = SecurityUtil.getServerPrincipal(hiveConf.getVar(ConfVars.HIVE_SERVER2_KERBEROS_PRINCIPAL),
-              "0.0.0.0");
-          String keyTabFile = hiveConf.getVar(ConfVars.HIVE_SERVER2_KERBEROS_KEYTAB);
-          argv.add("--principal");
-          argv.add(principal);
-          argv.add("--keytab");
-          argv.add(keyTabFile);
-      }
-
-      if (master.equals("yarn-cluster")) {
+      if (SparkClientUtilities.isYarnClusterMode(master, deployMode)) {
         String executorCores = conf.get("spark.executor.cores");
         if (executorCores != null) {
           argv.add("--executor-cores");
@@ -400,6 +393,34 @@ class SparkClientImpl implements SparkClient {
         if (numOfExecutors != null) {
           argv.add("--num-executors");
           argv.add(numOfExecutors);
+        }
+      }
+      // The options --principal/--keypad do not work with --proxy-user in spark-submit.sh
+      // (see HIVE-15485, SPARK-5493, SPARK-19143), so Hive could only support doAs or
+      // delegation token renewal, but not both. Since doAs is a more common case, if both
+      // are needed, we choose to favor doAs. So when doAs is enabled, we use kinit command,
+      // otherwise, we pass the principal/keypad to spark to support the token renewal for
+      // long-running application.
+      if ("kerberos".equals(hiveConf.get(HADOOP_SECURITY_AUTHENTICATION))) {
+        String principal = SecurityUtil.getServerPrincipal(hiveConf.getVar(ConfVars.HIVE_SERVER2_KERBEROS_PRINCIPAL),
+            "0.0.0.0");
+        String keyTabFile = hiveConf.getVar(ConfVars.HIVE_SERVER2_KERBEROS_KEYTAB);
+        if (hiveConf.getBoolVar(HiveConf.ConfVars.HIVE_SERVER2_ENABLE_DOAS)) {
+          List<String> kinitArgv = Lists.newLinkedList();
+          kinitArgv.add("kinit");
+          kinitArgv.add(principal);
+          kinitArgv.add("-k");
+          kinitArgv.add("-t");
+          kinitArgv.add(keyTabFile + ";");
+          kinitArgv.addAll(argv);
+          argv = kinitArgv;
+        } else {
+          // if doAs is not enabled, we pass the principal/keypad to spark-submit in order to
+          // support the possible delegation token renewal in Spark
+          argv.add("--principal");
+          argv.add(principal);
+          argv.add("--keytab");
+          argv.add(keyTabFile);
         }
       }
       if (hiveConf.getBoolVar(HiveConf.ConfVars.HIVE_SERVER2_ENABLE_DOAS)) {
@@ -532,6 +553,7 @@ class SparkClientImpl implements SparkClient {
         @Override
         public void operationComplete(io.netty.util.concurrent.Future<Void> f) {
           if (f.isSuccess()) {
+            // If the spark job finishes before this listener is called, the QUEUED status will not be set
             handle.changeState(JobHandle.State.QUEUED);
           } else if (!promise.isDone()) {
             promise.setFailure(f.cause());

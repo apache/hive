@@ -42,9 +42,7 @@ POSTHOOK: Lineage: vector_interval_2.str2 EXPRESSION []
 POSTHOOK: Lineage: vector_interval_2.str3 EXPRESSION []
 POSTHOOK: Lineage: vector_interval_2.str4 EXPRESSION []
 POSTHOOK: Lineage: vector_interval_2.ts EXPRESSION []
-PREHOOK: query: -- interval comparisons in select clause
-
-explain
+PREHOOK: query: explain
 select
   str1,
   -- Should all be true
@@ -76,9 +74,7 @@ select
   interval '1-2' year to month != interval_year_month(str2)
 from vector_interval_2 order by str1
 PREHOOK: type: QUERY
-POSTHOOK: query: -- interval comparisons in select clause
-
-explain
+POSTHOOK: query: explain
 select
   str1,
   -- Should all be true
@@ -722,8 +718,7 @@ POSTHOOK: Input: default@vector_interval_2
 #### A masked pattern was here ####
 NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
 1 2:3:4	false	false	false	false	false	false	false	false	false	false	false	false	false	false	false	false	false	false
-PREHOOK: query: -- interval expressions in predicates
-explain
+PREHOOK: query: explain
 select ts from vector_interval_2
 where
   interval_year_month(str1) = interval_year_month(str1)
@@ -748,8 +743,7 @@ where
   and interval '1-3' year to month > interval_year_month(str1)
 order by ts
 PREHOOK: type: QUERY
-POSTHOOK: query: -- interval expressions in predicates
-explain
+POSTHOOK: query: explain
 select ts from vector_interval_2
 where
   interval_year_month(str1) = interval_year_month(str1)
@@ -1320,8 +1314,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@vector_interval_2
 #### A masked pattern was here ####
 2001-01-01 01:02:03
-PREHOOK: query: -- day to second expressions in predicate
-explain
+PREHOOK: query: explain
 select ts from vector_interval_2
 where
   timestamp '2001-01-01 01:02:03' = dt + interval '0 1:2:3' day to second
@@ -1346,8 +1339,7 @@ where
   and ts > dt - interval '0 1:2:4' day to second
 order by ts
 PREHOOK: type: QUERY
-POSTHOOK: query: -- day to second expressions in predicate
-explain
+POSTHOOK: query: explain
 select ts from vector_interval_2
 where
   timestamp '2001-01-01 01:02:03' = dt + interval '0 1:2:3' day to second

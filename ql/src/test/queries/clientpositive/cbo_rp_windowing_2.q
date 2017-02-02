@@ -9,7 +9,7 @@ set mapred.reduce.tasks=4;
 select p_mfgr, p_name, p_size,
 rank() over(distribute by p_mfgr sort by p_name) as r,
 dense_rank() over(distribute by p_mfgr sort by p_name) as dr,
-sum(p_retailprice) over (distribute by p_mfgr sort by p_name rows between unbounded preceding and current row) as s1
+round(sum(p_retailprice) over (distribute by p_mfgr sort by p_name rows between unbounded preceding and current row),2) as s1
 from part
 ;
 
@@ -44,7 +44,7 @@ select p_mfgr, p_name,
 rank() over(distribute by p_mfgr sort by p_name) as r, 
 dense_rank() over(distribute by p_mfgr sort by p_name) as dr, 
 count(p_size) over(distribute by p_mfgr sort by p_name) as cd, 
-p_retailprice, sum(p_retailprice) over (distribute by p_mfgr sort by p_name rows between unbounded preceding and current row) as s1, 
+p_retailprice, round(sum(p_retailprice) over (distribute by p_mfgr sort by p_name rows between unbounded preceding and current row),2) as s1, 
 p_size, p_size - lag(p_size,1,p_size) over(distribute by p_mfgr sort by p_name) as deltaSz 
 from part 
 ;
@@ -55,7 +55,7 @@ from (select p_mfgr, p_name,
 rank() over(distribute by p_mfgr sort by p_name) as r, 
 dense_rank() over(distribute by p_mfgr sort by p_name) as dr, 
 count(p_size) over(distribute by p_mfgr sort by p_name) as cd, 
-p_retailprice, sum(p_retailprice) over (distribute by p_mfgr sort by p_name rows between unbounded preceding and current row) as s1, 
+p_retailprice, round(sum(p_retailprice) over (distribute by p_mfgr sort by p_name rows between unbounded preceding and current row),2) as s1, 
 p_size, p_size - lag(p_size,1,p_size) over(distribute by p_mfgr sort by p_name) as deltaSz 
 from part 
 ) sub1;
@@ -64,7 +64,7 @@ from part
 select abc.p_mfgr, abc.p_name, 
 rank() over(distribute by abc.p_mfgr sort by abc.p_name) as r, 
 dense_rank() over(distribute by abc.p_mfgr sort by abc.p_name) as dr, 
-abc.p_retailprice, sum(abc.p_retailprice) over (distribute by abc.p_mfgr sort by abc.p_name rows between unbounded preceding and current row) as s1, 
+abc.p_retailprice, round(sum(abc.p_retailprice) over (distribute by abc.p_mfgr sort by abc.p_name rows between unbounded preceding and current row),2) as s1, 
 abc.p_size, abc.p_size - lag(abc.p_size,1,abc.p_size) over(distribute by abc.p_mfgr sort by abc.p_name) as deltaSz 
 from noop(on part 
 partition by p_mfgr 
@@ -82,7 +82,7 @@ from part
 select p_mfgr, p_name, p_size, 
 rank() over(distribute by p_mfgr sort by p_name) as r, 
 dense_rank() over(distribute by p_mfgr sort by p_name) as dr, 
-sum(p_retailprice) over (distribute by p_mfgr sort by p_name rows between unbounded preceding and current row)  as s1
+round(sum(p_retailprice) over (distribute by p_mfgr sort by p_name rows between unbounded preceding and current row),2) as s1
 from part  
 ; 
 
@@ -90,7 +90,7 @@ from part
 select p_mfgr, p_name, p_size, 
 rank() over(distribute by p_mfgr sort by p_name) as r, 
 dense_rank() over(distribute by p_mfgr sort by p_name) as dr, 
-sum(p_retailprice) over (distribute by p_mfgr sort by p_name rows between unbounded preceding and current row) as s1 
+round(sum(p_retailprice) over (distribute by p_mfgr sort by p_name rows between unbounded preceding and current row),2) as s1 
 from part 
 ;
 
@@ -162,19 +162,19 @@ window w1 as (distribute by p_mfgr sort by p_mfgr, p_name rows between 2 precedi
 
 -- 18. testUDAFs
 select  p_mfgr,p_name, p_size, 
-sum(p_retailprice) over w1 as s, 
+round(sum(p_retailprice) over w1,2) as s,
 min(p_retailprice) over w1 as mi,
 max(p_retailprice) over w1 as ma,
-avg(p_retailprice) over w1 as ag
+round(avg(p_retailprice) over w1,2) as ag
 from part
 window w1 as (distribute by p_mfgr sort by p_mfgr, p_name rows between 2 preceding and 2 following);
 
 -- 19. testUDAFsWithGBY
 select  p_mfgr,p_name, p_size, p_retailprice, 
-sum(p_retailprice) over w1 as s, 
+round(sum(p_retailprice) over w1,2) as s,
 min(p_retailprice) as mi ,
 max(p_retailprice) as ma ,
-avg(p_retailprice) over w1 as ag
+round(avg(p_retailprice) over w1,2) as ag
 from part
 group by p_mfgr,p_name, p_size, p_retailprice
 window w1 as (distribute by p_mfgr sort by p_mfgr, p_name rows between 2 preceding and 2 following);
@@ -222,7 +222,7 @@ window w1 as (distribute by p_mfgr sort by p_brand rows between 2 preceding and 
 -- 23. testCreateViewWithWindowingQuery
 create view IF NOT EXISTS mfgr_brand_price_view as 
 select p_mfgr, p_brand, 
-sum(p_retailprice) over w1  as s
+round(sum(p_retailprice) over w1,2) as s
 from part 
 window w1 as (distribute by p_mfgr sort by p_name rows between 2 preceding and current row);
         
@@ -267,7 +267,7 @@ INSERT OVERWRITE TABLE part_1
 select p_mfgr, p_name, p_size, 
 rank() over(distribute by p_mfgr sort by p_name ) as r, 
 dense_rank() over(distribute by p_mfgr sort by p_name ) as dr, 
-sum(p_retailprice) over (distribute by p_mfgr sort by p_name rows between unbounded preceding and current row)  as s
+round(sum(p_retailprice) over (distribute by p_mfgr sort by p_name rows between unbounded preceding and current row),2) as s
 INSERT OVERWRITE TABLE part_2 
 select  p_mfgr,p_name, p_size,  
 rank() over(distribute by p_mfgr sort by p_name) as r, 
@@ -386,7 +386,7 @@ from part;
 
 -- 38. testPartitioningVariousForms2
 select p_mfgr, p_name, p_size,
-sum(p_retailprice) over (partition by p_mfgr, p_name order by p_mfgr, p_name rows between unbounded preceding and current row) as s1,
+round(sum(p_retailprice) over (partition by p_mfgr, p_name order by p_mfgr, p_name rows between unbounded preceding and current row),2) as s1,
 min(p_retailprice) over (distribute by p_mfgr, p_name sort by p_mfgr, p_name rows between unbounded preceding and current row) as s2,
 max(p_retailprice) over (partition by p_mfgr, p_name order by p_name) as s3
 from part;
@@ -398,22 +398,22 @@ from part;
 
 -- 40. testNoBetweenForRows
 select p_mfgr, p_name, p_size,
-    sum(p_retailprice) over (distribute by p_mfgr sort by p_name rows unbounded preceding) as s1
+    round(sum(p_retailprice) over (distribute by p_mfgr sort by p_name rows unbounded preceding),2) as s1
      from part ;
 
 -- 41. testNoBetweenForRange
 select p_mfgr, p_name, p_size,
-    sum(p_retailprice) over (distribute by p_mfgr sort by p_size range unbounded preceding) as s1
+    round(sum(p_retailprice) over (distribute by p_mfgr sort by p_size range unbounded preceding),2) as s1
      from part ;
 
 -- 42. testUnboundedFollowingForRows
 select p_mfgr, p_name, p_size,
-    sum(p_retailprice) over (distribute by p_mfgr sort by p_name rows between current row and unbounded following) as s1
+    round(sum(p_retailprice) over (distribute by p_mfgr sort by p_name rows between current row and unbounded following),2) as s1
     from part ;
 
 -- 43. testUnboundedFollowingForRange
 select p_mfgr, p_name, p_size,
-    sum(p_retailprice) over (distribute by p_mfgr sort by p_size range between current row and unbounded following) as s1
+    round(sum(p_retailprice) over (distribute by p_mfgr sort by p_size range between current row and unbounded following),2) as s1
     from part ;
         
 -- 44. testOverNoPartitionSingleAggregate
@@ -430,8 +430,8 @@ where p_mfgr = 'Manufacturer#6'
 ;
 
 -- 46. window sz is same as partition sz
-select p_retailprice, avg(p_retailprice) over (partition by p_mfgr order by p_name rows between current row and 6 following), 
-sum(p_retailprice) over (partition by p_mfgr order by p_name rows between current row and 6 following) 
+select p_retailprice, round(avg(p_retailprice) over (partition by p_mfgr order by p_name rows between current row and 6 following),2), 
+round(sum(p_retailprice) over (partition by p_mfgr order by p_name rows between current row and 6 following),2) 
 from part 
 where p_mfgr='Manufacturer#1';
 

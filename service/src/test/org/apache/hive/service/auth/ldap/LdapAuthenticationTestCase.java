@@ -113,8 +113,14 @@ public final class LdapAuthenticationTestCase {
       return setVarOnce(HiveConf.ConfVars.HIVE_SERVER2_PLAIN_LDAP_CUSTOMLDAPQUERY, customQuery);
     }
 
-    public Builder groupMembership(String groupMembership) {
-      return setVarOnce(HiveConf.ConfVars.HIVE_SERVER2_PLAIN_LDAP_GROUPMEMBERSHIP_KEY, groupMembership);
+    public Builder groupMembershipKey(String groupMembershipKey) {
+      return setVarOnce(HiveConf.ConfVars.HIVE_SERVER2_PLAIN_LDAP_GROUPMEMBERSHIP_KEY,
+          groupMembershipKey);
+    }
+
+    public Builder userMembershipKey(String userMembershipKey) {
+      return setVarOnce(HiveConf.ConfVars.HIVE_SERVER2_PLAIN_LDAP_USERMEMBERSHIP_KEY,
+          userMembershipKey);
     }
 
     private Builder setVarOnce(HiveConf.ConfVars confVar, String value) {

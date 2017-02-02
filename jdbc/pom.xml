@@ -241,12 +241,10 @@
                   <exclude>joda-time:*</exclude>
                   <exclude>net.java.dev.jets3t:*</exclude>
                   <exclude>org.apache.commons:commons-math3</exclude>
-                  <exclude>org.apache.curator:*</exclude>
                   <exclude>org.apache.derby:*</exclude>
                   <exclude>org.apache.directory.api:*</exclude>
                   <exclude>org.apache.directory.server:*</exclude>
                   <exclude>org.apache.geronimo.specs:*</exclude>
-                  <exclude>org.apache.zookeeper:*</exclude>
                   <exclude>org.codehaus.jackson:*</exclude>
                   <exclude>org.codehaus.jettison:*</exclude>
                   <exclude>org.datanucleus:*</exclude>
@@ -278,10 +276,6 @@
                 <relocation>
                   <pattern>org.apache.log4j</pattern>
                   <shadedPattern>org.apache.hive.org.apache.log4j</shadedPattern>
-                </relocation>
-                <relocation>
-                  <pattern>org.apache.logging</pattern>
-                  <shadedPattern>org.apache.hive.org.apache.logging</shadedPattern>
                 </relocation>
                 <relocation>
                   <pattern>org.slf4j</pattern>

@@ -1,14 +1,8 @@
-PREHOOK: query: -- Tests in this file are used to make sure Correlation Optimizer
--- can correctly handle tables with partitions
-
-CREATE TABLE part_table(key string, value string) PARTITIONED BY (partitionId int)
+PREHOOK: query: CREATE TABLE part_table(key string, value string) PARTITIONED BY (partitionId int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@part_table
-POSTHOOK: query: -- Tests in this file are used to make sure Correlation Optimizer
--- can correctly handle tables with partitions
-
-CREATE TABLE part_table(key string, value string) PARTITIONED BY (partitionId int)
+POSTHOOK: query: CREATE TABLE part_table(key string, value string) PARTITIONED BY (partitionId int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@part_table
@@ -36,22 +30,14 @@ POSTHOOK: Input: default@src1
 POSTHOOK: Output: default@part_table@partitionid=2
 POSTHOOK: Lineage: part_table PARTITION(partitionid=2).key SIMPLE [(src1)src1.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: part_table PARTITION(partitionid=2).value SIMPLE [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: -- In this case, we should not do shared scan on part_table
--- because left and right tables of JOIN use different partitions
--- of part_table. With Correlation Optimizer we will generate
--- 1 MR job.
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT x.key AS key, count(1) AS cnt
 FROM part_table x JOIN part_table y ON (x.key = y.key)
 WHERE x.partitionId = 1 AND
       y.partitionId = 2
 GROUP BY x.key
 PREHOOK: type: QUERY
-POSTHOOK: query: -- In this case, we should not do shared scan on part_table
--- because left and right tables of JOIN use different partitions
--- of part_table. With Correlation Optimizer we will generate
--- 1 MR job.
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT x.key AS key, count(1) AS cnt
 FROM part_table x JOIN part_table y ON (x.key = y.key)
 WHERE x.partitionId = 1 AND
@@ -281,22 +267,14 @@ POSTHOOK: Input: default@part_table@partitionid=2
 128	3
 146	2
 150	1
-PREHOOK: query: -- In this case, we should do shared scan on part_table
--- because left and right tables of JOIN use the same partition
--- of part_table. With Correlation Optimizer we will generate
--- 1 MR job.
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT x.key AS key, count(1) AS cnt
 FROM part_table x JOIN part_table y ON (x.key = y.key)
 WHERE x.partitionId = 2 AND
       y.partitionId = 2
 GROUP BY x.key
 PREHOOK: type: QUERY
-POSTHOOK: query: -- In this case, we should do shared scan on part_table
--- because left and right tables of JOIN use the same partition
--- of part_table. With Correlation Optimizer we will generate
--- 1 MR job.
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT x.key AS key, count(1) AS cnt
 FROM part_table x JOIN part_table y ON (x.key = y.key)
 WHERE x.partitionId = 2 AND

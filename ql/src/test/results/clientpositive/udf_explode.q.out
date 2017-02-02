@@ -8,6 +8,8 @@ PREHOOK: type: DESCFUNCTION
 POSTHOOK: query: DESCRIBE FUNCTION EXTENDED explode
 POSTHOOK: type: DESCFUNCTION
 explode(a) - separates the elements of array a into multiple rows, or the elements of a map into multiple rows and columns 
+Function class:org.apache.hadoop.hive.ql.udf.generic.GenericUDTFExplode
+Function type:BUILTIN
 PREHOOK: query: EXPLAIN EXTENDED SELECT explode(array(1,2,3)) AS myCol FROM src tablesample (1 rows)
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN EXTENDED SELECT explode(array(1,2,3)) AS myCol FROM src tablesample (1 rows)
@@ -84,6 +86,7 @@ STAGE PLANS:
             properties:
               COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
               bucket_count -1
+              column.name.delimiter ,
               columns key,value
               columns.comments 'default','default'
               columns.types string:string
@@ -104,6 +107,7 @@ STAGE PLANS:
               properties:
                 COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
                 bucket_count -1
+                column.name.delimiter ,
                 columns key,value
                 columns.comments 'default','default'
                 columns.types string:string
@@ -268,6 +272,7 @@ STAGE PLANS:
             properties:
               COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
               bucket_count -1
+              column.name.delimiter ,
               columns key,value
               columns.comments 'default','default'
               columns.types string:string
@@ -288,6 +293,7 @@ STAGE PLANS:
               properties:
                 COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
                 bucket_count -1
+                column.name.delimiter ,
                 columns key,value
                 columns.comments 'default','default'
                 columns.types string:string

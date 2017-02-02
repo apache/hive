@@ -54,6 +54,8 @@ Example:
   > SELECT radians(90) FROM src LIMIT 1;
   1.5707963267949mo
 
+Function class:org.apache.hadoop.hive.ql.udf.UDFRadians
+Function type:BUILTIN
 PREHOOK: query: explain 
 select radians(57.2958) FROM src tablesample (1 rows)
 PREHOOK: type: QUERY
@@ -110,3 +112,5 @@ Example:
   > SELECT radians(90) FROM src LIMIT 1;
   1.5707963267949mo
 
+Function class:org.apache.hadoop.hive.ql.udf.UDFRadians
+Function type:BUILTIN

@@ -45,9 +45,12 @@ public class DruidTimeseriesQueryRecordReader
   }
 
   @Override
-  protected List<Result<TimeseriesResultValue>> createResultsList(InputStream content) throws IOException {
+  protected List<Result<TimeseriesResultValue>> createResultsList(InputStream content)
+          throws IOException {
     return DruidStorageHandlerUtils.SMILE_MAPPER.readValue(content,
-            new TypeReference<List<Result<TimeseriesResultValue>>>(){});
+            new TypeReference<List<Result<TimeseriesResultValue>>>() {
+            }
+    );
   }
 
   @Override

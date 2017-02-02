@@ -14,14 +14,12 @@ POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/grouping_sets.txt' INT
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@t1
-PREHOOK: query: -- This filter is not pushed down
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT a, b FROM
 (SELECT a, b from T1 group by a, b grouping sets ( (a,b),a )) res
 WHERE res.a=5
 PREHOOK: type: QUERY
-POSTHOOK: query: -- This filter is not pushed down
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT a, b FROM
 (SELECT a, b from T1 group by a, b grouping sets ( (a,b),a )) res
 WHERE res.a=5
@@ -41,18 +39,18 @@ STAGE PLANS:
               predicate: (UDFToDouble(a) = 5.0) (type: boolean)
               Statistics: Num rows: 1 Data size: 36 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
-                keys: a (type: string), b (type: string), '0' (type: string)
+                keys: a (type: string), b (type: string), 0 (type: int)
                 mode: hash
                 outputColumnNames: _col0, _col1, _col2
                 Statistics: Num rows: 2 Data size: 72 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
-                  key expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string)
+                  key expressions: _col0 (type: string), _col1 (type: string), _col2 (type: int)
                   sort order: +++
-                  Map-reduce partition columns: _col0 (type: string), _col1 (type: string), _col2 (type: string)
+                  Map-reduce partition columns: _col0 (type: string), _col1 (type: string), _col2 (type: int)
                   Statistics: Num rows: 2 Data size: 72 Basic stats: COMPLETE Column stats: NONE
       Reduce Operator Tree:
         Group By Operator
-          keys: KEY._col0 (type: string), KEY._col1 (type: string), KEY._col2 (type: string)
+          keys: KEY._col0 (type: string), KEY._col1 (type: string), KEY._col2 (type: int)
           mode: mergepartial
           outputColumnNames: _col0, _col1
           Statistics: Num rows: 1 Data size: 36 Basic stats: COMPLETE Column stats: NONE
@@ -85,14 +83,12 @@ POSTHOOK: Input: default@t1
 #### A masked pattern was here ####
 5	NULL
 5	2
-PREHOOK: query: -- This filter is pushed down through aggregate with grouping sets by Calcite
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT a, b FROM
 (SELECT a, b from T1 group by a, b grouping sets ( (a,b),a )) res
 WHERE res.a=5
 PREHOOK: type: QUERY
-POSTHOOK: query: -- This filter is pushed down through aggregate with grouping sets by Calcite
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT a, b FROM
 (SELECT a, b from T1 group by a, b grouping sets ( (a,b),a )) res
 WHERE res.a=5
@@ -112,18 +108,18 @@ STAGE PLANS:
               predicate: (UDFToDouble(a) = 5.0) (type: boolean)
               Statistics: Num rows: 1 Data size: 36 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
-                keys: a (type: string), b (type: string), '0' (type: string)
+                keys: a (type: string), b (type: string), 0 (type: int)
                 mode: hash
                 outputColumnNames: _col0, _col1, _col2
                 Statistics: Num rows: 2 Data size: 72 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
-                  key expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string)
+                  key expressions: _col0 (type: string), _col1 (type: string), _col2 (type: int)
                   sort order: +++
-                  Map-reduce partition columns: _col0 (type: string), _col1 (type: string), _col2 (type: string)
+                  Map-reduce partition columns: _col0 (type: string), _col1 (type: string), _col2 (type: int)
                   Statistics: Num rows: 2 Data size: 72 Basic stats: COMPLETE Column stats: NONE
       Reduce Operator Tree:
         Group By Operator
-          keys: KEY._col0 (type: string), KEY._col1 (type: string), KEY._col2 (type: string)
+          keys: KEY._col0 (type: string), KEY._col1 (type: string), KEY._col2 (type: int)
           mode: mergepartial
           outputColumnNames: _col0, _col1
           Statistics: Num rows: 1 Data size: 36 Basic stats: COMPLETE Column stats: NONE

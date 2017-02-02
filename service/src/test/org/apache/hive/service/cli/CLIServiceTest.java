@@ -665,8 +665,8 @@ public abstract class CLIServiceTest {
       ByteArrayInputStream in = new ByteArrayInputStream(jsonTaskStatus.getBytes("UTF-8"));
       List<QueryDisplay.TaskDisplay> taskStatuses =
         mapper.readValue(in, new TypeReference<List<QueryDisplay.TaskDisplay>>(){});
-      checkTaskStatuses(taskStatuses);
       System.out.println("task statuses: " + jsonTaskStatus); // TaskDisplay doesn't have a toString, using json
+      checkTaskStatuses(taskStatuses);
       if (OperationState.CANCELED == state || state == OperationState.CLOSED
         || state == OperationState.FINISHED
         || state == OperationState.ERROR) {
@@ -693,9 +693,6 @@ public abstract class CLIServiceTest {
           assertNull(taskDisplay.getReturnValue());
           break;
         case RUNNING:
-          if (taskDisplay.getTaskType() == StageType.MAPRED || taskDisplay.getTaskType() == StageType.MAPREDLOCAL) {
-            assertNotNull(taskDisplay.getExternalHandle());
-          }
           assertNotNull(taskDisplay.getBeginTime());
           assertNull(taskDisplay.getEndTime());
           assertNotNull(taskDisplay.getElapsedTime());

@@ -1,5 +1,6 @@
 set hive.cbo.returnpath.hiveop=true;
 set hive.stats.fetch.column.stats=true;
+set hive.enable.semijoin.conversion=true;
 ;
 
 set hive.exec.reducers.max = 1;

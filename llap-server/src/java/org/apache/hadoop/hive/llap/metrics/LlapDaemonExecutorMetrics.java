@@ -50,6 +50,7 @@ import java.lang.management.ThreadMXBean;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import com.google.common.collect.Maps;
 import org.apache.hadoop.hive.llap.daemon.impl.ContainerRunnerImpl;
 import org.apache.hadoop.metrics2.MetricsCollector;
 import org.apache.hadoop.metrics2.MetricsInfo;
@@ -81,6 +82,8 @@ public class LlapDaemonExecutorMetrics implements MetricsSource {
   private final Map<Integer, MetricsInfo> userMetricsInfoMap;
   private long maxTimeLost = Long.MIN_VALUE;
   private long maxTimeToKill = Long.MIN_VALUE;
+
+  private final Map<String, Integer> executorNames;
 
   final MutableGaugeLong[] executorThreadCpuTime;
   final MutableGaugeLong[] executorThreadUserTime;
@@ -152,6 +155,7 @@ public class LlapDaemonExecutorMetrics implements MetricsSource {
           "ops", "latency", interval);
     }
 
+    this.executorNames = Maps.newHashMap();
     for (int i = 0; i < numExecutors; i++) {
       MetricsInfo mic = new LlapDaemonCustomMetricsInfo(ExecutorThreadCPUTime.name() + "_" + i,
           ExecutorThreadCPUTime.description());
@@ -161,6 +165,7 @@ public class LlapDaemonExecutorMetrics implements MetricsSource {
       this.userMetricsInfoMap.put(i, miu);
       this.executorThreadCpuTime[i] = registry.newGauge(mic, 0L);
       this.executorThreadUserTime[i] = registry.newGauge(miu, 0L);
+      this.executorNames.put(ContainerRunnerImpl.THREAD_NAME_FORMAT_PREFIX + i, i);
     }
   }
 
@@ -304,13 +309,15 @@ public class LlapDaemonExecutorMetrics implements MetricsSource {
       final ThreadInfo[] infos = threadMXBean.getThreadInfo(ids);
       for (int i = 0; i < ids.length; i++) {
         ThreadInfo threadInfo = infos[i];
+        if (threadInfo == null) {
+          continue;
+        }
         String threadName = threadInfo.getThreadName();
         long threadId = ids[i];
-        for (int j = 0; j < numExecutors; j++) {
-          if (threadName.equals(ContainerRunnerImpl.THREAD_NAME_FORMAT_PREFIX + j)) {
-            executorThreadCpuTime[j].set(threadMXBean.getThreadCpuTime(threadId));
-            executorThreadUserTime[j].set(threadMXBean.getThreadUserTime(threadId));
-          }
+        Integer id = executorNames.get(threadName);
+        if (id != null) {
+          executorThreadCpuTime[id].set(threadMXBean.getThreadCpuTime(threadId));
+          executorThreadUserTime[id].set(threadMXBean.getThreadUserTime(threadId));
         }
       }
 

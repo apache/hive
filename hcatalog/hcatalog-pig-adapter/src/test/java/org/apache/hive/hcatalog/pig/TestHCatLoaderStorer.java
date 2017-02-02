@@ -58,15 +58,15 @@ public class TestHCatLoaderStorer extends HCatBaseTest {
     Assert.assertTrue(dataDir.mkdir());
     final String INPUT_FILE_NAME = dataDir + "/inputtrw.data";
 
-    TestHCatLoader.dropTable(tblName, driver);
+    AbstractHCatLoaderTest.dropTable(tblName, driver);
     HcatTestUtils.createTestDataFile(INPUT_FILE_NAME, new String[]{"40\t1"});
 
-    TestHCatLoader.executeStatementOnDriver("create external table " + tblName +
+    AbstractHCatLoaderTest.executeStatementOnDriver("create external table " + tblName +
       " (my_small_int smallint, my_tiny_int tinyint)" +
       " row format delimited fields terminated by '\t' stored as textfile location '" +
       dataDir.toURI().getPath() + "'", driver);
-    TestHCatLoader.dropTable(tblName2, driver);
-    TestHCatLoader.createTable(tblName2, "my_small_int smallint, my_tiny_int tinyint", null, driver,
+    AbstractHCatLoaderTest.dropTable(tblName2, driver);
+    AbstractHCatLoaderTest.createTable(tblName2, "my_small_int smallint, my_tiny_int tinyint", null, driver,
       "textfile");
 
     LOG.debug("File=" + INPUT_FILE_NAME);
@@ -84,7 +84,7 @@ public class TestHCatLoaderStorer extends HCatBaseTest {
       logAndRegister(server, "store b into '" + tblName2 +
         "' using org.apache.hive.hcatalog.pig.HCatStorer();", queryNumber);
       //perform simple checksum here; make sure nothing got turned to NULL
-      TestHCatLoader.executeStatementOnDriver("select my_small_int from " + tblName2, driver);
+      AbstractHCatLoaderTest.executeStatementOnDriver("select my_small_int from " + tblName2, driver);
       ArrayList l = new ArrayList();
       driver.getResults(l);
       for(Object t : l) {

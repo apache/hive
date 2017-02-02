@@ -1,16 +1,8 @@
-PREHOOK: query: -- SORT_QUERY_RESULTS
-
--- union case: all subqueries are a map-reduce jobs, 3 way union, different inputs for all sub-queries, followed by filesink
-
-create table tmptable(key string, value int)
+PREHOOK: query: create table tmptable(key string, value int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@tmptable
-POSTHOOK: query: -- SORT_QUERY_RESULTS
-
--- union case: all subqueries are a map-reduce jobs, 3 way union, different inputs for all sub-queries, followed by filesink
-
-create table tmptable(key string, value int)
+POSTHOOK: query: create table tmptable(key string, value int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tmptable

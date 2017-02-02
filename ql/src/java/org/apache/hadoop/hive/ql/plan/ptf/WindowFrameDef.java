@@ -18,13 +18,18 @@
 
 package org.apache.hadoop.hive.ql.plan.ptf;
 
+import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.parse.WindowingSpec.WindowType;
 
 public class WindowFrameDef {
+  private WindowType windowType;
   private BoundaryDef start;
   private BoundaryDef end;
   private final int windowSize;
+  private OrderDef orderDef;    // Order expressions which will only get set and used for RANGE windowing type
 
-  public WindowFrameDef(BoundaryDef start, BoundaryDef end) {
+  public WindowFrameDef(WindowType windowType, BoundaryDef start, BoundaryDef end) {
+    this.windowType = windowType;
     this.start = start;
     this.end = end;
 
@@ -42,6 +47,21 @@ public class WindowFrameDef {
 
   public BoundaryDef getEnd() {
     return end;
+  }
+
+  public WindowType getWindowType() {
+    return windowType;
+  }
+
+  public void setOrderDef(OrderDef orderDef) {
+    this.orderDef = orderDef;
+  }
+
+  public OrderDef getOrderDef() throws HiveException {
+    if (this.windowType != WindowType.RANGE) {
+      throw new HiveException("Order expressions should only be used for RANGE windowing type");
+    }
+    return orderDef;
   }
 
   public boolean isStartUnbounded() {

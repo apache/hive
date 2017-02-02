@@ -1,10 +1,8 @@
-PREHOOK: query: -- small no part, 4 bucket & big no part, 2 bucket
-CREATE TABLE bucket_small (key string, value string) CLUSTERED BY (key) SORTED BY (key) INTO 4 BUCKETS STORED AS TEXTFILE
+PREHOOK: query: CREATE TABLE bucket_small (key string, value string) CLUSTERED BY (key) SORTED BY (key) INTO 4 BUCKETS STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@bucket_small
-POSTHOOK: query: -- small no part, 4 bucket & big no part, 2 bucket
-CREATE TABLE bucket_small (key string, value string) CLUSTERED BY (key) SORTED BY (key) INTO 4 BUCKETS STORED AS TEXTFILE
+POSTHOOK: query: CREATE TABLE bucket_small (key string, value string) CLUSTERED BY (key) SORTED BY (key) INTO 4 BUCKETS STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@bucket_small
@@ -149,6 +147,7 @@ STAGE PLANS:
               SORTBUCKETCOLSPREFIX TRUE
               bucket_count 2
               bucket_field_name key
+              column.name.delimiter ,
               columns key,value
               columns.comments 
               columns.types string:string
@@ -170,6 +169,7 @@ STAGE PLANS:
                 SORTBUCKETCOLSPREFIX TRUE
                 bucket_count 2
                 bucket_field_name key
+                column.name.delimiter ,
                 columns key,value
                 columns.comments 
                 columns.types string:string
@@ -285,6 +285,7 @@ STAGE PLANS:
               SORTBUCKETCOLSPREFIX TRUE
               bucket_count 2
               bucket_field_name key
+              column.name.delimiter ,
               columns key,value
               columns.comments 
               columns.types string:string
@@ -306,6 +307,7 @@ STAGE PLANS:
                 SORTBUCKETCOLSPREFIX TRUE
                 bucket_count 2
                 bucket_field_name key
+                column.name.delimiter ,
                 columns key,value
                 columns.comments 
                 columns.types string:string

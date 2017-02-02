@@ -1,11 +1,7 @@
-PREHOOK: query: -- This test verifies that a table partition could be dropped with columns stats computed
--- The column stats for a partitioned table will go to PART_COL_STATS
-CREATE DATABASE IF NOT EXISTS partstatsdb1
+PREHOOK: query: CREATE DATABASE IF NOT EXISTS partstatsdb1
 PREHOOK: type: CREATEDATABASE
 PREHOOK: Output: database:partstatsdb1
-POSTHOOK: query: -- This test verifies that a table partition could be dropped with columns stats computed
--- The column stats for a partitioned table will go to PART_COL_STATS
-CREATE DATABASE IF NOT EXISTS partstatsdb1
+POSTHOOK: query: CREATE DATABASE IF NOT EXISTS partstatsdb1
 POSTHOOK: type: CREATEDATABASE
 POSTHOOK: Output: database:partstatsdb1
 PREHOOK: query: USE partstatsdb1

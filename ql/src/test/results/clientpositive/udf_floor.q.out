@@ -13,3 +13,5 @@ Example:
   -1
   > SELECT floor(5) FROM src LIMIT 1;
   5
+Function class:org.apache.hadoop.hive.ql.udf.generic.GenericUDFFloor
+Function type:BUILTIN

@@ -347,6 +347,8 @@ class HeartbeatTxnRangeResponse;
 
 class CompactionRequest;
 
+class CompactionResponse;
+
 class ShowCompactRequest;
 
 class ShowCompactResponseElement;
@@ -2077,7 +2079,7 @@ inline std::ostream& operator<<(std::ostream& out, const StorageDescriptor& obj)
 }
 
 typedef struct _Table__isset {
-  _Table__isset() : tableName(false), dbName(false), owner(false), createTime(false), lastAccessTime(false), retention(false), sd(false), partitionKeys(false), parameters(false), viewOriginalText(false), viewExpandedText(false), tableType(false), privileges(false), temporary(true), mmNextWriteId(false), mmWatermarkWriteId(false) {}
+  _Table__isset() : tableName(false), dbName(false), owner(false), createTime(false), lastAccessTime(false), retention(false), sd(false), partitionKeys(false), parameters(false), viewOriginalText(false), viewExpandedText(false), tableType(false), privileges(false), temporary(true), rewriteEnabled(false), mmNextWriteId(false), mmWatermarkWriteId(false) {}
   bool tableName :1;
   bool dbName :1;
   bool owner :1;
@@ -2092,6 +2094,7 @@ typedef struct _Table__isset {
   bool tableType :1;
   bool privileges :1;
   bool temporary :1;
+  bool rewriteEnabled :1;
   bool mmNextWriteId :1;
   bool mmWatermarkWriteId :1;
 } _Table__isset;
@@ -2101,7 +2104,7 @@ class Table {
 
   Table(const Table&);
   Table& operator=(const Table&);
-  Table() : tableName(), dbName(), owner(), createTime(0), lastAccessTime(0), retention(0), viewOriginalText(), viewExpandedText(), tableType(), temporary(false), mmNextWriteId(0), mmWatermarkWriteId(0) {
+  Table() : tableName(), dbName(), owner(), createTime(0), lastAccessTime(0), retention(0), viewOriginalText(), viewExpandedText(), tableType(), temporary(false), rewriteEnabled(0), mmNextWriteId(0), mmWatermarkWriteId(0) {
   }
 
   virtual ~Table() throw();
@@ -2119,6 +2122,7 @@ class Table {
   std::string tableType;
   PrincipalPrivilegeSet privileges;
   bool temporary;
+  bool rewriteEnabled;
   int64_t mmNextWriteId;
   int64_t mmWatermarkWriteId;
 
@@ -2151,6 +2155,8 @@ class Table {
   void __set_privileges(const PrincipalPrivilegeSet& val);
 
   void __set_temporary(const bool val);
+
+  void __set_rewriteEnabled(const bool val);
 
   void __set_mmNextWriteId(const int64_t val);
 
@@ -2189,6 +2195,10 @@ class Table {
     if (__isset.temporary != rhs.__isset.temporary)
       return false;
     else if (__isset.temporary && !(temporary == rhs.temporary))
+      return false;
+    if (__isset.rewriteEnabled != rhs.__isset.rewriteEnabled)
+      return false;
+    else if (__isset.rewriteEnabled && !(rewriteEnabled == rhs.rewriteEnabled))
       return false;
     if (__isset.mmNextWriteId != rhs.__isset.mmNextWriteId)
       return false;
@@ -6034,6 +6044,56 @@ inline std::ostream& operator<<(std::ostream& out, const CompactionRequest& obj)
 }
 
 
+class CompactionResponse {
+ public:
+
+  CompactionResponse(const CompactionResponse&);
+  CompactionResponse& operator=(const CompactionResponse&);
+  CompactionResponse() : id(0), state(), accepted(0) {
+  }
+
+  virtual ~CompactionResponse() throw();
+  int64_t id;
+  std::string state;
+  bool accepted;
+
+  void __set_id(const int64_t val);
+
+  void __set_state(const std::string& val);
+
+  void __set_accepted(const bool val);
+
+  bool operator == (const CompactionResponse & rhs) const
+  {
+    if (!(id == rhs.id))
+      return false;
+    if (!(state == rhs.state))
+      return false;
+    if (!(accepted == rhs.accepted))
+      return false;
+    return true;
+  }
+  bool operator != (const CompactionResponse &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const CompactionResponse & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(CompactionResponse &a, CompactionResponse &b);
+
+inline std::ostream& operator<<(std::ostream& out, const CompactionResponse& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+
 class ShowCompactRequest {
  public:
 
@@ -6069,7 +6129,7 @@ inline std::ostream& operator<<(std::ostream& out, const ShowCompactRequest& obj
 }
 
 typedef struct _ShowCompactResponseElement__isset {
-  _ShowCompactResponseElement__isset() : partitionname(false), workerid(false), start(false), runAs(false), hightestTxnId(false), metaInfo(false), endTime(false), hadoopJobId(true) {}
+  _ShowCompactResponseElement__isset() : partitionname(false), workerid(false), start(false), runAs(false), hightestTxnId(false), metaInfo(false), endTime(false), hadoopJobId(true), id(false) {}
   bool partitionname :1;
   bool workerid :1;
   bool start :1;
@@ -6078,6 +6138,7 @@ typedef struct _ShowCompactResponseElement__isset {
   bool metaInfo :1;
   bool endTime :1;
   bool hadoopJobId :1;
+  bool id :1;
 } _ShowCompactResponseElement__isset;
 
 class ShowCompactResponseElement {
@@ -6085,7 +6146,7 @@ class ShowCompactResponseElement {
 
   ShowCompactResponseElement(const ShowCompactResponseElement&);
   ShowCompactResponseElement& operator=(const ShowCompactResponseElement&);
-  ShowCompactResponseElement() : dbname(), tablename(), partitionname(), type((CompactionType::type)0), state(), workerid(), start(0), runAs(), hightestTxnId(0), metaInfo(), endTime(0), hadoopJobId("None") {
+  ShowCompactResponseElement() : dbname(), tablename(), partitionname(), type((CompactionType::type)0), state(), workerid(), start(0), runAs(), hightestTxnId(0), metaInfo(), endTime(0), hadoopJobId("None"), id(0) {
   }
 
   virtual ~ShowCompactResponseElement() throw();
@@ -6101,6 +6162,7 @@ class ShowCompactResponseElement {
   std::string metaInfo;
   int64_t endTime;
   std::string hadoopJobId;
+  int64_t id;
 
   _ShowCompactResponseElement__isset __isset;
 
@@ -6127,6 +6189,8 @@ class ShowCompactResponseElement {
   void __set_endTime(const int64_t val);
 
   void __set_hadoopJobId(const std::string& val);
+
+  void __set_id(const int64_t val);
 
   bool operator == (const ShowCompactResponseElement & rhs) const
   {
@@ -6169,6 +6233,10 @@ class ShowCompactResponseElement {
     if (__isset.hadoopJobId != rhs.__isset.hadoopJobId)
       return false;
     else if (__isset.hadoopJobId && !(hadoopJobId == rhs.hadoopJobId))
+      return false;
+    if (__isset.id != rhs.__isset.id)
+      return false;
+    else if (__isset.id && !(id == rhs.id))
       return false;
     return true;
   }
@@ -6511,6 +6579,10 @@ inline std::ostream& operator<<(std::ostream& out, const CurrentNotificationEven
   return out;
 }
 
+typedef struct _InsertEventRequestData__isset {
+  _InsertEventRequestData__isset() : filesAddedChecksum(false) {}
+  bool filesAddedChecksum :1;
+} _InsertEventRequestData__isset;
 
 class InsertEventRequestData {
  public:
@@ -6522,12 +6594,21 @@ class InsertEventRequestData {
 
   virtual ~InsertEventRequestData() throw();
   std::vector<std::string>  filesAdded;
+  std::vector<std::string>  filesAddedChecksum;
+
+  _InsertEventRequestData__isset __isset;
 
   void __set_filesAdded(const std::vector<std::string> & val);
+
+  void __set_filesAddedChecksum(const std::vector<std::string> & val);
 
   bool operator == (const InsertEventRequestData & rhs) const
   {
     if (!(filesAdded == rhs.filesAdded))
+      return false;
+    if (__isset.filesAddedChecksum != rhs.__isset.filesAddedChecksum)
+      return false;
+    else if (__isset.filesAddedChecksum && !(filesAddedChecksum == rhs.filesAddedChecksum))
       return false;
     return true;
   }

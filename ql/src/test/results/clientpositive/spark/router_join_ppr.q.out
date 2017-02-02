@@ -1,6 +1,4 @@
-PREHOOK: query: -- SORT_QUERY_RESULTS
-
-EXPLAIN EXTENDED
+PREHOOK: query: EXPLAIN EXTENDED
  FROM 
   src a
  RIGHT OUTER JOIN 
@@ -9,9 +7,7 @@ EXPLAIN EXTENDED
  SELECT a.key, a.value, b.key, b.value
  WHERE a.key > 10 AND a.key < 20 AND b.key > 15 AND b.key < 25
 PREHOOK: type: QUERY
-POSTHOOK: query: -- SORT_QUERY_RESULTS
-
-EXPLAIN EXTENDED
+POSTHOOK: query: EXPLAIN EXTENDED
  FROM 
   src a
  RIGHT OUTER JOIN 
@@ -65,6 +61,7 @@ STAGE PLANS:
                   properties:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
                     bucket_count -1
+                    column.name.delimiter ,
                     columns key,value
                     columns.comments 'default','default'
                     columns.types string:string
@@ -85,6 +82,7 @@ STAGE PLANS:
                     properties:
                       COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
                       bucket_count -1
+                      column.name.delimiter ,
                       columns key,value
                       columns.comments 'default','default'
                       columns.types string:string
@@ -140,6 +138,7 @@ STAGE PLANS:
                   properties:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
                     bucket_count -1
+                    column.name.delimiter ,
                     columns key,value
                     columns.comments 'default','default'
                     columns.types string:string
@@ -161,6 +160,7 @@ STAGE PLANS:
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     properties:
                       bucket_count -1
+                      column.name.delimiter ,
                       columns key,value
                       columns.comments 'default','default'
                       columns.types string:string
@@ -186,6 +186,7 @@ STAGE PLANS:
                   properties:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
                     bucket_count -1
+                    column.name.delimiter ,
                     columns key,value
                     columns.comments 'default','default'
                     columns.types string:string
@@ -207,6 +208,7 @@ STAGE PLANS:
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     properties:
                       bucket_count -1
+                      column.name.delimiter ,
                       columns key,value
                       columns.comments 'default','default'
                       columns.types string:string
@@ -232,6 +234,7 @@ STAGE PLANS:
                   properties:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
                     bucket_count -1
+                    column.name.delimiter ,
                     columns key,value
                     columns.comments 'default','default'
                     columns.types string:string
@@ -253,6 +256,7 @@ STAGE PLANS:
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     properties:
                       bucket_count -1
+                      column.name.delimiter ,
                       columns key,value
                       columns.comments 'default','default'
                       columns.types string:string
@@ -278,6 +282,7 @@ STAGE PLANS:
                   properties:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
                     bucket_count -1
+                    column.name.delimiter ,
                     columns key,value
                     columns.comments 'default','default'
                     columns.types string:string
@@ -299,6 +304,7 @@ STAGE PLANS:
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     properties:
                       bucket_count -1
+                      column.name.delimiter ,
                       columns key,value
                       columns.comments 'default','default'
                       columns.types string:string
@@ -475,6 +481,7 @@ STAGE PLANS:
                   properties:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
                     bucket_count -1
+                    column.name.delimiter ,
                     columns key,value
                     columns.comments 'default','default'
                     columns.types string:string
@@ -496,6 +503,7 @@ STAGE PLANS:
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     properties:
                       bucket_count -1
+                      column.name.delimiter ,
                       columns key,value
                       columns.comments 'default','default'
                       columns.types string:string
@@ -521,6 +529,7 @@ STAGE PLANS:
                   properties:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
                     bucket_count -1
+                    column.name.delimiter ,
                     columns key,value
                     columns.comments 'default','default'
                     columns.types string:string
@@ -542,6 +551,7 @@ STAGE PLANS:
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     properties:
                       bucket_count -1
+                      column.name.delimiter ,
                       columns key,value
                       columns.comments 'default','default'
                       columns.types string:string
@@ -593,6 +603,7 @@ STAGE PLANS:
                   properties:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
                     bucket_count -1
+                    column.name.delimiter ,
                     columns key,value
                     columns.comments 'default','default'
                     columns.types string:string
@@ -613,6 +624,7 @@ STAGE PLANS:
                     properties:
                       COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
                       bucket_count -1
+                      column.name.delimiter ,
                       columns key,value
                       columns.comments 'default','default'
                       columns.types string:string
@@ -780,6 +792,7 @@ STAGE PLANS:
                   properties:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
                     bucket_count -1
+                    column.name.delimiter ,
                     columns key,value
                     columns.comments 'default','default'
                     columns.types string:string
@@ -800,6 +813,7 @@ STAGE PLANS:
                     properties:
                       COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
                       bucket_count -1
+                      column.name.delimiter ,
                       columns key,value
                       columns.comments 'default','default'
                       columns.types string:string
@@ -855,6 +869,7 @@ STAGE PLANS:
                   properties:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
                     bucket_count -1
+                    column.name.delimiter ,
                     columns key,value
                     columns.comments 'default','default'
                     columns.types string:string
@@ -876,6 +891,7 @@ STAGE PLANS:
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     properties:
                       bucket_count -1
+                      column.name.delimiter ,
                       columns key,value
                       columns.comments 'default','default'
                       columns.types string:string
@@ -901,6 +917,7 @@ STAGE PLANS:
                   properties:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
                     bucket_count -1
+                    column.name.delimiter ,
                     columns key,value
                     columns.comments 'default','default'
                     columns.types string:string
@@ -922,6 +939,7 @@ STAGE PLANS:
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     properties:
                       bucket_count -1
+                      column.name.delimiter ,
                       columns key,value
                       columns.comments 'default','default'
                       columns.types string:string
@@ -1087,6 +1105,7 @@ STAGE PLANS:
                   properties:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
                     bucket_count -1
+                    column.name.delimiter ,
                     columns key,value
                     columns.comments 'default','default'
                     columns.types string:string
@@ -1108,6 +1127,7 @@ STAGE PLANS:
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     properties:
                       bucket_count -1
+                      column.name.delimiter ,
                       columns key,value
                       columns.comments 'default','default'
                       columns.types string:string
@@ -1133,6 +1153,7 @@ STAGE PLANS:
                   properties:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
                     bucket_count -1
+                    column.name.delimiter ,
                     columns key,value
                     columns.comments 'default','default'
                     columns.types string:string
@@ -1154,6 +1175,7 @@ STAGE PLANS:
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     properties:
                       bucket_count -1
+                      column.name.delimiter ,
                       columns key,value
                       columns.comments 'default','default'
                       columns.types string:string
@@ -1205,6 +1227,7 @@ STAGE PLANS:
                   properties:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
                     bucket_count -1
+                    column.name.delimiter ,
                     columns key,value
                     columns.comments 'default','default'
                     columns.types string:string
@@ -1225,6 +1248,7 @@ STAGE PLANS:
                     properties:
                       COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
                       bucket_count -1
+                      column.name.delimiter ,
                       columns key,value
                       columns.comments 'default','default'
                       columns.types string:string

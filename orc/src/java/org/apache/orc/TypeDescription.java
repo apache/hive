@@ -178,6 +178,191 @@ public class TypeDescription
     return new TypeDescription(Category.DECIMAL);
   }
 
+  static class StringPosition {
+    final String value;
+    int position;
+    final int length;
+
+    StringPosition(String value) {
+      this.value = value;
+      position = 0;
+      length = value.length();
+    }
+
+    @Override
+    public String toString() {
+      StringBuilder buffer = new StringBuilder();
+      buffer.append('\'');
+      buffer.append(value.substring(0, position));
+      buffer.append('^');
+      buffer.append(value.substring(position));
+      buffer.append('\'');
+      return buffer.toString();
+    }
+  }
+
+  static Category parseCategory(StringPosition source) {
+    int start = source.position;
+    while (source.position < source.length) {
+      char ch = source.value.charAt(source.position);
+      if (!Character.isLetter(ch)) {
+        break;
+      }
+      source.position += 1;
+    }
+    if (source.position != start) {
+      String word = source.value.substring(start, source.position).toLowerCase();
+      for (Category cat : Category.values()) {
+        if (cat.getName().equals(word)) {
+          return cat;
+        }
+      }
+    }
+    throw new IllegalArgumentException("Can't parse category at " + source);
+  }
+
+  static int parseInt(StringPosition source) {
+    int start = source.position;
+    int result = 0;
+    while (source.position < source.length) {
+      char ch = source.value.charAt(source.position);
+      if (!Character.isDigit(ch)) {
+        break;
+      }
+      result = result * 10 + (ch - '0');
+      source.position += 1;
+    }
+    if (source.position == start) {
+      throw new IllegalArgumentException("Missing integer at " + source);
+    }
+    return result;
+  }
+
+  static String parseName(StringPosition source) {
+    int start = source.position;
+    while (source.position < source.length) {
+      char ch = source.value.charAt(source.position);
+      if (!Character.isLetterOrDigit(ch) && ch != '.' && ch != '_') {
+        break;
+      }
+      source.position += 1;
+    }
+    if (source.position == start) {
+      throw new IllegalArgumentException("Missing name at " + source);
+    }
+    return source.value.substring(start, source.position);
+  }
+
+  static void requireChar(StringPosition source, char required) {
+    if (source.position >= source.length ||
+        source.value.charAt(source.position) != required) {
+      throw new IllegalArgumentException("Missing required char '" +
+          required + "' at " + source);
+    }
+    source.position += 1;
+  }
+
+  static boolean consumeChar(StringPosition source, char ch) {
+    boolean result = source.position < source.length &&
+        source.value.charAt(source.position) == ch;
+    if (result) {
+      source.position += 1;
+    }
+    return result;
+  }
+
+  static void parseUnion(TypeDescription type, StringPosition source) {
+    requireChar(source, '<');
+    do {
+      type.addUnionChild(parseType(source));
+    } while (consumeChar(source, ','));
+    requireChar(source, '>');
+  }
+
+  static void parseStruct(TypeDescription type, StringPosition source) {
+    requireChar(source, '<');
+    do {
+      String fieldName = parseName(source);
+      requireChar(source, ':');
+      type.addField(fieldName, parseType(source));
+    } while (consumeChar(source, ','));
+    requireChar(source, '>');
+  }
+
+  static TypeDescription parseType(StringPosition source) {
+    TypeDescription result = new TypeDescription(parseCategory(source));
+    switch (result.getCategory()) {
+      case BINARY:
+      case BOOLEAN:
+      case BYTE:
+      case DATE:
+      case DOUBLE:
+      case FLOAT:
+      case INT:
+      case LONG:
+      case SHORT:
+      case STRING:
+      case TIMESTAMP:
+        break;
+      case CHAR:
+      case VARCHAR:
+        requireChar(source, '(');
+        result.withMaxLength(parseInt(source));
+        requireChar(source, ')');
+        break;
+      case DECIMAL: {
+        requireChar(source, '(');
+        int precision = parseInt(source);
+        requireChar(source, ',');
+        result.withScale(parseInt(source));
+        result.withPrecision(precision);
+        requireChar(source, ')');
+        break;
+      }
+      case LIST:
+        requireChar(source, '<');
+        result.children.add(parseType(source));
+        requireChar(source, '>');
+        break;
+      case MAP:
+        requireChar(source, '<');
+        result.children.add(parseType(source));
+        requireChar(source, ',');
+        result.children.add(parseType(source));
+        requireChar(source, '>');
+        break;
+      case UNION:
+        parseUnion(result, source);
+        break;
+      case STRUCT:
+        parseStruct(result, source);
+        break;
+      default:
+        throw new IllegalArgumentException("Unknown type " +
+            result.getCategory() + " at " + source);
+    }
+    return result;
+  }
+
+  /**
+   * Parse TypeDescription from the Hive type names. This is the inverse
+   * of TypeDescription.toString()
+   * @param typeName the name of the type
+   * @return a new TypeDescription or null if typeName was null
+   * @throws IllegalArgumentException if the string is badly formed
+   */
+  public static TypeDescription fromString(String typeName) {
+    if (typeName == null) {
+      return null;
+    }
+    StringPosition source = new StringPosition(typeName);
+    TypeDescription result = parseType(source);
+    if (source.position != source.length) {
+      throw new IllegalArgumentException("Extra characters at " + source);
+    }
+    return result;
+  }
+
   /**
    * For decimal types, set the precision.
    * @param precision the new precision
@@ -657,4 +842,29 @@ public class TypeDescription
     printJsonToBuffer("", buffer, 0);
     return buffer.toString();
   }
-}
+
+  /**
+   * Locate a subtype by its id.
+   * @param goal the column id to look for
+   * @return the subtype
+   */
+  public TypeDescription findSubtype(int goal) {
+    // call getId method to make sure the ids are assigned
+    int id = getId();
+    if (goal < id || goal > maxId) {
+      throw new IllegalArgumentException("Unknown type id " + id + " in " +
+          toJson());
+    }
+    if (goal == id) {
+      return this;
+    } else {
+      TypeDescription prev = null;
+      for(TypeDescription next: children) {
+        if (next.id > goal) {
+          return prev.findSubtype(goal);
+        }
+        prev = next;
+      }
+      return prev.findSubtype(goal);
+    }
+  }}

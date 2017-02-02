@@ -1,5 +1,6 @@
 set hive.mapred.mode=nonstrict;
 set hive.limit.query.max.table.partition=1;
+set hive.optimize.metadataonly=true;
 
 -- SORT_QUERY_RESULTS
 

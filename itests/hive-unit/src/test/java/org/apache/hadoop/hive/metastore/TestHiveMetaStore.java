@@ -738,6 +738,7 @@ public abstract class TestHiveMetaStore extends TestCase {
     view.setViewOriginalText("SELECT income, name FROM " + tblName);
     view.setViewExpandedText("SELECT `" + tblName + "`.`income`, `" + tblName +
         "`.`name` FROM `" + dbName + "`.`" + tblName + "`");
+    view.setRewriteEnabled(false);
     StorageDescriptor viewSd = new StorageDescriptor();
     view.setSd(viewSd);
     viewSd.setCols(viewCols);

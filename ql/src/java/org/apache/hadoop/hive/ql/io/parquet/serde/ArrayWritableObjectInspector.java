@@ -72,14 +72,20 @@ public class ArrayWritableObjectInspector extends SettableStructObjectInspector 
       final String name = fieldNames.get(i);
       final TypeInfo fieldInfo = fieldInfos.get(i);
 
-      StructFieldImpl field;
-      if (prunedTypeInfo != null && prunedTypeInfo.getAllStructFieldNames().indexOf(name) >= 0) {
-        int adjustedIndex = prunedTypeInfo.getAllStructFieldNames().indexOf(name);
-        TypeInfo prunedFieldInfo = prunedTypeInfo.getAllStructFieldTypeInfos().get(adjustedIndex);
-        field = new StructFieldImpl(name, getObjectInspector(fieldInfo, prunedFieldInfo), i, adjustedIndex);
-      } else {
+      StructFieldImpl field = null;
+      if (prunedTypeInfo != null) {
+        for (int idx = 0; idx < prunedTypeInfo.getAllStructFieldNames().size(); ++idx) {
+          if (prunedTypeInfo.getAllStructFieldNames().get(idx).equalsIgnoreCase(name)) {
+            TypeInfo prunedFieldInfo = prunedTypeInfo.getAllStructFieldTypeInfos().get(idx);
+            field = new StructFieldImpl(name, getObjectInspector(fieldInfo, prunedFieldInfo), i, idx);
+            break;
+          }
+        }
+      }
+      if (field == null) {
         field = new StructFieldImpl(name, getObjectInspector(fieldInfo, null), i, i);
       }
+
       fields.add(field);
       fieldsByName.put(name.toLowerCase(), field);
     }
@@ -222,29 +228,39 @@ public class ArrayWritableObjectInspector extends SettableStructObjectInspector 
   }
 
   @Override
-  public boolean equals(Object obj) {
-    if (obj == null) {
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (o == null || getClass() != o.getClass()) {
       return false;
     }
-    if (getClass() != obj.getClass()) {
+
+    ArrayWritableObjectInspector that = (ArrayWritableObjectInspector) o;
+
+    if (isRoot != that.isRoot ||
+      (typeInfo != null ? !typeInfo.equals(that.typeInfo) : that.typeInfo != null) ||
+      (fieldInfos != null ? !fieldInfos.equals(that.fieldInfos) : that.fieldInfos != null) ||
+      (fieldNames != null ? !fieldNames.equals(that.fieldNames) : that.fieldNames != null) ||
+      (fields != null ? !fields.equals(that.fields) : that.fields != null)) {
       return false;
     }
-    final ArrayWritableObjectInspector other = (ArrayWritableObjectInspector) obj;
-    if (this.typeInfo != other.typeInfo && (this.typeInfo == null || !this.typeInfo.equals(other.typeInfo))) {
-      return false;
-    }
-    return true;
+
+    return fieldsByName != null ? fieldsByName.equals(that.fieldsByName) : that.fieldsByName == null;
   }
 
   @Override
   public int hashCode() {
-    int hash = 5;
-    hash = 29 * hash + (this.typeInfo != null ? this.typeInfo.hashCode() : 0);
-    return hash;
+    int result = typeInfo != null ? typeInfo.hashCode() : 0;
+    result = 31 * result + (fieldInfos != null ? fieldInfos.hashCode() : 0);
+    result = 31 * result + (fieldNames != null ? fieldNames.hashCode() : 0);
+    result = 31 * result + (fields != null ? fields.hashCode() : 0);
+    result = 31 * result + (fieldsByName != null ? fieldsByName.hashCode() : 0);
+    result = 31 * result + (isRoot ? 1 : 0);
+    return result;
   }
 
   private class StructFieldImpl implements StructField {
-
     private final String name;
     private final ObjectInspector inspector;
     private final int index;
@@ -287,6 +303,38 @@ public class ArrayWritableObjectInspector extends SettableStructObjectInspector 
     @Override
     public int getFieldID() {
       return index;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+      if (this == o) {
+        return true;
+      }
+      if (o == null || getClass() != o.getClass()) {
+        return false;
+      }
+
+      StructFieldImpl that = (StructFieldImpl) o;
+
+      if (index != that.index) {
+        return false;
+      }
+      if (adjustedIndex != that.adjustedIndex) {
+        return false;
+      }
+      if (name != null ? !name.equals(that.name) : that.name != null) {
+        return false;
+      }
+      return inspector != null ? inspector.equals(that.inspector) : that.inspector == null;
+    }
+
+    @Override
+    public int hashCode() {
+      int result = name != null ? name.hashCode() : 0;
+      result = 31 * result + (inspector != null ? inspector.hashCode() : 0);
+      result = 31 * result + index;
+      result = 31 * result + adjustedIndex;
+      return result;
     }
   }
 }

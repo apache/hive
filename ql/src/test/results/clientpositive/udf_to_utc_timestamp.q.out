@@ -8,6 +8,8 @@ PREHOOK: type: DESCFUNCTION
 POSTHOOK: query: DESC FUNCTION EXTENDED to_utc_timestamp
 POSTHOOK: type: DESCFUNCTION
 to_utc_timestamp(timestamp, string timezone) - Assumes given timestamp is in given timezone and converts to UTC (as of Hive 0.8.0)
+Function class:org.apache.hadoop.hive.ql.udf.generic.GenericUDFToUtcTimestamp
+Function type:BUILTIN
 PREHOOK: query: explain select to_utc_timestamp('2012-02-11 10:30:00', 'PST')
 PREHOOK: type: QUERY
 POSTHOOK: query: explain select to_utc_timestamp('2012-02-11 10:30:00', 'PST')

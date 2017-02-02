@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.exec;
 
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDefaultDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
@@ -33,7 +34,11 @@ public class ExprNodeConstantDefaultEvaluator extends ExprNodeEvaluator<ExprNode
   transient ObjectInspector writableObjectInspector;
 
   public ExprNodeConstantDefaultEvaluator(ExprNodeConstantDefaultDesc expr) {
-    super(expr);
+    this(expr, null);
+  }
+
+  public ExprNodeConstantDefaultEvaluator(ExprNodeConstantDefaultDesc expr, Configuration conf) {
+    super(expr, conf);
     writableObjectInspector = expr.getWritableObjectInspector();
   }
 

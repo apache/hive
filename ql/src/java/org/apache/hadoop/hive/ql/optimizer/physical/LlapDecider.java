@@ -49,8 +49,10 @@ import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.ScriptOperator;
 import org.apache.hadoop.hive.ql.exec.SelectOperator;
 import org.apache.hadoop.hive.ql.exec.Task;
+import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.tez.TezTask;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedInputFormatInterface;
+import org.apache.hadoop.hive.ql.io.HiveInputFormat;
 import org.apache.hadoop.hive.ql.lib.DefaultGraphWalker;
 import org.apache.hadoop.hive.ql.lib.DefaultRuleDispatcher;
 import org.apache.hadoop.hive.ql.lib.Dispatcher;
@@ -430,14 +432,15 @@ public class LlapDecider implements PhysicalPlanResolver {
     }
 
     private boolean checkInputsVectorized(MapWork mapWork) {
-      for( PartitionDesc pd : mapWork.getPathToPartitionInfo().values()) {
-        List<Class<?>> interfaceList =
-          Arrays.asList(pd.getInputFileFormatClass().getInterfaces());
-        if (!interfaceList.contains(VectorizedInputFormatInterface.class)) {
-          LOG.info("Input format: " + pd.getInputFileFormatClassName()
-            + ", doesn't provide vectorized input");
-          return false;
+      boolean mayWrap = HiveConf.getBoolVar(conf, ConfVars.LLAP_IO_NONVECTOR_WRAPPER_ENABLED);
+      for (PartitionDesc pd : mapWork.getPathToPartitionInfo().values()) {
+        if (Utilities.isInputFileFormatVectorized(pd) || (mayWrap
+            && HiveInputFormat.canWrapForLlap(pd.getInputFileFormatClass(), true))) {
+          continue;
         }
+        LOG.info("Input format: " + pd.getInputFileFormatClassName()
+          + ", doesn't provide vectorized input");
+        return false;
       }
       return true;
     }

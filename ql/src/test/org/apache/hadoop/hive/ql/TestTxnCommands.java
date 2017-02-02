@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.ql;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.output.StringBuilderWriter;
 import org.apache.hadoop.fs.FileUtil;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -60,8 +61,12 @@ import java.util.concurrent.TimeUnit;
  * test AC=true, and AC=false with commit/rollback/exception and test resulting data.
  *
  * Can also test, calling commit in AC=true mode, etc, toggling AC...
+ * 
+ * Tests here are for multi-statement transactions (WIP) and those that don't need to
+ * run with Acid 2.0 (see subclasses of TestTxnCommands2)
  */
 public class TestTxnCommands {
+  static final private Logger LOG = LoggerFactory.getLogger(TestTxnCommands.class);
   private static final String TEST_DATA_DIR = new File(System.getProperty("java.io.tmpdir") +
     File.separator + TestTxnCommands.class.getCanonicalName()
     + "-" + System.currentTimeMillis()
@@ -75,6 +80,7 @@ public class TestTxnCommands {
   private Driver d;
   private static enum Table {
     ACIDTBL("acidTbl"),
+    ACIDTBLPART("acidTblPart"),
     ACIDTBL2("acidTbl2"),
     NONACIDORCTBL("nonAcidOrcTbl"),
     NONACIDORCTBL2("nonAcidOrcTbl2");
@@ -101,6 +107,7 @@ public class TestTxnCommands {
     hiveConf
     .setVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER,
         "org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory");
+    hiveConf.setBoolVar(HiveConf.ConfVars.MERGE_CARDINALITY_VIOLATION_CHECK, true);
     TxnDbUtil.setConfValues(hiveConf);
     TxnDbUtil.prepDb();
     File f = new File(TEST_WAREHOUSE_DIR);
@@ -112,8 +119,10 @@ public class TestTxnCommands {
     }
     SessionState.start(new SessionState(hiveConf));
     d = new Driver(hiveConf);
+    d.setMaxRows(10000);
     dropTables();
     runStatementOnDriver("create table " + Table.ACIDTBL + "(a int, b int) clustered by (a) into " + BUCKET_COUNT + " buckets stored as orc TBLPROPERTIES ('transactional'='true')");
+    runStatementOnDriver("create table " + Table.ACIDTBLPART + "(a int, b int) partitioned by (p string) clustered by (a) into " + BUCKET_COUNT + " buckets stored as orc TBLPROPERTIES ('transactional'='true')");
     runStatementOnDriver("create table " + Table.NONACIDORCTBL + "(a int, b int) clustered by (a) into " + BUCKET_COUNT + " buckets stored as orc TBLPROPERTIES ('transactional'='false')");
     runStatementOnDriver("create table " + Table.NONACIDORCTBL2 + "(a int, b int) clustered by (a) into " + BUCKET_COUNT + " buckets stored as orc TBLPROPERTIES ('transactional'='false')");
     runStatementOnDriver("create temporary  table " + Table.ACIDTBL2 + "(a int, b int, c int) clustered by (c) into " + BUCKET_COUNT + " buckets stored as orc TBLPROPERTIES ('transactional'='true')");
@@ -555,7 +564,6 @@ public class TestTxnCommands {
     return sb.toString();
   }
 
-  private static final Logger LOG = LoggerFactory.getLogger(TestTxnCommands.class);
   private List<String> runStatementOnDriver(String stmt) throws Exception {
     LOG.info("Running " + stmt);
     CommandProcessorResponse cpr = d.run(stmt);
@@ -599,13 +607,46 @@ public class TestTxnCommands {
   public void testMergeNegative2() throws Exception {
     CommandProcessorResponse cpr = runStatementOnDriverNegative("MERGE INTO "+ Table.ACIDTBL +
       " target USING " + Table.NONACIDORCTBL + "\n source ON target.pk = source.pk " +
-      "\nWHEN MATCHED THEN UPDATE set t = 1 " +
+      "\nWHEN MATCHED THEN UPDATE set b = 1 " +
       "\nWHEN MATCHED THEN UPDATE set b=a");
     Assert.assertEquals(ErrorMsg.MERGE_TOO_MANY_UPDATE, ((HiveException)cpr.getException()).getCanonicalErrorMsg());
   }
-  @Ignore
+
+  /**
+   * `1` means 1 is a column name and '1' means 1 is a string literal
+   * HiveConf.HIVE_QUOTEDID_SUPPORT
+   * HiveConf.HIVE_SUPPORT_SPECICAL_CHARACTERS_IN_TABLE_NAMES
+   * {@link TestTxnCommands#testMergeType2SCD01()}
+   */
   @Test
-  public void testSpecialChar() throws Exception {
+  public void testQuotedIdentifier() throws Exception {
+    String target = "`aci/d_u/ami`";
+    String src = "`src/name`";
+    runStatementOnDriver("drop table if exists " + target);
+    runStatementOnDriver("drop table if exists " + src);
+    runStatementOnDriver("create table " + target + "(i int," +
+      "`d?*de e` decimal(5,2)," +
+      "vc varchar(128)) clustered by (i) into 2 buckets stored as orc TBLPROPERTIES ('transactional'='true')");
+    runStatementOnDriver("create table " + src + "(gh int, j decimal(5,2), k varchar(128))");
+    runStatementOnDriver("merge into " + target + " as `d/8` using " + src + " as `a/b` on i=gh " +
+      "\nwhen matched and i > 5 then delete " +
+      "\nwhen matched then update set vc='blah' " +
+    "\nwhen not matched then insert values(1,2.1,'baz')");
+    runStatementOnDriver("merge into " + target + " as `d/8` using " + src + " as `a/b` on i=gh " +
+      "\nwhen matched and i > 5 then delete " +
+      "\nwhen matched then update set vc='blah',  `d?*de e` = current_timestamp()  " +
+      "\nwhen not matched then insert values(1,2.1, concat('baz', current_timestamp()))");
+    runStatementOnDriver("merge into " + target + " as `d/8` using " + src + " as `a/b` on i=gh " +
+      "\nwhen matched and i > 5 then delete " +
+      "\nwhen matched then update set vc='blah' " +
+      "\nwhen not matched then insert values(1,2.1,'a\\b')");
+    runStatementOnDriver("merge into " + target + " as `d/8` using " + src + " as `a/b` on i=gh " +
+      "\nwhen matched and i > 5 then delete " +
+      "\nwhen matched then update set vc='∆∋'" +
+      "\nwhen not matched then insert values(`a/b`.gh,`a/b`.j,'c\\t')");
+  }
+  @Test
+  public void testQuotedIdentifier2() throws Exception {
     String target = "`aci/d_u/ami`";
     String src = "`src/name`";
     runStatementOnDriver("drop table if exists " + target);
@@ -614,9 +655,192 @@ public class TestTxnCommands {
       "`d?*de e` decimal(5,2)," +
       "vc varchar(128)) clustered by (i) into 2 buckets stored as orc TBLPROPERTIES ('transactional'='true')");
     runStatementOnDriver("create table " + src + "(`g/h` int, j decimal(5,2), k varchar(128))");
-    runStatementOnDriver("merge into " + target + " as `d/8` using " + src + " as `a/b` on i=`g/h` " +
-      "\nwhen matched and i > 5 then delete " +
-      "\nwhen matched then update set vc=`∆∋` " +
-      "\nwhen not matched then insert values(`a/b`.`g/h`,`a/b`.j,`a/b`.k)");
+    runStatementOnDriver("merge into " + target + " as `d/8` using " + src + " as `a/b` on i=`g/h`" +
+      "\nwhen matched and `g/h` > 5 then delete " +
+      "\nwhen matched and `g/h` < 0 then update set vc='∆∋', `d?*de e` =  `d?*de e` * j + 1" +
+      "\nwhen not matched and `d?*de e` <> 0 then insert values(`a/b`.`g/h`,`a/b`.j,`a/b`.k)");
+    runStatementOnDriver("merge into " + target + " as `d/8` using " + src + " as `a/b` on i=`g/h`" +
+      "\nwhen matched and `g/h` > 5 then delete" +
+      "\n when matched and `g/h` < 0 then update set vc='∆∋'  , `d?*de e` =  `d?*de e` * j + 1  " +
+      "\n when not matched and `d?*de e` <> 0 then insert values(`a/b`.`g/h`,`a/b`.j,`a/b`.k)");
+  }
+  /**
+   * https://www.linkedin.com/pulse/how-load-slowly-changing-dimension-type-2-using-oracle-padhy
+   * also test QuotedIdentifier inside source expression
+   * {@link TestTxnCommands#testQuotedIdentifier()}
+   * {@link TestTxnCommands#testQuotedIdentifier2()}
+   */
+  @Test
+  public void testMergeType2SCD01() throws Exception {
+    runStatementOnDriver("drop table if exists target");
+    runStatementOnDriver("drop table if exists source");
+    runStatementOnDriver("drop table if exists splitTable");
+
+    runStatementOnDriver("create table splitTable(op int)");
+    runStatementOnDriver("insert into splitTable values (0),(1)");
+    runStatementOnDriver("create table source (key int, data int)");
+    runStatementOnDriver("create table target (key int, data int, cur int) clustered by (key) into " + BUCKET_COUNT + " buckets stored as orc TBLPROPERTIES ('transactional'='true')");
+    int[][] targetVals = {{1, 5, 1}, {2, 6, 1}, {1, 18, 0}};
+    runStatementOnDriver("insert into target " + makeValuesClause(targetVals));
+    int[][] sourceVals = {{1, 7}, {3, 8}};
+    runStatementOnDriver("insert into source " + makeValuesClause(sourceVals));
+    //augment source with a col which has 1 if it will cause an update in target, 0 otherwise
+    String curMatch = "select s.*, case when t.cur is null then 0 else 1 end m from source s left outer join (select * from target where target.cur=1) t on s.key=t.key";
+    //split each row (duplicate) which will cause an update into 2 rows and augment with 'op' col which has 0 to insert, 1 to update
+    String teeCurMatch = "select curMatch.*, case when splitTable.op is null or splitTable.op = 0 then 0 else 1 end `o/p\\n` from (" + curMatch + ") curMatch left outer join splitTable on curMatch.m=1";
+    if(false) {
+      //this is just for debug
+      List<String> r1 = runStatementOnDriver(curMatch);
+      List<String> r2 = runStatementOnDriver(teeCurMatch);
+    }
+    String stmt = "merge into target t using (" + teeCurMatch + ") s on t.key=s.key and t.cur=1 and s.`o/p\\n`=1 " +
+      "when matched then update set cur=0 " +
+      "when not matched then insert values(s.key,s.data,1)";
+
+    runStatementOnDriver(stmt);
+    int[][] resultVals = {{1,5,0},{1,7,1},{1,18,0},{2,6,1},{3,8,1}};
+    List<String> r = runStatementOnDriver("select * from target order by key,data,cur");
+    Assert.assertEquals(stringifyValues(resultVals), r);
+  }
+  /**
+   * https://www.linkedin.com/pulse/how-load-slowly-changing-dimension-type-2-using-oracle-padhy
+   * Same as testMergeType2SCD01 but with a more intuitive "source" expression
+   */
+  @Test
+  public void testMergeType2SCD02() throws Exception {
+    runStatementOnDriver("drop table if exists target");
+    runStatementOnDriver("drop table if exists source");
+    runStatementOnDriver("create table source (key int, data int)");
+    runStatementOnDriver("create table target (key int, data int, cur int) clustered by (key) into " + BUCKET_COUNT + " buckets stored as orc TBLPROPERTIES ('transactional'='true')");
+    int[][] targetVals = {{1, 5, 1}, {2, 6, 1}, {1, 18, 0}};
+    runStatementOnDriver("insert into target " + makeValuesClause(targetVals));
+    int[][] sourceVals = {{1, 7}, {3, 8}};
+    runStatementOnDriver("insert into source " + makeValuesClause(sourceVals));
+
+    String baseSrc =  "select source.*, 0 c from source " +
+      "union all " +
+      "select source.*, 1 c from source " +
+      "inner join target " +
+      "on source.key=target.key where target.cur=1";
+    if(false) {
+      //this is just for debug
+      List<String> r1 = runStatementOnDriver(baseSrc);
+      List<String> r2 = runStatementOnDriver(
+        "select t.*, s.* from target t right outer join (" + baseSrc + ") s " +
+          "\non t.key=s.key and t.cur=s.c and t.cur=1");
+    }
+    String stmt = "merge into target t using " +
+      "(" + baseSrc + ") s " +
+      "on t.key=s.key and t.cur=s.c and t.cur=1 " +
+      "when matched then update set cur=0 " +
+      "when not matched then insert values(s.key,s.data,1)";
+
+    runStatementOnDriver(stmt);
+    int[][] resultVals = {{1,5,0},{1,7,1},{1,18,0},{2,6,1},{3,8,1}};
+    List<String> r = runStatementOnDriver("select * from target order by key,data,cur");
+    Assert.assertEquals(stringifyValues(resultVals), r);
+  }
+  
+  @Test
+  public void testMergeOnTezEdges() throws Exception {
+    String query = "merge into " + Table.ACIDTBL +
+      " as t using " + Table.NONACIDORCTBL + " s ON t.a = s.a " +
+      "WHEN MATCHED AND s.a > 8 THEN DELETE " +
+      "WHEN MATCHED THEN UPDATE SET b = 7 " +
+      "WHEN NOT MATCHED THEN INSERT VALUES(s.a, s.b) ";
+    d.destroy();
+    HiveConf hc = new HiveConf(hiveConf);
+    hc.setVar(HiveConf.ConfVars.HIVE_EXECUTION_ENGINE, "tez");
+    hc.setBoolVar(HiveConf.ConfVars.HIVE_EXPLAIN_USER, false);
+    d = new Driver(hc);
+    d.setMaxRows(10000);
+
+    List<String> explain = runStatementOnDriver("explain " + query);
+    StringBuilder sb = new StringBuilder();
+    for(String s : explain) {
+      sb.append(s).append('\n');
+    }
+    LOG.info("Explain1: " + sb);
+    for(int i = 0; i < explain.size(); i++) {
+      if(explain.get(i).contains("Edges:")) {
+        Assert.assertTrue("At i+1=" + (i+1) + explain.get(i + 1), explain.get(i + 1).contains("Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 7 (SIMPLE_EDGE)"));
+        Assert.assertTrue("At i+1=" + (i+2) + explain.get(i + 2), explain.get(i + 2).contains("Reducer 3 <- Reducer 2 (SIMPLE_EDGE)"));
+        Assert.assertTrue("At i+1=" + (i+3) + explain.get(i + 3), explain.get(i + 3).contains("Reducer 4 <- Reducer 2 (SIMPLE_EDGE)"));
+        Assert.assertTrue("At i+1=" + (i+4) + explain.get(i + 4), explain.get(i + 4).contains("Reducer 5 <- Reducer 2 (SIMPLE_EDGE)"));
+        Assert.assertTrue("At i+1=" + (i+5) + explain.get(i + 5), explain.get(i + 5).contains("Reducer 6 <- Reducer 2 (CUSTOM_SIMPLE_EDGE)"));
+        break;
+      }
+    }
+  }
+  @Test
+  public void testMergeUpdateDelete() throws Exception {
+    int[][] baseValsOdd = {{2,2},{4,44},{5,5},{11,11}};
+    runStatementOnDriver("insert into " + Table.NONACIDORCTBL + " " + makeValuesClause(baseValsOdd));
+    int[][] vals = {{2,1},{4,3},{5,6},{7,8}};
+    runStatementOnDriver("insert into " + Table.ACIDTBL + " " + makeValuesClause(vals));
+    String query = "merge into " + Table.ACIDTBL +
+      " as t using " + Table.NONACIDORCTBL + " s ON t.a = s.a " +
+      "WHEN MATCHED AND s.a < 3 THEN update set b = 0 " +
+      "WHEN MATCHED and t.a > 3 and t.a < 5 THEN DELETE " +
+      "WHEN NOT MATCHED THEN INSERT VALUES(s.a, s.b) ";
+    runStatementOnDriver(query);
+
+    List<String> r = runStatementOnDriver("select a,b from " + Table.ACIDTBL + " order by a,b");
+    int[][] rExpected = {{2,0},{5,6},{7,8},{11,11}};
+    Assert.assertEquals(stringifyValues(rExpected), r);
+  }
+  @Test
+  public void testMergeDeleteUpdate() throws Exception {
+    int[][] sourceVals = {{2,2},{4,44},{5,5},{11,11}};
+    runStatementOnDriver("insert into " + Table.NONACIDORCTBL + " " + makeValuesClause(sourceVals));
+    int[][] targetVals = {{2,1},{4,3},{5,6},{7,8}};
+    runStatementOnDriver("insert into " + Table.ACIDTBL + " " + makeValuesClause(targetVals));
+    String query = "merge into " + Table.ACIDTBL +
+      " as t using " + Table.NONACIDORCTBL + " s ON t.a = s.a " +
+      "WHEN MATCHED and s.a < 5 THEN DELETE " +
+      "WHEN MATCHED AND s.a < 3 THEN update set b = 0 " +
+      "WHEN NOT MATCHED THEN INSERT VALUES(s.a, s.b) ";
+    runStatementOnDriver(query);
+
+    List<String> r = runStatementOnDriver("select a,b from " + Table.ACIDTBL + " order by a,b");
+    int[][] rExpected = {{5,6},{7,8},{11,11}};
+    Assert.assertEquals(stringifyValues(rExpected), r);
+  }
+
+  /**
+   * see https://issues.apache.org/jira/browse/HIVE-14949 for details
+   * @throws Exception
+   */
+  @Test
+  public void testMergeCardinalityViolation() throws Exception {
+    int[][] sourceVals = {{2,2},{2,44},{5,5},{11,11}};
+    runStatementOnDriver("insert into " + Table.NONACIDORCTBL + " " + makeValuesClause(sourceVals));
+    int[][] targetVals = {{2,1},{4,3},{5,6},{7,8}};
+    runStatementOnDriver("insert into " + Table.ACIDTBL + " " + makeValuesClause(targetVals));
+    String query = "merge into " + Table.ACIDTBL +
+      " as t using " + Table.NONACIDORCTBL + " s ON t.a = s.a " +
+      "WHEN MATCHED and s.a < 5 THEN DELETE " +
+      "WHEN MATCHED AND s.a < 3 THEN update set b = 0 " +
+      "WHEN NOT MATCHED THEN INSERT VALUES(s.a, s.b) ";
+    runStatementOnDriverNegative(query);
+    runStatementOnDriver("insert into " + Table.ACIDTBLPART + " partition(p) values(1,1,'p1'),(2,2,'p1'),(3,3,'p1'),(4,4,'p2')");
+    query = "merge into " + Table.ACIDTBLPART +
+      " as t using " + Table.NONACIDORCTBL + " s ON t.a = s.a " +
+      "WHEN MATCHED and s.a < 5 THEN DELETE " +
+      "WHEN MATCHED AND s.a < 3 THEN update set b = 0 " +
+      "WHEN NOT MATCHED THEN INSERT VALUES(s.a, s.b, 'p1') ";
+    runStatementOnDriverNegative(query);
+  }
+  @Test
+  public void testSetClauseFakeColumn() throws Exception {
+    CommandProcessorResponse cpr = runStatementOnDriverNegative("MERGE INTO "+ Table.ACIDTBL +
+      " target USING " + Table.NONACIDORCTBL +
+      "\n source ON target.a = source.a " +
+      "\nWHEN MATCHED THEN UPDATE set t = 1");
+    Assert.assertEquals(ErrorMsg.INVALID_TARGET_COLUMN_IN_SET_CLAUSE,
+      ((HiveException)cpr.getException()).getCanonicalErrorMsg());
+    cpr = runStatementOnDriverNegative("update " + Table.ACIDTBL + " set t = 1");
+    Assert.assertEquals(ErrorMsg.INVALID_TARGET_COLUMN_IN_SET_CLAUSE,
+      ((HiveException)cpr.getException()).getCanonicalErrorMsg());
   }
 }

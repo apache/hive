@@ -244,7 +244,7 @@ public class ReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
 
       if (limit >= 0 && memUsage > 0) {
         reducerHash = conf.isPTFReduceSink() ? new PTFTopNHash() : new TopNHash();
-        reducerHash.initialize(limit, memUsage, conf.isMapGroupBy(), this);
+        reducerHash.initialize(limit, memUsage, conf.isMapGroupBy(), this, conf, hconf);
       }
 
       useUniformHash = conf.getReducerTraits().contains(UNIFORM);
@@ -322,7 +322,7 @@ public class ReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
         if (conf.getWriteType() == AcidUtils.Operation.UPDATE ||
             conf.getWriteType() == AcidUtils.Operation.DELETE) {
           assert rowInspector instanceof StructObjectInspector :
-              "Exptected rowInspector to be instance of StructObjectInspector but it is a " +
+              "Expected rowInspector to be instance of StructObjectInspector but it is a " +
                   rowInspector.getClass().getName();
           acidRowInspector = (StructObjectInspector)rowInspector;
           // The record identifier is always in the first column

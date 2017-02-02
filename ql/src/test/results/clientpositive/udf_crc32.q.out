@@ -13,6 +13,8 @@ Example:
   2743272264
   > SELECT crc32(binary('ABC'));
   2743272264
+Function class:org.apache.hadoop.hive.ql.udf.UDFCrc32
+Function type:BUILTIN
 PREHOOK: query: explain select crc32('ABC')
 PREHOOK: type: QUERY
 POSTHOOK: query: explain select crc32('ABC')

@@ -53,6 +53,7 @@ UNION_TYPE_NAME = "uniontype"
 LIST_COLUMNS = "columns"
 LIST_COLUMN_TYPES = "columns.types"
 TIMESTAMP_FORMATS = "timestamp.formats"
+COLUMN_NAME_DELIMITER = "column.name.delimiter"
 PrimitiveTypes = set([
   "void",
   "boolean",

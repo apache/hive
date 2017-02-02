@@ -1,6 +1,4 @@
-PREHOOK: query: -- 18. SubQueries Not Exists
--- distinct, corr
-select * 
+PREHOOK: query: select * 
 from src_cbo b 
 where not exists 
   (select distinct a.key 
@@ -10,9 +8,7 @@ where not exists
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_cbo
 #### A masked pattern was here ####
-POSTHOOK: query: -- 18. SubQueries Not Exists
--- distinct, corr
-select * 
+POSTHOOK: query: select * 
 from src_cbo b 
 where not exists 
   (select distinct a.key 
@@ -141,8 +137,7 @@ POSTHOOK: Input: default@src_cbo
 199	val_199
 199	val_199
 2	val_2
-PREHOOK: query: -- no agg, corr, having
-select * 
+PREHOOK: query: select * 
 from src_cbo b 
 group by key, value
 having not exists 
@@ -153,8 +148,7 @@ having not exists
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_cbo
 #### A masked pattern was here ####
-POSTHOOK: query: -- no agg, corr, having
-select * 
+POSTHOOK: query: select * 
 from src_cbo b 
 group by key, value
 having not exists 
@@ -179,9 +173,7 @@ POSTHOOK: Input: default@src_cbo
 118	val_118
 119	val_119
 12	val_12
-PREHOOK: query: -- 19. SubQueries Exists
--- view test
-create view cv1 as 
+PREHOOK: query: create view cv1 as 
 select * 
 from src_cbo b 
 where exists
@@ -192,9 +184,7 @@ PREHOOK: type: CREATEVIEW
 PREHOOK: Input: default@src_cbo
 PREHOOK: Output: database:default
 PREHOOK: Output: default@cv1
-POSTHOOK: query: -- 19. SubQueries Exists
--- view test
-create view cv1 as 
+POSTHOOK: query: create view cv1 as 
 select * 
 from src_cbo b 
 where exists
@@ -226,8 +216,7 @@ POSTHOOK: Input: default@src_cbo
 97	val_97
 98	val_98
 98	val_98
-PREHOOK: query: -- sq in from
-select * 
+PREHOOK: query: select * 
 from (select * 
       from src_cbo b 
       where exists 
@@ -238,8 +227,7 @@ from (select *
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_cbo
 #### A masked pattern was here ####
-POSTHOOK: query: -- sq in from
-select * 
+POSTHOOK: query: select * 
 from (select * 
       from src_cbo b 
       where exists 
@@ -261,8 +249,7 @@ POSTHOOK: Input: default@src_cbo
 97	val_97
 98	val_98
 98	val_98
-PREHOOK: query: -- sq in from, having
-select *
+PREHOOK: query: select *
 from (select b.key, count(*) 
   from src_cbo b 
   group by b.key
@@ -275,8 +262,7 @@ from (select b.key, count(*)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_cbo
 #### A masked pattern was here ####
-POSTHOOK: query: -- sq in from, having
-select *
+POSTHOOK: query: select *
 from (select b.key, count(*) 
   from src_cbo b 
   group by b.key

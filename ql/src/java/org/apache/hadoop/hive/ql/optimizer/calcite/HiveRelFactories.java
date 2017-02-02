@@ -146,7 +146,7 @@ public class HiveRelFactories {
     @Override
     public RelNode createJoin(RelNode left, RelNode right, RexNode condition, JoinRelType joinType,
         Set<String> variablesStopped, boolean semiJoinDone) {
-      return HiveJoin.getJoin(left.getCluster(), left, right, condition, joinType, false);
+      return HiveJoin.getJoin(left.getCluster(), left, right, condition, joinType);
     }
 
     @Override
@@ -154,7 +154,7 @@ public class HiveRelFactories {
         Set<CorrelationId> variablesSet, JoinRelType joinType, boolean semiJoinDone) {
       // According to calcite, it is going to be removed before Calcite-2.0
       // TODO: to handle CorrelationId
-      return HiveJoin.getJoin(left.getCluster(), left, right, condition, joinType, semiJoinDone);
+      return HiveJoin.getJoin(left.getCluster(), left, right, condition, joinType);
     }
   }
 

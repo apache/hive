@@ -1,12 +1,8 @@
-PREHOOK: query: -- SORT_QUERY_RESULTS
-
-CREATE TABLE mytable(val1 INT, val2 INT, val3 INT)
+PREHOOK: query: CREATE TABLE mytable(val1 INT, val2 INT, val3 INT)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@mytable
-POSTHOOK: query: -- SORT_QUERY_RESULTS
-
-CREATE TABLE mytable(val1 INT, val2 INT, val3 INT)
+POSTHOOK: query: CREATE TABLE mytable(val1 INT, val2 INT, val3 INT)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@mytable

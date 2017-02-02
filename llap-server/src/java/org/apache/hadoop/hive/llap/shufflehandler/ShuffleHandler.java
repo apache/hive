@@ -838,7 +838,7 @@ public class ShuffleHandler implements AttemptRegistrationListener {
         response.setHeader(HttpHeaders.Names.CONNECTION, HttpHeaders.Values.KEEP_ALIVE);
         response.setHeader(HttpHeaders.Values.KEEP_ALIVE, "timeout="
             + connectionKeepAliveTimeOut);
-        LOG.info("Content Length in shuffle : " + contentLength);
+        LOG.debug("Content Length in shuffle : " + contentLength);
       }
     }
 

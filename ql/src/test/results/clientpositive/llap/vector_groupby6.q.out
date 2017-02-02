@@ -10,15 +10,11 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@srcorc
 POSTHOOK: Lineage: srcorc.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: srcorc.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: -- SORT_QUERY_RESULTS
-
-CREATE TABLE dest1(c1 STRING) STORED AS ORC
+PREHOOK: query: CREATE TABLE dest1(c1 STRING) STORED AS ORC
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@dest1
-POSTHOOK: query: -- SORT_QUERY_RESULTS
-
-CREATE TABLE dest1(c1 STRING) STORED AS ORC
+POSTHOOK: query: CREATE TABLE dest1(c1 STRING) STORED AS ORC
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@dest1

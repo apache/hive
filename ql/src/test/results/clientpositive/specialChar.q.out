@@ -1,0 +1,96 @@
+PREHOOK: query: CREATE TABLE ts(s varchar(550))
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ts
+POSTHOOK: query: CREATE TABLE ts(s varchar(550))
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ts
+PREHOOK: query: INSERT INTO ts VALUES ('Mozilla/5.0 (iPhone; CPU iPhone OS 5_0 like Mac OS X) AppleWebKit/534.46 (KHTML, like Gecko) Version/5.1 Mobile/9A334 Safari/7534.48.3')
+PREHOOK: type: QUERY
+PREHOOK: Output: default@ts
+POSTHOOK: query: INSERT INTO ts VALUES ('Mozilla/5.0 (iPhone; CPU iPhone OS 5_0 like Mac OS X) AppleWebKit/534.46 (KHTML, like Gecko) Version/5.1 Mobile/9A334 Safari/7534.48.3')
+POSTHOOK: type: QUERY
+POSTHOOK: Output: default@ts
+POSTHOOK: Lineage: ts.s EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+PREHOOK: query: INSERT INTO ts VALUES ("Mozilla/5.0 (iPhone; CPU iPhone OS 5_0 like Mac OS X) AppleWebKit/534.46 (KHTML, like Gecko) Version/5.1 Mobile/9A334 Safari/7534.48.3")
+PREHOOK: type: QUERY
+PREHOOK: Output: default@ts
+POSTHOOK: query: INSERT INTO ts VALUES ("Mozilla/5.0 (iPhone; CPU iPhone OS 5_0 like Mac OS X) AppleWebKit/534.46 (KHTML, like Gecko) Version/5.1 Mobile/9A334 Safari/7534.48.3")
+POSTHOOK: type: QUERY
+POSTHOOK: Output: default@ts
+POSTHOOK: Lineage: ts.s EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+PREHOOK: query: INSERT INTO ts VALUES ("Mozilla/5.0 (iPhone\; \\; \\\;CPU iPhone OS 5_0 like Mac OS X) AppleWebKit/534.46 (KHTML, like Gecko) Version/5.1 Mobile/9A334 Safari/7534.48.3")
+PREHOOK: type: QUERY
+PREHOOK: Output: default@ts
+POSTHOOK: query: INSERT INTO ts VALUES ("Mozilla/5.0 (iPhone\; \\; \\\;CPU iPhone OS 5_0 like Mac OS X) AppleWebKit/534.46 (KHTML, like Gecko) Version/5.1 Mobile/9A334 Safari/7534.48.3")
+POSTHOOK: type: QUERY
+POSTHOOK: Output: default@ts
+POSTHOOK: Lineage: ts.s EXPRESSION [(values__tmp__table__3)values__tmp__table__3.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+PREHOOK: query: INSERT INTO ts VALUES ("Mozilla/5.0 (iPhone\/; \/\/\/;CPU \;\;\;iPhone OS 5_0 like Mac OS X) AppleWebKit/534.46 (KHTML, like Gecko) Version/5.1 Mobile/9A334 Safari/7534.48.3")
+PREHOOK: type: QUERY
+PREHOOK: Output: default@ts
+POSTHOOK: query: INSERT INTO ts VALUES ("Mozilla/5.0 (iPhone\/; \/\/\/;CPU \;\;\;iPhone OS 5_0 like Mac OS X) AppleWebKit/534.46 (KHTML, like Gecko) Version/5.1 Mobile/9A334 Safari/7534.48.3")
+POSTHOOK: type: QUERY
+POSTHOOK: Output: default@ts
+POSTHOOK: Lineage: ts.s EXPRESSION [(values__tmp__table__4)values__tmp__table__4.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+PREHOOK: query: INSERT INTO ts VALUES ('\'')
+PREHOOK: type: QUERY
+PREHOOK: Output: default@ts
+POSTHOOK: query: INSERT INTO ts VALUES ('\'')
+POSTHOOK: type: QUERY
+POSTHOOK: Output: default@ts
+POSTHOOK: Lineage: ts.s EXPRESSION [(values__tmp__table__5)values__tmp__table__5.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+PREHOOK: query: INSERT INTO ts VALUES ('\"')
+PREHOOK: type: QUERY
+PREHOOK: Output: default@ts
+POSTHOOK: query: INSERT INTO ts VALUES ('\"')
+POSTHOOK: type: QUERY
+POSTHOOK: Output: default@ts
+POSTHOOK: Lineage: ts.s EXPRESSION [(values__tmp__table__6)values__tmp__table__6.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+PREHOOK: query: INSERT INTO ts VALUES ("Mozilla\"\'/5.0 \"(iPhone; CPU iPhone OS 5_0 like Mac OS X) AppleWebKit/534.46 (KHTML, like Gecko) Version/5.1 Mobile/9A334 Safari/7534.48.3")
+PREHOOK: type: QUERY
+PREHOOK: Output: default@ts
+POSTHOOK: query: INSERT INTO ts VALUES ("Mozilla\"\'/5.0 \"(iPhone; CPU iPhone OS 5_0 like Mac OS X) AppleWebKit/534.46 (KHTML, like Gecko) Version/5.1 Mobile/9A334 Safari/7534.48.3")
+POSTHOOK: type: QUERY
+POSTHOOK: Output: default@ts
+POSTHOOK: Lineage: ts.s EXPRESSION [(values__tmp__table__7)values__tmp__table__7.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+PREHOOK: query: INSERT INTO ts VALUES ("Mozilla\'\"/5.0 \'(iPhone; CPU iPhone OS 5_0 like Mac OS X) AppleWebKit/534.46 (KHTML, like Gecko) Version/5.1 Mobile/9A334 Safari/7534.48.3")
+PREHOOK: type: QUERY
+PREHOOK: Output: default@ts
+POSTHOOK: query: INSERT INTO ts VALUES ("Mozilla\'\"/5.0 \'(iPhone; CPU iPhone OS 5_0 like Mac OS X) AppleWebKit/534.46 (KHTML, like Gecko) Version/5.1 Mobile/9A334 Safari/7534.48.3")
+POSTHOOK: type: QUERY
+POSTHOOK: Output: default@ts
+POSTHOOK: Lineage: ts.s EXPRESSION [(values__tmp__table__8)values__tmp__table__8.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+PREHOOK: query: INSERT INTO ts VALUES ("Mozilla\\\"/5.0 ;;;;;;(iPhone; CPU iPhone OS 5_0 like Mac OS X) AppleWebKit/534.46 (KHTML, like Gecko) Version/5.1 Mobile/9A334 Safari/7534.48.3")
+PREHOOK: type: QUERY
+PREHOOK: Output: default@ts
+POSTHOOK: query: INSERT INTO ts VALUES ("Mozilla\\\"/5.0 ;;;;;;(iPhone; CPU iPhone OS 5_0 like Mac OS X) AppleWebKit/534.46 (KHTML, like Gecko) Version/5.1 Mobile/9A334 Safari/7534.48.3")
+POSTHOOK: type: QUERY
+POSTHOOK: Output: default@ts
+POSTHOOK: Lineage: ts.s EXPRESSION [(values__tmp__table__9)values__tmp__table__9.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+PREHOOK: query: INSERT INTO ts VALUES ("Mozilla\'\\/5.0 ;;;\";;\";(iPhone; CPU iPhone OS 5_0 like Mac OS X) AppleWebKit/534.46 (KHTML, like Gecko) Version/5.1 Mobile/9A334 Safari/7534.48.3")
+PREHOOK: type: QUERY
+PREHOOK: Output: default@ts
+POSTHOOK: query: INSERT INTO ts VALUES ("Mozilla\'\\/5.0 ;;;\";;\";(iPhone; CPU iPhone OS 5_0 like Mac OS X) AppleWebKit/534.46 (KHTML, like Gecko) Version/5.1 Mobile/9A334 Safari/7534.48.3")
+POSTHOOK: type: QUERY
+POSTHOOK: Output: default@ts
+POSTHOOK: Lineage: ts.s EXPRESSION [(values__tmp__table__10)values__tmp__table__10.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+PREHOOK: query: select * from ts order by s
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ts
+#### A masked pattern was here ####
+POSTHOOK: query: select * from ts order by s
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ts
+#### A masked pattern was here ####
+"
+'
+Mozilla"'/5.0 "(iPhone; CPU iPhone OS 5_0 like Mac OS X) AppleWebKit/534.46 (KHTML, like Gecko) Version/5.1 Mobile/9A334 Safari/7534.48.3
+Mozilla'"/5.0 '(iPhone; CPU iPhone OS 5_0 like Mac OS X) AppleWebKit/534.46 (KHTML, like Gecko) Version/5.1 Mobile/9A334 Safari/7534.48.3
+Mozilla'\/5.0 ;;;";;";(iPhone; CPU iPhone OS 5_0 like Mac OS X) AppleWebKit/534.46 (KHTML, like Gecko) Version/5.1 Mobile/9A334 Safari/7534.48.3
+Mozilla/5.0 (iPhone/; ///;CPU ;;;iPhone OS 5_0 like Mac OS X) AppleWebKit/534.46 (KHTML, like Gecko) Version/5.1 Mobile/9A334 Safari/7534.48.3
+Mozilla/5.0 (iPhone; CPU iPhone OS 5_0 like Mac OS X) AppleWebKit/534.46 (KHTML, like Gecko) Version/5.1 Mobile/9A334 Safari/7534.48.3
+Mozilla/5.0 (iPhone; CPU iPhone OS 5_0 like Mac OS X) AppleWebKit/534.46 (KHTML, like Gecko) Version/5.1 Mobile/9A334 Safari/7534.48.3
+Mozilla/5.0 (iPhone; \; \;CPU iPhone OS 5_0 like Mac OS X) AppleWebKit/534.46 (KHTML, like Gecko) Version/5.1 Mobile/9A334 Safari/7534.48.3
+Mozilla\"/5.0 ;;;;;;(iPhone; CPU iPhone OS 5_0 like Mac OS X) AppleWebKit/534.46 (KHTML, like Gecko) Version/5.1 Mobile/9A334 Safari/7534.48.3

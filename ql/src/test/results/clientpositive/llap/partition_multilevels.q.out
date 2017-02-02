@@ -438,8 +438,7 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
 POSTHOOK: Output: default@partition_test_multilevel@level1=2222/level2=333/level3=44
 POSTHOOK: Lineage: partition_test_multilevel PARTITION(level1=2222,level2=333,level3=44).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: partition_test_multilevel PARTITION(level1=2222,level2=333,level3=44).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: -- beginning level partition in predicate
-select level1, level2, level3, count(*) from partition_test_multilevel where level1 = '2222' group by level1, level2, level3
+PREHOOK: query: select level1, level2, level3, count(*) from partition_test_multilevel where level1 = '2222' group by level1, level2, level3
 PREHOOK: type: QUERY
 PREHOOK: Input: default@partition_test_multilevel
 PREHOOK: Input: default@partition_test_multilevel@level1=2222/level2=111/level3=11
@@ -455,8 +454,7 @@ PREHOOK: Input: default@partition_test_multilevel@level1=2222/level2=333/level3=
 PREHOOK: Input: default@partition_test_multilevel@level1=2222/level2=333/level3=33
 PREHOOK: Input: default@partition_test_multilevel@level1=2222/level2=333/level3=44
 #### A masked pattern was here ####
-POSTHOOK: query: -- beginning level partition in predicate
-select level1, level2, level3, count(*) from partition_test_multilevel where level1 = '2222' group by level1, level2, level3
+POSTHOOK: query: select level1, level2, level3, count(*) from partition_test_multilevel where level1 = '2222' group by level1, level2, level3
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@partition_test_multilevel
 POSTHOOK: Input: default@partition_test_multilevel@level1=2222/level2=111/level3=11
@@ -572,8 +570,7 @@ POSTHOOK: Input: default@partition_test_multilevel@level1=1111/level2=333/level3
 1111	333	22	20
 1111	333	33	21
 1111	333	44	22
-PREHOOK: query: -- middle level partition in predicate
-select level1, level2, level3, count(*) from partition_test_multilevel where level2 = '222' group by level1, level2, level3
+PREHOOK: query: select level1, level2, level3, count(*) from partition_test_multilevel where level2 = '222' group by level1, level2, level3
 PREHOOK: type: QUERY
 PREHOOK: Input: default@partition_test_multilevel
 PREHOOK: Input: default@partition_test_multilevel@level1=1111/level2=222/level3=11
@@ -585,8 +582,7 @@ PREHOOK: Input: default@partition_test_multilevel@level1=2222/level2=222/level3=
 PREHOOK: Input: default@partition_test_multilevel@level1=2222/level2=222/level3=33
 PREHOOK: Input: default@partition_test_multilevel@level1=2222/level2=222/level3=44
 #### A masked pattern was here ####
-POSTHOOK: query: -- middle level partition in predicate
-select level1, level2, level3, count(*) from partition_test_multilevel where level2 = '222' group by level1, level2, level3
+POSTHOOK: query: select level1, level2, level3, count(*) from partition_test_multilevel where level2 = '222' group by level1, level2, level3
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@partition_test_multilevel
 POSTHOOK: Input: default@partition_test_multilevel@level1=1111/level2=222/level3=11
@@ -718,8 +714,7 @@ POSTHOOK: Input: default@partition_test_multilevel@level1=2222/level2=333/level3
 2222	333	22	20
 2222	333	33	21
 2222	333	44	22
-PREHOOK: query: -- ending level partition in predicate
-select level1, level2, level3, count(*) from partition_test_multilevel where level3 = '22' group by level1, level2, level3
+PREHOOK: query: select level1, level2, level3, count(*) from partition_test_multilevel where level3 = '22' group by level1, level2, level3
 PREHOOK: type: QUERY
 PREHOOK: Input: default@partition_test_multilevel
 PREHOOK: Input: default@partition_test_multilevel@level1=1111/level2=111/level3=22
@@ -729,8 +724,7 @@ PREHOOK: Input: default@partition_test_multilevel@level1=2222/level2=111/level3=
 PREHOOK: Input: default@partition_test_multilevel@level1=2222/level2=222/level3=22
 PREHOOK: Input: default@partition_test_multilevel@level1=2222/level2=333/level3=22
 #### A masked pattern was here ####
-POSTHOOK: query: -- ending level partition in predicate
-select level1, level2, level3, count(*) from partition_test_multilevel where level3 = '22' group by level1, level2, level3
+POSTHOOK: query: select level1, level2, level3, count(*) from partition_test_multilevel where level3 = '22' group by level1, level2, level3
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@partition_test_multilevel
 POSTHOOK: Input: default@partition_test_multilevel@level1=1111/level2=111/level3=22
@@ -870,8 +864,7 @@ POSTHOOK: Input: default@partition_test_multilevel@level1=2222/level2=333/level3
 2222	333	11	19
 2222	333	33	21
 2222	333	44	22
-PREHOOK: query: -- two different levels of partitions in predicate
-select level1, level2, level3, count(*) from partition_test_multilevel where level2 >= '222' and level3 = '33' group by level1, level2, level3
+PREHOOK: query: select level1, level2, level3, count(*) from partition_test_multilevel where level2 >= '222' and level3 = '33' group by level1, level2, level3
 PREHOOK: type: QUERY
 PREHOOK: Input: default@partition_test_multilevel
 PREHOOK: Input: default@partition_test_multilevel@level1=1111/level2=222/level3=33
@@ -879,8 +872,7 @@ PREHOOK: Input: default@partition_test_multilevel@level1=1111/level2=333/level3=
 PREHOOK: Input: default@partition_test_multilevel@level1=2222/level2=222/level3=33
 PREHOOK: Input: default@partition_test_multilevel@level1=2222/level2=333/level3=33
 #### A masked pattern was here ####
-POSTHOOK: query: -- two different levels of partitions in predicate
-select level1, level2, level3, count(*) from partition_test_multilevel where level2 >= '222' and level3 = '33' group by level1, level2, level3
+POSTHOOK: query: select level1, level2, level3, count(*) from partition_test_multilevel where level2 >= '222' and level3 = '33' group by level1, level2, level3
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@partition_test_multilevel
 POSTHOOK: Input: default@partition_test_multilevel@level1=1111/level2=222/level3=33
@@ -918,8 +910,7 @@ POSTHOOK: Input: default@partition_test_multilevel@level1=1111/level2=333/level3
 1111	222	44	18
 1111	333	33	21
 1111	333	44	22
-PREHOOK: query: -- all levels of partitions in predicate
-select level1, level2, level3, count(*) from partition_test_multilevel where level1 = '2222' and level2 >= '222' and level3 <= '33' group by level1, level2, level3
+PREHOOK: query: select level1, level2, level3, count(*) from partition_test_multilevel where level1 = '2222' and level2 >= '222' and level3 <= '33' group by level1, level2, level3
 PREHOOK: type: QUERY
 PREHOOK: Input: default@partition_test_multilevel
 PREHOOK: Input: default@partition_test_multilevel@level1=2222/level2=222/level3=11
@@ -929,8 +920,7 @@ PREHOOK: Input: default@partition_test_multilevel@level1=2222/level2=333/level3=
 PREHOOK: Input: default@partition_test_multilevel@level1=2222/level2=333/level3=22
 PREHOOK: Input: default@partition_test_multilevel@level1=2222/level2=333/level3=33
 #### A masked pattern was here ####
-POSTHOOK: query: -- all levels of partitions in predicate
-select level1, level2, level3, count(*) from partition_test_multilevel where level1 = '2222' and level2 >= '222' and level3 <= '33' group by level1, level2, level3
+POSTHOOK: query: select level1, level2, level3, count(*) from partition_test_multilevel where level1 = '2222' and level2 >= '222' and level3 <= '33' group by level1, level2, level3
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@partition_test_multilevel
 POSTHOOK: Input: default@partition_test_multilevel@level1=2222/level2=222/level3=11
@@ -946,8 +936,7 @@ POSTHOOK: Input: default@partition_test_multilevel@level1=2222/level2=333/level3
 2222	333	11	19
 2222	333	22	20
 2222	333	33	21
-PREHOOK: query: -- between
-select level1, level2, level3, count(*) from partition_test_multilevel where (level1 = '2222') and (level2 between '222' and '333') and (level3 between '11' and '33') group by level1, level2, level3
+PREHOOK: query: select level1, level2, level3, count(*) from partition_test_multilevel where (level1 = '2222') and (level2 between '222' and '333') and (level3 between '11' and '33') group by level1, level2, level3
 PREHOOK: type: QUERY
 PREHOOK: Input: default@partition_test_multilevel
 PREHOOK: Input: default@partition_test_multilevel@level1=2222/level2=222/level3=11
@@ -957,8 +946,7 @@ PREHOOK: Input: default@partition_test_multilevel@level1=2222/level2=333/level3=
 PREHOOK: Input: default@partition_test_multilevel@level1=2222/level2=333/level3=22
 PREHOOK: Input: default@partition_test_multilevel@level1=2222/level2=333/level3=33
 #### A masked pattern was here ####
-POSTHOOK: query: -- between
-select level1, level2, level3, count(*) from partition_test_multilevel where (level1 = '2222') and (level2 between '222' and '333') and (level3 between '11' and '33') group by level1, level2, level3
+POSTHOOK: query: select level1, level2, level3, count(*) from partition_test_multilevel where (level1 = '2222') and (level2 between '222' and '333') and (level3 between '11' and '33') group by level1, level2, level3
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@partition_test_multilevel
 POSTHOOK: Input: default@partition_test_multilevel@level1=2222/level2=222/level3=11
@@ -1040,8 +1028,7 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: -- beginning level partition in predicate
-select level1, level2, level3, count(*) from partition_test_multilevel where level1 = '2222' group by level1, level2, level3
+PREHOOK: query: select level1, level2, level3, count(*) from partition_test_multilevel where level1 = '2222' group by level1, level2, level3
 PREHOOK: type: QUERY
 PREHOOK: Input: default@partition_test_multilevel
 PREHOOK: Input: default@partition_test_multilevel@level1=2222/level2=111/level3=11
@@ -1057,8 +1044,7 @@ PREHOOK: Input: default@partition_test_multilevel@level1=2222/level2=333/level3=
 PREHOOK: Input: default@partition_test_multilevel@level1=2222/level2=333/level3=33
 PREHOOK: Input: default@partition_test_multilevel@level1=2222/level2=333/level3=44
 #### A masked pattern was here ####
-POSTHOOK: query: -- beginning level partition in predicate
-select level1, level2, level3, count(*) from partition_test_multilevel where level1 = '2222' group by level1, level2, level3
+POSTHOOK: query: select level1, level2, level3, count(*) from partition_test_multilevel where level1 = '2222' group by level1, level2, level3
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@partition_test_multilevel
 POSTHOOK: Input: default@partition_test_multilevel@level1=2222/level2=111/level3=11
@@ -1174,8 +1160,7 @@ POSTHOOK: Input: default@partition_test_multilevel@level1=1111/level2=333/level3
 1111	333	22	20
 1111	333	33	21
 1111	333	44	22
-PREHOOK: query: -- middle level partition in predicate
-select level1, level2, level3, count(*) from partition_test_multilevel where level2 = '222' group by level1, level2, level3
+PREHOOK: query: select level1, level2, level3, count(*) from partition_test_multilevel where level2 = '222' group by level1, level2, level3
 PREHOOK: type: QUERY
 PREHOOK: Input: default@partition_test_multilevel
 PREHOOK: Input: default@partition_test_multilevel@level1=1111/level2=222/level3=11
@@ -1187,8 +1172,7 @@ PREHOOK: Input: default@partition_test_multilevel@level1=2222/level2=222/level3=
 PREHOOK: Input: default@partition_test_multilevel@level1=2222/level2=222/level3=33
 PREHOOK: Input: default@partition_test_multilevel@level1=2222/level2=222/level3=44
 #### A masked pattern was here ####
-POSTHOOK: query: -- middle level partition in predicate
-select level1, level2, level3, count(*) from partition_test_multilevel where level2 = '222' group by level1, level2, level3
+POSTHOOK: query: select level1, level2, level3, count(*) from partition_test_multilevel where level2 = '222' group by level1, level2, level3
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@partition_test_multilevel
 POSTHOOK: Input: default@partition_test_multilevel@level1=1111/level2=222/level3=11
@@ -1320,8 +1304,7 @@ POSTHOOK: Input: default@partition_test_multilevel@level1=2222/level2=333/level3
 2222	333	22	20
 2222	333	33	21
 2222	333	44	22
-PREHOOK: query: -- ending level partition in predicate
-select level1, level2, level3, count(*) from partition_test_multilevel where level3 = '22' group by level1, level2, level3
+PREHOOK: query: select level1, level2, level3, count(*) from partition_test_multilevel where level3 = '22' group by level1, level2, level3
 PREHOOK: type: QUERY
 PREHOOK: Input: default@partition_test_multilevel
 PREHOOK: Input: default@partition_test_multilevel@level1=1111/level2=111/level3=22
@@ -1331,8 +1314,7 @@ PREHOOK: Input: default@partition_test_multilevel@level1=2222/level2=111/level3=
 PREHOOK: Input: default@partition_test_multilevel@level1=2222/level2=222/level3=22
 PREHOOK: Input: default@partition_test_multilevel@level1=2222/level2=333/level3=22
 #### A masked pattern was here ####
-POSTHOOK: query: -- ending level partition in predicate
-select level1, level2, level3, count(*) from partition_test_multilevel where level3 = '22' group by level1, level2, level3
+POSTHOOK: query: select level1, level2, level3, count(*) from partition_test_multilevel where level3 = '22' group by level1, level2, level3
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@partition_test_multilevel
 POSTHOOK: Input: default@partition_test_multilevel@level1=1111/level2=111/level3=22
@@ -1472,8 +1454,7 @@ POSTHOOK: Input: default@partition_test_multilevel@level1=2222/level2=333/level3
 2222	333	11	19
 2222	333	33	21
 2222	333	44	22
-PREHOOK: query: -- two different levels of partitions in predicate
-select level1, level2, level3, count(*) from partition_test_multilevel where level2 >= '222' and level3 = '33' group by level1, level2, level3
+PREHOOK: query: select level1, level2, level3, count(*) from partition_test_multilevel where level2 >= '222' and level3 = '33' group by level1, level2, level3
 PREHOOK: type: QUERY
 PREHOOK: Input: default@partition_test_multilevel
 PREHOOK: Input: default@partition_test_multilevel@level1=1111/level2=222/level3=33
@@ -1481,8 +1462,7 @@ PREHOOK: Input: default@partition_test_multilevel@level1=1111/level2=333/level3=
 PREHOOK: Input: default@partition_test_multilevel@level1=2222/level2=222/level3=33
 PREHOOK: Input: default@partition_test_multilevel@level1=2222/level2=333/level3=33
 #### A masked pattern was here ####
-POSTHOOK: query: -- two different levels of partitions in predicate
-select level1, level2, level3, count(*) from partition_test_multilevel where level2 >= '222' and level3 = '33' group by level1, level2, level3
+POSTHOOK: query: select level1, level2, level3, count(*) from partition_test_multilevel where level2 >= '222' and level3 = '33' group by level1, level2, level3
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@partition_test_multilevel
 POSTHOOK: Input: default@partition_test_multilevel@level1=1111/level2=222/level3=33
@@ -1520,8 +1500,7 @@ POSTHOOK: Input: default@partition_test_multilevel@level1=1111/level2=333/level3
 1111	222	44	18
 1111	333	33	21
 1111	333	44	22
-PREHOOK: query: -- all levels of partitions in predicate
-select level1, level2, level3, count(*) from partition_test_multilevel where level1 = '2222' and level2 >= '222' and level3 <= '33' group by level1, level2, level3
+PREHOOK: query: select level1, level2, level3, count(*) from partition_test_multilevel where level1 = '2222' and level2 >= '222' and level3 <= '33' group by level1, level2, level3
 PREHOOK: type: QUERY
 PREHOOK: Input: default@partition_test_multilevel
 PREHOOK: Input: default@partition_test_multilevel@level1=2222/level2=222/level3=11
@@ -1531,8 +1510,7 @@ PREHOOK: Input: default@partition_test_multilevel@level1=2222/level2=333/level3=
 PREHOOK: Input: default@partition_test_multilevel@level1=2222/level2=333/level3=22
 PREHOOK: Input: default@partition_test_multilevel@level1=2222/level2=333/level3=33
 #### A masked pattern was here ####
-POSTHOOK: query: -- all levels of partitions in predicate
-select level1, level2, level3, count(*) from partition_test_multilevel where level1 = '2222' and level2 >= '222' and level3 <= '33' group by level1, level2, level3
+POSTHOOK: query: select level1, level2, level3, count(*) from partition_test_multilevel where level1 = '2222' and level2 >= '222' and level3 <= '33' group by level1, level2, level3
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@partition_test_multilevel
 POSTHOOK: Input: default@partition_test_multilevel@level1=2222/level2=222/level3=11
@@ -1548,8 +1526,7 @@ POSTHOOK: Input: default@partition_test_multilevel@level1=2222/level2=333/level3
 2222	333	11	19
 2222	333	22	20
 2222	333	33	21
-PREHOOK: query: -- between
-select level1, level2, level3, count(*) from partition_test_multilevel where (level1 = '2222') and (level2 between '222' and '333') and (level3 between '11' and '33') group by level1, level2, level3
+PREHOOK: query: select level1, level2, level3, count(*) from partition_test_multilevel where (level1 = '2222') and (level2 between '222' and '333') and (level3 between '11' and '33') group by level1, level2, level3
 PREHOOK: type: QUERY
 PREHOOK: Input: default@partition_test_multilevel
 PREHOOK: Input: default@partition_test_multilevel@level1=2222/level2=222/level3=11
@@ -1559,8 +1536,7 @@ PREHOOK: Input: default@partition_test_multilevel@level1=2222/level2=333/level3=
 PREHOOK: Input: default@partition_test_multilevel@level1=2222/level2=333/level3=22
 PREHOOK: Input: default@partition_test_multilevel@level1=2222/level2=333/level3=33
 #### A masked pattern was here ####
-POSTHOOK: query: -- between
-select level1, level2, level3, count(*) from partition_test_multilevel where (level1 = '2222') and (level2 between '222' and '333') and (level3 between '11' and '33') group by level1, level2, level3
+POSTHOOK: query: select level1, level2, level3, count(*) from partition_test_multilevel where (level1 = '2222') and (level2 between '222' and '333') and (level3 between '11' and '33') group by level1, level2, level3
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@partition_test_multilevel
 POSTHOOK: Input: default@partition_test_multilevel@level1=2222/level2=222/level3=11

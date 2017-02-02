@@ -1,16 +1,8 @@
-PREHOOK: query: -- This test verifies that the sort merge join optimizer works when the tables are sorted on columns which is a superset
--- of join columns
-
--- Create bucketed and sorted tables
-CREATE TABLE test_table1 (key INT, value STRING) CLUSTERED BY (key) SORTED BY (key ASC, value ASC) INTO 16 BUCKETS
+PREHOOK: query: CREATE TABLE test_table1 (key INT, value STRING) CLUSTERED BY (key) SORTED BY (key ASC, value ASC) INTO 16 BUCKETS
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@test_table1
-POSTHOOK: query: -- This test verifies that the sort merge join optimizer works when the tables are sorted on columns which is a superset
--- of join columns
-
--- Create bucketed and sorted tables
-CREATE TABLE test_table1 (key INT, value STRING) CLUSTERED BY (key) SORTED BY (key ASC, value ASC) INTO 16 BUCKETS
+POSTHOOK: query: CREATE TABLE test_table1 (key INT, value STRING) CLUSTERED BY (key) SORTED BY (key ASC, value ASC) INTO 16 BUCKETS
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_table1
@@ -40,12 +32,10 @@ POSTHOOK: Lineage: test_table1.key EXPRESSION [(src)src.FieldSchema(name:key, ty
 POSTHOOK: Lineage: test_table1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: test_table2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: test_table2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: -- it should be converted to a sort-merge join, since the first sort column (#join columns = 1) contains the join columns
-EXPLAIN EXTENDED
+PREHOOK: query: EXPLAIN EXTENDED
 SELECT /*+mapjoin(b)*/ * FROM test_table1 a JOIN test_table2 b ON a.key = b.key ORDER BY a.key LIMIT 10
 PREHOOK: type: QUERY
-POSTHOOK: query: -- it should be converted to a sort-merge join, since the first sort column (#join columns = 1) contains the join columns
-EXPLAIN EXTENDED
+POSTHOOK: query: EXPLAIN EXTENDED
 SELECT /*+mapjoin(b)*/ * FROM test_table1 a JOIN test_table2 b ON a.key = b.key ORDER BY a.key LIMIT 10
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -95,6 +85,7 @@ STAGE PLANS:
                     SORTBUCKETCOLSPREFIX TRUE
                     bucket_count 16
                     bucket_field_name key
+                    column.name.delimiter ,
                     columns key,value
                     columns.comments 
                     columns.types int:string
@@ -117,6 +108,7 @@ STAGE PLANS:
                       SORTBUCKETCOLSPREFIX TRUE
                       bucket_count 16
                       bucket_field_name key
+                      column.name.delimiter ,
                       columns key,value
                       columns.comments 
                       columns.types int:string
@@ -169,6 +161,7 @@ STAGE PLANS:
                     SORTBUCKETCOLSPREFIX TRUE
                     bucket_count 16
                     bucket_field_name key
+                    column.name.delimiter ,
                     columns key,value
                     columns.comments 
                     columns.types int:string
@@ -191,6 +184,7 @@ STAGE PLANS:
                       SORTBUCKETCOLSPREFIX TRUE
                       bucket_count 16
                       bucket_field_name key
+                      column.name.delimiter ,
                       columns key,value
                       columns.comments 
                       columns.types int:string
@@ -312,13 +306,11 @@ POSTHOOK: query: DROP TABLE test_table2
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@test_table2
 POSTHOOK: Output: default@test_table2
-PREHOOK: query: -- Create bucketed and sorted tables
-CREATE TABLE test_table1 (key INT, key2 INT, value STRING) CLUSTERED BY (key) SORTED BY (key ASC, key2 ASC, value ASC) INTO 16 BUCKETS
+PREHOOK: query: CREATE TABLE test_table1 (key INT, key2 INT, value STRING) CLUSTERED BY (key) SORTED BY (key ASC, key2 ASC, value ASC) INTO 16 BUCKETS
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@test_table1
-POSTHOOK: query: -- Create bucketed and sorted tables
-CREATE TABLE test_table1 (key INT, key2 INT, value STRING) CLUSTERED BY (key) SORTED BY (key ASC, key2 ASC, value ASC) INTO 16 BUCKETS
+POSTHOOK: query: CREATE TABLE test_table1 (key INT, key2 INT, value STRING) CLUSTERED BY (key) SORTED BY (key ASC, key2 ASC, value ASC) INTO 16 BUCKETS
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_table1
@@ -350,12 +342,10 @@ POSTHOOK: Lineage: test_table1.value SIMPLE [(src)src.FieldSchema(name:value, ty
 POSTHOOK: Lineage: test_table2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: test_table2.key2 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: test_table2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: -- it should be converted to a sort-merge join, since the first 2 sort columns (#join columns = 2) contain the join columns
-EXPLAIN EXTENDED
+PREHOOK: query: EXPLAIN EXTENDED
 SELECT /*+mapjoin(b)*/ * FROM test_table1 a JOIN test_table2 b ON a.key = b.key and a.key2 = b.key2 ORDER BY a.key LIMIT 10
 PREHOOK: type: QUERY
-POSTHOOK: query: -- it should be converted to a sort-merge join, since the first 2 sort columns (#join columns = 2) contain the join columns
-EXPLAIN EXTENDED
+POSTHOOK: query: EXPLAIN EXTENDED
 SELECT /*+mapjoin(b)*/ * FROM test_table1 a JOIN test_table2 b ON a.key = b.key and a.key2 = b.key2 ORDER BY a.key LIMIT 10
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -405,6 +395,7 @@ STAGE PLANS:
                     SORTBUCKETCOLSPREFIX TRUE
                     bucket_count 16
                     bucket_field_name key
+                    column.name.delimiter ,
                     columns key,key2,value
                     columns.comments 
                     columns.types int:int:string
@@ -427,6 +418,7 @@ STAGE PLANS:
                       SORTBUCKETCOLSPREFIX TRUE
                       bucket_count 16
                       bucket_field_name key
+                      column.name.delimiter ,
                       columns key,key2,value
                       columns.comments 
                       columns.types int:int:string
@@ -479,6 +471,7 @@ STAGE PLANS:
                     SORTBUCKETCOLSPREFIX TRUE
                     bucket_count 16
                     bucket_field_name key
+                    column.name.delimiter ,
                     columns key,key2,value
                     columns.comments 
                     columns.types int:int:string
@@ -501,6 +494,7 @@ STAGE PLANS:
                       SORTBUCKETCOLSPREFIX TRUE
                       bucket_count 16
                       bucket_field_name key
+                      column.name.delimiter ,
                       columns key,key2,value
                       columns.comments 
                       columns.types int:int:string
@@ -606,14 +600,10 @@ POSTHOOK: Input: default@test_table2
 0	0	val_0	0	0	val_0
 0	0	val_0	0	0	val_0
 2	2	val_2	2	2	val_2
-PREHOOK: query: -- it should be converted to a sort-merge join, since the first 2 sort columns (#join columns = 2) contain the join columns
--- even if the order is not the same
-EXPLAIN EXTENDED
+PREHOOK: query: EXPLAIN EXTENDED
 SELECT /*+mapjoin(b)*/ * FROM test_table1 a JOIN test_table2 b ON a.key2 = b.key2 and a.key = b.key ORDER BY a.key LIMIT 10
 PREHOOK: type: QUERY
-POSTHOOK: query: -- it should be converted to a sort-merge join, since the first 2 sort columns (#join columns = 2) contain the join columns
--- even if the order is not the same
-EXPLAIN EXTENDED
+POSTHOOK: query: EXPLAIN EXTENDED
 SELECT /*+mapjoin(b)*/ * FROM test_table1 a JOIN test_table2 b ON a.key2 = b.key2 and a.key = b.key ORDER BY a.key LIMIT 10
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -663,6 +653,7 @@ STAGE PLANS:
                     SORTBUCKETCOLSPREFIX TRUE
                     bucket_count 16
                     bucket_field_name key
+                    column.name.delimiter ,
                     columns key,key2,value
                     columns.comments 
                     columns.types int:int:string
@@ -685,6 +676,7 @@ STAGE PLANS:
                       SORTBUCKETCOLSPREFIX TRUE
                       bucket_count 16
                       bucket_field_name key
+                      column.name.delimiter ,
                       columns key,key2,value
                       columns.comments 
                       columns.types int:int:string
@@ -737,6 +729,7 @@ STAGE PLANS:
                     SORTBUCKETCOLSPREFIX TRUE
                     bucket_count 16
                     bucket_field_name key
+                    column.name.delimiter ,
                     columns key,key2,value
                     columns.comments 
                     columns.types int:int:string
@@ -759,6 +752,7 @@ STAGE PLANS:
                       SORTBUCKETCOLSPREFIX TRUE
                       bucket_count 16
                       bucket_field_name key
+                      column.name.delimiter ,
                       columns key,key2,value
                       columns.comments 
                       columns.types int:int:string
@@ -864,14 +858,10 @@ POSTHOOK: Input: default@test_table2
 0	0	val_0	0	0	val_0
 0	0	val_0	0	0	val_0
 2	2	val_2	2	2	val_2
-PREHOOK: query: -- it should not be converted to a sort-merge join, since the first 2 sort columns (#join columns = 2) do not contain all 
--- the join columns
-EXPLAIN EXTENDED
+PREHOOK: query: EXPLAIN EXTENDED
 SELECT /*+mapjoin(b)*/ * FROM test_table1 a JOIN test_table2 b ON a.key = b.key and a.value = b.value ORDER BY a.key LIMIT 10
 PREHOOK: type: QUERY
-POSTHOOK: query: -- it should not be converted to a sort-merge join, since the first 2 sort columns (#join columns = 2) do not contain all 
--- the join columns
-EXPLAIN EXTENDED
+POSTHOOK: query: EXPLAIN EXTENDED
 SELECT /*+mapjoin(b)*/ * FROM test_table1 a JOIN test_table2 b ON a.key = b.key and a.value = b.value ORDER BY a.key LIMIT 10
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -921,6 +911,7 @@ STAGE PLANS:
                     SORTBUCKETCOLSPREFIX TRUE
                     bucket_count 16
                     bucket_field_name key
+                    column.name.delimiter ,
                     columns key,key2,value
                     columns.comments 
                     columns.types int:int:string
@@ -943,6 +934,7 @@ STAGE PLANS:
                       SORTBUCKETCOLSPREFIX TRUE
                       bucket_count 16
                       bucket_field_name key
+                      column.name.delimiter ,
                       columns key,key2,value
                       columns.comments 
                       columns.types int:int:string
@@ -995,6 +987,7 @@ STAGE PLANS:
                     SORTBUCKETCOLSPREFIX TRUE
                     bucket_count 16
                     bucket_field_name key
+                    column.name.delimiter ,
                     columns key,key2,value
                     columns.comments 
                     columns.types int:int:string
@@ -1017,6 +1010,7 @@ STAGE PLANS:
                       SORTBUCKETCOLSPREFIX TRUE
                       bucket_count 16
                       bucket_field_name key
+                      column.name.delimiter ,
                       columns key,key2,value
                       columns.comments 
                       columns.types int:int:string

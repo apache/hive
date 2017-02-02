@@ -183,11 +183,7 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
       }
       fs.mkdirs(mkDirPath);
       if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_WAREHOUSE_SUBDIR_INHERIT_PERMS)) {
-        try {
-          HdfsUtils.setFullFileStatus(conf, new HdfsUtils.HadoopFileStatus(conf, fs, actualPath), fs, mkDirPath, true);
-        } catch (Exception e) {
-          LOG.warn("Error setting permissions or group of " + actualPath, e);
-        }
+        HdfsUtils.setFullFileStatus(conf, new HdfsUtils.HadoopFileStatus(conf, fs, actualPath), fs, mkDirPath, true);
       }
     }
     return deletePath;
@@ -429,10 +425,6 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
     DataContainer dc;
     List<LinkedHashMap<String, String>> dps = Utilities.getFullDPSpecs(conf, dpCtx);
 
-    // publish DP columns to its subscribers
-    if (dps != null && dps.size() > 0) {
-      pushFeed(FeedType.DYNAMIC_PARTITIONS, dps);
-    }
     console.printInfo(System.getProperty("line.separator"));
     long startTime = System.currentTimeMillis();
     // load the list of DP partitions and return the list of partition specs
@@ -458,6 +450,11 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
         SessionState.get().getTxnMgr().getCurrentTxnId(), hasFollowingStatsTask(),
         work.getLoadTableWork().getWriteType(),
         tbd.getMmWriteId());
+
+    // publish DP columns to its subscribers
+    if (dps != null && dps.size() > 0) {
+      pushFeed(FeedType.DYNAMIC_PARTITIONS, dps);
+    }
 
     String loadTime = "\t Time taken to load dynamic partitions: "  +
         (System.currentTimeMillis() - startTime)/1000.0 + " seconds";

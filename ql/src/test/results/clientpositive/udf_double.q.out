@@ -8,3 +8,5 @@ PREHOOK: type: DESCFUNCTION
 POSTHOOK: query: DESCRIBE FUNCTION EXTENDED double
 POSTHOOK: type: DESCFUNCTION
 There is no documentation for function 'double'
+Function class:org.apache.hadoop.hive.ql.udf.UDFToDouble
+Function type:BUILTIN

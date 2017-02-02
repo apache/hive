@@ -25,6 +25,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
 
+import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.hive.common.type.HiveChar;
@@ -336,27 +337,28 @@ public class VectorRandomRowSource {
       {
         WritableHiveCharObjectInspector writableCharObjectInspector =
                 new WritableHiveCharObjectInspector( (CharTypeInfo) primitiveTypeInfo);
-        return writableCharObjectInspector.create(new HiveChar(StringUtils.EMPTY, -1));
+        return writableCharObjectInspector.create((HiveChar) object);
       }
     case VARCHAR:
       {
         WritableHiveVarcharObjectInspector writableVarcharObjectInspector =
                 new WritableHiveVarcharObjectInspector( (VarcharTypeInfo) primitiveTypeInfo);
-        return writableVarcharObjectInspector.create(new HiveVarchar(StringUtils.EMPTY, -1));
+        return writableVarcharObjectInspector.create((HiveVarchar) object);
       }
     case BINARY:
-      return PrimitiveObjectInspectorFactory.writableBinaryObjectInspector.create(ArrayUtils.EMPTY_BYTE_ARRAY);
+      return PrimitiveObjectInspectorFactory.writableBinaryObjectInspector.create((byte[]) object);
     case TIMESTAMP:
-      return ((WritableTimestampObjectInspector) objectInspector).create(new Timestamp(0));
+      return ((WritableTimestampObjectInspector) objectInspector).create((Timestamp) object);
     case INTERVAL_YEAR_MONTH:
-      return ((WritableHiveIntervalYearMonthObjectInspector) objectInspector).create(new HiveIntervalYearMonth(0));
+      return ((WritableHiveIntervalYearMonthObjectInspector) objectInspector).create((HiveIntervalYearMonth) object);
     case INTERVAL_DAY_TIME:
-      return ((WritableHiveIntervalDayTimeObjectInspector) objectInspector).create(new HiveIntervalDayTime(0, 0));
+      return ((WritableHiveIntervalDayTimeObjectInspector) objectInspector).create((HiveIntervalDayTime) object);
     case DECIMAL:
       {
         WritableHiveDecimalObjectInspector writableDecimalObjectInspector =
                 new WritableHiveDecimalObjectInspector((DecimalTypeInfo) primitiveTypeInfo);
-        return writableDecimalObjectInspector.create(HiveDecimal.ZERO);
+        HiveDecimalWritable result = (HiveDecimalWritable) writableDecimalObjectInspector.create((HiveDecimal) object);
+        return result;
       }
     default:
       throw new Error("Unknown primitive category " + primitiveCategory);
@@ -420,7 +422,7 @@ public class VectorRandomRowSource {
           case CHAR:
             return new HiveChar(result, ((CharTypeInfo) primitiveTypeInfo).getLength());
           case VARCHAR:
-            return new HiveChar(result, ((VarcharTypeInfo) primitiveTypeInfo).getLength());
+            return new HiveVarchar(result, ((VarcharTypeInfo) primitiveTypeInfo).getLength());
           default:
             throw new Error("Unknown primitive category " + primitiveCategory);
           }
@@ -497,13 +499,9 @@ public class VectorRandomRowSource {
         sb.append(RandomTypeUtil.getRandString(r, DECIMAL_CHARS, scale));
       }
 
-      HiveDecimal bd = HiveDecimal.create(sb.toString());
-      if (bd.scale() > bd.precision()) {
-        // Sometimes weird decimals are produced?
-        continue;
-      }
+      HiveDecimal dec = HiveDecimal.create(sb.toString());
 
-      return bd;
+      return dec;
     }
   }
 

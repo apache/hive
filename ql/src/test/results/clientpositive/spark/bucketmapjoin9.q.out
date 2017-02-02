@@ -68,16 +68,12 @@ POSTHOOK: query: ALTER TABLE srcbucket_mapjoin_part_2 CLUSTERED BY (key) INTO 2 
 POSTHOOK: type: ALTERTABLE_CLUSTER_SORT
 POSTHOOK: Input: default@srcbucket_mapjoin_part_2
 POSTHOOK: Output: default@srcbucket_mapjoin_part_2
-PREHOOK: query: -- The table bucketing metadata matches but the partitions have different numbers of buckets, bucket map join should not be used
-
-EXPLAIN EXTENDED
+PREHOOK: query: EXPLAIN EXTENDED
 SELECT /*+ MAPJOIN(b) */ count(*)
 FROM srcbucket_mapjoin_part_1 a JOIN srcbucket_mapjoin_part_2 b
 ON a.key = b.key AND a.part = '1' and b.part = '1'
 PREHOOK: type: QUERY
-POSTHOOK: query: -- The table bucketing metadata matches but the partitions have different numbers of buckets, bucket map join should not be used
-
-EXPLAIN EXTENDED
+POSTHOOK: query: EXPLAIN EXTENDED
 SELECT /*+ MAPJOIN(b) */ count(*)
 FROM srcbucket_mapjoin_part_1 a JOIN srcbucket_mapjoin_part_2 b
 ON a.key = b.key AND a.part = '1' and b.part = '1'
@@ -122,6 +118,7 @@ STAGE PLANS:
                   properties:
                     bucket_count 3
                     bucket_field_name key
+                    column.name.delimiter ,
                     columns key,value
                     columns.comments 
                     columns.types int:string
@@ -144,6 +141,7 @@ STAGE PLANS:
                     properties:
                       bucket_count 2
                       bucket_field_name key
+                      column.name.delimiter ,
                       columns key,value
                       columns.comments 
                       columns.types int:string
@@ -214,6 +212,7 @@ STAGE PLANS:
                   properties:
                     bucket_count 2
                     bucket_field_name key
+                    column.name.delimiter ,
                     columns key,value
                     columns.comments 
                     columns.types int:string
@@ -236,6 +235,7 @@ STAGE PLANS:
                     properties:
                       bucket_count 2
                       bucket_field_name key
+                      column.name.delimiter ,
                       columns key,value
                       columns.comments 
                       columns.types int:string
@@ -349,16 +349,12 @@ POSTHOOK: query: ALTER TABLE srcbucket_mapjoin_part_2 CLUSTERED BY (key) INTO 2 
 POSTHOOK: type: ALTERTABLE_CLUSTER_SORT
 POSTHOOK: Input: default@srcbucket_mapjoin_part_2
 POSTHOOK: Output: default@srcbucket_mapjoin_part_2
-PREHOOK: query: -- The table bucketing metadata matches but the partitions are bucketed on different columns, bucket map join should not be used
-
-EXPLAIN EXTENDED
+PREHOOK: query: EXPLAIN EXTENDED
 SELECT /*+ MAPJOIN(b) */ count(*)
 FROM srcbucket_mapjoin_part_1 a JOIN srcbucket_mapjoin_part_2 b
 ON a.key = b.key AND a.part = '1' AND b.part = '1'
 PREHOOK: type: QUERY
-POSTHOOK: query: -- The table bucketing metadata matches but the partitions are bucketed on different columns, bucket map join should not be used
-
-EXPLAIN EXTENDED
+POSTHOOK: query: EXPLAIN EXTENDED
 SELECT /*+ MAPJOIN(b) */ count(*)
 FROM srcbucket_mapjoin_part_1 a JOIN srcbucket_mapjoin_part_2 b
 ON a.key = b.key AND a.part = '1' AND b.part = '1'
@@ -403,6 +399,7 @@ STAGE PLANS:
                   properties:
                     bucket_count 2
                     bucket_field_name value
+                    column.name.delimiter ,
                     columns key,value
                     columns.comments 
                     columns.types int:string
@@ -425,6 +422,7 @@ STAGE PLANS:
                     properties:
                       bucket_count 2
                       bucket_field_name key
+                      column.name.delimiter ,
                       columns key,value
                       columns.comments 
                       columns.types int:string
@@ -495,6 +493,7 @@ STAGE PLANS:
                   properties:
                     bucket_count 2
                     bucket_field_name key
+                    column.name.delimiter ,
                     columns key,value
                     columns.comments 
                     columns.types int:string
@@ -517,6 +516,7 @@ STAGE PLANS:
                     properties:
                       bucket_count 2
                       bucket_field_name key
+                      column.name.delimiter ,
                       columns key,value
                       columns.comments 
                       columns.types int:string

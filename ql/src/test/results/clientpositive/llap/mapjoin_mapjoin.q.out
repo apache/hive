@@ -1,14 +1,6 @@
-PREHOOK: query: -- Since the inputs are small, it should be automatically converted to mapjoin
-
--- SORT_QUERY_RESULTS
-
-explain extended select srcpart.key from srcpart join src on (srcpart.value=src.value) join src1 on (srcpart.key=src1.key)
+PREHOOK: query: explain extended select srcpart.key from srcpart join src on (srcpart.value=src.value) join src1 on (srcpart.key=src1.key)
 PREHOOK: type: QUERY
-POSTHOOK: query: -- Since the inputs are small, it should be automatically converted to mapjoin
-
--- SORT_QUERY_RESULTS
-
-explain extended select srcpart.key from srcpart join src on (srcpart.value=src.value) join src1 on (srcpart.key=src1.key)
+POSTHOOK: query: explain extended select srcpart.key from srcpart join src on (srcpart.value=src.value) join src1 on (srcpart.key=src1.key)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -98,6 +90,7 @@ STAGE PLANS:
                   properties:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
                     bucket_count -1
+                    column.name.delimiter ,
                     columns key,value
                     columns.comments 'default','default'
                     columns.types string:string
@@ -119,6 +112,7 @@ STAGE PLANS:
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     properties:
                       bucket_count -1
+                      column.name.delimiter ,
                       columns key,value
                       columns.comments 'default','default'
                       columns.types string:string
@@ -144,6 +138,7 @@ STAGE PLANS:
                   properties:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
                     bucket_count -1
+                    column.name.delimiter ,
                     columns key,value
                     columns.comments 'default','default'
                     columns.types string:string
@@ -165,6 +160,7 @@ STAGE PLANS:
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     properties:
                       bucket_count -1
+                      column.name.delimiter ,
                       columns key,value
                       columns.comments 'default','default'
                       columns.types string:string
@@ -190,6 +186,7 @@ STAGE PLANS:
                   properties:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
                     bucket_count -1
+                    column.name.delimiter ,
                     columns key,value
                     columns.comments 'default','default'
                     columns.types string:string
@@ -211,6 +208,7 @@ STAGE PLANS:
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     properties:
                       bucket_count -1
+                      column.name.delimiter ,
                       columns key,value
                       columns.comments 'default','default'
                       columns.types string:string
@@ -236,6 +234,7 @@ STAGE PLANS:
                   properties:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
                     bucket_count -1
+                    column.name.delimiter ,
                     columns key,value
                     columns.comments 'default','default'
                     columns.types string:string
@@ -257,6 +256,7 @@ STAGE PLANS:
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     properties:
                       bucket_count -1
+                      column.name.delimiter ,
                       columns key,value
                       columns.comments 'default','default'
                       columns.types string:string
@@ -311,6 +311,7 @@ STAGE PLANS:
                   properties:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
                     bucket_count -1
+                    column.name.delimiter ,
                     columns key,value
                     columns.comments 'default','default'
                     columns.types string:string
@@ -331,6 +332,7 @@ STAGE PLANS:
                     properties:
                       COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
                       bucket_count -1
+                      column.name.delimiter ,
                       columns key,value
                       columns.comments 'default','default'
                       columns.types string:string
@@ -384,6 +386,7 @@ STAGE PLANS:
                   properties:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
                     bucket_count -1
+                    column.name.delimiter ,
                     columns key,value
                     columns.comments 'default','default'
                     columns.types string:string
@@ -404,6 +407,7 @@ STAGE PLANS:
                     properties:
                       COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
                       bucket_count -1
+                      column.name.delimiter ,
                       columns key,value
                       columns.comments 'default','default'
                       columns.types string:string

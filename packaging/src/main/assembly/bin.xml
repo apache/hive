@@ -43,6 +43,8 @@
         <exclude>org.apache.hive.hcatalog:*</exclude>
         <exclude>org.slf4j:*</exclude>
         <exclude>log4j:*</exclude>
+        <exclude>junit:*</exclude>
+        <exclude>co.cask.tephra:*</exclude>
         <exclude>commons-configuration:commons-configuration</exclude>
         <exclude>org.apache.hive:hive-jdbc:*:standalone</exclude>
       </excludes>
@@ -54,6 +56,16 @@
       <useStrictFiltering>true</useStrictFiltering>
       <includes>
         <include>org.apache.hive:hive-jdbc:*:standalone</include>
+      </includes>
+    </dependencySet>
+    <dependencySet>
+      <outputDirectory>lib</outputDirectory>
+      <unpack>false</unpack>
+      <useProjectArtifact>false</useProjectArtifact>
+      <useStrictFiltering>true</useStrictFiltering>
+      <includes>
+        <include>org.apache.hive.hcatalog:hive-hcatalog-core</include>
+        <include>org.apache.hive.hcatalog:hive-hcatalog-server-extensions</include>
       </includes>
     </dependencySet>
     <dependencySet>
@@ -116,6 +128,17 @@
         <include>RELEASE_NOTES.txt</include>
       </includes>
       <outputDirectory>/</outputDirectory>
+    </fileSet>
+
+    <fileSet>
+      <directory>${project.parent.basedir}/binary-package-licenses</directory>
+      <includes>
+        <include>/*</include>
+      </includes>
+      <excludes>
+        <exclude>/README</exclude>
+      </excludes>
+      <outputDirectory>binary-package-licenses</outputDirectory>
     </fileSet>
 
     <fileSet>

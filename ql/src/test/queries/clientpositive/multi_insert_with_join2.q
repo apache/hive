@@ -1,4 +1,4 @@
-set hive.cbo.enable=false;
+set hive.strict.checks.cartesian.product=false;
 
 CREATE TABLE T_A ( id STRING, val STRING ); 
 CREATE TABLE T_B ( id STRING, val STRING ); 
@@ -48,4 +48,31 @@ SELECT a.*, b.*
 WHERE b.id = 'Id_1' AND b.val = 'val_103'
 INSERT OVERWRITE TABLE join_result_3
 SELECT a.*, b.*
+WHERE b.val = 'val_104' AND b.id = 'Id_2';
+
+explain
+FROM T_A a JOIN T_B b ON a.id = b.id
+INSERT OVERWRITE TABLE join_result_1
+SELECT *
+WHERE b.id = 'Id_1' AND b.val = 'val_103'
+INSERT OVERWRITE TABLE join_result_3
+SELECT *
+WHERE b.val = 'val_104' AND b.id = 'Id_2';
+
+explain
+FROM T_A a JOIN T_B b ON a.id = b.id
+INSERT OVERWRITE TABLE join_result_1
+SELECT a.id, a.val, b.id, b.val
+WHERE b.id = 'Id_1' AND b.val = 'val_103'
+INSERT OVERWRITE TABLE join_result_3
+SELECT a.id, a.val, b.id, b.val
+WHERE b.val = 'val_104' AND b.id = 'Id_2';
+
+explain
+FROM T_A a JOIN T_B b ON a.id = b.id
+INSERT OVERWRITE TABLE join_result_1
+SELECT a.val, a.id, b.id, b.val
+WHERE b.id = 'Id_1' AND b.val = 'val_103'
+INSERT OVERWRITE TABLE join_result_3
+SELECT a.id, b.val, b.id, a.val
 WHERE b.val = 'val_104' AND b.id = 'Id_2';

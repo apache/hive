@@ -160,7 +160,9 @@ public class TestIUD {
       Assert.assertFalse("Expected ParseException", true);
     }
     catch(ParseException ex) {
-      Assert.assertEquals("Failure didn't match.", "line 1:23 missing EOF at '(' near 'values'",ex.getMessage());
+      Assert.assertEquals("Failure didn't match.",
+          "line 1:24 cannot recognize input near 'values' '(' '3' in joinSource",
+          ex.getMessage());
     }
   }
   @Test

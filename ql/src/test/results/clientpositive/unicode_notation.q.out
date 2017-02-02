@@ -1,12 +1,8 @@
-PREHOOK: query: -- HIVE-4618 hive should accept unicode notation like \uxxxx
-
-CREATE  TABLE k1( a string)ROW FORMAT DELIMITED FIELDS TERMINATED BY '\u0001'
+PREHOOK: query: CREATE  TABLE k1( a string)ROW FORMAT DELIMITED FIELDS TERMINATED BY '\u0001'
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@k1
-POSTHOOK: query: -- HIVE-4618 hive should accept unicode notation like \uxxxx
-
-CREATE  TABLE k1( a string)ROW FORMAT DELIMITED FIELDS TERMINATED BY '\u0001'
+POSTHOOK: query: CREATE  TABLE k1( a string)ROW FORMAT DELIMITED FIELDS TERMINATED BY '\u0001'
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@k1

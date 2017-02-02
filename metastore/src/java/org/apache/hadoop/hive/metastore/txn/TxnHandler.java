@@ -30,6 +30,7 @@ import org.apache.commons.lang.NotImplementedException;
 import org.apache.hadoop.hive.common.ServerUtils;
 import org.apache.hadoop.hive.common.classification.InterfaceAudience;
 import org.apache.hadoop.hive.common.classification.InterfaceStability;
+import org.apache.hadoop.hive.common.classification.RetrySemantics;
 import org.apache.hadoop.hive.metastore.DatabaseProduct;
 import org.apache.hadoop.hive.metastore.HouseKeeperService;
 import org.apache.hadoop.hive.metastore.Warehouse;
@@ -100,6 +101,17 @@ import java.util.regex.Pattern;
  * It's imperative that any operation on a txn (e.g. commit), ensure (atomically) that this txn is
  * still valid and active.  In the code this is usually achieved at the same time the txn record
  * is locked for some operation.
+ * 
+ * Note on retry logic:
+ * Metastore has retry logic in both {@link org.apache.hadoop.hive.metastore.RetryingMetaStoreClient}
+ * and {@link org.apache.hadoop.hive.metastore.RetryingHMSHandler}.  The retry logic there is very
+ * generic and is not aware whether the operations are idempotent or not.  (This is separate from
+ * retry logic here in TxnHander which can/does retry DB errors intelligently).  The worst case is
+ * when an op here issues a successful commit against the RDBMS but the calling stack doesn't
+ * receive the ack and retries.  (If an op fails before commit, it's trivially idempotent)
+ * Thus the ops here need to be made idempotent as much as possible or
+ * the metstore call stack should have logic not to retry.  There are {@link RetrySemantics}
+ * annotations to document the behavior.
  */
 @InterfaceAudience.Private
 @InterfaceStability.Evolving
@@ -119,6 +131,8 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
   // Transaction states
   static final protected char TXN_ABORTED = 'a';
   static final protected char TXN_OPEN = 'o';
+  //todo: make these like OperationType and remove above char constatns
+  enum TxnStatus {OPEN, ABORTED, COMMITTED, UNKNOWN}
 
   // Lock states
   static final protected char LOCK_ACQUIRED = 'a';
@@ -262,7 +276,8 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       dumpConfig = false;
     }
   }
-
+  @Override
+  @RetrySemantics.ReadOnly
   public GetOpenTxnsInfoResponse getOpenTxnsInfo() throws MetaException {
     try {
       // We need to figure out the current transaction number and the list of
@@ -338,7 +353,8 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       return getOpenTxnsInfo();
     }
   }
-
+  @Override
+  @RetrySemantics.ReadOnly
   public GetOpenTxnsResponse getOpenTxns() throws MetaException {
     try {
       // We need to figure out the current transaction number and the list of
@@ -413,6 +429,12 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     }
   }
 
+  /**
+   * Retry-by-caller note:
+   * Worst case, it will leave an open txn which will timeout.
+   */
+  @Override
+  @RetrySemantics.Idempotent
   public OpenTxnsResponse openTxns(OpenTxnRequest rqst) throws MetaException {
     if (openTxnsCounter == null) {
       synchronized (TxnHandler.class) {
@@ -514,18 +536,25 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       return openTxns(rqst);
     }
   }
-
-  public void abortTxn(AbortTxnRequest rqst) throws NoSuchTxnException, MetaException {
+  @Override
+  @RetrySemantics.Idempotent
+  public void abortTxn(AbortTxnRequest rqst) throws NoSuchTxnException, MetaException, TxnAbortedException {
     long txnid = rqst.getTxnid();
     try {
       Connection dbConn = null;
+      Statement stmt = null;
       try {
         lockInternal();
         dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
         if (abortTxns(dbConn, Collections.singletonList(txnid), true) != 1) {
-          LOG.debug("Going to rollback");
-          dbConn.rollback();
-          throw new NoSuchTxnException("No such transaction " + JavaUtils.txnIdToString(txnid));
+          stmt = dbConn.createStatement();
+          TxnStatus status = findTxnState(txnid,stmt);
+          if(status == TxnStatus.ABORTED) {
+            LOG.info("abortTxn(" + JavaUtils.txnIdToString(txnid) +
+              ") requested by it is already " + TxnStatus.ABORTED);
+            return;
+          }
+          raiseTxnUnexpectedState(status, txnid);
         }
 
         LOG.debug("Going to commit");
@@ -537,14 +566,15 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         throw new MetaException("Unable to update transaction database "
           + StringUtils.stringifyException(e));
       } finally {
-        closeDbConn(dbConn);
+        close(null, stmt, dbConn);
         unlockInternal();
       }
     } catch (RetryException e) {
       abortTxn(rqst);
     }
   }
-
+  @Override
+  @RetrySemantics.Idempotent
   public void abortTxns(AbortTxnsRequest rqst) throws NoSuchTxnException, MetaException {
     List<Long> txnids = rqst.getTxn_ids();
     try {
@@ -553,7 +583,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
         int numAborted = abortTxns(dbConn, txnids, false);
         if (numAborted != txnids.size()) {
-          LOG.warn("Abort Transactions command only abort " + numAborted + " out of " +
+          LOG.warn("Abort Transactions command only aborted " + numAborted + " out of " +
               txnids.size() + " transactions. It's possible that the other " +
               (txnids.size() - numAborted) +
               " transactions have been aborted or committed, or the transaction ids are invalid.");
@@ -599,6 +629,8 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
    * txnid:2, which is possible if commitTxn() and openTxnx() is not mutexed)
    * 'x' would be updated to the same value by both, i.e. lost update. 
    */
+  @Override
+  @RetrySemantics.Idempotent("No-op if already committed")
   public void commitTxn(CommitTxnRequest rqst)
     throws NoSuchTxnException, TxnAbortedException,  MetaException {
     long txnid = rqst.getTxnid();
@@ -619,9 +651,19 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
          */
         lockHandle = lockTransactionRecord(stmt, txnid, TXN_OPEN);
         if (lockHandle == null) {
-          //this also ensures that txn is still there and in expected state (hasn't been timed out)
-          ensureValidTxn(dbConn, txnid, stmt);
+          //if here, txn was not found (in expected state)
+          TxnStatus actualTxnStatus = findTxnState(txnid, stmt);
+          if(actualTxnStatus == TxnStatus.COMMITTED) {
+            /**
+             * This makes the operation idempotent
+             * (assume that this is most likely due to retry logic)
+             */
+            LOG.info("Nth commitTxn(" + JavaUtils.txnIdToString(txnid) + ") msg");
+            return;
+          }
+          raiseTxnUnexpectedState(actualTxnStatus, txnid);
           shouldNeverHappen(txnid);
+          //dbConn is rolled back in finally{}
         }
         String conflictSQLSuffix = "from TXN_COMPONENTS where tc_txnid=" + txnid + " and tc_operation_type IN(" +
           quoteChar(OpertaionType.UPDATE.sqlConst) + "," + quoteChar(OpertaionType.DELETE.sqlConst) + ")";
@@ -642,9 +684,17 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
           }
           long commitId = commitIdRs.getLong(1);
           Savepoint undoWriteSetForCurrentTxn = dbConn.setSavepoint();
+          /**
+           * "select distinct" is used below because
+           * 1. once we get to multi-statement txns, we only care to record that something was updated once
+           * 2. if {@link #addDynamicPartitions(AddDynamicPartitions)} is retried by caller it my create
+           *  duplicate entries in TXN_COMPONENTS
+           * but we want to add a PK on WRITE_SET which won't have unique rows w/o this distinct
+           * even if it includes all of it's columns
+           */
           int numCompsWritten = stmt.executeUpdate(
             "insert into WRITE_SET (ws_database, ws_table, ws_partition, ws_txnid, ws_commit_id, ws_operation_type)" +
-            " select tc_database, tc_table, tc_partition, tc_txnid, " + commitId + ", tc_operation_type " + conflictSQLSuffix);
+            " select distinct tc_database, tc_table, tc_partition, tc_txnid, " + commitId + ", tc_operation_type " + conflictSQLSuffix);
           /**
            * see if there are any overlapping txns wrote the same element, i.e. have a conflict
            * Since entire commit operation is mutexed wrt other start/commit ops,
@@ -747,6 +797,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     }
   }
   @Override
+  @RetrySemantics.SafeToRetry
   public void performWriteSetGC() {
     Connection dbConn = null;
     Statement stmt = null;
@@ -795,7 +846,17 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
    * connection (but separate transactions).  This avoid some flakiness in BONECP where if you
    * perform an operation on 1 connection and immediately get another fron the pool, the 2nd one
    * doesn't see results of the first.
+   * 
+   * Retry-by-caller note: If the call to lock is from a transaction, then in the worst case
+   * there will be a duplicate set of locks but both sets will belong to the same txn so they 
+   * will not conflict with each other.  For locks w/o txn context (i.e. read-only query), this
+   * may lead to deadlock (at least a long wait).  (e.g. 1st call creates locks in {@code LOCK_WAITING}
+   * mode and response gets lost.  Then {@link org.apache.hadoop.hive.metastore.RetryingMetaStoreClient}
+   * retries, and enqueues another set of locks in LOCK_WAITING.  The 2nd LockResponse is delivered
+   * to the DbLockManager, which will keep dong {@link #checkLock(CheckLockRequest)} until the 1st
+   * set of locks times out.
    */
+  @RetrySemantics.CannotRetry
   public LockResponse lock(LockRequest rqst) throws NoSuchTxnException, TxnAbortedException, MetaException {
     ConnectionLockIdPair connAndLockId = enqueueLockWithRetry(rqst);
     try {
@@ -1060,7 +1121,12 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
    * {@link #checkLock(java.sql.Connection, long)}  must run at SERIALIZABLE (make sure some lock we are checking
    * against doesn't move from W to A in another txn) but this method can heartbeat in
    * separate txn at READ_COMMITTED.
+   * 
+   * Retry-by-caller note:
+   * Retryable because {@link #checkLock(Connection, long)} is
    */
+  @Override
+  @RetrySemantics.SafeToRetry
   public LockResponse checkLock(CheckLockRequest rqst)
     throws NoSuchTxnException, NoSuchLockException, TxnAbortedException, MetaException {
     try {
@@ -1109,6 +1175,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
    * heartbeat/performTimeout which are update/delete of HIVE_LOCKS thus will be locked as needed by db.
    * since this only removes from HIVE_LOCKS at worst some lock acquire is delayed
    */
+  @RetrySemantics.Idempotent
   public void unlock(UnlockRequest rqst)
     throws NoSuchLockException, TxnOpenException, MetaException {
     try {
@@ -1143,11 +1210,15 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
           if(info == null) {
             //didn't find any lock with extLockId but at ReadCommitted there is a possibility that
             //it existed when above delete ran but it didn't have the expected state.
-            LOG.error("No lock in " + LOCK_WAITING + " mode found for unlock(" + rqst + ")");
-            throw new NoSuchLockException("No such lock " + JavaUtils.lockIdToString(extLockId));
+            LOG.info("No lock in " + LOCK_WAITING + " mode found for unlock(" +
+              JavaUtils.lockIdToString(rqst.getLockid()) + ")");
+            //bail here to make the operation idempotent
+            return;
           }
           if(info.txnId != 0) {
             String msg = "Unlocking locks associated with transaction not permitted.  " + info;
+            //if a lock is associated with a txn we can only "unlock" if if it's in WAITING state
+            // which really means that the caller wants to give up waiting for the lock
             LOG.error(msg);
             throw new TxnOpenException(msg);
           }
@@ -1186,6 +1257,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       this.e = e;
     }
   }
+  @RetrySemantics.ReadOnly
   public ShowLocksResponse showLocks(ShowLocksRequest rqst) throws MetaException {
     try {
       Connection dbConn = null;
@@ -1294,6 +1366,8 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
    * {@code ids} should only have txnid or lockid but not both, ideally.
    * Currently DBTxnManager.heartbeat() enforces this.
    */
+  @Override
+  @RetrySemantics.SafeToRetry
   public void heartbeat(HeartbeatRequest ids)
     throws NoSuchTxnException,  NoSuchLockException, TxnAbortedException, MetaException {
     try {
@@ -1315,11 +1389,13 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       heartbeat(ids);
     }
   }
-
+  @Override
+  @RetrySemantics.SafeToRetry
   public HeartbeatTxnRangeResponse heartbeatTxnRange(HeartbeatTxnRangeRequest rqst)
     throws MetaException {
     try {
       Connection dbConn = null;
+      Statement stmt = null;
       HeartbeatTxnRangeResponse rsp = new HeartbeatTxnRangeResponse();
       Set<Long> nosuch = new HashSet<Long>();
       Set<Long> aborted = new HashSet<Long>();
@@ -1333,11 +1409,32 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
          * would care about (which would have required SERIALIZABLE)
          */
         dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
+        /*do fast path first (in 1 statement) if doesn't work, rollback and do the long version*/
+        stmt = dbConn.createStatement();
+        List<String> queries = new ArrayList<>();
+        int numTxnsToHeartbeat = (int) (rqst.getMax() - rqst.getMin() + 1);
+        List<Long> txnIds = new ArrayList<>(numTxnsToHeartbeat);
+        for (long txn = rqst.getMin(); txn <= rqst.getMax(); txn++) {
+          txnIds.add(txn);
+        }
+        TxnUtils.buildQueryWithINClause(conf, queries,
+          new StringBuilder("update TXNS set txn_last_heartbeat = " + getDbTime(dbConn) +
+            " where txn_state = " + quoteChar(TXN_OPEN) + " and "),
+          new StringBuilder(""), txnIds, "txn_id", true, false);
+        int updateCnt = 0;
+        for (String query : queries) {
+          LOG.debug("Going to execute update <" + query + ">");
+          updateCnt += stmt.executeUpdate(query);
+        }
+        if (updateCnt == numTxnsToHeartbeat) {
+          //fast pass worked, i.e. all txns we were asked to heartbeat were Open as expected
+          dbConn.commit();
+          return rsp;
+        }
+        //if here, do the slow path so that we can return info txns which were not in expected state
+        dbConn.rollback();
         for (long txn = rqst.getMin(); txn <= rqst.getMax(); txn++) {
           try {
-            //todo: do all updates in 1 SQL statement and check update count
-            //if update count is less than was requested, go into more expensive checks
-            //for each txn
             heartbeatTxn(dbConn, txn);
           } catch (NoSuchTxnException e) {
             nosuch.add(txn);
@@ -1353,7 +1450,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         throw new MetaException("Unable to select from transaction database " +
           StringUtils.stringifyException(e));
       } finally {
-        closeDbConn(dbConn);
+        close(null, stmt, dbConn);
       }
     } catch (RetryException e) {
       return heartbeatTxnRange(rqst);
@@ -1375,18 +1472,50 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     stmt.executeUpdate(s);
     return id;
   }
-  public long compact(CompactionRequest rqst) throws MetaException {
+  @Override
+  @RetrySemantics.Idempotent
+  public CompactionResponse compact(CompactionRequest rqst) throws MetaException {
     // Put a compaction request in the queue.
     try {
       Connection dbConn = null;
       Statement stmt = null;
+      TxnStore.MutexAPI.LockHandle handle = null;
       try {
         lockInternal();
+        /**
+         * MUTEX_KEY.CompactionScheduler lock ensures that there is only 1 entry in
+         * Initiated/Working state for any resource.  This ensures that we don't run concurrent
+         * compactions for any resource.
+         */
+        handle = getMutexAPI().acquireLock(MUTEX_KEY.CompactionScheduler.name());
         dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
         stmt = dbConn.createStatement();
-        
+
         long id = generateCompactionQueueId(stmt);
 
+        StringBuilder sb = new StringBuilder("select cq_id, cq_state from COMPACTION_QUEUE where").
+          append(" cq_state IN(").append(quoteChar(INITIATED_STATE)).
+            append(",").append(quoteChar(WORKING_STATE)).
+          append(") AND cq_database=").append(quoteString(rqst.getDbname())).
+          append(" AND cq_table=").append(quoteString(rqst.getTablename())).append(" AND ");
+        if(rqst.getPartitionname() == null) {
+          sb.append("cq_partition is null");
+        }
+        else {
+          sb.append("cq_partition=").append(quoteString(rqst.getPartitionname()));
+        }
+
+        LOG.debug("Going to execute query <" + sb.toString() + ">");
+        ResultSet rs = stmt.executeQuery(sb.toString());
+        if(rs.next()) {
+          long enqueuedId = rs.getLong(1);
+          String state = compactorStateToResponse(rs.getString(2).charAt(0));
+          LOG.info("Ignoring request to compact " + rqst.getDbname() + "/" + rqst.getTablename() +
+            "/" + rqst.getPartitionname() + " since it is already " + quoteString(state) +
+            " with id=" + enqueuedId);
+          return new CompactionResponse(enqueuedId, state, false);
+        }
+        close(rs);
         StringBuilder buf = new StringBuilder("insert into COMPACTION_QUEUE (cq_id, cq_database, " +
           "cq_table, ");
         String partName = rqst.getPartitionname();
@@ -1437,7 +1566,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         stmt.executeUpdate(s);
         LOG.debug("Going to commit");
         dbConn.commit();
-        return id;
+        return new CompactionResponse(id, INITIATED_RESPONSE, true);
       } catch (SQLException e) {
         LOG.debug("Going to rollback");
         rollbackDBConn(dbConn);
@@ -1447,6 +1576,9 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       } finally {
         closeStmt(stmt);
         closeDbConn(dbConn);
+        if(handle != null) {
+          handle.releaseLocks();
+        }
         unlockInternal();
       }
     } catch (RetryException e) {
@@ -1454,6 +1586,19 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     }
   }
 
+  private static String compactorStateToResponse(char s) {
+    switch (s) {
+      case INITIATED_STATE: return INITIATED_RESPONSE;
+      case WORKING_STATE: return WORKING_RESPONSE;
+      case READY_FOR_CLEANING: return CLEANING_RESPONSE;
+      case FAILED_STATE: return FAILED_RESPONSE;
+      case SUCCEEDED_STATE: return SUCCEEDED_RESPONSE;
+      case ATTEMPTED_STATE: return ATTEMPTED_RESPONSE;
+      default:
+        return Character.toString(s);
+    }
+  }
+  @RetrySemantics.ReadOnly
   public ShowCompactResponse showCompact(ShowCompactRequest rqst) throws MetaException {
     ShowCompactResponse response = new ShowCompactResponse(new ArrayList<ShowCompactResponseElement>());
     Connection dbConn = null;
@@ -1463,6 +1608,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
         stmt = dbConn.createStatement();
         String s = "select cq_database, cq_table, cq_partition, cq_state, cq_type, cq_worker_id, " +
+          //-1 because 'null' literal doesn't work for all DBs...
           "cq_start, -1 cc_end, cq_run_as, cq_hadoop_job_id, cq_id from COMPACTION_QUEUE union all " +
           "select cc_database, cc_table, cc_partition, cc_state, cc_type, cc_worker_id, " +
           "cc_start, cc_end, cc_run_as, cc_hadoop_job_id, cc_id from COMPLETED_COMPACTIONS";
@@ -1477,16 +1623,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
           e.setDbname(rs.getString(1));
           e.setTablename(rs.getString(2));
           e.setPartitionname(rs.getString(3));
-          switch (rs.getString(4).charAt(0)) {
-            case INITIATED_STATE: e.setState(INITIATED_RESPONSE); break;
-            case WORKING_STATE: e.setState(WORKING_RESPONSE); break;
-            case READY_FOR_CLEANING: e.setState(CLEANING_RESPONSE); break;
-            case FAILED_STATE: e.setState(FAILED_RESPONSE); break;
-            case SUCCEEDED_STATE: e.setState(SUCCEEDED_RESPONSE); break;
-            case ATTEMPTED_STATE: e.setState(ATTEMPTED_RESPONSE); break;
-            default:
-              //do nothing to handle RU/D if we add another status
-          }
+          e.setState(compactorStateToResponse(rs.getString(4).charAt(0)));
           switch (rs.getString(5).charAt(0)) {
             case MAJOR_TYPE: e.setType(CompactionType.MAJOR); break;
             case MINOR_TYPE: e.setType(CompactionType.MINOR); break;
@@ -1494,14 +1631,17 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
               //do nothing to handle RU/D if we add another status
           }
           e.setWorkerid(rs.getString(6));
-          e.setStart(rs.getLong(7));
+          long start = rs.getLong(7);
+          if(!rs.wasNull()) {
+            e.setStart(start);
+          }
           long endTime = rs.getLong(8);
           if(endTime != -1) {
             e.setEndTime(endTime);
           }
           e.setRunAs(rs.getString(9));
           e.setHadoopJobId(rs.getString(10));
-          long id = rs.getLong(11);//for debugging
+          e.setId(rs.getLong(11));
           response.addToCompacts(e);
         }
         LOG.debug("Going to rollback");
@@ -1530,6 +1670,13 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       + JavaUtils.lockIdToString(extLockId) + " " + intLockId);
   }
 
+  /**
+   * Retry-by-caller note:
+   * This may be retried after dbConn.commit.  At worst, it will create duplicate entries in
+   * TXN_COMPONENTS which won't affect anything.  See more comments in {@link #commitTxn(CommitTxnRequest)}
+   */
+  @Override
+  @RetrySemantics.SafeToRetry
   public void addDynamicPartitions(AddDynamicPartitions rqst)
       throws NoSuchTxnException,  TxnAbortedException, MetaException {
     Connection dbConn = null;
@@ -1585,7 +1732,11 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
   /**
    * Clean up corresponding records in metastore tables when corresponding object is dropped,
    * specifically: TXN_COMPONENTS, COMPLETED_TXN_COMPONENTS, COMPACTION_QUEUE, COMPLETED_COMPACTIONS
+   * Retry-by-caller note: this is only idempotent assuming it's only called by dropTable/Db/etc
+   * operations.
    */
+  @Override
+  @RetrySemantics.Idempotent
   public void cleanupRecords(HiveObjectType type, Database db, Table table,
                              Iterator<Partition> partitionIterator) throws MetaException {
     try {
@@ -1906,12 +2057,12 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
           }
           sendRetrySignal = true;
         } else {
-          LOG.error("Fatal error. Retry limit (" + retryLimit + ") reached. Last error: " + getMessage(e));
+          LOG.error("Fatal error in " + caller + ". Retry limit (" + retryLimit + ") reached. Last error: " + getMessage(e));
         }
       }
       else {
         //make sure we know we saw an error that we don't recognize
-        LOG.info("Non-retryable error: " + getMessage(e));
+        LOG.info("Non-retryable error in " + caller + " : " + getMessage(e));
       }
     }
     finally {
@@ -2069,6 +2220,9 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     }
     private boolean isTableLock() {
       return db != null && table != null && partition == null;
+    }
+    private boolean isPartitionLock() {
+      return !(isDbLock() || isTableLock());
     }
   }
 
@@ -2275,6 +2429,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
    * If they happen to be for the same txnid, there will be a WW conflict (in MS DB), if different txnid,
    * checkLock() will in the worst case keep locks in Waiting state a little longer.
    */
+  @RetrySemantics.SafeToRetry("See @SafeToRetry")
   private LockResponse checkLock(Connection dbConn, long extLockId)
     throws NoSuchLockException, NoSuchTxnException, TxnAbortedException, MetaException, SQLException {
     TxnStore.MutexAPI.LockHandle handle =  null;
@@ -2284,7 +2439,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     /**
      * todo: Longer term we should pass this from client somehow - this would be an optimization;  once
      * that is in place make sure to build and test "writeSet" below using OperationType not LockType
-     * With SP we assume that the query modifies exactly the partitions it locked.  (not entirely
+     * With Static Partitions we assume that the query modifies exactly the partitions it locked.  (not entirely
      * realistic since Update/Delete may have some predicate that filters out all records out of
      * some partition(s), but plausible).  For DP, we acquire locks very wide (all known partitions),
      * but for most queries only a fraction will actually be updated.  #addDynamicPartitions() tells
@@ -2470,6 +2625,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         // If we've found it and it's already been marked acquired,
         // then just look at the other locks.
         if (locks[index].state == LockState.ACQUIRED) {
+          /**this is what makes this method @SafeToRetry*/
           continue;
         }
 
@@ -2559,15 +2715,25 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
    * the {@link #jumpTable} only deals with LockState/LockType.  In some cases it's not
    * sufficient.  For example, an EXCLUSIVE lock on partition should prevent SHARED_READ
    * on the table, but there is no reason for EXCLUSIVE on a table to prevent SHARED_READ
-   * on a database.
+   * on a database.  Similarly, EXCLUSIVE on a partition should not conflict with SHARED_READ on
+   * a database.  (SHARED_READ is usually acquired on a database to make sure it's not dropped
+   * while some operation is performed on that db (e.g. show tables, created table, etc)
+   * EXCLUSIVE on an object may mean it's being dropped or overwritten (for non-acid tables,
+   * an Insert uses EXCLUSIVE as well)).
    */
   private boolean ignoreConflict(LockInfo desiredLock, LockInfo existingLock) {
     return
       ((desiredLock.isDbLock() && desiredLock.type == LockType.SHARED_READ &&
           existingLock.isTableLock() && existingLock.type == LockType.EXCLUSIVE) ||
         (existingLock.isDbLock() && existingLock.type == LockType.SHARED_READ &&
-          desiredLock.isTableLock() && desiredLock.type == LockType.EXCLUSIVE))
+          desiredLock.isTableLock() && desiredLock.type == LockType.EXCLUSIVE) ||
+
+        (desiredLock.isDbLock() && desiredLock.type == LockType.SHARED_READ &&
+          existingLock.isPartitionLock() && existingLock.type == LockType.EXCLUSIVE) ||
+        (existingLock.isDbLock() && existingLock.type == LockType.SHARED_READ &&
+          desiredLock.isPartitionLock() && desiredLock.type == LockType.EXCLUSIVE))
         ||
+
       //different locks from same txn should not conflict with each other
       (desiredLock.txnId != 0 && desiredLock.txnId == existingLock.txnId) ||
       //txnId=0 means it's a select or IUD which does not write to ACID table, e.g
@@ -2663,6 +2829,55 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     }
   }
 
+  /**
+   * Returns the state of the transaction iff it's able to determine it.  Some cases where it cannot:
+   * 1. txnid was Aborted/Committed and then GC'd (compacted)
+   * 2. txnid was committed but it didn't modify anything (nothing in COMPLETED_TXN_COMPONENTS)
+   */
+  private TxnStatus findTxnState(long txnid, Statement stmt) throws SQLException, MetaException {
+    String s = "select txn_state from TXNS where txn_id = " + txnid;
+    LOG.debug("Going to execute query <" + s + ">");
+    ResultSet rs = stmt.executeQuery(s);
+    if (!rs.next()) {
+      s = sqlGenerator.addLimitClause(1, "1 from COMPLETED_TXN_COMPONENTS where CTC_TXNID = " + txnid);
+      LOG.debug("Going to execute query <" + s + ">");
+      ResultSet rs2 = stmt.executeQuery(s);
+      if(rs2.next()) {
+        return TxnStatus.COMMITTED;
+      }
+      //could also check WRITE_SET but that seems overkill
+      return TxnStatus.UNKNOWN;
+    }
+    char txnState = rs.getString(1).charAt(0);
+    if (txnState == TXN_ABORTED) {
+      return TxnStatus.ABORTED;
+    }
+    assert txnState == TXN_OPEN : "we found it in TXNS but it's not ABORTED, so must be OPEN";
+    return TxnStatus.OPEN;
+  }
+
+  /**
+   * Used to raise an informative error when the caller expected a txn in a particular TxnStatus
+   * but found it in some other status
+   */
+  private static void raiseTxnUnexpectedState(TxnStatus actualStatus, long txnid) 
+    throws NoSuchTxnException, TxnAbortedException {
+    switch (actualStatus) {
+      case ABORTED:
+        throw new TxnAbortedException("Transaction " + JavaUtils.txnIdToString(txnid) + " already aborted");
+      case COMMITTED:
+        throw new NoSuchTxnException("Transaction " + JavaUtils.txnIdToString(txnid) + " is already committed.");
+      case UNKNOWN:
+        throw new NoSuchTxnException("No such transaction " + JavaUtils.txnIdToString(txnid));
+      case OPEN:
+        throw new NoSuchTxnException(JavaUtils.txnIdToString(txnid) + " is " + TxnStatus.OPEN);
+      default:
+        throw new IllegalArgumentException("Unknown TxnStatus " + actualStatus);
+    }
+  }
+  /**
+   * Returns the state of the transaction with {@code txnid} or throws if {@code raiseError} is true.
+   */
   private static void ensureValidTxn(Connection dbConn, long txnid, Statement stmt)
       throws SQLException, NoSuchTxnException, TxnAbortedException {
     // We need to check whether this transaction is valid and open
@@ -2677,7 +2892,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       //possible for for multi-stmt txns
       boolean alreadyCommitted = rs2.next() && rs2.getInt(1) > 0;
       LOG.debug("Going to rollback");
-      dbConn.rollback();
+      rollbackDBConn(dbConn);
       if(alreadyCommitted) {
         //makes the message more informative - helps to find bugs in client code
         throw new NoSuchTxnException("Transaction " + JavaUtils.txnIdToString(txnid) + " is already committed.");
@@ -2686,7 +2901,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     }
     if (rs.getString(1).charAt(0) == TXN_ABORTED) {
       LOG.debug("Going to rollback");
-      dbConn.rollback();
+      rollbackDBConn(dbConn);
       throw new TxnAbortedException("Transaction " + JavaUtils.txnIdToString(txnid) +
         " already aborted");//todo: add time of abort, which is not currently tracked.  Requires schema change
     }
@@ -2787,9 +3002,9 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         deletedLocks += stmt.executeUpdate(query);
       }
       if(deletedLocks > 0) {
-        Collections.sort(extLockIDs);////easier to read logs
-        LOG.info("Deleted " + deletedLocks + " ext locks from HIVE_LOCKS due to timeout (vs. " +
-            extLockIDs.size() + " found. List: " + extLockIDs + ") maxHeartbeatTime=" + maxHeartbeatTime);
+        Collections.sort(extLockIDs);//easier to read logs
+        LOG.info("Deleted " + deletedLocks + " int locks from HIVE_LOCKS due to timeout (" +
+          "HL_LOCK_EXT_ID list:  " + extLockIDs + ") maxHeartbeatTime=" + maxHeartbeatTime);
       }
       LOG.debug("Going to commit");
       dbConn.commit();
@@ -2812,6 +3027,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
    * Will also delete locks which are not associated with a transaction and have timed out
    * Tries to keep transactions (against metastore db) small to reduce lock contention.
    */
+  @RetrySemantics.Idempotent
   public void performTimeOuts() {
     Connection dbConn = null;
     Statement stmt = null;
@@ -2844,11 +3060,11 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         List<Long> currentBatch = new ArrayList<>(TIMED_OUT_TXN_ABORT_BATCH_SIZE);
         timedOutTxns.add(currentBatch);
         do {
-          currentBatch.add(rs.getLong(1));
           if(currentBatch.size() == TIMED_OUT_TXN_ABORT_BATCH_SIZE) {
             currentBatch = new ArrayList<>(TIMED_OUT_TXN_ABORT_BATCH_SIZE);
             timedOutTxns.add(currentBatch);
           }
+          currentBatch.add(rs.getLong(1));
         } while(rs.next());
         dbConn.commit();
         close(rs, stmt, null);
@@ -2882,7 +3098,8 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       close(rs, stmt, dbConn);
     }
   }
-
+  @Override
+  @RetrySemantics.ReadOnly
   public void countOpenTxns() throws MetaException {
     Connection dbConn = null;
     Statement stmt = null;
@@ -3187,6 +3404,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     }
   }
   @Override
+  @RetrySemantics.Idempotent
   public MutexAPI getMutexAPI() {
     return this;
   }
@@ -3199,7 +3417,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
      * production code as possible.
      * In particular, with Derby we always run in a single process with a single metastore and
      * the absence of For Update is handled via a Semaphore.  The later would strictly speaking
-     * make the SQL statments below unnecessary (for Derby), but then they would not be tested.
+     * make the SQL statements below unnecessary (for Derby), but then they would not be tested.
      */
     Connection dbConn = null;
     Statement stmt = null;
@@ -3223,6 +3441,11 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
             if (!isDuplicateKeyError(ex)) {
               throw new RuntimeException("Unable to lock " + quoteString(key) + " due to: " + getMessage(ex), ex);
             }
+            //if here, it means a concrurrent acquireLock() inserted the 'key'
+
+            //rollback is done for the benefit of Postgres which throws (SQLState=25P02, ErrorCode=0) if
+            //you attempt any stmt in a txn which had an error.
+            dbConn.rollback();
           }
           rs = stmt.executeQuery(sqlStmt);
           if (!rs.next()) {
@@ -3235,7 +3458,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
           derbySemaphore =  derbyKey2Lock.get(key);
           derbySemaphore.acquire();
         }
-        LOG.info(quoteString(key) + " locked by " + quoteString(TxnHandler.hostname));
+        LOG.debug(quoteString(key) + " locked by " + quoteString(TxnHandler.hostname));
         //OK, so now we have a lock
         return new LockHandleImpl(dbConn, stmt, rs, key, derbySemaphore);
       } catch (SQLException ex) {
@@ -3292,12 +3515,13 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         derbySemaphore.release();
       }
       for(String key : keys) {
-        LOG.info(quoteString(key) + " unlocked by " + quoteString(TxnHandler.hostname));
+        LOG.debug(quoteString(key) + " unlocked by " + quoteString(TxnHandler.hostname));
       }
     }
   }
   /**
    * Helper class that generates SQL queries with syntax specific to target DB
+   * todo: why throw MetaException?
    */
   @VisibleForTesting
   static final class SQLGenerator {
@@ -3397,7 +3621,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     }
     /**
      * Suppose you have a query "select a,b from T" and you want to limit the result set
-     * to the first 5 rows.  The mechanism to do that differs in different DB.
+     * to the first 5 rows.  The mechanism to do that differs in different DBs.
      * Make {@code noSelectsqlQuery} to be "a,b from T" and this method will return the
      * appropriately modified row limiting query.
      *

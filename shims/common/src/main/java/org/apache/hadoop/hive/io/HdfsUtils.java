@@ -19,9 +19,14 @@
 package org.apache.hadoop.hive.io;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
+import com.google.common.annotations.VisibleForTesting;
+
 import org.apache.commons.lang.ArrayUtils;
+
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
@@ -34,6 +39,7 @@ import org.apache.hadoop.fs.permission.AclStatus;
 import org.apache.hadoop.fs.permission.FsAction;
 import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.hdfs.DistributedFileSystem;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -56,39 +62,63 @@ public class HdfsUtils {
         ? new Path(HDFS_ID_PATH_PREFIX + fileId) : path;
   }
 
+  /**
+   * Copy the permissions, group, and ACLs from a source {@link HadoopFileStatus} to a target {@link Path}. This method
+   * will only log a warning if permissions cannot be set, no exception will be thrown.
+   *
+   * @param conf the {@link Configuration} used when setting permissions and ACLs
+   * @param sourceStatus the source {@link HadoopFileStatus} to copy permissions and ACLs from
+   * @param fs the {@link FileSystem} that contains the target {@link Path}
+   * @param target the {@link Path} to copy permissions, group, and ACLs to
+   * @param recursion recursively set permissions and ACLs on the target {@link Path}
+   */
   public static void setFullFileStatus(Configuration conf, HdfsUtils.HadoopFileStatus sourceStatus,
-      FileSystem fs, Path target, boolean recursion) throws IOException {
+      FileSystem fs, Path target, boolean recursion) {
     setFullFileStatus(conf, sourceStatus, null, fs, target, recursion);
   }
 
+  /**
+   * Copy the permissions, group, and ACLs from a source {@link HadoopFileStatus} to a target {@link Path}. This method
+   * will only log a warning if permissions cannot be set, no exception will be thrown.
+   *
+   * @param conf the {@link Configuration} used when setting permissions and ACLs
+   * @param sourceStatus the source {@link HadoopFileStatus} to copy permissions and ACLs from
+   * @param targetGroup the group of the target {@link Path}, if this is set and it is equal to the source group, an
+   *                    extra set group operation is avoided
+   * @param fs the {@link FileSystem} that contains the target {@link Path}
+   * @param target the {@link Path} to copy permissions, group, and ACLs to
+   * @param recursion recursively set permissions and ACLs on the target {@link Path}
+   */
   public static void setFullFileStatus(Configuration conf, HdfsUtils.HadoopFileStatus sourceStatus,
-    String targetGroup, FileSystem fs, Path target, boolean recursion) throws IOException {
-    FileStatus fStatus= sourceStatus.getFileStatus();
-    String group = fStatus.getGroup();
-    boolean aclEnabled = Objects.equal(conf.get("dfs.namenode.acls.enabled"), "true");
-    FsPermission sourcePerm = fStatus.getPermission();
-    List<AclEntry> aclEntries = null;
-    AclStatus aclStatus;
-    if (aclEnabled) {
-      aclStatus =  sourceStatus.getAclStatus();
-      if (aclStatus != null) {
-        LOG.trace(aclStatus.toString());
-        aclEntries = aclStatus.getEntries();
-        removeBaseAclEntries(aclEntries);
+      String targetGroup, FileSystem fs, Path target, boolean recursion) {
+    setFullFileStatus(conf, sourceStatus, targetGroup, fs, target, recursion, recursion ? new FsShell() : null);
+  }
 
-        //the ACL api's also expect the tradition user/group/other permission in the form of ACL
-        aclEntries.add(newAclEntry(AclEntryScope.ACCESS, AclEntryType.USER, sourcePerm.getUserAction()));
-        aclEntries.add(newAclEntry(AclEntryScope.ACCESS, AclEntryType.GROUP, sourcePerm.getGroupAction()));
-        aclEntries.add(newAclEntry(AclEntryScope.ACCESS, AclEntryType.OTHER, sourcePerm.getOtherAction()));
+  @VisibleForTesting
+  static void setFullFileStatus(Configuration conf, HdfsUtils.HadoopFileStatus sourceStatus,
+    String targetGroup, FileSystem fs, Path target, boolean recursion, FsShell fsShell) {
+    try {
+      FileStatus fStatus = sourceStatus.getFileStatus();
+      String group = fStatus.getGroup();
+      boolean aclEnabled = Objects.equal(conf.get("dfs.namenode.acls.enabled"), "true");
+      FsPermission sourcePerm = fStatus.getPermission();
+      List<AclEntry> aclEntries = null;
+      if (aclEnabled) {
+        if (sourceStatus.getAclEntries() != null) {
+          LOG.trace(sourceStatus.getAclStatus().toString());
+          aclEntries = new ArrayList<>(sourceStatus.getAclEntries());
+          removeBaseAclEntries(aclEntries);
+
+          //the ACL api's also expect the tradition user/group/other permission in the form of ACL
+          aclEntries.add(newAclEntry(AclEntryScope.ACCESS, AclEntryType.USER, sourcePerm.getUserAction()));
+          aclEntries.add(newAclEntry(AclEntryScope.ACCESS, AclEntryType.GROUP, sourcePerm.getGroupAction()));
+          aclEntries.add(newAclEntry(AclEntryScope.ACCESS, AclEntryType.OTHER, sourcePerm.getOtherAction()));
+        }
       }
-    }
 
-    if (recursion) {
-      //use FsShell to change group, permissions, and extended ACL's recursively
-      FsShell fsShell = new FsShell();
-      fsShell.setConf(conf);
-
-      try {
+      if (recursion) {
+        //use FsShell to change group, permissions, and extended ACL's recursively
+        fsShell.setConf(conf);
         //If there is no group of a file, no need to call chgrp
         if (group != null && !group.isEmpty()) {
           run(fsShell, new String[]{"-chgrp", "-R", group, target.toString()});
@@ -111,23 +141,26 @@ public class HdfsUtils {
           String permission = Integer.toString(sourcePerm.toShort(), 8);
           run(fsShell, new String[]{"-chmod", "-R", permission, target.toString()});
         }
-      } catch (Exception e) {
-        throw new IOException("Unable to set permissions of " + target, e);
-      }
-    } else {
-      if (group != null && !group.isEmpty()) {
-        if (targetGroup == null ||
-            !group.equals(targetGroup)) {
-          fs.setOwner(target, null, group);
-        }
-      }
-      if (aclEnabled) {
-        if (null != aclEntries) {
-          fs.setAcl(target, aclEntries);
-        }
       } else {
-        fs.setPermission(target, sourcePerm);
+        if (group != null && !group.isEmpty()) {
+          if (targetGroup == null ||
+              !group.equals(targetGroup)) {
+            fs.setOwner(target, null, group);
+          }
+        }
+        if (aclEnabled) {
+          if (null != aclEntries) {
+            fs.setAcl(target, aclEntries);
+          }
+        } else {
+          fs.setPermission(target, sourcePerm);
+        }
       }
+    } catch (Exception e) {
+      LOG.warn(
+              "Unable to inherit permissions for file " + target + " from file " + sourceStatus.getFileStatus().getPath(),
+              e.getMessage());
+      LOG.debug("Exception while inheriting permissions", e);
     }
   }
 
@@ -193,8 +226,14 @@ public static class HadoopFileStatus {
   public FileStatus getFileStatus() {
     return fileStatus;
   }
-  public AclStatus getAclStatus() {
-    return aclStatus;
+
+  public List<AclEntry> getAclEntries() {
+    return aclStatus == null ? null : Collections.unmodifiableList(aclStatus.getEntries());
+  }
+
+  @VisibleForTesting
+  AclStatus getAclStatus() {
+    return this.aclStatus;
   }
 }
 }

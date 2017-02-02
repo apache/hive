@@ -31,6 +31,7 @@ import org.apache.hadoop.hive.llap.cache.LowLevelCachePolicy;
 import org.apache.hadoop.hive.llap.cache.MemoryManager;
 import org.apache.hadoop.hive.llap.cache.LowLevelCache.Priority;
 import org.apache.hadoop.hive.ql.io.orc.encoded.OrcBatchKey;
+import org.apache.hadoop.hive.ql.util.JavaDataModel;
 
 public class OrcMetadataCache {
   private final ConcurrentHashMap<Object, OrcFileMetadata> metadata = new ConcurrentHashMap<>();
@@ -115,7 +116,6 @@ public class OrcMetadataCache {
   public OrcFileMetadata getFileMetadata(Object fileKey) throws IOException {
     return touchOnGet(metadata.get(fileKey));
   }
-
 
   private <T extends LlapCacheableBuffer> T touchOnGet(T result) {
     if (result != null) {

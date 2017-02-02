@@ -66,46 +66,38 @@ POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv2.txt' INTO TABLE T3
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@t3
-PREHOOK: query: -- 2 split by max.split.size
-SELECT COUNT(1) FROM T2
+PREHOOK: query: SELECT COUNT(1) FROM T2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t2
 #### A masked pattern was here ####
-POSTHOOK: query: -- 2 split by max.split.size
-SELECT COUNT(1) FROM T2
+POSTHOOK: query: SELECT COUNT(1) FROM T2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t2
 #### A masked pattern was here ####
 5000000
-PREHOOK: query: -- 1 split for two file
-SELECT COUNT(1) FROM T3
+PREHOOK: query: SELECT COUNT(1) FROM T3
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t3
 #### A masked pattern was here ####
-POSTHOOK: query: -- 1 split for two file
-SELECT COUNT(1) FROM T3
+POSTHOOK: query: SELECT COUNT(1) FROM T3
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t3
 #### A masked pattern was here ####
 1000
-PREHOOK: query: -- 1 split
-SELECT COUNT(1) FROM T2
+PREHOOK: query: SELECT COUNT(1) FROM T2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t2
 #### A masked pattern was here ####
-POSTHOOK: query: -- 1 split
-SELECT COUNT(1) FROM T2
+POSTHOOK: query: SELECT COUNT(1) FROM T2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t2
 #### A masked pattern was here ####
 5000000
-PREHOOK: query: -- 2 split for two file
-SELECT COUNT(1) FROM T3
+PREHOOK: query: SELECT COUNT(1) FROM T3
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t3
 #### A masked pattern was here ####
-POSTHOOK: query: -- 2 split for two file
-SELECT COUNT(1) FROM T3
+POSTHOOK: query: SELECT COUNT(1) FROM T3
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t3
 #### A masked pattern was here ####

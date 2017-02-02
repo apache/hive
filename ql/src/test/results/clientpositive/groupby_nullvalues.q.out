@@ -32,11 +32,9 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@paqtest
 PREHOOK: query: insert into paqtest values (58, '', 'ABC', 0)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__1
 PREHOOK: Output: default@paqtest
 POSTHOOK: query: insert into paqtest values (58, '', 'ABC', 0)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__1
 POSTHOOK: Output: default@paqtest
 POSTHOOK: Lineage: paqtest.bn1 EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col4, type:string, comment:), ]
 POSTHOOK: Lineage: paqtest.c1 EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]

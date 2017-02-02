@@ -15,6 +15,8 @@ Example:
   ["b1","b2","b3"]
   > SELECT xpath('<a><b>b1</b><b>b2</b><b>b3</b><c>c1</c><c>c2</c></a>', 'a/c/text()') FROM src LIMIT 1
   ["c1","c2"]
+Function class:org.apache.hadoop.hive.ql.udf.xml.GenericUDFXPath
+Function type:BUILTIN
 PREHOOK: query: SELECT xpath ('<a><b>b1</b><b>b2</b><b>b3</b><c>c1</c><c>c2</c></a>', 'a/text()') FROM src tablesample (1 rows)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src

@@ -1,10 +1,6 @@
-PREHOOK: query: -- INCLUDE_HADOOP_MAJOR_VERSIONS(0.23)
-
-drop table stats_list_bucket
+PREHOOK: query: drop table stats_list_bucket
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: -- INCLUDE_HADOOP_MAJOR_VERSIONS(0.23)
-
-drop table stats_list_bucket
+POSTHOOK: query: drop table stats_list_bucket
 POSTHOOK: type: DROPTABLE
 PREHOOK: query: drop table stats_list_bucket_1
 PREHOOK: type: DROPTABLE
@@ -30,18 +26,12 @@ stored as rcfile
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@stats_list_bucket
-PREHOOK: query: -- Try partitioned table with list bucketing.
--- The stats should show 500 rows loaded, as many rows as the src table has.
-
-insert overwrite table stats_list_bucket partition (ds = '2008-04-08',  hr = '11')
+PREHOOK: query: insert overwrite table stats_list_bucket partition (ds = '2008-04-08',  hr = '11')
   select key, value from src
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Output: default@stats_list_bucket@ds=2008-04-08/hr=11
-POSTHOOK: query: -- Try partitioned table with list bucketing.
--- The stats should show 500 rows loaded, as many rows as the src table has.
-
-insert overwrite table stats_list_bucket partition (ds = '2008-04-08',  hr = '11')
+POSTHOOK: query: insert overwrite table stats_list_bucket partition (ds = '2008-04-08',  hr = '11')
   select key, value from src
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
@@ -93,10 +83,7 @@ Skewed Values:      	[[287, val_287], [466, val_466], [82, val_82]]
 Skewed Value to Truncated Path:	{[287, val_287]=/stats_list_bucket/ds=2008-04-08/hr=11/c1=287/c2=val_287, [466, val_466]=/stats_list_bucket/ds=2008-04-08/hr=11/c1=466/c2=val_466, [82, val_82]=/stats_list_bucket/ds=2008-04-08/hr=11/c1=82/c2=val_82}	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: -- Also try non-partitioned table with list bucketing.
--- Stats should show the same number of rows.
-
-create table stats_list_bucket_1 (
+PREHOOK: query: create table stats_list_bucket_1 (
   c1 string,
   c2 string
 )
@@ -106,10 +93,7 @@ stored as rcfile
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@stats_list_bucket_1
-POSTHOOK: query: -- Also try non-partitioned table with list bucketing.
--- Stats should show the same number of rows.
-
-create table stats_list_bucket_1 (
+POSTHOOK: query: create table stats_list_bucket_1 (
   c1 string,
   c2 string
 )

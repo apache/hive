@@ -148,6 +148,7 @@ STAGE PLANS:
                   properties:
                     bucket_count 4
                     bucket_field_name key
+                    column.name.delimiter ,
                     columns key,value
                     columns.comments 
                     columns.types int:string
@@ -170,6 +171,7 @@ STAGE PLANS:
                     properties:
                       bucket_count 4
                       bucket_field_name key
+                      column.name.delimiter ,
                       columns key,value
                       columns.comments 
                       columns.types int:string
@@ -220,6 +222,7 @@ STAGE PLANS:
                   properties:
                     bucket_count 2
                     bucket_field_name key
+                    column.name.delimiter ,
                     columns key,value
                     columns.comments 
                     columns.types int:string
@@ -242,6 +245,7 @@ STAGE PLANS:
                     properties:
                       bucket_count 2
                       bucket_field_name key
+                      column.name.delimiter ,
                       columns key,value
                       columns.comments 
                       columns.types int:string
@@ -288,6 +292,7 @@ STAGE PLANS:
                         properties:
                           COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                           bucket_count -1
+                          column.name.delimiter ,
                           columns key,value1,value2
                           columns.comments 
                           columns.types string:string:string
@@ -321,6 +326,7 @@ STAGE PLANS:
               properties:
                 COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                 bucket_count -1
+                column.name.delimiter ,
                 columns key,value1,value2
                 columns.comments 
                 columns.types string:string:string
@@ -506,6 +512,7 @@ STAGE PLANS:
                   properties:
                     bucket_count 4
                     bucket_field_name key
+                    column.name.delimiter ,
                     columns key,value
                     columns.comments 
                     columns.types int:string
@@ -528,6 +535,7 @@ STAGE PLANS:
                     properties:
                       bucket_count 4
                       bucket_field_name key
+                      column.name.delimiter ,
                       columns key,value
                       columns.comments 
                       columns.types int:string
@@ -578,6 +586,7 @@ STAGE PLANS:
                   properties:
                     bucket_count 2
                     bucket_field_name key
+                    column.name.delimiter ,
                     columns key,value
                     columns.comments 
                     columns.types int:string
@@ -600,6 +609,7 @@ STAGE PLANS:
                     properties:
                       bucket_count 2
                       bucket_field_name key
+                      column.name.delimiter ,
                       columns key,value
                       columns.comments 
                       columns.types int:string
@@ -646,6 +656,7 @@ STAGE PLANS:
                         properties:
                           COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                           bucket_count -1
+                          column.name.delimiter ,
                           columns key,value1,value2
                           columns.comments 
                           columns.types string:string:string
@@ -679,6 +690,7 @@ STAGE PLANS:
               properties:
                 COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                 bucket_count -1
+                column.name.delimiter ,
                 columns key,value1,value2
                 columns.comments 
                 columns.types string:string:string
@@ -804,13 +816,11 @@ POSTHOOK: Input: default@bucketmapjoin_hash_result_1
 POSTHOOK: Input: default@bucketmapjoin_hash_result_2
 #### A masked pattern was here ####
 0	0	0
-PREHOOK: query: -- HIVE-3210
-load data local inpath '../../data/files/srcbucket22.txt' INTO TABLE srcbucket_mapjoin_part_2 partition(ds='2008-04-09')
+PREHOOK: query: load data local inpath '../../data/files/srcbucket22.txt' INTO TABLE srcbucket_mapjoin_part_2 partition(ds='2008-04-09')
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
 PREHOOK: Output: default@srcbucket_mapjoin_part_2
-POSTHOOK: query: -- HIVE-3210
-load data local inpath '../../data/files/srcbucket22.txt' INTO TABLE srcbucket_mapjoin_part_2 partition(ds='2008-04-09')
+POSTHOOK: query: load data local inpath '../../data/files/srcbucket22.txt' INTO TABLE srcbucket_mapjoin_part_2 partition(ds='2008-04-09')
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@srcbucket_mapjoin_part_2
@@ -883,6 +893,7 @@ STAGE PLANS:
                   properties:
                     bucket_count 4
                     bucket_field_name key
+                    column.name.delimiter ,
                     columns key,value
                     columns.comments 
                     columns.types int:string
@@ -905,6 +916,7 @@ STAGE PLANS:
                     properties:
                       bucket_count 4
                       bucket_field_name key
+                      column.name.delimiter ,
                       columns key,value
                       columns.comments 
                       columns.types int:string
@@ -955,6 +967,7 @@ STAGE PLANS:
                   properties:
                     bucket_count 2
                     bucket_field_name key
+                    column.name.delimiter ,
                     columns key,value
                     columns.comments 
                     columns.types int:string
@@ -977,6 +990,7 @@ STAGE PLANS:
                     properties:
                       bucket_count 2
                       bucket_field_name key
+                      column.name.delimiter ,
                       columns key,value
                       columns.comments 
                       columns.types int:string
@@ -1001,6 +1015,7 @@ STAGE PLANS:
                   properties:
                     bucket_count 2
                     bucket_field_name key
+                    column.name.delimiter ,
                     columns key,value
                     columns.comments 
                     columns.types int:string
@@ -1023,6 +1038,7 @@ STAGE PLANS:
                     properties:
                       bucket_count 2
                       bucket_field_name key
+                      column.name.delimiter ,
                       columns key,value
                       columns.comments 
                       columns.types int:string
@@ -1070,6 +1086,7 @@ STAGE PLANS:
                         properties:
                           COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                           bucket_count -1
+                          column.name.delimiter ,
                           columns key,value1,value2
                           columns.comments 
                           columns.types string:string:string
@@ -1103,6 +1120,7 @@ STAGE PLANS:
               properties:
                 COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                 bucket_count -1
+                column.name.delimiter ,
                 columns key,value1,value2
                 columns.comments 
                 columns.types string:string:string

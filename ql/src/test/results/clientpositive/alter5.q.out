@@ -1,16 +1,8 @@
-PREHOOK: query: --
--- Added to validate the fix for HIVE-2117 - explicit partition location
---
-
-create table alter5_src ( col1 string ) stored as textfile
+PREHOOK: query: create table alter5_src ( col1 string ) stored as textfile
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@alter5_src
-POSTHOOK: query: --
--- Added to validate the fix for HIVE-2117 - explicit partition location
---
-
-create table alter5_src ( col1 string ) stored as textfile
+POSTHOOK: query: create table alter5_src ( col1 string ) stored as textfile
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@alter5_src
@@ -30,19 +22,11 @@ POSTHOOK: query: create table alter5 ( col1 string ) partitioned by (dt string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@alter5
-PREHOOK: query: --
--- Here's the interesting bit for HIVE-2117 - partition subdir should be
--- named "parta".
---
-alter table alter5 add partition (dt='a') location 'parta'
+PREHOOK: query: alter table alter5 add partition (dt='a') location 'parta'
 PREHOOK: type: ALTERTABLE_ADDPARTS
 #### A masked pattern was here ####
 PREHOOK: Output: default@alter5
-POSTHOOK: query: --
--- Here's the interesting bit for HIVE-2117 - partition subdir should be
--- named "parta".
---
-alter table alter5 add partition (dt='a') location 'parta'
+POSTHOOK: query: alter table alter5 add partition (dt='a') location 'parta'
 POSTHOOK: type: ALTERTABLE_ADDPARTS
 #### A masked pattern was here ####
 POSTHOOK: Output: default@alter5
@@ -102,13 +86,11 @@ dt                  	string
 dt                  	string              	                    
 	 	 
 #### A masked pattern was here ####
-PREHOOK: query: -- Cleanup
-DROP TABLE alter5_src
+PREHOOK: query: DROP TABLE alter5_src
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@alter5_src
 PREHOOK: Output: default@alter5_src
-POSTHOOK: query: -- Cleanup
-DROP TABLE alter5_src
+POSTHOOK: query: DROP TABLE alter5_src
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@alter5_src
 POSTHOOK: Output: default@alter5_src
@@ -141,14 +123,10 @@ src_thrift
 srcbucket
 srcbucket2
 srcpart
-PREHOOK: query: -- With non-default Database
-
-CREATE DATABASE alter5_db
+PREHOOK: query: CREATE DATABASE alter5_db
 PREHOOK: type: CREATEDATABASE
 PREHOOK: Output: database:alter5_db
-POSTHOOK: query: -- With non-default Database
-
-CREATE DATABASE alter5_db
+POSTHOOK: query: CREATE DATABASE alter5_db
 POSTHOOK: type: CREATEDATABASE
 POSTHOOK: Output: database:alter5_db
 PREHOOK: query: USE alter5_db

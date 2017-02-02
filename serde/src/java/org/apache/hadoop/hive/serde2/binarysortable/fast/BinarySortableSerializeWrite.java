@@ -32,6 +32,7 @@ import org.apache.hadoop.hive.serde2.ByteStream.Output;
 import org.apache.hadoop.hive.serde2.binarysortable.BinarySortableSerDe;
 import org.apache.hadoop.hive.serde2.fast.SerializeWrite;
 import org.apache.hadoop.hive.serde2.io.DateWritable;
+import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.serde2.io.TimestampWritable;
 import org.apache.hive.common.util.DateUtils;
 import org.slf4j.Logger;
@@ -60,6 +61,8 @@ public final class BinarySortableSerializeWrite implements SerializeWrite {
   private int fieldCount;
 
   private TimestampWritable tempTimestampWritable;
+
+  private byte[] decimalBytesScratch;
 
   public BinarySortableSerializeWrite(boolean[] columnSortOrderIsDesc,
           byte[] columnNullMarker, byte[] columnNotNullMarker) {
@@ -397,6 +400,9 @@ public final class BinarySortableSerializeWrite implements SerializeWrite {
 
   /*
    * DECIMAL.
+   *
+   * NOTE: The scale parameter is for text serialization (e.g. HiveDecimal.toFormatString) that
+   * creates trailing zeroes output decimals.
    */
   @Override
   public void writeHiveDecimal(HiveDecimal dec, int scale) throws IOException {
@@ -407,6 +413,24 @@ public final class BinarySortableSerializeWrite implements SerializeWrite {
     // This field is not a null.
     BinarySortableSerDe.writeByte(output, columnNotNullMarker[index], invert);
 
-    BinarySortableSerDe.serializeHiveDecimal(output, dec, invert);
+    if (decimalBytesScratch == null) {
+      decimalBytesScratch = new byte[HiveDecimal.SCRATCH_BUFFER_LEN_TO_BYTES];
+    }
+    BinarySortableSerDe.serializeHiveDecimal(output, dec, invert, decimalBytesScratch);
+  }
+
+  @Override
+  public void writeHiveDecimal(HiveDecimalWritable decWritable, int scale) throws IOException {
+    ++index;
+
+    final boolean invert = columnSortOrderIsDesc[index];
+
+    // This field is not a null.
+    BinarySortableSerDe.writeByte(output, columnNotNullMarker[index], invert);
+
+    if (decimalBytesScratch == null) {
+      decimalBytesScratch = new byte[HiveDecimal.SCRATCH_BUFFER_LEN_TO_BYTES];
+    }
+    BinarySortableSerDe.serializeHiveDecimal(output, decWritable, invert, decimalBytesScratch);
   }
 }

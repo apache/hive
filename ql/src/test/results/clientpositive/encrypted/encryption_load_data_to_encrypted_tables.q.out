@@ -14,13 +14,11 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@encrypted_table
 Encryption key created: 'key1'
 Encryption zone created: '/build/ql/test/data/warehouse/encrypted_table' using key: 'key1'
-PREHOOK: query: -- Test loading data from the local filesystem;
-LOAD DATA LOCAL INPATH '../../data/files/kv1.txt' OVERWRITE INTO TABLE encrypted_table
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv1.txt' OVERWRITE INTO TABLE encrypted_table
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
 PREHOOK: Output: default@encrypted_table
-POSTHOOK: query: -- Test loading data from the local filesystem;
-LOAD DATA LOCAL INPATH '../../data/files/kv1.txt' OVERWRITE INTO TABLE encrypted_table
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv1.txt' OVERWRITE INTO TABLE encrypted_table
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@encrypted_table

@@ -223,7 +223,12 @@ public class TezSessionState {
         IllegalArgumentException, URISyntaxException, TezException {
     this.conf = conf;
     // TODO Why is the queue name set again. It has already been setup via setQueueName. Do only one of the two.
-    this.queueName = conf.get(TezConfiguration.TEZ_QUEUE_NAME);
+    String confQueueName = conf.get(TezConfiguration.TEZ_QUEUE_NAME);
+    if (queueName != null && !queueName.equals(confQueueName)) {
+      LOG.warn("Resetting a queue name that was already set: was "
+          + queueName + ", now " + confQueueName);
+    }
+    this.queueName = confQueueName;
     this.doAsEnabled = conf.getBoolVar(HiveConf.ConfVars.HIVE_SERVER2_ENABLE_DOAS);
 
     final boolean llapMode = "llap".equalsIgnoreCase(HiveConf.getVar(

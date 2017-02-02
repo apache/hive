@@ -68,11 +68,11 @@
         <include>data/**/*</include>
         <include>dev-support/**/*</include>
         <include>docs/**/*</include>
+        <include>druid-handler/**/*</include>
         <include>find-bugs/**/*</include>
         <include>hbase-handler/**/*</include>
         <include>hcatalog/**/*</include>
         <include>hplsql/**/*</include>
-        <include>hwi/**/*</include>
         <include>itests/**/*</include>
         <include>jdbc/**/*</include>
         <include>contrib/**/*</include>

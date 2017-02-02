@@ -8,7 +8,7 @@ Vertex dependency in root stage
 Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 7 (SIMPLE_EDGE)
 Reducer 3 <- Map 8 (SIMPLE_EDGE), Reducer 2 (SIMPLE_EDGE)
 Reducer 4 <- Map 9 (SIMPLE_EDGE), Reducer 3 (SIMPLE_EDGE)
-Reducer 5 <- Reducer 4 (SIMPLE_EDGE)
+Reducer 5 <- Reducer 4 (CUSTOM_SIMPLE_EDGE)
 Reducer 6 <- Reducer 5 (SIMPLE_EDGE)
 
 Stage-0
@@ -25,8 +25,8 @@ Stage-0
             SHUFFLE [RS_26]
               Group By Operator [GBY_24] (rows=1 width=8)
                 Output:["_col0"],aggregations:["count(VALUE._col0)"]
-              <-Reducer 4 [SIMPLE_EDGE]
-                SHUFFLE [RS_23]
+              <-Reducer 4 [CUSTOM_SIMPLE_EDGE]
+                PARTITION_ONLY_SHUFFLE [RS_23]
                   Group By Operator [GBY_22] (rows=1 width=8)
                     Output:["_col0"],aggregations:["count()"]
                     Merge Join Operator [MERGEJOIN_45] (rows=766650239 width=88)

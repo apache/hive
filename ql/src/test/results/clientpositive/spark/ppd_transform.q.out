@@ -1,6 +1,4 @@
-PREHOOK: query: -- SORT_QUERY_RESULTS
-
-EXPLAIN
+PREHOOK: query: EXPLAIN
 FROM (
   FROM src
   SELECT TRANSFORM(src.key, src.value)
@@ -9,9 +7,7 @@ FROM (
 ) tmap
 SELECT tmap.tkey, tmap.tvalue WHERE tmap.tkey < 100
 PREHOOK: type: QUERY
-POSTHOOK: query: -- SORT_QUERY_RESULTS
-
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 FROM (
   FROM src
   SELECT TRANSFORM(src.key, src.value)
@@ -362,17 +358,13 @@ POSTHOOK: Input: default@src
 97	val_97
 98	val_98
 98	val_98
-PREHOOK: query: -- test described in HIVE-4598
-
-EXPLAIN
+PREHOOK: query: EXPLAIN
 FROM (
     FROM ( SELECT * FROM src ) mapout REDUCE * USING 'cat' AS x,y
 ) reduced
 #### A masked pattern was here ####
 PREHOOK: type: QUERY
-POSTHOOK: query: -- test described in HIVE-4598
-
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 FROM (
     FROM ( SELECT * FROM src ) mapout REDUCE * USING 'cat' AS x,y
 ) reduced

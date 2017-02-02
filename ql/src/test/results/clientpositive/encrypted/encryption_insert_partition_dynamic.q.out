@@ -1,12 +1,6 @@
-PREHOOK: query: -- SORT_QUERY_RESULTS
-
--- init
-drop table IF EXISTS encryptedTable PURGE
+PREHOOK: query: drop table IF EXISTS encryptedTable PURGE
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: -- SORT_QUERY_RESULTS
-
--- init
-drop table IF EXISTS encryptedTable PURGE
+POSTHOOK: query: drop table IF EXISTS encryptedTable PURGE
 POSTHOOK: type: DROPTABLE
 PREHOOK: query: drop table IF EXISTS unencryptedTable PURGE
 PREHOOK: type: DROPTABLE
@@ -38,19 +32,15 @@ POSTHOOK: query: create table unencryptedTable(value string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@unencryptedTable
-PREHOOK: query: -- insert encrypted table from values
-insert into table encryptedTable partition (key) values
+PREHOOK: query: insert into table encryptedTable partition (key) values
     ('val_501', '501'),
     ('val_502', '502')
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__1
 PREHOOK: Output: default@encryptedtable
-POSTHOOK: query: -- insert encrypted table from values
-insert into table encryptedTable partition (key) values
+POSTHOOK: query: insert into table encryptedTable partition (key) values
     ('val_501', '501'),
     ('val_502', '502')
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__1
 POSTHOOK: Output: default@encryptedtable@key=501
 POSTHOOK: Output: default@encryptedtable@key=502
 POSTHOOK: Lineage: encryptedtable PARTITION(key=501).value SIMPLE [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
@@ -69,15 +59,13 @@ POSTHOOK: Input: default@encryptedtable@key=502
 #### A PARTIAL masked pattern was here #### data/warehouse/encryptedTable/.hive-staging
 val_501	501
 val_502	502
-PREHOOK: query: -- insert encrypted table from unencrypted source
-from src
+PREHOOK: query: from src
 insert into table encryptedTable partition (key)
     select value, key limit 2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Output: default@encryptedtable
-POSTHOOK: query: -- insert encrypted table from unencrypted source
-from src
+POSTHOOK: query: from src
 insert into table encryptedTable partition (key)
     select value, key limit 2
 POSTHOOK: type: QUERY
@@ -106,8 +94,7 @@ val_238	238
 val_501	501
 val_502	502
 val_86	86
-PREHOOK: query: -- insert unencrypted table from encrypted source
-from encryptedTable
+PREHOOK: query: from encryptedTable
 insert into table unencryptedTable partition (key)
     select value, key
 PREHOOK: type: QUERY
@@ -117,8 +104,7 @@ PREHOOK: Input: default@encryptedtable@key=501
 PREHOOK: Input: default@encryptedtable@key=502
 PREHOOK: Input: default@encryptedtable@key=86
 PREHOOK: Output: default@unencryptedtable
-POSTHOOK: query: -- insert unencrypted table from encrypted source
-from encryptedTable
+POSTHOOK: query: from encryptedTable
 insert into table unencryptedTable partition (key)
     select value, key
 POSTHOOK: type: QUERY
@@ -155,13 +141,11 @@ val_238	238
 val_501	501
 val_502	502
 val_86	86
-PREHOOK: query: -- clean up
-drop table encryptedTable PURGE
+PREHOOK: query: drop table encryptedTable PURGE
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@encryptedtable
 PREHOOK: Output: default@encryptedtable
-POSTHOOK: query: -- clean up
-drop table encryptedTable PURGE
+POSTHOOK: query: drop table encryptedTable PURGE
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@encryptedtable
 POSTHOOK: Output: default@encryptedtable

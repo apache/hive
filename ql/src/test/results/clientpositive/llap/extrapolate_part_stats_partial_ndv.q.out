@@ -191,6 +191,7 @@ STAGE PLANS:
             properties:
               COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
               bucket_count -1
+              column.name.delimiter ,
               columns state,locid,cnt,zip
               columns.comments 
               columns.types string:double:decimal(10,0):int
@@ -212,6 +213,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
               properties:
                 bucket_count -1
+                column.name.delimiter ,
                 columns state,locid,cnt,zip
                 columns.comments 
                 columns.types string:double:decimal(10,0):int
@@ -234,6 +236,7 @@ STAGE PLANS:
             properties:
               COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"cnt":"true","locid":"true","state":"true","zip":"true"}}
               bucket_count -1
+              column.name.delimiter ,
               columns state,locid,cnt,zip
               columns.comments 
               columns.types string:double:decimal(10,0):int
@@ -255,6 +258,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
               properties:
                 bucket_count -1
+                column.name.delimiter ,
                 columns state,locid,cnt,zip
                 columns.comments 
                 columns.types string:double:decimal(10,0):int
@@ -277,6 +281,7 @@ STAGE PLANS:
             properties:
               COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"cnt":"true","locid":"true","state":"true","zip":"true"}}
               bucket_count -1
+              column.name.delimiter ,
               columns state,locid,cnt,zip
               columns.comments 
               columns.types string:double:decimal(10,0):int
@@ -298,6 +303,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
               properties:
                 bucket_count -1
+                column.name.delimiter ,
                 columns state,locid,cnt,zip
                 columns.comments 
                 columns.types string:double:decimal(10,0):int
@@ -320,6 +326,7 @@ STAGE PLANS:
             properties:
               COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
               bucket_count -1
+              column.name.delimiter ,
               columns state,locid,cnt,zip
               columns.comments 
               columns.types string:double:decimal(10,0):int
@@ -341,6 +348,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
               properties:
                 bucket_count -1
+                column.name.delimiter ,
                 columns state,locid,cnt,zip
                 columns.comments 
                 columns.types string:double:decimal(10,0):int
@@ -476,6 +484,7 @@ STAGE PLANS:
             properties:
               COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"cnt":"true","locid":"true","state":"true","zip":"true"}}
               bucket_count -1
+              column.name.delimiter ,
               columns state,locid,cnt,zip
               columns.comments 
               columns.types string:double:decimal(10,0):int
@@ -497,6 +506,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
               properties:
                 bucket_count -1
+                column.name.delimiter ,
                 columns state,locid,cnt,zip
                 columns.comments 
                 columns.types string:double:decimal(10,0):int
@@ -519,6 +529,7 @@ STAGE PLANS:
             properties:
               COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"cnt":"true","locid":"true","state":"true","zip":"true"}}
               bucket_count -1
+              column.name.delimiter ,
               columns state,locid,cnt,zip
               columns.comments 
               columns.types string:double:decimal(10,0):int
@@ -540,6 +551,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
               properties:
                 bucket_count -1
+                column.name.delimiter ,
                 columns state,locid,cnt,zip
                 columns.comments 
                 columns.types string:double:decimal(10,0):int
@@ -562,6 +574,7 @@ STAGE PLANS:
             properties:
               COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"cnt":"true","locid":"true","state":"true","zip":"true"}}
               bucket_count -1
+              column.name.delimiter ,
               columns state,locid,cnt,zip
               columns.comments 
               columns.types string:double:decimal(10,0):int
@@ -583,6 +596,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
               properties:
                 bucket_count -1
+                column.name.delimiter ,
                 columns state,locid,cnt,zip
                 columns.comments 
                 columns.types string:double:decimal(10,0):int
@@ -605,6 +619,7 @@ STAGE PLANS:
             properties:
               COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"cnt":"true","locid":"true","state":"true","zip":"true"}}
               bucket_count -1
+              column.name.delimiter ,
               columns state,locid,cnt,zip
               columns.comments 
               columns.types string:double:decimal(10,0):int
@@ -626,6 +641,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
               properties:
                 bucket_count -1
+                column.name.delimiter ,
                 columns state,locid,cnt,zip
                 columns.comments 
                 columns.types string:double:decimal(10,0):int
@@ -815,6 +831,7 @@ STAGE PLANS:
             properties:
               COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
               bucket_count -1
+              column.name.delimiter ,
               columns state,locid,cnt
               columns.comments 
               columns.types string:int:decimal(10,0)
@@ -836,6 +853,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
               properties:
                 bucket_count -1
+                column.name.delimiter ,
                 columns state,locid,cnt
                 columns.comments 
                 columns.types string:int:decimal(10,0)
@@ -859,6 +877,7 @@ STAGE PLANS:
             properties:
               COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
               bucket_count -1
+              column.name.delimiter ,
               columns state,locid,cnt
               columns.comments 
               columns.types string:int:decimal(10,0)
@@ -880,6 +899,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
               properties:
                 bucket_count -1
+                column.name.delimiter ,
                 columns state,locid,cnt
                 columns.comments 
                 columns.types string:int:decimal(10,0)
@@ -903,6 +923,7 @@ STAGE PLANS:
             properties:
               COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
               bucket_count -1
+              column.name.delimiter ,
               columns state,locid,cnt
               columns.comments 
               columns.types string:int:decimal(10,0)
@@ -924,6 +945,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
               properties:
                 bucket_count -1
+                column.name.delimiter ,
                 columns state,locid,cnt
                 columns.comments 
                 columns.types string:int:decimal(10,0)
@@ -947,6 +969,7 @@ STAGE PLANS:
             properties:
               COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
               bucket_count -1
+              column.name.delimiter ,
               columns state,locid,cnt
               columns.comments 
               columns.types string:int:decimal(10,0)
@@ -968,6 +991,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
               properties:
                 bucket_count -1
+                column.name.delimiter ,
                 columns state,locid,cnt
                 columns.comments 
                 columns.types string:int:decimal(10,0)
@@ -991,6 +1015,7 @@ STAGE PLANS:
             properties:
               COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"cnt":"true","locid":"true","state":"true"}}
               bucket_count -1
+              column.name.delimiter ,
               columns state,locid,cnt
               columns.comments 
               columns.types string:int:decimal(10,0)
@@ -1012,6 +1037,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
               properties:
                 bucket_count -1
+                column.name.delimiter ,
                 columns state,locid,cnt
                 columns.comments 
                 columns.types string:int:decimal(10,0)
@@ -1035,6 +1061,7 @@ STAGE PLANS:
             properties:
               COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
               bucket_count -1
+              column.name.delimiter ,
               columns state,locid,cnt
               columns.comments 
               columns.types string:int:decimal(10,0)
@@ -1056,6 +1083,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
               properties:
                 bucket_count -1
+                column.name.delimiter ,
                 columns state,locid,cnt
                 columns.comments 
                 columns.types string:int:decimal(10,0)
@@ -1079,6 +1107,7 @@ STAGE PLANS:
             properties:
               COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
               bucket_count -1
+              column.name.delimiter ,
               columns state,locid,cnt
               columns.comments 
               columns.types string:int:decimal(10,0)
@@ -1100,6 +1129,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
               properties:
                 bucket_count -1
+                column.name.delimiter ,
                 columns state,locid,cnt
                 columns.comments 
                 columns.types string:int:decimal(10,0)
@@ -1123,6 +1153,7 @@ STAGE PLANS:
             properties:
               COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
               bucket_count -1
+              column.name.delimiter ,
               columns state,locid,cnt
               columns.comments 
               columns.types string:int:decimal(10,0)
@@ -1144,6 +1175,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
               properties:
                 bucket_count -1
+                column.name.delimiter ,
                 columns state,locid,cnt
                 columns.comments 
                 columns.types string:int:decimal(10,0)
@@ -1167,6 +1199,7 @@ STAGE PLANS:
             properties:
               COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
               bucket_count -1
+              column.name.delimiter ,
               columns state,locid,cnt
               columns.comments 
               columns.types string:int:decimal(10,0)
@@ -1188,6 +1221,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
               properties:
                 bucket_count -1
+                column.name.delimiter ,
                 columns state,locid,cnt
                 columns.comments 
                 columns.types string:int:decimal(10,0)
@@ -1211,6 +1245,7 @@ STAGE PLANS:
             properties:
               COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"cnt":"true","locid":"true","state":"true"}}
               bucket_count -1
+              column.name.delimiter ,
               columns state,locid,cnt
               columns.comments 
               columns.types string:int:decimal(10,0)
@@ -1232,6 +1267,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
               properties:
                 bucket_count -1
+                column.name.delimiter ,
                 columns state,locid,cnt
                 columns.comments 
                 columns.types string:int:decimal(10,0)
@@ -1255,6 +1291,7 @@ STAGE PLANS:
             properties:
               COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
               bucket_count -1
+              column.name.delimiter ,
               columns state,locid,cnt
               columns.comments 
               columns.types string:int:decimal(10,0)
@@ -1276,6 +1313,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
               properties:
                 bucket_count -1
+                column.name.delimiter ,
                 columns state,locid,cnt
                 columns.comments 
                 columns.types string:int:decimal(10,0)

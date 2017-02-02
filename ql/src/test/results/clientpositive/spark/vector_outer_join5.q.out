@@ -1,6 +1,4 @@
-PREHOOK: query: -- SORT_QUERY_RESULTS
-
-create table sorted_mod_4 stored as orc
+PREHOOK: query: create table sorted_mod_4 stored as orc
 as select ctinyint, pmod(cint, 4) as cmodint from alltypesorc
 where cint is not null and ctinyint is not null
 order by ctinyint
@@ -8,9 +6,7 @@ PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@alltypesorc
 PREHOOK: Output: database:default
 PREHOOK: Output: default@sorted_mod_4
-POSTHOOK: query: -- SORT_QUERY_RESULTS
-
-create table sorted_mod_4 stored as orc
+POSTHOOK: query: create table sorted_mod_4 stored as orc
 as select ctinyint, pmod(cint, 4) as cmodint from alltypesorc
 where cint is not null and ctinyint is not null
 order by ctinyint
@@ -94,11 +90,11 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: st
-                  Statistics: Num rows: 100 Data size: 380 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 100 Data size: 379 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: ctinyint (type: tinyint)
                     outputColumnNames: _col0
-                    Statistics: Num rows: 100 Data size: 380 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 100 Data size: 379 Basic stats: COMPLETE Column stats: NONE
                     Spark HashTable Sink Operator
                       keys:
                         0 _col0 (type: tinyint)
@@ -212,11 +208,11 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: sm
-                  Statistics: Num rows: 100 Data size: 380 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 100 Data size: 379 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: ctinyint (type: tinyint)
                     outputColumnNames: _col0
-                    Statistics: Num rows: 100 Data size: 380 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 100 Data size: 379 Basic stats: COMPLETE Column stats: NONE
                     Spark HashTable Sink Operator
                       filter predicates:
                         0 {(_col1 = 2)}
@@ -336,11 +332,11 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: sm
-                  Statistics: Num rows: 100 Data size: 380 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 100 Data size: 379 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: ctinyint (type: tinyint)
                     outputColumnNames: _col0
-                    Statistics: Num rows: 100 Data size: 380 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 100 Data size: 379 Basic stats: COMPLETE Column stats: NONE
                     Spark HashTable Sink Operator
                       filter predicates:
                         0 {((UDFToInteger(_col0) pmod 4) = _col1)}
@@ -460,11 +456,11 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: sm
-                  Statistics: Num rows: 100 Data size: 380 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 100 Data size: 379 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: ctinyint (type: tinyint)
                     outputColumnNames: _col0
-                    Statistics: Num rows: 100 Data size: 380 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 100 Data size: 379 Basic stats: COMPLETE Column stats: NONE
                     Spark HashTable Sink Operator
                       filter predicates:
                         0 {(_col0 < 100)}
@@ -588,11 +584,11 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: sm
-                  Statistics: Num rows: 100 Data size: 380 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 100 Data size: 379 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: cbigint (type: bigint)
                     outputColumnNames: _col0
-                    Statistics: Num rows: 100 Data size: 380 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 100 Data size: 379 Basic stats: COMPLETE Column stats: NONE
                     Spark HashTable Sink Operator
                       keys:
                         0 UDFToLong(_col1) (type: bigint)
@@ -798,11 +794,11 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: st
-                  Statistics: Num rows: 100 Data size: 363 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 100 Data size: 362 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: cmodtinyint (type: int)
                     outputColumnNames: _col0
-                    Statistics: Num rows: 100 Data size: 363 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 100 Data size: 362 Basic stats: COMPLETE Column stats: NONE
                     Spark HashTable Sink Operator
                       keys:
                         0 _col0 (type: int)
@@ -916,11 +912,11 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: sm
-                  Statistics: Num rows: 100 Data size: 363 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 100 Data size: 362 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: cmodtinyint (type: int)
                     outputColumnNames: _col0
-                    Statistics: Num rows: 100 Data size: 363 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 100 Data size: 362 Basic stats: COMPLETE Column stats: NONE
                     Spark HashTable Sink Operator
                       filter predicates:
                         0 {(_col1 = 2)}
@@ -1040,11 +1036,11 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: sm
-                  Statistics: Num rows: 100 Data size: 363 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 100 Data size: 362 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: cmodtinyint (type: int)
                     outputColumnNames: _col0
-                    Statistics: Num rows: 100 Data size: 363 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 100 Data size: 362 Basic stats: COMPLETE Column stats: NONE
                     Spark HashTable Sink Operator
                       filter predicates:
                         0 {((_col0 pmod 4) = _col1)}
@@ -1164,11 +1160,11 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: sm
-                  Statistics: Num rows: 100 Data size: 363 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 100 Data size: 362 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: cmodtinyint (type: int)
                     outputColumnNames: _col0
-                    Statistics: Num rows: 100 Data size: 363 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 100 Data size: 362 Basic stats: COMPLETE Column stats: NONE
                     Spark HashTable Sink Operator
                       filter predicates:
                         0 {(_col0 < 3)}
@@ -1292,11 +1288,11 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: sm
-                  Statistics: Num rows: 100 Data size: 363 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 100 Data size: 362 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: cbigint (type: bigint)
                     outputColumnNames: _col0
-                    Statistics: Num rows: 100 Data size: 363 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 100 Data size: 362 Basic stats: COMPLETE Column stats: NONE
                     Spark HashTable Sink Operator
                       keys:
                         0 UDFToLong(_col1) (type: bigint)

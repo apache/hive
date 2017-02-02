@@ -26,6 +26,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashMap;
+import java.util.Properties;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
@@ -41,6 +42,7 @@ import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.ReduceSinkDesc;
 import org.apache.hadoop.hive.ql.plan.ReduceWork;
+import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.plan.TableScanDesc;
 import org.apache.hadoop.hive.ql.plan.TezWork;
 import org.apache.hadoop.hive.ql.session.SessionState;
@@ -101,6 +103,9 @@ public class TestGenTezWork {
     fs.setConf(new FileSinkDesc());
     rs = new ReduceSinkOperator(cCtx);
     rs.setConf(new ReduceSinkDesc());
+    TableDesc tableDesc = new TableDesc();
+    tableDesc.setProperties(new Properties());
+    rs.getConf().setKeySerializeInfo(tableDesc);
     ts = new TableScanOperator(cCtx);
     ts.setConf(new TableScanDesc(null));
     ts.getChildOperators().add(rs);

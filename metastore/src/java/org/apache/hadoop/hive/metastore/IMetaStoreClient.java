@@ -19,11 +19,18 @@
 package org.apache.hadoop.hive.metastore;
 
 
+import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+
 import org.apache.hadoop.hive.common.ObjectPair;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.classification.InterfaceAudience;
 import org.apache.hadoop.hive.common.classification.InterfaceAudience.Public;
 import org.apache.hadoop.hive.common.classification.InterfaceStability.Evolving;
+import org.apache.hadoop.hive.common.classification.RetrySemantics;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.annotation.NoReconnect;
@@ -31,6 +38,7 @@ import org.apache.hadoop.hive.metastore.api.AggrStats;
 import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
+import org.apache.hadoop.hive.metastore.api.CompactionResponse;
 import org.apache.hadoop.hive.metastore.api.CompactionType;
 import org.apache.hadoop.hive.metastore.api.ConfigValSecurityException;
 import org.apache.hadoop.hive.metastore.api.CurrentNotificationEventId;
@@ -89,12 +97,6 @@ import org.apache.hadoop.hive.metastore.api.UnknownPartitionException;
 import org.apache.hadoop.hive.metastore.api.UnknownTableException;
 import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
 import org.apache.thrift.TException;
-
-import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
 
 /**
  * Wrapper around hive metastore thrift api
@@ -1347,6 +1349,7 @@ public interface IMetaStoreClient {
    * aborted.  This can result from the transaction timing out.
    * @throws TException
    */
+  @RetrySemantics.CannotRetry
   LockResponse lock(LockRequest request)
       throws NoSuchTxnException, TxnAbortedException, TException;
 
@@ -1457,12 +1460,15 @@ public interface IMetaStoreClient {
   @Deprecated
   void compact(String dbname, String tableName, String partitionName,  CompactionType type)
       throws TException;
-
+  @Deprecated
+  void compact(String dbname, String tableName, String partitionName, CompactionType type,
+               Map<String, String> tblproperties) throws TException;
   /**
    * Send a request to compact a table or partition.  This will not block until the compaction is
    * complete.  It will instead put a request on the queue for that table or partition to be
    * compacted.  No checking is done on the dbname, tableName, or partitionName to make sure they
-   * refer to valid objects.  It is assumed this has already been done by the caller.
+   * refer to valid objects.  It is assumed this has already been done by the caller.  At most one
+   * Compaction can be scheduled/running for any given resource at a time.
    * @param dbname Name of the database the table is in.  If null, this will be assumed to be
    *               'default'.
    * @param tableName Name of the table to be compacted.  This cannot be null.  If partitionName
@@ -1470,10 +1476,11 @@ public interface IMetaStoreClient {
    * @param partitionName Name of the partition to be compacted
    * @param type Whether this is a major or minor compaction.
    * @param tblproperties the list of tblproperties to override for this compact. Can be null.
+   * @return id of newly scheduled compaction or id/state of one which is already scheduled/running
    * @throws TException
    */
-  void compact(String dbname, String tableName, String partitionName, CompactionType type,
-               Map<String, String> tblproperties) throws TException;
+  CompactionResponse compact2(String dbname, String tableName, String partitionName, CompactionType type,
+                              Map<String, String> tblproperties) throws TException;
 
   /**
    * Get a list of all current compactions.
@@ -1501,6 +1508,15 @@ public interface IMetaStoreClient {
   void addDynamicPartitions(long txnId, String dbName, String tableName, List<String> partNames,
                             DataOperationType operationType)
     throws TException;
+
+  /**
+   * Performs the pre/commit/rollback to the metadata storage for insert operator from external storage handler.
+   * @param table table name
+   * @param overwrite true if the insert is overwrite
+   *
+   * @throws MetaException
+   */
+  void insertTable(Table table, boolean overwrite) throws MetaException;
 
   /**
    * A filter provided by the client that determines if a given notification event should be
@@ -1627,7 +1643,7 @@ public interface IMetaStoreClient {
     List<SQLPrimaryKey> primaryKeys, List<SQLForeignKey> foreignKeys)
     throws AlreadyExistsException, InvalidObjectException, MetaException, NoSuchObjectException, TException;
 
-  void dropConstraint(String dbName, String tableName, String constraintName) throws 
+  void dropConstraint(String dbName, String tableName, String constraintName) throws
     MetaException, NoSuchObjectException, TException;
 
   void addPrimaryKey(List<SQLPrimaryKey> primaryKeyCols) throws

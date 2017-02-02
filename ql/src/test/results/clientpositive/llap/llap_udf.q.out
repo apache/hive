@@ -14,14 +14,10 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@src_orc
 POSTHOOK: Lineage: src_orc.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: src_orc.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: -- Not using GenericUDFTestGetJavaBoolean; that is already registered when tests begin
-
-CREATE TEMPORARY FUNCTION test_udf0 AS 'org.apache.hadoop.hive.ql.udf.generic.GenericUDFEvaluateNPE'
+PREHOOK: query: CREATE TEMPORARY FUNCTION test_udf0 AS 'org.apache.hadoop.hive.ql.udf.generic.GenericUDFEvaluateNPE'
 PREHOOK: type: CREATEFUNCTION
 PREHOOK: Output: test_udf0
-POSTHOOK: query: -- Not using GenericUDFTestGetJavaBoolean; that is already registered when tests begin
-
-CREATE TEMPORARY FUNCTION test_udf0 AS 'org.apache.hadoop.hive.ql.udf.generic.GenericUDFEvaluateNPE'
+POSTHOOK: query: CREATE TEMPORARY FUNCTION test_udf0 AS 'org.apache.hadoop.hive.ql.udf.generic.GenericUDFEvaluateNPE'
 POSTHOOK: type: CREATEFUNCTION
 POSTHOOK: Output: test_udf0
 PREHOOK: query: EXPLAIN SELECT test_udf0(cast(key as string)) from src_orc
@@ -124,12 +120,10 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: -- Verification is based on classes, so 0 would work based on 4.
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT test_udf0(cast(key as string)) from src_orc
 PREHOOK: type: QUERY
-POSTHOOK: query: -- Verification is based on classes, so 0 would work based on 4.
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT test_udf0(cast(key as string)) from src_orc
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -172,12 +166,10 @@ POSTHOOK: query: DROP FUNCTION test_udf2
 POSTHOOK: type: DROPFUNCTION
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default.test_udf2
-PREHOOK: query: -- ...verify that 3 still works
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT test_udf3(cast(key as string)), test_udf4(cast(key as string)) from src_orc
 PREHOOK: type: QUERY
-POSTHOOK: query: -- ...verify that 3 still works
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT test_udf3(cast(key as string)), test_udf4(cast(key as string)) from src_orc
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -222,12 +214,10 @@ POSTHOOK: query: DROP FUNCTION test_udf4
 POSTHOOK: type: DROPFUNCTION
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default.test_udf4
-PREHOOK: query: -- ...now 0 should stop working
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT test_udf0(cast(key as string)) from src_orc
 PREHOOK: type: QUERY
-POSTHOOK: query: -- ...now 0 should stop working
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT test_udf0(cast(key as string)) from src_orc
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:

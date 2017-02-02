@@ -59,6 +59,8 @@ public class JoinDesc extends AbstractOperatorDesc {
   // alias to filter mapping
   private Map<Byte, List<ExprNodeDesc>> filters;
 
+  private List<ExprNodeDesc> residualFilterExprs;
+
   // pos of outer join alias=<pos of other alias:num of filters on outer join alias>xn
   // for example,
   // a left outer join b on a.k=b.k AND a.k>5 full outer join c on a.k=c.k AND a.k>10 AND c.k>20
@@ -193,6 +195,7 @@ public class JoinDesc extends AbstractOperatorDesc {
     this.tagOrder = clone.tagOrder;
     this.filters = clone.filters;
     this.filterMap = clone.filterMap;
+    this.residualFilterExprs = clone.residualFilterExprs;
     this.statistics = clone.statistics;
   }
 
@@ -292,6 +295,36 @@ public class JoinDesc extends AbstractOperatorDesc {
 
   public void setFilters(Map<Byte, List<ExprNodeDesc>> filters) {
     this.filters = filters;
+  }
+
+  @Explain(displayName = "residual filter predicates", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
+  public String getResidualFilterExprsString() {
+    if (getResidualFilterExprs() == null || getResidualFilterExprs().size() == 0) {
+      return null;
+    }
+
+    StringBuilder sb = new StringBuilder();
+    boolean first = true;
+    for (ExprNodeDesc expr : getResidualFilterExprs()) {
+      if (!first) {
+        sb.append(" ");
+      }
+
+      first = false;
+      sb.append("{");
+      sb.append(expr.getExprString());
+      sb.append("}");
+    }
+
+    return sb.toString();
+  }
+
+  public List<ExprNodeDesc> getResidualFilterExprs() {
+    return residualFilterExprs;
+  }
+
+  public void setResidualFilterExprs(List<ExprNodeDesc> residualFilterExprs) {
+    this.residualFilterExprs = residualFilterExprs;
   }
 
   @Explain(displayName = "outputColumnNames")

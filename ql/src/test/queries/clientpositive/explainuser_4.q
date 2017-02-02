@@ -101,3 +101,9 @@ where
   a.cint between 1000000 and 3000000 and b.cbigint is not null
 group by a.csmallint
 order by c1;
+
+-- Left outer join with residual
+explain
+select *
+from alltypesorc a left outer join alltypesorc b
+on a.cint = b.cint or a.csmallint between 1 and 10;

@@ -1,11 +1,7 @@
-PREHOOK: query: -- Test SHOW CREATE TABLE on a table name of format "db.table".
-
-CREATE DATABASE tmp_feng comment 'for show create table test'
+PREHOOK: query: CREATE DATABASE tmp_feng comment 'for show create table test'
 PREHOOK: type: CREATEDATABASE
 PREHOOK: Output: database:tmp_feng
-POSTHOOK: query: -- Test SHOW CREATE TABLE on a table name of format "db.table".
-
-CREATE DATABASE tmp_feng comment 'for show create table test'
+POSTHOOK: query: CREATE DATABASE tmp_feng comment 'for show create table test'
 POSTHOOK: type: CREATEDATABASE
 POSTHOOK: Output: database:tmp_feng
 PREHOOK: query: SHOW DATABASES
@@ -14,27 +10,43 @@ POSTHOOK: query: SHOW DATABASES
 POSTHOOK: type: SHOWDATABASES
 default
 tmp_feng
-PREHOOK: query: CREATE TABLE tmp_feng.tmp_showcrt (key string, value int)
+PREHOOK: query: CREATE TABLE tmp_feng.tmp_showcrt1(key string, value int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:tmp_feng
-PREHOOK: Output: tmp_feng@tmp_showcrt
-POSTHOOK: query: CREATE TABLE tmp_feng.tmp_showcrt (key string, value int)
+PREHOOK: Output: tmp_feng@tmp_showcrt1
+POSTHOOK: query: CREATE TABLE tmp_feng.tmp_showcrt1(key string, value int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:tmp_feng
-POSTHOOK: Output: tmp_feng@tmp_showcrt
+POSTHOOK: Output: tmp_feng@tmp_showcrt1
+PREHOOK: query: CREATE TABLE tmp_feng.tmp_showcrt2(key string, value int) skewed by (key) on ('1','2')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:tmp_feng
+PREHOOK: Output: tmp_feng@tmp_showcrt2
+POSTHOOK: query: CREATE TABLE tmp_feng.tmp_showcrt2(key string, value int) skewed by (key) on ('1','2')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:tmp_feng
+POSTHOOK: Output: tmp_feng@tmp_showcrt2
+PREHOOK: query: CREATE TABLE tmp_feng.tmp_showcrt3(key string, value int) skewed by (key) on ('1','2') stored as directories
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:tmp_feng
+PREHOOK: Output: tmp_feng@tmp_showcrt3
+POSTHOOK: query: CREATE TABLE tmp_feng.tmp_showcrt3(key string, value int) skewed by (key) on ('1','2') stored as directories
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:tmp_feng
+POSTHOOK: Output: tmp_feng@tmp_showcrt3
 PREHOOK: query: USE default
 PREHOOK: type: SWITCHDATABASE
 PREHOOK: Input: database:default
 POSTHOOK: query: USE default
 POSTHOOK: type: SWITCHDATABASE
 POSTHOOK: Input: database:default
-PREHOOK: query: SHOW CREATE TABLE tmp_feng.tmp_showcrt
+PREHOOK: query: SHOW CREATE TABLE tmp_feng.tmp_showcrt1
 PREHOOK: type: SHOW_CREATETABLE
-PREHOOK: Input: tmp_feng@tmp_showcrt
-POSTHOOK: query: SHOW CREATE TABLE tmp_feng.tmp_showcrt
+PREHOOK: Input: tmp_feng@tmp_showcrt1
+POSTHOOK: query: SHOW CREATE TABLE tmp_feng.tmp_showcrt1
 POSTHOOK: type: SHOW_CREATETABLE
-POSTHOOK: Input: tmp_feng@tmp_showcrt
-CREATE TABLE `tmp_feng.tmp_showcrt`(
+POSTHOOK: Input: tmp_feng@tmp_showcrt1
+CREATE TABLE `tmp_feng.tmp_showcrt1`(
   `key` string, 
   `value` int)
 ROW FORMAT SERDE 
@@ -47,14 +59,73 @@ LOCATION
 #### A masked pattern was here ####
 TBLPROPERTIES (
 #### A masked pattern was here ####
-PREHOOK: query: DROP TABLE tmp_feng.tmp_showcrt
+PREHOOK: query: SHOW CREATE TABLE tmp_feng.tmp_showcrt2
+PREHOOK: type: SHOW_CREATETABLE
+PREHOOK: Input: tmp_feng@tmp_showcrt2
+POSTHOOK: query: SHOW CREATE TABLE tmp_feng.tmp_showcrt2
+POSTHOOK: type: SHOW_CREATETABLE
+POSTHOOK: Input: tmp_feng@tmp_showcrt2
+CREATE TABLE `tmp_feng.tmp_showcrt2`(
+  `key` string, 
+  `value` int)
+SKEWED BY (key)
+  ON (('1'),('2'))
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+#### A masked pattern was here ####
+PREHOOK: query: SHOW CREATE TABLE tmp_feng.tmp_showcrt3
+PREHOOK: type: SHOW_CREATETABLE
+PREHOOK: Input: tmp_feng@tmp_showcrt3
+POSTHOOK: query: SHOW CREATE TABLE tmp_feng.tmp_showcrt3
+POSTHOOK: type: SHOW_CREATETABLE
+POSTHOOK: Input: tmp_feng@tmp_showcrt3
+CREATE TABLE `tmp_feng.tmp_showcrt3`(
+  `key` string, 
+  `value` int)
+SKEWED BY (key)
+  ON (('1'),('2'))
+  STORED AS DIRECTORIES
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+#### A masked pattern was here ####
+PREHOOK: query: DROP TABLE tmp_feng.tmp_showcrt1
 PREHOOK: type: DROPTABLE
-PREHOOK: Input: tmp_feng@tmp_showcrt
-PREHOOK: Output: tmp_feng@tmp_showcrt
-POSTHOOK: query: DROP TABLE tmp_feng.tmp_showcrt
+PREHOOK: Input: tmp_feng@tmp_showcrt1
+PREHOOK: Output: tmp_feng@tmp_showcrt1
+POSTHOOK: query: DROP TABLE tmp_feng.tmp_showcrt1
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: tmp_feng@tmp_showcrt
-POSTHOOK: Output: tmp_feng@tmp_showcrt
+POSTHOOK: Input: tmp_feng@tmp_showcrt1
+POSTHOOK: Output: tmp_feng@tmp_showcrt1
+PREHOOK: query: DROP TABLE tmp_feng.tmp_showcrt2
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: tmp_feng@tmp_showcrt2
+PREHOOK: Output: tmp_feng@tmp_showcrt2
+POSTHOOK: query: DROP TABLE tmp_feng.tmp_showcrt2
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: tmp_feng@tmp_showcrt2
+POSTHOOK: Output: tmp_feng@tmp_showcrt2
+PREHOOK: query: DROP TABLE tmp_feng.tmp_showcrt3
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: tmp_feng@tmp_showcrt3
+PREHOOK: Output: tmp_feng@tmp_showcrt3
+POSTHOOK: query: DROP TABLE tmp_feng.tmp_showcrt3
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: tmp_feng@tmp_showcrt3
+POSTHOOK: Output: tmp_feng@tmp_showcrt3
 PREHOOK: query: DROP DATABASE tmp_feng
 PREHOOK: type: DROPDATABASE
 PREHOOK: Input: database:tmp_feng

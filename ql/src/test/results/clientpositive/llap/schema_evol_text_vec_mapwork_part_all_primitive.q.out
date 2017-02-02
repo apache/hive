@@ -38,7 +38,6 @@ PREHOOK: query: insert into table part_change_various_various_boolean partition(
           (3, 200, 72909, 3244222, -93222, 30.774, -66475.561431, -66475.561431, '1', '6229-06-28 02:54:28.970117179', 'original'),
           (4, 1, 90000, 754072151, 3289094, 46114.284799488 ,9250340.75, 9250340.75, 'time will come', '2002-05-10 05:29:48.990818073', 'original')
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__1
 PREHOOK: Output: default@part_change_various_various_boolean@part=1
 POSTHOOK: query: insert into table part_change_various_various_boolean partition(part=1)
     values(1, 255, 2000, 72909, 3244222, -29.0764, 470614135, 470614135, 'true', '0004-09-22 18:26:29.519542222', 'original'),
@@ -46,7 +45,6 @@ POSTHOOK: query: insert into table part_change_various_various_boolean partition
           (3, 200, 72909, 3244222, -93222, 30.774, -66475.561431, -66475.561431, '1', '6229-06-28 02:54:28.970117179', 'original'),
           (4, 1, 90000, 754072151, 3289094, 46114.284799488 ,9250340.75, 9250340.75, 'time will come', '2002-05-10 05:29:48.990818073', 'original')
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__1
 POSTHOOK: Output: default@part_change_various_various_boolean@part=1
 POSTHOOK: Lineage: part_change_various_various_boolean PARTITION(part=1).b SIMPLE [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col11, type:string, comment:), ]
 POSTHOOK: Lineage: part_change_various_various_boolean PARTITION(part=1).c1 EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
@@ -88,12 +86,10 @@ POSTHOOK: Output: default@part_change_various_various_boolean
 PREHOOK: query: insert into table part_change_various_various_boolean partition(part=2)
     values (5, 1, true, false, 1, 0, false, false, true, false, 'new')
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__2
 PREHOOK: Output: default@part_change_various_various_boolean@part=2
 POSTHOOK: query: insert into table part_change_various_various_boolean partition(part=2)
     values (5, 1, true, false, 1, 0, false, false, true, false, 'new')
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__2
 POSTHOOK: Output: default@part_change_various_various_boolean@part=2
 POSTHOOK: Lineage: part_change_various_various_boolean PARTITION(part=2).b SIMPLE [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col11, type:string, comment:), ]
 POSTHOOK: Lineage: part_change_various_various_boolean PARTITION(part=2).c1 EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
@@ -110,12 +106,10 @@ _col0	_col1	_col2	_col3	_col4	_col5	_col6	_col7	_col8	_col9	_col10
 PREHOOK: query: insert into table part_change_various_various_boolean partition(part=1)
     values (6, 0, 1, 1, false, 0, true, false, true, 0, 'new')
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__3
 PREHOOK: Output: default@part_change_various_various_boolean@part=1
 POSTHOOK: query: insert into table part_change_various_various_boolean partition(part=1)
     values (6, 0, 1, 1, false, 0, true, false, true, 0, 'new')
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__3
 POSTHOOK: Output: default@part_change_various_various_boolean@part=1
 POSTHOOK: Lineage: part_change_various_various_boolean PARTITION(part=1).b SIMPLE [(values__tmp__table__3)values__tmp__table__3.FieldSchema(name:tmp_values_col11, type:string, comment:), ]
 POSTHOOK: Lineage: part_change_various_various_boolean PARTITION(part=1).c1 EXPRESSION [(values__tmp__table__3)values__tmp__table__3.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
@@ -199,7 +193,6 @@ PREHOOK: query: insert into table part_change_various_various_tinyint partition(
           (4, false, -72, -127, 127, 30.774, 127.561431, -106.561431, '90.284799488', '90.284799488', '1', '6229-06-28 02:54:28.970117179', 'original'),
           (5, 1, -90, 75, -38, 109.284799488 ,-128.75, 98.75, '120.4', '33.333', '0.45', '2002-05-10 05:29:48.990818073', 'original')
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__4
 PREHOOK: Output: default@part_change_various_various_tinyint@part=1
 POSTHOOK: query: insert into table part_change_various_various_tinyint partition(part=1)
     values(1, true, 2000, 72909, 3244222, -29.0764, 470614135, 470614135, '129', '-128', '-2999', '0004-09-22 18:26:29.519542222', 'original'),
@@ -208,7 +201,6 @@ POSTHOOK: query: insert into table part_change_various_various_tinyint partition
           (4, false, -72, -127, 127, 30.774, 127.561431, -106.561431, '90.284799488', '90.284799488', '1', '6229-06-28 02:54:28.970117179', 'original'),
           (5, 1, -90, 75, -38, 109.284799488 ,-128.75, 98.75, '120.4', '33.333', '0.45', '2002-05-10 05:29:48.990818073', 'original')
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__4
 POSTHOOK: Output: default@part_change_various_various_tinyint@part=1
 POSTHOOK: Lineage: part_change_various_various_tinyint PARTITION(part=1).b SIMPLE [(values__tmp__table__4)values__tmp__table__4.FieldSchema(name:tmp_values_col13, type:string, comment:), ]
 POSTHOOK: Lineage: part_change_various_various_tinyint PARTITION(part=1).c1 EXPRESSION [(values__tmp__table__4)values__tmp__table__4.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
@@ -253,12 +245,10 @@ POSTHOOK: Output: default@part_change_various_various_tinyint
 PREHOOK: query: insert into table part_change_various_various_tinyint partition(part=2)
     values (6, 23, 71, 127, 1, 131, -60, 68, -230, -182, 40, 93, 'new')
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__5
 PREHOOK: Output: default@part_change_various_various_tinyint@part=2
 POSTHOOK: query: insert into table part_change_various_various_tinyint partition(part=2)
     values (6, 23, 71, 127, 1, 131, -60, 68, -230, -182, 40, 93, 'new')
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__5
 POSTHOOK: Output: default@part_change_various_various_tinyint@part=2
 POSTHOOK: Lineage: part_change_various_various_tinyint PARTITION(part=2).b SIMPLE [(values__tmp__table__5)values__tmp__table__5.FieldSchema(name:tmp_values_col13, type:string, comment:), ]
 POSTHOOK: Lineage: part_change_various_various_tinyint PARTITION(part=2).c1 EXPRESSION [(values__tmp__table__5)values__tmp__table__5.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
@@ -277,12 +267,10 @@ _col0	_col1	_col2	_col3	_col4	_col5	_col6	_col7	_col8	_col9	_col10	_col11	_col12
 PREHOOK: query: insert into table part_change_various_various_tinyint partition(part=1)
     values (7, -120, 85, -126, -167, 91, 113, -28, -63, 0, 8, 237, 'new')
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__6
 PREHOOK: Output: default@part_change_various_various_tinyint@part=1
 POSTHOOK: query: insert into table part_change_various_various_tinyint partition(part=1)
     values (7, -120, 85, -126, -167, 91, 113, -28, -63, 0, 8, 237, 'new')
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__6
 POSTHOOK: Output: default@part_change_various_various_tinyint@part=1
 POSTHOOK: Lineage: part_change_various_various_tinyint PARTITION(part=1).b SIMPLE [(values__tmp__table__6)values__tmp__table__6.FieldSchema(name:tmp_values_col13, type:string, comment:), ]
 POSTHOOK: Lineage: part_change_various_various_tinyint PARTITION(part=1).c1 EXPRESSION [(values__tmp__table__6)values__tmp__table__6.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
@@ -369,7 +357,6 @@ PREHOOK: query: insert into table part_change_various_various_smallint partition
           (4, false, 72, 32422, -9322, 30.774, -6675.561431, -6675.561431, '1', '1', '1', '6229-06-28 02:54:28.970117179', 'original'),
           (5, 1, -90, 7151, 3094, 30000.284799488 ,-9000.75, 0.75, '5299', '5299', '5299', '2002-05-10 05:29:48.990818073', 'original')
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__7
 PREHOOK: Output: default@part_change_various_various_smallint@part=1
 POSTHOOK: query: insert into table part_change_various_various_smallint partition(part=1)
     values(1, -2999, 200, 72909, 3244222, -29.0764, 470614135, 470614135, '-2999', '-2999', '-2999', '0004-09-22 18:26:29.519542222', 'original'),
@@ -378,7 +365,6 @@ POSTHOOK: query: insert into table part_change_various_various_smallint partitio
           (4, false, 72, 32422, -9322, 30.774, -6675.561431, -6675.561431, '1', '1', '1', '6229-06-28 02:54:28.970117179', 'original'),
           (5, 1, -90, 7151, 3094, 30000.284799488 ,-9000.75, 0.75, '5299', '5299', '5299', '2002-05-10 05:29:48.990818073', 'original')
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__7
 POSTHOOK: Output: default@part_change_various_various_smallint@part=1
 POSTHOOK: Lineage: part_change_various_various_smallint PARTITION(part=1).b SIMPLE [(values__tmp__table__7)values__tmp__table__7.FieldSchema(name:tmp_values_col13, type:string, comment:), ]
 POSTHOOK: Lineage: part_change_various_various_smallint PARTITION(part=1).c1 EXPRESSION [(values__tmp__table__7)values__tmp__table__7.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
@@ -423,12 +409,10 @@ POSTHOOK: Output: default@part_change_various_various_smallint
 PREHOOK: query: insert into table part_change_various_various_smallint partition(part=2)
     values (6, -30486, 15230, 3117, 1, -117, -7131, 20227, -24858, -28771, 46114, 72909, 'new')
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__8
 PREHOOK: Output: default@part_change_various_various_smallint@part=2
 POSTHOOK: query: insert into table part_change_various_various_smallint partition(part=2)
     values (6, -30486, 15230, 3117, 1, -117, -7131, 20227, -24858, -28771, 46114, 72909, 'new')
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__8
 POSTHOOK: Output: default@part_change_various_various_smallint@part=2
 POSTHOOK: Lineage: part_change_various_various_smallint PARTITION(part=2).b SIMPLE [(values__tmp__table__8)values__tmp__table__8.FieldSchema(name:tmp_values_col13, type:string, comment:), ]
 POSTHOOK: Lineage: part_change_various_various_smallint PARTITION(part=2).c1 EXPRESSION [(values__tmp__table__8)values__tmp__table__8.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
@@ -447,12 +431,10 @@ _col0	_col1	_col2	_col3	_col4	_col5	_col6	_col7	_col8	_col9	_col10	_col11	_col12
 PREHOOK: query: insert into table part_change_various_various_smallint partition(part=1)
     values (7, -10542, -1805, -4844, 15507, 91, 22385, -28, -12268, 0, 66475, 774, 'new')
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__9
 PREHOOK: Output: default@part_change_various_various_smallint@part=1
 POSTHOOK: query: insert into table part_change_various_various_smallint partition(part=1)
     values (7, -10542, -1805, -4844, 15507, 91, 22385, -28, -12268, 0, 66475, 774, 'new')
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__9
 POSTHOOK: Output: default@part_change_various_various_smallint@part=1
 POSTHOOK: Lineage: part_change_various_various_smallint PARTITION(part=1).b SIMPLE [(values__tmp__table__9)values__tmp__table__9.FieldSchema(name:tmp_values_col13, type:string, comment:), ]
 POSTHOOK: Lineage: part_change_various_various_smallint PARTITION(part=1).c1 EXPRESSION [(values__tmp__table__9)values__tmp__table__9.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
@@ -539,7 +521,6 @@ PREHOOK: query: insert into table part_change_various_various_int partition(part
           (4, false, 72, 3244222, -93222, 30.774, -66475.561431, -66475.561431, '1', '1', '1', '6229-06-28 02:54:28.970117179', 'original'),
           (5, 1, -90, 754072151, 3289094, 46114.284799488 ,9250340.75, 9250340.75, '5299', '5299', '5299', '2002-05-10 05:29:48.990818073', 'original')
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__10
 PREHOOK: Output: default@part_change_various_various_int@part=1
 POSTHOOK: query: insert into table part_change_various_various_int partition(part=1)
     values(1, -2999, 200, 72909, 3244222, -29.0764, 470614135, 470614135, '-2999', '-2999', '-2999', '0004-09-22 18:26:29.519542222', 'original'),
@@ -548,7 +529,6 @@ POSTHOOK: query: insert into table part_change_various_various_int partition(par
           (4, false, 72, 3244222, -93222, 30.774, -66475.561431, -66475.561431, '1', '1', '1', '6229-06-28 02:54:28.970117179', 'original'),
           (5, 1, -90, 754072151, 3289094, 46114.284799488 ,9250340.75, 9250340.75, '5299', '5299', '5299', '2002-05-10 05:29:48.990818073', 'original')
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__10
 POSTHOOK: Output: default@part_change_various_various_int@part=1
 POSTHOOK: Lineage: part_change_various_various_int PARTITION(part=1).b SIMPLE [(values__tmp__table__10)values__tmp__table__10.FieldSchema(name:tmp_values_col13, type:string, comment:), ]
 POSTHOOK: Lineage: part_change_various_various_int PARTITION(part=1).c1 EXPRESSION [(values__tmp__table__10)values__tmp__table__10.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
@@ -593,12 +573,10 @@ POSTHOOK: Output: default@part_change_various_various_int
 PREHOOK: query: insert into table part_change_various_various_int partition(part=2)
     values (5, 560930, -1281818, 127, 1, 84269672, -60, 27094665, -36016110, -182, 3244222, 561431, 'new')
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__11
 PREHOOK: Output: default@part_change_various_various_int@part=2
 POSTHOOK: query: insert into table part_change_various_various_int partition(part=2)
     values (5, 560930, -1281818, 127, 1, 84269672, -60, 27094665, -36016110, -182, 3244222, 561431, 'new')
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__11
 POSTHOOK: Output: default@part_change_various_various_int@part=2
 POSTHOOK: Lineage: part_change_various_various_int PARTITION(part=2).b SIMPLE [(values__tmp__table__11)values__tmp__table__11.FieldSchema(name:tmp_values_col13, type:string, comment:), ]
 POSTHOOK: Lineage: part_change_various_various_int PARTITION(part=2).c1 EXPRESSION [(values__tmp__table__11)values__tmp__table__11.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
@@ -617,12 +595,10 @@ _col0	_col1	_col2	_col3	_col4	_col5	_col6	_col7	_col8	_col9	_col10	_col11	_col12
 PREHOOK: query: insert into table part_change_various_various_int partition(part=1)
     values (6, -1928921, 695025, -151775655, -167, 91, 113, -164341325, -134237413, 0, 6229, 4422, 'new')
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__12
 PREHOOK: Output: default@part_change_various_various_int@part=1
 POSTHOOK: query: insert into table part_change_various_various_int partition(part=1)
     values (6, -1928921, 695025, -151775655, -167, 91, 113, -164341325, -134237413, 0, 6229, 4422, 'new')
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__12
 POSTHOOK: Output: default@part_change_various_various_int@part=1
 POSTHOOK: Lineage: part_change_various_various_int PARTITION(part=1).b SIMPLE [(values__tmp__table__12)values__tmp__table__12.FieldSchema(name:tmp_values_col13, type:string, comment:), ]
 POSTHOOK: Lineage: part_change_various_various_int PARTITION(part=1).c1 EXPRESSION [(values__tmp__table__12)values__tmp__table__12.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
@@ -709,7 +685,6 @@ PREHOOK: query: insert into table part_change_various_various_bigint partition(p
           (4, false, 72, 3244222, -93222, 30.774, -66475.561431, -66475.561431, '1', '1', '1', '6229-06-28 02:54:28.970117179', 'original'),
           (5, 1, -90, 754072151, 3289094, 46114.284799488 ,9250340.75, 9250340.75, '1998287.3541', '1998287.3541', '1998287.3541', '2002-05-10 05:29:48.990818073', 'original')
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__13
 PREHOOK: Output: default@part_change_various_various_bigint@part=1
 POSTHOOK: query: insert into table part_change_various_various_bigint partition(part=1)
     values(1, -2999, 200, 72909, 3244222, -29.0764, 470614135, 470614135, '-2999', '-2999', '-2999', '0004-09-22 18:26:29.519542222', 'original'),
@@ -718,7 +693,6 @@ POSTHOOK: query: insert into table part_change_various_various_bigint partition(
           (4, false, 72, 3244222, -93222, 30.774, -66475.561431, -66475.561431, '1', '1', '1', '6229-06-28 02:54:28.970117179', 'original'),
           (5, 1, -90, 754072151, 3289094, 46114.284799488 ,9250340.75, 9250340.75, '1998287.3541', '1998287.3541', '1998287.3541', '2002-05-10 05:29:48.990818073', 'original')
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__13
 POSTHOOK: Output: default@part_change_various_various_bigint@part=1
 POSTHOOK: Lineage: part_change_various_various_bigint PARTITION(part=1).b SIMPLE [(values__tmp__table__13)values__tmp__table__13.FieldSchema(name:tmp_values_col13, type:string, comment:), ]
 POSTHOOK: Lineage: part_change_various_various_bigint PARTITION(part=1).c1 EXPRESSION [(values__tmp__table__13)values__tmp__table__13.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
@@ -763,12 +737,10 @@ POSTHOOK: Output: default@part_change_various_various_bigint
 PREHOOK: query: insert into table part_change_various_various_bigint partition(part=2)
     values (6, 5573199346255528403, 71, 151775655, 1, 131, -60, 6275638713485623898, -230, -695025, 519542222, -29.0764, 'new')
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__14
 PREHOOK: Output: default@part_change_various_various_bigint@part=2
 POSTHOOK: query: insert into table part_change_various_various_bigint partition(part=2)
     values (6, 5573199346255528403, 71, 151775655, 1, 131, -60, 6275638713485623898, -230, -695025, 519542222, -29.0764, 'new')
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__14
 POSTHOOK: Output: default@part_change_various_various_bigint@part=2
 POSTHOOK: Lineage: part_change_various_various_bigint PARTITION(part=2).b SIMPLE [(values__tmp__table__14)values__tmp__table__14.FieldSchema(name:tmp_values_col13, type:string, comment:), ]
 POSTHOOK: Lineage: part_change_various_various_bigint PARTITION(part=2).c1 EXPRESSION [(values__tmp__table__14)values__tmp__table__14.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
@@ -787,12 +759,10 @@ _col0	_col1	_col2	_col3	_col4	_col5	_col6	_col7	_col8	_col9	_col10	_col11	_col12
 PREHOOK: query: insert into table part_change_various_various_bigint partition(part=1)
     values (7, -164341325, 9043162437544575070, -126, -6566204574741299000, 91, 113, -28, -63, 0, 3244222, -90, 'new')
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__15
 PREHOOK: Output: default@part_change_various_various_bigint@part=1
 POSTHOOK: query: insert into table part_change_various_various_bigint partition(part=1)
     values (7, -164341325, 9043162437544575070, -126, -6566204574741299000, 91, 113, -28, -63, 0, 3244222, -90, 'new')
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__15
 POSTHOOK: Output: default@part_change_various_various_bigint@part=1
 POSTHOOK: Lineage: part_change_various_various_bigint PARTITION(part=1).b SIMPLE [(values__tmp__table__15)values__tmp__table__15.FieldSchema(name:tmp_values_col13, type:string, comment:), ]
 POSTHOOK: Lineage: part_change_various_various_bigint PARTITION(part=1).c1 EXPRESSION [(values__tmp__table__15)values__tmp__table__15.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
@@ -877,7 +847,6 @@ PREHOOK: query: insert into table part_change_various_various_float partition(pa
           (4, false, 72, 3244222, -93222, 30.774, -66475.561431, -66475.561431, '2402.3', '2402.3', '2402.3', '6229-06-28 02:54:28.970117179', 'original'),
           (5, 1, -90, 754072151, 3289094, 46114.284799488 ,9250340.75, 9250340.75, '5299', '5299', '5299', '2002-05-10 05:29:48.990818073', 'original')
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__16
 PREHOOK: Output: default@part_change_various_various_float@part=1
 POSTHOOK: query: insert into table part_change_various_various_float partition(part=1)
     values(1, -2999, 200, 72909, 3244222, -29.0764, 470614135, 470614135, '-2999', '-2999', '-2999', '0004-09-22 18:26:29.519542222', 'original'),
@@ -886,7 +855,6 @@ POSTHOOK: query: insert into table part_change_various_various_float partition(p
           (4, false, 72, 3244222, -93222, 30.774, -66475.561431, -66475.561431, '2402.3', '2402.3', '2402.3', '6229-06-28 02:54:28.970117179', 'original'),
           (5, 1, -90, 754072151, 3289094, 46114.284799488 ,9250340.75, 9250340.75, '5299', '5299', '5299', '2002-05-10 05:29:48.990818073', 'original')
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__16
 POSTHOOK: Output: default@part_change_various_various_float@part=1
 POSTHOOK: Lineage: part_change_various_various_float PARTITION(part=1).b SIMPLE [(values__tmp__table__16)values__tmp__table__16.FieldSchema(name:tmp_values_col13, type:string, comment:), ]
 POSTHOOK: Lineage: part_change_various_various_float PARTITION(part=1).c1 EXPRESSION [(values__tmp__table__16)values__tmp__table__16.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
@@ -931,12 +899,10 @@ POSTHOOK: Output: default@part_change_various_various_float
 PREHOOK: query: insert into table part_change_various_various_float partition(part=2)
     values (6, 953967041., 62.0791539559013466, 718.78, 1, 203.199548118, -60, 6275638713485623898, -230, -695025, -3651.67212, 46114.28, 'new')
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__17
 PREHOOK: Output: default@part_change_various_various_float@part=2
 POSTHOOK: query: insert into table part_change_various_various_float partition(part=2)
     values (6, 953967041., 62.0791539559013466, 718.78, 1, 203.199548118, -60, 6275638713485623898, -230, -695025, -3651.67212, 46114.28, 'new')
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__17
 POSTHOOK: Output: default@part_change_various_various_float@part=2
 POSTHOOK: Lineage: part_change_various_various_float PARTITION(part=2).b SIMPLE [(values__tmp__table__17)values__tmp__table__17.FieldSchema(name:tmp_values_col13, type:string, comment:), ]
 POSTHOOK: Lineage: part_change_various_various_float PARTITION(part=2).c1 EXPRESSION [(values__tmp__table__17)values__tmp__table__17.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
@@ -955,12 +921,10 @@ _col0	_col1	_col2	_col3	_col4	_col5	_col6	_col7	_col8	_col9	_col10	_col11	_col12
 PREHOOK: query: insert into table part_change_various_various_float partition(part=1)
     values (7, -1255178165.77663, 9043162437544575070.974, -4314.7918, -1240033819, 91, 1698.95, -100.3597812, -63, 0, -93222.200, 29.076, 'new')
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__18
 PREHOOK: Output: default@part_change_various_various_float@part=1
 POSTHOOK: query: insert into table part_change_various_various_float partition(part=1)
     values (7, -1255178165.77663, 9043162437544575070.974, -4314.7918, -1240033819, 91, 1698.95, -100.3597812, -63, 0, -93222.200, 29.076, 'new')
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__18
 POSTHOOK: Output: default@part_change_various_various_float@part=1
 POSTHOOK: Lineage: part_change_various_various_float PARTITION(part=1).b SIMPLE [(values__tmp__table__18)values__tmp__table__18.FieldSchema(name:tmp_values_col13, type:string, comment:), ]
 POSTHOOK: Lineage: part_change_various_various_float PARTITION(part=1).c1 EXPRESSION [(values__tmp__table__18)values__tmp__table__18.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
@@ -1045,7 +1009,6 @@ PREHOOK: query: insert into table part_change_various_various_double partition(p
           (4, false, 72, 3244222, -93222, 30.774, -66475.561431, -66475.561431, '1', '1', '1', '6229-06-28 02:54:28.970117179', 'original'),
           (5, 1, -90, 754072151, 3289094, 46114.284799488 ,9250340.75, 9250340.75, '5299', '5299', '5299', '2002-05-10 05:29:48.990818073', 'original')
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__19
 PREHOOK: Output: default@part_change_various_various_double@part=1
 POSTHOOK: query: insert into table part_change_various_various_double partition(part=1)
     values(1, -2999, 200, 72909, 3244222, -29.0764, 470614135, 470614135, '-2999', '-2999', '-2999', '0004-09-22 18:26:29.519542222', 'original'),
@@ -1054,7 +1017,6 @@ POSTHOOK: query: insert into table part_change_various_various_double partition(
           (4, false, 72, 3244222, -93222, 30.774, -66475.561431, -66475.561431, '1', '1', '1', '6229-06-28 02:54:28.970117179', 'original'),
           (5, 1, -90, 754072151, 3289094, 46114.284799488 ,9250340.75, 9250340.75, '5299', '5299', '5299', '2002-05-10 05:29:48.990818073', 'original')
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__19
 POSTHOOK: Output: default@part_change_various_various_double@part=1
 POSTHOOK: Lineage: part_change_various_various_double PARTITION(part=1).b SIMPLE [(values__tmp__table__19)values__tmp__table__19.FieldSchema(name:tmp_values_col13, type:string, comment:), ]
 POSTHOOK: Lineage: part_change_various_various_double PARTITION(part=1).c1 EXPRESSION [(values__tmp__table__19)values__tmp__table__19.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
@@ -1099,12 +1061,10 @@ POSTHOOK: Output: default@part_change_various_various_double
 PREHOOK: query: insert into table part_change_various_various_double partition(part=2)
     values (6, 953967041., 62.0791539559013466, 718.78, 1, 203.199548118, -60, 6275638713485623898, -230, -695025, 0.00007011717, 4.28479948, 'new')
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__20
 PREHOOK: Output: default@part_change_various_various_double@part=2
 POSTHOOK: query: insert into table part_change_various_various_double partition(part=2)
     values (6, 953967041., 62.0791539559013466, 718.78, 1, 203.199548118, -60, 6275638713485623898, -230, -695025, 0.00007011717, 4.28479948, 'new')
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__20
 POSTHOOK: Output: default@part_change_various_various_double@part=2
 POSTHOOK: Lineage: part_change_various_various_double PARTITION(part=2).b SIMPLE [(values__tmp__table__20)values__tmp__table__20.FieldSchema(name:tmp_values_col13, type:string, comment:), ]
 POSTHOOK: Lineage: part_change_various_various_double PARTITION(part=2).c1 EXPRESSION [(values__tmp__table__20)values__tmp__table__20.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
@@ -1123,12 +1083,10 @@ _col0	_col1	_col2	_col3	_col4	_col5	_col6	_col7	_col8	_col9	_col10	_col11	_col12
 PREHOOK: query: insert into table part_change_various_various_double partition(part=1)
     values (7, -1255178165.77663, 9043162437544575070.974, -4314.7918, -1240033819, 91, 1698.95, -100.3597812, -63, 0, -66475.0000008, -284799488.1, 'new')
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__21
 PREHOOK: Output: default@part_change_various_various_double@part=1
 POSTHOOK: query: insert into table part_change_various_various_double partition(part=1)
     values (7, -1255178165.77663, 9043162437544575070.974, -4314.7918, -1240033819, 91, 1698.95, -100.3597812, -63, 0, -66475.0000008, -284799488.1, 'new')
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__21
 POSTHOOK: Output: default@part_change_various_various_double@part=1
 POSTHOOK: Lineage: part_change_various_various_double PARTITION(part=1).b SIMPLE [(values__tmp__table__21)values__tmp__table__21.FieldSchema(name:tmp_values_col13, type:string, comment:), ]
 POSTHOOK: Lineage: part_change_various_various_double PARTITION(part=1).c1 EXPRESSION [(values__tmp__table__21)values__tmp__table__21.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
@@ -1213,7 +1171,6 @@ PREHOOK: query: insert into table part_change_various_various_decimal partition(
           (4, false, 72, 3244222, -93222, 30.774, -66475.561431, -66475.561431, '1', '1', '1', '6229-06-28 02:54:28.970117179', 'original'),
           (5, 1, -90, 754072151, 3289094, 46114.284799488 ,9250340.75, 9250340.75, '2402.3', '2402.3', '2402.3', '2002-05-10 05:29:48.990818073', 'original')
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__22
 PREHOOK: Output: default@part_change_various_various_decimal@part=1
 POSTHOOK: query: insert into table part_change_various_various_decimal partition(part=1)
     values(1, -2999, 200, 72909, 3244222, -29.0764, 470614135, 470614135, '--1551801.09502', '--1551801.09502', '--1551801.09502', '0004-09-22 18:26:29.519542222', 'original'),
@@ -1222,7 +1179,6 @@ POSTHOOK: query: insert into table part_change_various_various_decimal partition
           (4, false, 72, 3244222, -93222, 30.774, -66475.561431, -66475.561431, '1', '1', '1', '6229-06-28 02:54:28.970117179', 'original'),
           (5, 1, -90, 754072151, 3289094, 46114.284799488 ,9250340.75, 9250340.75, '2402.3', '2402.3', '2402.3', '2002-05-10 05:29:48.990818073', 'original')
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__22
 POSTHOOK: Output: default@part_change_various_various_decimal@part=1
 POSTHOOK: Lineage: part_change_various_various_decimal PARTITION(part=1).b SIMPLE [(values__tmp__table__22)values__tmp__table__22.FieldSchema(name:tmp_values_col13, type:string, comment:), ]
 POSTHOOK: Lineage: part_change_various_various_decimal PARTITION(part=1).c1 EXPRESSION [(values__tmp__table__22)values__tmp__table__22.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
@@ -1267,12 +1223,10 @@ POSTHOOK: Output: default@part_change_various_various_decimal
 PREHOOK: query: insert into table part_change_various_various_decimal partition(part=2)
     values (6, 953967041., 62.0791539559013466, 718.78, 1, 203.199548118, -60, 6275638713485623898, -230, -695025, 0.00007011717, 4.28479948, 'new')
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__23
 PREHOOK: Output: default@part_change_various_various_decimal@part=2
 POSTHOOK: query: insert into table part_change_various_various_decimal partition(part=2)
     values (6, 953967041., 62.0791539559013466, 718.78, 1, 203.199548118, -60, 6275638713485623898, -230, -695025, 0.00007011717, 4.28479948, 'new')
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__23
 POSTHOOK: Output: default@part_change_various_various_decimal@part=2
 POSTHOOK: Lineage: part_change_various_various_decimal PARTITION(part=2).b SIMPLE [(values__tmp__table__23)values__tmp__table__23.FieldSchema(name:tmp_values_col13, type:string, comment:), ]
 POSTHOOK: Lineage: part_change_various_various_decimal PARTITION(part=2).c1 EXPRESSION [(values__tmp__table__23)values__tmp__table__23.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
@@ -1291,12 +1245,10 @@ _col0	_col1	_col2	_col3	_col4	_col5	_col6	_col7	_col8	_col9	_col10	_col11	_col12
 PREHOOK: query: insert into table part_change_various_various_decimal partition(part=1)
     values (7,-1255178165.77663, 9043162437544575070.974, -4314.7918, -1240033819, 91, 1698.95, -100.3597812, -63, 0, -66475.0000008, -284799488.1, 'new')
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__24
 PREHOOK: Output: default@part_change_various_various_decimal@part=1
 POSTHOOK: query: insert into table part_change_various_various_decimal partition(part=1)
     values (7,-1255178165.77663, 9043162437544575070.974, -4314.7918, -1240033819, 91, 1698.95, -100.3597812, -63, 0, -66475.0000008, -284799488.1, 'new')
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__24
 POSTHOOK: Output: default@part_change_various_various_decimal@part=1
 POSTHOOK: Lineage: part_change_various_various_decimal PARTITION(part=1).b SIMPLE [(values__tmp__table__24)values__tmp__table__24.FieldSchema(name:tmp_values_col13, type:string, comment:), ]
 POSTHOOK: Lineage: part_change_various_various_decimal PARTITION(part=1).c1 EXPRESSION [(values__tmp__table__24)values__tmp__table__24.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
@@ -1381,7 +1333,6 @@ PREHOOK: query: insert into table part_change_various_various_string partition(p
           (4, false, 72,   3244222,    -93222,   30.774,       -   66475.561431, -66475.561431,    0.561431,          '1', '1',                                  '6229-06-28 02:54:28.970117179', '5966-07-09', 'binary', 'original'),
           (5, 1,    -90,   754072151,   3289094, 46114.284799488,  9250340.75,    9250340.75,      9250340.75,        'junkyard', 'junkyard',                    '2002-05-10 05:29:48.990818073', '1815-05-06', 'binary', 'original')
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__25
 PREHOOK: Output: default@part_change_various_various_string@part=1
 POSTHOOK: query: insert into table part_change_various_various_string partition(part=1)
     values(1, true,  200,  72909,      3244222, -99999999999,     -29.0764,      470614135,        470614135,         'dynamic reptile  ', 'dynamic reptile  ',  '0004-09-22 18:26:29.519542222', '2007-02-09', 'binary', 'original'),
@@ -1390,7 +1341,6 @@ POSTHOOK: query: insert into table part_change_various_various_string partition(
           (4, false, 72,   3244222,    -93222,   30.774,       -   66475.561431, -66475.561431,    0.561431,          '1', '1',                                  '6229-06-28 02:54:28.970117179', '5966-07-09', 'binary', 'original'),
           (5, 1,    -90,   754072151,   3289094, 46114.284799488,  9250340.75,    9250340.75,      9250340.75,        'junkyard', 'junkyard',                    '2002-05-10 05:29:48.990818073', '1815-05-06', 'binary', 'original')
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__25
 POSTHOOK: Output: default@part_change_various_various_string@part=1
 POSTHOOK: Lineage: part_change_various_various_string PARTITION(part=1).b SIMPLE [(values__tmp__table__25)values__tmp__table__25.FieldSchema(name:tmp_values_col15, type:string, comment:), ]
 POSTHOOK: Lineage: part_change_various_various_string PARTITION(part=1).c1 EXPRESSION [(values__tmp__table__25)values__tmp__table__25.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
@@ -1437,12 +1387,10 @@ POSTHOOK: Output: default@part_change_various_various_string
 PREHOOK: query: insert into table part_change_various_various_string partition(part=2)
     values (6, 'true', '400',  '44388',       -'100',    '953967041.',       '62.079153',     '718.78',         '1',                'verdict', 'verdict', 'timestamp', 'date', 'binary', 'new')
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__26
 PREHOOK: Output: default@part_change_various_various_string@part=2
 POSTHOOK: query: insert into table part_change_various_various_string partition(part=2)
     values (6, 'true', '400',  '44388',       -'100',    '953967041.',       '62.079153',     '718.78',         '1',                'verdict', 'verdict', 'timestamp', 'date', 'binary', 'new')
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__26
 POSTHOOK: Output: default@part_change_various_various_string@part=2
 POSTHOOK: Lineage: part_change_various_various_string PARTITION(part=2).b SIMPLE [(values__tmp__table__26)values__tmp__table__26.FieldSchema(name:tmp_values_col15, type:string, comment:), ]
 POSTHOOK: Lineage: part_change_various_various_string PARTITION(part=2).c1 SIMPLE [(values__tmp__table__26)values__tmp__table__26.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
@@ -1463,12 +1411,10 @@ _col0	_col1	_col2	_col3	_col4	_col5	_col6	_col7	_col8	_col9	_col10	_col11	_col12
 PREHOOK: query: insert into table part_change_various_various_string partition(part=1)
     values (7,-'false', '-67', '833',          '63993', ' 1255178165.77663', '905070.974', '-4314.7918',        -'1240033819',      'trial',   'trial',  '2016-03-07 03:02:22.0', '2016-03-07', 'binary', 'new')
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__27
 PREHOOK: Output: default@part_change_various_various_string@part=1
 POSTHOOK: query: insert into table part_change_various_various_string partition(part=1)
     values (7,-'false', '-67', '833',          '63993', ' 1255178165.77663', '905070.974', '-4314.7918',        -'1240033819',      'trial',   'trial',  '2016-03-07 03:02:22.0', '2016-03-07', 'binary', 'new')
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__27
 POSTHOOK: Output: default@part_change_various_various_string@part=1
 POSTHOOK: Lineage: part_change_various_various_string PARTITION(part=1).b SIMPLE [(values__tmp__table__27)values__tmp__table__27.FieldSchema(name:tmp_values_col15, type:string, comment:), ]
 POSTHOOK: Lineage: part_change_various_various_string PARTITION(part=1).c1 SIMPLE [(values__tmp__table__27)values__tmp__table__27.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
@@ -1555,7 +1501,6 @@ PREHOOK: query: insert into table part_change_various_various_char partition(par
           (4, false, 72,   3244222,    -93222,   30.774,       -   66475.561431, -66475.561431,    0.561431,         '1', '1',                                  '6229-06-28 02:54:28.970117179', '5966-07-09', 'binary', 'original'),
           (5, 1,    -90,   754072151,   3289094, 46114.284799488,  9250340.75,    9250340.75,      9250340.75,        'junkyard', 'junkyard',                    '2002-05-10 05:29:48.990818073', '1815-05-06', 'binary', 'original')
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__28
 PREHOOK: Output: default@part_change_various_various_char@part=1
 POSTHOOK: query: insert into table part_change_various_various_char partition(part=1)
     values(1, true,  200,  72909,      3244222, -99999999999,     -29.0764,      470614135,        470614135,         'dynamic reptile  ', 'dynamic reptile  ',  '0004-09-22 18:26:29.519542222', '2007-02-09', 'binary', 'original'),
@@ -1564,7 +1509,6 @@ POSTHOOK: query: insert into table part_change_various_various_char partition(pa
           (4, false, 72,   3244222,    -93222,   30.774,       -   66475.561431, -66475.561431,    0.561431,         '1', '1',                                  '6229-06-28 02:54:28.970117179', '5966-07-09', 'binary', 'original'),
           (5, 1,    -90,   754072151,   3289094, 46114.284799488,  9250340.75,    9250340.75,      9250340.75,        'junkyard', 'junkyard',                    '2002-05-10 05:29:48.990818073', '1815-05-06', 'binary', 'original')
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__28
 POSTHOOK: Output: default@part_change_various_various_char@part=1
 POSTHOOK: Lineage: part_change_various_various_char PARTITION(part=1).b SIMPLE [(values__tmp__table__28)values__tmp__table__28.FieldSchema(name:tmp_values_col15, type:string, comment:), ]
 POSTHOOK: Lineage: part_change_various_various_char PARTITION(part=1).c1 EXPRESSION [(values__tmp__table__28)values__tmp__table__28.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
@@ -1611,12 +1555,10 @@ POSTHOOK: Output: default@part_change_various_various_char
 PREHOOK: query: insert into table part_change_various_various_char partition(part=2)
     values (6, 'true', '400',  '44388',       -'100',    '953967041.',       '62.079153',     '718.78',         '1',                'verdict', 'verdict', 'timestamp', 'date', 'binary', 'new')
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__29
 PREHOOK: Output: default@part_change_various_various_char@part=2
 POSTHOOK: query: insert into table part_change_various_various_char partition(part=2)
     values (6, 'true', '400',  '44388',       -'100',    '953967041.',       '62.079153',     '718.78',         '1',                'verdict', 'verdict', 'timestamp', 'date', 'binary', 'new')
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__29
 POSTHOOK: Output: default@part_change_various_various_char@part=2
 POSTHOOK: Lineage: part_change_various_various_char PARTITION(part=2).b SIMPLE [(values__tmp__table__29)values__tmp__table__29.FieldSchema(name:tmp_values_col15, type:string, comment:), ]
 POSTHOOK: Lineage: part_change_various_various_char PARTITION(part=2).c1 EXPRESSION [(values__tmp__table__29)values__tmp__table__29.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
@@ -1637,12 +1579,10 @@ _col0	_col1	_col2	_col3	_col4	_col5	_col6	_col7	_col8	_col9	_col10	_col11	_col12
 PREHOOK: query: insert into table part_change_various_various_char partition(part=1)
     values (7,-'false', '-67', '833',          '63993', ' 1255178165.77663', '905070.974', '-4314.7918',        -'1240033819',      'trial',   'trial',  '2016-03-07 03:02:22.0', '2016-03-07', 'binary', 'new')
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__30
 PREHOOK: Output: default@part_change_various_various_char@part=1
 POSTHOOK: query: insert into table part_change_various_various_char partition(part=1)
     values (7,-'false', '-67', '833',          '63993', ' 1255178165.77663', '905070.974', '-4314.7918',        -'1240033819',      'trial',   'trial',  '2016-03-07 03:02:22.0', '2016-03-07', 'binary', 'new')
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__30
 POSTHOOK: Output: default@part_change_various_various_char@part=1
 POSTHOOK: Lineage: part_change_various_various_char PARTITION(part=1).b SIMPLE [(values__tmp__table__30)values__tmp__table__30.FieldSchema(name:tmp_values_col15, type:string, comment:), ]
 POSTHOOK: Lineage: part_change_various_various_char PARTITION(part=1).c1 EXPRESSION [(values__tmp__table__30)values__tmp__table__30.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
@@ -1729,7 +1669,6 @@ PREHOOK: query: insert into table part_change_various_various_char_trunc partiti
           (4, false, 72,   3244222,    -93222,   30.774,       -   66475.561431, -66475.561431,    0.561431,         '1', '1',                                  '6229-06-28 02:54:28.970117179', '5966-07-09', 'binary', 'original'),
           (5, 1,    -90,   754072151,   3289094, 46114.284799488,  9250340.75,    9250340.75,      9250340.75,        'junkyard', 'junkyard',                    '2002-05-10 05:29:48.990818073', '1815-05-06', 'binary', 'original')
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__31
 PREHOOK: Output: default@part_change_various_various_char_trunc@part=1
 POSTHOOK: query: insert into table part_change_various_various_char_trunc partition(part=1)
     values(1, true,  200,  72909,      3244222, -99999999999,     -29.0764,      470614135,        470614135,         'dynamic reptile  ', 'dynamic reptile  ',  '0004-09-22 18:26:29.519542222', '2007-02-09', 'binary', 'original'),
@@ -1738,7 +1677,6 @@ POSTHOOK: query: insert into table part_change_various_various_char_trunc partit
           (4, false, 72,   3244222,    -93222,   30.774,       -   66475.561431, -66475.561431,    0.561431,         '1', '1',                                  '6229-06-28 02:54:28.970117179', '5966-07-09', 'binary', 'original'),
           (5, 1,    -90,   754072151,   3289094, 46114.284799488,  9250340.75,    9250340.75,      9250340.75,        'junkyard', 'junkyard',                    '2002-05-10 05:29:48.990818073', '1815-05-06', 'binary', 'original')
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__31
 POSTHOOK: Output: default@part_change_various_various_char_trunc@part=1
 POSTHOOK: Lineage: part_change_various_various_char_trunc PARTITION(part=1).b SIMPLE [(values__tmp__table__31)values__tmp__table__31.FieldSchema(name:tmp_values_col15, type:string, comment:), ]
 POSTHOOK: Lineage: part_change_various_various_char_trunc PARTITION(part=1).c1 EXPRESSION [(values__tmp__table__31)values__tmp__table__31.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
@@ -1785,12 +1723,10 @@ POSTHOOK: Output: default@part_change_various_various_char_trunc
 PREHOOK: query: insert into table part_change_various_various_char_trunc partition(part=2)
     values (6, 'true', '400',  '44388',       -'100',    '953967041.',       '62.079153',     '718.78',         '1',                'verdict', 'verdict', 'timestamp', 'date', 'binary', 'new')
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__32
 PREHOOK: Output: default@part_change_various_various_char_trunc@part=2
 POSTHOOK: query: insert into table part_change_various_various_char_trunc partition(part=2)
     values (6, 'true', '400',  '44388',       -'100',    '953967041.',       '62.079153',     '718.78',         '1',                'verdict', 'verdict', 'timestamp', 'date', 'binary', 'new')
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__32
 POSTHOOK: Output: default@part_change_various_various_char_trunc@part=2
 POSTHOOK: Lineage: part_change_various_various_char_trunc PARTITION(part=2).b SIMPLE [(values__tmp__table__32)values__tmp__table__32.FieldSchema(name:tmp_values_col15, type:string, comment:), ]
 POSTHOOK: Lineage: part_change_various_various_char_trunc PARTITION(part=2).c1 EXPRESSION [(values__tmp__table__32)values__tmp__table__32.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
@@ -1811,12 +1747,10 @@ _col0	_col1	_col2	_col3	_col4	_col5	_col6	_col7	_col8	_col9	_col10	_col11	_col12
 PREHOOK: query: insert into table part_change_various_various_char_trunc partition(part=1)
     values (7,-'false', '-67', '833',          '63993', ' 1255178165.77663', '905070.974', '-4314.7918',        -'1240033819',      'trial',   'trial',  '2016-03-07 03:02:22.0', '2016-03-07', 'binary', 'new')
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__33
 PREHOOK: Output: default@part_change_various_various_char_trunc@part=1
 POSTHOOK: query: insert into table part_change_various_various_char_trunc partition(part=1)
     values (7,-'false', '-67', '833',          '63993', ' 1255178165.77663', '905070.974', '-4314.7918',        -'1240033819',      'trial',   'trial',  '2016-03-07 03:02:22.0', '2016-03-07', 'binary', 'new')
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__33
 POSTHOOK: Output: default@part_change_various_various_char_trunc@part=1
 POSTHOOK: Lineage: part_change_various_various_char_trunc PARTITION(part=1).b SIMPLE [(values__tmp__table__33)values__tmp__table__33.FieldSchema(name:tmp_values_col15, type:string, comment:), ]
 POSTHOOK: Lineage: part_change_various_various_char_trunc PARTITION(part=1).c1 EXPRESSION [(values__tmp__table__33)values__tmp__table__33.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
@@ -1903,7 +1837,6 @@ PREHOOK: query: insert into table part_change_various_various_varchar partition(
           (4, false, 72,   3244222,    -93222,   30.774,       -   66475.561431, -66475.561431,    0.561431,         '1', '1',                                  '6229-06-28 02:54:28.970117179', '5966-07-09', 'binary', 'original'),
           (5, 1,    -90,   754072151,   3289094, 46114.284799488,  9250340.75,    9250340.75,      9250340.75,        'junkyard', 'junkyard',                    '2002-05-10 05:29:48.990818073', '1815-05-06', 'binary', 'original')
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__34
 PREHOOK: Output: default@part_change_various_various_varchar@part=1
 POSTHOOK: query: insert into table part_change_various_various_varchar partition(part=1)
     values(1, true,  200,  72909,      3244222, -99999999999,     -29.0764,      470614135,        470614135,         'dynamic reptile  ', 'dynamic reptile  ',  '0004-09-22 18:26:29.519542222', '2007-02-09', 'binary', 'original'),
@@ -1912,7 +1845,6 @@ POSTHOOK: query: insert into table part_change_various_various_varchar partition
           (4, false, 72,   3244222,    -93222,   30.774,       -   66475.561431, -66475.561431,    0.561431,         '1', '1',                                  '6229-06-28 02:54:28.970117179', '5966-07-09', 'binary', 'original'),
           (5, 1,    -90,   754072151,   3289094, 46114.284799488,  9250340.75,    9250340.75,      9250340.75,        'junkyard', 'junkyard',                    '2002-05-10 05:29:48.990818073', '1815-05-06', 'binary', 'original')
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__34
 POSTHOOK: Output: default@part_change_various_various_varchar@part=1
 POSTHOOK: Lineage: part_change_various_various_varchar PARTITION(part=1).b SIMPLE [(values__tmp__table__34)values__tmp__table__34.FieldSchema(name:tmp_values_col15, type:string, comment:), ]
 POSTHOOK: Lineage: part_change_various_various_varchar PARTITION(part=1).c1 EXPRESSION [(values__tmp__table__34)values__tmp__table__34.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
@@ -1959,12 +1891,10 @@ POSTHOOK: Output: default@part_change_various_various_varchar
 PREHOOK: query: insert into table part_change_various_various_varchar partition(part=2)
     values (6, 'true', '400',  '44388',       -'100',    '953967041.',       '62.079153',     '718.78',         '1',                'verdict', 'verdict', 'timestamp', 'date', 'binary', 'new')
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__35
 PREHOOK: Output: default@part_change_various_various_varchar@part=2
 POSTHOOK: query: insert into table part_change_various_various_varchar partition(part=2)
     values (6, 'true', '400',  '44388',       -'100',    '953967041.',       '62.079153',     '718.78',         '1',                'verdict', 'verdict', 'timestamp', 'date', 'binary', 'new')
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__35
 POSTHOOK: Output: default@part_change_various_various_varchar@part=2
 POSTHOOK: Lineage: part_change_various_various_varchar PARTITION(part=2).b SIMPLE [(values__tmp__table__35)values__tmp__table__35.FieldSchema(name:tmp_values_col15, type:string, comment:), ]
 POSTHOOK: Lineage: part_change_various_various_varchar PARTITION(part=2).c1 EXPRESSION [(values__tmp__table__35)values__tmp__table__35.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
@@ -1985,12 +1915,10 @@ _col0	_col1	_col2	_col3	_col4	_col5	_col6	_col7	_col8	_col9	_col10	_col11	_col12
 PREHOOK: query: insert into table part_change_various_various_varchar partition(part=1)
     values (7,-'false', '-67', '833',          '63993', ' 1255178165.77663', '905070.974', '-4314.7918',        -'1240033819',      'trial',   'trial',  '2016-03-07 03:02:22.0', '2016-03-07', 'binary', 'new')
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__36
 PREHOOK: Output: default@part_change_various_various_varchar@part=1
 POSTHOOK: query: insert into table part_change_various_various_varchar partition(part=1)
     values (7,-'false', '-67', '833',          '63993', ' 1255178165.77663', '905070.974', '-4314.7918',        -'1240033819',      'trial',   'trial',  '2016-03-07 03:02:22.0', '2016-03-07', 'binary', 'new')
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__36
 POSTHOOK: Output: default@part_change_various_various_varchar@part=1
 POSTHOOK: Lineage: part_change_various_various_varchar PARTITION(part=1).b SIMPLE [(values__tmp__table__36)values__tmp__table__36.FieldSchema(name:tmp_values_col15, type:string, comment:), ]
 POSTHOOK: Lineage: part_change_various_various_varchar PARTITION(part=1).c1 EXPRESSION [(values__tmp__table__36)values__tmp__table__36.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
@@ -2077,7 +2005,6 @@ PREHOOK: query: insert into table part_change_various_various_varchar_trunc part
           (3, false, 72,   3244222,    -93222,   30.774,       -   66475.561431, -66475.561431,    0.561431,         '1', '1',                                  '6229-06-28 02:54:28.970117179', '5966-07-09', 'binary', 'original'),
           (4, 1,    -90,   754072151,   3289094, 46114.284799488,  9250340.75,    9250340.75,      9250340.75,        'junkyard', 'junkyard',                    '2002-05-10 05:29:48.990818073', '1815-05-06', 'binary', 'original')
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__37
 PREHOOK: Output: default@part_change_various_various_varchar_trunc@part=1
 POSTHOOK: query: insert into table part_change_various_various_varchar_trunc partition(part=1)
     values(1, true,  200,  72909,      3244222, -99999999999,     -29.0764,      470614135,        470614135,         'dynamic reptile  ', 'dynamic reptile  ',  '0004-09-22 18:26:29.519542222', '2007-02-09', 'binary', 'original'),
@@ -2086,7 +2013,6 @@ POSTHOOK: query: insert into table part_change_various_various_varchar_trunc par
           (3, false, 72,   3244222,    -93222,   30.774,       -   66475.561431, -66475.561431,    0.561431,         '1', '1',                                  '6229-06-28 02:54:28.970117179', '5966-07-09', 'binary', 'original'),
           (4, 1,    -90,   754072151,   3289094, 46114.284799488,  9250340.75,    9250340.75,      9250340.75,        'junkyard', 'junkyard',                    '2002-05-10 05:29:48.990818073', '1815-05-06', 'binary', 'original')
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__37
 POSTHOOK: Output: default@part_change_various_various_varchar_trunc@part=1
 POSTHOOK: Lineage: part_change_various_various_varchar_trunc PARTITION(part=1).b SIMPLE [(values__tmp__table__37)values__tmp__table__37.FieldSchema(name:tmp_values_col15, type:string, comment:), ]
 POSTHOOK: Lineage: part_change_various_various_varchar_trunc PARTITION(part=1).c1 EXPRESSION [(values__tmp__table__37)values__tmp__table__37.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
@@ -2133,12 +2059,10 @@ POSTHOOK: Output: default@part_change_various_various_varchar_trunc
 PREHOOK: query: insert into table part_change_various_various_varchar_trunc partition(part=2)
     values (5, 'true', '400',  '44388',       -'100',    '953967041.',       '62.079153',     '718.78',         '1',                'verdict', 'verdict', 'timestamp', 'date', 'binary', 'new')
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__38
 PREHOOK: Output: default@part_change_various_various_varchar_trunc@part=2
 POSTHOOK: query: insert into table part_change_various_various_varchar_trunc partition(part=2)
     values (5, 'true', '400',  '44388',       -'100',    '953967041.',       '62.079153',     '718.78',         '1',                'verdict', 'verdict', 'timestamp', 'date', 'binary', 'new')
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__38
 POSTHOOK: Output: default@part_change_various_various_varchar_trunc@part=2
 POSTHOOK: Lineage: part_change_various_various_varchar_trunc PARTITION(part=2).b SIMPLE [(values__tmp__table__38)values__tmp__table__38.FieldSchema(name:tmp_values_col15, type:string, comment:), ]
 POSTHOOK: Lineage: part_change_various_various_varchar_trunc PARTITION(part=2).c1 EXPRESSION [(values__tmp__table__38)values__tmp__table__38.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
@@ -2159,12 +2083,10 @@ _col0	_col1	_col2	_col3	_col4	_col5	_col6	_col7	_col8	_col9	_col10	_col11	_col12
 PREHOOK: query: insert into table part_change_various_various_varchar_trunc partition(part=1)
     values (6,-'false', '-67', '833',          '63993', ' 1255178165.77663', '905070.974', '-4314.7918',        -'1240033819',      'trial',   'trial',  '2016-03-07 03:02:22.0', '2016-03-07', 'binary', 'new')
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__39
 PREHOOK: Output: default@part_change_various_various_varchar_trunc@part=1
 POSTHOOK: query: insert into table part_change_various_various_varchar_trunc partition(part=1)
     values (6,-'false', '-67', '833',          '63993', ' 1255178165.77663', '905070.974', '-4314.7918',        -'1240033819',      'trial',   'trial',  '2016-03-07 03:02:22.0', '2016-03-07', 'binary', 'new')
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__39
 POSTHOOK: Output: default@part_change_various_various_varchar_trunc@part=1
 POSTHOOK: Lineage: part_change_various_various_varchar_trunc PARTITION(part=1).b SIMPLE [(values__tmp__table__39)values__tmp__table__39.FieldSchema(name:tmp_values_col15, type:string, comment:), ]
 POSTHOOK: Lineage: part_change_various_various_varchar_trunc PARTITION(part=1).c1 EXPRESSION [(values__tmp__table__39)values__tmp__table__39.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
@@ -2251,7 +2173,6 @@ PREHOOK: query: insert into table part_change_various_various_timestamp partitio
           (4, false, 72,   3244222,    -93222,   30.774,       -   66475.561431, -66475.561431,    0.561431,          '6229-06-28 02:54:28.970117179', '6229-06-28 02:54:28.970117179',  '6229-06-28 02:54:28.970117179', '5966-07-09', 'original'),
           (5, 1,    -90,   754072151,   3289094, 46114.284799488,  9250340.75,    9250340.75,      9250340.75,        '2002-05-10 05:29:48.990818073', '2002-05-10 05:29:48.990818073',  '2002-05-10 05:29:48.990818073', '1815-05-06', 'original')
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__40
 PREHOOK: Output: default@part_change_various_various_timestamp@part=1
 POSTHOOK: query: insert into table part_change_various_various_timestamp partition(part=1)
     values(1, true,  200,  72909,      3244222, -99999999999,     -29.0764,      470614135,        470614135,         '0004-09-22 18:26:29.519542222', '0004-09-22 18:26:29.519542222',  '0004-09-22 18:26:29.519542222', '2007-02-09', 'original'),
@@ -2260,7 +2181,6 @@ POSTHOOK: query: insert into table part_change_various_various_timestamp partiti
           (4, false, 72,   3244222,    -93222,   30.774,       -   66475.561431, -66475.561431,    0.561431,          '6229-06-28 02:54:28.970117179', '6229-06-28 02:54:28.970117179',  '6229-06-28 02:54:28.970117179', '5966-07-09', 'original'),
           (5, 1,    -90,   754072151,   3289094, 46114.284799488,  9250340.75,    9250340.75,      9250340.75,        '2002-05-10 05:29:48.990818073', '2002-05-10 05:29:48.990818073',  '2002-05-10 05:29:48.990818073', '1815-05-06', 'original')
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__40
 POSTHOOK: Output: default@part_change_various_various_timestamp@part=1
 POSTHOOK: Lineage: part_change_various_various_timestamp PARTITION(part=1).b SIMPLE [(values__tmp__table__40)values__tmp__table__40.FieldSchema(name:tmp_values_col14, type:string, comment:), ]
 POSTHOOK: Lineage: part_change_various_various_timestamp PARTITION(part=1).c1 EXPRESSION [(values__tmp__table__40)values__tmp__table__40.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
@@ -2306,12 +2226,10 @@ POSTHOOK: Output: default@part_change_various_various_timestamp
 PREHOOK: query: insert into table part_change_various_various_timestamp partition(part=2)
     values (6, 'true', '400',  '44388',       -'100',    '953967041.',       '62.079153',     '718.78',         '1',                'timestamp', 'timestamp', 'timestamp', 'date', 'new')
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__41
 PREHOOK: Output: default@part_change_various_various_timestamp@part=2
 POSTHOOK: query: insert into table part_change_various_various_timestamp partition(part=2)
     values (6, 'true', '400',  '44388',       -'100',    '953967041.',       '62.079153',     '718.78',         '1',                'timestamp', 'timestamp', 'timestamp', 'date', 'new')
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__41
 POSTHOOK: Output: default@part_change_various_various_timestamp@part=2
 POSTHOOK: Lineage: part_change_various_various_timestamp PARTITION(part=2).b SIMPLE [(values__tmp__table__41)values__tmp__table__41.FieldSchema(name:tmp_values_col14, type:string, comment:), ]
 POSTHOOK: Lineage: part_change_various_various_timestamp PARTITION(part=2).c1 EXPRESSION [(values__tmp__table__41)values__tmp__table__41.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
@@ -2331,12 +2249,10 @@ _col0	_col1	_col2	_col3	_col4	_col5	_col6	_col7	_col8	_col9	_col10	_col11	_col12
 PREHOOK: query: insert into table part_change_various_various_timestamp partition(part=1)
     values (7,-'false', '-67', '833',          '63993', ' 1255178165.77663', '905070.974', '-4314.7918',        -'1240033819',      '2016-03-07 03:02:22.0',   '2016-03-07 03:02:22.0',  '2016-03-07 03:02:22.0', '2016-03-07', 'new')
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__42
 PREHOOK: Output: default@part_change_various_various_timestamp@part=1
 POSTHOOK: query: insert into table part_change_various_various_timestamp partition(part=1)
     values (7,-'false', '-67', '833',          '63993', ' 1255178165.77663', '905070.974', '-4314.7918',        -'1240033819',      '2016-03-07 03:02:22.0',   '2016-03-07 03:02:22.0',  '2016-03-07 03:02:22.0', '2016-03-07', 'new')
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__42
 POSTHOOK: Output: default@part_change_various_various_timestamp@part=1
 POSTHOOK: Lineage: part_change_various_various_timestamp PARTITION(part=1).b SIMPLE [(values__tmp__table__42)values__tmp__table__42.FieldSchema(name:tmp_values_col14, type:string, comment:), ]
 POSTHOOK: Lineage: part_change_various_various_timestamp PARTITION(part=1).c1 EXPRESSION [(values__tmp__table__42)values__tmp__table__42.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
@@ -2421,7 +2337,6 @@ PREHOOK: query: insert into table part_change_various_various_date partition(par
           (3, '6229-06-28 02:54:28.970117179', '6229-06-28 02:54:28.970117179',  '6229-06-28 02:54:28.970117179', '6229-06-28 02:54:28.970117179', 'original'),
           (4, '2002-05-10 05:29:48.990818073', '2002-05-10 05:29:48.990818073',  '2002-05-10 05:29:48.990818073', '2002-05-10 05:29:48.990818073', 'original')
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__43
 PREHOOK: Output: default@part_change_various_various_date@part=1
 POSTHOOK: query: insert into table part_change_various_various_date partition(part=1)
     values(1, '0004-09-22 18:26:29.519542222', '0004-09-22 18:26:29.519542222',  '0004-09-22 18:26:29.519542222', '0004-09-22 18:26:29.519542222', 'original'),
@@ -2429,7 +2344,6 @@ POSTHOOK: query: insert into table part_change_various_various_date partition(pa
           (3, '6229-06-28 02:54:28.970117179', '6229-06-28 02:54:28.970117179',  '6229-06-28 02:54:28.970117179', '6229-06-28 02:54:28.970117179', 'original'),
           (4, '2002-05-10 05:29:48.990818073', '2002-05-10 05:29:48.990818073',  '2002-05-10 05:29:48.990818073', '2002-05-10 05:29:48.990818073', 'original')
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__43
 POSTHOOK: Output: default@part_change_various_various_date@part=1
 POSTHOOK: Lineage: part_change_various_various_date PARTITION(part=1).b SIMPLE [(values__tmp__table__43)values__tmp__table__43.FieldSchema(name:tmp_values_col6, type:string, comment:), ]
 POSTHOOK: Lineage: part_change_various_various_date PARTITION(part=1).c1 SIMPLE [(values__tmp__table__43)values__tmp__table__43.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
@@ -2466,12 +2380,10 @@ POSTHOOK: Output: default@part_change_various_various_date
 PREHOOK: query: insert into table part_change_various_various_date partition(part=2)
     values (5, '2016-03-07', '2016-03-07', '2016-03-07', '2016-03-07', 'new')
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__44
 PREHOOK: Output: default@part_change_various_various_date@part=2
 POSTHOOK: query: insert into table part_change_various_various_date partition(part=2)
     values (5, '2016-03-07', '2016-03-07', '2016-03-07', '2016-03-07', 'new')
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__44
 POSTHOOK: Output: default@part_change_various_various_date@part=2
 POSTHOOK: Lineage: part_change_various_various_date PARTITION(part=2).b SIMPLE [(values__tmp__table__44)values__tmp__table__44.FieldSchema(name:tmp_values_col6, type:string, comment:), ]
 POSTHOOK: Lineage: part_change_various_various_date PARTITION(part=2).c1 EXPRESSION [(values__tmp__table__44)values__tmp__table__44.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
@@ -2483,12 +2395,10 @@ _col0	_col1	_col2	_col3	_col4	_col5
 PREHOOK: query: insert into table part_change_various_various_date partition(part=1)
     values (6,-'2002-05-10', '2002-05-10', '2002-05-10', '2002-05-10','new')
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__45
 PREHOOK: Output: default@part_change_various_various_date@part=1
 POSTHOOK: query: insert into table part_change_various_various_date partition(part=1)
     values (6,-'2002-05-10', '2002-05-10', '2002-05-10', '2002-05-10','new')
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__45
 POSTHOOK: Output: default@part_change_various_various_date@part=1
 POSTHOOK: Lineage: part_change_various_various_date PARTITION(part=1).b SIMPLE [(values__tmp__table__45)values__tmp__table__45.FieldSchema(name:tmp_values_col6, type:string, comment:), ]
 POSTHOOK: Lineage: part_change_various_various_date PARTITION(part=1).c1 EXPRESSION [(values__tmp__table__45)values__tmp__table__45.FieldSchema(name:tmp_values_col2, type:string, comment:), ]

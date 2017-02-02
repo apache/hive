@@ -1,16 +1,8 @@
-PREHOOK: query: -- SORT_QUERY_RESULTS
-
--- Set merging to false above to make the explain more readable
-
-CREATE TABLE T1(a STRING, b STRING, c STRING) ROW FORMAT DELIMITED FIELDS TERMINATED BY ' ' STORED AS TEXTFILE
+PREHOOK: query: CREATE TABLE T1(a STRING, b STRING, c STRING) ROW FORMAT DELIMITED FIELDS TERMINATED BY ' ' STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@T1
-POSTHOOK: query: -- SORT_QUERY_RESULTS
-
--- Set merging to false above to make the explain more readable
-
-CREATE TABLE T1(a STRING, b STRING, c STRING) ROW FORMAT DELIMITED FIELDS TERMINATED BY ' ' STORED AS TEXTFILE
+POSTHOOK: query: CREATE TABLE T1(a STRING, b STRING, c STRING) ROW FORMAT DELIMITED FIELDS TERMINATED BY ' ' STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@T1
@@ -22,16 +14,14 @@ POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/grouping_sets.txt' INT
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@t1
-PREHOOK: query: -- This tests that cubes and rollups work fine inside sub-queries.
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT * FROM
 (SELECT a, b, count(*) from T1 where a < 3 group by a, b with cube) subq1
 join
 (SELECT a, b, count(*) from T1 where a < 3 group by a, b with cube) subq2
 on subq1.a = subq2.a
 PREHOOK: type: QUERY
-POSTHOOK: query: -- This tests that cubes and rollups work fine inside sub-queries.
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT * FROM
 (SELECT a, b, count(*) from T1 where a < 3 group by a, b with cube) subq1
 join
@@ -56,20 +46,20 @@ STAGE PLANS:
               Statistics: Num rows: 1 Data size: 36 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
                 aggregations: count()
-                keys: a (type: string), b (type: string), '0' (type: string)
+                keys: a (type: string), b (type: string), 0 (type: int)
                 mode: hash
                 outputColumnNames: _col0, _col1, _col2, _col3
                 Statistics: Num rows: 4 Data size: 144 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
-                  key expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string)
+                  key expressions: _col0 (type: string), _col1 (type: string), _col2 (type: int)
                   sort order: +++
-                  Map-reduce partition columns: _col0 (type: string), _col1 (type: string), _col2 (type: string)
+                  Map-reduce partition columns: _col0 (type: string), _col1 (type: string), _col2 (type: int)
                   Statistics: Num rows: 4 Data size: 144 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col3 (type: bigint)
       Reduce Operator Tree:
         Group By Operator
           aggregations: count(VALUE._col0)
-          keys: KEY._col0 (type: string), KEY._col1 (type: string), KEY._col2 (type: string)
+          keys: KEY._col0 (type: string), KEY._col1 (type: string), KEY._col2 (type: int)
           mode: mergepartial
           outputColumnNames: _col0, _col1, _col3
           Statistics: Num rows: 2 Data size: 72 Basic stats: COMPLETE Column stats: NONE
@@ -133,20 +123,20 @@ STAGE PLANS:
               Statistics: Num rows: 1 Data size: 36 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
                 aggregations: count()
-                keys: a (type: string), b (type: string), '0' (type: string)
+                keys: a (type: string), b (type: string), 0 (type: int)
                 mode: hash
                 outputColumnNames: _col0, _col1, _col2, _col3
                 Statistics: Num rows: 4 Data size: 144 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
-                  key expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string)
+                  key expressions: _col0 (type: string), _col1 (type: string), _col2 (type: int)
                   sort order: +++
-                  Map-reduce partition columns: _col0 (type: string), _col1 (type: string), _col2 (type: string)
+                  Map-reduce partition columns: _col0 (type: string), _col1 (type: string), _col2 (type: int)
                   Statistics: Num rows: 4 Data size: 144 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col3 (type: bigint)
       Reduce Operator Tree:
         Group By Operator
           aggregations: count(VALUE._col0)
-          keys: KEY._col0 (type: string), KEY._col1 (type: string), KEY._col2 (type: string)
+          keys: KEY._col0 (type: string), KEY._col1 (type: string), KEY._col2 (type: int)
           mode: mergepartial
           outputColumnNames: _col0, _col1, _col3
           Statistics: Num rows: 2 Data size: 72 Basic stats: COMPLETE Column stats: NONE
@@ -203,20 +193,20 @@ STAGE PLANS:
               Statistics: Num rows: 1 Data size: 36 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
                 aggregations: count()
-                keys: a (type: string), b (type: string), '0' (type: string)
+                keys: a (type: string), b (type: string), 0 (type: int)
                 mode: hash
                 outputColumnNames: _col0, _col1, _col2, _col3
                 Statistics: Num rows: 4 Data size: 144 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
-                  key expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string)
+                  key expressions: _col0 (type: string), _col1 (type: string), _col2 (type: int)
                   sort order: +++
-                  Map-reduce partition columns: _col0 (type: string), _col1 (type: string), _col2 (type: string)
+                  Map-reduce partition columns: _col0 (type: string), _col1 (type: string), _col2 (type: int)
                   Statistics: Num rows: 4 Data size: 144 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col3 (type: bigint)
       Reduce Operator Tree:
         Group By Operator
           aggregations: count(VALUE._col0)
-          keys: KEY._col0 (type: string), KEY._col1 (type: string), KEY._col2 (type: string)
+          keys: KEY._col0 (type: string), KEY._col1 (type: string), KEY._col2 (type: int)
           mode: mergepartial
           outputColumnNames: _col0, _col1, _col3
           Statistics: Num rows: 2 Data size: 72 Basic stats: COMPLETE Column stats: NONE
@@ -280,20 +270,20 @@ STAGE PLANS:
               Statistics: Num rows: 1 Data size: 36 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
                 aggregations: count()
-                keys: a (type: string), b (type: string), '0' (type: string)
+                keys: a (type: string), b (type: string), 0 (type: int)
                 mode: hash
                 outputColumnNames: _col0, _col1, _col2, _col3
                 Statistics: Num rows: 4 Data size: 144 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
-                  key expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string)
+                  key expressions: _col0 (type: string), _col1 (type: string), _col2 (type: int)
                   sort order: +++
-                  Map-reduce partition columns: _col0 (type: string), _col1 (type: string), _col2 (type: string)
+                  Map-reduce partition columns: _col0 (type: string), _col1 (type: string), _col2 (type: int)
                   Statistics: Num rows: 4 Data size: 144 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col3 (type: bigint)
       Reduce Operator Tree:
         Group By Operator
           aggregations: count(VALUE._col0)
-          keys: KEY._col0 (type: string), KEY._col1 (type: string), KEY._col2 (type: string)
+          keys: KEY._col0 (type: string), KEY._col1 (type: string), KEY._col2 (type: int)
           mode: mergepartial
           outputColumnNames: _col0, _col1, _col3
           Statistics: Num rows: 2 Data size: 72 Basic stats: COMPLETE Column stats: NONE
@@ -347,18 +337,14 @@ POSTHOOK: Input: default@t1
 2	NULL	2	2	2	1
 2	NULL	2	2	3	1
 2	NULL	2	2	NULL	2
-PREHOOK: query: -- Since 4 grouping sets would be generated for each sub-query, an additional MR job should be created
--- for each of them
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT * FROM
 (SELECT a, b, count(*) from T1 where a < 3 group by a, b with cube) subq1
 join
 (SELECT a, b, count(*) from T1 where a < 3 group by a, b with cube) subq2
 on subq1.a = subq2.a
 PREHOOK: type: QUERY
-POSTHOOK: query: -- Since 4 grouping sets would be generated for each sub-query, an additional MR job should be created
--- for each of them
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT * FROM
 (SELECT a, b, count(*) from T1 where a < 3 group by a, b with cube) subq1
 join
@@ -398,7 +384,7 @@ STAGE PLANS:
       Reduce Operator Tree:
         Group By Operator
           aggregations: count(VALUE._col0)
-          keys: KEY._col0 (type: string), KEY._col1 (type: string), '0' (type: string)
+          keys: KEY._col0 (type: string), KEY._col1 (type: string), 0 (type: int)
           mode: partials
           outputColumnNames: _col0, _col1, _col2, _col3
           Statistics: Num rows: 4 Data size: 144 Basic stats: COMPLETE Column stats: NONE
@@ -414,15 +400,15 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             Reduce Output Operator
-              key expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string)
+              key expressions: _col0 (type: string), _col1 (type: string), _col2 (type: int)
               sort order: +++
-              Map-reduce partition columns: _col0 (type: string), _col1 (type: string), _col2 (type: string)
+              Map-reduce partition columns: _col0 (type: string), _col1 (type: string), _col2 (type: int)
               Statistics: Num rows: 4 Data size: 144 Basic stats: COMPLETE Column stats: NONE
               value expressions: _col3 (type: bigint)
       Reduce Operator Tree:
         Group By Operator
           aggregations: count(VALUE._col0)
-          keys: KEY._col0 (type: string), KEY._col1 (type: string), KEY._col2 (type: string)
+          keys: KEY._col0 (type: string), KEY._col1 (type: string), KEY._col2 (type: int)
           mode: final
           outputColumnNames: _col0, _col1, _col3
           Statistics: Num rows: 2 Data size: 72 Basic stats: COMPLETE Column stats: NONE
@@ -499,7 +485,7 @@ STAGE PLANS:
       Reduce Operator Tree:
         Group By Operator
           aggregations: count(VALUE._col0)
-          keys: KEY._col0 (type: string), KEY._col1 (type: string), '0' (type: string)
+          keys: KEY._col0 (type: string), KEY._col1 (type: string), 0 (type: int)
           mode: partials
           outputColumnNames: _col0, _col1, _col2, _col3
           Statistics: Num rows: 4 Data size: 144 Basic stats: COMPLETE Column stats: NONE
@@ -515,15 +501,15 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             Reduce Output Operator
-              key expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string)
+              key expressions: _col0 (type: string), _col1 (type: string), _col2 (type: int)
               sort order: +++
-              Map-reduce partition columns: _col0 (type: string), _col1 (type: string), _col2 (type: string)
+              Map-reduce partition columns: _col0 (type: string), _col1 (type: string), _col2 (type: int)
               Statistics: Num rows: 4 Data size: 144 Basic stats: COMPLETE Column stats: NONE
               value expressions: _col3 (type: bigint)
       Reduce Operator Tree:
         Group By Operator
           aggregations: count(VALUE._col0)
-          keys: KEY._col0 (type: string), KEY._col1 (type: string), KEY._col2 (type: string)
+          keys: KEY._col0 (type: string), KEY._col1 (type: string), KEY._col2 (type: int)
           mode: final
           outputColumnNames: _col0, _col1, _col3
           Statistics: Num rows: 2 Data size: 72 Basic stats: COMPLETE Column stats: NONE

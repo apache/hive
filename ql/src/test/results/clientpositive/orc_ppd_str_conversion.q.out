@@ -16,11 +16,9 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@text_test
 PREHOOK: query: insert into orc_test values ('val1', '1')
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__1
 PREHOOK: Output: default@orc_test
 POSTHOOK: query: insert into orc_test values ('val1', '1')
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__1
 POSTHOOK: Output: default@orc_test
 POSTHOOK: Lineage: orc_test.col1 EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 POSTHOOK: Lineage: orc_test.col2 EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]

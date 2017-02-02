@@ -330,4 +330,20 @@ public class OperatorUtils {
     }
     return numberOperators;
   }
+
+  public static void setMemoryAvailable(final List<Operator<? extends OperatorDesc>> operators,
+    final long memoryAvailableToTask) {
+    if (operators == null) {
+      return;
+    }
+
+    for (Operator<? extends OperatorDesc> op : operators) {
+      if (op.getConf() != null) {
+        op.getConf().setMaxMemoryAvailable(memoryAvailableToTask);
+      }
+      if (op.getChildOperators() != null && !op.getChildOperators().isEmpty()) {
+        setMemoryAvailable(op.getChildOperators(), memoryAvailableToTask);
+      }
+    }
+  }
 }

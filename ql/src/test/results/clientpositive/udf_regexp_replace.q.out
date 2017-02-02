@@ -11,3 +11,5 @@ regexp_replace(str, regexp, rep) - replace all substrings of str that match rege
 Example:
   > SELECT regexp_replace('100-200', '(\d+)', 'num') FROM src LIMIT 1;
   'num-num'
+Function class:org.apache.hadoop.hive.ql.udf.UDFRegExpReplace
+Function type:BUILTIN

@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.metastore;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Lists;
 
 import org.apache.commons.lang.StringUtils;
@@ -399,7 +400,12 @@ public class HiveAlterHandler implements AlterHandler {
         msdb.openTransaction();
         oldPart = msdb.getPartition(dbname, name, new_part.getValues());
         if (MetaStoreUtils.requireCalStats(hiveConf, oldPart, new_part, tbl, environmentContext)) {
-          MetaStoreUtils.updatePartitionStatsFast(new_part, wh, false, true, environmentContext);
+          // if stats are same, no need to update
+          if (MetaStoreUtils.isFastStatsSame(oldPart, new_part)) {
+            MetaStoreUtils.updateBasicState(environmentContext, new_part.getParameters());
+          } else {
+            MetaStoreUtils.updatePartitionStatsFast(new_part, wh, false, true, environmentContext);
+          }
         }
 
         updatePartColumnStats(msdb, dbname, name, new_part.getValues(), new_part);
@@ -627,7 +633,12 @@ public class HiveAlterHandler implements AlterHandler {
         partValsList.add(tmpPart.getValues());
 
         if (MetaStoreUtils.requireCalStats(hiveConf, oldTmpPart, tmpPart, tbl, environmentContext)) {
-          MetaStoreUtils.updatePartitionStatsFast(tmpPart, wh, false, true, environmentContext);
+          // Check if stats are same, no need to update
+          if (MetaStoreUtils.isFastStatsSame(oldTmpPart, tmpPart)) {
+            MetaStoreUtils.updateBasicState(environmentContext, tmpPart.getParameters());
+          } else {
+            MetaStoreUtils.updatePartitionStatsFast(tmpPart, wh, false, true, environmentContext);
+          }
         }
         updatePartColumnStats(msdb, dbname, name, oldTmpPart.getValues(), tmpPart);
       }
@@ -718,6 +729,7 @@ public class HiveAlterHandler implements AlterHandler {
       assert (partsColStats.size() <= 1);
       for (ColumnStatistics partColStats : partsColStats) { //actually only at most one loop
         List<ColumnStatisticsObj> statsObjs = partColStats.getStatsObj();
+        List<String> deletedCols = new ArrayList<String>();
         for (ColumnStatisticsObj statsObj : statsObjs) {
           boolean found =false;
           for (FieldSchema newCol : newCols) {
@@ -730,8 +742,10 @@ public class HiveAlterHandler implements AlterHandler {
           if (!found) {
             msdb.deletePartitionColumnStatistics(dbName, tableName, oldPartName, partVals,
                 statsObj.getColName());
+            deletedCols.add(statsObj.getColName());
           }
         }
+        StatsSetupConst.removeColumnStatsState(newPart.getParameters(), deletedCols);
       }
     } catch (NoSuchObjectException nsoe) {
       LOG.debug("Could not find db entry." + nsoe);
@@ -767,7 +781,7 @@ public class HiveAlterHandler implements AlterHandler {
         }
         if (oldPartition.getSd() != null && newPart.getSd() != null) {
         List<FieldSchema> oldCols = oldPartition.getSd().getCols();
-          if (!MetaStoreUtils.areSameColumns(oldCols, newPart.getSd().getCols())) {
+          if (!MetaStoreUtils.columnsIncluded(oldCols, newPart.getSd().getCols())) {
             updatePartColumnStatsForAlterColumns(msdb, oldPartition, oldPartName, partVals, oldCols, newPart);
           }
         }
@@ -780,7 +794,8 @@ public class HiveAlterHandler implements AlterHandler {
     }
   }
 
-  private void alterTableUpdateTableColumnStats(RawStore msdb,
+  @VisibleForTesting
+  void alterTableUpdateTableColumnStats(RawStore msdb,
       Table oldTable, Table newTable)
       throws MetaException, InvalidObjectException {
     String dbName = oldTable.getDbName().toLowerCase();
@@ -798,7 +813,7 @@ public class HiveAlterHandler implements AlterHandler {
       // Nothing to update if everything is the same
         if (newDbName.equals(dbName) &&
             newTableName.equals(tableName) &&
-            MetaStoreUtils.areSameColumns(oldCols, newCols)) {
+            MetaStoreUtils.columnsIncluded(oldCols, newCols)) {
           updateColumnStats = false;
         }
 
@@ -815,6 +830,7 @@ public class HiveAlterHandler implements AlterHandler {
           } else {
             List<ColumnStatisticsObj> statsObjs = colStats.getStatsObj();
             if (statsObjs != null) {
+              List<String> deletedCols = new ArrayList<String>();
               for (ColumnStatisticsObj statsObj : statsObjs) {
                 boolean found = false;
                 for (FieldSchema newCol : newCols) {
@@ -829,11 +845,14 @@ public class HiveAlterHandler implements AlterHandler {
                   if (!newDbName.equals(dbName) || !newTableName.equals(tableName)) {
                     msdb.deleteTableColumnStatistics(dbName, tableName, statsObj.getColName());
                     newStatsObjs.add(statsObj);
+                    deletedCols.add(statsObj.getColName());
                   }
                 } else {
                   msdb.deleteTableColumnStatistics(dbName, tableName, statsObj.getColName());
+                  deletedCols.add(statsObj.getColName());
                 }
               }
+              StatsSetupConst.removeColumnStatsState(newTable.getParameters(), deletedCols);
             }
           }
         }

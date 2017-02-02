@@ -95,6 +95,7 @@ public class TestJdbcDriver2 {
   private static final String testDbName = "testjdbcdriver";
   private static final String defaultDbName = "default";
   private static final String tableName = "testjdbcdrivertbl";
+  private static final String tableNameWithPk = "pktable";
   private static final String tableComment = "Simple table";
   private static final String viewName = "testjdbcdriverview";
   private static final String viewComment = "Simple view";
@@ -138,6 +139,8 @@ public class TestJdbcDriver2 {
     stmt.execute("create table " + tableName
         + " (under_col int comment 'the under column', value string) comment '" + tableComment
         + "'");
+    stmt.execute("create table " + tableNameWithPk
+        + " (a STRING, b STRING, primary key (a) disable novalidate) ");
     // load data
     stmt.execute("load data local inpath '" + dataFilePath.toString() + "' into table " + tableName);
 
@@ -1664,7 +1667,7 @@ public class TestJdbcDriver2 {
     assertEquals(meta.getPrecision(12), colRS.getInt("COLUMN_SIZE"));
     assertEquals(meta.getScale(12), colRS.getInt("DECIMAL_DIGITS"));
 
-    assertEquals("c12_1", meta.getColumnName(13));
+    assertEquals("_c12", meta.getColumnName(13));
     assertEquals(Types.INTEGER, meta.getColumnType(13));
     assertEquals("int", meta.getColumnTypeName(13));
     assertEquals(11, meta.getColumnDisplaySize(13));
@@ -1801,8 +1804,19 @@ public class TestJdbcDriver2 {
     assertTrue(colRS.next());
     assertEquals("c2", meta.getColumnName(2));
     assertTrue(colRS.next());
-    assertEquals("c2_2", meta.getColumnName(3));
+    assertEquals("_c2", meta.getColumnName(3));
     stmt.close();
+  }
+
+  @Test
+  public void testResultSetRowProperties() throws SQLException {
+	  Statement stmt = con.createStatement();
+	  ResultSet res =
+	      stmt.executeQuery("select * from "
+	          + dataTypeTableName + " limit 1");
+	  assertFalse(res.rowDeleted());
+	  assertFalse(res.rowInserted());
+	  assertFalse(res.rowUpdated());
   }
 
   // [url] [host] [port] [db]
@@ -1973,7 +1987,7 @@ public class TestJdbcDriver2 {
         stmt.executeQuery("select c12, bin(c12) from " + dataTypeTableName + " where c1=1");
     ResultSetMetaData md = res.getMetaData();
     assertEquals(md.getColumnCount(), 2); // only one result column
-    assertEquals(md.getColumnLabel(2), "c1"); // verify the system generated column name
+    assertEquals(md.getColumnLabel(2), "_c1"); // verify the system generated column name
     assertTrue(res.next());
     assertEquals(res.getLong(1), 1);
     assertEquals(res.getString(2), "1");
@@ -2044,6 +2058,33 @@ public class TestJdbcDriver2 {
     ResultSetMetaData md = res.getMetaData();
     assertEquals(md.getColumnCount(), 6);
     assertFalse(res.next());
+  }
+
+  /**
+   * test testPrimaryKeysNotNull()
+   * @throws SQLException
+   */
+  @Test
+  public void testPrimaryKeysNotNull() throws SQLException {
+    DatabaseMetaData dbmd = con.getMetaData();
+    assertNotNull(dbmd);
+    ResultSet rs = dbmd.getColumns(null, testDbName, tableNameWithPk, "%");
+    int index = 0;
+    while (rs.next()) {
+      int nullableInt = rs.getInt("NULLABLE");
+      String isNullable = rs.getString("IS_NULLABLE");
+      if (index == 0) {
+        assertEquals(nullableInt, 0);
+        assertEquals(isNullable, "NO");
+      } else if (index == 1) {
+        assertEquals(nullableInt, 1);
+        assertEquals(isNullable, "YES");
+      } else {
+        throw new SQLException("Unexpected column.");
+      }
+      index++;
+    }
+    rs.close();
   }
 
   /**

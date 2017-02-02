@@ -82,8 +82,8 @@ public class GenericUDFOPNegative extends GenericUDFBaseUnary {
       doubleWritable.set(-(((DoubleWritable)input).get()));
       return doubleWritable;
     case DECIMAL:
-      HiveDecimal dec = ((HiveDecimalWritable)input).getHiveDecimal();
-      decimalWritable.set(dec.negate());
+      decimalWritable.set((HiveDecimalWritable)input);
+      decimalWritable.mutateNegate();
       return decimalWritable;
     case INTERVAL_YEAR_MONTH:
       HiveIntervalYearMonth intervalYearMonth =

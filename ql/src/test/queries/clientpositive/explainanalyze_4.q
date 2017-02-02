@@ -1,3 +1,5 @@
+set hive.map.aggr=false;
+
 set hive.mapred.mode=nonstrict;
 
 set hive.explain.user=true;

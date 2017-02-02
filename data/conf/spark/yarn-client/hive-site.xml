@@ -201,7 +201,12 @@
 
 <property>
   <name>spark.master</name>
-  <value>yarn-cluster</value>
+  <value>yarn</value>
+</property>
+
+<property>
+  <name>spark.submit.deployMode</name>
+  <value>cluster</value>
 </property>
 
 <property>

@@ -22,6 +22,9 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * A block of data for a given section of a file, similar to VRB but in encoded form.
  * Stores a set of buffers for each encoded stream that is a part of each column.
@@ -72,6 +75,19 @@ public class EncodedColumnBatch<BatchKey> {
     public void setIndexBaseOffset(int indexBaseOffset) {
       this.indexBaseOffset = indexBaseOffset;
     }
+
+    @Override
+    public String toString() {
+      String bufStr = "";
+      if (cacheBuffers != null) {
+        for (MemoryBuffer mb : cacheBuffers) {
+          bufStr += mb.getClass().getSimpleName() + " with " + mb.getByteBufferRaw().remaining() + " bytes, ";
+        }
+      }
+      return "ColumnStreamData [cacheBuffers=[" + bufStr
+          + "], indexBaseOffset=" + indexBaseOffset + "]";
+    }
+
   }
 
   /** The key that is used to map this batch to source location. */
@@ -104,6 +120,7 @@ public class EncodedColumnBatch<BatchKey> {
     }
   }
 
+  private static final Logger LOG = LoggerFactory.getLogger(EncodedColumnBatch.class);
   public void setStreamData(int colIx, int streamIx, ColumnStreamData csd) {
     assert hasData[colIx];
     columnData[colIx][streamIx] = csd;

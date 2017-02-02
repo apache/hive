@@ -1,12 +1,8 @@
-PREHOOK: query: -- Tests attempting to truncate a column in a table that doesn't exist
-
-CREATE TABLE test_tab (key STRING, value STRING) STORED AS RCFILE
+PREHOOK: query: CREATE TABLE test_tab (key STRING, value STRING) STORED AS RCFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@test_tab
-POSTHOOK: query: -- Tests attempting to truncate a column in a table that doesn't exist
-
-CREATE TABLE test_tab (key STRING, value STRING) STORED AS RCFILE
+POSTHOOK: query: CREATE TABLE test_tab (key STRING, value STRING) STORED AS RCFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_tab

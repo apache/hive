@@ -1,10 +1,6 @@
-PREHOOK: query: -- SORT_BEFORE_DIFF
-
-drop table srclimit
+PREHOOK: query: drop table srclimit
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: -- SORT_BEFORE_DIFF
-
-drop table srclimit
+POSTHOOK: query: drop table srclimit
 POSTHOOK: type: DROPTABLE
 PREHOOK: query: create table srclimit as select * from src limit 10
 PREHOOK: type: CREATETABLE_AS_SELECT

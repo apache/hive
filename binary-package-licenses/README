@@ -1,0 +1,89 @@
+This file contains notes tracking the licenses included in binary files.  This is not
+intended to be shipped with the product but is for the use of other poor souls who
+will have to figure out whether the Hive binary distribution includes all of the
+necessary licenses or not.
+
+In naming the licenses I have used the maven group id.  When there was only one jar and it was different than the
+group id, I put that in the name as well.  When there were multiple jars from the same group (e.g. org.ruby has
+both joni and jcoding, com.sun.jersey has a number of jars) or the jar name was the same as the group id, I named
+the license just for the group id.
+
+slf4j-LICENSE covers jul-to-slf4j jar
+
+All of the following jars have Apache licenses and thus do not have separate license
+files:
+RoaringBitmap
+accumulo*
+airline
+ant*
+apache-curator
+avatica*
+avro
+bonecp
+calcite*
+classmate
+commons*
+compress-lzf
+config-magic
+curator*
+datanucleus*
+derby
+disruptor
+dropwizard-metrics-hadoop-metrics2-reporter
+druid*
+eigenbase-properties
+emitter
+extendedset
+findbugs-annotations
+geronimo*
+groovy-all
+gson
+guava
+guice*
+hbase*
+hibernate-validator
+htrace-core
+http-client
+httpclient
+httpcore
+ivy
+jackson*
+jasper*
+java-util
+javax.jdo
+jboss-logging
+jcommander
+jdbi
+jdo-api
+jetty*
+joda-time
+jpam
+jsr305
+libfb303
+libthrift
+log4j*
+lz4
+mapdb
+maven*
+metrics*
+netty*
+opencsv*
+parquet-hadoop-bundle
+pentaho-aggdesigner-algorithm
+plexus-utils
+regexp
+server-metrics
+slider-core
+snappy*
+stax-api
+super-csv
+tempus-fugit
+validation-api
+velocity
+zookeeper
+
+No license could be found for the following so I am optimistically assuming they are
+public domain:
+jettison
+
+

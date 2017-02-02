@@ -95,9 +95,9 @@ POSTHOOK: query: SELECT col1, col2 FROM src LATERAL VIEW explode2(array(1,2,3)) 
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
-3	3
 1	1
 2	2
+3	3
 PREHOOK: query: DROP TEMPORARY FUNCTION explode2
 PREHOOK: type: DROPFUNCTION
 PREHOOK: Output: explode2

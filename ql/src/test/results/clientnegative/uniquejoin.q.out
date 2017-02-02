@@ -1,1 +1,1 @@
-FAILED: SemanticException Subqueries are not supported in UNIQUEJOIN
+FAILED: ParseException line 1:16 cannot recognize input near '(' 'SELECT' 'src' in table name

@@ -1,0 +1,572 @@
+PREHOOK: query: create database statsdb
+PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:statsdb
+POSTHOOK: query: create database statsdb
+POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:statsdb
+PREHOOK: query: use statsdb
+PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:statsdb
+POSTHOOK: query: use statsdb
+POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:statsdb
+PREHOOK: query: create table srctable like default.src
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:statsdb
+PREHOOK: Output: statsdb@srctable
+POSTHOOK: query: create table srctable like default.src
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:statsdb
+POSTHOOK: Output: statsdb@srctable
+PREHOOK: query: load data local inpath '../../data/files/kv1.txt' overwrite into table srctable
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: statsdb@srctable
+POSTHOOK: query: load data local inpath '../../data/files/kv1.txt' overwrite into table srctable
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: statsdb@srctable
+PREHOOK: query: analyze table srctable compute statistics
+PREHOOK: type: QUERY
+PREHOOK: Input: statsdb@srctable
+PREHOOK: Output: statsdb@srctable
+POSTHOOK: query: analyze table srctable compute statistics
+POSTHOOK: type: QUERY
+POSTHOOK: Input: statsdb@srctable
+POSTHOOK: Output: statsdb@srctable
+PREHOOK: query: describe formatted srctable
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: statsdb@srctable
+POSTHOOK: query: describe formatted srctable
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: statsdb@srctable
+# col_name            	data_type           	comment             
+	 	 
+key                 	string              	default             
+value               	string              	default             
+	 	 
+# Detailed Table Information	 	 
+Database:           	statsdb             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	numFiles            	1                   
+	numRows             	500                 
+	rawDataSize         	5312                
+	totalSize           	5812                
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: alter table srctable touch
+PREHOOK: type: ALTERTABLE_TOUCH
+PREHOOK: Input: statsdb@srctable
+PREHOOK: Output: statsdb@srctable
+POSTHOOK: query: alter table srctable touch
+POSTHOOK: type: ALTERTABLE_TOUCH
+POSTHOOK: Input: statsdb@srctable
+POSTHOOK: Output: statsdb@srctable
+PREHOOK: query: alter table srctable rename to statstable
+PREHOOK: type: ALTERTABLE_RENAME
+PREHOOK: Input: statsdb@srctable
+PREHOOK: Output: statsdb@srctable
+POSTHOOK: query: alter table srctable rename to statstable
+POSTHOOK: type: ALTERTABLE_RENAME
+POSTHOOK: Input: statsdb@srctable
+POSTHOOK: Output: statsdb@srctable
+POSTHOOK: Output: statsdb@statstable
+PREHOOK: query: alter table statstable add columns (newcol string)
+PREHOOK: type: ALTERTABLE_ADDCOLS
+PREHOOK: Input: statsdb@statstable
+PREHOOK: Output: statsdb@statstable
+POSTHOOK: query: alter table statstable add columns (newcol string)
+POSTHOOK: type: ALTERTABLE_ADDCOLS
+POSTHOOK: Input: statsdb@statstable
+POSTHOOK: Output: statsdb@statstable
+PREHOOK: query: alter table statstable change key key string
+PREHOOK: type: ALTERTABLE_RENAMECOL
+PREHOOK: Input: statsdb@statstable
+PREHOOK: Output: statsdb@statstable
+POSTHOOK: query: alter table statstable change key key string
+POSTHOOK: type: ALTERTABLE_RENAMECOL
+POSTHOOK: Input: statsdb@statstable
+POSTHOOK: Output: statsdb@statstable
+PREHOOK: query: alter table statstable set tblproperties('testtblstats'='unchange')
+PREHOOK: type: ALTERTABLE_PROPERTIES
+PREHOOK: Input: statsdb@statstable
+PREHOOK: Output: statsdb@statstable
+POSTHOOK: query: alter table statstable set tblproperties('testtblstats'='unchange')
+POSTHOOK: type: ALTERTABLE_PROPERTIES
+POSTHOOK: Input: statsdb@statstable
+POSTHOOK: Output: statsdb@statstable
+PREHOOK: query: describe formatted statstable
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: statsdb@statstable
+POSTHOOK: query: describe formatted statstable
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: statsdb@statstable
+# col_name            	data_type           	comment             
+	 	 
+key                 	string              	default             
+value               	string              	default             
+newcol              	string              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	statsdb             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+#### A masked pattern was here ####
+	numFiles            	1                   
+	numRows             	500                 
+	rawDataSize         	5312                
+	testtblstats        	unchange            
+	totalSize           	5812                
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: alter table statstable update statistics set ('numRows' = '1000')
+PREHOOK: type: ALTERTABLE_UPDATETABLESTATS
+PREHOOK: Input: statsdb@statstable
+PREHOOK: Output: statsdb@statstable
+POSTHOOK: query: alter table statstable update statistics set ('numRows' = '1000')
+POSTHOOK: type: ALTERTABLE_UPDATETABLESTATS
+POSTHOOK: Input: statsdb@statstable
+POSTHOOK: Output: statsdb@statstable
+PREHOOK: query: describe formatted statstable
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: statsdb@statstable
+POSTHOOK: query: describe formatted statstable
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: statsdb@statstable
+# col_name            	data_type           	comment             
+	 	 
+key                 	string              	default             
+value               	string              	default             
+newcol              	string              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	statsdb             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+#### A masked pattern was here ####
+	numFiles            	1                   
+	numRows             	1000                
+	rawDataSize         	5312                
+	testtblstats        	unchange            
+	totalSize           	5812                
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: analyze table statstable compute statistics
+PREHOOK: type: QUERY
+PREHOOK: Input: statsdb@statstable
+PREHOOK: Output: statsdb@statstable
+POSTHOOK: query: analyze table statstable compute statistics
+POSTHOOK: type: QUERY
+POSTHOOK: Input: statsdb@statstable
+POSTHOOK: Output: statsdb@statstable
+PREHOOK: query: describe formatted statstable
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: statsdb@statstable
+POSTHOOK: query: describe formatted statstable
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: statsdb@statstable
+# col_name            	data_type           	comment             
+	 	 
+key                 	string              	default             
+value               	string              	default             
+newcol              	string              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	statsdb             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+#### A masked pattern was here ####
+	numFiles            	1                   
+	numRows             	500                 
+	rawDataSize         	5312                
+	testtblstats        	unchange            
+	totalSize           	5812                
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+#### A masked pattern was here ####
+PREHOOK: type: ALTERTABLE_LOCATION
+PREHOOK: Input: statsdb@statstable
+#### A masked pattern was here ####
+PREHOOK: Output: statsdb@statstable
+#### A masked pattern was here ####
+POSTHOOK: type: ALTERTABLE_LOCATION
+POSTHOOK: Input: statsdb@statstable
+#### A masked pattern was here ####
+POSTHOOK: Output: statsdb@statstable
+PREHOOK: query: describe formatted statstable
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: statsdb@statstable
+POSTHOOK: query: describe formatted statstable
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: statsdb@statstable
+# col_name            	data_type           	comment             
+	 	 
+key                 	string              	default             
+value               	string              	default             
+newcol              	string              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	statsdb             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+#### A masked pattern was here ####
+	numFiles            	0                   
+	numRows             	500                 
+	rawDataSize         	5312                
+	testtblstats        	unchange            
+	totalSize           	0                   
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: drop table statstable
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: statsdb@statstable
+PREHOOK: Output: statsdb@statstable
+POSTHOOK: query: drop table statstable
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: statsdb@statstable
+POSTHOOK: Output: statsdb@statstable
+PREHOOK: query: create table srcpart like default.srcpart
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:statsdb
+PREHOOK: Output: statsdb@srcpart
+POSTHOOK: query: create table srcpart like default.srcpart
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:statsdb
+POSTHOOK: Output: statsdb@srcpart
+PREHOOK: query: load data local inpath '../../data/files/kv1.txt' overwrite into table srcpart partition (ds='2008-04-08', hr='11')
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: statsdb@srcpart
+POSTHOOK: query: load data local inpath '../../data/files/kv1.txt' overwrite into table srcpart partition (ds='2008-04-08', hr='11')
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: statsdb@srcpart
+POSTHOOK: Output: statsdb@srcpart@ds=2008-04-08/hr=11
+PREHOOK: query: load data local inpath '../../data/files/kv1.txt' overwrite into table srcpart partition (ds='2008-04-08', hr='12')
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: statsdb@srcpart
+POSTHOOK: query: load data local inpath '../../data/files/kv1.txt' overwrite into table srcpart partition (ds='2008-04-08', hr='12')
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: statsdb@srcpart
+POSTHOOK: Output: statsdb@srcpart@ds=2008-04-08/hr=12
+PREHOOK: query: analyze table srcpart partition (ds='2008-04-08', hr='11') compute statistics
+PREHOOK: type: QUERY
+PREHOOK: Input: statsdb@srcpart
+PREHOOK: Input: statsdb@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Output: statsdb@srcpart
+PREHOOK: Output: statsdb@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: query: analyze table srcpart partition (ds='2008-04-08', hr='11') compute statistics
+POSTHOOK: type: QUERY
+POSTHOOK: Input: statsdb@srcpart
+POSTHOOK: Input: statsdb@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Output: statsdb@srcpart
+POSTHOOK: Output: statsdb@srcpart@ds=2008-04-08/hr=11
+PREHOOK: query: describe formatted srcpart partition (ds='2008-04-08', hr='11')
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: statsdb@srcpart
+POSTHOOK: query: describe formatted srcpart partition (ds='2008-04-08', hr='11')
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: statsdb@srcpart
+# col_name            	data_type           	comment             
+	 	 
+key                 	string              	default             
+value               	string              	default             
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+ds                  	string              	                    
+hr                  	string              	                    
+	 	 
+# Detailed Partition Information	 	 
+Partition Value:    	[2008-04-08, 11]    	 
+Database:           	statsdb             	 
+Table:              	srcpart             	 
+#### A masked pattern was here ####
+Partition Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	numFiles            	1                   
+	numRows             	500                 
+	rawDataSize         	5312                
+	totalSize           	5812                
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: alter table srcpart touch
+PREHOOK: type: ALTERTABLE_TOUCH
+PREHOOK: Input: statsdb@srcpart
+PREHOOK: Output: statsdb@srcpart
+POSTHOOK: query: alter table srcpart touch
+POSTHOOK: type: ALTERTABLE_TOUCH
+POSTHOOK: Input: statsdb@srcpart
+POSTHOOK: Output: statsdb@srcpart
+PREHOOK: query: alter table srcpart partition (ds='2008-04-08', hr='11') rename to partition (ds='2017-01-19', hr='11')
+PREHOOK: type: ALTERTABLE_RENAMEPART
+PREHOOK: Input: statsdb@srcpart
+PREHOOK: Output: statsdb@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: query: alter table srcpart partition (ds='2008-04-08', hr='11') rename to partition (ds='2017-01-19', hr='11')
+POSTHOOK: type: ALTERTABLE_RENAMEPART
+POSTHOOK: Input: statsdb@srcpart
+POSTHOOK: Input: statsdb@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Output: statsdb@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Output: statsdb@srcpart@ds=2017-01-19/hr=11
+PREHOOK: query: alter table srcpart partition (ds='2017-01-19', hr='11') add columns (newcol string)
+PREHOOK: type: ALTERTABLE_ADDCOLS
+PREHOOK: Input: statsdb@srcpart
+PREHOOK: Output: statsdb@srcpart@ds=2017-01-19/hr=11
+POSTHOOK: query: alter table srcpart partition (ds='2017-01-19', hr='11') add columns (newcol string)
+POSTHOOK: type: ALTERTABLE_ADDCOLS
+POSTHOOK: Input: statsdb@srcpart
+POSTHOOK: Input: statsdb@srcpart@ds=2017-01-19/hr=11
+POSTHOOK: Output: statsdb@srcpart@ds=2017-01-19/hr=11
+PREHOOK: query: alter table srcpart partition (ds='2017-01-19', hr='11') change key key string
+PREHOOK: type: ALTERTABLE_RENAMECOL
+PREHOOK: Input: statsdb@srcpart
+PREHOOK: Output: statsdb@srcpart@ds=2017-01-19/hr=11
+POSTHOOK: query: alter table srcpart partition (ds='2017-01-19', hr='11') change key key string
+POSTHOOK: type: ALTERTABLE_RENAMECOL
+POSTHOOK: Input: statsdb@srcpart
+POSTHOOK: Input: statsdb@srcpart@ds=2017-01-19/hr=11
+POSTHOOK: Output: statsdb@srcpart@ds=2017-01-19/hr=11
+PREHOOK: query: alter table srcpart set tblproperties('testpartstats'='unchange')
+PREHOOK: type: ALTERTABLE_PROPERTIES
+PREHOOK: Input: statsdb@srcpart
+PREHOOK: Output: statsdb@srcpart
+POSTHOOK: query: alter table srcpart set tblproperties('testpartstats'='unchange')
+POSTHOOK: type: ALTERTABLE_PROPERTIES
+POSTHOOK: Input: statsdb@srcpart
+POSTHOOK: Output: statsdb@srcpart
+PREHOOK: query: describe formatted srcpart partition (ds='2017-01-19', hr='11')
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: statsdb@srcpart
+POSTHOOK: query: describe formatted srcpart partition (ds='2017-01-19', hr='11')
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: statsdb@srcpart
+# col_name            	data_type           	comment             
+	 	 
+key                 	string              	default             
+value               	string              	default             
+newcol              	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+ds                  	string              	                    
+hr                  	string              	                    
+	 	 
+# Detailed Partition Information	 	 
+Partition Value:    	[2017-01-19, 11]    	 
+Database:           	statsdb             	 
+Table:              	srcpart             	 
+#### A masked pattern was here ####
+Partition Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+#### A masked pattern was here ####
+	numFiles            	1                   
+	numRows             	500                 
+	rawDataSize         	5312                
+	totalSize           	5812                
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: alter table srcpart partition (ds='2017-01-19', hr='11') update statistics set ('numRows' = '1000')
+PREHOOK: type: ALTERTABLE_UPDATEPARTSTATS
+PREHOOK: Input: statsdb@srcpart
+PREHOOK: Output: statsdb@srcpart@ds=2017-01-19/hr=11
+POSTHOOK: query: alter table srcpart partition (ds='2017-01-19', hr='11') update statistics set ('numRows' = '1000')
+POSTHOOK: type: ALTERTABLE_UPDATEPARTSTATS
+POSTHOOK: Input: statsdb@srcpart
+POSTHOOK: Input: statsdb@srcpart@ds=2017-01-19/hr=11
+POSTHOOK: Output: statsdb@srcpart@ds=2017-01-19/hr=11
+PREHOOK: query: describe formatted srcpart partition (ds='2017-01-19', hr='11')
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: statsdb@srcpart
+POSTHOOK: query: describe formatted srcpart partition (ds='2017-01-19', hr='11')
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: statsdb@srcpart
+# col_name            	data_type           	comment             
+	 	 
+key                 	string              	default             
+value               	string              	default             
+newcol              	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+ds                  	string              	                    
+hr                  	string              	                    
+	 	 
+# Detailed Partition Information	 	 
+Partition Value:    	[2017-01-19, 11]    	 
+Database:           	statsdb             	 
+Table:              	srcpart             	 
+#### A masked pattern was here ####
+Partition Parameters:	 	 
+#### A masked pattern was here ####
+	numFiles            	1                   
+	numRows             	1000                
+	rawDataSize         	5312                
+	totalSize           	5812                
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: analyze table srcpart partition (ds='2017-01-19', hr='11') compute statistics
+PREHOOK: type: QUERY
+PREHOOK: Input: statsdb@srcpart
+PREHOOK: Input: statsdb@srcpart@ds=2017-01-19/hr=11
+PREHOOK: Output: statsdb@srcpart
+PREHOOK: Output: statsdb@srcpart@ds=2017-01-19/hr=11
+POSTHOOK: query: analyze table srcpart partition (ds='2017-01-19', hr='11') compute statistics
+POSTHOOK: type: QUERY
+POSTHOOK: Input: statsdb@srcpart
+POSTHOOK: Input: statsdb@srcpart@ds=2017-01-19/hr=11
+POSTHOOK: Output: statsdb@srcpart
+POSTHOOK: Output: statsdb@srcpart@ds=2017-01-19/hr=11
+PREHOOK: query: describe formatted srcpart partition (ds='2017-01-19', hr='11')
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: statsdb@srcpart
+POSTHOOK: query: describe formatted srcpart partition (ds='2017-01-19', hr='11')
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: statsdb@srcpart
+# col_name            	data_type           	comment             
+	 	 
+key                 	string              	default             
+value               	string              	default             
+newcol              	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+	 	 
+ds                  	string              	                    
+hr                  	string              	                    
+	 	 
+# Detailed Partition Information	 	 
+Partition Value:    	[2017-01-19, 11]    	 
+Database:           	statsdb             	 
+Table:              	srcpart             	 
+#### A masked pattern was here ####
+Partition Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+#### A masked pattern was here ####
+	numFiles            	1                   
+	numRows             	500                 
+	rawDataSize         	5312                
+	totalSize           	5812                
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: drop table srcpart
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: statsdb@srcpart
+PREHOOK: Output: statsdb@srcpart
+POSTHOOK: query: drop table srcpart
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: statsdb@srcpart
+POSTHOOK: Output: statsdb@srcpart

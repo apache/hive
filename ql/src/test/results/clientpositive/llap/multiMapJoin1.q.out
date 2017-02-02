@@ -185,7 +185,7 @@ STAGE PLANS:
 #### A masked pattern was here ####
       Edges:
         Map 1 <- Map 3 (BROADCAST_EDGE), Map 4 (BROADCAST_EDGE)
-        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -320,9 +320,7 @@ POSTHOOK: Input: default@smalltbl2
 #### A masked pattern was here ####
 RUN: Stage-1:MAPRED
 580
-PREHOOK: query: -- Now run a query with two-way join, which should be converted into a
--- map-join followed by groupby - two MR jobs overall 
-explain
+PREHOOK: query: explain
 select count(*) FROM
 (select bigTbl.key as key, bigTbl.value as value1,
  bigTbl.value as value2 FROM bigTbl JOIN smallTbl1 
@@ -331,9 +329,7 @@ select count(*) FROM
 JOIN                                                                  
 smallTbl2 on (firstjoin.value1 = smallTbl2.value)
 PREHOOK: type: QUERY
-POSTHOOK: query: -- Now run a query with two-way join, which should be converted into a
--- map-join followed by groupby - two MR jobs overall 
-explain
+POSTHOOK: query: explain
 select count(*) FROM
 (select bigTbl.key as key, bigTbl.value as value1,
  bigTbl.value as value2 FROM bigTbl JOIN smallTbl1 
@@ -352,7 +348,7 @@ STAGE PLANS:
 #### A masked pattern was here ####
       Edges:
         Map 1 <- Map 3 (BROADCAST_EDGE), Map 4 (BROADCAST_EDGE)
-        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -487,10 +483,7 @@ POSTHOOK: Input: default@smalltbl2
 #### A masked pattern was here ####
 RUN: Stage-1:MAPRED
 580
-PREHOOK: query: -- Now run a query with two-way join, which should first be converted into a
--- map-join followed by groupby and then finally into a single MR job.
-
-explain
+PREHOOK: query: explain
 select count(*) FROM
 (select bigTbl.key as key, bigTbl.value as value1,
  bigTbl.value as value2 FROM bigTbl JOIN smallTbl1
@@ -500,10 +493,7 @@ JOIN
 smallTbl2 on (firstjoin.value1 = smallTbl2.value)
 group by smallTbl2.key
 PREHOOK: type: QUERY
-POSTHOOK: query: -- Now run a query with two-way join, which should first be converted into a
--- map-join followed by groupby and then finally into a single MR job.
-
-explain
+POSTHOOK: query: explain
 select count(*) FROM
 (select bigTbl.key as key, bigTbl.value as value1,
  bigTbl.value as value2 FROM bigTbl JOIN smallTbl1
@@ -752,8 +742,7 @@ RUN: Stage-1:MAPRED
 RUN: Stage-2:DEPENDENCY_COLLECTION
 RUN: Stage-0:MOVE
 RUN: Stage-3:STATS
-PREHOOK: query: -- First disable noconditionaltask
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT SUM(HASH(join3.key1)),
        SUM(HASH(join3.key2)),
        SUM(HASH(join3.key3)),
@@ -786,8 +775,7 @@ FROM (SELECT join2.key1 as key1,
       JOIN smallTbl3 ON (join2.key2 = smallTbl3.key)) join3
 JOIN smallTbl4 ON (join3.key3 = smallTbl4.key)
 PREHOOK: type: QUERY
-POSTHOOK: query: -- First disable noconditionaltask
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT SUM(HASH(join3.key1)),
        SUM(HASH(join3.key2)),
        SUM(HASH(join3.key3)),
@@ -830,7 +818,7 @@ STAGE PLANS:
 #### A masked pattern was here ####
       Edges:
         Map 1 <- Map 3 (BROADCAST_EDGE), Map 4 (BROADCAST_EDGE), Map 5 (BROADCAST_EDGE), Map 6 (BROADCAST_EDGE)
-        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -1089,10 +1077,7 @@ POSTHOOK: Input: default@smalltbl4
 #### A masked pattern was here ####
 RUN: Stage-1:MAPRED
 247580	247580	247580	247580	247580	247580	548662743780	548662743780
-PREHOOK: query: -- Enable noconditionaltask and set the size of hive.auto.convert.join.noconditionaltask.size
--- to 10000, which is large enough to fit all four small tables (smallTbl1 to smallTbl4).
--- We will use a single MR job to evaluate this query.
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT SUM(HASH(join3.key1)),
        SUM(HASH(join3.key2)),
        SUM(HASH(join3.key3)),
@@ -1125,10 +1110,7 @@ FROM (SELECT join2.key1 as key1,
       JOIN smallTbl3 ON (join2.key2 = smallTbl3.key)) join3
 JOIN smallTbl4 ON (join3.key3 = smallTbl4.key)
 PREHOOK: type: QUERY
-POSTHOOK: query: -- Enable noconditionaltask and set the size of hive.auto.convert.join.noconditionaltask.size
--- to 10000, which is large enough to fit all four small tables (smallTbl1 to smallTbl4).
--- We will use a single MR job to evaluate this query.
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT SUM(HASH(join3.key1)),
        SUM(HASH(join3.key2)),
        SUM(HASH(join3.key3)),
@@ -1171,7 +1153,7 @@ STAGE PLANS:
 #### A masked pattern was here ####
       Edges:
         Map 1 <- Map 3 (BROADCAST_EDGE), Map 4 (BROADCAST_EDGE), Map 5 (BROADCAST_EDGE), Map 6 (BROADCAST_EDGE)
-        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -1430,11 +1412,7 @@ POSTHOOK: Input: default@smalltbl4
 #### A masked pattern was here ####
 RUN: Stage-1:MAPRED
 247580	247580	247580	247580	247580	247580	548662743780	548662743780
-PREHOOK: query: -- Enable noconditionaltask and set the size of hive.auto.convert.join.noconditionaltask.size
--- to 200, which is large enough to fit two small tables. We will have two jobs to evaluate this
--- query. The first job is a Map-only job to evaluate join1 and join2.
--- The second job will evaluate the rest of this query.
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT SUM(HASH(join3.key1)),
        SUM(HASH(join3.key2)),
        SUM(HASH(join3.key3)),
@@ -1467,11 +1445,7 @@ FROM (SELECT join2.key1 as key1,
       JOIN smallTbl3 ON (join2.key2 = smallTbl3.key)) join3
 JOIN smallTbl4 ON (join3.key3 = smallTbl4.key)
 PREHOOK: type: QUERY
-POSTHOOK: query: -- Enable noconditionaltask and set the size of hive.auto.convert.join.noconditionaltask.size
--- to 200, which is large enough to fit two small tables. We will have two jobs to evaluate this
--- query. The first job is a Map-only job to evaluate join1 and join2.
--- The second job will evaluate the rest of this query.
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT SUM(HASH(join3.key1)),
        SUM(HASH(join3.key2)),
        SUM(HASH(join3.key3)),
@@ -1514,7 +1488,7 @@ STAGE PLANS:
 #### A masked pattern was here ####
       Edges:
         Map 1 <- Map 3 (BROADCAST_EDGE), Map 4 (BROADCAST_EDGE), Map 5 (BROADCAST_EDGE), Map 6 (BROADCAST_EDGE)
-        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -1773,9 +1747,7 @@ POSTHOOK: Input: default@smalltbl4
 #### A masked pattern was here ####
 RUN: Stage-1:MAPRED
 247580	247580	247580	247580	247580	247580	548662743780	548662743780
-PREHOOK: query: -- Enable noconditionaltask and but set the size of hive.auto.convert.join.noconditionaltask.size
--- to 0. The plan will be the same as the one with a disabled nonconditionaltask.
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT SUM(HASH(join3.key1)),
        SUM(HASH(join3.key2)),
        SUM(HASH(join3.key3)),
@@ -1808,9 +1780,7 @@ FROM (SELECT join2.key1 as key1,
       JOIN smallTbl3 ON (join2.key2 = smallTbl3.key)) join3
 JOIN smallTbl4 ON (join3.key3 = smallTbl4.key)
 PREHOOK: type: QUERY
-POSTHOOK: query: -- Enable noconditionaltask and but set the size of hive.auto.convert.join.noconditionaltask.size
--- to 0. The plan will be the same as the one with a disabled nonconditionaltask.
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT SUM(HASH(join3.key1)),
        SUM(HASH(join3.key2)),
        SUM(HASH(join3.key3)),
@@ -1856,7 +1826,7 @@ STAGE PLANS:
         Reducer 3 <- Map 8 (SIMPLE_EDGE), Reducer 2 (SIMPLE_EDGE)
         Reducer 4 <- Map 9 (SIMPLE_EDGE), Reducer 3 (SIMPLE_EDGE)
         Reducer 5 <- Map 10 (SIMPLE_EDGE), Reducer 4 (SIMPLE_EDGE)
-        Reducer 6 <- Reducer 5 (SIMPLE_EDGE)
+        Reducer 6 <- Reducer 5 (CUSTOM_SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 

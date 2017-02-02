@@ -45,6 +45,8 @@ Example:
   > SELECT degrees(30) FROM src LIMIT 1;
   -1
 
+Function class:org.apache.hadoop.hive.ql.udf.UDFDegrees
+Function type:BUILTIN
 PREHOOK: query: explain 
 select degrees(PI()) FROM src tablesample (1 rows)
 PREHOOK: type: QUERY
@@ -92,3 +94,5 @@ Example:
   > SELECT degrees(30) FROM src LIMIT 1;
   -1
 
+Function class:org.apache.hadoop.hive.ql.udf.UDFDegrees
+Function type:BUILTIN

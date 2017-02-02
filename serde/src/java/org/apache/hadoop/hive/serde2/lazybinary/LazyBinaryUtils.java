@@ -402,10 +402,12 @@ public final class LazyBinaryUtils {
     return 1 + len;
   }
 
+  public static int VLONG_BYTES_LEN = 9;
+
   private static ThreadLocal<byte[]> vLongBytesThreadLocal = new ThreadLocal<byte[]>() {
     @Override
     public byte[] initialValue() {
-      return new byte[9];
+      return new byte[VLONG_BYTES_LEN];
     }
   };
 

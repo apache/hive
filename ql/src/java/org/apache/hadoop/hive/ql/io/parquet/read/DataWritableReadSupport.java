@@ -228,7 +228,7 @@ public class DataWritableReadSupport extends ReadSupport<ArrayWritable> {
     MessageType schema,
     List<String> colNames,
     List<Integer> colIndexes,
-    List<String> nestedColumnPaths) {
+    Set<String> nestedColumnPaths) {
     List<Type> schemaTypes = new ArrayList<Type>();
 
     Map<String, FieldNode> prunedCols = getPrunedNestedColumns(nestedColumnPaths);
@@ -236,7 +236,8 @@ public class DataWritableReadSupport extends ReadSupport<ArrayWritable> {
       if (i < colNames.size()) {
         if (i < schema.getFieldCount()) {
           Type t = schema.getType(i);
-          if (!prunedCols.containsKey(t.getName())) {
+          String tn = t.getName().toLowerCase();
+          if (!prunedCols.containsKey(tn)) {
             schemaTypes.add(schema.getType(i));
           } else {
             if (t.isPrimitive()) {
@@ -245,7 +246,7 @@ public class DataWritableReadSupport extends ReadSupport<ArrayWritable> {
             } else {
               // For group type, we need to build the projected group type with required leaves
               List<Type> g =
-                projectLeafTypes(Arrays.asList(t), Arrays.asList(prunedCols.get(t.getName())));
+                projectLeafTypes(Arrays.asList(t), Arrays.asList(prunedCols.get(tn)));
               if (!g.isEmpty()) {
                 schemaTypes.addAll(g);
               }
@@ -264,20 +265,19 @@ public class DataWritableReadSupport extends ReadSupport<ArrayWritable> {
 
   /**
    * Return the columns which contains required nested attribute level
-   * e.g.
-   * Given struct a <x:int, y:int> and a is required while y is not, so the method will return a
-   * who contains the attribute x
+   * E.g., given struct a:<x:int, y:int> while 'x' is required and 'y' is not, the method will return
+   * a pruned struct for 'a' which only contains the attribute 'x'
    *
    * @param nestedColPaths the paths for required nested attribute
-   * @return column list contains required nested attribute
+   * @return a map from the column to its selected nested column paths, of which the keys are all lower-cased.
    */
-  private static Map<String, FieldNode> getPrunedNestedColumns(List<String> nestedColPaths) {
+  private static Map<String, FieldNode> getPrunedNestedColumns(Set<String> nestedColPaths) {
     Map<String, FieldNode> resMap = new HashMap<>();
     if (nestedColPaths.isEmpty()) {
       return resMap;
     }
     for (String s : nestedColPaths) {
-      String c = StringUtils.split(s, '.')[0];
+      String c = StringUtils.split(s, '.')[0].toLowerCase();
       if (!resMap.containsKey(c)) {
         FieldNode f = NestedColumnFieldPruningUtils.addNodeByPath(null, s);
         resMap.put(c, f);
@@ -306,10 +306,10 @@ public class DataWritableReadSupport extends ReadSupport<ArrayWritable> {
     }
     Map<String, FieldNode> fieldMap = new HashMap<>();
     for (FieldNode n : nodes) {
-      fieldMap.put(n.getFieldName(), n);
+      fieldMap.put(n.getFieldName().toLowerCase(), n);
     }
     for (Type type : types) {
-      String tn = type.getName();
+      String tn = type.getName().toLowerCase();
 
       if (fieldMap.containsKey(tn)) {
         FieldNode f = fieldMap.get(tn);
@@ -373,7 +373,7 @@ public class DataWritableReadSupport extends ReadSupport<ArrayWritable> {
       contextMetadata.put(PARQUET_COLUMN_INDEX_ACCESS, String.valueOf(indexAccess));
       this.hiveTypeInfo = TypeInfoFactory.getStructTypeInfo(columnNamesList, columnTypesList);
 
-      List<String> groupPaths = ColumnProjectionUtils.getNestedColumnPaths(configuration);
+      Set<String> groupPaths = ColumnProjectionUtils.getNestedColumnPaths(configuration);
       List<Integer> indexColumnsWanted = ColumnProjectionUtils.getReadColumnIDs(configuration);
       if (!ColumnProjectionUtils.isReadAllColumns(configuration) && !indexColumnsWanted.isEmpty()) {
         MessageType requestedSchemaByUser = getProjectedSchema(tableSchema, columnNamesList,

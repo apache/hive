@@ -3,6 +3,8 @@ set hive.input.format=org.apache.hadoop.hive.ql.io.HiveInputFormat;
 set hive.map.aggr=false;
 set hive.groupby.skewindata=true;
 
+-- SORT_QUERY_RESULTS
+
 -- Taken from groupby2.q
 CREATE TABLE dest_g2(key STRING, c1 INT, c2 STRING) STORED AS TEXTFILE;
 CREATE TEMPORARY TABLE src_temp AS SELECT * FROM src;

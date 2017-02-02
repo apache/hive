@@ -193,7 +193,7 @@ for (HiveSession hiveSession: hiveSessions) {
         <td><%= operation.getState() %></td>
         <td><%= operation.getElapsedTime()/1000 %></td>
         <td><%= operation.getEndTime() == null ? "In Progress" : new Date(operation.getEndTime()) %></td>
-        <td><%= operation.getRuntime()/1000 %></td>
+        <td><%= operation.getRuntime() == null ? "n/a" : operation.getRuntime()/1000 %></td>
         <% String link = "/query_page?operationId=" + operation.getOperationId(); %>
         <td>  <a href= <%= link %>>Drilldown</a> </td>
     </tr>

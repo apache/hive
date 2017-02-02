@@ -55,13 +55,11 @@ POSTHOOK: Input: default@src
 5
 5
 5
-PREHOOK: query: -- in subquery
-explain
+PREHOOK: query: explain
 with q1 as ( select key from src where key = '5')
 select * from (select key from q1) a
 PREHOOK: type: QUERY
-POSTHOOK: query: -- in subquery
-explain
+POSTHOOK: query: explain
 with q1 as ( select key from src where key = '5')
 select * from (select key from q1) a
 POSTHOOK: type: QUERY
@@ -110,14 +108,12 @@ POSTHOOK: Input: default@src
 5
 5
 5
-PREHOOK: query: -- chaining
-explain
+PREHOOK: query: explain
 with q1 as ( select key from q2 where key = '5'),
 q2 as ( select key from src where key = '5')
 select * from (select key from q1) a
 PREHOOK: type: QUERY
-POSTHOOK: query: -- chaining
-explain
+POSTHOOK: query: explain
 with q1 as ( select key from q2 where key = '5'),
 q2 as ( select key from src where key = '5')
 select * from (select key from q1) a
@@ -12951,16 +12947,14 @@ NULL	y605nF0K3mMoM75j	NULL
 1073418988	s1Tij71BKtw43u	-11535.0
 1073680599	NULL	NULL
 1073680599	pWxC5d20ub50yq8EJ8qpQ4h	NULL
-PREHOOK: query: --standard rollup syntax
-with q1 as (select * from alltypesorc)
+PREHOOK: query: with q1 as (select * from alltypesorc)
            from q1
            select cint, cstring1, avg(csmallint)
            group by rollup (cint, cstring1)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
-POSTHOOK: query: --standard rollup syntax
-with q1 as (select * from alltypesorc)
+POSTHOOK: query: with q1 as (select * from alltypesorc)
            from q1
            select cint, cstring1, avg(csmallint)
            group by rollup (cint, cstring1)

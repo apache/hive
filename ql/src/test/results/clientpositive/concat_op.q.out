@@ -112,24 +112,20 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
 222
-PREHOOK: query: -- || has higher precedence than bitwise ops...so () is neccessary
-select '1' || 4 / 2 || 1 + 2 * 1 || (6 & 4) || (1 | 4)
+PREHOOK: query: select '1' || 4 / 2 || 1 + 2 * 1 || (6 & 4) || (1 | 4)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
-POSTHOOK: query: -- || has higher precedence than bitwise ops...so () is neccessary
-select '1' || 4 / 2 || 1 + 2 * 1 || (6 & 4) || (1 | 4)
+POSTHOOK: query: select '1' || 4 / 2 || 1 + 2 * 1 || (6 & 4) || (1 | 4)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
 12.0345
-PREHOOK: query: -- however ^ is different from the other bitwise ops:
-select 0 ^ 1 || '2' || 1 ^ 2
+PREHOOK: query: select 0 ^ 1 || '2' || 1 ^ 2
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
-POSTHOOK: query: -- however ^ is different from the other bitwise ops:
-select 0 ^ 1 || '2' || 1 ^ 2
+POSTHOOK: query: select 0 ^ 1 || '2' || 1 ^ 2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
@@ -152,20 +148,16 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@ct2
 PREHOOK: query: insert into ct1 values (7),(5),(3),(1)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__1
 PREHOOK: Output: default@ct1
 POSTHOOK: query: insert into ct1 values (7),(5),(3),(1)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__1
 POSTHOOK: Output: default@ct1
 POSTHOOK: Lineage: ct1.c EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 PREHOOK: query: insert into ct2 values (8),(6),(4),(2)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__2
 PREHOOK: Output: default@ct2
 POSTHOOK: query: insert into ct2 values (8),(6),(4),(2)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__2
 POSTHOOK: Output: default@ct2
 POSTHOOK: Lineage: ct2.c EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 PREHOOK: query: create view ct_v1 as select * from ct1 union all select * from ct2 order by c
@@ -180,6 +172,7 @@ POSTHOOK: Input: default@ct1
 POSTHOOK: Input: default@ct2
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@ct_v1
+POSTHOOK: Lineage: ct_v1.c EXPRESSION [(ct1)ct1.FieldSchema(name:c, type:int, comment:null), (ct2)ct2.FieldSchema(name:c, type:int, comment:null), ]
 PREHOOK: query: select c,c * c + c || 'x', 'c+c=' || c+c || ', c*c=' || c*c || ', (c&c)=' || (c & c) from ct_v1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@ct1
@@ -284,17 +277,11 @@ STAGE PLANS:
             Statistics: Num rows: 1 Data size: 87 Basic stats: COMPLETE Column stats: COMPLETE
             ListSink
 
-PREHOOK: query: -- check and/or precedence relation; should be true
--- (true and false) or (false and true) or true => true		psql/mysql/ora/hive
--- true and (false or false) and (true or true) => false	should not happen
-select true and false or false and true or true
+PREHOOK: query: select true and false or false and true or true
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
-POSTHOOK: query: -- check and/or precedence relation; should be true
--- (true and false) or (false and true) or true => true		psql/mysql/ora/hive
--- true and (false or false) and (true or true) => false	should not happen
-select true and false or false and true or true
+POSTHOOK: query: select true and false or false and true or true
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####

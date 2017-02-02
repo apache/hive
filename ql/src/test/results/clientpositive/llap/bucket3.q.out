@@ -1,12 +1,8 @@
-PREHOOK: query: -- SORT_QUERY_RESULTS
-
-CREATE TABLE bucket3_1(key int, value string) partitioned by (ds string) CLUSTERED BY (key) INTO 2 BUCKETS
+PREHOOK: query: CREATE TABLE bucket3_1(key int, value string) partitioned by (ds string) CLUSTERED BY (key) INTO 2 BUCKETS
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@bucket3_1
-POSTHOOK: query: -- SORT_QUERY_RESULTS
-
-CREATE TABLE bucket3_1(key int, value string) partitioned by (ds string) CLUSTERED BY (key) INTO 2 BUCKETS
+POSTHOOK: query: CREATE TABLE bucket3_1(key int, value string) partitioned by (ds string) CLUSTERED BY (key) INTO 2 BUCKETS
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@bucket3_1
@@ -29,7 +25,7 @@ STAGE PLANS:
     Tez
 #### A masked pattern was here ####
       Edges:
-        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -63,6 +59,7 @@ STAGE PLANS:
                   properties:
                     COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
                     bucket_count -1
+                    column.name.delimiter ,
                     columns key,value
                     columns.comments 'default','default'
                     columns.types string:string
@@ -83,6 +80,7 @@ STAGE PLANS:
                     properties:
                       COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
                       bucket_count -1
+                      column.name.delimiter ,
                       columns key,value
                       columns.comments 'default','default'
                       columns.types string:string
@@ -123,6 +121,7 @@ STAGE PLANS:
                       properties:
                         bucket_count 2
                         bucket_field_name key
+                        column.name.delimiter ,
                         columns key,value
                         columns.comments 
                         columns.types int:string
@@ -156,6 +155,7 @@ STAGE PLANS:
               properties:
                 bucket_count 2
                 bucket_field_name key
+                column.name.delimiter ,
                 columns key,value
                 columns.comments 
                 columns.types int:string

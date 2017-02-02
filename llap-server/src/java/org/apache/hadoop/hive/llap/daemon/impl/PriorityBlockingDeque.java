@@ -107,7 +107,7 @@ public class PriorityBlockingDeque<E>
     }
 
     list.add(insertionPoint, e);
-    //        Collections.sort(list, comparator);
+    // Inserted in sort order. Hence no explict sort.
     notEmpty.signal();
 
     return true;
@@ -178,6 +178,7 @@ public class PriorityBlockingDeque<E>
   /**
    * @throws NullPointerException {@inheritDoc}
    */
+  @Override
   public boolean offerLast(E e) {
     if (e == null) throw new NullPointerException();
     lock.lock();
@@ -450,6 +451,7 @@ public class PriorityBlockingDeque<E>
   /**
    * @throws NullPointerException if the specified element is null
    */
+  @Override
   public boolean offer(E e) {
     return offerLast(e);
   }

@@ -28,6 +28,9 @@ POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@invites
 POSTHOOK: Output: database:tv1
 POSTHOOK: Output: tv1@view1
+POSTHOOK: Lineage: view1.bar SIMPLE [(invites)invites.FieldSchema(name:bar, type:string, comment:null), ]
+POSTHOOK: Lineage: view1.ds SIMPLE [(invites)invites.FieldSchema(name:ds, type:string, comment:null), ]
+POSTHOOK: Lineage: view1.foo SIMPLE [(invites)invites.FieldSchema(name:foo, type:int, comment:null), ]
 PREHOOK: query: DESCRIBE EXTENDED tv1.view1
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: tv1@view1

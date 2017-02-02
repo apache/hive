@@ -269,27 +269,27 @@ public class SerdeRandomRowSource {
       {
         WritableHiveCharObjectInspector writableCharObjectInspector =
                 new WritableHiveCharObjectInspector( (CharTypeInfo) primitiveTypeInfo);
-        return writableCharObjectInspector.create(new HiveChar(StringUtils.EMPTY, -1));
+        return writableCharObjectInspector.create((HiveChar) object);
       }
     case VARCHAR:
       {
         WritableHiveVarcharObjectInspector writableVarcharObjectInspector =
                 new WritableHiveVarcharObjectInspector( (VarcharTypeInfo) primitiveTypeInfo);
-        return writableVarcharObjectInspector.create(new HiveVarchar(StringUtils.EMPTY, -1));
+        return writableVarcharObjectInspector.create((HiveVarchar) object);
       }
     case BINARY:
-      return PrimitiveObjectInspectorFactory.writableBinaryObjectInspector.create(ArrayUtils.EMPTY_BYTE_ARRAY);
+      return PrimitiveObjectInspectorFactory.writableBinaryObjectInspector.create((byte[]) object);
     case TIMESTAMP:
-      return ((WritableTimestampObjectInspector) objectInspector).create(new Timestamp(0));
+      return ((WritableTimestampObjectInspector) objectInspector).create((Timestamp) object);
     case INTERVAL_YEAR_MONTH:
-      return ((WritableHiveIntervalYearMonthObjectInspector) objectInspector).create(new HiveIntervalYearMonth(0));
+      return ((WritableHiveIntervalYearMonthObjectInspector) objectInspector).create((HiveIntervalYearMonth) object);
     case INTERVAL_DAY_TIME:
-      return ((WritableHiveIntervalDayTimeObjectInspector) objectInspector).create(new HiveIntervalDayTime(0, 0));
+      return ((WritableHiveIntervalDayTimeObjectInspector) objectInspector).create((HiveIntervalDayTime) object);
     case DECIMAL:
       {
         WritableHiveDecimalObjectInspector writableDecimalObjectInspector =
                 new WritableHiveDecimalObjectInspector((DecimalTypeInfo) primitiveTypeInfo);
-        return writableDecimalObjectInspector.create(HiveDecimal.ZERO);
+        return writableDecimalObjectInspector.create((HiveDecimal) object);
       }
     default:
       throw new Error("Unknown primitive category " + primitiveCategory);
@@ -331,7 +331,10 @@ public class SerdeRandomRowSource {
     case INTERVAL_DAY_TIME:
       return getRandIntervalDayTime(r);
     case DECIMAL:
-      return getRandHiveDecimal(r, (DecimalTypeInfo) primitiveTypeInfo);
+      {
+        HiveDecimal dec = getRandHiveDecimal(r, (DecimalTypeInfo) primitiveTypeInfo);
+        return dec;
+      }
     default:
       throw new Error("Unknown primitive category " + primitiveCategory);
     }
@@ -382,14 +385,9 @@ public class SerdeRandomRowSource {
         sb.append(".");
         sb.append(RandomTypeUtil.getRandString(r, DECIMAL_CHARS, scale));
       }
+      HiveDecimal dec = HiveDecimal.create(sb.toString());
 
-      HiveDecimal bd = HiveDecimal.create(sb.toString());
-      if (bd.scale() > bd.precision()) {
-        // Sometimes weird decimals are produced?
-        continue;
-      }
-
-      return bd;
+      return dec;
     }
   }
 

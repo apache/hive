@@ -109,7 +109,8 @@ public class VectorHashKeyWrapper extends KeyWrapper {
         Arrays.hashCode(isNull);
 
     for (int i = 0; i < decimalValues.length; i++) {
-      hashcode ^= decimalValues[i].getHiveDecimal().hashCode();
+      // Use the new faster hash code since we are hashing memory objects.
+      hashcode ^= decimalValues[i].newFasterHashCode();
     }
 
     for (int i = 0; i < timestampValues.length; i++) {

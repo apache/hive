@@ -12,6 +12,8 @@ The soundex code consist of the first letter of the name followed by three digit
 Example:
  > SELECT soundex('Miller');
  M460
+Function class:org.apache.hadoop.hive.ql.udf.generic.GenericUDFSoundex
+Function type:BUILTIN
 PREHOOK: query: explain select soundex('Miller')
 PREHOOK: type: QUERY
 POSTHOOK: query: explain select soundex('Miller')

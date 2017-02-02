@@ -36,7 +36,9 @@ avg
 base64
 between
 bin
+bloom_filter
 bround
+cardinality_violation
 case
 cbrt
 ceil
@@ -102,12 +104,14 @@ from_utc_timestamp
 get_json_object
 get_splits
 greatest
+grouping
 hash
 hex
 histogram_numeric
 hour
 if
 in
+in_bloom_filter
 in_file
 index
 initcap
@@ -211,6 +215,7 @@ sort_array_by
 soundex
 space
 split
+sq_count_check
 sqrt
 stack
 std
@@ -259,6 +264,7 @@ PREHOOK: query: SHOW FUNCTIONS '^c.*'
 PREHOOK: type: SHOWFUNCTIONS
 POSTHOOK: query: SHOW FUNCTIONS '^c.*'
 POSTHOOK: type: SHOWFUNCTIONS
+cardinality_violation
 case
 cbrt
 ceil

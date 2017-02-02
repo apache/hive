@@ -1,13 +1,9 @@
 WARNING: Comparing a bigint and a string may result in a loss of precision.
-PREHOOK: query: -- Test Joins with a variety of literals in the on clause
-
-SELECT COUNT(*) FROM src a JOIN src b ON a.key = b.key AND a.key = 0L
+PREHOOK: query: SELECT COUNT(*) FROM src a JOIN src b ON a.key = b.key AND a.key = 0L
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
-POSTHOOK: query: -- Test Joins with a variety of literals in the on clause
-
-SELECT COUNT(*) FROM src a JOIN src b ON a.key = b.key AND a.key = 0L
+POSTHOOK: query: SELECT COUNT(*) FROM src a JOIN src b ON a.key = b.key AND a.key = 0L
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####

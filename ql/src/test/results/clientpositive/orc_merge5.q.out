@@ -1,12 +1,8 @@
-PREHOOK: query: -- SORT_QUERY_RESULTS
-
-create table orc_merge5 (userid bigint, string1 string, subtype double, decimal1 decimal, ts timestamp) stored as orc
+PREHOOK: query: create table orc_merge5 (userid bigint, string1 string, subtype double, decimal1 decimal, ts timestamp) stored as orc
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@orc_merge5
-POSTHOOK: query: -- SORT_QUERY_RESULTS
-
-create table orc_merge5 (userid bigint, string1 string, subtype double, decimal1 decimal, ts timestamp) stored as orc
+POSTHOOK: query: create table orc_merge5 (userid bigint, string1 string, subtype double, decimal1 decimal, ts timestamp) stored as orc
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@orc_merge5
@@ -26,11 +22,9 @@ POSTHOOK: query: load data local inpath '../../data/files/orc_split_elim.orc' in
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@orc_merge5
-PREHOOK: query: -- 3 mappers
-explain insert overwrite table orc_merge5b select userid,string1,subtype,decimal1,ts from orc_merge5 where userid<=13
+PREHOOK: query: explain insert overwrite table orc_merge5b select userid,string1,subtype,decimal1,ts from orc_merge5 where userid<=13
 PREHOOK: type: QUERY
-POSTHOOK: query: -- 3 mappers
-explain insert overwrite table orc_merge5b select userid,string1,subtype,decimal1,ts from orc_merge5 where userid<=13
+POSTHOOK: query: explain insert overwrite table orc_merge5b select userid,string1,subtype,decimal1,ts from orc_merge5 where userid<=13
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -87,13 +81,11 @@ POSTHOOK: Lineage: orc_merge5b.string1 SIMPLE [(orc_merge5)orc_merge5.FieldSchem
 POSTHOOK: Lineage: orc_merge5b.subtype SIMPLE [(orc_merge5)orc_merge5.FieldSchema(name:subtype, type:double, comment:null), ]
 POSTHOOK: Lineage: orc_merge5b.ts SIMPLE [(orc_merge5)orc_merge5.FieldSchema(name:ts, type:timestamp, comment:null), ]
 POSTHOOK: Lineage: orc_merge5b.userid SIMPLE [(orc_merge5)orc_merge5.FieldSchema(name:userid, type:bigint, comment:null), ]
-PREHOOK: query: -- 3 files total
-analyze table orc_merge5b compute statistics noscan
+PREHOOK: query: analyze table orc_merge5b compute statistics noscan
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_merge5b
 PREHOOK: Output: default@orc_merge5b
-POSTHOOK: query: -- 3 files total
-analyze table orc_merge5b compute statistics noscan
+POSTHOOK: query: analyze table orc_merge5b compute statistics noscan
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orc_merge5b
 POSTHOOK: Output: default@orc_merge5b
@@ -110,11 +102,9 @@ POSTHOOK: Input: default@orc_merge5b
 13	bar	80.0	2	1969-12-31 16:00:05
 2	foo	0.8	1	1969-12-31 16:00:00
 5	eat	0.8	6	1969-12-31 16:00:20
-PREHOOK: query: -- 3 mappers
-explain insert overwrite table orc_merge5b select userid,string1,subtype,decimal1,ts from orc_merge5 where userid<=13
+PREHOOK: query: explain insert overwrite table orc_merge5b select userid,string1,subtype,decimal1,ts from orc_merge5 where userid<=13
 PREHOOK: type: QUERY
-POSTHOOK: query: -- 3 mappers
-explain insert overwrite table orc_merge5b select userid,string1,subtype,decimal1,ts from orc_merge5 where userid<=13
+POSTHOOK: query: explain insert overwrite table orc_merge5b select userid,string1,subtype,decimal1,ts from orc_merge5 where userid<=13
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -205,13 +195,11 @@ POSTHOOK: Lineage: orc_merge5b.string1 SIMPLE [(orc_merge5)orc_merge5.FieldSchem
 POSTHOOK: Lineage: orc_merge5b.subtype SIMPLE [(orc_merge5)orc_merge5.FieldSchema(name:subtype, type:double, comment:null), ]
 POSTHOOK: Lineage: orc_merge5b.ts SIMPLE [(orc_merge5)orc_merge5.FieldSchema(name:ts, type:timestamp, comment:null), ]
 POSTHOOK: Lineage: orc_merge5b.userid SIMPLE [(orc_merge5)orc_merge5.FieldSchema(name:userid, type:bigint, comment:null), ]
-PREHOOK: query: -- 1 file after merging
-analyze table orc_merge5b compute statistics noscan
+PREHOOK: query: analyze table orc_merge5b compute statistics noscan
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_merge5b
 PREHOOK: Output: default@orc_merge5b
-POSTHOOK: query: -- 1 file after merging
-analyze table orc_merge5b compute statistics noscan
+POSTHOOK: query: analyze table orc_merge5b compute statistics noscan
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orc_merge5b
 POSTHOOK: Output: default@orc_merge5b
@@ -295,13 +283,11 @@ POSTHOOK: query: alter table orc_merge5b concatenate
 POSTHOOK: type: ALTER_TABLE_MERGE
 POSTHOOK: Input: default@orc_merge5b
 POSTHOOK: Output: default@orc_merge5b
-PREHOOK: query: -- 1 file after merging
-analyze table orc_merge5b compute statistics noscan
+PREHOOK: query: analyze table orc_merge5b compute statistics noscan
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_merge5b
 PREHOOK: Output: default@orc_merge5b
-POSTHOOK: query: -- 1 file after merging
-analyze table orc_merge5b compute statistics noscan
+POSTHOOK: query: analyze table orc_merge5b compute statistics noscan
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orc_merge5b
 POSTHOOK: Output: default@orc_merge5b

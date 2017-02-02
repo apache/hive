@@ -455,7 +455,7 @@ public class TestHBaseSchemaTool extends HBaseIntegrationTests {
         "\"createTime\":0,\"lastAccessTime\":0,\"retention\":0," +
         "\"partitionKeys\":[{\"name\":\"pcol1\",\"type\":\"string\",\"comment\":\"\"}," +
         "{\"name\":\"pcol2\",\"type\":\"string\",\"comment\":\"\"}],\"parameters\":{}," +
-        "\"tableType\":\"\"} sdHash: qQTgZAi5VzgpozzFGmIVTQ stats:" + lsep,
+        "\"tableType\":\"\",\"rewriteEnabled\":0} sdHash: qQTgZAi5VzgpozzFGmIVTQ stats:" + lsep,
         outStr.toString());
 
     outStr = new ByteArrayOutputStream();
@@ -465,7 +465,7 @@ public class TestHBaseSchemaTool extends HBaseIntegrationTests {
         "\"createTime\":0,\"lastAccessTime\":0,\"retention\":0," +
         "\"partitionKeys\":[{\"name\":\"pcol1\",\"type\":\"string\",\"comment\":\"\"}," +
         "{\"name\":\"pcol2\",\"type\":\"string\",\"comment\":\"\"}],\"parameters\":{\"COLUMN_STATS_ACCURATE\":\"{\\\"COLUMN_STATS\\\":{\\\"col1\\\":\\\"true\\\",\\\"col2\\\":\\\"true\\\"}}\"}," +
-            "\"tableType\":\"\"} sdHash: qQTgZAi5VzgpozzFGmIVTQ stats: column " +
+            "\"tableType\":\"\",\"rewriteEnabled\":0} sdHash: qQTgZAi5VzgpozzFGmIVTQ stats: column " +
             "col1: {\"colName\":\"col1\",\"colType\":\"int\"," +
             "\"statsData\":{\"longStats\":{\"lowValue\":-95,\"highValue\":95,\"numNulls\":1," +
             "\"numDVs\":2,\"bitVectors\":\"\"}}} column col2: {\"colName\":\"col2\",\"colType\":\"varchar(32)\"," +
@@ -474,12 +474,12 @@ public class TestHBaseSchemaTool extends HBaseIntegrationTests {
         "{\"tableName\":\"tab1\",\"dbName\":\"db0\",\"owner\":\"me\",\"createTime\":0," +
         "\"lastAccessTime\":0,\"retention\":0,\"partitionKeys\":[{\"name\":\"pcol1\"," +
             "\"type\":\"string\",\"comment\":\"\"},{\"name\":\"pcol2\",\"type\":\"string\"," +
-            "\"comment\":\"\"}],\"parameters\":{},\"tableType\":\"\"} sdHash: " +
+            "\"comment\":\"\"}],\"parameters\":{},\"tableType\":\"\",\"rewriteEnabled\":0} sdHash: " +
             "qQTgZAi5VzgpozzFGmIVTQ stats:" + lsep +
         "{\"tableName\":\"tab2\",\"dbName\":\"db0\",\"owner\":\"me\",\"createTime\":0," +
         "\"lastAccessTime\":0,\"retention\":0,\"partitionKeys\":[{\"name\":\"pcol1\"," +
         "\"type\":\"string\",\"comment\":\"\"},{\"name\":\"pcol2\",\"type\":\"string\"," +
-        "\"comment\":\"\"}],\"parameters\":{},\"tableType\":\"\"} sdHash: " +
+        "\"comment\":\"\"}],\"parameters\":{},\"tableType\":\"\",\"rewriteEnabled\":0} sdHash: " +
         "qQTgZAi5VzgpozzFGmIVTQ stats:" + lsep, outStr.toString());
 
     List<List<String>> partVals = Arrays.asList(Arrays.asList("a", "b"), Arrays.asList("c", "d"));

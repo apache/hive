@@ -1,6 +1,4 @@
-PREHOOK: query: -- Multiple tables, and change the order of the big table (alltypesorc)
--- First try with regular mergejoin
-explain
+PREHOOK: query: explain
 select
   a.*
 from
@@ -12,204 +10,7 @@ where
   and (a.csmallint < 100)
 order by a.csmallint, a.ctinyint, a.cint
 PREHOOK: type: QUERY
-POSTHOOK: query: -- Multiple tables, and change the order of the big table (alltypesorc)
--- First try with regular mergejoin
-explain
-select
-  a.*
-from
-  alltypesorc a,
-  src b,
-  src c
-where
-  a.csmallint = cast(b.key as int) and a.csmallint = (cast(c.key as int) + 0)
-  and (a.csmallint < 100)
-order by a.csmallint, a.ctinyint, a.cint
-POSTHOOK: type: QUERY
-STAGE DEPENDENCIES:
-  Stage-1 is a root stage
-  Stage-0 depends on stages: Stage-1
-
-STAGE PLANS:
-  Stage: Stage-1
-    Tez
-#### A masked pattern was here ####
-      Edges:
-        Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 4 (SIMPLE_EDGE), Map 5 (SIMPLE_EDGE)
-        Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
-#### A masked pattern was here ####
-      Vertices:
-        Map 1 
-            Map Operator Tree:
-                TableScan
-                  alias: a
-                  Statistics: Num rows: 12288 Data size: 3093170 Basic stats: COMPLETE Column stats: COMPLETE
-                  Filter Operator
-                    predicate: (csmallint < 100) (type: boolean)
-                    Statistics: Num rows: 4096 Data size: 1031250 Basic stats: COMPLETE Column stats: COMPLETE
-                    Select Operator
-                      expressions: ctinyint (type: tinyint), csmallint (type: smallint), cint (type: int), cbigint (type: bigint), cfloat (type: float), cdouble (type: double), cstring1 (type: string), cstring2 (type: string), ctimestamp1 (type: timestamp), ctimestamp2 (type: timestamp), cboolean1 (type: boolean), cboolean2 (type: boolean)
-                      outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11
-                      Statistics: Num rows: 4096 Data size: 1031250 Basic stats: COMPLETE Column stats: COMPLETE
-                      Reduce Output Operator
-                        key expressions: UDFToInteger(_col1) (type: int)
-                        sort order: +
-                        Map-reduce partition columns: UDFToInteger(_col1) (type: int)
-                        Statistics: Num rows: 4096 Data size: 1031250 Basic stats: COMPLETE Column stats: COMPLETE
-                        value expressions: _col0 (type: tinyint), _col1 (type: smallint), _col2 (type: int), _col3 (type: bigint), _col4 (type: float), _col5 (type: double), _col6 (type: string), _col7 (type: string), _col8 (type: timestamp), _col9 (type: timestamp), _col10 (type: boolean), _col11 (type: boolean)
-            Execution mode: llap
-            LLAP IO: all inputs
-        Map 4 
-            Map Operator Tree:
-                TableScan
-                  alias: b
-                  Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
-                  Filter Operator
-                    predicate: key is not null (type: boolean)
-                    Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
-                    Select Operator
-                      expressions: key (type: string)
-                      outputColumnNames: _col0
-                      Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
-                      Reduce Output Operator
-                        key expressions: UDFToInteger(_col0) (type: int)
-                        sort order: +
-                        Map-reduce partition columns: UDFToInteger(_col0) (type: int)
-                        Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
-            Execution mode: llap
-            LLAP IO: no inputs
-        Map 5 
-            Map Operator Tree:
-                TableScan
-                  alias: c
-                  Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
-                  Filter Operator
-                    predicate: key is not null (type: boolean)
-                    Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
-                    Select Operator
-                      expressions: key (type: string)
-                      outputColumnNames: _col0
-                      Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
-                      Reduce Output Operator
-                        key expressions: (UDFToInteger(_col0) + 0) (type: int)
-                        sort order: +
-                        Map-reduce partition columns: (UDFToInteger(_col0) + 0) (type: int)
-                        Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
-            Execution mode: llap
-            LLAP IO: no inputs
-        Reducer 2 
-            Execution mode: llap
-            Reduce Operator Tree:
-              Merge Join Operator
-                condition map:
-                     Inner Join 0 to 1
-                     Inner Join 0 to 2
-                keys:
-                  0 UDFToInteger(_col1) (type: int)
-                  1 UDFToInteger(_col0) (type: int)
-                  2 (UDFToInteger(_col0) + 0) (type: int)
-                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11
-                Statistics: Num rows: 2710 Data size: 840100 Basic stats: COMPLETE Column stats: COMPLETE
-                Reduce Output Operator
-                  key expressions: _col1 (type: smallint), _col0 (type: tinyint), _col2 (type: int)
-                  sort order: +++
-                  Statistics: Num rows: 2710 Data size: 840100 Basic stats: COMPLETE Column stats: COMPLETE
-                  value expressions: _col3 (type: bigint), _col4 (type: float), _col5 (type: double), _col6 (type: string), _col7 (type: string), _col8 (type: timestamp), _col9 (type: timestamp), _col10 (type: boolean), _col11 (type: boolean)
-        Reducer 3 
-            Execution mode: llap
-            Reduce Operator Tree:
-              Select Operator
-                expressions: KEY.reducesinkkey1 (type: tinyint), KEY.reducesinkkey0 (type: smallint), KEY.reducesinkkey2 (type: int), VALUE._col0 (type: bigint), VALUE._col1 (type: float), VALUE._col2 (type: double), VALUE._col3 (type: string), VALUE._col4 (type: string), VALUE._col5 (type: timestamp), VALUE._col6 (type: timestamp), VALUE._col7 (type: boolean), VALUE._col8 (type: boolean)
-                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11
-                Statistics: Num rows: 2710 Data size: 840100 Basic stats: COMPLETE Column stats: COMPLETE
-                File Output Operator
-                  compressed: false
-                  Statistics: Num rows: 2710 Data size: 840100 Basic stats: COMPLETE Column stats: COMPLETE
-                  table:
-                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-
-  Stage: Stage-0
-    Fetch Operator
-      limit: -1
-      Processor Tree:
-        ListSink
-
-PREHOOK: query: select
-  a.*
-from
-  alltypesorc a,
-  src b,
-  src c
-where
-  a.csmallint = cast(b.key as int) and a.csmallint = (cast(c.key as int) + 0)
-  and (a.csmallint < 100)
-order by a.csmallint, a.ctinyint, a.cint
-PREHOOK: type: QUERY
-PREHOOK: Input: default@alltypesorc
-PREHOOK: Input: default@src
-#### A masked pattern was here ####
-POSTHOOK: query: select
-  a.*
-from
-  alltypesorc a,
-  src b,
-  src c
-where
-  a.csmallint = cast(b.key as int) and a.csmallint = (cast(c.key as int) + 0)
-  and (a.csmallint < 100)
-order by a.csmallint, a.ctinyint, a.cint
-POSTHOOK: type: QUERY
-POSTHOOK: Input: default@alltypesorc
-POSTHOOK: Input: default@src
-#### A masked pattern was here ####
--19	8	626923679	NULL	-19.0	8.0	821UdmGbkEf4j	NULL	1969-12-31 15:59:46.619	1969-12-31 15:59:46.95	true	NULL
-6	8	528534767	NULL	6.0	8.0	cvLH6Eat2yFsyy7p	NULL	1969-12-31 15:59:45.459	1969-12-31 16:00:00.236	true	NULL
-NULL	9	-470743566	-1887561756	NULL	9.0	swx5K33Sm5qcKR5B	4hA4KQj2vD3fI6gX82220d	NULL	1969-12-31 16:00:07.318	true	false
-NULL	10	813877020	-1645852809	NULL	10.0	4QG23O2GKF6BUe13O7A2C	xH7445Rals48VOulSyR5F	NULL	1969-12-31 16:00:05.851	false	false
--62	10	528534767	NULL	-62.0	10.0	cvLH6Eat2yFsyy7p	NULL	1969-12-31 15:59:52.265	1969-12-31 15:59:56.584	true	NULL
-NULL	19	312515097	1864027286	NULL	19.0	ds5YqbRvhf3Sb2	4KWs6gw7lv2WYd66P	NULL	1969-12-31 15:59:56.211	false	true
--7	19	528534767	NULL	-7.0	19.0	cvLH6Eat2yFsyy7p	NULL	1969-12-31 16:00:13.994	1969-12-31 15:59:55.362	true	NULL
--45	20	253665376	NULL	-45.0	20.0	1cGVWH7n1QU	NULL	1969-12-31 16:00:09.949	1969-12-31 16:00:10.979	true	NULL
-NULL	34	510824788	-1887561756	NULL	34.0	nj1bXoh6k	4hA4KQj2vD3fI6gX82220d	NULL	1969-12-31 15:59:46.017	true	false
-41	37	528534767	NULL	41.0	37.0	cvLH6Eat2yFsyy7p	NULL	1969-12-31 15:59:52.817	1969-12-31 15:59:53.672	true	NULL
-41	37	528534767	NULL	41.0	37.0	cvLH6Eat2yFsyy7p	NULL	1969-12-31 15:59:52.817	1969-12-31 15:59:53.672	true	NULL
-41	37	528534767	NULL	41.0	37.0	cvLH6Eat2yFsyy7p	NULL	1969-12-31 15:59:52.817	1969-12-31 15:59:53.672	true	NULL
-41	37	528534767	NULL	41.0	37.0	cvLH6Eat2yFsyy7p	NULL	1969-12-31 15:59:52.817	1969-12-31 15:59:53.672	true	NULL
-61	41	528534767	NULL	61.0	41.0	cvLH6Eat2yFsyy7p	NULL	1969-12-31 15:59:55.708	1969-12-31 16:00:14.412	true	NULL
-NULL	58	-144190833	-1645852809	NULL	58.0	122J3HlhqBW1D43	xH7445Rals48VOulSyR5F	NULL	1969-12-31 15:59:46.315	true	false
-NULL	58	-144190833	-1645852809	NULL	58.0	122J3HlhqBW1D43	xH7445Rals48VOulSyR5F	NULL	1969-12-31 15:59:46.315	true	false
-NULL	58	-144190833	-1645852809	NULL	58.0	122J3HlhqBW1D43	xH7445Rals48VOulSyR5F	NULL	1969-12-31 15:59:46.315	true	false
-NULL	58	-144190833	-1645852809	NULL	58.0	122J3HlhqBW1D43	xH7445Rals48VOulSyR5F	NULL	1969-12-31 15:59:46.315	true	false
-NULL	67	790444583	-1645852809	NULL	67.0	xptM81y	xH7445Rals48VOulSyR5F	NULL	1969-12-31 15:59:58.622	false	false
-NULL	67	790444583	-1645852809	NULL	67.0	xptM81y	xH7445Rals48VOulSyR5F	NULL	1969-12-31 15:59:58.622	false	false
-NULL	67	790444583	-1645852809	NULL	67.0	xptM81y	xH7445Rals48VOulSyR5F	NULL	1969-12-31 15:59:58.622	false	false
-NULL	67	790444583	-1645852809	NULL	67.0	xptM81y	xH7445Rals48VOulSyR5F	NULL	1969-12-31 15:59:58.622	false	false
--46	72	626923679	NULL	-46.0	72.0	821UdmGbkEf4j	NULL	1969-12-31 16:00:11.411	1969-12-31 16:00:05.539	true	NULL
--46	72	626923679	NULL	-46.0	72.0	821UdmGbkEf4j	NULL	1969-12-31 16:00:11.411	1969-12-31 16:00:05.539	true	NULL
--46	72	626923679	NULL	-46.0	72.0	821UdmGbkEf4j	NULL	1969-12-31 16:00:11.411	1969-12-31 16:00:05.539	true	NULL
--46	72	626923679	NULL	-46.0	72.0	821UdmGbkEf4j	NULL	1969-12-31 16:00:11.411	1969-12-31 16:00:05.539	true	NULL
-39	74	626923679	NULL	39.0	74.0	821UdmGbkEf4j	NULL	1969-12-31 16:00:10.403	1969-12-31 16:00:12.52	true	NULL
-47	74	626923679	NULL	47.0	74.0	821UdmGbkEf4j	NULL	1969-12-31 15:59:57.849	1969-12-31 15:59:57.569	true	NULL
--22	77	528534767	NULL	-22.0	77.0	cvLH6Eat2yFsyy7p	NULL	1969-12-31 15:59:45.928	1969-12-31 15:59:43.621	true	NULL
-PREHOOK: query: -- noconditionaltask.size needs to be low enough that entire filtered table results do not fit in one task's hash table
--- Try with dynamically partitioned hash join 
-explain
-select
-  a.*
-from
-  alltypesorc a,
-  src b,
-  src c
-where
-  a.csmallint = cast(b.key as int) and a.csmallint = (cast(c.key as int) + 0)
-  and (a.csmallint < 100)
-order by a.csmallint, a.ctinyint, a.cint
-PREHOOK: type: QUERY
-POSTHOOK: query: -- noconditionaltask.size needs to be low enough that entire filtered table results do not fit in one task's hash table
--- Try with dynamically partitioned hash join 
-explain
+POSTHOOK: query: explain
 select
   a.*
 from
@@ -388,8 +189,198 @@ NULL	67	790444583	-1645852809	NULL	67.0	xptM81y	xH7445Rals48VOulSyR5F	NULL	1969-
 39	74	626923679	NULL	39.0	74.0	821UdmGbkEf4j	NULL	1969-12-31 16:00:10.403	1969-12-31 16:00:12.52	true	NULL
 47	74	626923679	NULL	47.0	74.0	821UdmGbkEf4j	NULL	1969-12-31 15:59:57.849	1969-12-31 15:59:57.569	true	NULL
 -22	77	528534767	NULL	-22.0	77.0	cvLH6Eat2yFsyy7p	NULL	1969-12-31 15:59:45.928	1969-12-31 15:59:43.621	true	NULL
-PREHOOK: query: -- Try different order of tables
-explain
+PREHOOK: query: explain
+select
+  a.*
+from
+  alltypesorc a,
+  src b,
+  src c
+where
+  a.csmallint = cast(b.key as int) and a.csmallint = (cast(c.key as int) + 0)
+  and (a.csmallint < 100)
+order by a.csmallint, a.ctinyint, a.cint
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+select
+  a.*
+from
+  alltypesorc a,
+  src b,
+  src c
+where
+  a.csmallint = cast(b.key as int) and a.csmallint = (cast(c.key as int) + 0)
+  and (a.csmallint < 100)
+order by a.csmallint, a.ctinyint, a.cint
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 4 (SIMPLE_EDGE), Map 5 (SIMPLE_EDGE)
+        Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: a
+                  Statistics: Num rows: 12288 Data size: 3093170 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: (csmallint < 100) (type: boolean)
+                    Statistics: Num rows: 4096 Data size: 1031250 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: ctinyint (type: tinyint), csmallint (type: smallint), cint (type: int), cbigint (type: bigint), cfloat (type: float), cdouble (type: double), cstring1 (type: string), cstring2 (type: string), ctimestamp1 (type: timestamp), ctimestamp2 (type: timestamp), cboolean1 (type: boolean), cboolean2 (type: boolean)
+                      outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11
+                      Statistics: Num rows: 4096 Data size: 1031250 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: UDFToInteger(_col1) (type: int)
+                        sort order: +
+                        Map-reduce partition columns: UDFToInteger(_col1) (type: int)
+                        Statistics: Num rows: 4096 Data size: 1031250 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col0 (type: tinyint), _col1 (type: smallint), _col2 (type: int), _col3 (type: bigint), _col4 (type: float), _col5 (type: double), _col6 (type: string), _col7 (type: string), _col8 (type: timestamp), _col9 (type: timestamp), _col10 (type: boolean), _col11 (type: boolean)
+            Execution mode: llap
+            LLAP IO: all inputs
+        Map 4 
+            Map Operator Tree:
+                TableScan
+                  alias: b
+                  Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: key is not null (type: boolean)
+                    Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: key (type: string)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: UDFToInteger(_col0) (type: int)
+                        sort order: +
+                        Map-reduce partition columns: UDFToInteger(_col0) (type: int)
+                        Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
+            Execution mode: llap
+            LLAP IO: no inputs
+        Map 5 
+            Map Operator Tree:
+                TableScan
+                  alias: c
+                  Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: key is not null (type: boolean)
+                    Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: key (type: string)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: (UDFToInteger(_col0) + 0) (type: int)
+                        sort order: +
+                        Map-reduce partition columns: (UDFToInteger(_col0) + 0) (type: int)
+                        Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
+            Execution mode: llap
+            LLAP IO: no inputs
+        Reducer 2 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                     Inner Join 0 to 2
+                keys:
+                  0 UDFToInteger(_col1) (type: int)
+                  1 UDFToInteger(_col0) (type: int)
+                  2 (UDFToInteger(_col0) + 0) (type: int)
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11
+                Statistics: Num rows: 2710 Data size: 840100 Basic stats: COMPLETE Column stats: COMPLETE
+                Reduce Output Operator
+                  key expressions: _col1 (type: smallint), _col0 (type: tinyint), _col2 (type: int)
+                  sort order: +++
+                  Statistics: Num rows: 2710 Data size: 840100 Basic stats: COMPLETE Column stats: COMPLETE
+                  value expressions: _col3 (type: bigint), _col4 (type: float), _col5 (type: double), _col6 (type: string), _col7 (type: string), _col8 (type: timestamp), _col9 (type: timestamp), _col10 (type: boolean), _col11 (type: boolean)
+        Reducer 3 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Select Operator
+                expressions: KEY.reducesinkkey1 (type: tinyint), KEY.reducesinkkey0 (type: smallint), KEY.reducesinkkey2 (type: int), VALUE._col0 (type: bigint), VALUE._col1 (type: float), VALUE._col2 (type: double), VALUE._col3 (type: string), VALUE._col4 (type: string), VALUE._col5 (type: timestamp), VALUE._col6 (type: timestamp), VALUE._col7 (type: boolean), VALUE._col8 (type: boolean)
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11
+                Statistics: Num rows: 2710 Data size: 840100 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 2710 Data size: 840100 Basic stats: COMPLETE Column stats: COMPLETE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select
+  a.*
+from
+  alltypesorc a,
+  src b,
+  src c
+where
+  a.csmallint = cast(b.key as int) and a.csmallint = (cast(c.key as int) + 0)
+  and (a.csmallint < 100)
+order by a.csmallint, a.ctinyint, a.cint
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: select
+  a.*
+from
+  alltypesorc a,
+  src b,
+  src c
+where
+  a.csmallint = cast(b.key as int) and a.csmallint = (cast(c.key as int) + 0)
+  and (a.csmallint < 100)
+order by a.csmallint, a.ctinyint, a.cint
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+-19	8	626923679	NULL	-19.0	8.0	821UdmGbkEf4j	NULL	1969-12-31 15:59:46.619	1969-12-31 15:59:46.95	true	NULL
+6	8	528534767	NULL	6.0	8.0	cvLH6Eat2yFsyy7p	NULL	1969-12-31 15:59:45.459	1969-12-31 16:00:00.236	true	NULL
+NULL	9	-470743566	-1887561756	NULL	9.0	swx5K33Sm5qcKR5B	4hA4KQj2vD3fI6gX82220d	NULL	1969-12-31 16:00:07.318	true	false
+NULL	10	813877020	-1645852809	NULL	10.0	4QG23O2GKF6BUe13O7A2C	xH7445Rals48VOulSyR5F	NULL	1969-12-31 16:00:05.851	false	false
+-62	10	528534767	NULL	-62.0	10.0	cvLH6Eat2yFsyy7p	NULL	1969-12-31 15:59:52.265	1969-12-31 15:59:56.584	true	NULL
+NULL	19	312515097	1864027286	NULL	19.0	ds5YqbRvhf3Sb2	4KWs6gw7lv2WYd66P	NULL	1969-12-31 15:59:56.211	false	true
+-7	19	528534767	NULL	-7.0	19.0	cvLH6Eat2yFsyy7p	NULL	1969-12-31 16:00:13.994	1969-12-31 15:59:55.362	true	NULL
+-45	20	253665376	NULL	-45.0	20.0	1cGVWH7n1QU	NULL	1969-12-31 16:00:09.949	1969-12-31 16:00:10.979	true	NULL
+NULL	34	510824788	-1887561756	NULL	34.0	nj1bXoh6k	4hA4KQj2vD3fI6gX82220d	NULL	1969-12-31 15:59:46.017	true	false
+41	37	528534767	NULL	41.0	37.0	cvLH6Eat2yFsyy7p	NULL	1969-12-31 15:59:52.817	1969-12-31 15:59:53.672	true	NULL
+41	37	528534767	NULL	41.0	37.0	cvLH6Eat2yFsyy7p	NULL	1969-12-31 15:59:52.817	1969-12-31 15:59:53.672	true	NULL
+41	37	528534767	NULL	41.0	37.0	cvLH6Eat2yFsyy7p	NULL	1969-12-31 15:59:52.817	1969-12-31 15:59:53.672	true	NULL
+41	37	528534767	NULL	41.0	37.0	cvLH6Eat2yFsyy7p	NULL	1969-12-31 15:59:52.817	1969-12-31 15:59:53.672	true	NULL
+61	41	528534767	NULL	61.0	41.0	cvLH6Eat2yFsyy7p	NULL	1969-12-31 15:59:55.708	1969-12-31 16:00:14.412	true	NULL
+NULL	58	-144190833	-1645852809	NULL	58.0	122J3HlhqBW1D43	xH7445Rals48VOulSyR5F	NULL	1969-12-31 15:59:46.315	true	false
+NULL	58	-144190833	-1645852809	NULL	58.0	122J3HlhqBW1D43	xH7445Rals48VOulSyR5F	NULL	1969-12-31 15:59:46.315	true	false
+NULL	58	-144190833	-1645852809	NULL	58.0	122J3HlhqBW1D43	xH7445Rals48VOulSyR5F	NULL	1969-12-31 15:59:46.315	true	false
+NULL	58	-144190833	-1645852809	NULL	58.0	122J3HlhqBW1D43	xH7445Rals48VOulSyR5F	NULL	1969-12-31 15:59:46.315	true	false
+NULL	67	790444583	-1645852809	NULL	67.0	xptM81y	xH7445Rals48VOulSyR5F	NULL	1969-12-31 15:59:58.622	false	false
+NULL	67	790444583	-1645852809	NULL	67.0	xptM81y	xH7445Rals48VOulSyR5F	NULL	1969-12-31 15:59:58.622	false	false
+NULL	67	790444583	-1645852809	NULL	67.0	xptM81y	xH7445Rals48VOulSyR5F	NULL	1969-12-31 15:59:58.622	false	false
+NULL	67	790444583	-1645852809	NULL	67.0	xptM81y	xH7445Rals48VOulSyR5F	NULL	1969-12-31 15:59:58.622	false	false
+-46	72	626923679	NULL	-46.0	72.0	821UdmGbkEf4j	NULL	1969-12-31 16:00:11.411	1969-12-31 16:00:05.539	true	NULL
+-46	72	626923679	NULL	-46.0	72.0	821UdmGbkEf4j	NULL	1969-12-31 16:00:11.411	1969-12-31 16:00:05.539	true	NULL
+-46	72	626923679	NULL	-46.0	72.0	821UdmGbkEf4j	NULL	1969-12-31 16:00:11.411	1969-12-31 16:00:05.539	true	NULL
+-46	72	626923679	NULL	-46.0	72.0	821UdmGbkEf4j	NULL	1969-12-31 16:00:11.411	1969-12-31 16:00:05.539	true	NULL
+39	74	626923679	NULL	39.0	74.0	821UdmGbkEf4j	NULL	1969-12-31 16:00:10.403	1969-12-31 16:00:12.52	true	NULL
+47	74	626923679	NULL	47.0	74.0	821UdmGbkEf4j	NULL	1969-12-31 15:59:57.849	1969-12-31 15:59:57.569	true	NULL
+-22	77	528534767	NULL	-22.0	77.0	cvLH6Eat2yFsyy7p	NULL	1969-12-31 15:59:45.928	1969-12-31 15:59:43.621	true	NULL
+PREHOOK: query: explain
 select
   a.*
 from
@@ -401,8 +392,7 @@ where
   and (a.csmallint < 100)
 order by a.csmallint, a.ctinyint, a.cint
 PREHOOK: type: QUERY
-POSTHOOK: query: -- Try different order of tables
-explain
+POSTHOOK: query: explain
 select
   a.*
 from

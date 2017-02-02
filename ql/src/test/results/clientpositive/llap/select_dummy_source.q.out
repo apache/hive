@@ -29,12 +29,10 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
 a	100
-PREHOOK: query: --evaluation
-explain
+PREHOOK: query: explain
 select 1 + 1
 PREHOOK: type: QUERY
-POSTHOOK: query: --evaluation
-explain
+POSTHOOK: query: explain
 select 1 + 1
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -62,12 +60,10 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
 2
-PREHOOK: query: -- explode (not possible for lateral view)
-explain
+PREHOOK: query: explain
 select explode(array('a', 'b'))
 PREHOOK: type: QUERY
-POSTHOOK: query: -- explode (not possible for lateral view)
-explain
+POSTHOOK: query: explain
 select explode(array('a', 'b'))
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -194,12 +190,10 @@ POSTHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
 a
 b
-PREHOOK: query: -- subquery
-explain
+PREHOOK: query: explain
 select 2 + 3,x from (select 1 + 2 x) X
 PREHOOK: type: QUERY
-POSTHOOK: query: -- subquery
-explain
+POSTHOOK: query: explain
 select 2 + 3,x from (select 1 + 2 x) X
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:

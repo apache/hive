@@ -271,9 +271,9 @@ public abstract class AbstractHCatStorerTest extends HCatBaseTest {
   void pigValueRangeTest(String tblName, String hiveType, String pigType,
       HCatBaseStorer.OOR_VALUE_OPT_VALUES goal, String inputValue, String expectedValue,
       String format) throws Exception {
-    TestHCatLoader.dropTable(tblName, driver);
+    AbstractHCatLoaderTest.dropTable(tblName, driver);
     final String field = "f1";
-    TestHCatLoader.createTable(tblName, field + " " + hiveType, null, driver, storageFormat);
+    AbstractHCatLoaderTest.createTable(tblName, field + " " + hiveType, null, driver, storageFormat);
     HcatTestUtils.createTestDataFile(INPUT_FILE_NAME, new String[] { inputValue });
     LOG.debug("File=" + INPUT_FILE_NAME);
     dumpFile(INPUT_FILE_NAME);
@@ -351,8 +351,8 @@ public abstract class AbstractHCatStorerTest extends HCatBaseTest {
   @Test
   public void testDateCharTypes() throws Exception {
     final String tblName = "junit_date_char";
-    TestHCatLoader.dropTable(tblName, driver);
-    TestHCatLoader.createTable(tblName,
+    AbstractHCatLoaderTest.dropTable(tblName, driver);
+    AbstractHCatLoaderTest.createTable(tblName,
         "id int, char5 char(5), varchar10 varchar(10), dec52 decimal(5,2)", null, driver,
         storageFormat);
     int NUM_ROWS = 5;

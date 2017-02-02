@@ -275,6 +275,8 @@ public class TestFunctionRegistry extends TestCase {
         TypeInfoFactory.doubleTypeInfo);
     comparison(TypeInfoFactory.timestampTypeInfo, TypeInfoFactory.intTypeInfo,
         TypeInfoFactory.doubleTypeInfo);
+   comparison(TypeInfoFactory.timestampTypeInfo, TypeInfoFactory.dateTypeInfo,
+        TypeInfoFactory.timestampTypeInfo);
 
     comparison(TypeInfoFactory.stringTypeInfo, varchar10, TypeInfoFactory.stringTypeInfo);
     comparison(varchar10, TypeInfoFactory.stringTypeInfo, TypeInfoFactory.stringTypeInfo);

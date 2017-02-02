@@ -33,6 +33,7 @@ import org.apache.hadoop.hive.common.type.HiveIntervalYearMonth;
 import org.apache.hadoop.hive.common.type.HiveVarchar;
 import org.apache.hadoop.hive.serde2.ByteStream.Output;
 import org.apache.hadoop.hive.serde2.io.DateWritable;
+import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.serde2.io.HiveIntervalDayTimeWritable;
 import org.apache.hadoop.hive.serde2.io.HiveIntervalYearMonthWritable;
 import org.apache.hadoop.hive.serde2.io.TimestampWritable;
@@ -76,6 +77,7 @@ public final class LazySimpleSerializeWrite implements SerializeWrite {
   private HiveIntervalYearMonthWritable hiveIntervalYearMonthWritable;
   private HiveIntervalDayTimeWritable hiveIntervalDayTimeWritable;
   private HiveIntervalDayTime hiveIntervalDayTime;
+  private byte[] decimalScratchBuffer;
 
   public LazySimpleSerializeWrite(int fieldCount,
     byte separator, LazySerDeParameters lazyParams) {
@@ -475,14 +477,34 @@ public final class LazySimpleSerializeWrite implements SerializeWrite {
 
   /*
    * DECIMAL.
+   *
+   * NOTE: The scale parameter is for text serialization (e.g. HiveDecimal.toFormatString) that
+   * creates trailing zeroes output decimals.
    */
   @Override
-  public void writeHiveDecimal(HiveDecimal v, int scale) throws IOException {
+  public void writeHiveDecimal(HiveDecimal dec, int scale) throws IOException {
     if (index > 0) {
       output.write(separator);
     }
 
-    LazyHiveDecimal.writeUTF8(output, v, scale);
+    if (decimalScratchBuffer == null) {
+      decimalScratchBuffer = new byte[HiveDecimal.SCRATCH_BUFFER_LEN_TO_BYTES];
+    }
+    LazyHiveDecimal.writeUTF8(output, dec, scale, decimalScratchBuffer);
+
+    index++;
+  }
+
+  @Override
+  public void writeHiveDecimal(HiveDecimalWritable decWritable, int scale) throws IOException {
+    if (index > 0) {
+      output.write(separator);
+    }
+
+    if (decimalScratchBuffer == null) {
+      decimalScratchBuffer = new byte[HiveDecimal.SCRATCH_BUFFER_LEN_TO_BYTES];
+    }
+    LazyHiveDecimal.writeUTF8(output, decWritable, scale, decimalScratchBuffer);
 
     index++;
   }

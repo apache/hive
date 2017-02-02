@@ -8,6 +8,8 @@ PREHOOK: type: DESCFUNCTION
 POSTHOOK: query: DESCRIBE FUNCTION EXTENDED struct
 POSTHOOK: type: DESCFUNCTION
 struct(col1, col2, col3, ...) - Creates a struct with the given field values
+Function class:org.apache.hadoop.hive.ql.udf.generic.GenericUDFStruct
+Function type:BUILTIN
 PREHOOK: query: EXPLAIN
 SELECT struct(1), struct(1, "a"), struct(1, "b", 1.5).col1, struct(1, struct("a", 1.5)).col2.col1
 FROM src tablesample (1 rows)

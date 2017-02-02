@@ -77,7 +77,8 @@ public class Optimizer {
       Splitter.on(",").trimResults().omitEmptyStrings().split(
         Strings.nullToEmpty(HiveConf.getVar(hiveConf, HiveConf.ConfVars.POSTEXECHOOKS))));
     if (postExecHooks.contains("org.apache.hadoop.hive.ql.hooks.PostExecutePrinter")
-        || postExecHooks.contains("org.apache.hadoop.hive.ql.hooks.LineageLogger")) {
+        || postExecHooks.contains("org.apache.hadoop.hive.ql.hooks.LineageLogger")
+        || postExecHooks.contains("org.apache.atlas.hive.hook.HiveHook")) {
       transformations.add(new Generator());
     }
 
@@ -121,6 +122,8 @@ public class Optimizer {
         !HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVEOPTLISTBUCKETING)) {
       transformations.add(new SortedDynPartitionOptimizer());
     }
+
+    transformations.add(new SortedDynPartitionTimeGranularityOptimizer());
 
     if (HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVEOPTPPD)) {
       transformations.add(new PartitionPruner());

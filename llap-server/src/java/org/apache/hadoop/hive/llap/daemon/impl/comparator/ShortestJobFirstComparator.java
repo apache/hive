@@ -54,17 +54,22 @@ public class ShortestJobFirstComparator implements Comparator<TaskWrapper> {
     // it's parent hierarchy. selfAndUpstreamComplete indicates how many of these have completed.
     int knownPending1 = fri1.getNumSelfAndUpstreamTasks() - fri1.getNumSelfAndUpstreamCompletedTasks();
     int knownPending2 = fri2.getNumSelfAndUpstreamTasks() - fri2.getNumSelfAndUpstreamCompletedTasks();
-    if (knownPending1 < knownPending2) {
+    // longer the wait time for an attempt wrt to its start time, higher the priority it gets
+    long waitTime1 = fri1.getCurrentAttemptStartTime() - fri1.getFirstAttemptStartTime();
+    long waitTime2 = fri2.getCurrentAttemptStartTime() - fri2.getFirstAttemptStartTime();
+
+    if (waitTime1 == 0 || waitTime2 == 0) {
+      return knownPending1 - knownPending2;
+    }
+
+    double ratio1 = (double) knownPending1 / (double) waitTime1;
+    double ratio2 = (double) knownPending2 / (double) waitTime2;
+    if (ratio1 < ratio2) {
       return -1;
-    } else if (knownPending1 > knownPending2) {
+    } else if (ratio1 > ratio2) {
       return 1;
     }
 
-    if (fri1.getFirstAttemptStartTime() < fri2.getFirstAttemptStartTime()) {
-      return -1;
-    } else if (fri1.getFirstAttemptStartTime() > fri2.getFirstAttemptStartTime()) {
-      return 1;
-    }
     return 0;
   }
 }

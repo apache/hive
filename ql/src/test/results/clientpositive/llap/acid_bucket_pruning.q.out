@@ -1,16 +1,8 @@
-PREHOOK: query: -- Bucket pruning only works for ACID when split-update (U=D+I) has been enabled for the table.
--- For e.g., this can be done by setting 'transactional_properties' = 'default'.
--- This also means that bucket pruning will not work for ACID tables with legacy behaviour.
-
-CREATE TABLE acidTblDefault(a INT) CLUSTERED BY(a) INTO 16 BUCKETS STORED AS ORC TBLPROPERTIES ('transactional'='true', 'transactional_properties'='default')
+PREHOOK: query: CREATE TABLE acidTblDefault(a INT) CLUSTERED BY(a) INTO 16 BUCKETS STORED AS ORC TBLPROPERTIES ('transactional'='true', 'transactional_properties'='default')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@acidTblDefault
-POSTHOOK: query: -- Bucket pruning only works for ACID when split-update (U=D+I) has been enabled for the table.
--- For e.g., this can be done by setting 'transactional_properties' = 'default'.
--- This also means that bucket pruning will not work for ACID tables with legacy behaviour.
-
-CREATE TABLE acidTblDefault(a INT) CLUSTERED BY(a) INTO 16 BUCKETS STORED AS ORC TBLPROPERTIES ('transactional'='true', 'transactional_properties'='default')
+POSTHOOK: query: CREATE TABLE acidTblDefault(a INT) CLUSTERED BY(a) INTO 16 BUCKETS STORED AS ORC TBLPROPERTIES ('transactional'='true', 'transactional_properties'='default')
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@acidTblDefault
@@ -25,21 +17,15 @@ POSTHOOK: Output: default@acidtbldefault
 POSTHOOK: Lineage: acidtbldefault.a SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
 PREHOOK: query: INSERT INTO TABLE acidTblDefault VALUES (1)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__1
 PREHOOK: Output: default@acidtbldefault
 POSTHOOK: query: INSERT INTO TABLE acidTblDefault VALUES (1)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__1
 POSTHOOK: Output: default@acidtbldefault
 POSTHOOK: Lineage: acidtbldefault.a EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-PREHOOK: query: -- Exactly one of the buckets should be selected out of the 16 buckets
--- by the following selection query.
-EXPLAIN EXTENDED
+PREHOOK: query: EXPLAIN EXTENDED
 SELECT * FROM acidTblDefault WHERE a = 1
 PREHOOK: type: QUERY
-POSTHOOK: query: -- Exactly one of the buckets should be selected out of the 16 buckets
--- by the following selection query.
-EXPLAIN EXTENDED
+POSTHOOK: query: EXPLAIN EXTENDED
 SELECT * FROM acidTblDefault WHERE a = 1
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -57,22 +43,22 @@ STAGE PLANS:
                   alias: acidtbldefault
                   filterExpr: (a = 1) (type: boolean)
                   buckets included: [1,] of 16
-                  Statistics: Num rows: 8983 Data size: 35932 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 7972 Data size: 31889 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
                     predicate: (a = 1) (type: boolean)
-                    Statistics: Num rows: 4491 Data size: 17964 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 3986 Data size: 15944 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: 1 (type: int)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 4491 Data size: 17964 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 3986 Data size: 15944 Basic stats: COMPLETE Column stats: NONE
                       File Output Operator
                         compressed: false
                         GlobalTableId: 0
 #### A masked pattern was here ####
                         NumFilesPerFileSink: 1
-                        Statistics: Num rows: 4491 Data size: 17964 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 3986 Data size: 15944 Basic stats: COMPLETE Column stats: NONE
 #### A masked pattern was here ####
                         table:
                             input format: org.apache.hadoop.mapred.SequenceFileInputFormat
@@ -102,6 +88,7 @@ STAGE PLANS:
                   properties:
                     bucket_count 16
                     bucket_field_name a
+                    column.name.delimiter ,
                     columns a
                     columns.comments 
                     columns.types int
@@ -113,7 +100,7 @@ STAGE PLANS:
                     serialization.ddl struct acidtbldefault { i32 a}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                    totalSize 35932
+                    totalSize 31889
                     transactional true
                     transactional_properties default
 #### A masked pattern was here ####
@@ -124,6 +111,7 @@ STAGE PLANS:
                     properties:
                       bucket_count 16
                       bucket_field_name a
+                      column.name.delimiter ,
                       columns a
                       columns.comments 
                       columns.types int
@@ -135,7 +123,7 @@ STAGE PLANS:
                       serialization.ddl struct acidtbldefault { i32 a}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                      totalSize 35932
+                      totalSize 31889
                       transactional true
                       transactional_properties default
 #### A masked pattern was here ####

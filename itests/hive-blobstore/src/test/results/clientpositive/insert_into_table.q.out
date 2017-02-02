@@ -1,0 +1,368 @@
+PREHOOK: query: DROP TABLE table1
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE table1
+POSTHOOK: type: DROPTABLE
+#### A masked pattern was here ####
+PREHOOK: type: CREATETABLE
+PREHOOK: Input: ### test.blobstore.path ###/table1
+PREHOOK: Output: database:default
+PREHOOK: Output: default@table1
+#### A masked pattern was here ####
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Input: ### test.blobstore.path ###/table1
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@table1
+PREHOOK: query: INSERT INTO TABLE table1 VALUES (1)
+PREHOOK: type: QUERY
+PREHOOK: Output: default@table1
+POSTHOOK: query: INSERT INTO TABLE table1 VALUES (1)
+POSTHOOK: type: QUERY
+POSTHOOK: Output: default@table1
+PREHOOK: query: INSERT INTO TABLE table1 VALUES (2)
+PREHOOK: type: QUERY
+PREHOOK: Output: default@table1
+POSTHOOK: query: INSERT INTO TABLE table1 VALUES (2)
+POSTHOOK: type: QUERY
+POSTHOOK: Output: default@table1
+PREHOOK: query: SELECT * FROM table1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@table1
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM table1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table1
+#### A masked pattern was here ####
+1
+2
+PREHOOK: query: EXPLAIN EXTENDED INSERT INTO TABLE table1 VALUES (1)
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN EXTENDED INSERT INTO TABLE table1 VALUES (1)
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-7 depends on stages: Stage-1 , consists of Stage-4, Stage-3, Stage-5
+  Stage-4
+  Stage-2 depends on stages: Stage-0, Stage-4
+  Stage-3
+  Stage-0 depends on stages: Stage-3, Stage-6
+  Stage-5
+  Stage-6 depends on stages: Stage-5
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: values__tmp__table__3
+            Statistics: Num rows: 1 Data size: 2 Basic stats: COMPLETE Column stats: NONE
+            GatherStats: false
+            Select Operator
+              expressions: UDFToInteger(tmp_values_col1) (type: int)
+              outputColumnNames: _col0
+              Statistics: Num rows: 1 Data size: 2 Basic stats: COMPLETE Column stats: NONE
+              File Output Operator
+                compressed: false
+                GlobalTableId: 1
+                directory: ### BLOBSTORE_STAGING_PATH ###
+                NumFilesPerFileSink: 1
+                Statistics: Num rows: 1 Data size: 2 Basic stats: COMPLETE Column stats: NONE
+                Stats Publishing Key Prefix: ### BLOBSTORE_STAGING_PATH ###
+                table:
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    properties:
+                      bucket_count -1
+                      column.name.delimiter ,
+                      columns id
+                      columns.comments 
+                      columns.types int
+#### A masked pattern was here ####
+                      location ### test.blobstore.path ###/table1
+                      name default.table1
+                      numFiles 2
+                      serialization.ddl struct table1 { i32 id}
+                      serialization.format 1
+                      serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      totalSize 4
+#### A masked pattern was here ####
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    name: default.table1
+                TotalFiles: 1
+                GatherStats: true
+                MultiFileSpray: false
+      Path -> Alias:
+#### A masked pattern was here ####
+      Path -> Partition:
+#### A masked pattern was here ####
+          Partition
+            base file name: Values__Tmp__Table__3
+            input format: org.apache.hadoop.mapred.TextInputFormat
+            output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+            properties:
+              bucket_count -1
+              column.name.delimiter ,
+              columns tmp_values_col1
+              columns.comments 
+              columns.types string
+#### A masked pattern was here ####
+              name default.values__tmp__table__3
+              serialization.ddl struct values__tmp__table__3 { string tmp_values_col1}
+              serialization.format 1
+              serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+          
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              properties:
+                bucket_count -1
+                column.name.delimiter ,
+                columns tmp_values_col1
+                columns.comments 
+                columns.types string
+#### A masked pattern was here ####
+                name default.values__tmp__table__3
+                serialization.ddl struct values__tmp__table__3 { string tmp_values_col1}
+                serialization.format 1
+                serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.values__tmp__table__3
+            name: default.values__tmp__table__3
+      Truncated Path -> Alias:
+#### A masked pattern was here ####
+
+  Stage: Stage-7
+    Conditional Operator
+
+  Stage: Stage-4
+    Move Operator
+      tables:
+          replace: false
+          source: ### BLOBSTORE_STAGING_PATH ###
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              properties:
+                bucket_count -1
+                column.name.delimiter ,
+                columns id
+                columns.comments 
+                columns.types int
+#### A masked pattern was here ####
+                location ### test.blobstore.path ###/table1
+                name default.table1
+                numFiles 2
+                serialization.ddl struct table1 { i32 id}
+                serialization.format 1
+                serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                totalSize 4
+#### A masked pattern was here ####
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.table1
+
+  Stage: Stage-2
+    Stats-Aggr Operator
+      Stats Aggregation Key Prefix: ### BLOBSTORE_STAGING_PATH ###
+
+  Stage: Stage-3
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            GatherStats: false
+            File Output Operator
+              compressed: false
+              GlobalTableId: 0
+              directory: ### BLOBSTORE_STAGING_PATH ###
+              NumFilesPerFileSink: 1
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  properties:
+                    bucket_count -1
+                    column.name.delimiter ,
+                    columns id
+                    columns.comments 
+                    columns.types int
+#### A masked pattern was here ####
+                    location ### test.blobstore.path ###/table1
+                    name default.table1
+                    numFiles 2
+                    serialization.ddl struct table1 { i32 id}
+                    serialization.format 1
+                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    totalSize 4
+#### A masked pattern was here ####
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  name: default.table1
+              TotalFiles: 1
+              GatherStats: false
+              MultiFileSpray: false
+      Path -> Alias:
+        ### BLOBSTORE_STAGING_PATH ###
+      Path -> Partition:
+        ### BLOBSTORE_STAGING_PATH ###
+          Partition
+            base file name: -ext-10002
+            input format: org.apache.hadoop.mapred.TextInputFormat
+            output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+            properties:
+              bucket_count -1
+              column.name.delimiter ,
+              columns id
+              columns.comments 
+              columns.types int
+#### A masked pattern was here ####
+              location ### test.blobstore.path ###/table1
+              name default.table1
+              numFiles 2
+              serialization.ddl struct table1 { i32 id}
+              serialization.format 1
+              serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              totalSize 4
+#### A masked pattern was here ####
+            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+          
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              properties:
+                bucket_count -1
+                column.name.delimiter ,
+                columns id
+                columns.comments 
+                columns.types int
+#### A masked pattern was here ####
+                location ### test.blobstore.path ###/table1
+                name default.table1
+                numFiles 2
+                serialization.ddl struct table1 { i32 id}
+                serialization.format 1
+                serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                totalSize 4
+#### A masked pattern was here ####
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.table1
+            name: default.table1
+      Truncated Path -> Alias:
+        ### BLOBSTORE_STAGING_PATH ###
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          replace: false
+          source: ### BLOBSTORE_STAGING_PATH ###
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              properties:
+                bucket_count -1
+                column.name.delimiter ,
+                columns id
+                columns.comments 
+                columns.types int
+#### A masked pattern was here ####
+                location ### test.blobstore.path ###/table1
+                name default.table1
+                numFiles 2
+                serialization.ddl struct table1 { i32 id}
+                serialization.format 1
+                serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                totalSize 4
+#### A masked pattern was here ####
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.table1
+
+  Stage: Stage-5
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            GatherStats: false
+            File Output Operator
+              compressed: false
+              GlobalTableId: 0
+              directory: ### BLOBSTORE_STAGING_PATH ###
+              NumFilesPerFileSink: 1
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  properties:
+                    bucket_count -1
+                    column.name.delimiter ,
+                    columns id
+                    columns.comments 
+                    columns.types int
+#### A masked pattern was here ####
+                    location ### test.blobstore.path ###/table1
+                    name default.table1
+                    numFiles 2
+                    serialization.ddl struct table1 { i32 id}
+                    serialization.format 1
+                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    totalSize 4
+#### A masked pattern was here ####
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  name: default.table1
+              TotalFiles: 1
+              GatherStats: false
+              MultiFileSpray: false
+      Path -> Alias:
+        ### BLOBSTORE_STAGING_PATH ###
+      Path -> Partition:
+        ### BLOBSTORE_STAGING_PATH ###
+          Partition
+            base file name: -ext-10002
+            input format: org.apache.hadoop.mapred.TextInputFormat
+            output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+            properties:
+              bucket_count -1
+              column.name.delimiter ,
+              columns id
+              columns.comments 
+              columns.types int
+#### A masked pattern was here ####
+              location ### test.blobstore.path ###/table1
+              name default.table1
+              numFiles 2
+              serialization.ddl struct table1 { i32 id}
+              serialization.format 1
+              serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              totalSize 4
+#### A masked pattern was here ####
+            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+          
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              properties:
+                bucket_count -1
+                column.name.delimiter ,
+                columns id
+                columns.comments 
+                columns.types int
+#### A masked pattern was here ####
+                location ### test.blobstore.path ###/table1
+                name default.table1
+                numFiles 2
+                serialization.ddl struct table1 { i32 id}
+                serialization.format 1
+                serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                totalSize 4
+#### A masked pattern was here ####
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.table1
+            name: default.table1
+      Truncated Path -> Alias:
+        ### BLOBSTORE_STAGING_PATH ###
+
+  Stage: Stage-6
+    Move Operator
+      files:
+          hdfs directory: true
+          source: ### BLOBSTORE_STAGING_PATH ###
+          destination: ### BLOBSTORE_STAGING_PATH ###
+
+PREHOOK: query: DROP TABLE table1
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@table1
+PREHOOK: Output: default@table1
+POSTHOOK: query: DROP TABLE table1
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@table1
+POSTHOOK: Output: default@table1

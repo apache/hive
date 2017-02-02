@@ -53,7 +53,11 @@ public class ReadEntity extends Entity implements Serializable {
   // important because in that case we shouldn't acquire a lock for it or authorize the read.
   // These will be handled by the output to the table instead.
   private boolean isUpdateOrDelete = false;
-  //https://issues.apache.org/jira/browse/HIVE-15048
+  /**
+   * https://issues.apache.org/jira/browse/HIVE-15048
+   * It is possible that the same table is used in top level query and a sub-query, e.g.
+   * select * from T where T.c in (select c from T inner join S on T.a=S.b)
+   */
   public transient boolean isFromTopLevelQuery = true;
 
 

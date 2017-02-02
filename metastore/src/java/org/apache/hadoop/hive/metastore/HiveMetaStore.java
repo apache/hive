@@ -18,24 +18,45 @@
 
 package org.apache.hadoop.hive.metastore;
 
-import org.apache.hadoop.hive.metastore.api.ClientCapabilities;
-import org.apache.hadoop.hive.metastore.api.ClientCapability;
-import org.apache.hadoop.hive.metastore.api.GetTableRequest;
-import org.apache.hadoop.hive.metastore.api.GetTableResult;
-import org.apache.hadoop.hive.metastore.api.GetTablesRequest;
-import org.apache.hadoop.hive.metastore.api.GetTablesResult;
-import org.apache.hadoop.hive.metastore.api.MetaException;
+import static org.apache.commons.lang.StringUtils.join;
+import static org.apache.hadoop.hive.metastore.MetaStoreUtils.DEFAULT_DATABASE_COMMENT;
+import static org.apache.hadoop.hive.metastore.MetaStoreUtils.DEFAULT_DATABASE_NAME;
+import static org.apache.hadoop.hive.metastore.MetaStoreUtils.validateName;
 
-import com.facebook.fb303.FacebookBase;
-import com.facebook.fb303.fb_status;
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Preconditions;
-import com.google.common.base.Splitter;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableListMultimap;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Multimaps;
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.security.PrivilegedExceptionAction;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.AbstractMap;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Formatter;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Random;
+import java.util.Set;
+import java.util.Timer;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
+import java.util.regex.Pattern;
+
+import javax.jdo.JDOException;
 
 import org.apache.commons.cli.OptionBuilder;
 import org.apache.hadoop.conf.Configuration;
@@ -44,9 +65,9 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.common.JvmPauseMonitor;
 import org.apache.hadoop.hive.common.LogUtils;
+import org.apache.hadoop.hive.common.LogUtils.LogInitializationException;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.common.auth.HiveAuthUtils;
-import org.apache.hadoop.hive.common.LogUtils.LogInitializationException;
 import org.apache.hadoop.hive.common.classification.InterfaceAudience;
 import org.apache.hadoop.hive.common.classification.InterfaceStability;
 import org.apache.hadoop.hive.common.cli.CommonCliOptions;
@@ -127,45 +148,21 @@ import org.apache.thrift.transport.TTransportFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.jdo.JDOException;
-import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.sql.SQLException;
-import java.security.PrivilegedExceptionAction;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.AbstractMap;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Formatter;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Random;
-import java.util.Set;
-import java.util.Timer;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.locks.Condition;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
-import java.util.regex.Pattern;
 
 import static org.apache.commons.lang.StringUtils.join;
 import static org.apache.hadoop.hive.metastore.MetaStoreUtils.DEFAULT_DATABASE_COMMENT;
 import static org.apache.hadoop.hive.metastore.MetaStoreUtils.DEFAULT_DATABASE_NAME;
 import static org.apache.hadoop.hive.metastore.MetaStoreUtils.validateName;
+import com.facebook.fb303.FacebookBase;
+import com.facebook.fb303.fb_status;
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Preconditions;
+import com.google.common.base.Splitter;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableListMultimap;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Multimaps;
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
 /**
  * TODO:pc remove application logic to a separate interface.
@@ -4803,7 +4800,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       List<ColumnStatisticsObj> statsObjs =  colStats.getStatsObj();
 
       startFunction("write_column_statistics", ":  db=" + dbName
-          + " table=" + tableName + " column=" + colName);
+          + " table=" + tableName);
       for (ColumnStatisticsObj statsObj:statsObjs) {
         colName = statsObj.getColName().toLowerCase();
         statsObj.setColName(colName);
@@ -4846,7 +4843,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
 
       startFunction("write_partition_column_statistics",
           ":  db=" + dbName + " table=" + tableName
-              + " part=" + partName + "column=" + colName);
+              + " part=" + partName);
       for (ColumnStatisticsObj statsObj:statsObjs) {
         colName = statsObj.getColName().toLowerCase();
         statsObj.setColName(colName);
@@ -6244,10 +6241,14 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       throws TException {
       return getTxnHandler().heartbeatTxnRange(rqst);
     }
-
+    @Deprecated
     @Override
     public void compact(CompactionRequest rqst) throws TException {
-      getTxnHandler().compact(rqst);
+      compact2(rqst);
+    }
+    @Override
+    public CompactionResponse compact2(CompactionRequest rqst) throws TException {
+      return getTxnHandler().compact(rqst);
     }
 
     @Override
@@ -6430,23 +6431,23 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     @Override
     public FireEventResponse fire_listener_event(FireEventRequest rqst) throws TException {
       switch (rqst.getData().getSetField()) {
-        case INSERT_DATA:
-          InsertEvent event = new InsertEvent(rqst.getDbName(), rqst.getTableName(),
-              rqst.getPartitionVals(), rqst.getData().getInsertData().getFilesAdded(),
-              rqst.isSuccessful(), this);
-          for (MetaStoreEventListener transactionalListener : transactionalListeners) {
-            transactionalListener.onInsert(event);
-          }
+      case INSERT_DATA:
+        InsertEvent event =
+            new InsertEvent(rqst.getDbName(), rqst.getTableName(), rqst.getPartitionVals(), rqst
+                .getData().getInsertData(), rqst.isSuccessful(), this);
+        for (MetaStoreEventListener transactionalListener : transactionalListeners) {
+          transactionalListener.onInsert(event);
+        }
 
-          for (MetaStoreEventListener listener : listeners) {
-            listener.onInsert(event);
-          }
+        for (MetaStoreEventListener listener : listeners) {
+          listener.onInsert(event);
+        }
 
-          return new FireEventResponse();
+        return new FireEventResponse();
 
-        default:
-          throw new TException("Event type " + rqst.getData().getSetField().toString() +
-              " not currently supported.");
+      default:
+        throw new TException("Event type " + rqst.getData().getSetField().toString()
+            + " not currently supported.");
       }
 
     }
@@ -7155,7 +7156,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       // Server will create new threads up to max as necessary. After an idle
       // period, it will destroy threads to keep the number of threads in the
       // pool to min.
-      long maxMessageSize = conf.getIntVar(HiveConf.ConfVars.METASTORESERVERMAXMESSAGESIZE);
+      long maxMessageSize = conf.getLongVar(HiveConf.ConfVars.METASTORESERVERMAXMESSAGESIZE);
       int minWorkerThreads = conf.getIntVar(HiveConf.ConfVars.METASTORESERVERMINTHREADS);
       int maxWorkerThreads = conf.getIntVar(HiveConf.ConfVars.METASTORESERVERMAXTHREADS);
       boolean tcpKeepAlive = conf.getBoolVar(HiveConf.ConfVars.METASTORE_TCP_KEEP_ALIVE);
@@ -7393,6 +7394,8 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         } finally {
           startLock.unlock();
         }
+
+        ReplChangeManager.scheduleCMClearer(conf);
       }
     };
     t.setDaemon(true);

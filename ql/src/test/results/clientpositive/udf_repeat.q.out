@@ -11,6 +11,8 @@ repeat(str, n) - repeat str n times
 Example:
   > SELECT repeat('123', 2) FROM src LIMIT 1;
   '123123'
+Function class:org.apache.hadoop.hive.ql.udf.UDFRepeat
+Function type:BUILTIN
 PREHOOK: query: EXPLAIN SELECT
   repeat("Facebook", 3),
   repeat("", 4),

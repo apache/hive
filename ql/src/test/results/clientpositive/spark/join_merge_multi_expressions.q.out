@@ -1,9 +1,7 @@
-PREHOOK: query: -- SORT_QUERY_RESULTS
-explain
+PREHOOK: query: explain
 select count(*) from srcpart a join srcpart b on a.key = b.key and a.hr = b.hr join srcpart c on a.hr = c.hr and a.key = c.key
 PREHOOK: type: QUERY
-POSTHOOK: query: -- SORT_QUERY_RESULTS
-explain
+POSTHOOK: query: explain
 select count(*) from srcpart a join srcpart b on a.key = b.key and a.hr = b.hr join srcpart c on a.hr = c.hr and a.key = c.key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:

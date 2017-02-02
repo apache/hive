@@ -1,10 +1,6 @@
-PREHOOK: query: -- Although the user has specified a bucketed map-join, the number of buckets in the table
--- do not match the number of files
-drop table table1
+PREHOOK: query: drop table table1
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: -- Although the user has specified a bucketed map-join, the number of buckets in the table
--- do not match the number of files
-drop table table1
+POSTHOOK: query: drop table table1
 POSTHOOK: type: DROPTABLE
 PREHOOK: query: drop table table2
 PREHOOK: type: DROPTABLE

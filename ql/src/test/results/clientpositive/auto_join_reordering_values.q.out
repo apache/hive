@@ -1,12 +1,8 @@
-PREHOOK: query: -- HIVE-5056 RS has expression list for values, but it's ignored in MapJoinProcessor
-
-create table testsrc ( `key` int,`val` string)
+PREHOOK: query: create table testsrc ( `key` int,`val` string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@testsrc
-POSTHOOK: query: -- HIVE-5056 RS has expression list for values, but it's ignored in MapJoinProcessor
-
-create table testsrc ( `key` int,`val` string)
+POSTHOOK: query: create table testsrc ( `key` int,`val` string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@testsrc
@@ -147,6 +143,7 @@ STAGE PLANS:
             properties:
               COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
               bucket_count -1
+              column.name.delimiter ,
               columns dealid,date,time,cityid,userid
               columns.comments 
               columns.types int:string:string:int:int
@@ -167,6 +164,7 @@ STAGE PLANS:
               properties:
                 COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                 bucket_count -1
+                column.name.delimiter ,
                 columns dealid,date,time,cityid,userid
                 columns.comments 
                 columns.types int:string:string:int:int
@@ -204,6 +202,7 @@ STAGE PLANS:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                 properties:
+                  column.name.delimiter ,
                   columns _col0,_col2,_col3,_col4
                   columns.types int,int,int,string
                   escape.delim \
@@ -256,6 +255,7 @@ STAGE PLANS:
             input format: org.apache.hadoop.mapred.SequenceFileInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
             properties:
+              column.name.delimiter ,
               columns _col0,_col2,_col3,_col4
               columns.types int,int,int,string
               escape.delim \
@@ -265,6 +265,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.SequenceFileInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
               properties:
+                column.name.delimiter ,
                 columns _col0,_col2,_col3,_col4
                 columns.types int,int,int,string
                 escape.delim \
@@ -278,6 +279,7 @@ STAGE PLANS:
             properties:
               COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
               bucket_count -1
+              column.name.delimiter ,
               columns dealid,date,time,cityid,userid
               columns.comments 
               columns.types int:string:string:int:int
@@ -298,6 +300,7 @@ STAGE PLANS:
               properties:
                 COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                 bucket_count -1
+                column.name.delimiter ,
                 columns dealid,date,time,cityid,userid
                 columns.comments 
                 columns.types int:string:string:int:int
@@ -336,6 +339,7 @@ STAGE PLANS:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                 properties:
+                  column.name.delimiter ,
                   columns _col2,_col3,_col4,_col5
                   columns.types int,int,string,int
                   escape.delim \
@@ -388,6 +392,7 @@ STAGE PLANS:
             input format: org.apache.hadoop.mapred.SequenceFileInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
             properties:
+              column.name.delimiter ,
               columns _col2,_col3,_col4,_col5
               columns.types int,int,string,int
               escape.delim \
@@ -397,6 +402,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.SequenceFileInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
               properties:
+                column.name.delimiter ,
                 columns _col2,_col3,_col4,_col5
                 columns.types int,int,string,int
                 escape.delim \
@@ -410,6 +416,7 @@ STAGE PLANS:
             properties:
               COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
               bucket_count -1
+              column.name.delimiter ,
               columns dealid,date,time,cityid,userid
               columns.comments 
               columns.types int:string:string:int:int
@@ -430,6 +437,7 @@ STAGE PLANS:
               properties:
                 COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                 bucket_count -1
+                column.name.delimiter ,
                 columns dealid,date,time,cityid,userid
                 columns.comments 
                 columns.types int:string:string:int:int
@@ -468,6 +476,7 @@ STAGE PLANS:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                 properties:
+                  column.name.delimiter ,
                   columns _col3,_col4,_col5
                   columns.types int,string,int
                   escape.delim \
@@ -520,6 +529,7 @@ STAGE PLANS:
             input format: org.apache.hadoop.mapred.SequenceFileInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
             properties:
+              column.name.delimiter ,
               columns _col3,_col4,_col5
               columns.types int,string,int
               escape.delim \
@@ -529,6 +539,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.SequenceFileInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
               properties:
+                column.name.delimiter ,
                 columns _col3,_col4,_col5
                 columns.types int,string,int
                 escape.delim \
@@ -542,6 +553,7 @@ STAGE PLANS:
             properties:
               COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
               bucket_count -1
+              column.name.delimiter ,
               columns userid
               columns.comments 
               columns.types int
@@ -562,6 +574,7 @@ STAGE PLANS:
               properties:
                 COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                 bucket_count -1
+                column.name.delimiter ,
                 columns userid
                 columns.comments 
                 columns.types int

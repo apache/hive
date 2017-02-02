@@ -280,20 +280,10 @@ POSTHOOK: Input: default@vsmb_bucket_rc
 528534767	cvLH6Eat2yFsyy7p	528534767	cvLH6Eat2yFsyy7p
 528534767	cvLH6Eat2yFsyy7p	528534767	cvLH6Eat2yFsyy7p
 528534767	cvLH6Eat2yFsyy7p	528534767	cvLH6Eat2yFsyy7p
-PREHOOK: query: -- RC file does not yet provide the vectorized CommonRCFileformat out-of-the-box
--- explain
--- select /*+MAPJOIN(b)*/ * from vsmb_bucket_RC a join vsmb_bucket_2 b on a.key = b.key;
--- select /*+MAPJOIN(b)*/ * from vsmb_bucket_RC a join vsmb_bucket_2 b on a.key = b.key;
-
-explain
+PREHOOK: query: explain
 select /*+MAPJOIN(b)*/ * from vsmb_bucket_1 a join vsmb_bucket_TXT b on a.key = b.key
 PREHOOK: type: QUERY
-POSTHOOK: query: -- RC file does not yet provide the vectorized CommonRCFileformat out-of-the-box
--- explain
--- select /*+MAPJOIN(b)*/ * from vsmb_bucket_RC a join vsmb_bucket_2 b on a.key = b.key;
--- select /*+MAPJOIN(b)*/ * from vsmb_bucket_RC a join vsmb_bucket_2 b on a.key = b.key;
-
-explain
+POSTHOOK: query: explain
 select /*+MAPJOIN(b)*/ * from vsmb_bucket_1 a join vsmb_bucket_TXT b on a.key = b.key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:

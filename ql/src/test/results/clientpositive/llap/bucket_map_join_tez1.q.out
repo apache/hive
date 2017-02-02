@@ -210,7 +210,7 @@ STAGE PLANS:
 #### A masked pattern was here ####
       Edges:
         Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 4 (BROADCAST_EDGE)
-        Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
+        Reducer 3 <- Reducer 2 (CUSTOM_SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -347,7 +347,7 @@ STAGE PLANS:
 #### A masked pattern was here ####
       Edges:
         Map 2 <- Map 1 (CUSTOM_EDGE), Map 4 (CUSTOM_EDGE)
-        Reducer 3 <- Map 2 (SIMPLE_EDGE)
+        Reducer 3 <- Map 2 (CUSTOM_SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -499,7 +499,7 @@ STAGE PLANS:
 #### A masked pattern was here ####
       Edges:
         Map 3 <- Map 1 (CUSTOM_EDGE), Map 2 (CUSTOM_EDGE)
-        Reducer 4 <- Map 3 (SIMPLE_EDGE)
+        Reducer 4 <- Map 3 (CUSTOM_SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -627,16 +627,12 @@ POSTHOOK: Input: default@tab_part
 POSTHOOK: Input: default@tab_part@ds=2008-04-08
 #### A masked pattern was here ####
 1166
-PREHOOK: query: -- one side is really bucketed. srcbucket_mapjoin is not really a bucketed table.
--- In this case the sub-query is chosen as the big table.
-explain
+PREHOOK: query: explain
 select a.k1, a.v1, b.value
 from (select sum(substr(srcbucket_mapjoin.value,5)) as v1, key as k1 from srcbucket_mapjoin GROUP BY srcbucket_mapjoin.key) a
 join tab b on a.k1 = b.key
 PREHOOK: type: QUERY
-POSTHOOK: query: -- one side is really bucketed. srcbucket_mapjoin is not really a bucketed table.
--- In this case the sub-query is chosen as the big table.
-explain
+POSTHOOK: query: explain
 select a.k1, a.v1, b.value
 from (select sum(substr(srcbucket_mapjoin.value,5)) as v1, key as k1 from srcbucket_mapjoin GROUP BY srcbucket_mapjoin.key) a
 join tab b on a.k1 = b.key
@@ -1028,13 +1024,11 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: -- multi-way join
-explain
+PREHOOK: query: explain
 select a.key, a.value, b.value
 from tab_part a join tab b on a.key = b.key join tab c on a.key = c.key
 PREHOOK: type: QUERY
-POSTHOOK: query: -- multi-way join
-explain
+POSTHOOK: query: explain
 select a.key, a.value, b.value
 from tab_part a join tab b on a.key = b.key join tab c on a.key = c.key
 POSTHOOK: type: QUERY
@@ -1245,14 +1239,12 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: -- in this case sub-query is the small table
-explain
+PREHOOK: query: explain
 select a.key, a.value, b.value
 from (select key, sum(substr(srcbucket_mapjoin.value,5)) as value from srcbucket_mapjoin GROUP BY srcbucket_mapjoin.key) a
 join tab_part b on a.key = b.key
 PREHOOK: type: QUERY
-POSTHOOK: query: -- in this case sub-query is the small table
-explain
+POSTHOOK: query: explain
 select a.key, a.value, b.value
 from (select key, sum(substr(srcbucket_mapjoin.value,5)) as value from srcbucket_mapjoin GROUP BY srcbucket_mapjoin.key) a
 join tab_part b on a.key = b.key
@@ -1453,13 +1445,11 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: -- join on non-bucketed column results in broadcast join.
-explain
+PREHOOK: query: explain
 select a.key, a.value, b.value
 from tab a join tab_part b on a.value = b.value
 PREHOOK: type: QUERY
-POSTHOOK: query: -- join on non-bucketed column results in broadcast join.
-explain
+POSTHOOK: query: explain
 select a.key, a.value, b.value
 from tab a join tab_part b on a.value = b.value
 POSTHOOK: type: QUERY
@@ -1873,7 +1863,7 @@ STAGE PLANS:
 #### A masked pattern was here ####
       Edges:
         Map 1 <- Map 3 (CUSTOM_EDGE)
-        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -1992,7 +1982,7 @@ STAGE PLANS:
 #### A masked pattern was here ####
       Edges:
         Map 1 <- Map 3 (CUSTOM_EDGE)
-        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 

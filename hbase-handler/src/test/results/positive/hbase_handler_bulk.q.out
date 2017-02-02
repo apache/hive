@@ -1,52 +1,34 @@
-PREHOOK: query: -- -*- mode:sql -*-
-
-drop table if exists hb_target
+PREHOOK: query: drop table if exists hb_target
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: -- -*- mode:sql -*-
-
-drop table if exists hb_target
+POSTHOOK: query: drop table if exists hb_target
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: -- this is the target HBase table
-create table hb_target(key int, val string)
+PREHOOK: query: create table hb_target(key int, val string)
 stored by 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
 with serdeproperties ('hbase.columns.mapping' = ':key,cf:val')
 tblproperties ('hbase.table.name' = 'positive_hbase_handler_bulk')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@hb_target
-POSTHOOK: query: -- this is the target HBase table
-create table hb_target(key int, val string)
+POSTHOOK: query: create table hb_target(key int, val string)
 stored by 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
 with serdeproperties ('hbase.columns.mapping' = ':key,cf:val')
 tblproperties ('hbase.table.name' = 'positive_hbase_handler_bulk')
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@hb_target
-#### A masked pattern was here ####
-insert overwrite table hb_target select distinct key, value from src cluster by key
+PREHOOK: query: insert overwrite table hb_target select distinct key, value from src cluster by key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Output: default@hb_target
-#### A masked pattern was here ####
-insert overwrite table hb_target select distinct key, value from src cluster by key
+POSTHOOK: query: insert overwrite table hb_target select distinct key, value from src cluster by key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@hb_target
-PREHOOK: query: -- To get the files out to your local filesystem for loading into
-#### A masked pattern was here ####
--- semicolon-terminate the line below before running this test:
-#### A masked pattern was here ####
-
-drop table hb_target
+PREHOOK: query: drop table hb_target
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@hb_target
 PREHOOK: Output: default@hb_target
-POSTHOOK: query: -- To get the files out to your local filesystem for loading into
-#### A masked pattern was here ####
--- semicolon-terminate the line below before running this test:
-#### A masked pattern was here ####
-
-drop table hb_target
+POSTHOOK: query: drop table hb_target
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@hb_target
 POSTHOOK: Output: default@hb_target

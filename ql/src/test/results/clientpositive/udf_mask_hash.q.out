@@ -12,6 +12,8 @@ Examples:
    mask_hash(value)
  Arguments:
    value - value to mask. Supported types: STRING, VARCHAR, CHAR
+Function class:org.apache.hadoop.hive.ql.udf.generic.GenericUDFMaskHash
+Function type:BUILTIN
 PREHOOK: query: explain select mask_hash('TestString-123')
 PREHOOK: type: QUERY
 POSTHOOK: query: explain select mask_hash('TestString-123')

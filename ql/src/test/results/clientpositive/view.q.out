@@ -50,106 +50,106 @@ OVERWRITE INTO TABLE table2
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: db1@table2
-PREHOOK: query: -- relative reference, no alias
-CREATE VIEW v1 AS SELECT * FROM table1
+PREHOOK: query: CREATE VIEW v1 AS SELECT * FROM table1
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: db1@table1
 PREHOOK: Output: database:db1
 PREHOOK: Output: db1@v1
-POSTHOOK: query: -- relative reference, no alias
-CREATE VIEW v1 AS SELECT * FROM table1
+POSTHOOK: query: CREATE VIEW v1 AS SELECT * FROM table1
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: db1@table1
 POSTHOOK: Output: database:db1
 POSTHOOK: Output: db1@v1
-PREHOOK: query: -- relative reference, aliased
-CREATE VIEW v2 AS SELECT t1.* FROM table1 t1
+POSTHOOK: Lineage: v1.key SIMPLE [(table1)table1.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: v1.value SIMPLE [(table1)table1.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: CREATE VIEW v2 AS SELECT t1.* FROM table1 t1
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: db1@table1
 PREHOOK: Output: database:db1
 PREHOOK: Output: db1@v2
-POSTHOOK: query: -- relative reference, aliased
-CREATE VIEW v2 AS SELECT t1.* FROM table1 t1
+POSTHOOK: query: CREATE VIEW v2 AS SELECT t1.* FROM table1 t1
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: db1@table1
 POSTHOOK: Output: database:db1
 POSTHOOK: Output: db1@v2
-PREHOOK: query: -- relative reference, multiple tables
-CREATE VIEW v3 AS SELECT t1.*, t2.key k FROM table1 t1 JOIN table2 t2 ON t1.key = t2.key
+POSTHOOK: Lineage: v2.key SIMPLE [(table1)t1.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: v2.value SIMPLE [(table1)t1.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: CREATE VIEW v3 AS SELECT t1.*, t2.key k FROM table1 t1 JOIN table2 t2 ON t1.key = t2.key
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: db1@table1
 PREHOOK: Input: db1@table2
 PREHOOK: Output: database:db1
 PREHOOK: Output: db1@v3
-POSTHOOK: query: -- relative reference, multiple tables
-CREATE VIEW v3 AS SELECT t1.*, t2.key k FROM table1 t1 JOIN table2 t2 ON t1.key = t2.key
+POSTHOOK: query: CREATE VIEW v3 AS SELECT t1.*, t2.key k FROM table1 t1 JOIN table2 t2 ON t1.key = t2.key
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: db1@table1
 POSTHOOK: Input: db1@table2
 POSTHOOK: Output: database:db1
 POSTHOOK: Output: db1@v3
-PREHOOK: query: -- absolute reference, no alias
-CREATE VIEW v4 AS SELECT * FROM db1.table1
+POSTHOOK: Lineage: v3.k SIMPLE [(table2)t2.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: v3.key SIMPLE [(table1)t1.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: v3.value SIMPLE [(table1)t1.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: CREATE VIEW v4 AS SELECT * FROM db1.table1
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: db1@table1
 PREHOOK: Output: database:db1
 PREHOOK: Output: db1@v4
-POSTHOOK: query: -- absolute reference, no alias
-CREATE VIEW v4 AS SELECT * FROM db1.table1
+POSTHOOK: query: CREATE VIEW v4 AS SELECT * FROM db1.table1
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: db1@table1
 POSTHOOK: Output: database:db1
 POSTHOOK: Output: db1@v4
-PREHOOK: query: -- absolute reference, aliased
-CREATE VIEW v5 AS SELECT t1.* FROM db1.table1 t1
+POSTHOOK: Lineage: v4.key SIMPLE [(table1)table1.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: v4.value SIMPLE [(table1)table1.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: CREATE VIEW v5 AS SELECT t1.* FROM db1.table1 t1
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: db1@table1
 PREHOOK: Output: database:db1
 PREHOOK: Output: db1@v5
-POSTHOOK: query: -- absolute reference, aliased
-CREATE VIEW v5 AS SELECT t1.* FROM db1.table1 t1
+POSTHOOK: query: CREATE VIEW v5 AS SELECT t1.* FROM db1.table1 t1
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: db1@table1
 POSTHOOK: Output: database:db1
 POSTHOOK: Output: db1@v5
-PREHOOK: query: -- absolute reference, multiple tables
-CREATE VIEW v6 AS SELECT t1.*, t2.key k FROM db1.table1 t1 JOIN db1.table2 t2 ON t1.key = t2.key
+POSTHOOK: Lineage: v5.key SIMPLE [(table1)t1.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: v5.value SIMPLE [(table1)t1.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: CREATE VIEW v6 AS SELECT t1.*, t2.key k FROM db1.table1 t1 JOIN db1.table2 t2 ON t1.key = t2.key
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: db1@table1
 PREHOOK: Input: db1@table2
 PREHOOK: Output: database:db1
 PREHOOK: Output: db1@v6
-POSTHOOK: query: -- absolute reference, multiple tables
-CREATE VIEW v6 AS SELECT t1.*, t2.key k FROM db1.table1 t1 JOIN db1.table2 t2 ON t1.key = t2.key
+POSTHOOK: query: CREATE VIEW v6 AS SELECT t1.*, t2.key k FROM db1.table1 t1 JOIN db1.table2 t2 ON t1.key = t2.key
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: db1@table1
 POSTHOOK: Input: db1@table2
 POSTHOOK: Output: database:db1
 POSTHOOK: Output: db1@v6
-PREHOOK: query: -- relative reference, explicit column
-CREATE VIEW v7 AS SELECT key from table1
+POSTHOOK: Lineage: v6.k SIMPLE [(table2)t2.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: v6.key SIMPLE [(table1)t1.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: v6.value SIMPLE [(table1)t1.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: CREATE VIEW v7 AS SELECT key from table1
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: db1@table1
 PREHOOK: Output: database:db1
 PREHOOK: Output: db1@v7
-POSTHOOK: query: -- relative reference, explicit column
-CREATE VIEW v7 AS SELECT key from table1
+POSTHOOK: query: CREATE VIEW v7 AS SELECT key from table1
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: db1@table1
 POSTHOOK: Output: database:db1
 POSTHOOK: Output: db1@v7
-PREHOOK: query: -- absolute reference, explicit column
-CREATE VIEW v8 AS SELECT key from db1.table1
+POSTHOOK: Lineage: v7.key SIMPLE [(table1)table1.FieldSchema(name:key, type:string, comment:null), ]
+PREHOOK: query: CREATE VIEW v8 AS SELECT key from db1.table1
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: db1@table1
 PREHOOK: Output: database:db1
 PREHOOK: Output: db1@v8
-POSTHOOK: query: -- absolute reference, explicit column
-CREATE VIEW v8 AS SELECT key from db1.table1
+POSTHOOK: query: CREATE VIEW v8 AS SELECT key from db1.table1
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: db1@table1
 POSTHOOK: Output: database:db1
 POSTHOOK: Output: db1@v8
+POSTHOOK: Lineage: v8.key SIMPLE [(table1)table1.FieldSchema(name:key, type:string, comment:null), ]
 PREHOOK: query: CREATE DATABASE db2
 PREHOOK: type: CREATEDATABASE
 PREHOOK: Output: database:db2

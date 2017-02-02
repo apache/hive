@@ -95,7 +95,10 @@ STAGE PLANS:
   Stage: Stage-1
     Spark
       Edges:
-        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 4), Map 3 (PARTITION-LEVEL SORT, 4)
+        Reducer 2 <- Map 1 (PARTITION-LEVEL SORT, 4), Reducer 5 (PARTITION-LEVEL SORT, 4)
+        Reducer 4 <- Map 3 (PARTITION-LEVEL SORT, 4), Reducer 7 (PARTITION-LEVEL SORT, 4)
+        Reducer 5 <- Reducer 4 (GROUP, 4)
+        Reducer 7 <- Map 6 (GROUP, 4)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -104,7 +107,7 @@ STAGE PLANS:
                   alias: li
                   Statistics: Num rows: 100 Data size: 11999 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((l_linenumber = 1) and l_orderkey is not null) (type: boolean)
+                    predicate: (l_linenumber = 1) (type: boolean)
                     Statistics: Num rows: 50 Data size: 5999 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: l_orderkey (type: int), l_partkey (type: int), l_suppkey (type: int)
@@ -122,27 +125,42 @@ STAGE PLANS:
                   alias: lineitem
                   Statistics: Num rows: 100 Data size: 11999 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((l_shipmode = 'AIR') and (l_linenumber = 1) and l_orderkey is not null) (type: boolean)
-                    Statistics: Num rows: 25 Data size: 2999 Basic stats: COMPLETE Column stats: NONE
+                    predicate: (l_shipmode = 'AIR') (type: boolean)
+                    Statistics: Num rows: 50 Data size: 5999 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
-                      expressions: l_orderkey (type: int), 1 (type: int)
+                      expressions: l_orderkey (type: int), l_linenumber (type: int)
                       outputColumnNames: _col0, _col1
-                      Statistics: Num rows: 25 Data size: 2999 Basic stats: COMPLETE Column stats: NONE
-                      Group By Operator
-                        keys: _col0 (type: int), _col1 (type: int)
-                        mode: hash
-                        outputColumnNames: _col0, _col1
-                        Statistics: Num rows: 25 Data size: 2999 Basic stats: COMPLETE Column stats: NONE
-                        Reduce Output Operator
-                          key expressions: _col0 (type: int), _col1 (type: int)
-                          sort order: ++
-                          Map-reduce partition columns: _col0 (type: int), _col1 (type: int)
-                          Statistics: Num rows: 25 Data size: 2999 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 50 Data size: 5999 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col1 (type: int)
+                        sort order: +
+                        Map-reduce partition columns: _col1 (type: int)
+                        Statistics: Num rows: 50 Data size: 5999 Basic stats: COMPLETE Column stats: NONE
+                        value expressions: _col0 (type: int)
+        Map 6 
+            Map Operator Tree:
+                TableScan
+                  alias: li
+                  Statistics: Num rows: 100 Data size: 11999 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: l_linenumber (type: int)
+                    outputColumnNames: l_linenumber
+                    Statistics: Num rows: 100 Data size: 11999 Basic stats: COMPLETE Column stats: NONE
+                    Group By Operator
+                      keys: l_linenumber (type: int)
+                      mode: hash
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 100 Data size: 11999 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: int)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: int)
+                        Statistics: Num rows: 100 Data size: 11999 Basic stats: COMPLETE Column stats: NONE
         Reducer 2 
             Reduce Operator Tree:
               Join Operator
                 condition map:
-                     Left Semi Join 0 to 1
+                     Inner Join 0 to 1
                 keys:
                   0 _col0 (type: int), 1 (type: int)
                   1 _col0 (type: int), _col1 (type: int)
@@ -159,6 +177,50 @@ STAGE PLANS:
                         input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+        Reducer 4 
+            Reduce Operator Tree:
+              Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 _col1 (type: int)
+                  1 _col0 (type: int)
+                outputColumnNames: _col0, _col3
+                Statistics: Num rows: 55 Data size: 6598 Basic stats: COMPLETE Column stats: NONE
+                Group By Operator
+                  keys: _col0 (type: int), _col3 (type: int)
+                  mode: hash
+                  outputColumnNames: _col0, _col1
+                  Statistics: Num rows: 55 Data size: 6598 Basic stats: COMPLETE Column stats: NONE
+                  Reduce Output Operator
+                    key expressions: _col0 (type: int), _col1 (type: int)
+                    sort order: ++
+                    Map-reduce partition columns: _col0 (type: int), _col1 (type: int)
+                    Statistics: Num rows: 55 Data size: 6598 Basic stats: COMPLETE Column stats: NONE
+        Reducer 5 
+            Reduce Operator Tree:
+              Group By Operator
+                keys: KEY._col0 (type: int), KEY._col1 (type: int)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 27 Data size: 3239 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col0 (type: int), _col1 (type: int)
+                  sort order: ++
+                  Map-reduce partition columns: _col0 (type: int), _col1 (type: int)
+                  Statistics: Num rows: 27 Data size: 3239 Basic stats: COMPLETE Column stats: NONE
+        Reducer 7 
+            Reduce Operator Tree:
+              Group By Operator
+                keys: KEY._col0 (type: int)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 50 Data size: 5999 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col0 (type: int)
+                  sort order: +
+                  Map-reduce partition columns: _col0 (type: int)
+                  Statistics: Num rows: 50 Data size: 5999 Basic stats: COMPLETE Column stats: NONE
 
   Stage: Stage-0
     Fetch Operator

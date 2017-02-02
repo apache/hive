@@ -1,6 +1,16 @@
-PREHOOK: query: explain select i_item_desc ,i_category ,i_class ,i_current_price ,i_item_id ,sum(ss_ext_sales_price) as itemrevenue ,sum(ss_ext_sales_price)*100/sum(sum(ss_ext_sales_price)) over (partition by i_class) as revenueratio from store_sales ,item ,date_dim where store_sales.ss_item_sk = item.i_item_sk and i_category in ('Jewelry', 'Sports', 'Books') and store_sales.ss_sold_date_sk = date_dim.d_date_sk and d_date between cast('2001-01-12' as date) and (cast('2001-02-11' as date)) group by i_item_id ,i_item_desc ,i_category ,i_class ,i_current_price order by i_category ,i_class ,i_item_id ,i_item_desc ,revenueratio
+PREHOOK: query: explain 
+select i_item_desc ,i_category ,i_class ,i_current_price ,i_item_id ,sum(ss_ext_sales_price) as itemrevenue ,sum(ss_ext_sales_price)*100/sum(sum(ss_ext_sales_price)) over (partition by i_class) as revenueratio from store_sales ,item ,date_dim 
+where store_sales.ss_item_sk = item.i_item_sk and i_category in ('Jewelry', 'Sports', 'Books') and store_sales.ss_sold_date_sk = date_dim.d_date_sk and 
+d_date between cast('2001-01-12' as date)
+                                and (cast('2001-01-12' as date) + 30 days)
+group by i_item_id ,i_item_desc ,i_category ,i_class ,i_current_price order by i_category ,i_class ,i_item_id ,i_item_desc ,revenueratio
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select i_item_desc ,i_category ,i_class ,i_current_price ,i_item_id ,sum(ss_ext_sales_price) as itemrevenue ,sum(ss_ext_sales_price)*100/sum(sum(ss_ext_sales_price)) over (partition by i_class) as revenueratio from store_sales ,item ,date_dim where store_sales.ss_item_sk = item.i_item_sk and i_category in ('Jewelry', 'Sports', 'Books') and store_sales.ss_sold_date_sk = date_dim.d_date_sk and d_date between cast('2001-01-12' as date) and (cast('2001-02-11' as date)) group by i_item_id ,i_item_desc ,i_category ,i_class ,i_current_price order by i_category ,i_class ,i_item_id ,i_item_desc ,revenueratio
+POSTHOOK: query: explain 
+select i_item_desc ,i_category ,i_class ,i_current_price ,i_item_id ,sum(ss_ext_sales_price) as itemrevenue ,sum(ss_ext_sales_price)*100/sum(sum(ss_ext_sales_price)) over (partition by i_class) as revenueratio from store_sales ,item ,date_dim 
+where store_sales.ss_item_sk = item.i_item_sk and i_category in ('Jewelry', 'Sports', 'Books') and store_sales.ss_sold_date_sk = date_dim.d_date_sk and 
+d_date between cast('2001-01-12' as date)
+                                and (cast('2001-01-12' as date) + 30 days)
+group by i_item_id ,i_item_desc ,i_category ,i_class ,i_current_price order by i_category ,i_class ,i_item_id ,i_item_desc ,revenueratio
 POSTHOOK: type: QUERY
 Plan optimized by CBO.
 
@@ -72,7 +82,7 @@ Stage-0
                                       Select Operator [SEL_5] (rows=8116 width=1119)
                                         Output:["_col0"]
                                         Filter Operator [FIL_34] (rows=8116 width=1119)
-                                          predicate:(d_date BETWEEN 2001-01-12 AND 2001-02-11 and d_date_sk is not null)
+                                          predicate:(d_date BETWEEN 2001-01-12 AND 2001-02-11 00:00:00.0 and d_date_sk is not null)
                                           TableScan [TS_3] (rows=73049 width=1119)
                                             default@date_dim,date_dim,Tbl:COMPLETE,Col:NONE,Output:["d_date_sk","d_date"]
 

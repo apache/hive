@@ -735,8 +735,9 @@ class Table
   TABLETYPE = 12
   PRIVILEGES = 13
   TEMPORARY = 14
-  MMNEXTWRITEID = 15
-  MMWATERMARKWRITEID = 16
+  REWRITEENABLED = 15
+  MMNEXTWRITEID = 16
+  MMWATERMARKWRITEID = 17
 
   FIELDS = {
     TABLENAME => {:type => ::Thrift::Types::STRING, :name => 'tableName'},
@@ -753,6 +754,7 @@ class Table
     TABLETYPE => {:type => ::Thrift::Types::STRING, :name => 'tableType'},
     PRIVILEGES => {:type => ::Thrift::Types::STRUCT, :name => 'privileges', :class => ::PrincipalPrivilegeSet, :optional => true},
     TEMPORARY => {:type => ::Thrift::Types::BOOL, :name => 'temporary', :default => false, :optional => true},
+    REWRITEENABLED => {:type => ::Thrift::Types::BOOL, :name => 'rewriteEnabled', :optional => true},
     MMNEXTWRITEID => {:type => ::Thrift::Types::I64, :name => 'mmNextWriteId', :optional => true},
     MMWATERMARKWRITEID => {:type => ::Thrift::Types::I64, :name => 'mmWatermarkWriteId', :optional => true}
   }
@@ -2286,6 +2288,29 @@ class CompactionRequest
   ::Thrift::Struct.generate_accessors self
 end
 
+class CompactionResponse
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  ID = 1
+  STATE = 2
+  ACCEPTED = 3
+
+  FIELDS = {
+    ID => {:type => ::Thrift::Types::I64, :name => 'id'},
+    STATE => {:type => ::Thrift::Types::STRING, :name => 'state'},
+    ACCEPTED => {:type => ::Thrift::Types::BOOL, :name => 'accepted'}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field id is unset!') unless @id
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field state is unset!') unless @state
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field accepted is unset!') if @accepted.nil?
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
 class ShowCompactRequest
   include ::Thrift::Struct, ::Thrift::Struct_Union
 
@@ -2315,6 +2340,7 @@ class ShowCompactResponseElement
   METAINFO = 10
   ENDTIME = 11
   HADOOPJOBID = 12
+  ID = 13
 
   FIELDS = {
     DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbname'},
@@ -2328,7 +2354,8 @@ class ShowCompactResponseElement
     HIGHTESTTXNID => {:type => ::Thrift::Types::I64, :name => 'hightestTxnId', :optional => true},
     METAINFO => {:type => ::Thrift::Types::STRING, :name => 'metaInfo', :optional => true},
     ENDTIME => {:type => ::Thrift::Types::I64, :name => 'endTime', :optional => true},
-    HADOOPJOBID => {:type => ::Thrift::Types::STRING, :name => 'hadoopJobId', :default => %q"None", :optional => true}
+    HADOOPJOBID => {:type => ::Thrift::Types::STRING, :name => 'hadoopJobId', :default => %q"None", :optional => true},
+    ID => {:type => ::Thrift::Types::I64, :name => 'id', :optional => true}
   }
 
   def struct_fields; FIELDS; end
@@ -2480,9 +2507,11 @@ end
 class InsertEventRequestData
   include ::Thrift::Struct, ::Thrift::Struct_Union
   FILESADDED = 1
+  FILESADDEDCHECKSUM = 2
 
   FIELDS = {
-    FILESADDED => {:type => ::Thrift::Types::LIST, :name => 'filesAdded', :element => {:type => ::Thrift::Types::STRING}}
+    FILESADDED => {:type => ::Thrift::Types::LIST, :name => 'filesAdded', :element => {:type => ::Thrift::Types::STRING}},
+    FILESADDEDCHECKSUM => {:type => ::Thrift::Types::LIST, :name => 'filesAddedChecksum', :element => {:type => ::Thrift::Types::STRING}, :optional => true}
   }
 
   def struct_fields; FIELDS; end

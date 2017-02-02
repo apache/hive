@@ -29,6 +29,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 import org.junit.Before;
 import org.mockito.Mock;
 
+import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
@@ -49,16 +50,31 @@ public class TestGroupFilter {
   }
 
   @Test
-  public void testFactory() {
+  public void testGetInstanceWhenGroupFilterIsEmpty() {
     conf.unset(HiveConf.ConfVars.HIVE_SERVER2_PLAIN_LDAP_GROUPFILTER.varname);
     assertNull(factory.getInstance(conf));
-
-    conf.setVar(HiveConf.ConfVars.HIVE_SERVER2_PLAIN_LDAP_GROUPFILTER, "G1");
-    assertNotNull(factory.getInstance(conf));
   }
 
   @Test
-  public void testApplyPositive() throws AuthenticationException, NamingException, IOException {
+  public void testGetInstanceOfGroupMembershipKeyFilter() {
+    conf.setVar(HiveConf.ConfVars.HIVE_SERVER2_PLAIN_LDAP_GROUPFILTER, "G1");
+    Filter instance = factory.getInstance(conf);
+    assertNotNull(instance);
+    assertThat(instance, instanceOf(GroupFilterFactory.GroupMembershipKeyFilter.class));
+  }
+
+  @Test
+  public void testGetInstanceOfUserMembershipKeyFilter() {
+    conf.setVar(HiveConf.ConfVars.HIVE_SERVER2_PLAIN_LDAP_GROUPFILTER, "G1");
+    conf.setVar(HiveConf.ConfVars.HIVE_SERVER2_PLAIN_LDAP_USERMEMBERSHIP_KEY, "memberof");
+    Filter instance = factory.getInstance(conf);
+    assertNotNull(instance);
+    assertThat(instance, instanceOf(GroupFilterFactory.UserMembershipKeyFilter.class));
+  }
+
+  @Test
+  public void testGroupMembershipKeyFilterApplyPositive()
+      throws AuthenticationException, NamingException, IOException {
     conf.setVar(HiveConf.ConfVars.HIVE_SERVER2_PLAIN_LDAP_GROUPFILTER, "HiveUsers");
 
     when(search.findUserDn(eq("user1")))
@@ -90,12 +106,56 @@ public class TestGroupFilter {
   }
 
   @Test(expected = AuthenticationException.class)
-  public void testApplyNegative() throws AuthenticationException, NamingException, IOException {
+  public void testGroupMembershipKeyFilterApplyNegative()
+      throws AuthenticationException, NamingException, IOException {
     conf.setVar(HiveConf.ConfVars.HIVE_SERVER2_PLAIN_LDAP_GROUPFILTER, "HiveUsers");
 
     when(search.findGroupsForUser(eq("user1"))).thenReturn(Arrays.asList("SuperUsers", "Office1", "G1", "G2"));
 
     Filter filter = factory.getInstance(conf);
     filter.apply(search, "user1");
+  }
+
+  @Test
+  public void testUserMembershipKeyFilterApplyPositiveWithUserId()
+      throws AuthenticationException, NamingException, IOException {
+    conf.setVar(HiveConf.ConfVars.HIVE_SERVER2_PLAIN_LDAP_USERMEMBERSHIP_KEY, "memberOf");
+    conf.setVar(HiveConf.ConfVars.HIVE_SERVER2_PLAIN_LDAP_GROUPFILTER, "Group1,Group2");
+
+    when(search.findGroupDn("Group1")).thenReturn("cn=Group1,dc=a,dc=b");
+    when(search.findGroupDn("Group2")).thenReturn("cn=Group2,dc=a,dc=b");
+
+    when(search.isUserMemberOfGroup("User1", "cn=Group2,dc=a,dc=b")).thenReturn(true);
+
+    Filter filter = factory.getInstance(conf);
+    filter.apply(search, "User1");
+  }
+
+  @Test
+  public void testUserMembershipKeyFilterApplyPositiveWithUserDn()
+      throws AuthenticationException, NamingException, IOException {
+    conf.setVar(HiveConf.ConfVars.HIVE_SERVER2_PLAIN_LDAP_USERMEMBERSHIP_KEY, "memberOf");
+    conf.setVar(HiveConf.ConfVars.HIVE_SERVER2_PLAIN_LDAP_GROUPFILTER, "Group1,Group2");
+
+    when(search.findGroupDn("Group1")).thenReturn("cn=Group1,dc=a,dc=b");
+    when(search.findGroupDn("Group2")).thenReturn("cn=Group2,dc=a,dc=b");
+
+    when(search.isUserMemberOfGroup("cn=User1,dc=a,dc=b", "cn=Group2,dc=a,dc=b")).thenReturn(true);
+
+    Filter filter = factory.getInstance(conf);
+    filter.apply(search, "cn=User1,dc=a,dc=b");
+  }
+
+  @Test(expected = AuthenticationException.class)
+  public void testUserMembershipKeyFilterApplyNegative()
+      throws AuthenticationException, NamingException, IOException {
+    conf.setVar(HiveConf.ConfVars.HIVE_SERVER2_PLAIN_LDAP_USERMEMBERSHIP_KEY, "memberOf");
+    conf.setVar(HiveConf.ConfVars.HIVE_SERVER2_PLAIN_LDAP_GROUPFILTER, "Group1,Group2");
+
+    when(search.findGroupDn("Group1")).thenReturn("cn=Group1,dc=a,dc=b");
+    when(search.findGroupDn("Group2")).thenReturn("cn=Group2,dc=a,dc=b");
+
+    Filter filter = factory.getInstance(conf);
+    filter.apply(search, "User1");
   }
 }

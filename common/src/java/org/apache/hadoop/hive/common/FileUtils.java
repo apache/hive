@@ -555,15 +555,11 @@ public final class FileUtils {
       if (!success) {
         return false;
       } else {
-        try {
-          //set on the entire subtree
-          if (inheritPerms) {
-            HdfsUtils.setFullFileStatus(conf,
-                new HdfsUtils.HadoopFileStatus(conf, fs, lastExistingParent), fs,
-                firstNonExistentParent, true);
-          }
-        } catch (Exception e) {
-          LOG.warn("Error setting permissions of " + firstNonExistentParent, e);
+        //set on the entire subtree
+        if (inheritPerms) {
+          HdfsUtils.setFullFileStatus(conf,
+                  new HdfsUtils.HadoopFileStatus(conf, fs, lastExistingParent), fs,
+                  firstNonExistentParent, true);
         }
         return true;
       }
@@ -606,11 +602,7 @@ public final class FileUtils {
 
     boolean inheritPerms = conf.getBoolVar(HiveConf.ConfVars.HIVE_WAREHOUSE_SUBDIR_INHERIT_PERMS);
     if (copied && inheritPerms) {
-      try {
-        HdfsUtils.setFullFileStatus(conf, new HdfsUtils.HadoopFileStatus(conf, dstFS, dst.getParent()), dstFS, dst, true);
-      } catch (Exception e) {
-        LOG.warn("Error setting permissions or group of " + dst, e);
-      }
+      HdfsUtils.setFullFileStatus(conf, new HdfsUtils.HadoopFileStatus(conf, dstFS, dst.getParent()), dstFS, dst, true);
     }
     return copied;
   }
@@ -665,12 +657,8 @@ public final class FileUtils {
     } else {
       //rename the directory
       if (fs.rename(sourcePath, destPath)) {
-        try {
-          HdfsUtils.setFullFileStatus(conf, new HdfsUtils.HadoopFileStatus(conf, fs, destPath.getParent()), fs, destPath, true);
-        } catch (Exception e) {
-          LOG.warn("Error setting permissions or group of " + destPath, e);
-        }
-
+        HdfsUtils.setFullFileStatus(conf, new HdfsUtils.HadoopFileStatus(conf, fs, destPath.getParent()), fs, destPath,
+                true);
         return true;
       }
 
@@ -922,13 +910,30 @@ public final class FileUtils {
    * @return
    */
   public static boolean isPathWithinSubtree(Path path, Path subtree) {
-    while(path!=null){
+    return isPathWithinSubtree(path, subtree, subtree.depth());
+  }
+
+  private static boolean isPathWithinSubtree(Path path, Path subtree, int subtreeDepth) {
+    while(path != null){
+      if (subtreeDepth > path.depth()) {
+        return false;
+      }
       if(subtree.equals(path)){
         return true;
       }
-      path=path.getParent();
+      path = path.getParent();
     }
     return false;
+  }
+
+  public static void populateParentPaths(Set<Path> parents, Path path) {
+    if (parents == null) {
+      return;
+    }
+    while(path != null) {
+      parents.add(path);
+      path = path.getParent();
+    }
   }
 
   /**

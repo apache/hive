@@ -43,6 +43,8 @@ a singleton set, NULL will be returned. Otherwise, it computes the following:
 where neither x nor y is null,
 COVAR_POP is the population covariance,
 and STDDEV_POP is the population standard deviation.
+Function class:org.apache.hadoop.hive.ql.udf.generic.GenericUDAFCorrelation
+Function type:BUILTIN
 PREHOOK: query: SELECT corr(b, c) FROM covar_tab WHERE a < 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@covar_tab

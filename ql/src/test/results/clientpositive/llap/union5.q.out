@@ -1,15 +1,9 @@
-PREHOOK: query: -- SORT_BEFORE_DIFF
--- union case: both subqueries are map-reduce jobs on same input, followed by reduce sink
-
-explain 
+PREHOOK: query: explain 
   select unionsrc.key, count(1) FROM (select 'tst1' as key, count(1) as value from src s1
                                     UNION  ALL  
                                       select 'tst2' as key, count(1) as value from src s2) unionsrc group by unionsrc.key
 PREHOOK: type: QUERY
-POSTHOOK: query: -- SORT_BEFORE_DIFF
--- union case: both subqueries are map-reduce jobs on same input, followed by reduce sink
-
-explain 
+POSTHOOK: query: explain 
   select unionsrc.key, count(1) FROM (select 'tst1' as key, count(1) as value from src s1
                                     UNION  ALL  
                                       select 'tst2' as key, count(1) as value from src s2) unionsrc group by unionsrc.key
@@ -23,9 +17,9 @@ STAGE PLANS:
     Tez
 #### A masked pattern was here ####
       Edges:
-        Reducer 2 <- Map 1 (SIMPLE_EDGE), Union 3 (CONTAINS)
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE), Union 3 (CONTAINS)
         Reducer 4 <- Union 3 (SIMPLE_EDGE)
-        Reducer 6 <- Map 5 (SIMPLE_EDGE), Union 3 (CONTAINS)
+        Reducer 6 <- Map 5 (CUSTOM_SIMPLE_EDGE), Union 3 (CONTAINS)
 #### A masked pattern was here ####
       Vertices:
         Map 1 

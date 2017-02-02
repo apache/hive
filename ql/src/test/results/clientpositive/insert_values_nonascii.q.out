@@ -8,11 +8,9 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@insert_values_nonascii
 PREHOOK: query: insert into insert_values_nonascii values("Абвгде Garçu 谢谢",  "Kôkaku ありがとう"), ("ございます", "kidôtai한국어")
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__1
 PREHOOK: Output: default@insert_values_nonascii
 POSTHOOK: query: insert into insert_values_nonascii values("Абвгде Garçu 谢谢",  "Kôkaku ありがとう"), ("ございます", "kidôtai한국어")
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__1
 POSTHOOK: Output: default@insert_values_nonascii
 POSTHOOK: Lineage: insert_values_nonascii.t1 EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 POSTHOOK: Lineage: insert_values_nonascii.t2 SIMPLE [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]

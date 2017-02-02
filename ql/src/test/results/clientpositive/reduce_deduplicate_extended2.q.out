@@ -1,12 +1,10 @@
-PREHOOK: query: -- JOIN + GBY
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT f.key, g.value
 FROM src f
 JOIN src g ON (f.key = g.key AND f.value = g.value)
 GROUP BY g.value, f.key
 PREHOOK: type: QUERY
-POSTHOOK: query: -- JOIN + GBY
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT f.key, g.value
 FROM src f
 JOIN src g ON (f.key = g.key AND f.value = g.value)
@@ -101,16 +99,14 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: -- JOIN + GBY + OBY
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT g.key, f.value
 FROM src f
 JOIN src g ON (f.key = g.key AND f.value = g.value)
 GROUP BY g.key, f.value
 ORDER BY f.value, g.key
 PREHOOK: type: QUERY
-POSTHOOK: query: -- JOIN + GBY + OBY
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT g.key, f.value
 FROM src f
 JOIN src g ON (f.key = g.key AND f.value = g.value)
@@ -210,8 +206,7 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: -- GBY + JOIN + GBY
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT f.key, g.value
 FROM src f
 JOIN (
@@ -221,8 +216,7 @@ JOIN (
 ON (f.key = g.key AND f.value = g.value)
 GROUP BY g.value, f.key
 PREHOOK: type: QUERY
-POSTHOOK: query: -- GBY + JOIN + GBY
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT f.key, g.value
 FROM src f
 JOIN (
@@ -345,8 +339,7 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: -- 2GBY + JOIN + GBY
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT f.key, g.value
 FROM (
   SELECT key, value
@@ -359,8 +352,7 @@ JOIN (
 ON (f.key = g.key AND f.value = g.value)
 GROUP BY g.value, f.key
 PREHOOK: type: QUERY
-POSTHOOK: query: -- 2GBY + JOIN + GBY
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT f.key, g.value
 FROM (
   SELECT key, value
@@ -511,8 +503,7 @@ STAGE PLANS:
         ListSink
 
 Warning: Shuffle Join JOIN[14][tables = [$hdt$_0, $hdt$_1]] in Stage 'Stage-2:MAPRED' is a cross product
-PREHOOK: query: -- 2GBY + JOIN + GBY + OBY
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT f.key, g.value
 FROM (
   SELECT value
@@ -525,8 +516,7 @@ JOIN (
 GROUP BY g.value, f.key
 ORDER BY f.key desc, g.value
 PREHOOK: type: QUERY
-POSTHOOK: query: -- 2GBY + JOIN + GBY + OBY
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT f.key, g.value
 FROM (
   SELECT value
@@ -676,8 +666,7 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: -- 2(2GBY + JOIN + GBY + OBY) + UNION
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT x.key, x.value
 FROM (
   SELECT f.key, g.value
@@ -706,8 +695,7 @@ UNION ALL
 ) x
 ORDER BY x.value desc, x.key desc
 PREHOOK: type: QUERY
-POSTHOOK: query: -- 2(2GBY + JOIN + GBY + OBY) + UNION
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT x.key, x.value
 FROM (
   SELECT f.key, g.value

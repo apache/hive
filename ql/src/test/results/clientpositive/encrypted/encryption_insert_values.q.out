@@ -1,10 +1,6 @@
-PREHOOK: query: -- SORT_QUERY_RESULTS;
-
-DROP TABLE IF EXISTS encrypted_table PURGE
+PREHOOK: query: DROP TABLE IF EXISTS encrypted_table PURGE
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: -- SORT_QUERY_RESULTS;
-
-DROP TABLE IF EXISTS encrypted_table PURGE
+POSTHOOK: query: DROP TABLE IF EXISTS encrypted_table PURGE
 POSTHOOK: type: DROPTABLE
 #### A masked pattern was here ####
 PREHOOK: type: CREATETABLE
@@ -20,11 +16,9 @@ Encryption key created: 'key_128'
 Encryption zone created: '/build/ql/test/data/warehouse/default/encrypted_table' using key: 'key_128'
 PREHOOK: query: INSERT INTO encrypted_table values(1,'foo'),(2,'bar')
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__1
 PREHOOK: Output: default@encrypted_table
 POSTHOOK: query: INSERT INTO encrypted_table values(1,'foo'),(2,'bar')
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__1
 POSTHOOK: Output: default@encrypted_table
 POSTHOOK: Lineage: encrypted_table.key EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 POSTHOOK: Lineage: encrypted_table.value SIMPLE [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
@@ -38,12 +32,10 @@ POSTHOOK: Input: default@encrypted_table
 #### A PARTIAL masked pattern was here #### data/warehouse/default/encrypted_table/.hive-staging
 1	foo
 2	bar
-PREHOOK: query: -- this checks that we've actually created temp table data under encrypted_table folder 
-describe formatted values__tmp__table__1
+PREHOOK: query: describe formatted values__tmp__table__1
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@values__tmp__table__1
-POSTHOOK: query: -- this checks that we've actually created temp table data under encrypted_table folder 
-describe formatted values__tmp__table__1
+POSTHOOK: query: describe formatted values__tmp__table__1
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@values__tmp__table__1
 # col_name            	data_type           	comment             

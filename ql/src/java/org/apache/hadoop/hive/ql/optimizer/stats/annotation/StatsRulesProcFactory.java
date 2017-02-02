@@ -51,41 +51,10 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.PrunedPartitionList;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
-import org.apache.hadoop.hive.ql.plan.AggregationDesc;
-import org.apache.hadoop.hive.ql.plan.ColStatistics;
-import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
-import org.apache.hadoop.hive.ql.plan.ExprNodeColumnListDesc;
-import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
-import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
+import org.apache.hadoop.hive.ql.plan.*;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc.ExprNodeDescEqualityWrapper;
-import org.apache.hadoop.hive.ql.plan.ExprNodeDescUtils;
-import org.apache.hadoop.hive.ql.plan.ExprNodeDynamicListDesc;
-import org.apache.hadoop.hive.ql.plan.ExprNodeFieldDesc;
-import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
-import org.apache.hadoop.hive.ql.plan.GroupByDesc;
-import org.apache.hadoop.hive.ql.plan.JoinCondDesc;
-import org.apache.hadoop.hive.ql.plan.JoinDesc;
-import org.apache.hadoop.hive.ql.plan.MapJoinDesc;
-import org.apache.hadoop.hive.ql.plan.OperatorDesc;
-import org.apache.hadoop.hive.ql.plan.Statistics;
 import org.apache.hadoop.hive.ql.stats.StatsUtils;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBetween;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDFIn;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPAnd;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqual;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqualNS;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqualOrGreaterThan;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqualOrLessThan;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPGreaterThan;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPLessThan;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPNot;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPNotEqual;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPNotNull;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPNull;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPOr;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDFStruct;
+import org.apache.hadoop.hive.ql.udf.generic.*;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
@@ -494,6 +463,12 @@ public class StatsRulesProcFactory {
       final ExprNodeDesc leftExpression = fd.getChildren().get(2); // left expression
       final ExprNodeDesc rightExpression = fd.getChildren().get(3); // right expression
 
+      // Short circuit and return the current number of rows if this is a
+      // synthetic predicate with dynamic values
+      if (leftExpression instanceof ExprNodeDynamicValueDesc) {
+        return stats.getNumRows();
+      }
+
       // We transform the BETWEEN clause to AND clause (with NOT on top in invert is true).
       // This is more straightforward, as the evaluateExpression method will deal with
       // generating the final row count relying on the basic comparator evaluation methods
@@ -888,18 +863,29 @@ public class StatsRulesProcFactory {
         } else if (udf instanceof GenericUDFOPNotEqual) {
           return numRows;
         } else if (udf instanceof GenericUDFOPEqualOrGreaterThan
-            || udf instanceof GenericUDFOPEqualOrLessThan
-            || udf instanceof GenericUDFOPGreaterThan
-            || udf instanceof GenericUDFOPLessThan) {
+                || udf instanceof GenericUDFOPEqualOrLessThan
+                || udf instanceof GenericUDFOPGreaterThan
+                || udf instanceof GenericUDFOPLessThan) {
           return evaluateComparator(stats, genFunc);
         } else if (udf instanceof GenericUDFOPNotNull) {
-            return evaluateNotNullExpr(stats, genFunc);
+          return evaluateNotNullExpr(stats, genFunc);
         } else if (udf instanceof GenericUDFOPNull) {
           return evaluateColEqualsNullExpr(stats, genFunc);
         } else if (udf instanceof GenericUDFOPAnd || udf instanceof GenericUDFOPOr
-            || udf instanceof GenericUDFIn || udf instanceof GenericUDFBetween
-            || udf instanceof GenericUDFOPNot) {
+                || udf instanceof GenericUDFIn || udf instanceof GenericUDFBetween
+                || udf instanceof GenericUDFOPNot) {
           return evaluateExpression(stats, genFunc, aspCtx, neededCols, fop, evaluatedRowCount);
+        } else if (udf instanceof GenericUDFInBloomFilter) {
+          if (genFunc.getChildren().get(1) instanceof ExprNodeDynamicValueDesc) {
+            // Synthetic predicates from semijoin opt should not affect stats.
+            return numRows;
+          }
+        }
+      } else if (child instanceof ExprNodeConstantDesc) {
+        if (Boolean.FALSE.equals(((ExprNodeConstantDesc) child).getValue())) {
+          return 0;
+        } else {
+          return stats.getNumRows();
         }
       }
 

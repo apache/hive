@@ -55,14 +55,10 @@ POSTHOOK: Input: default@alltypesorc
 -1887561756	-8881.0
 -1887561756	-2281.0
 -1887561756	9531.0
-PREHOOK: query: -- HIVE-3562 Some limit can be pushed down to map stage - c/p parts from limit_pushdown
-
-explain
+PREHOOK: query: explain
 select ctinyint,cdouble,csmallint from alltypesorc where ctinyint is not null order by ctinyint,cdouble limit 20
 PREHOOK: type: QUERY
-POSTHOOK: query: -- HIVE-3562 Some limit can be pushed down to map stage - c/p parts from limit_pushdown
-
-explain
+POSTHOOK: query: explain
 select ctinyint,cdouble,csmallint from alltypesorc where ctinyint is not null order by ctinyint,cdouble limit 20
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -140,12 +136,10 @@ POSTHOOK: Input: default@alltypesorc
 -64	-2919.0	-2919
 -64	-1600.0	-1600
 -64	-200.0	-200
-PREHOOK: query: -- deduped RS
-explain
+PREHOOK: query: explain
 select ctinyint,avg(cdouble + 1) from alltypesorc group by ctinyint order by ctinyint limit 20
 PREHOOK: type: QUERY
-POSTHOOK: query: -- deduped RS
-explain
+POSTHOOK: query: explain
 select ctinyint,avg(cdouble + 1) from alltypesorc group by ctinyint order by ctinyint limit 20
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -229,12 +223,10 @@ NULL	9370.0945309795
 -48	1672.909090909091
 -47	-574.6428571428571
 -46	3033.55
-PREHOOK: query: -- distincts
-explain
+PREHOOK: query: explain
 select distinct(ctinyint) from alltypesorc limit 20
 PREHOOK: type: QUERY
-POSTHOOK: query: -- distincts
-explain
+POSTHOOK: query: explain
 select distinct(ctinyint) from alltypesorc limit 20
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -401,12 +393,10 @@ NULL	2932
 -48	29
 -47	22
 -46	24
-PREHOOK: query: -- limit zero
-explain
+PREHOOK: query: explain
 select ctinyint,cdouble from alltypesorc order by ctinyint limit 0
 PREHOOK: type: QUERY
-POSTHOOK: query: -- limit zero
-explain
+POSTHOOK: query: explain
 select ctinyint,cdouble from alltypesorc order by ctinyint limit 0
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -427,12 +417,10 @@ POSTHOOK: query: select ctinyint,cdouble from alltypesorc order by ctinyint limi
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
-PREHOOK: query: -- 2MR (applied to last RS)
-explain
+PREHOOK: query: explain
 select cdouble, sum(ctinyint) as sum from alltypesorc where ctinyint is not null group by cdouble order by sum, cdouble limit 20
 PREHOOK: type: QUERY
-POSTHOOK: query: -- 2MR (applied to last RS)
-explain
+POSTHOOK: query: explain
 select cdouble, sum(ctinyint) as sum from alltypesorc where ctinyint is not null group by cdouble order by sum, cdouble limit 20
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:

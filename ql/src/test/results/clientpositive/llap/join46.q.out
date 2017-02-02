@@ -1,0 +1,2260 @@
+PREHOOK: query: CREATE TABLE test1 (key INT, value INT, col_1 STRING)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test1
+POSTHOOK: query: CREATE TABLE test1 (key INT, value INT, col_1 STRING)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test1
+PREHOOK: query: INSERT INTO test1 VALUES (NULL, NULL, 'None'), (98, NULL, 'None'),
+    (99, 0, 'Alice'), (99, 2, 'Mat'), (100, 1, 'Bob'), (101, 2, 'Car')
+PREHOOK: type: QUERY
+PREHOOK: Output: default@test1
+POSTHOOK: query: INSERT INTO test1 VALUES (NULL, NULL, 'None'), (98, NULL, 'None'),
+    (99, 0, 'Alice'), (99, 2, 'Mat'), (100, 1, 'Bob'), (101, 2, 'Car')
+POSTHOOK: type: QUERY
+POSTHOOK: Output: default@test1
+POSTHOOK: Lineage: test1.col_1 SIMPLE [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
+POSTHOOK: Lineage: test1.key EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: test1.value EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+PREHOOK: query: CREATE TABLE test2 (key INT, value INT, col_2 STRING)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test2
+POSTHOOK: query: CREATE TABLE test2 (key INT, value INT, col_2 STRING)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test2
+PREHOOK: query: INSERT INTO test2 VALUES (102, 2, 'Del'), (103, 2, 'Ema'),
+    (104, 3, 'Fli'), (105, NULL, 'None')
+PREHOOK: type: QUERY
+PREHOOK: Output: default@test2
+POSTHOOK: query: INSERT INTO test2 VALUES (102, 2, 'Del'), (103, 2, 'Ema'),
+    (104, 3, 'Fli'), (105, NULL, 'None')
+POSTHOOK: type: QUERY
+POSTHOOK: Output: default@test2
+POSTHOOK: Lineage: test2.col_2 SIMPLE [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
+POSTHOOK: Lineage: test2.key EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: test2.value EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+PREHOOK: query: EXPLAIN
+SELECT *
+FROM test1 LEFT OUTER JOIN test2
+ON (test1.value=test2.value)
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+SELECT *
+FROM test1 LEFT OUTER JOIN test2
+ON (test1.value=test2.value)
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 3 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: test1
+                  Statistics: Num rows: 6 Data size: 56 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: key (type: int), value (type: int), col_1 (type: string)
+                    outputColumnNames: _col0, _col1, _col2
+                    Statistics: Num rows: 6 Data size: 56 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: _col1 (type: int)
+                      sort order: +
+                      Map-reduce partition columns: _col1 (type: int)
+                      Statistics: Num rows: 6 Data size: 56 Basic stats: COMPLETE Column stats: NONE
+                      value expressions: _col0 (type: int), _col2 (type: string)
+            Execution mode: llap
+            LLAP IO: no inputs
+        Map 3 
+            Map Operator Tree:
+                TableScan
+                  alias: test2
+                  Statistics: Num rows: 4 Data size: 38 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: key (type: int), value (type: int), col_2 (type: string)
+                    outputColumnNames: _col0, _col1, _col2
+                    Statistics: Num rows: 4 Data size: 38 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: _col1 (type: int)
+                      sort order: +
+                      Map-reduce partition columns: _col1 (type: int)
+                      Statistics: Num rows: 4 Data size: 38 Basic stats: COMPLETE Column stats: NONE
+                      value expressions: _col0 (type: int), _col2 (type: string)
+            Execution mode: llap
+            LLAP IO: no inputs
+        Reducer 2 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Left Outer Join0 to 1
+                keys:
+                  0 _col1 (type: int)
+                  1 _col1 (type: int)
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+                Statistics: Num rows: 6 Data size: 61 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 6 Data size: 61 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SELECT *
+FROM test1 LEFT OUTER JOIN test2
+ON (test1.value=test2.value)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test1
+PREHOOK: Input: default@test2
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT *
+FROM test1 LEFT OUTER JOIN test2
+ON (test1.value=test2.value)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test1
+POSTHOOK: Input: default@test2
+#### A masked pattern was here ####
+NULL	NULL	None	NULL	NULL	NULL
+98	NULL	None	NULL	NULL	NULL
+99	0	Alice	NULL	NULL	NULL
+100	1	Bob	NULL	NULL	NULL
+99	2	Mat	102	2	Del
+99	2	Mat	103	2	Ema
+101	2	Car	102	2	Del
+101	2	Car	103	2	Ema
+PREHOOK: query: EXPLAIN
+SELECT *
+FROM test1 LEFT OUTER JOIN test2
+ON (test1.value=test2.value
+  AND test1.key between 100 and 102
+  AND test2.key between 100 and 102)
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+SELECT *
+FROM test1 LEFT OUTER JOIN test2
+ON (test1.value=test2.value
+  AND test1.key between 100 and 102
+  AND test2.key between 100 and 102)
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 3 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: test1
+                  Statistics: Num rows: 6 Data size: 56 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: key (type: int), value (type: int), col_1 (type: string)
+                    outputColumnNames: _col0, _col1, _col2
+                    Statistics: Num rows: 6 Data size: 56 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: _col1 (type: int)
+                      sort order: +
+                      Map-reduce partition columns: _col1 (type: int)
+                      Statistics: Num rows: 6 Data size: 56 Basic stats: COMPLETE Column stats: NONE
+                      value expressions: _col0 (type: int), _col2 (type: string)
+            Execution mode: llap
+            LLAP IO: no inputs
+        Map 3 
+            Map Operator Tree:
+                TableScan
+                  alias: test2
+                  Statistics: Num rows: 4 Data size: 38 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: key BETWEEN 100 AND 102 (type: boolean)
+                    Statistics: Num rows: 1 Data size: 9 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: key (type: int), value (type: int), col_2 (type: string)
+                      outputColumnNames: _col0, _col1, _col2
+                      Statistics: Num rows: 1 Data size: 9 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col1 (type: int)
+                        sort order: +
+                        Map-reduce partition columns: _col1 (type: int)
+                        Statistics: Num rows: 1 Data size: 9 Basic stats: COMPLETE Column stats: NONE
+                        value expressions: _col0 (type: int), _col2 (type: string)
+            Execution mode: llap
+            LLAP IO: no inputs
+        Reducer 2 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Left Outer Join0 to 1
+                filter predicates:
+                  0 {VALUE._col0 BETWEEN 100 AND 102}
+                  1 
+                keys:
+                  0 _col1 (type: int)
+                  1 _col1 (type: int)
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+                Statistics: Num rows: 6 Data size: 61 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 6 Data size: 61 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SELECT *
+FROM test1 LEFT OUTER JOIN test2
+ON (test1.value=test2.value
+  AND test1.key between 100 and 102
+  AND test2.key between 100 and 102)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test1
+PREHOOK: Input: default@test2
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT *
+FROM test1 LEFT OUTER JOIN test2
+ON (test1.value=test2.value
+  AND test1.key between 100 and 102
+  AND test2.key between 100 and 102)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test1
+POSTHOOK: Input: default@test2
+#### A masked pattern was here ####
+NULL	NULL	None	NULL	NULL	NULL
+98	NULL	None	NULL	NULL	NULL
+99	0	Alice	NULL	NULL	NULL
+100	1	Bob	NULL	NULL	NULL
+99	2	Mat	NULL	NULL	NULL
+101	2	Car	102	2	Del
+Warning: Shuffle Join MERGEJOIN[11][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
+PREHOOK: query: EXPLAIN
+SELECT *
+FROM test1 LEFT OUTER JOIN test2
+ON (test1.key between 100 and 102
+  AND test2.key between 100 and 102)
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+SELECT *
+FROM test1 LEFT OUTER JOIN test2
+ON (test1.key between 100 and 102
+  AND test2.key between 100 and 102)
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE), Map 3 (CUSTOM_SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: test1
+                  Statistics: Num rows: 6 Data size: 56 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: key (type: int), value (type: int), col_1 (type: string)
+                    outputColumnNames: _col0, _col1, _col2
+                    Statistics: Num rows: 6 Data size: 56 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      sort order: 
+                      Statistics: Num rows: 6 Data size: 56 Basic stats: COMPLETE Column stats: NONE
+                      value expressions: _col0 (type: int), _col1 (type: int), _col2 (type: string)
+            Execution mode: llap
+            LLAP IO: no inputs
+        Map 3 
+            Map Operator Tree:
+                TableScan
+                  alias: test2
+                  Statistics: Num rows: 4 Data size: 38 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: key BETWEEN 100 AND 102 (type: boolean)
+                    Statistics: Num rows: 1 Data size: 9 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: key (type: int), value (type: int), col_2 (type: string)
+                      outputColumnNames: _col0, _col1, _col2
+                      Statistics: Num rows: 1 Data size: 9 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        sort order: 
+                        Statistics: Num rows: 1 Data size: 9 Basic stats: COMPLETE Column stats: NONE
+                        value expressions: _col0 (type: int), _col1 (type: int), _col2 (type: string)
+            Execution mode: llap
+            LLAP IO: no inputs
+        Reducer 2 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Left Outer Join0 to 1
+                filter predicates:
+                  0 {VALUE._col0 BETWEEN 100 AND 102}
+                  1 
+                keys:
+                  0 
+                  1 
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+                Statistics: Num rows: 6 Data size: 116 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 6 Data size: 116 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+Warning: Shuffle Join MERGEJOIN[11][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
+PREHOOK: query: SELECT *
+FROM test1 LEFT OUTER JOIN test2
+ON (test1.key between 100 and 102
+  AND test2.key between 100 and 102)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test1
+PREHOOK: Input: default@test2
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT *
+FROM test1 LEFT OUTER JOIN test2
+ON (test1.key between 100 and 102
+  AND test2.key between 100 and 102)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test1
+POSTHOOK: Input: default@test2
+#### A masked pattern was here ####
+NULL	NULL	None	NULL	NULL	NULL
+98	NULL	None	NULL	NULL	NULL
+99	0	Alice	NULL	NULL	NULL
+99	2	Mat	NULL	NULL	NULL
+100	1	Bob	102	2	Del
+101	2	Car	102	2	Del
+PREHOOK: query: EXPLAIN
+SELECT *
+FROM test1 RIGHT OUTER JOIN test2
+ON (test1.value=test2.value AND true)
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+SELECT *
+FROM test1 RIGHT OUTER JOIN test2
+ON (test1.value=test2.value AND true)
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 3 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: test1
+                  Statistics: Num rows: 6 Data size: 56 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: key (type: int), value (type: int), col_1 (type: string)
+                    outputColumnNames: _col0, _col1, _col2
+                    Statistics: Num rows: 6 Data size: 56 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: _col1 (type: int)
+                      sort order: +
+                      Map-reduce partition columns: _col1 (type: int)
+                      Statistics: Num rows: 6 Data size: 56 Basic stats: COMPLETE Column stats: NONE
+                      value expressions: _col0 (type: int), _col2 (type: string)
+            Execution mode: llap
+            LLAP IO: no inputs
+        Map 3 
+            Map Operator Tree:
+                TableScan
+                  alias: test2
+                  Statistics: Num rows: 4 Data size: 38 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: key (type: int), value (type: int), col_2 (type: string)
+                    outputColumnNames: _col0, _col1, _col2
+                    Statistics: Num rows: 4 Data size: 38 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: _col1 (type: int)
+                      sort order: +
+                      Map-reduce partition columns: _col1 (type: int)
+                      Statistics: Num rows: 4 Data size: 38 Basic stats: COMPLETE Column stats: NONE
+                      value expressions: _col0 (type: int), _col2 (type: string)
+            Execution mode: llap
+            LLAP IO: no inputs
+        Reducer 2 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Right Outer Join0 to 1
+                keys:
+                  0 _col1 (type: int)
+                  1 _col1 (type: int)
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+                Statistics: Num rows: 6 Data size: 61 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 6 Data size: 61 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SELECT *
+FROM test1 RIGHT OUTER JOIN test2
+ON (test1.value=test2.value AND true)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test1
+PREHOOK: Input: default@test2
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT *
+FROM test1 RIGHT OUTER JOIN test2
+ON (test1.value=test2.value AND true)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test1
+POSTHOOK: Input: default@test2
+#### A masked pattern was here ####
+NULL	NULL	NULL	105	NULL	None
+99	2	Mat	102	2	Del
+99	2	Mat	103	2	Ema
+101	2	Car	102	2	Del
+101	2	Car	103	2	Ema
+NULL	NULL	NULL	104	3	Fli
+Warning: Shuffle Join MERGEJOIN[9][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
+PREHOOK: query: EXPLAIN
+SELECT *
+FROM test1 LEFT OUTER JOIN test2
+ON (test1.key between 100 and 102)
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+SELECT *
+FROM test1 LEFT OUTER JOIN test2
+ON (test1.key between 100 and 102)
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE), Map 3 (CUSTOM_SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: test1
+                  Statistics: Num rows: 6 Data size: 56 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: key (type: int), value (type: int), col_1 (type: string)
+                    outputColumnNames: _col0, _col1, _col2
+                    Statistics: Num rows: 6 Data size: 56 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      sort order: 
+                      Statistics: Num rows: 6 Data size: 56 Basic stats: COMPLETE Column stats: NONE
+                      value expressions: _col0 (type: int), _col1 (type: int), _col2 (type: string)
+            Execution mode: llap
+            LLAP IO: no inputs
+        Map 3 
+            Map Operator Tree:
+                TableScan
+                  alias: test2
+                  Statistics: Num rows: 4 Data size: 38 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: key (type: int), value (type: int), col_2 (type: string)
+                    outputColumnNames: _col0, _col1, _col2
+                    Statistics: Num rows: 4 Data size: 38 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      sort order: 
+                      Statistics: Num rows: 4 Data size: 38 Basic stats: COMPLETE Column stats: NONE
+                      value expressions: _col0 (type: int), _col1 (type: int), _col2 (type: string)
+            Execution mode: llap
+            LLAP IO: no inputs
+        Reducer 2 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Left Outer Join0 to 1
+                filter predicates:
+                  0 {VALUE._col0 BETWEEN 100 AND 102}
+                  1 
+                keys:
+                  0 
+                  1 
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+                Statistics: Num rows: 24 Data size: 476 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 24 Data size: 476 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+Warning: Shuffle Join MERGEJOIN[9][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
+PREHOOK: query: SELECT *
+FROM test1 LEFT OUTER JOIN test2
+ON (test1.key between 100 and 102)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test1
+PREHOOK: Input: default@test2
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT *
+FROM test1 LEFT OUTER JOIN test2
+ON (test1.key between 100 and 102)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test1
+POSTHOOK: Input: default@test2
+#### A masked pattern was here ####
+NULL	NULL	None	NULL	NULL	NULL
+98	NULL	None	NULL	NULL	NULL
+99	0	Alice	NULL	NULL	NULL
+99	2	Mat	NULL	NULL	NULL
+100	1	Bob	102	2	Del
+100	1	Bob	103	2	Ema
+100	1	Bob	104	3	Fli
+100	1	Bob	105	NULL	None
+101	2	Car	102	2	Del
+101	2	Car	103	2	Ema
+101	2	Car	104	3	Fli
+101	2	Car	105	NULL	None
+Warning: Shuffle Join MERGEJOIN[9][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
+PREHOOK: query: EXPLAIN
+SELECT *
+FROM test1 LEFT OUTER JOIN test2
+ON (test1.value=test2.value
+  OR test1.key between 100 and 102
+  OR test2.key between 100 and 102)
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+SELECT *
+FROM test1 LEFT OUTER JOIN test2
+ON (test1.value=test2.value
+  OR test1.key between 100 and 102
+  OR test2.key between 100 and 102)
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE), Map 3 (CUSTOM_SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: test1
+                  Statistics: Num rows: 6 Data size: 56 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: key (type: int), value (type: int), col_1 (type: string)
+                    outputColumnNames: _col0, _col1, _col2
+                    Statistics: Num rows: 6 Data size: 56 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      sort order: 
+                      Statistics: Num rows: 6 Data size: 56 Basic stats: COMPLETE Column stats: NONE
+                      value expressions: _col0 (type: int), _col1 (type: int), _col2 (type: string)
+            Execution mode: llap
+            LLAP IO: no inputs
+        Map 3 
+            Map Operator Tree:
+                TableScan
+                  alias: test2
+                  Statistics: Num rows: 4 Data size: 38 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: key (type: int), value (type: int), col_2 (type: string)
+                    outputColumnNames: _col0, _col1, _col2
+                    Statistics: Num rows: 4 Data size: 38 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      sort order: 
+                      Statistics: Num rows: 4 Data size: 38 Basic stats: COMPLETE Column stats: NONE
+                      value expressions: _col0 (type: int), _col1 (type: int), _col2 (type: string)
+            Execution mode: llap
+            LLAP IO: no inputs
+        Reducer 2 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Left Outer Join0 to 1
+                keys:
+                  0 
+                  1 
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+                residual filter predicates: {((_col1 = _col4) or _col0 BETWEEN 100 AND 102 or _col3 BETWEEN 100 AND 102)}
+                Statistics: Num rows: 24 Data size: 476 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 24 Data size: 476 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+Warning: Shuffle Join MERGEJOIN[9][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
+PREHOOK: query: SELECT *
+FROM test1 LEFT OUTER JOIN test2
+ON (test1.value=test2.value
+  OR test1.key between 100 and 102
+  OR test2.key between 100 and 102)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test1
+PREHOOK: Input: default@test2
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT *
+FROM test1 LEFT OUTER JOIN test2
+ON (test1.value=test2.value
+  OR test1.key between 100 and 102
+  OR test2.key between 100 and 102)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test1
+POSTHOOK: Input: default@test2
+#### A masked pattern was here ####
+NULL	NULL	None	102	2	Del
+98	NULL	None	102	2	Del
+99	0	Alice	102	2	Del
+99	2	Mat	102	2	Del
+99	2	Mat	103	2	Ema
+100	1	Bob	102	2	Del
+100	1	Bob	103	2	Ema
+100	1	Bob	104	3	Fli
+100	1	Bob	105	NULL	None
+101	2	Car	102	2	Del
+101	2	Car	103	2	Ema
+101	2	Car	104	3	Fli
+101	2	Car	105	NULL	None
+Warning: Shuffle Join MERGEJOIN[9][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
+PREHOOK: query: EXPLAIN
+SELECT *
+FROM test1 LEFT OUTER JOIN test2
+ON (test1.value=test2.value
+  OR test1.key between 100 and 102)
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+SELECT *
+FROM test1 LEFT OUTER JOIN test2
+ON (test1.value=test2.value
+  OR test1.key between 100 and 102)
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE), Map 3 (CUSTOM_SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: test1
+                  Statistics: Num rows: 6 Data size: 56 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: key (type: int), value (type: int), col_1 (type: string)
+                    outputColumnNames: _col0, _col1, _col2
+                    Statistics: Num rows: 6 Data size: 56 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      sort order: 
+                      Statistics: Num rows: 6 Data size: 56 Basic stats: COMPLETE Column stats: NONE
+                      value expressions: _col0 (type: int), _col1 (type: int), _col2 (type: string)
+            Execution mode: llap
+            LLAP IO: no inputs
+        Map 3 
+            Map Operator Tree:
+                TableScan
+                  alias: test2
+                  Statistics: Num rows: 4 Data size: 38 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: key (type: int), value (type: int), col_2 (type: string)
+                    outputColumnNames: _col0, _col1, _col2
+                    Statistics: Num rows: 4 Data size: 38 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      sort order: 
+                      Statistics: Num rows: 4 Data size: 38 Basic stats: COMPLETE Column stats: NONE
+                      value expressions: _col0 (type: int), _col1 (type: int), _col2 (type: string)
+            Execution mode: llap
+            LLAP IO: no inputs
+        Reducer 2 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Left Outer Join0 to 1
+                keys:
+                  0 
+                  1 
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+                residual filter predicates: {((_col1 = _col4) or _col0 BETWEEN 100 AND 102)}
+                Statistics: Num rows: 24 Data size: 476 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 24 Data size: 476 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+Warning: Shuffle Join MERGEJOIN[9][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
+PREHOOK: query: SELECT *
+FROM test1 LEFT OUTER JOIN test2
+ON (test1.value=test2.value
+  OR test1.key between 100 and 102)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test1
+PREHOOK: Input: default@test2
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT *
+FROM test1 LEFT OUTER JOIN test2
+ON (test1.value=test2.value
+  OR test1.key between 100 and 102)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test1
+POSTHOOK: Input: default@test2
+#### A masked pattern was here ####
+NULL	NULL	None	NULL	NULL	NULL
+98	NULL	None	NULL	NULL	NULL
+99	0	Alice	NULL	NULL	NULL
+99	2	Mat	102	2	Del
+99	2	Mat	103	2	Ema
+100	1	Bob	102	2	Del
+100	1	Bob	103	2	Ema
+100	1	Bob	104	3	Fli
+100	1	Bob	105	NULL	None
+101	2	Car	102	2	Del
+101	2	Car	103	2	Ema
+101	2	Car	104	3	Fli
+101	2	Car	105	NULL	None
+Warning: Shuffle Join MERGEJOIN[9][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
+PREHOOK: query: EXPLAIN
+SELECT *
+FROM test1 LEFT OUTER JOIN test2
+ON (test1.value=test2.value
+  OR test2.key between 100 and 102)
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+SELECT *
+FROM test1 LEFT OUTER JOIN test2
+ON (test1.value=test2.value
+  OR test2.key between 100 and 102)
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE), Map 3 (CUSTOM_SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: test1
+                  Statistics: Num rows: 6 Data size: 56 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: key (type: int), value (type: int), col_1 (type: string)
+                    outputColumnNames: _col0, _col1, _col2
+                    Statistics: Num rows: 6 Data size: 56 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      sort order: 
+                      Statistics: Num rows: 6 Data size: 56 Basic stats: COMPLETE Column stats: NONE
+                      value expressions: _col0 (type: int), _col1 (type: int), _col2 (type: string)
+            Execution mode: llap
+            LLAP IO: no inputs
+        Map 3 
+            Map Operator Tree:
+                TableScan
+                  alias: test2
+                  Statistics: Num rows: 4 Data size: 38 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: key (type: int), value (type: int), col_2 (type: string)
+                    outputColumnNames: _col0, _col1, _col2
+                    Statistics: Num rows: 4 Data size: 38 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      sort order: 
+                      Statistics: Num rows: 4 Data size: 38 Basic stats: COMPLETE Column stats: NONE
+                      value expressions: _col0 (type: int), _col1 (type: int), _col2 (type: string)
+            Execution mode: llap
+            LLAP IO: no inputs
+        Reducer 2 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Left Outer Join0 to 1
+                keys:
+                  0 
+                  1 
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+                residual filter predicates: {((_col1 = _col4) or _col3 BETWEEN 100 AND 102)}
+                Statistics: Num rows: 24 Data size: 476 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 24 Data size: 476 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+Warning: Shuffle Join MERGEJOIN[9][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
+PREHOOK: query: SELECT *
+FROM test1 LEFT OUTER JOIN test2
+ON (test1.value=test2.value
+  OR test2.key between 100 and 102)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test1
+PREHOOK: Input: default@test2
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT *
+FROM test1 LEFT OUTER JOIN test2
+ON (test1.value=test2.value
+  OR test2.key between 100 and 102)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test1
+POSTHOOK: Input: default@test2
+#### A masked pattern was here ####
+NULL	NULL	None	102	2	Del
+98	NULL	None	102	2	Del
+99	0	Alice	102	2	Del
+99	2	Mat	102	2	Del
+99	2	Mat	103	2	Ema
+100	1	Bob	102	2	Del
+101	2	Car	102	2	Del
+101	2	Car	103	2	Ema
+PREHOOK: query: EXPLAIN
+SELECT *
+FROM test1 LEFT OUTER JOIN test2
+ON (test1.value=test2.value
+  AND (test1.key between 100 and 102
+    OR test2.key between 100 and 102))
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+SELECT *
+FROM test1 LEFT OUTER JOIN test2
+ON (test1.value=test2.value
+  AND (test1.key between 100 and 102
+    OR test2.key between 100 and 102))
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 3 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: test1
+                  Statistics: Num rows: 6 Data size: 56 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: key (type: int), value (type: int), col_1 (type: string)
+                    outputColumnNames: _col0, _col1, _col2
+                    Statistics: Num rows: 6 Data size: 56 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: _col1 (type: int)
+                      sort order: +
+                      Map-reduce partition columns: _col1 (type: int)
+                      Statistics: Num rows: 6 Data size: 56 Basic stats: COMPLETE Column stats: NONE
+                      value expressions: _col0 (type: int), _col2 (type: string)
+            Execution mode: llap
+            LLAP IO: no inputs
+        Map 3 
+            Map Operator Tree:
+                TableScan
+                  alias: test2
+                  Statistics: Num rows: 4 Data size: 38 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: key (type: int), value (type: int), col_2 (type: string)
+                    outputColumnNames: _col0, _col1, _col2
+                    Statistics: Num rows: 4 Data size: 38 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: _col1 (type: int)
+                      sort order: +
+                      Map-reduce partition columns: _col1 (type: int)
+                      Statistics: Num rows: 4 Data size: 38 Basic stats: COMPLETE Column stats: NONE
+                      value expressions: _col0 (type: int), _col2 (type: string)
+            Execution mode: llap
+            LLAP IO: no inputs
+        Reducer 2 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Left Outer Join0 to 1
+                keys:
+                  0 _col1 (type: int)
+                  1 _col1 (type: int)
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+                residual filter predicates: {(_col0 BETWEEN 100 AND 102 or _col3 BETWEEN 100 AND 102)}
+                Statistics: Num rows: 6 Data size: 61 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 6 Data size: 61 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SELECT *
+FROM test1 LEFT OUTER JOIN test2
+ON (test1.value=test2.value
+  AND (test1.key between 100 and 102
+    OR test2.key between 100 and 102))
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test1
+PREHOOK: Input: default@test2
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT *
+FROM test1 LEFT OUTER JOIN test2
+ON (test1.value=test2.value
+  AND (test1.key between 100 and 102
+    OR test2.key between 100 and 102))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test1
+POSTHOOK: Input: default@test2
+#### A masked pattern was here ####
+NULL	NULL	None	NULL	NULL	NULL
+98	NULL	None	NULL	NULL	NULL
+99	0	Alice	NULL	NULL	NULL
+100	1	Bob	NULL	NULL	NULL
+99	2	Mat	102	2	Del
+101	2	Car	102	2	Del
+101	2	Car	103	2	Ema
+Warning: Shuffle Join MERGEJOIN[9][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
+PREHOOK: query: EXPLAIN
+SELECT col_1, col_2
+FROM test1 LEFT OUTER JOIN test2
+ON (test1.value=test2.value
+      OR test1.key=test2.key)
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+SELECT col_1, col_2
+FROM test1 LEFT OUTER JOIN test2
+ON (test1.value=test2.value
+      OR test1.key=test2.key)
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE), Map 3 (CUSTOM_SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: test1
+                  Statistics: Num rows: 6 Data size: 56 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: key (type: int), value (type: int), col_1 (type: string)
+                    outputColumnNames: _col0, _col1, _col2
+                    Statistics: Num rows: 6 Data size: 56 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      sort order: 
+                      Statistics: Num rows: 6 Data size: 56 Basic stats: COMPLETE Column stats: NONE
+                      value expressions: _col0 (type: int), _col1 (type: int), _col2 (type: string)
+            Execution mode: llap
+            LLAP IO: no inputs
+        Map 3 
+            Map Operator Tree:
+                TableScan
+                  alias: test2
+                  Statistics: Num rows: 4 Data size: 38 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: key (type: int), value (type: int), col_2 (type: string)
+                    outputColumnNames: _col0, _col1, _col2
+                    Statistics: Num rows: 4 Data size: 38 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      sort order: 
+                      Statistics: Num rows: 4 Data size: 38 Basic stats: COMPLETE Column stats: NONE
+                      value expressions: _col0 (type: int), _col1 (type: int), _col2 (type: string)
+            Execution mode: llap
+            LLAP IO: no inputs
+        Reducer 2 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Left Outer Join0 to 1
+                keys:
+                  0 
+                  1 
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+                residual filter predicates: {((_col1 = _col4) or (_col0 = _col3))}
+                Statistics: Num rows: 24 Data size: 476 Basic stats: COMPLETE Column stats: NONE
+                Select Operator
+                  expressions: _col2 (type: string), _col5 (type: string)
+                  outputColumnNames: _col0, _col1
+                  Statistics: Num rows: 24 Data size: 476 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 24 Data size: 476 Basic stats: COMPLETE Column stats: NONE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+Warning: Shuffle Join MERGEJOIN[9][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
+PREHOOK: query: SELECT col_1, col_2
+FROM test1 LEFT OUTER JOIN test2
+ON (test1.value=test2.value
+      OR test1.key=test2.key)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test1
+PREHOOK: Input: default@test2
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT col_1, col_2
+FROM test1 LEFT OUTER JOIN test2
+ON (test1.value=test2.value
+      OR test1.key=test2.key)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test1
+POSTHOOK: Input: default@test2
+#### A masked pattern was here ####
+None	NULL
+None	NULL
+Alice	NULL
+Mat	Del
+Mat	Ema
+Bob	NULL
+Car	Del
+Car	Ema
+Warning: Shuffle Join MERGEJOIN[9][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
+PREHOOK: query: EXPLAIN
+SELECT *
+FROM test1 RIGHT OUTER JOIN test2
+ON (test1.value=test2.value
+  OR test1.key between 100 and 102
+  OR test2.key between 100 and 102)
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+SELECT *
+FROM test1 RIGHT OUTER JOIN test2
+ON (test1.value=test2.value
+  OR test1.key between 100 and 102
+  OR test2.key between 100 and 102)
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE), Map 3 (CUSTOM_SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: test1
+                  Statistics: Num rows: 6 Data size: 56 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: key (type: int), value (type: int), col_1 (type: string)
+                    outputColumnNames: _col0, _col1, _col2
+                    Statistics: Num rows: 6 Data size: 56 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      sort order: 
+                      Statistics: Num rows: 6 Data size: 56 Basic stats: COMPLETE Column stats: NONE
+                      value expressions: _col0 (type: int), _col1 (type: int), _col2 (type: string)
+            Execution mode: llap
+            LLAP IO: no inputs
+        Map 3 
+            Map Operator Tree:
+                TableScan
+                  alias: test2
+                  Statistics: Num rows: 4 Data size: 38 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: key (type: int), value (type: int), col_2 (type: string)
+                    outputColumnNames: _col0, _col1, _col2
+                    Statistics: Num rows: 4 Data size: 38 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      sort order: 
+                      Statistics: Num rows: 4 Data size: 38 Basic stats: COMPLETE Column stats: NONE
+                      value expressions: _col0 (type: int), _col1 (type: int), _col2 (type: string)
+            Execution mode: llap
+            LLAP IO: no inputs
+        Reducer 2 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Right Outer Join0 to 1
+                keys:
+                  0 
+                  1 
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+                residual filter predicates: {((_col1 = _col4) or _col0 BETWEEN 100 AND 102 or _col3 BETWEEN 100 AND 102)}
+                Statistics: Num rows: 24 Data size: 476 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 24 Data size: 476 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+Warning: Shuffle Join MERGEJOIN[9][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
+PREHOOK: query: SELECT *
+FROM test1 RIGHT OUTER JOIN test2
+ON (test1.value=test2.value
+  OR test1.key between 100 and 102
+  OR test2.key between 100 and 102)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test1
+PREHOOK: Input: default@test2
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT *
+FROM test1 RIGHT OUTER JOIN test2
+ON (test1.value=test2.value
+  OR test1.key between 100 and 102
+  OR test2.key between 100 and 102)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test1
+POSTHOOK: Input: default@test2
+#### A masked pattern was here ####
+NULL	NULL	None	102	2	Del
+98	NULL	None	102	2	Del
+99	0	Alice	102	2	Del
+99	2	Mat	102	2	Del
+99	2	Mat	103	2	Ema
+100	1	Bob	102	2	Del
+100	1	Bob	103	2	Ema
+100	1	Bob	104	3	Fli
+100	1	Bob	105	NULL	None
+101	2	Car	102	2	Del
+101	2	Car	103	2	Ema
+101	2	Car	104	3	Fli
+101	2	Car	105	NULL	None
+Warning: Shuffle Join MERGEJOIN[9][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
+PREHOOK: query: EXPLAIN
+SELECT *
+FROM test1 RIGHT OUTER JOIN test2
+ON (test1.value=test2.value
+  OR test1.key between 100 and 102)
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+SELECT *
+FROM test1 RIGHT OUTER JOIN test2
+ON (test1.value=test2.value
+  OR test1.key between 100 and 102)
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE), Map 3 (CUSTOM_SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: test1
+                  Statistics: Num rows: 6 Data size: 56 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: key (type: int), value (type: int), col_1 (type: string)
+                    outputColumnNames: _col0, _col1, _col2
+                    Statistics: Num rows: 6 Data size: 56 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      sort order: 
+                      Statistics: Num rows: 6 Data size: 56 Basic stats: COMPLETE Column stats: NONE
+                      value expressions: _col0 (type: int), _col1 (type: int), _col2 (type: string)
+            Execution mode: llap
+            LLAP IO: no inputs
+        Map 3 
+            Map Operator Tree:
+                TableScan
+                  alias: test2
+                  Statistics: Num rows: 4 Data size: 38 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: key (type: int), value (type: int), col_2 (type: string)
+                    outputColumnNames: _col0, _col1, _col2
+                    Statistics: Num rows: 4 Data size: 38 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      sort order: 
+                      Statistics: Num rows: 4 Data size: 38 Basic stats: COMPLETE Column stats: NONE
+                      value expressions: _col0 (type: int), _col1 (type: int), _col2 (type: string)
+            Execution mode: llap
+            LLAP IO: no inputs
+        Reducer 2 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Right Outer Join0 to 1
+                keys:
+                  0 
+                  1 
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+                residual filter predicates: {((_col1 = _col4) or _col0 BETWEEN 100 AND 102)}
+                Statistics: Num rows: 24 Data size: 476 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 24 Data size: 476 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+Warning: Shuffle Join MERGEJOIN[9][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
+PREHOOK: query: SELECT *
+FROM test1 RIGHT OUTER JOIN test2
+ON (test1.value=test2.value
+  OR test1.key between 100 and 102)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test1
+PREHOOK: Input: default@test2
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT *
+FROM test1 RIGHT OUTER JOIN test2
+ON (test1.value=test2.value
+  OR test1.key between 100 and 102)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test1
+POSTHOOK: Input: default@test2
+#### A masked pattern was here ####
+99	2	Mat	102	2	Del
+99	2	Mat	103	2	Ema
+100	1	Bob	102	2	Del
+100	1	Bob	103	2	Ema
+100	1	Bob	104	3	Fli
+100	1	Bob	105	NULL	None
+101	2	Car	102	2	Del
+101	2	Car	103	2	Ema
+101	2	Car	104	3	Fli
+101	2	Car	105	NULL	None
+Warning: Shuffle Join MERGEJOIN[9][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
+PREHOOK: query: EXPLAIN
+SELECT *
+FROM test1 RIGHT OUTER JOIN test2
+ON (test1.value=test2.value
+  OR test2.key between 100 and 102)
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+SELECT *
+FROM test1 RIGHT OUTER JOIN test2
+ON (test1.value=test2.value
+  OR test2.key between 100 and 102)
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE), Map 3 (CUSTOM_SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: test1
+                  Statistics: Num rows: 6 Data size: 56 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: key (type: int), value (type: int), col_1 (type: string)
+                    outputColumnNames: _col0, _col1, _col2
+                    Statistics: Num rows: 6 Data size: 56 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      sort order: 
+                      Statistics: Num rows: 6 Data size: 56 Basic stats: COMPLETE Column stats: NONE
+                      value expressions: _col0 (type: int), _col1 (type: int), _col2 (type: string)
+            Execution mode: llap
+            LLAP IO: no inputs
+        Map 3 
+            Map Operator Tree:
+                TableScan
+                  alias: test2
+                  Statistics: Num rows: 4 Data size: 38 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: key (type: int), value (type: int), col_2 (type: string)
+                    outputColumnNames: _col0, _col1, _col2
+                    Statistics: Num rows: 4 Data size: 38 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      sort order: 
+                      Statistics: Num rows: 4 Data size: 38 Basic stats: COMPLETE Column stats: NONE
+                      value expressions: _col0 (type: int), _col1 (type: int), _col2 (type: string)
+            Execution mode: llap
+            LLAP IO: no inputs
+        Reducer 2 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Right Outer Join0 to 1
+                keys:
+                  0 
+                  1 
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+                residual filter predicates: {((_col1 = _col4) or _col3 BETWEEN 100 AND 102)}
+                Statistics: Num rows: 24 Data size: 476 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 24 Data size: 476 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+Warning: Shuffle Join MERGEJOIN[9][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
+PREHOOK: query: SELECT *
+FROM test1 RIGHT OUTER JOIN test2
+ON (test1.value=test2.value
+  OR test2.key between 100 and 102)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test1
+PREHOOK: Input: default@test2
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT *
+FROM test1 RIGHT OUTER JOIN test2
+ON (test1.value=test2.value
+  OR test2.key between 100 and 102)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test1
+POSTHOOK: Input: default@test2
+#### A masked pattern was here ####
+NULL	NULL	None	102	2	Del
+98	NULL	None	102	2	Del
+99	0	Alice	102	2	Del
+99	2	Mat	102	2	Del
+99	2	Mat	103	2	Ema
+100	1	Bob	102	2	Del
+101	2	Car	102	2	Del
+101	2	Car	103	2	Ema
+NULL	NULL	NULL	104	3	Fli
+NULL	NULL	NULL	105	NULL	None
+PREHOOK: query: EXPLAIN
+SELECT *
+FROM test1 RIGHT OUTER JOIN test2
+ON (test1.value=test2.value
+  AND (test1.key between 100 and 102
+    OR test2.key between 100 and 102))
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+SELECT *
+FROM test1 RIGHT OUTER JOIN test2
+ON (test1.value=test2.value
+  AND (test1.key between 100 and 102
+    OR test2.key between 100 and 102))
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 3 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: test1
+                  Statistics: Num rows: 6 Data size: 56 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: key (type: int), value (type: int), col_1 (type: string)
+                    outputColumnNames: _col0, _col1, _col2
+                    Statistics: Num rows: 6 Data size: 56 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: _col1 (type: int)
+                      sort order: +
+                      Map-reduce partition columns: _col1 (type: int)
+                      Statistics: Num rows: 6 Data size: 56 Basic stats: COMPLETE Column stats: NONE
+                      value expressions: _col0 (type: int), _col2 (type: string)
+            Execution mode: llap
+            LLAP IO: no inputs
+        Map 3 
+            Map Operator Tree:
+                TableScan
+                  alias: test2
+                  Statistics: Num rows: 4 Data size: 38 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: key (type: int), value (type: int), col_2 (type: string)
+                    outputColumnNames: _col0, _col1, _col2
+                    Statistics: Num rows: 4 Data size: 38 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: _col1 (type: int)
+                      sort order: +
+                      Map-reduce partition columns: _col1 (type: int)
+                      Statistics: Num rows: 4 Data size: 38 Basic stats: COMPLETE Column stats: NONE
+                      value expressions: _col0 (type: int), _col2 (type: string)
+            Execution mode: llap
+            LLAP IO: no inputs
+        Reducer 2 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Right Outer Join0 to 1
+                keys:
+                  0 _col1 (type: int)
+                  1 _col1 (type: int)
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+                residual filter predicates: {(_col0 BETWEEN 100 AND 102 or _col3 BETWEEN 100 AND 102)}
+                Statistics: Num rows: 6 Data size: 61 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 6 Data size: 61 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SELECT *
+FROM test1 RIGHT OUTER JOIN test2
+ON (test1.value=test2.value
+  AND (test1.key between 100 and 102
+    OR test2.key between 100 and 102))
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test1
+PREHOOK: Input: default@test2
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT *
+FROM test1 RIGHT OUTER JOIN test2
+ON (test1.value=test2.value
+  AND (test1.key between 100 and 102
+    OR test2.key between 100 and 102))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test1
+POSTHOOK: Input: default@test2
+#### A masked pattern was here ####
+NULL	NULL	NULL	105	NULL	None
+99	2	Mat	102	2	Del
+101	2	Car	102	2	Del
+101	2	Car	103	2	Ema
+NULL	NULL	NULL	104	3	Fli
+Warning: Shuffle Join MERGEJOIN[9][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
+PREHOOK: query: EXPLAIN
+SELECT *
+FROM test1 FULL OUTER JOIN test2
+ON (test1.value=test2.value
+  OR test1.key between 100 and 102
+  OR test2.key between 100 and 102)
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+SELECT *
+FROM test1 FULL OUTER JOIN test2
+ON (test1.value=test2.value
+  OR test1.key between 100 and 102
+  OR test2.key between 100 and 102)
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE), Map 3 (CUSTOM_SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: test1
+                  Statistics: Num rows: 6 Data size: 56 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: key (type: int), value (type: int), col_1 (type: string)
+                    outputColumnNames: _col0, _col1, _col2
+                    Statistics: Num rows: 6 Data size: 56 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      sort order: 
+                      Statistics: Num rows: 6 Data size: 56 Basic stats: COMPLETE Column stats: NONE
+                      value expressions: _col0 (type: int), _col1 (type: int), _col2 (type: string)
+            Execution mode: llap
+            LLAP IO: no inputs
+        Map 3 
+            Map Operator Tree:
+                TableScan
+                  alias: test2
+                  Statistics: Num rows: 4 Data size: 38 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: key (type: int), value (type: int), col_2 (type: string)
+                    outputColumnNames: _col0, _col1, _col2
+                    Statistics: Num rows: 4 Data size: 38 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      sort order: 
+                      Statistics: Num rows: 4 Data size: 38 Basic stats: COMPLETE Column stats: NONE
+                      value expressions: _col0 (type: int), _col1 (type: int), _col2 (type: string)
+            Execution mode: llap
+            LLAP IO: no inputs
+        Reducer 2 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Outer Join 0 to 1
+                keys:
+                  0 
+                  1 
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+                residual filter predicates: {((_col1 = _col4) or _col0 BETWEEN 100 AND 102 or _col3 BETWEEN 100 AND 102)}
+                Statistics: Num rows: 24 Data size: 476 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 24 Data size: 476 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+Warning: Shuffle Join MERGEJOIN[9][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
+PREHOOK: query: SELECT *
+FROM test1 FULL OUTER JOIN test2
+ON (test1.value=test2.value
+  OR test1.key between 100 and 102
+  OR test2.key between 100 and 102)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test1
+PREHOOK: Input: default@test2
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT *
+FROM test1 FULL OUTER JOIN test2
+ON (test1.value=test2.value
+  OR test1.key between 100 and 102
+  OR test2.key between 100 and 102)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test1
+POSTHOOK: Input: default@test2
+#### A masked pattern was here ####
+NULL	NULL	None	102	2	Del
+98	NULL	None	102	2	Del
+99	0	Alice	102	2	Del
+99	2	Mat	102	2	Del
+99	2	Mat	103	2	Ema
+100	1	Bob	102	2	Del
+100	1	Bob	103	2	Ema
+100	1	Bob	104	3	Fli
+100	1	Bob	105	NULL	None
+101	2	Car	102	2	Del
+101	2	Car	103	2	Ema
+101	2	Car	104	3	Fli
+101	2	Car	105	NULL	None
+Warning: Shuffle Join MERGEJOIN[9][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
+PREHOOK: query: EXPLAIN
+SELECT *
+FROM test1 FULL OUTER JOIN test2
+ON (test1.value=test2.value
+  OR test1.key between 100 and 102)
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+SELECT *
+FROM test1 FULL OUTER JOIN test2
+ON (test1.value=test2.value
+  OR test1.key between 100 and 102)
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE), Map 3 (CUSTOM_SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: test1
+                  Statistics: Num rows: 6 Data size: 56 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: key (type: int), value (type: int), col_1 (type: string)
+                    outputColumnNames: _col0, _col1, _col2
+                    Statistics: Num rows: 6 Data size: 56 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      sort order: 
+                      Statistics: Num rows: 6 Data size: 56 Basic stats: COMPLETE Column stats: NONE
+                      value expressions: _col0 (type: int), _col1 (type: int), _col2 (type: string)
+            Execution mode: llap
+            LLAP IO: no inputs
+        Map 3 
+            Map Operator Tree:
+                TableScan
+                  alias: test2
+                  Statistics: Num rows: 4 Data size: 38 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: key (type: int), value (type: int), col_2 (type: string)
+                    outputColumnNames: _col0, _col1, _col2
+                    Statistics: Num rows: 4 Data size: 38 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      sort order: 
+                      Statistics: Num rows: 4 Data size: 38 Basic stats: COMPLETE Column stats: NONE
+                      value expressions: _col0 (type: int), _col1 (type: int), _col2 (type: string)
+            Execution mode: llap
+            LLAP IO: no inputs
+        Reducer 2 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Outer Join 0 to 1
+                keys:
+                  0 
+                  1 
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+                residual filter predicates: {((_col1 = _col4) or _col0 BETWEEN 100 AND 102)}
+                Statistics: Num rows: 24 Data size: 476 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 24 Data size: 476 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+Warning: Shuffle Join MERGEJOIN[9][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
+PREHOOK: query: SELECT *
+FROM test1 FULL OUTER JOIN test2
+ON (test1.value=test2.value
+  OR test1.key between 100 and 102)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test1
+PREHOOK: Input: default@test2
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT *
+FROM test1 FULL OUTER JOIN test2
+ON (test1.value=test2.value
+  OR test1.key between 100 and 102)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test1
+POSTHOOK: Input: default@test2
+#### A masked pattern was here ####
+NULL	NULL	None	NULL	NULL	NULL
+98	NULL	None	NULL	NULL	NULL
+99	0	Alice	NULL	NULL	NULL
+99	2	Mat	102	2	Del
+99	2	Mat	103	2	Ema
+100	1	Bob	102	2	Del
+100	1	Bob	103	2	Ema
+100	1	Bob	104	3	Fli
+100	1	Bob	105	NULL	None
+101	2	Car	102	2	Del
+101	2	Car	103	2	Ema
+101	2	Car	104	3	Fli
+101	2	Car	105	NULL	None
+Warning: Shuffle Join MERGEJOIN[9][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
+PREHOOK: query: EXPLAIN
+SELECT *
+FROM test1 FULL OUTER JOIN test2
+ON (test1.value=test2.value
+  OR test2.key between 100 and 102)
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+SELECT *
+FROM test1 FULL OUTER JOIN test2
+ON (test1.value=test2.value
+  OR test2.key between 100 and 102)
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE), Map 3 (CUSTOM_SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: test1
+                  Statistics: Num rows: 6 Data size: 56 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: key (type: int), value (type: int), col_1 (type: string)
+                    outputColumnNames: _col0, _col1, _col2
+                    Statistics: Num rows: 6 Data size: 56 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      sort order: 
+                      Statistics: Num rows: 6 Data size: 56 Basic stats: COMPLETE Column stats: NONE
+                      value expressions: _col0 (type: int), _col1 (type: int), _col2 (type: string)
+            Execution mode: llap
+            LLAP IO: no inputs
+        Map 3 
+            Map Operator Tree:
+                TableScan
+                  alias: test2
+                  Statistics: Num rows: 4 Data size: 38 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: key (type: int), value (type: int), col_2 (type: string)
+                    outputColumnNames: _col0, _col1, _col2
+                    Statistics: Num rows: 4 Data size: 38 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      sort order: 
+                      Statistics: Num rows: 4 Data size: 38 Basic stats: COMPLETE Column stats: NONE
+                      value expressions: _col0 (type: int), _col1 (type: int), _col2 (type: string)
+            Execution mode: llap
+            LLAP IO: no inputs
+        Reducer 2 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Outer Join 0 to 1
+                keys:
+                  0 
+                  1 
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+                residual filter predicates: {((_col1 = _col4) or _col3 BETWEEN 100 AND 102)}
+                Statistics: Num rows: 24 Data size: 476 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 24 Data size: 476 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+Warning: Shuffle Join MERGEJOIN[9][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
+PREHOOK: query: SELECT *
+FROM test1 FULL OUTER JOIN test2
+ON (test1.value=test2.value
+  OR test2.key between 100 and 102)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test1
+PREHOOK: Input: default@test2
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT *
+FROM test1 FULL OUTER JOIN test2
+ON (test1.value=test2.value
+  OR test2.key between 100 and 102)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test1
+POSTHOOK: Input: default@test2
+#### A masked pattern was here ####
+NULL	NULL	None	102	2	Del
+98	NULL	None	102	2	Del
+99	0	Alice	102	2	Del
+99	2	Mat	102	2	Del
+99	2	Mat	103	2	Ema
+100	1	Bob	102	2	Del
+101	2	Car	102	2	Del
+101	2	Car	103	2	Ema
+NULL	NULL	NULL	104	3	Fli
+NULL	NULL	NULL	105	NULL	None
+PREHOOK: query: EXPLAIN
+SELECT *
+FROM test1 FULL OUTER JOIN test2
+ON (test1.value=test2.value
+  AND (test1.key between 100 and 102
+    OR test2.key between 100 and 102))
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+SELECT *
+FROM test1 FULL OUTER JOIN test2
+ON (test1.value=test2.value
+  AND (test1.key between 100 and 102
+    OR test2.key between 100 and 102))
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 3 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: test1
+                  Statistics: Num rows: 6 Data size: 56 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: key (type: int), value (type: int), col_1 (type: string)
+                    outputColumnNames: _col0, _col1, _col2
+                    Statistics: Num rows: 6 Data size: 56 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: _col1 (type: int)
+                      sort order: +
+                      Map-reduce partition columns: _col1 (type: int)
+                      Statistics: Num rows: 6 Data size: 56 Basic stats: COMPLETE Column stats: NONE
+                      value expressions: _col0 (type: int), _col2 (type: string)
+            Execution mode: llap
+            LLAP IO: no inputs
+        Map 3 
+            Map Operator Tree:
+                TableScan
+                  alias: test2
+                  Statistics: Num rows: 4 Data size: 38 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: key (type: int), value (type: int), col_2 (type: string)
+                    outputColumnNames: _col0, _col1, _col2
+                    Statistics: Num rows: 4 Data size: 38 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: _col1 (type: int)
+                      sort order: +
+                      Map-reduce partition columns: _col1 (type: int)
+                      Statistics: Num rows: 4 Data size: 38 Basic stats: COMPLETE Column stats: NONE
+                      value expressions: _col0 (type: int), _col2 (type: string)
+            Execution mode: llap
+            LLAP IO: no inputs
+        Reducer 2 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Outer Join 0 to 1
+                keys:
+                  0 _col1 (type: int)
+                  1 _col1 (type: int)
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+                residual filter predicates: {(_col0 BETWEEN 100 AND 102 or _col3 BETWEEN 100 AND 102)}
+                Statistics: Num rows: 6 Data size: 61 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 6 Data size: 61 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SELECT *
+FROM test1 FULL OUTER JOIN test2
+ON (test1.value=test2.value
+  AND (test1.key between 100 and 102
+    OR test2.key between 100 and 102))
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test1
+PREHOOK: Input: default@test2
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT *
+FROM test1 FULL OUTER JOIN test2
+ON (test1.value=test2.value
+  AND (test1.key between 100 and 102
+    OR test2.key between 100 and 102))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test1
+POSTHOOK: Input: default@test2
+#### A masked pattern was here ####
+NULL	NULL	NULL	105	NULL	None
+NULL	NULL	None	NULL	NULL	NULL
+98	NULL	None	NULL	NULL	NULL
+99	0	Alice	NULL	NULL	NULL
+100	1	Bob	NULL	NULL	NULL
+99	2	Mat	102	2	Del
+101	2	Car	102	2	Del
+101	2	Car	103	2	Ema
+NULL	NULL	NULL	104	3	Fli
+Warning: Shuffle Join MERGEJOIN[26][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 3' is a cross product
+PREHOOK: query: EXPLAIN
+SELECT *
+FROM (
+  SELECT test1.key AS key1, test1.value AS value1, test1.col_1 AS col_1,
+         test2.key AS key2, test2.value AS value2, test2.col_2 AS col_2
+  FROM test1 RIGHT OUTER JOIN test2
+  ON (test1.value=test2.value
+    AND (test1.key between 100 and 102
+      OR test2.key between 100 and 102))
+  ) sq1
+FULL OUTER JOIN (
+  SELECT test1.key AS key3, test1.value AS value3, test1.col_1 AS col_3,
+         test2.key AS key4, test2.value AS value4, test2.col_2 AS col_4
+  FROM test1 LEFT OUTER JOIN test2
+  ON (test1.value=test2.value
+    AND (test1.key between 100 and 102
+      OR test2.key between 100 and 102))
+  ) sq2
+ON (sq1.value1 is null or sq2.value4 is null and sq2.value3 != sq1.value2)
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+SELECT *
+FROM (
+  SELECT test1.key AS key1, test1.value AS value1, test1.col_1 AS col_1,
+         test2.key AS key2, test2.value AS value2, test2.col_2 AS col_2
+  FROM test1 RIGHT OUTER JOIN test2
+  ON (test1.value=test2.value
+    AND (test1.key between 100 and 102
+      OR test2.key between 100 and 102))
+  ) sq1
+FULL OUTER JOIN (
+  SELECT test1.key AS key3, test1.value AS value3, test1.col_1 AS col_3,
+         test2.key AS key4, test2.value AS value4, test2.col_2 AS col_4
+  FROM test1 LEFT OUTER JOIN test2
+  ON (test1.value=test2.value
+    AND (test1.key between 100 and 102
+      OR test2.key between 100 and 102))
+  ) sq2
+ON (sq1.value1 is null or sq2.value4 is null and sq2.value3 != sq1.value2)
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 4 (SIMPLE_EDGE)
+        Reducer 3 <- Reducer 2 (CUSTOM_SIMPLE_EDGE), Reducer 6 (CUSTOM_SIMPLE_EDGE)
+        Reducer 6 <- Map 5 (SIMPLE_EDGE), Map 7 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: test1
+                  Statistics: Num rows: 6 Data size: 56 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: key (type: int), value (type: int), col_1 (type: string)
+                    outputColumnNames: _col0, _col1, _col2
+                    Statistics: Num rows: 6 Data size: 56 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: _col1 (type: int)
+                      sort order: +
+                      Map-reduce partition columns: _col1 (type: int)
+                      Statistics: Num rows: 6 Data size: 56 Basic stats: COMPLETE Column stats: NONE
+                      value expressions: _col0 (type: int), _col2 (type: string)
+            Execution mode: llap
+            LLAP IO: no inputs
+        Map 4 
+            Map Operator Tree:
+                TableScan
+                  alias: test2
+                  Statistics: Num rows: 4 Data size: 38 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: key (type: int), value (type: int), col_2 (type: string)
+                    outputColumnNames: _col0, _col1, _col2
+                    Statistics: Num rows: 4 Data size: 38 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: _col1 (type: int)
+                      sort order: +
+                      Map-reduce partition columns: _col1 (type: int)
+                      Statistics: Num rows: 4 Data size: 38 Basic stats: COMPLETE Column stats: NONE
+                      value expressions: _col0 (type: int), _col2 (type: string)
+            Execution mode: llap
+            LLAP IO: no inputs
+        Map 5 
+            Map Operator Tree:
+                TableScan
+                  alias: test1
+                  Statistics: Num rows: 6 Data size: 56 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: key (type: int), value (type: int), col_1 (type: string)
+                    outputColumnNames: _col0, _col1, _col2
+                    Statistics: Num rows: 6 Data size: 56 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: _col1 (type: int)
+                      sort order: +
+                      Map-reduce partition columns: _col1 (type: int)
+                      Statistics: Num rows: 6 Data size: 56 Basic stats: COMPLETE Column stats: NONE
+                      value expressions: _col0 (type: int), _col2 (type: string)
+            Execution mode: llap
+            LLAP IO: no inputs
+        Map 7 
+            Map Operator Tree:
+                TableScan
+                  alias: test2
+                  Statistics: Num rows: 4 Data size: 38 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: key (type: int), value (type: int), col_2 (type: string)
+                    outputColumnNames: _col0, _col1, _col2
+                    Statistics: Num rows: 4 Data size: 38 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: _col1 (type: int)
+                      sort order: +
+                      Map-reduce partition columns: _col1 (type: int)
+                      Statistics: Num rows: 4 Data size: 38 Basic stats: COMPLETE Column stats: NONE
+                      value expressions: _col0 (type: int), _col2 (type: string)
+            Execution mode: llap
+            LLAP IO: no inputs
+        Reducer 2 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Right Outer Join0 to 1
+                keys:
+                  0 _col1 (type: int)
+                  1 _col1 (type: int)
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+                residual filter predicates: {(_col0 BETWEEN 100 AND 102 or _col3 BETWEEN 100 AND 102)}
+                Statistics: Num rows: 6 Data size: 61 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  sort order: 
+                  Statistics: Num rows: 6 Data size: 61 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col0 (type: int), _col1 (type: int), _col2 (type: string), _col3 (type: int), _col4 (type: int), _col5 (type: string)
+        Reducer 3 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Outer Join 0 to 1
+                keys:
+                  0 
+                  1 
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11
+                residual filter predicates: {(_col1 is null or (_col10 is null and (_col7 <> _col4)))}
+                Statistics: Num rows: 36 Data size: 768 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 36 Data size: 768 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+        Reducer 6 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Left Outer Join0 to 1
+                keys:
+                  0 _col1 (type: int)
+                  1 _col1 (type: int)
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+                residual filter predicates: {(_col0 BETWEEN 100 AND 102 or _col3 BETWEEN 100 AND 102)}
+                Statistics: Num rows: 6 Data size: 61 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  sort order: 
+                  Statistics: Num rows: 6 Data size: 61 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col0 (type: int), _col1 (type: int), _col2 (type: string), _col3 (type: int), _col4 (type: int), _col5 (type: string)
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+Warning: Shuffle Join MERGEJOIN[26][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 3' is a cross product
+PREHOOK: query: SELECT *
+FROM (
+  SELECT test1.key AS key1, test1.value AS value1, test1.col_1 AS col_1,
+         test2.key AS key2, test2.value AS value2, test2.col_2 AS col_2
+  FROM test1 RIGHT OUTER JOIN test2
+  ON (test1.value=test2.value
+    AND (test1.key between 100 and 102
+      OR test2.key between 100 and 102))
+  ) sq1
+FULL OUTER JOIN (
+  SELECT test1.key AS key3, test1.value AS value3, test1.col_1 AS col_3,
+         test2.key AS key4, test2.value AS value4, test2.col_2 AS col_4
+  FROM test1 LEFT OUTER JOIN test2
+  ON (test1.value=test2.value
+    AND (test1.key between 100 and 102
+      OR test2.key between 100 and 102))
+  ) sq2
+ON (sq1.value1 is null or sq2.value4 is null and sq2.value3 != sq1.value2)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test1
+PREHOOK: Input: default@test2
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT *
+FROM (
+  SELECT test1.key AS key1, test1.value AS value1, test1.col_1 AS col_1,
+         test2.key AS key2, test2.value AS value2, test2.col_2 AS col_2
+  FROM test1 RIGHT OUTER JOIN test2
+  ON (test1.value=test2.value
+    AND (test1.key between 100 and 102
+      OR test2.key between 100 and 102))
+  ) sq1
+FULL OUTER JOIN (
+  SELECT test1.key AS key3, test1.value AS value3, test1.col_1 AS col_3,
+         test2.key AS key4, test2.value AS value4, test2.col_2 AS col_4
+  FROM test1 LEFT OUTER JOIN test2
+  ON (test1.value=test2.value
+    AND (test1.key between 100 and 102
+      OR test2.key between 100 and 102))
+  ) sq2
+ON (sq1.value1 is null or sq2.value4 is null and sq2.value3 != sq1.value2)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test1
+POSTHOOK: Input: default@test2
+#### A masked pattern was here ####
+NULL	NULL	NULL	105	NULL	None	NULL	NULL	None	NULL	NULL	NULL
+NULL	NULL	NULL	105	NULL	None	98	NULL	None	NULL	NULL	NULL
+NULL	NULL	NULL	105	NULL	None	99	0	Alice	NULL	NULL	NULL
+NULL	NULL	NULL	105	NULL	None	100	1	Bob	NULL	NULL	NULL
+NULL	NULL	NULL	105	NULL	None	99	2	Mat	102	2	Del
+NULL	NULL	NULL	105	NULL	None	101	2	Car	102	2	Del
+NULL	NULL	NULL	105	NULL	None	101	2	Car	103	2	Ema
+99	2	Mat	102	2	Del	99	0	Alice	NULL	NULL	NULL
+99	2	Mat	102	2	Del	100	1	Bob	NULL	NULL	NULL
+101	2	Car	102	2	Del	99	0	Alice	NULL	NULL	NULL
+101	2	Car	102	2	Del	100	1	Bob	NULL	NULL	NULL
+101	2	Car	103	2	Ema	99	0	Alice	NULL	NULL	NULL
+101	2	Car	103	2	Ema	100	1	Bob	NULL	NULL	NULL
+NULL	NULL	NULL	104	3	Fli	NULL	NULL	None	NULL	NULL	NULL
+NULL	NULL	NULL	104	3	Fli	98	NULL	None	NULL	NULL	NULL
+NULL	NULL	NULL	104	3	Fli	99	0	Alice	NULL	NULL	NULL
+NULL	NULL	NULL	104	3	Fli	100	1	Bob	NULL	NULL	NULL
+NULL	NULL	NULL	104	3	Fli	99	2	Mat	102	2	Del
+NULL	NULL	NULL	104	3	Fli	101	2	Car	102	2	Del
+NULL	NULL	NULL	104	3	Fli	101	2	Car	103	2	Ema

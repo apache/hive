@@ -1,15 +1,9 @@
-PREHOOK: query: -- EXCLUDE_HADOOP_MAJOR_VERSIONS(0.20S)
--- SORT_QUERY_RESULTS
-
-CREATE TABLE T1(key STRING, val STRING)
+PREHOOK: query: CREATE TABLE T1(key STRING, val STRING)
 CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@T1
-POSTHOOK: query: -- EXCLUDE_HADOOP_MAJOR_VERSIONS(0.20S)
--- SORT_QUERY_RESULTS
-
-CREATE TABLE T1(key STRING, val STRING)
+POSTHOOK: query: CREATE TABLE T1(key STRING, val STRING)
 CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
@@ -22,13 +16,11 @@ POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/T1.txt' INTO TABLE T1
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@t1
-PREHOOK: query: -- perform an insert to make sure there are 2 files
-INSERT OVERWRITE TABLE T1 select key, val from T1
+PREHOOK: query: INSERT OVERWRITE TABLE T1 select key, val from T1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
 PREHOOK: Output: default@t1
-POSTHOOK: query: -- perform an insert to make sure there are 2 files
-INSERT OVERWRITE TABLE T1 select key, val from T1
+POSTHOOK: query: INSERT OVERWRITE TABLE T1 select key, val from T1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 POSTHOOK: Output: default@t1
@@ -42,15 +34,11 @@ POSTHOOK: query: CREATE TABLE outputTbl1(key int, cnt int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@outputTbl1
-PREHOOK: query: -- The plan should be converted to a map-side group by if the group by key
--- matches the sorted key
-EXPLAIN EXTENDED
+PREHOOK: query: EXPLAIN EXTENDED
 INSERT OVERWRITE TABLE outputTbl1
 SELECT key, count(1) FROM T1 GROUP BY key
 PREHOOK: type: QUERY
-POSTHOOK: query: -- The plan should be converted to a map-side group by if the group by key
--- matches the sorted key
-EXPLAIN EXTENDED
+POSTHOOK: query: EXPLAIN EXTENDED
 INSERT OVERWRITE TABLE outputTbl1
 SELECT key, count(1) FROM T1 GROUP BY key
 POSTHOOK: type: QUERY
@@ -97,6 +85,7 @@ STAGE PLANS:
                               properties:
                                 COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                                 bucket_count -1
+                                column.name.delimiter ,
                                 columns key,cnt
                                 columns.comments 
                                 columns.types int:int
@@ -128,6 +117,7 @@ STAGE PLANS:
                     SORTBUCKETCOLSPREFIX TRUE
                     bucket_count 2
                     bucket_field_name key
+                    column.name.delimiter ,
                     columns key,val
                     columns.comments 
                     columns.types string:string
@@ -150,6 +140,7 @@ STAGE PLANS:
                       SORTBUCKETCOLSPREFIX TRUE
                       bucket_count 2
                       bucket_field_name key
+                      column.name.delimiter ,
                       columns key,val
                       columns.comments 
                       columns.types string:string
@@ -180,6 +171,7 @@ STAGE PLANS:
               properties:
                 COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                 bucket_count -1
+                column.name.delimiter ,
                 columns key,cnt
                 columns.comments 
                 columns.types int:int
@@ -233,13 +225,11 @@ POSTHOOK: query: CREATE TABLE outputTbl2(key1 int, key2 string, cnt int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@outputTbl2
-PREHOOK: query: -- no map-side group by even if the group by key is a superset of sorted key
-EXPLAIN EXTENDED
+PREHOOK: query: EXPLAIN EXTENDED
 INSERT OVERWRITE TABLE outputTbl2
 SELECT key, val, count(1) FROM T1 GROUP BY key, val
 PREHOOK: type: QUERY
-POSTHOOK: query: -- no map-side group by even if the group by key is a superset of sorted key
-EXPLAIN EXTENDED
+POSTHOOK: query: EXPLAIN EXTENDED
 INSERT OVERWRITE TABLE outputTbl2
 SELECT key, val, count(1) FROM T1 GROUP BY key, val
 POSTHOOK: type: QUERY
@@ -294,6 +284,7 @@ STAGE PLANS:
                     SORTBUCKETCOLSPREFIX TRUE
                     bucket_count 2
                     bucket_field_name key
+                    column.name.delimiter ,
                     columns key,val
                     columns.comments 
                     columns.types string:string
@@ -316,6 +307,7 @@ STAGE PLANS:
                       SORTBUCKETCOLSPREFIX TRUE
                       bucket_count 2
                       bucket_field_name key
+                      column.name.delimiter ,
                       columns key,val
                       columns.comments 
                       columns.types string:string
@@ -378,6 +370,7 @@ STAGE PLANS:
                         properties:
                           COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                           bucket_count -1
+                          column.name.delimiter ,
                           columns key1,key2,cnt
                           columns.comments 
                           columns.types int:string:int
@@ -408,6 +401,7 @@ STAGE PLANS:
               properties:
                 COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                 bucket_count -1
+                column.name.delimiter ,
                 columns key1,key2,cnt
                 columns.comments 
                 columns.types int:string:int
@@ -455,13 +449,11 @@ POSTHOOK: Input: default@outputtbl2
 7	17	1
 8	18	1
 8	28	1
-PREHOOK: query: -- It should work for sub-queries
-EXPLAIN EXTENDED 
+PREHOOK: query: EXPLAIN EXTENDED 
 INSERT OVERWRITE TABLE outputTbl1
 SELECT key, count(1) FROM (SELECT key, val FROM T1) subq1 GROUP BY key
 PREHOOK: type: QUERY
-POSTHOOK: query: -- It should work for sub-queries
-EXPLAIN EXTENDED 
+POSTHOOK: query: EXPLAIN EXTENDED 
 INSERT OVERWRITE TABLE outputTbl1
 SELECT key, count(1) FROM (SELECT key, val FROM T1) subq1 GROUP BY key
 POSTHOOK: type: QUERY
@@ -508,6 +500,7 @@ STAGE PLANS:
                               properties:
                                 COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                                 bucket_count -1
+                                column.name.delimiter ,
                                 columns key,cnt
                                 columns.comments 
                                 columns.types int:int
@@ -539,6 +532,7 @@ STAGE PLANS:
                     SORTBUCKETCOLSPREFIX TRUE
                     bucket_count 2
                     bucket_field_name key
+                    column.name.delimiter ,
                     columns key,val
                     columns.comments 
                     columns.types string:string
@@ -561,6 +555,7 @@ STAGE PLANS:
                       SORTBUCKETCOLSPREFIX TRUE
                       bucket_count 2
                       bucket_field_name key
+                      column.name.delimiter ,
                       columns key,val
                       columns.comments 
                       columns.types string:string
@@ -591,6 +586,7 @@ STAGE PLANS:
               properties:
                 COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                 bucket_count -1
+                column.name.delimiter ,
                 columns key,cnt
                 columns.comments 
                 columns.types int:int
@@ -636,13 +632,11 @@ POSTHOOK: Input: default@outputtbl1
 3	1
 7	1
 8	2
-PREHOOK: query: -- It should work for sub-queries with column aliases
-EXPLAIN EXTENDED
+PREHOOK: query: EXPLAIN EXTENDED
 INSERT OVERWRITE TABLE outputTbl1
 SELECT k, count(1) FROM (SELECT key as k, val as v FROM T1) subq1 GROUP BY k
 PREHOOK: type: QUERY
-POSTHOOK: query: -- It should work for sub-queries with column aliases
-EXPLAIN EXTENDED
+POSTHOOK: query: EXPLAIN EXTENDED
 INSERT OVERWRITE TABLE outputTbl1
 SELECT k, count(1) FROM (SELECT key as k, val as v FROM T1) subq1 GROUP BY k
 POSTHOOK: type: QUERY
@@ -689,6 +683,7 @@ STAGE PLANS:
                               properties:
                                 COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                                 bucket_count -1
+                                column.name.delimiter ,
                                 columns key,cnt
                                 columns.comments 
                                 columns.types int:int
@@ -720,6 +715,7 @@ STAGE PLANS:
                     SORTBUCKETCOLSPREFIX TRUE
                     bucket_count 2
                     bucket_field_name key
+                    column.name.delimiter ,
                     columns key,val
                     columns.comments 
                     columns.types string:string
@@ -742,6 +738,7 @@ STAGE PLANS:
                       SORTBUCKETCOLSPREFIX TRUE
                       bucket_count 2
                       bucket_field_name key
+                      column.name.delimiter ,
                       columns key,val
                       columns.comments 
                       columns.types string:string
@@ -772,6 +769,7 @@ STAGE PLANS:
               properties:
                 COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                 bucket_count -1
+                column.name.delimiter ,
                 columns key,cnt
                 columns.comments 
                 columns.types int:int
@@ -825,15 +823,11 @@ POSTHOOK: query: CREATE TABLE outputTbl3(key1 int, key2 int, cnt int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@outputTbl3
-PREHOOK: query: -- The plan should be converted to a map-side group by if the group by key contains a constant followed
--- by a match to the sorted key
-EXPLAIN EXTENDED 
+PREHOOK: query: EXPLAIN EXTENDED 
 INSERT OVERWRITE TABLE outputTbl3
 SELECT 1, key, count(1) FROM T1 GROUP BY 1, key
 PREHOOK: type: QUERY
-POSTHOOK: query: -- The plan should be converted to a map-side group by if the group by key contains a constant followed
--- by a match to the sorted key
-EXPLAIN EXTENDED 
+POSTHOOK: query: EXPLAIN EXTENDED 
 INSERT OVERWRITE TABLE outputTbl3
 SELECT 1, key, count(1) FROM T1 GROUP BY 1, key
 POSTHOOK: type: QUERY
@@ -880,6 +874,7 @@ STAGE PLANS:
                               properties:
                                 COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                                 bucket_count -1
+                                column.name.delimiter ,
                                 columns key1,key2,cnt
                                 columns.comments 
                                 columns.types int:int:int
@@ -911,6 +906,7 @@ STAGE PLANS:
                     SORTBUCKETCOLSPREFIX TRUE
                     bucket_count 2
                     bucket_field_name key
+                    column.name.delimiter ,
                     columns key,val
                     columns.comments 
                     columns.types string:string
@@ -933,6 +929,7 @@ STAGE PLANS:
                       SORTBUCKETCOLSPREFIX TRUE
                       bucket_count 2
                       bucket_field_name key
+                      column.name.delimiter ,
                       columns key,val
                       columns.comments 
                       columns.types string:string
@@ -963,6 +960,7 @@ STAGE PLANS:
               properties:
                 COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                 bucket_count -1
+                column.name.delimiter ,
                 columns key1,key2,cnt
                 columns.comments 
                 columns.types int:int:int
@@ -1017,13 +1015,11 @@ POSTHOOK: query: CREATE TABLE outputTbl4(key1 int, key2 int, key3 string, cnt in
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@outputTbl4
-PREHOOK: query: -- no map-side group by if the group by key contains a constant followed by another column
-EXPLAIN EXTENDED 
+PREHOOK: query: EXPLAIN EXTENDED 
 INSERT OVERWRITE TABLE outputTbl4
 SELECT key, 1, val, count(1) FROM T1 GROUP BY key, 1, val
 PREHOOK: type: QUERY
-POSTHOOK: query: -- no map-side group by if the group by key contains a constant followed by another column
-EXPLAIN EXTENDED 
+POSTHOOK: query: EXPLAIN EXTENDED 
 INSERT OVERWRITE TABLE outputTbl4
 SELECT key, 1, val, count(1) FROM T1 GROUP BY key, 1, val
 POSTHOOK: type: QUERY
@@ -1078,6 +1074,7 @@ STAGE PLANS:
                     SORTBUCKETCOLSPREFIX TRUE
                     bucket_count 2
                     bucket_field_name key
+                    column.name.delimiter ,
                     columns key,val
                     columns.comments 
                     columns.types string:string
@@ -1100,6 +1097,7 @@ STAGE PLANS:
                       SORTBUCKETCOLSPREFIX TRUE
                       bucket_count 2
                       bucket_field_name key
+                      column.name.delimiter ,
                       columns key,val
                       columns.comments 
                       columns.types string:string
@@ -1162,6 +1160,7 @@ STAGE PLANS:
                         properties:
                           COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                           bucket_count -1
+                          column.name.delimiter ,
                           columns key1,key2,key3,cnt
                           columns.comments 
                           columns.types int:int:string:int
@@ -1192,6 +1191,7 @@ STAGE PLANS:
               properties:
                 COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                 bucket_count -1
+                column.name.delimiter ,
                 columns key1,key2,key3,cnt
                 columns.comments 
                 columns.types int:int:string:int
@@ -1240,13 +1240,11 @@ POSTHOOK: Input: default@outputtbl4
 7	1	17	1
 8	1	18	1
 8	1	28	1
-PREHOOK: query: -- no map-side group by if the group by key contains a function
-EXPLAIN EXTENDED 
+PREHOOK: query: EXPLAIN EXTENDED 
 INSERT OVERWRITE TABLE outputTbl3
 SELECT key, key + 1, count(1) FROM T1 GROUP BY key, key + 1
 PREHOOK: type: QUERY
-POSTHOOK: query: -- no map-side group by if the group by key contains a function
-EXPLAIN EXTENDED 
+POSTHOOK: query: EXPLAIN EXTENDED 
 INSERT OVERWRITE TABLE outputTbl3
 SELECT key, key + 1, count(1) FROM T1 GROUP BY key, key + 1
 POSTHOOK: type: QUERY
@@ -1301,6 +1299,7 @@ STAGE PLANS:
                     SORTBUCKETCOLSPREFIX TRUE
                     bucket_count 2
                     bucket_field_name key
+                    column.name.delimiter ,
                     columns key,val
                     columns.comments 
                     columns.types string:string
@@ -1323,6 +1322,7 @@ STAGE PLANS:
                       SORTBUCKETCOLSPREFIX TRUE
                       bucket_count 2
                       bucket_field_name key
+                      column.name.delimiter ,
                       columns key,val
                       columns.comments 
                       columns.types string:string
@@ -1385,6 +1385,7 @@ STAGE PLANS:
                         properties:
                           COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                           bucket_count -1
+                          column.name.delimiter ,
                           columns key1,key2,cnt
                           columns.comments 
                           columns.types int:int:int
@@ -1415,6 +1416,7 @@ STAGE PLANS:
               properties:
                 COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                 bucket_count -1
+                column.name.delimiter ,
                 columns key1,key2,cnt
                 columns.comments 
                 columns.types int:int:int
@@ -1461,21 +1463,13 @@ POSTHOOK: Input: default@outputtbl3
 3	4	1
 7	8	1
 8	9	2
-PREHOOK: query: -- it should not matter what follows the group by
--- test various cases
-
--- group by followed by another group by
-EXPLAIN EXTENDED 
+PREHOOK: query: EXPLAIN EXTENDED 
 INSERT OVERWRITE TABLE outputTbl1
 SELECT cast(key + key as string), sum(cnt) from
 (SELECT key, count(1) as cnt FROM T1 GROUP BY key) subq1
 group by key + key
 PREHOOK: type: QUERY
-POSTHOOK: query: -- it should not matter what follows the group by
--- test various cases
-
--- group by followed by another group by
-EXPLAIN EXTENDED 
+POSTHOOK: query: EXPLAIN EXTENDED 
 INSERT OVERWRITE TABLE outputTbl1
 SELECT cast(key + key as string), sum(cnt) from
 (SELECT key, count(1) as cnt FROM T1 GROUP BY key) subq1
@@ -1542,6 +1536,7 @@ STAGE PLANS:
                     SORTBUCKETCOLSPREFIX TRUE
                     bucket_count 2
                     bucket_field_name key
+                    column.name.delimiter ,
                     columns key,val
                     columns.comments 
                     columns.types string:string
@@ -1564,6 +1559,7 @@ STAGE PLANS:
                       SORTBUCKETCOLSPREFIX TRUE
                       bucket_count 2
                       bucket_field_name key
+                      column.name.delimiter ,
                       columns key,val
                       columns.comments 
                       columns.types string:string
@@ -1626,6 +1622,7 @@ STAGE PLANS:
                         properties:
                           COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                           bucket_count -1
+                          column.name.delimiter ,
                           columns key,cnt
                           columns.comments 
                           columns.types int:int
@@ -1656,6 +1653,7 @@ STAGE PLANS:
               properties:
                 COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                 bucket_count -1
+                column.name.delimiter ,
                 columns key,cnt
                 columns.comments 
                 columns.types int:int
@@ -1705,8 +1703,7 @@ POSTHOOK: Input: default@outputtbl1
 2	1
 4	1
 6	1
-PREHOOK: query: -- group by followed by a union
-EXPLAIN EXTENDED 
+PREHOOK: query: EXPLAIN EXTENDED 
 INSERT OVERWRITE TABLE outputTbl1
 SELECT * FROM (
 SELECT key, count(1) FROM T1 GROUP BY key
@@ -1714,8 +1711,7 @@ SELECT key, count(1) FROM T1 GROUP BY key
 SELECT key, count(1) FROM T1 GROUP BY key
 ) subq1
 PREHOOK: type: QUERY
-POSTHOOK: query: -- group by followed by a union
-EXPLAIN EXTENDED 
+POSTHOOK: query: EXPLAIN EXTENDED 
 INSERT OVERWRITE TABLE outputTbl1
 SELECT * FROM (
 SELECT key, count(1) FROM T1 GROUP BY key
@@ -1766,6 +1762,7 @@ STAGE PLANS:
                               properties:
                                 COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                                 bucket_count -1
+                                column.name.delimiter ,
                                 columns key,cnt
                                 columns.comments 
                                 columns.types int:int
@@ -1797,6 +1794,7 @@ STAGE PLANS:
                     SORTBUCKETCOLSPREFIX TRUE
                     bucket_count 2
                     bucket_field_name key
+                    column.name.delimiter ,
                     columns key,val
                     columns.comments 
                     columns.types string:string
@@ -1819,6 +1817,7 @@ STAGE PLANS:
                       SORTBUCKETCOLSPREFIX TRUE
                       bucket_count 2
                       bucket_field_name key
+                      column.name.delimiter ,
                       columns key,val
                       columns.comments 
                       columns.types string:string
@@ -1870,6 +1869,7 @@ STAGE PLANS:
                               properties:
                                 COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                                 bucket_count -1
+                                column.name.delimiter ,
                                 columns key,cnt
                                 columns.comments 
                                 columns.types int:int
@@ -1901,6 +1901,7 @@ STAGE PLANS:
                     SORTBUCKETCOLSPREFIX TRUE
                     bucket_count 2
                     bucket_field_name key
+                    column.name.delimiter ,
                     columns key,val
                     columns.comments 
                     columns.types string:string
@@ -1923,6 +1924,7 @@ STAGE PLANS:
                       SORTBUCKETCOLSPREFIX TRUE
                       bucket_count 2
                       bucket_field_name key
+                      column.name.delimiter ,
                       columns key,val
                       columns.comments 
                       columns.types string:string
@@ -1953,6 +1955,7 @@ STAGE PLANS:
               properties:
                 COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                 bucket_count -1
+                column.name.delimiter ,
                 columns key,cnt
                 columns.comments 
                 columns.types int:int
@@ -2011,8 +2014,7 @@ POSTHOOK: Input: default@outputtbl1
 7	1
 8	2
 8	2
-PREHOOK: query: -- group by followed by a union where one of the sub-queries is map-side group by
-EXPLAIN EXTENDED
+PREHOOK: query: EXPLAIN EXTENDED
 INSERT OVERWRITE TABLE outputTbl1
 SELECT * FROM (
 SELECT key, count(1) FROM T1 GROUP BY key
@@ -2020,8 +2022,7 @@ SELECT key, count(1) FROM T1 GROUP BY key
 SELECT cast(key + key as string) as key, count(1) FROM T1 GROUP BY key + key
 ) subq1
 PREHOOK: type: QUERY
-POSTHOOK: query: -- group by followed by a union where one of the sub-queries is map-side group by
-EXPLAIN EXTENDED
+POSTHOOK: query: EXPLAIN EXTENDED
 INSERT OVERWRITE TABLE outputTbl1
 SELECT * FROM (
 SELECT key, count(1) FROM T1 GROUP BY key
@@ -2075,6 +2076,7 @@ STAGE PLANS:
                               properties:
                                 COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                                 bucket_count -1
+                                column.name.delimiter ,
                                 columns key,cnt
                                 columns.comments 
                                 columns.types int:int
@@ -2106,6 +2108,7 @@ STAGE PLANS:
                     SORTBUCKETCOLSPREFIX TRUE
                     bucket_count 2
                     bucket_field_name key
+                    column.name.delimiter ,
                     columns key,val
                     columns.comments 
                     columns.types string:string
@@ -2128,6 +2131,7 @@ STAGE PLANS:
                       SORTBUCKETCOLSPREFIX TRUE
                       bucket_count 2
                       bucket_field_name key
+                      column.name.delimiter ,
                       columns key,val
                       columns.comments 
                       columns.types string:string
@@ -2184,6 +2188,7 @@ STAGE PLANS:
                     SORTBUCKETCOLSPREFIX TRUE
                     bucket_count 2
                     bucket_field_name key
+                    column.name.delimiter ,
                     columns key,val
                     columns.comments 
                     columns.types string:string
@@ -2206,6 +2211,7 @@ STAGE PLANS:
                       SORTBUCKETCOLSPREFIX TRUE
                       bucket_count 2
                       bucket_field_name key
+                      column.name.delimiter ,
                       columns key,val
                       columns.comments 
                       columns.types string:string
@@ -2272,6 +2278,7 @@ STAGE PLANS:
                           properties:
                             COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                             bucket_count -1
+                            column.name.delimiter ,
                             columns key,cnt
                             columns.comments 
                             columns.types int:int
@@ -2302,6 +2309,7 @@ STAGE PLANS:
               properties:
                 COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                 bucket_count -1
+                column.name.delimiter ,
                 columns key,cnt
                 columns.comments 
                 columns.types int:int
@@ -2360,8 +2368,7 @@ POSTHOOK: Input: default@outputtbl1
 6	1
 7	1
 8	2
-PREHOOK: query: -- group by followed by a join
-EXPLAIN EXTENDED 
+PREHOOK: query: EXPLAIN EXTENDED 
 INSERT OVERWRITE TABLE outputTbl1
 SELECT subq1.key, subq1.cnt+subq2.cnt FROM 
 (SELECT key, count(1) as cnt FROM T1 GROUP BY key) subq1
@@ -2369,8 +2376,7 @@ JOIN
 (SELECT key, count(1) as cnt FROM T1 GROUP BY key) subq2
 ON subq1.key = subq2.key
 PREHOOK: type: QUERY
-POSTHOOK: query: -- group by followed by a join
-EXPLAIN EXTENDED 
+POSTHOOK: query: EXPLAIN EXTENDED 
 INSERT OVERWRITE TABLE outputTbl1
 SELECT subq1.key, subq1.cnt+subq2.cnt FROM 
 (SELECT key, count(1) as cnt FROM T1 GROUP BY key) subq1
@@ -2432,6 +2438,7 @@ STAGE PLANS:
                     SORTBUCKETCOLSPREFIX TRUE
                     bucket_count 2
                     bucket_field_name key
+                    column.name.delimiter ,
                     columns key,val
                     columns.comments 
                     columns.types string:string
@@ -2454,6 +2461,7 @@ STAGE PLANS:
                       SORTBUCKETCOLSPREFIX TRUE
                       bucket_count 2
                       bucket_field_name key
+                      column.name.delimiter ,
                       columns key,val
                       columns.comments 
                       columns.types string:string
@@ -2514,6 +2522,7 @@ STAGE PLANS:
                     SORTBUCKETCOLSPREFIX TRUE
                     bucket_count 2
                     bucket_field_name key
+                    column.name.delimiter ,
                     columns key,val
                     columns.comments 
                     columns.types string:string
@@ -2536,6 +2545,7 @@ STAGE PLANS:
                       SORTBUCKETCOLSPREFIX TRUE
                       bucket_count 2
                       bucket_field_name key
+                      column.name.delimiter ,
                       columns key,val
                       columns.comments 
                       columns.types string:string
@@ -2582,6 +2592,7 @@ STAGE PLANS:
                         properties:
                           COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                           bucket_count -1
+                          column.name.delimiter ,
                           columns key,cnt
                           columns.comments 
                           columns.types int:int
@@ -2612,6 +2623,7 @@ STAGE PLANS:
               properties:
                 COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                 bucket_count -1
+                column.name.delimiter ,
                 columns key,cnt
                 columns.comments 
                 columns.types int:int
@@ -2665,16 +2677,14 @@ POSTHOOK: Input: default@outputtbl1
 3	2
 7	2
 8	4
-PREHOOK: query: -- group by followed by a join where one of the sub-queries can be performed in the mapper
-EXPLAIN EXTENDED 
+PREHOOK: query: EXPLAIN EXTENDED 
 SELECT * FROM 
 (SELECT key, count(1) FROM T1 GROUP BY key) subq1
 JOIN
 (SELECT key, val, count(1) FROM T1 GROUP BY key, val) subq2
 ON subq1.key = subq2.key
 PREHOOK: type: QUERY
-POSTHOOK: query: -- group by followed by a join where one of the sub-queries can be performed in the mapper
-EXPLAIN EXTENDED 
+POSTHOOK: query: EXPLAIN EXTENDED 
 SELECT * FROM 
 (SELECT key, count(1) FROM T1 GROUP BY key) subq1
 JOIN
@@ -2736,6 +2746,7 @@ STAGE PLANS:
                     SORTBUCKETCOLSPREFIX TRUE
                     bucket_count 2
                     bucket_field_name key
+                    column.name.delimiter ,
                     columns key,val
                     columns.comments 
                     columns.types string:string
@@ -2758,6 +2769,7 @@ STAGE PLANS:
                       SORTBUCKETCOLSPREFIX TRUE
                       bucket_count 2
                       bucket_field_name key
+                      column.name.delimiter ,
                       columns key,val
                       columns.comments 
                       columns.types string:string
@@ -2818,6 +2830,7 @@ STAGE PLANS:
                     SORTBUCKETCOLSPREFIX TRUE
                     bucket_count 2
                     bucket_field_name key
+                    column.name.delimiter ,
                     columns key,val
                     columns.comments 
                     columns.types string:string
@@ -2840,6 +2853,7 @@ STAGE PLANS:
                       SORTBUCKETCOLSPREFIX TRUE
                       bucket_count 2
                       bucket_field_name key
+                      column.name.delimiter ,
                       columns key,val
                       columns.comments 
                       columns.types string:string
@@ -2944,25 +2958,21 @@ CLUSTERED BY (key, val) SORTED BY (key, val) INTO 2 BUCKETS STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@T2
-PREHOOK: query: -- perform an insert to make sure there are 2 files
-INSERT OVERWRITE TABLE T2 select key, val from T1
+PREHOOK: query: INSERT OVERWRITE TABLE T2 select key, val from T1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
 PREHOOK: Output: default@t2
-POSTHOOK: query: -- perform an insert to make sure there are 2 files
-INSERT OVERWRITE TABLE T2 select key, val from T1
+POSTHOOK: query: INSERT OVERWRITE TABLE T2 select key, val from T1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 POSTHOOK: Output: default@t2
 POSTHOOK: Lineage: t2.key SIMPLE [(t1)t1.FieldSchema(name:key, type:string, comment:null), ]
 POSTHOOK: Lineage: t2.val SIMPLE [(t1)t1.FieldSchema(name:val, type:string, comment:null), ]
-PREHOOK: query: -- no mapside sort group by if the group by is a prefix of the sorted key
-EXPLAIN EXTENDED 
+PREHOOK: query: EXPLAIN EXTENDED 
 INSERT OVERWRITE TABLE outputTbl1
 SELECT key, count(1) FROM T2 GROUP BY key
 PREHOOK: type: QUERY
-POSTHOOK: query: -- no mapside sort group by if the group by is a prefix of the sorted key
-EXPLAIN EXTENDED 
+POSTHOOK: query: EXPLAIN EXTENDED 
 INSERT OVERWRITE TABLE outputTbl1
 SELECT key, count(1) FROM T2 GROUP BY key
 POSTHOOK: type: QUERY
@@ -3018,6 +3028,7 @@ STAGE PLANS:
                     SORTBUCKETCOLSPREFIX TRUE
                     bucket_count 2
                     bucket_field_name key
+                    column.name.delimiter ,
                     columns key,val
                     columns.comments 
                     columns.types string:string
@@ -3040,6 +3051,7 @@ STAGE PLANS:
                       SORTBUCKETCOLSPREFIX TRUE
                       bucket_count 2
                       bucket_field_name key
+                      column.name.delimiter ,
                       columns key,val
                       columns.comments 
                       columns.types string:string
@@ -3102,6 +3114,7 @@ STAGE PLANS:
                         properties:
                           COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                           bucket_count -1
+                          column.name.delimiter ,
                           columns key,cnt
                           columns.comments 
                           columns.types int:int
@@ -3132,6 +3145,7 @@ STAGE PLANS:
               properties:
                 COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                 bucket_count -1
+                column.name.delimiter ,
                 columns key,cnt
                 columns.comments 
                 columns.types int:int
@@ -3177,15 +3191,11 @@ POSTHOOK: Input: default@outputtbl1
 3	1
 7	1
 8	2
-PREHOOK: query: -- The plan should be converted to a map-side group by if the group by key contains a constant in between the
--- sorted keys
-EXPLAIN EXTENDED 
+PREHOOK: query: EXPLAIN EXTENDED 
 INSERT OVERWRITE TABLE outputTbl4
 SELECT key, 1, val, count(1) FROM T2 GROUP BY key, 1, val
 PREHOOK: type: QUERY
-POSTHOOK: query: -- The plan should be converted to a map-side group by if the group by key contains a constant in between the
--- sorted keys
-EXPLAIN EXTENDED 
+POSTHOOK: query: EXPLAIN EXTENDED 
 INSERT OVERWRITE TABLE outputTbl4
 SELECT key, 1, val, count(1) FROM T2 GROUP BY key, 1, val
 POSTHOOK: type: QUERY
@@ -3232,6 +3242,7 @@ STAGE PLANS:
                               properties:
                                 COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                                 bucket_count -1
+                                column.name.delimiter ,
                                 columns key1,key2,key3,cnt
                                 columns.comments 
                                 columns.types int:int:string:int
@@ -3263,6 +3274,7 @@ STAGE PLANS:
                     SORTBUCKETCOLSPREFIX TRUE
                     bucket_count 2
                     bucket_field_name key
+                    column.name.delimiter ,
                     columns key,val
                     columns.comments 
                     columns.types string:string
@@ -3285,6 +3297,7 @@ STAGE PLANS:
                       SORTBUCKETCOLSPREFIX TRUE
                       bucket_count 2
                       bucket_field_name key
+                      column.name.delimiter ,
                       columns key,val
                       columns.comments 
                       columns.types string:string
@@ -3315,6 +3328,7 @@ STAGE PLANS:
               properties:
                 COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                 bucket_count -1
+                column.name.delimiter ,
                 columns key1,key2,key3,cnt
                 columns.comments 
                 columns.types int:int:string:int
@@ -3371,15 +3385,11 @@ POSTHOOK: query: CREATE TABLE outputTbl5(key1 int, key2 int, key3 string, key4 i
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@outputTbl5
-PREHOOK: query: -- The plan should be converted to a map-side group by if the group by key contains a constant in between the
--- sorted keys followed by anything
-EXPLAIN EXTENDED 
+PREHOOK: query: EXPLAIN EXTENDED 
 INSERT OVERWRITE TABLE outputTbl5
 SELECT key, 1, val, 2, count(1) FROM T2 GROUP BY key, 1, val, 2
 PREHOOK: type: QUERY
-POSTHOOK: query: -- The plan should be converted to a map-side group by if the group by key contains a constant in between the
--- sorted keys followed by anything
-EXPLAIN EXTENDED 
+POSTHOOK: query: EXPLAIN EXTENDED 
 INSERT OVERWRITE TABLE outputTbl5
 SELECT key, 1, val, 2, count(1) FROM T2 GROUP BY key, 1, val, 2
 POSTHOOK: type: QUERY
@@ -3426,6 +3436,7 @@ STAGE PLANS:
                               properties:
                                 COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                                 bucket_count -1
+                                column.name.delimiter ,
                                 columns key1,key2,key3,key4,cnt
                                 columns.comments 
                                 columns.types int:int:string:int:int
@@ -3457,6 +3468,7 @@ STAGE PLANS:
                     SORTBUCKETCOLSPREFIX TRUE
                     bucket_count 2
                     bucket_field_name key
+                    column.name.delimiter ,
                     columns key,val
                     columns.comments 
                     columns.types string:string
@@ -3479,6 +3491,7 @@ STAGE PLANS:
                       SORTBUCKETCOLSPREFIX TRUE
                       bucket_count 2
                       bucket_field_name key
+                      column.name.delimiter ,
                       columns key,val
                       columns.comments 
                       columns.types string:string
@@ -3509,6 +3522,7 @@ STAGE PLANS:
               properties:
                 COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                 bucket_count -1
+                column.name.delimiter ,
                 columns key1,key2,key3,key4,cnt
                 columns.comments 
                 columns.types int:int:string:int:int
@@ -3560,15 +3574,13 @@ POSTHOOK: Input: default@outputtbl5
 7	1	17	2	1
 8	1	18	2	1
 8	1	28	2	1
-PREHOOK: query: -- contants from sub-queries should work fine
-EXPLAIN EXTENDED
+PREHOOK: query: EXPLAIN EXTENDED
 INSERT OVERWRITE TABLE outputTbl4
 SELECT key, constant, val, count(1) from 
 (SELECT key, 1 as constant, val from T2)subq
 group by key, constant, val
 PREHOOK: type: QUERY
-POSTHOOK: query: -- contants from sub-queries should work fine
-EXPLAIN EXTENDED
+POSTHOOK: query: EXPLAIN EXTENDED
 INSERT OVERWRITE TABLE outputTbl4
 SELECT key, constant, val, count(1) from 
 (SELECT key, 1 as constant, val from T2)subq
@@ -3617,6 +3629,7 @@ STAGE PLANS:
                               properties:
                                 COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                                 bucket_count -1
+                                column.name.delimiter ,
                                 columns key1,key2,key3,cnt
                                 columns.comments 
                                 columns.types int:int:string:int
@@ -3648,6 +3661,7 @@ STAGE PLANS:
                     SORTBUCKETCOLSPREFIX TRUE
                     bucket_count 2
                     bucket_field_name key
+                    column.name.delimiter ,
                     columns key,val
                     columns.comments 
                     columns.types string:string
@@ -3670,6 +3684,7 @@ STAGE PLANS:
                       SORTBUCKETCOLSPREFIX TRUE
                       bucket_count 2
                       bucket_field_name key
+                      column.name.delimiter ,
                       columns key,val
                       columns.comments 
                       columns.types string:string
@@ -3700,6 +3715,7 @@ STAGE PLANS:
               properties:
                 COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                 bucket_count -1
+                column.name.delimiter ,
                 columns key1,key2,key3,cnt
                 columns.comments 
                 columns.types int:int:string:int
@@ -3752,8 +3768,7 @@ POSTHOOK: Input: default@outputtbl4
 7	1	17	1
 8	1	18	1
 8	1	28	1
-PREHOOK: query: -- multiple levels of contants from sub-queries should work fine
-EXPLAIN EXTENDED
+PREHOOK: query: EXPLAIN EXTENDED
 INSERT OVERWRITE TABLE outputTbl4
 select key, constant3, val, count(1) from
 (
@@ -3762,8 +3777,7 @@ SELECT key, constant as constant2, val, 2 as constant3 from
 )subq2
 group by key, constant3, val
 PREHOOK: type: QUERY
-POSTHOOK: query: -- multiple levels of contants from sub-queries should work fine
-EXPLAIN EXTENDED
+POSTHOOK: query: EXPLAIN EXTENDED
 INSERT OVERWRITE TABLE outputTbl4
 select key, constant3, val, count(1) from
 (
@@ -3815,6 +3829,7 @@ STAGE PLANS:
                               properties:
                                 COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                                 bucket_count -1
+                                column.name.delimiter ,
                                 columns key1,key2,key3,cnt
                                 columns.comments 
                                 columns.types int:int:string:int
@@ -3846,6 +3861,7 @@ STAGE PLANS:
                     SORTBUCKETCOLSPREFIX TRUE
                     bucket_count 2
                     bucket_field_name key
+                    column.name.delimiter ,
                     columns key,val
                     columns.comments 
                     columns.types string:string
@@ -3868,6 +3884,7 @@ STAGE PLANS:
                       SORTBUCKETCOLSPREFIX TRUE
                       bucket_count 2
                       bucket_field_name key
+                      column.name.delimiter ,
                       columns key,val
                       columns.comments 
                       columns.types string:string
@@ -3898,6 +3915,7 @@ STAGE PLANS:
               properties:
                 COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}
                 bucket_count -1
+                column.name.delimiter ,
                 columns key1,key2,key3,cnt
                 columns.comments 
                 columns.types int:int:string:int
@@ -4148,14 +4166,12 @@ POSTHOOK: Input: default@dest2
 7	17	1
 8	18	1
 8	28	1
-PREHOOK: query: -- multi-table insert with a sub-query
-EXPLAIN
+PREHOOK: query: EXPLAIN
 FROM (select key, val from T2 where key = 8) x
 INSERT OVERWRITE TABLE DEST1 SELECT key, count(1) GROUP BY key
 INSERT OVERWRITE TABLE DEST2 SELECT key, val, count(1) GROUP BY key, val
 PREHOOK: type: QUERY
-POSTHOOK: query: -- multi-table insert with a sub-query
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 FROM (select key, val from T2 where key = 8) x
 INSERT OVERWRITE TABLE DEST1 SELECT key, count(1) GROUP BY key
 INSERT OVERWRITE TABLE DEST2 SELECT key, val, count(1) GROUP BY key, val
@@ -4181,7 +4197,7 @@ STAGE PLANS:
                   alias: t2
                   Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (key = 8) (type: boolean)
+                    predicate: (UDFToDouble(key) = 8.0) (type: boolean)
                     Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key (type: string), val (type: string)

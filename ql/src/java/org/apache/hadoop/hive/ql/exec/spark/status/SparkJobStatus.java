@@ -44,4 +44,6 @@ public interface SparkJobStatus {
   SparkStatistics getSparkStatistics();
 
   void cleanup();
+
+  Throwable getError();
 }

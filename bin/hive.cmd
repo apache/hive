@@ -227,6 +227,7 @@ if exist %HIVE_HOME%\auxlib (
 	)
 	popd
 )
+set HADOOP_USER_CLASSPATH_FIRST=true
 
 @rem pass classpath to hadoop
 set HADOOP_CLASSPATH=%HADOOP_CLASSPATH%;%CLASSPATH%;%AUX_CLASSPATH%
@@ -340,9 +341,6 @@ goto :EOF
 
 	set /a SERVICE_COUNT = %SERVICE_COUNT% + 1
 	set VAR%SERVICE_COUNT%=hiveserver2
-
-	set /a SERVICE_COUNT = %SERVICE_COUNT% + 1
-	set VAR%SERVICE_COUNT%=hwi
 
 	set /a SERVICE_COUNT = %SERVICE_COUNT% + 1
 	set VAR%SERVICE_COUNT%=jar

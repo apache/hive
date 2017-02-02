@@ -12,3 +12,5 @@ Synonyms: power
 Example:
   > SELECT pow(2, 3) FROM src LIMIT 1;
   8
+Function class:org.apache.hadoop.hive.ql.udf.generic.GenericUDFPower
+Function type:BUILTIN

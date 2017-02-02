@@ -1,13 +1,7 @@
-PREHOOK: query: -- This test verifies that if a partition exists outside a table's current location when the
--- database is dropped the partition's location is dropped as well.
-
-CREATE DATABASE test_database
+PREHOOK: query: CREATE DATABASE test_database
 PREHOOK: type: CREATEDATABASE
 PREHOOK: Output: database:test_database
-POSTHOOK: query: -- This test verifies that if a partition exists outside a table's current location when the
--- database is dropped the partition's location is dropped as well.
-
-CREATE DATABASE test_database
+POSTHOOK: query: CREATE DATABASE test_database
 POSTHOOK: type: CREATEDATABASE
 POSTHOOK: Output: database:test_database
 PREHOOK: query: USE test_database

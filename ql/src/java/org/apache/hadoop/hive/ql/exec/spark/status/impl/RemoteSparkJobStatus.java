@@ -136,6 +136,11 @@ public class RemoteSparkJobStatus implements SparkJobStatus {
 
   }
 
+  @Override
+  public Throwable getError() {
+    return jobHandle.getError();
+  }
+
   private SparkJobInfo getSparkJobInfo() throws HiveException {
     Integer sparkJobId = jobHandle.getSparkJobIds().size() == 1
       ? jobHandle.getSparkJobIds().get(0) : null;

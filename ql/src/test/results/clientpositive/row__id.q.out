@@ -1,0 +1,156 @@
+PREHOOK: query: drop table if exists hello_acid
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table if exists hello_acid
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table hello_acid (key int, value int)
+partitioned by (load_date date)
+clustered by(key) into 3 buckets
+stored as orc tblproperties ('transactional'='true')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@hello_acid
+POSTHOOK: query: create table hello_acid (key int, value int)
+partitioned by (load_date date)
+clustered by(key) into 3 buckets
+stored as orc tblproperties ('transactional'='true')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@hello_acid
+PREHOOK: query: insert into hello_acid partition (load_date='2016-03-01') values (1, 1)
+PREHOOK: type: QUERY
+PREHOOK: Output: default@hello_acid@load_date=2016-03-01
+POSTHOOK: query: insert into hello_acid partition (load_date='2016-03-01') values (1, 1)
+POSTHOOK: type: QUERY
+POSTHOOK: Output: default@hello_acid@load_date=2016-03-01
+POSTHOOK: Lineage: hello_acid PARTITION(load_date=2016-03-01).key EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: hello_acid PARTITION(load_date=2016-03-01).value EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+PREHOOK: query: insert into hello_acid partition (load_date='2016-03-02') values (2, 2)
+PREHOOK: type: QUERY
+PREHOOK: Output: default@hello_acid@load_date=2016-03-02
+POSTHOOK: query: insert into hello_acid partition (load_date='2016-03-02') values (2, 2)
+POSTHOOK: type: QUERY
+POSTHOOK: Output: default@hello_acid@load_date=2016-03-02
+POSTHOOK: Lineage: hello_acid PARTITION(load_date=2016-03-02).key EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: hello_acid PARTITION(load_date=2016-03-02).value EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+PREHOOK: query: insert into hello_acid partition (load_date='2016-03-03') values (3, 3)
+PREHOOK: type: QUERY
+PREHOOK: Output: default@hello_acid@load_date=2016-03-03
+POSTHOOK: query: insert into hello_acid partition (load_date='2016-03-03') values (3, 3)
+POSTHOOK: type: QUERY
+POSTHOOK: Output: default@hello_acid@load_date=2016-03-03
+POSTHOOK: Lineage: hello_acid PARTITION(load_date=2016-03-03).key EXPRESSION [(values__tmp__table__3)values__tmp__table__3.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: hello_acid PARTITION(load_date=2016-03-03).value EXPRESSION [(values__tmp__table__3)values__tmp__table__3.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+PREHOOK: query: explain
+select tid from (select row__id.transactionid as tid from hello_acid) sub order by tid
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+select tid from (select row__id.transactionid as tid from hello_acid) sub order by tid
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: hello_acid
+            Statistics: Num rows: 1 Data size: 2902 Basic stats: PARTIAL Column stats: NONE
+            Select Operator
+              expressions: ROW__ID.transactionid (type: bigint)
+              outputColumnNames: _col0
+              Statistics: Num rows: 1 Data size: 2902 Basic stats: PARTIAL Column stats: NONE
+              Reduce Output Operator
+                key expressions: _col0 (type: bigint)
+                sort order: +
+                Statistics: Num rows: 1 Data size: 2902 Basic stats: PARTIAL Column stats: NONE
+      Reduce Operator Tree:
+        Select Operator
+          expressions: KEY.reducesinkkey0 (type: bigint)
+          outputColumnNames: _col0
+          Statistics: Num rows: 1 Data size: 2902 Basic stats: PARTIAL Column stats: NONE
+          File Output Operator
+            compressed: false
+            Statistics: Num rows: 1 Data size: 2902 Basic stats: COMPLETE Column stats: NONE
+            table:
+                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select tid from (select row__id.transactionid as tid from hello_acid) sub order by tid
+PREHOOK: type: QUERY
+PREHOOK: Input: default@hello_acid
+PREHOOK: Input: default@hello_acid@load_date=2016-03-01
+PREHOOK: Input: default@hello_acid@load_date=2016-03-02
+PREHOOK: Input: default@hello_acid@load_date=2016-03-03
+#### A masked pattern was here ####
+POSTHOOK: query: select tid from (select row__id.transactionid as tid from hello_acid) sub order by tid
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@hello_acid
+POSTHOOK: Input: default@hello_acid@load_date=2016-03-01
+POSTHOOK: Input: default@hello_acid@load_date=2016-03-02
+POSTHOOK: Input: default@hello_acid@load_date=2016-03-03
+#### A masked pattern was here ####
+1
+2
+3
+PREHOOK: query: explain
+select tid from (select row__id.transactionid as tid from hello_acid) sub where tid = 1
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+select tid from (select row__id.transactionid as tid from hello_acid) sub where tid = 1
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: hello_acid
+            Statistics: Num rows: 1 Data size: 2902 Basic stats: PARTIAL Column stats: NONE
+            Filter Operator
+              predicate: (ROW__ID.transactionid = 1) (type: boolean)
+              Statistics: Num rows: 1 Data size: 2902 Basic stats: COMPLETE Column stats: NONE
+              Select Operator
+                expressions: ROW__ID.transactionid (type: bigint)
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 2902 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 1 Data size: 2902 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select tid from (select row__id.transactionid as tid from hello_acid) sub where tid = 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@hello_acid
+PREHOOK: Input: default@hello_acid@load_date=2016-03-01
+PREHOOK: Input: default@hello_acid@load_date=2016-03-02
+PREHOOK: Input: default@hello_acid@load_date=2016-03-03
+#### A masked pattern was here ####
+POSTHOOK: query: select tid from (select row__id.transactionid as tid from hello_acid) sub where tid = 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@hello_acid
+POSTHOOK: Input: default@hello_acid@load_date=2016-03-01
+POSTHOOK: Input: default@hello_acid@load_date=2016-03-02
+POSTHOOK: Input: default@hello_acid@load_date=2016-03-03
+#### A masked pattern was here ####
+1

@@ -90,7 +90,7 @@ public class OptionsProcessor {
         .hasArgs(2)
         .withArgName("key=value")
         .withLongOpt("define")
-        .withDescription("Variable subsitution to apply to hive commands. e.g. -d A=B or --define A=B")
+        .withDescription("Variable substitution to apply to Hive commands. e.g. -d A=B or --define A=B")
         .create('d'));
 
     // Substitution option --hivevar
@@ -99,7 +99,7 @@ public class OptionsProcessor {
         .hasArgs(2)
         .withArgName("key=value")
         .withLongOpt("hivevar")
-        .withDescription("Variable subsitution to apply to hive commands. e.g. --hivevar A=B")
+        .withDescription("Variable substitution to apply to Hive commands. e.g. --hivevar A=B")
         .create());
 
     // [-S|--silent]

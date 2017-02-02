@@ -8,6 +8,8 @@ PREHOOK: type: DESCFUNCTION
 POSTHOOK: query: DESCRIBE FUNCTION EXTENDED named_struct
 POSTHOOK: type: DESCFUNCTION
 named_struct(name1, val1, name2, val2, ...) - Creates a struct with the given field names and values
+Function class:org.apache.hadoop.hive.ql.udf.generic.GenericUDFNamedStruct
+Function type:BUILTIN
 PREHOOK: query: EXPLAIN
 SELECT named_struct("foo", 1, "bar", 2),
        named_struct("foo", 1, "bar", 2).foo FROM src tablesample (1 rows)

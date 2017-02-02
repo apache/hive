@@ -1,0 +1,1 @@
+FAILED: SemanticException [Error 10249]: Line 4:53 Unsupported SubQuery Expression 'p_name': Nested SubQuery expressions are not supported.

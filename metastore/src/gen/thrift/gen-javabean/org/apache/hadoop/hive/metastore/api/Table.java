@@ -52,8 +52,9 @@ public class Table implements org.apache.thrift.TBase<Table, Table._Fields>, jav
   private static final org.apache.thrift.protocol.TField TABLE_TYPE_FIELD_DESC = new org.apache.thrift.protocol.TField("tableType", org.apache.thrift.protocol.TType.STRING, (short)12);
   private static final org.apache.thrift.protocol.TField PRIVILEGES_FIELD_DESC = new org.apache.thrift.protocol.TField("privileges", org.apache.thrift.protocol.TType.STRUCT, (short)13);
   private static final org.apache.thrift.protocol.TField TEMPORARY_FIELD_DESC = new org.apache.thrift.protocol.TField("temporary", org.apache.thrift.protocol.TType.BOOL, (short)14);
-  private static final org.apache.thrift.protocol.TField MM_NEXT_WRITE_ID_FIELD_DESC = new org.apache.thrift.protocol.TField("mmNextWriteId", org.apache.thrift.protocol.TType.I64, (short)15);
-  private static final org.apache.thrift.protocol.TField MM_WATERMARK_WRITE_ID_FIELD_DESC = new org.apache.thrift.protocol.TField("mmWatermarkWriteId", org.apache.thrift.protocol.TType.I64, (short)16);
+  private static final org.apache.thrift.protocol.TField REWRITE_ENABLED_FIELD_DESC = new org.apache.thrift.protocol.TField("rewriteEnabled", org.apache.thrift.protocol.TType.BOOL, (short)15);
+  private static final org.apache.thrift.protocol.TField MM_NEXT_WRITE_ID_FIELD_DESC = new org.apache.thrift.protocol.TField("mmNextWriteId", org.apache.thrift.protocol.TType.I64, (short)16);
+  private static final org.apache.thrift.protocol.TField MM_WATERMARK_WRITE_ID_FIELD_DESC = new org.apache.thrift.protocol.TField("mmWatermarkWriteId", org.apache.thrift.protocol.TType.I64, (short)17);
 
   private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
   static {
@@ -75,6 +76,7 @@ public class Table implements org.apache.thrift.TBase<Table, Table._Fields>, jav
   private String tableType; // required
   private PrincipalPrivilegeSet privileges; // optional
   private boolean temporary; // optional
+  private boolean rewriteEnabled; // optional
   private long mmNextWriteId; // optional
   private long mmWatermarkWriteId; // optional
 
@@ -94,8 +96,9 @@ public class Table implements org.apache.thrift.TBase<Table, Table._Fields>, jav
     TABLE_TYPE((short)12, "tableType"),
     PRIVILEGES((short)13, "privileges"),
     TEMPORARY((short)14, "temporary"),
-    MM_NEXT_WRITE_ID((short)15, "mmNextWriteId"),
-    MM_WATERMARK_WRITE_ID((short)16, "mmWatermarkWriteId");
+    REWRITE_ENABLED((short)15, "rewriteEnabled"),
+    MM_NEXT_WRITE_ID((short)16, "mmNextWriteId"),
+    MM_WATERMARK_WRITE_ID((short)17, "mmWatermarkWriteId");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -138,9 +141,11 @@ public class Table implements org.apache.thrift.TBase<Table, Table._Fields>, jav
           return PRIVILEGES;
         case 14: // TEMPORARY
           return TEMPORARY;
-        case 15: // MM_NEXT_WRITE_ID
+        case 15: // REWRITE_ENABLED
+          return REWRITE_ENABLED;
+        case 16: // MM_NEXT_WRITE_ID
           return MM_NEXT_WRITE_ID;
-        case 16: // MM_WATERMARK_WRITE_ID
+        case 17: // MM_WATERMARK_WRITE_ID
           return MM_WATERMARK_WRITE_ID;
         default:
           return null;
@@ -186,10 +191,11 @@ public class Table implements org.apache.thrift.TBase<Table, Table._Fields>, jav
   private static final int __LASTACCESSTIME_ISSET_ID = 1;
   private static final int __RETENTION_ISSET_ID = 2;
   private static final int __TEMPORARY_ISSET_ID = 3;
-  private static final int __MMNEXTWRITEID_ISSET_ID = 4;
-  private static final int __MMWATERMARKWRITEID_ISSET_ID = 5;
+  private static final int __REWRITEENABLED_ISSET_ID = 4;
+  private static final int __MMNEXTWRITEID_ISSET_ID = 5;
+  private static final int __MMWATERMARKWRITEID_ISSET_ID = 6;
   private byte __isset_bitfield = 0;
-  private static final _Fields optionals[] = {_Fields.PRIVILEGES,_Fields.TEMPORARY,_Fields.MM_NEXT_WRITE_ID,_Fields.MM_WATERMARK_WRITE_ID};
+  private static final _Fields optionals[] = {_Fields.PRIVILEGES,_Fields.TEMPORARY,_Fields.REWRITE_ENABLED,_Fields.MM_NEXT_WRITE_ID,_Fields.MM_WATERMARK_WRITE_ID};
   public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
@@ -223,6 +229,8 @@ public class Table implements org.apache.thrift.TBase<Table, Table._Fields>, jav
     tmpMap.put(_Fields.PRIVILEGES, new org.apache.thrift.meta_data.FieldMetaData("privileges", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, PrincipalPrivilegeSet.class)));
     tmpMap.put(_Fields.TEMPORARY, new org.apache.thrift.meta_data.FieldMetaData("temporary", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
+    tmpMap.put(_Fields.REWRITE_ENABLED, new org.apache.thrift.meta_data.FieldMetaData("rewriteEnabled", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
     tmpMap.put(_Fields.MM_NEXT_WRITE_ID, new org.apache.thrift.meta_data.FieldMetaData("mmNextWriteId", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64)));
@@ -313,6 +321,7 @@ public class Table implements org.apache.thrift.TBase<Table, Table._Fields>, jav
       this.privileges = new PrincipalPrivilegeSet(other.privileges);
     }
     this.temporary = other.temporary;
+    this.rewriteEnabled = other.rewriteEnabled;
     this.mmNextWriteId = other.mmNextWriteId;
     this.mmWatermarkWriteId = other.mmWatermarkWriteId;
   }
@@ -341,6 +350,8 @@ public class Table implements org.apache.thrift.TBase<Table, Table._Fields>, jav
     this.privileges = null;
     this.temporary = false;
 
+    setRewriteEnabledIsSet(false);
+    this.rewriteEnabled = false;
     setMmNextWriteIdIsSet(false);
     this.mmNextWriteId = 0;
     setMmWatermarkWriteIdIsSet(false);
@@ -691,6 +702,28 @@ public class Table implements org.apache.thrift.TBase<Table, Table._Fields>, jav
     __isset_bitfield = EncodingUtils.setBit(__isset_bitfield, __TEMPORARY_ISSET_ID, value);
   }
 
+  public boolean isRewriteEnabled() {
+    return this.rewriteEnabled;
+  }
+
+  public void setRewriteEnabled(boolean rewriteEnabled) {
+    this.rewriteEnabled = rewriteEnabled;
+    setRewriteEnabledIsSet(true);
+  }
+
+  public void unsetRewriteEnabled() {
+    __isset_bitfield = EncodingUtils.clearBit(__isset_bitfield, __REWRITEENABLED_ISSET_ID);
+  }
+
+  /** Returns true if field rewriteEnabled is set (has been assigned a value) and false otherwise */
+  public boolean isSetRewriteEnabled() {
+    return EncodingUtils.testBit(__isset_bitfield, __REWRITEENABLED_ISSET_ID);
+  }
+
+  public void setRewriteEnabledIsSet(boolean value) {
+    __isset_bitfield = EncodingUtils.setBit(__isset_bitfield, __REWRITEENABLED_ISSET_ID, value);
+  }
+
   public long getMmNextWriteId() {
     return this.mmNextWriteId;
   }
@@ -849,6 +882,14 @@ public class Table implements org.apache.thrift.TBase<Table, Table._Fields>, jav
       }
       break;
 
+    case REWRITE_ENABLED:
+      if (value == null) {
+        unsetRewriteEnabled();
+      } else {
+        setRewriteEnabled((Boolean)value);
+      }
+      break;
+
     case MM_NEXT_WRITE_ID:
       if (value == null) {
         unsetMmNextWriteId();
@@ -912,6 +953,9 @@ public class Table implements org.apache.thrift.TBase<Table, Table._Fields>, jav
     case TEMPORARY:
       return isTemporary();
 
+    case REWRITE_ENABLED:
+      return isRewriteEnabled();
+
     case MM_NEXT_WRITE_ID:
       return getMmNextWriteId();
 
@@ -957,6 +1001,8 @@ public class Table implements org.apache.thrift.TBase<Table, Table._Fields>, jav
       return isSetPrivileges();
     case TEMPORARY:
       return isSetTemporary();
+    case REWRITE_ENABLED:
+      return isSetRewriteEnabled();
     case MM_NEXT_WRITE_ID:
       return isSetMmNextWriteId();
     case MM_WATERMARK_WRITE_ID:
@@ -1104,6 +1150,15 @@ public class Table implements org.apache.thrift.TBase<Table, Table._Fields>, jav
         return false;
     }
 
+    boolean this_present_rewriteEnabled = true && this.isSetRewriteEnabled();
+    boolean that_present_rewriteEnabled = true && that.isSetRewriteEnabled();
+    if (this_present_rewriteEnabled || that_present_rewriteEnabled) {
+      if (!(this_present_rewriteEnabled && that_present_rewriteEnabled))
+        return false;
+      if (this.rewriteEnabled != that.rewriteEnabled)
+        return false;
+    }
+
     boolean this_present_mmNextWriteId = true && this.isSetMmNextWriteId();
     boolean that_present_mmNextWriteId = true && that.isSetMmNextWriteId();
     if (this_present_mmNextWriteId || that_present_mmNextWriteId) {
@@ -1198,6 +1253,11 @@ public class Table implements org.apache.thrift.TBase<Table, Table._Fields>, jav
     list.add(present_temporary);
     if (present_temporary)
       list.add(temporary);
+
+    boolean present_rewriteEnabled = true && (isSetRewriteEnabled());
+    list.add(present_rewriteEnabled);
+    if (present_rewriteEnabled)
+      list.add(rewriteEnabled);
 
     boolean present_mmNextWriteId = true && (isSetMmNextWriteId());
     list.add(present_mmNextWriteId);
@@ -1360,6 +1420,16 @@ public class Table implements org.apache.thrift.TBase<Table, Table._Fields>, jav
         return lastComparison;
       }
     }
+    lastComparison = Boolean.valueOf(isSetRewriteEnabled()).compareTo(other.isSetRewriteEnabled());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetRewriteEnabled()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.rewriteEnabled, other.rewriteEnabled);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
     lastComparison = Boolean.valueOf(isSetMmNextWriteId()).compareTo(other.isSetMmNextWriteId());
     if (lastComparison != 0) {
       return lastComparison;
@@ -1497,6 +1567,12 @@ public class Table implements org.apache.thrift.TBase<Table, Table._Fields>, jav
       if (!first) sb.append(", ");
       sb.append("temporary:");
       sb.append(this.temporary);
+      first = false;
+    }
+    if (isSetRewriteEnabled()) {
+      if (!first) sb.append(", ");
+      sb.append("rewriteEnabled:");
+      sb.append(this.rewriteEnabled);
       first = false;
     }
     if (isSetMmNextWriteId()) {
@@ -1699,7 +1775,15 @@ public class Table implements org.apache.thrift.TBase<Table, Table._Fields>, jav
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
-          case 15: // MM_NEXT_WRITE_ID
+          case 15: // REWRITE_ENABLED
+            if (schemeField.type == org.apache.thrift.protocol.TType.BOOL) {
+              struct.rewriteEnabled = iprot.readBool();
+              struct.setRewriteEnabledIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
+          case 16: // MM_NEXT_WRITE_ID
             if (schemeField.type == org.apache.thrift.protocol.TType.I64) {
               struct.mmNextWriteId = iprot.readI64();
               struct.setMmNextWriteIdIsSet(true);
@@ -1707,7 +1791,7 @@ public class Table implements org.apache.thrift.TBase<Table, Table._Fields>, jav
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
-          case 16: // MM_WATERMARK_WRITE_ID
+          case 17: // MM_WATERMARK_WRITE_ID
             if (schemeField.type == org.apache.thrift.protocol.TType.I64) {
               struct.mmWatermarkWriteId = iprot.readI64();
               struct.setMmWatermarkWriteIdIsSet(true);
@@ -1809,6 +1893,11 @@ public class Table implements org.apache.thrift.TBase<Table, Table._Fields>, jav
         oprot.writeBool(struct.temporary);
         oprot.writeFieldEnd();
       }
+      if (struct.isSetRewriteEnabled()) {
+        oprot.writeFieldBegin(REWRITE_ENABLED_FIELD_DESC);
+        oprot.writeBool(struct.rewriteEnabled);
+        oprot.writeFieldEnd();
+      }
       if (struct.isSetMmNextWriteId()) {
         oprot.writeFieldBegin(MM_NEXT_WRITE_ID_FIELD_DESC);
         oprot.writeI64(struct.mmNextWriteId);
@@ -1879,13 +1968,16 @@ public class Table implements org.apache.thrift.TBase<Table, Table._Fields>, jav
       if (struct.isSetTemporary()) {
         optionals.set(13);
       }
-      if (struct.isSetMmNextWriteId()) {
+      if (struct.isSetRewriteEnabled()) {
         optionals.set(14);
       }
-      if (struct.isSetMmWatermarkWriteId()) {
+      if (struct.isSetMmNextWriteId()) {
         optionals.set(15);
       }
-      oprot.writeBitSet(optionals, 16);
+      if (struct.isSetMmWatermarkWriteId()) {
+        optionals.set(16);
+      }
+      oprot.writeBitSet(optionals, 17);
       if (struct.isSetTableName()) {
         oprot.writeString(struct.tableName);
       }
@@ -1941,6 +2033,9 @@ public class Table implements org.apache.thrift.TBase<Table, Table._Fields>, jav
       if (struct.isSetTemporary()) {
         oprot.writeBool(struct.temporary);
       }
+      if (struct.isSetRewriteEnabled()) {
+        oprot.writeBool(struct.rewriteEnabled);
+      }
       if (struct.isSetMmNextWriteId()) {
         oprot.writeI64(struct.mmNextWriteId);
       }
@@ -1952,7 +2047,7 @@ public class Table implements org.apache.thrift.TBase<Table, Table._Fields>, jav
     @Override
     public void read(org.apache.thrift.protocol.TProtocol prot, Table struct) throws org.apache.thrift.TException {
       TTupleProtocol iprot = (TTupleProtocol) prot;
-      BitSet incoming = iprot.readBitSet(16);
+      BitSet incoming = iprot.readBitSet(17);
       if (incoming.get(0)) {
         struct.tableName = iprot.readString();
         struct.setTableNameIsSet(true);
@@ -2033,10 +2128,14 @@ public class Table implements org.apache.thrift.TBase<Table, Table._Fields>, jav
         struct.setTemporaryIsSet(true);
       }
       if (incoming.get(14)) {
+        struct.rewriteEnabled = iprot.readBool();
+        struct.setRewriteEnabledIsSet(true);
+      }
+      if (incoming.get(15)) {
         struct.mmNextWriteId = iprot.readI64();
         struct.setMmNextWriteIdIsSet(true);
       }
-      if (incoming.get(15)) {
+      if (incoming.get(16)) {
         struct.mmWatermarkWriteId = iprot.readI64();
         struct.setMmWatermarkWriteIdIsSet(true);
       }

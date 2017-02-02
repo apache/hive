@@ -128,6 +128,11 @@ class JobHandleImpl<T extends Serializable> implements JobHandle<T> {
     return state;
   }
 
+  @Override
+  public Throwable getError() {
+    return promise.cause();
+  }
+
   public void setSparkCounters(SparkCounters sparkCounters) {
     this.sparkCounters = sparkCounters;
   }

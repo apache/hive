@@ -32,6 +32,8 @@ import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.parse.QBSubQuery.SubQueryType;
 import org.apache.hadoop.hive.ql.parse.QBSubQuery.SubQueryTypeDef;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFCount;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFResolver;
 
 public class SubQueryUtils {
 
@@ -252,7 +254,8 @@ public class SubQueryUtils {
    * @return
    * 0 if implies neither
    * 1 if implies aggregation
-   * 2 if implies windowing
+   * 2 if implies count
+   * 3 if implies windowing
    */
   static int checkAggOrWindowing(ASTNode expressionTree) throws SemanticException {
     int exprTokenType = expressionTree.getToken().getType();
@@ -262,12 +265,18 @@ public class SubQueryUtils {
       assert (expressionTree.getChildCount() != 0);
       if (expressionTree.getChild(expressionTree.getChildCount()-1).getType()
           == HiveParser.TOK_WINDOWSPEC) {
-        return 2;
+        return 3;
       }
       if (expressionTree.getChild(0).getType() == HiveParser.Identifier) {
         String functionName = SemanticAnalyzer.unescapeIdentifier(expressionTree.getChild(0)
             .getText());
-        if (FunctionRegistry.getGenericUDAFResolver(functionName) != null) {
+        GenericUDAFResolver udafResolver = FunctionRegistry.getGenericUDAFResolver(functionName);
+        if (udafResolver != null) {
+            // we need to know if it is COUNT since this is specialized for IN/NOT IN
+            // corr subqueries.
+          if(udafResolver instanceof GenericUDAFCount) {
+            return 2;
+          }
           return 1;
         }
       }

@@ -667,6 +667,9 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
   // since it is called by its parents' main thread, so no
   // more than 1 thread should call this close() function.
   public void close(boolean abort) throws HiveException {
+    if (isLogDebugEnabled) {
+      LOG.debug("close called for operator " + this);
+    }
 
     if (state == State.CLOSE) {
       return;
@@ -683,11 +686,12 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
     // set state as CLOSE as long as all parents are closed
     // state == CLOSE doesn't mean all children are also in state CLOSE
     state = State.CLOSE;
-    if (isLogDebugEnabled) {
-      LOG.debug(id + " finished. closing... ");
+    if (isLogInfoEnabled) {
+      LOG.info("Closing operator " + this);
     }
 
     abort |= abortOp.get();
+
 
     // call the operator specific close routine
     closeOp(abort);

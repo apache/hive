@@ -33,6 +33,7 @@ import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.SerDeSpec;
 import org.apache.hadoop.hive.serde2.SerDeStats;
+import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
@@ -113,7 +114,9 @@ public class RegexSerDe extends AbstractSerDe {
     } else {
       inputPattern = null;
     }
-    List<String> columnNames = Arrays.asList(columnNameProperty.split(","));
+    final String columnNameDelimiter = tbl.containsKey(serdeConstants.COLUMN_NAME_DELIMITER) ? tbl
+        .getProperty(serdeConstants.COLUMN_NAME_DELIMITER) : String.valueOf(SerDeUtils.COMMA);
+    List<String> columnNames = Arrays.asList(columnNameProperty.split(columnNameDelimiter));
     List<TypeInfo> columnTypes = TypeInfoUtils
         .getTypeInfosFromTypeString(columnTypeProperty);
     assert columnNames.size() == columnTypes.size();

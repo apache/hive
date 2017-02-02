@@ -11,6 +11,8 @@ elt(n, str1, str2, ...) - returns the n-th string
 Example:
   > SELECT elt(1, 'face', 'book') FROM src LIMIT 1;
   'face'
+Function class:org.apache.hadoop.hive.ql.udf.generic.GenericUDFElt
+Function type:BUILTIN
 PREHOOK: query: EXPLAIN
 SELECT elt(2, 'abc', 'defg'),
        elt(3, 'aa', 'bb', 'cc', 'dd', 'ee', 'ff', 'gg'),

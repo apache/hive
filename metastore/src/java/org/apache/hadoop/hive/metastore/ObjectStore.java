@@ -59,7 +59,6 @@ import javax.jdo.datastore.DataStoreCache;
 import javax.jdo.datastore.JDOConnection;
 import javax.jdo.identity.IntIdentity;
 
-import com.google.common.collect.Maps;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.conf.Configuration;
@@ -169,6 +168,7 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 
 /**
  * This class is the interface between the application logic and the database
@@ -1575,11 +1575,12 @@ public class ObjectStore implements RawStore, Configurable {
         tableType = TableType.MANAGED_TABLE.toString();
       }
     }
-    Table t = new Table(mtbl.getTableName(), mtbl.getDatabase().getName(), mtbl
+    final Table t = new Table(mtbl.getTableName(), mtbl.getDatabase().getName(), mtbl
         .getOwner(), mtbl.getCreateTime(), mtbl.getLastAccessTime(), mtbl
         .getRetention(), convertToStorageDescriptor(mtbl.getSd()),
         convertToFieldSchemas(mtbl.getPartitionKeys()), convertMap(mtbl.getParameters()),
         mtbl.getViewOriginalText(), mtbl.getViewExpandedText(), tableType);
+    t.setRewriteEnabled(mtbl.isRewriteEnabled());
     t.setMmNextWriteId(mtbl.getMmNextWriteId());
     t.setMmWatermarkWriteId(mtbl.getMmWatermarkWriteId());
     return t;
@@ -1619,7 +1620,7 @@ public class ObjectStore implements RawStore, Configurable {
         convertToMStorageDescriptor(tbl.getSd()), tbl.getOwner(), tbl
         .getCreateTime(), tbl.getLastAccessTime(), tbl.getRetention(),
         convertToMFieldSchemas(tbl.getPartitionKeys()), tbl.getParameters(),
-        tbl.getViewOriginalText(), tbl.getViewExpandedText(),
+        tbl.getViewOriginalText(), tbl.getViewExpandedText(), tbl.isRewriteEnabled(),
         tableType, tbl.isSetMmNextWriteId() ?  tbl.getMmNextWriteId() : 0,
             tbl.isSetMmWatermarkWriteId() ?  tbl.getMmWatermarkWriteId() : -1);
   }
@@ -3388,6 +3389,7 @@ public class ObjectStore implements RawStore, Configurable {
       oldt.setViewExpandedText(newt.getViewExpandedText());
       oldt.setMmNextWriteId(newt.getMmNextWriteId());
       oldt.setMmWatermarkWriteId(newt.getMmWatermarkWriteId());
+      oldt.setRewriteEnabled(newt.isRewriteEnabled());
 
       // commit the changes
       success = commitTransaction();
@@ -3706,7 +3708,7 @@ public class ObjectStore implements RawStore, Configurable {
       }
 
       MColumnDescriptor parentCD = retrieveCD ? nParentTable.mcd : parentTable.getSd().getCD();
-      List<MFieldSchema> parentCols = parentCD.getCols();
+      List<MFieldSchema> parentCols = parentCD == null ? null : parentCD.getCols();
       int parentIntegerIndex =
         getColumnIndexFromTableColumns(parentCols, fks.get(i).getPkcolumn_name());
       if (parentIntegerIndex == -1) {
@@ -3781,7 +3783,7 @@ public class ObjectStore implements RawStore, Configurable {
 
       MColumnDescriptor parentCD = retrieveCD ? nParentTable.mcd : parentTable.getSd().getCD();
       int parentIntegerIndex =
-        getColumnIndexFromTableColumns(parentCD.getCols(), pks.get(i).getColumn_name());
+        getColumnIndexFromTableColumns(parentCD == null ? null : parentCD.getCols(), pks.get(i).getColumn_name());
 
       if (parentIntegerIndex == -1) {
         throw new InvalidObjectException("Parent column not found: " + pks.get(i).getColumn_name());
@@ -7264,6 +7266,10 @@ public class ObjectStore implements RawStore, Configurable {
 
   private List<MTableColumnStatistics> getMTableColumnStatistics(Table table, List<String> colNames, QueryWrapper queryWrapper)
       throws MetaException {
+    if (colNames == null || colNames.isEmpty()) {
+      return null;
+    }
+
     boolean committed = false;
 
     try {
@@ -7302,7 +7308,6 @@ public class ObjectStore implements RawStore, Configurable {
     } finally {
       if (!committed) {
         rollbackTransaction();
-        return Lists.newArrayList();
       }
     }
   }

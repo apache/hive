@@ -21,7 +21,9 @@ import static org.junit.Assert.*;
 
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.metrics.common.MetricsConstant;
@@ -43,6 +45,8 @@ import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.PrincipalType;
 import org.apache.hadoop.hive.metastore.api.Role;
+import org.apache.hadoop.hive.metastore.api.SQLForeignKey;
+import org.apache.hadoop.hive.metastore.api.SQLPrimaryKey;
 import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
@@ -164,14 +168,14 @@ public class TestObjectStore {
     StorageDescriptor sd = createFakeSd("location");
     HashMap<String,String> params = new HashMap<String,String>();
     params.put("EXTERNAL", "false");
-    Table tbl1 = new Table(TABLE1, DB1, "owner", 1, 2, 3, sd, null, params, "viewOriginalText", "viewExpandedText", "MANAGED_TABLE");
+    Table tbl1 = new Table(TABLE1, DB1, "owner", 1, 2, 3, sd, null, params, null, null, "MANAGED_TABLE");
     objectStore.createTable(tbl1);
 
     List<String> tables = objectStore.getAllTables(DB1);
     Assert.assertEquals(1, tables.size());
     Assert.assertEquals(TABLE1, tables.get(0));
 
-    Table newTbl1 = new Table("new" + TABLE1, DB1, "owner", 1, 2, 3, sd, null, params, "viewOriginalText", "viewExpandedText", "MANAGED_TABLE");
+    Table newTbl1 = new Table("new" + TABLE1, DB1, "owner", 1, 2, 3, sd, null, params, null, null, "MANAGED_TABLE");
     objectStore.alterTable(DB1, TABLE1, newTbl1);
     tables = objectStore.getTables(DB1, "new*");
     Assert.assertEquals(1, tables.size());
@@ -347,7 +351,7 @@ public class TestObjectStore {
     tableParams.put("EXTERNAL", "false");
     FieldSchema partitionKey1 = new FieldSchema("Country", serdeConstants.STRING_TYPE_NAME, "");
     FieldSchema partitionKey2 = new FieldSchema("State", serdeConstants.STRING_TYPE_NAME, "");
-    Table tbl1 = new Table(TABLE1, DB1, "owner", 1, 2, 3, sd, Arrays.asList(partitionKey1, partitionKey2), tableParams, "viewOriginalText", "viewExpandedText", "MANAGED_TABLE");
+    Table tbl1 = new Table(TABLE1, DB1, "owner", 1, 2, 3, sd, Arrays.asList(partitionKey1, partitionKey2), tableParams, null, null, "MANAGED_TABLE");
     objectStore.createTable(tbl1);
     HashMap<String, String> partitionParams = new HashMap<String, String>();
     partitionParams.put("PARTITION_LEVEL_PRIVILEGE", "true");
@@ -492,6 +496,23 @@ public class TestObjectStore {
           List<Partition> parts = store.getPartitions(db, tbl, 100);
           for (Partition part : parts) {
             store.dropPartition(db, tbl, part.getValues());
+          }
+          // Find any constraints and drop them
+          Set<String> constraints = new HashSet<>();
+          List<SQLPrimaryKey> pk = store.getPrimaryKeys(db, tbl);
+          if (pk != null) {
+            for (SQLPrimaryKey pkcol : pk) {
+              constraints.add(pkcol.getPk_name());
+            }
+          }
+          List<SQLForeignKey> fks = store.getForeignKeys(null, null, db, tbl);
+          if (fks != null) {
+            for (SQLForeignKey fkcol : fks) {
+              constraints.add(fkcol.getFk_name());
+            }
+          }
+          for (String constraint : constraints) {
+            store.dropConstraint(db, tbl, constraint);
           }
           store.dropTable(db, tbl);
         }

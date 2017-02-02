@@ -12,11 +12,9 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test
 PREHOOK: query: INSERT INTO TABLE test VALUES ('0001-01-01 00:00:00.000000000'), ('9999-12-31 23:59:59.999999999')
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__1
 PREHOOK: Output: default@test
 POSTHOOK: query: INSERT INTO TABLE test VALUES ('0001-01-01 00:00:00.000000000'), ('9999-12-31 23:59:59.999999999')
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__1
 POSTHOOK: Output: default@test
 POSTHOOK: Lineage: test.ts EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 PREHOOK: query: EXPLAIN
@@ -57,7 +55,7 @@ POSTHOOK: type: QUERY
 Plan optimized by CBO.
 
 Vertex dependency in root stage
-Reducer 2 <- Map 1 (SIMPLE_EDGE)
+Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
 
 Stage-0
   Fetch Operator
@@ -69,8 +67,8 @@ Stage-0
           Output:["_col0","_col1","_col2"]
           Group By Operator [GBY_4] (rows=1 width=80)
             Output:["_col0","_col1"],aggregations:["min(VALUE._col0)","max(VALUE._col1)"]
-          <-Map 1 [SIMPLE_EDGE] llap
-            SHUFFLE [RS_3]
+          <-Map 1 [CUSTOM_SIMPLE_EDGE] llap
+            PARTITION_ONLY_SHUFFLE [RS_3]
               Group By Operator [GBY_2] (rows=1 width=80)
                 Output:["_col0","_col1"],aggregations:["min(ts)","max(ts)"]
                 Select Operator [SEL_1] (rows=2 width=40)
@@ -125,7 +123,7 @@ POSTHOOK: type: QUERY
 Plan optimized by CBO.
 
 Vertex dependency in root stage
-Reducer 2 <- Map 1 (SIMPLE_EDGE)
+Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
 
 Stage-0
   Fetch Operator
@@ -137,8 +135,8 @@ Stage-0
           Output:["_col0","_col1","_col2"]
           Group By Operator [GBY_10] (rows=1 width=80)
             Output:["_col0","_col1"],aggregations:["min(VALUE._col0)","max(VALUE._col1)"]
-          <-Map 1 [SIMPLE_EDGE] vectorized, llap
-            SHUFFLE [RS_9]
+          <-Map 1 [CUSTOM_SIMPLE_EDGE] vectorized, llap
+            PARTITION_ONLY_SHUFFLE [RS_9]
               Group By Operator [GBY_8] (rows=1 width=80)
                 Output:["_col0","_col1"],aggregations:["min(ts)","max(ts)"]
                 Select Operator [SEL_7] (rows=2 width=40)

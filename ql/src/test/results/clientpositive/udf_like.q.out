@@ -11,6 +11,8 @@ like(str, pattern) - Checks if str matches pattern
 Example:
   > SELECT a.* FROM srcpart a WHERE a.hr like '%2' LIMIT 1;
   27      val_27  2008-04-08      12
+Function class:org.apache.hadoop.hive.ql.udf.UDFLike
+Function type:BUILTIN
 PREHOOK: query: EXPLAIN
 SELECT '_%_' LIKE '%\_\%\_%', '__' LIKE '%\_\%\_%', '%%_%_' LIKE '%\_\%\_%', '%_%_%' LIKE '%\%\_\%',
   '_%_' LIKE '\%\_%', '%__' LIKE '__\%%', '_%' LIKE '\_\%\_\%%', '_%' LIKE '\_\%_%',

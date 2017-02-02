@@ -1,8 +1,6 @@
-PREHOOK: query: -- TestSerDe is a user defined serde where the default delimiter is Ctrl-B
-DROP TABLE INPUT16
+PREHOOK: query: DROP TABLE INPUT16
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: -- TestSerDe is a user defined serde where the default delimiter is Ctrl-B
-DROP TABLE INPUT16
+POSTHOOK: query: DROP TABLE INPUT16
 POSTHOOK: type: DROPTABLE
 PREHOOK: query: CREATE TABLE INPUT16(KEY STRING, VALUE STRING) ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.TestSerDe' STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE

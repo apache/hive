@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.nio.charset.CharacterCodingException;
+import java.nio.charset.StandardCharsets;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -66,29 +67,19 @@ public class LazyHiveDecimal extends LazyPrimitive<LazyHiveDecimalObjectInspecto
    */
   @Override
   public void init(ByteArrayRef bytes, int start, int length) {
-    String byteData = null;
-    try {
-      byteData = Text.decode(bytes.getData(), start, length);
-    } catch (CharacterCodingException e) {
-      isNull = true;
-      LOG.debug("Data not in the HiveDecimal data type range so converted to null.", e);
-      return;
-    }
 
-    HiveDecimal dec = HiveDecimal.create(byteData);
-    dec = enforcePrecisionScale(dec);
-    if (dec != null) {
-      data.set(dec);
-      isNull = false;
+    // Set the HiveDecimalWritable from bytes without converting to String first for
+    // better performance.
+    data.setFromBytes(bytes.getData(), start, length);
+    if (!data.isSet()) {
+      isNull = true;
     } else {
-      LOG.debug("Data not in the HiveDecimal data type range so converted to null. Given data is :"
-          + byteData);
-      isNull = true;
+      isNull = !data.mutateEnforcePrecisionScale(precision, scale);
     }
-  }
-
-  private HiveDecimal enforcePrecisionScale(HiveDecimal dec) {
-    return HiveDecimal.enforcePrecisionScale(dec, precision, scale);
+    if (isNull) {
+      LOG.debug("Data not in the HiveDecimal data type range so converted to null. Given data is :"
+          + new String(bytes.getData(), start, length, StandardCharsets.UTF_8));
+    }
   }
 
   @Override
@@ -107,8 +98,47 @@ public class LazyHiveDecimal extends LazyPrimitive<LazyHiveDecimalObjectInspecto
     if (hiveDecimal == null) {
       outputStream.write(nullBytes);
     } else {
-      ByteBuffer b = Text.encode(hiveDecimal.toFormatString(scale));
-      outputStream.write(b.array(), 0, b.limit());
+      byte[] scratchBuffer = new byte[HiveDecimal.SCRATCH_BUFFER_LEN_TO_BYTES];
+      int index = hiveDecimal.toFormatBytes(scale, scratchBuffer);
+      outputStream.write(scratchBuffer, index, scratchBuffer.length - index);
+    }
+  }
+
+  /**
+   * Writes HiveDecimal object to output stream as string
+   * @param outputStream
+   * @param hiveDecimal
+   * @throws IOException
+   */
+  public static void writeUTF8(
+      OutputStream outputStream,
+      HiveDecimal hiveDecimal, int scale,
+      byte[] scratchBuffer)
+    throws IOException {
+    if (hiveDecimal == null) {
+      outputStream.write(nullBytes);
+    } else {
+      int index = hiveDecimal.toFormatBytes(scale, scratchBuffer);
+      outputStream.write(scratchBuffer, index, scratchBuffer.length - index);
+    }
+  }
+
+  /**
+   * Writes HiveDecimalWritable object to output stream as string
+   * @param outputStream
+   * @param hiveDecimal
+   * @throws IOException
+   */
+  public static void writeUTF8(
+      OutputStream outputStream,
+      HiveDecimalWritable hiveDecimalWritable, int scale,
+      byte[] scratchBuffer)
+    throws IOException {
+    if (hiveDecimalWritable == null || !hiveDecimalWritable.isSet()) {
+      outputStream.write(nullBytes);
+    } else {
+      int index = hiveDecimalWritable.toFormatBytes(scale, scratchBuffer);
+      outputStream.write(scratchBuffer, index, scratchBuffer.length - index);
     }
   }
 }

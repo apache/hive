@@ -12,11 +12,9 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@predicate_fold_tb
 PREHOOK: query: insert into predicate_fold_tb values(NULL), (1), (2), (3), (4), (5)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__1
 PREHOOK: Output: default@predicate_fold_tb
 POSTHOOK: query: insert into predicate_fold_tb values(NULL), (1), (2), (3), (4), (5)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__1
 POSTHOOK: Output: default@predicate_fold_tb
 POSTHOOK: Lineage: predicate_fold_tb.value EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 PREHOOK: query: explain

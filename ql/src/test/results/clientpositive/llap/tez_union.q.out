@@ -176,7 +176,7 @@ STAGE PLANS:
         Map 6 <- Union 7 (CONTAINS)
         Map 8 <- Union 7 (CONTAINS)
         Reducer 3 <- Union 2 (SIMPLE_EDGE), Union 7 (SIMPLE_EDGE)
-        Reducer 4 <- Reducer 3 (SIMPLE_EDGE)
+        Reducer 4 <- Reducer 3 (CUSTOM_SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -1429,6 +1429,8 @@ POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@table1
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@TABLE3
+POSTHOOK: Lineage: TABLE3.emp_id SIMPLE [(table1)table1.FieldSchema(name:emp_id, type:int, comment:null), ]
+POSTHOOK: Lineage: TABLE3.emp_name SIMPLE [(table1)table1.FieldSchema(name:emp_name, type:string, comment:null), ]
 PREHOOK: query: explain formatted select count(*) from TABLE3
 PREHOOK: type: QUERY
 POSTHOOK: query: explain formatted select count(*) from TABLE3

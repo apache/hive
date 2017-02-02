@@ -1,12 +1,8 @@
-PREHOOK: query: -- SORT_QUERY_RESULTS
-
-create table dest1(key int, val int)
+PREHOOK: query: create table dest1(key int, val int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@dest1
-POSTHOOK: query: -- SORT_QUERY_RESULTS
-
-create table dest1(key int, val int)
+POSTHOOK: query: create table dest1(key int, val int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@dest1

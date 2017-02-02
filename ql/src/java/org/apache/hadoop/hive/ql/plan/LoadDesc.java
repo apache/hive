@@ -43,7 +43,7 @@ public class LoadDesc implements Serializable {
     return sourcePath;
   }
 
-  public void setSourcePath(Path path) {
-    this.sourcePath = path;
+  public void setSourcePath(Path sourcePath) {
+    this.sourcePath = sourcePath;
   }
 }

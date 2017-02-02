@@ -1,0 +1,1 @@
+FAILED: SemanticException [Error 10250]: org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSubquerySemanticException: Line 1:62 Invalid SubQuery expression 'p_type': Scalar subqueries with aggregate cannot have non-equi join predicate

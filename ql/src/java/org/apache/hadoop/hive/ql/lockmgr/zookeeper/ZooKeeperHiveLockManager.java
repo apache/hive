@@ -24,6 +24,8 @@ import org.apache.hadoop.hive.common.metrics.common.Metrics;
 import org.apache.hadoop.hive.common.metrics.common.MetricsConstant;
 import org.apache.hadoop.hive.common.metrics.common.MetricsFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.Driver.DriverState;
+import org.apache.hadoop.hive.ql.Driver.LockedDriverState;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.lockmgr.*;
 import org.apache.hadoop.hive.ql.lockmgr.HiveLockObject.HiveLockObjectData;
@@ -146,7 +148,7 @@ public class ZooKeeperHiveLockManager implements HiveLockManager {
    **/
   @Override
   public List<HiveLock> lock(List<HiveLockObj> lockObjects,
-      boolean keepAlive) throws LockException
+      boolean keepAlive, LockedDriverState lDrvState) throws LockException
   {
     // Sort the objects first. You are guaranteed that if a partition is being locked,
     // the table has already been locked
@@ -184,16 +186,29 @@ public class ZooKeeperHiveLockManager implements HiveLockManager {
       }
 
       HiveLock lock = null;
-      try {
-        lock = lock(lockObject.getObj(), lockObject.getMode(), keepAlive, true);
-      } catch (LockException e) {
-        console.printError("Error in acquireLocks..." );
-        LOG.error("Error in acquireLocks...", e);
-        lock = null;
+      boolean isInterrupted = false;
+      if (lDrvState != null) {
+        lDrvState.stateLock.lock();
+        if (lDrvState.driverState == DriverState.INTERRUPT) {
+          isInterrupted = true;
+        }
+        lDrvState.stateLock.unlock();
+      }
+      if (!isInterrupted) {
+        try {
+          lock = lock(lockObject.getObj(), lockObject.getMode(), keepAlive, true);
+        } catch (LockException e) {
+          console.printError("Error in acquireLocks..." );
+          LOG.error("Error in acquireLocks...", e);
+          lock = null;
+        }
       }
 
       if (lock == null) {
         releaseLocks(hiveLocks);
+        if (isInterrupted) {
+          throw new LockException(ErrorMsg.LOCK_ACQUIRE_CANCELLED.getMsg());
+        }
         return null;
       }
 

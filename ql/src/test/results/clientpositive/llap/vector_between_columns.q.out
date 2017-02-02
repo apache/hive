@@ -1,17 +1,9 @@
-PREHOOK: query: -- SORT_QUERY_RESULTS
---
--- Verify the VectorUDFAdaptor to GenericUDFBetween works for PROJECTION and FILTER.
---
-create table if not exists TSINT_txt ( RNUM int , CSINT smallint )
+PREHOOK: query: create table if not exists TSINT_txt ( RNUM int , CSINT smallint )
 ROW FORMAT DELIMITED FIELDS TERMINATED BY '|' LINES TERMINATED BY '\n'
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@TSINT_txt
-POSTHOOK: query: -- SORT_QUERY_RESULTS
---
--- Verify the VectorUDFAdaptor to GenericUDFBetween works for PROJECTION and FILTER.
---
-create table if not exists TSINT_txt ( RNUM int , CSINT smallint )
+POSTHOOK: query: create table if not exists TSINT_txt ( RNUM int , CSINT smallint )
 ROW FORMAT DELIMITED FIELDS TERMINATED BY '|' LINES TERMINATED BY '\n'
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default

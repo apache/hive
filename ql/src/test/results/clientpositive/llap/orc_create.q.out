@@ -1,10 +1,6 @@
-PREHOOK: query: -- SORT_QUERY_RESULTS
-
-DROP TABLE orc_create
+PREHOOK: query: DROP TABLE orc_create
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: -- SORT_QUERY_RESULTS
-
-DROP TABLE orc_create
+POSTHOOK: query: DROP TABLE orc_create
 POSTHOOK: type: DROPTABLE
 PREHOOK: query: DROP TABLE orc_create_complex
 PREHOOK: type: DROPTABLE
@@ -506,28 +502,24 @@ POSTHOOK: Lineage: orc_create_people PARTITION(state=Or).id SIMPLE [(orc_create_
 POSTHOOK: Lineage: orc_create_people PARTITION(state=Or).last_name SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:last_name, type:string, comment:null), ]
 POSTHOOK: Lineage: orc_create_people PARTITION(state=Or).salary SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:salary, type:decimal(10,0), comment:null), ]
 POSTHOOK: Lineage: orc_create_people PARTITION(state=Or).start_date SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:start_date, type:timestamp, comment:null), ]
-PREHOOK: query: -- test predicate push down with partition pruning
-SELECT COUNT(*) FROM orc_create_people where id < 10 and state = 'Ca'
+PREHOOK: query: SELECT COUNT(*) FROM orc_create_people where id < 10 and state = 'Ca'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_create_people
 PREHOOK: Input: default@orc_create_people@state=Ca
 #### A masked pattern was here ####
-POSTHOOK: query: -- test predicate push down with partition pruning
-SELECT COUNT(*) FROM orc_create_people where id < 10 and state = 'Ca'
+POSTHOOK: query: SELECT COUNT(*) FROM orc_create_people where id < 10 and state = 'Ca'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orc_create_people
 POSTHOOK: Input: default@orc_create_people@state=Ca
 #### A masked pattern was here ####
 5
-PREHOOK: query: -- test predicate push down
-SELECT COUNT(*) FROM orc_create_people where id = 50
+PREHOOK: query: SELECT COUNT(*) FROM orc_create_people where id = 50
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_create_people
 PREHOOK: Input: default@orc_create_people@state=Ca
 PREHOOK: Input: default@orc_create_people@state=Or
 #### A masked pattern was here ####
-POSTHOOK: query: -- test predicate push down
-SELECT COUNT(*) FROM orc_create_people where id = 50
+POSTHOOK: query: SELECT COUNT(*) FROM orc_create_people where id = 50
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orc_create_people
 POSTHOOK: Input: default@orc_create_people@state=Ca
@@ -653,29 +645,25 @@ POSTHOOK: Input: default@orc_create_people@state=Ca
 POSTHOOK: Input: default@orc_create_people@state=Or
 #### A masked pattern was here ####
 20
-PREHOOK: query: -- test predicate push down with partition pruning
-SELECT COUNT(*) FROM orc_create_people where salary = 200.00 and state = 'Ca'
+PREHOOK: query: SELECT COUNT(*) FROM orc_create_people where salary = 200.00 and state = 'Ca'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_create_people
 PREHOOK: Input: default@orc_create_people@state=Ca
 #### A masked pattern was here ####
-POSTHOOK: query: -- test predicate push down with partition pruning
-SELECT COUNT(*) FROM orc_create_people where salary = 200.00 and state = 'Ca'
+POSTHOOK: query: SELECT COUNT(*) FROM orc_create_people where salary = 200.00 and state = 'Ca'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orc_create_people
 POSTHOOK: Input: default@orc_create_people@state=Ca
 #### A masked pattern was here ####
 5
-PREHOOK: query: -- test predicate push down with no column projection
-SELECT id, first_name, last_name, address
+PREHOOK: query: SELECT id, first_name, last_name, address
   FROM orc_create_people WHERE id > 90
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_create_people
 PREHOOK: Input: default@orc_create_people@state=Ca
 PREHOOK: Input: default@orc_create_people@state=Or
 #### A masked pattern was here ####
-POSTHOOK: query: -- test predicate push down with no column projection
-SELECT id, first_name, last_name, address
+POSTHOOK: query: SELECT id, first_name, last_name, address
   FROM orc_create_people WHERE id > 90
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orc_create_people
@@ -692,8 +680,7 @@ POSTHOOK: Input: default@orc_create_people@state=Or
 97	Dana	Carter	814-601 Purus. Av.
 98	Juliet	Battle	Ap #535-1965 Cursus St.
 99	Wynter	Vincent	626-8492 Mollis Avenue
-PREHOOK: query: -- test create with lower case compression method.
-CREATE TABLE orc_create_cprl (id int)
+PREHOOK: query: CREATE TABLE orc_create_cprl (id int)
 PARTITIONED BY (cdate date)
 STORED AS ORC
 TBLPROPERTIES (
@@ -701,8 +688,7 @@ TBLPROPERTIES (
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@orc_create_cprl
-POSTHOOK: query: -- test create with lower case compression method.
-CREATE TABLE orc_create_cprl (id int)
+POSTHOOK: query: CREATE TABLE orc_create_cprl (id int)
 PARTITIONED BY (cdate date)
 STORED AS ORC
 TBLPROPERTIES (

@@ -1,12 +1,8 @@
-PREHOOK: query: -- Tests truncating a column from a table stored as a sequence file
-
-CREATE TABLE test_tab (key STRING, value STRING) STORED AS SEQUENCEFILE
+PREHOOK: query: CREATE TABLE test_tab (key STRING, value STRING) STORED AS SEQUENCEFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@test_tab
-POSTHOOK: query: -- Tests truncating a column from a table stored as a sequence file
-
-CREATE TABLE test_tab (key STRING, value STRING) STORED AS SEQUENCEFILE
+POSTHOOK: query: CREATE TABLE test_tab (key STRING, value STRING) STORED AS SEQUENCEFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_tab

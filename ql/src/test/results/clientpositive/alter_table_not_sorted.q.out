@@ -68,6 +68,7 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	SORTBUCKETCOLSPREFIX	TRUE                
 #### A masked pattern was here ####
 	numFiles            	0                   

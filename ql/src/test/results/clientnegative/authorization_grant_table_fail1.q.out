@@ -1,17 +1,12 @@
-PREHOOK: query: -- current user has been set (comment line before the set cmd is resulting in parse error!!)
-
-CREATE TABLE  table_priv_gfail1(i int)
+PREHOOK: query: CREATE TABLE  table_priv_gfail1(i int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@table_priv_gfail1
-POSTHOOK: query: -- current user has been set (comment line before the set cmd is resulting in parse error!!)
-
-CREATE TABLE  table_priv_gfail1(i int)
+POSTHOOK: query: CREATE TABLE  table_priv_gfail1(i int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@table_priv_gfail1
-PREHOOK: query: -- try grant insert to user3 as user2
-GRANT INSERT ON table_priv_gfail1 TO USER user3
+PREHOOK: query: GRANT INSERT ON table_priv_gfail1 TO USER user3
 PREHOOK: type: GRANT_PRIVILEGE
 PREHOOK: Output: default@table_priv_gfail1
 FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. Permission denied: Principal [name=user2, type=USER] does not have following privileges for operation GRANT_PRIVILEGE [[INSERT with grant] on Object [type=TABLE_OR_VIEW, name=default.table_priv_gfail1]]

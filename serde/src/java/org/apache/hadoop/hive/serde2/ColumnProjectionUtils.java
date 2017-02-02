@@ -19,7 +19,10 @@
 package org.apache.hadoop.hive.serde2;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.util.StringUtils;
@@ -140,8 +143,6 @@ public final class ColumnProjectionUtils {
       newConfStr = newConfStr + StringUtils.COMMA_STR + old;
     }
     setReadNestedColumnPathConf(conf, newConfStr);
-    // Set READ_ALL_COLUMNS to false
-    conf.setBoolean(READ_ALL_COLUMNS, false);
   }
 
 
@@ -194,18 +195,10 @@ public final class ColumnProjectionUtils {
     return result;
   }
 
-  public static List<String> getNestedColumnPaths(Configuration conf) {
+  public static Set<String> getNestedColumnPaths(Configuration conf) {
     String skips =
       conf.get(READ_NESTED_COLUMN_PATH_CONF_STR, READ_NESTED_COLUMN_PATH_CONF_STR_DEFAULT);
-    String[] list = StringUtils.split(skips);
-    List<String> result = new ArrayList<>(list.length);
-    for (String element : list) {
-      // it may contain duplicates, remove duplicates
-      if (!result.contains(element)) {
-        result.add(element);
-      }
-    }
-    return result;
+    return new HashSet<>(Arrays.asList(StringUtils.split(skips)));
   }
 
   public static String[] getReadColumnNames(Configuration conf) {
@@ -227,6 +220,7 @@ public final class ColumnProjectionUtils {
   private static void setReadNestedColumnPathConf(
     Configuration conf,
     String nestedColumnPaths) {
+    nestedColumnPaths = nestedColumnPaths.toLowerCase();
     if (nestedColumnPaths.trim().isEmpty()) {
       conf.set(READ_NESTED_COLUMN_PATH_CONF_STR, READ_NESTED_COLUMN_PATH_CONF_STR_DEFAULT);
     } else {

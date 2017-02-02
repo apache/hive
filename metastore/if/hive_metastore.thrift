@@ -302,11 +302,12 @@ struct Table {
   9: map<string, string> parameters,   // to store comments or any other user level parameters
   10: string viewOriginalText,         // original view text, null for non-view
   11: string viewExpandedText,         // expanded view text, null for non-view
-  12: string tableType,                 // table type enum, e.g. EXTERNAL_TABLE
+  12: string tableType,                // table type enum, e.g. EXTERNAL_TABLE
   13: optional PrincipalPrivilegeSet privileges,
   14: optional bool temporary=false,
-  15: optional i64 mmNextWriteId,
-  16: optional i64 mmWatermarkWriteId
+  15: optional bool rewriteEnabled,     // rewrite enabled or not
+  16: optional i64 mmNextWriteId,
+  17: optional i64 mmWatermarkWriteId
 }
 
 struct Partition {
@@ -752,6 +753,12 @@ struct CompactionRequest {
     6: optional map<string, string> properties
 }
 
+struct CompactionResponse {
+    1: required i64 id,
+    2: required string state,
+    3: required bool accepted
+}
+
 struct ShowCompactRequest {
 }
 
@@ -768,6 +775,7 @@ struct ShowCompactResponseElement {
     10: optional string metaInfo,
     11: optional i64 endTime,
     12: optional string hadoopJobId = "None",
+    13: optional i64 id,
 }
 
 struct ShowCompactResponse {
@@ -805,7 +813,9 @@ struct CurrentNotificationEventId {
 }
 
 struct InsertEventRequestData {
-    1: required list<string> filesAdded
+    1: required list<string> filesAdded,
+    // Checksum of files (hex string of checksum byte payload)
+    2: optional list<string> filesAddedChecksum,
 }
 
 union FireEventRequestData {
@@ -1501,6 +1511,7 @@ service ThriftHiveMetastore extends fb303.FacebookService
   void heartbeat(1:HeartbeatRequest ids) throws (1:NoSuchLockException o1, 2:NoSuchTxnException o2, 3:TxnAbortedException o3)
   HeartbeatTxnRangeResponse heartbeat_txn_range(1:HeartbeatTxnRangeRequest txns)
   void compact(1:CompactionRequest rqst) 
+  CompactionResponse compact2(1:CompactionRequest rqst) 
   ShowCompactResponse show_compact(1:ShowCompactRequest rqst)
   void add_dynamic_partitions(1:AddDynamicPartitions rqst) throws (1:NoSuchTxnException o1, 2:TxnAbortedException o2)
 

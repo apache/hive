@@ -222,7 +222,7 @@ public class PartialScanTask extends Task<PartialScanWork> implements
 
       // Finally SUBMIT the JOB!
       rj = jc.submitJob(job);
-
+      this.jobID = rj.getJobID();
       returnVal = jobExecHelper.progress(rj, jc, ctx);
       success = (returnVal == 0);
 
@@ -252,7 +252,6 @@ public class PartialScanTask extends Task<PartialScanWork> implements
           if (returnVal != 0) {
             rj.killJob();
           }
-          jobID = rj.getID().toString();
         }
       } catch (Exception e) {
 	LOG.warn("Failed in cleaning up ", e);

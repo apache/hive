@@ -1,12 +1,8 @@
-PREHOOK: query: -- SORT_QUERY_RESULTS
-
-CREATE TABLE tbl1(key int, value string) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
+PREHOOK: query: CREATE TABLE tbl1(key int, value string) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@tbl1
-POSTHOOK: query: -- SORT_QUERY_RESULTS
-
-CREATE TABLE tbl1(key int, value string) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
+POSTHOOK: query: CREATE TABLE tbl1(key int, value string) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tbl1
@@ -197,6 +193,7 @@ STAGE PLANS:
               SORTBUCKETCOLSPREFIX TRUE
               bucket_count 2
               bucket_field_name key
+              column.name.delimiter ,
               columns key,value
               columns.comments 
               columns.types int:string
@@ -219,6 +216,7 @@ STAGE PLANS:
                 SORTBUCKETCOLSPREFIX TRUE
                 bucket_count 2
                 bucket_field_name key
+                column.name.delimiter ,
                 columns key,value
                 columns.comments 
                 columns.types int:string
@@ -245,6 +243,7 @@ STAGE PLANS:
               SORTBUCKETCOLSPREFIX TRUE
               bucket_count 2
               bucket_field_name key
+              column.name.delimiter ,
               columns key,value
               columns.comments 
               columns.types int:string
@@ -267,6 +266,7 @@ STAGE PLANS:
                 SORTBUCKETCOLSPREFIX TRUE
                 bucket_count 2
                 bucket_field_name key
+                column.name.delimiter ,
                 columns key,value
                 columns.comments 
                 columns.types int:string
@@ -293,6 +293,7 @@ STAGE PLANS:
               SORTBUCKETCOLSPREFIX TRUE
               bucket_count 2
               bucket_field_name key
+              column.name.delimiter ,
               columns key,value
               columns.comments 
               columns.types int:string
@@ -315,6 +316,7 @@ STAGE PLANS:
                 SORTBUCKETCOLSPREFIX TRUE
                 bucket_count 2
                 bucket_field_name key
+                column.name.delimiter ,
                 columns key,value
                 columns.comments 
                 columns.types int:string
@@ -547,6 +549,7 @@ STAGE PLANS:
               SORTBUCKETCOLSPREFIX TRUE
               bucket_count 2
               bucket_field_name key
+              column.name.delimiter ,
               columns key,value
               columns.comments 
               columns.types int:string
@@ -569,6 +572,7 @@ STAGE PLANS:
                 SORTBUCKETCOLSPREFIX TRUE
                 bucket_count 2
                 bucket_field_name key
+                column.name.delimiter ,
                 columns key,value
                 columns.comments 
                 columns.types int:string
@@ -595,6 +599,7 @@ STAGE PLANS:
               SORTBUCKETCOLSPREFIX TRUE
               bucket_count 2
               bucket_field_name key
+              column.name.delimiter ,
               columns key,value
               columns.comments 
               columns.types int:string
@@ -617,6 +622,7 @@ STAGE PLANS:
                 SORTBUCKETCOLSPREFIX TRUE
                 bucket_count 2
                 bucket_field_name key
+                column.name.delimiter ,
                 columns key,value
                 columns.comments 
                 columns.types int:string
@@ -643,6 +649,7 @@ STAGE PLANS:
               SORTBUCKETCOLSPREFIX TRUE
               bucket_count 2
               bucket_field_name key
+              column.name.delimiter ,
               columns key,value
               columns.comments 
               columns.types int:string
@@ -665,6 +672,7 @@ STAGE PLANS:
                 SORTBUCKETCOLSPREFIX TRUE
                 bucket_count 2
                 bucket_field_name key
+                column.name.delimiter ,
                 columns key,value
                 columns.comments 
                 columns.types int:string

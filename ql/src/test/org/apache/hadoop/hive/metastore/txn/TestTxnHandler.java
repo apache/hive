@@ -17,11 +17,14 @@
  */
 package org.apache.hadoop.hive.metastore.txn;
 
+import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.AbortTxnRequest;
+import org.apache.hadoop.hive.metastore.api.AddDynamicPartitions;
 import org.apache.hadoop.hive.metastore.api.CheckLockRequest;
 import org.apache.hadoop.hive.metastore.api.CommitTxnRequest;
 import org.apache.hadoop.hive.metastore.api.CompactionRequest;
+import org.apache.hadoop.hive.metastore.api.CompactionResponse;
 import org.apache.hadoop.hive.metastore.api.CompactionType;
 import org.apache.hadoop.hive.metastore.api.DataOperationType;
 import org.apache.hadoop.hive.metastore.api.GetOpenTxnsInfoResponse;
@@ -137,30 +140,71 @@ public class TestTxnHandler {
 
   @Test
   public void testAbortTxn() throws Exception {
-    OpenTxnsResponse openedTxns = txnHandler.openTxns(new OpenTxnRequest(2, "me", "localhost"));
+    OpenTxnsResponse openedTxns = txnHandler.openTxns(new OpenTxnRequest(3, "me", "localhost"));
     List<Long> txnList = openedTxns.getTxn_ids();
     long first = txnList.get(0);
     assertEquals(1L, first);
     long second = txnList.get(1);
     assertEquals(2L, second);
     txnHandler.abortTxn(new AbortTxnRequest(1));
+    List<String> parts = new ArrayList<String>();
+    parts.add("p=1");
+    AddDynamicPartitions adp = new AddDynamicPartitions(3, "default", "T", parts);
+    adp.setOperationType(DataOperationType.INSERT);
+    txnHandler.addDynamicPartitions(adp);
     GetOpenTxnsInfoResponse txnsInfo = txnHandler.getOpenTxnsInfo();
-    assertEquals(2L, txnsInfo.getTxn_high_water_mark());
-    assertEquals(2, txnsInfo.getOpen_txns().size());
+    assertEquals(3, txnsInfo.getTxn_high_water_mark());
+    assertEquals(3, txnsInfo.getOpen_txns().size());
     assertEquals(1L, txnsInfo.getOpen_txns().get(0).getId());
     assertEquals(TxnState.ABORTED, txnsInfo.getOpen_txns().get(0).getState());
     assertEquals(2L, txnsInfo.getOpen_txns().get(1).getId());
     assertEquals(TxnState.OPEN, txnsInfo.getOpen_txns().get(1).getState());
+    assertEquals(3, txnsInfo.getOpen_txns().get(2).getId());
+    assertEquals(TxnState.OPEN, txnsInfo.getOpen_txns().get(2).getState());
 
     GetOpenTxnsResponse txns = txnHandler.getOpenTxns();
-    assertEquals(2L, txns.getTxn_high_water_mark());
-    assertEquals(2, txns.getOpen_txns().size());
-    boolean[] saw = new boolean[3];
+    assertEquals(3, txns.getTxn_high_water_mark());
+    assertEquals(3, txns.getOpen_txns().size());
+    boolean[] saw = new boolean[4];
     for (int i = 0; i < saw.length; i++) saw[i] = false;
     for (Long tid : txns.getOpen_txns()) {
       saw[tid.intValue()] = true;
     }
     for (int i = 1; i < saw.length; i++) assertTrue(saw[i]);
+    txnHandler.commitTxn(new CommitTxnRequest(2));
+    //this succeeds as abortTxn is idempotent
+    txnHandler.abortTxn(new AbortTxnRequest(1));
+    boolean gotException = false;
+    try {
+      txnHandler.abortTxn(new AbortTxnRequest(2));
+    }
+    catch(NoSuchTxnException ex) {
+      gotException = true;
+      //if this wasn't an empty txn, we'd get a better msg
+      Assert.assertEquals("No such transaction " + JavaUtils.txnIdToString(2), ex.getMessage());
+    }
+    Assert.assertTrue(gotException);
+    gotException = false;
+    txnHandler.commitTxn(new CommitTxnRequest(3));
+    try {
+      txnHandler.abortTxn(new AbortTxnRequest(3));
+    }
+    catch(NoSuchTxnException ex) {
+      gotException = true;
+      //txn 3 is not empty txn, so we get a better msg
+      Assert.assertEquals("Transaction " + JavaUtils.txnIdToString(3) + " is already committed.", ex.getMessage());
+    }
+    Assert.assertTrue(gotException);
+    
+    gotException = false;
+    try {
+      txnHandler.abortTxn(new AbortTxnRequest(4));
+    }
+    catch(NoSuchTxnException ex) {
+      gotException = true;
+      Assert.assertEquals("No such transaction " + JavaUtils.txnIdToString(4), ex.getMessage());
+    }
+    Assert.assertTrue(gotException);
   }
 
   @Test
@@ -1132,6 +1176,38 @@ public class TestTxnHandler {
     txnHandler.compact(rqst);
     ShowCompactResponse rsp = txnHandler.showCompact(new ShowCompactRequest());
     List<ShowCompactResponseElement> compacts = rsp.getCompacts();
+    assertEquals(1, compacts.size());
+    ShowCompactResponseElement c = compacts.get(0);
+    assertEquals("foo", c.getDbname());
+    assertEquals("bar", c.getTablename());
+    assertEquals("ds=today", c.getPartitionname());
+    assertEquals(CompactionType.MAJOR, c.getType());
+    assertEquals("initiated", c.getState());
+    assertEquals(0L, c.getStart());
+  }
+
+  /**
+   * Once a Compaction for a given resource is scheduled/working, we should not
+   * schedule another one to prevent concurrent compactions for the same resource.
+   * @throws Exception
+   */
+  @Test
+  public void testCompactWhenAlreadyCompacting() throws Exception {
+    CompactionRequest rqst = new CompactionRequest("foo", "bar", CompactionType.MAJOR);
+    rqst.setPartitionname("ds=today");
+    CompactionResponse resp = txnHandler.compact(rqst);
+    Assert.assertEquals(resp, new CompactionResponse(1, TxnStore.INITIATED_RESPONSE, true));
+
+    ShowCompactResponse rsp = txnHandler.showCompact(new ShowCompactRequest());
+    List<ShowCompactResponseElement> compacts = rsp.getCompacts();
+    assertEquals(1, compacts.size());
+
+    rqst.setType(CompactionType.MINOR);
+    resp = txnHandler.compact(rqst);
+    Assert.assertEquals(resp, new CompactionResponse(1, TxnStore.INITIATED_RESPONSE, false));
+
+    rsp = txnHandler.showCompact(new ShowCompactRequest());
+    compacts = rsp.getCompacts();
     assertEquals(1, compacts.size());
     ShowCompactResponseElement c = compacts.get(0);
     assertEquals("foo", c.getDbname());

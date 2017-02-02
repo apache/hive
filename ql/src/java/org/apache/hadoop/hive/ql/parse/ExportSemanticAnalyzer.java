@@ -183,7 +183,7 @@ public class ExportSemanticAnalyzer extends BaseSemanticAnalyzer {
         partitions = null;
       }
 
-      Path path = new Path(ctx.getLocalTmpPath(), "_metadata");
+      Path path = new Path(ctx.getLocalTmpPath(), EximUtil.METADATA_NAME);
       EximUtil.createExportDump(
           FileSystem.getLocal(conf),
           path,
@@ -235,7 +235,7 @@ public class ExportSemanticAnalyzer extends BaseSemanticAnalyzer {
         }
       } else {
         Path fromPath = ts.tableHandle.getDataLocation();
-        Path toDataPath = new Path(parentPath, "data");
+        Path toDataPath = new Path(parentPath, EximUtil.DATA_PATH_NAME);
         Task<?> copyTask = null;
         if (replicationSpec.isInReplicationScope()) {
           if (isMmTable) {
@@ -245,6 +245,7 @@ public class ExportSemanticAnalyzer extends BaseSemanticAnalyzer {
           }
           copyTask = ReplCopyTask.getDumpCopyTask(replicationSpec, fromPath, toDataPath, conf);
         } else {
+          // TODO# master merge - did master remove this path or did it never exit? we need it for MM
           CopyWork cw = createCopyWork(isMmTable, lbLevels, ids, fromPath, toDataPath, conf);
           copyTask = TaskFactory.get(cw, conf);
         }

@@ -34,6 +34,7 @@ POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: unicode_comments_db@unicode_comments_tbl1
 POSTHOOK: Output: database:unicode_comments_db
 POSTHOOK: Output: unicode_comments_db@unicode_comments_view1
+POSTHOOK: Lineage: unicode_comments_view1.col1 SIMPLE [(unicode_comments_tbl1)unicode_comments_tbl1.FieldSchema(name:col1, type:string, comment:第一列), ]
 PREHOOK: query: create index index2 on table unicode_comments_tbl1(col1) as 'COMPACT' with deferred rebuild comment '索引'
 PREHOOK: type: CREATEINDEX
 PREHOOK: Input: unicode_comments_db@unicode_comments_tbl1
@@ -142,6 +143,7 @@ Sort Columns:       	[]
 # View Information	 	 
 View Original Text: 	select col1 from unicode_comments_tbl1	 
 View Expanded Text: 	SELECT `col1` AS `col1` FROM (select `unicode_comments_tbl1`.`col1` from `unicode_comments_db`.`unicode_comments_tbl1`) `unicode_comments_db.unicode_comments_view1`	 
+View Rewrite Enabled:	No                  	 
 PREHOOK: query: show formatted index on unicode_comments_tbl1
 PREHOOK: type: SHOWINDEXES
 POSTHOOK: query: show formatted index on unicode_comments_tbl1

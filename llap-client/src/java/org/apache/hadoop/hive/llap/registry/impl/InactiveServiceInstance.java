@@ -31,11 +31,6 @@ public class InactiveServiceInstance implements ServiceInstance {
   }
 
   @Override
-  public boolean isAlive() {
-    return false;
-  }
-
-  @Override
   public String getHost() {
     return null;
   }

@@ -1,14 +1,8 @@
-PREHOOK: query: -- SORT_BEFORE_DIFF
-
--- HIVE-2901
-select x from (select * from (select value as x from src order by x limit 5)a union all select * from (select cast(NULL as string) as x from src limit 5)b )a
+PREHOOK: query: select x from (select * from (select value as x from src order by x limit 5)a union all select * from (select cast(NULL as string) as x from src limit 5)b )a
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
-POSTHOOK: query: -- SORT_BEFORE_DIFF
-
--- HIVE-2901
-select x from (select * from (select value as x from src order by x limit 5)a union all select * from (select cast(NULL as string) as x from src limit 5)b )a
+POSTHOOK: query: select x from (select * from (select value as x from src order by x limit 5)a union all select * from (select cast(NULL as string) as x from src limit 5)b )a
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
@@ -30,23 +24,21 @@ POSTHOOK: query: select x from (select * from (select value as x from src order 
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
+NULL
+NULL
+NULL
+NULL
+NULL
 val_0
 val_0
 val_0
 val_10
 val_100
-NULL
-NULL
-NULL
-NULL
-NULL
-PREHOOK: query: -- HIVE-4837
-select * from (select * from (select cast(null as string) as N from src1 group by key)a UNION ALL select * from (select cast(null as string) as N from src1 group by key)b ) a
+PREHOOK: query: select * from (select * from (select cast(null as string) as N from src1 group by key)a UNION ALL select * from (select cast(null as string) as N from src1 group by key)b ) a
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src1
 #### A masked pattern was here ####
-POSTHOOK: query: -- HIVE-4837
-select * from (select * from (select cast(null as string) as N from src1 group by key)a UNION ALL select * from (select cast(null as string) as N from src1 group by key)b ) a
+POSTHOOK: query: select * from (select * from (select cast(null as string) as N from src1 group by key)a UNION ALL select * from (select cast(null as string) as N from src1 group by key)b ) a
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src1
 #### A masked pattern was here ####

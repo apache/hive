@@ -1,0 +1,29 @@
+PREHOOK: query: create table test(x string, y string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test
+POSTHOOK: query: create table test(x string, y string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test
+PREHOOK: query: insert into test values ('q', 'q'), ('q', 'w'), (NULL, 'q'), ('q', NULL), (NULL, NULL)
+PREHOOK: type: QUERY
+PREHOOK: Output: default@test
+POSTHOOK: query: insert into test values ('q', 'q'), ('q', 'w'), (NULL, 'q'), ('q', NULL), (NULL, NULL)
+POSTHOOK: type: QUERY
+POSTHOOK: Output: default@test
+POSTHOOK: Lineage: test.x SIMPLE [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: test.y SIMPLE [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+PREHOOK: query: select *, x<=>y, not (x<=> y), (x <=> y) = false from test
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test
+#### A masked pattern was here ####
+POSTHOOK: query: select *, x<=>y, not (x<=> y), (x <=> y) = false from test
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test
+#### A masked pattern was here ####
+NULL	NULL	true	false	false
+NULL	q	false	true	true
+q	NULL	false	true	true
+q	q	true	false	false
+q	w	false	true	true

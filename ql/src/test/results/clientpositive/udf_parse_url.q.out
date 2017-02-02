@@ -17,6 +17,8 @@ Example:
   'query=1'
   > SELECT parse_url('http://facebook.com/path/p1.php?query=1', 'QUERY', 'query') FROM src LIMIT 1;
   '1'
+Function class:org.apache.hadoop.hive.ql.udf.UDFParseUrl
+Function type:BUILTIN
 PREHOOK: query: EXPLAIN
 SELECT parse_url('http://facebook.com/path1/p.php?k1=v1&k2=v2#Ref1', 'HOST'), 
 parse_url('http://facebook.com/path1/p.php?k1=v1&k2=v2#Ref1', 'PATH'), 

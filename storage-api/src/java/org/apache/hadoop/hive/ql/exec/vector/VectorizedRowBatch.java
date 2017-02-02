@@ -164,7 +164,11 @@ public class VectorizedRowBatch implements Writable {
             b.append(", ");
           }
           if (cv != null) {
-            cv.stringifyValue(b, i);
+            try {
+              cv.stringifyValue(b, i);
+            } catch (Exception ex) {
+              b.append("<invalid>");
+            }
           }
         }
         b.append(']');

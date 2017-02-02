@@ -8,11 +8,9 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@acid_notbucketed
 PREHOOK: query: insert into table acid_notbucketed values (1, 'abc'), (2, 'def')
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__1
 PREHOOK: Output: default@acid_notbucketed
 POSTHOOK: query: insert into table acid_notbucketed values (1, 'abc'), (2, 'def')
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__1
 POSTHOOK: Output: default@acid_notbucketed
 POSTHOOK: Lineage: acid_notbucketed.a EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 POSTHOOK: Lineage: acid_notbucketed.b EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]

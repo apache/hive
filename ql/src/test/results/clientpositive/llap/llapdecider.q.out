@@ -1,8 +1,6 @@
-PREHOOK: query: -- simple query with multiple reduce stages
-EXPLAIN SELECT key, count(value) as cnt FROM src GROUP BY key ORDER BY cnt
+PREHOOK: query: EXPLAIN SELECT key, count(value) as cnt FROM src GROUP BY key ORDER BY cnt
 PREHOOK: type: QUERY
-POSTHOOK: query: -- simple query with multiple reduce stages
-EXPLAIN SELECT key, count(value) as cnt FROM src GROUP BY key ORDER BY cnt
+POSTHOOK: query: EXPLAIN SELECT key, count(value) as cnt FROM src GROUP BY key ORDER BY cnt
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -1057,7 +1055,7 @@ STAGE PLANS:
     Tez
 #### A masked pattern was here ####
       Edges:
-        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -1118,7 +1116,7 @@ STAGE PLANS:
     Tez
 #### A masked pattern was here ####
       Edges:
-        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -1176,7 +1174,7 @@ STAGE PLANS:
     Tez
 #### A masked pattern was here ####
       Edges:
-        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -1234,7 +1232,7 @@ STAGE PLANS:
     Tez
 #### A masked pattern was here ####
       Edges:
-        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 

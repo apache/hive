@@ -1,10 +1,8 @@
-PREHOOK: query: -- should return a value
-select * from src tablesample (1 rows) where length(key) <> reverse(key)
+PREHOOK: query: select * from src tablesample (1 rows) where length(key) <> reverse(key)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
-POSTHOOK: query: -- should return a value
-select * from src tablesample (1 rows) where length(key) <> reverse(key)
+POSTHOOK: query: select * from src tablesample (1 rows) where length(key) <> reverse(key)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####

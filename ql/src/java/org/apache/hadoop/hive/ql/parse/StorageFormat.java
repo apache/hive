@@ -111,8 +111,8 @@ public class StorageFormat {
       String defaultManagedFormat;
       if (isMaterializedView) {
         defaultFormat = defaultManagedFormat =
-            HiveConf.getVar(conf, HiveConf.ConfVars.HIVEMATERIALIZEDVIEWFILEFORMAT);
-        serde = HiveConf.getVar(conf, HiveConf.ConfVars.HIVEMATERIALIZEDVIEWSERDE);
+            HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_MATERIALIZED_VIEW_FILE_FORMAT);
+        serde = HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_MATERIALIZED_VIEW_SERDE);
       } else {
         defaultFormat = HiveConf.getVar(conf, HiveConf.ConfVars.HIVEDEFAULTFILEFORMAT);
         defaultManagedFormat = HiveConf.getVar(conf, HiveConf.ConfVars.HIVEDEFAULTMANAGEDFILEFORMAT);

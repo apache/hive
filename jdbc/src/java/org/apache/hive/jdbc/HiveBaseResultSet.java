@@ -658,15 +658,15 @@ public abstract class HiveBaseResultSet implements ResultSet {
   }
 
   public boolean rowDeleted() throws SQLException {
-    throw new SQLException("Method not supported");
+    return false;
   }
 
   public boolean rowInserted() throws SQLException {
-    throw new SQLException("Method not supported");
+    return false;
   }
 
   public boolean rowUpdated() throws SQLException {
-    throw new SQLException("Method not supported");
+    return false;
   }
 
   public void setFetchDirection(int direction) throws SQLException {

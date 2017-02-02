@@ -74,15 +74,13 @@ POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/flights_tiny.txt.1' OV
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@date_udf_flight
-PREHOOK: query: -- Test UDFs with date input
-select unix_timestamp(d), year(d), month(d), day(d), dayofmonth(d),
+PREHOOK: query: select unix_timestamp(d), year(d), month(d), day(d), dayofmonth(d),
     weekofyear(d), to_date(d)
   from date_udf
 PREHOOK: type: QUERY
 PREHOOK: Input: default@date_udf
 #### A masked pattern was here ####
-POSTHOOK: query: -- Test UDFs with date input
-select unix_timestamp(d), year(d), month(d), day(d), dayofmonth(d),
+POSTHOOK: query: select unix_timestamp(d), year(d), month(d), day(d), dayofmonth(d),
     weekofyear(d), to_date(d)
   from date_udf
 POSTHOOK: type: QUERY
@@ -114,16 +112,14 @@ POSTHOOK: query: select datediff(d, d), datediff(d, '2002-03-21'), datediff('200
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@date_udf
 #### A masked pattern was here ####
-0	3333	-3333	-3332	3332
-PREHOOK: query: -- Test UDFs with string input
-select unix_timestamp(d), year(d), month(d), day(d), dayofmonth(d), 
+0	3333	-3333	-3333	3333
+PREHOOK: query: select unix_timestamp(d), year(d), month(d), day(d), dayofmonth(d), 
     weekofyear(d), to_date(d)
   from date_udf_string
 PREHOOK: type: QUERY
 PREHOOK: Input: default@date_udf_string
 #### A masked pattern was here ####
-POSTHOOK: query: -- Test UDFs with string input
-select unix_timestamp(d), year(d), month(d), day(d), dayofmonth(d), 
+POSTHOOK: query: select unix_timestamp(d), year(d), month(d), day(d), dayofmonth(d), 
     weekofyear(d), to_date(d)
   from date_udf_string
 POSTHOOK: type: QUERY
@@ -139,21 +135,43 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@date_udf_string
 #### A masked pattern was here ####
 2011-05-11	2011-04-26
-PREHOOK: query: select datediff(d, d), datediff(d, '2002-03-21'), datediff('2002-03-21', d),
+PREHOOK: query: select
+    datediff(d, d),
+    datediff(d, '2002-03-21'),
+    datediff(d, date '2002-03-21'),
+    datediff('2002-03-21', d),
+    datediff(date '2002-03-21', d),
     datediff('2002-03-21 00:00:00', d),
-    datediff(d, '2002-03-21 00:00:00')
+    datediff(timestamp '2002-03-21 00:00:00', d),
+    datediff(d, '2002-03-21 00:00:00'),
+    datediff(d, timestamp '2002-03-21 00:00:00'),
+    datediff('2002-03-21 08:01:59', d),
+    datediff(timestamp '2002-03-21 08:01:59', d),
+    datediff(d, '2002-03-21 08:01:59'),
+    datediff(d, timestamp '2002-03-21 08:01:59')
   from date_udf_string
 PREHOOK: type: QUERY
 PREHOOK: Input: default@date_udf_string
 #### A masked pattern was here ####
-POSTHOOK: query: select datediff(d, d), datediff(d, '2002-03-21'), datediff('2002-03-21', d),
+POSTHOOK: query: select
+    datediff(d, d),
+    datediff(d, '2002-03-21'),
+    datediff(d, date '2002-03-21'),
+    datediff('2002-03-21', d),
+    datediff(date '2002-03-21', d),
     datediff('2002-03-21 00:00:00', d),
-    datediff(d, '2002-03-21 00:00:00')
+    datediff(timestamp '2002-03-21 00:00:00', d),
+    datediff(d, '2002-03-21 00:00:00'),
+    datediff(d, timestamp '2002-03-21 00:00:00'),
+    datediff('2002-03-21 08:01:59', d),
+    datediff(timestamp '2002-03-21 08:01:59', d),
+    datediff(d, '2002-03-21 08:01:59'),
+    datediff(d, timestamp '2002-03-21 08:01:59')
   from date_udf_string
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@date_udf_string
 #### A masked pattern was here ####
-0	3333	-3333	-3333	3333
+0	3333	3333	-3333	-3333	-3333	-3333	3333	3333	-3333	-3333	3333	3333
 PREHOOK: query: select 
     to_utc_timestamp(date '1970-01-01', 'America/Los_Angeles'),
     from_utc_timestamp(date '1970-01-01', 'America/Los_Angeles'),
@@ -173,8 +191,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@date_udf
 #### A masked pattern was here ####
 1970-01-01 08:00:00	1969-12-31 16:00:00	2013-06-19 07:00:00	2013-06-18 17:00:00
-PREHOOK: query: -- should all be true
-select 
+PREHOOK: query: select 
     to_utc_timestamp(date '1970-01-01', 'America/Los_Angeles') = to_utc_timestamp(timestamp('1970-01-01 00:00:00'), 'America/Los_Angeles'),
     from_utc_timestamp(date '1970-01-01', 'America/Los_Angeles') = from_utc_timestamp(timestamp('1970-01-01 00:00:00'), 'America/Los_Angeles'),
     to_utc_timestamp(date '2013-06-19', 'America/Los_Angeles') = to_utc_timestamp(timestamp('2013-06-19 00:00:00'), 'America/Los_Angeles'),
@@ -183,8 +200,7 @@ select
 PREHOOK: type: QUERY
 PREHOOK: Input: default@date_udf
 #### A masked pattern was here ####
-POSTHOOK: query: -- should all be true
-select 
+POSTHOOK: query: select 
     to_utc_timestamp(date '1970-01-01', 'America/Los_Angeles') = to_utc_timestamp(timestamp('1970-01-01 00:00:00'), 'America/Los_Angeles'),
     from_utc_timestamp(date '1970-01-01', 'America/Los_Angeles') = from_utc_timestamp(timestamp('1970-01-01 00:00:00'), 'America/Los_Angeles'),
     to_utc_timestamp(date '2013-06-19', 'America/Los_Angeles') = to_utc_timestamp(timestamp('2013-06-19 00:00:00'), 'America/Los_Angeles'),
@@ -194,13 +210,11 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@date_udf
 #### A masked pattern was here ####
 true	true	true	true
-PREHOOK: query: -- Aggregation functions (min/max)
-select min(fl_date) from date_udf_flight
+PREHOOK: query: select min(fl_date) from date_udf_flight
 PREHOOK: type: QUERY
 PREHOOK: Input: default@date_udf_flight
 #### A masked pattern was here ####
-POSTHOOK: query: -- Aggregation functions (min/max)
-select min(fl_date) from date_udf_flight
+POSTHOOK: query: select min(fl_date) from date_udf_flight
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@date_udf_flight
 #### A masked pattern was here ####

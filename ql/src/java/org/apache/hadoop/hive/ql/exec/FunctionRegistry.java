@@ -213,6 +213,7 @@ public final class FunctionRegistry {
     system.registerGenericUDF("ceiling", GenericUDFCeil.class);
     system.registerUDF("rand", UDFRand.class, false);
     system.registerGenericUDF("abs", GenericUDFAbs.class);
+    system.registerGenericUDF("sq_count_check", GenericUDFSQCountCheck.class);
     system.registerGenericUDF("pmod", GenericUDFPosMod.class);
 
     system.registerUDF("ln", UDFLn.class, false);
@@ -342,6 +343,8 @@ public final class FunctionRegistry {
     system.registerUDF("shiftright", UDFOPBitShiftRight.class, true);
     system.registerUDF("shiftrightunsigned", UDFOPBitShiftRightUnsigned.class, true);
 
+    system.registerGenericUDF("grouping", GenericUDFGrouping.class);
+
     system.registerGenericUDF("current_database", UDFCurrentDB.class);
     system.registerGenericUDF("current_date", GenericUDFCurrentDate.class);
     system.registerGenericUDF("current_timestamp", GenericUDFCurrentTimestamp.class);
@@ -367,6 +370,7 @@ public final class FunctionRegistry {
     system.registerGenericUDF("not", GenericUDFOPNot.class);
     system.registerGenericUDF("!", GenericUDFOPNot.class);
     system.registerGenericUDF("between", GenericUDFBetween.class);
+    system.registerGenericUDF("in_bloom_filter", GenericUDFInBloomFilter.class);
 
     system.registerGenericUDF("ewah_bitmap_and", GenericUDFEWAHBitmapAnd.class);
     system.registerGenericUDF("ewah_bitmap_or", GenericUDFEWAHBitmapOr.class);
@@ -424,7 +428,7 @@ public final class FunctionRegistry {
     system.registerGenericUDAF("ewah_bitmap", new GenericUDAFEWAHBitmap());
 
     system.registerGenericUDAF("compute_stats", new GenericUDAFComputeStats());
-
+    system.registerGenericUDAF("bloom_filter", new GenericUDAFBloomFilter());
     system.registerUDAF("percentile", UDAFPercentile.class);
 
 
@@ -461,6 +465,7 @@ public final class FunctionRegistry {
     system.registerGenericUDF("printf", GenericUDFPrintf.class);
     system.registerGenericUDF("greatest", GenericUDFGreatest.class);
     system.registerGenericUDF("least", GenericUDFLeast.class);
+    system.registerGenericUDF("cardinality_violation", GenericUDFCardinalityViolation.class);
 
     system.registerGenericUDF("from_utc_timestamp", GenericUDFFromUtcTimestamp.class);
     system.registerGenericUDF("to_utc_timestamp", GenericUDFToUtcTimestamp.class);
@@ -469,7 +474,6 @@ public final class FunctionRegistry {
     system.registerGenericUDF("to_unix_timestamp", GenericUDFToUnixTimeStamp.class);
 
     system.registerGenericUDF("internal_interval", GenericUDFInternalInterval.class);
-
     // Generic UDTF's
     system.registerGenericUDTF("explode", GenericUDTFExplode.class);
     system.registerGenericUDTF("replicate_rows", GenericUDTFReplicateRows.class);
@@ -769,12 +773,21 @@ public final class FunctionRegistry {
 
     PrimitiveGrouping pgA = PrimitiveObjectInspectorUtils.getPrimitiveGrouping(pcA);
     PrimitiveGrouping pgB = PrimitiveObjectInspectorUtils.getPrimitiveGrouping(pcB);
+
+    if (pgA == pgB) {
+      // grouping is same, but category is not.
+      if (pgA == PrimitiveGrouping.DATE_GROUP) {
+        // we got timestamp & date and timestamp has higher precedence than date
+        return TypeInfoFactory.timestampTypeInfo;
+      }
+    }
     // handle string types properly
     if (pgA == PrimitiveGrouping.STRING_GROUP && pgB == PrimitiveGrouping.STRING_GROUP) {
       // Compare as strings. Char comparison semantics may be different if/when implemented.
       return getTypeInfoForPrimitiveCategory(
           (PrimitiveTypeInfo)a, (PrimitiveTypeInfo)b,PrimitiveCategory.STRING);
     }
+
     // timestamp/date is higher precedence than String_GROUP
     if (pgA == PrimitiveGrouping.STRING_GROUP && pgB == PrimitiveGrouping.DATE_GROUP) {
       return b;

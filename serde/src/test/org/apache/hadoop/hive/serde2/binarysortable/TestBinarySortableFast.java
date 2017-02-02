@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.serde2.binarysortable;
 
+import java.util.ArrayList;
 import java.io.EOFException;
 import java.util.Arrays;
 import java.util.List;
@@ -196,7 +197,11 @@ public class TestBinarySortableFast extends TestCase {
           }
         } else {
           if (!object.equals(expected)) {
-            fail("SerDe deserialized value does not match");
+            fail("SerDe deserialized value does not match (expected " +
+              expected.getClass().getName() + " " +
+              expected.toString() + ", actual " +
+              object.getClass().getName() + " " +
+              object.toString() + ")");
           }
         }
       }
@@ -233,10 +238,36 @@ public class TestBinarySortableFast extends TestCase {
           fail("Different byte array lengths: serDeOutput.length " + serDeOutput.length + ", serializeWriteExpected.length " + serializeWriteExpected.length +
                   " mismatchPos " + mismatchPos + " perFieldWriteLengths " + Arrays.toString(perFieldWriteLengthsArray[i]));
         }
+        List<Integer> differentPositions = new ArrayList();
         for (int b = 0; b < serDeOutput.length; b++) {
           if (serDeOutput[b] != serializeWriteExpected[b]) {
-            fail("SerializeWrite and SerDe serialization does not match at position " + b);
+            differentPositions.add(b);
           }
+        }
+        if (differentPositions.size() > 0) {
+          List<String> serializeWriteExpectedFields = new ArrayList<String>();
+          List<String> serDeFields = new ArrayList<String>();
+          int f = 0;
+          int lastBegin = 0;
+          for (int b = 0; b < serDeOutput.length; b++) {
+            int writeLength = perFieldWriteLengthsArray[i][f];
+            if (b + 1 == writeLength) {
+              serializeWriteExpectedFields.add(
+                  displayBytes(serializeWriteExpected, lastBegin, writeLength - lastBegin));
+              serDeFields.add(
+                  displayBytes(serDeOutput, lastBegin, writeLength - lastBegin));
+              f++;
+              lastBegin = b + 1;
+            }
+          }
+          fail("SerializeWrite and SerDe serialization does not match at positions " + differentPositions.toString() +
+              "\n(SerializeWrite: " +
+                  serializeWriteExpectedFields.toString() +
+              "\nSerDe: " +
+                  serDeFields.toString() +
+              "\nperFieldWriteLengths " + Arrays.toString(perFieldWriteLengthsArray[i]) +
+              "\nprimitiveTypeInfos " + Arrays.toString(primitiveTypeInfos) +
+              "\nrow " + Arrays.toString(row));
         }
       }
       serdeBytes[i] = bytesWritable;
@@ -425,5 +456,13 @@ public class TestBinarySortableFast extends TestCase {
       e.printStackTrace();
       throw e;
     }
+  }
+
+  private static String displayBytes(byte[] bytes, int start, int length) {
+    StringBuilder sb = new StringBuilder();
+    for (int i = start; i < start + length; i++) {
+      sb.append(String.format("\\%03d", (int) (bytes[i] & 0xff)));
+    }
+    return sb.toString();
   }
 }

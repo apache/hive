@@ -165,29 +165,33 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: d1
-                  filterExpr: (id is not null and (label) IN ('foo', 'bar')) (type: boolean)
+                  filterExpr: ((label) IN ('foo', 'bar') and id is not null) (type: boolean)
                   Statistics: Num rows: 3 Data size: 15 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (id is not null and (label) IN ('foo', 'bar')) (type: boolean)
-                    Statistics: Num rows: 1 Data size: 5 Basic stats: COMPLETE Column stats: NONE
-                    Spark HashTable Sink Operator
-                      keys:
-                        0 dim_shops_id (type: int)
-                        1 id (type: int)
+                    predicate: ((label) IN ('foo', 'bar') and id is not null) (type: boolean)
+                    Statistics: Num rows: 2 Data size: 10 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
-                      expressions: id (type: int)
-                      outputColumnNames: _col0
-                      Statistics: Num rows: 1 Data size: 5 Basic stats: COMPLETE Column stats: NONE
-                      Group By Operator
-                        keys: _col0 (type: int)
-                        mode: hash
+                      expressions: id (type: int), label (type: string)
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 2 Data size: 10 Basic stats: COMPLETE Column stats: NONE
+                      Spark HashTable Sink Operator
+                        keys:
+                          0 _col1 (type: int)
+                          1 _col0 (type: int)
+                      Select Operator
+                        expressions: _col0 (type: int)
                         outputColumnNames: _col0
-                        Statistics: Num rows: 1 Data size: 5 Basic stats: COMPLETE Column stats: NONE
-                        Spark Partition Pruning Sink Operator
-                          partition key expr: dim_shops_id
-                          Statistics: Num rows: 1 Data size: 5 Basic stats: COMPLETE Column stats: NONE
-                          target column name: dim_shops_id
-                          target work: Map 1
+                        Statistics: Num rows: 2 Data size: 10 Basic stats: COMPLETE Column stats: NONE
+                        Group By Operator
+                          keys: _col0 (type: int)
+                          mode: hash
+                          outputColumnNames: _col0
+                          Statistics: Num rows: 2 Data size: 10 Basic stats: COMPLETE Column stats: NONE
+                          Spark Partition Pruning Sink Operator
+                            partition key expr: dim_shops_id
+                            Statistics: Num rows: 2 Data size: 10 Basic stats: COMPLETE Column stats: NONE
+                            target column name: dim_shops_id
+                            target work: Map 1
             Local Work:
               Map Reduce Local Work
 
@@ -204,34 +208,35 @@ STAGE PLANS:
                   alias: agg
                   filterExpr: dim_shops_id is not null (type: boolean)
                   Statistics: Num rows: 9 Data size: 27 Basic stats: COMPLETE Column stats: NONE
-                  Map Join Operator
-                    condition map:
-                         Inner Join 0 to 1
-                    keys:
-                      0 dim_shops_id (type: int)
-                      1 id (type: int)
-                    outputColumnNames: _col0, _col1, _col5, _col6
-                    input vertices:
-                      1 Map 4
-                    Statistics: Num rows: 9 Data size: 29 Basic stats: COMPLETE Column stats: NONE
-                    Filter Operator
-                      predicate: ((_col1 = _col5) and (_col6) IN ('foo', 'bar')) (type: boolean)
-                      Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: amount (type: decimal(10,0)), dim_shops_id (type: int)
+                    outputColumnNames: _col0, _col1
+                    Statistics: Num rows: 9 Data size: 27 Basic stats: COMPLETE Column stats: NONE
+                    Map Join Operator
+                      condition map:
+                           Inner Join 0 to 1
+                      keys:
+                        0 _col1 (type: int)
+                        1 _col0 (type: int)
+                      outputColumnNames: _col0, _col3
+                      input vertices:
+                        1 Map 4
+                      Statistics: Num rows: 9 Data size: 29 Basic stats: COMPLETE Column stats: NONE
                       Select Operator
-                        expressions: _col6 (type: string), _col0 (type: decimal(10,0))
-                        outputColumnNames: _col6, _col0
-                        Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
+                        expressions: _col3 (type: string), _col0 (type: decimal(10,0))
+                        outputColumnNames: _col3, _col0
+                        Statistics: Num rows: 9 Data size: 29 Basic stats: COMPLETE Column stats: NONE
                         Group By Operator
                           aggregations: count(), sum(_col0)
-                          keys: _col6 (type: string)
+                          keys: _col3 (type: string)
                           mode: hash
                           outputColumnNames: _col0, _col1, _col2
-                          Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
+                          Statistics: Num rows: 9 Data size: 29 Basic stats: COMPLETE Column stats: NONE
                           Reduce Output Operator
                             key expressions: _col0 (type: string)
                             sort order: +
                             Map-reduce partition columns: _col0 (type: string)
-                            Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
+                            Statistics: Num rows: 9 Data size: 29 Basic stats: COMPLETE Column stats: NONE
                             value expressions: _col1 (type: bigint), _col2 (type: decimal(20,0))
             Local Work:
               Map Reduce Local Work
@@ -242,24 +247,24 @@ STAGE PLANS:
                 keys: KEY._col0 (type: string)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 4 Data size: 12 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col0 (type: string)
                   sort order: +
-                  Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 4 Data size: 12 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col1 (type: bigint), _col2 (type: decimal(20,0))
         Reducer 3 
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: string), VALUE._col0 (type: bigint), VALUE._col1 (type: decimal(20,0))
                 outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 4 Data size: 12 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 4 Data size: 12 Basic stats: COMPLETE Column stats: NONE
                   table:
-                      input format: org.apache.hadoop.mapred.TextInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
@@ -332,15 +337,19 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: d1
-                  filterExpr: (id is not null and (label) IN ('foo', 'bar')) (type: boolean)
+                  filterExpr: ((label) IN ('foo', 'bar') and id is not null) (type: boolean)
                   Statistics: Num rows: 3 Data size: 15 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (id is not null and (label) IN ('foo', 'bar')) (type: boolean)
-                    Statistics: Num rows: 1 Data size: 5 Basic stats: COMPLETE Column stats: NONE
-                    Spark HashTable Sink Operator
-                      keys:
-                        0 dim_shops_id (type: int)
-                        1 id (type: int)
+                    predicate: ((label) IN ('foo', 'bar') and id is not null) (type: boolean)
+                    Statistics: Num rows: 2 Data size: 10 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: id (type: int), label (type: string)
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 2 Data size: 10 Basic stats: COMPLETE Column stats: NONE
+                      Spark HashTable Sink Operator
+                        keys:
+                          0 _col1 (type: int)
+                          1 _col0 (type: int)
             Local Work:
               Map Reduce Local Work
 
@@ -357,34 +366,35 @@ STAGE PLANS:
                   alias: agg
                   filterExpr: dim_shops_id is not null (type: boolean)
                   Statistics: Num rows: 9 Data size: 27 Basic stats: COMPLETE Column stats: NONE
-                  Map Join Operator
-                    condition map:
-                         Inner Join 0 to 1
-                    keys:
-                      0 dim_shops_id (type: int)
-                      1 id (type: int)
-                    outputColumnNames: _col0, _col1, _col5, _col6
-                    input vertices:
-                      1 Map 4
-                    Statistics: Num rows: 9 Data size: 29 Basic stats: COMPLETE Column stats: NONE
-                    Filter Operator
-                      predicate: ((_col1 = _col5) and (_col6) IN ('foo', 'bar')) (type: boolean)
-                      Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: amount (type: decimal(10,0)), dim_shops_id (type: int)
+                    outputColumnNames: _col0, _col1
+                    Statistics: Num rows: 9 Data size: 27 Basic stats: COMPLETE Column stats: NONE
+                    Map Join Operator
+                      condition map:
+                           Inner Join 0 to 1
+                      keys:
+                        0 _col1 (type: int)
+                        1 _col0 (type: int)
+                      outputColumnNames: _col0, _col3
+                      input vertices:
+                        1 Map 4
+                      Statistics: Num rows: 9 Data size: 29 Basic stats: COMPLETE Column stats: NONE
                       Select Operator
-                        expressions: _col6 (type: string), _col0 (type: decimal(10,0))
-                        outputColumnNames: _col6, _col0
-                        Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
+                        expressions: _col3 (type: string), _col0 (type: decimal(10,0))
+                        outputColumnNames: _col3, _col0
+                        Statistics: Num rows: 9 Data size: 29 Basic stats: COMPLETE Column stats: NONE
                         Group By Operator
                           aggregations: count(), sum(_col0)
-                          keys: _col6 (type: string)
+                          keys: _col3 (type: string)
                           mode: hash
                           outputColumnNames: _col0, _col1, _col2
-                          Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
+                          Statistics: Num rows: 9 Data size: 29 Basic stats: COMPLETE Column stats: NONE
                           Reduce Output Operator
                             key expressions: _col0 (type: string)
                             sort order: +
                             Map-reduce partition columns: _col0 (type: string)
-                            Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
+                            Statistics: Num rows: 9 Data size: 29 Basic stats: COMPLETE Column stats: NONE
                             value expressions: _col1 (type: bigint), _col2 (type: decimal(20,0))
             Local Work:
               Map Reduce Local Work
@@ -395,24 +405,24 @@ STAGE PLANS:
                 keys: KEY._col0 (type: string)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 4 Data size: 12 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col0 (type: string)
                   sort order: +
-                  Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 4 Data size: 12 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col1 (type: bigint), _col2 (type: decimal(20,0))
         Reducer 3 
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: string), VALUE._col0 (type: bigint), VALUE._col1 (type: decimal(20,0))
                 outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 4 Data size: 12 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 4 Data size: 12 Basic stats: COMPLETE Column stats: NONE
                   table:
-                      input format: org.apache.hadoop.mapred.TextInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
@@ -481,11 +491,15 @@ STAGE PLANS:
                   Statistics: Num rows: 3 Data size: 15 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: id is not null (type: boolean)
-                    Statistics: Num rows: 2 Data size: 10 Basic stats: COMPLETE Column stats: NONE
-                    Spark HashTable Sink Operator
-                      keys:
-                        0 dim_shops_id (type: int)
-                        1 id (type: int)
+                    Statistics: Num rows: 3 Data size: 15 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: id (type: int), label (type: string)
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 3 Data size: 15 Basic stats: COMPLETE Column stats: NONE
+                      Spark HashTable Sink Operator
+                        keys:
+                          0 _col0 (type: int)
+                          1 _col0 (type: int)
             Local Work:
               Map Reduce Local Work
 
@@ -499,29 +513,30 @@ STAGE PLANS:
                   alias: agg
                   filterExpr: dim_shops_id is not null (type: boolean)
                   Statistics: Num rows: 9 Data size: 27 Basic stats: COMPLETE Column stats: NONE
-                  Map Join Operator
-                    condition map:
-                         Inner Join 0 to 1
-                    keys:
-                      0 dim_shops_id (type: int)
-                      1 id (type: int)
-                    outputColumnNames: _col1, _col5, _col6
-                    input vertices:
-                      1 Map 2
-                    Statistics: Num rows: 9 Data size: 29 Basic stats: COMPLETE Column stats: NONE
-                    Filter Operator
-                      predicate: (_col1 = _col5) (type: boolean)
-                      Statistics: Num rows: 4 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: dim_shops_id (type: int)
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 9 Data size: 27 Basic stats: COMPLETE Column stats: NONE
+                    Map Join Operator
+                      condition map:
+                           Inner Join 0 to 1
+                      keys:
+                        0 _col0 (type: int)
+                        1 _col0 (type: int)
+                      outputColumnNames: _col2
+                      input vertices:
+                        1 Map 2
+                      Statistics: Num rows: 9 Data size: 29 Basic stats: COMPLETE Column stats: NONE
                       Select Operator
-                        expressions: _col6 (type: string)
+                        expressions: _col2 (type: string)
                         outputColumnNames: _col0
-                        Statistics: Num rows: 4 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 9 Data size: 29 Basic stats: COMPLETE Column stats: NONE
                         File Output Operator
                           compressed: false
-                          Statistics: Num rows: 4 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                          Statistics: Num rows: 9 Data size: 29 Basic stats: COMPLETE Column stats: NONE
                           table:
-                              input format: org.apache.hadoop.mapred.TextInputFormat
-                              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                              input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                              output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
             Local Work:
               Map Reduce Local Work
@@ -563,6 +578,7 @@ baz
 foo
 foo
 foo
+Warning: Map Join MAPJOIN[13][bigTable=?] in task 'Stage-1:MAPRED' is a cross product
 PREHOOK: query: EXPLAIN SELECT agg.amount
 FROM agg_01 agg,
 dim_shops d1
@@ -589,15 +605,17 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: d1
-                  filterExpr: (id = 1) (type: boolean)
+                  filterExpr: (1 = id) (type: boolean)
                   Statistics: Num rows: 3 Data size: 15 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (id = 1) (type: boolean)
+                    predicate: (1 = id) (type: boolean)
                     Statistics: Num rows: 1 Data size: 5 Basic stats: COMPLETE Column stats: NONE
-                    Spark HashTable Sink Operator
-                      keys:
-                        0 1 (type: int)
-                        1 1 (type: int)
+                    Select Operator
+                      Statistics: Num rows: 1 Data size: 5 Basic stats: COMPLETE Column stats: NONE
+                      Spark HashTable Sink Operator
+                        keys:
+                          0 
+                          1 
             Local Work:
               Map Reduce Local Work
 
@@ -611,23 +629,27 @@ STAGE PLANS:
                   alias: agg
                   filterExpr: (dim_shops_id = 1) (type: boolean)
                   Statistics: Num rows: 3 Data size: 9 Basic stats: COMPLETE Column stats: NONE
-                  Map Join Operator
-                    condition map:
-                         Inner Join 0 to 1
-                    keys:
-                      0 1 (type: int)
-                      1 1 (type: int)
+                  Select Operator
+                    expressions: amount (type: decimal(10,0))
                     outputColumnNames: _col0
-                    input vertices:
-                      1 Map 2
                     Statistics: Num rows: 3 Data size: 9 Basic stats: COMPLETE Column stats: NONE
-                    File Output Operator
-                      compressed: false
-                      Statistics: Num rows: 3 Data size: 9 Basic stats: COMPLETE Column stats: NONE
-                      table:
-                          input format: org.apache.hadoop.mapred.TextInputFormat
-                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    Map Join Operator
+                      condition map:
+                           Inner Join 0 to 1
+                      keys:
+                        0 
+                        1 
+                      outputColumnNames: _col0
+                      input vertices:
+                        1 Map 2
+                      Statistics: Num rows: 3 Data size: 27 Basic stats: COMPLETE Column stats: NONE
+                      File Output Operator
+                        compressed: false
+                        Statistics: Num rows: 3 Data size: 27 Basic stats: COMPLETE Column stats: NONE
+                        table:
+                            input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                            output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
             Local Work:
               Map Reduce Local Work
 
@@ -637,6 +659,7 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
+Warning: Map Join MAPJOIN[13][bigTable=?] in task 'Stage-1:MAPRED' is a cross product
 PREHOOK: query: SELECT agg.amount
 FROM agg_01 agg,
 dim_shops d1
@@ -692,29 +715,33 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: d1
-                  filterExpr: (id is not null and (label) IN ('foo', 'bar')) (type: boolean)
+                  filterExpr: ((label) IN ('foo', 'bar') and id is not null) (type: boolean)
                   Statistics: Num rows: 3 Data size: 15 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (id is not null and (label) IN ('foo', 'bar')) (type: boolean)
-                    Statistics: Num rows: 1 Data size: 5 Basic stats: COMPLETE Column stats: NONE
-                    Spark HashTable Sink Operator
-                      keys:
-                        0 dim_shops_id (type: int)
-                        1 id (type: int)
+                    predicate: ((label) IN ('foo', 'bar') and id is not null) (type: boolean)
+                    Statistics: Num rows: 2 Data size: 10 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
-                      expressions: id (type: int)
-                      outputColumnNames: _col0
-                      Statistics: Num rows: 1 Data size: 5 Basic stats: COMPLETE Column stats: NONE
-                      Group By Operator
-                        keys: _col0 (type: int)
-                        mode: hash
+                      expressions: id (type: int), label (type: string)
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 2 Data size: 10 Basic stats: COMPLETE Column stats: NONE
+                      Spark HashTable Sink Operator
+                        keys:
+                          0 _col1 (type: int)
+                          1 _col0 (type: int)
+                      Select Operator
+                        expressions: _col0 (type: int)
                         outputColumnNames: _col0
-                        Statistics: Num rows: 1 Data size: 5 Basic stats: COMPLETE Column stats: NONE
-                        Spark Partition Pruning Sink Operator
-                          partition key expr: dim_shops_id
-                          Statistics: Num rows: 1 Data size: 5 Basic stats: COMPLETE Column stats: NONE
-                          target column name: dim_shops_id
-                          target work: Map 1
+                        Statistics: Num rows: 2 Data size: 10 Basic stats: COMPLETE Column stats: NONE
+                        Group By Operator
+                          keys: _col0 (type: int)
+                          mode: hash
+                          outputColumnNames: _col0
+                          Statistics: Num rows: 2 Data size: 10 Basic stats: COMPLETE Column stats: NONE
+                          Spark Partition Pruning Sink Operator
+                            partition key expr: dim_shops_id
+                            Statistics: Num rows: 2 Data size: 10 Basic stats: COMPLETE Column stats: NONE
+                            target column name: dim_shops_id
+                            target work: Map 1
             Local Work:
               Map Reduce Local Work
 
@@ -731,34 +758,35 @@ STAGE PLANS:
                   alias: agg
                   filterExpr: dim_shops_id is not null (type: boolean)
                   Statistics: Num rows: 9 Data size: 27 Basic stats: COMPLETE Column stats: NONE
-                  Map Join Operator
-                    condition map:
-                         Inner Join 0 to 1
-                    keys:
-                      0 dim_shops_id (type: int)
-                      1 id (type: int)
-                    outputColumnNames: _col0, _col1, _col5, _col6
-                    input vertices:
-                      1 Map 4
-                    Statistics: Num rows: 9 Data size: 29 Basic stats: COMPLETE Column stats: NONE
-                    Filter Operator
-                      predicate: ((_col1 = _col5) and (_col6) IN ('foo', 'bar')) (type: boolean)
-                      Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: amount (type: decimal(10,0)), dim_shops_id (type: int)
+                    outputColumnNames: _col0, _col1
+                    Statistics: Num rows: 9 Data size: 27 Basic stats: COMPLETE Column stats: NONE
+                    Map Join Operator
+                      condition map:
+                           Inner Join 0 to 1
+                      keys:
+                        0 _col1 (type: int)
+                        1 _col0 (type: int)
+                      outputColumnNames: _col0, _col3
+                      input vertices:
+                        1 Map 4
+                      Statistics: Num rows: 9 Data size: 29 Basic stats: COMPLETE Column stats: NONE
                       Select Operator
-                        expressions: _col6 (type: string), _col0 (type: decimal(10,0))
-                        outputColumnNames: _col6, _col0
-                        Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
+                        expressions: _col3 (type: string), _col0 (type: decimal(10,0))
+                        outputColumnNames: _col3, _col0
+                        Statistics: Num rows: 9 Data size: 29 Basic stats: COMPLETE Column stats: NONE
                         Group By Operator
                           aggregations: count(), sum(_col0)
-                          keys: _col6 (type: string)
+                          keys: _col3 (type: string)
                           mode: hash
                           outputColumnNames: _col0, _col1, _col2
-                          Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
+                          Statistics: Num rows: 9 Data size: 29 Basic stats: COMPLETE Column stats: NONE
                           Reduce Output Operator
                             key expressions: _col0 (type: string)
                             sort order: +
                             Map-reduce partition columns: _col0 (type: string)
-                            Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
+                            Statistics: Num rows: 9 Data size: 29 Basic stats: COMPLETE Column stats: NONE
                             value expressions: _col1 (type: bigint), _col2 (type: decimal(20,0))
             Local Work:
               Map Reduce Local Work
@@ -769,24 +797,24 @@ STAGE PLANS:
                 keys: KEY._col0 (type: string)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 4 Data size: 12 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col0 (type: string)
                   sort order: +
-                  Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 4 Data size: 12 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col1 (type: bigint), _col2 (type: decimal(20,0))
         Reducer 3 
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: string), VALUE._col0 (type: bigint), VALUE._col1 (type: decimal(20,0))
                 outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 4 Data size: 12 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 4 Data size: 12 Basic stats: COMPLETE Column stats: NONE
                   table:
-                      input format: org.apache.hadoop.mapred.TextInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
@@ -852,29 +880,33 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: dim_shops
-                  filterExpr: (id is not null and (label = 'foo')) (type: boolean)
+                  filterExpr: ((label = 'foo') and id is not null) (type: boolean)
                   Statistics: Num rows: 3 Data size: 15 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (id is not null and (label = 'foo')) (type: boolean)
+                    predicate: ((label = 'foo') and id is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 5 Basic stats: COMPLETE Column stats: NONE
-                    Spark HashTable Sink Operator
-                      keys:
-                        0 dim_shops_id (type: int)
-                        1 id (type: int)
                     Select Operator
                       expressions: id (type: int)
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 5 Basic stats: COMPLETE Column stats: NONE
-                      Group By Operator
-                        keys: _col0 (type: int)
-                        mode: hash
+                      Spark HashTable Sink Operator
+                        keys:
+                          0 _col1 (type: int)
+                          1 _col0 (type: int)
+                      Select Operator
+                        expressions: _col0 (type: int)
                         outputColumnNames: _col0
                         Statistics: Num rows: 1 Data size: 5 Basic stats: COMPLETE Column stats: NONE
-                        Spark Partition Pruning Sink Operator
-                          partition key expr: dim_shops_id
+                        Group By Operator
+                          keys: _col0 (type: int)
+                          mode: hash
+                          outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 5 Basic stats: COMPLETE Column stats: NONE
-                          target column name: dim_shops_id
-                          target work: Map 1
+                          Spark Partition Pruning Sink Operator
+                            partition key expr: dim_shops_id
+                            Statistics: Num rows: 1 Data size: 5 Basic stats: COMPLETE Column stats: NONE
+                            target column name: dim_shops_id
+                            target work: Map 1
             Local Work:
               Map Reduce Local Work
 
@@ -886,29 +918,33 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: dim_shops
-                  filterExpr: (id is not null and (label = 'bar')) (type: boolean)
+                  filterExpr: ((label = 'bar') and id is not null) (type: boolean)
                   Statistics: Num rows: 3 Data size: 15 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (id is not null and (label = 'bar')) (type: boolean)
+                    predicate: ((label = 'bar') and id is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 5 Basic stats: COMPLETE Column stats: NONE
-                    Spark HashTable Sink Operator
-                      keys:
-                        0 dim_shops_id (type: int)
-                        1 id (type: int)
                     Select Operator
                       expressions: id (type: int)
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 5 Basic stats: COMPLETE Column stats: NONE
-                      Group By Operator
-                        keys: _col0 (type: int)
-                        mode: hash
+                      Spark HashTable Sink Operator
+                        keys:
+                          0 _col1 (type: int)
+                          1 _col0 (type: int)
+                      Select Operator
+                        expressions: _col0 (type: int)
                         outputColumnNames: _col0
                         Statistics: Num rows: 1 Data size: 5 Basic stats: COMPLETE Column stats: NONE
-                        Spark Partition Pruning Sink Operator
-                          partition key expr: dim_shops_id
+                        Group By Operator
+                          keys: _col0 (type: int)
+                          mode: hash
+                          outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 5 Basic stats: COMPLETE Column stats: NONE
-                          target column name: dim_shops_id
-                          target work: Map 3
+                          Spark Partition Pruning Sink Operator
+                            partition key expr: dim_shops_id
+                            Statistics: Num rows: 1 Data size: 5 Basic stats: COMPLETE Column stats: NONE
+                            target column name: dim_shops_id
+                            target work: Map 3
             Local Work:
               Map Reduce Local Work
 
@@ -922,30 +958,27 @@ STAGE PLANS:
                   alias: agg_01
                   filterExpr: dim_shops_id is not null (type: boolean)
                   Statistics: Num rows: 9 Data size: 27 Basic stats: COMPLETE Column stats: NONE
-                  Map Join Operator
-                    condition map:
-                         Inner Join 0 to 1
-                    keys:
-                      0 dim_shops_id (type: int)
-                      1 id (type: int)
-                    outputColumnNames: _col0, _col1, _col5
-                    input vertices:
-                      1 Map 2
-                    Statistics: Num rows: 9 Data size: 29 Basic stats: COMPLETE Column stats: NONE
-                    Filter Operator
-                      predicate: (_col1 = _col5) (type: boolean)
-                      Statistics: Num rows: 4 Data size: 12 Basic stats: COMPLETE Column stats: NONE
-                      Select Operator
-                        expressions: _col0 (type: decimal(10,0))
-                        outputColumnNames: _col0
-                        Statistics: Num rows: 4 Data size: 12 Basic stats: COMPLETE Column stats: NONE
-                        File Output Operator
-                          compressed: false
-                          Statistics: Num rows: 8 Data size: 24 Basic stats: COMPLETE Column stats: NONE
-                          table:
-                              input format: org.apache.hadoop.mapred.TextInputFormat
-                              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  Select Operator
+                    expressions: amount (type: decimal(10,0)), dim_shops_id (type: int)
+                    outputColumnNames: _col0, _col1
+                    Statistics: Num rows: 9 Data size: 27 Basic stats: COMPLETE Column stats: NONE
+                    Map Join Operator
+                      condition map:
+                           Inner Join 0 to 1
+                      keys:
+                        0 _col1 (type: int)
+                        1 _col0 (type: int)
+                      outputColumnNames: _col0
+                      input vertices:
+                        1 Map 2
+                      Statistics: Num rows: 9 Data size: 29 Basic stats: COMPLETE Column stats: NONE
+                      File Output Operator
+                        compressed: false
+                        Statistics: Num rows: 18 Data size: 58 Basic stats: COMPLETE Column stats: NONE
+                        table:
+                            input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                            output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
             Local Work:
               Map Reduce Local Work
         Map 3 
@@ -954,30 +987,27 @@ STAGE PLANS:
                   alias: agg_01
                   filterExpr: dim_shops_id is not null (type: boolean)
                   Statistics: Num rows: 9 Data size: 27 Basic stats: COMPLETE Column stats: NONE
-                  Map Join Operator
-                    condition map:
-                         Inner Join 0 to 1
-                    keys:
-                      0 dim_shops_id (type: int)
-                      1 id (type: int)
-                    outputColumnNames: _col0, _col1, _col5
-                    input vertices:
-                      1 Map 4
-                    Statistics: Num rows: 9 Data size: 29 Basic stats: COMPLETE Column stats: NONE
-                    Filter Operator
-                      predicate: (_col1 = _col5) (type: boolean)
-                      Statistics: Num rows: 4 Data size: 12 Basic stats: COMPLETE Column stats: NONE
-                      Select Operator
-                        expressions: _col0 (type: decimal(10,0))
-                        outputColumnNames: _col0
-                        Statistics: Num rows: 4 Data size: 12 Basic stats: COMPLETE Column stats: NONE
-                        File Output Operator
-                          compressed: false
-                          Statistics: Num rows: 8 Data size: 24 Basic stats: COMPLETE Column stats: NONE
-                          table:
-                              input format: org.apache.hadoop.mapred.TextInputFormat
-                              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  Select Operator
+                    expressions: amount (type: decimal(10,0)), dim_shops_id (type: int)
+                    outputColumnNames: _col0, _col1
+                    Statistics: Num rows: 9 Data size: 27 Basic stats: COMPLETE Column stats: NONE
+                    Map Join Operator
+                      condition map:
+                           Inner Join 0 to 1
+                      keys:
+                        0 _col1 (type: int)
+                        1 _col0 (type: int)
+                      outputColumnNames: _col0
+                      input vertices:
+                        1 Map 4
+                      Statistics: Num rows: 9 Data size: 29 Basic stats: COMPLETE Column stats: NONE
+                      File Output Operator
+                        compressed: false
+                        Statistics: Num rows: 18 Data size: 58 Basic stats: COMPLETE Column stats: NONE
+                        table:
+                            input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                            output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
             Local Work:
               Map Reduce Local Work
 

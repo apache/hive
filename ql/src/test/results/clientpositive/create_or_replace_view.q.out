@@ -14,6 +14,10 @@ POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@srcpart
 POSTHOOK: Output: database:vt
 POSTHOOK: Output: vt@v
+POSTHOOK: Lineage: v.ds SIMPLE [(srcpart)srcpart.FieldSchema(name:ds, type:string, comment:null), ]
+POSTHOOK: Lineage: v.hr SIMPLE [(srcpart)srcpart.FieldSchema(name:hr, type:string, comment:null), ]
+POSTHOOK: Lineage: v.key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: v.value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: describe formatted vt.v
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: vt@v
@@ -47,14 +51,13 @@ Sort Columns:       	[]
 # View Information	 	 
 View Original Text: 	select * from srcpart	 
 View Expanded Text: 	select `srcpart`.`key`, `srcpart`.`value`, `srcpart`.`ds`, `srcpart`.`hr` from `default`.`srcpart`	 
-PREHOOK: query: -- modifying definition of unpartitioned view
-create or replace view vt.v partitioned on (ds, hr) as select * from srcpart
+View Rewrite Enabled:	No                  	 
+PREHOOK: query: create or replace view vt.v partitioned on (ds, hr) as select * from srcpart
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: default@srcpart
 PREHOOK: Output: database:vt
 PREHOOK: Output: vt@v
-POSTHOOK: query: -- modifying definition of unpartitioned view
-create or replace view vt.v partitioned on (ds, hr) as select * from srcpart
+POSTHOOK: query: create or replace view vt.v partitioned on (ds, hr) as select * from srcpart
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@srcpart
 POSTHOOK: Output: database:vt
@@ -137,6 +140,7 @@ Sort Columns:       	[]
 # View Information	 	 
 View Original Text: 	select * from srcpart	 
 View Expanded Text: 	select `srcpart`.`key`, `srcpart`.`value`, `srcpart`.`ds`, `srcpart`.`hr` from `default`.`srcpart`	 
+View Rewrite Enabled:	No                  	 
 PREHOOK: query: show partitions vt.v
 PREHOOK: type: SHOWPARTITIONS
 PREHOOK: Input: vt@v
@@ -167,14 +171,12 @@ PREHOOK: Input: vt@v
 POSTHOOK: query: show partitions vt.v
 POSTHOOK: type: SHOWPARTITIONS
 POSTHOOK: Input: vt@v
-PREHOOK: query: -- altering partitioned view 1
-create or replace view vt.v partitioned on (ds, hr) as select value, ds, hr from srcpart
+PREHOOK: query: create or replace view vt.v partitioned on (ds, hr) as select value, ds, hr from srcpart
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: default@srcpart
 PREHOOK: Output: database:vt
 PREHOOK: Output: vt@v
-POSTHOOK: query: -- altering partitioned view 1
-create or replace view vt.v partitioned on (ds, hr) as select value, ds, hr from srcpart
+POSTHOOK: query: create or replace view vt.v partitioned on (ds, hr) as select value, ds, hr from srcpart
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@srcpart
 POSTHOOK: Output: database:vt
@@ -230,20 +232,19 @@ Sort Columns:       	[]
 # View Information	 	 
 View Original Text: 	select value, ds, hr from srcpart	 
 View Expanded Text: 	select `srcpart`.`value`, `srcpart`.`ds`, `srcpart`.`hr` from `default`.`srcpart`	 
+View Rewrite Enabled:	No                  	 
 PREHOOK: query: show partitions vt.v
 PREHOOK: type: SHOWPARTITIONS
 PREHOOK: Input: vt@v
 POSTHOOK: query: show partitions vt.v
 POSTHOOK: type: SHOWPARTITIONS
 POSTHOOK: Input: vt@v
-PREHOOK: query: -- altering partitioned view 2
-create or replace view vt.v partitioned on (ds, hr) as select key, value, ds, hr from srcpart
+PREHOOK: query: create or replace view vt.v partitioned on (ds, hr) as select key, value, ds, hr from srcpart
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: default@srcpart
 PREHOOK: Output: database:vt
 PREHOOK: Output: vt@v
-POSTHOOK: query: -- altering partitioned view 2
-create or replace view vt.v partitioned on (ds, hr) as select key, value, ds, hr from srcpart
+POSTHOOK: query: create or replace view vt.v partitioned on (ds, hr) as select key, value, ds, hr from srcpart
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@srcpart
 POSTHOOK: Output: database:vt
@@ -300,6 +301,7 @@ Sort Columns:       	[]
 # View Information	 	 
 View Original Text: 	select key, value, ds, hr from srcpart	 
 View Expanded Text: 	select `srcpart`.`key`, `srcpart`.`value`, `srcpart`.`ds`, `srcpart`.`hr` from `default`.`srcpart`	 
+View Rewrite Enabled:	No                  	 
 PREHOOK: query: show partitions vt.v
 PREHOOK: type: SHOWPARTITIONS
 PREHOOK: Input: vt@v
@@ -314,13 +316,11 @@ POSTHOOK: query: drop view vt.v
 POSTHOOK: type: DROPVIEW
 POSTHOOK: Input: vt@v
 POSTHOOK: Output: vt@v
-PREHOOK: query: -- updating to fix view with invalid definition
-create table srcpart_temp like srcpart
+PREHOOK: query: create table srcpart_temp like srcpart
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@srcpart_temp
-POSTHOOK: query: -- updating to fix view with invalid definition
-create table srcpart_temp like srcpart
+POSTHOOK: query: create table srcpart_temp like srcpart
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@srcpart_temp
@@ -334,6 +334,8 @@ POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@srcpart_temp
 POSTHOOK: Output: database:vt
 POSTHOOK: Output: vt@v
+POSTHOOK: Lineage: v.key SIMPLE [(srcpart_temp)srcpart_temp.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: v.value SIMPLE [(srcpart_temp)srcpart_temp.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: drop table srcpart_temp
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@srcpart_temp
@@ -391,6 +393,7 @@ Sort Columns:       	[]
 # View Information	 	 
 View Original Text: 	select * from srcpart	 
 View Expanded Text: 	select `srcpart`.`key`, `srcpart`.`value`, `srcpart`.`ds`, `srcpart`.`hr` from `default`.`srcpart`	 
+View Rewrite Enabled:	No                  	 
 PREHOOK: query: drop view vt.v
 PREHOOK: type: DROPVIEW
 PREHOOK: Input: vt@v

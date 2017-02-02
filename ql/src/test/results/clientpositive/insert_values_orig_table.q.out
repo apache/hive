@@ -51,13 +51,11 @@ PREHOOK: query: insert into table acid_ivot values
         (1, 2, 3, 4, 3.14, 2.34, 'fred', 'bob', '2014-09-01 10:34:23.111', '1944-06-06 06:00:00', true, true),
         (111, 222, 3333, 444, 13.14, 10239302.34239320, 'fred', 'bob', '2014-09-01 10:34:23.111', '1944-06-06 06:00:00', true, true)
 PREHOOK: type: QUERY
-PREHOOK: Input: default@values__tmp__table__1
 PREHOOK: Output: default@acid_ivot
 POSTHOOK: query: insert into table acid_ivot values
         (1, 2, 3, 4, 3.14, 2.34, 'fred', 'bob', '2014-09-01 10:34:23.111', '1944-06-06 06:00:00', true, true),
         (111, 222, 3333, 444, 13.14, 10239302.34239320, 'fred', 'bob', '2014-09-01 10:34:23.111', '1944-06-06 06:00:00', true, true)
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@values__tmp__table__1
 POSTHOOK: Output: default@acid_ivot
 POSTHOOK: Lineage: acid_ivot.cbigint EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col4, type:string, comment:), ]
 POSTHOOK: Lineage: acid_ivot.cboolean1 EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col11, type:string, comment:), ]

@@ -23,6 +23,8 @@ import com.google.common.collect.Iterators;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.hbase.filter.FirstKeyOnlyFilter;
+import org.apache.hadoop.hive.metastore.api.SQLForeignKey;
+import org.apache.hadoop.hive.metastore.api.SQLPrimaryKey;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -143,6 +145,8 @@ public class HBaseReadWrite implements MetadataStore {
   private final static byte[] REF_COUNT_COL = "ref".getBytes(HBaseUtils.ENCODING);
   private final static byte[] DELEGATION_TOKEN_COL = "dt".getBytes(HBaseUtils.ENCODING);
   private final static byte[] MASTER_KEY_COL = "mk".getBytes(HBaseUtils.ENCODING);
+  private final static byte[] PRIMARY_KEY_COL = "pk".getBytes(HBaseUtils.ENCODING);
+  private final static byte[] FOREIGN_KEY_COL = "fk".getBytes(HBaseUtils.ENCODING);
   private final static byte[] GLOBAL_PRIVS_KEY = "gp".getBytes(HBaseUtils.ENCODING);
   private final static byte[] SEQUENCES_KEY = "seq".getBytes(HBaseUtils.ENCODING);
   private final static int TABLES_TO_CACHE = 10;
@@ -1716,6 +1720,22 @@ public class HBaseReadWrite implements MetadataStore {
       ColumnStatisticsObj cso = HBaseUtils.deserializeStatsForOneColumn(pcs, statsCol.getValue());
       builder.append(dumpThriftObject(cso));
     }
+    // Add the primary key
+    List<SQLPrimaryKey> pk = getPrimaryKey(sdParts.containingTable.getDbName(),
+        sdParts.containingTable.getTableName());
+    if (pk != null && pk.size() > 0) {
+      builder.append(" primary key: ");
+      for (SQLPrimaryKey pkcol : pk) builder.append(dumpThriftObject(pkcol));
+    }
+
+    // Add any foreign keys
+    List<SQLForeignKey> fks = getForeignKeys(sdParts.containingTable.getDbName(),
+        sdParts.containingTable.getTableName());
+    if (fks != null && fks.size() > 0) {
+      builder.append(" foreign keys: ");
+      for (SQLForeignKey fkcol : fks) builder.append(dumpThriftObject(fkcol));
+
+    }
     return builder.toString();
   }
 
@@ -2527,6 +2547,86 @@ public class HBaseReadWrite implements MetadataStore {
           .toString());
     }
     return sequences;
+  }
+
+  /**********************************************************************************************
+   * Constraints (pk/fk) related methods
+   *********************************************************************************************/
+
+  /**
+   * Fetch a primary key
+   * @param dbName database the table is in
+   * @param tableName table name
+   * @return List of primary key objects, which together make up one key
+   * @throws IOException if there's a read error
+   */
+  List<SQLPrimaryKey> getPrimaryKey(String dbName, String tableName) throws IOException {
+    byte[] key = HBaseUtils.buildKey(dbName, tableName);
+    byte[] serialized = read(TABLE_TABLE, key, CATALOG_CF, PRIMARY_KEY_COL);
+    if (serialized == null) return null;
+    return HBaseUtils.deserializePrimaryKey(dbName, tableName, serialized);
+  }
+
+  /**
+   * Fetch a the foreign keys for a table
+   * @param dbName database the table is in
+   * @param tableName table name
+   * @return All of the foreign key columns thrown together in one list.  Have fun sorting them out.
+   * @throws IOException if there's a read error
+   */
+  List<SQLForeignKey> getForeignKeys(String dbName, String tableName) throws IOException {
+    byte[] key = HBaseUtils.buildKey(dbName, tableName);
+    byte[] serialized = read(TABLE_TABLE, key, CATALOG_CF, FOREIGN_KEY_COL);
+    if (serialized == null) return null;
+    return HBaseUtils.deserializeForeignKeys(dbName, tableName, serialized);
+  }
+
+  /**
+   * Create a primary key on a table.
+   * @param pk Primary key for this table
+   * @throws IOException if unable to write the data to the store.
+   */
+  void putPrimaryKey(List<SQLPrimaryKey> pk) throws IOException {
+    byte[][] serialized = HBaseUtils.serializePrimaryKey(pk);
+    store(TABLE_TABLE, serialized[0], CATALOG_CF, PRIMARY_KEY_COL, serialized[1]);
+  }
+
+  /**
+   * Create one or more foreign keys on a table.  Note that this will not add a foreign key, it
+   * will overwrite whatever is there.  So if you wish to add a key to a table that may already
+   * foreign keys you need to first use {@link #getForeignKeys(String, String)} to fetch the
+   * existing keys, add to the list, and then call this.
+   * @param fks Foreign key(s) for this table
+   * @throws IOException if unable to write the data to the store.
+   */
+  void putForeignKeys(List<SQLForeignKey> fks) throws IOException {
+    byte[][] serialized = HBaseUtils.serializeForeignKeys(fks);
+    store(TABLE_TABLE, serialized[0], CATALOG_CF, FOREIGN_KEY_COL, serialized[1]);
+  }
+
+  /**
+   * Drop the primary key from a table.
+   * @param dbName database the table is in
+   * @param tableName table name
+   * @throws IOException if unable to delete from the store
+   */
+  void deletePrimaryKey(String dbName, String tableName) throws IOException {
+    byte[] key = HBaseUtils.buildKey(dbName, tableName);
+    delete(TABLE_TABLE, key, CATALOG_CF, PRIMARY_KEY_COL);
+  }
+
+  /**
+   * Drop all foreign keys from a table.  Note that this will drop all keys blindly.  You should
+   * only call this if you're sure you want to drop them all.  If you just want to drop one you
+   * should instead all {@link #getForeignKeys(String, String)}, modify the list it returns, and
+   * then call {@link #putForeignKeys(List)}.
+   * @param dbName database the table is in
+   * @param tableName table name
+   * @throws IOException if unable to delete from the store
+   */
+  void deleteForeignKeys(String dbName, String tableName) throws IOException {
+    byte[] key = HBaseUtils.buildKey(dbName, tableName);
+    delete(TABLE_TABLE, key, CATALOG_CF, FOREIGN_KEY_COL);
   }
 
   /**********************************************************************************************

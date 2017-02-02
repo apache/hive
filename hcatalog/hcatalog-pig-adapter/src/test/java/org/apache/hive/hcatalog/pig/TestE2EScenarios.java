@@ -62,7 +62,7 @@ import org.junit.Test;
 
 public class TestE2EScenarios {
   private static final String TEST_DATA_DIR = System.getProperty("java.io.tmpdir") + File.separator
-      + TestHCatLoader.class.getCanonicalName() + "-" + System.currentTimeMillis();
+      + TestE2EScenarios.class.getCanonicalName() + "-" + System.currentTimeMillis();
   private static final String TEST_WAREHOUSE_DIR = TEST_DATA_DIR + "/warehouse";
 
   private static final String TEXTFILE_LOCN = TEST_DATA_DIR + "/textfile";

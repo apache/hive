@@ -1,12 +1,6 @@
-PREHOOK: query: -- simple query with multiple reduce stages
--- SORT_QUERY_RESULTS
-
-EXPLAIN SELECT key, count(value) as cnt FROM src GROUP BY key ORDER BY cnt
+PREHOOK: query: EXPLAIN SELECT key, count(value) as cnt FROM src GROUP BY key ORDER BY cnt
 PREHOOK: type: QUERY
-POSTHOOK: query: -- simple query with multiple reduce stages
--- SORT_QUERY_RESULTS
-
-EXPLAIN SELECT key, count(value) as cnt FROM src GROUP BY key ORDER BY cnt
+POSTHOOK: query: EXPLAIN SELECT key, count(value) as cnt FROM src GROUP BY key ORDER BY cnt
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -396,11 +390,9 @@ POSTHOOK: Input: default@src
 96	1
 97	2
 98	2
-PREHOOK: query: -- join query with multiple reduce stages;
-EXPLAIN SELECT s2.key, count(distinct s2.value) as cnt FROM src s1 join src s2 on (s1.key = s2.key) GROUP BY s2.key ORDER BY cnt,s2.key
+PREHOOK: query: EXPLAIN SELECT s2.key, count(distinct s2.value) as cnt FROM src s1 join src s2 on (s1.key = s2.key) GROUP BY s2.key ORDER BY cnt,s2.key
 PREHOOK: type: QUERY
-POSTHOOK: query: -- join query with multiple reduce stages;
-EXPLAIN SELECT s2.key, count(distinct s2.value) as cnt FROM src s1 join src s2 on (s1.key = s2.key) GROUP BY s2.key ORDER BY cnt,s2.key
+POSTHOOK: query: EXPLAIN SELECT s2.key, count(distinct s2.value) as cnt FROM src s1 join src s2 on (s1.key = s2.key) GROUP BY s2.key ORDER BY cnt,s2.key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -832,11 +824,9 @@ POSTHOOK: Input: default@src
 96	1
 97	1
 98	1
-PREHOOK: query: -- same query with broadcast join
-EXPLAIN SELECT s2.key, count(distinct s2.value) as cnt FROM src s1 join src s2 on (s1.key = s2.key) GROUP BY s2.key ORDER BY cnt,s2.key
+PREHOOK: query: EXPLAIN SELECT s2.key, count(distinct s2.value) as cnt FROM src s1 join src s2 on (s1.key = s2.key) GROUP BY s2.key ORDER BY cnt,s2.key
 PREHOOK: type: QUERY
-POSTHOOK: query: -- same query with broadcast join
-EXPLAIN SELECT s2.key, count(distinct s2.value) as cnt FROM src s1 join src s2 on (s1.key = s2.key) GROUP BY s2.key ORDER BY cnt,s2.key
+POSTHOOK: query: EXPLAIN SELECT s2.key, count(distinct s2.value) as cnt FROM src s1 join src s2 on (s1.key = s2.key) GROUP BY s2.key ORDER BY cnt,s2.key
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -1261,8 +1251,7 @@ POSTHOOK: Input: default@src
 96	1
 97	1
 98	1
-PREHOOK: query: -- query with multiple branches in the task dag
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT * 
 FROM
   (SELECT key, count(value) as cnt 
@@ -1278,8 +1267,7 @@ WHERE
   s1.cnt > 1
 ORDER BY s1.key
 PREHOOK: type: QUERY
-POSTHOOK: query: -- query with multiple branches in the task dag
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT * 
 FROM
   (SELECT key, count(value) as cnt 
@@ -1677,15 +1665,13 @@ POSTHOOK: Input: default@src
 95	2	95	2	95	2
 97	2	97	2	97	2
 98	2	98	2	98	2
-PREHOOK: query: -- query with broadcast join in the reduce stage
-EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT *
 FROM
   (SELECT key, count(value) as cnt FROM src GROUP BY key) s1
   JOIN src ON (s1.key = src.key) order by s1.key
 PREHOOK: type: QUERY
-POSTHOOK: query: -- query with broadcast join in the reduce stage
-EXPLAIN
+POSTHOOK: query: EXPLAIN
 SELECT *
 FROM
   (SELECT key, count(value) as cnt FROM src GROUP BY key) s1

@@ -1,14 +1,8 @@
-PREHOOK: query: -- Setting HTS(src2) < threshold < HTS(src2) + HTS(smalltable).
--- This query plan should thus not try to combine the mapjoin into a single work.
-
-create table smalltable(key string, value string) stored as textfile
+PREHOOK: query: create table smalltable(key string, value string) stored as textfile
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@smalltable
-POSTHOOK: query: -- Setting HTS(src2) < threshold < HTS(src2) + HTS(smalltable).
--- This query plan should thus not try to combine the mapjoin into a single work.
-
-create table smalltable(key string, value string) stored as textfile
+POSTHOOK: query: create table smalltable(key string, value string) stored as textfile
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@smalltable

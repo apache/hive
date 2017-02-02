@@ -22,6 +22,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.PrintStream;
 import java.io.PrintWriter;
+import java.lang.reflect.Method;
 
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -58,11 +59,14 @@ public class TestBeeLineHistory {
     BeeLine beeline = new BeeLine();
     beeline.getOpts().setHistoryFile(fileName);
     beeline.setOutputStream(ops);
+    Method method = beeline.getClass().getDeclaredMethod("setupHistory");
+    method.setAccessible(true);
+    method.invoke(beeline);
     beeline.initializeConsoleReader(null);
     beeline.dispatch("!history");
     String output = os.toString("UTF-8");
     int numHistories = output.split("\n").length;
-    Assert.assertEquals(numHistories, 10);
+    Assert.assertEquals(10, numHistories);
     beeline.close();
   }
 
@@ -73,6 +77,9 @@ public class TestBeeLineHistory {
     BeeLine beeline = new BeeLine();
     beeline.getOpts().setHistoryFile(fileName);
     beeline.setOutputStream(ops);
+    Method method = beeline.getClass().getDeclaredMethod("setupHistory");
+    method.setAccessible(true);
+    method.invoke(beeline);
     beeline.initializeConsoleReader(null);
     beeline.dispatch("!history");
     String output = os.toString("UTF-8");

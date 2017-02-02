@@ -1,0 +1,1584 @@
+PREHOOK: query: DROP TABLE IF EXISTS dummy
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE IF EXISTS dummy
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: CREATE TABLE dummy (i int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@dummy
+POSTHOOK: query: CREATE TABLE dummy (i int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@dummy
+PREHOOK: query: INSERT INTO TABLE dummy VALUES (42)
+PREHOOK: type: QUERY
+PREHOOK: Output: default@dummy
+POSTHOOK: query: INSERT INTO TABLE dummy VALUES (42)
+POSTHOOK: type: QUERY
+POSTHOOK: Output: default@dummy
+POSTHOOK: Lineage: dummy.i EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+PREHOOK: query: DROP TABLE IF EXISTS nested_tbl_1
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE IF EXISTS nested_tbl_1
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: CREATE TABLE nested_tbl_1 (
+  a int,
+  s1 struct<f1: boolean, f2: string, f3: struct<f4: int, f5: double>, f6: int>,
+  s2 struct<f7: string, f8: struct<f9 : boolean, f10: array<int>, f11: map<string, boolean>>>,
+  s3 struct<f12: array<struct<f13:string, f14:int>>>,
+  s4 map<string, struct<f15:int>>,
+  s5 struct<f16: array<struct<f17:string, f18:struct<f19:int>>>>,
+  s6 map<string, struct<f20:array<struct<f21:struct<f22:int>>>>>
+) STORED AS PARQUET
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@nested_tbl_1
+POSTHOOK: query: CREATE TABLE nested_tbl_1 (
+  a int,
+  s1 struct<f1: boolean, f2: string, f3: struct<f4: int, f5: double>, f6: int>,
+  s2 struct<f7: string, f8: struct<f9 : boolean, f10: array<int>, f11: map<string, boolean>>>,
+  s3 struct<f12: array<struct<f13:string, f14:int>>>,
+  s4 map<string, struct<f15:int>>,
+  s5 struct<f16: array<struct<f17:string, f18:struct<f19:int>>>>,
+  s6 map<string, struct<f20:array<struct<f21:struct<f22:int>>>>>
+) STORED AS PARQUET
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@nested_tbl_1
+PREHOOK: query: INSERT INTO TABLE nested_tbl_1 SELECT
+  1, named_struct('f1', false, 'f2', 'foo', 'f3', named_struct('f4', 4, 'f5', cast(5.0 as double)), 'f6', 4),
+  named_struct('f7', 'f7', 'f8', named_struct('f9', true, 'f10', array(10, 11), 'f11', map('key1', true, 'key2', false))),
+  named_struct('f12', array(named_struct('f13', 'foo', 'f14', 14), named_struct('f13', 'bar', 'f14', 28))),
+  map('key1', named_struct('f15', 1), 'key2', named_struct('f15', 2)),
+  named_struct('f16', array(named_struct('f17', 'foo', 'f18', named_struct('f19', 14)), named_struct('f17', 'bar', 'f18', named_struct('f19', 28)))),
+  map('key1', named_struct('f20', array(named_struct('f21', named_struct('f22', 1)))),
+      'key2', named_struct('f20', array(named_struct('f21', named_struct('f22', 2)))))
+FROM dummy
+PREHOOK: type: QUERY
+PREHOOK: Input: default@dummy
+PREHOOK: Output: default@nested_tbl_1
+POSTHOOK: query: INSERT INTO TABLE nested_tbl_1 SELECT
+  1, named_struct('f1', false, 'f2', 'foo', 'f3', named_struct('f4', 4, 'f5', cast(5.0 as double)), 'f6', 4),
+  named_struct('f7', 'f7', 'f8', named_struct('f9', true, 'f10', array(10, 11), 'f11', map('key1', true, 'key2', false))),
+  named_struct('f12', array(named_struct('f13', 'foo', 'f14', 14), named_struct('f13', 'bar', 'f14', 28))),
+  map('key1', named_struct('f15', 1), 'key2', named_struct('f15', 2)),
+  named_struct('f16', array(named_struct('f17', 'foo', 'f18', named_struct('f19', 14)), named_struct('f17', 'bar', 'f18', named_struct('f19', 28)))),
+  map('key1', named_struct('f20', array(named_struct('f21', named_struct('f22', 1)))),
+      'key2', named_struct('f20', array(named_struct('f21', named_struct('f22', 2)))))
+FROM dummy
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dummy
+POSTHOOK: Output: default@nested_tbl_1
+POSTHOOK: Lineage: nested_tbl_1.a SIMPLE []
+POSTHOOK: Lineage: nested_tbl_1.s1 EXPRESSION []
+POSTHOOK: Lineage: nested_tbl_1.s2 EXPRESSION []
+POSTHOOK: Lineage: nested_tbl_1.s3 EXPRESSION []
+POSTHOOK: Lineage: nested_tbl_1.s4 EXPRESSION []
+POSTHOOK: Lineage: nested_tbl_1.s5 EXPRESSION []
+POSTHOOK: Lineage: nested_tbl_1.s6 EXPRESSION []
+PREHOOK: query: DROP TABLE IF EXISTS nested_tbl_2
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE IF EXISTS nested_tbl_2
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: CREATE TABLE nested_tbl_2 LIKE nested_tbl_1
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@nested_tbl_2
+POSTHOOK: query: CREATE TABLE nested_tbl_2 LIKE nested_tbl_1
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@nested_tbl_2
+PREHOOK: query: INSERT INTO TABLE nested_tbl_2 SELECT
+  2, named_struct('f1', true, 'f2', 'bar', 'f3', named_struct('f4', 4, 'f5', cast(6.5 as double)), 'f6', 4),
+  named_struct('f7', 'f72', 'f8', named_struct('f9', false, 'f10', array(20, 22), 'f11', map('key3', true, 'key4', false))),
+  named_struct('f12', array(named_struct('f13', 'bar', 'f14', 28), named_struct('f13', 'foo', 'f14', 56))),
+  map('key3', named_struct('f15', 3), 'key4', named_struct('f15', 4)),
+  named_struct('f16', array(named_struct('f17', 'bar', 'f18', named_struct('f19', 28)), named_struct('f17', 'foo', 'f18', named_struct('f19', 56)))),
+  map('key3', named_struct('f20', array(named_struct('f21', named_struct('f22', 3)))),
+      'key4', named_struct('f20', array(named_struct('f21', named_struct('f22', 4)))))
+FROM dummy
+PREHOOK: type: QUERY
+PREHOOK: Input: default@dummy
+PREHOOK: Output: default@nested_tbl_2
+POSTHOOK: query: INSERT INTO TABLE nested_tbl_2 SELECT
+  2, named_struct('f1', true, 'f2', 'bar', 'f3', named_struct('f4', 4, 'f5', cast(6.5 as double)), 'f6', 4),
+  named_struct('f7', 'f72', 'f8', named_struct('f9', false, 'f10', array(20, 22), 'f11', map('key3', true, 'key4', false))),
+  named_struct('f12', array(named_struct('f13', 'bar', 'f14', 28), named_struct('f13', 'foo', 'f14', 56))),
+  map('key3', named_struct('f15', 3), 'key4', named_struct('f15', 4)),
+  named_struct('f16', array(named_struct('f17', 'bar', 'f18', named_struct('f19', 28)), named_struct('f17', 'foo', 'f18', named_struct('f19', 56)))),
+  map('key3', named_struct('f20', array(named_struct('f21', named_struct('f22', 3)))),
+      'key4', named_struct('f20', array(named_struct('f21', named_struct('f22', 4)))))
+FROM dummy
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dummy
+POSTHOOK: Output: default@nested_tbl_2
+POSTHOOK: Lineage: nested_tbl_2.a SIMPLE []
+POSTHOOK: Lineage: nested_tbl_2.s1 EXPRESSION []
+POSTHOOK: Lineage: nested_tbl_2.s2 EXPRESSION []
+POSTHOOK: Lineage: nested_tbl_2.s3 EXPRESSION []
+POSTHOOK: Lineage: nested_tbl_2.s4 EXPRESSION []
+POSTHOOK: Lineage: nested_tbl_2.s5 EXPRESSION []
+POSTHOOK: Lineage: nested_tbl_2.s6 EXPRESSION []
+PREHOOK: query: EXPLAIN SELECT a FROM nested_tbl_1
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN SELECT a FROM nested_tbl_1
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: nested_tbl_1
+            Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: a (type: int)
+              outputColumnNames: _col0
+              Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
+              File Output Operator
+                compressed: false
+                Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
+                table:
+                    input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SELECT a FROM nested_tbl_1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@nested_tbl_1
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT a FROM nested_tbl_1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@nested_tbl_1
+#### A masked pattern was here ####
+1
+PREHOOK: query: EXPLAIN SELECT s1.f1 FROM nested_tbl_1
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN SELECT s1.f1 FROM nested_tbl_1
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: nested_tbl_1
+            Pruned Column Paths: s1.f1
+            Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: s1.f1 (type: boolean)
+              outputColumnNames: _col0
+              Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
+              File Output Operator
+                compressed: false
+                Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
+                table:
+                    input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SELECT s1.f1 FROM nested_tbl_1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@nested_tbl_1
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT s1.f1 FROM nested_tbl_1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@nested_tbl_1
+#### A masked pattern was here ####
+false
+PREHOOK: query: EXPLAIN SELECT s1.f1, s1.f2 FROM nested_tbl_1
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN SELECT s1.f1, s1.f2 FROM nested_tbl_1
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: nested_tbl_1
+            Pruned Column Paths: s1.f1, s1.f2
+            Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: s1.f1 (type: boolean), s1.f2 (type: string)
+              outputColumnNames: _col0, _col1
+              Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
+              File Output Operator
+                compressed: false
+                Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
+                table:
+                    input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SELECT s1.f1, s1.f2 FROM nested_tbl_1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@nested_tbl_1
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT s1.f1, s1.f2 FROM nested_tbl_1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@nested_tbl_1
+#### A masked pattern was here ####
+false	foo
+PREHOOK: query: EXPLAIN SELECT s1.f3, s1.f3.f4 FROM nested_tbl_1
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN SELECT s1.f3, s1.f3.f4 FROM nested_tbl_1
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: nested_tbl_1
+            Pruned Column Paths: s1.f3
+            Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: s1.f3 (type: struct<f4:int,f5:double>), s1.f3.f4 (type: int)
+              outputColumnNames: _col0, _col1
+              Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
+              File Output Operator
+                compressed: false
+                Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
+                table:
+                    input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SELECT s1.f3, s1.f3.f4 FROM nested_tbl_1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@nested_tbl_1
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT s1.f3, s1.f3.f4 FROM nested_tbl_1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@nested_tbl_1
+#### A masked pattern was here ####
+{"f4":4,"f5":5.0}	4
+PREHOOK: query: EXPLAIN SELECT s1.f3.f5 FROM nested_tbl_1
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN SELECT s1.f3.f5 FROM nested_tbl_1
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: nested_tbl_1
+            Pruned Column Paths: s1.f3.f5
+            Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: s1.f3.f5 (type: double)
+              outputColumnNames: _col0
+              Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
+              File Output Operator
+                compressed: false
+                Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
+                table:
+                    input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SELECT s1.f3.f5 FROM nested_tbl_1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@nested_tbl_1
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT s1.f3.f5 FROM nested_tbl_1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@nested_tbl_1
+#### A masked pattern was here ####
+5.0
+PREHOOK: query: EXPLAIN SELECT s1.f3.f4, s2.f8.f9 FROM nested_tbl_1
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN SELECT s1.f3.f4, s2.f8.f9 FROM nested_tbl_1
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: nested_tbl_1
+            Pruned Column Paths: s1.f3.f4, s2.f8.f9
+            Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: s1.f3.f4 (type: int), s2.f8.f9 (type: boolean)
+              outputColumnNames: _col0, _col1
+              Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
+              File Output Operator
+                compressed: false
+                Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
+                table:
+                    input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SELECT s1.f3.f4, s2.f8.f9 FROM nested_tbl_1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@nested_tbl_1
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT s1.f3.f4, s2.f8.f9 FROM nested_tbl_1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@nested_tbl_1
+#### A masked pattern was here ####
+4	true
+PREHOOK: query: EXPLAIN SELECT s1.f2 FROM nested_tbl_1 WHERE s1.f1 = FALSE
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN SELECT s1.f2 FROM nested_tbl_1 WHERE s1.f1 = FALSE
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: nested_tbl_1
+            Pruned Column Paths: s1.f2, s1.f1
+            Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: (s1.f1 = false) (type: boolean)
+              Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
+              Select Operator
+                expressions: s1.f2 (type: string)
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SELECT s1.f2 FROM nested_tbl_1 WHERE s1.f1 = FALSE
+PREHOOK: type: QUERY
+PREHOOK: Input: default@nested_tbl_1
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT s1.f2 FROM nested_tbl_1 WHERE s1.f1 = FALSE
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@nested_tbl_1
+#### A masked pattern was here ####
+foo
+PREHOOK: query: EXPLAIN SELECT s1.f3.f5 FROM nested_tbl_1 WHERE s1.f3.f4 = 4
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN SELECT s1.f3.f5 FROM nested_tbl_1 WHERE s1.f3.f4 = 4
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: nested_tbl_1
+            Pruned Column Paths: s1.f3.f5, s1.f3.f4
+            Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: (s1.f3.f4 = 4) (type: boolean)
+              Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
+              Select Operator
+                expressions: s1.f3.f5 (type: double)
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SELECT s1.f3.f5 FROM nested_tbl_1 WHERE s1.f3.f4 = 4
+PREHOOK: type: QUERY
+PREHOOK: Input: default@nested_tbl_1
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT s1.f3.f5 FROM nested_tbl_1 WHERE s1.f3.f4 = 4
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@nested_tbl_1
+#### A masked pattern was here ####
+5.0
+PREHOOK: query: EXPLAIN SELECT s2.f8 FROM nested_tbl_1 WHERE s1.f2 = 'foo' AND size(s2.f8.f10) > 1 AND s2.f8.f11['key1'] = TRUE
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN SELECT s2.f8 FROM nested_tbl_1 WHERE s1.f2 = 'foo' AND size(s2.f8.f10) > 1 AND s2.f8.f11['key1'] = TRUE
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: nested_tbl_1
+            Pruned Column Paths: s1.f2, s2.f8
+            Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: ((s1.f2 = 'foo') and (size(s2.f8.f10) > 1) and s2.f8.f11['key1']) (type: boolean)
+              Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
+              Select Operator
+                expressions: s2.f8 (type: struct<f9:boolean,f10:array<int>,f11:map<string,boolean>>)
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SELECT s2.f8 FROM nested_tbl_1 WHERE s1.f2 = 'foo' AND size(s2.f8.f10) > 1 AND s2.f8.f11['key1'] = TRUE
+PREHOOK: type: QUERY
+PREHOOK: Input: default@nested_tbl_1
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT s2.f8 FROM nested_tbl_1 WHERE s1.f2 = 'foo' AND size(s2.f8.f10) > 1 AND s2.f8.f11['key1'] = TRUE
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@nested_tbl_1
+#### A masked pattern was here ####
+{"f9":true,"f10":[10,11],"f11":{"key1":true,"key2":false}}
+PREHOOK: query: EXPLAIN SELECT col1, col2 FROM nested_tbl_1
+LATERAL VIEW explode(s2.f8.f10) tbl1 AS col1
+LATERAL VIEW explode(s3.f12) tbl2 AS col2
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN SELECT col1, col2 FROM nested_tbl_1
+LATERAL VIEW explode(s2.f8.f10) tbl1 AS col1
+LATERAL VIEW explode(s3.f12) tbl2 AS col2
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: nested_tbl_1
+            Pruned Column Paths: s2.f8.f10
+            Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
+            Lateral View Forward
+              Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
+              Select Operator
+                expressions: s3 (type: struct<f12:array<struct<f13:string,f14:int>>>)
+                outputColumnNames: s3
+                Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
+                Lateral View Join Operator
+                  outputColumnNames: _col3, _col10
+                  Statistics: Num rows: 2 Data size: 14 Basic stats: COMPLETE Column stats: NONE
+                  Lateral View Forward
+                    Statistics: Num rows: 2 Data size: 14 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: _col10 (type: int)
+                      outputColumnNames: _col10
+                      Statistics: Num rows: 2 Data size: 14 Basic stats: COMPLETE Column stats: NONE
+                      Lateral View Join Operator
+                        outputColumnNames: _col10, _col11
+                        Statistics: Num rows: 4 Data size: 28 Basic stats: COMPLETE Column stats: NONE
+                        Select Operator
+                          expressions: _col10 (type: int), _col11 (type: struct<f13:string,f14:int>)
+                          outputColumnNames: _col0, _col1
+                          Statistics: Num rows: 4 Data size: 28 Basic stats: COMPLETE Column stats: NONE
+                          File Output Operator
+                            compressed: false
+                            Statistics: Num rows: 4 Data size: 28 Basic stats: COMPLETE Column stats: NONE
+                            table:
+                                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    Select Operator
+                      expressions: _col3.f12 (type: array<struct<f13:string,f14:int>>)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 2 Data size: 14 Basic stats: COMPLETE Column stats: NONE
+                      UDTF Operator
+                        Statistics: Num rows: 2 Data size: 14 Basic stats: COMPLETE Column stats: NONE
+                        function name: explode
+                        Lateral View Join Operator
+                          outputColumnNames: _col10, _col11
+                          Statistics: Num rows: 4 Data size: 28 Basic stats: COMPLETE Column stats: NONE
+                          Select Operator
+                            expressions: _col10 (type: int), _col11 (type: struct<f13:string,f14:int>)
+                            outputColumnNames: _col0, _col1
+                            Statistics: Num rows: 4 Data size: 28 Basic stats: COMPLETE Column stats: NONE
+                            File Output Operator
+                              compressed: false
+                              Statistics: Num rows: 4 Data size: 28 Basic stats: COMPLETE Column stats: NONE
+                              table:
+                                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              Select Operator
+                expressions: s2.f8.f10 (type: array<int>)
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
+                UDTF Operator
+                  Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
+                  function name: explode
+                  Lateral View Join Operator
+                    outputColumnNames: _col3, _col10
+                    Statistics: Num rows: 2 Data size: 14 Basic stats: COMPLETE Column stats: NONE
+                    Lateral View Forward
+                      Statistics: Num rows: 2 Data size: 14 Basic stats: COMPLETE Column stats: NONE
+                      Select Operator
+                        expressions: _col10 (type: int)
+                        outputColumnNames: _col10
+                        Statistics: Num rows: 2 Data size: 14 Basic stats: COMPLETE Column stats: NONE
+                        Lateral View Join Operator
+                          outputColumnNames: _col10, _col11
+                          Statistics: Num rows: 4 Data size: 28 Basic stats: COMPLETE Column stats: NONE
+                          Select Operator
+                            expressions: _col10 (type: int), _col11 (type: struct<f13:string,f14:int>)
+                            outputColumnNames: _col0, _col1
+                            Statistics: Num rows: 4 Data size: 28 Basic stats: COMPLETE Column stats: NONE
+                            File Output Operator
+                              compressed: false
+                              Statistics: Num rows: 4 Data size: 28 Basic stats: COMPLETE Column stats: NONE
+                              table:
+                                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      Select Operator
+                        expressions: _col3.f12 (type: array<struct<f13:string,f14:int>>)
+                        outputColumnNames: _col0
+                        Statistics: Num rows: 2 Data size: 14 Basic stats: COMPLETE Column stats: NONE
+                        UDTF Operator
+                          Statistics: Num rows: 2 Data size: 14 Basic stats: COMPLETE Column stats: NONE
+                          function name: explode
+                          Lateral View Join Operator
+                            outputColumnNames: _col10, _col11
+                            Statistics: Num rows: 4 Data size: 28 Basic stats: COMPLETE Column stats: NONE
+                            Select Operator
+                              expressions: _col10 (type: int), _col11 (type: struct<f13:string,f14:int>)
+                              outputColumnNames: _col0, _col1
+                              Statistics: Num rows: 4 Data size: 28 Basic stats: COMPLETE Column stats: NONE
+                              File Output Operator
+                                compressed: false
+                                Statistics: Num rows: 4 Data size: 28 Basic stats: COMPLETE Column stats: NONE
+                                table:
+                                    input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                                    output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SELECT col1, col2 FROM nested_tbl_1
+LATERAL VIEW explode(s2.f8.f10) tbl1 AS col1
+LATERAL VIEW explode(s3.f12) tbl2 AS col2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@nested_tbl_1
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT col1, col2 FROM nested_tbl_1
+LATERAL VIEW explode(s2.f8.f10) tbl1 AS col1
+LATERAL VIEW explode(s3.f12) tbl2 AS col2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@nested_tbl_1
+#### A masked pattern was here ####
+10	{"f13":"foo","f14":14}
+10	{"f13":"bar","f14":28}
+11	{"f13":"foo","f14":14}
+11	{"f13":"bar","f14":28}
+PREHOOK: query: EXPLAIN SELECT pmod(s2.f8.f10[1], s1.f3.f4) FROM nested_tbl_1
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN SELECT pmod(s2.f8.f10[1], s1.f3.f4) FROM nested_tbl_1
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: nested_tbl_1
+            Pruned Column Paths: s2.f8.f10, s1.f3.f4
+            Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: (s2.f8.f10[1] pmod s1.f3.f4) (type: int)
+              outputColumnNames: _col0
+              Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
+              File Output Operator
+                compressed: false
+                Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
+                table:
+                    input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SELECT pmod(s2.f8.f10[1], s1.f3.f4) FROM nested_tbl_1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@nested_tbl_1
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT pmod(s2.f8.f10[1], s1.f3.f4) FROM nested_tbl_1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@nested_tbl_1
+#### A masked pattern was here ####
+3
+PREHOOK: query: EXPLAIN SELECT s1.f3.f5, count(s1.f3.f4) FROM nested_tbl_1 GROUP BY s1.f3.f5
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN SELECT s1.f3.f5, count(s1.f3.f4) FROM nested_tbl_1 GROUP BY s1.f3.f5
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: nested_tbl_1
+            Pruned Column Paths: s1.f3.f5, s1.f3.f4
+            Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: s1.f3.f5 (type: double), s1.f3.f4 (type: int)
+              outputColumnNames: _col0, _col1
+              Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
+              Group By Operator
+                aggregations: count(_col1)
+                keys: _col0 (type: double)
+                mode: hash
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col0 (type: double)
+                  sort order: +
+                  Map-reduce partition columns: _col0 (type: double)
+                  Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col1 (type: bigint)
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations: count(VALUE._col0)
+          keys: KEY._col0 (type: double)
+          mode: mergepartial
+          outputColumnNames: _col0, _col1
+          Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
+          File Output Operator
+            compressed: false
+            Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
+            table:
+                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SELECT s1.f3.f5, count(s1.f3.f4) FROM nested_tbl_1 GROUP BY s1.f3.f5
+PREHOOK: type: QUERY
+PREHOOK: Input: default@nested_tbl_1
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT s1.f3.f5, count(s1.f3.f4) FROM nested_tbl_1 GROUP BY s1.f3.f5
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@nested_tbl_1
+#### A masked pattern was here ####
+5.0	1
+PREHOOK: query: EXPLAIN SELECT s1.f3, count(s1.f3.f4) FROM nested_tbl_1 GROUP BY s1.f3
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN SELECT s1.f3, count(s1.f3.f4) FROM nested_tbl_1 GROUP BY s1.f3
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: nested_tbl_1
+            Pruned Column Paths: s1.f3
+            Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: s1.f3 (type: struct<f4:int,f5:double>), s1.f3.f4 (type: int)
+              outputColumnNames: _col0, _col1
+              Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
+              Group By Operator
+                aggregations: count(_col1)
+                keys: _col0 (type: struct<f4:int,f5:double>)
+                mode: hash
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col0 (type: struct<f4:int,f5:double>)
+                  sort order: +
+                  Map-reduce partition columns: _col0 (type: struct<f4:int,f5:double>)
+                  Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col1 (type: bigint)
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations: count(VALUE._col0)
+          keys: KEY._col0 (type: struct<f4:int,f5:double>)
+          mode: mergepartial
+          outputColumnNames: _col0, _col1
+          Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
+          File Output Operator
+            compressed: false
+            Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
+            table:
+                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SELECT s1.f3, count(s1.f3.f4) FROM nested_tbl_1 GROUP BY s1.f3
+PREHOOK: type: QUERY
+PREHOOK: Input: default@nested_tbl_1
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT s1.f3, count(s1.f3.f4) FROM nested_tbl_1 GROUP BY s1.f3
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@nested_tbl_1
+#### A masked pattern was here ####
+{"f4":4,"f5":5.0}	1
+PREHOOK: query: EXPLAIN SELECT s1.f3, count(s1.f3.f4) FROM nested_tbl_1 GROUP BY s1.f3 ORDER BY s1.f3
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN SELECT s1.f3, count(s1.f3.f4) FROM nested_tbl_1 GROUP BY s1.f3 ORDER BY s1.f3
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-2 depends on stages: Stage-1
+  Stage-0 depends on stages: Stage-2
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: nested_tbl_1
+            Pruned Column Paths: s1.f3
+            Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: s1.f3 (type: struct<f4:int,f5:double>), s1.f3.f4 (type: int)
+              outputColumnNames: _col0, _col1
+              Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
+              Group By Operator
+                aggregations: count(_col1)
+                keys: _col0 (type: struct<f4:int,f5:double>)
+                mode: hash
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col0 (type: struct<f4:int,f5:double>)
+                  sort order: +
+                  Map-reduce partition columns: _col0 (type: struct<f4:int,f5:double>)
+                  Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col1 (type: bigint)
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations: count(VALUE._col0)
+          keys: KEY._col0 (type: struct<f4:int,f5:double>)
+          mode: mergepartial
+          outputColumnNames: _col0, _col1
+          Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
+          File Output Operator
+            compressed: false
+            table:
+                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+
+  Stage: Stage-2
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            Reduce Output Operator
+              key expressions: _col0 (type: struct<f4:int,f5:double>)
+              sort order: +
+              Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
+              value expressions: _col1 (type: bigint)
+      Reduce Operator Tree:
+        Select Operator
+          expressions: KEY.reducesinkkey0 (type: struct<f4:int,f5:double>), VALUE._col0 (type: bigint)
+          outputColumnNames: _col0, _col1
+          Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
+          File Output Operator
+            compressed: false
+            Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
+            table:
+                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SELECT s1.f3, count(s1.f3.f4) FROM nested_tbl_1 GROUP BY s1.f3 ORDER BY s1.f3
+PREHOOK: type: QUERY
+PREHOOK: Input: default@nested_tbl_1
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT s1.f3, count(s1.f3.f4) FROM nested_tbl_1 GROUP BY s1.f3 ORDER BY s1.f3
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@nested_tbl_1
+#### A masked pattern was here ####
+{"f4":4,"f5":5.0}	1
+PREHOOK: query: EXPLAIN SELECT t1.s1.f3.f5, t2.s2.f8
+FROM nested_tbl_1 t1 JOIN nested_tbl_2 t2
+ON t1.s1.f3.f4 = t2.s1.f6
+WHERE t2.s2.f8.f9 == FALSE
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN SELECT t1.s1.f3.f5, t2.s2.f8
+FROM nested_tbl_1 t1 JOIN nested_tbl_2 t2
+ON t1.s1.f3.f4 = t2.s1.f6
+WHERE t2.s2.f8.f9 == FALSE
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: t1
+            Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: s1 (type: struct<f1:boolean,f2:string,f3:struct<f4:int,f5:double>,f6:int>)
+              outputColumnNames: _col0
+              Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
+              Reduce Output Operator
+                key expressions: _col0.f3.f4 (type: int)
+                sort order: +
+                Map-reduce partition columns: _col0.f3.f4 (type: int)
+                Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
+                value expressions: _col0 (type: struct<f1:boolean,f2:string,f3:struct<f4:int,f5:double>,f6:int>)
+          TableScan
+            alias: t2
+            Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: (s2.f8.f9 = false) (type: boolean)
+              Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
+              Select Operator
+                expressions: s1 (type: struct<f1:boolean,f2:string,f3:struct<f4:int,f5:double>,f6:int>), s2 (type: struct<f7:string,f8:struct<f9:boolean,f10:array<int>,f11:map<string,boolean>>>)
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col0.f6 (type: int)
+                  sort order: +
+                  Map-reduce partition columns: _col0.f6 (type: int)
+                  Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col1 (type: struct<f7:string,f8:struct<f9:boolean,f10:array<int>,f11:map<string,boolean>>>)
+      Reduce Operator Tree:
+        Join Operator
+          condition map:
+               Inner Join 0 to 1
+          keys:
+            0 _col0.f3.f4 (type: int)
+            1 _col0.f6 (type: int)
+          outputColumnNames: _col0, _col2
+          Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
+          Select Operator
+            expressions: _col0.f3.f5 (type: double), _col2.f8 (type: struct<f9:boolean,f10:array<int>,f11:map<string,boolean>>)
+            outputColumnNames: _col0, _col1
+            Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
+            File Output Operator
+              compressed: false
+              Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
+              table:
+                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SELECT t1.s1.f3.f5, t2.s2.f8
+FROM nested_tbl_1 t1 JOIN nested_tbl_2 t2
+ON t1.s1.f3.f4 = t2.s1.f6
+WHERE t2.s2.f8.f9 == FALSE
+PREHOOK: type: QUERY
+PREHOOK: Input: default@nested_tbl_1
+PREHOOK: Input: default@nested_tbl_2
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT t1.s1.f3.f5, t2.s2.f8
+FROM nested_tbl_1 t1 JOIN nested_tbl_2 t2
+ON t1.s1.f3.f4 = t2.s1.f6
+WHERE t2.s2.f8.f9 == FALSE
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@nested_tbl_1
+POSTHOOK: Input: default@nested_tbl_2
+#### A masked pattern was here ####
+5.0	{"f9":false,"f10":[20,22],"f11":{"key3":true,"key4":false}}
+PREHOOK: query: EXPLAIN SELECT t1.s1.f3.f5, t2.s2.f8
+FROM nested_tbl_1 t1 JOIN nested_tbl_1 t2
+ON t1.s1.f3.f4 = t2.s1.f6
+WHERE t2.s2.f8.f9 == TRUE
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN SELECT t1.s1.f3.f5, t2.s2.f8
+FROM nested_tbl_1 t1 JOIN nested_tbl_1 t2
+ON t1.s1.f3.f4 = t2.s1.f6
+WHERE t2.s2.f8.f9 == TRUE
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: t1
+            Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: s1 (type: struct<f1:boolean,f2:string,f3:struct<f4:int,f5:double>,f6:int>)
+              outputColumnNames: _col0
+              Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
+              Reduce Output Operator
+                key expressions: _col0.f3.f4 (type: int)
+                sort order: +
+                Map-reduce partition columns: _col0.f3.f4 (type: int)
+                Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
+                value expressions: _col0 (type: struct<f1:boolean,f2:string,f3:struct<f4:int,f5:double>,f6:int>)
+          TableScan
+            alias: t2
+            Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: (s2.f8.f9 = true) (type: boolean)
+              Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
+              Select Operator
+                expressions: s1 (type: struct<f1:boolean,f2:string,f3:struct<f4:int,f5:double>,f6:int>), s2 (type: struct<f7:string,f8:struct<f9:boolean,f10:array<int>,f11:map<string,boolean>>>)
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col0.f6 (type: int)
+                  sort order: +
+                  Map-reduce partition columns: _col0.f6 (type: int)
+                  Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col1 (type: struct<f7:string,f8:struct<f9:boolean,f10:array<int>,f11:map<string,boolean>>>)
+      Reduce Operator Tree:
+        Join Operator
+          condition map:
+               Inner Join 0 to 1
+          keys:
+            0 _col0.f3.f4 (type: int)
+            1 _col0.f6 (type: int)
+          outputColumnNames: _col0, _col2
+          Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
+          Select Operator
+            expressions: _col0.f3.f5 (type: double), _col2.f8 (type: struct<f9:boolean,f10:array<int>,f11:map<string,boolean>>)
+            outputColumnNames: _col0, _col1
+            Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
+            File Output Operator
+              compressed: false
+              Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
+              table:
+                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SELECT t1.s1.f3.f5, t2.s2.f8
+FROM nested_tbl_1 t1 JOIN nested_tbl_1 t2
+ON t1.s1.f3.f4 = t2.s1.f6
+WHERE t2.s2.f8.f9 == TRUE
+PREHOOK: type: QUERY
+PREHOOK: Input: default@nested_tbl_1
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT t1.s1.f3.f5, t2.s2.f8
+FROM nested_tbl_1 t1 JOIN nested_tbl_1 t2
+ON t1.s1.f3.f4 = t2.s1.f6
+WHERE t2.s2.f8.f9 == TRUE
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@nested_tbl_1
+#### A masked pattern was here ####
+5.0	{"f9":true,"f10":[10,11],"f11":{"key1":true,"key2":false}}
+PREHOOK: query: DROP TABLE IF EXISTS nested_tbl_3
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE IF EXISTS nested_tbl_3
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: CREATE TABLE nested_tbl_3 (f1 boolean, f2 string) PARTITIONED BY (f3 int) STORED AS PARQUET
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@nested_tbl_3
+POSTHOOK: query: CREATE TABLE nested_tbl_3 (f1 boolean, f2 string) PARTITIONED BY (f3 int) STORED AS PARQUET
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@nested_tbl_3
+PREHOOK: query: INSERT OVERWRITE TABLE nested_tbl_3 PARTITION(f3)
+SELECT s1.f1 AS f1, S1.f2 AS f2, s1.f6 AS f3
+FROM nested_tbl_1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@nested_tbl_1
+PREHOOK: Output: default@nested_tbl_3
+POSTHOOK: query: INSERT OVERWRITE TABLE nested_tbl_3 PARTITION(f3)
+SELECT s1.f1 AS f1, S1.f2 AS f2, s1.f6 AS f3
+FROM nested_tbl_1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@nested_tbl_1
+POSTHOOK: Output: default@nested_tbl_3@f3=4
+POSTHOOK: Lineage: nested_tbl_3 PARTITION(f3=4).f1 EXPRESSION [(nested_tbl_1)nested_tbl_1.FieldSchema(name:s1, type:struct<f1:boolean,f2:string,f3:struct<f4:int,f5:double>,f6:int>, comment:null), ]
+POSTHOOK: Lineage: nested_tbl_3 PARTITION(f3=4).f2 EXPRESSION [(nested_tbl_1)nested_tbl_1.FieldSchema(name:s1, type:struct<f1:boolean,f2:string,f3:struct<f4:int,f5:double>,f6:int>, comment:null), ]
+PREHOOK: query: SELECT * FROM nested_tbl_3
+PREHOOK: type: QUERY
+PREHOOK: Input: default@nested_tbl_3
+PREHOOK: Input: default@nested_tbl_3@f3=4
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM nested_tbl_3
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@nested_tbl_3
+POSTHOOK: Input: default@nested_tbl_3@f3=4
+#### A masked pattern was here ####
+false	foo	4
+PREHOOK: query: EXPLAIN
+SELECT count(s1.f6), s3.f12[0].f14
+FROM nested_tbl_1
+GROUP BY s3.f12[0].f14
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+SELECT count(s1.f6), s3.f12[0].f14
+FROM nested_tbl_1
+GROUP BY s3.f12[0].f14
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: nested_tbl_1
+            Pruned Column Paths: s3.f12, s1.f6
+            Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: s3.f12[0].f14 (type: int), s1.f6 (type: int)
+              outputColumnNames: _col0, _col1
+              Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
+              Group By Operator
+                aggregations: count(_col1)
+                keys: _col0 (type: int)
+                mode: hash
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col0 (type: int)
+                  sort order: +
+                  Map-reduce partition columns: _col0 (type: int)
+                  Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col1 (type: bigint)
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations: count(VALUE._col0)
+          keys: KEY._col0 (type: int)
+          mode: mergepartial
+          outputColumnNames: _col0, _col1
+          Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
+          Select Operator
+            expressions: _col1 (type: bigint), _col0 (type: int)
+            outputColumnNames: _col0, _col1
+            Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
+            File Output Operator
+              compressed: false
+              Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
+              table:
+                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SELECT count(s1.f6), s3.f12[0].f14
+FROM nested_tbl_1
+GROUP BY s3.f12[0].f14
+PREHOOK: type: QUERY
+PREHOOK: Input: default@nested_tbl_1
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT count(s1.f6), s3.f12[0].f14
+FROM nested_tbl_1
+GROUP BY s3.f12[0].f14
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@nested_tbl_1
+#### A masked pattern was here ####
+1	14
+PREHOOK: query: EXPLAIN
+SELECT count(s1.f6), s4['key1'].f15
+FROM nested_tbl_1
+GROUP BY s4['key1'].f15
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+SELECT count(s1.f6), s4['key1'].f15
+FROM nested_tbl_1
+GROUP BY s4['key1'].f15
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: nested_tbl_1
+            Pruned Column Paths: s1.f6
+            Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: s4['key1'].f15 (type: int), s1.f6 (type: int)
+              outputColumnNames: _col0, _col1
+              Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
+              Group By Operator
+                aggregations: count(_col1)
+                keys: _col0 (type: int)
+                mode: hash
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col0 (type: int)
+                  sort order: +
+                  Map-reduce partition columns: _col0 (type: int)
+                  Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col1 (type: bigint)
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations: count(VALUE._col0)
+          keys: KEY._col0 (type: int)
+          mode: mergepartial
+          outputColumnNames: _col0, _col1
+          Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
+          Select Operator
+            expressions: _col1 (type: bigint), _col0 (type: int)
+            outputColumnNames: _col0, _col1
+            Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
+            File Output Operator
+              compressed: false
+              Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
+              table:
+                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SELECT count(s1.f6), s4['key1'].f15
+FROM nested_tbl_1
+GROUP BY s4['key1'].f15
+PREHOOK: type: QUERY
+PREHOOK: Input: default@nested_tbl_1
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT count(s1.f6), s4['key1'].f15
+FROM nested_tbl_1
+GROUP BY s4['key1'].f15
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@nested_tbl_1
+#### A masked pattern was here ####
+1	1
+PREHOOK: query: EXPLAIN
+SELECT count(s1.f6), s5.f16[0].f18.f19
+FROM nested_tbl_1
+GROUP BY s5.f16[0].f18.f19
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+SELECT count(s1.f6), s5.f16[0].f18.f19
+FROM nested_tbl_1
+GROUP BY s5.f16[0].f18.f19
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: nested_tbl_1
+            Pruned Column Paths: s5.f16, s1.f6
+            Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: s5.f16[0].f18.f19 (type: int), s1.f6 (type: int)
+              outputColumnNames: _col0, _col1
+              Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
+              Group By Operator
+                aggregations: count(_col1)
+                keys: _col0 (type: int)
+                mode: hash
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col0 (type: int)
+                  sort order: +
+                  Map-reduce partition columns: _col0 (type: int)
+                  Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col1 (type: bigint)
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations: count(VALUE._col0)
+          keys: KEY._col0 (type: int)
+          mode: mergepartial
+          outputColumnNames: _col0, _col1
+          Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
+          Select Operator
+            expressions: _col1 (type: bigint), _col0 (type: int)
+            outputColumnNames: _col0, _col1
+            Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
+            File Output Operator
+              compressed: false
+              Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
+              table:
+                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SELECT count(s1.f6), s5.f16[0].f18.f19
+FROM nested_tbl_1
+GROUP BY s5.f16[0].f18.f19
+PREHOOK: type: QUERY
+PREHOOK: Input: default@nested_tbl_1
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT count(s1.f6), s5.f16[0].f18.f19
+FROM nested_tbl_1
+GROUP BY s5.f16[0].f18.f19
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@nested_tbl_1
+#### A masked pattern was here ####
+1	14
+PREHOOK: query: EXPLAIN
+SELECT count(s1.f6), s5.f16.f18.f19
+FROM nested_tbl_1
+GROUP BY s5.f16.f18.f19
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+SELECT count(s1.f6), s5.f16.f18.f19
+FROM nested_tbl_1
+GROUP BY s5.f16.f18.f19
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: nested_tbl_1
+            Pruned Column Paths: s1.f6, s5.f16
+            Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: s5 (type: struct<f16:array<struct<f17:string,f18:struct<f19:int>>>>), s1 (type: struct<f1:boolean,f2:string,f3:struct<f4:int,f5:double>,f6:int>)
+              outputColumnNames: s5, s1
+              Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
+              Group By Operator
+                aggregations: count(s1.f6)
+                keys: s5.f16.f18.f19 (type: array<int>)
+                mode: hash
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col0 (type: array<int>)
+                  sort order: +
+                  Map-reduce partition columns: _col0 (type: array<int>)
+                  Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col1 (type: bigint)
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations: count(VALUE._col0)
+          keys: KEY._col0 (type: array<int>)
+          mode: mergepartial
+          outputColumnNames: _col0, _col1
+          Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
+          Select Operator
+            expressions: _col1 (type: bigint), _col0 (type: array<int>)
+            outputColumnNames: _col0, _col1
+            Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
+            File Output Operator
+              compressed: false
+              Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
+              table:
+                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SELECT count(s1.f6), s5.f16.f18.f19
+FROM nested_tbl_1
+GROUP BY s5.f16.f18.f19
+PREHOOK: type: QUERY
+PREHOOK: Input: default@nested_tbl_1
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT count(s1.f6), s5.f16.f18.f19
+FROM nested_tbl_1
+GROUP BY s5.f16.f18.f19
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@nested_tbl_1
+#### A masked pattern was here ####
+1	[14,28]
+PREHOOK: query: EXPLAIN
+SELECT count(s1.f6), s6['key1'].f20[0].f21.f22
+FROM nested_tbl_1
+GROUP BY s6['key1'].f20[0].f21.f22
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+SELECT count(s1.f6), s6['key1'].f20[0].f21.f22
+FROM nested_tbl_1
+GROUP BY s6['key1'].f20[0].f21.f22
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: nested_tbl_1
+            Pruned Column Paths: s1.f6
+            Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: s6['key1'].f20[0].f21.f22 (type: int), s1.f6 (type: int)
+              outputColumnNames: _col0, _col1
+              Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
+              Group By Operator
+                aggregations: count(_col1)
+                keys: _col0 (type: int)
+                mode: hash
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col0 (type: int)
+                  sort order: +
+                  Map-reduce partition columns: _col0 (type: int)
+                  Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col1 (type: bigint)
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations: count(VALUE._col0)
+          keys: KEY._col0 (type: int)
+          mode: mergepartial
+          outputColumnNames: _col0, _col1
+          Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
+          Select Operator
+            expressions: _col1 (type: bigint), _col0 (type: int)
+            outputColumnNames: _col0, _col1
+            Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
+            File Output Operator
+              compressed: false
+              Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
+              table:
+                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SELECT count(s1.f6), s6['key1'].f20[0].f21.f22
+FROM nested_tbl_1
+GROUP BY s6['key1'].f20[0].f21.f22
+PREHOOK: type: QUERY
+PREHOOK: Input: default@nested_tbl_1
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT count(s1.f6), s6['key1'].f20[0].f21.f22
+FROM nested_tbl_1
+GROUP BY s6['key1'].f20[0].f21.f22
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@nested_tbl_1
+#### A masked pattern was here ####
+1	1
+PREHOOK: query: EXPLAIN
+SELECT count(s1.f6), s6['key1'].f20.f21.f22
+FROM nested_tbl_1
+GROUP BY s6['key1'].f20.f21.f22
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+SELECT count(s1.f6), s6['key1'].f20.f21.f22
+FROM nested_tbl_1
+GROUP BY s6['key1'].f20.f21.f22
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: nested_tbl_1
+            Pruned Column Paths: s1.f6
+            Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: s6 (type: map<string,struct<f20:array<struct<f21:struct<f22:int>>>>>), s1 (type: struct<f1:boolean,f2:string,f3:struct<f4:int,f5:double>,f6:int>)
+              outputColumnNames: s6, s1
+              Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
+              Group By Operator
+                aggregations: count(s1.f6)
+                keys: s6['key1'].f20.f21.f22 (type: array<int>)
+                mode: hash
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col0 (type: array<int>)
+                  sort order: +
+                  Map-reduce partition columns: _col0 (type: array<int>)
+                  Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col1 (type: bigint)
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations: count(VALUE._col0)
+          keys: KEY._col0 (type: array<int>)
+          mode: mergepartial
+          outputColumnNames: _col0, _col1
+          Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
+          Select Operator
+            expressions: _col1 (type: bigint), _col0 (type: array<int>)
+            outputColumnNames: _col0, _col1
+            Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
+            File Output Operator
+              compressed: false
+              Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
+              table:
+                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SELECT count(s1.f6), s6['key1'].f20.f21.f22
+FROM nested_tbl_1
+GROUP BY s6['key1'].f20.f21.f22
+PREHOOK: type: QUERY
+PREHOOK: Input: default@nested_tbl_1
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT count(s1.f6), s6['key1'].f20.f21.f22
+FROM nested_tbl_1
+GROUP BY s6['key1'].f20.f21.f22
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@nested_tbl_1
+#### A masked pattern was here ####
+1	[1]
