@@ -49,10 +49,10 @@ public class TestTaskExecutorService {
 
   @Test(timeout = 5000)
   public void testPreemptionQueueComparator() throws InterruptedException {
-    TaskWrapper r1 = createTaskWrapper(createSubmitWorkRequestProto(1, 2, 100), false, 100000);
-    TaskWrapper r2 = createTaskWrapper(createSubmitWorkRequestProto(2, 4, 200), false, 100000);
-    TaskWrapper r3 = createTaskWrapper(createSubmitWorkRequestProto(3, 6, 300), false, 1000000);
-    TaskWrapper r4 = createTaskWrapper(createSubmitWorkRequestProto(4, 8, 400), false, 1000000);
+    TaskWrapper r1 = createTaskWrapper(createSubmitWorkRequestProto(1, 2, 100, 200), false, 100000);
+    TaskWrapper r2 = createTaskWrapper(createSubmitWorkRequestProto(2, 4, 200, 300), false, 100000);
+    TaskWrapper r3 = createTaskWrapper(createSubmitWorkRequestProto(3, 6, 300, 400), false, 1000000);
+    TaskWrapper r4 = createTaskWrapper(createSubmitWorkRequestProto(4, 8, 400, 500), false, 1000000);
     BlockingQueue<TaskWrapper> queue = new PriorityBlockingQueue<>(4,
         new TaskExecutorService.PreemptionQueueComparator());
 
@@ -71,8 +71,8 @@ public class TestTaskExecutorService {
 
   @Test(timeout = 10000)
   public void testFinishablePreeptsNonFinishable() throws InterruptedException {
-    MockRequest r1 = createMockRequest(1, 1, 100, false, 5000l);
-    MockRequest r2 = createMockRequest(2, 1, 100, true, 1000l);
+    MockRequest r1 = createMockRequest(1, 1, 100, 200, false, 5000l);
+    MockRequest r2 = createMockRequest(2, 1, 100, 200, true, 1000l);
     TaskExecutorServiceForTest taskExecutorService = new TaskExecutorServiceForTest(1, 2,
         ShortestJobFirstComparator.class.getName(), true);
     taskExecutorService.init(new Configuration());
@@ -110,7 +110,7 @@ public class TestTaskExecutorService {
   @Test(timeout = 10000)
   public void testPreemptionStateOnTaskMoveToFinishableState() throws InterruptedException {
 
-    MockRequest r1 = createMockRequest(1, 1, 100, false, 20000l);
+    MockRequest r1 = createMockRequest(1, 1, 100, 200, false, 20000l);
 
     TaskExecutorServiceForTest taskExecutorService =
         new TaskExecutorServiceForTest(1, 2, ShortestJobFirstComparator.class.getName(), true);
@@ -142,7 +142,7 @@ public class TestTaskExecutorService {
   @Test(timeout = 10000)
   public void testPreemptionStateOnTaskMoveToNonFinishableState() throws InterruptedException {
 
-    MockRequest r1 = createMockRequest(1, 1, 100, true, 20000l);
+    MockRequest r1 = createMockRequest(1, 1, 100, 200, true, 20000l);
 
     TaskExecutorServiceForTest taskExecutorService =
         new TaskExecutorServiceForTest(1, 2, ShortestJobFirstComparator.class.getName(), true);
@@ -176,11 +176,11 @@ public class TestTaskExecutorService {
 
   @Test(timeout = 10000)
   public void testWaitQueuePreemption() throws InterruptedException {
-    MockRequest r1 = createMockRequest(1, 1, 100, true, 20000l);
-    MockRequest r2 = createMockRequest(2, 1, 200, false, 20000l);
-    MockRequest r3 = createMockRequest(3, 1, 300, false, 20000l);
-    MockRequest r4 = createMockRequest(4, 1, 400, false, 20000l);
-    MockRequest r5 = createMockRequest(5, 1, 500, true, 20000l);
+    MockRequest r1 = createMockRequest(1, 1, 100, 200, true, 20000l);
+    MockRequest r2 = createMockRequest(2, 1, 200, 330, false, 20000l);
+    MockRequest r3 = createMockRequest(3, 1, 300, 420, false, 20000l);
+    MockRequest r4 = createMockRequest(4, 1, 400, 510, false, 20000l);
+    MockRequest r5 = createMockRequest(5, 1, 500, 610, true, 20000l);
 
     TaskExecutorServiceForTest taskExecutorService =
         new TaskExecutorServiceForTest(1, 2, ShortestJobFirstComparator.class.getName(), true);
