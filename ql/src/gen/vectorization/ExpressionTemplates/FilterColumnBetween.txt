@@ -173,7 +173,12 @@ public class <ClassName> extends VectorExpression {
   public void setRightValue(<OperandType> value) {
     this.rightValue = value;
   }
-  
+
+  @Override
+  public String vectorExpressionParameters() {
+    return "col " + colNum + ", left " + leftValue + ", right " + rightValue;
+  }
+
   @Override
   public VectorExpressionDescriptor.Descriptor getDescriptor() {
     return (new VectorExpressionDescriptor.Builder())

@@ -25,13 +25,19 @@ import junit.framework.Assert;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
+import org.apache.hadoop.hive.ql.exec.FilterOperator;
+import org.apache.hadoop.hive.ql.exec.Operator;
+import org.apache.hadoop.hive.ql.exec.OperatorFactory;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.FilterExprAndExpr;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterLongColEqualDoubleScalar;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterLongColGreaterLongColumn;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.optimizer.physical.Vectorizer;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.FilterDesc;
+import org.apache.hadoop.hive.ql.plan.OperatorDesc;
+import org.apache.hadoop.hive.ql.plan.VectorFilterDesc;
 import org.junit.Test;
 
 /**
@@ -89,10 +95,15 @@ public class TestVectorFilterOperator {
     ExprNodeColumnDesc col1Expr = new  ExprNodeColumnDesc(Long.class, "col1", "table", false);
     List<String> columns = new ArrayList<String>();
     columns.add("col1");
-    VectorizationContext vc = new VectorizationContext("name", columns);
     FilterDesc fdesc = new FilterDesc();
     fdesc.setPredicate(col1Expr);
-    return new VectorFilterOperator(new CompilationOpContext(), vc, fdesc);
+
+    Operator<? extends OperatorDesc> filterOp = 
+        OperatorFactory.get(new CompilationOpContext(), fdesc);
+
+    VectorizationContext vc = new VectorizationContext("name", columns);
+
+    return (VectorFilterOperator) Vectorizer.vectorizeFilterOperator(filterOp, vc);
   }
 
   @Test

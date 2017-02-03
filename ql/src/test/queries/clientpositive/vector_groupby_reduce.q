@@ -1,6 +1,7 @@
 set hive.mapred.mode=nonstrict;
 set hive.explain.user=false;
 SET hive.vectorized.execution.enabled=true;
+set hive.fetch.task.conversion=none;
 
 create table store_sales_txt
 (
@@ -91,7 +92,7 @@ ss_sold_date_sk           ,
     ss_net_profit         
  from store_sales_txt;
 
-explain
+explain vectorization expression
 select 
   ss_ticket_number
 from
@@ -108,7 +109,7 @@ limit 20;
 
 
 
-explain
+explain vectorization expression
 select 
     min(ss_ticket_number) m
 from
@@ -133,7 +134,7 @@ order by m;
 
 
 
-explain
+explain vectorization expression
 select
     ss_ticket_number, sum(ss_item_sk), sum(q)
 from
@@ -157,7 +158,7 @@ group by ss_ticket_number
 order by ss_ticket_number;
 
 
-explain
+explain vectorization expression
 select
     ss_ticket_number, ss_item_sk, sum(q)
 from

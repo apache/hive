@@ -42,6 +42,11 @@ public class SMBJoinDesc extends MapJoinDesc implements Serializable {
   }
 
   public SMBJoinDesc() {
+    super();
+  }
+
+  public SMBJoinDesc(SMBJoinDesc clone) {
+    super(clone);
   }
 
   public MapredLocalWork getLocalWork() {

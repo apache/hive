@@ -1,6 +1,6 @@
 set hive.explain.user=false;
 SET hive.vectorized.execution.enabled=true;
-set hive.fetch.task.conversion=minimal;
+set hive.fetch.task.conversion=none;
 
 create table orc1
   stored as orc
@@ -22,7 +22,7 @@ create table orc_rn3 (rn int);
 
 analyze table orc1 compute statistics;
 
-explain from orc1 a
+explain vectorization from orc1 a
 insert overwrite table orc_rn1 select a.* where a.rn < 100
 insert overwrite table orc_rn2 select a.* where a.rn >= 100 and a.rn < 1000
 insert overwrite table orc_rn3 select a.* where a.rn >= 1000;

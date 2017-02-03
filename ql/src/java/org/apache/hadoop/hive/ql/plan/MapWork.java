@@ -26,6 +26,7 @@ import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -47,8 +48,10 @@ import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.io.HiveInputFormat;
 import org.apache.hadoop.hive.ql.optimizer.physical.BucketingSortingCtx.BucketCol;
 import org.apache.hadoop.hive.ql.optimizer.physical.BucketingSortingCtx.SortCol;
+import org.apache.hadoop.hive.ql.optimizer.physical.VectorizerReason;
 import org.apache.hadoop.hive.ql.parse.SplitSample;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
+import org.apache.hadoop.hive.ql.plan.Explain.Vectorization;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
@@ -139,6 +142,12 @@ public class MapWork extends BaseWork {
   private boolean doSplitsGrouping = true;
 
   private VectorizedRowBatch vectorizedRowBatch;
+
+  private VectorizerReason notEnabledInputFileFormatReason;
+
+  private Set<String> vectorizationInputFileFormatClassNameSet;
+  private List<String> vectorizationEnabledConditionsMet;
+  private List<String> vectorizationEnabledConditionsNotMet;
 
   // bitsets can't be correctly serialized by Kryo's default serializer
   // BitSet::wordsInUse is transient, so force dumping into a lower form
@@ -362,7 +371,7 @@ public class MapWork extends BaseWork {
     return nameToSplitSample;
   }
 
-  @Explain(displayName = "LLAP IO")
+  @Explain(displayName = "LLAP IO", vectorization = Vectorization.SUMMARY_PATH)
   public String getLlapIoDesc() {
     return llapIoDesc;
   }
@@ -434,7 +443,8 @@ public class MapWork extends BaseWork {
     }
   }
 
-  @Explain(displayName = "Execution mode", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
+  @Explain(displayName = "Execution mode", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED },
+      vectorization = Vectorization.SUMMARY_PATH)
   public String getExecutionMode() {
     if (vectorMode) {
       if (llapMode) {
@@ -464,7 +474,8 @@ public class MapWork extends BaseWork {
   }
 
   @Override
-  @Explain(displayName = "Map Operator Tree", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
+  @Explain(displayName = "Map Operator Tree", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED },
+      vectorization = Vectorization.OPERATOR_PATH)
   public Set<Operator<? extends OperatorDesc>> getAllRootOperators() {
     Set<Operator<?>> opSet = new LinkedHashSet<Operator<?>>();
 
@@ -720,5 +731,87 @@ public class MapWork extends BaseWork {
 
   public VectorizedRowBatch getVectorizedRowBatch() {
     return vectorizedRowBatch;
+  }
+
+  /*
+   * Whether the HiveConf.ConfVars.HIVE_VECTORIZATION_USE_VECTORIZED_INPUT_FILE_FORMAT variable
+   * (hive.vectorized.use.vectorized.input.format) was true when the Vectorizer class evaluated
+   * vectorizing this node.
+   *
+   * When Vectorized Input File Format looks at this flag, it can determine whether it should
+   * operate vectorized or not.  In some modes, the node can be vectorized but use row
+   * serialization.
+   */
+  public void setUseVectorizedInputFileFormat(boolean useVectorizedInputFileFormat) {
+    this.useVectorizedInputFileFormat = useVectorizedInputFileFormat;
+  }
+
+  public boolean getUseVectorizedInputFileFormat() {
+    return useVectorizedInputFileFormat;
+  }
+
+  public void setNotEnabledInputFileFormatReason(VectorizerReason notEnabledInputFileFormatReason) {
+    this.notEnabledInputFileFormatReason = notEnabledInputFileFormatReason;
+  }
+
+  public VectorizerReason getNotEnabledInputFileFormatReason() {
+    return notEnabledInputFileFormatReason;
+  }
+
+  public void setVectorizationInputFileFormatClassNameSet(Set<String> vectorizationInputFileFormatClassNameSet) {
+    this.vectorizationInputFileFormatClassNameSet = vectorizationInputFileFormatClassNameSet;
+  }
+
+  public Set<String> getVectorizationInputFileFormatClassNameSet() {
+    return vectorizationInputFileFormatClassNameSet;
+  }
+
+  public void setVectorizationEnabledConditionsMet(ArrayList<String> vectorizationEnabledConditionsMet) {
+    this.vectorizationEnabledConditionsMet = VectorizationCondition.addBooleans(vectorizationEnabledConditionsMet, true);
+  }
+
+  public List<String> getVectorizationEnabledConditionsMet() {
+    return vectorizationEnabledConditionsMet;
+  }
+
+  public void setVectorizationEnabledConditionsNotMet(List<String> vectorizationEnabledConditionsNotMet) {
+    this.vectorizationEnabledConditionsNotMet = VectorizationCondition.addBooleans(vectorizationEnabledConditionsNotMet, false);
+  }
+
+  public List<String> getVectorizationEnabledConditionsNotMet() {
+    return vectorizationEnabledConditionsNotMet;
+  }
+
+  public class MapExplainVectorization extends BaseExplainVectorization {
+
+    private final MapWork mapWork;
+
+    public MapExplainVectorization(MapWork mapWork) {
+      super(mapWork);
+      this.mapWork = mapWork;
+    }
+
+    @Explain(vectorization = Vectorization.SUMMARY, displayName = "inputFileFormats", explainLevels = { Level.DEFAULT, Level.EXTENDED })
+    public Set<String> inputFileFormats() {
+      return mapWork.getVectorizationInputFileFormatClassNameSet();
+    }
+
+    @Explain(vectorization = Vectorization.SUMMARY, displayName = "enabledConditionsMet", explainLevels = { Level.DEFAULT, Level.EXTENDED })
+    public List<String> enabledConditionsMet() {
+      return mapWork.getVectorizationEnabledConditionsMet();
+    }
+
+    @Explain(vectorization = Vectorization.SUMMARY, displayName = "enabledConditionsNotMet", explainLevels = { Level.DEFAULT, Level.EXTENDED })
+    public List<String> enabledConditionsNotMet() {
+      return mapWork.getVectorizationEnabledConditionsNotMet();
+    }
+  }
+
+  @Explain(vectorization = Vectorization.SUMMARY, displayName = "Map Vectorization", explainLevels = { Level.DEFAULT, Level.EXTENDED })
+  public MapExplainVectorization getMapExplainVectorization() {
+    if (!getVectorizationExamined()) {
+      return null;
+    }
+    return new MapExplainVectorization(this);
   }
 }

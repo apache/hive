@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.plan;
 
+import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -35,7 +36,9 @@ import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatchCtx;
 import org.apache.hadoop.hive.ql.parse.RuntimeValuesInfo;
 import org.apache.hadoop.mapred.JobConf;
+import org.apache.hadoop.hive.ql.optimizer.physical.VectorizerReason;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
+import org.apache.hadoop.hive.ql.plan.Explain.Vectorization;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 
 
@@ -67,11 +70,24 @@ public abstract class BaseWork extends AbstractOperatorDesc {
 
   private String name;
 
-  // Vectorization.
+  /*
+   * Vectorization.
+   */
+
+  // This will be true if a node was examined by the Vectorizer class.
+  protected boolean vectorizationExamined;
+
+  protected boolean vectorizationEnabled;
 
   protected VectorizedRowBatchCtx vectorizedRowBatchCtx;
 
   protected boolean useVectorizedInputFileFormat;
+
+  private VectorizerReason notVectorizedReason;
+
+  private boolean groupByVectorOutput;
+  private boolean allNative;
+  private boolean usesVectorUDFAdaptor;
 
   protected boolean llapMode = false;
   protected boolean uberMode = false;
@@ -169,6 +185,22 @@ public abstract class BaseWork extends AbstractOperatorDesc {
 
   // -----------------------------------------------------------------------------------------------
 
+  public void setVectorizationExamined(boolean vectorizationExamined) {
+    this.vectorizationExamined = vectorizationExamined;
+  }
+
+  public boolean getVectorizationExamined() {
+    return vectorizationExamined;
+  }
+
+  public void setVectorizationEnabled(boolean vectorizationEnabled) {
+    this.vectorizationEnabled = vectorizationEnabled;
+  }
+
+  public boolean getVectorizationEnabled() {
+    return vectorizationEnabled;
+  }
+
   /*
    * The vectorization context for creating the VectorizedRowBatch for the node.
    */
@@ -180,22 +212,159 @@ public abstract class BaseWork extends AbstractOperatorDesc {
     this.vectorizedRowBatchCtx = vectorizedRowBatchCtx;
   }
 
-  /*
-   * Whether the HiveConf.ConfVars.HIVE_VECTORIZATION_USE_VECTORIZED_INPUT_FILE_FORMAT variable
-   * (hive.vectorized.use.vectorized.input.format) was true when the Vectorizer class evaluated
-   * vectorizing this node.
-   *
-   * When Vectorized Input File Format looks at this flag, it can determine whether it should
-   * operate vectorized or not.  In some modes, the node can be vectorized but use row
-   * serialization.
-   */
-  public void setUseVectorizedInputFileFormat(boolean useVectorizedInputFileFormat) {
-    this.useVectorizedInputFileFormat = useVectorizedInputFileFormat;
+  public void setNotVectorizedReason(VectorizerReason notVectorizedReason) {
+    this.notVectorizedReason = notVectorizedReason;
   }
 
-  public boolean getUseVectorizedInputFileFormat() {
-    return useVectorizedInputFileFormat;
+  public VectorizerReason getNotVectorizedReason() {
+    return notVectorizedReason;
   }
+
+  public void setGroupByVectorOutput(boolean groupByVectorOutput) {
+    this.groupByVectorOutput = groupByVectorOutput;
+  }
+
+  public boolean getGroupByVectorOutput() {
+    return groupByVectorOutput;
+  }
+
+  public void setUsesVectorUDFAdaptor(boolean usesVectorUDFAdaptor) {
+    this.usesVectorUDFAdaptor = usesVectorUDFAdaptor;
+  }
+
+  public boolean getUsesVectorUDFAdaptor() {
+    return usesVectorUDFAdaptor;
+  }
+
+  public void setAllNative(boolean allNative) {
+    this.allNative = allNative;
+  }
+
+  public boolean getAllNative() {
+    return allNative;
+  }
+
+  public static class BaseExplainVectorization {
+
+    private final BaseWork baseWork;
+
+    public BaseExplainVectorization(BaseWork baseWork) {
+      this.baseWork = baseWork;
+    }
+
+    @Explain(vectorization = Vectorization.SUMMARY, displayName = "enabled", explainLevels = { Level.DEFAULT, Level.EXTENDED })
+    public boolean enabled() {
+      return baseWork.getVectorizationEnabled();
+    }
+
+    @Explain(vectorization = Vectorization.SUMMARY, displayName = "vectorized", explainLevels = { Level.DEFAULT, Level.EXTENDED })
+    public Boolean vectorized() {
+      if (!baseWork.getVectorizationEnabled()) {
+        return null;
+      }
+      return baseWork.getVectorMode();
+    }
+
+    @Explain(vectorization = Vectorization.SUMMARY, displayName = "notVectorizedReason", explainLevels = { Level.DEFAULT, Level.EXTENDED })
+    public String notVectorizedReason() {
+      if (!baseWork.getVectorizationEnabled() || baseWork.getVectorMode()) {
+        return null;
+      }
+      VectorizerReason notVectorizedReason = baseWork.getNotVectorizedReason();
+      if (notVectorizedReason ==  null) {
+        return "Unknown";
+      }
+      return notVectorizedReason.toString();
+    }
+
+    @Explain(vectorization = Vectorization.SUMMARY, displayName = "groupByVectorOutput", explainLevels = { Level.DEFAULT, Level.EXTENDED })
+    public Boolean groupByRowOutputCascade() {
+      if (!baseWork.getVectorMode()) {
+        return null;
+      }
+      return baseWork.getGroupByVectorOutput();
+    }
+
+    @Explain(vectorization = Vectorization.SUMMARY, displayName = "allNative", explainLevels = { Level.DEFAULT, Level.EXTENDED })
+    public Boolean nativeVectorized() {
+      if (!baseWork.getVectorMode()) {
+        return null;
+      }
+      return baseWork.getAllNative();
+    }
+
+    @Explain(vectorization = Vectorization.SUMMARY, displayName = "usesVectorUDFAdaptor", explainLevels = { Level.DEFAULT, Level.EXTENDED })
+    public Boolean usesVectorUDFAdaptor() {
+      if (!baseWork.getVectorMode()) {
+        return null;
+      }
+      return baseWork.getUsesVectorUDFAdaptor();
+    }
+
+    public static class RowBatchContextExplainVectorization {
+
+      private final VectorizedRowBatchCtx vectorizedRowBatchCtx;
+
+      public RowBatchContextExplainVectorization(VectorizedRowBatchCtx vectorizedRowBatchCtx) {
+        this.vectorizedRowBatchCtx = vectorizedRowBatchCtx;
+      }
+
+      private List<String> getColumns(int startIndex, int count) {
+        String[] rowColumnNames = vectorizedRowBatchCtx.getRowColumnNames();
+        TypeInfo[] rowColumnTypeInfos = vectorizedRowBatchCtx.getRowColumnTypeInfos();
+        List<String> result = new ArrayList<String>(count);
+        final int end = startIndex + count;
+        for (int i = startIndex; i < end; i++) {
+          result.add(rowColumnNames[i] + ":" + rowColumnTypeInfos[i]);
+        }
+        return result;
+      }
+
+      @Explain(vectorization = Vectorization.DETAIL, displayName = "dataColumns", explainLevels = { Level.DEFAULT, Level.EXTENDED })
+      public List<String> getDataColumns() {
+        return getColumns(0, vectorizedRowBatchCtx.getDataColumnCount());
+      }
+
+      @Explain(vectorization = Vectorization.DETAIL, displayName = "partitionColumns", explainLevels = { Level.DEFAULT, Level.EXTENDED })
+      public List<String> getPartitionColumns() {
+        return getColumns(vectorizedRowBatchCtx.getDataColumnCount(), vectorizedRowBatchCtx.getPartitionColumnCount());
+      }
+
+      @Explain(vectorization = Vectorization.DETAIL, displayName = "includeColumns", explainLevels = { Level.DEFAULT, Level.EXTENDED })
+      public String getDataColumnNums() {
+        int[] dataColumnNums = vectorizedRowBatchCtx.getDataColumnNums();
+        if (dataColumnNums == null) {
+          return null;
+        }
+        return Arrays.toString(vectorizedRowBatchCtx.getDataColumnNums());
+      }
+
+      @Explain(vectorization = Vectorization.DETAIL, displayName = "dataColumnCount", explainLevels = { Level.DEFAULT, Level.EXTENDED })
+      public int getDataColumnCount() {
+        return vectorizedRowBatchCtx.getDataColumnCount();
+      }
+
+      @Explain(vectorization = Vectorization.DETAIL, displayName = "partitionColumnCount", explainLevels = { Level.DEFAULT, Level.EXTENDED })
+      public int getPartitionColumnCount() {
+        return vectorizedRowBatchCtx.getPartitionColumnCount();
+      }
+
+      @Explain(vectorization = Vectorization.DETAIL, displayName = "scratchColumnTypeNames", explainLevels = { Level.DEFAULT, Level.EXTENDED })
+      public List<String> getScratchColumnTypeNames() {
+        return Arrays.asList(vectorizedRowBatchCtx.getScratchColumnTypeNames());
+      }
+
+    }
+
+    @Explain(vectorization = Vectorization.DETAIL, displayName = "rowBatchContext", explainLevels = { Level.DEFAULT, Level.EXTENDED })
+    public RowBatchContextExplainVectorization vectorizedRowBatchContext() {
+      if (!baseWork.getVectorMode()) {
+        return null;
+      }
+      return new RowBatchContextExplainVectorization(baseWork.getVectorizedRowBatchCtx());
+    }
+  }
+
 
   // -----------------------------------------------------------------------------------------------
 

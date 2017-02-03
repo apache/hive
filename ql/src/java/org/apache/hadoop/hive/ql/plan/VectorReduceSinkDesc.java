@@ -61,4 +61,72 @@ public class VectorReduceSinkDesc extends AbstractVectorDesc  {
   public VectorReduceSinkInfo getVectorReduceSinkInfo() {
     return vectorReduceSinkInfo;
   }
+
+  private boolean isVectorizationReduceSinkNativeEnabled;
+  private String engine;
+  private boolean acidChange;
+  private boolean hasBuckets;
+  private boolean hasTopN;
+  private boolean useUniformHash;
+  private boolean hasDistinctColumns;
+  private boolean isKeyBinarySortable;
+  private boolean isValueLazyBinary;
+
+  /*
+   * The following conditions are for native Vector ReduceSink.
+   */
+  public void setIsVectorizationReduceSinkNativeEnabled(boolean isVectorizationReduceSinkNativeEnabled) {
+    this.isVectorizationReduceSinkNativeEnabled = isVectorizationReduceSinkNativeEnabled;
+  }
+  public boolean getIsVectorizationReduceSinkNativeEnabled() {
+    return isVectorizationReduceSinkNativeEnabled;
+  }
+  public void setEngine(String engine) {
+    this.engine = engine;
+  }
+  public String getEngine() {
+    return engine;
+  }
+  public void setAcidChange(boolean acidChange) {
+    this.acidChange = acidChange;
+  }
+  public boolean getAcidChange() {
+    return acidChange;
+  }
+  public void setHasBuckets(boolean hasBuckets) {
+    this.hasBuckets = hasBuckets;
+  }  
+  public boolean getHasBuckets() {
+    return hasBuckets;
+  }
+  public void setHasTopN(boolean hasTopN) {
+    this.hasTopN = hasTopN;
+  }
+  public boolean getHasTopN() {
+    return hasTopN;
+  }
+  public void setUseUniformHash(boolean useUniformHash) {
+    this.useUniformHash = useUniformHash;
+  }
+  public boolean getUseUniformHash() {
+    return useUniformHash;
+  }
+  public void setHasDistinctColumns(boolean hasDistinctColumns) {
+    this.hasDistinctColumns = hasDistinctColumns;
+  }
+  public boolean getHasDistinctColumns() {
+    return hasDistinctColumns;
+  }
+  public void setIsKeyBinarySortable(boolean isKeyBinarySortable) {
+    this.isKeyBinarySortable = isKeyBinarySortable;
+  }
+  public boolean getIsKeyBinarySortable() {
+    return isKeyBinarySortable;
+  }
+  public void setIsValueLazyBinary(boolean isValueLazyBinary) {
+    this.isValueLazyBinary = isValueLazyBinary;
+  }
+  public boolean getIsValueLazyBinary() {
+    return isValueLazyBinary;
+  }
 }

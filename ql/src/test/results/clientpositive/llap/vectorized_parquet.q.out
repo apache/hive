@@ -46,16 +46,20 @@ POSTHOOK: Lineage: alltypes_parquet.cint SIMPLE [(alltypesorc)alltypesorc.FieldS
 POSTHOOK: Lineage: alltypes_parquet.csmallint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:csmallint, type:smallint, comment:null), ]
 POSTHOOK: Lineage: alltypes_parquet.cstring1 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
 POSTHOOK: Lineage: alltypes_parquet.ctinyint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctinyint, type:tinyint, comment:null), ]
-PREHOOK: query: explain select * 
+PREHOOK: query: explain vectorization select * 
   from alltypes_parquet
   where cint = 528534767 
   limit 10
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select * 
+POSTHOOK: query: explain vectorization select * 
   from alltypes_parquet
   where cint = 528534767 
   limit 10
 POSTHOOK: type: QUERY
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -99,7 +103,7 @@ POSTHOOK: Input: default@alltypes_parquet
 528534767	27	-7824	27.0	-7824.0	cvLH6Eat2yFsyy7p
 528534767	-11	-15431	-11.0	-15431.0	cvLH6Eat2yFsyy7p
 528534767	61	-15549	61.0	-15549.0	cvLH6Eat2yFsyy7p
-PREHOOK: query: explain select ctinyint, 
+PREHOOK: query: explain vectorization select ctinyint, 
   max(cint), 
   min(csmallint), 
   count(cstring1), 
@@ -108,7 +112,7 @@ PREHOOK: query: explain select ctinyint,
   from alltypes_parquet
   group by ctinyint
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select ctinyint, 
+POSTHOOK: query: explain vectorization select ctinyint, 
   max(cint), 
   min(csmallint), 
   count(cstring1), 
@@ -117,6 +121,10 @@ POSTHOOK: query: explain select ctinyint,
   from alltypes_parquet
   group by ctinyint
 POSTHOOK: type: QUERY
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -152,8 +160,21 @@ STAGE PLANS:
                         value expressions: _col1 (type: int), _col2 (type: smallint), _col3 (type: bigint), _col4 (type: struct<count:bigint,sum:double,input:float>), _col5 (type: struct<count:bigint,sum:double,variance:double>)
             Execution mode: vectorized, llap
             LLAP IO: no inputs
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                groupByVectorOutput: false
+                inputFileFormats: org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
         Reducer 2 
             Execution mode: llap
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                notVectorizedReason: Aggregation Function UDF avg parameter expression for GROUPBY operator: Data type struct<count:bigint,sum:double,input:float> of Column[VALUE._col3] not supported
+                vectorized: false
             Reduce Operator Tree:
               Group By Operator
                 aggregations: max(VALUE._col0), min(VALUE._col1), count(VALUE._col2), avg(VALUE._col3), stddev_pop(VALUE._col4)

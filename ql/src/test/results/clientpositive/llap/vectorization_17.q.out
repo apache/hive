@@ -1,4 +1,4 @@
-PREHOOK: query: EXPLAIN 
+PREHOOK: query: EXPLAIN VECTORIZATION 
 SELECT   cfloat,
          cstring1,
          cint,
@@ -22,7 +22,7 @@ WHERE    (((cbigint > -23)
                   OR (cfloat = cdouble))))
 ORDER BY cbigint, cfloat
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN 
+POSTHOOK: query: EXPLAIN VECTORIZATION 
 SELECT   cfloat,
          cstring1,
          cint,
@@ -46,6 +46,10 @@ WHERE    (((cbigint > -23)
                   OR (cfloat = cdouble))))
 ORDER BY cbigint, cfloat
 POSTHOOK: type: QUERY
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -77,8 +81,23 @@ STAGE PLANS:
                         value expressions: _col1 (type: string), _col2 (type: int), _col3 (type: timestamp), _col4 (type: double), _col6 (type: double), _col7 (type: bigint), _col8 (type: double), _col9 (type: double), _col10 (type: double), _col11 (type: double), _col12 (type: decimal(11,4)), _col13 (type: double)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                groupByVectorOutput: true
+                inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
         Reducer 2 
             Execution mode: vectorized, llap
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                groupByVectorOutput: true
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey1 (type: float), VALUE._col0 (type: string), VALUE._col1 (type: int), VALUE._col2 (type: timestamp), VALUE._col3 (type: double), KEY.reducesinkkey0 (type: bigint), VALUE._col4 (type: double), VALUE._col5 (type: bigint), VALUE._col6 (type: double), VALUE._col7 (type: double), VALUE._col8 (type: double), VALUE._col9 (type: double), VALUE._col10 (type: decimal(11,4)), VALUE._col11 (type: double)

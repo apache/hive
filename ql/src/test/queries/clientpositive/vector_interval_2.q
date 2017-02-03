@@ -1,7 +1,7 @@
 set hive.mapred.mode=nonstrict;
 set hive.explain.user=false;
 set hive.vectorized.execution.enabled=true;
-set hive.fetch.task.conversion=minimal;
+set hive.fetch.task.conversion=none;
 
 drop table if exists vector_interval_2;
 create table vector_interval_2 (ts timestamp, dt date, str1 string, str2 string, str3 string, str4 string) stored as orc;
@@ -14,7 +14,7 @@ insert into vector_interval_2
 
 -- interval comparisons in select clause
 
-explain
+explain vectorization expression
 select
   str1,
   -- Should all be true
@@ -77,7 +77,7 @@ select
   interval '1-2' year to month != interval_year_month(str2)
 from vector_interval_2 order by str1;
 
-explain
+explain vectorization expression
 select
   str1,
   -- Should all be false
@@ -128,7 +128,7 @@ select
   interval '1-2' year to month != interval_year_month(str1)
 from vector_interval_2 order by str1;
 
-explain
+explain vectorization expression
 select
   str3,
   -- Should all be true
@@ -191,7 +191,7 @@ select
   interval '1 2:3:4' day to second != interval_day_time(str4)
 from vector_interval_2 order by str3;
 
-explain
+explain vectorization expression
 select
   str3,
   -- Should all be false
@@ -244,7 +244,7 @@ from vector_interval_2 order by str3;
 
 
 -- interval expressions in predicates
-explain
+explain vectorization expression
 select ts from vector_interval_2
 where
   interval_year_month(str1) = interval_year_month(str1)
@@ -293,7 +293,7 @@ where
   and interval '1-3' year to month > interval_year_month(str1)
 order by ts;
 
-explain
+explain vectorization expression
 select ts from vector_interval_2
 where
   interval_day_time(str3) = interval_day_time(str3)
@@ -342,7 +342,7 @@ where
   and interval '1 2:3:5' day to second > interval_day_time(str3)
 order by ts;
 
-explain
+explain vectorization expression
 select ts from vector_interval_2
 where
   date '2002-03-01' = dt + interval_year_month(str1)
@@ -381,7 +381,7 @@ where
   and dt != dt + interval '1-2' year to month
 order by ts;
 
-explain
+explain vectorization expression
 select ts from vector_interval_2
 where
   timestamp '2002-03-01 01:02:03' = ts + interval '1-2' year to month
@@ -431,7 +431,7 @@ where
 order by ts;
 
 -- day to second expressions in predicate
-explain
+explain vectorization expression
 select ts from vector_interval_2
 where
   timestamp '2001-01-01 01:02:03' = dt + interval '0 1:2:3' day to second
@@ -480,7 +480,7 @@ where
   and ts > dt - interval '0 1:2:4' day to second
 order by ts;
 
-explain
+explain vectorization expression
 select ts from vector_interval_2
 where
   timestamp '2001-01-01 01:02:03' = ts + interval '0' day

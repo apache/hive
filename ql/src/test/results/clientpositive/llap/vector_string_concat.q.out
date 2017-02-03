@@ -95,32 +95,78 @@ POSTHOOK: Lineage: over1korc.s SIMPLE [(over1k)over1k.FieldSchema(name:s, type:s
 POSTHOOK: Lineage: over1korc.si SIMPLE [(over1k)over1k.FieldSchema(name:si, type:smallint, comment:null), ]
 POSTHOOK: Lineage: over1korc.t SIMPLE [(over1k)over1k.FieldSchema(name:t, type:tinyint, comment:null), ]
 POSTHOOK: Lineage: over1korc.ts SIMPLE [(over1k)over1k.FieldSchema(name:ts, type:timestamp, comment:null), ]
-PREHOOK: query: EXPLAIN SELECT s AS `string`,
+PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION SELECT s AS `string`,
        CONCAT(CONCAT('      ',s),'      ') AS `none_padded_str`,
        CONCAT(CONCAT('|',RTRIM(CONCAT(CONCAT('      ',s),'      '))),'|') AS `none_z_rtrim_str`
        FROM over1korc LIMIT 20
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN SELECT s AS `string`,
+POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION SELECT s AS `string`,
        CONCAT(CONCAT('      ',s),'      ') AS `none_padded_str`,
        CONCAT(CONCAT('|',RTRIM(CONCAT(CONCAT('      ',s),'      '))),'|') AS `none_z_rtrim_str`
        FROM over1korc LIMIT 20
 POSTHOOK: type: QUERY
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
 STAGE DEPENDENCIES:
-  Stage-0 is a root stage
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: over1korc
+                  Statistics: Num rows: 1049 Data size: 311170 Basic stats: COMPLETE Column stats: NONE
+                  TableScan Vectorization:
+                      native: true
+                      projectedOutputColumns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+                  Select Operator
+                    expressions: s (type: string), concat(concat('      ', s), '      ') (type: string), concat(concat('|', rtrim(concat(concat('      ', s), '      '))), '|') (type: string)
+                    outputColumnNames: _col0, _col1, _col2
+                    Select Vectorization:
+                        className: VectorSelectOperator
+                        native: true
+                        projectedOutputColumns: [7, 12, 11]
+                        selectExpressions: StringGroupColConcatStringScalar(col 11, val       )(children: StringScalarConcatStringGroupCol(val       , col 7) -> 11:String_Family) -> 12:String_Family, StringGroupColConcatStringScalar(col 13, val |)(children: StringScalarConcatStringGroupCol(val |, col 11)(children: StringRTrim(col 13)(children: StringGroupColConcatStringScalar(col 11, val       )(children: StringScalarConcatStringGroupCol(val       , col 7) -> 11:String_Family) -> 13:String_Family) -> 11:String) -> 13:String_Family) -> 11:String_Family
+                    Statistics: Num rows: 1049 Data size: 311170 Basic stats: COMPLETE Column stats: NONE
+                    Limit
+                      Number of rows: 20
+                      Limit Vectorization:
+                          className: VectorLimitOperator
+                          native: true
+                      Statistics: Num rows: 20 Data size: 5920 Basic stats: COMPLETE Column stats: NONE
+                      File Output Operator
+                        compressed: false
+                        File Sink Vectorization:
+                            className: VectorFileSinkOperator
+                            native: false
+                        Statistics: Num rows: 20 Data size: 5920 Basic stats: COMPLETE Column stats: NONE
+                        table:
+                            input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                            output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                groupByVectorOutput: true
+                inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+
   Stage: Stage-0
     Fetch Operator
       limit: 20
       Processor Tree:
-        TableScan
-          alias: over1korc
-          Select Operator
-            expressions: s (type: string), concat(concat('      ', s), '      ') (type: string), concat(concat('|', rtrim(concat(concat('      ', s), '      '))), '|') (type: string)
-            outputColumnNames: _col0, _col1, _col2
-            Limit
-              Number of rows: 20
-              ListSink
+        ListSink
 
 PREHOOK: query: SELECT s AS `string`,
        CONCAT(CONCAT('      ',s),'      ') AS `none_padded_str`,
@@ -259,20 +305,24 @@ POSTHOOK: Lineage: vectortab2korc.si SIMPLE [(vectortab2k)vectortab2k.FieldSchem
 POSTHOOK: Lineage: vectortab2korc.t SIMPLE [(vectortab2k)vectortab2k.FieldSchema(name:t, type:tinyint, comment:null), ]
 POSTHOOK: Lineage: vectortab2korc.ts SIMPLE [(vectortab2k)vectortab2k.FieldSchema(name:ts, type:timestamp, comment:null), ]
 POSTHOOK: Lineage: vectortab2korc.ts2 SIMPLE [(vectortab2k)vectortab2k.FieldSchema(name:ts2, type:timestamp, comment:null), ]
-PREHOOK: query: EXPLAIN
+PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT CONCAT(CONCAT(CONCAT('Quarter ',CAST(CAST((MONTH(dt) - 1) / 3 + 1 AS INT) AS STRING)),'-'),CAST(YEAR(dt) AS STRING)) AS `field`
     FROM vectortab2korc 
     GROUP BY CONCAT(CONCAT(CONCAT('Quarter ',CAST(CAST((MONTH(dt) - 1) / 3 + 1 AS INT) AS STRING)),'-'),CAST(YEAR(dt) AS STRING))
     ORDER BY `field`
     LIMIT 50
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN
+POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT CONCAT(CONCAT(CONCAT('Quarter ',CAST(CAST((MONTH(dt) - 1) / 3 + 1 AS INT) AS STRING)),'-'),CAST(YEAR(dt) AS STRING)) AS `field`
     FROM vectortab2korc 
     GROUP BY CONCAT(CONCAT(CONCAT('Quarter ',CAST(CAST((MONTH(dt) - 1) / 3 + 1 AS INT) AS STRING)),'-'),CAST(YEAR(dt) AS STRING))
     ORDER BY `field`
     LIMIT 50
 POSTHOOK: type: QUERY
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -291,11 +341,25 @@ STAGE PLANS:
                 TableScan
                   alias: vectortab2korc
                   Statistics: Num rows: 2000 Data size: 918712 Basic stats: COMPLETE Column stats: NONE
+                  TableScan Vectorization:
+                      native: true
+                      projectedOutputColumns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
                   Select Operator
                     expressions: concat(concat(concat('Quarter ', UDFToString(UDFToInteger(((UDFToDouble((month(dt) - 1)) / 3.0) + 1.0)))), '-'), UDFToString(year(dt))) (type: string)
                     outputColumnNames: _col0
+                    Select Vectorization:
+                        className: VectorSelectOperator
+                        native: true
+                        projectedOutputColumns: [19]
+                        selectExpressions: StringGroupConcatColCol(col 17, col 18)(children: StringGroupColConcatStringScalar(col 18, val -)(children: StringScalarConcatStringGroupCol(val Quarter , col 17)(children: CastLongToString(col 13)(children: CastDoubleToLong(col 15)(children: DoubleColAddDoubleScalar(col 16, val 1.0)(children: DoubleColDivideDoubleScalar(col 15, val 3.0)(children: CastLongToDouble(col 14)(children: LongColSubtractLongScalar(col 13, val 1)(children: VectorUDFMonthDate(col 12, field MONTH) -> 13:long) -> 14:long) -> 15:double) -> 16:double) -> 15:double) -> 13:long) -> 17:String) -> 18:String_Family) -> 17:String_Family, CastLongToString(col 13)(children: VectorUDFYearDate(col 12, field YEAR) -> 13:long) -> 18:String) -> 19:String_Family
                     Statistics: Num rows: 2000 Data size: 918712 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
+                      Group By Vectorization:
+                          className: VectorGroupByOperator
+                          vectorOutput: true
+                          keyExpressions: col 19
+                          native: false
+                          projectedOutputColumns: []
                       keys: _col0 (type: string)
                       mode: hash
                       outputColumnNames: _col0
@@ -304,14 +368,40 @@ STAGE PLANS:
                         key expressions: _col0 (type: string)
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
+                        Reduce Sink Vectorization:
+                            className: VectorReduceSinkOperator
+                            native: false
+                            nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, Not ACID UPDATE or DELETE IS true, No buckets IS true, Uniform Hash IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                            nativeConditionsNotMet: No TopN IS false
                         Statistics: Num rows: 2000 Data size: 918712 Basic stats: COMPLETE Column stats: NONE
                         TopN Hash Memory Usage: 0.1
             Execution mode: vectorized, llap
             LLAP IO: all inputs
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                groupByVectorOutput: true
+                inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
         Reducer 2 
             Execution mode: vectorized, llap
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                groupByVectorOutput: true
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
             Reduce Operator Tree:
               Group By Operator
+                Group By Vectorization:
+                    className: VectorGroupByOperator
+                    vectorOutput: true
+                    keyExpressions: col 0
+                    native: false
+                    projectedOutputColumns: []
                 keys: KEY._col0 (type: string)
                 mode: mergepartial
                 outputColumnNames: _col0
@@ -319,20 +409,42 @@ STAGE PLANS:
                 Reduce Output Operator
                   key expressions: _col0 (type: string)
                   sort order: +
+                  Reduce Sink Vectorization:
+                      className: VectorReduceSinkOperator
+                      native: false
+                      nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, Not ACID UPDATE or DELETE IS true, No buckets IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                      nativeConditionsNotMet: No TopN IS false, Uniform Hash IS false
                   Statistics: Num rows: 1000 Data size: 459356 Basic stats: COMPLETE Column stats: NONE
                   TopN Hash Memory Usage: 0.1
         Reducer 3 
             Execution mode: vectorized, llap
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                groupByVectorOutput: true
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: string)
                 outputColumnNames: _col0
+                Select Vectorization:
+                    className: VectorSelectOperator
+                    native: true
+                    projectedOutputColumns: [0]
                 Statistics: Num rows: 1000 Data size: 459356 Basic stats: COMPLETE Column stats: NONE
                 Limit
                   Number of rows: 50
+                  Limit Vectorization:
+                      className: VectorLimitOperator
+                      native: true
                   Statistics: Num rows: 50 Data size: 22950 Basic stats: COMPLETE Column stats: NONE
                   File Output Operator
                     compressed: false
+                    File Sink Vectorization:
+                        className: VectorFileSinkOperator
+                        native: false
                     Statistics: Num rows: 50 Data size: 22950 Basic stats: COMPLETE Column stats: NONE
                     table:
                         input format: org.apache.hadoop.mapred.SequenceFileInputFormat

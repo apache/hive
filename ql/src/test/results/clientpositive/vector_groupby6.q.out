@@ -18,14 +18,18 @@ POSTHOOK: query: CREATE TABLE dest1(c1 STRING) STORED AS ORC
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@dest1
-PREHOOK: query: EXPLAIN
+PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 FROM srcorc
 INSERT OVERWRITE TABLE dest1 SELECT DISTINCT substr(srcorc.value,5,1)
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN
+POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 FROM srcorc
 INSERT OVERWRITE TABLE dest1 SELECT DISTINCT substr(srcorc.value,5,1)
 POSTHOOK: type: QUERY
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -39,18 +43,47 @@ STAGE PLANS:
           TableScan
             alias: srcorc
             Statistics: Num rows: 500 Data size: 88000 Basic stats: COMPLETE Column stats: NONE
+            TableScan Vectorization:
+                native: true
+                projectedOutputColumns: [0, 1]
             Select Operator
               expressions: substr(value, 5, 1) (type: string)
               outputColumnNames: _col0
+              Select Vectorization:
+                  className: VectorSelectOperator
+                  native: true
+                  projectedOutputColumns: [2]
+                  selectExpressions: StringSubstrColStartLen(col 1, start 4, length 1) -> 2:string
               Statistics: Num rows: 500 Data size: 88000 Basic stats: COMPLETE Column stats: NONE
               Reduce Output Operator
                 key expressions: _col0 (type: string)
                 sort order: +
                 Map-reduce partition columns: rand() (type: double)
+                Reduce Sink Vectorization:
+                    className: VectorReduceSinkOperator
+                    native: false
+                    nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, Not ACID UPDATE or DELETE IS true, No buckets IS true, No TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                    nativeConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false, Uniform Hash IS false
                 Statistics: Num rows: 500 Data size: 88000 Basic stats: COMPLETE Column stats: NONE
       Execution mode: vectorized
+      Map Vectorization:
+          enabled: true
+          enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+          groupByVectorOutput: true
+          inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+          allNative: false
+          usesVectorUDFAdaptor: false
+          vectorized: true
+      Reduce Vectorization:
+          enabled: false
+          enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true
+          enableConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false
       Reduce Operator Tree:
         Group By Operator
+          Group By Vectorization:
+              vectorOutput: false
+              native: false
+              projectedOutputColumns: null
           keys: KEY._col0 (type: string)
           mode: partial1
           outputColumnNames: _col0
@@ -71,8 +104,20 @@ STAGE PLANS:
               sort order: +
               Map-reduce partition columns: _col0 (type: string)
               Statistics: Num rows: 500 Data size: 88000 Basic stats: COMPLETE Column stats: NONE
+      Map Vectorization:
+          enabled: false
+          enabledConditionsNotMet: hive.vectorized.use.vector.serde.deserialize IS false
+          inputFileFormats: org.apache.hadoop.mapred.SequenceFileInputFormat
+      Reduce Vectorization:
+          enabled: false
+          enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true
+          enableConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false
       Reduce Operator Tree:
         Group By Operator
+          Group By Vectorization:
+              vectorOutput: false
+              native: false
+              projectedOutputColumns: null
           keys: KEY._col0 (type: string)
           mode: final
           outputColumnNames: _col0

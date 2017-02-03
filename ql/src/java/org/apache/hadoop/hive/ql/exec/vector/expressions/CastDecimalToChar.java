@@ -55,4 +55,9 @@ public class CastDecimalToChar extends CastDecimalToString implements TruncStrin
   public void setMaxLength(int maxLength) {
     this.maxLength = maxLength;
   }
+
+  @Override
+  public String vectorExpressionParameters() {
+    return "col " + inputColumn + ", maxLength " + maxLength;
+  }
 }

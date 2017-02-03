@@ -28,12 +28,16 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_tbl_txt
 #### A masked pattern was here ####
 101
-PREHOOK: query: explain
+PREHOOK: query: explain vectorization expression
 select dec, round(dec, -1) from decimal_tbl_txt order by dec
 PREHOOK: type: QUERY
-POSTHOOK: query: explain
+POSTHOOK: query: explain vectorization expression
 select dec, round(dec, -1) from decimal_tbl_txt order by dec
 POSTHOOK: type: QUERY
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -62,15 +66,33 @@ STAGE PLANS:
                       value expressions: _col1 (type: decimal(11,0))
             Execution mode: llap
             LLAP IO: no inputs
+            Map Vectorization:
+                enabled: false
+                enabledConditionsNotMet: hive.vectorized.use.vector.serde.deserialize IS false
+                inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
         Reducer 2 
             Execution mode: vectorized, llap
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                groupByVectorOutput: true
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: decimal(10,0)), VALUE._col0 (type: decimal(11,0))
                 outputColumnNames: _col0, _col1
+                Select Vectorization:
+                    className: VectorSelectOperator
+                    native: true
+                    projectedOutputColumns: [0, 1]
                 Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
+                  File Sink Vectorization:
+                      className: VectorFileSinkOperator
+                      native: false
                   Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
@@ -92,12 +114,16 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_tbl_txt
 #### A masked pattern was here ####
 101	100
-PREHOOK: query: explain
+PREHOOK: query: explain vectorization expression
 select dec, round(dec, -1) from decimal_tbl_txt order by round(dec, -1)
 PREHOOK: type: QUERY
-POSTHOOK: query: explain
+POSTHOOK: query: explain vectorization expression
 select dec, round(dec, -1) from decimal_tbl_txt order by round(dec, -1)
 POSTHOOK: type: QUERY
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -126,15 +152,33 @@ STAGE PLANS:
                       value expressions: _col0 (type: decimal(10,0))
             Execution mode: llap
             LLAP IO: no inputs
+            Map Vectorization:
+                enabled: false
+                enabledConditionsNotMet: hive.vectorized.use.vector.serde.deserialize IS false
+                inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
         Reducer 2 
             Execution mode: vectorized, llap
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                groupByVectorOutput: true
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
             Reduce Operator Tree:
               Select Operator
                 expressions: VALUE._col0 (type: decimal(10,0)), KEY.reducesinkkey0 (type: decimal(11,0))
                 outputColumnNames: _col0, _col1
+                Select Vectorization:
+                    className: VectorSelectOperator
+                    native: true
+                    projectedOutputColumns: [1, 0]
                 Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
+                  File Sink Vectorization:
+                      className: VectorFileSinkOperator
+                      native: false
                   Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
@@ -182,12 +226,16 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_tbl_rc
 #### A masked pattern was here ####
 101
-PREHOOK: query: explain
+PREHOOK: query: explain vectorization expression
 select dec, round(dec, -1) from decimal_tbl_rc order by dec
 PREHOOK: type: QUERY
-POSTHOOK: query: explain
+POSTHOOK: query: explain vectorization expression
 select dec, round(dec, -1) from decimal_tbl_rc order by dec
 POSTHOOK: type: QUERY
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -216,15 +264,33 @@ STAGE PLANS:
                       value expressions: _col1 (type: decimal(11,0))
             Execution mode: llap
             LLAP IO: no inputs
+            Map Vectorization:
+                enabled: false
+                enabledConditionsNotMet: hive.vectorized.use.row.serde.deserialize IS false
+                inputFileFormats: org.apache.hadoop.hive.ql.io.RCFileInputFormat
         Reducer 2 
             Execution mode: vectorized, llap
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                groupByVectorOutput: true
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: decimal(10,0)), VALUE._col0 (type: decimal(11,0))
                 outputColumnNames: _col0, _col1
+                Select Vectorization:
+                    className: VectorSelectOperator
+                    native: true
+                    projectedOutputColumns: [0, 1]
                 Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
+                  File Sink Vectorization:
+                      className: VectorFileSinkOperator
+                      native: false
                   Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
@@ -246,12 +312,16 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_tbl_rc
 #### A masked pattern was here ####
 101	100
-PREHOOK: query: explain
+PREHOOK: query: explain vectorization expression
 select dec, round(dec, -1) from decimal_tbl_rc order by round(dec, -1)
 PREHOOK: type: QUERY
-POSTHOOK: query: explain
+POSTHOOK: query: explain vectorization expression
 select dec, round(dec, -1) from decimal_tbl_rc order by round(dec, -1)
 POSTHOOK: type: QUERY
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -280,15 +350,33 @@ STAGE PLANS:
                       value expressions: _col0 (type: decimal(10,0))
             Execution mode: llap
             LLAP IO: no inputs
+            Map Vectorization:
+                enabled: false
+                enabledConditionsNotMet: hive.vectorized.use.row.serde.deserialize IS false
+                inputFileFormats: org.apache.hadoop.hive.ql.io.RCFileInputFormat
         Reducer 2 
             Execution mode: vectorized, llap
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                groupByVectorOutput: true
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
             Reduce Operator Tree:
               Select Operator
                 expressions: VALUE._col0 (type: decimal(10,0)), KEY.reducesinkkey0 (type: decimal(11,0))
                 outputColumnNames: _col0, _col1
+                Select Vectorization:
+                    className: VectorSelectOperator
+                    native: true
+                    projectedOutputColumns: [1, 0]
                 Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
+                  File Sink Vectorization:
+                      className: VectorFileSinkOperator
+                      native: false
                   Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
@@ -336,12 +424,16 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_tbl_orc
 #### A masked pattern was here ####
 101
-PREHOOK: query: explain
+PREHOOK: query: explain vectorization expression
 select dec, round(dec, -1) from decimal_tbl_orc order by dec
 PREHOOK: type: QUERY
-POSTHOOK: query: explain
+POSTHOOK: query: explain vectorization expression
 select dec, round(dec, -1) from decimal_tbl_orc order by dec
 POSTHOOK: type: QUERY
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -359,26 +451,61 @@ STAGE PLANS:
                 TableScan
                   alias: decimal_tbl_orc
                   Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
+                  TableScan Vectorization:
+                      native: true
+                      projectedOutputColumns: [0]
                   Select Operator
                     expressions: dec (type: decimal(10,0)), round(dec, -1) (type: decimal(11,0))
                     outputColumnNames: _col0, _col1
+                    Select Vectorization:
+                        className: VectorSelectOperator
+                        native: true
+                        projectedOutputColumns: [0, 1]
+                        selectExpressions: FuncRoundWithNumDigitsDecimalToDecimal(col 0, decimalPlaces -1) -> 1:decimal(11,0)
                     Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col0 (type: decimal(10,0))
                       sort order: +
+                      Reduce Sink Vectorization:
+                          className: VectorReduceSinkOperator
+                          native: false
+                          nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, Not ACID UPDATE or DELETE IS true, No buckets IS true, No TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                          nativeConditionsNotMet: Uniform Hash IS false
                       Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
                       value expressions: _col1 (type: decimal(11,0))
             Execution mode: vectorized, llap
             LLAP IO: all inputs
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                groupByVectorOutput: true
+                inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
         Reducer 2 
             Execution mode: vectorized, llap
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                groupByVectorOutput: true
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: decimal(10,0)), VALUE._col0 (type: decimal(11,0))
                 outputColumnNames: _col0, _col1
+                Select Vectorization:
+                    className: VectorSelectOperator
+                    native: true
+                    projectedOutputColumns: [0, 1]
                 Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
+                  File Sink Vectorization:
+                      className: VectorFileSinkOperator
+                      native: false
                   Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
@@ -400,12 +527,16 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_tbl_orc
 #### A masked pattern was here ####
 101	100
-PREHOOK: query: explain
+PREHOOK: query: explain vectorization expression
 select dec, round(dec, -1) from decimal_tbl_orc order by round(dec, -1)
 PREHOOK: type: QUERY
-POSTHOOK: query: explain
+POSTHOOK: query: explain vectorization expression
 select dec, round(dec, -1) from decimal_tbl_orc order by round(dec, -1)
 POSTHOOK: type: QUERY
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -423,26 +554,60 @@ STAGE PLANS:
                 TableScan
                   alias: decimal_tbl_orc
                   Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
+                  TableScan Vectorization:
+                      native: true
+                      projectedOutputColumns: [0]
                   Select Operator
                     expressions: dec (type: decimal(10,0))
                     outputColumnNames: _col0
+                    Select Vectorization:
+                        className: VectorSelectOperator
+                        native: true
+                        projectedOutputColumns: [0]
                     Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: round(_col0, -1) (type: decimal(11,0))
                       sort order: +
+                      Reduce Sink Vectorization:
+                          className: VectorReduceSinkOperator
+                          native: false
+                          nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, Not ACID UPDATE or DELETE IS true, No buckets IS true, No TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                          nativeConditionsNotMet: Uniform Hash IS false
                       Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
                       value expressions: _col0 (type: decimal(10,0))
             Execution mode: vectorized, llap
             LLAP IO: all inputs
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                groupByVectorOutput: true
+                inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
         Reducer 2 
             Execution mode: vectorized, llap
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                groupByVectorOutput: true
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
             Reduce Operator Tree:
               Select Operator
                 expressions: VALUE._col0 (type: decimal(10,0)), KEY.reducesinkkey0 (type: decimal(11,0))
                 outputColumnNames: _col0, _col1
+                Select Vectorization:
+                    className: VectorSelectOperator
+                    native: true
+                    projectedOutputColumns: [1, 0]
                 Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
+                  File Sink Vectorization:
+                      className: VectorFileSinkOperator
+                      native: false
                   Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat

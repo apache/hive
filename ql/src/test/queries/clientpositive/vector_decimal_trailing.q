@@ -1,6 +1,6 @@
 set hive.mapred.mode=nonstrict;
 SET hive.vectorized.execution.enabled=true;
-set hive.fetch.task.conversion=minimal;
+set hive.fetch.task.conversion=none;
 
 DROP TABLE IF EXISTS DECIMAL_TRAILING_txt;
 DROP TABLE IF EXISTS DECIMAL_TRAILING;

@@ -1,4 +1,4 @@
-PREHOOK: query: EXPLAIN 
+PREHOOK: query: EXPLAIN VECTORIZATION 
 SELECT   cstring1,
          cdouble,
          ctimestamp1,
@@ -18,7 +18,7 @@ WHERE    ((cstring2 LIKE '%b%')
               OR (cstring1 < 'a')))
 GROUP BY cstring1, cdouble, ctimestamp1
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN 
+POSTHOOK: query: EXPLAIN VECTORIZATION 
 SELECT   cstring1,
          cdouble,
          ctimestamp1,
@@ -38,6 +38,10 @@ WHERE    ((cstring2 LIKE '%b%')
               OR (cstring1 < 'a')))
 GROUP BY cstring1, cdouble, ctimestamp1
 POSTHOOK: type: QUERY
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -69,6 +73,18 @@ STAGE PLANS:
                     Statistics: Num rows: 4096 Data size: 880654 Basic stats: COMPLETE Column stats: NONE
                     value expressions: _col3 (type: bigint), _col4 (type: struct<count:bigint,sum:double,variance:double>), _col5 (type: double)
       Execution mode: vectorized
+      Map Vectorization:
+          enabled: true
+          enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+          groupByVectorOutput: false
+          inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+          allNative: false
+          usesVectorUDFAdaptor: false
+          vectorized: true
+      Reduce Vectorization:
+          enabled: false
+          enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true
+          enableConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false
       Reduce Operator Tree:
         Group By Operator
           aggregations: count(VALUE._col0), stddev_samp(VALUE._col1), min(VALUE._col2)

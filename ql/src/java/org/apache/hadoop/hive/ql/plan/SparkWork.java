@@ -19,7 +19,6 @@
 package org.apache.hadoop.hive.ql.plan;
 
 import java.io.Serializable;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -34,6 +33,7 @@ import java.util.Set;
 
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
+import org.apache.hadoop.hive.ql.plan.Explain.Vectorization;
 
 import com.google.common.base.Preconditions;
 
@@ -43,7 +43,7 @@ import com.google.common.base.Preconditions;
  * roots and and ReduceWork at all other nodes.
  */
 @SuppressWarnings("serial")
-@Explain(displayName = "Spark")
+@Explain(displayName = "Spark", vectorization = Vectorization.SUMMARY_PATH)
 public class SparkWork extends AbstractOperatorDesc {
   private static int counter;
   private final String name;
@@ -76,7 +76,7 @@ public class SparkWork extends AbstractOperatorDesc {
   /**
    * @return a map of "vertex name" to BaseWork
    */
-  @Explain(displayName = "Vertices")
+  @Explain(displayName = "Vertices", vectorization = Vectorization.SUMMARY_PATH)
   public Map<String, BaseWork> getWorkMap() {
     Map<String, BaseWork> result = new LinkedHashMap<String, BaseWork>();
     for (BaseWork w: getAllWork()) {

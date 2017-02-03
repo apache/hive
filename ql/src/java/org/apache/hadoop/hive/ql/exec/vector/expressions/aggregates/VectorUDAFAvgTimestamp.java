@@ -84,6 +84,12 @@ public class VectorUDAFAvgTimestamp extends VectorAggregateExpression {
     }
     
     private VectorExpression inputExpression;
+
+    @Override
+    public VectorExpression inputExpression() {
+      return inputExpression;
+    }
+
     transient private Object[] partialResult;
     transient private LongWritable resultCount;
     transient private DoubleWritable resultSum;

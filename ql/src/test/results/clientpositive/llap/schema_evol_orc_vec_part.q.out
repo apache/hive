@@ -53,25 +53,73 @@ POSTHOOK: Lineage: part_add_int_permute_select PARTITION(part=1).b SIMPLE [(valu
 POSTHOOK: Lineage: part_add_int_permute_select PARTITION(part=1).c EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col4, type:string, comment:), ]
 POSTHOOK: Lineage: part_add_int_permute_select PARTITION(part=1).insert_num EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 _col0	_col1	_col2	_col3
-PREHOOK: query: explain
+PREHOOK: query: explain vectorization detail
 select insert_num,part,a,b from part_add_int_permute_select
 PREHOOK: type: QUERY
-POSTHOOK: query: explain
+POSTHOOK: query: explain vectorization detail
 select insert_num,part,a,b from part_add_int_permute_select
 POSTHOOK: type: QUERY
 Explain
-Plan optimized by CBO.
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
 
-Stage-0
-  Fetch Operator
-    limit:-1
-    Stage-1
-      Map 1 vectorized, llap
-      File Output Operator [FS_4]
-        Select Operator [SEL_3] (rows=2 width=4)
-          Output:["_col0","_col1","_col2","_col3"]
-          TableScan [TS_0] (rows=2 width=101)
-            default@part_add_int_permute_select,part_add_int_permute_select,Tbl:COMPLETE,Col:PARTIAL,Output:["insert_num","a","b"]
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: part_add_int_permute_select
+                  Statistics: Num rows: 2 Data size: 202 Basic stats: COMPLETE Column stats: PARTIAL
+                  TableScan Vectorization:
+                      native: true
+                      projectedOutputColumns: [0, 1, 2, 3, 4]
+                  Select Operator
+                    expressions: insert_num (type: int), part (type: int), a (type: int), b (type: string)
+                    outputColumnNames: _col0, _col1, _col2, _col3
+                    Select Vectorization:
+                        className: VectorSelectOperator
+                        native: true
+                        projectedOutputColumns: [0, 4, 1, 2]
+                    Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: PARTIAL
+                    File Output Operator
+                      compressed: false
+                      File Sink Vectorization:
+                          className: VectorFileSinkOperator
+                          native: false
+                      Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: PARTIAL
+                      table:
+                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: vectorized, llap
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                groupByVectorOutput: true
+                inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 4
+                    includeColumns: [0, 1, 2]
+                    dataColumns: insert_num:int, a:int, b:string, c:int
+                    partitionColumnCount: 1
+                    partitionColumns: part:int
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: select insert_num,part,a,b from part_add_int_permute_select
 PREHOOK: type: QUERY
@@ -158,25 +206,73 @@ POSTHOOK: Lineage: part_add_int_string_permute_select PARTITION(part=1).c EXPRES
 POSTHOOK: Lineage: part_add_int_string_permute_select PARTITION(part=1).d SIMPLE [(values__tmp__table__4)values__tmp__table__4.FieldSchema(name:tmp_values_col5, type:string, comment:), ]
 POSTHOOK: Lineage: part_add_int_string_permute_select PARTITION(part=1).insert_num EXPRESSION [(values__tmp__table__4)values__tmp__table__4.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 _col0	_col1	_col2	_col3	_col4
-PREHOOK: query: explain
+PREHOOK: query: explain vectorization detail
 select insert_num,part,a,b from part_add_int_string_permute_select
 PREHOOK: type: QUERY
-POSTHOOK: query: explain
+POSTHOOK: query: explain vectorization detail
 select insert_num,part,a,b from part_add_int_string_permute_select
 POSTHOOK: type: QUERY
 Explain
-Plan optimized by CBO.
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
 
-Stage-0
-  Fetch Operator
-    limit:-1
-    Stage-1
-      Map 1 vectorized, llap
-      File Output Operator [FS_4]
-        Select Operator [SEL_3] (rows=2 width=4)
-          Output:["_col0","_col1","_col2","_col3"]
-          TableScan [TS_0] (rows=2 width=145)
-            default@part_add_int_string_permute_select,part_add_int_string_permute_select,Tbl:COMPLETE,Col:PARTIAL,Output:["insert_num","a","b"]
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: part_add_int_string_permute_select
+                  Statistics: Num rows: 2 Data size: 290 Basic stats: COMPLETE Column stats: PARTIAL
+                  TableScan Vectorization:
+                      native: true
+                      projectedOutputColumns: [0, 1, 2, 3, 4, 5]
+                  Select Operator
+                    expressions: insert_num (type: int), part (type: int), a (type: int), b (type: string)
+                    outputColumnNames: _col0, _col1, _col2, _col3
+                    Select Vectorization:
+                        className: VectorSelectOperator
+                        native: true
+                        projectedOutputColumns: [0, 5, 1, 2]
+                    Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: PARTIAL
+                    File Output Operator
+                      compressed: false
+                      File Sink Vectorization:
+                          className: VectorFileSinkOperator
+                          native: false
+                      Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: PARTIAL
+                      table:
+                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: vectorized, llap
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                groupByVectorOutput: true
+                inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 5
+                    includeColumns: [0, 1, 2]
+                    dataColumns: insert_num:int, a:int, b:string, c:int, d:string
+                    partitionColumnCount: 1
+                    partitionColumns: part:int
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: select insert_num,part,a,b from part_add_int_string_permute_select
 PREHOOK: type: QUERY
@@ -321,25 +417,73 @@ POSTHOOK: Lineage: part_change_string_group_double PARTITION(part=1).c2 SIMPLE [
 POSTHOOK: Lineage: part_change_string_group_double PARTITION(part=1).c3 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:double1, type:double, comment:null), ]
 POSTHOOK: Lineage: part_change_string_group_double PARTITION(part=1).insert_num SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:insert_num, type:int, comment:null), ]
 insert_num	double1	double1	double1	_c4
-PREHOOK: query: explain
+PREHOOK: query: explain vectorization detail
 select insert_num,part,c1,c2,c3,b from part_change_string_group_double
 PREHOOK: type: QUERY
-POSTHOOK: query: explain
+POSTHOOK: query: explain vectorization detail
 select insert_num,part,c1,c2,c3,b from part_change_string_group_double
 POSTHOOK: type: QUERY
 Explain
-Plan optimized by CBO.
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
 
-Stage-0
-  Fetch Operator
-    limit:-1
-    Stage-1
-      Map 1 vectorized, llap
-      File Output Operator [FS_4]
-        Select Operator [SEL_3] (rows=5 width=4)
-          Output:["_col0","_col1","_col2","_col3","_col4","_col5"]
-          TableScan [TS_0] (rows=5 width=426)
-            default@part_change_string_group_double,part_change_string_group_double,Tbl:COMPLETE,Col:PARTIAL,Output:["insert_num","c1","c2","c3","b"]
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: part_change_string_group_double
+                  Statistics: Num rows: 5 Data size: 2130 Basic stats: COMPLETE Column stats: PARTIAL
+                  TableScan Vectorization:
+                      native: true
+                      projectedOutputColumns: [0, 1, 2, 3, 4, 5]
+                  Select Operator
+                    expressions: insert_num (type: int), part (type: int), c1 (type: double), c2 (type: double), c3 (type: double), b (type: string)
+                    outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+                    Select Vectorization:
+                        className: VectorSelectOperator
+                        native: true
+                        projectedOutputColumns: [0, 5, 1, 2, 3, 4]
+                    Statistics: Num rows: 5 Data size: 20 Basic stats: COMPLETE Column stats: PARTIAL
+                    File Output Operator
+                      compressed: false
+                      File Sink Vectorization:
+                          className: VectorFileSinkOperator
+                          native: false
+                      Statistics: Num rows: 5 Data size: 20 Basic stats: COMPLETE Column stats: PARTIAL
+                      table:
+                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: vectorized, llap
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                groupByVectorOutput: true
+                inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 5
+                    includeColumns: [0, 1, 2, 3, 4]
+                    dataColumns: insert_num:int, c1:double, c2:double, c3:double, b:string
+                    partitionColumnCount: 1
+                    partitionColumns: part:int
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: select insert_num,part,c1,c2,c3,b from part_change_string_group_double
 PREHOOK: type: QUERY
@@ -421,25 +565,73 @@ POSTHOOK: Lineage: part_change_date_group_string_group_date_timestamp PARTITION(
 POSTHOOK: Lineage: part_change_date_group_string_group_date_timestamp PARTITION(part=1).c9 EXPRESSION [(values__tmp__table__5)values__tmp__table__5.FieldSchema(name:tmp_values_col10, type:string, comment:), ]
 POSTHOOK: Lineage: part_change_date_group_string_group_date_timestamp PARTITION(part=1).insert_num EXPRESSION [(values__tmp__table__5)values__tmp__table__5.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 _col0	_col1	_col2	_col3	_col4	_col5	_col6	_col7	_col8	_col9	_col10	_col11
-PREHOOK: query: explain
+PREHOOK: query: explain vectorization detail
 select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,b from part_change_date_group_string_group_date_timestamp
 PREHOOK: type: QUERY
-POSTHOOK: query: explain
+POSTHOOK: query: explain vectorization detail
 select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,b from part_change_date_group_string_group_date_timestamp
 POSTHOOK: type: QUERY
 Explain
-Plan optimized by CBO.
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
 
-Stage-0
-  Fetch Operator
-    limit:-1
-    Stage-1
-      Map 1 vectorized, llap
-      File Output Operator [FS_4]
-        Select Operator [SEL_3] (rows=6 width=4)
-          Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10","_col11","_col12"]
-          TableScan [TS_0] (rows=6 width=586)
-            default@part_change_date_group_string_group_date_timestamp,part_change_date_group_string_group_date_timestamp,Tbl:COMPLETE,Col:PARTIAL,Output:["insert_num","c1","c2","c3","c4","c5","c6","c7","c8","c9","c10","b"]
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: part_change_date_group_string_group_date_timestamp
+                  Statistics: Num rows: 6 Data size: 3521 Basic stats: COMPLETE Column stats: PARTIAL
+                  TableScan Vectorization:
+                      native: true
+                      projectedOutputColumns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+                  Select Operator
+                    expressions: insert_num (type: int), part (type: int), c1 (type: string), c2 (type: char(50)), c3 (type: char(15)), c4 (type: varchar(50)), c5 (type: varchar(15)), c6 (type: string), c7 (type: char(50)), c8 (type: char(15)), c9 (type: varchar(50)), c10 (type: varchar(15)), b (type: string)
+                    outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12
+                    Select Vectorization:
+                        className: VectorSelectOperator
+                        native: true
+                        projectedOutputColumns: [0, 12, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
+                    Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: PARTIAL
+                    File Output Operator
+                      compressed: false
+                      File Sink Vectorization:
+                          className: VectorFileSinkOperator
+                          native: false
+                      Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: PARTIAL
+                      table:
+                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: vectorized, llap
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                groupByVectorOutput: true
+                inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 12
+                    includeColumns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
+                    dataColumns: insert_num:int, c1:string, c2:char(50), c3:char(15), c4:varchar(50), c5:varchar(15), c6:string, c7:char(50), c8:char(15), c9:varchar(50), c10:varchar(15), b:string
+                    partitionColumnCount: 1
+                    partitionColumns: part:int
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,b from part_change_date_group_string_group_date_timestamp
 PREHOOK: type: QUERY
@@ -590,25 +782,73 @@ POSTHOOK: Lineage: part_change_numeric_group_string_group_multi_ints_string_grou
 POSTHOOK: Lineage: part_change_numeric_group_string_group_multi_ints_string_group PARTITION(part=1).c9 EXPRESSION [(values__tmp__table__6)values__tmp__table__6.FieldSchema(name:tmp_values_col10, type:string, comment:), ]
 POSTHOOK: Lineage: part_change_numeric_group_string_group_multi_ints_string_group PARTITION(part=1).insert_num EXPRESSION [(values__tmp__table__6)values__tmp__table__6.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 _col0	_col1	_col2	_col3	_col4	_col5	_col6	_col7	_col8	_col9	_col10	_col11	_col12	_col13	_col14	_col15	_col16	_col17	_col18	_col19	_col20	_col21
-PREHOOK: query: explain
+PREHOOK: query: explain vectorization detail
 select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15,c16,c17,c18,c19,c20,b from part_change_numeric_group_string_group_multi_ints_string_group
 PREHOOK: type: QUERY
-POSTHOOK: query: explain
+POSTHOOK: query: explain vectorization detail
 select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15,c16,c17,c18,c19,c20,b from part_change_numeric_group_string_group_multi_ints_string_group
 POSTHOOK: type: QUERY
 Explain
-Plan optimized by CBO.
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
 
-Stage-0
-  Fetch Operator
-    limit:-1
-    Stage-1
-      Map 1 vectorized, llap
-      File Output Operator [FS_4]
-        Select Operator [SEL_3] (rows=6 width=4)
-          Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10","_col11","_col12","_col13","_col14","_col15","_col16","_col17","_col18","_col19","_col20","_col21","_col22"]
-          TableScan [TS_0] (rows=6 width=483)
-            default@part_change_numeric_group_string_group_multi_ints_string_group,part_change_numeric_group_string_group_multi_ints_string_group,Tbl:COMPLETE,Col:PARTIAL,Output:["insert_num","c1","c2","c3","c4","c5","c6","c7","c8","c9","c10","c11","c12","c13","c14","c15","c16","c17","c18","c19","c20","b"]
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: part_change_numeric_group_string_group_multi_ints_string_group
+                  Statistics: Num rows: 6 Data size: 2903 Basic stats: COMPLETE Column stats: PARTIAL
+                  TableScan Vectorization:
+                      native: true
+                      projectedOutputColumns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22]
+                  Select Operator
+                    expressions: insert_num (type: int), part (type: int), c1 (type: string), c2 (type: string), c3 (type: string), c4 (type: string), c5 (type: char(50)), c6 (type: char(50)), c7 (type: char(50)), c8 (type: char(50)), c9 (type: char(5)), c10 (type: char(5)), c11 (type: char(5)), c12 (type: char(5)), c13 (type: varchar(50)), c14 (type: varchar(50)), c15 (type: varchar(50)), c16 (type: varchar(50)), c17 (type: varchar(5)), c18 (type: varchar(5)), c19 (type: varchar(5)), c20 (type: varchar(5)), b (type: string)
+                    outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18, _col19, _col20, _col21, _col22
+                    Select Vectorization:
+                        className: VectorSelectOperator
+                        native: true
+                        projectedOutputColumns: [0, 22, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21]
+                    Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: PARTIAL
+                    File Output Operator
+                      compressed: false
+                      File Sink Vectorization:
+                          className: VectorFileSinkOperator
+                          native: false
+                      Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: PARTIAL
+                      table:
+                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: vectorized, llap
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                groupByVectorOutput: true
+                inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 22
+                    includeColumns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21]
+                    dataColumns: insert_num:int, c1:string, c2:string, c3:string, c4:string, c5:char(50), c6:char(50), c7:char(50), c8:char(50), c9:char(5), c10:char(5), c11:char(5), c12:char(5), c13:varchar(50), c14:varchar(50), c15:varchar(50), c16:varchar(50), c17:varchar(5), c18:varchar(5), c19:varchar(5), c20:varchar(5), b:string
+                    partitionColumnCount: 1
+                    partitionColumns: part:int
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15,c16,c17,c18,c19,c20,b from part_change_numeric_group_string_group_multi_ints_string_group
 PREHOOK: type: QUERY
@@ -749,25 +989,73 @@ POSTHOOK: Lineage: part_change_numeric_group_string_group_floating_string_group 
 POSTHOOK: Lineage: part_change_numeric_group_string_group_floating_string_group PARTITION(part=1).c9 EXPRESSION [(values__tmp__table__7)values__tmp__table__7.FieldSchema(name:tmp_values_col10, type:string, comment:), ]
 POSTHOOK: Lineage: part_change_numeric_group_string_group_floating_string_group PARTITION(part=1).insert_num EXPRESSION [(values__tmp__table__7)values__tmp__table__7.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 _col0	_col1	_col2	_col3	_col4	_col5	_col6	_col7	_col8	_col9	_col10	_col11	_col12	_col13	_col14	_col15	_col16
-PREHOOK: query: explain
+PREHOOK: query: explain vectorization detail
 select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15,b from part_change_numeric_group_string_group_floating_string_group
 PREHOOK: type: QUERY
-POSTHOOK: query: explain
+POSTHOOK: query: explain vectorization detail
 select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15,b from part_change_numeric_group_string_group_floating_string_group
 POSTHOOK: type: QUERY
 Explain
-Plan optimized by CBO.
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
 
-Stage-0
-  Fetch Operator
-    limit:-1
-    Stage-1
-      Map 1 vectorized, llap
-      File Output Operator [FS_4]
-        Select Operator [SEL_3] (rows=6 width=4)
-          Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10","_col11","_col12","_col13","_col14","_col15","_col16","_col17"]
-          TableScan [TS_0] (rows=6 width=756)
-            default@part_change_numeric_group_string_group_floating_string_group,part_change_numeric_group_string_group_floating_string_group,Tbl:COMPLETE,Col:PARTIAL,Output:["insert_num","c1","c2","c3","c4","c5","c6","c7","c8","c9","c10","c11","c12","c13","c14","c15","b"]
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: part_change_numeric_group_string_group_floating_string_group
+                  Statistics: Num rows: 6 Data size: 4540 Basic stats: COMPLETE Column stats: PARTIAL
+                  TableScan Vectorization:
+                      native: true
+                      projectedOutputColumns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17]
+                  Select Operator
+                    expressions: insert_num (type: int), part (type: int), c1 (type: string), c2 (type: string), c3 (type: string), c4 (type: char(50)), c5 (type: char(50)), c6 (type: char(50)), c7 (type: char(7)), c8 (type: char(7)), c9 (type: char(7)), c10 (type: varchar(50)), c11 (type: varchar(50)), c12 (type: varchar(50)), c13 (type: varchar(7)), c14 (type: varchar(7)), c15 (type: varchar(7)), b (type: string)
+                    outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17
+                    Select Vectorization:
+                        className: VectorSelectOperator
+                        native: true
+                        projectedOutputColumns: [0, 17, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]
+                    Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: PARTIAL
+                    File Output Operator
+                      compressed: false
+                      File Sink Vectorization:
+                          className: VectorFileSinkOperator
+                          native: false
+                      Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: PARTIAL
+                      table:
+                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: vectorized, llap
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                groupByVectorOutput: true
+                inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 17
+                    includeColumns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]
+                    dataColumns: insert_num:int, c1:string, c2:string, c3:string, c4:char(50), c5:char(50), c6:char(50), c7:char(7), c8:char(7), c9:char(7), c10:varchar(50), c11:varchar(50), c12:varchar(50), c13:varchar(7), c14:varchar(7), c15:varchar(7), b:string
+                    partitionColumnCount: 1
+                    partitionColumns: part:int
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15,b from part_change_numeric_group_string_group_floating_string_group
 PREHOOK: type: QUERY
@@ -894,25 +1182,73 @@ POSTHOOK: Lineage: part_change_string_group_string_group_string PARTITION(part=1
 POSTHOOK: Lineage: part_change_string_group_string_group_string PARTITION(part=1).c9 EXPRESSION [(values__tmp__table__8)values__tmp__table__8.FieldSchema(name:tmp_values_col10, type:string, comment:), ]
 POSTHOOK: Lineage: part_change_string_group_string_group_string PARTITION(part=1).insert_num EXPRESSION [(values__tmp__table__8)values__tmp__table__8.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 _col0	_col1	_col2	_col3	_col4	_col5	_col6	_col7	_col8	_col9	_col10	_col11
-PREHOOK: query: explain
+PREHOOK: query: explain vectorization detail
 select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,b from part_change_string_group_string_group_string
 PREHOOK: type: QUERY
-POSTHOOK: query: explain
+POSTHOOK: query: explain vectorization detail
 select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,b from part_change_string_group_string_group_string
 POSTHOOK: type: QUERY
 Explain
-Plan optimized by CBO.
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
 
-Stage-0
-  Fetch Operator
-    limit:-1
-    Stage-1
-      Map 1 vectorized, llap
-      File Output Operator [FS_4]
-        Select Operator [SEL_3] (rows=6 width=4)
-          Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10","_col11","_col12"]
-          TableScan [TS_0] (rows=6 width=1113)
-            default@part_change_string_group_string_group_string,part_change_string_group_string_group_string,Tbl:COMPLETE,Col:PARTIAL,Output:["insert_num","c1","c2","c3","c4","c5","c6","c7","c8","c9","c10","b"]
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: part_change_string_group_string_group_string
+                  Statistics: Num rows: 6 Data size: 6682 Basic stats: COMPLETE Column stats: PARTIAL
+                  TableScan Vectorization:
+                      native: true
+                      projectedOutputColumns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+                  Select Operator
+                    expressions: insert_num (type: int), part (type: int), c1 (type: char(50)), c2 (type: char(9)), c3 (type: varchar(50)), c4 (type: char(9)), c5 (type: varchar(50)), c6 (type: varchar(9)), c7 (type: string), c8 (type: char(50)), c9 (type: char(9)), c10 (type: string), b (type: string)
+                    outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12
+                    Select Vectorization:
+                        className: VectorSelectOperator
+                        native: true
+                        projectedOutputColumns: [0, 12, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
+                    Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: PARTIAL
+                    File Output Operator
+                      compressed: false
+                      File Sink Vectorization:
+                          className: VectorFileSinkOperator
+                          native: false
+                      Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: PARTIAL
+                      table:
+                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: vectorized, llap
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                groupByVectorOutput: true
+                inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 12
+                    includeColumns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
+                    dataColumns: insert_num:int, c1:char(50), c2:char(9), c3:varchar(50), c4:char(9), c5:varchar(50), c6:varchar(9), c7:string, c8:char(50), c9:char(9), c10:string, b:string
+                    partitionColumnCount: 1
+                    partitionColumns: part:int
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,b from part_change_string_group_string_group_string
 PREHOOK: type: QUERY
@@ -1067,25 +1403,73 @@ POSTHOOK: Lineage: part_change_lower_to_higher_numeric_group_tinyint_to_bigint P
 POSTHOOK: Lineage: part_change_lower_to_higher_numeric_group_tinyint_to_bigint PARTITION(part=1).c9 EXPRESSION [(values__tmp__table__9)values__tmp__table__9.FieldSchema(name:tmp_values_col10, type:string, comment:), ]
 POSTHOOK: Lineage: part_change_lower_to_higher_numeric_group_tinyint_to_bigint PARTITION(part=1).insert_num EXPRESSION [(values__tmp__table__9)values__tmp__table__9.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 _col0	_col1	_col2	_col3	_col4	_col5	_col6	_col7	_col8	_col9	_col10	_col11	_col12	_col13	_col14	_col15	_col16	_col17	_col18	_col19
-PREHOOK: query: explain
+PREHOOK: query: explain vectorization detail
 select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15,c16,c17,c18,b from part_change_lower_to_higher_numeric_group_tinyint_to_bigint
 PREHOOK: type: QUERY
-POSTHOOK: query: explain
+POSTHOOK: query: explain vectorization detail
 select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15,c16,c17,c18,b from part_change_lower_to_higher_numeric_group_tinyint_to_bigint
 POSTHOOK: type: QUERY
 Explain
-Plan optimized by CBO.
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
 
-Stage-0
-  Fetch Operator
-    limit:-1
-    Stage-1
-      Map 1 vectorized, llap
-      File Output Operator [FS_4]
-        Select Operator [SEL_3] (rows=6 width=4)
-          Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10","_col11","_col12","_col13","_col14","_col15","_col16","_col17","_col18","_col19","_col20"]
-          TableScan [TS_0] (rows=6 width=236)
-            default@part_change_lower_to_higher_numeric_group_tinyint_to_bigint,part_change_lower_to_higher_numeric_group_tinyint_to_bigint,Tbl:COMPLETE,Col:PARTIAL,Output:["insert_num","c1","c2","c3","c4","c5","c6","c7","c8","c9","c10","c11","c12","c13","c14","c15","c16","c17","c18","b"]
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: part_change_lower_to_higher_numeric_group_tinyint_to_bigint
+                  Statistics: Num rows: 6 Data size: 1419 Basic stats: COMPLETE Column stats: PARTIAL
+                  TableScan Vectorization:
+                      native: true
+                      projectedOutputColumns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]
+                  Select Operator
+                    expressions: insert_num (type: int), part (type: int), c1 (type: smallint), c2 (type: int), c3 (type: bigint), c4 (type: decimal(38,18)), c5 (type: float), c6 (type: double), c7 (type: int), c8 (type: bigint), c9 (type: decimal(38,18)), c10 (type: float), c11 (type: double), c12 (type: bigint), c13 (type: decimal(38,18)), c14 (type: float), c15 (type: double), c16 (type: decimal(38,18)), c17 (type: float), c18 (type: double), b (type: string)
+                    outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18, _col19, _col20
+                    Select Vectorization:
+                        className: VectorSelectOperator
+                        native: true
+                        projectedOutputColumns: [0, 20, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
+                    Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: PARTIAL
+                    File Output Operator
+                      compressed: false
+                      File Sink Vectorization:
+                          className: VectorFileSinkOperator
+                          native: false
+                      Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: PARTIAL
+                      table:
+                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: vectorized, llap
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                groupByVectorOutput: true
+                inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 20
+                    includeColumns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
+                    dataColumns: insert_num:int, c1:smallint, c2:int, c3:bigint, c4:decimal(38,18), c5:float, c6:double, c7:int, c8:bigint, c9:decimal(38,18), c10:float, c11:double, c12:bigint, c13:decimal(38,18), c14:float, c15:double, c16:decimal(38,18), c17:float, c18:double, b:string
+                    partitionColumnCount: 1
+                    partitionColumns: part:int
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15,c16,c17,c18,b from part_change_lower_to_higher_numeric_group_tinyint_to_bigint
 PREHOOK: type: QUERY
@@ -1182,25 +1566,73 @@ POSTHOOK: Lineage: part_change_lower_to_higher_numeric_group_decimal_to_float PA
 POSTHOOK: Lineage: part_change_lower_to_higher_numeric_group_decimal_to_float PARTITION(part=1).c3 EXPRESSION [(values__tmp__table__10)values__tmp__table__10.FieldSchema(name:tmp_values_col4, type:string, comment:), ]
 POSTHOOK: Lineage: part_change_lower_to_higher_numeric_group_decimal_to_float PARTITION(part=1).insert_num EXPRESSION [(values__tmp__table__10)values__tmp__table__10.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 _col0	_col1	_col2	_col3	_col4
-PREHOOK: query: explain
+PREHOOK: query: explain vectorization detail
 select insert_num,part,c1,c2,c3,b from part_change_lower_to_higher_numeric_group_decimal_to_float
 PREHOOK: type: QUERY
-POSTHOOK: query: explain
+POSTHOOK: query: explain vectorization detail
 select insert_num,part,c1,c2,c3,b from part_change_lower_to_higher_numeric_group_decimal_to_float
 POSTHOOK: type: QUERY
 Explain
-Plan optimized by CBO.
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
 
-Stage-0
-  Fetch Operator
-    limit:-1
-    Stage-1
-      Map 1 vectorized, llap
-      File Output Operator [FS_4]
-        Select Operator [SEL_3] (rows=6 width=4)
-          Output:["_col0","_col1","_col2","_col3","_col4","_col5"]
-          TableScan [TS_0] (rows=6 width=253)
-            default@part_change_lower_to_higher_numeric_group_decimal_to_float,part_change_lower_to_higher_numeric_group_decimal_to_float,Tbl:COMPLETE,Col:PARTIAL,Output:["insert_num","c1","c2","c3","b"]
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: part_change_lower_to_higher_numeric_group_decimal_to_float
+                  Statistics: Num rows: 6 Data size: 1523 Basic stats: COMPLETE Column stats: PARTIAL
+                  TableScan Vectorization:
+                      native: true
+                      projectedOutputColumns: [0, 1, 2, 3, 4, 5]
+                  Select Operator
+                    expressions: insert_num (type: int), part (type: int), c1 (type: float), c2 (type: double), c3 (type: double), b (type: string)
+                    outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+                    Select Vectorization:
+                        className: VectorSelectOperator
+                        native: true
+                        projectedOutputColumns: [0, 5, 1, 2, 3, 4]
+                    Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: PARTIAL
+                    File Output Operator
+                      compressed: false
+                      File Sink Vectorization:
+                          className: VectorFileSinkOperator
+                          native: false
+                      Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: PARTIAL
+                      table:
+                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: vectorized, llap
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                groupByVectorOutput: true
+                inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 5
+                    includeColumns: [0, 1, 2, 3, 4]
+                    dataColumns: insert_num:int, c1:float, c2:double, c3:double, b:string
+                    partitionColumnCount: 1
+                    partitionColumns: part:int
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: select insert_num,part,c1,c2,c3,b from part_change_lower_to_higher_numeric_group_decimal_to_float
 PREHOOK: type: QUERY

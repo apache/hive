@@ -95,10 +95,14 @@ POSTHOOK: Lineage: over1korc.s SIMPLE [(over1k)over1k.FieldSchema(name:s, type:s
 POSTHOOK: Lineage: over1korc.si SIMPLE [(over1k)over1k.FieldSchema(name:si, type:smallint, comment:null), ]
 POSTHOOK: Lineage: over1korc.t SIMPLE [(over1k)over1k.FieldSchema(name:t, type:tinyint, comment:null), ]
 POSTHOOK: Lineage: over1korc.ts SIMPLE [(over1k)over1k.FieldSchema(name:ts, type:timestamp, comment:null), ]
-PREHOOK: query: EXPLAIN SELECT t, si, i, b, f, d, bo, s, ts, dec, bin FROM over1korc ORDER BY t, si, i LIMIT 20
+PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION SELECT t, si, i, b, f, d, bo, s, ts, dec, bin FROM over1korc ORDER BY t, si, i LIMIT 20
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN SELECT t, si, i, b, f, d, bo, s, ts, dec, bin FROM over1korc ORDER BY t, si, i LIMIT 20
+POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION SELECT t, si, i, b, f, d, bo, s, ts, dec, bin FROM over1korc ORDER BY t, si, i LIMIT 20
 POSTHOOK: type: QUERY
+PLAN VECTORIZATION:
+  enabled: false
+  enabledConditionsNotMet: [hive.vectorized.execution.enabled IS false]
+
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -187,10 +191,14 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@over1korc
 #### A masked pattern was here ####
 -17045922556
-PREHOOK: query: EXPLAIN select t, si, i, b, f, d, bo, s, ts, dec, bin FROM over1korc ORDER BY t, si, i LIMIT 20
+PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION select t, si, i, b, f, d, bo, s, ts, dec, bin FROM over1korc ORDER BY t, si, i LIMIT 20
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN select t, si, i, b, f, d, bo, s, ts, dec, bin FROM over1korc ORDER BY t, si, i LIMIT 20
+POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION select t, si, i, b, f, d, bo, s, ts, dec, bin FROM over1korc ORDER BY t, si, i LIMIT 20
 POSTHOOK: type: QUERY
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -207,29 +215,66 @@ STAGE PLANS:
                 TableScan
                   alias: over1korc
                   Statistics: Num rows: 1049 Data size: 311170 Basic stats: COMPLETE Column stats: NONE
+                  TableScan Vectorization:
+                      native: true
+                      projectedOutputColumns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
                   Select Operator
                     expressions: t (type: tinyint), si (type: smallint), i (type: int), b (type: bigint), f (type: float), d (type: double), bo (type: boolean), s (type: string), ts (type: timestamp), dec (type: decimal(4,2)), bin (type: binary)
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10
+                    Select Vectorization:
+                        className: VectorSelectOperator
+                        native: true
+                        projectedOutputColumns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
                     Statistics: Num rows: 1049 Data size: 311170 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col0 (type: tinyint), _col1 (type: smallint), _col2 (type: int)
                       sort order: +++
+                      Reduce Sink Vectorization:
+                          className: VectorReduceSinkOperator
+                          native: false
+                          nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, Not ACID UPDATE or DELETE IS true, No buckets IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                          nativeConditionsNotMet: No TopN IS false, Uniform Hash IS false
                       Statistics: Num rows: 1049 Data size: 311170 Basic stats: COMPLETE Column stats: NONE
                       TopN Hash Memory Usage: 0.1
                       value expressions: _col3 (type: bigint), _col4 (type: float), _col5 (type: double), _col6 (type: boolean), _col7 (type: string), _col8 (type: timestamp), _col9 (type: decimal(4,2)), _col10 (type: binary)
             Execution mode: vectorized
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                groupByVectorOutput: true
+                inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
         Reducer 2 
             Execution mode: vectorized
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true
+                groupByVectorOutput: true
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: tinyint), KEY.reducesinkkey1 (type: smallint), KEY.reducesinkkey2 (type: int), VALUE._col0 (type: bigint), VALUE._col1 (type: float), VALUE._col2 (type: double), VALUE._col3 (type: boolean), VALUE._col4 (type: string), VALUE._col5 (type: timestamp), VALUE._col6 (type: decimal(4,2)), VALUE._col7 (type: binary)
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10
+                Select Vectorization:
+                    className: VectorSelectOperator
+                    native: true
+                    projectedOutputColumns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
                 Statistics: Num rows: 1049 Data size: 311170 Basic stats: COMPLETE Column stats: NONE
                 Limit
                   Number of rows: 20
+                  Limit Vectorization:
+                      className: VectorLimitOperator
+                      native: true
                   Statistics: Num rows: 20 Data size: 5920 Basic stats: COMPLETE Column stats: NONE
                   File Output Operator
                     compressed: false
+                    File Sink Vectorization:
+                        className: VectorFileSinkOperator
+                        native: false
                     Statistics: Num rows: 20 Data size: 5920 Basic stats: COMPLETE Column stats: NONE
                     table:
                         input format: org.apache.hadoop.mapred.SequenceFileInputFormat

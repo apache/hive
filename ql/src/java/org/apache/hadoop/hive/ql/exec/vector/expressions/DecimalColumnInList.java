@@ -25,6 +25,7 @@ import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 
+import java.util.Arrays;
 import java.util.HashSet;
 
 /**
@@ -155,4 +156,10 @@ public class DecimalColumnInList extends VectorExpression implements IDecimalInE
   public void setInListValues(HiveDecimal[] a) {
     this.inListValues = a;
   }
+
+  @Override
+  public String vectorExpressionParameters() {
+    return "col " + inputCol + ", values " + Arrays.toString(inListValues);
+  }
+
 }

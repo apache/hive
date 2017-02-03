@@ -1,7 +1,11 @@
-PREHOOK: query: explain SELECT * FROM alltypesorc WHERE cint in (ctinyint, cbigint)
+PREHOOK: query: explain vectorization SELECT * FROM alltypesorc WHERE cint in (ctinyint, cbigint)
 PREHOOK: type: QUERY
-POSTHOOK: query: explain SELECT * FROM alltypesorc WHERE cint in (ctinyint, cbigint)
+POSTHOOK: query: explain vectorization SELECT * FROM alltypesorc WHERE cint in (ctinyint, cbigint)
 POSTHOOK: type: QUERY
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -27,6 +31,12 @@ STAGE PLANS:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+      Map Vectorization:
+          enabled: true
+          enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+          inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+          notVectorizedReason: Predicate expression for FILTER operator: Cannot vectorize IN() - casting a column is not supported. Column type is int but the common type is bigint
+          vectorized: false
 
   Stage: Stage-0
     Fetch Operator

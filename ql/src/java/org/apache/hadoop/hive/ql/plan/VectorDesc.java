@@ -21,5 +21,11 @@ package org.apache.hadoop.hive.ql.plan;
 import java.io.Serializable;
 
 public interface VectorDesc extends Serializable, Cloneable {
-  public Object clone() throws CloneNotSupportedException;
+
+  public Object clone();
+
+  public void setVectorOp(Class<?> vectorOpClass);
+
+  public Class<?> getVectorOpClass();
+
 }

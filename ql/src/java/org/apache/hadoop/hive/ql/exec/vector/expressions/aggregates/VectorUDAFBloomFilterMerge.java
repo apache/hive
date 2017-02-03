@@ -40,6 +40,12 @@ public class VectorUDAFBloomFilterMerge extends VectorAggregateExpression {
   private static final long serialVersionUID = 1L;
 
   private VectorExpression inputExpression;
+
+  @Override
+  public VectorExpression inputExpression() {
+    return inputExpression;
+  }
+
   private long expectedEntries = -1;
   transient private int aggBufferSize = -1;
   transient private BytesWritable bw = new BytesWritable();

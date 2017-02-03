@@ -1,8 +1,9 @@
 set hive.mapred.mode=nonstrict;
 set hive.explain.user=false;
 SET hive.vectorized.execution.enabled=true;
+set hive.fetch.task.conversion=none;
 
-EXPLAIN SELECT (ctinyint % 2) + 1, cstring1, cint, elt((ctinyint % 2) + 1, cstring1, cint) 
+EXPLAIN VECTORIZATION EXPRESSION SELECT (ctinyint % 2) + 1, cstring1, cint, elt((ctinyint % 2) + 1, cstring1, cint) 
 FROM alltypesorc
 WHERE ctinyint > 0 LIMIT 10;
 
@@ -10,7 +11,7 @@ SELECT (ctinyint % 2) + 1, cstring1, cint, elt((ctinyint % 2) + 1, cstring1, cin
 FROM alltypesorc
 WHERE ctinyint > 0 LIMIT 10;
 
-EXPLAIN
+EXPLAIN VECTORIZATION EXPRESSION
 SELECT elt(2, 'abc', 'defg'),
        elt(3, 'aa', 'bb', 'cc', 'dd', 'ee', 'ff', 'gg'),
        elt('1', 'abc', 'defg'),

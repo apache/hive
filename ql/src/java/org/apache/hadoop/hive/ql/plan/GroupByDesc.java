@@ -19,13 +19,18 @@
 package org.apache.hadoop.hive.ql.plan;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
-import org.apache.hadoop.hive.ql.exec.GroupByOperator;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.VectorAggregateExpression;
 import org.apache.hadoop.hive.ql.udf.UDFType;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator;
 import org.apache.hive.common.util.AnnotationUtils;
+import org.apache.hadoop.hive.ql.optimizer.physical.Vectorizer;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
+import org.apache.hadoop.hive.ql.plan.Explain.Vectorization;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 
 
 /**
@@ -71,9 +76,6 @@ public class GroupByDesc extends AbstractOperatorDesc {
   transient private boolean isDistinct;
   private boolean dontResetAggrsDistinct;
 
-  // Extra parameters only for vectorization.
-  private VectorGroupByDesc vectorDesc;
-
   public GroupByDesc() {
     vectorDesc = new VectorGroupByDesc();
   }
@@ -118,14 +120,6 @@ public class GroupByDesc extends AbstractOperatorDesc {
     this.groupingSetsPresent = groupingSetsPresent;
     this.groupingSetPosition = groupingSetsPosition;
     this.isDistinct = isDistinct;
-  }
-
-  public void setVectorDesc(VectorGroupByDesc vectorDesc) {
-    this.vectorDesc = vectorDesc;
-  }
-
-  public VectorGroupByDesc getVectorDesc() {
-    return vectorDesc;
   }
 
   public Mode getMode() {
@@ -311,4 +305,66 @@ public class GroupByDesc extends AbstractOperatorDesc {
     this.isDistinct = isDistinct;
   }
 
+  public class GroupByOperatorExplainVectorization extends OperatorExplainVectorization {
+
+    private final GroupByDesc groupByDesc;
+    private final VectorGroupByDesc vectorGroupByDesc;
+
+    public GroupByOperatorExplainVectorization(GroupByDesc groupByDesc, VectorDesc vectorDesc) {
+      // Native vectorization not supported.
+      super(vectorDesc, false);
+      this.groupByDesc = groupByDesc;
+      vectorGroupByDesc = (VectorGroupByDesc) vectorDesc;
+    }
+
+    @Explain(vectorization = Vectorization.EXPRESSION, displayName = "keyExpressions", explainLevels = { Level.DEFAULT, Level.EXTENDED })
+    public List<String> getKeysExpression() {
+      return vectorExpressionsToStringList(vectorGroupByDesc.getKeyExpressions());
+    }
+
+    @Explain(vectorization = Vectorization.EXPRESSION, displayName = "aggregators", explainLevels = { Level.DEFAULT, Level.EXTENDED })
+    public List<String> getAggregators() {
+      VectorAggregateExpression[] vecAggregators = vectorGroupByDesc.getAggregators();
+      List<String> vecAggrList = new ArrayList<String>(vecAggregators.length);
+      for (VectorAggregateExpression vecAggr : vecAggregators) {
+        vecAggrList.add(vecAggr.toString());
+      }
+      return vecAggrList;
+    }
+
+    @Explain(vectorization = Vectorization.OPERATOR, displayName = "vectorOutput", explainLevels = { Level.DEFAULT, Level.EXTENDED })
+    public boolean getGroupByRowOutputCascade() {
+      return vectorGroupByDesc.isVectorOutput();
+    }
+
+    @Explain(vectorization = Vectorization.OPERATOR, displayName = "vectorOutputConditionsNotMet", explainLevels = { Level.DEFAULT, Level.EXTENDED })
+    public List<String> getVectorOutputConditionsNotMet() {
+      List<String> results = new ArrayList<String>();
+      VectorAggregateExpression[] vecAggregators = vectorGroupByDesc.getAggregators();
+      for (VectorAggregateExpression vecAggr : vecAggregators) {
+        Category category = Vectorizer.aggregationOutputCategory(vecAggr);
+        if (category != ObjectInspector.Category.PRIMITIVE) {
+          results.add(
+              "Vector output of " + vecAggr.toString() + " output type " + category + " requires PRIMITIVE IS false");
+        }
+      }
+      if (results.size() == 0) {
+        return null;
+      }
+      return results;
+    }
+
+    @Explain(vectorization = Vectorization.EXPRESSION, displayName = "projectedOutputColumns", explainLevels = { Level.DEFAULT, Level.EXTENDED })
+    public String getProjectedOutputColumns() {
+      return Arrays.toString(vectorGroupByDesc.getProjectedOutputColumns());
+    }
+  }
+
+  @Explain(vectorization = Vectorization.OPERATOR, displayName = "Group By Vectorization", explainLevels = { Level.DEFAULT, Level.EXTENDED })
+  public GroupByOperatorExplainVectorization getGroupByVectorization() {
+    if (vectorDesc == null) {
+      return null;
+    }
+    return new GroupByOperatorExplainVectorization(this, vectorDesc);
+  }
 }

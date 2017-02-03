@@ -75,6 +75,11 @@ public class VectorUDAFSumDecimal extends VectorAggregateExpression {
 
     private VectorExpression inputExpression;
 
+    @Override
+    public VectorExpression inputExpression() {
+      return inputExpression;
+    }
+
     public VectorUDAFSumDecimal(VectorExpression inputExpression) {
       this();
       this.inputExpression = inputExpression;

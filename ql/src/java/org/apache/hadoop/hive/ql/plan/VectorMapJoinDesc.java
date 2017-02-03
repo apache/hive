@@ -18,8 +18,12 @@
 
 package org.apache.hadoop.hive.ql.plan;
 
+import java.util.List;
+
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
+
+import com.google.common.base.Preconditions;
 
 /**
  * VectorGroupByDesc.
@@ -79,23 +83,43 @@ public class VectorMapJoinDesc extends AbstractVectorDesc  {
     }
   }
 
+  public static enum OperatorVariation {
+    NONE,
+    INNER_BIG_ONLY,
+    INNER,
+    LEFT_SEMI,
+    OUTER
+  }
+
   private HashTableImplementationType hashTableImplementationType;
   private HashTableKind hashTableKind;
   private HashTableKeyType hashTableKeyType;
+  private OperatorVariation operatorVariation;
   private boolean minMaxEnabled;
+
+  private VectorMapJoinInfo vectorMapJoinInfo;
 
   public VectorMapJoinDesc() {
     hashTableImplementationType = HashTableImplementationType.NONE;
     hashTableKind = HashTableKind.NONE;
     hashTableKeyType = HashTableKeyType.NONE;
+    operatorVariation = OperatorVariation.NONE;
     minMaxEnabled = false;
+    vectorMapJoinInfo = null;
   }
 
-  public VectorMapJoinDesc(VectorMapJoinDesc clone) {
-    this.hashTableImplementationType = clone.hashTableImplementationType;
-    this.hashTableKind = clone.hashTableKind;
-    this.hashTableKeyType = clone.hashTableKeyType;
-    this.minMaxEnabled = clone.minMaxEnabled;
+  @Override
+  public VectorMapJoinDesc clone() {
+    VectorMapJoinDesc clone = new VectorMapJoinDesc();
+    clone.hashTableImplementationType = this.hashTableImplementationType;
+    clone.hashTableKind = this.hashTableKind;
+    clone.hashTableKeyType = this.hashTableKeyType;
+    clone.operatorVariation = this.operatorVariation;
+    clone.minMaxEnabled = this.minMaxEnabled;
+    if (vectorMapJoinInfo != null) {
+      throw new RuntimeException("Cloning VectorMapJoinInfo not supported");
+    }
+    return clone;
   }
 
   public HashTableImplementationType hashTableImplementationType() {
@@ -122,6 +146,14 @@ public class VectorMapJoinDesc extends AbstractVectorDesc  {
     this.hashTableKeyType = hashTableKeyType;
   }
 
+  public OperatorVariation operatorVariation() {
+    return operatorVariation;
+  }
+
+  public void setOperatorVariation(OperatorVariation operatorVariation) {
+    this.operatorVariation = operatorVariation;
+  }
+
   public boolean minMaxEnabled() {
     return minMaxEnabled;
   }
@@ -129,4 +161,87 @@ public class VectorMapJoinDesc extends AbstractVectorDesc  {
   public void setMinMaxEnabled(boolean minMaxEnabled) {
     this.minMaxEnabled = minMaxEnabled;
   }
+
+  public void setVectorMapJoinInfo(VectorMapJoinInfo vectorMapJoinInfo) {
+    Preconditions.checkState(vectorMapJoinInfo != null);
+    this.vectorMapJoinInfo = vectorMapJoinInfo;
+  }
+
+  public VectorMapJoinInfo getVectorMapJoinInfo() {
+    return vectorMapJoinInfo;
+  }
+
+  private boolean useOptimizedTable;
+  private boolean isVectorizationMapJoinNativeEnabled;
+  private String engine;
+  private boolean oneMapJoinCondition;
+  private boolean hasNullSafes;
+  private boolean isFastHashTableEnabled;
+  private boolean isHybridHashJoin;
+  private boolean supportsKeyTypes;
+  private List<String> notSupportedKeyTypes;
+  private boolean smallTableExprVectorizes;
+
+  public void setUseOptimizedTable(boolean useOptimizedTable) {
+    this.useOptimizedTable = useOptimizedTable;
+  }
+  public boolean getUseOptimizedTable() {
+    return useOptimizedTable;
+  }
+  public void setIsVectorizationMapJoinNativeEnabled(boolean isVectorizationMapJoinNativeEnabled) {
+    this.isVectorizationMapJoinNativeEnabled = isVectorizationMapJoinNativeEnabled;
+  }
+  public boolean getIsVectorizationMapJoinNativeEnabled() {
+    return isVectorizationMapJoinNativeEnabled;
+  }
+  public void setEngine(String engine) {
+    this.engine = engine;
+  }
+  public String getEngine() {
+    return engine;
+  }
+  public void setOneMapJoinCondition(boolean oneMapJoinCondition) {
+    this.oneMapJoinCondition = oneMapJoinCondition;
+  }
+  public boolean getOneMapJoinCondition() {
+    return oneMapJoinCondition;
+  }
+  public void setHasNullSafes(boolean hasNullSafes) {
+    this.hasNullSafes = hasNullSafes;
+  }
+  public boolean getHasNullSafes() {
+    return hasNullSafes;
+  }
+  public void setSupportsKeyTypes(boolean supportsKeyTypes) {
+    this.supportsKeyTypes = supportsKeyTypes;
+  }
+  public boolean getSupportsKeyTypes() {
+    return supportsKeyTypes;
+  }
+  public void setNotSupportedKeyTypes(List<String> notSupportedKeyTypes) {
+    this.notSupportedKeyTypes = notSupportedKeyTypes;
+  }
+  public List<String> getNotSupportedKeyTypes() {
+    return notSupportedKeyTypes;
+  }
+  public void setSmallTableExprVectorizes(boolean smallTableExprVectorizes) {
+    this.smallTableExprVectorizes = smallTableExprVectorizes;
+  }
+  public boolean getSmallTableExprVectorizes() {
+    return smallTableExprVectorizes;
+  }
+
+  public void setIsFastHashTableEnabled(boolean isFastHashTableEnabled) {
+    this.isFastHashTableEnabled = isFastHashTableEnabled;
+  }
+  public boolean getIsFastHashTableEnabled() {
+    return isFastHashTableEnabled;
+  }
+  public void setIsHybridHashJoin(boolean isHybridHashJoin) {
+    this.isHybridHashJoin = isHybridHashJoin;
+  }
+  public boolean getIsHybridHashJoin() {
+    return isHybridHashJoin;
+  }
+
 }

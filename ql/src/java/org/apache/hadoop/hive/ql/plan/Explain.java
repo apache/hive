@@ -45,4 +45,33 @@ public @interface Explain {
   boolean displayOnlyOnTrue() default false;
 
   boolean skipHeader() default false;
+
+  // By default, many existing @Explain classes/methods are NON_VECTORIZED.
+  //
+  // Vectorized methods/classes have detail levels:
+  //     SUMMARY, OPERATOR, EXPRESSION, or DETAIL.
+  // As you go to the right you get more detail and the information for the previous level(s) is
+  // included.  The default is SUMMARY.
+  //
+  // The "path" enumerations are used to mark methods/classes that lead to vectorization specific
+  // ones so we can avoid displaying headers for things that have no vectorization information
+  // below.
+  //
+  // For example, the TezWork class is marked SUMMARY_PATH because it leads to both
+  // SUMMARY and OPERATOR methods/classes. And, MapWork.getAllRootOperators is marked OPERATOR_PATH
+  // because we only display operator information for OPERATOR.
+  //
+  // EXPRESSION and DETAIL typically live inside SUMMARY or OPERATOR classes.
+  //
+  public enum Vectorization {
+    SUMMARY_PATH(4), OPERATOR_PATH(3),
+    SUMMARY(4), OPERATOR(3), EXPRESSION(2), DETAIL(1),
+    NON_VECTORIZED(Integer.MAX_VALUE);
+
+    public final int rank;
+    Vectorization(int rank) {
+      this.rank = rank;
+    }
+  };
+  Vectorization vectorization() default Vectorization.NON_VECTORIZED;
 }

@@ -121,12 +121,16 @@ POSTHOOK: query: create table char_lazy_binary_columnar(ct char(10), csi char(10
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@char_lazy_binary_columnar
-PREHOOK: query: explain
+PREHOOK: query: explain vectorization expression
 insert overwrite table char_lazy_binary_columnar select t, si, i, b, f, d, s from vectortab2korc
 PREHOOK: type: QUERY
-POSTHOOK: query: explain
+POSTHOOK: query: explain vectorization expression
 insert overwrite table char_lazy_binary_columnar select t, si, i, b, f, d, s from vectortab2korc
 POSTHOOK: type: QUERY
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -142,12 +146,23 @@ STAGE PLANS:
                 TableScan
                   alias: vectortab2korc
                   Statistics: Num rows: 2000 Data size: 918712 Basic stats: COMPLETE Column stats: NONE
+                  TableScan Vectorization:
+                      native: true
+                      projectedOutputColumns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
                   Select Operator
                     expressions: CAST( t AS CHAR(10) (type: char(10)), CAST( si AS CHAR(10) (type: char(10)), CAST( i AS CHAR(20) (type: char(20)), CAST( b AS CHAR(30) (type: char(30)), CAST( f AS CHAR(20) (type: char(20)), CAST( d AS CHAR(20) (type: char(20)), CAST( s AS CHAR(50) (type: char(50))
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6
+                    Select Vectorization:
+                        className: VectorSelectOperator
+                        native: true
+                        projectedOutputColumns: [13, 14, 15, 16, 17, 18, 19]
+                        selectExpressions: CastLongToChar(col 0, maxLength 10) -> 13:Char, CastLongToChar(col 1, maxLength 10) -> 14:Char, CastLongToChar(col 2, maxLength 20) -> 15:Char, CastLongToChar(col 3, maxLength 30) -> 16:Char, VectorUDFAdaptor(CAST( f AS CHAR(20)) -> 17:char(20), VectorUDFAdaptor(CAST( d AS CHAR(20)) -> 18:char(20), CastStringGroupToChar(col 8, maxLength 50) -> 19:Char
                     Statistics: Num rows: 2000 Data size: 918712 Basic stats: COMPLETE Column stats: NONE
                     File Output Operator
                       compressed: false
+                      File Sink Vectorization:
+                          className: VectorFileSinkOperator
+                          native: false
                       Statistics: Num rows: 2000 Data size: 918712 Basic stats: COMPLETE Column stats: NONE
                       table:
                           input format: org.apache.hadoop.hive.ql.io.RCFileInputFormat
@@ -155,6 +170,14 @@ STAGE PLANS:
                           serde: org.apache.hadoop.hive.serde2.columnar.LazyBinaryColumnarSerDe
                           name: default.char_lazy_binary_columnar
             Execution mode: vectorized
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                groupByVectorOutput: true
+                inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: true
+                vectorized: true
 
   Stage: Stage-0
     Move Operator

@@ -32,7 +32,7 @@ insert into table count_case_groupby values ('key1', true),('key2', false),('key
 
 set hive.vectorized.adaptor.usage.mode=none;
 
-explain
+explain vectorization expression
 select
   c2 regexp 'val',
   c4 regexp 'val',
@@ -45,7 +45,7 @@ select
   (c2 regexp 'val') = (c4 regexp 'val')
 from varchar_udf_1 limit 1;
 
-explain
+explain vectorization expression
 select
   regexp_extract(c2, 'val_([0-9]+)', 1),
   regexp_extract(c4, 'val_([0-9]+)', 1),
@@ -58,7 +58,7 @@ select
   regexp_extract(c2, 'val_([0-9]+)', 1) = regexp_extract(c4, 'val_([0-9]+)', 1)
 from varchar_udf_1 limit 1;
 
-explain
+explain vectorization expression
 select
   regexp_replace(c2, 'val', 'replaced'),
   regexp_replace(c4, 'val', 'replaced'),
@@ -74,7 +74,7 @@ from varchar_udf_1 limit 1;
 
 set hive.vectorized.adaptor.usage.mode=chosen;
 
-explain
+explain vectorization expression
 select
   c2 regexp 'val',
   c4 regexp 'val',
@@ -87,7 +87,7 @@ select
   (c2 regexp 'val') = (c4 regexp 'val')
 from varchar_udf_1 limit 1;
 
-explain
+explain vectorization expression
 select
   regexp_extract(c2, 'val_([0-9]+)', 1),
   regexp_extract(c4, 'val_([0-9]+)', 1),
@@ -100,7 +100,7 @@ select
   regexp_extract(c2, 'val_([0-9]+)', 1) = regexp_extract(c4, 'val_([0-9]+)', 1)
 from varchar_udf_1 limit 1;
 
-explain
+explain vectorization expression
 select
   regexp_replace(c2, 'val', 'replaced'),
   regexp_replace(c4, 'val', 'replaced'),
@@ -116,11 +116,11 @@ from varchar_udf_1 limit 1;
 
 set hive.vectorized.adaptor.usage.mode=none;
 
-EXPLAIN SELECT POWER(key, 2) FROM DECIMAL_UDF;
+EXPLAIN VECTORIZATION EXPRESSION  SELECT POWER(key, 2) FROM DECIMAL_UDF;
 
 SELECT POWER(key, 2) FROM DECIMAL_UDF;
 
-EXPLAIN
+EXPLAIN VECTORIZATION EXPRESSION
 SELECT
   exp(key), ln(key),
   log(key), log(key, key), log(key, value), log(value, key),
@@ -135,11 +135,11 @@ FROM DECIMAL_UDF WHERE key = 10;
 
 set hive.vectorized.adaptor.usage.mode=chosen;
 
-EXPLAIN SELECT POWER(key, 2) FROM DECIMAL_UDF;
+EXPLAIN VECTORIZATION EXPRESSION  SELECT POWER(key, 2) FROM DECIMAL_UDF;
 
 SELECT POWER(key, 2) FROM DECIMAL_UDF;
 
-EXPLAIN
+EXPLAIN VECTORIZATION EXPRESSION
 SELECT
   exp(key), ln(key),
   log(key), log(key, key), log(key, value), log(value, key),
@@ -155,14 +155,14 @@ FROM DECIMAL_UDF WHERE key = 10;
 
 set hive.vectorized.adaptor.usage.mode=none;
 
-explain
+explain vectorization expression
 SELECT key, COUNT(CASE WHEN bool THEN 1 WHEN NOT bool THEN 0 ELSE NULL END) AS cnt_bool0_ok FROM count_case_groupby GROUP BY key;
 
 SELECT key, COUNT(CASE WHEN bool THEN 1 WHEN NOT bool THEN 0 ELSE NULL END) AS cnt_bool0_ok FROM count_case_groupby GROUP BY key;
 
 set hive.vectorized.adaptor.usage.mode=chosen;
 
-explain
+explain vectorization expression
 SELECT key, COUNT(CASE WHEN bool THEN 1 WHEN NOT bool THEN 0 ELSE NULL END) AS cnt_bool0_ok FROM count_case_groupby GROUP BY key;
 
 SELECT key, COUNT(CASE WHEN bool THEN 1 WHEN NOT bool THEN 0 ELSE NULL END) AS cnt_bool0_ok FROM count_case_groupby GROUP BY key;

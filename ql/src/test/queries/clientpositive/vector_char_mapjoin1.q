@@ -37,21 +37,21 @@ create table char_join1_vc2_orc stored as orc as select * from char_join1_vc2;
 create table char_join1_str_orc stored as orc as select * from char_join1_str;
 
 -- Join char with same length char
-explain select * from char_join1_vc1_orc a join char_join1_vc1_orc b on (a.c2 = b.c2) order by a.c1;
+explain vectorization expression select * from char_join1_vc1_orc a join char_join1_vc1_orc b on (a.c2 = b.c2) order by a.c1;
 
 -- SORT_QUERY_RESULTS
 
 select * from char_join1_vc1_orc a join char_join1_vc1_orc b on (a.c2 = b.c2) order by a.c1;
 
 -- Join char with different length char
-explain select * from char_join1_vc1_orc a join char_join1_vc2_orc b on (a.c2 = b.c2) order by a.c1;
+explain vectorization expression select * from char_join1_vc1_orc a join char_join1_vc2_orc b on (a.c2 = b.c2) order by a.c1;
 
 -- SORT_QUERY_RESULTS
 
 select * from char_join1_vc1_orc a join char_join1_vc2_orc b on (a.c2 = b.c2) order by a.c1;
 
 -- Join char with string
-explain select * from char_join1_vc1_orc a join char_join1_str_orc b on (a.c2 = b.c2) order by a.c1;
+explain vectorization expression select * from char_join1_vc1_orc a join char_join1_str_orc b on (a.c2 = b.c2) order by a.c1;
 
 -- SORT_QUERY_RESULTS
 

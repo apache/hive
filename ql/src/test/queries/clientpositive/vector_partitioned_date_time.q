@@ -1,6 +1,6 @@
 set hive.mapred.mode=nonstrict;
 set hive.explain.user=false;
-set hive.fetch.task.conversion=minimal;
+set hive.fetch.task.conversion=none;
 
 -- Exclude test on Windows due to space character being escaped in Hive paths on Windows.
 -- EXCLUDE_OS_WINDOWS
@@ -32,12 +32,12 @@ select fl_date, count(*) from flights_tiny_orc group by fl_date;
 
 SET hive.vectorized.execution.enabled=true;
 
-explain
+explain vectorization expression
 select * from flights_tiny_orc sort by fl_num, fl_date limit 25;
 
 select * from flights_tiny_orc sort by fl_num, fl_date limit 25;
 
-explain
+explain vectorization expression
 select fl_date, count(*) from flights_tiny_orc group by fl_date;
 
 select fl_date, count(*) from flights_tiny_orc group by fl_date;
@@ -71,17 +71,17 @@ select fl_date, count(*) from flights_tiny_orc_partitioned_date group by fl_date
 
 SET hive.vectorized.execution.enabled=true;
 
-explain
+explain vectorization expression
 select * from flights_tiny_orc_partitioned_date;
 
 select * from flights_tiny_orc_partitioned_date;
 
-explain
+explain vectorization expression
 select * from flights_tiny_orc_partitioned_date sort by fl_num, fl_date limit 25;
 
 select * from flights_tiny_orc_partitioned_date sort by fl_num, fl_date limit 25;
 
-explain
+explain vectorization expression
 select fl_date, count(*) from flights_tiny_orc_partitioned_date group by fl_date;
 
 select fl_date, count(*) from flights_tiny_orc_partitioned_date group by fl_date;
@@ -115,17 +115,17 @@ select fl_time, count(*) from flights_tiny_orc_partitioned_timestamp group by fl
 
 SET hive.vectorized.execution.enabled=true;
 
-explain
+explain vectorization expression
 select * from flights_tiny_orc_partitioned_timestamp;
 
 select * from flights_tiny_orc_partitioned_timestamp;
 
-explain
+explain vectorization expression
 select * from flights_tiny_orc_partitioned_timestamp sort by fl_num, fl_time limit 25;
 
 select * from flights_tiny_orc_partitioned_timestamp sort by fl_num, fl_time limit 25;
 
-explain
+explain vectorization expression
 select fl_time, count(*) from flights_tiny_orc_partitioned_timestamp group by fl_time;
 
 select fl_time, count(*) from flights_tiny_orc_partitioned_timestamp group by fl_time;

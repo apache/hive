@@ -1,4 +1,4 @@
-PREHOOK: query: explain
+PREHOOK: query: explain vectorization expression
 select
 
   cast (ctinyint as timestamp)
@@ -16,7 +16,7 @@ from alltypesorc
 
 where cbigint % 250 = 0
 PREHOOK: type: QUERY
-POSTHOOK: query: explain
+POSTHOOK: query: explain vectorization expression
 select
 
   cast (ctinyint as timestamp)
@@ -34,6 +34,10 @@ from alltypesorc
 
 where cbigint % 250 = 0
 POSTHOOK: type: QUERY
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -45,21 +49,44 @@ STAGE PLANS:
           TableScan
             alias: alltypesorc
             Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
+            TableScan Vectorization:
+                native: true
+                projectedOutputColumns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
             Filter Operator
+              Filter Vectorization:
+                  className: VectorFilterOperator
+                  native: true
+                  predicateExpression: FilterLongColEqualLongScalar(col 12, val 0)(children: LongColModuloLongScalar(col 3, val 250) -> 12:long) -> boolean
               predicate: ((cbigint % 250) = 0) (type: boolean)
               Statistics: Num rows: 6144 Data size: 1320982 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: CAST( ctinyint AS TIMESTAMP) (type: timestamp), CAST( csmallint AS TIMESTAMP) (type: timestamp), CAST( cint AS TIMESTAMP) (type: timestamp), CAST( cbigint AS TIMESTAMP) (type: timestamp), CAST( cfloat AS TIMESTAMP) (type: timestamp), CAST( cdouble AS TIMESTAMP) (type: timestamp), CAST( cboolean1 AS TIMESTAMP) (type: timestamp), CAST( (cbigint * 0) AS TIMESTAMP) (type: timestamp), ctimestamp1 (type: timestamp), CAST( cstring1 AS TIMESTAMP) (type: timestamp), CAST( substr(cstring1, 1, 1) AS TIMESTAMP) (type: timestamp)
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10
+                Select Vectorization:
+                    className: VectorSelectOperator
+                    native: true
+                    projectedOutputColumns: [14, 16, 18, 20, 21, 22, 24, 26, 8, 27, 29]
+                    selectExpressions: CastMillisecondsLongToTimestamp(col 0) -> 14:timestamp, CastMillisecondsLongToTimestamp(col 1) -> 16:timestamp, CastMillisecondsLongToTimestamp(col 2) -> 18:timestamp, CastMillisecondsLongToTimestamp(col 3) -> 20:timestamp, CastDoubleToTimestamp(col 4) -> 21:timestamp, CastDoubleToTimestamp(col 5) -> 22:timestamp, CastMillisecondsLongToTimestamp(col 10) -> 24:timestamp, CastMillisecondsLongToTimestamp(col 12)(children: LongColMultiplyLongScalar(col 3, val 0) -> 12:long) -> 26:timestamp, VectorUDFAdaptor(CAST( cstring1 AS TIMESTAMP)) -> 27:timestamp, VectorUDFAdaptor(CAST( substr(cstring1, 1, 1) AS TIMESTAMP))(children: StringSubstrColStartLen(col 6, start 0, length 1) -> 28:string) -> 29:timestamp
                 Statistics: Num rows: 6144 Data size: 1320982 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
+                  File Sink Vectorization:
+                      className: VectorFileSinkOperator
+                      native: false
                   Statistics: Num rows: 6144 Data size: 1320982 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
       Execution mode: vectorized
+      Map Vectorization:
+          enabled: true
+          enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+          groupByVectorOutput: true
+          inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+          allNative: false
+          usesVectorUDFAdaptor: true
+          vectorized: true
 
   Stage: Stage-0
     Fetch Operator
@@ -131,7 +158,7 @@ POSTHOOK: Input: default@alltypesorc
 1969-12-31 15:59:59.95	1969-12-31 15:59:52.804	NULL	1969-12-19 17:33:32.75	1969-12-31 15:59:10	1969-12-31 14:00:04	NULL	1969-12-31 16:00:00	1969-12-31 15:59:54.733	NULL	NULL
 1969-12-31 16:00:00.011	NULL	1969-12-30 22:03:04.018	1970-01-21 12:50:53.75	1969-12-31 16:00:11	NULL	1969-12-31 16:00:00.001	1969-12-31 16:00:00	1969-12-31 16:00:02.351	NULL	NULL
 1969-12-31 16:00:00.011	NULL	1969-12-27 18:49:09.583	1970-01-14 22:35:27	1969-12-31 16:00:11	NULL	1969-12-31 16:00:00.001	1969-12-31 16:00:00	1969-12-31 16:00:02.351	NULL	NULL
-PREHOOK: query: explain
+PREHOOK: query: explain vectorization expression
 select
 
   cast (ctinyint as timestamp)
@@ -149,7 +176,7 @@ from alltypesorc
 
 where cbigint % 250 = 0
 PREHOOK: type: QUERY
-POSTHOOK: query: explain
+POSTHOOK: query: explain vectorization expression
 select
 
   cast (ctinyint as timestamp)
@@ -167,6 +194,10 @@ from alltypesorc
 
 where cbigint % 250 = 0
 POSTHOOK: type: QUERY
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -178,21 +209,44 @@ STAGE PLANS:
           TableScan
             alias: alltypesorc
             Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
+            TableScan Vectorization:
+                native: true
+                projectedOutputColumns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
             Filter Operator
+              Filter Vectorization:
+                  className: VectorFilterOperator
+                  native: true
+                  predicateExpression: FilterLongColEqualLongScalar(col 12, val 0)(children: LongColModuloLongScalar(col 3, val 250) -> 12:long) -> boolean
               predicate: ((cbigint % 250) = 0) (type: boolean)
               Statistics: Num rows: 6144 Data size: 1320982 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: CAST( ctinyint AS TIMESTAMP) (type: timestamp), CAST( csmallint AS TIMESTAMP) (type: timestamp), CAST( cint AS TIMESTAMP) (type: timestamp), CAST( cbigint AS TIMESTAMP) (type: timestamp), CAST( cfloat AS TIMESTAMP) (type: timestamp), CAST( cdouble AS TIMESTAMP) (type: timestamp), CAST( cboolean1 AS TIMESTAMP) (type: timestamp), CAST( (cbigint * 0) AS TIMESTAMP) (type: timestamp), ctimestamp1 (type: timestamp), CAST( cstring1 AS TIMESTAMP) (type: timestamp), CAST( substr(cstring1, 1, 1) AS TIMESTAMP) (type: timestamp)
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10
+                Select Vectorization:
+                    className: VectorSelectOperator
+                    native: true
+                    projectedOutputColumns: [13, 14, 15, 16, 17, 18, 19, 20, 8, 21, 23]
+                    selectExpressions: CastLongToTimestamp(col 0) -> 13:timestamp, CastLongToTimestamp(col 1) -> 14:timestamp, CastLongToTimestamp(col 2) -> 15:timestamp, CastLongToTimestamp(col 3) -> 16:timestamp, CastDoubleToTimestamp(col 4) -> 17:timestamp, CastDoubleToTimestamp(col 5) -> 18:timestamp, CastLongToTimestamp(col 10) -> 19:timestamp, CastLongToTimestamp(col 12)(children: LongColMultiplyLongScalar(col 3, val 0) -> 12:long) -> 20:timestamp, VectorUDFAdaptor(CAST( cstring1 AS TIMESTAMP)) -> 21:timestamp, VectorUDFAdaptor(CAST( substr(cstring1, 1, 1) AS TIMESTAMP))(children: StringSubstrColStartLen(col 6, start 0, length 1) -> 22:string) -> 23:timestamp
                 Statistics: Num rows: 6144 Data size: 1320982 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
+                  File Sink Vectorization:
+                      className: VectorFileSinkOperator
+                      native: false
                   Statistics: Num rows: 6144 Data size: 1320982 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
       Execution mode: vectorized
+      Map Vectorization:
+          enabled: true
+          enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+          groupByVectorOutput: true
+          inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+          allNative: false
+          usesVectorUDFAdaptor: true
+          vectorized: true
 
   Stage: Stage-0
     Fetch Operator

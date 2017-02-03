@@ -20,6 +20,8 @@ package org.apache.hadoop.hive.ql.exec;
 
 import static org.apache.hadoop.hive.serde.serdeConstants.STRING_TYPE_NAME;
 
+import org.apache.commons.lang3.tuple.ImmutablePair;
+
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.io.Serializable;
@@ -35,30 +37,68 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Stack;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeMap;
 
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.ObjectPair;
 import org.apache.hadoop.hive.common.jsonexplain.JsonParser;
 import org.apache.hadoop.hive.common.jsonexplain.JsonParserFactory;
+import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.Validator.StringSet;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.DriverContext;
+import org.apache.hadoop.hive.ql.exec.spark.SparkTask;
+import org.apache.hadoop.hive.ql.exec.tez.TezTask;
+import org.apache.hadoop.hive.ql.exec.vector.VectorGroupByOperator;
+import org.apache.hadoop.hive.ql.exec.vector.VectorizationContext;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.VectorAggregateExpression;
+import org.apache.hadoop.hive.ql.plan.MapJoinDesc;
+import org.apache.hadoop.hive.ql.plan.ReduceSinkDesc;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
+import org.apache.hadoop.hive.ql.io.AcidUtils;
+import org.apache.hadoop.hive.ql.lib.DefaultGraphWalker;
+import org.apache.hadoop.hive.ql.lib.DefaultRuleDispatcher;
+import org.apache.hadoop.hive.ql.lib.Dispatcher;
+import org.apache.hadoop.hive.ql.lib.GraphWalker;
+import org.apache.hadoop.hive.ql.lib.Node;
+import org.apache.hadoop.hive.ql.lib.NodeProcessor;
+import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
+import org.apache.hadoop.hive.ql.lib.Rule;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.optimizer.physical.StageIDsRearranger;
+import org.apache.hadoop.hive.ql.optimizer.physical.Vectorizer;
+import org.apache.hadoop.hive.ql.optimizer.physical.VectorizerReason;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer;
+import org.apache.hadoop.hive.ql.parse.ExplainConfiguration.VectorizationDetailLevel;
+import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hadoop.hive.ql.plan.BaseWork;
 import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
+import org.apache.hadoop.hive.ql.plan.Explain.Vectorization;
+import org.apache.hadoop.hive.ql.plan.AggregationDesc;
 import org.apache.hadoop.hive.ql.plan.ExplainWork;
+import org.apache.hadoop.hive.ql.plan.GroupByDesc;
 import org.apache.hadoop.hive.ql.plan.HiveOperation;
+import org.apache.hadoop.hive.ql.plan.MapredWork;
+import org.apache.hadoop.hive.ql.plan.MapWork;
+import org.apache.hadoop.hive.ql.plan.ReduceWork;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.SparkWork;
+import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.plan.TezWork;
+import org.apache.hadoop.hive.ql.plan.VectorReduceSinkInfo;
+import org.apache.hadoop.hive.ql.plan.VectorReduceSinkDesc;
+import org.apache.hadoop.hive.ql.plan.VectorGroupByDesc;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
 import org.apache.hadoop.hive.ql.security.authorization.AuthorizationFactory;
 import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.hadoop.hive.serde2.Deserializer;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.io.IOUtils;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.hive.common.util.AnnotationUtils;
@@ -157,6 +197,54 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
     return outJSONObject;
   }
 
+  private static String trueCondNameVectorizationEnabled =
+      HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED.varname + " IS true";
+  private static String falseCondNameVectorizationEnabled =
+      HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED.varname + " IS false";
+
+  private ImmutablePair<Boolean, JSONObject> outputPlanVectorization(PrintStream out, boolean jsonOutput)
+      throws Exception {
+
+    if (out != null) {
+      out.println("PLAN VECTORIZATION:");
+    }
+
+    JSONObject json = jsonOutput ? new JSONObject(new LinkedHashMap<>()) : null;
+
+    HiveConf hiveConf = queryState.getConf();
+
+    boolean isVectorizationEnabled = HiveConf.getBoolVar(hiveConf,
+        HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED);
+    String isVectorizationEnabledCondName =
+        (isVectorizationEnabled ?
+            trueCondNameVectorizationEnabled :
+              falseCondNameVectorizationEnabled);
+    List<String> isVectorizationEnabledCondList = Arrays.asList(isVectorizationEnabledCondName);
+
+    if (out != null) {
+      out.print(indentString(2));
+      out.print("enabled: ");
+      out.println(isVectorizationEnabled);
+      out.print(indentString(2));
+      if (!isVectorizationEnabled) {
+        out.print("enabledConditionsNotMet: ");
+      } else {
+        out.print("enabledConditionsMet: ");
+      }
+      out.println(isVectorizationEnabledCondList);
+    }
+    if (jsonOutput) {
+      json.put("enabled", isVectorizationEnabled);
+      if (!isVectorizationEnabled) {
+        json.put("enabledConditionsNotMet", isVectorizationEnabledCondList);
+      } else {
+        json.put("enabledConditionsMet", isVectorizationEnabledCondList);
+      }
+    }
+
+    return new ImmutablePair<Boolean, JSONObject>(isVectorizationEnabled, jsonOutput ? json : null);
+  }
+
   public JSONObject getJSONPlan(PrintStream out, ExplainWork work)
       throws Exception {
     return getJSONPlan(out, work.getRootTasks(), work.getFetchTask(),
@@ -184,26 +272,46 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
       ordered.add(fetchTask);
     }
 
-    JSONObject jsonDependencies = outputDependencies(out, jsonOutput, appendTaskType, ordered);
+    boolean suppressOthersForVectorization = false;
+    if (this.work != null && this.work.isVectorization()) {
+      ImmutablePair<Boolean, JSONObject> planVecPair = outputPlanVectorization(out, jsonOutput);
+  
+      if (this.work.isVectorizationOnly()) {
+        // Suppress the STAGES if vectorization is off.
+        suppressOthersForVectorization = !planVecPair.left;
+      }
 
-    if (out != null) {
-      out.println();
+      if (out != null) {
+        out.println();
+      }
+  
+      if (jsonOutput) {
+        outJSONObject.put("PLAN VECTORIZATION", planVecPair.right);
+      }
     }
 
-    if (jsonOutput) {
-      outJSONObject.put("STAGE DEPENDENCIES", jsonDependencies);
-    }
+    if (!suppressOthersForVectorization) {
+      JSONObject jsonDependencies = outputDependencies(out, jsonOutput, appendTaskType, ordered);
 
-    // Go over all the tasks and dump out the plans
-    JSONObject jsonPlan = outputStagePlans(out, ordered,
-         jsonOutput, isExtended);
+      if (out != null) {
+        out.println();
+      }
 
-    if (jsonOutput) {
-      outJSONObject.put("STAGE PLANS", jsonPlan);
-    }
+      if (jsonOutput) {
+        outJSONObject.put("STAGE DEPENDENCIES", jsonDependencies);
+      }
 
-    if (fetchTask != null) {
-      fetchTask.setParentTasks(null);
+      // Go over all the tasks and dump out the plans
+      JSONObject jsonPlan = outputStagePlans(out, ordered,
+           jsonOutput, isExtended);
+
+      if (jsonOutput) {
+        outJSONObject.put("STAGE PLANS", jsonPlan);
+      }
+
+      if (fetchTask != null) {
+        fetchTask.setParentTasks(null);
+      }
     }
 
     return jsonOutput ? outJSONObject : null;
@@ -602,6 +710,64 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
         }
       }
       if (invokeFlag) {
+        Vectorization vectorization = xpl_note.vectorization();
+        if (this.work != null && this.work.isVectorization()) {
+
+          // The EXPLAIN VECTORIZATION option was specified.
+          final boolean desireOnly = this.work.isVectorizationOnly();
+          final VectorizationDetailLevel desiredVecDetailLevel =
+              this.work.isVectorizationDetailLevel();
+
+          switch (vectorization) {
+          case NON_VECTORIZED:
+            // Display all non-vectorized leaf objects unless ONLY.
+            if (desireOnly) {
+              invokeFlag = false;
+            }
+            break;
+          case SUMMARY:
+          case OPERATOR:
+          case EXPRESSION:
+          case DETAIL:
+            if (vectorization.rank < desiredVecDetailLevel.rank) {
+              // This detail not desired.
+              invokeFlag = false;
+            }
+            break;
+          case SUMMARY_PATH:
+          case OPERATOR_PATH:
+            if (desireOnly) {
+              if (vectorization.rank < desiredVecDetailLevel.rank) {
+                // Suppress headers and all objects below.
+                invokeFlag = false;
+              }
+            }
+            break;
+          default:
+            throw new RuntimeException("Unknown EXPLAIN vectorization " + vectorization);
+          }
+        } else  {
+          // Do not display vectorization objects.
+          switch (vectorization) {
+          case SUMMARY:
+          case OPERATOR:
+          case EXPRESSION:
+          case DETAIL:
+            invokeFlag = false;
+            break;
+          case NON_VECTORIZED:
+            // No action.
+            break;
+          case SUMMARY_PATH:
+          case OPERATOR_PATH:
+            // Always include headers since they contain non-vectorized objects, too.
+            break;
+          default:
+            throw new RuntimeException("Unknown EXPLAIN vectorization " + vectorization);
+          }
+        }
+      }
+      if (invokeFlag) {
         keyJSONObject = xpl_note.displayName();
         if (out != null) {
           out.print(indentString(indent));
@@ -672,6 +838,64 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
             invokeFlag = Level.EXTENDED.in(xpl_note.explainLevels());
           } else {
             invokeFlag = Level.DEFAULT.in(xpl_note.explainLevels());
+          }
+        }
+        if (invokeFlag) {
+          Vectorization vectorization = xpl_note.vectorization();
+          if (this.work != null && this.work.isVectorization()) {
+
+            // The EXPLAIN VECTORIZATION option was specified.
+            final boolean desireOnly = this.work.isVectorizationOnly();
+            final VectorizationDetailLevel desiredVecDetailLevel =
+                this.work.isVectorizationDetailLevel();
+
+            switch (vectorization) {
+            case NON_VECTORIZED:
+              // Display all non-vectorized leaf objects unless ONLY.
+              if (desireOnly) {
+                invokeFlag = false;
+              }
+              break;
+            case SUMMARY:
+            case OPERATOR:
+            case EXPRESSION:
+            case DETAIL:
+              if (vectorization.rank < desiredVecDetailLevel.rank) {
+                // This detail not desired.
+                invokeFlag = false;
+              }
+              break;
+            case SUMMARY_PATH:
+            case OPERATOR_PATH:
+              if (desireOnly) {
+                if (vectorization.rank < desiredVecDetailLevel.rank) {
+                  // Suppress headers and all objects below.
+                  invokeFlag = false;
+                }
+              }
+              break;
+            default:
+              throw new RuntimeException("Unknown EXPLAIN vectorization " + vectorization);
+            }
+          } else  {
+            // Do not display vectorization objects.
+            switch (vectorization) {
+            case SUMMARY:
+            case OPERATOR:
+            case EXPRESSION:
+            case DETAIL:
+              invokeFlag = false;
+              break;
+            case NON_VECTORIZED:
+              // No action.
+              break;
+            case SUMMARY_PATH:
+            case OPERATOR_PATH:
+              // Always include headers since they contain non-vectorized objects, too.
+              break;
+            default:
+              throw new RuntimeException("Unknown EXPLAIN vectorization " + vectorization);
+            }
           }
         }
         if (invokeFlag) {

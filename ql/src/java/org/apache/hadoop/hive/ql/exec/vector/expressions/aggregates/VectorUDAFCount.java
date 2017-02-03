@@ -60,6 +60,12 @@ public class VectorUDAFCount extends VectorAggregateExpression {
     }
 
     private VectorExpression inputExpression = null;
+
+    @Override
+    public VectorExpression inputExpression() {
+      return inputExpression;
+    }
+
     transient private final LongWritable result;
 
     public VectorUDAFCount(VectorExpression inputExpression) {

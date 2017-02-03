@@ -131,25 +131,55 @@ POSTHOOK: Lineage: part_change_various_various_struct1 PARTITION(part=1).b SIMPL
 POSTHOOK: Lineage: part_change_various_various_struct1 PARTITION(part=1).insert_num SIMPLE [(complex_struct1_c_txt)complex_struct1_c_txt.FieldSchema(name:insert_num, type:int, comment:null), ]
 POSTHOOK: Lineage: part_change_various_various_struct1 PARTITION(part=1).s1 SIMPLE [(complex_struct1_c_txt)complex_struct1_c_txt.FieldSchema(name:s1, type:struct<c1:string,c2:string,c3:string,c4:string,c5:string,c6:string,c7:string,c8:string,c9:string,c10:string,c11:string,c12:string,c13:string>, comment:null), ]
 complex_struct1_c_txt.insert_num	complex_struct1_c_txt.s1	complex_struct1_c_txt.b
-PREHOOK: query: explain
+PREHOOK: query: explain vectorization detail
 select insert_num,part,s1,b from part_change_various_various_struct1
 PREHOOK: type: QUERY
-POSTHOOK: query: explain
+POSTHOOK: query: explain vectorization detail
 select insert_num,part,s1,b from part_change_various_various_struct1
 POSTHOOK: type: QUERY
 Explain
-Plan optimized by CBO.
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
 
-Stage-0
-  Fetch Operator
-    limit:-1
-    Stage-1
-      Map 1 llap
-      File Output Operator [FS_2]
-        Select Operator [SEL_1] (rows=6 width=4)
-          Output:["_col0","_col1","_col2","_col3"]
-          TableScan [TS_0] (rows=6 width=155)
-            default@part_change_various_various_struct1,part_change_various_various_struct1,Tbl:COMPLETE,Col:PARTIAL,Output:["insert_num","s1","b"]
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: part_change_various_various_struct1
+                  Statistics: Num rows: 6 Data size: 931 Basic stats: COMPLETE Column stats: PARTIAL
+                  Select Operator
+                    expressions: insert_num (type: int), part (type: int), s1 (type: struct<c1:string,c2:string,c3:string,c4:string,c5:string,c6:string,c7:string,c8:string,c9:string,c10:string,c11:string,c12:string,c13:string>), b (type: string)
+                    outputColumnNames: _col0, _col1, _col2, _col3
+                    Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: PARTIAL
+                    File Output Operator
+                      compressed: false
+                      Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: PARTIAL
+                      table:
+                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: llap
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
+                inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
+                notVectorizedReason: Select expression for SELECT operator: Data type struct<c1:string,c2:string,c3:string,c4:string,c5:string,c6:string,c7:string,c8:string,c9:string,c10:string,c11:string,c12:string,c13:string> of Column[s1] not supported
+                vectorized: false
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: select insert_num,part,s1,b from part_change_various_various_struct1
 PREHOOK: type: QUERY
@@ -383,25 +413,55 @@ POSTHOOK: Lineage: part_add_various_various_struct2 PARTITION(part=1).b SIMPLE [
 POSTHOOK: Lineage: part_add_various_various_struct2 PARTITION(part=1).insert_num SIMPLE [(complex_struct2_d_txt)complex_struct2_d_txt.FieldSchema(name:insert_num, type:int, comment:null), ]
 POSTHOOK: Lineage: part_add_various_various_struct2 PARTITION(part=1).s2 SIMPLE [(complex_struct2_d_txt)complex_struct2_d_txt.FieldSchema(name:s2, type:struct<c1:string,c2:string,c3:string,c4:string,c5:string,c6:string,c7:string,c8:string,c9:string,c10:string,c11:string,c12:string,c13:string>, comment:null), ]
 complex_struct2_d_txt.insert_num	complex_struct2_d_txt.b	complex_struct2_d_txt.s2
-PREHOOK: query: explain
+PREHOOK: query: explain vectorization detail
 select insert_num,part,b,s2 from part_add_various_various_struct2
 PREHOOK: type: QUERY
-POSTHOOK: query: explain
+POSTHOOK: query: explain vectorization detail
 select insert_num,part,b,s2 from part_add_various_various_struct2
 POSTHOOK: type: QUERY
 Explain
-Plan optimized by CBO.
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
 
-Stage-0
-  Fetch Operator
-    limit:-1
-    Stage-1
-      Map 1 llap
-      File Output Operator [FS_2]
-        Select Operator [SEL_1] (rows=8 width=4)
-          Output:["_col0","_col1","_col2","_col3"]
-          TableScan [TS_0] (rows=8 width=117)
-            default@part_add_various_various_struct2,part_add_various_various_struct2,Tbl:COMPLETE,Col:PARTIAL,Output:["insert_num","b","s2"]
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: part_add_various_various_struct2
+                  Statistics: Num rows: 8 Data size: 939 Basic stats: COMPLETE Column stats: PARTIAL
+                  Select Operator
+                    expressions: insert_num (type: int), part (type: int), b (type: string), s2 (type: struct<c1:string,c2:string,c3:string,c4:string,c5:string,c6:string,c7:string,c8:string,c9:string,c10:string,c11:string,c12:string,c13:string>)
+                    outputColumnNames: _col0, _col1, _col2, _col3
+                    Statistics: Num rows: 8 Data size: 32 Basic stats: COMPLETE Column stats: PARTIAL
+                    File Output Operator
+                      compressed: false
+                      Statistics: Num rows: 8 Data size: 32 Basic stats: COMPLETE Column stats: PARTIAL
+                      table:
+                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: llap
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
+                inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
+                notVectorizedReason: Select expression for SELECT operator: Data type struct<c1:string,c2:string,c3:string,c4:string,c5:string,c6:string,c7:string,c8:string,c9:string,c10:string,c11:string,c12:string,c13:string> of Column[s2] not supported
+                vectorized: false
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: select insert_num,part,b,s2 from part_add_various_various_struct2
 PREHOOK: type: QUERY
@@ -563,25 +623,55 @@ POSTHOOK: Lineage: part_add_to_various_various_struct4 PARTITION(part=1).b SIMPL
 POSTHOOK: Lineage: part_add_to_various_various_struct4 PARTITION(part=1).insert_num SIMPLE [(complex_struct4_c_txt)complex_struct4_c_txt.FieldSchema(name:insert_num, type:int, comment:null), ]
 POSTHOOK: Lineage: part_add_to_various_various_struct4 PARTITION(part=1).s3 SIMPLE [(complex_struct4_c_txt)complex_struct4_c_txt.FieldSchema(name:s3, type:struct<c1:boolean,c2:tinyint,c3:smallint,c4:int,c5:bigint,c6:float,c7:double,c8:decimal(38,18),c9:char(25),c10:varchar(25),c11:timestamp,c12:date,c13:binary>, comment:null), ]
 complex_struct4_c_txt.insert_num	complex_struct4_c_txt.b	complex_struct4_c_txt.s3
-PREHOOK: query: explain
+PREHOOK: query: explain vectorization detail
 select insert_num,part,b,s3 from part_add_to_various_various_struct4
 PREHOOK: type: QUERY
-POSTHOOK: query: explain
+POSTHOOK: query: explain vectorization detail
 select insert_num,part,b,s3 from part_add_to_various_various_struct4
 POSTHOOK: type: QUERY
 Explain
-Plan optimized by CBO.
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
 
-Stage-0
-  Fetch Operator
-    limit:-1
-    Stage-1
-      Map 1 llap
-      File Output Operator [FS_2]
-        Select Operator [SEL_1] (rows=4 width=4)
-          Output:["_col0","_col1","_col2","_col3"]
-          TableScan [TS_0] (rows=4 width=88)
-            default@part_add_to_various_various_struct4,part_add_to_various_various_struct4,Tbl:COMPLETE,Col:PARTIAL,Output:["insert_num","b","s3"]
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: part_add_to_various_various_struct4
+                  Statistics: Num rows: 4 Data size: 353 Basic stats: COMPLETE Column stats: PARTIAL
+                  Select Operator
+                    expressions: insert_num (type: int), part (type: int), b (type: string), s3 (type: struct<c1:boolean,c2:tinyint,c3:smallint,c4:int,c5:bigint,c6:float,c7:double,c8:decimal(38,18),c9:char(25),c10:varchar(25),c11:timestamp,c12:date,c13:binary>)
+                    outputColumnNames: _col0, _col1, _col2, _col3
+                    Statistics: Num rows: 4 Data size: 16 Basic stats: COMPLETE Column stats: PARTIAL
+                    File Output Operator
+                      compressed: false
+                      Statistics: Num rows: 4 Data size: 16 Basic stats: COMPLETE Column stats: PARTIAL
+                      table:
+                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: llap
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
+                inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
+                notVectorizedReason: Select expression for SELECT operator: Data type struct<c1:boolean,c2:tinyint,c3:smallint,c4:int,c5:bigint,c6:float,c7:double,c8:decimal(38,18),c9:char(25),c10:varchar(25),c11:timestamp,c12:date,c13:binary> of Column[s3] not supported
+                vectorized: false
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
 
 PREHOOK: query: select insert_num,part,b,s3 from part_add_to_various_various_struct4
 PREHOOK: type: QUERY

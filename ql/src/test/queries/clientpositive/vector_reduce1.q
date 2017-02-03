@@ -2,6 +2,7 @@ set hive.mapred.mode=nonstrict;
 set hive.explain.user=false;
 SET hive.vectorized.execution.enabled=true;
 SET hive.vectorized.execution.reducesink.new.enabled=true;
+set hive.fetch.task.conversion=none;
 
 -- SORT_QUERY_RESULTS
 
@@ -42,7 +43,7 @@ STORED AS ORC;
 
 INSERT INTO TABLE vectortab2korc SELECT * FROM vectortab2k;
 
-explain
+explain vectorization expression
 select b from vectortab2korc order by b;
 
 select b from vectortab2korc order by b;

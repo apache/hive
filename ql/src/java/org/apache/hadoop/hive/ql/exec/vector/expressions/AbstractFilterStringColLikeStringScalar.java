@@ -518,6 +518,11 @@ public abstract class AbstractFilterStringColLikeStringScalar extends VectorExpr
   }
 
   @Override
+  public String vectorExpressionParameters() {
+    return "col " + colNum + ", pattern " + pattern;
+  }
+
+  @Override
   public VectorExpressionDescriptor.Descriptor getDescriptor() {
     return (new VectorExpressionDescriptor.Builder())
         .setMode(

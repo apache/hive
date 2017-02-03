@@ -156,6 +156,10 @@ public class StringLength extends VectorExpression {
     this.outputColumn = outputColumn;
   }
 
+  public String vectorExpressionParameters() {
+    return "col " + colNum;
+  }
+
   @Override
   public VectorExpressionDescriptor.Descriptor getDescriptor() {
     VectorExpressionDescriptor.Builder b = new VectorExpressionDescriptor.Builder();

@@ -62,105 +62,21 @@ POSTHOOK: query: ANALYZE TABLE small_table COMPUTE STATISTICS FOR COLUMNS
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@small_table
 #### A masked pattern was here ####
-PREHOOK: query: explain
+PREHOOK: query: explain vectorization detail formatted
 select count(*) from (select s.*, st.*
 from sorted_mod_4 s
 left outer join small_table st
 on s.ctinyint = st.ctinyint
 ) t1
 PREHOOK: type: QUERY
-POSTHOOK: query: explain
+POSTHOOK: query: explain vectorization detail formatted
 select count(*) from (select s.*, st.*
 from sorted_mod_4 s
 left outer join small_table st
 on s.ctinyint = st.ctinyint
 ) t1
 POSTHOOK: type: QUERY
-STAGE DEPENDENCIES:
-  Stage-2 is a root stage
-  Stage-1 depends on stages: Stage-2
-  Stage-0 depends on stages: Stage-1
-
-STAGE PLANS:
-  Stage: Stage-2
-    Spark
 #### A masked pattern was here ####
-      Vertices:
-        Map 3 
-            Map Operator Tree:
-                TableScan
-                  alias: st
-                  Statistics: Num rows: 100 Data size: 379 Basic stats: COMPLETE Column stats: NONE
-                  Select Operator
-                    expressions: ctinyint (type: tinyint)
-                    outputColumnNames: _col0
-                    Statistics: Num rows: 100 Data size: 379 Basic stats: COMPLETE Column stats: NONE
-                    Spark HashTable Sink Operator
-                      keys:
-                        0 _col0 (type: tinyint)
-                        1 _col0 (type: tinyint)
-            Execution mode: vectorized
-            Local Work:
-              Map Reduce Local Work
-
-  Stage: Stage-1
-    Spark
-      Edges:
-        Reducer 2 <- Map 1 (GROUP, 1)
-#### A masked pattern was here ####
-      Vertices:
-        Map 1 
-            Map Operator Tree:
-                TableScan
-                  alias: s
-                  Statistics: Num rows: 6058 Data size: 2027 Basic stats: COMPLETE Column stats: NONE
-                  Select Operator
-                    expressions: ctinyint (type: tinyint)
-                    outputColumnNames: _col0
-                    Statistics: Num rows: 6058 Data size: 2027 Basic stats: COMPLETE Column stats: NONE
-                    Map Join Operator
-                      condition map:
-                           Left Outer Join0 to 1
-                      keys:
-                        0 _col0 (type: tinyint)
-                        1 _col0 (type: tinyint)
-                      input vertices:
-                        1 Map 3
-                      Statistics: Num rows: 6663 Data size: 2229 Basic stats: COMPLETE Column stats: NONE
-                      Group By Operator
-                        aggregations: count()
-                        mode: hash
-                        outputColumnNames: _col0
-                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                        Reduce Output Operator
-                          sort order: 
-                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                          value expressions: _col0 (type: bigint)
-            Execution mode: vectorized
-            Local Work:
-              Map Reduce Local Work
-        Reducer 2 
-            Execution mode: vectorized
-            Reduce Operator Tree:
-              Group By Operator
-                aggregations: count(VALUE._col0)
-                mode: mergepartial
-                outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                File Output Operator
-                  compressed: false
-                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                  table:
-                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-
-  Stage: Stage-0
-    Fetch Operator
-      limit: -1
-      Processor Tree:
-        ListSink
-
 PREHOOK: query: select count(*) from (select s.*, st.*
 from sorted_mod_4 s
 left outer join small_table st
@@ -180,111 +96,21 @@ POSTHOOK: Input: default@small_table
 POSTHOOK: Input: default@sorted_mod_4
 #### A masked pattern was here ####
 6876
-PREHOOK: query: explain
+PREHOOK: query: explain vectorization detail formatted
 select count(*) from (select s.ctinyint, s.cmodint, sm.cbigint 
 from sorted_mod_4 s
 left outer join small_table sm
 on s.ctinyint = sm.ctinyint and s.cmodint = 2
 ) t1
 PREHOOK: type: QUERY
-POSTHOOK: query: explain
+POSTHOOK: query: explain vectorization detail formatted
 select count(*) from (select s.ctinyint, s.cmodint, sm.cbigint 
 from sorted_mod_4 s
 left outer join small_table sm
 on s.ctinyint = sm.ctinyint and s.cmodint = 2
 ) t1
 POSTHOOK: type: QUERY
-STAGE DEPENDENCIES:
-  Stage-2 is a root stage
-  Stage-1 depends on stages: Stage-2
-  Stage-0 depends on stages: Stage-1
-
-STAGE PLANS:
-  Stage: Stage-2
-    Spark
 #### A masked pattern was here ####
-      Vertices:
-        Map 3 
-            Map Operator Tree:
-                TableScan
-                  alias: sm
-                  Statistics: Num rows: 100 Data size: 379 Basic stats: COMPLETE Column stats: NONE
-                  Select Operator
-                    expressions: ctinyint (type: tinyint)
-                    outputColumnNames: _col0
-                    Statistics: Num rows: 100 Data size: 379 Basic stats: COMPLETE Column stats: NONE
-                    Spark HashTable Sink Operator
-                      filter predicates:
-                        0 {(_col1 = 2)}
-                        1 
-                      keys:
-                        0 _col0 (type: tinyint)
-                        1 _col0 (type: tinyint)
-            Execution mode: vectorized
-            Local Work:
-              Map Reduce Local Work
-
-  Stage: Stage-1
-    Spark
-      Edges:
-        Reducer 2 <- Map 1 (GROUP, 1)
-#### A masked pattern was here ####
-      Vertices:
-        Map 1 
-            Map Operator Tree:
-                TableScan
-                  alias: s
-                  Statistics: Num rows: 6058 Data size: 2027 Basic stats: COMPLETE Column stats: NONE
-                  Select Operator
-                    expressions: ctinyint (type: tinyint), cmodint (type: int)
-                    outputColumnNames: _col0, _col1
-                    Statistics: Num rows: 6058 Data size: 2027 Basic stats: COMPLETE Column stats: NONE
-                    Map Join Operator
-                      condition map:
-                           Left Outer Join0 to 1
-                      filter predicates:
-                        0 {(_col1 = 2)}
-                        1 
-                      keys:
-                        0 _col0 (type: tinyint)
-                        1 _col0 (type: tinyint)
-                      input vertices:
-                        1 Map 3
-                      Statistics: Num rows: 6663 Data size: 2229 Basic stats: COMPLETE Column stats: NONE
-                      Group By Operator
-                        aggregations: count()
-                        mode: hash
-                        outputColumnNames: _col0
-                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                        Reduce Output Operator
-                          sort order: 
-                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                          value expressions: _col0 (type: bigint)
-            Execution mode: vectorized
-            Local Work:
-              Map Reduce Local Work
-        Reducer 2 
-            Execution mode: vectorized
-            Reduce Operator Tree:
-              Group By Operator
-                aggregations: count(VALUE._col0)
-                mode: mergepartial
-                outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                File Output Operator
-                  compressed: false
-                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                  table:
-                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-
-  Stage: Stage-0
-    Fetch Operator
-      limit: -1
-      Processor Tree:
-        ListSink
-
 PREHOOK: query: select count(*) from (select s.ctinyint, s.cmodint, sm.cbigint 
 from sorted_mod_4 s
 left outer join small_table sm
@@ -304,111 +130,21 @@ POSTHOOK: Input: default@small_table
 POSTHOOK: Input: default@sorted_mod_4
 #### A masked pattern was here ####
 6058
-PREHOOK: query: explain
+PREHOOK: query: explain vectorization detail formatted
 select count(*) from (select s.ctinyint, s.cmodint, sm.cbigint 
 from sorted_mod_4 s
 left outer join small_table sm
 on s.ctinyint = sm.ctinyint and pmod(s.ctinyint, 4) = s.cmodint
 ) t1
 PREHOOK: type: QUERY
-POSTHOOK: query: explain
+POSTHOOK: query: explain vectorization detail formatted
 select count(*) from (select s.ctinyint, s.cmodint, sm.cbigint 
 from sorted_mod_4 s
 left outer join small_table sm
 on s.ctinyint = sm.ctinyint and pmod(s.ctinyint, 4) = s.cmodint
 ) t1
 POSTHOOK: type: QUERY
-STAGE DEPENDENCIES:
-  Stage-2 is a root stage
-  Stage-1 depends on stages: Stage-2
-  Stage-0 depends on stages: Stage-1
-
-STAGE PLANS:
-  Stage: Stage-2
-    Spark
 #### A masked pattern was here ####
-      Vertices:
-        Map 3 
-            Map Operator Tree:
-                TableScan
-                  alias: sm
-                  Statistics: Num rows: 100 Data size: 379 Basic stats: COMPLETE Column stats: NONE
-                  Select Operator
-                    expressions: ctinyint (type: tinyint)
-                    outputColumnNames: _col0
-                    Statistics: Num rows: 100 Data size: 379 Basic stats: COMPLETE Column stats: NONE
-                    Spark HashTable Sink Operator
-                      filter predicates:
-                        0 {((UDFToInteger(_col0) pmod 4) = _col1)}
-                        1 
-                      keys:
-                        0 _col0 (type: tinyint)
-                        1 _col0 (type: tinyint)
-            Execution mode: vectorized
-            Local Work:
-              Map Reduce Local Work
-
-  Stage: Stage-1
-    Spark
-      Edges:
-        Reducer 2 <- Map 1 (GROUP, 1)
-#### A masked pattern was here ####
-      Vertices:
-        Map 1 
-            Map Operator Tree:
-                TableScan
-                  alias: s
-                  Statistics: Num rows: 6058 Data size: 2027 Basic stats: COMPLETE Column stats: NONE
-                  Select Operator
-                    expressions: ctinyint (type: tinyint), cmodint (type: int)
-                    outputColumnNames: _col0, _col1
-                    Statistics: Num rows: 6058 Data size: 2027 Basic stats: COMPLETE Column stats: NONE
-                    Map Join Operator
-                      condition map:
-                           Left Outer Join0 to 1
-                      filter predicates:
-                        0 {((UDFToInteger(_col0) pmod 4) = _col1)}
-                        1 
-                      keys:
-                        0 _col0 (type: tinyint)
-                        1 _col0 (type: tinyint)
-                      input vertices:
-                        1 Map 3
-                      Statistics: Num rows: 6663 Data size: 2229 Basic stats: COMPLETE Column stats: NONE
-                      Group By Operator
-                        aggregations: count()
-                        mode: hash
-                        outputColumnNames: _col0
-                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                        Reduce Output Operator
-                          sort order: 
-                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                          value expressions: _col0 (type: bigint)
-            Execution mode: vectorized
-            Local Work:
-              Map Reduce Local Work
-        Reducer 2 
-            Execution mode: vectorized
-            Reduce Operator Tree:
-              Group By Operator
-                aggregations: count(VALUE._col0)
-                mode: mergepartial
-                outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                File Output Operator
-                  compressed: false
-                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                  table:
-                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-
-  Stage: Stage-0
-    Fetch Operator
-      limit: -1
-      Processor Tree:
-        ListSink
-
 PREHOOK: query: select count(*) from (select s.ctinyint, s.cmodint, sm.cbigint 
 from sorted_mod_4 s
 left outer join small_table sm
@@ -428,111 +164,21 @@ POSTHOOK: Input: default@small_table
 POSTHOOK: Input: default@sorted_mod_4
 #### A masked pattern was here ####
 6248
-PREHOOK: query: explain
+PREHOOK: query: explain vectorization detail formatted
 select count(*) from (select s.ctinyint, s.cmodint, sm.cbigint 
 from sorted_mod_4 s
 left outer join small_table sm
 on s.ctinyint = sm.ctinyint and s.ctinyint < 100
 ) t1
 PREHOOK: type: QUERY
-POSTHOOK: query: explain
+POSTHOOK: query: explain vectorization detail formatted
 select count(*) from (select s.ctinyint, s.cmodint, sm.cbigint 
 from sorted_mod_4 s
 left outer join small_table sm
 on s.ctinyint = sm.ctinyint and s.ctinyint < 100
 ) t1
 POSTHOOK: type: QUERY
-STAGE DEPENDENCIES:
-  Stage-2 is a root stage
-  Stage-1 depends on stages: Stage-2
-  Stage-0 depends on stages: Stage-1
-
-STAGE PLANS:
-  Stage: Stage-2
-    Spark
 #### A masked pattern was here ####
-      Vertices:
-        Map 3 
-            Map Operator Tree:
-                TableScan
-                  alias: sm
-                  Statistics: Num rows: 100 Data size: 379 Basic stats: COMPLETE Column stats: NONE
-                  Select Operator
-                    expressions: ctinyint (type: tinyint)
-                    outputColumnNames: _col0
-                    Statistics: Num rows: 100 Data size: 379 Basic stats: COMPLETE Column stats: NONE
-                    Spark HashTable Sink Operator
-                      filter predicates:
-                        0 {(_col0 < 100)}
-                        1 
-                      keys:
-                        0 _col0 (type: tinyint)
-                        1 _col0 (type: tinyint)
-            Execution mode: vectorized
-            Local Work:
-              Map Reduce Local Work
-
-  Stage: Stage-1
-    Spark
-      Edges:
-        Reducer 2 <- Map 1 (GROUP, 1)
-#### A masked pattern was here ####
-      Vertices:
-        Map 1 
-            Map Operator Tree:
-                TableScan
-                  alias: s
-                  Statistics: Num rows: 6058 Data size: 2027 Basic stats: COMPLETE Column stats: NONE
-                  Select Operator
-                    expressions: ctinyint (type: tinyint)
-                    outputColumnNames: _col0
-                    Statistics: Num rows: 6058 Data size: 2027 Basic stats: COMPLETE Column stats: NONE
-                    Map Join Operator
-                      condition map:
-                           Left Outer Join0 to 1
-                      filter predicates:
-                        0 {(_col0 < 100)}
-                        1 
-                      keys:
-                        0 _col0 (type: tinyint)
-                        1 _col0 (type: tinyint)
-                      input vertices:
-                        1 Map 3
-                      Statistics: Num rows: 6663 Data size: 2229 Basic stats: COMPLETE Column stats: NONE
-                      Group By Operator
-                        aggregations: count()
-                        mode: hash
-                        outputColumnNames: _col0
-                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                        Reduce Output Operator
-                          sort order: 
-                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                          value expressions: _col0 (type: bigint)
-            Execution mode: vectorized
-            Local Work:
-              Map Reduce Local Work
-        Reducer 2 
-            Execution mode: vectorized
-            Reduce Operator Tree:
-              Group By Operator
-                aggregations: count(VALUE._col0)
-                mode: mergepartial
-                outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                File Output Operator
-                  compressed: false
-                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                  table:
-                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-
-  Stage: Stage-0
-    Fetch Operator
-      limit: -1
-      Processor Tree:
-        ListSink
-
 PREHOOK: query: select count(*) from (select s.ctinyint, s.cmodint, sm.cbigint 
 from sorted_mod_4 s
 left outer join small_table sm
@@ -552,7 +198,7 @@ POSTHOOK: Input: default@small_table
 POSTHOOK: Input: default@sorted_mod_4
 #### A masked pattern was here ####
 6876
-PREHOOK: query: explain
+PREHOOK: query: explain vectorization detail formatted
 select count(*) from (select s.*, sm.*, s2.* 
 from sorted_mod_4 s
 left outer join small_table sm
@@ -561,7 +207,7 @@ left outer join sorted_mod_4 s2
   on s2.ctinyint = s.ctinyint
 ) t1
 PREHOOK: type: QUERY
-POSTHOOK: query: explain
+POSTHOOK: query: explain vectorization detail formatted
 select count(*) from (select s.*, sm.*, s2.* 
 from sorted_mod_4 s
 left outer join small_table sm
@@ -570,117 +216,7 @@ left outer join sorted_mod_4 s2
   on s2.ctinyint = s.ctinyint
 ) t1
 POSTHOOK: type: QUERY
-STAGE DEPENDENCIES:
-  Stage-2 is a root stage
-  Stage-1 depends on stages: Stage-2
-  Stage-0 depends on stages: Stage-1
-
-STAGE PLANS:
-  Stage: Stage-2
-    Spark
 #### A masked pattern was here ####
-      Vertices:
-        Map 3 
-            Map Operator Tree:
-                TableScan
-                  alias: sm
-                  Statistics: Num rows: 100 Data size: 379 Basic stats: COMPLETE Column stats: NONE
-                  Select Operator
-                    expressions: cbigint (type: bigint)
-                    outputColumnNames: _col0
-                    Statistics: Num rows: 100 Data size: 379 Basic stats: COMPLETE Column stats: NONE
-                    Spark HashTable Sink Operator
-                      keys:
-                        0 UDFToLong(_col1) (type: bigint)
-                        1 (_col0 pmod 8) (type: bigint)
-            Execution mode: vectorized
-            Local Work:
-              Map Reduce Local Work
-        Map 4 
-            Map Operator Tree:
-                TableScan
-                  alias: s2
-                  Statistics: Num rows: 6058 Data size: 2027 Basic stats: COMPLETE Column stats: NONE
-                  Select Operator
-                    expressions: ctinyint (type: tinyint)
-                    outputColumnNames: _col0
-                    Statistics: Num rows: 6058 Data size: 2027 Basic stats: COMPLETE Column stats: NONE
-                    Spark HashTable Sink Operator
-                      keys:
-                        0 _col0 (type: tinyint)
-                        1 _col0 (type: tinyint)
-            Execution mode: vectorized
-            Local Work:
-              Map Reduce Local Work
-
-  Stage: Stage-1
-    Spark
-      Edges:
-        Reducer 2 <- Map 1 (GROUP, 1)
-#### A masked pattern was here ####
-      Vertices:
-        Map 1 
-            Map Operator Tree:
-                TableScan
-                  alias: s
-                  Statistics: Num rows: 6058 Data size: 2027 Basic stats: COMPLETE Column stats: NONE
-                  Select Operator
-                    expressions: ctinyint (type: tinyint), cmodint (type: int)
-                    outputColumnNames: _col0, _col1
-                    Statistics: Num rows: 6058 Data size: 2027 Basic stats: COMPLETE Column stats: NONE
-                    Map Join Operator
-                      condition map:
-                           Left Outer Join0 to 1
-                      keys:
-                        0 UDFToLong(_col1) (type: bigint)
-                        1 (_col0 pmod 8) (type: bigint)
-                      outputColumnNames: _col0
-                      input vertices:
-                        1 Map 3
-                      Statistics: Num rows: 6663 Data size: 2229 Basic stats: COMPLETE Column stats: NONE
-                      Map Join Operator
-                        condition map:
-                             Left Outer Join0 to 1
-                        keys:
-                          0 _col0 (type: tinyint)
-                          1 _col0 (type: tinyint)
-                        input vertices:
-                          1 Map 4
-                        Statistics: Num rows: 7329 Data size: 2451 Basic stats: COMPLETE Column stats: NONE
-                        Group By Operator
-                          aggregations: count()
-                          mode: hash
-                          outputColumnNames: _col0
-                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                          Reduce Output Operator
-                            sort order: 
-                            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                            value expressions: _col0 (type: bigint)
-            Execution mode: vectorized
-            Local Work:
-              Map Reduce Local Work
-        Reducer 2 
-            Execution mode: vectorized
-            Reduce Operator Tree:
-              Group By Operator
-                aggregations: count(VALUE._col0)
-                mode: mergepartial
-                outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                File Output Operator
-                  compressed: false
-                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                  table:
-                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-
-  Stage: Stage-0
-    Fetch Operator
-      limit: -1
-      Processor Tree:
-        ListSink
-
 PREHOOK: query: select count(*) from (select s.*, sm.*, s2.* 
 from sorted_mod_4 s
 left outer join small_table sm
@@ -766,105 +302,21 @@ POSTHOOK: query: ANALYZE TABLE small_table2 COMPUTE STATISTICS FOR COLUMNS
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@small_table2
 #### A masked pattern was here ####
-PREHOOK: query: explain
+PREHOOK: query: explain vectorization detail formatted
 select count(*) from (select s.*, st.*
 from mod_8_mod_4 s
 left outer join small_table2 st
 on s.cmodtinyint = st.cmodtinyint
 ) t1
 PREHOOK: type: QUERY
-POSTHOOK: query: explain
+POSTHOOK: query: explain vectorization detail formatted
 select count(*) from (select s.*, st.*
 from mod_8_mod_4 s
 left outer join small_table2 st
 on s.cmodtinyint = st.cmodtinyint
 ) t1
 POSTHOOK: type: QUERY
-STAGE DEPENDENCIES:
-  Stage-2 is a root stage
-  Stage-1 depends on stages: Stage-2
-  Stage-0 depends on stages: Stage-1
-
-STAGE PLANS:
-  Stage: Stage-2
-    Spark
 #### A masked pattern was here ####
-      Vertices:
-        Map 3 
-            Map Operator Tree:
-                TableScan
-                  alias: st
-                  Statistics: Num rows: 100 Data size: 362 Basic stats: COMPLETE Column stats: NONE
-                  Select Operator
-                    expressions: cmodtinyint (type: int)
-                    outputColumnNames: _col0
-                    Statistics: Num rows: 100 Data size: 362 Basic stats: COMPLETE Column stats: NONE
-                    Spark HashTable Sink Operator
-                      keys:
-                        0 _col0 (type: int)
-                        1 _col0 (type: int)
-            Execution mode: vectorized
-            Local Work:
-              Map Reduce Local Work
-
-  Stage: Stage-1
-    Spark
-      Edges:
-        Reducer 2 <- Map 1 (GROUP, 1)
-#### A masked pattern was here ####
-      Vertices:
-        Map 1 
-            Map Operator Tree:
-                TableScan
-                  alias: s
-                  Statistics: Num rows: 6058 Data size: 2757 Basic stats: COMPLETE Column stats: NONE
-                  Select Operator
-                    expressions: cmodtinyint (type: int)
-                    outputColumnNames: _col0
-                    Statistics: Num rows: 6058 Data size: 2757 Basic stats: COMPLETE Column stats: NONE
-                    Map Join Operator
-                      condition map:
-                           Left Outer Join0 to 1
-                      keys:
-                        0 _col0 (type: int)
-                        1 _col0 (type: int)
-                      input vertices:
-                        1 Map 3
-                      Statistics: Num rows: 6663 Data size: 3032 Basic stats: COMPLETE Column stats: NONE
-                      Group By Operator
-                        aggregations: count()
-                        mode: hash
-                        outputColumnNames: _col0
-                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                        Reduce Output Operator
-                          sort order: 
-                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                          value expressions: _col0 (type: bigint)
-            Execution mode: vectorized
-            Local Work:
-              Map Reduce Local Work
-        Reducer 2 
-            Execution mode: vectorized
-            Reduce Operator Tree:
-              Group By Operator
-                aggregations: count(VALUE._col0)
-                mode: mergepartial
-                outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                File Output Operator
-                  compressed: false
-                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                  table:
-                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-
-  Stage: Stage-0
-    Fetch Operator
-      limit: -1
-      Processor Tree:
-        ListSink
-
 PREHOOK: query: select count(*) from (select s.*, st.*
 from mod_8_mod_4 s
 left outer join small_table2 st
@@ -884,111 +336,21 @@ POSTHOOK: Input: default@mod_8_mod_4
 POSTHOOK: Input: default@small_table2
 #### A masked pattern was here ####
 39112
-PREHOOK: query: explain
+PREHOOK: query: explain vectorization detail formatted
 select count(*) from (select s.cmodtinyint, s.cmodint, sm.cbigint 
 from mod_8_mod_4 s
 left outer join small_table2 sm
 on s.cmodtinyint = sm.cmodtinyint and s.cmodint = 2
 ) t1
 PREHOOK: type: QUERY
-POSTHOOK: query: explain
+POSTHOOK: query: explain vectorization detail formatted
 select count(*) from (select s.cmodtinyint, s.cmodint, sm.cbigint 
 from mod_8_mod_4 s
 left outer join small_table2 sm
 on s.cmodtinyint = sm.cmodtinyint and s.cmodint = 2
 ) t1
 POSTHOOK: type: QUERY
-STAGE DEPENDENCIES:
-  Stage-2 is a root stage
-  Stage-1 depends on stages: Stage-2
-  Stage-0 depends on stages: Stage-1
-
-STAGE PLANS:
-  Stage: Stage-2
-    Spark
 #### A masked pattern was here ####
-      Vertices:
-        Map 3 
-            Map Operator Tree:
-                TableScan
-                  alias: sm
-                  Statistics: Num rows: 100 Data size: 362 Basic stats: COMPLETE Column stats: NONE
-                  Select Operator
-                    expressions: cmodtinyint (type: int)
-                    outputColumnNames: _col0
-                    Statistics: Num rows: 100 Data size: 362 Basic stats: COMPLETE Column stats: NONE
-                    Spark HashTable Sink Operator
-                      filter predicates:
-                        0 {(_col1 = 2)}
-                        1 
-                      keys:
-                        0 _col0 (type: int)
-                        1 _col0 (type: int)
-            Execution mode: vectorized
-            Local Work:
-              Map Reduce Local Work
-
-  Stage: Stage-1
-    Spark
-      Edges:
-        Reducer 2 <- Map 1 (GROUP, 1)
-#### A masked pattern was here ####
-      Vertices:
-        Map 1 
-            Map Operator Tree:
-                TableScan
-                  alias: s
-                  Statistics: Num rows: 6058 Data size: 2757 Basic stats: COMPLETE Column stats: NONE
-                  Select Operator
-                    expressions: cmodtinyint (type: int), cmodint (type: int)
-                    outputColumnNames: _col0, _col1
-                    Statistics: Num rows: 6058 Data size: 2757 Basic stats: COMPLETE Column stats: NONE
-                    Map Join Operator
-                      condition map:
-                           Left Outer Join0 to 1
-                      filter predicates:
-                        0 {(_col1 = 2)}
-                        1 
-                      keys:
-                        0 _col0 (type: int)
-                        1 _col0 (type: int)
-                      input vertices:
-                        1 Map 3
-                      Statistics: Num rows: 6663 Data size: 3032 Basic stats: COMPLETE Column stats: NONE
-                      Group By Operator
-                        aggregations: count()
-                        mode: hash
-                        outputColumnNames: _col0
-                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                        Reduce Output Operator
-                          sort order: 
-                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                          value expressions: _col0 (type: bigint)
-            Execution mode: vectorized
-            Local Work:
-              Map Reduce Local Work
-        Reducer 2 
-            Execution mode: vectorized
-            Reduce Operator Tree:
-              Group By Operator
-                aggregations: count(VALUE._col0)
-                mode: mergepartial
-                outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                File Output Operator
-                  compressed: false
-                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                  table:
-                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-
-  Stage: Stage-0
-    Fetch Operator
-      limit: -1
-      Processor Tree:
-        ListSink
-
 PREHOOK: query: select count(*) from (select s.cmodtinyint, s.cmodint, sm.cbigint 
 from mod_8_mod_4 s
 left outer join small_table2 sm
@@ -1008,111 +370,21 @@ POSTHOOK: Input: default@mod_8_mod_4
 POSTHOOK: Input: default@small_table2
 #### A masked pattern was here ####
 11171
-PREHOOK: query: explain
+PREHOOK: query: explain vectorization detail formatted
 select count(*) from (select s.cmodtinyint, s.cmodint, sm.cbigint 
 from mod_8_mod_4 s
 left outer join small_table2 sm
 on s.cmodtinyint = sm.cmodtinyint and pmod(s.cmodtinyint, 4) = s.cmodint
 ) t1
 PREHOOK: type: QUERY
-POSTHOOK: query: explain
+POSTHOOK: query: explain vectorization detail formatted
 select count(*) from (select s.cmodtinyint, s.cmodint, sm.cbigint 
 from mod_8_mod_4 s
 left outer join small_table2 sm
 on s.cmodtinyint = sm.cmodtinyint and pmod(s.cmodtinyint, 4) = s.cmodint
 ) t1
 POSTHOOK: type: QUERY
-STAGE DEPENDENCIES:
-  Stage-2 is a root stage
-  Stage-1 depends on stages: Stage-2
-  Stage-0 depends on stages: Stage-1
-
-STAGE PLANS:
-  Stage: Stage-2
-    Spark
 #### A masked pattern was here ####
-      Vertices:
-        Map 3 
-            Map Operator Tree:
-                TableScan
-                  alias: sm
-                  Statistics: Num rows: 100 Data size: 362 Basic stats: COMPLETE Column stats: NONE
-                  Select Operator
-                    expressions: cmodtinyint (type: int)
-                    outputColumnNames: _col0
-                    Statistics: Num rows: 100 Data size: 362 Basic stats: COMPLETE Column stats: NONE
-                    Spark HashTable Sink Operator
-                      filter predicates:
-                        0 {((_col0 pmod 4) = _col1)}
-                        1 
-                      keys:
-                        0 _col0 (type: int)
-                        1 _col0 (type: int)
-            Execution mode: vectorized
-            Local Work:
-              Map Reduce Local Work
-
-  Stage: Stage-1
-    Spark
-      Edges:
-        Reducer 2 <- Map 1 (GROUP, 1)
-#### A masked pattern was here ####
-      Vertices:
-        Map 1 
-            Map Operator Tree:
-                TableScan
-                  alias: s
-                  Statistics: Num rows: 6058 Data size: 2757 Basic stats: COMPLETE Column stats: NONE
-                  Select Operator
-                    expressions: cmodtinyint (type: int), cmodint (type: int)
-                    outputColumnNames: _col0, _col1
-                    Statistics: Num rows: 6058 Data size: 2757 Basic stats: COMPLETE Column stats: NONE
-                    Map Join Operator
-                      condition map:
-                           Left Outer Join0 to 1
-                      filter predicates:
-                        0 {((_col0 pmod 4) = _col1)}
-                        1 
-                      keys:
-                        0 _col0 (type: int)
-                        1 _col0 (type: int)
-                      input vertices:
-                        1 Map 3
-                      Statistics: Num rows: 6663 Data size: 3032 Basic stats: COMPLETE Column stats: NONE
-                      Group By Operator
-                        aggregations: count()
-                        mode: hash
-                        outputColumnNames: _col0
-                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                        Reduce Output Operator
-                          sort order: 
-                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                          value expressions: _col0 (type: bigint)
-            Execution mode: vectorized
-            Local Work:
-              Map Reduce Local Work
-        Reducer 2 
-            Execution mode: vectorized
-            Reduce Operator Tree:
-              Group By Operator
-                aggregations: count(VALUE._col0)
-                mode: mergepartial
-                outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                File Output Operator
-                  compressed: false
-                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                  table:
-                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-
-  Stage: Stage-0
-    Fetch Operator
-      limit: -1
-      Processor Tree:
-        ListSink
-
 PREHOOK: query: select count(*) from (select s.cmodtinyint, s.cmodint, sm.cbigint 
 from mod_8_mod_4 s
 left outer join small_table2 sm
@@ -1132,111 +404,21 @@ POSTHOOK: Input: default@mod_8_mod_4
 POSTHOOK: Input: default@small_table2
 #### A masked pattern was here ####
 14371
-PREHOOK: query: explain
+PREHOOK: query: explain vectorization detail formatted
 select count(*) from (select s.cmodtinyint, s.cmodint, sm.cbigint 
 from mod_8_mod_4 s
 left outer join small_table2 sm
 on s.cmodtinyint = sm.cmodtinyint and s.cmodtinyint < 3
 ) t1
 PREHOOK: type: QUERY
-POSTHOOK: query: explain
+POSTHOOK: query: explain vectorization detail formatted
 select count(*) from (select s.cmodtinyint, s.cmodint, sm.cbigint 
 from mod_8_mod_4 s
 left outer join small_table2 sm
 on s.cmodtinyint = sm.cmodtinyint and s.cmodtinyint < 3
 ) t1
 POSTHOOK: type: QUERY
-STAGE DEPENDENCIES:
-  Stage-2 is a root stage
-  Stage-1 depends on stages: Stage-2
-  Stage-0 depends on stages: Stage-1
-
-STAGE PLANS:
-  Stage: Stage-2
-    Spark
 #### A masked pattern was here ####
-      Vertices:
-        Map 3 
-            Map Operator Tree:
-                TableScan
-                  alias: sm
-                  Statistics: Num rows: 100 Data size: 362 Basic stats: COMPLETE Column stats: NONE
-                  Select Operator
-                    expressions: cmodtinyint (type: int)
-                    outputColumnNames: _col0
-                    Statistics: Num rows: 100 Data size: 362 Basic stats: COMPLETE Column stats: NONE
-                    Spark HashTable Sink Operator
-                      filter predicates:
-                        0 {(_col0 < 3)}
-                        1 
-                      keys:
-                        0 _col0 (type: int)
-                        1 _col0 (type: int)
-            Execution mode: vectorized
-            Local Work:
-              Map Reduce Local Work
-
-  Stage: Stage-1
-    Spark
-      Edges:
-        Reducer 2 <- Map 1 (GROUP, 1)
-#### A masked pattern was here ####
-      Vertices:
-        Map 1 
-            Map Operator Tree:
-                TableScan
-                  alias: s
-                  Statistics: Num rows: 6058 Data size: 2757 Basic stats: COMPLETE Column stats: NONE
-                  Select Operator
-                    expressions: cmodtinyint (type: int)
-                    outputColumnNames: _col0
-                    Statistics: Num rows: 6058 Data size: 2757 Basic stats: COMPLETE Column stats: NONE
-                    Map Join Operator
-                      condition map:
-                           Left Outer Join0 to 1
-                      filter predicates:
-                        0 {(_col0 < 3)}
-                        1 
-                      keys:
-                        0 _col0 (type: int)
-                        1 _col0 (type: int)
-                      input vertices:
-                        1 Map 3
-                      Statistics: Num rows: 6663 Data size: 3032 Basic stats: COMPLETE Column stats: NONE
-                      Group By Operator
-                        aggregations: count()
-                        mode: hash
-                        outputColumnNames: _col0
-                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                        Reduce Output Operator
-                          sort order: 
-                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                          value expressions: _col0 (type: bigint)
-            Execution mode: vectorized
-            Local Work:
-              Map Reduce Local Work
-        Reducer 2 
-            Execution mode: vectorized
-            Reduce Operator Tree:
-              Group By Operator
-                aggregations: count(VALUE._col0)
-                mode: mergepartial
-                outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                File Output Operator
-                  compressed: false
-                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                  table:
-                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-
-  Stage: Stage-0
-    Fetch Operator
-      limit: -1
-      Processor Tree:
-        ListSink
-
 PREHOOK: query: select count(*) from (select s.cmodtinyint, s.cmodint, sm.cbigint 
 from mod_8_mod_4 s
 left outer join small_table2 sm
@@ -1256,7 +438,7 @@ POSTHOOK: Input: default@mod_8_mod_4
 POSTHOOK: Input: default@small_table2
 #### A masked pattern was here ####
 17792
-PREHOOK: query: explain
+PREHOOK: query: explain vectorization detail formatted
 select count(*) from (select s.*, sm.*, s2.* 
 from mod_8_mod_4 s
 left outer join small_table2 sm
@@ -1265,7 +447,7 @@ left outer join mod_8_mod_4 s2
   on s2.cmodtinyint = s.cmodtinyint
 ) t1
 PREHOOK: type: QUERY
-POSTHOOK: query: explain
+POSTHOOK: query: explain vectorization detail formatted
 select count(*) from (select s.*, sm.*, s2.* 
 from mod_8_mod_4 s
 left outer join small_table2 sm
@@ -1274,117 +456,7 @@ left outer join mod_8_mod_4 s2
   on s2.cmodtinyint = s.cmodtinyint
 ) t1
 POSTHOOK: type: QUERY
-STAGE DEPENDENCIES:
-  Stage-2 is a root stage
-  Stage-1 depends on stages: Stage-2
-  Stage-0 depends on stages: Stage-1
-
-STAGE PLANS:
-  Stage: Stage-2
-    Spark
 #### A masked pattern was here ####
-      Vertices:
-        Map 3 
-            Map Operator Tree:
-                TableScan
-                  alias: sm
-                  Statistics: Num rows: 100 Data size: 362 Basic stats: COMPLETE Column stats: NONE
-                  Select Operator
-                    expressions: cbigint (type: bigint)
-                    outputColumnNames: _col0
-                    Statistics: Num rows: 100 Data size: 362 Basic stats: COMPLETE Column stats: NONE
-                    Spark HashTable Sink Operator
-                      keys:
-                        0 UDFToLong(_col1) (type: bigint)
-                        1 (_col0 pmod 8) (type: bigint)
-            Execution mode: vectorized
-            Local Work:
-              Map Reduce Local Work
-        Map 4 
-            Map Operator Tree:
-                TableScan
-                  alias: s2
-                  Statistics: Num rows: 6058 Data size: 2757 Basic stats: COMPLETE Column stats: NONE
-                  Select Operator
-                    expressions: cmodtinyint (type: int)
-                    outputColumnNames: _col0
-                    Statistics: Num rows: 6058 Data size: 2757 Basic stats: COMPLETE Column stats: NONE
-                    Spark HashTable Sink Operator
-                      keys:
-                        0 _col0 (type: int)
-                        1 _col0 (type: int)
-            Execution mode: vectorized
-            Local Work:
-              Map Reduce Local Work
-
-  Stage: Stage-1
-    Spark
-      Edges:
-        Reducer 2 <- Map 1 (GROUP, 1)
-#### A masked pattern was here ####
-      Vertices:
-        Map 1 
-            Map Operator Tree:
-                TableScan
-                  alias: s
-                  Statistics: Num rows: 6058 Data size: 2757 Basic stats: COMPLETE Column stats: NONE
-                  Select Operator
-                    expressions: cmodtinyint (type: int), cmodint (type: int)
-                    outputColumnNames: _col0, _col1
-                    Statistics: Num rows: 6058 Data size: 2757 Basic stats: COMPLETE Column stats: NONE
-                    Map Join Operator
-                      condition map:
-                           Left Outer Join0 to 1
-                      keys:
-                        0 UDFToLong(_col1) (type: bigint)
-                        1 (_col0 pmod 8) (type: bigint)
-                      outputColumnNames: _col0
-                      input vertices:
-                        1 Map 3
-                      Statistics: Num rows: 6663 Data size: 3032 Basic stats: COMPLETE Column stats: NONE
-                      Map Join Operator
-                        condition map:
-                             Left Outer Join0 to 1
-                        keys:
-                          0 _col0 (type: int)
-                          1 _col0 (type: int)
-                        input vertices:
-                          1 Map 4
-                        Statistics: Num rows: 7329 Data size: 3335 Basic stats: COMPLETE Column stats: NONE
-                        Group By Operator
-                          aggregations: count()
-                          mode: hash
-                          outputColumnNames: _col0
-                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                          Reduce Output Operator
-                            sort order: 
-                            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                            value expressions: _col0 (type: bigint)
-            Execution mode: vectorized
-            Local Work:
-              Map Reduce Local Work
-        Reducer 2 
-            Execution mode: vectorized
-            Reduce Operator Tree:
-              Group By Operator
-                aggregations: count(VALUE._col0)
-                mode: mergepartial
-                outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                File Output Operator
-                  compressed: false
-                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                  table:
-                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-
-  Stage: Stage-0
-    Fetch Operator
-      limit: -1
-      Processor Tree:
-        ListSink
-
 PREHOOK: query: select count(*) from (select s.*, sm.*, s2.* 
 from mod_8_mod_4 s
 left outer join small_table2 sm
