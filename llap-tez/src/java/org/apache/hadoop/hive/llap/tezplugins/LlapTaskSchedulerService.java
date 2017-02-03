@@ -701,20 +701,17 @@ public class LlapTaskSchedulerService extends TaskScheduler {
    */
   private SelectHostResult selectHost(TaskInfo request) {
     String[] requestedHosts = request.requestedHosts;
+    String requestedHostsDebugStr = Arrays.toString(requestedHosts);
     if (LOG.isDebugEnabled()) {
-      LOG.debug("selectingHost for task={} on hosts={}", request.task, Arrays.toString(requestedHosts));
+      LOG.debug("selectingHost for task={} on hosts={}", request.task,
+          requestedHostsDebugStr);
     }
     long schedulerAttemptTime = clock.getTime();
     readLock.lock(); // Read-lock. Not updating any stats at the moment.
     try {
-      // If there's no memory available, fail
-      if (getTotalResources().getMemory() <= 0) {
-        return SELECT_HOST_RESULT_INADEQUATE_TOTAL_CAPACITY;
-      }
-
       boolean shouldDelayForLocality = request.shouldDelayForLocality(schedulerAttemptTime);
       LOG.debug("ShouldDelayForLocality={} for task={} on hosts={}", shouldDelayForLocality,
-          request.task, Arrays.toString(requestedHosts));
+          request.task, requestedHostsDebugStr);
       if (requestedHosts != null && requestedHosts.length > 0) {
         int prefHostCount = -1;
         boolean requestedHostsWillBecomeAvailable = false;
@@ -729,8 +726,9 @@ public class LlapTaskSchedulerService extends TaskScheduler {
                 if  (nodeInfo.canAcceptTask()) {
                   // Successfully scheduled.
                   LOG.info(
-                      "Assigning " + nodeInfo.toShortString() + " when looking for " + host +
-                          ". local=true" + " FirstRequestedHost=" + (prefHostCount == 0) +
+                      "Assigning {} when looking for {}."
+                          + " local=true FirstRequestedHost={}, #prefLocations={}", nodeInfo
+                          .toShortString(), host, (prefHostCount == 0) +
                           (requestedHosts.length > 1 ? ", #prefLocations=" + requestedHosts.length :
                               ""));
                   return new SelectHostResult(nodeInfo);
@@ -767,7 +765,7 @@ public class LlapTaskSchedulerService extends TaskScheduler {
           if (requestedHostsWillBecomeAvailable) {
             if (LOG.isDebugEnabled()) {
               LOG.debug("Delaying local allocation for [" + request.task +
-                  "] when trying to allocate on [" + Arrays.toString(requestedHosts) + "]" +
+                  "] when trying to allocate on [" + requestedHostsDebugStr + "]" +
                   ". ScheduleAttemptTime=" + schedulerAttemptTime + ", taskDelayTimeout=" +
                   request.getLocalityDelayTimeout());
             }
@@ -775,7 +773,7 @@ public class LlapTaskSchedulerService extends TaskScheduler {
           } else {
             if (LOG.isDebugEnabled()) {
               LOG.debug("Skipping local allocation for [" + request.task +
-                  "] when trying to allocate on [" + Arrays.toString(requestedHosts) +
+                  "] when trying to allocate on [" + requestedHostsDebugStr +
                   "] since none of these hosts are part of the known list");
             }
           }
@@ -799,10 +797,9 @@ public class LlapTaskSchedulerService extends TaskScheduler {
         }
         for (NodeInfo nodeInfo : allNodes) {
           if (nodeInfo.canAcceptTask()) {
-            LOG.info("Assigning " + nodeInfo.toShortString()
-              + " when looking for any host, from #hosts=" + allNodes.size() + ", requestedHosts="
-              + ((requestedHosts == null || requestedHosts.length == 0)
-              ? "null" : Arrays.toString(requestedHosts)));
+            LOG.info("Assigning {} when looking for any host, from #hosts={}, requestedHosts={}",
+                nodeInfo.toShortString(), allNodes.size(), ((requestedHosts == null || requestedHosts.length == 0)
+                    ? "null" : requestedHostsDebugStr));
             return new SelectHostResult(nodeInfo);
           }
         }
@@ -825,10 +822,12 @@ public class LlapTaskSchedulerService extends TaskScheduler {
         for (int i = 0; i < allNodes.size(); i++) {
           NodeInfo nodeInfo = allNodes.get((i + requestedHostIdx + 1) % allNodes.size());
           if (nodeInfo.canAcceptTask()) {
-            LOG.info("Assigning " + nodeInfo.toShortString()
-              + " when looking for first requested host, from #hosts=" + allNodes.size() + ", requestedHosts="
-              + ((requestedHosts == null || requestedHosts.length == 0)
-              ? "null" : Arrays.toString(requestedHosts)));
+            if (LOG.isInfoEnabled()) {
+              LOG.info("Assigning {} when looking for first requested host, from #hosts={},"
+                      + " requestedHosts={}", nodeInfo.toShortString(), allNodes.size(),
+                  ((requestedHosts == null || requestedHosts.length == 0) ? "null" :
+                      requestedHostsDebugStr));
+            }
             return new SelectHostResult(nodeInfo);
           }
         }
@@ -1036,6 +1035,7 @@ public class LlapTaskSchedulerService extends TaskScheduler {
       }
       Iterator<Entry<Priority, List<TaskInfo>>> pendingIterator =
           pendingTasks.entrySet().iterator();
+      Resource totalResource = getTotalResources();
       while (pendingIterator.hasNext()) {
         Entry<Priority, List<TaskInfo>> entry = pendingIterator.next();
         List<TaskInfo> taskListAtPriority = entry.getValue();
@@ -1050,7 +1050,7 @@ public class LlapTaskSchedulerService extends TaskScheduler {
             dagStats.registerDelayedAllocation();
           }
           taskInfo.triedAssigningTask();
-          ScheduleResult scheduleResult = scheduleTask(taskInfo);
+          ScheduleResult scheduleResult = scheduleTask(taskInfo, totalResource);
           LOG.info("ScheduleResult for Task: {} = {}", taskInfo, scheduleResult);
           if (scheduleResult == ScheduleResult.SCHEDULED) {
             taskIter.remove();
@@ -1105,13 +1105,16 @@ public class LlapTaskSchedulerService extends TaskScheduler {
                 }
               }
               if (shouldPreempt) {
-                LOG.debug("Preempting for {} on potential hosts={}. TotalPendingPreemptions={}",
-                    taskInfo.task, Arrays.toString(potentialHosts), pendingPreemptions.get());
+                if (LOG.isDebugEnabled()) {
+                  LOG.debug("Preempting for {} on potential hosts={}. TotalPendingPreemptions={}",
+                      taskInfo.task, Arrays.toString(potentialHosts), pendingPreemptions.get());
+                }
                 preemptTasks(entry.getKey().getPriority(), 1, potentialHosts);
               } else {
-                LOG.debug(
-                    "Not preempting for {} on potential hosts={}. An existing preemption request exists",
-                    taskInfo.task, Arrays.toString(potentialHosts));
+                if (LOG.isDebugEnabled()) {
+                  LOG.debug("Not preempting for {} on potential hosts={}. An existing preemption request exists",
+                      taskInfo.task, Arrays.toString(potentialHosts));
+                }
               }
             } else { // Either DELAYED_RESOURCES or DELAYED_LOCALITY with an unknown requested host.
               // Request for a preemption if there's none pending. If a single preemption is pending,
@@ -1172,7 +1175,12 @@ public class LlapTaskSchedulerService extends TaskScheduler {
     return sb.toString();
   }
 
-  private ScheduleResult scheduleTask(TaskInfo taskInfo) {
+  private ScheduleResult scheduleTask(TaskInfo taskInfo, Resource totalResource) {
+    Preconditions.checkNotNull(totalResource, "totalResource can not be null");
+    // If there's no memory available, fail
+    if (totalResource.getMemory() <= 0) {
+      return SELECT_HOST_RESULT_INADEQUATE_TOTAL_CAPACITY.scheduleResult;
+    }
     SelectHostResult selectHostResult = selectHost(taskInfo);
     if (selectHostResult.scheduleResult == ScheduleResult.SCHEDULED) {
       NodeInfo nodeInfo = selectHostResult.nodeInfo;
@@ -1202,12 +1210,7 @@ public class LlapTaskSchedulerService extends TaskScheduler {
   // Subsequent tasks will be scheduled again once the de-allocate request for the preempted
   // task is processed.
   private void preemptTasks(int forPriority, int numTasksToPreempt, String []potentialHosts) {
-    Set<String> preemptHosts;
-    if (potentialHosts == null) {
-      preemptHosts = null;
-    } else {
-      preemptHosts = Sets.newHashSet(potentialHosts);
-    }
+    Set<String> preemptHosts = null;
     writeLock.lock();
     List<TaskInfo> preemptedTaskList = null;
     try {
@@ -1217,6 +1220,9 @@ public class LlapTaskSchedulerService extends TaskScheduler {
       while (iterator.hasNext() && preemptedCount < numTasksToPreempt) {
         Entry<Integer, TreeSet<TaskInfo>> entryAtPriority = iterator.next();
         if (entryAtPriority.getKey() > forPriority) {
+          if (potentialHosts != null && preemptHosts == null) {
+            preemptHosts = Sets.newHashSet(potentialHosts);
+          }
           Iterator<TaskInfo> taskInfoIterator = entryAtPriority.getValue().iterator();
           while (taskInfoIterator.hasNext() && preemptedCount < numTasksToPreempt) {
             TaskInfo taskInfo = taskInfoIterator.next();
