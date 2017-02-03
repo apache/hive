@@ -38,8 +38,8 @@ public class Utils {
     SplitLocationProvider splitLocationProvider;
     LOG.info("SplitGenerator using llap affinitized locations: " + useCustomLocations);
     if (useCustomLocations) {
-      LlapRegistryService serviceRegistry;
-      serviceRegistry = LlapRegistryService.getClient(conf);
+      LlapRegistryService serviceRegistry = LlapRegistryService.getClient(conf);
+      LOG.info("Using LLAP instance " + serviceRegistry.getApplicationId());
 
       Collection<ServiceInstance> serviceInstances =
           serviceRegistry.getInstances().getAllInstancesOrdered(true);

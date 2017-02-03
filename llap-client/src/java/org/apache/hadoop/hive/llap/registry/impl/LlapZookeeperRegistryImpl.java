@@ -71,6 +71,8 @@ import org.apache.hadoop.registry.client.types.ServiceRecord;
 import org.apache.hadoop.security.SecurityUtil;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.security.authentication.util.KerberosUtil;
+import org.apache.hadoop.yarn.api.records.ApplicationId;
+import org.apache.hadoop.yarn.api.records.ContainerId;
 import org.apache.hadoop.yarn.api.records.Resource;
 import org.apache.hadoop.yarn.conf.YarnConfiguration;
 import org.apache.zookeeper.ZooDefs;
@@ -573,11 +575,8 @@ public class LlapZookeeperRegistryImpl implements ServiceRegistry {
 
     private void populateCache() {
       for (ChildData childData : instancesCache.getCurrentData()) {
-        if (childData == null) continue;
-        byte[] data = childData.getData();
+        byte[] data = getWorkerData(childData);
         if (data == null) continue;
-        String nodeName = extractNodeName(childData);
-        if (!nodeName.startsWith(WORKER_PREFIX)) continue;
         try {
           ServiceRecord srv = encoder.fromBytes(childData.getPath(), data);
           ServiceInstance instance = new DynamicServiceInstance(srv);
@@ -596,6 +595,33 @@ public class LlapZookeeperRegistryImpl implements ServiceRegistry {
         instances.addAll(instanceSet);
       }
       return instances;
+    }
+
+    public ApplicationId getApplicationId() {
+      for (ChildData childData : instancesCache.getCurrentData()) {
+        byte[] data = getWorkerData(childData);
+        if (data == null) continue;
+        ServiceRecord sr = null;
+        try {
+          sr = encoder.fromBytes(childData.getPath(), data);
+        } catch (IOException e) {
+          LOG.error("Unable to decode data for zkpath: {}." +
+              " Ignoring from current instances list..", childData.getPath());
+          continue;
+        }
+        String containerStr = sr.get(HiveConf.ConfVars.LLAP_DAEMON_CONTAINER_ID.varname);
+        if (containerStr == null || containerStr.isEmpty()) continue;
+        return ContainerId.fromString(containerStr).getApplicationAttemptId().getApplicationId();
+      }
+      return null;
+    }
+
+    private byte[] getWorkerData(ChildData childData) {
+        if (childData == null) return null;
+        byte[] data = childData.getData();
+        if (data == null) return null;
+        if (!extractNodeName(childData).startsWith(WORKER_PREFIX)) return null;
+        return data;
     }
 
     @Override
@@ -763,6 +789,12 @@ public class LlapZookeeperRegistryImpl implements ServiceRegistry {
       this.instances = new DynamicServiceInstanceSet(instancesCache);
     }
     return instances;
+  }
+
+  @Override
+  public ApplicationId getApplicationId() throws IOException {
+    getInstances(null);
+    return instances.getApplicationId();
   }
 
   @Override

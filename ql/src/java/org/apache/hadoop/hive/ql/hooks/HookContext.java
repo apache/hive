@@ -34,6 +34,7 @@ import org.apache.hadoop.hive.ql.optimizer.lineage.LineageCtx.Index;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.shims.Utils;
 import org.apache.hadoop.security.UserGroupInformation;
+import org.apache.hadoop.yarn.api.records.ApplicationId;
 /**
  * Hook Context keeps all the necessary information for all the hooks.
  * New implemented hook can get the query plan, job conf and the list of all completed tasks from this hook context
@@ -65,12 +66,13 @@ public class HookContext {
   private final String operationId;
   private final String sessionId;
   private final String threadId;
-  private boolean isHiveServerQuery;
-  private PerfLogger perfLogger;
+  private final boolean isHiveServerQuery;
+  private final PerfLogger perfLogger;
 
   public HookContext(QueryPlan queryPlan, QueryState queryState,
-      Map<String, ContentSummary> inputPathToContentSummary, String userName, String ipAddress, String hiveInstanceAddress,
-      String operationId, String sessionId, String threadId, boolean isHiveServerQuery, PerfLogger perfLogger) throws Exception {
+      Map<String, ContentSummary> inputPathToContentSummary, String userName, String ipAddress,
+      String hiveInstanceAddress, String operationId, String sessionId, String threadId,
+      boolean isHiveServerQuery, PerfLogger perfLogger) throws Exception {
     this.queryPlan = queryPlan;
     this.queryState = queryState;
     this.conf = queryState.getConf();
@@ -227,16 +229,7 @@ public class HookContext {
     return isHiveServerQuery;
   }
 
-  public void setHiveServerQuery(boolean isHiveServerQuery) {
-    this.isHiveServerQuery = isHiveServerQuery;
-  }
-
   public PerfLogger getPerfLogger() {
     return perfLogger;
   }
-
-  public void setPerfLogger(PerfLogger perfLogger) {
-    this.perfLogger = perfLogger;
-  }
-
 }

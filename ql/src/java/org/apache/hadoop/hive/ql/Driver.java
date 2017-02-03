@@ -1735,8 +1735,8 @@ public class Driver implements CommandProcessor {
 
       SessionState ss = SessionState.get();
       hookContext = new HookContext(plan, queryState, ctx.getPathToCS(), ss.getUserName(),
-          ss.getUserIpAddress(), InetAddress.getLocalHost().getHostAddress(), operationId, ss.getSessionId(),
-          Thread.currentThread().getName(), ss.isHiveServerQuery(), perfLogger);
+          ss.getUserIpAddress(), InetAddress.getLocalHost().getHostAddress(), operationId,
+          ss.getSessionId(), Thread.currentThread().getName(), ss.isHiveServerQuery(), perfLogger);
       hookContext.setHookType(HookContext.HookType.PRE_EXEC_HOOK);
 
       for (Hook peh : getHooks(HiveConf.ConfVars.PREEXECHOOKS)) {
@@ -1770,9 +1770,8 @@ public class Driver implements CommandProcessor {
 
       setQueryDisplays(plan.getRootTasks());
       int mrJobs = Utilities.getMRTasks(plan.getRootTasks()).size();
-      int jobs = mrJobs
-        + Utilities.getTezTasks(plan.getRootTasks()).size()
-        + Utilities.getSparkTasks(plan.getRootTasks()).size();
+      int jobs = mrJobs + Utilities.getTezTasks(plan.getRootTasks()).size()
+          + Utilities.getSparkTasks(plan.getRootTasks()).size();
       if (jobs > 0) {
         logMrWarning(mrJobs);
         console.printInfo("Query ID = " + queryId);

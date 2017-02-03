@@ -15,6 +15,8 @@ package org.apache.hadoop.hive.llap.registry;
 
 import java.io.IOException;
 
+import org.apache.hadoop.yarn.api.records.ApplicationId;
+
 /**
  * ServiceRegistry interface for switching between fixed host and dynamic registry implementations.
  */
@@ -67,4 +69,9 @@ public interface ServiceRegistry {
    */
   public void registerStateChangeListener(ServiceInstanceStateChangeListener listener)
       throws IOException;
+
+  /**
+   * @return The application ID of the LLAP cluster.
+   */
+  ApplicationId getApplicationId() throws IOException;
 }

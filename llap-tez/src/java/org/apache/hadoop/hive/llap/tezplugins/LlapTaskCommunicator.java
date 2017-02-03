@@ -143,6 +143,7 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
     Preconditions.checkState((token != null) == UserGroupInformation.isSecurityEnabled());
 
     // Not closing this at the moment at shutdown, since this could be a shared instance.
+    // TODO: this is unused.
     serviceRegistry = LlapRegistryService.getClient(conf);
 
     umbilical = new LlapTaskUmbilicalProtocolImpl(getUmbilical());

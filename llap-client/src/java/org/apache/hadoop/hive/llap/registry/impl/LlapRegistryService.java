@@ -24,6 +24,7 @@ import org.apache.hadoop.hive.llap.registry.ServiceInstanceSet;
 import org.apache.hadoop.hive.llap.registry.ServiceInstanceStateChangeListener;
 import org.apache.hadoop.hive.llap.registry.ServiceRegistry;
 import org.apache.hadoop.service.AbstractService;
+import org.apache.hadoop.yarn.api.records.ApplicationId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -56,6 +57,7 @@ public class LlapRegistryService extends AbstractService {
     String hosts = HiveConf.getTrimmedVar(conf, HiveConf.ConfVars.LLAP_DAEMON_SERVICE_HOSTS);
     Preconditions.checkNotNull(hosts, ConfVars.LLAP_DAEMON_SERVICE_HOSTS.toString() + " must be defined");
     LlapRegistryService registry;
+    // TODO: this is not going to work with multiple users.
     if (hosts.startsWith("@")) {
       // Caching instances only in case of the YARN registry. Each host based list will get it's own copy.
       String name = hosts.substring(1);
@@ -142,5 +144,9 @@ public class LlapRegistryService extends AbstractService {
   // this is only useful for the daemons to know themselves
   public String getWorkerIdentity() {
     return identity;
+  }
+
+  public ApplicationId getApplicationId() throws IOException {
+    return registry.getApplicationId();
   }
 }
