@@ -1752,7 +1752,7 @@ public class SessionState {
     this.progressMonitor = progressMonitor;
   }
 
-  public ProgressMonitor progressMonitor() {
+  public ProgressMonitor getProgressMonitor() {
     return progressMonitor;
   }
 

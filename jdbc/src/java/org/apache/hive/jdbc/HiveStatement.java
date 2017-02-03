@@ -957,6 +957,10 @@ public class HiveStatement implements java.sql.Statement {
     return null;
   }
 
+  /**
+   * This is only used by the beeline client to set the stream on which in place progress updates
+   * are to be shown
+   */
   public void setInPlaceUpdateStream(InPlaceUpdateStream stream) {
     this.inPlaceUpdateStream = stream;
   }

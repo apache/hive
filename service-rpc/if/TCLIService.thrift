@@ -63,6 +63,9 @@ enum TProtocolVersion {
 
   // V9 adds support for serializing ResultSets in SerDe
   HIVE_CLI_SERVICE_PROTOCOL_V9
+
+  // V10 adds support for in place updates via GetOperationStatus
+  HIVE_CLI_SERVICE_PROTOCOL_V10
 }
 
 enum TTypeId {
@@ -559,7 +562,7 @@ struct TOperationHandle {
 // which operations may be executed.
 struct TOpenSessionReq {
   // The version of the HiveServer2 protocol that the client is using.
-  1: required TProtocolVersion client_protocol = TProtocolVersion.HIVE_CLI_SERVICE_PROTOCOL_V9
+  1: required TProtocolVersion client_protocol = TProtocolVersion.HIVE_CLI_SERVICE_PROTOCOL_V10
 
   // Username and password for authentication.
   // Depending on the authentication scheme being used,
@@ -578,7 +581,7 @@ struct TOpenSessionResp {
   1: required TStatus status
 
   // The protocol version that the server is using.
-  2: required TProtocolVersion serverProtocolVersion = TProtocolVersion.HIVE_CLI_SERVICE_PROTOCOL_V9
+  2: required TProtocolVersion serverProtocolVersion = TProtocolVersion.HIVE_CLI_SERVICE_PROTOCOL_V10
 
   // Session Handle
   3: optional TSessionHandle sessionHandle

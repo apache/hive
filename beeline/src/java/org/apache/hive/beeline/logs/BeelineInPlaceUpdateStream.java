@@ -1,5 +1,6 @@
 package org.apache.hive.beeline.logs;
 
+import org.apache.hadoop.hive.common.log.InPlaceUpdate;
 import org.apache.hadoop.hive.common.log.ProgressMonitor;
 import org.apache.hive.jdbc.logs.InPlaceUpdateStream;
 import org.apache.hive.service.rpc.thrift.TJobExecutionStatus;
@@ -9,10 +10,10 @@ import java.io.PrintStream;
 import java.util.List;
 
 public class BeelineInPlaceUpdateStream implements InPlaceUpdateStream {
-  private org.apache.hadoop.hive.common.log.InPlaceUpdate inPlaceUpdate;
+  private InPlaceUpdate inPlaceUpdate;
 
   public BeelineInPlaceUpdateStream(PrintStream out) {
-    this.inPlaceUpdate = new org.apache.hadoop.hive.common.log.InPlaceUpdate(out);
+    this.inPlaceUpdate = new InPlaceUpdate(out);
   }
 
   @Override
