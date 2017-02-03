@@ -39,14 +39,23 @@ import org.junit.Test;
 public class TestFirstInFirstOutComparator {
 
   private SubmitWorkRequestProto createRequest(int fragmentNumber, int numSelfAndUpstreamTasks, int dagStartTime,
-                                               int attemptStartTime) {
+      int attemptStartTime) {
     // Same priority for all tasks.
     return createRequest(fragmentNumber, numSelfAndUpstreamTasks, 0, dagStartTime, attemptStartTime, 1);
   }
 
   private SubmitWorkRequestProto createRequest(int fragmentNumber, int numSelfAndUpstreamTasks,
-                                               int numSelfAndUpstreamComplete, int dagStartTime,
-                                               int attemptStartTime, int withinDagPriority) {
+      int numSelfAndUpstreamComplete, int dagStartTime,
+      int attemptStartTime, int withinDagPriority) {
+    return createRequest(fragmentNumber, numSelfAndUpstreamTasks, numSelfAndUpstreamComplete,
+        dagStartTime, attemptStartTime, withinDagPriority, "MockDag");
+  }
+
+
+  private SubmitWorkRequestProto createRequest(int fragmentNumber, int numSelfAndUpstreamTasks,
+      int numSelfAndUpstreamComplete, int dagStartTime,
+      int attemptStartTime, int withinDagPriority,
+      String dagName) {
     ApplicationId appId = ApplicationId.newInstance(9999, 72);
     TezDAGID dagId = TezDAGID.getInstance(appId, 1);
     TezVertexID vId = TezVertexID.getInstance(dagId, 35);
@@ -58,22 +67,22 @@ public class TestFirstInFirstOutComparator {
         .setFragmentNumber(fragmentNumber)
         .setWorkSpec(
             VertexOrBinary.newBuilder().setVertex(
-            SignableVertexSpec
-                .newBuilder()
-                .setQueryIdentifier(
-                    QueryIdentifierProto.newBuilder()
-                        .setApplicationIdString(appId.toString())
-                        .setAppAttemptNumber(0)
-                        .setDagIndex(dagId.getId())
-                        .build())
-                .setVertexIndex(vId.getId())
-                .setDagName("MockDag")
-                .setVertexName("MockVertex")
-                .setUser("MockUser")
-                .setTokenIdentifier("MockToken_1")
-                .setProcessorDescriptor(
-                    EntityDescriptorProto.newBuilder().setClassName("MockProcessor").build())
-                .build()).build())
+                SignableVertexSpec
+                    .newBuilder()
+                    .setQueryIdentifier(
+                        QueryIdentifierProto.newBuilder()
+                            .setApplicationIdString(appId.toString())
+                            .setAppAttemptNumber(0)
+                            .setDagIndex(dagId.getId())
+                            .build())
+                    .setVertexIndex(vId.getId())
+                    .setDagName(dagName)
+                    .setVertexName("MockVertex")
+                    .setUser("MockUser")
+                    .setTokenIdentifier("MockToken_1")
+                    .setProcessorDescriptor(
+                        EntityDescriptorProto.newBuilder().setClassName("MockProcessor").build())
+                    .build()).build())
         .setAmHost("localhost")
         .setAmPort(12345)
         .setContainerIdString("MockContainer_1")
@@ -240,8 +249,8 @@ public class TestFirstInFirstOutComparator {
     assertEquals(r4, queue.peek());
     // offer accepted, r1 evicted
     assertEquals(r1, queue.offer(r5));
-    assertEquals(r4, queue.take());
     assertEquals(r5, queue.take());
+    assertEquals(r4, queue.take());
     assertEquals(r3, queue.take());
     assertEquals(r2, queue.take());
   }
@@ -265,10 +274,28 @@ public class TestFirstInFirstOutComparator {
   }
 
   @Test(timeout = 60000)
+  public void testWaitQueueComparatorWithinSameDagPriority() throws InterruptedException {
+    TaskWrapper r1 = createTaskWrapper(createRequest(1, 1, 0, 10, 100, 10), true, 100000);
+    TaskWrapper r2 = createTaskWrapper(createRequest(2, 1, 0, 10, 100, 10), true, 100000);
+    TaskWrapper r3 = createTaskWrapper(createRequest(3, 1, 0, 10, 100, 10), true, 100000);
+
+    EvictingPriorityBlockingQueue<TaskWrapper> queue = new EvictingPriorityBlockingQueue<>(
+        new ShortestJobFirstComparator(), 3);
+
+    assertNull(queue.offer(r1));
+    assertNull(queue.offer(r2));
+    assertNull(queue.offer(r3));
+
+    // can not queue more requests as queue is full
+    TaskWrapper r4 = createTaskWrapper(createRequest(4, 1, 0, 10, 100, 10), true, 100000);
+    assertEquals(r4, queue.offer(r4));
+  }
+
+  @Test(timeout = 60000)
   public void testWaitQueueComparatorParallelism() throws InterruptedException {
-    TaskWrapper r1 = createTaskWrapper(createRequest(1, 10, 3, 100, 100, 1), false, 100000);
-    TaskWrapper r2 = createTaskWrapper(createRequest(2, 10, 7, 100, 100, 1), false, 100000);
-    TaskWrapper r3 = createTaskWrapper(createRequest(3, 10, 5, 100, 100, 1), false, 100000);
+    TaskWrapper r1 = createTaskWrapper(createRequest(1, 10, 3, 100, 100, 1, "q1"), false, 100000);
+    TaskWrapper r2 = createTaskWrapper(createRequest(2, 10, 7, 100, 100, 1, "q2"), false, 100000);
+    TaskWrapper r3 = createTaskWrapper(createRequest(3, 10, 5, 100, 100, 1, "q3"), false, 100000);
 
     EvictingPriorityBlockingQueue<TaskWrapper> queue = new EvictingPriorityBlockingQueue<>(
         new FirstInFirstOutComparator(), 4);

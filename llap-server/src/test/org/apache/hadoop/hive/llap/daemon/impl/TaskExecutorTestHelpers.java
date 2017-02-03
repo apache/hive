@@ -90,9 +90,24 @@ public class TaskExecutorTestHelpers {
   }
 
   public static SubmitWorkRequestProto createSubmitWorkRequestProto(
+      int fragmentNumber, int selfAndUpstreamParallelism, long firstAttemptStartTime,
+      long currentAttemptStartTime, String dagName) {
+    return createSubmitWorkRequestProto(fragmentNumber, selfAndUpstreamParallelism, 0, firstAttemptStartTime,
+        currentAttemptStartTime, 1, dagName);
+  }
+
+  public static SubmitWorkRequestProto createSubmitWorkRequestProto(
       int fragmentNumber, int selfAndUpstreamParallelism,
       int selfAndUpstreamComplete, long firstAttemptStartTime,
       long currentAttemptStartTime, int withinDagPriority) {
+    return createSubmitWorkRequestProto(fragmentNumber, selfAndUpstreamParallelism, 0, firstAttemptStartTime,
+        currentAttemptStartTime, withinDagPriority, "MockDag");
+  }
+
+  public static SubmitWorkRequestProto createSubmitWorkRequestProto(
+      int fragmentNumber, int selfAndUpstreamParallelism,
+      int selfAndUpstreamComplete, long firstAttemptStartTime,
+      long currentAttemptStartTime, int withinDagPriority, String dagName) {
     ApplicationId appId = ApplicationId.newInstance(9999, 72);
     TezDAGID dagId = TezDAGID.getInstance(appId, 1);
     TezVertexID vId = TezVertexID.getInstance(dagId, 35);
@@ -103,7 +118,7 @@ public class TaskExecutorTestHelpers {
         .setWorkSpec(
             VertexOrBinary.newBuilder().setVertex(
             SignableVertexSpec.newBuilder()
-                .setDagName("MockDag")
+                .setDagName(dagName)
                 .setUser("MockUser")
                 .setTokenIdentifier("MockToken_1")
                 .setQueryIdentifier(
