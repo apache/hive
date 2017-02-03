@@ -2841,7 +2841,8 @@ public class HiveConf extends Configuration {
     TEZ_EXEC_INPLACE_PROGRESS(
         "hive.tez.exec.inplace.progress",
         true,
-        "Updates tez job execution progress in-place in the terminal."),
+        "Updates tez job execution progress in-place in the terminal when hive-cli is used. If this"
+            + " is required in hive server 2 mode then the config value must be false."),
     HIVE_SERVER2_INPLACE_PROGRESS(
         "hive.server2.in.place.progress",
         true,
