@@ -20,8 +20,12 @@ package org.apache.hive.common.util;
 
 import static org.junit.Assert.assertEquals;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.util.ArrayList;
 import java.util.Random;
 
+import org.junit.Assert;
 import org.junit.Test;
 
 /**
@@ -460,5 +464,126 @@ public class TestBloomFilter {
     assertEquals(true, bf.testString(v1));
     assertEquals(true, bf.testString(v2));
     assertEquals(true, bf.testString(v3));
+  }
+
+  @Test
+  public void testSerialize() throws Exception {
+    BloomFilter bf1 = new BloomFilter(10000);
+    String[] inputs = {
+      "bloo",
+      "bloom fil",
+      "bloom filter",
+      "cuckoo filter",
+    };
+
+    for (String val : inputs) {
+      bf1.addString(val);
+    }
+
+    // Serialize/deserialize
+    ByteArrayOutputStream bytesOut = new ByteArrayOutputStream();
+    BloomFilter.serialize(bytesOut, bf1);
+    ByteArrayInputStream bytesIn = new ByteArrayInputStream(bytesOut.toByteArray());
+    BloomFilter bf2 = BloomFilter.deserialize(bytesIn);
+
+    for (String val : inputs) {
+      assertEquals("Testing bf1 with " + val, true, bf1.testString(val));
+      assertEquals("Testing bf2 with " + val, true, bf2.testString(val));
+    }
+  }
+
+  @Test
+  public void testMergeBloomFilterBytes() throws Exception {
+    BloomFilter bf1 = new BloomFilter(10000);
+    BloomFilter bf2 = new BloomFilter(10000);
+
+    String[] inputs1 = {
+      "bloo",
+      "bloom fil",
+      "bloom filter",
+      "cuckoo filter",
+    };
+
+    String[] inputs2 = {
+      "2_bloo",
+      "2_bloom fil",
+      "2_bloom filter",
+      "2_cuckoo filter",
+    };
+
+    for (String val : inputs1) {
+      bf1.addString(val);
+    }
+    for (String val : inputs2) {
+      bf2.addString(val);
+    }
+
+    ByteArrayOutputStream bytesOut = new ByteArrayOutputStream();
+    BloomFilter.serialize(bytesOut, bf1);
+    byte[] bf1Bytes = bytesOut.toByteArray();
+    bytesOut.reset();
+    BloomFilter.serialize(bytesOut, bf1);
+    byte[] bf2Bytes = bytesOut.toByteArray();
+
+    // Merge bytes
+    BloomFilter.mergeBloomFilterBytes(
+        bf1Bytes, 0, bf1Bytes.length,
+        bf2Bytes, 0, bf2Bytes.length);
+
+    // Deserialize and test
+    ByteArrayInputStream bytesIn = new ByteArrayInputStream(bf1Bytes, 0, bf1Bytes.length);
+    BloomFilter bfMerged = BloomFilter.deserialize(bytesIn);
+    // All values should pass test
+    for (String val : inputs1) {
+      bfMerged.addString(val);
+    }
+    for (String val : inputs2) {
+      bfMerged.addString(val);
+    }
+  }
+
+  @Test
+  public void testMergeBloomFilterBytesFailureCases() throws Exception {
+    BloomFilter bf1 = new BloomFilter(1000);
+    BloomFilter bf2 = new BloomFilter(200);
+    // Create bloom filter with same number of bits, but different # hash functions
+    ArrayList<Long> bits = new ArrayList<Long>();
+    for (int idx = 0; idx < bf1.getBitSet().length; ++idx) {
+      bits.add(0L);
+    }
+    BloomFilter bf3 = new BloomFilter(bits, bf1.getBitSize(), bf1.getNumHashFunctions() + 1);
+
+    // Serialize to bytes
+    ByteArrayOutputStream bytesOut = new ByteArrayOutputStream();
+    BloomFilter.serialize(bytesOut, bf1);
+    byte[] bf1Bytes = bytesOut.toByteArray();
+
+    bytesOut.reset();
+    BloomFilter.serialize(bytesOut, bf2);
+    byte[] bf2Bytes = bytesOut.toByteArray();
+
+    bytesOut.reset();
+    BloomFilter.serialize(bytesOut, bf3);
+    byte[] bf3Bytes = bytesOut.toByteArray();
+
+    try {
+      // this should fail
+      BloomFilter.mergeBloomFilterBytes(
+          bf1Bytes, 0, bf1Bytes.length,
+          bf2Bytes, 0, bf2Bytes.length);
+      Assert.fail("Expected exception not encountered");
+    } catch (IllegalArgumentException err) {
+      // expected
+    }
+
+    try {
+      // this should fail
+      BloomFilter.mergeBloomFilterBytes(
+          bf1Bytes, 0, bf1Bytes.length,
+          bf3Bytes, 0, bf3Bytes.length);
+      Assert.fail("Expected exception not encountered");
+    } catch (IllegalArgumentException err) {
+      // expected
+    }
   }
 }

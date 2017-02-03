@@ -72,6 +72,8 @@ public class VectorFilterOperator extends FilterOperator {
     try {
       heartbeatInterval = HiveConf.getIntVar(hconf,
           HiveConf.ConfVars.HIVESENDHEARTBEAT);
+
+      conditionEvaluator.init(hconf);
     } catch (Throwable e) {
       throw new HiveException(e);
     }

@@ -22,8 +22,11 @@ import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentLengthException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
+import org.apache.hadoop.hive.ql.exec.vector.VectorizedExpressions;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorInBloomFilterColDynamicValue;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.io.DateWritable;
+import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.*;
@@ -41,6 +44,7 @@ import java.sql.Timestamp;
 /**
  * GenericUDF to lookup a value in BloomFilter
  */
+@VectorizedExpressions({VectorInBloomFilterColDynamicValue.class})
 public class GenericUDFInBloomFilter extends GenericUDF {
   private static final Logger LOG = LoggerFactory.getLogger(GenericUDFInBloomFilter.class);
 
@@ -48,6 +52,7 @@ public class GenericUDFInBloomFilter extends GenericUDF {
   private transient ObjectInspector bloomFilterObjectInspector;
   private transient BloomFilter bloomFilter;
   private transient boolean initializedBloomFilter;
+  private transient byte[] scratchBuffer = new byte[HiveDecimal.SCRATCH_BUFFER_LEN_TO_BYTES];
 
   @Override
   public ObjectInspector initialize(ObjectInspector[] arguments) throws UDFArgumentException {
@@ -133,9 +138,10 @@ public class GenericUDFInBloomFilter extends GenericUDF {
                 get(arguments[0].get());
         return bloomFilter.testDouble(vDouble);
       case DECIMAL:
-        HiveDecimal vDecimal = ((HiveDecimalObjectInspector) valObjectInspector).
-                getPrimitiveJavaObject(arguments[0].get());
-        return bloomFilter.testString(vDecimal.toString());
+        HiveDecimalWritable vDecimal = ((HiveDecimalObjectInspector) valObjectInspector).
+            getPrimitiveWritableObject(arguments[0].get());
+        int startIdx = vDecimal.toBytes(scratchBuffer);
+        return bloomFilter.testBytes(scratchBuffer, startIdx, scratchBuffer.length - startIdx);
       case DATE:
         DateWritable vDate = ((DateObjectInspector) valObjectInspector).
                 getPrimitiveWritableObject(arguments[0].get());

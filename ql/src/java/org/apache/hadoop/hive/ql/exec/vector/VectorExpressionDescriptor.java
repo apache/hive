@@ -183,7 +183,8 @@ public class VectorExpressionDescriptor {
   public enum InputExpressionType {
     NONE(0),
     COLUMN(1),
-    SCALAR(2);
+    SCALAR(2),
+    DYNAMICVALUE(3);
 
     private final int value;
 

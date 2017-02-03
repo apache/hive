@@ -334,6 +334,7 @@ public class Vectorizer implements PhysicalPlanResolver {
     supportedGenericUDFs.add(GenericUDFNvl.class);
     supportedGenericUDFs.add(GenericUDFElt.class);
     supportedGenericUDFs.add(GenericUDFInitCap.class);
+    supportedGenericUDFs.add(GenericUDFInBloomFilter.class);
 
     // For type casts
     supportedGenericUDFs.add(UDFToLong.class);
@@ -367,6 +368,7 @@ public class Vectorizer implements PhysicalPlanResolver {
     supportedAggregationUdfs.add("stddev");
     supportedAggregationUdfs.add("stddev_pop");
     supportedAggregationUdfs.add("stddev_samp");
+    supportedAggregationUdfs.add("bloom_filter");
   }
 
   private class VectorTaskColumnInfo {
