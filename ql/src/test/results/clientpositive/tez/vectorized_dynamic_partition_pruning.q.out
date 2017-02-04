@@ -3000,10 +3000,11 @@ STAGE PLANS:
     Tez
 #### A masked pattern was here ####
       Edges:
-        Reducer 2 <- Map 1 (SIMPLE_EDGE), Union 6 (SIMPLE_EDGE)
+        Reducer 2 <- Map 1 (SIMPLE_EDGE), Reducer 7 (SIMPLE_EDGE)
         Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
         Reducer 5 <- Map 4 (SIMPLE_EDGE), Union 6 (CONTAINS)
-        Reducer 8 <- Map 7 (SIMPLE_EDGE), Union 6 (CONTAINS)
+        Reducer 7 <- Union 6 (SIMPLE_EDGE)
+        Reducer 9 <- Map 8 (SIMPLE_EDGE), Union 6 (CONTAINS)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -3039,7 +3040,7 @@ STAGE PLANS:
                         sort order: 
                         Statistics: Num rows: 1 Data size: 84 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col0 (type: string)
-        Map 7 
+        Map 8 
             Map Operator Tree:
                 TableScan
                   alias: srcpart
@@ -3061,7 +3062,7 @@ STAGE PLANS:
             Reduce Operator Tree:
               Merge Join Operator
                 condition map:
-                     Left Semi Join 0 to 1
+                     Inner Join 0 to 1
                 keys:
                   0 _col0 (type: string)
                   1 _col0 (type: string)
@@ -3111,22 +3112,35 @@ STAGE PLANS:
                       sort order: +
                       Map-reduce partition columns: _col0 (type: string)
                       Statistics: Num rows: 2 Data size: 168 Basic stats: COMPLETE Column stats: NONE
-                    Select Operator
-                      expressions: _col0 (type: string)
-                      outputColumnNames: _col0
-                      Statistics: Num rows: 2 Data size: 168 Basic stats: COMPLETE Column stats: NONE
-                      Group By Operator
-                        keys: _col0 (type: string)
-                        mode: hash
-                        outputColumnNames: _col0
-                        Statistics: Num rows: 2 Data size: 168 Basic stats: COMPLETE Column stats: NONE
-                        Dynamic Partitioning Event Operator
-                          Target column: ds (string)
-                          Target Input: srcpart
-                          Partition key expr: ds
-                          Statistics: Num rows: 2 Data size: 168 Basic stats: COMPLETE Column stats: NONE
-                          Target Vertex: Map 1
-        Reducer 8 
+        Reducer 7 
+            Execution mode: vectorized
+            Reduce Operator Tree:
+              Group By Operator
+                keys: KEY._col0 (type: string)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 84 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col0 (type: string)
+                  sort order: +
+                  Map-reduce partition columns: _col0 (type: string)
+                  Statistics: Num rows: 1 Data size: 84 Basic stats: COMPLETE Column stats: NONE
+                Select Operator
+                  expressions: _col0 (type: string)
+                  outputColumnNames: _col0
+                  Statistics: Num rows: 1 Data size: 84 Basic stats: COMPLETE Column stats: NONE
+                  Group By Operator
+                    keys: _col0 (type: string)
+                    mode: hash
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 1 Data size: 84 Basic stats: COMPLETE Column stats: NONE
+                    Dynamic Partitioning Event Operator
+                      Target column: ds (string)
+                      Target Input: srcpart
+                      Partition key expr: ds
+                      Statistics: Num rows: 1 Data size: 84 Basic stats: COMPLETE Column stats: NONE
+                      Target Vertex: Map 1
+        Reducer 9 
             Execution mode: vectorized
             Reduce Operator Tree:
               Group By Operator
@@ -3147,21 +3161,6 @@ STAGE PLANS:
                       sort order: +
                       Map-reduce partition columns: _col0 (type: string)
                       Statistics: Num rows: 2 Data size: 168 Basic stats: COMPLETE Column stats: NONE
-                    Select Operator
-                      expressions: _col0 (type: string)
-                      outputColumnNames: _col0
-                      Statistics: Num rows: 2 Data size: 168 Basic stats: COMPLETE Column stats: NONE
-                      Group By Operator
-                        keys: _col0 (type: string)
-                        mode: hash
-                        outputColumnNames: _col0
-                        Statistics: Num rows: 2 Data size: 168 Basic stats: COMPLETE Column stats: NONE
-                        Dynamic Partitioning Event Operator
-                          Target column: ds (string)
-                          Target Input: srcpart
-                          Partition key expr: ds
-                          Statistics: Num rows: 2 Data size: 168 Basic stats: COMPLETE Column stats: NONE
-                          Target Vertex: Map 1
         Union 6 
             Vertex: Union 6
 
@@ -3201,10 +3200,11 @@ STAGE PLANS:
     Tez
 #### A masked pattern was here ####
       Edges:
-        Reducer 2 <- Map 1 (SIMPLE_EDGE), Union 6 (SIMPLE_EDGE)
+        Reducer 2 <- Map 1 (SIMPLE_EDGE), Reducer 7 (SIMPLE_EDGE)
         Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
         Reducer 5 <- Map 4 (SIMPLE_EDGE), Union 6 (CONTAINS)
-        Reducer 8 <- Map 7 (SIMPLE_EDGE), Union 6 (CONTAINS)
+        Reducer 7 <- Union 6 (SIMPLE_EDGE)
+        Reducer 9 <- Map 8 (SIMPLE_EDGE), Union 6 (CONTAINS)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -3240,7 +3240,7 @@ STAGE PLANS:
                         sort order: 
                         Statistics: Num rows: 1 Data size: 84 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col0 (type: string)
-        Map 7 
+        Map 8 
             Map Operator Tree:
                 TableScan
                   alias: srcpart
@@ -3262,7 +3262,7 @@ STAGE PLANS:
             Reduce Operator Tree:
               Merge Join Operator
                 condition map:
-                     Left Semi Join 0 to 1
+                     Inner Join 0 to 1
                 keys:
                   0 _col0 (type: string)
                   1 _col0 (type: string)
@@ -3314,22 +3314,35 @@ STAGE PLANS:
                       sort order: +
                       Map-reduce partition columns: _col0 (type: string)
                       Statistics: Num rows: 2 Data size: 168 Basic stats: COMPLETE Column stats: NONE
-                    Select Operator
-                      expressions: _col0 (type: string)
-                      outputColumnNames: _col0
-                      Statistics: Num rows: 2 Data size: 168 Basic stats: COMPLETE Column stats: NONE
-                      Group By Operator
-                        keys: _col0 (type: string)
-                        mode: hash
-                        outputColumnNames: _col0
-                        Statistics: Num rows: 2 Data size: 168 Basic stats: COMPLETE Column stats: NONE
-                        Dynamic Partitioning Event Operator
-                          Target column: ds (string)
-                          Target Input: srcpart
-                          Partition key expr: ds
-                          Statistics: Num rows: 2 Data size: 168 Basic stats: COMPLETE Column stats: NONE
-                          Target Vertex: Map 1
-        Reducer 8 
+        Reducer 7 
+            Execution mode: vectorized
+            Reduce Operator Tree:
+              Group By Operator
+                keys: KEY._col0 (type: string)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 84 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col0 (type: string)
+                  sort order: +
+                  Map-reduce partition columns: _col0 (type: string)
+                  Statistics: Num rows: 1 Data size: 84 Basic stats: COMPLETE Column stats: NONE
+                Select Operator
+                  expressions: _col0 (type: string)
+                  outputColumnNames: _col0
+                  Statistics: Num rows: 1 Data size: 84 Basic stats: COMPLETE Column stats: NONE
+                  Group By Operator
+                    keys: _col0 (type: string)
+                    mode: hash
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 1 Data size: 84 Basic stats: COMPLETE Column stats: NONE
+                    Dynamic Partitioning Event Operator
+                      Target column: ds (string)
+                      Target Input: srcpart
+                      Partition key expr: ds
+                      Statistics: Num rows: 1 Data size: 84 Basic stats: COMPLETE Column stats: NONE
+                      Target Vertex: Map 1
+        Reducer 9 
             Execution mode: vectorized
             Reduce Operator Tree:
               Group By Operator
@@ -3350,21 +3363,6 @@ STAGE PLANS:
                       sort order: +
                       Map-reduce partition columns: _col0 (type: string)
                       Statistics: Num rows: 2 Data size: 168 Basic stats: COMPLETE Column stats: NONE
-                    Select Operator
-                      expressions: _col0 (type: string)
-                      outputColumnNames: _col0
-                      Statistics: Num rows: 2 Data size: 168 Basic stats: COMPLETE Column stats: NONE
-                      Group By Operator
-                        keys: _col0 (type: string)
-                        mode: hash
-                        outputColumnNames: _col0
-                        Statistics: Num rows: 2 Data size: 168 Basic stats: COMPLETE Column stats: NONE
-                        Dynamic Partitioning Event Operator
-                          Target column: ds (string)
-                          Target Input: srcpart
-                          Partition key expr: ds
-                          Statistics: Num rows: 2 Data size: 168 Basic stats: COMPLETE Column stats: NONE
-                          Target Vertex: Map 1
         Union 6 
             Vertex: Union 6
 
@@ -5211,10 +5209,10 @@ STAGE PLANS:
     Tez
 #### A masked pattern was here ####
       Edges:
-        Map 1 <- Union 5 (BROADCAST_EDGE)
-        Reducer 2 <- Map 1 (SIMPLE_EDGE)
-        Reducer 4 <- Map 3 (SIMPLE_EDGE), Union 5 (CONTAINS)
-        Reducer 7 <- Map 6 (SIMPLE_EDGE), Union 5 (CONTAINS)
+        Reducer 3 <- Map 2 (SIMPLE_EDGE), Union 4 (CONTAINS)
+        Reducer 5 <- Map 1 (BROADCAST_EDGE), Union 4 (SIMPLE_EDGE)
+        Reducer 6 <- Reducer 5 (SIMPLE_EDGE)
+        Reducer 8 <- Map 7 (SIMPLE_EDGE), Union 4 (CONTAINS)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -5227,28 +5225,12 @@ STAGE PLANS:
                     expressions: ds (type: string)
                     outputColumnNames: _col0
                     Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
-                    Map Join Operator
-                      condition map:
-                           Left Semi Join 0 to 1
-                      keys:
-                        0 _col0 (type: string)
-                        1 _col0 (type: string)
-                      outputColumnNames: _col0
-                      input vertices:
-                        1 Union 5
-                      Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
-                      HybridGraceHashJoin: true
-                      Group By Operator
-                        keys: _col0 (type: string)
-                        mode: hash
-                        outputColumnNames: _col0
-                        Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
-                        Reduce Output Operator
-                          key expressions: _col0 (type: string)
-                          sort order: +
-                          Map-reduce partition columns: _col0 (type: string)
-                          Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
-        Map 3 
+                    Reduce Output Operator
+                      key expressions: _col0 (type: string)
+                      sort order: +
+                      Map-reduce partition columns: _col0 (type: string)
+                      Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
+        Map 2 
             Map Operator Tree:
                 TableScan
                   alias: srcpart
@@ -5266,7 +5248,7 @@ STAGE PLANS:
                         sort order: 
                         Statistics: Num rows: 1 Data size: 84 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col0 (type: string)
-        Map 6 
+        Map 7 
             Map Operator Tree:
                 TableScan
                   alias: srcpart
@@ -5284,22 +5266,7 @@ STAGE PLANS:
                         sort order: 
                         Statistics: Num rows: 1 Data size: 84 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col0 (type: string)
-        Reducer 2 
-            Execution mode: vectorized
-            Reduce Operator Tree:
-              Group By Operator
-                keys: KEY._col0 (type: string)
-                mode: mergepartial
-                outputColumnNames: _col0
-                Statistics: Num rows: 1100 Data size: 11686 Basic stats: COMPLETE Column stats: NONE
-                File Output Operator
-                  compressed: false
-                  Statistics: Num rows: 1100 Data size: 11686 Basic stats: COMPLETE Column stats: NONE
-                  table:
-                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-        Reducer 4 
+        Reducer 3 
             Execution mode: vectorized
             Reduce Operator Tree:
               Group By Operator
@@ -5320,22 +5287,51 @@ STAGE PLANS:
                       sort order: +
                       Map-reduce partition columns: _col0 (type: string)
                       Statistics: Num rows: 2 Data size: 168 Basic stats: COMPLETE Column stats: NONE
-                    Select Operator
-                      expressions: _col0 (type: string)
-                      outputColumnNames: _col0
-                      Statistics: Num rows: 2 Data size: 168 Basic stats: COMPLETE Column stats: NONE
-                      Group By Operator
-                        keys: _col0 (type: string)
-                        mode: hash
-                        outputColumnNames: _col0
-                        Statistics: Num rows: 2 Data size: 168 Basic stats: COMPLETE Column stats: NONE
-                        Dynamic Partitioning Event Operator
-                          Target column: ds (string)
-                          Target Input: srcpart
-                          Partition key expr: ds
-                          Statistics: Num rows: 2 Data size: 168 Basic stats: COMPLETE Column stats: NONE
-                          Target Vertex: Map 1
-        Reducer 7 
+        Reducer 5 
+            Execution mode: vectorized
+            Reduce Operator Tree:
+              Group By Operator
+                keys: KEY._col0 (type: string)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 84 Basic stats: COMPLETE Column stats: NONE
+                Map Join Operator
+                  condition map:
+                       Inner Join 0 to 1
+                  keys:
+                    0 _col0 (type: string)
+                    1 _col0 (type: string)
+                  outputColumnNames: _col0
+                  input vertices:
+                    0 Map 1
+                  Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
+                  HybridGraceHashJoin: true
+                  Group By Operator
+                    keys: _col0 (type: string)
+                    mode: hash
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: _col0 (type: string)
+                      sort order: +
+                      Map-reduce partition columns: _col0 (type: string)
+                      Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
+        Reducer 6 
+            Execution mode: vectorized
+            Reduce Operator Tree:
+              Group By Operator
+                keys: KEY._col0 (type: string)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 1100 Data size: 11686 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 1100 Data size: 11686 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+        Reducer 8 
             Execution mode: vectorized
             Reduce Operator Tree:
               Group By Operator
@@ -5356,23 +5352,8 @@ STAGE PLANS:
                       sort order: +
                       Map-reduce partition columns: _col0 (type: string)
                       Statistics: Num rows: 2 Data size: 168 Basic stats: COMPLETE Column stats: NONE
-                    Select Operator
-                      expressions: _col0 (type: string)
-                      outputColumnNames: _col0
-                      Statistics: Num rows: 2 Data size: 168 Basic stats: COMPLETE Column stats: NONE
-                      Group By Operator
-                        keys: _col0 (type: string)
-                        mode: hash
-                        outputColumnNames: _col0
-                        Statistics: Num rows: 2 Data size: 168 Basic stats: COMPLETE Column stats: NONE
-                        Dynamic Partitioning Event Operator
-                          Target column: ds (string)
-                          Target Input: srcpart
-                          Partition key expr: ds
-                          Statistics: Num rows: 2 Data size: 168 Basic stats: COMPLETE Column stats: NONE
-                          Target Vertex: Map 1
-        Union 5 
-            Vertex: Union 5
+        Union 4 
+            Vertex: Union 4
 
   Stage: Stage-0
     Fetch Operator

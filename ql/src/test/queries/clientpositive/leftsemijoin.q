@@ -24,3 +24,11 @@ SELECT name,id FROM sales LEFT SEMI JOIN things ON (sales.id = things.id);
 
 drop table sales;
 drop table things;
+
+-- HIVE-15458
+explain select part.p_type from part join (select p1.p_name from part p1, part p2 group by p1.p_name) pp ON pp.p_name = part.p_name;
+select part.p_type from part join (select p1.p_name from part p1, part p2 group by p1.p_name) pp ON pp.p_name = part.p_name;
+
+-- Semi join optmization should take out the right side
+explain select part.p_type from part left join (select p1.p_name from part p1, part p2 group by p1.p_name) pp ON pp.p_name = part.p_name;
+select part.p_type from part left join (select p1.p_name from part p1, part p2 group by p1.p_name) pp ON pp.p_name = part.p_name;

@@ -112,3 +112,141 @@ POSTHOOK: query: drop table things
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@things
 POSTHOOK: Output: default@things
+Warning: Shuffle Join MERGEJOIN[24][tables = [$hdt$_1, $hdt$_2]] in Stage 'Reducer 4' is a cross product
+PREHOOK: query: -- HIVE-15458
+explain select part.p_type from part join (select p1.p_name from part p1, part p2 group by p1.p_name) pp ON pp.p_name = part.p_name
+PREHOOK: type: QUERY
+POSTHOOK: query: -- HIVE-15458
+explain select part.p_type from part join (select p1.p_name from part p1, part p2 group by p1.p_name) pp ON pp.p_name = part.p_name
+POSTHOOK: type: QUERY
+Plan optimized by CBO.
+
+Vertex dependency in root stage
+Reducer 2 <- Map 1 (SIMPLE_EDGE), Reducer 4 (SIMPLE_EDGE)
+Reducer 4 <- Map 3 (SIMPLE_EDGE), Map 5 (SIMPLE_EDGE)
+
+Stage-0
+  Fetch Operator
+    limit:-1
+    Stage-1
+      Reducer 2
+      File Output Operator [FS_18]
+        Select Operator [SEL_17] (rows=743 width=126)
+          Output:["_col0"]
+          Merge Join Operator [MERGEJOIN_25] (rows=743 width=126)
+            Conds:RS_14._col0=RS_15._col0(Left Semi),Output:["_col1"]
+          <-Map 1 [SIMPLE_EDGE]
+            SHUFFLE [RS_14]
+              PartitionCols:_col0
+              Select Operator [SEL_2] (rows=26 width=121)
+                Output:["_col0","_col1"]
+                Filter Operator [FIL_22] (rows=26 width=121)
+                  predicate:p_name is not null
+                  TableScan [TS_0] (rows=26 width=121)
+                    default@part,part,Tbl:COMPLETE,Col:NONE,Output:["p_name","p_type"]
+          <-Reducer 4 [SIMPLE_EDGE]
+            SHUFFLE [RS_15]
+              PartitionCols:_col0
+              Group By Operator [GBY_13] (rows=676 width=126)
+                Output:["_col0"],keys:_col0
+                Merge Join Operator [MERGEJOIN_24] (rows=676 width=126)
+                  Conds:(Inner),Output:["_col0"]
+                <-Map 3 [SIMPLE_EDGE]
+                  SHUFFLE [RS_8]
+                    Select Operator [SEL_5] (rows=26 width=121)
+                      Output:["_col0"]
+                      Filter Operator [FIL_23] (rows=26 width=121)
+                        predicate:p_name is not null
+                        TableScan [TS_3] (rows=26 width=121)
+                          default@part,p1,Tbl:COMPLETE,Col:NONE,Output:["p_name"]
+                <-Map 5 [SIMPLE_EDGE]
+                  SHUFFLE [RS_9]
+                    Select Operator [SEL_7] (rows=26 width=4)
+                      TableScan [TS_6] (rows=26 width=121)
+                        default@part,p2,Tbl:COMPLETE,Col:COMPLETE
+
+Warning: Shuffle Join MERGEJOIN[24][tables = [$hdt$_1, $hdt$_2]] in Stage 'Reducer 4' is a cross product
+PREHOOK: query: select part.p_type from part join (select p1.p_name from part p1, part p2 group by p1.p_name) pp ON pp.p_name = part.p_name
+PREHOOK: type: QUERY
+PREHOOK: Input: default@part
+#### A masked pattern was here ####
+POSTHOOK: query: select part.p_type from part join (select p1.p_name from part p1, part p2 group by p1.p_name) pp ON pp.p_name = part.p_name
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part
+#### A masked pattern was here ####
+ECONOMY BRUSHED COPPER
+ECONOMY BURNISHED STEEL
+ECONOMY PLATED COPPER
+ECONOMY POLISHED STEEL
+LARGE BRUSHED BRASS
+LARGE BRUSHED STEEL
+LARGE BURNISHED STEEL
+MEDIUM ANODIZED COPPER
+MEDIUM BURNISHED BRASS
+MEDIUM BURNISHED COPPER
+MEDIUM BURNISHED TIN
+MEDIUM BURNISHED TIN
+PROMO ANODIZED TIN
+PROMO BURNISHED NICKEL
+PROMO PLATED TIN
+PROMO PLATED TIN
+PROMO POLISHED STEEL
+SMALL BRUSHED BRASS
+SMALL PLATED BRASS
+SMALL PLATED STEEL
+SMALL POLISHED NICKEL
+STANDARD ANODIZED STEEL
+STANDARD ANODIZED TIN
+STANDARD BURNISHED TIN
+STANDARD PLATED TIN
+STANDARD POLISHED STEEL
+PREHOOK: query: -- Semi join optmization should take out the right side
+explain select part.p_type from part left join (select p1.p_name from part p1, part p2 group by p1.p_name) pp ON pp.p_name = part.p_name
+PREHOOK: type: QUERY
+POSTHOOK: query: -- Semi join optmization should take out the right side
+explain select part.p_type from part left join (select p1.p_name from part p1, part p2 group by p1.p_name) pp ON pp.p_name = part.p_name
+POSTHOOK: type: QUERY
+Plan optimized by CBO.
+
+Stage-0
+  Fetch Operator
+    limit:-1
+    Select Operator [SEL_1]
+      Output:["_col0"]
+      TableScan [TS_0]
+        Output:["p_type"]
+
+PREHOOK: query: select part.p_type from part left join (select p1.p_name from part p1, part p2 group by p1.p_name) pp ON pp.p_name = part.p_name
+PREHOOK: type: QUERY
+PREHOOK: Input: default@part
+#### A masked pattern was here ####
+POSTHOOK: query: select part.p_type from part left join (select p1.p_name from part p1, part p2 group by p1.p_name) pp ON pp.p_name = part.p_name
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part
+#### A masked pattern was here ####
+ECONOMY BRUSHED COPPER
+ECONOMY BURNISHED STEEL
+ECONOMY PLATED COPPER
+ECONOMY POLISHED STEEL
+LARGE BRUSHED BRASS
+LARGE BRUSHED STEEL
+LARGE BURNISHED STEEL
+MEDIUM ANODIZED COPPER
+MEDIUM BURNISHED BRASS
+MEDIUM BURNISHED COPPER
+MEDIUM BURNISHED TIN
+MEDIUM BURNISHED TIN
+PROMO ANODIZED TIN
+PROMO BURNISHED NICKEL
+PROMO PLATED TIN
+PROMO PLATED TIN
+PROMO POLISHED STEEL
+SMALL BRUSHED BRASS
+SMALL PLATED BRASS
+SMALL PLATED STEEL
+SMALL POLISHED NICKEL
+STANDARD ANODIZED STEEL
+STANDARD ANODIZED TIN
+STANDARD BURNISHED TIN
+STANDARD PLATED TIN
+STANDARD POLISHED STEEL
