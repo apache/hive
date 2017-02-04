@@ -129,20 +129,19 @@ STAGE PLANS:
         Reducer 13 <- Reducer 12 (SIMPLE_EDGE), Reducer 17 (SIMPLE_EDGE)
         Reducer 15 <- Map 14 (SIMPLE_EDGE)
         Reducer 17 <- Map 16 (SIMPLE_EDGE)
-        Reducer 19 <- Map 18 (SIMPLE_EDGE), Reducer 24 (SIMPLE_EDGE)
+        Reducer 19 <- Map 18 (SIMPLE_EDGE), Reducer 23 (SIMPLE_EDGE)
         Reducer 2 <- Map 1 (SIMPLE_EDGE), Reducer 7 (SIMPLE_EDGE)
-        Reducer 20 <- Reducer 19 (SIMPLE_EDGE), Reducer 30 (SIMPLE_EDGE)
-        Reducer 21 <- Reducer 20 (SIMPLE_EDGE)
-        Reducer 23 <- Map 22 (SIMPLE_EDGE), Reducer 26 (SIMPLE_EDGE)
-        Reducer 24 <- Reducer 23 (SIMPLE_EDGE)
-        Reducer 26 <- Map 25 (SIMPLE_EDGE)
-        Reducer 28 <- Map 27 (SIMPLE_EDGE), Reducer 32 (SIMPLE_EDGE)
-        Reducer 29 <- Reducer 28 (SIMPLE_EDGE)
+        Reducer 20 <- Reducer 19 (SIMPLE_EDGE), Reducer 29 (SIMPLE_EDGE)
+        Reducer 22 <- Map 21 (SIMPLE_EDGE), Reducer 25 (SIMPLE_EDGE)
+        Reducer 23 <- Reducer 22 (SIMPLE_EDGE)
+        Reducer 25 <- Map 24 (SIMPLE_EDGE)
+        Reducer 27 <- Map 26 (SIMPLE_EDGE), Reducer 31 (SIMPLE_EDGE)
+        Reducer 28 <- Reducer 27 (SIMPLE_EDGE)
+        Reducer 29 <- Reducer 28 (SIMPLE_EDGE), Reducer 33 (SIMPLE_EDGE)
         Reducer 3 <- Reducer 13 (SIMPLE_EDGE), Reducer 2 (SIMPLE_EDGE)
-        Reducer 30 <- Reducer 29 (SIMPLE_EDGE), Reducer 34 (SIMPLE_EDGE)
-        Reducer 32 <- Map 31 (SIMPLE_EDGE)
-        Reducer 34 <- Map 33 (SIMPLE_EDGE)
-        Reducer 4 <- Reducer 21 (SIMPLE_EDGE), Reducer 3 (SIMPLE_EDGE)
+        Reducer 31 <- Map 30 (SIMPLE_EDGE)
+        Reducer 33 <- Map 32 (SIMPLE_EDGE)
+        Reducer 4 <- Reducer 20 (SIMPLE_EDGE), Reducer 3 (SIMPLE_EDGE)
         Reducer 6 <- Map 5 (SIMPLE_EDGE), Reducer 9 (SIMPLE_EDGE)
         Reducer 7 <- Reducer 6 (SIMPLE_EDGE)
         Reducer 9 <- Map 8 (SIMPLE_EDGE)
@@ -247,7 +246,7 @@ STAGE PLANS:
                         Statistics: Num rows: 166 Data size: 29548 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: llap
             LLAP IO: no inputs
-        Map 22 
+        Map 21 
             Map Operator Tree:
                 TableScan
                   alias: a
@@ -266,7 +265,7 @@ STAGE PLANS:
                         Statistics: Num rows: 166 Data size: 29548 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: llap
             LLAP IO: no inputs
-        Map 25 
+        Map 24 
             Map Operator Tree:
                 TableScan
                   alias: b
@@ -285,7 +284,7 @@ STAGE PLANS:
                       Statistics: Num rows: 250 Data size: 44500 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: llap
             LLAP IO: no inputs
-        Map 27 
+        Map 26 
             Map Operator Tree:
                 TableScan
                   alias: a
@@ -304,7 +303,7 @@ STAGE PLANS:
                         Statistics: Num rows: 166 Data size: 29548 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: llap
             LLAP IO: no inputs
-        Map 31 
+        Map 30 
             Map Operator Tree:
                 TableScan
                   alias: b
@@ -323,7 +322,7 @@ STAGE PLANS:
                       Statistics: Num rows: 250 Data size: 44500 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: llap
             LLAP IO: no inputs
-        Map 33 
+        Map 32 
             Map Operator Tree:
                 TableScan
                   alias: b
@@ -513,7 +512,7 @@ STAGE PLANS:
                   Select Operator
                     expressions: _col0 (type: string)
                     outputColumnNames: _col0
-                    Statistics: Num rows: 83 Data size: 8881 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 83 Data size: 7221 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       keys: _col0 (type: string)
                       mode: hash
@@ -524,20 +523,7 @@ STAGE PLANS:
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 1 Data size: 87 Basic stats: COMPLETE Column stats: COMPLETE
-        Reducer 21 
-            Execution mode: llap
-            Reduce Operator Tree:
-              Group By Operator
-                keys: KEY._col0 (type: string)
-                mode: mergepartial
-                outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 87 Basic stats: COMPLETE Column stats: COMPLETE
-                Reduce Output Operator
-                  key expressions: _col0 (type: string)
-                  sort order: +
-                  Map-reduce partition columns: _col0 (type: string)
-                  Statistics: Num rows: 1 Data size: 87 Basic stats: COMPLETE Column stats: COMPLETE
-        Reducer 23 
+        Reducer 22 
             Execution mode: llap
             Reduce Operator Tree:
               Merge Join Operator
@@ -564,7 +550,7 @@ STAGE PLANS:
                       Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
                       Statistics: Num rows: 1 Data size: 194 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: _col2 (type: bigint), _col3 (type: bigint)
-        Reducer 24 
+        Reducer 23 
             Execution mode: llap
             Reduce Operator Tree:
               Group By Operator
@@ -579,7 +565,7 @@ STAGE PLANS:
                   Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
                   Statistics: Num rows: 1 Data size: 194 Basic stats: COMPLETE Column stats: COMPLETE
                   value expressions: _col2 (type: bigint), _col3 (type: bigint)
-        Reducer 26 
+        Reducer 25 
             Execution mode: llap
             Reduce Operator Tree:
               Group By Operator
@@ -592,7 +578,7 @@ STAGE PLANS:
                   sort order: ++
                   Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
                   Statistics: Num rows: 250 Data size: 44500 Basic stats: COMPLETE Column stats: COMPLETE
-        Reducer 28 
+        Reducer 27 
             Execution mode: llap
             Reduce Operator Tree:
               Merge Join Operator
@@ -613,7 +599,7 @@ STAGE PLANS:
                     sort order: +++
                     Map-reduce partition columns: _col0 (type: string), _col1 (type: string), _col2 (type: string)
                     Statistics: Num rows: 1 Data size: 265 Basic stats: COMPLETE Column stats: COMPLETE
-        Reducer 29 
+        Reducer 28 
             Execution mode: llap
             Reduce Operator Tree:
               Group By Operator
@@ -631,6 +617,23 @@ STAGE PLANS:
                     Map-reduce partition columns: _col0 (type: string)
                     Statistics: Num rows: 1 Data size: 269 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: _col1 (type: string), _col2 (type: string), _col3 (type: boolean)
+        Reducer 29 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 _col0 (type: string)
+                  1 _col0 (type: string)
+                outputColumnNames: _col1, _col2, _col3, _col4
+                Statistics: Num rows: 1 Data size: 269 Basic stats: COMPLETE Column stats: COMPLETE
+                Reduce Output Operator
+                  key expressions: _col4 (type: string), _col2 (type: string), _col1 (type: string)
+                  sort order: +++
+                  Map-reduce partition columns: _col4 (type: string), _col2 (type: string), _col1 (type: string)
+                  Statistics: Num rows: 1 Data size: 269 Basic stats: COMPLETE Column stats: COMPLETE
+                  value expressions: _col3 (type: boolean)
         Reducer 3 
             Execution mode: llap
             Reduce Operator Tree:
@@ -655,24 +658,7 @@ STAGE PLANS:
                       Map-reduce partition columns: _col0 (type: string)
                       Statistics: Num rows: 83 Data size: 14774 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: _col1 (type: string)
-        Reducer 30 
-            Execution mode: llap
-            Reduce Operator Tree:
-              Merge Join Operator
-                condition map:
-                     Inner Join 0 to 1
-                keys:
-                  0 _col0 (type: string)
-                  1 _col0 (type: string)
-                outputColumnNames: _col1, _col2, _col3, _col4
-                Statistics: Num rows: 1 Data size: 269 Basic stats: COMPLETE Column stats: COMPLETE
-                Reduce Output Operator
-                  key expressions: _col4 (type: string), _col2 (type: string), _col1 (type: string)
-                  sort order: +++
-                  Map-reduce partition columns: _col4 (type: string), _col2 (type: string), _col1 (type: string)
-                  Statistics: Num rows: 1 Data size: 269 Basic stats: COMPLETE Column stats: COMPLETE
-                  value expressions: _col3 (type: boolean)
-        Reducer 32 
+        Reducer 31 
             Execution mode: llap
             Reduce Operator Tree:
               Group By Operator
@@ -685,7 +671,7 @@ STAGE PLANS:
                   sort order: ++
                   Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
                   Statistics: Num rows: 250 Data size: 44500 Basic stats: COMPLETE Column stats: COMPLETE
-        Reducer 34 
+        Reducer 33 
             Execution mode: llap
             Reduce Operator Tree:
               Group By Operator
@@ -703,7 +689,7 @@ STAGE PLANS:
             Reduce Operator Tree:
               Merge Join Operator
                 condition map:
-                     Inner Join 0 to 1
+                     Left Semi Join 0 to 1
                 keys:
                   0 _col0 (type: string)
                   1 _col0 (type: string)
