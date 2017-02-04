@@ -29,6 +29,7 @@ import java.util.Properties;
 
 import org.apache.calcite.adapter.druid.DruidTable;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.druid.DruidStorageHandlerUtils;
@@ -38,6 +39,7 @@ import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.SerDeSpec;
 import org.apache.hadoop.hive.serde2.SerDeStats;
+import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.serde2.io.TimestampWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
@@ -55,8 +57,12 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.StringObjectInspe
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.TimestampObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
+import org.apache.hadoop.io.ByteWritable;
+import org.apache.hadoop.io.DoubleWritable;
 import org.apache.hadoop.io.FloatWritable;
+import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
+import org.apache.hadoop.io.ShortWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.util.StringUtils;
@@ -460,11 +466,26 @@ public class DruidSerDe extends AbstractSerDe {
         case TIMESTAMP:
           output.add(new TimestampWritable(new Timestamp((Long) value)));
           break;
+        case BYTE:
+          output.add(new ByteWritable(((Number) value).byteValue()));
+          break;
+        case SHORT:
+          output.add(new ShortWritable(((Number) value).shortValue()));
+          break;
+        case INT:
+          output.add(new IntWritable(((Number) value).intValue()));
+          break;
         case LONG:
           output.add(new LongWritable(((Number) value).longValue()));
           break;
         case FLOAT:
           output.add(new FloatWritable(((Number) value).floatValue()));
+          break;
+        case DOUBLE:
+          output.add(new DoubleWritable(((Number) value).doubleValue()));
+          break;
+        case DECIMAL:
+          output.add(new HiveDecimalWritable(HiveDecimal.create(((Number) value).doubleValue())));
           break;
         case STRING:
           output.add(new Text(value.toString()));
