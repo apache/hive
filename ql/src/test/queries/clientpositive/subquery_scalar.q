@@ -91,6 +91,9 @@ select * from part where p_size <> (select count(p_name) from part p where p.p_s
 explain select key, count(*) from src where value <> (select max(value) from src) group by key having count(*) > (select count(*) from src s1 where s1.key = '90' group by s1.key );
 select key, count(*) from src where value <> (select max(value) from src) group by key having count(*) > (select count(*) from src s1 where s1.key = '90' group by s1.key );
 
+explain select sum(p_retailprice) from part group by p_type having sum(p_retailprice) > (select max(pp.p_retailprice) from part pp);
+select sum(p_retailprice) from part group by p_type having sum(p_retailprice) > (select max(pp.p_retailprice) from part pp);
+
 -- scalar subquery with INTERSECT
 explain select * from part where p_size > (select count(p_name) from part INTERSECT select count(p_brand) from part);
 select * from part where p_size > (select count(p_name) from part INTERSECT select count(p_brand) from part);
@@ -173,5 +176,31 @@ select * from emps where deptno <> (select count(deptno) from depts where depts.
 drop table DEPTS;
 drop table EMPS;
 
+-- having
+explain
+ select key, count(*)
+from src
+group by key
+having count(*) > (select count(*) from src s1 where s1.key > '9' )
+;
 
+select key, count(*)
+from src
+group by key
+having count(*) > (select count(*) from src s1 where s1.key = '90')
+;
+
+explain
+select key, value, count(*)
+from src b
+where b.key in (select key from src where src.key > '8')
+group by key, value
+having count(*) > (select count(*) from src s1 where s1.key > '9' )
+;
+select key, value, count(*)
+from src b
+where b.key in (select key from src where src.key > '8')
+group by key, value
+having count(*) > (select count(*) from src s1 where s1.key > '9' )
+;
 
