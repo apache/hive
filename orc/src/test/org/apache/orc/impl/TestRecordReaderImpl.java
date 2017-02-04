@@ -618,46 +618,57 @@ public class TestRecordReaderImpl {
   public void testPredEvalWithTimestampStats() throws Exception {
     PredicateLeaf pred = createPredicateLeaf(
         PredicateLeaf.Operator.NULL_SAFE_EQUALS, PredicateLeaf.Type.LONG, "x", 15L, null);
-    assertEquals(TruthValue.YES_NO,
+    // timestamp PPD is disable until ORC-135
+    assertEquals(TruthValue.YES_NO_NULL,
         RecordReaderImpl.evaluatePredicateProto(createTimestampStats(10, 100), pred, null));
 
     pred = createPredicateLeaf(PredicateLeaf.Operator.NULL_SAFE_EQUALS,
         PredicateLeaf.Type.FLOAT, "x", 15.0, null);
-    assertEquals(TruthValue.NO,
+    // timestamp PPD is disable until ORC-135
+    assertEquals(TruthValue.YES_NO_NULL,
         RecordReaderImpl.evaluatePredicateProto(createTimestampStats(10, 100), pred, null));
-    assertEquals(TruthValue.YES_NO,
+    // timestamp PPD is disable until ORC-135
+    assertEquals(TruthValue.YES_NO_NULL,
         RecordReaderImpl.evaluatePredicateProto(createTimestampStats(10000, 100000), pred, null));
 
     pred = createPredicateLeaf(PredicateLeaf.Operator.NULL_SAFE_EQUALS,
         PredicateLeaf.Type.STRING, "x", "15", null);
-    assertEquals(TruthValue.NO,
+    // timestamp PPD is disable until ORC-135
+    assertEquals(TruthValue.YES_NO_NULL,
         RecordReaderImpl.evaluatePredicateProto(createTimestampStats(10, 100), pred, null));
 
     pred = createPredicateLeaf(PredicateLeaf.Operator.NULL_SAFE_EQUALS,
         PredicateLeaf.Type.STRING, "x", new Timestamp(15).toString(), null);
-    assertEquals(TruthValue.YES_NO,
+    // timestamp PPD is disable until ORC-135
+    assertEquals(TruthValue.YES_NO_NULL,
         RecordReaderImpl.evaluatePredicateProto(createTimestampStats(10, 100), pred, null));
 
     pred = createPredicateLeaf(PredicateLeaf.Operator.NULL_SAFE_EQUALS,
         PredicateLeaf.Type.DATE, "x", new DateWritable(15).get(), null);
-    assertEquals(TruthValue.NO,
+    // timestamp PPD is disable until ORC-135
+    assertEquals(TruthValue.YES_NO_NULL,
         RecordReaderImpl.evaluatePredicateProto(createTimestampStats(10, 100), pred, null));
-    assertEquals(TruthValue.YES_NO,
+    // timestamp PPD is disable until ORC-135
+    assertEquals(TruthValue.YES_NO_NULL,
         RecordReaderImpl.evaluatePredicateProto(createTimestampStats(10 * 24L * 60L * 60L * 1000L,
           100 * 24L * 60L * 60L * 1000L), pred, null));
 
     pred = createPredicateLeaf(PredicateLeaf.Operator.NULL_SAFE_EQUALS,
         PredicateLeaf.Type.DECIMAL, "x", new HiveDecimalWritable("15"), null);
-    assertEquals(TruthValue.NO,
+    // timestamp PPD is disable until ORC-135
+    assertEquals(TruthValue.YES_NO_NULL,
         RecordReaderImpl.evaluatePredicateProto(createTimestampStats(10, 100), pred, null));
-    assertEquals(TruthValue.YES_NO,
+    // timestamp PPD is disable until ORC-135
+    assertEquals(TruthValue.YES_NO_NULL,
         RecordReaderImpl.evaluatePredicateProto(createTimestampStats(10000, 100000), pred, null));
 
     pred = createPredicateLeaf(PredicateLeaf.Operator.NULL_SAFE_EQUALS,
         PredicateLeaf.Type.TIMESTAMP, "x", new Timestamp(15), null);
-    assertEquals(TruthValue.YES_NO,
+    // timestamp PPD is disable until ORC-135
+    assertEquals(TruthValue.YES_NO_NULL,
         RecordReaderImpl.evaluatePredicateProto(createTimestampStats(10, 100), pred, null));
-    assertEquals(TruthValue.NO,
+    // timestamp PPD is disable until ORC-135
+    assertEquals(TruthValue.YES_NO_NULL,
         RecordReaderImpl.evaluatePredicateProto(createTimestampStats(10000, 100000), pred, null));
   }
 
@@ -1521,10 +1532,12 @@ public class TestRecordReaderImpl {
       bf.addLong((new Timestamp(i)).getTime());
     }
     ColumnStatistics cs = ColumnStatisticsImpl.deserialize(createTimestampStats(10, 100));
-    assertEquals(TruthValue.NO, RecordReaderImpl.evaluatePredicate(cs, pred, bf));
+    // timestamp PPD is disable until ORC-135
+    assertEquals(TruthValue.YES_NO_NULL, RecordReaderImpl.evaluatePredicate(cs, pred, bf));
 
     bf.addLong((new Timestamp(15)).getTime());
-    assertEquals(TruthValue.YES_NO, RecordReaderImpl.evaluatePredicate(cs, pred, bf));
+    // timestamp PPD is disable until ORC-135
+    assertEquals(TruthValue.YES_NO_NULL, RecordReaderImpl.evaluatePredicate(cs, pred, bf));
   }
 
   @Test
@@ -1536,9 +1549,11 @@ public class TestRecordReaderImpl {
       bf.addLong((new Timestamp(i)).getTime());
     }
     ColumnStatistics cs = ColumnStatisticsImpl.deserialize(createTimestampStats(10, 100));
-    assertEquals(TruthValue.NO_NULL, RecordReaderImpl.evaluatePredicate(cs, pred, bf));
+    // timestamp PPD is disable until ORC-135
+    assertEquals(TruthValue.YES_NO_NULL, RecordReaderImpl.evaluatePredicate(cs, pred, bf));
 
     bf.addLong((new Timestamp(15)).getTime());
+    // timestamp PPD is disable until ORC-135
     assertEquals(TruthValue.YES_NO_NULL, RecordReaderImpl.evaluatePredicate(cs, pred, bf));
   }
 
@@ -1555,12 +1570,15 @@ public class TestRecordReaderImpl {
       bf.addLong((new Timestamp(i)).getTime());
     }
     ColumnStatistics cs = ColumnStatisticsImpl.deserialize(createTimestampStats(10, 100));
-    assertEquals(TruthValue.NO_NULL, RecordReaderImpl.evaluatePredicate(cs, pred, bf));
+    // timestamp PPD is disable until ORC-135
+    assertEquals(TruthValue.YES_NO_NULL, RecordReaderImpl.evaluatePredicate(cs, pred, bf));
 
     bf.addLong((new Timestamp(19)).getTime());
+    // timestamp PPD is disable until ORC-135
     assertEquals(TruthValue.YES_NO_NULL, RecordReaderImpl.evaluatePredicate(cs, pred, bf));
 
     bf.addLong((new Timestamp(15)).getTime());
+    // timestamp PPD is disable until ORC-135
     assertEquals(TruthValue.YES_NO_NULL, RecordReaderImpl.evaluatePredicate(cs, pred, bf));
   }
 
