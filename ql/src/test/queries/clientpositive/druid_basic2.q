@@ -50,3 +50,11 @@ FROM
   FROM druid_table_1) b
   ON a.language = b.language
 );
+
+EXPLAIN EXTENDED
+SELECT robot, floor_day(`__time`), max(added) as m, sum(delta) as s
+FROM druid_table_1
+GROUP BY robot, language, floor_day(`__time`)
+ORDER BY CAST(robot AS INTEGER) ASC, m DESC
+LIMIT 10;
+
