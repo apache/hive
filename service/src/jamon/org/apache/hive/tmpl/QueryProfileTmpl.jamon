@@ -160,7 +160,7 @@ org.apache.hive.service.cli.operation.SQLOperationDisplay;
         </%if>
         <tr>
             <td>Latency (s)</td>
-            <td><% sod.getRuntime()/1000 %></td>
+            <td><% sod.getRuntime() == null ? "Not finished" : sod.getRuntime()/1000 %></td>
         </tr>
     </table>
 </%def>
