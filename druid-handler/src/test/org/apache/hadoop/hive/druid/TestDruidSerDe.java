@@ -502,7 +502,7 @@ public class TestDruidSerDe {
           IllegalAccessException, IOException, InterruptedException,
           NoSuchMethodException, InvocationTargetException {
     // Create, initialize, and test the SerDe
-    DruidSerDe serDe = new DruidSerDe();
+    QTestDruidSerDe serDe = new QTestDruidSerDe();
     Configuration conf = new Configuration();
     Properties tbl;
     // Timeseries query
