@@ -25,6 +25,7 @@ import java.util.concurrent.locks.ReentrantLock;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.llap.daemon.FragmentCompletionHandler;
 import org.apache.hadoop.hive.llap.daemon.KilledTaskHandler;
+import org.apache.hadoop.hive.llap.daemon.SchedulerFragmentCompletingListener;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.QueryIdentifierProto;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SignableVertexSpec;
@@ -51,6 +52,18 @@ public class TaskExecutorTestHelpers {
     long currentAttemptStartTime, boolean canFinish, long workTime) {
     SubmitWorkRequestProto
         request = createSubmitWorkRequestProto(fragmentNum, parallelism, firstAttemptStartTime, currentAttemptStartTime);
+    return createMockRequest(canFinish, workTime, request);
+  }
+
+  public static MockRequest createMockRequest(int fragmentNum, int parallelism,
+                                              int withinDagPriority,
+                                              long firstAttemptStartTime,
+                                              long currentAttemptStartTime,
+                                              boolean canFinish,
+                                              long workTime) {
+    SubmitWorkRequestProto
+        request = createSubmitWorkRequestProto(fragmentNum, parallelism, 0,
+        firstAttemptStartTime, currentAttemptStartTime, withinDagPriority);
     return createMockRequest(canFinish, workTime, request);
   }
 
@@ -170,7 +183,8 @@ public class TaskExecutorTestHelpers {
               LlapDaemonExecutorMetrics.class),
           mock(KilledTaskHandler.class), mock(
               FragmentCompletionHandler.class), new DefaultHadoopShim(), null,
-              requestProto.getWorkSpec().getVertex(), initialEvent, null);
+              requestProto.getWorkSpec().getVertex(), initialEvent, null, mock(
+              SchedulerFragmentCompletingListener.class));
       this.workTime = workTime;
       this.canFinish = canFinish;
     }
@@ -284,5 +298,6 @@ public class TaskExecutorTestHelpers {
   private static void logInfo(String message) {
     logInfo(message, null);
   }
+
 
 }

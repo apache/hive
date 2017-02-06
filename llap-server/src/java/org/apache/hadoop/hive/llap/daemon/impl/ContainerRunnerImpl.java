@@ -36,6 +36,7 @@ import org.apache.hadoop.hive.llap.daemon.FragmentCompletionHandler;
 import org.apache.hadoop.hive.llap.daemon.HistoryLogger;
 import org.apache.hadoop.hive.llap.daemon.KilledTaskHandler;
 import org.apache.hadoop.hive.llap.daemon.QueryFailedHandler;
+import org.apache.hadoop.hive.llap.daemon.SchedulerFragmentCompletingListener;
 import org.apache.hadoop.hive.llap.daemon.impl.LlapTokenChecker.LlapTokenInfo;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.FragmentRuntimeInfo;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.GroupInputSpecProto;
@@ -93,6 +94,7 @@ public class ContainerRunnerImpl extends CompositeService implements ContainerRu
   private final AMReporter amReporter;
   private final QueryTracker queryTracker;
   private final Scheduler<TaskRunnerCallable> executorService;
+  private final SchedulerFragmentCompletingListener completionListener;
   private final AtomicReference<InetSocketAddress> localAddress;
   private final AtomicReference<Integer> localShufflePort;
   private final Map<String, String> localEnv = new HashMap<>();
@@ -129,6 +131,7 @@ public class ContainerRunnerImpl extends CompositeService implements ContainerRu
         conf, ConfVars.LLAP_DAEMON_WAIT_QUEUE_COMPARATOR_CLASS_NAME);
     this.executorService = new TaskExecutorService(numExecutors, waitQueueSize,
         waitQueueSchedulerClassName, enablePreemption, classLoader, metrics);
+    completionListener = (SchedulerFragmentCompletingListener) executorService;
 
     addIfService(executorService);
 
@@ -251,7 +254,8 @@ public class ContainerRunnerImpl extends CompositeService implements ContainerRu
       TaskRunnerCallable callable = new TaskRunnerCallable(request, fragmentInfo, callableConf,
           new ExecutionContextImpl(localAddress.get().getHostName()), env,
           credentials, memoryPerExecutor, amReporter, confParams, metrics, killedTaskHandler,
-          this, tezHadoopShim, attemptId, vertex, initialEvent, taskUgi);
+          this, tezHadoopShim, attemptId, vertex, initialEvent, taskUgi,
+          completionListener);
       submissionState = executorService.schedule(callable);
 
       if (LOG.isInfoEnabled()) {
