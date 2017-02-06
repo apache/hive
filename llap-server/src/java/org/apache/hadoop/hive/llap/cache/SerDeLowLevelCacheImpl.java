@@ -113,7 +113,7 @@ public class SerDeLowLevelCacheImpl implements BufferUsageManager, LlapOomDebugD
 
   public static final class StripeData {
     // In LRR case, if we just store 2 boundaries (which could be split boundaries or reader
-    // positions, we wouldn't be able to account for torn rows correctly because the semantics of
+    // positions), we wouldn't be able to account for torn rows correctly because the semantics of
     // our "exact" reader positions, and inexact split boundaries, are different. We cannot even
     // tell LRR to use exact boundaries, as there can be a mismatch in an original mid-file split
     // wrt first row when caching - we may produce incorrect result if we adjust the split
@@ -182,7 +182,7 @@ public class SerDeLowLevelCacheImpl implements BufferUsageManager, LlapOomDebugD
           + firstStart + " to [" + lastStart + ", " + lastEnd + ")";
     }
 
-    public static StripeData duplicateForResults(StripeData s) {
+    public static StripeData duplicateStructure(StripeData s) {
       return new StripeData(s.knownTornStart, s.firstStart, s.lastStart, s.lastEnd,
           s.rowCount, new OrcProto.ColumnEncoding[s.encodings.length]);
     }
@@ -389,14 +389,14 @@ public class SerDeLowLevelCacheImpl implements BufferUsageManager, LlapOomDebugD
     if (LlapIoImpl.CACHE_LOGGER.isTraceEnabled()) {
       LlapIoImpl.CACHE_LOGGER.trace("Got stripe in cache " + cStripe);
     }
-    StripeData stripe = StripeData.duplicateForResults(cStripe);
+    StripeData stripe = StripeData.duplicateStructure(cStripe);
     result.stripes.add(stripe);
     boolean isMissed = false;
     for (int colIx = 0; colIx < cached.colCount; ++colIx) {
       if (!includes[colIx]) continue;
       if (cStripe.encodings[colIx] == null || cStripe.data[colIx] == null) {
         if (cStripe.data[colIx] != null) {
-          assert false : cStripe;
+          throw new AssertionError(cStripe);
           // No encoding => must have no data.
         }
         isMissed = true;
@@ -419,9 +419,9 @@ public class SerDeLowLevelCacheImpl implements BufferUsageManager, LlapOomDebugD
             LlapIoImpl.CACHE_LOGGER.info("Couldn't lock data for stripe at "
                 + stripeIx + ", colIx " + colIx + ", stream type " + streamIx);
 
+            handleRemovedColumnData(cColData);
             cColData = null;
             isMissed = true;
-            handleRemovedColumnData(cColData);
             if (gotAllData != null) {
               gotAllData.value = false;
             }
@@ -432,6 +432,9 @@ public class SerDeLowLevelCacheImpl implements BufferUsageManager, LlapOomDebugD
       // At this point, we have arrived at the level where we need all the data, and the
       // arrays never change. So we will just do a shallow assignment here instead of copy.
       stripe.data[colIx] = cColData;
+      if (cColData == null) {
+        stripe.encodings[colIx] = null;
+      }
     }
     doMetricsStuffForOneSlice(qfCounters, stripe, isMissed);
   }

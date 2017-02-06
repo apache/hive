@@ -147,4 +147,8 @@ public abstract class MultiValuedColumnVector extends ColumnVector {
     childCount = 0;
   }
 
+  @Override
+  public void shallowCopyTo(ColumnVector otherCv) {
+    throw new UnsupportedOperationException(); // Implement in future, if needed.
+  }
 }

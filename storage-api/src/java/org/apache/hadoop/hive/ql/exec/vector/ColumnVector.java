@@ -214,4 +214,16 @@ public abstract class ColumnVector {
      */
     public abstract void stringifyValue(StringBuilder buffer,
                                         int row);
+
+    /**
+     * Shallow copy of the contents of this vector to the other vector;
+     * replaces other vector's values.
+     */
+    public void shallowCopyTo(ColumnVector otherCv) {
+      otherCv.isNull = isNull;
+      otherCv.noNulls = noNulls;
+      otherCv.isRepeating = isRepeating;
+      otherCv.preFlattenIsRepeating = preFlattenIsRepeating;
+      otherCv.preFlattenNoNulls = preFlattenNoNulls;
+    }
   }

@@ -166,6 +166,7 @@ public class TreeReaderFactory {
      * @param batchSize      Size of the column vector
      * @throws IOException
      */
+    // TODO: it looks like isNull is never used; it's always null. Remove/deprecate?
     public void nextVector(ColumnVector previous,
                            boolean[] isNull,
                            final int batchSize) throws IOException {

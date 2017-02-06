@@ -2320,7 +2320,9 @@ public class WriterImpl implements Writer, MemoryManager.Callback {
       rowsInStripe += batch.size;
       treeWriter.writeRootBatch(batch, 0, batch.size);
     }
-    memoryManager.addedRow(batch.size);
+    if (path != null) {
+      memoryManager.addedRow(batch.size);
+    }
   }
 
   @Override

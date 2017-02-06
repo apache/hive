@@ -379,6 +379,38 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
     return result;
   }
 
+  public static List<Integer> genIncludedColumnsReverse(
+      TypeDescription readerSchema, boolean[] included, boolean isFullColumnMatch) {
+    assert included != null;
+    List<Integer> result = new ArrayList<>();
+    List<TypeDescription> children = readerSchema.getChildren();
+    for (int columnNumber = 0; columnNumber < children.size(); ++columnNumber) {
+      TypeDescription child = children.get(columnNumber);
+      int id = child.getId(), maxId = child.getMaximumId();
+      if (id >= included.length) break; // Assumes the IDs are sequential in the child list.
+      if (maxId >= included.length) {
+        if (isFullColumnMatch) {
+          throw new AssertionError("Inconsistent includes: " + included.length
+              + " elements; the root column IDs are [" + id + ", " + maxId + "]");
+        } else {
+          maxId = included.length - 1;
+        }
+      }
+      boolean isIncluded = included[id];
+      for (int col = id + 1; col <= maxId; ++col) {
+        if (isFullColumnMatch && included[col] != isIncluded) {
+          throw new AssertionError("Inconsistent includes: root column IDs are [" + id + ", "
+              + maxId + "]; included[" + col + "] = " + included[col] + ", which is different "
+              + " from the previous IDs of the same root columns.");
+        }
+        isIncluded = isIncluded || included[col];
+      }
+      if (isIncluded) {
+        result.add(columnNumber);
+      }
+    }
+    return result;
+  }
 
   /**
    * Take the configuration and figure out which columns we need to include.
