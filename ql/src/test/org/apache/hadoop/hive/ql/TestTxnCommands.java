@@ -44,6 +44,8 @@ import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestName;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -63,6 +65,7 @@ import java.util.concurrent.TimeUnit;
  * run with Acid 2.0 (see subclasses of TestTxnCommands2)
  */
 public class TestTxnCommands {
+  static final private Logger LOG = LoggerFactory.getLogger(TestTxnCommands.class);
   private static final String TEST_DATA_DIR = new File(System.getProperty("java.io.tmpdir") +
     File.separator + TestTxnCommands.class.getCanonicalName()
     + "-" + System.currentTimeMillis()
@@ -76,6 +79,7 @@ public class TestTxnCommands {
   private Driver d;
   private static enum Table {
     ACIDTBL("acidTbl"),
+    ACIDTBLPART("acidTblPart"),
     ACIDTBL2("acidTbl2"),
     NONACIDORCTBL("nonAcidOrcTbl"),
     NONACIDORCTBL2("nonAcidOrcTbl2");
@@ -102,6 +106,7 @@ public class TestTxnCommands {
     hiveConf
     .setVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER,
         "org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory");
+    hiveConf.setBoolVar(HiveConf.ConfVars.MERGE_CARDINALITY_VIOLATION_CHECK, true);
     TxnDbUtil.setConfValues(hiveConf);
     TxnDbUtil.prepDb();
     File f = new File(TEST_WAREHOUSE_DIR);
@@ -115,6 +120,7 @@ public class TestTxnCommands {
     d = new Driver(hiveConf);
     dropTables();
     runStatementOnDriver("create table " + Table.ACIDTBL + "(a int, b int) clustered by (a) into " + BUCKET_COUNT + " buckets stored as orc TBLPROPERTIES ('transactional'='true')");
+    runStatementOnDriver("create table " + Table.ACIDTBLPART + "(a int, b int) partitioned by (p string) clustered by (a) into " + BUCKET_COUNT + " buckets stored as orc TBLPROPERTIES ('transactional'='true')");
     runStatementOnDriver("create table " + Table.NONACIDORCTBL + "(a int, b int) clustered by (a) into " + BUCKET_COUNT + " buckets stored as orc TBLPROPERTIES ('transactional'='false')");
     runStatementOnDriver("create table " + Table.NONACIDORCTBL2 + "(a int, b int) clustered by (a) into " + BUCKET_COUNT + " buckets stored as orc TBLPROPERTIES ('transactional'='false')");
     runStatementOnDriver("create temporary  table " + Table.ACIDTBL2 + "(a int, b int, c int) clustered by (c) into " + BUCKET_COUNT + " buckets stored as orc TBLPROPERTIES ('transactional'='true')");
@@ -376,6 +382,37 @@ public class TestTxnCommands {
     runStatementOnDriver("set autocommit true");
     List<String> rs4 = runStatementOnDriver("select a,b from " + Table.ACIDTBL + " order by a,b");
     Assert.assertEquals("Wrong data after commit", stringifyValues(updatedData2), rs4);
+  }
+  @Test
+  public void testMergeOnTezEdges() throws Exception {
+    String query = "merge into " + Table.ACIDTBL +
+      " as t using " + Table.NONACIDORCTBL + " s ON t.a = s.a " +
+      "WHEN MATCHED AND s.a > 8 THEN DELETE " +
+      "WHEN MATCHED THEN UPDATE SET b = 7 " +
+      "WHEN NOT MATCHED THEN INSERT VALUES(s.a, s.b) ";
+    d.destroy();
+    HiveConf hc = new HiveConf(hiveConf);
+    hc.setVar(HiveConf.ConfVars.HIVE_EXECUTION_ENGINE, "tez");
+    hc.setBoolVar(HiveConf.ConfVars.HIVE_EXPLAIN_USER, false);
+    d = new Driver(hc);
+    d.setMaxRows(10000);
+
+    List<String> explain = runStatementOnDriver("explain " + query);
+    StringBuilder sb = new StringBuilder();
+    for(String s : explain) {
+      sb.append(s).append('\n');
+    }
+    LOG.info("Explain1: " + sb);
+    for(int i = 0; i < explain.size(); i++) {
+      if(explain.get(i).contains("Edges:")) {
+        Assert.assertTrue("At i+1=" + (i+1) + explain.get(i + 1), explain.get(i + 1).contains("Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 7 (SIMPLE_EDGE)"));
+        Assert.assertTrue("At i+1=" + (i+2) + explain.get(i + 2), explain.get(i + 2).contains("Reducer 3 <- Reducer 2 (SIMPLE_EDGE)"));
+        Assert.assertTrue("At i+1=" + (i+3) + explain.get(i + 3), explain.get(i + 3).contains("Reducer 4 <- Reducer 2 (SIMPLE_EDGE)"));
+        Assert.assertTrue("At i+1=" + (i+4) + explain.get(i + 4), explain.get(i + 4).contains("Reducer 5 <- Reducer 2 (SIMPLE_EDGE)"));
+        Assert.assertTrue("At i+1=" + (i+5) + explain.get(i + 5), explain.get(i + 5).contains("Reducer 6 <- Reducer 2 (CUSTOM_SIMPLE_EDGE)"));
+        break;
+      }
+    }
   }
   @Test
   public void testMultipleDelete() throws Exception {
@@ -764,6 +801,31 @@ public class TestTxnCommands {
     List<String> r = runStatementOnDriver("select a,b from " + Table.ACIDTBL + " order by a,b");
     int[][] rExpected = {{5,6},{7,8},{11,11}};
     Assert.assertEquals(stringifyValues(rExpected), r);
+  }
+
+  /**
+   * see https://issues.apache.org/jira/browse/HIVE-14949 for details
+   * @throws Exception
+   */
+  @Test
+  public void testMergeCardinalityViolation() throws Exception {
+    int[][] sourceVals = {{2,2},{2,44},{5,5},{11,11}};
+    runStatementOnDriver("insert into " + Table.NONACIDORCTBL + " " + makeValuesClause(sourceVals));
+    int[][] targetVals = {{2,1},{4,3},{5,6},{7,8}};
+    runStatementOnDriver("insert into " + Table.ACIDTBL + " " + makeValuesClause(targetVals));
+    String query = "merge into " + Table.ACIDTBL +
+      " as t using " + Table.NONACIDORCTBL + " s ON t.a = s.a " +
+      "WHEN MATCHED and s.a < 5 THEN DELETE " +
+      "WHEN MATCHED AND s.a < 3 THEN update set b = 0 " +
+      "WHEN NOT MATCHED THEN INSERT VALUES(s.a, s.b) ";
+    runStatementOnDriverNegative(query);
+    runStatementOnDriver("insert into " + Table.ACIDTBLPART + " partition(p) values(1,1,'p1'),(2,2,'p1'),(3,3,'p1'),(4,4,'p2')");
+    query = "merge into " + Table.ACIDTBLPART +
+      " as t using " + Table.NONACIDORCTBL + " s ON t.a = s.a " +
+      "WHEN MATCHED and s.a < 5 THEN DELETE " +
+      "WHEN MATCHED AND s.a < 3 THEN update set b = 0 " +
+      "WHEN NOT MATCHED THEN INSERT VALUES(s.a, s.b, 'p1') ";
+    runStatementOnDriverNegative(query);
   }
   @Test
   public void testSetClauseFakeColumn() throws Exception {

@@ -1906,6 +1906,10 @@ public class HiveConf extends Configuration {
       new TimeValidator(TimeUnit.MILLISECONDS), "Time interval describing how often the reaper runs"),
     WRITE_SET_REAPER_INTERVAL("hive.writeset.reaper.interval", "60s",
       new TimeValidator(TimeUnit.MILLISECONDS), "Frequency of WriteSet reaper runs"),
+    
+    MERGE_CARDINALITY_VIOLATION_CHECK("hive.merge.cardinality.check", true,
+      "Set to true to ensure that each SQL Merge statement ensures that for each row in the target\n" +
+        "table there is at most 1 matching row in the source table per SQL Specification."),
 
     // For Druid storage handler
     HIVE_DRUID_INDEXING_GRANULARITY("hive.druid.indexer.segments.granularity", "DAY",

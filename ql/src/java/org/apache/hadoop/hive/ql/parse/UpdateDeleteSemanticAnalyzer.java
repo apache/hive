@@ -29,9 +29,12 @@ import java.util.Map;
 import java.util.Set;
 
 import org.antlr.runtime.TokenRewriteStream;
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.TableType;
+import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.QueryState;
@@ -127,16 +130,19 @@ public class UpdateDeleteSemanticAnalyzer extends SemanticAnalyzer {
   /**
    * Append list of partition columns to Insert statement, i.e. the 2nd set of partCol1,partCol2
    * INSERT INTO T PARTITION(partCol1,partCol2...) SELECT col1, ... partCol1,partCol2...
-   * @param targetName simple target table name (i.e. name or alias)
+   * @param target target table
    */
-  private void addPartitionColsToSelect(List<FieldSchema> partCols, StringBuilder rewrittenQueryStr, String targetName) {
+  private void addPartitionColsToSelect(List<FieldSchema> partCols, StringBuilder rewrittenQueryStr,
+                                        ASTNode target) throws SemanticException {
+    String targetName = target != null ? getSimpleTableName(target) : null;
+
     // If the table is partitioned, we need to select the partition columns as well.
     if (partCols != null) {
       for (FieldSchema fschema : partCols) {
         rewrittenQueryStr.append(", ");
         //would be nice if there was a way to determine if quotes are needed
         if(targetName != null) {
-          rewrittenQueryStr.append(HiveUtils.unparseIdentifier(targetName, this.conf)).append('.');
+          rewrittenQueryStr.append(targetName).append('.');
         }
         rewrittenQueryStr.append(HiveUtils.unparseIdentifier(fschema.getName(), this.conf));
       }
@@ -688,13 +694,15 @@ public class UpdateDeleteSemanticAnalyzer extends SemanticAnalyzer {
     if(numWhenMatchedDeleteClauses + numWhenMatchedUpdateClauses == 2 && extraPredicate == null) {
       throw new SemanticException(ErrorMsg.MERGE_PREDIACTE_REQUIRED, ctx.getCmd());
     }
-
+    handleCardinalityViolation(rewrittenQueryStr, target, onClauseAsText, targetTable);
     ReparseResult rr = parseRewrittenQuery(rewrittenQueryStr, ctx.getCmd());
     Context rewrittenCtx = rr.rewrittenCtx;
     ASTNode rewrittenTree = rr.rewrittenTree;
 
     //set dest name mapping on new context
-    for(int insClauseIdx = 1, whenClauseIdx = 0; insClauseIdx < rewrittenTree.getChildCount(); insClauseIdx++, whenClauseIdx++) {
+    for(int insClauseIdx = 1, whenClauseIdx = 0;
+        insClauseIdx < rewrittenTree.getChildCount() - 1/*skip cardinality violation clause*/;
+        insClauseIdx++, whenClauseIdx++) {
       //we've added Insert clauses in order or WHEN items in whenClauses
       ASTNode insertClause = (ASTNode) rewrittenTree.getChild(insClauseIdx);
       switch (getWhenClauseOperation(whenClauses.get(whenClauseIdx)).getType()) {
@@ -808,6 +816,61 @@ public class UpdateDeleteSemanticAnalyzer extends SemanticAnalyzer {
      */
     return targetTable.equals(entity.getTable());
   }
+
+  /**
+   * Per SQL Spec ISO/IEC 9075-2:2011(E) Section 14.2 under "General Rules" Item 6/Subitem a/Subitem 2/Subitem B,
+   * an error should be raised if > 1 row of "source" matches the same row in "target".
+   * This should not affect the runtime of the query as it's running in parallel with other
+   * branches of the multi-insert.  It won't actually write any data to merge_tmp_table since the
+   * cardinality_violation() UDF throws an error whenever it's called killing the query
+   */
+  private void handleCardinalityViolation(StringBuilder rewrittenQueryStr, ASTNode target,
+                                          String onClauseAsString, Table targetTable)
+              throws SemanticException {
+    if(!conf.getBoolVar(HiveConf.ConfVars.MERGE_CARDINALITY_VIOLATION_CHECK)) {
+      LOG.info("Merge statement cardinality violation check is disabled: " +
+        HiveConf.ConfVars.MERGE_CARDINALITY_VIOLATION_CHECK.varname);
+      return;
+    }
+    //this is a tmp table and thus Session scoped and acid requires SQL statement to be serial in a
+    // given session, i.e. the name can be fixed across all invocations
+    String tableName = "merge_tmp_table";
+    rewrittenQueryStr.append("\nINSERT INTO ").append(tableName)
+      .append("\n  SELECT cardinality_violation(")
+      .append(getSimpleTableName(target)).append(".ROW__ID");
+      addPartitionColsToSelect(targetTable.getPartCols(), rewrittenQueryStr, target);
+    
+      rewrittenQueryStr.append(")\n WHERE ").append(onClauseAsString)
+      .append(" GROUP BY ").append(getSimpleTableName(target)).append(".ROW__ID");
+    
+      addPartitionColsToSelect(targetTable.getPartCols(), rewrittenQueryStr, target);
+
+      rewrittenQueryStr.append(" HAVING count(*) > 1");
+    //say table T has partiton p, we are generating
+    //select cardinality_violation(ROW_ID, p) WHERE ... GROUP BY ROW__ID, p
+    //the Group By args are passed to cardinality_violation to add the violating value to the error msg
+    try {
+      if (null == db.getTable(tableName, false)) {
+        StorageFormat format = new StorageFormat(conf);
+        format.processStorageFormat("TextFile");
+        Table table = db.newTable(tableName);
+        table.setSerializationLib(format.getSerde());
+        List<FieldSchema> fields = new ArrayList<FieldSchema>();
+        fields.add(new FieldSchema("val", "int", null));
+        table.setFields(fields);
+        table.setDataLocation(Warehouse.getDnsPath(new Path(SessionState.get().getTempTableSpace(),
+          tableName), conf));
+        table.getTTable().setTemporary(true);
+        table.setStoredAsSubDirectories(false);
+        table.setInputFormatClass(format.getInputFormat());
+        table.setOutputFormatClass(format.getOutputFormat());
+        db.createTable(table, true);
+      }
+    }
+    catch(HiveException|MetaException e) {
+      throw new SemanticException(e.getMessage(), e);
+    }
+  }
   /**
    * @param onClauseAsString - because there is no clone() and we need to use in multiple places
    * @param deleteExtraPredicate - see notes at caller
@@ -847,7 +910,7 @@ public class UpdateDeleteSemanticAnalyzer extends SemanticAnalyzer {
         rewrittenQueryStr.append(getSimpleTableName(target)).append(".").append(HiveUtils.unparseIdentifier(name, this.conf));
       }
     }
-    addPartitionColsToSelect(targetTable.getPartCols(), rewrittenQueryStr, targetName);
+    addPartitionColsToSelect(targetTable.getPartCols(), rewrittenQueryStr, target);
     rewrittenQueryStr.append("\n   WHERE ").append(onClauseAsString);
     String extraPredicate = getWhenClausePredicate(whenMatchedUpdateClause);
     if(extraPredicate != null) {
@@ -881,7 +944,7 @@ public class UpdateDeleteSemanticAnalyzer extends SemanticAnalyzer {
     addPartitionColsToInsert(partCols, rewrittenQueryStr);
 
     rewrittenQueryStr.append("    -- delete clause\n select ").append(targetName).append(".ROW__ID ");
-    addPartitionColsToSelect(partCols, rewrittenQueryStr, targetName);
+    addPartitionColsToSelect(partCols, rewrittenQueryStr, target);
     rewrittenQueryStr.append("\n   WHERE ").append(onClauseAsString);
     String extraPredicate = getWhenClausePredicate(whenMatchedDeleteClause);
     if(extraPredicate != null) {

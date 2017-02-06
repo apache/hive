@@ -867,7 +867,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   }
 
   /**
-   * Generate a temp table out of a value clause
+   * Generate a temp table out of a values clause
    * See also {@link #preProcessForInsert(ASTNode, QB)}
    */
   private ASTNode genValuesTempTable(ASTNode originalFrom, QB qb) throws SemanticException {
