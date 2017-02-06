@@ -39,6 +39,7 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.llap.daemon.SchedulerFragmentCompletingListener;
 import org.apache.hadoop.hive.llap.daemon.impl.TaskExecutorService.TaskWrapper;
 import org.apache.hadoop.hive.llap.daemon.impl.TaskExecutorTestHelpers.MockRequest;
 import org.apache.hadoop.hive.llap.daemon.impl.comparator.ShortestJobFirstComparator;
@@ -174,12 +175,65 @@ public class TestTaskExecutorService {
     }
   }
 
+  // Tests wait queue behaviour for fragments which have reported to the AM, but have not given up their executor slot.
+  @Test (timeout = 10000)
+  public void testWaitQueueAcceptAfterAMTaskReport() throws
+      InterruptedException {
+
+    TaskExecutorServiceForTest taskExecutorService =
+        new TaskExecutorServiceForTest(1, 2, ShortestJobFirstComparator.class.getName(), true);
+
+    // Fourth is lower priority as a result of canFinish being set to false.
+    MockRequest r1 = createMockRequest(1, 1, 100, 200, true, 20000l);
+    MockRequest r2 = createMockRequest(2, 1, 1, 200, 2000, true, 20000l);
+    MockRequest r3 = createMockRequest(3, 1, 2, 300, 420, true, 20000l);
+    MockRequest r4 = createMockRequest(4, 1, 3, 400, 510, false, 20000l);
+
+    taskExecutorService.init(new Configuration());
+    taskExecutorService.start();
+    try {
+      Scheduler.SubmissionState submissionState;
+      submissionState = taskExecutorService.schedule(r1);
+      assertEquals(Scheduler.SubmissionState.ACCEPTED, submissionState);
+      r1.awaitStart();
+
+      submissionState = taskExecutorService.schedule(r2);
+      assertEquals(Scheduler.SubmissionState.ACCEPTED, submissionState);
+
+      submissionState = taskExecutorService.schedule(r3);
+      assertEquals(Scheduler.SubmissionState.ACCEPTED, submissionState);
+
+      submissionState = taskExecutorService.schedule(r4);
+      assertEquals(Scheduler.SubmissionState.REJECTED, submissionState);
+
+      // Mark a fragment as completing, but don't actually complete it yet.
+      // The wait queue should now have capacity to accept one more fragment.
+      taskExecutorService.fragmentCompleting(r1.getRequestId(),
+          SchedulerFragmentCompletingListener.State.SUCCESS);
+
+      submissionState = taskExecutorService.schedule(r4);
+      assertEquals(Scheduler.SubmissionState.ACCEPTED, submissionState);
+
+      assertEquals(3, taskExecutorService.waitQueue.size());
+      assertEquals(1, taskExecutorService.completingFragmentMap.size());
+
+      r1.complete();
+      r1.awaitEnd();
+      // r2 can only start once 1 fragment has completed. the map should be clear at this point.
+      awaitStartAndSchedulerRun(r2, taskExecutorService);
+      assertEquals(0, taskExecutorService.completingFragmentMap.size());
+
+    } finally {
+      taskExecutorService.shutDown(false);
+    }
+  }
+
   @Test(timeout = 10000)
   public void testWaitQueuePreemption() throws InterruptedException {
     MockRequest r1 = createMockRequest(1, 1, 100, 200, true, 20000l);
-    MockRequest r2 = createMockRequest(2, 1, 200, 330, false, 20000l);
-    MockRequest r3 = createMockRequest(3, 1, 300, 420, false, 20000l);
-    MockRequest r4 = createMockRequest(4, 1, 400, 510, false, 20000l);
+    MockRequest r2 = createMockRequest(2, 1, 1,200, 330, false, 20000l);
+    MockRequest r3 = createMockRequest(3, 2, 2,300, 420, false, 20000l);
+    MockRequest r4 = createMockRequest(4, 1, 3,400, 510, false, 20000l);
     MockRequest r5 = createMockRequest(5, 1, 500, 610, true, 20000l);
 
     TaskExecutorServiceForTest taskExecutorService =
@@ -190,8 +244,7 @@ public class TestTaskExecutorService {
     try {
       taskExecutorService.schedule(r1);
 
-      // TODO HIVE-11687. Remove the awaitStart once offer can handle (waitQueueSize + numFreeExecutionSlots)
-      // This currently serves to allow the task to be removed from the waitQueue.
+      // 1 scheduling run will happen, which may or may not pick up this task in the test..
       awaitStartAndSchedulerRun(r1, taskExecutorService);
       Scheduler.SubmissionState submissionState = taskExecutorService.schedule(r2);
       assertEquals(Scheduler.SubmissionState.ACCEPTED, submissionState);

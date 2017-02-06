@@ -42,10 +42,13 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.hadoop.hive.llap.daemon.FinishableStateUpdateHandler;
+import org.apache.hadoop.hive.llap.daemon.SchedulerFragmentCompletingListener;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.FragmentRuntimeInfo;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SignableVertexSpec;
 import org.apache.hadoop.hive.llap.metrics.LlapDaemonExecutorMetrics;
+import org.apache.hadoop.hive.llap.tezplugins.helpers.MonotonicClock;
 import org.apache.hadoop.service.AbstractService;
+import org.apache.hadoop.yarn.util.Clock;
 import org.apache.tez.runtime.task.EndReason;
 import org.apache.tez.runtime.task.TaskRunner2Result;
 import org.slf4j.Logger;
@@ -78,7 +81,8 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
  * Task executor service can be shut down which will terminated all running tasks and reject all
  * new tasks. Shutting down of the task executor service can be done gracefully or immediately.
  */
-public class TaskExecutorService extends AbstractService implements Scheduler<TaskRunnerCallable> {
+public class TaskExecutorService extends AbstractService
+    implements Scheduler<TaskRunnerCallable>, SchedulerFragmentCompletingListener {
   private static final Logger LOG = LoggerFactory.getLogger(TaskExecutorService.class);
   private static final boolean isInfoEnabled = LOG.isInfoEnabled();
   private static final boolean isDebugEnabled = LOG.isDebugEnabled();
@@ -89,7 +93,8 @@ public class TaskExecutorService extends AbstractService implements Scheduler<Ta
 
   // Thread pool for actual execution of work.
   private final ListeningExecutorService executorService;
-  private final EvictingPriorityBlockingQueue<TaskWrapper> waitQueue;
+  @VisibleForTesting
+  final EvictingPriorityBlockingQueue<TaskWrapper> waitQueue;
   // Thread pool for taking entities off the wait queue.
   private final ListeningExecutorService waitQueueExecutorService;
   // Thread pool for callbacks on completion of execution of a work unit.
@@ -100,6 +105,13 @@ public class TaskExecutorService extends AbstractService implements Scheduler<Ta
   private final boolean enablePreemption;
   private final ThreadPoolExecutor threadPoolExecutor;
   private final AtomicInteger numSlotsAvailable;
+  private final int maxParallelExecutors;
+  private final Clock clock = new MonotonicClock();
+
+  // Tracks running fragments, and completing fragments.
+  // Completing since we have a race in the AM being notified and the task actually
+  // falling off, and the executor service being ready to schedule a new task.
+  private final AtomicInteger runningFragmentCount = new AtomicInteger(0);
 
 
   @VisibleForTesting
@@ -121,6 +133,7 @@ public class TaskExecutorService extends AbstractService implements Scheduler<Ta
 
     final Comparator<TaskWrapper> waitQueueComparator = createComparator(
         waitQueueComparatorClassName);
+    this.maxParallelExecutors = numExecutors;
     this.waitQueue = new EvictingPriorityBlockingQueue<>(waitQueueComparator, waitQueueSize);
     this.threadPoolExecutor = new ThreadPoolExecutor(numExecutors, // core pool size
         numExecutors, // max pool size
@@ -344,8 +357,15 @@ public class TaskExecutorService extends AbstractService implements Scheduler<Ta
       // TODO HIVE-11687 It's possible for a bunch of tasks to come in around the same time, without the
       // actual executor threads picking up any work. This will lead to unnecessary rejection of tasks.
       // The wait queue should be able to fit at least (waitQueue + currentFreeExecutor slots)
+      if (LOG.isDebugEnabled()) {
+        LOG.debug(
+            "Offering to wait queue with: waitQueueSize={}, numSlotsAvailable={}, runningFragmentCount={} ",
+            waitQueue.size(), numSlotsAvailable.get(),
+            runningFragmentCount.get());
+      }
+
       canFinish = taskWrapper.getTaskRunnerCallable().canFinish();
-      evictedTask = waitQueue.offer(taskWrapper);
+      evictedTask = waitQueue.offer(taskWrapper, maxParallelExecutors - runningFragmentCount.get());
       // Finishable state is checked on the task, via an explicit query to the TaskRunnerCallable
 
       // null evicted task means offer accepted
@@ -366,7 +386,9 @@ public class TaskExecutorService extends AbstractService implements Scheduler<Ta
         }
       } else {
         if (isInfoEnabled) {
-          LOG.info("wait queue full, size={}. {} not added", waitQueue.size(), task.getRequestId());
+          LOG.info(
+              "wait queue full, size={}. numSlotsAvailable={}, runningFragmentCount={}. {} not added",
+              waitQueue.size(), numSlotsAvailable.get(), runningFragmentCount.get(), task.getRequestId());
         }
         evictedTask.getTaskRunnerCallable().killTask();
 
@@ -473,6 +495,34 @@ public class TaskExecutorService extends AbstractService implements Scheduler<Ta
     }
   }
 
+  private static final class FragmentCompletion {
+
+    public FragmentCompletion(
+        State state, long completingTime) {
+      this.state = state;
+      this.completingTime = completingTime;
+    }
+
+    State state;
+    long completingTime;
+  }
+
+  @VisibleForTesting
+  final ConcurrentMap<String, FragmentCompletion>
+      completingFragmentMap = new ConcurrentHashMap<>();
+
+  @Override
+  public void fragmentCompleting(String fragmentId, State state) {
+    int count = runningFragmentCount.decrementAndGet();
+    if (count < 0) {
+      LOG.warn(
+          "RunningFragmentCount went negative. Multiple calls for the same completion. Resetting to 0");
+      runningFragmentCount.set(0);
+    }
+    completingFragmentMap
+        .put(fragmentId, new FragmentCompletion(state, clock.getTime()));
+  }
+
   @VisibleForTesting
   void trySchedule(final TaskWrapper taskWrapper) throws RejectedExecutionException {
 
@@ -481,6 +531,7 @@ public class TaskExecutorService extends AbstractService implements Scheduler<Ta
         LOG.info("Attempting to execute {}", taskWrapper);
         ListenableFuture<TaskRunner2Result> future = executorService.submit(
             taskWrapper.getTaskRunnerCallable());
+        runningFragmentCount.incrementAndGet();
         taskWrapper.setIsInWaitQueue(false);
         FutureCallback<TaskRunner2Result> wrappedCallback = createInternalCompletionListener(
             taskWrapper);
@@ -547,10 +598,8 @@ public class TaskExecutorService extends AbstractService implements Scheduler<Ta
         // Re-order the wait queue
         LOG.debug("Re-ordering the wait queue since {} finishable state moved to {}",
             taskWrapper.getRequestId(), newFinishableState);
-        if (waitQueue.remove(taskWrapper)) {
-          // Put element back only if it existed.
-          waitQueue.offer(taskWrapper);
-        } else {
+        boolean reInserted = waitQueue.reinsertIfExists(taskWrapper);
+        if (!reInserted) {
           LOG.warn("Failed to remove {} from waitQueue",
               taskWrapper.getTaskRunnerCallable().getRequestId());
         }
@@ -653,6 +702,11 @@ public class TaskExecutorService extends AbstractService implements Scheduler<Ta
 
     @Override
     public void onSuccess(TaskRunner2Result result) {
+      if (LOG.isDebugEnabled()) {
+        LOG.debug("Received successful completion for: {}",
+            taskWrapper.getRequestId());
+      }
+      updateFallOffStats(taskWrapper.getRequestId());
       knownTasks.remove(taskWrapper.getRequestId());
       taskWrapper.setIsInPreemptableQueue(false);
       taskWrapper.maybeUnregisterForFinishedStateNotifications();
@@ -662,6 +716,11 @@ public class TaskExecutorService extends AbstractService implements Scheduler<Ta
 
     @Override
     public void onFailure(Throwable t) {
+      if (LOG.isDebugEnabled()) {
+        LOG.debug("Received failed completion for: {}",
+            taskWrapper.getRequestId());
+      }
+      updateFallOffStats(taskWrapper.getRequestId());
       knownTasks.remove(taskWrapper.getRequestId());
       taskWrapper.setIsInPreemptableQueue(false);
       taskWrapper.maybeUnregisterForFinishedStateNotifications();
@@ -694,6 +753,42 @@ public class TaskExecutorService extends AbstractService implements Scheduler<Ta
       synchronized (lock) {
         if (!waitQueue.isEmpty()) {
           lock.notify();
+        }
+      }
+    }
+
+    private void updateFallOffStats(
+        String requestId) {
+      long now = clock.getTime();
+      FragmentCompletion fragmentCompletion =
+          completingFragmentMap.remove(requestId);
+      if (fragmentCompletion == null) {
+        LOG.warn(
+            "Received onSuccess/onFailure for a fragment for which a completing message was not received: {}",
+            requestId);
+        // Happens due to AM side pre-emption, or the AM asking for a task to die.
+        // There's no hooks at the moment to get information over.
+        // For now - decrement the count to avoid accounting errors.
+        runningFragmentCount.decrementAndGet();
+        // TODO: Extend TaskRunner2 or see if an API with callbacks will work
+      } else {
+        long timeTaken = now - fragmentCompletion.completingTime;
+        switch (fragmentCompletion.state) {
+          case SUCCESS:
+            if (metrics != null) {
+              metrics.addMetricsFallOffSuccessTimeLost(timeTaken);
+            }
+            break;
+          case FAILED:
+            if (metrics != null) {
+              metrics.addMetricsFallOffFailedTimeLost(timeTaken);
+            }
+            break;
+          case KILLED:
+            if (metrics != null) {
+              metrics.addMetricsFallOffKilledTimeLost(timeTaken);
+            }
+            break;
         }
       }
     }

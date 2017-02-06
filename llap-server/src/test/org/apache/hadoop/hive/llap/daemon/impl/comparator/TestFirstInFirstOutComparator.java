@@ -107,16 +107,16 @@ public class TestFirstInFirstOutComparator {
     TaskWrapper r5 = createTaskWrapper(createRequest(5, 10, 1, 500), false, 1000000);
     EvictingPriorityBlockingQueue<TaskWrapper> queue = new EvictingPriorityBlockingQueue<>(
         new FirstInFirstOutComparator(), 4);
-    assertNull(queue.offer(r1));
+    assertNull(queue.offer(r1, 0));
     assertEquals(r1, queue.peek());
-    assertNull(queue.offer(r2));
+    assertNull(queue.offer(r2, 0));
     assertEquals(r2, queue.peek());
-    assertNull(queue.offer(r3));
+    assertNull(queue.offer(r3, 0));
     assertEquals(r3, queue.peek());
-    assertNull(queue.offer(r4));
+    assertNull(queue.offer(r4, 0));
     assertEquals(r4, queue.peek());
     // this offer will be accepted and r1 evicted
-    assertEquals(r1, queue.offer(r5));
+    assertEquals(r1, queue.offer(r5, 0));
     assertEquals(r5, queue.take());
     assertEquals(r4, queue.take());
     assertEquals(r3, queue.take());
@@ -129,16 +129,16 @@ public class TestFirstInFirstOutComparator {
     r5 = createTaskWrapper(createRequest(5, 10, 1, 500), true, 1000000);
     queue = new EvictingPriorityBlockingQueue(
         new FirstInFirstOutComparator(), 4);
-    assertNull(queue.offer(r1));
+    assertNull(queue.offer(r1, 0));
     assertEquals(r1, queue.peek());
-    assertNull(queue.offer(r2));
+    assertNull(queue.offer(r2, 0));
     assertEquals(r2, queue.peek());
-    assertNull(queue.offer(r3));
+    assertNull(queue.offer(r3, 0));
     assertEquals(r3, queue.peek());
-    assertNull(queue.offer(r4));
+    assertNull(queue.offer(r4, 0));
     assertEquals(r4, queue.peek());
     // this offer will be accpeted and r1 evicted
-    assertEquals(r1, queue.offer(r5));
+    assertEquals(r1, queue.offer(r5, 0));
     assertEquals(r5, queue.take());
     assertEquals(r4, queue.take());
     assertEquals(r3, queue.take());
@@ -151,16 +151,16 @@ public class TestFirstInFirstOutComparator {
     r5 = createTaskWrapper(createRequest(5, 10, 1, 500), true, 1000000);
     queue = new EvictingPriorityBlockingQueue(
         new FirstInFirstOutComparator(), 4);
-    assertNull(queue.offer(r1));
+    assertNull(queue.offer(r1, 0));
     assertEquals(r1, queue.peek());
-    assertNull(queue.offer(r2));
+    assertNull(queue.offer(r2, 0));
     assertEquals(r1, queue.peek());
-    assertNull(queue.offer(r3));
+    assertNull(queue.offer(r3, 0));
     assertEquals(r3, queue.peek());
-    assertNull(queue.offer(r4));
+    assertNull(queue.offer(r4, 0));
     assertEquals(r3, queue.peek());
     // offer accepted and r2 gets evicted
-    assertEquals(r2, queue.offer(r5));
+    assertEquals(r2, queue.offer(r5, 0));
     assertEquals(r5, queue.take());
     assertEquals(r3, queue.take());
     assertEquals(r1, queue.take());
@@ -173,16 +173,16 @@ public class TestFirstInFirstOutComparator {
     r5 = createTaskWrapper(createRequest(5, 10, 1, 500), true, 1000000);
     queue = new EvictingPriorityBlockingQueue(
         new FirstInFirstOutComparator(), 4);
-    assertNull(queue.offer(r1));
+    assertNull(queue.offer(r1, 0));
     assertEquals(r1, queue.peek());
-    assertNull(queue.offer(r2));
+    assertNull(queue.offer(r2, 0));
     assertEquals(r1, queue.peek());
-    assertNull(queue.offer(r3));
+    assertNull(queue.offer(r3, 0));
     assertEquals(r3, queue.peek());
-    assertNull(queue.offer(r4));
+    assertNull(queue.offer(r4, 0));
     assertEquals(r3, queue.peek());
     // offer accepted and r2 gets evicted
-    assertEquals(r2, queue.offer(r5));
+    assertEquals(r2, queue.offer(r5, 0));
     assertEquals(r5, queue.take());
     assertEquals(r3, queue.take());
     assertEquals(r1, queue.take());
@@ -195,16 +195,16 @@ public class TestFirstInFirstOutComparator {
     r5 = createTaskWrapper(createRequest(5, 10, 1, 500), true, 1000000);
     queue = new EvictingPriorityBlockingQueue(
         new FirstInFirstOutComparator(), 4);
-    assertNull(queue.offer(r1));
+    assertNull(queue.offer(r1, 0));
     assertEquals(r1, queue.peek());
-    assertNull(queue.offer(r2));
+    assertNull(queue.offer(r2, 0));
     assertEquals(r1, queue.peek());
-    assertNull(queue.offer(r3));
+    assertNull(queue.offer(r3, 0));
     assertEquals(r1, queue.peek());
-    assertNull(queue.offer(r4));
+    assertNull(queue.offer(r4, 0));
     assertEquals(r1, queue.peek());
     // offer accepted and r2 gets evicted
-    assertEquals(r2, queue.offer(r5));
+    assertEquals(r2, queue.offer(r5, 0));
     assertEquals(r5, queue.take());
     assertEquals(r1, queue.take());
     assertEquals(r4, queue.take());
@@ -217,16 +217,16 @@ public class TestFirstInFirstOutComparator {
     r5 = createTaskWrapper(createRequest(5, 10, 1, 500), true, 1000000);
     queue = new EvictingPriorityBlockingQueue(
         new FirstInFirstOutComparator(), 4);
-    assertNull(queue.offer(r1));
+    assertNull(queue.offer(r1, 0));
     assertEquals(r1, queue.peek());
-    assertNull(queue.offer(r2));
+    assertNull(queue.offer(r2, 0));
     assertEquals(r2, queue.peek());
-    assertNull(queue.offer(r3));
+    assertNull(queue.offer(r3, 0));
     assertEquals(r3, queue.peek());
-    assertNull(queue.offer(r4));
+    assertNull(queue.offer(r4, 0));
     assertEquals(r4, queue.peek());
     // offer accepted, r1 evicted
-    assertEquals(r1, queue.offer(r5));
+    assertEquals(r1, queue.offer(r5, 0));
     assertEquals(r5, queue.take());
     assertEquals(r4, queue.take());
     assertEquals(r3, queue.take());
@@ -239,16 +239,16 @@ public class TestFirstInFirstOutComparator {
     r5 = createTaskWrapper(createRequest(5, 10, 2, 500), true, 1000000);
     queue = new EvictingPriorityBlockingQueue(
         new FirstInFirstOutComparator(), 4);
-    assertNull(queue.offer(r1));
+    assertNull(queue.offer(r1, 0));
     assertEquals(r1, queue.peek());
-    assertNull(queue.offer(r2));
+    assertNull(queue.offer(r2, 0));
     assertEquals(r2, queue.peek());
-    assertNull(queue.offer(r3));
+    assertNull(queue.offer(r3, 0));
     assertEquals(r3, queue.peek());
-    assertNull(queue.offer(r4));
+    assertNull(queue.offer(r4, 0));
     assertEquals(r4, queue.peek());
     // offer accepted, r1 evicted
-    assertEquals(r1, queue.offer(r5));
+    assertEquals(r1, queue.offer(r5, 0));
     assertEquals(r5, queue.take());
     assertEquals(r4, queue.take());
     assertEquals(r3, queue.take());
@@ -264,9 +264,9 @@ public class TestFirstInFirstOutComparator {
     EvictingPriorityBlockingQueue<TaskWrapper> queue = new EvictingPriorityBlockingQueue<>(
         new FirstInFirstOutComparator(), 4);
 
-    assertNull(queue.offer(r1));
-    assertNull(queue.offer(r2));
-    assertNull(queue.offer(r3));
+    assertNull(queue.offer(r1, 0));
+    assertNull(queue.offer(r2, 0));
+    assertNull(queue.offer(r3, 0));
 
     assertEquals(r2, queue.take());
     assertEquals(r3, queue.take());
@@ -282,13 +282,13 @@ public class TestFirstInFirstOutComparator {
     EvictingPriorityBlockingQueue<TaskWrapper> queue = new EvictingPriorityBlockingQueue<>(
         new ShortestJobFirstComparator(), 3);
 
-    assertNull(queue.offer(r1));
-    assertNull(queue.offer(r2));
-    assertNull(queue.offer(r3));
+    assertNull(queue.offer(r1, 0));
+    assertNull(queue.offer(r2, 0));
+    assertNull(queue.offer(r3, 0));
 
     // can not queue more requests as queue is full
     TaskWrapper r4 = createTaskWrapper(createRequest(4, 1, 0, 10, 100, 10), true, 100000);
-    assertEquals(r4, queue.offer(r4));
+    assertEquals(r4, queue.offer(r4, 0));
   }
 
   @Test(timeout = 60000)
@@ -300,9 +300,9 @@ public class TestFirstInFirstOutComparator {
     EvictingPriorityBlockingQueue<TaskWrapper> queue = new EvictingPriorityBlockingQueue<>(
         new FirstInFirstOutComparator(), 4);
 
-    assertNull(queue.offer(r1));
-    assertNull(queue.offer(r2));
-    assertNull(queue.offer(r3));
+    assertNull(queue.offer(r1, 0));
+    assertNull(queue.offer(r2, 0));
+    assertNull(queue.offer(r3, 0));
 
     assertEquals(r2, queue.take());
     assertEquals(r3, queue.take());
