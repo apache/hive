@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.common.metrics;
 
+import com.codahale.metrics.Meter;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Assert;
@@ -33,6 +34,7 @@ public class MetricsTestUtils {
   public static final MetricsCategory COUNTER = new MetricsCategory("counters", "count");
   public static final MetricsCategory TIMER = new MetricsCategory("timers", "count");
   public static final MetricsCategory GAUGE = new MetricsCategory("gauges", "value");
+  public static final MetricsCategory METER = new MetricsCategory("meters", "count");
 
   static class MetricsCategory {
     String category;

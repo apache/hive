@@ -231,6 +231,10 @@ public class LegacyMetrics implements Metrics {
     //Not implemented
   }
 
+  public void markMeter(String name) {
+    //Not implemented.
+  }
+
   public void set(String name, Object value) {
     metrics.put(name,value);
   }

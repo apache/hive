@@ -23,6 +23,7 @@ import com.codahale.metrics.Counter;
 import com.codahale.metrics.ExponentiallyDecayingReservoir;
 import com.codahale.metrics.Gauge;
 import com.codahale.metrics.JmxReporter;
+import com.codahale.metrics.Meter;
 import com.codahale.metrics.Metric;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.MetricSet;
@@ -46,6 +47,7 @@ import com.google.common.collect.Lists;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.permission.FsPermission;
+import org.apache.hadoop.hive.common.metrics.common.MetricsConstant;
 import org.apache.hadoop.hive.common.metrics.common.MetricsScope;
 import org.apache.hadoop.hive.common.metrics.common.MetricsVariable;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -76,17 +78,17 @@ import java.util.concurrent.locks.ReentrantLock;
  */
 public class CodahaleMetrics implements org.apache.hadoop.hive.common.metrics.common.Metrics {
 
-  public static final String API_PREFIX = "api_";
-  public static final String ACTIVE_CALLS = "active_calls_";
   public static final Logger LOGGER = LoggerFactory.getLogger(CodahaleMetrics.class);
 
   public final MetricRegistry metricRegistry = new MetricRegistry();
   private final Lock timersLock = new ReentrantLock();
   private final Lock countersLock = new ReentrantLock();
   private final Lock gaugesLock = new ReentrantLock();
+  private final Lock metersLock = new ReentrantLock();
 
   private LoadingCache<String, Timer> timers;
   private LoadingCache<String, Counter> counters;
+  private LoadingCache<String, Meter> meters;
   private ConcurrentHashMap<String, Gauge> gauges;
 
   private HiveConf conf;
@@ -126,7 +128,7 @@ public class CodahaleMetrics implements org.apache.hadoop.hive.common.metrics.co
       if (!isOpen) {
         isOpen = true;
         this.timerContext = timer.time();
-        CodahaleMetrics.this.incrementCounter(ACTIVE_CALLS + name);
+        CodahaleMetrics.this.incrementCounter(MetricsConstant.ACTIVE_CALLS + name);
       } else {
         LOGGER.warn("Scope named " + name + " is not closed, cannot be opened.");
       }
@@ -138,7 +140,7 @@ public class CodahaleMetrics implements org.apache.hadoop.hive.common.metrics.co
     public void close() {
       if (isOpen) {
         timerContext.close();
-        CodahaleMetrics.this.decrementCounter(ACTIVE_CALLS + name);
+        CodahaleMetrics.this.decrementCounter(MetricsConstant.ACTIVE_CALLS + name);
       } else {
         LOGGER.warn("Scope named " + name + " is not open, cannot be closed.");
       }
@@ -168,6 +170,16 @@ public class CodahaleMetrics implements org.apache.hadoop.hive.common.metrics.co
           return counter;
         }
       }
+    );
+    meters = CacheBuilder.newBuilder().build(
+        new CacheLoader<String, Meter>() {
+          @Override
+          public Meter load(String key) {
+            Meter meter = new Meter();
+            metricRegistry.register(key, meter);
+            return meter;
+          }
+        }
     );
     gauges = new ConcurrentHashMap<String, Gauge>();
 
@@ -209,11 +221,11 @@ public class CodahaleMetrics implements org.apache.hadoop.hive.common.metrics.co
     }
     timers.invalidateAll();
     counters.invalidateAll();
+    meters.invalidateAll();
   }
 
   @Override
   public void startStoredScope(String name) {
-    name = API_PREFIX + name;
     if (threadLocalScopes.get().containsKey(name)) {
       threadLocalScopes.get().get(name).open();
     } else {
@@ -223,7 +235,6 @@ public class CodahaleMetrics implements org.apache.hadoop.hive.common.metrics.co
 
   @Override
   public void endStoredScope(String name) {
-    name = API_PREFIX + name;
     if (threadLocalScopes.get().containsKey(name)) {
       threadLocalScopes.get().get(name).close();
       threadLocalScopes.get().remove(name);
@@ -239,7 +250,6 @@ public class CodahaleMetrics implements org.apache.hadoop.hive.common.metrics.co
   }
 
   public MetricsScope createScope(String name) {
-    name = API_PREFIX + name;
     return new CodahaleMetricsScope(name);
   }
 
@@ -322,6 +332,21 @@ public class CodahaleMetrics implements org.apache.hadoop.hive.common.metrics.co
     }
   }
 
+  @Override
+  public void markMeter(String name) {
+    String key = name;
+    try {
+      metersLock.lock();
+      Meter meter = meters.get(name);
+      meter.mark();
+    } catch (ExecutionException e) {
+      throw new IllegalStateException("Error retrieving meter " + name
+          + " from the metric registry ", e);
+    } finally {
+      metersLock.unlock();
+    }
+  }
+
   // This method is necessary to synchronize lazy-creation to the timers.
   private Timer getTimer(String name) {
     String key = name;
@@ -330,7 +355,8 @@ public class CodahaleMetrics implements org.apache.hadoop.hive.common.metrics.co
       Timer timer = timers.get(key);
       return timer;
     } catch (ExecutionException e) {
-      throw new IllegalStateException("Error retrieving timer from the metric registry ", e);
+      throw new IllegalStateException("Error retrieving timer " + name
+          + " from the metric registry ", e);
     } finally {
       timersLock.unlock();
     }

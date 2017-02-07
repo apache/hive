@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.log;
 
 import com.google.common.collect.ImmutableMap;
 import org.apache.hadoop.hive.common.metrics.common.Metrics;
+import org.apache.hadoop.hive.common.metrics.common.MetricsConstant;
 import org.apache.hadoop.hive.common.metrics.common.MetricsFactory;
 import org.apache.hadoop.hive.common.metrics.common.MetricsScope;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -27,13 +28,8 @@ import org.apache.hadoop.util.ReflectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
-import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * PerfLogger.
@@ -225,7 +221,7 @@ public class PerfLogger {
   private void beginMetrics(String method) {
     Metrics metrics = MetricsFactory.getInstance();
     if (metrics != null) {
-      MetricsScope scope = metrics.createScope(method);
+      MetricsScope scope = metrics.createScope(MetricsConstant.API_PREFIX + method);
       openScopes.put(method, scope);
     }
 

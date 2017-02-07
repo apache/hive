@@ -107,6 +107,7 @@ public class SQLOperation extends ExecuteStatementOperation {
    */
   private static Map<String, AtomicInteger> userQueries = new HashMap<String, AtomicInteger>();
   private static final String ACTIVE_SQL_USER = MetricsConstant.SQL_OPERATION_PREFIX + "active_user";
+  private MetricsScope submittedQryScp;
 
   public SQLOperation(HiveSession parentSession, String statement, Map<String, String> confOverlay,
       boolean runInBackground, long queryTimeout) {
@@ -125,6 +126,11 @@ public class SQLOperation extends ExecuteStatementOperation {
       sqlOpDisplay = new SQLOperationDisplay(this);
     } catch (HiveSQLException e) {
       LOG.warn("Error calcluating SQL Operation Display for webui", e);
+    }
+
+    Metrics metrics = MetricsFactory.getInstance();
+    if (metrics != null) {
+      submittedQryScp = metrics.createScope(MetricsConstant.HS2_SUBMITTED_QURIES);
     }
   }
 
@@ -623,29 +629,30 @@ public class SQLOperation extends ExecuteStatementOperation {
 
   @Override
   protected void onNewState(OperationState state, OperationState prevState) {
+
     super.onNewState(state, prevState);
-    currentSQLStateScope = setMetrics(currentSQLStateScope, MetricsConstant.SQL_OPERATION_PREFIX,
-      MetricsConstant.COMPLETED_SQL_OPERATION_PREFIX, state);
+    currentSQLStateScope = updateOperationStateMetrics(currentSQLStateScope,
+        MetricsConstant.SQL_OPERATION_PREFIX,
+        MetricsConstant.COMPLETED_SQL_OPERATION_PREFIX, state);
 
     Metrics metrics = MetricsFactory.getInstance();
     if (metrics != null) {
-      try {
-        // New state is changed to running from something else (user is active)
-        if (state == OperationState.RUNNING && prevState != state) {
-          incrementUserQueries(metrics);
-        }
-        // New state is not running (user not active) any more
-        if (prevState == OperationState.RUNNING && prevState != state) {
-          decrementUserQueries(metrics);
-        }
-      } catch (IOException e) {
-        LOG.warn("Error metrics", e);
+      // New state is changed to running from something else (user is active)
+      if (state == OperationState.RUNNING && prevState != state) {
+        incrementUserQueries(metrics);
+      }
+      // New state is not running (user not active) any more
+      if (prevState == OperationState.RUNNING && prevState != state) {
+        decrementUserQueries(metrics);
       }
     }
 
     if (state == OperationState.FINISHED || state == OperationState.CANCELED || state == OperationState.ERROR) {
       //update runtime
       sqlOpDisplay.setRuntime(getOperationComplete() - getOperationStart());
+      if (metrics != null && submittedQryScp != null) {
+        metrics.endScope(submittedQryScp);
+      }
     }
 
     if (state == OperationState.CLOSED) {
@@ -654,9 +661,16 @@ public class SQLOperation extends ExecuteStatementOperation {
       //CLOSED state not interesting, state before (FINISHED, ERROR) is.
       sqlOpDisplay.updateState(state);
     }
+
+    if (state == OperationState.ERROR) {
+      markQueryMetric(MetricsFactory.getInstance(), MetricsConstant.HS2_FAILED_QUERIES);
+    }
+    if (state == OperationState.FINISHED) {
+      markQueryMetric(MetricsFactory.getInstance(), MetricsConstant.HS2_SUCEEDED_QUERIES);
+    }
   }
 
-  private void incrementUserQueries(Metrics metrics) throws IOException {
+  private void incrementUserQueries(Metrics metrics) {
     String username = parentSession.getUserName();
     if (username != null) {
       synchronized (userQueries) {
@@ -675,7 +689,7 @@ public class SQLOperation extends ExecuteStatementOperation {
     }
   }
 
-  private void decrementUserQueries(Metrics metrics) throws IOException {
+  private void decrementUserQueries(Metrics metrics) {
     String username = parentSession.getUserName();
     if (username != null) {
       synchronized (userQueries) {
@@ -685,6 +699,12 @@ public class SQLOperation extends ExecuteStatementOperation {
           userQueries.remove(username);
         }
       }
+    }
+  }
+
+  private void markQueryMetric(Metrics metric, String name) {
+    if(metric != null) {
+      metric.markMeter(name);
     }
   }
 
