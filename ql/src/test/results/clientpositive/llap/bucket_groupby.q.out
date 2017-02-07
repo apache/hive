@@ -433,10 +433,10 @@ POSTHOOK: Input: default@clustergroupby@ds=101
 2	74
 3	416
 PREHOOK: query: explain
-select key, count(1) from clustergroupby  where ds='101'  group by key,3 order by key,3 limit 10
+select key, count(1) from clustergroupby  where ds='101'  group by key,'a' order by key,'a' limit 10
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
-select key, count(1) from clustergroupby  where ds='101'  group by key,3 order by key,3 limit 10
+select key, count(1) from clustergroupby  where ds='101'  group by key,'a' order by key,'a' limit 10
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -514,12 +514,12 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select key, count(1) from clustergroupby  where ds='101' group by key,3 order by key,3 limit 10
+PREHOOK: query: select key, count(1) from clustergroupby  where ds='101' group by key,'a' order by key,'a' limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@clustergroupby
 PREHOOK: Input: default@clustergroupby@ds=101
 #### A masked pattern was here ####
-POSTHOOK: query: select key, count(1) from clustergroupby  where ds='101' group by key,3 order by key,3 limit 10
+POSTHOOK: query: select key, count(1) from clustergroupby  where ds='101' group by key,'a' order by key,'a' limit 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@clustergroupby
 POSTHOOK: Input: default@clustergroupby@ds=101

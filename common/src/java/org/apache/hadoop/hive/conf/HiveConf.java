@@ -1141,8 +1141,14 @@ public class HiveConf extends Configuration {
         "If the bucketing/sorting properties of the table exactly match the grouping key, whether to perform \n" +
         "the group by in the mapper by using BucketizedHiveInputFormat. The only downside to this\n" +
         "is that it limits the number of mappers to the number of files."),
+    HIVE_GROUPBY_POSITION_ALIAS("hive.groupby.position.alias", false,
+        "Whether to enable using Column Position Alias in Group By"),
+    HIVE_ORDERBY_POSITION_ALIAS("hive.orderby.position.alias", true,
+        "Whether to enable using Column Position Alias in Order By"),
+    @Deprecated
     HIVE_GROUPBY_ORDERBY_POSITION_ALIAS("hive.groupby.orderby.position.alias", false,
-        "Whether to enable using Column Position Alias in Group By or Order By"),
+        "Whether to enable using Column Position Alias in Group By or Order By (deprecated).\n" +
+        "Use " + HIVE_ORDERBY_POSITION_ALIAS.varname + " or " + HIVE_GROUPBY_POSITION_ALIAS.varname + " instead"),
     HIVE_NEW_JOB_GROUPING_SET_CARDINALITY("hive.new.job.grouping.set.cardinality", 30,
         "Whether a new map-reduce job should be launched for grouping sets/rollups/cubes.\n" +
         "For a query like: select a, b, c, count(1) from T group by a, b, c with rollup;\n" +

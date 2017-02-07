@@ -12243,11 +12243,11 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
   // Process the position alias in GROUPBY and ORDERBY
   private void processPositionAlias(ASTNode ast) throws SemanticException {
-    boolean isByPos = false;
-    if (HiveConf.getBoolVar(conf,
-          HiveConf.ConfVars.HIVE_GROUPBY_ORDERBY_POSITION_ALIAS) == true) {
-      isByPos = true;
-    }
+    boolean isBothByPos = HiveConf.getBoolVar(conf, ConfVars.HIVE_GROUPBY_ORDERBY_POSITION_ALIAS);
+    boolean isGbyByPos = isBothByPos
+        || HiveConf.getBoolVar(conf, ConfVars.HIVE_GROUPBY_POSITION_ALIAS);
+    boolean isObyByPos = isBothByPos
+        || HiveConf.getBoolVar(conf, ConfVars.HIVE_ORDERBY_POSITION_ALIAS);
 
     Deque<ASTNode> stack = new ArrayDeque<ASTNode>();
     stack.push(ast);
@@ -12286,7 +12286,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           for (int child_pos = 0; child_pos < groupbyNode.getChildCount(); ++child_pos) {
             ASTNode node = (ASTNode) groupbyNode.getChild(child_pos);
             if (node.getToken().getType() == HiveParser.Number) {
-              if (isByPos) {
+              if (isGbyByPos) {
                 int pos = Integer.parseInt(node.getText());
                 if (pos > 0 && pos <= selectExpCnt) {
                   groupbyNode.setChild(child_pos,
@@ -12299,7 +12299,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
                 }
               } else {
                 warn("Using constant number  " + node.getText() +
-                  " in group by. If you try to use position alias when hive.groupby.orderby.position.alias is false, the position alias will be ignored.");
+                  " in group by. If you try to use position alias when hive.groupby.position.alias is false, the position alias will be ignored.");
               }
             }
           }
@@ -12318,7 +12318,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
             ASTNode colNode = (ASTNode) orderbyNode.getChild(child_pos).getChild(0);
             ASTNode node = (ASTNode) colNode.getChild(0);
             if (node != null && node.getToken().getType() == HiveParser.Number) {
-              if( isByPos ) {
+              if (isObyByPos) {
                 if (!isAllCol) {
                   int pos = Integer.parseInt(node.getText());
                   if (pos > 0 && pos <= selectExpCnt) {
@@ -12335,7 +12335,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
                 }
               } else { //if not using position alias and it is a number.
                 warn("Using constant number " + node.getText() +
-                  " in order by. If you try to use position alias when hive.groupby.orderby.position.alias is false, the position alias will be ignored.");
+                  " in order by. If you try to use position alias when hive.orderby.position.alias is false, the position alias will be ignored.");
               }
             }
           }

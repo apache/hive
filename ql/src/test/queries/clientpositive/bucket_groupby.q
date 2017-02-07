@@ -28,8 +28,8 @@ select abs(length(key)), count(1) from clustergroupby  where ds='101' group by a
 
 --constant--
 explain
-select key, count(1) from clustergroupby  where ds='101'  group by key,3 order by key,3 limit 10;
-select key, count(1) from clustergroupby  where ds='101' group by key,3 order by key,3 limit 10;
+select key, count(1) from clustergroupby  where ds='101'  group by key,'a' order by key,'a' limit 10;
+select key, count(1) from clustergroupby  where ds='101' group by key,'a' order by key,'a' limit 10;
 
 --subquery--
 explain
