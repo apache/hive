@@ -55,6 +55,7 @@ import org.apache.hadoop.hive.common.metrics.common.MetricsFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.llap.coordinator.LlapCoordinator;
+import org.apache.hadoop.hive.llap.registry.impl.LlapRegistryService;
 import org.apache.hadoop.hive.ql.exec.spark.session.SparkSessionManagerImpl;
 import org.apache.hadoop.hive.ql.exec.tez.TezSessionPoolManager;
 import org.apache.hadoop.hive.ql.session.ClearDanglingScratchDir;
@@ -86,6 +87,7 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Joiner;
+import com.google.common.base.Preconditions;
 
 /**
  * HiveServer2.
@@ -148,6 +150,14 @@ public class HiveServer2 extends CompositeService {
         throw new RuntimeException(e);
       }
     }
+
+    // Trigger the creation of LLAP registry client, if in use. Clients may be using a different
+    // cluster than the default one, but at least for the default case we'd have it covered.
+    String llapHosts = HiveConf.getVar(hiveConf, HiveConf.ConfVars.LLAP_DAEMON_SERVICE_HOSTS);
+    if (llapHosts != null && !llapHosts.isEmpty()) {
+      LlapRegistryService.getClient(hiveConf);
+    }
+
     // Setup web UI
     try {
       int webUIPort =

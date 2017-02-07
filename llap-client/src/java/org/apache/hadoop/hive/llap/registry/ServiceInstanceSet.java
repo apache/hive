@@ -31,7 +31,7 @@ public interface ServiceInstanceSet {
    * 
    * @return
    */
-  public Collection<ServiceInstance> getAll();
+  Collection<ServiceInstance> getAll();
 
   /**
    * Gets a list containing all the instances. This list has the same iteration order across
@@ -40,7 +40,7 @@ public interface ServiceInstanceSet {
    *                          across calls, by inserting inactive instances to replace the
    *                          removed ones.
    */
-  public Collection<ServiceInstance> getAllInstancesOrdered(boolean consistentIndexes);
+  Collection<ServiceInstance> getAllInstancesOrdered(boolean consistentIndexes);
 
   /**
    * Get an instance by worker identity.
@@ -48,7 +48,7 @@ public interface ServiceInstanceSet {
    * @param name
    * @return
    */
-  public ServiceInstance getInstance(String name);
+  ServiceInstance getInstance(String name);
 
   /**
    * Get a list of service instances for a given host.
@@ -58,12 +58,12 @@ public interface ServiceInstanceSet {
    * @param host
    * @return
    */
-  public Set<ServiceInstance> getByHost(String host);
+  Set<ServiceInstance> getByHost(String host);
 
   /**
    * Get number of instances in the currently availabe.
    *
    * @return - number of instances
    */
-  public int size();
+  int size();
 }
