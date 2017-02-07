@@ -136,7 +136,9 @@ public class TezJobMonitor {
         console.logInfo(report);
       }
     };
-    return InPlaceUpdate.canRenderInPlace(hiveConf) && !SessionState.getConsole().getIsSilent()
+    return InPlaceUpdate.canRenderInPlace(hiveConf)
+        && !SessionState.getConsole().getIsSilent()
+        && !SessionState.get().isHiveServerQuery()
         ? inPlaceUpdateFunction : logToFileFunction;
   }
 
