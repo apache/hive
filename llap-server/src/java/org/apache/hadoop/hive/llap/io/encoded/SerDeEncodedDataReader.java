@@ -218,7 +218,7 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
     this.jobConf = jobConf;
     this.schema = schema;
     this.writerIncludes = OrcInputFormat.genIncludedColumns(schema, columnIds);
-    SchemaEvolution evolution = new SchemaEvolution(schema,
+    SchemaEvolution evolution = new SchemaEvolution(schema, null,
         new Reader.Options(jobConf).include(writerIncludes));
     consumer.setSchemaEvolution(evolution);
   }

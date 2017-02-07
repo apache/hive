@@ -1531,7 +1531,7 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
       Reader.Options readerOptions = new Reader.Options(context.conf);
       if (readerTypes == null) {
         readerIncluded = genIncludedColumns(fileSchema, context.conf);
-        evolution = new SchemaEvolution(fileSchema, readerOptions.include(readerIncluded));
+        evolution = new SchemaEvolution(fileSchema, null, readerOptions.include(readerIncluded));
       } else {
         // The reader schema always comes in without ACID columns.
         TypeDescription readerSchema = OrcUtils.convertTypeFromProtobuf(readerTypes, 0);

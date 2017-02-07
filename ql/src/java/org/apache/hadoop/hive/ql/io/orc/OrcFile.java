@@ -29,7 +29,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.orc.FileMetadata;
 import org.apache.orc.PhysicalWriter;
-import org.apache.orc.impl.MemoryManager;
+import org.apache.orc.MemoryManager;
 import org.apache.orc.TypeDescription;
 import org.apache.orc.impl.OrcTail;
 
@@ -258,7 +258,7 @@ public final class OrcFile extends org.apache.orc.OrcFile {
     /**
      * A package local option to set the memory manager.
      */
-    protected WriterOptions memory(MemoryManager value) {
+    public WriterOptions memory(MemoryManager value) {
       super.memory(value);
       return this;
     }
