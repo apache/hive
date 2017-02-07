@@ -98,7 +98,7 @@ public class LlapServlet extends HttpServlet {
 
         LOG.info("Retrieving info for cluster: " + clusterName);
         LlapStatusServiceDriver driver = new LlapStatusServiceDriver();
-        int ret = driver.run(new LlapStatusOptionsProcessor.LlapStatusOptions(clusterName));
+        int ret = driver.run(new LlapStatusOptionsProcessor.LlapStatusOptions(clusterName), 0);
         if (ret == LlapStatusServiceDriver.ExitCode.SUCCESS.getInt()) {
           driver.outputJson(writer);
         }

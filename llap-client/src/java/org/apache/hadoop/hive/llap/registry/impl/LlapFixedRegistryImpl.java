@@ -258,7 +258,7 @@ public class LlapFixedRegistryImpl implements ServiceRegistry {
   }
 
   @Override
-  public ServiceInstanceSet getInstances(String component) throws IOException {
+  public ServiceInstanceSet getInstances(String component, long timeoutMs) throws IOException {
     return new FixedServiceInstanceSet();
   }
 

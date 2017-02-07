@@ -128,7 +128,11 @@ public class LlapRegistryService extends AbstractService {
   }
 
   public ServiceInstanceSet getInstances() throws IOException {
-    return this.registry.getInstances("LLAP");
+    return getInstances(0);
+  }
+
+  public ServiceInstanceSet getInstances(long clusterReadyTimeoutMs) throws IOException {
+    return this.registry.getInstances("LLAP", clusterReadyTimeoutMs);
   }
 
   public void registerStateChangeListener(ServiceInstanceStateChangeListener listener)

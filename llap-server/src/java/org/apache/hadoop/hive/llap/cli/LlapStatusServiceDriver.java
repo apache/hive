@@ -174,7 +174,7 @@ public class LlapStatusServiceDriver {
     }
   }
 
-  public int run(LlapStatusOptions options) {
+  public int run(LlapStatusOptions options, long watchTimeoutMs) {
     appStatusBuilder = new AppStatusBuilder();
     try {
       if (appName == null) {
@@ -253,7 +253,7 @@ public class LlapStatusServiceDriver {
         return ret.getInt();
       } else {
         try {
-          ret = populateAppStatusFromLlapRegistry(appStatusBuilder);
+          ret = populateAppStatusFromLlapRegistry(appStatusBuilder, watchTimeoutMs);
         } catch (LlapStatusCliException e) {
           logError(e);
           return e.getExitCode().getInt();
@@ -481,7 +481,8 @@ public class LlapStatusServiceDriver {
    * @return an ExitCode. An ExitCode other than ExitCode.SUCCESS implies future progress not possible
    * @throws LlapStatusCliException
    */
-  private ExitCode populateAppStatusFromLlapRegistry(AppStatusBuilder appStatusBuilder) throws
+  private ExitCode populateAppStatusFromLlapRegistry(
+      AppStatusBuilder appStatusBuilder, long watchTimeoutMs) throws
     LlapStatusCliException {
 
     if (llapRegistry == null) {
@@ -495,7 +496,7 @@ public class LlapStatusServiceDriver {
 
     Collection<ServiceInstance> serviceInstances;
     try {
-      serviceInstances = llapRegistry.getInstances().getAll();
+      serviceInstances = llapRegistry.getInstances(watchTimeoutMs).getAll();
     } catch (Exception e) {
       throw new LlapStatusCliException(ExitCode.LLAP_REGISTRY_ERROR, "Failed to get instances from llap registry", e);
     }
@@ -979,7 +980,7 @@ public class LlapStatusServiceDriver {
         numAttempts, watchMode, new DecimalFormat("#.###").format(runningNodesThreshold));
       while (numAttempts > 0) {
         try {
-          ret = statusServiceDriver.run(options);
+          ret = statusServiceDriver.run(options, watchMode ? watchTimeout : 0);
           if (ret == ExitCode.SUCCESS.getInt()) {
             if (watchMode) {
               currentState = statusServiceDriver.appStatusBuilder.state;
