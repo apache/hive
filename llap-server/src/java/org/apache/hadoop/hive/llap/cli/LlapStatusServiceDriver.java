@@ -251,6 +251,9 @@ public class LlapStatusServiceDriver {
 
       if (ret != ExitCode.SUCCESS) {
         return ret.getInt();
+      } else if (EnumSet.of(State.APP_NOT_FOUND, State.COMPLETE, State.LAUNCHING)
+        .contains(appStatusBuilder.getState())) {
+        return ExitCode.SUCCESS.getInt();
       } else {
         try {
           ret = populateAppStatusFromLlapRegistry(appStatusBuilder);
@@ -435,6 +438,15 @@ public class LlapStatusServiceDriver {
           int liveContainers = llapStats.get(StatusKeys.STATISTICS_CONTAINERS_LIVE);
           appStatusBuilder.setDesiredInstances(desiredContainers);
           appStatusBuilder.setLiveInstances(liveContainers);
+          if (liveContainers == 0) {
+            appStatusBuilder.setState(State.LAUNCHING);
+          } else {
+            if (desiredContainers >= liveContainers) {
+              appStatusBuilder.setState(State.RUNNING_ALL);
+            } else {
+              appStatusBuilder.setState(State.RUNNING_PARTIAL);
+            }
+          }
         } else {
           throw new LlapStatusCliException(ExitCode.SLIDER_CLIENT_ERROR_OTHER,
               "Failed to get statistics for LLAP"); // Error since LLAP should always exist.
@@ -496,7 +508,7 @@ public class LlapStatusServiceDriver {
     Collection<ServiceInstance> serviceInstances;
     try {
       serviceInstances = llapRegistry.getInstances().getAll();
-    } catch (IOException e) {
+    } catch (Exception e) {
       throw new LlapStatusCliException(ExitCode.LLAP_REGISTRY_ERROR, "Failed to get instances from llap registry", e);
     }
 
@@ -540,7 +552,11 @@ public class LlapStatusServiceDriver {
           LOG.warn("Found more entries in LLAP registry, as compared to desired entries");
         }
       } else {
-        appStatusBuilder.setState(State.RUNNING_PARTIAL);
+        if (validatedInstances.size() > 0) {
+          appStatusBuilder.setState(State.RUNNING_PARTIAL);
+        } else {
+          appStatusBuilder.setState(State.LAUNCHING);
+        }
       }
 
       // At this point, everything that can be consumed from AppStatusBuilder has been consumed.
@@ -573,6 +589,8 @@ public class LlapStatusServiceDriver {
 
     private Long appStartTime;
     private Long appFinishTime;
+
+    private boolean runningThresholdAchieved = false;
 
     private final List<LlapInstance> llapInstances = new LinkedList<>();
 
@@ -621,6 +639,11 @@ public class LlapStatusServiceDriver {
     public AppStatusBuilder addNewLlapInstance(LlapInstance llapInstance) {
       this.llapInstances.add(llapInstance);
       this.containerToInstanceMap.put(llapInstance.getContainerId(), llapInstance);
+      return this;
+    }
+
+    public AppStatusBuilder setRunningThresholdAchieved(boolean thresholdAchieved) {
+      this.runningThresholdAchieved = thresholdAchieved;
       return this;
     }
 
@@ -680,6 +703,10 @@ public class LlapStatusServiceDriver {
 
     public List<LlapInstance> getLlapInstances() {
       return llapInstances;
+    }
+
+    public boolean isRunningThresholdAchieved() {
+      return runningThresholdAchieved;
     }
 
     @JsonIgnore
@@ -993,7 +1020,7 @@ public class LlapStatusServiceDriver {
               // we have reached RUNNING state, now check if running nodes threshold is met
               final int liveInstances = statusServiceDriver.appStatusBuilder.getLiveInstances();
               final int desiredInstances = statusServiceDriver.appStatusBuilder.getDesiredInstances();
-              if (liveInstances > 0 && desiredInstances > 0) {
+              if (desiredInstances > 0) {
                 final float ratio = (float) liveInstances / (float) desiredInstances;
                 if (ratio < runningNodesThreshold) {
                   LOG.warn("Waiting until running nodes threshold is reached. Current: {} Desired: {}." +
@@ -1005,7 +1032,11 @@ public class LlapStatusServiceDriver {
                   continue;
                 } else {
                   desiredStateAttained = true;
+                  statusServiceDriver.appStatusBuilder.setRunningThresholdAchieved(true);
                 }
+              } else {
+                numAttempts--;
+                continue;
               }
             }
           }
