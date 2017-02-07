@@ -496,7 +496,7 @@ public class LlapStatusServiceDriver {
     Collection<ServiceInstance> serviceInstances;
     try {
       serviceInstances = llapRegistry.getInstances().getAll();
-    } catch (IOException e) {
+    } catch (Exception e) {
       throw new LlapStatusCliException(ExitCode.LLAP_REGISTRY_ERROR, "Failed to get instances from llap registry", e);
     }
 
@@ -540,7 +540,11 @@ public class LlapStatusServiceDriver {
           LOG.warn("Found more entries in LLAP registry, as compared to desired entries");
         }
       } else {
-        appStatusBuilder.setState(State.RUNNING_PARTIAL);
+        if (validatedInstances.size() > 0) {
+          appStatusBuilder.setState(State.RUNNING_PARTIAL);
+        } else {
+          appStatusBuilder.setState(State.LAUNCHING);
+        }
       }
 
       // At this point, everything that can be consumed from AppStatusBuilder has been consumed.
@@ -573,6 +577,8 @@ public class LlapStatusServiceDriver {
 
     private Long appStartTime;
     private Long appFinishTime;
+
+    private boolean runningThresholdAchieved = false;
 
     private final List<LlapInstance> llapInstances = new LinkedList<>();
 
@@ -621,6 +627,11 @@ public class LlapStatusServiceDriver {
     public AppStatusBuilder addNewLlapInstance(LlapInstance llapInstance) {
       this.llapInstances.add(llapInstance);
       this.containerToInstanceMap.put(llapInstance.getContainerId(), llapInstance);
+      return this;
+    }
+
+    public AppStatusBuilder setRunningThresholdAchieved(boolean thresholdAchieved) {
+      this.runningThresholdAchieved = thresholdAchieved;
       return this;
     }
 
@@ -680,6 +691,10 @@ public class LlapStatusServiceDriver {
 
     public List<LlapInstance> getLlapInstances() {
       return llapInstances;
+    }
+
+    public boolean isRunningThresholdAchieved() {
+      return runningThresholdAchieved;
     }
 
     @JsonIgnore
@@ -993,7 +1008,7 @@ public class LlapStatusServiceDriver {
               // we have reached RUNNING state, now check if running nodes threshold is met
               final int liveInstances = statusServiceDriver.appStatusBuilder.getLiveInstances();
               final int desiredInstances = statusServiceDriver.appStatusBuilder.getDesiredInstances();
-              if (liveInstances > 0 && desiredInstances > 0) {
+              if (desiredInstances > 0) {
                 final float ratio = (float) liveInstances / (float) desiredInstances;
                 if (ratio < runningNodesThreshold) {
                   LOG.warn("Waiting until running nodes threshold is reached. Current: {} Desired: {}." +
@@ -1005,9 +1020,29 @@ public class LlapStatusServiceDriver {
                   continue;
                 } else {
                   desiredStateAttained = true;
+                  statusServiceDriver.appStatusBuilder.setRunningThresholdAchieved(true);
                 }
+              } else {
+                numAttempts--;
+                continue;
               }
             }
+          } else if (ret == ExitCode.YARN_ERROR.getInt() && watchMode) {
+            LOG.warn("Watch mode enabled and got YARN error. Retrying..");
+            numAttempts--;
+            continue;
+          } else if (ret == ExitCode.SLIDER_CLIENT_ERROR_CREATE_FAILED.getInt() && watchMode) {
+            LOG.warn("Watch mode enabled and slider client creation failed. Retrying..");
+            numAttempts--;
+            continue;
+          } else if (ret == ExitCode.SLIDER_CLIENT_ERROR_OTHER.getInt() && watchMode) {
+            LOG.warn("Watch mode enabled and got slider client error. Retrying..");
+            numAttempts--;
+            continue;
+          } else if (ret == ExitCode.LLAP_REGISTRY_ERROR.getInt() && watchMode) {
+            LOG.warn("Watch mode enabled and got LLAP registry error. Retrying..");
+            numAttempts--;
+            continue;
           }
           break;
         } finally {
