@@ -16,6 +16,9 @@ import java.util.List;
 import static org.fusesource.jansi.Ansi.ansi;
 import static org.fusesource.jansi.internal.CLibrary.*;
 
+/**
+ * Renders information from ProgressMonitor to the stream provided.
+ */
 public class InPlaceUpdate {
 
   public static final int MIN_TERMINAL_WIDTH = 94;
