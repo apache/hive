@@ -842,4 +842,13 @@ public class TestTxnCommands {
     Assert.assertEquals(ErrorMsg.INVALID_TARGET_COLUMN_IN_SET_CLAUSE,
       ((HiveException)cpr.getException()).getCanonicalErrorMsg());
   }
+  @Test
+  public void testBadOnClause() throws Exception {
+    CommandProcessorResponse cpr = runStatementOnDriverNegative("merge into " + Table.ACIDTBL +
+      " trgt using (select * from " + Table.NONACIDORCTBL +
+      "src) sub on sub.a = target.a when not matched then insert values (sub.a,sub.b)");
+    Assert.assertTrue("Error didn't match: " + cpr, cpr.getErrorMessage().contains(
+      "No columns from target table 'trgt' found in ON clause '`sub`.`a` = `target`.`a`' of MERGE statement."));
+
+  }
 }
