@@ -1,4 +1,4 @@
-set hive.explain.user=true;
+set hive.explain.user=false;
 set hive.mapred.mode=nonstrict;
 set hive.cli.print.header=true;
 SET hive.exec.schema.evolution=true;
@@ -38,7 +38,7 @@ alter table part_add_int_permute_select add columns(c int);
 
 insert into table part_add_int_permute_select partition(part=1) VALUES (2, 2222, 'new', 3333);
 
-explain
+explain vectorization detail
 select insert_num,part,a,b from part_add_int_permute_select;
 
 -- SELECT permutation columns to make sure NULL defaulting works right
@@ -61,7 +61,7 @@ alter table part_add_int_string_permute_select add columns(c int, d string);
 
 insert into table part_add_int_string_permute_select partition(part=1) VALUES (2, 2222, 'new', 3333, '4444');
 
-explain
+explain vectorization detail
 select insert_num,part,a,b from part_add_int_string_permute_select;
 
 -- SELECT permutation columns to make sure NULL defaulting works right
@@ -93,7 +93,7 @@ alter table part_change_string_group_double replace columns (insert_num int, c1 
 
 insert into table part_change_string_group_double partition(part=1) SELECT insert_num, double1, double1, double1, 'new' FROM schema_evolution_data WHERE insert_num = 111;
 
-explain
+explain vectorization detail
 select insert_num,part,c1,c2,c3,b from part_change_string_group_double;
 
 select insert_num,part,c1,c2,c3,b from part_change_string_group_double;
@@ -116,7 +116,7 @@ alter table part_change_date_group_string_group_date_timestamp replace columns(i
 
 insert into table part_change_date_group_string_group_date_timestamp partition(part=1) VALUES (111, 'filler', 'filler', 'filler', 'filler', 'filler', 'filler', 'filler', 'filler', 'filler', 'filler', 'new');
 
-explain
+explain vectorization detail
 select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,b from part_change_date_group_string_group_date_timestamp;
 
 select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,b from part_change_date_group_string_group_date_timestamp;
@@ -164,7 +164,7 @@ insert into table part_change_numeric_group_string_group_multi_ints_string_group
             'filler', 'filler', 'filler', 'filler', 'filler', 'filler', 'filler', 'filler',
             'new');
 
-explain
+explain vectorization detail
 select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15,c16,c17,c18,c19,c20,b from part_change_numeric_group_string_group_multi_ints_string_group;
 
 select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15,c16,c17,c18,c19,c20,b from part_change_numeric_group_string_group_multi_ints_string_group;
@@ -207,7 +207,7 @@ insert into table part_change_numeric_group_string_group_floating_string_group p
              'filler', 'filler', 'filler', 'filler', 'filler', 'filler',
              'new');
 
-explain
+explain vectorization detail
 select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15,b from part_change_numeric_group_string_group_floating_string_group;
 
 select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15,b from part_change_numeric_group_string_group_floating_string_group;
@@ -249,7 +249,7 @@ insert into table part_change_string_group_string_group_string partition(part=1)
           'filler', 'filler', 'filler',
           'new');
 
-explain
+explain vectorization detail
 select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,b from part_change_string_group_string_group_string;
 
 select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,b from part_change_string_group_string_group_string;
@@ -299,7 +299,7 @@ insert into table part_change_lower_to_higher_numeric_group_tinyint_to_bigint pa
             1234.5678, 9876.543, 789.321,
            'new');
 
-explain
+explain vectorization detail
 select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15,c16,c17,c18,b from part_change_lower_to_higher_numeric_group_tinyint_to_bigint;
 
 select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15,c16,c17,c18,b from part_change_lower_to_higher_numeric_group_tinyint_to_bigint;
@@ -330,7 +330,7 @@ alter table part_change_lower_to_higher_numeric_group_decimal_to_float replace c
 
 insert into table part_change_lower_to_higher_numeric_group_decimal_to_float partition(part=1) VALUES (111, 1234.5678, 9876.543, 1234.5678, 'new');
 
-explain
+explain vectorization detail
 select insert_num,part,c1,c2,c3,b from part_change_lower_to_higher_numeric_group_decimal_to_float;
 
 select insert_num,part,c1,c2,c3,b from part_change_lower_to_higher_numeric_group_decimal_to_float;

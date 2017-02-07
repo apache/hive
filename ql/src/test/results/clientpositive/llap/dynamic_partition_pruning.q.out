@@ -3730,10 +3730,9 @@ STAGE PLANS:
     Tez
 #### A masked pattern was here ####
       Edges:
-        Reducer 10 <- Union 9 (SIMPLE_EDGE)
-        Reducer 12 <- Map 11 (CUSTOM_SIMPLE_EDGE), Union 9 (CONTAINS)
+        Reducer 11 <- Map 10 (CUSTOM_SIMPLE_EDGE), Union 9 (CONTAINS)
         Reducer 2 <- Map 1 (SIMPLE_EDGE), Union 3 (CONTAINS)
-        Reducer 4 <- Reducer 10 (SIMPLE_EDGE), Union 3 (SIMPLE_EDGE)
+        Reducer 4 <- Union 3 (SIMPLE_EDGE), Union 9 (SIMPLE_EDGE)
         Reducer 6 <- Map 5 (SIMPLE_EDGE), Union 3 (CONTAINS)
         Reducer 8 <- Map 7 (CUSTOM_SIMPLE_EDGE), Union 9 (CONTAINS)
 #### A masked pattern was here ####
@@ -3756,7 +3755,7 @@ STAGE PLANS:
                       Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: llap
             LLAP IO: no inputs
-        Map 11 
+        Map 10 
             Map Operator Tree:
                 TableScan
                   alias: srcpart
@@ -3814,50 +3813,7 @@ STAGE PLANS:
                         value expressions: _col0 (type: string)
             Execution mode: llap
             LLAP IO: no inputs
-        Reducer 10 
-            Execution mode: llap
-            Reduce Operator Tree:
-              Group By Operator
-                keys: KEY._col0 (type: string)
-                mode: mergepartial
-                outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
-                Reduce Output Operator
-                  key expressions: _col0 (type: string)
-                  sort order: +
-                  Map-reduce partition columns: _col0 (type: string)
-                  Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
-                Select Operator
-                  expressions: _col0 (type: string)
-                  outputColumnNames: _col0
-                  Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
-                  Group By Operator
-                    keys: _col0 (type: string)
-                    mode: hash
-                    outputColumnNames: _col0
-                    Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
-                    Dynamic Partitioning Event Operator
-                      Target column: ds (string)
-                      Target Input: srcpart
-                      Partition key expr: ds
-                      Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
-                      Target Vertex: Map 1
-                Select Operator
-                  expressions: _col0 (type: string)
-                  outputColumnNames: _col0
-                  Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
-                  Group By Operator
-                    keys: _col0 (type: string)
-                    mode: hash
-                    outputColumnNames: _col0
-                    Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
-                    Dynamic Partitioning Event Operator
-                      Target column: ds (string)
-                      Target Input: srcpart
-                      Partition key expr: ds
-                      Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
-                      Target Vertex: Map 5
-        Reducer 12 
+        Reducer 11 
             Execution mode: llap
             Reduce Operator Tree:
               Group By Operator
@@ -3878,6 +3834,36 @@ STAGE PLANS:
                       sort order: +
                       Map-reduce partition columns: _col0 (type: string)
                       Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: _col0 (type: string)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
+                      Group By Operator
+                        keys: _col0 (type: string)
+                        mode: hash
+                        outputColumnNames: _col0
+                        Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
+                        Dynamic Partitioning Event Operator
+                          Target column: ds (string)
+                          Target Input: srcpart
+                          Partition key expr: ds
+                          Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
+                          Target Vertex: Map 1
+                    Select Operator
+                      expressions: _col0 (type: string)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
+                      Group By Operator
+                        keys: _col0 (type: string)
+                        mode: hash
+                        outputColumnNames: _col0
+                        Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
+                        Dynamic Partitioning Event Operator
+                          Target column: ds (string)
+                          Target Input: srcpart
+                          Partition key expr: ds
+                          Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
+                          Target Vertex: Map 5
         Reducer 2 
             Execution mode: llap
             Reduce Operator Tree:
@@ -3896,7 +3882,7 @@ STAGE PLANS:
             Reduce Operator Tree:
               Merge Join Operator
                 condition map:
-                     Inner Join 0 to 1
+                     Left Semi Join 0 to 1
                 keys:
                   0 _col0 (type: string)
                   1 _col0 (type: string)
@@ -3943,6 +3929,36 @@ STAGE PLANS:
                       sort order: +
                       Map-reduce partition columns: _col0 (type: string)
                       Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: _col0 (type: string)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
+                      Group By Operator
+                        keys: _col0 (type: string)
+                        mode: hash
+                        outputColumnNames: _col0
+                        Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
+                        Dynamic Partitioning Event Operator
+                          Target column: ds (string)
+                          Target Input: srcpart
+                          Partition key expr: ds
+                          Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
+                          Target Vertex: Map 1
+                    Select Operator
+                      expressions: _col0 (type: string)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
+                      Group By Operator
+                        keys: _col0 (type: string)
+                        mode: hash
+                        outputColumnNames: _col0
+                        Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
+                        Dynamic Partitioning Event Operator
+                          Target column: ds (string)
+                          Target Input: srcpart
+                          Partition key expr: ds
+                          Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
+                          Target Vertex: Map 5
         Union 3 
             Vertex: Union 3
         Union 9 

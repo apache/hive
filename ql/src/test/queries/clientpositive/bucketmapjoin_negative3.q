@@ -28,14 +28,14 @@ load data local inpath '../../data/files/srcbucket22.txt' INTO TABLE test4;
 
 set hive.optimize.bucketmapjoin = true;
 -- should be allowed
-explain extended select /* + MAPJOIN(R) */ * from test1 L join test1 R on L.key=R.key AND L.value=R.value;
-explain extended select /* + MAPJOIN(R) */ * from test2 L join test2 R on L.key=R.key AND L.value=R.value;
+explain extended select /*+ MAPJOIN(R) */ * from test1 L join test1 R on L.key=R.key AND L.value=R.value;
+explain extended select /*+ MAPJOIN(R) */ * from test2 L join test2 R on L.key=R.key AND L.value=R.value;
 
 -- should not apply bucket mapjoin
-explain extended select /* + MAPJOIN(R) */ * from test1 L join test1 R on L.key+L.key=R.key;
-explain extended select /* + MAPJOIN(R) */ * from test1 L join test2 R on L.key=R.key AND L.value=R.value;
-explain extended select /* + MAPJOIN(R) */ * from test1 L join test3 R on L.key=R.key AND L.value=R.value;
-explain extended select /* + MAPJOIN(R) */ * from test1 L join test4 R on L.key=R.key AND L.value=R.value;
-explain extended select /* + MAPJOIN(R) */ * from test2 L join test3 R on L.key=R.key AND L.value=R.value;
-explain extended select /* + MAPJOIN(R) */ * from test2 L join test4 R on L.key=R.key AND L.value=R.value;
-explain extended select /* + MAPJOIN(R) */ * from test3 L join test4 R on L.key=R.key AND L.value=R.value;
+explain extended select /*+ MAPJOIN(R) */ * from test1 L join test1 R on L.key+L.key=R.key;
+explain extended select /*+ MAPJOIN(R) */ * from test1 L join test2 R on L.key=R.key AND L.value=R.value;
+explain extended select /*+ MAPJOIN(R) */ * from test1 L join test3 R on L.key=R.key AND L.value=R.value;
+explain extended select /*+ MAPJOIN(R) */ * from test1 L join test4 R on L.key=R.key AND L.value=R.value;
+explain extended select /*+ MAPJOIN(R) */ * from test2 L join test3 R on L.key=R.key AND L.value=R.value;
+explain extended select /*+ MAPJOIN(R) */ * from test2 L join test4 R on L.key=R.key AND L.value=R.value;
+explain extended select /*+ MAPJOIN(R) */ * from test3 L join test4 R on L.key=R.key AND L.value=R.value;

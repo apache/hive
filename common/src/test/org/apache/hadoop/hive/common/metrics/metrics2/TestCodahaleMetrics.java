@@ -80,7 +80,7 @@ public class TestCodahaleMetrics {
       MetricsFactory.getInstance().endStoredScope("method1");
     }
 
-    Timer timer = metricRegistry.getTimers().get("api_method1");
+    Timer timer = metricRegistry.getTimers().get("method1");
     Assert.assertEquals(5, timer.getCount());
     Assert.assertTrue(timer.getMeanRate() > 0);
   }
@@ -113,7 +113,7 @@ public class TestCodahaleMetrics {
     }
     executorService.shutdown();
     assertTrue(executorService.awaitTermination(10000, TimeUnit.MILLISECONDS));
-    Timer timer = metricRegistry.getTimers().get("api_method2");
+    Timer timer = metricRegistry.getTimers().get("method2");
     Assert.assertEquals(4, timer.getCount());
     Assert.assertTrue(timer.getMeanRate() > 0);
   }
@@ -160,5 +160,21 @@ public class TestCodahaleMetrics {
     testVar.setValue(40);
     json = ((CodahaleMetrics) MetricsFactory.getInstance()).dumpJson();
     MetricsTestUtils.verifyMetricsJson(json, MetricsTestUtils.GAUGE, "gauge1", testVar.getValue());
+  }
+
+  @Test
+  public void testMeter() throws Exception {
+
+    String json = ((CodahaleMetrics) MetricsFactory.getInstance()).dumpJson();
+    MetricsTestUtils.verifyMetricsJson(json, MetricsTestUtils.METER, "meter", "");
+
+    MetricsFactory.getInstance().markMeter("meter");
+    json = ((CodahaleMetrics) MetricsFactory.getInstance()).dumpJson();
+    MetricsTestUtils.verifyMetricsJson(json, MetricsTestUtils.METER, "meter", "1");
+
+    MetricsFactory.getInstance().markMeter("meter");
+    json = ((CodahaleMetrics) MetricsFactory.getInstance()).dumpJson();
+    MetricsTestUtils.verifyMetricsJson(json, MetricsTestUtils.METER, "meter", "2");
+
   }
 }

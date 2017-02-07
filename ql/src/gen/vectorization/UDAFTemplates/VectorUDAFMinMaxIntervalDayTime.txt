@@ -81,6 +81,12 @@ public class <ClassName> extends VectorAggregateExpression {
     }
 
     private VectorExpression inputExpression;
+
+    @Override
+    public VectorExpression inputExpression() {
+      return inputExpression;
+    }
+
     private transient VectorExpressionWriter resultWriter;
 
     public <ClassName>(VectorExpression inputExpression) {

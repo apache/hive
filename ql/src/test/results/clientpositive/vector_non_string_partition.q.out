@@ -27,10 +27,14 @@ POSTHOOK: query: SHOW PARTITIONS non_string_part
 POSTHOOK: type: SHOWPARTITIONS
 POSTHOOK: Input: default@non_string_part
 ctinyint=__HIVE_DEFAULT_PARTITION__
-PREHOOK: query: EXPLAIN SELECT cint, ctinyint FROM non_string_part WHERE cint > 0 ORDER BY cint LIMIT 10
+PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION  SELECT cint, ctinyint FROM non_string_part WHERE cint > 0 ORDER BY cint LIMIT 10
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN SELECT cint, ctinyint FROM non_string_part WHERE cint > 0 ORDER BY cint LIMIT 10
+POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION  SELECT cint, ctinyint FROM non_string_part WHERE cint > 0 ORDER BY cint LIMIT 10
 POSTHOOK: type: QUERY
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -42,20 +46,48 @@ STAGE PLANS:
           TableScan
             alias: non_string_part
             Statistics: Num rows: 3073 Data size: 339150 Basic stats: COMPLETE Column stats: NONE
+            TableScan Vectorization:
+                native: true
+                projectedOutputColumns: [0, 1, 2, 3, 4]
             Filter Operator
+              Filter Vectorization:
+                  className: VectorFilterOperator
+                  native: true
+                  predicateExpression: FilterLongColGreaterLongScalar(col 0, val 0) -> boolean
               predicate: (cint > 0) (type: boolean)
               Statistics: Num rows: 1024 Data size: 113013 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: cint (type: int), ctinyint (type: tinyint)
                 outputColumnNames: _col0, _col1
+                Select Vectorization:
+                    className: VectorSelectOperator
+                    native: true
+                    projectedOutputColumns: [0, 4]
                 Statistics: Num rows: 1024 Data size: 113013 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col0 (type: int)
                   sort order: +
+                  Reduce Sink Vectorization:
+                      className: VectorReduceSinkOperator
+                      native: false
+                      nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, Not ACID UPDATE or DELETE IS true, No buckets IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                      nativeConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false, No TopN IS false, Uniform Hash IS false
                   Statistics: Num rows: 1024 Data size: 113013 Basic stats: COMPLETE Column stats: NONE
                   TopN Hash Memory Usage: 0.1
                   value expressions: _col1 (type: tinyint)
       Execution mode: vectorized
+      Map Vectorization:
+          enabled: true
+          enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+          groupByVectorOutput: true
+          inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+          allNative: false
+          usesVectorUDFAdaptor: false
+          vectorized: true
+      Reduce Vectorization:
+          enabled: false
+          enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true
+          enableConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: int), VALUE._col0 (type: tinyint)
@@ -98,10 +130,14 @@ POSTHOOK: Input: default@non_string_part@ctinyint=__HIVE_DEFAULT_PARTITION__
 799471	NULL
 1248059	NULL
 1286921	NULL
-PREHOOK: query: EXPLAIN SELECT cint, cstring1 FROM non_string_part WHERE cint > 0 ORDER BY cint, cstring1 LIMIT 10
+PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION  SELECT cint, cstring1 FROM non_string_part WHERE cint > 0 ORDER BY cint, cstring1 LIMIT 10
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN SELECT cint, cstring1 FROM non_string_part WHERE cint > 0 ORDER BY cint, cstring1 LIMIT 10
+POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION  SELECT cint, cstring1 FROM non_string_part WHERE cint > 0 ORDER BY cint, cstring1 LIMIT 10
 POSTHOOK: type: QUERY
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -113,19 +149,47 @@ STAGE PLANS:
           TableScan
             alias: non_string_part
             Statistics: Num rows: 3073 Data size: 339150 Basic stats: COMPLETE Column stats: NONE
+            TableScan Vectorization:
+                native: true
+                projectedOutputColumns: [0, 1, 2, 3, 4]
             Filter Operator
+              Filter Vectorization:
+                  className: VectorFilterOperator
+                  native: true
+                  predicateExpression: FilterLongColGreaterLongScalar(col 0, val 0) -> boolean
               predicate: (cint > 0) (type: boolean)
               Statistics: Num rows: 1024 Data size: 113013 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: cint (type: int), cstring1 (type: string)
                 outputColumnNames: _col0, _col1
+                Select Vectorization:
+                    className: VectorSelectOperator
+                    native: true
+                    projectedOutputColumns: [0, 1]
                 Statistics: Num rows: 1024 Data size: 113013 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col0 (type: int), _col1 (type: string)
                   sort order: ++
+                  Reduce Sink Vectorization:
+                      className: VectorReduceSinkOperator
+                      native: false
+                      nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, Not ACID UPDATE or DELETE IS true, No buckets IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                      nativeConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false, No TopN IS false, Uniform Hash IS false
                   Statistics: Num rows: 1024 Data size: 113013 Basic stats: COMPLETE Column stats: NONE
                   TopN Hash Memory Usage: 0.1
       Execution mode: vectorized
+      Map Vectorization:
+          enabled: true
+          enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+          groupByVectorOutput: true
+          inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+          allNative: false
+          usesVectorUDFAdaptor: false
+          vectorized: true
+      Reduce Vectorization:
+          enabled: false
+          enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true
+          enableConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: int), KEY.reducesinkkey1 (type: string)

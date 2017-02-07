@@ -91,7 +91,7 @@ class LlapRecordReader
   private final ExecutorService executor;
   private final int columnCount;
 
-  private TypeDescription fileSchema;
+  private SchemaEvolution evolution;
 
   public LlapRecordReader(JobConf job, FileSplit split, List<Integer> includedCols,
       String hostName, ColumnVectorProducer cvp, ExecutorService executor,
@@ -147,7 +147,7 @@ class LlapRecordReader
     feedback = rp = cvp.createReadPipeline(this, split, columnIds, sarg, columnNames,
         counters, schema, sourceInputFormat, sourceSerDe, reporter, job,
         mapWork.getPathToPartitionInfo());
-    fileSchema = rp.getFileSchema();
+    evolution = rp.getSchemaEvolution();
     includedColumns = rp.getIncludedColumns();
   }
 
@@ -168,10 +168,9 @@ class LlapRecordReader
   }
 
   private boolean checkOrcSchemaEvolution() {
-    SchemaEvolution schemaEvolution = new SchemaEvolution(
-        fileSchema, rp.getReaderSchema(), includedColumns);
     for (int i = 0; i < columnCount; ++i) {
-      if (!schemaEvolution.isPPDSafeConversion(columnIds.get(i))) {
+      int colId = columnIds == null ? i : columnIds.get(i);
+      if (!evolution.isPPDSafeConversion(colId)) {
         LlapIoImpl.LOG.warn("Unsupported schema evolution! Disabling Llap IO for {}", split);
         return false;
       }

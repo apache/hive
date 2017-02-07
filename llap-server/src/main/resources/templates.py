@@ -127,7 +127,7 @@ runner = """
 #!/bin/bash -e
 
 BASEDIR=$(dirname $0)
-slider stop %(name)s
+slider stop %(name)s --force || slider stop %(name)s
 slider destroy %(name)s --force || slider destroy %(name)s
 slider install-package --name LLAP --package  $BASEDIR/llap-%(version)s.zip --replacepkg
 slider create %(name)s --resources $BASEDIR/resources.json --template $BASEDIR/appConfig.json %(queue.string)s

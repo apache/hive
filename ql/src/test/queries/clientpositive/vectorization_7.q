@@ -1,11 +1,11 @@
 set hive.mapred.mode=nonstrict;
 set hive.explain.user=false;
 SET hive.vectorized.execution.enabled=true;
-set hive.fetch.task.conversion=minimal;
+set hive.fetch.task.conversion=none;
 
 -- SORT_QUERY_RESULTS
 
-EXPLAIN
+EXPLAIN VECTORIZATION EXPRESSION
 SELECT cboolean1,
        cbigint,
        csmallint,
@@ -60,7 +60,7 @@ LIMIT 25;
 
 
 -- double compare timestamp
-EXPLAIN
+EXPLAIN VECTORIZATION EXPRESSION
 SELECT cboolean1,
        cbigint,
        csmallint,

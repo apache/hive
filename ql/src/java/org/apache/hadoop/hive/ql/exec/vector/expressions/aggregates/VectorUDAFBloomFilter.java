@@ -55,6 +55,12 @@ public class VectorUDAFBloomFilter extends VectorAggregateExpression {
   private static final long serialVersionUID = 1L;
 
   private VectorExpression inputExpression;
+
+  @Override
+  public VectorExpression inputExpression() {
+    return inputExpression;
+  }
+
   private long expectedEntries = -1;
   private ValueProcessor valueProcessor;
   transient private int bitSetSize = -1;

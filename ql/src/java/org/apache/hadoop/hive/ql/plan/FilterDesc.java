@@ -22,6 +22,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
+import org.apache.hadoop.hive.ql.plan.Explain.Vectorization;
 
 
 
@@ -185,5 +186,31 @@ public class FilterDesc extends AbstractOperatorDesc {
     }
     filterDesc.setSortedFilter(isSortedFilter());
     return filterDesc;
+  }
+
+  public class FilterOperatorExplainVectorization extends OperatorExplainVectorization {
+
+    private final FilterDesc filterDesc;
+    private final VectorFilterDesc vectorFilterDesc;
+
+    public FilterOperatorExplainVectorization(FilterDesc filterDesc, VectorDesc vectorDesc) {
+      // Native vectorization supported.
+      super(vectorDesc, true);
+      this.filterDesc = filterDesc;
+      vectorFilterDesc = (VectorFilterDesc) vectorDesc;
+    }
+
+    @Explain(vectorization = Vectorization.EXPRESSION, displayName = "predicateExpression", explainLevels = { Level.DEFAULT, Level.EXTENDED })
+    public String getPredicateExpression() {
+      return vectorFilterDesc.getPredicateExpression().toString();
+    }
+  }
+
+  @Explain(vectorization = Vectorization.OPERATOR, displayName = "Filter Vectorization", explainLevels = { Level.DEFAULT, Level.EXTENDED })
+  public FilterOperatorExplainVectorization getFilterVectorization() {
+    if (vectorDesc == null) {
+      return null;
+    }
+    return new FilterOperatorExplainVectorization(this, vectorDesc);
   }
 }

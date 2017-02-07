@@ -18,6 +18,9 @@
 
 package org.apache.hadoop.hive.ql.plan;
 
+import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.VectorAggregateExpression;
+
 /**
  * VectorGroupByDesc.
  *
@@ -59,6 +62,10 @@ public class VectorGroupByDesc extends AbstractVectorDesc  {
 
   private boolean isVectorOutput;
 
+  private VectorExpression[] keyExpressions;
+  private VectorAggregateExpression[] aggregators;
+  private int[] projectedOutputColumns;
+
   public VectorGroupByDesc() {
     this.processingMode = ProcessingMode.NONE;
     this.isVectorOutput = false;
@@ -77,6 +84,30 @@ public class VectorGroupByDesc extends AbstractVectorDesc  {
 
   public void setVectorOutput(boolean isVectorOutput) {
     this.isVectorOutput = isVectorOutput;
+  }
+
+  public void setKeyExpressions(VectorExpression[] keyExpressions) {
+    this.keyExpressions = keyExpressions;
+  }
+
+  public VectorExpression[] getKeyExpressions() {
+    return keyExpressions;
+  }
+
+  public void setAggregators(VectorAggregateExpression[] aggregators) {
+    this.aggregators = aggregators;
+  }
+
+  public VectorAggregateExpression[] getAggregators() {
+    return aggregators;
+  }
+
+  public void setProjectedOutputColumns(int[] projectedOutputColumns) {
+    this.projectedOutputColumns = projectedOutputColumns;
+  }
+
+  public int[] getProjectedOutputColumns() {
+    return projectedOutputColumns;
   }
 
   /**

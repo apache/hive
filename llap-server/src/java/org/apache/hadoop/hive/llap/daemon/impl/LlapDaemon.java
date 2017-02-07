@@ -380,6 +380,12 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
     }
     getConfig().setInt(ConfVars.LLAP_DAEMON_OUTPUT_SERVICE_PORT.varname, LlapOutputFormatService.get().getPort());
 
+    // Ensure this is set in the config so that the AM can read it.
+    getConfig()
+        .setIfUnset(ConfVars.LLAP_DAEMON_TASK_SCHEDULER_WAIT_QUEUE_SIZE.varname,
+            ConfVars.LLAP_DAEMON_TASK_SCHEDULER_WAIT_QUEUE_SIZE
+                .getDefaultValue());
+
     this.registry.init(getConfig());
     this.registry.start();
     LOG.info(

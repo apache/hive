@@ -50,11 +50,13 @@ public class RemoteSparkJobStatus implements SparkJobStatus {
   private static final Logger LOG = LoggerFactory.getLogger(RemoteSparkJobStatus.class.getName());
   private final SparkClient sparkClient;
   private final JobHandle<Serializable> jobHandle;
+  private Throwable error;
   private final transient long sparkClientTimeoutInSeconds;
 
   public RemoteSparkJobStatus(SparkClient sparkClient, JobHandle<Serializable> jobHandle, long timeoutInSeconds) {
     this.sparkClient = sparkClient;
     this.jobHandle = jobHandle;
+    this.error = null;
     this.sparkClientTimeoutInSeconds = timeoutInSeconds;
   }
 
@@ -138,7 +140,15 @@ public class RemoteSparkJobStatus implements SparkJobStatus {
 
   @Override
   public Throwable getError() {
+    if (error != null) {
+      return error;
+    }
     return jobHandle.getError();
+  }
+
+  @Override
+  public void setError(Throwable e) {
+    this.error = e;
   }
 
   private SparkJobInfo getSparkJobInfo() throws HiveException {

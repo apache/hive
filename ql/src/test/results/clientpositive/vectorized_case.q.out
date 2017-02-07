@@ -1,4 +1,4 @@
-PREHOOK: query: explain
+PREHOOK: query: explain vectorization expression
 select 
   csmallint,
   case 
@@ -16,7 +16,7 @@ where csmallint = 418
 or csmallint = 12205
 or csmallint = 10583
 PREHOOK: type: QUERY
-POSTHOOK: query: explain
+POSTHOOK: query: explain vectorization expression
 select 
   csmallint,
   case 
@@ -34,6 +34,10 @@ where csmallint = 418
 or csmallint = 12205
 or csmallint = 10583
 POSTHOOK: type: QUERY
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -45,21 +49,44 @@ STAGE PLANS:
           TableScan
             alias: alltypesorc
             Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
+            TableScan Vectorization:
+                native: true
+                projectedOutputColumns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
             Filter Operator
+              Filter Vectorization:
+                  className: VectorFilterOperator
+                  native: true
+                  predicateExpression: FilterExprOrExpr(children: FilterLongColEqualLongScalar(col 1, val 418) -> boolean, FilterLongColEqualLongScalar(col 1, val 12205) -> boolean, FilterLongColEqualLongScalar(col 1, val 10583) -> boolean) -> boolean
               predicate: ((csmallint = 418) or (csmallint = 12205) or (csmallint = 10583)) (type: boolean)
               Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: csmallint (type: smallint), CASE WHEN ((csmallint = 418)) THEN ('a') WHEN ((csmallint = 12205)) THEN ('b') ELSE ('c') END (type: string), CASE WHEN ((csmallint = 418)) THEN ('a') WHEN ((csmallint = 12205)) THEN ('b') ELSE ('c') END (type: string)
                 outputColumnNames: _col0, _col1, _col2
+                Select Vectorization:
+                    className: VectorSelectOperator
+                    native: true
+                    projectedOutputColumns: [1, 14, 15]
+                    selectExpressions: VectorUDFAdaptor(CASE WHEN ((csmallint = 418)) THEN ('a') WHEN ((csmallint = 12205)) THEN ('b') ELSE ('c') END)(children: LongColEqualLongScalar(col 1, val 418) -> 12:long, LongColEqualLongScalar(col 1, val 12205) -> 13:long) -> 14:string, VectorUDFAdaptor(CASE WHEN ((csmallint = 418)) THEN ('a') WHEN ((csmallint = 12205)) THEN ('b') ELSE ('c') END)(children: LongColEqualLongScalar(col 1, val 418) -> 12:long, LongColEqualLongScalar(col 1, val 12205) -> 13:long) -> 15:string
                 Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
+                  File Sink Vectorization:
+                      className: VectorFileSinkOperator
+                      native: false
                   Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
       Execution mode: vectorized
+      Map Vectorization:
+          enabled: true
+          enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+          groupByVectorOutput: true
+          inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+          allNative: false
+          usesVectorUDFAdaptor: true
+          vectorized: true
 
   Stage: Stage-0
     Fetch Operator
@@ -109,7 +136,7 @@ POSTHOOK: Input: default@alltypesorc
 10583	c	c
 418	a	a
 12205	b	b
-PREHOOK: query: explain
+PREHOOK: query: explain vectorization expression
 select 
   csmallint,
   case 
@@ -127,7 +154,7 @@ where csmallint = 418
 or csmallint = 12205
 or csmallint = 10583
 PREHOOK: type: QUERY
-POSTHOOK: query: explain
+POSTHOOK: query: explain vectorization expression
 select 
   csmallint,
   case 
@@ -145,6 +172,10 @@ where csmallint = 418
 or csmallint = 12205
 or csmallint = 10583
 POSTHOOK: type: QUERY
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -156,21 +187,44 @@ STAGE PLANS:
           TableScan
             alias: alltypesorc
             Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
+            TableScan Vectorization:
+                native: true
+                projectedOutputColumns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
             Filter Operator
+              Filter Vectorization:
+                  className: VectorFilterOperator
+                  native: true
+                  predicateExpression: FilterExprOrExpr(children: FilterLongColEqualLongScalar(col 1, val 418) -> boolean, FilterLongColEqualLongScalar(col 1, val 12205) -> boolean, FilterLongColEqualLongScalar(col 1, val 10583) -> boolean) -> boolean
               predicate: ((csmallint = 418) or (csmallint = 12205) or (csmallint = 10583)) (type: boolean)
               Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: csmallint (type: smallint), CASE WHEN ((csmallint = 418)) THEN ('a') WHEN ((csmallint = 12205)) THEN ('b') ELSE (null) END (type: string), CASE WHEN ((csmallint = 418)) THEN ('a') WHEN ((csmallint = 12205)) THEN (null) ELSE ('c') END (type: string)
                 outputColumnNames: _col0, _col1, _col2
+                Select Vectorization:
+                    className: VectorSelectOperator
+                    native: true
+                    projectedOutputColumns: [1, 14, 15]
+                    selectExpressions: VectorUDFAdaptor(CASE WHEN ((csmallint = 418)) THEN ('a') WHEN ((csmallint = 12205)) THEN ('b') ELSE (null) END)(children: LongColEqualLongScalar(col 1, val 418) -> 12:long, LongColEqualLongScalar(col 1, val 12205) -> 13:long) -> 14:string, VectorUDFAdaptor(CASE WHEN ((csmallint = 418)) THEN ('a') WHEN ((csmallint = 12205)) THEN (null) ELSE ('c') END)(children: LongColEqualLongScalar(col 1, val 418) -> 12:long, LongColEqualLongScalar(col 1, val 12205) -> 13:long) -> 15:string
                 Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
+                  File Sink Vectorization:
+                      className: VectorFileSinkOperator
+                      native: false
                   Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
       Execution mode: vectorized
+      Map Vectorization:
+          enabled: true
+          enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+          groupByVectorOutput: true
+          inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+          allNative: false
+          usesVectorUDFAdaptor: true
+          vectorized: true
 
   Stage: Stage-0
     Fetch Operator

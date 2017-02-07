@@ -2,6 +2,7 @@ set hive.explain.user=false;
 SET hive.vectorized.execution.enabled=true;
 SET hive.auto.convert.join=true;
 SET hive.vectorized.execution.mapjoin.native.enabled=true;
+set hive.fetch.task.conversion=none;
 
 -- Using cint and cbigint in test queries
 create table small_alltypesorc1a as select * from alltypesorc where cint is not null and cbigint is not null order by ctinyint, csmallint, cint, cbigint, cfloat, cdouble, cstring1, cstring2, ctimestamp1, ctimestamp2, cboolean1, cboolean2 limit 5;
@@ -28,7 +29,7 @@ ANALYZE TABLE small_alltypesorc_a COMPUTE STATISTICS FOR COLUMNS;
 
 select * from small_alltypesorc_a;
 
-explain
+explain vectorization detail
 select count(*), sum(t1.c_cbigint) from (select c.cbigint as c_cbigint
 from small_alltypesorc_a c
 left outer join small_alltypesorc_a cd

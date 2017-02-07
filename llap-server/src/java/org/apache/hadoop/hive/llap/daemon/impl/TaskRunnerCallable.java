@@ -28,6 +28,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.hive.llap.daemon.FragmentCompletionHandler;
 import org.apache.hadoop.hive.llap.daemon.HistoryLogger;
 import org.apache.hadoop.hive.llap.daemon.KilledTaskHandler;
+import org.apache.hadoop.hive.llap.daemon.SchedulerFragmentCompletingListener;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.FragmentRuntimeInfo;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.IOSpecProto;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SignableVertexSpec;
@@ -114,16 +115,17 @@ public class TaskRunnerCallable extends CallableWithNdc<TaskRunner2Result> {
   private final AtomicBoolean killInvoked = new AtomicBoolean(false);
   private final SignableVertexSpec vertex;
   private final TezEvent initialEvent;
+  private final SchedulerFragmentCompletingListener completionListener;
   private UserGroupInformation taskUgi;
 
   @VisibleForTesting
   public TaskRunnerCallable(SubmitWorkRequestProto request, QueryFragmentInfo fragmentInfo,
-      Configuration conf, ExecutionContext executionContext, Map<String, String> envMap,
-      Credentials credentials, long memoryAvailable, AMReporter amReporter, ConfParams confParams,
-      LlapDaemonExecutorMetrics metrics, KilledTaskHandler killedTaskHandler,
-      FragmentCompletionHandler fragmentCompleteHandler, HadoopShim tezHadoopShim,
-      TezTaskAttemptID attemptId, SignableVertexSpec vertex, TezEvent initialEvent,
-      UserGroupInformation taskUgi) {
+                            Configuration conf, ExecutionContext executionContext, Map<String, String> envMap,
+                            Credentials credentials, long memoryAvailable, AMReporter amReporter, ConfParams confParams,
+                            LlapDaemonExecutorMetrics metrics, KilledTaskHandler killedTaskHandler,
+                            FragmentCompletionHandler fragmentCompleteHandler, HadoopShim tezHadoopShim,
+                            TezTaskAttemptID attemptId, SignableVertexSpec vertex, TezEvent initialEvent,
+                            UserGroupInformation taskUgi, SchedulerFragmentCompletingListener completionListener) {
     this.request = request;
     this.fragmentInfo = fragmentInfo;
     this.conf = conf;
@@ -152,6 +154,7 @@ public class TaskRunnerCallable extends CallableWithNdc<TaskRunner2Result> {
     this.tezHadoopShim = tezHadoopShim;
     this.initialEvent = initialEvent;
     this.taskUgi = taskUgi;
+    this.completionListener = completionListener;
   }
 
   public long getStartTime() {
@@ -219,6 +222,7 @@ public class TaskRunnerCallable extends CallableWithNdc<TaskRunner2Result> {
 
       String fragmentId = LlapTezUtils.stripAttemptPrefix(taskSpec.getTaskAttemptID().toString());
       taskReporter = new LlapTaskReporter(
+          completionListener,
           umbilical,
           confParams.amHeartbeatIntervalMsMax,
           confParams.amCounterHeartbeatInterval,
@@ -226,7 +230,8 @@ public class TaskRunnerCallable extends CallableWithNdc<TaskRunner2Result> {
           new AtomicLong(0),
           request.getContainerIdString(),
           fragmentId,
-          initialEvent);
+          initialEvent,
+          requestId);
 
       String attemptId = fragmentInfo.getFragmentIdentifierString();
       IOContextMap.setThreadAttemptId(attemptId);
@@ -297,9 +302,14 @@ public class TaskRunnerCallable extends CallableWithNdc<TaskRunner2Result> {
             killtimerWatch.start();
             LOG.info("Issuing kill to task {}", taskSpec.getTaskAttemptID());
             boolean killed = taskRunner.killTask();
+
             if (killed) {
               // Sending a kill message to the AM right here. Don't need to wait for the task to complete.
               LOG.info("Kill request for task {} completed. Informing AM", ta);
+              // Inform the scheduler that this fragment has been killed.
+              // If the kill failed - that means the task has already hit a final condition,
+              // and a notification comes from the LlapTaskReporter
+              completionListener.fragmentCompleting(getRequestId(), SchedulerFragmentCompletingListener.State.KILLED);
               reportTaskKilled();
             } else {
               LOG.info("Kill request for task {} did not complete because the task is already complete",

@@ -3,6 +3,7 @@ set hive.explain.user=false;
 SET hive.vectorized.execution.enabled=true;
 SET hive.vectorized.execution.mapjoin.native.enabled=true;
 SET hive.auto.convert.join=true;
+set hive.fetch.task.conversion=none;
 
 -- SORT_QUERY_RESULTS
 
@@ -28,14 +29,14 @@ create table TJOIN2 stored as orc AS SELECT * FROM TJOIN2_txt;
 create table TJOIN3 stored as orc AS SELECT * FROM TJOIN3_txt;
 create table TJOIN4 stored as orc AS SELECT * FROM TJOIN4_txt;
 
-explain
+explain vectorization detail formatted
 select tj1rnum, tj2rnum, tjoin3.rnum as rnumt3 from
    (select tjoin1.rnum tj1rnum, tjoin2.rnum tj2rnum, tjoin2.c1 tj2c1 from tjoin1 left outer join tjoin2 on tjoin1.c1 = tjoin2.c1 ) tj left outer join tjoin3 on tj2c1 = tjoin3.c1;
 
 select tj1rnum, tj2rnum, tjoin3.rnum as rnumt3 from
    (select tjoin1.rnum tj1rnum, tjoin2.rnum tj2rnum, tjoin2.c1 tj2c1 from tjoin1 left outer join tjoin2 on tjoin1.c1 = tjoin2.c1 ) tj left outer join tjoin3 on tj2c1 = tjoin3.c1;
 
-explain
+explain vectorization detail formatted
 select tj1rnum, tj2rnum as rnumt3 from
    (select tjoin1.rnum tj1rnum, tjoin2.rnum tj2rnum, tjoin2.c1 tj2c1 from tjoin1 left outer join tjoin2 on tjoin1.c1 = tjoin2.c1 ) tj left outer join tjoin3 on tj2c1 = tjoin3.c1;
 

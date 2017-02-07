@@ -175,4 +175,9 @@ public class StringColumnInList extends VectorExpression implements IStringInExp
   public void setInListValues(byte [][] a) {
     this.inListValues = a;
   }
+
+  @Override
+  public String vectorExpressionParameters() {
+    return "col " + inputCol + ", values " + Arrays.toString(inListValues);
+  }
 }

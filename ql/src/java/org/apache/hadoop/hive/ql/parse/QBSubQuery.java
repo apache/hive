@@ -536,7 +536,7 @@ public class QBSubQuery implements ISubQueryJoinInfo {
 
 
     int selectExprStart = 0;
-    if ( selectClause.getChild(0).getType() == HiveParser.TOK_HINTLIST ) {
+    if ( selectClause.getChild(0).getType() == HiveParser.QUERY_HINT ) {
       selectExprStart = 1;
     }
 
@@ -672,7 +672,7 @@ public class QBSubQuery implements ISubQueryJoinInfo {
     ASTNode selectClause = (ASTNode) insertClause.getChild(1);
 
     int selectExprStart = 0;
-    if ( selectClause.getChild(0).getType() == HiveParser.TOK_HINTLIST ) {
+    if ( selectClause.getChild(0).getType() == HiveParser.QUERY_HINT ) {
       selectExprStart = 1;
     }
 

@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.llap.metrics;
 import static org.apache.hadoop.hive.llap.metrics.LlapDaemonExecutorInfo.ExecutorAvailableFreeSlots;
 import static org.apache.hadoop.hive.llap.metrics.LlapDaemonExecutorInfo.ExecutorAvailableFreeSlotsPercent;
 import static org.apache.hadoop.hive.llap.metrics.LlapDaemonExecutorInfo.ExecutorCacheMemoryPerInstance;
+import static org.apache.hadoop.hive.llap.metrics.LlapDaemonExecutorInfo.ExecutorFallOffNumCompletedFragments;
 import static org.apache.hadoop.hive.llap.metrics.LlapDaemonExecutorInfo.ExecutorJvmMaxMemory;
 import static org.apache.hadoop.hive.llap.metrics.LlapDaemonExecutorInfo.ExecutorMaxFreeSlots;
 import static org.apache.hadoop.hive.llap.metrics.LlapDaemonExecutorInfo.ExecutorMaxPreemptionTimeLost;
@@ -41,6 +42,12 @@ import static org.apache.hadoop.hive.llap.metrics.LlapDaemonExecutorInfo.Executo
 import static org.apache.hadoop.hive.llap.metrics.LlapDaemonExecutorInfo.ExecutorTotalPreemptionTimeLost;
 import static org.apache.hadoop.hive.llap.metrics.LlapDaemonExecutorInfo.ExecutorTotalPreemptionTimeToKill;
 import static org.apache.hadoop.hive.llap.metrics.LlapDaemonExecutorInfo.ExecutorWaitQueueSize;
+import static org.apache.hadoop.hive.llap.metrics.LlapDaemonExecutorInfo.ExecutorFallOffSuccessTimeLost;
+import static org.apache.hadoop.hive.llap.metrics.LlapDaemonExecutorInfo.ExecutorFallOffSuccessMaxTimeLost;
+import static org.apache.hadoop.hive.llap.metrics.LlapDaemonExecutorInfo.ExecutorFallOffFailedTimeLost;
+import static org.apache.hadoop.hive.llap.metrics.LlapDaemonExecutorInfo.ExecutorFallOffFailedMaxTimeLost;
+import static org.apache.hadoop.hive.llap.metrics.LlapDaemonExecutorInfo.ExecutorFallOffKilledTimeLost;
+import static org.apache.hadoop.hive.llap.metrics.LlapDaemonExecutorInfo.ExecutorFallOffKilledMaxTimeLost;
 import static org.apache.hadoop.metrics2.impl.MsInfo.ProcessName;
 import static org.apache.hadoop.metrics2.impl.MsInfo.SessionId;
 
@@ -82,6 +89,10 @@ public class LlapDaemonExecutorMetrics implements MetricsSource {
   private final Map<Integer, MetricsInfo> userMetricsInfoMap;
   private long maxTimeLost = Long.MIN_VALUE;
   private long maxTimeToKill = Long.MIN_VALUE;
+
+  private long fallOffMaxSuccessTimeLostLong = 0L;
+  private long fallOffMaxFailedTimeLostLong = 0L;
+  private long fallOffMaxKilledTimeLostLong = 0L;
 
   private final Map<String, Integer> executorNames;
 
@@ -125,6 +136,23 @@ public class LlapDaemonExecutorMetrics implements MetricsSource {
   final MutableQuantiles[] percentileTimeToKill;
   @Metric
   final MutableQuantiles[] percentileTimeLost;
+
+  @Metric
+  MutableCounterLong fallOffNumCompletedFragments;
+  @Metric
+  MutableCounterLong fallOffSuccessTimeLost;
+  @Metric
+  MutableCounterLong fallOffFailedTimeLost;
+  @Metric
+  MutableCounterLong fallOffKilledTimeLost;
+  @Metric
+  MutableGaugeLong fallOffMaxSuccessTimeLost;
+  @Metric
+  MutableGaugeLong fallOffMaxFailedTimeLost;
+  @Metric
+  MutableGaugeLong fallOffMaxKilledTimeLost;
+
+
 
   private LlapDaemonExecutorMetrics(String displayName, JvmMetrics jm, String sessionId,
       int numExecutors, final int[] intervals) {
@@ -244,6 +272,33 @@ public class LlapDaemonExecutorMetrics implements MetricsSource {
     }
   }
 
+  public void addMetricsFallOffSuccessTimeLost(long timeLost) {
+    fallOffNumCompletedFragments.incr();
+    fallOffSuccessTimeLost.incr(timeLost);
+    if (timeLost > fallOffMaxSuccessTimeLostLong) {
+      fallOffMaxSuccessTimeLostLong = timeLost;
+      fallOffMaxSuccessTimeLost.set(timeLost);
+    }
+  }
+
+  public void addMetricsFallOffFailedTimeLost(long timeLost) {
+    fallOffNumCompletedFragments.incr();
+    fallOffFailedTimeLost.incr(timeLost);
+    if (timeLost > fallOffMaxFailedTimeLostLong) {
+      fallOffMaxFailedTimeLostLong = timeLost;
+      fallOffMaxFailedTimeLost.set(timeLost);
+    }
+  }
+
+  public void addMetricsFallOffKilledTimeLost(long timeLost) {
+    fallOffNumCompletedFragments.incr();
+    fallOffKilledTimeLost.incr(timeLost);
+    if (timeLost > fallOffMaxKilledTimeLostLong) {
+      fallOffMaxKilledTimeLostLong = timeLost;
+      fallOffMaxKilledTimeLost.set(timeLost);
+    }
+  }
+
   public void incrExecutorTotalKilled() {
     executorTotalIKilled.incr();
   }
@@ -292,7 +347,14 @@ public class LlapDaemonExecutorMetrics implements MetricsSource {
         .addCounter(ExecutorTotalPreemptionTimeToKill, totalPreemptionTimeToKill.value())
         .addCounter(ExecutorTotalPreemptionTimeLost, totalPreemptionTimeLost.value())
         .addGauge(ExecutorMaxPreemptionTimeToKill, maxPreemptionTimeToKill.value())
-        .addGauge(ExecutorMaxPreemptionTimeLost, maxPreemptionTimeLost.value());
+        .addGauge(ExecutorMaxPreemptionTimeLost, maxPreemptionTimeLost.value())
+        .addCounter(ExecutorFallOffSuccessTimeLost, fallOffSuccessTimeLost.value())
+        .addGauge(ExecutorFallOffSuccessMaxTimeLost, fallOffMaxSuccessTimeLost.value())
+        .addCounter(ExecutorFallOffFailedTimeLost, fallOffFailedTimeLost.value())
+        .addGauge(ExecutorFallOffFailedMaxTimeLost, fallOffMaxFailedTimeLost.value())
+        .addCounter(ExecutorFallOffKilledTimeLost, fallOffKilledTimeLost.value())
+        .addGauge(ExecutorFallOffKilledMaxTimeLost, fallOffMaxKilledTimeLost.value())
+        .addCounter(ExecutorFallOffNumCompletedFragments, fallOffNumCompletedFragments.value());
 
     for (MutableQuantiles q : percentileTimeToKill) {
       q.snapshot(rb, true);

@@ -15,6 +15,8 @@ package org.apache.hadoop.hive.llap.registry;
 
 import java.io.IOException;
 
+import org.apache.hadoop.yarn.api.records.ApplicationId;
+
 /**
  * ServiceRegistry interface for switching between fixed host and dynamic registry implementations.
  */
@@ -22,49 +24,42 @@ public interface ServiceRegistry {
 
   /**
    * Start the service registry
-   *
-   * @throws IOException
    */
-  public void start() throws IOException;
+  void start() throws IOException;
 
   /**
    * Stop the service registry
-   *
-   * @throws IOException
    */
-  public void stop() throws IOException;
+  void stop() throws IOException;
 
   /**
    * Register the current instance - the implementation takes care of the endpoints to register.
-   *
    * @return self identifying name
-   * 
-   * @throws IOException
    */
-  public String register() throws IOException;
+  String register() throws IOException;
 
   /**
    * Remove the current registration cleanly (implementation defined cleanup)
-   *
-   * @throws IOException
    */
-  public void unregister() throws IOException;
+  void unregister() throws IOException;
 
   /**
    * Client API to get the list of instances registered via the current registry key.
-   *
    * @param component
-   * @return
-   * @throws IOException
+   * @param clusterReadyTimeoutMs The time to wait for the cluster to be ready, if it's not
+   *                              started yet. 0 means do not wait.
    */
-  public ServiceInstanceSet getInstances(String component) throws IOException;
+  ServiceInstanceSet getInstances(String component, long clusterReadyTimeoutMs) throws IOException;
 
   /**
    * Adds state change listeners for service instances.
-   *
    * @param listener - state change listener
-   * @throws IOException
    */
-  public void registerStateChangeListener(ServiceInstanceStateChangeListener listener)
+  void registerStateChangeListener(ServiceInstanceStateChangeListener listener)
       throws IOException;
+
+  /**
+   * @return The application ID of the LLAP cluster.
+   */
+  ApplicationId getApplicationId() throws IOException;
 }

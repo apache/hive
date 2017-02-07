@@ -30,6 +30,7 @@ import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.parse.TableSample;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
+import org.apache.hadoop.hive.ql.plan.Explain.Vectorization;
 import org.apache.hadoop.hive.serde.serdeConstants;
 
 /**
@@ -415,4 +416,29 @@ public class TableScanDesc extends AbstractOperatorDesc {
     return opProps;
   }
 
+  public class TableScanOperatorExplainVectorization extends OperatorExplainVectorization {
+
+    private final TableScanDesc tableScanDesc;
+    private final VectorTableScanDesc vectorTableScanDesc;
+
+    public TableScanOperatorExplainVectorization(TableScanDesc tableScanDesc, VectorDesc vectorDesc) {
+      // Native vectorization supported.
+      super(vectorDesc, true);
+      this.tableScanDesc = tableScanDesc;
+      vectorTableScanDesc = (VectorTableScanDesc) vectorDesc;
+    }
+
+    @Explain(vectorization = Vectorization.EXPRESSION, displayName = "projectedOutputColumns", explainLevels = { Level.DEFAULT, Level.EXTENDED })
+    public String getProjectedOutputColumns() {
+      return Arrays.toString(vectorTableScanDesc.getProjectedOutputColumns());
+    }
+  }
+
+  @Explain(vectorization = Vectorization.OPERATOR, displayName = "TableScan Vectorization", explainLevels = { Level.DEFAULT, Level.EXTENDED })
+  public TableScanOperatorExplainVectorization getTableScanVectorization() {
+    if (vectorDesc == null) {
+      return null;
+    }
+    return new TableScanOperatorExplainVectorization(this, vectorDesc);
+  }
 }

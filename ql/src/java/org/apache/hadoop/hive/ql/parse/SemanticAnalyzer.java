@@ -606,6 +606,12 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   private void doPhase1GetAllAggregations(ASTNode expressionTree,
       HashMap<String, ASTNode> aggregations, List<ASTNode> wdwFns) throws SemanticException {
     int exprTokenType = expressionTree.getToken().getType();
+    if(exprTokenType == HiveParser.TOK_SUBQUERY_EXPR) {
+      //since now we have scalar subqueries we can get subquery expression in having
+      // we don't want to include aggregate from within subquery
+      return;
+    }
+
     if (exprTokenType == HiveParser.TOK_FUNCTION
         || exprTokenType == HiveParser.TOK_FUNCTIONDI
         || exprTokenType == HiveParser.TOK_FUNCTIONSTAR) {
@@ -1435,9 +1441,19 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         qbp.setSelExprForClause(ctx_1.dest, ast);
 
         int posn = 0;
-        if (((ASTNode) ast.getChild(0)).getToken().getType() == HiveParser.TOK_HINTLIST) {
-          qbp.setHints((ASTNode) ast.getChild(0));
-          posn++;
+        if (((ASTNode) ast.getChild(0)).getToken().getType() == HiveParser.QUERY_HINT) {
+          ParseDriver pd = new ParseDriver();
+          String queryHintStr = ast.getChild(0).getText();
+          if (LOG.isDebugEnabled()) {
+            LOG.debug("QUERY HINT: "+queryHintStr);
+          }
+          try {
+            ASTNode hintNode = pd.parseHint(queryHintStr);
+            qbp.setHints((ASTNode) hintNode);
+            posn++;
+          } catch (ParseException e) {
+            throw new SemanticException("failed to parse query hint: "+e.getMessage(), e);
+          }
         }
 
         if ((ast.getChild(posn).getChild(0).getType() == HiveParser.TOK_TRANSFORM))
@@ -3940,7 +3956,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           : selectExprs.getChildCount());
       if (selectExprs != null) {
         for (int i = 0; i < selectExprs.getChildCount(); ++i) {
-          if (((ASTNode) selectExprs.getChild(i)).getToken().getType() == HiveParser.TOK_HINTLIST) {
+          if (((ASTNode) selectExprs.getChild(i)).getToken().getType() == HiveParser.QUERY_HINT) {
             continue;
           }
           // table.column AS alias
@@ -4088,7 +4104,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     // SELECT * or SELECT TRANSFORM(*)
     boolean selectStar = false;
     int posn = 0;
-    boolean hintPresent = (selExprList.getChild(0).getType() == HiveParser.TOK_HINTLIST);
+    boolean hintPresent = (selExprList.getChild(0).getType() == HiveParser.QUERY_HINT);
     if (hintPresent) {
       posn++;
     }
@@ -6740,7 +6756,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         // This is a non-native table.
         // We need to set stats as inaccurate.
         setStatsForNonNativeTable(dest_tab);
-        createInsertDesc(dest_tab, !qb.getParseInfo().isInsertIntoTable(dest_tab.getTableName()));
+        // true if it is insert overwrite.
+        boolean overwrite = !qb.getParseInfo().isInsertIntoTable(
+                String.format("%s.%s", dest_tab.getDbName(), dest_tab.getTableName()));
+        createInsertDesc(dest_tab, overwrite);
       }
 
       WriteEntity output = generateTableWriteEntity(
@@ -7260,7 +7279,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   private void createInsertDesc(Table table, boolean overwrite) {
     Task<? extends Serializable>[] tasks = new Task[this.rootTasks.size()];
     tasks = this.rootTasks.toArray(tasks);
-    InsertTableDesc insertTableDesc = new InsertTableDesc(table.getTTable(), overwrite);
+    PreInsertTableDesc preInsertTableDesc = new PreInsertTableDesc(table, overwrite);
+    InsertTableDesc insertTableDesc = new InsertTableDesc(table, overwrite);
+    this.rootTasks
+            .add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), preInsertTableDesc), conf));
     TaskFactory
             .getAndMakeChild(new DDLWork(getInputs(), getOutputs(), insertTableDesc), conf, tasks);
   }
@@ -8483,7 +8505,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     ASTNode hints = qb.getParseInfo().getHints();
     for (int pos = 0; pos < hints.getChildCount(); pos++) {
       ASTNode hint = (ASTNode) hints.getChild(pos);
-      if (((ASTNode) hint.getChild(0)).getToken().getType() == HiveParser.TOK_MAPJOIN) {
+      if (((ASTNode) hint.getChild(0)).getToken().getType() == HintParser.TOK_MAPJOIN) {
         // the user has specified to ignore mapjoin hint
         if (!conf.getBoolVar(HiveConf.ConfVars.HIVEIGNOREMAPJOINHINT)
             && !conf.getVar(HiveConf.ConfVars.HIVE_EXECUTION_ENGINE).equals("tez")) {
@@ -8944,7 +8966,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     for (Node hintNode : qb.getParseInfo().getHints().getChildren()) {
       ASTNode hint = (ASTNode) hintNode;
-      if (hint.getChild(0).getType() == HiveParser.TOK_STREAMTABLE) {
+      if (hint.getChild(0).getType() == HintParser.TOK_STREAMTABLE) {
         for (int i = 0; i < hint.getChild(1).getChildCount(); i++) {
           if (streamAliases == null) {
             streamAliases = new ArrayList<String>();
@@ -12282,11 +12304,11 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
   // Process the position alias in GROUPBY and ORDERBY
   private void processPositionAlias(ASTNode ast) throws SemanticException {
-    boolean isByPos = false;
-    if (HiveConf.getBoolVar(conf,
-          HiveConf.ConfVars.HIVE_GROUPBY_ORDERBY_POSITION_ALIAS) == true) {
-      isByPos = true;
-    }
+    boolean isBothByPos = HiveConf.getBoolVar(conf, ConfVars.HIVE_GROUPBY_ORDERBY_POSITION_ALIAS);
+    boolean isGbyByPos = isBothByPos
+        || HiveConf.getBoolVar(conf, ConfVars.HIVE_GROUPBY_POSITION_ALIAS);
+    boolean isObyByPos = isBothByPos
+        || HiveConf.getBoolVar(conf, ConfVars.HIVE_ORDERBY_POSITION_ALIAS);
 
     Deque<ASTNode> stack = new ArrayDeque<ASTNode>();
     stack.push(ast);
@@ -12325,7 +12347,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           for (int child_pos = 0; child_pos < groupbyNode.getChildCount(); ++child_pos) {
             ASTNode node = (ASTNode) groupbyNode.getChild(child_pos);
             if (node.getToken().getType() == HiveParser.Number) {
-              if (isByPos) {
+              if (isGbyByPos) {
                 int pos = Integer.parseInt(node.getText());
                 if (pos > 0 && pos <= selectExpCnt) {
                   groupbyNode.setChild(child_pos,
@@ -12338,7 +12360,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
                 }
               } else {
                 warn("Using constant number  " + node.getText() +
-                  " in group by. If you try to use position alias when hive.groupby.orderby.position.alias is false, the position alias will be ignored.");
+                  " in group by. If you try to use position alias when hive.groupby.position.alias is false, the position alias will be ignored.");
               }
             }
           }
@@ -12349,15 +12371,15 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           isAllCol = false;
           for (int child_pos = 0; child_pos < selectNode.getChildCount(); ++child_pos) {
             ASTNode node = (ASTNode) selectNode.getChild(child_pos).getChild(0);
-            if (node.getToken().getType() == HiveParser.TOK_ALLCOLREF) {
+            if (node != null && node.getToken().getType() == HiveParser.TOK_ALLCOLREF) {
               isAllCol = true;
             }
           }
           for (int child_pos = 0; child_pos < orderbyNode.getChildCount(); ++child_pos) {
             ASTNode colNode = (ASTNode) orderbyNode.getChild(child_pos).getChild(0);
             ASTNode node = (ASTNode) colNode.getChild(0);
-            if (node.getToken().getType() == HiveParser.Number) {
-              if( isByPos ) {
+            if (node != null && node.getToken().getType() == HiveParser.Number) {
+              if (isObyByPos) {
                 if (!isAllCol) {
                   int pos = Integer.parseInt(node.getText());
                   if (pos > 0 && pos <= selectExpCnt) {
@@ -12374,7 +12396,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
                 }
               } else { //if not using position alias and it is a number.
                 warn("Using constant number " + node.getText() +
-                  " in order by. If you try to use position alias when hive.groupby.orderby.position.alias is false, the position alias will be ignored.");
+                  " in order by. If you try to use position alias when hive.orderby.position.alias is false, the position alias will be ignored.");
               }
             }
           }
@@ -12983,7 +13005,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     for (int i = 0; selectNode != null && i < selectNode.getChildCount(); i++) {
       ASTNode selectExpr = (ASTNode) selectNode.getChild(i);
-      //check for TOK_HINTLIST expressions on ast
+      //check for QUERY_HINT expressions on ast
       if(selectExpr.getType() != HiveParser.TOK_SELEXPR){
         continue;
       }

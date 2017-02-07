@@ -195,7 +195,7 @@ set hive.optimize.correlation=false;
 -- HIVE-5891 Alias conflict when merging multiple mapjoin tasks into their common
 -- child mapred task
 EXPLAIN   
-SELECT * FROM (
+SELECT x.key FROM (
   SELECT c.key FROM
     (SELECT a.key FROM src a JOIN src b ON a.key=b.key GROUP BY a.key) tmp
     JOIN src c ON tmp.key=c.key
@@ -203,9 +203,9 @@ SELECT * FROM (
   SELECT c.key FROM
     (SELECT a.key FROM src a JOIN src b ON a.key=b.key GROUP BY a.key) tmp
     JOIN src c ON tmp.key=c.key
-) x;
+) x order by x.key;
 
-SELECT * FROM (
+SELECT x.key FROM (
   SELECT c.key FROM
     (SELECT a.key FROM src a JOIN src b ON a.key=b.key GROUP BY a.key) tmp
     JOIN src c ON tmp.key=c.key
@@ -213,5 +213,5 @@ SELECT * FROM (
   SELECT c.key FROM
     (SELECT a.key FROM src a JOIN src b ON a.key=b.key GROUP BY a.key) tmp
     JOIN src c ON tmp.key=c.key
-) x;
+) x order by x.key;
 

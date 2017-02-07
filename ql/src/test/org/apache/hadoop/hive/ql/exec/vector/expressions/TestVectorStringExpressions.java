@@ -3178,6 +3178,8 @@ public class TestVectorStringExpressions {
   public void testLoadBytesColumnVectorByValueLargeData()  {
     BytesColumnVector bcv = new BytesColumnVector(VectorizedRowBatch.DEFAULT_SIZE);
     bcv.initBuffer(10); // initialize with estimated element size 10
+    // Record initial buffer size
+    int initialBufferSize = bcv.bufferSize();
     String s = "0123456789";
     while (s.length() < 500) {
       s += s;
@@ -3191,7 +3193,8 @@ public class TestVectorStringExpressions {
     for (int i = 0; i != VectorizedRowBatch.DEFAULT_SIZE; i++) {
       bcv.setVal(i, b, 0, b.length);
     }
-    Assert.assertTrue(bcv.bufferSize() >= b.length * VectorizedRowBatch.DEFAULT_SIZE);
+    // Current buffer size should be larger than initial size
+    Assert.assertTrue(bcv.bufferSize() > initialBufferSize);
   }
 
   @Test

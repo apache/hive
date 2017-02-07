@@ -81,6 +81,10 @@ public class PriorityBlockingDeque<E>
     this(null, capacity);
   }
 
+  public PriorityBlockingDeque(Comparator<E> comparator) {
+    this(comparator, Integer.MAX_VALUE);
+  }
+
   public PriorityBlockingDeque(Comparator<E> comparator, int capacity) {
     if (capacity <= 0) throw new IllegalArgumentException();
     this.capacity = capacity;

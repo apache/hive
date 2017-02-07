@@ -37,6 +37,7 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
 
+import com.google.common.collect.Iterables;
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.hive.common.ValidTxnList;
@@ -69,6 +70,7 @@ import org.apache.hadoop.hive.ql.hooks.ExecuteWithHookContext;
 import org.apache.hadoop.hive.ql.hooks.Hook;
 import org.apache.hadoop.hive.ql.hooks.HookContext;
 import org.apache.hadoop.hive.ql.hooks.HookUtils;
+import org.apache.hadoop.hive.ql.hooks.MetricsQueryLifeTimeHook;
 import org.apache.hadoop.hive.ql.hooks.PostExecute;
 import org.apache.hadoop.hive.ql.hooks.PreExecute;
 import org.apache.hadoop.hive.ql.hooks.QueryLifeTimeHook;
@@ -93,7 +95,6 @@ import org.apache.hadoop.hive.ql.optimizer.ppr.PartitionPruner;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.ColumnAccessInfo;
-import org.apache.hadoop.hive.ql.parse.ExplainSemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.HiveSemanticAnalyzerHook;
 import org.apache.hadoop.hive.ql.parse.HiveSemanticAnalyzerHookContext;
 import org.apache.hadoop.hive.ql.parse.HiveSemanticAnalyzerHookContextImpl;
@@ -183,7 +184,7 @@ public class Driver implements CommandProcessor {
   private QueryState queryState;
 
   // Query hooks that execute before compilation and after execution
-  List<QueryLifeTimeHook> queryHooks;
+  private List<QueryLifeTimeHook> queryHooks;
 
   public enum DriverState {
     INITIALIZED,
@@ -437,8 +438,8 @@ public class Driver implements CommandProcessor {
 
     // Whether any error occurred during query compilation. Used for query lifetime hook.
     boolean compileError = false;
-
     try {
+
       // Initialize the transaction manager.  This must be done before analyze is called.
       final HiveTxnManager txnManager = SessionState.get().initTxnMgr(conf);
       // In case when user Ctrl-C twice to kill Hive CLI JVM, we want to release locks
@@ -476,7 +477,7 @@ public class Driver implements CommandProcessor {
       perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.PARSE);
 
       // Trigger query hook before compilation
-      queryHooks = getHooks(ConfVars.HIVE_QUERY_LIFETIME_HOOKS, QueryLifeTimeHook.class);
+      queryHooks = loadQueryHooks();
       if (queryHooks != null && !queryHooks.isEmpty()) {
         QueryLifeTimeHookContext qhc = new QueryLifeTimeHookContextImpl();
         qhc.setHiveConf(conf);
@@ -669,6 +670,19 @@ public class Driver implements CommandProcessor {
     } finally {
       lDrvState.stateLock.unlock();
     }
+  }
+
+  private List<QueryLifeTimeHook> loadQueryHooks() throws Exception {
+    List<QueryLifeTimeHook> hooks = new ArrayList<>();
+
+    if (conf.getBoolVar(ConfVars.HIVE_SERVER2_METRICS_ENABLED)) {
+      hooks.add(new MetricsQueryLifeTimeHook());
+    }
+    List<QueryLifeTimeHook> propertyDefinedHoooks = getHooks(ConfVars.HIVE_QUERY_LIFETIME_HOOKS, QueryLifeTimeHook.class);
+    if (propertyDefinedHoooks != null) {
+      Iterables.addAll(hooks, propertyDefinedHoooks);
+    }
+    return hooks;
   }
 
   private ImmutableMap<String, Long> dumpMetaCallTimingWithoutEx(String phase) {
@@ -1732,6 +1746,7 @@ public class Driver implements CommandProcessor {
 
     boolean noName = StringUtils.isEmpty(conf.get(MRJobConfig.JOB_NAME));
     int maxlen = conf.getIntVar(HiveConf.ConfVars.HIVEJOBNAMELENGTH);
+    Metrics metrics = MetricsFactory.getInstance();
 
     String queryId = conf.getVar(HiveConf.ConfVars.HIVEQUERYID);
     // Get the query string from the conf file as the compileInternal() method might
@@ -1780,8 +1795,8 @@ public class Driver implements CommandProcessor {
 
       SessionState ss = SessionState.get();
       hookContext = new HookContext(plan, queryState, ctx.getPathToCS(), ss.getUserName(),
-          ss.getUserIpAddress(), InetAddress.getLocalHost().getHostAddress(), operationId, ss.getSessionId(),
-          Thread.currentThread().getName(), ss.isHiveServerQuery(), perfLogger);
+          ss.getUserIpAddress(), InetAddress.getLocalHost().getHostAddress(), operationId,
+          ss.getSessionId(), Thread.currentThread().getName(), ss.isHiveServerQuery(), perfLogger);
       hookContext.setHookType(HookContext.HookType.PRE_EXEC_HOOK);
 
       for (Hook peh : getHooks(HiveConf.ConfVars.PREEXECHOOKS)) {
@@ -1815,9 +1830,8 @@ public class Driver implements CommandProcessor {
 
       setQueryDisplays(plan.getRootTasks());
       int mrJobs = Utilities.getMRTasks(plan.getRootTasks()).size();
-      int jobs = mrJobs
-        + Utilities.getTezTasks(plan.getRootTasks()).size()
-        + Utilities.getSparkTasks(plan.getRootTasks()).size();
+      int jobs = mrJobs + Utilities.getTezTasks(plan.getRootTasks()).size()
+          + Utilities.getSparkTasks(plan.getRootTasks()).size();
       if (jobs > 0) {
         logMrWarning(mrJobs);
         console.printInfo("Query ID = " + queryId);
@@ -1856,7 +1870,6 @@ public class Driver implements CommandProcessor {
         assert tsk.getParentTasks() == null || tsk.getParentTasks().isEmpty();
         driverCxt.addToRunnable(tsk);
 
-        Metrics metrics = MetricsFactory.getInstance();
         if (metrics != null) {
           tsk.updateTaskMetrics(metrics);
         }
@@ -2480,7 +2493,7 @@ public class Driver implements CommandProcessor {
     this.operationId = opId;
   }
 
-  /** 
+  /**
    * Resets QueryState to get new queryId on Driver reuse.
    */
   public void resetQueryState() {

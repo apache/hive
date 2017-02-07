@@ -76,7 +76,7 @@ public class TestVectorizedOrcAcidRowBatchReader {
     }
 
     static String getColumnNamesProperty() {
-      return "x";
+      return "field";
     }
     static String getColumnTypesProperty() {
       return "bigint";

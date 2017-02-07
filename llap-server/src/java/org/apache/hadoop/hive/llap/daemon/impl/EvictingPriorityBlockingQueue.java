@@ -36,27 +36,28 @@ public class EvictingPriorityBlockingQueue<E> {
 
   private final PriorityBlockingDeque<E> deque;
   private final Comparator<E> comparator;
+  private final int waitQueueSize;
+
+  private int currentSize = 0;
 
   public EvictingPriorityBlockingQueue(Comparator<E> comparator, int maxSize) {
-    this.deque = new PriorityBlockingDeque<>(comparator, maxSize);
+    this.deque = new PriorityBlockingDeque<>(comparator);
+    this.waitQueueSize = maxSize;
     this.comparator = comparator;
   }
 
-  public synchronized E offer(E e) {
-    if (deque.offer(e)) {
+  public synchronized E offer(E e, int additionalElementsAllowed) {
+    if (currentSize < waitQueueSize + additionalElementsAllowed) {
+      // Capacity exists.
+      offerToDequeueInternal(e);
+      currentSize++;
       return null;
     } else {
+      // No capacity. Check if an element needs to be evicted.
       E last = deque.peekLast();
       if (comparator.compare(e, last) < 0) {
         deque.removeLast();
-        if (!deque.offer(e)) {
-          LOG.error(
-              "Failed to insert element into queue with capacity available. size={}, element={}",
-              size(), e);
-          throw new RuntimeException(
-              "Failed to insert element into queue with capacity available. size=" +
-                  size());
-        }
+        offerToDequeueInternal(e);
         return last;
       }
       return e;
@@ -64,7 +65,7 @@ public class EvictingPriorityBlockingQueue<E> {
   }
 
   public synchronized boolean isEmpty() {
-    return deque.isEmpty();
+    return currentSize == 0;
   }
 
   public synchronized E peek() {
@@ -72,19 +73,55 @@ public class EvictingPriorityBlockingQueue<E> {
   }
 
   public synchronized E take() throws InterruptedException {
-    return deque.take();
+    E e = deque.take();
+    currentSize--; // Decrement only if an element was removed.
+    return e;
   }
 
   public synchronized boolean remove(E e) {
-    return deque.remove(e);
+    boolean removed = deque.remove(e);
+    if (removed) {
+      currentSize--;
+    }
+    return removed;
+  }
+
+  /**
+   * Re-insert an element if it exists (mainly to force a re-order)
+   * @param e
+   * @return false if the element was not found. true otherwise.
+   */
+  public synchronized boolean reinsertIfExists(E e) {
+    if (remove(e)) {
+      offerToDequeueInternal(e);
+      currentSize++;
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  private void offerToDequeueInternal(E e) {
+    boolean result = deque.offer(e);
+    if (!result) {
+      LOG.error(
+          "Failed to insert element into queue with capacity available. size={}, element={}",
+          size(), e);
+      throw new RuntimeException(
+          "Failed to insert element into queue with capacity available. size=" +
+              size());
+    }
   }
 
   public synchronized int size() {
-    return deque.size();
+    return currentSize;
   }
 
   @Override
   public synchronized String toString() {
-    return deque.toString();
+    StringBuilder sb = new StringBuilder();
+    sb.append("currentSize=").append(size()).append(", queue=")
+        .append(deque.toString());
+    return sb.toString();
   }
 }

@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
+import java.nio.charset.StandardCharsets;
 import java.sql.Timestamp;
 
 import org.apache.hadoop.hive.common.type.HiveDecimal;
@@ -265,6 +266,38 @@ public class ConstantVectorExpression extends VectorExpression {
 
   public void setOutputColumn(int outputColumn) {
     this.outputColumn = outputColumn;
+  }
+
+  @Override
+  public String vectorExpressionParameters() {
+    String value;
+    if (isNullValue) {
+      value = "null";
+    } else {
+      switch (type) {
+      case LONG:
+        value = Long.toString(longValue);
+        break;
+      case DOUBLE:
+        value = Double.toString(doubleValue);
+        break;
+      case BYTES:
+        value = new String(bytesValue, StandardCharsets.UTF_8);
+        break;
+      case DECIMAL:
+        value = decimalValue.toString();
+        break;
+      case TIMESTAMP:
+        value = timestampValue.toString();
+        break;
+      case INTERVAL_DAY_TIME:
+        value = intervalDayTimeValue.toString();
+        break;
+      default:
+        throw new RuntimeException("Unknown vector column type " + type);
+      }
+    }
+    return "val " + value;
   }
 
   @Override

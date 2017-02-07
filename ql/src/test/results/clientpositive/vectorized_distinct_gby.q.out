@@ -16,10 +16,14 @@ POSTHOOK: Input: default@src
 POSTHOOK: Output: default@dtest
 POSTHOOK: Lineage: dtest.a SCRIPT []
 POSTHOOK: Lineage: dtest.b SIMPLE []
-PREHOOK: query: explain select sum(distinct a), count(distinct a) from dtest
+PREHOOK: query: explain vectorization select sum(distinct a), count(distinct a) from dtest
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select sum(distinct a), count(distinct a) from dtest
+POSTHOOK: query: explain vectorization select sum(distinct a), count(distinct a) from dtest
 POSTHOOK: type: QUERY
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -47,6 +51,18 @@ STAGE PLANS:
                   sort order: +
                   Statistics: Num rows: 5 Data size: 40 Basic stats: COMPLETE Column stats: NONE
       Execution mode: vectorized
+      Map Vectorization:
+          enabled: true
+          enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+          groupByVectorOutput: true
+          inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+          allNative: false
+          usesVectorUDFAdaptor: false
+          vectorized: true
+      Reduce Vectorization:
+          enabled: false
+          enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true
+          enableConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false
       Reduce Operator Tree:
         Group By Operator
           aggregations: sum(DISTINCT KEY._col0:0._col0), count(DISTINCT KEY._col0:1._col0)
@@ -76,10 +92,14 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dtest
 #### A masked pattern was here ####
 300	1
-PREHOOK: query: explain select sum(distinct cint), count(distinct cint), avg(distinct cint), std(distinct cint) from alltypesorc
+PREHOOK: query: explain vectorization select sum(distinct cint), count(distinct cint), avg(distinct cint), std(distinct cint) from alltypesorc
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select sum(distinct cint), count(distinct cint), avg(distinct cint), std(distinct cint) from alltypesorc
+POSTHOOK: query: explain vectorization select sum(distinct cint), count(distinct cint), avg(distinct cint), std(distinct cint) from alltypesorc
 POSTHOOK: type: QUERY
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -106,6 +126,18 @@ STAGE PLANS:
                   sort order: +
                   Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
       Execution mode: vectorized
+      Map Vectorization:
+          enabled: true
+          enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+          groupByVectorOutput: false
+          inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+          allNative: false
+          usesVectorUDFAdaptor: false
+          vectorized: true
+      Reduce Vectorization:
+          enabled: false
+          enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true
+          enableConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false
       Reduce Operator Tree:
         Group By Operator
           aggregations: sum(DISTINCT KEY._col0:0._col0), count(DISTINCT KEY._col0:1._col0), avg(DISTINCT KEY._col0:2._col0), std(DISTINCT KEY._col0:3._col0)

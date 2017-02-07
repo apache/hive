@@ -93,7 +93,7 @@ PREHOOK: Input: default@orc_ppd
 #### A masked pattern was here ####
 -- BEGIN ORC FILE DUMP --
 #### A masked pattern was here ####
-File Version: 0.12 with HIVE_13083
+File Version: 0.12 with ORC_101
 Rows: 1049
 Compression: ZLIB
 Compression size: 262144
@@ -129,49 +129,49 @@ File Statistics:
   Column 11: count: 1049 hasNull: false sum: 13278
 
 Stripes:
-  Stripe: offset: 3 data: 22593 rows: 1049 tail: 250 index: 9943
+  Stripe: offset: 3 data: 22593 rows: 1049 tail: 250 index: 8963
     Stream: column 0 section ROW_INDEX start: 3 length 20
-    Stream: column 0 section BLOOM_FILTER start: 23 length 45
-    Stream: column 1 section ROW_INDEX start: 68 length 58
-    Stream: column 1 section BLOOM_FILTER start: 126 length 799
-    Stream: column 2 section ROW_INDEX start: 925 length 58
-    Stream: column 2 section BLOOM_FILTER start: 983 length 978
-    Stream: column 3 section ROW_INDEX start: 1961 length 61
-    Stream: column 3 section BLOOM_FILTER start: 2022 length 983
-    Stream: column 4 section ROW_INDEX start: 3005 length 69
-    Stream: column 4 section BLOOM_FILTER start: 3074 length 963
-    Stream: column 5 section ROW_INDEX start: 4037 length 78
-    Stream: column 5 section BLOOM_FILTER start: 4115 length 1291
-    Stream: column 6 section ROW_INDEX start: 5406 length 85
-    Stream: column 6 section BLOOM_FILTER start: 5491 length 1280
-    Stream: column 7 section ROW_INDEX start: 6771 length 41
-    Stream: column 7 section BLOOM_FILTER start: 6812 length 45
-    Stream: column 8 section ROW_INDEX start: 6857 length 86
-    Stream: column 8 section BLOOM_FILTER start: 6943 length 1157
-    Stream: column 9 section ROW_INDEX start: 8100 length 50
-    Stream: column 9 section BLOOM_FILTER start: 8150 length 62
-    Stream: column 10 section ROW_INDEX start: 8212 length 82
-    Stream: column 10 section BLOOM_FILTER start: 8294 length 1297
-    Stream: column 11 section ROW_INDEX start: 9591 length 47
-    Stream: column 11 section BLOOM_FILTER start: 9638 length 308
-    Stream: column 1 section PRESENT start: 9946 length 17
-    Stream: column 1 section DATA start: 9963 length 962
-    Stream: column 2 section PRESENT start: 10925 length 17
-    Stream: column 2 section DATA start: 10942 length 1441
-    Stream: column 3 section DATA start: 12383 length 1704
-    Stream: column 4 section DATA start: 14087 length 1998
-    Stream: column 5 section DATA start: 16085 length 2925
-    Stream: column 6 section DATA start: 19010 length 3323
-    Stream: column 7 section DATA start: 22333 length 137
-    Stream: column 8 section DATA start: 22470 length 1572
-    Stream: column 8 section LENGTH start: 24042 length 310
-    Stream: column 8 section DICTIONARY_DATA start: 24352 length 1548
-    Stream: column 9 section DATA start: 25900 length 19
-    Stream: column 9 section SECONDARY start: 25919 length 1783
-    Stream: column 10 section DATA start: 27702 length 2138
-    Stream: column 10 section SECONDARY start: 29840 length 231
-    Stream: column 11 section DATA start: 30071 length 1877
-    Stream: column 11 section LENGTH start: 31948 length 591
+    Stream: column 0 section BLOOM_FILTER_UTF8 start: 23 length 34
+    Stream: column 1 section ROW_INDEX start: 57 length 58
+    Stream: column 1 section BLOOM_FILTER_UTF8 start: 115 length 696
+    Stream: column 2 section ROW_INDEX start: 811 length 58
+    Stream: column 2 section BLOOM_FILTER_UTF8 start: 869 length 867
+    Stream: column 3 section ROW_INDEX start: 1736 length 61
+    Stream: column 3 section BLOOM_FILTER_UTF8 start: 1797 length 861
+    Stream: column 4 section ROW_INDEX start: 2658 length 69
+    Stream: column 4 section BLOOM_FILTER_UTF8 start: 2727 length 850
+    Stream: column 5 section ROW_INDEX start: 3577 length 78
+    Stream: column 5 section BLOOM_FILTER_UTF8 start: 3655 length 1172
+    Stream: column 6 section ROW_INDEX start: 4827 length 85
+    Stream: column 6 section BLOOM_FILTER_UTF8 start: 4912 length 1167
+    Stream: column 7 section ROW_INDEX start: 6079 length 41
+    Stream: column 7 section BLOOM_FILTER_UTF8 start: 6120 length 34
+    Stream: column 8 section ROW_INDEX start: 6154 length 86
+    Stream: column 8 section BLOOM_FILTER_UTF8 start: 6240 length 1051
+    Stream: column 9 section ROW_INDEX start: 7291 length 50
+    Stream: column 9 section BLOOM_FILTER_UTF8 start: 7341 length 53
+    Stream: column 10 section ROW_INDEX start: 7394 length 82
+    Stream: column 10 section BLOOM_FILTER_UTF8 start: 7476 length 1189
+    Stream: column 11 section ROW_INDEX start: 8665 length 47
+    Stream: column 11 section BLOOM_FILTER_UTF8 start: 8712 length 254
+    Stream: column 1 section PRESENT start: 8966 length 17
+    Stream: column 1 section DATA start: 8983 length 962
+    Stream: column 2 section PRESENT start: 9945 length 17
+    Stream: column 2 section DATA start: 9962 length 1441
+    Stream: column 3 section DATA start: 11403 length 1704
+    Stream: column 4 section DATA start: 13107 length 1998
+    Stream: column 5 section DATA start: 15105 length 2925
+    Stream: column 6 section DATA start: 18030 length 3323
+    Stream: column 7 section DATA start: 21353 length 137
+    Stream: column 8 section DATA start: 21490 length 1572
+    Stream: column 8 section LENGTH start: 23062 length 310
+    Stream: column 8 section DICTIONARY_DATA start: 23372 length 1548
+    Stream: column 9 section DATA start: 24920 length 19
+    Stream: column 9 section SECONDARY start: 24939 length 1783
+    Stream: column 10 section DATA start: 26722 length 2138
+    Stream: column 10 section SECONDARY start: 28860 length 231
+    Stream: column 11 section DATA start: 29091 length 1877
+    Stream: column 11 section LENGTH start: 30968 length 591
     Encoding column 0: DIRECT
     Encoding column 1: DIRECT
     Encoding column 2: DIRECT_V2
@@ -269,7 +269,7 @@ Stripes:
       Entry 1: numHashFunctions: 4 bitCount: 6272 popCount: 98 loadFactor: 0.0156 expectedFpp: 5.9604645E-8
       Stripe level merge: numHashFunctions: 4 bitCount: 6272 popCount: 102 loadFactor: 0.0163 expectedFpp: 6.9948186E-8
 
-File length: 33416 bytes
+File length: 32435 bytes
 Padding length: 0 bytes
 Padding ratio: 0%
 ________________________________________________________________________________________________________________________
@@ -290,7 +290,7 @@ PREHOOK: Input: default@orc_ppd
 #### A masked pattern was here ####
 -- BEGIN ORC FILE DUMP --
 #### A masked pattern was here ####
-File Version: 0.12 with HIVE_13083
+File Version: 0.12 with ORC_101
 Rows: 1049
 Compression: ZLIB
 Compression size: 262144
@@ -326,49 +326,49 @@ File Statistics:
   Column 11: count: 1049 hasNull: false sum: 13278
 
 Stripes:
-  Stripe: offset: 3 data: 22593 rows: 1049 tail: 250 index: 15095
+  Stripe: offset: 3 data: 22593 rows: 1049 tail: 246 index: 13609
     Stream: column 0 section ROW_INDEX start: 3 length 20
-    Stream: column 0 section BLOOM_FILTER start: 23 length 56
-    Stream: column 1 section ROW_INDEX start: 79 length 58
-    Stream: column 1 section BLOOM_FILTER start: 137 length 1258
-    Stream: column 2 section ROW_INDEX start: 1395 length 58
-    Stream: column 2 section BLOOM_FILTER start: 1453 length 1544
-    Stream: column 3 section ROW_INDEX start: 2997 length 61
-    Stream: column 3 section BLOOM_FILTER start: 3058 length 1543
-    Stream: column 4 section ROW_INDEX start: 4601 length 69
-    Stream: column 4 section BLOOM_FILTER start: 4670 length 1556
-    Stream: column 5 section ROW_INDEX start: 6226 length 78
-    Stream: column 5 section BLOOM_FILTER start: 6304 length 1991
-    Stream: column 6 section ROW_INDEX start: 8295 length 85
-    Stream: column 6 section BLOOM_FILTER start: 8380 length 1964
-    Stream: column 7 section ROW_INDEX start: 10344 length 41
-    Stream: column 7 section BLOOM_FILTER start: 10385 length 56
-    Stream: column 8 section ROW_INDEX start: 10441 length 86
-    Stream: column 8 section BLOOM_FILTER start: 10527 length 1829
-    Stream: column 9 section ROW_INDEX start: 12356 length 50
-    Stream: column 9 section BLOOM_FILTER start: 12406 length 95
-    Stream: column 10 section ROW_INDEX start: 12501 length 82
-    Stream: column 10 section BLOOM_FILTER start: 12583 length 1994
-    Stream: column 11 section ROW_INDEX start: 14577 length 47
-    Stream: column 11 section BLOOM_FILTER start: 14624 length 474
-    Stream: column 1 section PRESENT start: 15098 length 17
-    Stream: column 1 section DATA start: 15115 length 962
-    Stream: column 2 section PRESENT start: 16077 length 17
-    Stream: column 2 section DATA start: 16094 length 1441
-    Stream: column 3 section DATA start: 17535 length 1704
-    Stream: column 4 section DATA start: 19239 length 1998
-    Stream: column 5 section DATA start: 21237 length 2925
-    Stream: column 6 section DATA start: 24162 length 3323
-    Stream: column 7 section DATA start: 27485 length 137
-    Stream: column 8 section DATA start: 27622 length 1572
-    Stream: column 8 section LENGTH start: 29194 length 310
-    Stream: column 8 section DICTIONARY_DATA start: 29504 length 1548
-    Stream: column 9 section DATA start: 31052 length 19
-    Stream: column 9 section SECONDARY start: 31071 length 1783
-    Stream: column 10 section DATA start: 32854 length 2138
-    Stream: column 10 section SECONDARY start: 34992 length 231
-    Stream: column 11 section DATA start: 35223 length 1877
-    Stream: column 11 section LENGTH start: 37100 length 591
+    Stream: column 0 section BLOOM_FILTER_UTF8 start: 23 length 43
+    Stream: column 1 section ROW_INDEX start: 66 length 58
+    Stream: column 1 section BLOOM_FILTER_UTF8 start: 124 length 1091
+    Stream: column 2 section ROW_INDEX start: 1215 length 58
+    Stream: column 2 section BLOOM_FILTER_UTF8 start: 1273 length 1372
+    Stream: column 3 section ROW_INDEX start: 2645 length 61
+    Stream: column 3 section BLOOM_FILTER_UTF8 start: 2706 length 1374
+    Stream: column 4 section ROW_INDEX start: 4080 length 69
+    Stream: column 4 section BLOOM_FILTER_UTF8 start: 4149 length 1375
+    Stream: column 5 section ROW_INDEX start: 5524 length 78
+    Stream: column 5 section BLOOM_FILTER_UTF8 start: 5602 length 1824
+    Stream: column 6 section ROW_INDEX start: 7426 length 85
+    Stream: column 6 section BLOOM_FILTER_UTF8 start: 7511 length 1795
+    Stream: column 7 section ROW_INDEX start: 9306 length 41
+    Stream: column 7 section BLOOM_FILTER_UTF8 start: 9347 length 43
+    Stream: column 8 section ROW_INDEX start: 9390 length 86
+    Stream: column 8 section BLOOM_FILTER_UTF8 start: 9476 length 1653
+    Stream: column 9 section ROW_INDEX start: 11129 length 50
+    Stream: column 9 section BLOOM_FILTER_UTF8 start: 11179 length 80
+    Stream: column 10 section ROW_INDEX start: 11259 length 82
+    Stream: column 10 section BLOOM_FILTER_UTF8 start: 11341 length 1802
+    Stream: column 11 section ROW_INDEX start: 13143 length 47
+    Stream: column 11 section BLOOM_FILTER_UTF8 start: 13190 length 422
+    Stream: column 1 section PRESENT start: 13612 length 17
+    Stream: column 1 section DATA start: 13629 length 962
+    Stream: column 2 section PRESENT start: 14591 length 17
+    Stream: column 2 section DATA start: 14608 length 1441
+    Stream: column 3 section DATA start: 16049 length 1704
+    Stream: column 4 section DATA start: 17753 length 1998
+    Stream: column 5 section DATA start: 19751 length 2925
+    Stream: column 6 section DATA start: 22676 length 3323
+    Stream: column 7 section DATA start: 25999 length 137
+    Stream: column 8 section DATA start: 26136 length 1572
+    Stream: column 8 section LENGTH start: 27708 length 310
+    Stream: column 8 section DICTIONARY_DATA start: 28018 length 1548
+    Stream: column 9 section DATA start: 29566 length 19
+    Stream: column 9 section SECONDARY start: 29585 length 1783
+    Stream: column 10 section DATA start: 31368 length 2138
+    Stream: column 10 section SECONDARY start: 33506 length 231
+    Stream: column 11 section DATA start: 33737 length 1877
+    Stream: column 11 section LENGTH start: 35614 length 591
     Encoding column 0: DIRECT
     Encoding column 1: DIRECT
     Encoding column 2: DIRECT_V2
@@ -466,7 +466,7 @@ Stripes:
       Entry 1: numHashFunctions: 7 bitCount: 9600 popCount: 174 loadFactor: 0.0181 expectedFpp: 6.426078E-13
       Stripe level merge: numHashFunctions: 7 bitCount: 9600 popCount: 181 loadFactor: 0.0189 expectedFpp: 8.4693775E-13
 
-File length: 38568 bytes
+File length: 37078 bytes
 Padding length: 0 bytes
 Padding ratio: 0%
 ________________________________________________________________________________________________________________________
@@ -499,7 +499,7 @@ PREHOOK: Input: default@orc_ppd_part@ds=2015/hr=10
 #### A masked pattern was here ####
 -- BEGIN ORC FILE DUMP --
 #### A masked pattern was here ####
-File Version: 0.12 with HIVE_13083
+File Version: 0.12 with ORC_101
 Rows: 1049
 Compression: ZLIB
 Compression size: 262144
@@ -535,49 +535,49 @@ File Statistics:
   Column 11: count: 1049 hasNull: false sum: 13278
 
 Stripes:
-  Stripe: offset: 3 data: 22593 rows: 1049 tail: 250 index: 9943
+  Stripe: offset: 3 data: 22593 rows: 1049 tail: 250 index: 8963
     Stream: column 0 section ROW_INDEX start: 3 length 20
-    Stream: column 0 section BLOOM_FILTER start: 23 length 45
-    Stream: column 1 section ROW_INDEX start: 68 length 58
-    Stream: column 1 section BLOOM_FILTER start: 126 length 799
-    Stream: column 2 section ROW_INDEX start: 925 length 58
-    Stream: column 2 section BLOOM_FILTER start: 983 length 978
-    Stream: column 3 section ROW_INDEX start: 1961 length 61
-    Stream: column 3 section BLOOM_FILTER start: 2022 length 983
-    Stream: column 4 section ROW_INDEX start: 3005 length 69
-    Stream: column 4 section BLOOM_FILTER start: 3074 length 963
-    Stream: column 5 section ROW_INDEX start: 4037 length 78
-    Stream: column 5 section BLOOM_FILTER start: 4115 length 1291
-    Stream: column 6 section ROW_INDEX start: 5406 length 85
-    Stream: column 6 section BLOOM_FILTER start: 5491 length 1280
-    Stream: column 7 section ROW_INDEX start: 6771 length 41
-    Stream: column 7 section BLOOM_FILTER start: 6812 length 45
-    Stream: column 8 section ROW_INDEX start: 6857 length 86
-    Stream: column 8 section BLOOM_FILTER start: 6943 length 1157
-    Stream: column 9 section ROW_INDEX start: 8100 length 50
-    Stream: column 9 section BLOOM_FILTER start: 8150 length 62
-    Stream: column 10 section ROW_INDEX start: 8212 length 82
-    Stream: column 10 section BLOOM_FILTER start: 8294 length 1297
-    Stream: column 11 section ROW_INDEX start: 9591 length 47
-    Stream: column 11 section BLOOM_FILTER start: 9638 length 308
-    Stream: column 1 section PRESENT start: 9946 length 17
-    Stream: column 1 section DATA start: 9963 length 962
-    Stream: column 2 section PRESENT start: 10925 length 17
-    Stream: column 2 section DATA start: 10942 length 1441
-    Stream: column 3 section DATA start: 12383 length 1704
-    Stream: column 4 section DATA start: 14087 length 1998
-    Stream: column 5 section DATA start: 16085 length 2925
-    Stream: column 6 section DATA start: 19010 length 3323
-    Stream: column 7 section DATA start: 22333 length 137
-    Stream: column 8 section DATA start: 22470 length 1572
-    Stream: column 8 section LENGTH start: 24042 length 310
-    Stream: column 8 section DICTIONARY_DATA start: 24352 length 1548
-    Stream: column 9 section DATA start: 25900 length 19
-    Stream: column 9 section SECONDARY start: 25919 length 1783
-    Stream: column 10 section DATA start: 27702 length 2138
-    Stream: column 10 section SECONDARY start: 29840 length 231
-    Stream: column 11 section DATA start: 30071 length 1877
-    Stream: column 11 section LENGTH start: 31948 length 591
+    Stream: column 0 section BLOOM_FILTER_UTF8 start: 23 length 34
+    Stream: column 1 section ROW_INDEX start: 57 length 58
+    Stream: column 1 section BLOOM_FILTER_UTF8 start: 115 length 696
+    Stream: column 2 section ROW_INDEX start: 811 length 58
+    Stream: column 2 section BLOOM_FILTER_UTF8 start: 869 length 867
+    Stream: column 3 section ROW_INDEX start: 1736 length 61
+    Stream: column 3 section BLOOM_FILTER_UTF8 start: 1797 length 861
+    Stream: column 4 section ROW_INDEX start: 2658 length 69
+    Stream: column 4 section BLOOM_FILTER_UTF8 start: 2727 length 850
+    Stream: column 5 section ROW_INDEX start: 3577 length 78
+    Stream: column 5 section BLOOM_FILTER_UTF8 start: 3655 length 1172
+    Stream: column 6 section ROW_INDEX start: 4827 length 85
+    Stream: column 6 section BLOOM_FILTER_UTF8 start: 4912 length 1167
+    Stream: column 7 section ROW_INDEX start: 6079 length 41
+    Stream: column 7 section BLOOM_FILTER_UTF8 start: 6120 length 34
+    Stream: column 8 section ROW_INDEX start: 6154 length 86
+    Stream: column 8 section BLOOM_FILTER_UTF8 start: 6240 length 1051
+    Stream: column 9 section ROW_INDEX start: 7291 length 50
+    Stream: column 9 section BLOOM_FILTER_UTF8 start: 7341 length 53
+    Stream: column 10 section ROW_INDEX start: 7394 length 82
+    Stream: column 10 section BLOOM_FILTER_UTF8 start: 7476 length 1189
+    Stream: column 11 section ROW_INDEX start: 8665 length 47
+    Stream: column 11 section BLOOM_FILTER_UTF8 start: 8712 length 254
+    Stream: column 1 section PRESENT start: 8966 length 17
+    Stream: column 1 section DATA start: 8983 length 962
+    Stream: column 2 section PRESENT start: 9945 length 17
+    Stream: column 2 section DATA start: 9962 length 1441
+    Stream: column 3 section DATA start: 11403 length 1704
+    Stream: column 4 section DATA start: 13107 length 1998
+    Stream: column 5 section DATA start: 15105 length 2925
+    Stream: column 6 section DATA start: 18030 length 3323
+    Stream: column 7 section DATA start: 21353 length 137
+    Stream: column 8 section DATA start: 21490 length 1572
+    Stream: column 8 section LENGTH start: 23062 length 310
+    Stream: column 8 section DICTIONARY_DATA start: 23372 length 1548
+    Stream: column 9 section DATA start: 24920 length 19
+    Stream: column 9 section SECONDARY start: 24939 length 1783
+    Stream: column 10 section DATA start: 26722 length 2138
+    Stream: column 10 section SECONDARY start: 28860 length 231
+    Stream: column 11 section DATA start: 29091 length 1877
+    Stream: column 11 section LENGTH start: 30968 length 591
     Encoding column 0: DIRECT
     Encoding column 1: DIRECT
     Encoding column 2: DIRECT_V2
@@ -675,7 +675,7 @@ Stripes:
       Entry 1: numHashFunctions: 4 bitCount: 6272 popCount: 98 loadFactor: 0.0156 expectedFpp: 5.9604645E-8
       Stripe level merge: numHashFunctions: 4 bitCount: 6272 popCount: 102 loadFactor: 0.0163 expectedFpp: 6.9948186E-8
 
-File length: 33416 bytes
+File length: 32435 bytes
 Padding length: 0 bytes
 Padding ratio: 0%
 ________________________________________________________________________________________________________________________

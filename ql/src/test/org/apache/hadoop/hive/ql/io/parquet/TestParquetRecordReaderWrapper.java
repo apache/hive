@@ -18,19 +18,18 @@
 
 package org.apache.hadoop.hive.ql.io.parquet;
 
-import static junit.framework.Assert.assertEquals;
-
 import org.apache.hadoop.hive.common.type.HiveChar;
 import org.apache.hadoop.hive.common.type.HiveVarchar;
 import org.apache.hadoop.hive.ql.io.parquet.read.ParquetFilterPredicateConverter;
 import org.apache.hadoop.hive.ql.io.sarg.PredicateLeaf;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
-import org.apache.hadoop.hive.ql.io.sarg.SearchArgument.TruthValue;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgumentFactory;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.parquet.schema.MessageType;
 import org.apache.parquet.schema.MessageTypeParser;
 import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
 
 import java.sql.Date;
 
@@ -40,10 +39,6 @@ import org.apache.parquet.filter2.predicate.FilterPredicate;
  * These tests test the conversion to Parquet's sarg implementation.
  */
 public class TestParquetRecordReaderWrapper {
-
-  private static TruthValue[] values(TruthValue... vals) {
-    return vals;
-  }
 
   @Test
   public void testBuilder() throws Exception {
@@ -69,6 +64,10 @@ public class TestParquetRecordReaderWrapper {
     assertEquals(expected, p.toString());
   }
 
+  /**
+   * Check the converted filter predicate is null if unsupported types are included
+   * @throws Exception
+   */
   @Test
   public void testBuilderComplexTypes() throws Exception {
     SearchArgument sarg =
@@ -83,8 +82,8 @@ public class TestParquetRecordReaderWrapper {
             .build();
     MessageType schema = MessageTypeParser.parseMessageType("message test {" +
         " required int32 x; required binary y; required binary z;}");
-    assertEquals("lteq(y, Binary{\"hi        \"})",
-        ParquetFilterPredicateConverter.toFilterPredicate(sarg, schema).toString());
+    assertEquals(null,
+        ParquetFilterPredicateConverter.toFilterPredicate(sarg, schema));
 
     sarg = SearchArgumentFactory.newBuilder()
         .startNot()
@@ -101,13 +100,14 @@ public class TestParquetRecordReaderWrapper {
     schema = MessageTypeParser.parseMessageType("message test {" +
         " optional int32 x; required binary y; required int32 z;" +
         " optional binary a;}");
-    FilterPredicate p = ParquetFilterPredicateConverter.toFilterPredicate(sarg, schema);
-    String expected =
-        "and(and(not(eq(x, null)), not(or(or(eq(z, 1), eq(z, 2)), eq(z, 3)))), " +
-        "not(eq(a, Binary{\"stinger\"})))";
-    assertEquals(expected, p.toString());
+    assertEquals(null,
+        ParquetFilterPredicateConverter.toFilterPredicate(sarg, schema));
   }
 
+  /**
+   * Check the converted filter predicate is null if unsupported types are included
+   * @throws Exception
+   */
   @Test
   public void testBuilderComplexTypes2() throws Exception {
     SearchArgument sarg =
@@ -122,8 +122,8 @@ public class TestParquetRecordReaderWrapper {
             .build();
     MessageType schema = MessageTypeParser.parseMessageType("message test {" +
         " required int32 x; required binary y; required binary z;}");
-    assertEquals("lteq(y, Binary{\"hi        \"})",
-        ParquetFilterPredicateConverter.toFilterPredicate(sarg, schema).toString());
+    assertEquals(null,
+        ParquetFilterPredicateConverter.toFilterPredicate(sarg, schema));
 
     sarg = SearchArgumentFactory.newBuilder()
         .startNot()
@@ -140,11 +140,8 @@ public class TestParquetRecordReaderWrapper {
     schema = MessageTypeParser.parseMessageType("message test {" +
         " optional int32 x; required binary y; required int32 z;" +
         " optional binary a;}");
-
-    FilterPredicate p = ParquetFilterPredicateConverter.toFilterPredicate(sarg, schema);
-    String expected = "and(and(not(eq(x, null)), not(or(or(eq(z, 1), eq(z, 2)), eq(z, 3)))), " +
-        "not(eq(a, Binary{\"stinger\"})))";
-    assertEquals(expected, p.toString());
+    assertEquals(null,
+        ParquetFilterPredicateConverter.toFilterPredicate(sarg, schema));
   }
 
   @Test

@@ -351,4 +351,64 @@ public class StringExpr {
       return Arrays.copyOf(bytes, j);
     }
   }
+
+  /*
+   * Compiles the given pattern with a proper algorithm.
+   */
+  public static Finder compile(byte[] pattern) {
+    return new BoyerMooreHorspool(pattern);
+  }
+
+  /*
+   * A finder finds the first index of its pattern in a given byte array.
+   * Its thread-safety depends on its implementation.
+   */
+  public interface Finder {
+    int find(byte[] input, int start, int len);
+  }
+
+  /*
+   * StringExpr uses Boyer Moore Horspool algorithm to find faster.
+   * It is thread-safe, because it holds final member instances only.
+   * See https://en.wikipedia.org/wiki/Boyer–Moore–Horspool_algorithm .
+   */
+  private static class BoyerMooreHorspool implements Finder {
+    private static final int MAX_BYTE = 0xff;
+    private final long[] shift = new long[MAX_BYTE];
+    private final byte[] pattern;
+    private final int plen;
+
+    public BoyerMooreHorspool(byte[] pattern) {
+      this.pattern = pattern;
+      this.plen = pattern.length;
+      Arrays.fill(shift, plen);
+      for (int i = 0; i < plen - 1; i++) {
+        shift[pattern[i] & MAX_BYTE] = plen - i - 1;
+      }
+    }
+
+    public int find(byte[] input, int start, int len) {
+      if (pattern.length == 0) {
+        return 0;
+      }
+
+      final int end = start + len;
+      int next = start + plen - 1;
+      final int plen = this.plen;
+      final byte[] pattern = this.pattern;
+      while (next < end) {
+        int s_tmp = next;
+        int p_tmp = plen - 1;
+        while (input[s_tmp] == pattern[p_tmp]) {
+          p_tmp--;
+          if (p_tmp < 0) {
+            return s_tmp;
+          }
+          s_tmp--;
+        }
+        next += shift[input[next] & MAX_BYTE];
+      }
+      return -1;
+    }
+  }
 }

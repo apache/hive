@@ -1,4 +1,4 @@
-PREHOOK: query: explain 
+PREHOOK: query: explain vectorization 
 select 
 
    cast (ctinyint as boolean)
@@ -72,7 +72,7 @@ from alltypesorc
 
 where cbigint % 250 = 0
 PREHOOK: type: QUERY
-POSTHOOK: query: explain 
+POSTHOOK: query: explain vectorization 
 select 
 
    cast (ctinyint as boolean)
@@ -146,6 +146,10 @@ from alltypesorc
 
 where cbigint % 250 = 0
 POSTHOOK: type: QUERY
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -172,6 +176,14 @@ STAGE PLANS:
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
       Execution mode: vectorized
+      Map Vectorization:
+          enabled: true
+          enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+          groupByVectorOutput: true
+          inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+          allNative: false
+          usesVectorUDFAdaptor: true
+          vectorized: true
 
   Stage: Stage-0
     Fetch Operator

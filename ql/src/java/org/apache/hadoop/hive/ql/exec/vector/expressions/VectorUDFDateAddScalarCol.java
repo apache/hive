@@ -207,6 +207,11 @@ public class VectorUDFDateAddScalarCol extends VectorExpression {
     this.isPositive = isPositive;
   }
 
+  @Override
+  public String vectorExpressionParameters() {
+    return "val " + stringValue + ", col " + colNum;
+  }
+
   public VectorExpressionDescriptor.Descriptor getDescriptor() {
     VectorExpressionDescriptor.Builder b = new VectorExpressionDescriptor.Builder();
     b.setMode(VectorExpressionDescriptor.Mode.PROJECTION)

@@ -31,9 +31,9 @@ POSTHOOK: Output: default@testvec
 POSTHOOK: Lineage: testvec.dt EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
 POSTHOOK: Lineage: testvec.greg_dt SIMPLE [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
 POSTHOOK: Lineage: testvec.id EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-PREHOOK: query: explain select max(dt), max(greg_dt) from testvec where id=5
+PREHOOK: query: explain vectorization select max(dt), max(greg_dt) from testvec where id=5
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select max(dt), max(greg_dt) from testvec where id=5
+POSTHOOK: query: explain vectorization select max(dt), max(greg_dt) from testvec where id=5
 POSTHOOK: type: QUERY
 Plan optimized by CBO.
 

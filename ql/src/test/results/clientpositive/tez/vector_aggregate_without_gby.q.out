@@ -1,0 +1,70 @@
+PREHOOK: query: create table testvec(id int, dt int, greg_dt string) stored as orc
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@testvec
+POSTHOOK: query: create table testvec(id int, dt int, greg_dt string) stored as orc
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@testvec
+PREHOOK: query: insert into table testvec
+values 
+(1,20150330, '2015-03-30'),
+(2,20150301, '2015-03-01'),
+(3,20150502, '2015-05-02'),
+(4,20150401, '2015-04-01'),
+(5,20150313, '2015-03-13'),
+(6,20150314, '2015-03-14'),
+(7,20150404, '2015-04-04')
+PREHOOK: type: QUERY
+PREHOOK: Output: default@testvec
+POSTHOOK: query: insert into table testvec
+values 
+(1,20150330, '2015-03-30'),
+(2,20150301, '2015-03-01'),
+(3,20150502, '2015-05-02'),
+(4,20150401, '2015-04-01'),
+(5,20150313, '2015-03-13'),
+(6,20150314, '2015-03-14'),
+(7,20150404, '2015-04-04')
+POSTHOOK: type: QUERY
+POSTHOOK: Output: default@testvec
+POSTHOOK: Lineage: testvec.dt EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+POSTHOOK: Lineage: testvec.greg_dt SIMPLE [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
+POSTHOOK: Lineage: testvec.id EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+PREHOOK: query: explain vectorization select max(dt), max(greg_dt) from testvec where id=5
+PREHOOK: type: QUERY
+POSTHOOK: query: explain vectorization select max(dt), max(greg_dt) from testvec where id=5
+POSTHOOK: type: QUERY
+Plan optimized by CBO.
+
+Vertex dependency in root stage
+Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
+
+Stage-0
+  Fetch Operator
+    limit:-1
+    Stage-1
+      Reducer 2 vectorized
+      File Output Operator [FS_14]
+        Group By Operator [GBY_13] (rows=1 width=188)
+          Output:["_col0","_col1"],aggregations:["max(VALUE._col0)","max(VALUE._col1)"]
+        <-Map 1 [CUSTOM_SIMPLE_EDGE] vectorized
+          PARTITION_ONLY_SHUFFLE [RS_12]
+            Group By Operator [GBY_11] (rows=1 width=188)
+              Output:["_col0","_col1"],aggregations:["max(dt)","max(greg_dt)"]
+              Select Operator [SEL_10] (rows=3 width=102)
+                Output:["dt","greg_dt"]
+                Filter Operator [FIL_9] (rows=3 width=102)
+                  predicate:(id = 5)
+                  TableScan [TS_0] (rows=7 width=102)
+                    default@testvec,testvec,Tbl:COMPLETE,Col:NONE,Output:["id","dt","greg_dt"]
+
+PREHOOK: query: select max(dt), max(greg_dt) from testvec where id=5
+PREHOOK: type: QUERY
+PREHOOK: Input: default@testvec
+#### A masked pattern was here ####
+POSTHOOK: query: select max(dt), max(greg_dt) from testvec where id=5
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@testvec
+#### A masked pattern was here ####
+20150313	2015-03-13

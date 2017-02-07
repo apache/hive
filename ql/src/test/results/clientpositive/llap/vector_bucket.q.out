@@ -6,12 +6,16 @@ POSTHOOK: query: CREATE TABLE non_orc_table(a INT, b STRING) CLUSTERED BY(a) INT
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@non_orc_table
-PREHOOK: query: explain
+PREHOOK: query: explain vectorization expression
 insert into table non_orc_table values(1, 'one'),(1, 'one'), (2, 'two'),(3, 'three')
 PREHOOK: type: QUERY
-POSTHOOK: query: explain
+POSTHOOK: query: explain vectorization expression
 insert into table non_orc_table values(1, 'one'),(1, 'one'), (2, 'two'),(3, 'three')
 POSTHOOK: type: QUERY
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -42,15 +46,34 @@ STAGE PLANS:
                       value expressions: _col0 (type: string), _col1 (type: string)
             Execution mode: llap
             LLAP IO: no inputs
+            Map Vectorization:
+                enabled: false
+                enabledConditionsNotMet: hive.vectorized.use.vector.serde.deserialize IS false
+                inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
         Reducer 2 
             Execution mode: vectorized, llap
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                groupByVectorOutput: true
+                allNative: false
+                usesVectorUDFAdaptor: true
+                vectorized: true
             Reduce Operator Tree:
               Select Operator
                 expressions: UDFToInteger(VALUE._col0) (type: int), VALUE._col1 (type: string)
                 outputColumnNames: _col0, _col1
+                Select Vectorization:
+                    className: VectorSelectOperator
+                    native: true
+                    projectedOutputColumns: [2, 1]
+                    selectExpressions: VectorUDFAdaptor(UDFToInteger(VALUE._col0)) -> 2:int
                 Statistics: Num rows: 1 Data size: 26 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
+                  File Sink Vectorization:
+                      className: VectorFileSinkOperator
+                      native: false
                   Statistics: Num rows: 1 Data size: 26 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat

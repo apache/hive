@@ -40,7 +40,7 @@ public class VectorMapJoinOptimizedCreateHashTable {
     ReusableGetAdaptor hashMapRowGetter = mapJoinTableContainer.createGetter(refKey);
 
     boolean isOuterJoin = !desc.isNoOuterJoin();
-    VectorMapJoinDesc vectorDesc = desc.getVectorDesc();
+    VectorMapJoinDesc vectorDesc = (VectorMapJoinDesc) desc.getVectorDesc();
     HashTableKind hashTableKind = vectorDesc.hashTableKind();
     HashTableKeyType hashTableKeyType = vectorDesc.hashTableKeyType();
     boolean minMaxEnabled = vectorDesc.minMaxEnabled();

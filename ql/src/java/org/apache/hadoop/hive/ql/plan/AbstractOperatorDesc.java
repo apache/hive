@@ -29,6 +29,10 @@ import org.apache.hadoop.hive.ql.stats.StatsCollectionContext;
 public class AbstractOperatorDesc implements OperatorDesc {
 
   protected boolean vectorMode = false;
+
+  // Extra parameters only for vectorization.
+  protected VectorDesc vectorDesc;
+
   protected Statistics statistics;
   protected transient OpTraits opTraits;
   protected transient Map<String, String> opProps;
@@ -63,6 +67,14 @@ public class AbstractOperatorDesc implements OperatorDesc {
 
   public void setVectorMode(boolean vm) {
     this.vectorMode = vm;
+  }
+
+  public void setVectorDesc(VectorDesc vectorDesc) {
+    this.vectorDesc = vectorDesc;
+  }
+
+  public VectorDesc getVectorDesc() {
+    return vectorDesc;
   }
 
   @Override

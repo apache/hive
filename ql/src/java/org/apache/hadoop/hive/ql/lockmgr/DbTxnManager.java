@@ -250,6 +250,7 @@ public class DbTxnManager extends HiveTxnManagerImpl {
     // overwrite) than we need a shared.  If it's update or delete then we
     // need a SEMI-SHARED.
     for (WriteEntity output : plan.getOutputs()) {
+      LOG.debug("output is null " + (output == null));
       if (output.getType() == Entity.Type.DFS_DIR || output.getType() == Entity.Type.LOCAL_DIR ||
           (output.getType() == Entity.Type.TABLE && output.getTable().isTemporary())) {
         // We don't lock files or directories. We also skip locking temp tables.
@@ -257,7 +258,6 @@ public class DbTxnManager extends HiveTxnManagerImpl {
       }
       LockComponentBuilder compBuilder = new LockComponentBuilder();
       Table t = null;
-      LOG.debug("output is null " + (output == null));
       switch (output.getWriteType()) {
         case DDL_EXCLUSIVE:
         case INSERT_OVERWRITE:
@@ -272,7 +272,11 @@ public class DbTxnManager extends HiveTxnManagerImpl {
             compBuilder.setIsAcid(true);
           }
           else {
-            compBuilder.setExclusive();
+            if (conf.getBoolVar(HiveConf.ConfVars.HIVE_TXN_STRICT_LOCKING_MODE)) {
+              compBuilder.setExclusive();
+            } else {  // this is backward compatible for non-ACID resources, w/o ACID semantics
+              compBuilder.setShared();
+            }
             compBuilder.setIsAcid(false);
           }
           compBuilder.setOperationType(DataOperationType.INSERT);

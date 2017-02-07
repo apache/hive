@@ -104,7 +104,7 @@ POSTHOOK: Lineage: part_orc.p_partkey SIMPLE [(part_staging)part_staging.FieldSc
 POSTHOOK: Lineage: part_orc.p_retailprice SIMPLE [(part_staging)part_staging.FieldSchema(name:p_retailprice, type:double, comment:null), ]
 POSTHOOK: Lineage: part_orc.p_size SIMPLE [(part_staging)part_staging.FieldSchema(name:p_size, type:int, comment:null), ]
 POSTHOOK: Lineage: part_orc.p_type SIMPLE [(part_staging)part_staging.FieldSchema(name:p_type, type:string, comment:null), ]
-PREHOOK: query: explain extended
+PREHOOK: query: explain vectorization extended
 select p_mfgr, p_name, p_size,
 rank() over (partition by p_mfgr order by p_name) as r,
 dense_rank() over (partition by p_mfgr order by p_name) as dr,
@@ -114,7 +114,7 @@ from noop(on part_orc
   order by p_name
   )
 PREHOOK: type: QUERY
-POSTHOOK: query: explain extended
+POSTHOOK: query: explain vectorization extended
 select p_mfgr, p_name, p_size,
 rank() over (partition by p_mfgr order by p_name) as r,
 dense_rank() over (partition by p_mfgr order by p_name) as dr,
@@ -124,6 +124,10 @@ from noop(on part_orc
   order by p_name
   )
 POSTHOOK: type: QUERY
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -152,6 +156,14 @@ STAGE PLANS:
                     value expressions: p_size (type: int), p_retailprice (type: double)
                     auto parallelism: false
             Execution mode: vectorized
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                groupByVectorOutput: true
+                inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -205,6 +217,11 @@ STAGE PLANS:
               /part_orc [part_orc]
         Reducer 2 
             Needs Tagging: false
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true
+                notVectorizedReason: PTF Operator (PTF) not supported
+                vectorized: false
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col3 (type: int), VALUE._col5 (type: double)
@@ -235,6 +252,11 @@ STAGE PLANS:
                     auto parallelism: false
         Reducer 3 
             Needs Tagging: false
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true
+                notVectorizedReason: PTF Operator (PTF) not supported
+                vectorized: false
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col3 (type: int), VALUE._col5 (type: double)
@@ -355,20 +377,24 @@ Manufacturer#5	almond antique medium spring khaki	6	2	2	3401.3500000000004
 Manufacturer#5	almond antique sky peru orange	2	3	3	5190.08
 Manufacturer#5	almond aquamarine dodger light gainsboro	46	4	4	6208.18
 Manufacturer#5	almond azure blanched chiffon midnight	23	5	5	7672.66
-PREHOOK: query: explain extended
+PREHOOK: query: explain vectorization extended
 select p_mfgr, p_name,
 p_size, p_size - lag(p_size,1,p_size) over (partition by p_mfgr order by p_name) as deltaSz
 from noop (on (select p1.* from part_orc p1 join part_orc p2 on p1.p_partkey = p2.p_partkey) j
 distribute by j.p_mfgr
 sort by j.p_name)
 PREHOOK: type: QUERY
-POSTHOOK: query: explain extended
+POSTHOOK: query: explain vectorization extended
 select p_mfgr, p_name,
 p_size, p_size - lag(p_size,1,p_size) over (partition by p_mfgr order by p_name) as deltaSz
 from noop (on (select p1.* from part_orc p1 join part_orc p2 on p1.p_partkey = p2.p_partkey) j
 distribute by j.p_mfgr
 sort by j.p_name)
 POSTHOOK: type: QUERY
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -402,6 +428,14 @@ STAGE PLANS:
                       value expressions: p_name (type: string), p_mfgr (type: string), p_size (type: int)
                       auto parallelism: false
             Execution mode: vectorized
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                groupByVectorOutput: true
+                inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -472,6 +506,14 @@ STAGE PLANS:
                       tag: 1
                       auto parallelism: false
             Execution mode: vectorized
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                groupByVectorOutput: true
+                inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -525,6 +567,11 @@ STAGE PLANS:
               /part_orc [p2]
         Reducer 2 
             Needs Tagging: true
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true
+                notVectorizedReason: Tez doesn't use tagging
+                vectorized: false
             Reduce Operator Tree:
               Join Operator
                 condition map:
@@ -545,6 +592,11 @@ STAGE PLANS:
                   auto parallelism: false
         Reducer 3 
             Needs Tagging: false
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true
+                notVectorizedReason: PTF Operator (PTF) not supported
+                vectorized: false
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col3 (type: int)
@@ -575,6 +627,11 @@ STAGE PLANS:
                     auto parallelism: false
         Reducer 4 
             Needs Tagging: false
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true
+                notVectorizedReason: PTF Operator (PTF) not supported
+                vectorized: false
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col3 (type: int)
@@ -678,18 +735,22 @@ Manufacturer#5	almond antique medium spring khaki	6	-25
 Manufacturer#5	almond antique sky peru orange	2	-4
 Manufacturer#5	almond aquamarine dodger light gainsboro	46	44
 Manufacturer#5	almond azure blanched chiffon midnight	23	-23
-PREHOOK: query: explain extended
+PREHOOK: query: explain vectorization extended
 select p_mfgr, p_name, p_size
 from noop(on part_orc
 partition by p_mfgr
 order by p_name)
 PREHOOK: type: QUERY
-POSTHOOK: query: explain extended
+POSTHOOK: query: explain vectorization extended
 select p_mfgr, p_name, p_size
 from noop(on part_orc
 partition by p_mfgr
 order by p_name)
 POSTHOOK: type: QUERY
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -717,6 +778,14 @@ STAGE PLANS:
                     value expressions: p_size (type: int)
                     auto parallelism: false
             Execution mode: vectorized
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                groupByVectorOutput: true
+                inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -770,6 +839,11 @@ STAGE PLANS:
               /part_orc [part_orc]
         Reducer 2 
             Needs Tagging: false
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true
+                notVectorizedReason: PTF Operator (PTF) not supported
+                vectorized: false
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col3 (type: int)
@@ -862,7 +936,7 @@ Manufacturer#5	almond antique medium spring khaki	6
 Manufacturer#5	almond antique sky peru orange	2
 Manufacturer#5	almond aquamarine dodger light gainsboro	46
 Manufacturer#5	almond azure blanched chiffon midnight	23
-PREHOOK: query: explain extended
+PREHOOK: query: explain vectorization extended
 select p_mfgr, p_name, p_size,
 rank() over (partition by p_mfgr order by p_name) as r,
 dense_rank() over (partition by p_mfgr order by p_name) as dr,
@@ -872,7 +946,7 @@ from noop(on part_orc
   order by p_name
   ) abc
 PREHOOK: type: QUERY
-POSTHOOK: query: explain extended
+POSTHOOK: query: explain vectorization extended
 select p_mfgr, p_name, p_size,
 rank() over (partition by p_mfgr order by p_name) as r,
 dense_rank() over (partition by p_mfgr order by p_name) as dr,
@@ -882,6 +956,10 @@ from noop(on part_orc
   order by p_name
   ) abc
 POSTHOOK: type: QUERY
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -910,6 +988,14 @@ STAGE PLANS:
                     value expressions: p_size (type: int), p_retailprice (type: double)
                     auto parallelism: false
             Execution mode: vectorized
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                groupByVectorOutput: true
+                inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -963,6 +1049,11 @@ STAGE PLANS:
               /part_orc [part_orc]
         Reducer 2 
             Needs Tagging: false
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true
+                notVectorizedReason: PTF Operator (PTF) not supported
+                vectorized: false
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col3 (type: int), VALUE._col5 (type: double)
@@ -993,6 +1084,11 @@ STAGE PLANS:
                     auto parallelism: false
         Reducer 3 
             Needs Tagging: false
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true
+                notVectorizedReason: PTF Operator (PTF) not supported
+                vectorized: false
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col3 (type: int), VALUE._col5 (type: double)
@@ -1113,7 +1209,7 @@ Manufacturer#5	almond antique medium spring khaki	6	2	2	3401.35
 Manufacturer#5	almond antique sky peru orange	2	3	3	5190.08
 Manufacturer#5	almond aquamarine dodger light gainsboro	46	4	4	6208.18
 Manufacturer#5	almond azure blanched chiffon midnight	23	5	5	7672.66
-PREHOOK: query: explain extended
+PREHOOK: query: explain vectorization extended
 select p_mfgr, p_name, p_size, 
 rank() over (partition by p_mfgr order by p_name) as r, 
 dense_rank() over (partition by p_mfgr order by p_name) as dr, 
@@ -1123,7 +1219,7 @@ from noop(on part_orc
           order by p_name 
           )
 PREHOOK: type: QUERY
-POSTHOOK: query: explain extended
+POSTHOOK: query: explain vectorization extended
 select p_mfgr, p_name, p_size, 
 rank() over (partition by p_mfgr order by p_name) as r, 
 dense_rank() over (partition by p_mfgr order by p_name) as dr, 
@@ -1133,6 +1229,10 @@ from noop(on part_orc
           order by p_name 
           )
 POSTHOOK: type: QUERY
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1161,6 +1261,14 @@ STAGE PLANS:
                     value expressions: p_size (type: int)
                     auto parallelism: false
             Execution mode: vectorized
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                groupByVectorOutput: true
+                inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -1214,6 +1322,11 @@ STAGE PLANS:
               /part_orc [part_orc]
         Reducer 2 
             Needs Tagging: false
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true
+                notVectorizedReason: PTF Operator (PTF) not supported
+                vectorized: false
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col3 (type: int)
@@ -1244,6 +1357,11 @@ STAGE PLANS:
                     auto parallelism: false
         Reducer 3 
             Needs Tagging: false
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true
+                notVectorizedReason: PTF Operator (PTF) not supported
+                vectorized: false
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col3 (type: int)
@@ -1365,7 +1483,7 @@ Manufacturer#5	almond antique medium spring khaki	6	2	2	6	-25
 Manufacturer#5	almond antique sky peru orange	2	3	3	2	-4
 Manufacturer#5	almond aquamarine dodger light gainsboro	46	4	4	46	44
 Manufacturer#5	almond azure blanched chiffon midnight	23	5	5	23	-23
-PREHOOK: query: explain extended
+PREHOOK: query: explain vectorization extended
 select p_mfgr, p_name, p_size, 
 rank() over (partition by p_mfgr order by p_name) as r, 
 dense_rank() over (partition by p_mfgr order by p_name) as dr, 
@@ -1376,7 +1494,7 @@ from noop(on part_orc
           ) 
 group by p_mfgr, p_name, p_size
 PREHOOK: type: QUERY
-POSTHOOK: query: explain extended
+POSTHOOK: query: explain vectorization extended
 select p_mfgr, p_name, p_size, 
 rank() over (partition by p_mfgr order by p_name) as r, 
 dense_rank() over (partition by p_mfgr order by p_name) as dr, 
@@ -1387,6 +1505,10 @@ from noop(on part_orc
           ) 
 group by p_mfgr, p_name, p_size
 POSTHOOK: type: QUERY
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1415,6 +1537,14 @@ STAGE PLANS:
                     value expressions: p_size (type: int)
                     auto parallelism: false
             Execution mode: vectorized
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                groupByVectorOutput: true
+                inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -1468,6 +1598,11 @@ STAGE PLANS:
               /part_orc [part_orc]
         Reducer 2 
             Needs Tagging: false
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true
+                notVectorizedReason: PTF Operator (PTF) not supported
+                vectorized: false
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col3 (type: int)
@@ -1506,6 +1641,11 @@ STAGE PLANS:
                         auto parallelism: false
         Reducer 3 
             Needs Tagging: false
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true
+                notVectorizedReason: PTF Operator (PTF) not supported
+                vectorized: false
             Reduce Operator Tree:
               Group By Operator
                 keys: KEY._col0 (type: string), KEY._col1 (type: string), KEY._col2 (type: int)
@@ -1629,20 +1769,24 @@ Manufacturer#5	almond antique medium spring khaki	6	2	2	6	-25
 Manufacturer#5	almond antique sky peru orange	2	3	3	2	-4
 Manufacturer#5	almond aquamarine dodger light gainsboro	46	4	4	46	44
 Manufacturer#5	almond azure blanched chiffon midnight	23	5	5	23	-23
-PREHOOK: query: explain extended
+PREHOOK: query: explain vectorization extended
 select abc.* 
 from noop(on part_orc 
 partition by p_mfgr 
 order by p_name 
 ) abc join part_orc p1 on abc.p_partkey = p1.p_partkey
 PREHOOK: type: QUERY
-POSTHOOK: query: explain extended
+POSTHOOK: query: explain vectorization extended
 select abc.* 
 from noop(on part_orc 
 partition by p_mfgr 
 order by p_name 
 ) abc join part_orc p1 on abc.p_partkey = p1.p_partkey
 POSTHOOK: type: QUERY
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1671,6 +1815,14 @@ STAGE PLANS:
                     value expressions: p_partkey (type: int), p_brand (type: string), p_type (type: string), p_size (type: int), p_container (type: string), p_retailprice (type: double), p_comment (type: string)
                     auto parallelism: false
             Execution mode: vectorized
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                groupByVectorOutput: true
+                inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -1741,6 +1893,14 @@ STAGE PLANS:
                       tag: 1
                       auto parallelism: false
             Execution mode: vectorized
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                groupByVectorOutput: true
+                inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -1794,6 +1954,11 @@ STAGE PLANS:
               /part_orc [p1]
         Reducer 2 
             Needs Tagging: false
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true
+                notVectorizedReason: PTF Operator (PTF) not supported
+                vectorized: false
             Reduce Operator Tree:
               Select Operator
                 expressions: VALUE._col0 (type: int), KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col1 (type: string), VALUE._col2 (type: string), VALUE._col3 (type: int), VALUE._col4 (type: string), VALUE._col5 (type: double), VALUE._col6 (type: string)
@@ -1828,6 +1993,11 @@ STAGE PLANS:
                       auto parallelism: false
         Reducer 3 
             Needs Tagging: true
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true
+                notVectorizedReason: Tez doesn't use tagging
+                vectorized: false
             Reduce Operator Tree:
               Join Operator
                 condition map:
@@ -1910,20 +2080,24 @@ POSTHOOK: Input: default@part_orc
 85768	almond antique chartreuse lavender yellow	Manufacturer#1	Brand#12	LARGE BRUSHED STEEL	34	SM BAG	1753.76	refull
 86428	almond aquamarine burnished black steel	Manufacturer#1	Brand#12	STANDARD ANODIZED STEEL	28	WRAP BAG	1414.42	arefully 
 90681	almond antique chartreuse khaki white	Manufacturer#3	Brand#31	MEDIUM BURNISHED TIN	17	SM CASE	1671.68	are slyly after the sl
-PREHOOK: query: explain extended
+PREHOOK: query: explain vectorization extended
 select abc.* 
 from part_orc p1 join noop(on part_orc 
 partition by p_mfgr 
 order by p_name 
 ) abc on abc.p_partkey = p1.p_partkey
 PREHOOK: type: QUERY
-POSTHOOK: query: explain extended
+POSTHOOK: query: explain vectorization extended
 select abc.* 
 from part_orc p1 join noop(on part_orc 
 partition by p_mfgr 
 order by p_name 
 ) abc on abc.p_partkey = p1.p_partkey
 POSTHOOK: type: QUERY
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1955,6 +2129,14 @@ STAGE PLANS:
                       tag: 0
                       auto parallelism: false
             Execution mode: vectorized
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                groupByVectorOutput: true
+                inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -2022,6 +2204,14 @@ STAGE PLANS:
                     value expressions: p_partkey (type: int), p_brand (type: string), p_type (type: string), p_size (type: int), p_container (type: string), p_retailprice (type: double), p_comment (type: string)
                     auto parallelism: false
             Execution mode: vectorized
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                groupByVectorOutput: true
+                inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -2075,6 +2265,11 @@ STAGE PLANS:
               /part_orc [part_orc]
         Reducer 2 
             Needs Tagging: true
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true
+                notVectorizedReason: Tez doesn't use tagging
+                vectorized: false
             Reduce Operator Tree:
               Join Operator
                 condition map:
@@ -2112,6 +2307,11 @@ STAGE PLANS:
                     MultiFileSpray: false
         Reducer 4 
             Needs Tagging: false
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true
+                notVectorizedReason: PTF Operator (PTF) not supported
+                vectorized: false
             Reduce Operator Tree:
               Select Operator
                 expressions: VALUE._col0 (type: int), KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col1 (type: string), VALUE._col2 (type: string), VALUE._col3 (type: int), VALUE._col4 (type: string), VALUE._col5 (type: double), VALUE._col6 (type: string)
@@ -2195,20 +2395,24 @@ POSTHOOK: Input: default@part_orc
 85768	almond antique chartreuse lavender yellow	Manufacturer#1	Brand#12	LARGE BRUSHED STEEL	34	SM BAG	1753.76	refull
 86428	almond aquamarine burnished black steel	Manufacturer#1	Brand#12	STANDARD ANODIZED STEEL	28	WRAP BAG	1414.42	arefully 
 90681	almond antique chartreuse khaki white	Manufacturer#3	Brand#31	MEDIUM BURNISHED TIN	17	SM CASE	1671.68	are slyly after the sl
-PREHOOK: query: explain extended
+PREHOOK: query: explain vectorization extended
 select p_mfgr, p_name, p_size, 
 rank() over (partition by p_mfgr order by p_name, p_size desc) as r
 from noopwithmap(on part_orc
 partition by p_mfgr
 order by p_name, p_size desc)
 PREHOOK: type: QUERY
-POSTHOOK: query: explain extended
+POSTHOOK: query: explain vectorization extended
 select p_mfgr, p_name, p_size, 
 rank() over (partition by p_mfgr order by p_name, p_size desc) as r
 from noopwithmap(on part_orc
 partition by p_mfgr
 order by p_name, p_size desc)
 POSTHOOK: type: QUERY
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -2251,6 +2455,12 @@ STAGE PLANS:
                       Statistics: Num rows: 26 Data size: 16042 Basic stats: COMPLETE Column stats: NONE
                       tag: -1
                       auto parallelism: false
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                notVectorizedReason: PTF Operator (PTF) not supported
+                vectorized: false
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -2304,6 +2514,11 @@ STAGE PLANS:
               /part_orc [part_orc]
         Reducer 2 
             Needs Tagging: false
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true
+                notVectorizedReason: PTF Operator (PTF) not supported
+                vectorized: false
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), KEY.reducesinkkey2 (type: int)
@@ -2334,6 +2549,11 @@ STAGE PLANS:
                     auto parallelism: false
         Reducer 3 
             Needs Tagging: false
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true
+                notVectorizedReason: PTF Operator (PTF) not supported
+                vectorized: false
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), KEY.reducesinkkey2 (type: int)
@@ -2435,7 +2655,7 @@ Manufacturer#5	almond antique medium spring khaki	6	2
 Manufacturer#5	almond antique sky peru orange	2	3
 Manufacturer#5	almond aquamarine dodger light gainsboro	46	4
 Manufacturer#5	almond azure blanched chiffon midnight	23	5
-PREHOOK: query: explain extended
+PREHOOK: query: explain vectorization extended
 select p_mfgr, p_name, p_size,
 rank() over (partition by p_mfgr order by p_name) as r,
 dense_rank() over (partition by p_mfgr order by p_name) as dr,
@@ -2444,7 +2664,7 @@ from noopwithmap(on part_orc
   partition by p_mfgr
   order by p_name)
 PREHOOK: type: QUERY
-POSTHOOK: query: explain extended
+POSTHOOK: query: explain vectorization extended
 select p_mfgr, p_name, p_size,
 rank() over (partition by p_mfgr order by p_name) as r,
 dense_rank() over (partition by p_mfgr order by p_name) as dr,
@@ -2453,6 +2673,10 @@ from noopwithmap(on part_orc
   partition by p_mfgr
   order by p_name)
 POSTHOOK: type: QUERY
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -2496,6 +2720,12 @@ STAGE PLANS:
                       tag: -1
                       value expressions: p_size (type: int), p_retailprice (type: double)
                       auto parallelism: false
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                notVectorizedReason: PTF Operator (PTF) not supported
+                vectorized: false
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -2549,6 +2779,11 @@ STAGE PLANS:
               /part_orc [part_orc]
         Reducer 2 
             Needs Tagging: false
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true
+                notVectorizedReason: PTF Operator (PTF) not supported
+                vectorized: false
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col3 (type: int), VALUE._col5 (type: double)
@@ -2580,6 +2815,11 @@ STAGE PLANS:
                     auto parallelism: false
         Reducer 3 
             Needs Tagging: false
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true
+                notVectorizedReason: PTF Operator (PTF) not supported
+                vectorized: false
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col3 (type: int), VALUE._col5 (type: double)
@@ -2698,7 +2938,7 @@ Manufacturer#5	almond antique medium spring khaki	6	2	2	3401.35
 Manufacturer#5	almond antique sky peru orange	2	3	3	5190.08
 Manufacturer#5	almond aquamarine dodger light gainsboro	46	4	4	6208.18
 Manufacturer#5	almond azure blanched chiffon midnight	23	5	5	7672.66
-PREHOOK: query: explain extended
+PREHOOK: query: explain vectorization extended
 select p_mfgr, p_name, p_size,
 rank() over (partition by p_mfgr order by p_name) as r,
 dense_rank() over (partition by p_mfgr order by p_name) as dr,
@@ -2707,7 +2947,7 @@ from noop(on part_orc
 partition by p_mfgr
 order by p_name)
 PREHOOK: type: QUERY
-POSTHOOK: query: explain extended
+POSTHOOK: query: explain vectorization extended
 select p_mfgr, p_name, p_size,
 rank() over (partition by p_mfgr order by p_name) as r,
 dense_rank() over (partition by p_mfgr order by p_name) as dr,
@@ -2716,6 +2956,10 @@ from noop(on part_orc
 partition by p_mfgr
 order by p_name)
 POSTHOOK: type: QUERY
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -2744,6 +2988,14 @@ STAGE PLANS:
                     value expressions: p_size (type: int), p_retailprice (type: double)
                     auto parallelism: false
             Execution mode: vectorized
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                groupByVectorOutput: true
+                inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -2797,6 +3049,11 @@ STAGE PLANS:
               /part_orc [part_orc]
         Reducer 2 
             Needs Tagging: false
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true
+                notVectorizedReason: PTF Operator (PTF) not supported
+                vectorized: false
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col3 (type: int), VALUE._col5 (type: double)
@@ -2827,6 +3084,11 @@ STAGE PLANS:
                     auto parallelism: false
         Reducer 3 
             Needs Tagging: false
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true
+                notVectorizedReason: PTF Operator (PTF) not supported
+                vectorized: false
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col3 (type: int), VALUE._col5 (type: double)
@@ -2945,7 +3207,7 @@ Manufacturer#5	almond antique medium spring khaki	6	2	2	3401.35
 Manufacturer#5	almond antique sky peru orange	2	3	3	5190.08
 Manufacturer#5	almond aquamarine dodger light gainsboro	46	4	4	6208.18
 Manufacturer#5	almond azure blanched chiffon midnight	23	5	5	7672.66
-PREHOOK: query: explain extended
+PREHOOK: query: explain vectorization extended
 select p_mfgr, p_name, p_size, 
 rank() over (partition by p_mfgr order by p_name) as r, 
 dense_rank() over (partition by p_mfgr order by p_name) as dr, 
@@ -2955,7 +3217,7 @@ partition by p_mfgr
 order by p_mfgr, p_name
 )))
 PREHOOK: type: QUERY
-POSTHOOK: query: explain extended
+POSTHOOK: query: explain vectorization extended
 select p_mfgr, p_name, p_size, 
 rank() over (partition by p_mfgr order by p_name) as r, 
 dense_rank() over (partition by p_mfgr order by p_name) as dr, 
@@ -2965,6 +3227,10 @@ partition by p_mfgr
 order by p_mfgr, p_name
 )))
 POSTHOOK: type: QUERY
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -2994,6 +3260,14 @@ STAGE PLANS:
                     value expressions: p_size (type: int), p_retailprice (type: double)
                     auto parallelism: false
             Execution mode: vectorized
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                groupByVectorOutput: true
+                inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -3047,6 +3321,11 @@ STAGE PLANS:
               /part_orc [part_orc]
         Reducer 2 
             Needs Tagging: false
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true
+                notVectorizedReason: PTF Operator (PTF) not supported
+                vectorized: false
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col3 (type: int), VALUE._col5 (type: double)
@@ -3100,6 +3379,11 @@ STAGE PLANS:
                       auto parallelism: false
         Reducer 3 
             Needs Tagging: false
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true
+                notVectorizedReason: PTF Operator (PTF) not supported
+                vectorized: false
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col3 (type: int), VALUE._col5 (type: double)
@@ -3138,6 +3422,11 @@ STAGE PLANS:
                     auto parallelism: false
         Reducer 4 
             Needs Tagging: false
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true
+                notVectorizedReason: PTF Operator (PTF) not supported
+                vectorized: false
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col3 (type: int), VALUE._col5 (type: double)
@@ -3258,7 +3547,7 @@ Manufacturer#5	almond antique medium spring khaki	6	2	2	3401.35
 Manufacturer#5	almond antique sky peru orange	2	3	3	5190.08
 Manufacturer#5	almond aquamarine dodger light gainsboro	46	4	4	6208.18
 Manufacturer#5	almond azure blanched chiffon midnight	23	5	5	7672.66
-PREHOOK: query: explain extended
+PREHOOK: query: explain vectorization extended
 select p_mfgr, p_name, 
 sub1.cd, sub1.s1 
 from (select p_mfgr, p_name, 
@@ -3271,7 +3560,7 @@ order by p_name)
 window w1 as (partition by p_mfgr order by p_name rows between 2 preceding and 2 following) 
 ) sub1
 PREHOOK: type: QUERY
-POSTHOOK: query: explain extended
+POSTHOOK: query: explain vectorization extended
 select p_mfgr, p_name, 
 sub1.cd, sub1.s1 
 from (select p_mfgr, p_name, 
@@ -3284,6 +3573,10 @@ order by p_name)
 window w1 as (partition by p_mfgr order by p_name rows between 2 preceding and 2 following) 
 ) sub1
 POSTHOOK: type: QUERY
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -3312,6 +3605,14 @@ STAGE PLANS:
                     value expressions: p_size (type: int), p_retailprice (type: double)
                     auto parallelism: false
             Execution mode: vectorized
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                groupByVectorOutput: true
+                inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -3365,6 +3666,11 @@ STAGE PLANS:
               /part_orc [part_orc]
         Reducer 2 
             Needs Tagging: false
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true
+                notVectorizedReason: PTF Operator (PTF) not supported
+                vectorized: false
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col3 (type: int), VALUE._col5 (type: double)
@@ -3395,6 +3701,11 @@ STAGE PLANS:
                     auto parallelism: false
         Reducer 3 
             Needs Tagging: false
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true
+                notVectorizedReason: PTF Operator (PTF) not supported
+                vectorized: false
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col3 (type: int), VALUE._col5 (type: double)
@@ -3513,7 +3824,7 @@ Manufacturer#5	almond antique medium spring khaki	2	6208.18
 Manufacturer#5	almond antique sky peru orange	3	7672.66
 Manufacturer#5	almond aquamarine dodger light gainsboro	4	5882.97
 Manufacturer#5	almond azure blanched chiffon midnight	5	4271.31
-PREHOOK: query: explain extended
+PREHOOK: query: explain vectorization extended
 select abc.p_mfgr, abc.p_name, 
 rank() over (distribute by abc.p_mfgr sort by abc.p_name) as r, 
 dense_rank() over (distribute by abc.p_mfgr sort by abc.p_name) as dr, 
@@ -3525,7 +3836,7 @@ partition by p_mfgr
 order by p_name 
 ) abc join part_orc p1 on abc.p_partkey = p1.p_partkey
 PREHOOK: type: QUERY
-POSTHOOK: query: explain extended
+POSTHOOK: query: explain vectorization extended
 select abc.p_mfgr, abc.p_name, 
 rank() over (distribute by abc.p_mfgr sort by abc.p_name) as r, 
 dense_rank() over (distribute by abc.p_mfgr sort by abc.p_name) as dr, 
@@ -3537,6 +3848,10 @@ partition by p_mfgr
 order by p_name 
 ) abc join part_orc p1 on abc.p_partkey = p1.p_partkey
 POSTHOOK: type: QUERY
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -3566,6 +3881,14 @@ STAGE PLANS:
                     value expressions: p_partkey (type: int), p_size (type: int), p_retailprice (type: double)
                     auto parallelism: false
             Execution mode: vectorized
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                groupByVectorOutput: true
+                inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -3636,6 +3959,14 @@ STAGE PLANS:
                       tag: 1
                       auto parallelism: false
             Execution mode: vectorized
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                groupByVectorOutput: true
+                inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -3689,6 +4020,11 @@ STAGE PLANS:
               /part_orc [p1]
         Reducer 2 
             Needs Tagging: false
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true
+                notVectorizedReason: PTF Operator (PTF) not supported
+                vectorized: false
             Reduce Operator Tree:
               Select Operator
                 expressions: VALUE._col0 (type: int), KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col3 (type: int), VALUE._col5 (type: double)
@@ -3723,6 +4059,11 @@ STAGE PLANS:
                       auto parallelism: false
         Reducer 3 
             Needs Tagging: true
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true
+                notVectorizedReason: Tez doesn't use tagging
+                vectorized: false
             Reduce Operator Tree:
               Join Operator
                 condition map:
@@ -3743,6 +4084,11 @@ STAGE PLANS:
                   auto parallelism: false
         Reducer 4 
             Needs Tagging: false
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true
+                notVectorizedReason: PTF Operator (PTF) not supported
+                vectorized: false
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col3 (type: int), VALUE._col5 (type: double)
@@ -3882,18 +4228,22 @@ Manufacturer#5	almond antique medium spring khaki	2	2	2	1611.66	3401.35	6	-25
 Manufacturer#5	almond antique sky peru orange	3	3	3	1788.73	5190.08	2	-4
 Manufacturer#5	almond aquamarine dodger light gainsboro	4	4	4	1018.1	6208.18	46	44
 Manufacturer#5	almond azure blanched chiffon midnight	5	5	5	1464.48	7672.66	23	-23
-PREHOOK: query: explain extended
+PREHOOK: query: explain vectorization extended
 select DISTINCT p_mfgr, p_name, p_size 
 from noop(on part_orc 
 partition by p_mfgr 
 order by p_name)
 PREHOOK: type: QUERY
-POSTHOOK: query: explain extended
+POSTHOOK: query: explain vectorization extended
 select DISTINCT p_mfgr, p_name, p_size 
 from noop(on part_orc 
 partition by p_mfgr 
 order by p_name)
 POSTHOOK: type: QUERY
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -3922,6 +4272,14 @@ STAGE PLANS:
                     value expressions: p_size (type: int)
                     auto parallelism: false
             Execution mode: vectorized
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                groupByVectorOutput: true
+                inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -3975,6 +4333,11 @@ STAGE PLANS:
               /part_orc [part_orc]
         Reducer 2 
             Needs Tagging: false
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true
+                notVectorizedReason: PTF Operator (PTF) not supported
+                vectorized: false
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col3 (type: int)
@@ -4014,6 +4377,13 @@ STAGE PLANS:
         Reducer 3 
             Execution mode: vectorized
             Needs Tagging: false
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true
+                groupByVectorOutput: true
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
             Reduce Operator Tree:
               Group By Operator
                 keys: KEY._col0 (type: string), KEY._col1 (type: string), KEY._col2 (type: int)
@@ -4109,7 +4479,7 @@ POSTHOOK: Output: default@mfgr_price_view
 POSTHOOK: Lineage: mfgr_price_view.p_brand SIMPLE [(part_orc)part_orc.FieldSchema(name:p_brand, type:string, comment:null), ]
 POSTHOOK: Lineage: mfgr_price_view.p_mfgr SIMPLE [(part_orc)part_orc.FieldSchema(name:p_mfgr, type:string, comment:null), ]
 POSTHOOK: Lineage: mfgr_price_view.s EXPRESSION [(part_orc)part_orc.FieldSchema(name:p_retailprice, type:double, comment:null), ]
-PREHOOK: query: explain extended
+PREHOOK: query: explain vectorization extended
 select p_mfgr, p_brand, s, 
 round(sum(s) over w1,2) as s1
 from noop(on mfgr_price_view 
@@ -4117,7 +4487,7 @@ partition by p_mfgr
 order by p_mfgr)  
 window w1 as ( partition by p_mfgr order by p_brand rows between 2 preceding and current row)
 PREHOOK: type: QUERY
-POSTHOOK: query: explain extended
+POSTHOOK: query: explain vectorization extended
 select p_mfgr, p_brand, s, 
 round(sum(s) over w1,2) as s1
 from noop(on mfgr_price_view 
@@ -4125,6 +4495,10 @@ partition by p_mfgr
 order by p_mfgr)  
 window w1 as ( partition by p_mfgr order by p_brand rows between 2 preceding and current row)
 POSTHOOK: type: QUERY
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -4163,6 +4537,14 @@ STAGE PLANS:
                         value expressions: _col2 (type: double)
                         auto parallelism: false
             Execution mode: vectorized
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                groupByVectorOutput: true
+                inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -4216,6 +4598,11 @@ STAGE PLANS:
               /part_orc [part_orc]
         Reducer 2 
             Needs Tagging: false
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true
+                notVectorizedReason: PTF Operator (PTF) not supported
+                vectorized: false
             Reduce Operator Tree:
               Group By Operator
                 aggregations: sum(VALUE._col0)
@@ -4252,6 +4639,11 @@ STAGE PLANS:
                       auto parallelism: false
         Reducer 3 
             Needs Tagging: false
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true
+                notVectorizedReason: PTF Operator (PTF) not supported
+                vectorized: false
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: string), KEY.reducesinkkey1 (type: string), VALUE._col0 (type: double)
@@ -4390,7 +4782,7 @@ fv1 INT)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@part_5
-PREHOOK: query: explain extended
+PREHOOK: query: explain vectorization extended
 from noop(on part_orc 
 partition by p_mfgr 
 order by p_name) 
@@ -4406,7 +4798,7 @@ cume_dist() over (distribute by p_mfgr sort by p_mfgr, p_name) as cud,
 first_value(p_size, true) over w1  as fv1
 window w1 as (distribute by p_mfgr sort by p_mfgr, p_name rows between 2 preceding and 2 following)
 PREHOOK: type: QUERY
-POSTHOOK: query: explain extended
+POSTHOOK: query: explain vectorization extended
 from noop(on part_orc 
 partition by p_mfgr 
 order by p_name) 
@@ -4422,6 +4814,10 @@ cume_dist() over (distribute by p_mfgr sort by p_mfgr, p_name) as cud,
 first_value(p_size, true) over w1  as fv1
 window w1 as (distribute by p_mfgr sort by p_mfgr, p_name rows between 2 preceding and 2 following)
 POSTHOOK: type: QUERY
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-0 depends on stages: Stage-2
@@ -4456,6 +4852,14 @@ STAGE PLANS:
                     value expressions: p_size (type: int), p_retailprice (type: double)
                     auto parallelism: false
             Execution mode: vectorized
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                groupByVectorOutput: true
+                inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -4509,6 +4913,11 @@ STAGE PLANS:
               /part_orc [part_orc]
         Reducer 3 
             Needs Tagging: false
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true
+                notVectorizedReason: PTF Operator (PTF) not supported
+                vectorized: false
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col3 (type: int), VALUE._col5 (type: double)
@@ -4586,6 +4995,11 @@ STAGE PLANS:
                       MultiFileSpray: false
         Reducer 4 
             Needs Tagging: false
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true
+                notVectorizedReason: PTF Operator (PTF) not supported
+                vectorized: false
             Reduce Operator Tree:
               Select Operator
                 expressions: VALUE._col1 (type: string), KEY.reducesinkkey0 (type: string), KEY.reducesinkkey1 (type: int)
@@ -4626,6 +5040,11 @@ STAGE PLANS:
                       auto parallelism: false
         Reducer 5 
             Needs Tagging: false
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true
+                notVectorizedReason: PTF Operator (PTF) not supported
+                vectorized: false
             Reduce Operator Tree:
               Select Operator
                 expressions: VALUE._col0 (type: bigint), KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col4 (type: int)
@@ -4710,6 +5129,11 @@ STAGE PLANS:
                       MultiFileSpray: false
         Reducer 6 
             Needs Tagging: false
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true
+                notVectorizedReason: PTF Operator (PTF) not supported
+                vectorized: false
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col3 (type: int), VALUE._col5 (type: double)
@@ -4738,6 +5162,11 @@ STAGE PLANS:
                     auto parallelism: false
         Reducer 7 
             Needs Tagging: false
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true
+                notVectorizedReason: PTF Operator (PTF) not supported
+                vectorized: false
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col3 (type: int), VALUE._col5 (type: double)
@@ -4947,7 +5376,7 @@ Manufacturer#5	almond antique medium spring khaki	6	8	2	2	0.4	31
 Manufacturer#5	almond antique sky peru orange	2	2	3	3	0.6	31
 Manufacturer#5	almond aquamarine dodger light gainsboro	46	46	4	4	0.8	6
 Manufacturer#5	almond azure blanched chiffon midnight	23	23	5	5	1.0	2
-PREHOOK: query: explain extended
+PREHOOK: query: explain vectorization extended
 select p_mfgr, p_name,  
 rank() over (partition by p_mfgr,p_name) as r, 
 dense_rank() over (partition by p_mfgr,p_name) as dr, 
@@ -4964,7 +5393,7 @@ from noop(on
         partition by p_mfgr,p_name  
         order by p_mfgr,p_name)
 PREHOOK: type: QUERY
-POSTHOOK: query: explain extended
+POSTHOOK: query: explain vectorization extended
 select p_mfgr, p_name,  
 rank() over (partition by p_mfgr,p_name) as r, 
 dense_rank() over (partition by p_mfgr,p_name) as dr, 
@@ -4981,6 +5410,10 @@ from noop(on
         partition by p_mfgr,p_name  
         order by p_mfgr,p_name)
 POSTHOOK: type: QUERY
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -5010,6 +5443,14 @@ STAGE PLANS:
                     value expressions: p_name (type: string), p_size (type: int)
                     auto parallelism: false
             Execution mode: vectorized
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                groupByVectorOutput: true
+                inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -5063,6 +5504,11 @@ STAGE PLANS:
               /part_orc [part_orc]
         Reducer 2 
             Needs Tagging: false
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true
+                notVectorizedReason: PTF Operator (PTF) not supported
+                vectorized: false
             Reduce Operator Tree:
               Select Operator
                 expressions: VALUE._col1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col4 (type: int)
@@ -5123,6 +5569,11 @@ STAGE PLANS:
                       auto parallelism: false
         Reducer 3 
             Needs Tagging: false
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true
+                notVectorizedReason: PTF Operator (PTF) not supported
+                vectorized: false
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col3 (type: int)
@@ -5161,6 +5612,11 @@ STAGE PLANS:
                     auto parallelism: false
         Reducer 4 
             Needs Tagging: false
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true
+                notVectorizedReason: PTF Operator (PTF) not supported
+                vectorized: false
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col3 (type: int)
@@ -5295,7 +5751,7 @@ Manufacturer#5	almond antique medium spring khaki	1	1	6	6
 Manufacturer#5	almond antique sky peru orange	1	1	2	2
 Manufacturer#5	almond aquamarine dodger light gainsboro	1	1	46	46
 Manufacturer#5	almond azure blanched chiffon midnight	1	1	23	23
-PREHOOK: query: explain extended
+PREHOOK: query: explain vectorization extended
 select p_mfgr, p_name,  
 rank() over (partition by p_mfgr order by p_name) as r, 
 dense_rank() over (partition by p_mfgr order by p_name) as dr, 
@@ -5312,7 +5768,7 @@ from noop(on
         partition by p_mfgr  
         order by p_mfgr )
 PREHOOK: type: QUERY
-POSTHOOK: query: explain extended
+POSTHOOK: query: explain vectorization extended
 select p_mfgr, p_name,  
 rank() over (partition by p_mfgr order by p_name) as r, 
 dense_rank() over (partition by p_mfgr order by p_name) as dr, 
@@ -5329,6 +5785,10 @@ from noop(on
         partition by p_mfgr  
         order by p_mfgr )
 POSTHOOK: type: QUERY
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -5359,6 +5819,14 @@ STAGE PLANS:
                     value expressions: p_name (type: string), p_size (type: int)
                     auto parallelism: false
             Execution mode: vectorized
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                groupByVectorOutput: true
+                inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -5412,6 +5880,11 @@ STAGE PLANS:
               /part_orc [part_orc]
         Reducer 2 
             Needs Tagging: false
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true
+                notVectorizedReason: PTF Operator (PTF) not supported
+                vectorized: false
             Reduce Operator Tree:
               Select Operator
                 expressions: VALUE._col1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col4 (type: int)
@@ -5449,6 +5922,11 @@ STAGE PLANS:
                     auto parallelism: false
         Reducer 3 
             Needs Tagging: false
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true
+                notVectorizedReason: PTF Operator (PTF) not supported
+                vectorized: false
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col3 (type: int)
@@ -5479,6 +5957,11 @@ STAGE PLANS:
                     auto parallelism: false
         Reducer 4 
             Needs Tagging: false
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true
+                notVectorizedReason: PTF Operator (PTF) not supported
+                vectorized: false
             Reduce Operator Tree:
               Select Operator
                 expressions: VALUE._col1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col4 (type: int)
@@ -5509,6 +5992,11 @@ STAGE PLANS:
                     auto parallelism: false
         Reducer 5 
             Needs Tagging: false
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true
+                notVectorizedReason: PTF Operator (PTF) not supported
+                vectorized: false
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col3 (type: int)
@@ -5643,7 +6131,7 @@ Manufacturer#5	almond antique medium spring khaki	2	2	6	37
 Manufacturer#5	almond antique sky peru orange	3	3	2	39
 Manufacturer#5	almond aquamarine dodger light gainsboro	4	4	46	85
 Manufacturer#5	almond azure blanched chiffon midnight	5	5	23	108
-PREHOOK: query: explain extended
+PREHOOK: query: explain vectorization extended
 select p_mfgr, p_name,  
 rank() over (partition by p_mfgr order by p_name) as r, 
 dense_rank() over (partition by p_mfgr order by p_name) as dr, 
@@ -5658,7 +6146,7 @@ from noop(on
           partition by p_mfgr 
           order by p_mfgr))
 PREHOOK: type: QUERY
-POSTHOOK: query: explain extended
+POSTHOOK: query: explain vectorization extended
 select p_mfgr, p_name,  
 rank() over (partition by p_mfgr order by p_name) as r, 
 dense_rank() over (partition by p_mfgr order by p_name) as dr, 
@@ -5673,6 +6161,10 @@ from noop(on
           partition by p_mfgr 
           order by p_mfgr))
 POSTHOOK: type: QUERY
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -5702,6 +6194,14 @@ STAGE PLANS:
                     value expressions: p_size (type: int)
                     auto parallelism: false
             Execution mode: vectorized
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                groupByVectorOutput: true
+                inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -5755,6 +6255,11 @@ STAGE PLANS:
               /part_orc [part_orc]
         Reducer 2 
             Needs Tagging: false
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true
+                notVectorizedReason: PTF Operator (PTF) not supported
+                vectorized: false
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col3 (type: int)
@@ -5792,6 +6297,11 @@ STAGE PLANS:
                     auto parallelism: false
         Reducer 3 
             Needs Tagging: false
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true
+                notVectorizedReason: PTF Operator (PTF) not supported
+                vectorized: false
             Reduce Operator Tree:
               Select Operator
                 expressions: VALUE._col1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col4 (type: int)
@@ -5829,6 +6339,11 @@ STAGE PLANS:
                     auto parallelism: false
         Reducer 4 
             Needs Tagging: false
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true
+                notVectorizedReason: PTF Operator (PTF) not supported
+                vectorized: false
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col3 (type: int)
@@ -5959,7 +6474,7 @@ Manufacturer#5	almond antique medium spring khaki	2	2	6	37
 Manufacturer#5	almond antique sky peru orange	3	3	2	39
 Manufacturer#5	almond aquamarine dodger light gainsboro	4	4	46	85
 Manufacturer#5	almond azure blanched chiffon midnight	5	5	23	108
-PREHOOK: query: explain extended
+PREHOOK: query: explain vectorization extended
 select p_mfgr, p_name,  
 rank() over (partition by p_mfgr,p_name) as r, 
 dense_rank() over (partition by p_mfgr,p_name) as dr, 
@@ -5976,7 +6491,7 @@ from noopwithmap(on
           partition by p_mfgr,p_name 
           order by p_mfgr,p_name)
 PREHOOK: type: QUERY
-POSTHOOK: query: explain extended
+POSTHOOK: query: explain vectorization extended
 select p_mfgr, p_name,  
 rank() over (partition by p_mfgr,p_name) as r, 
 dense_rank() over (partition by p_mfgr,p_name) as dr, 
@@ -5993,6 +6508,10 @@ from noopwithmap(on
           partition by p_mfgr,p_name 
           order by p_mfgr,p_name)
 POSTHOOK: type: QUERY
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -6023,6 +6542,14 @@ STAGE PLANS:
                     value expressions: p_size (type: int)
                     auto parallelism: false
             Execution mode: vectorized
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                groupByVectorOutput: true
+                inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -6076,6 +6603,11 @@ STAGE PLANS:
               /part_orc [part_orc]
         Reducer 2 
             Needs Tagging: false
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true
+                notVectorizedReason: PTF Operator (PTF) not supported
+                vectorized: false
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col3 (type: int)
@@ -6113,6 +6645,11 @@ STAGE PLANS:
                     auto parallelism: false
         Reducer 3 
             Needs Tagging: false
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true
+                notVectorizedReason: PTF Operator (PTF) not supported
+                vectorized: false
             Reduce Operator Tree:
               Select Operator
                 expressions: VALUE._col1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col4 (type: int)
@@ -6159,6 +6696,11 @@ STAGE PLANS:
                       auto parallelism: false
         Reducer 4 
             Needs Tagging: false
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true
+                notVectorizedReason: PTF Operator (PTF) not supported
+                vectorized: false
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col3 (type: int)
@@ -6190,6 +6732,11 @@ STAGE PLANS:
                     auto parallelism: false
         Reducer 5 
             Needs Tagging: false
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true
+                notVectorizedReason: PTF Operator (PTF) not supported
+                vectorized: false
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col3 (type: int)
@@ -6324,7 +6871,7 @@ Manufacturer#5	almond antique medium spring khaki	1	1	6	6
 Manufacturer#5	almond antique sky peru orange	1	1	2	2
 Manufacturer#5	almond aquamarine dodger light gainsboro	1	1	46	46
 Manufacturer#5	almond azure blanched chiffon midnight	1	1	23	23
-PREHOOK: query: explain extended
+PREHOOK: query: explain vectorization extended
 select p_mfgr, p_name,  
 rank() over (partition by p_mfgr,p_name order by p_mfgr,p_name) as r, 
 dense_rank() over (partition by p_mfgr,p_name order by p_mfgr,p_name) as dr, 
@@ -6340,7 +6887,7 @@ from noop(on
           order by p_mfgr
           ))
 PREHOOK: type: QUERY
-POSTHOOK: query: explain extended
+POSTHOOK: query: explain vectorization extended
 select p_mfgr, p_name,  
 rank() over (partition by p_mfgr,p_name order by p_mfgr,p_name) as r, 
 dense_rank() over (partition by p_mfgr,p_name order by p_mfgr,p_name) as dr, 
@@ -6356,6 +6903,10 @@ from noop(on
           order by p_mfgr
           ))
 POSTHOOK: type: QUERY
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -6385,6 +6936,14 @@ STAGE PLANS:
                     value expressions: p_size (type: int)
                     auto parallelism: false
             Execution mode: vectorized
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                groupByVectorOutput: true
+                inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -6438,6 +6997,11 @@ STAGE PLANS:
               /part_orc [part_orc]
         Reducer 2 
             Needs Tagging: false
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true
+                notVectorizedReason: PTF Operator (PTF) not supported
+                vectorized: false
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col3 (type: int)
@@ -6491,6 +7055,11 @@ STAGE PLANS:
                       auto parallelism: false
         Reducer 3 
             Needs Tagging: false
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true
+                notVectorizedReason: PTF Operator (PTF) not supported
+                vectorized: false
             Reduce Operator Tree:
               Select Operator
                 expressions: VALUE._col1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col4 (type: int)
@@ -6529,6 +7098,11 @@ STAGE PLANS:
                     auto parallelism: false
         Reducer 4 
             Needs Tagging: false
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true
+                notVectorizedReason: PTF Operator (PTF) not supported
+                vectorized: false
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col3 (type: int)
@@ -6661,7 +7235,7 @@ Manufacturer#5	almond antique medium spring khaki	1	1	6	6	6
 Manufacturer#5	almond antique sky peru orange	1	1	2	2	2
 Manufacturer#5	almond aquamarine dodger light gainsboro	1	1	46	46	46
 Manufacturer#5	almond azure blanched chiffon midnight	1	1	23	23	23
-PREHOOK: query: explain extended
+PREHOOK: query: explain vectorization extended
 select p_mfgr, p_name,  
 rank() over (partition by p_mfgr order by p_name) as r, 
 dense_rank() over (partition by p_mfgr order by p_name) as dr, 
@@ -6675,7 +7249,7 @@ from noopwithmap(on
               order by p_mfgr, p_name) 
           ))
 PREHOOK: type: QUERY
-POSTHOOK: query: explain extended
+POSTHOOK: query: explain vectorization extended
 select p_mfgr, p_name,  
 rank() over (partition by p_mfgr order by p_name) as r, 
 dense_rank() over (partition by p_mfgr order by p_name) as dr, 
@@ -6689,6 +7263,10 @@ from noopwithmap(on
               order by p_mfgr, p_name) 
           ))
 POSTHOOK: type: QUERY
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -6718,6 +7296,14 @@ STAGE PLANS:
                     value expressions: p_size (type: int)
                     auto parallelism: false
             Execution mode: vectorized
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                groupByVectorOutput: true
+                inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -6771,6 +7357,11 @@ STAGE PLANS:
               /part_orc [part_orc]
         Reducer 2 
             Needs Tagging: false
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true
+                notVectorizedReason: PTF Operator (PTF) not supported
+                vectorized: false
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col3 (type: int)
@@ -6824,6 +7415,11 @@ STAGE PLANS:
                       auto parallelism: false
         Reducer 3 
             Needs Tagging: false
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true
+                notVectorizedReason: PTF Operator (PTF) not supported
+                vectorized: false
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col3 (type: int)
@@ -6855,6 +7451,11 @@ STAGE PLANS:
                     auto parallelism: false
         Reducer 4 
             Needs Tagging: false
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true
+                notVectorizedReason: PTF Operator (PTF) not supported
+                vectorized: false
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col3 (type: int)

@@ -1144,8 +1144,14 @@ public class HiveConf extends Configuration {
         "If the bucketing/sorting properties of the table exactly match the grouping key, whether to perform \n" +
         "the group by in the mapper by using BucketizedHiveInputFormat. The only downside to this\n" +
         "is that it limits the number of mappers to the number of files."),
+    HIVE_GROUPBY_POSITION_ALIAS("hive.groupby.position.alias", false,
+        "Whether to enable using Column Position Alias in Group By"),
+    HIVE_ORDERBY_POSITION_ALIAS("hive.orderby.position.alias", true,
+        "Whether to enable using Column Position Alias in Order By"),
+    @Deprecated
     HIVE_GROUPBY_ORDERBY_POSITION_ALIAS("hive.groupby.orderby.position.alias", false,
-        "Whether to enable using Column Position Alias in Group By or Order By"),
+        "Whether to enable using Column Position Alias in Group By or Order By (deprecated).\n" +
+        "Use " + HIVE_ORDERBY_POSITION_ALIAS.varname + " or " + HIVE_GROUPBY_POSITION_ALIAS.varname + " instead"),
     HIVE_NEW_JOB_GROUPING_SET_CARDINALITY("hive.new.job.grouping.set.cardinality", 30,
         "Whether a new map-reduce job should be launched for grouping sets/rollups/cubes.\n" +
         "For a query like: select a, b, c, count(1) from T group by a, b, c with rollup;\n" +
@@ -1323,53 +1329,9 @@ public class HiveConf extends Configuration {
     HIVE_INT_TIMESTAMP_CONVERSION_IN_SECONDS("hive.int.timestamp.conversion.in.seconds", false,
         "Boolean/tinyint/smallint/int/bigint value is interpreted as milliseconds during the timestamp conversion.\n" +
         "Set this flag to true to interpret the value as seconds to be consistent with float/double." ),
-    HIVE_ORC_FILE_MEMORY_POOL("hive.exec.orc.memory.pool", 0.5f,
-        "Maximum fraction of heap that can be used by ORC file writers"),
-    HIVE_ORC_WRITE_FORMAT("hive.exec.orc.write.format", null,
-        "Define the version of the file to write. Possible values are 0.11 and 0.12.\n" +
-        "If this parameter is not defined, ORC will use the run length encoding (RLE)\n" +
-        "introduced in Hive 0.12. Any value other than 0.11 results in the 0.12 encoding."),
-    HIVE_ORC_DEFAULT_STRIPE_SIZE("hive.exec.orc.default.stripe.size",
-        64L * 1024 * 1024,
-        "Define the default ORC stripe size, in bytes."),
-    HIVE_ORC_DEFAULT_BLOCK_SIZE("hive.exec.orc.default.block.size", 256L * 1024 * 1024,
-        "Define the default file system block size for ORC files."),
 
-    HIVE_ORC_DICTIONARY_KEY_SIZE_THRESHOLD("hive.exec.orc.dictionary.key.size.threshold", 0.8f,
-        "If the number of keys in a dictionary is greater than this fraction of the total number of\n" +
-        "non-null rows, turn off dictionary encoding.  Use 1 to always use dictionary encoding."),
-    HIVE_ORC_DEFAULT_ROW_INDEX_STRIDE("hive.exec.orc.default.row.index.stride", 10000,
-        "Define the default ORC index stride in number of rows. (Stride is the number of rows\n" +
-        "an index entry represents.)"),
-    HIVE_ORC_ROW_INDEX_STRIDE_DICTIONARY_CHECK("hive.orc.row.index.stride.dictionary.check", true,
-        "If enabled dictionary check will happen after first row index stride (default 10000 rows)\n" +
-        "else dictionary check will happen before writing first stripe. In both cases, the decision\n" +
-        "to use dictionary or not will be retained thereafter."),
-    HIVE_ORC_DEFAULT_BUFFER_SIZE("hive.exec.orc.default.buffer.size", 256 * 1024,
-        "Define the default ORC buffer size, in bytes."),
     HIVE_ORC_BASE_DELTA_RATIO("hive.exec.orc.base.delta.ratio", 8, "The ratio of base writer and\n" +
         "delta writer in terms of STRIPE_SIZE and BUFFER_SIZE."),
-    HIVE_ORC_DEFAULT_BLOCK_PADDING("hive.exec.orc.default.block.padding", true,
-        "Define the default block padding, which pads stripes to the HDFS block boundaries."),
-    HIVE_ORC_BLOCK_PADDING_TOLERANCE("hive.exec.orc.block.padding.tolerance", 0.05f,
-        "Define the tolerance for block padding as a decimal fraction of stripe size (for\n" +
-        "example, the default value 0.05 is 5% of the stripe size). For the defaults of 64Mb\n" +
-        "ORC stripe and 256Mb HDFS blocks, the default block padding tolerance of 5% will\n" +
-        "reserve a maximum of 3.2Mb for padding within the 256Mb block. In that case, if the\n" +
-        "available size within the block is more than 3.2Mb, a new smaller stripe will be\n" +
-        "inserted to fit within that space. This will make sure that no stripe written will\n" +
-        "cross block boundaries and cause remote reads within a node local task."),
-    HIVE_ORC_DEFAULT_COMPRESS("hive.exec.orc.default.compress", "ZLIB", "Define the default compression codec for ORC file"),
-
-    HIVE_ORC_ENCODING_STRATEGY("hive.exec.orc.encoding.strategy", "SPEED", new StringSet("SPEED", "COMPRESSION"),
-        "Define the encoding strategy to use while writing data. Changing this will\n" +
-        "only affect the light weight encoding for integers. This flag will not\n" +
-        "change the compression level of higher level compression codec (like ZLIB)."),
-
-    HIVE_ORC_COMPRESSION_STRATEGY("hive.exec.orc.compression.strategy", "SPEED", new StringSet("SPEED", "COMPRESSION"),
-         "Define the compression strategy to use while writing data. \n" +
-         "This changes the compression level of higher level compression codec (like ZLIB)."),
-
     HIVE_ORC_SPLIT_STRATEGY("hive.exec.orc.split.strategy", "HYBRID", new StringSet("HYBRID", "BI", "ETL"),
         "This is not a user level config. BI strategy is used when the requirement is to spend less time in split generation" +
         " as opposed to query execution (split generation does not read or cache file footers)." +
@@ -1403,12 +1365,6 @@ public class HiveConf extends Configuration {
         "references for the cached object. Setting this to true can help avoid out of memory\n" +
         "issues under memory pressure (in some cases) at the cost of slight unpredictability in\n" +
         "overall query performance."),
-    HIVE_ORC_SKIP_CORRUPT_DATA("hive.exec.orc.skip.corrupt.data", false,
-        "If ORC reader encounters corrupt data, this value will be used to determine\n" +
-        "whether to skip the corrupt data or throw exception. The default behavior is to throw exception."),
-
-    HIVE_ORC_ZEROCOPY("hive.exec.orc.zerocopy", false,
-        "Use zerocopy reads with ORC. (This requires Hadoop 2.3 or later.)"),
 
     HIVE_LAZYSIMPLE_EXTENDED_BOOLEAN_LITERAL("hive.lazysimple.extended_boolean_literal", false,
         "LazySimpleSerde uses this property to determine if it treats 'T', 't', 'F', 'f',\n" +
@@ -1837,6 +1793,11 @@ public class HiveConf extends Configuration {
         "(true), and hive.exec.dynamic.partition.mode (nonstrict).\n" +
         "The default DummyTxnManager replicates pre-Hive-0.13 behavior and provides\n" +
         "no transactions."),
+    HIVE_TXN_STRICT_LOCKING_MODE("hive.txn.strict.locking.mode", true, "In strict mode non-ACID\n" +
+        "resources use standard R/W lock semantics, e.g. INSERT will acquire exclusive lock.\n" +
+        "In nonstrict mode, for non-ACID resources, INSERT will only acquire shared lock, which\n" +
+        "allows two concurrent writes to the same partition but still lets lock manager prevent\n" +
+        "DROP TABLE etc. when the table is being written to"),
     HIVE_TXN_TIMEOUT("hive.txn.timeout", "300s", new TimeValidator(TimeUnit.SECONDS),
         "time after which transactions are declared aborted if the client has not sent a heartbeat."),
     HIVE_TXN_HEARTBEAT_THREADPOOL_SIZE("hive.txn.heartbeat.threadpool.size", 5, "The number of " +
@@ -1999,7 +1960,7 @@ public class HiveConf extends Configuration {
             , "druid deep storage location."),
     DRUID_METADATA_BASE("hive.druid.metadata.base", "druid", "Default prefix for metadata tables"),
     DRUID_METADATA_DB_TYPE("hive.druid.metadata.db.type", "mysql",
-            new PatternSet("mysql", "postgres"), "Type of the metadata database."
+            new PatternSet("mysql", "postgresql"), "Type of the metadata database."
     ),
     DRUID_METADATA_DB_USERNAME("hive.druid.metadata.username", "",
             "Username to connect to Type of the metadata DB."
@@ -2887,7 +2848,12 @@ public class HiveConf extends Configuration {
     TEZ_EXEC_INPLACE_PROGRESS(
         "hive.tez.exec.inplace.progress",
         true,
-        "Updates tez job execution progress in-place in the terminal."),
+        "Updates tez job execution progress in-place in the terminal when hive-cli is used."),
+    HIVE_SERVER2_INPLACE_PROGRESS(
+        "hive.server2.in.place.progress",
+        true,
+        "Allows hive server 2 to send progress bar update information. This is currently available"
+            + " only if the execution engine is tez."),
     SPARK_EXEC_INPLACE_PROGRESS("hive.spark.exec.inplace.progress", true,
         "Updates spark job execution progress in-place in the terminal."),
     TEZ_CONTAINER_MAX_JAVA_HEAP_FRACTION("hive.tez.container.max.java.heap.fraction", 0.8f,

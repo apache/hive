@@ -208,7 +208,7 @@ stored as orc
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@store
-PREHOOK: query: explain select
+PREHOOK: query: explain vectorization select
         s_state, count(1)
  from store_sales,
  store,
@@ -220,7 +220,7 @@ PREHOOK: query: explain select
  order by s_state
  limit 100
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select
+POSTHOOK: query: explain vectorization select
         s_state, count(1)
  from store_sales,
  store,
@@ -232,6 +232,10 @@ POSTHOOK: query: explain select
  order by s_state
  limit 100
 POSTHOOK: type: QUERY
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -267,6 +271,12 @@ STAGE PLANS:
                         value expressions: _col0 (type: int)
             Execution mode: vectorized, llap
             LLAP IO: unknown
+            Map Vectorization:
+                enabled: true
+                groupByVectorOutput: true
+                allNative: true
+                usesVectorUDFAdaptor: false
+                vectorized: true
         Map 6 
             Map Operator Tree:
                 TableScan
@@ -287,6 +297,14 @@ STAGE PLANS:
                         value expressions: _col1 (type: string)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                groupByVectorOutput: true
+                inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                allNative: true
+                usesVectorUDFAdaptor: false
+                vectorized: true
         Map 7 
             Map Operator Tree:
                 TableScan
@@ -306,6 +324,14 @@ STAGE PLANS:
                         Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                groupByVectorOutput: true
+                inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                allNative: true
+                usesVectorUDFAdaptor: false
+                vectorized: true
         Reducer 2 
             Execution mode: llap
             Reduce Operator Tree:
@@ -353,6 +379,13 @@ STAGE PLANS:
                       value expressions: _col1 (type: bigint)
         Reducer 4 
             Execution mode: vectorized, llap
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                groupByVectorOutput: true
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
             Reduce Operator Tree:
               Group By Operator
                 aggregations: count(VALUE._col0)
@@ -368,6 +401,13 @@ STAGE PLANS:
                   value expressions: _col1 (type: bigint)
         Reducer 5 
             Execution mode: vectorized, llap
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                groupByVectorOutput: true
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: string), VALUE._col0 (type: bigint)

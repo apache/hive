@@ -51,4 +51,9 @@ public class CastDateToVarChar extends CastDateToString implements TruncStringOu
   public void setMaxLength(int maxLength) {
     this.maxLength = maxLength;
   }
+
+  @Override
+  public String vectorExpressionParameters() {
+    return "col " + inputColumn + ", maxLength " + maxLength;
+  }
 }

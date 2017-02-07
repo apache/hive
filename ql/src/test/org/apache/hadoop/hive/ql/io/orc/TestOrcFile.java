@@ -85,6 +85,7 @@ import org.apache.orc.ColumnStatistics;
 import org.apache.orc.DecimalColumnStatistics;
 import org.apache.orc.DoubleColumnStatistics;
 import org.apache.orc.IntegerColumnStatistics;
+import org.apache.orc.OrcConf;
 import org.apache.orc.impl.MemoryManager;
 import org.apache.orc.OrcProto;
 
@@ -247,7 +248,7 @@ public class TestOrcFile {
   public void openFileSystem () throws Exception {
     conf = new Configuration();
     if(zeroCopy) {
-      conf.setBoolean(HiveConf.ConfVars.HIVE_ORC_ZEROCOPY.varname, zeroCopy);
+      conf.setBoolean(OrcConf.USE_ZEROCOPY.getHiveConfName(), zeroCopy);
     }
     fs = FileSystem.getLocal(conf);
     testFilePath = new Path(workDir, "TestOrcFile." +
@@ -1817,7 +1818,7 @@ public class TestOrcFile {
     assertEquals(COUNT, reader.getNumberOfRows());
     /* enable zero copy record reader */
     Configuration conf = new Configuration();
-    HiveConf.setBoolVar(conf, HiveConf.ConfVars.HIVE_ORC_ZEROCOPY, true);
+    conf.setBoolean(OrcConf.USE_ZEROCOPY.getHiveConfName(), true);
     RecordReader rows = reader.rows();
     /* all tests are identical to the other seek() tests */
     OrcStruct row = null;

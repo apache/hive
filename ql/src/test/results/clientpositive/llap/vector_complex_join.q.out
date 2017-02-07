@@ -17,13 +17,17 @@ POSTHOOK: Output: default@test
 POSTHOOK: Lineage: test.a SIMPLE []
 POSTHOOK: Lineage: test.b EXPRESSION []
 _c0	_c1
-PREHOOK: query: explain
+PREHOOK: query: explain vectorization expression
 select * from alltypesorc join test where alltypesorc.cint=test.a
 PREHOOK: type: QUERY
-POSTHOOK: query: explain
+POSTHOOK: query: explain vectorization expression
 select * from alltypesorc join test where alltypesorc.cint=test.a
 POSTHOOK: type: QUERY
 Explain
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -67,6 +71,12 @@ STAGE PLANS:
                               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
             Execution mode: llap
             LLAP IO: all inputs
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                notVectorizedReason: Small Table expression for MAPJOIN operator: Data type map<int,string> of Column[_col1] not supported
+                vectorized: false
         Map 2 
             Map Operator Tree:
                 TableScan
@@ -87,6 +97,12 @@ STAGE PLANS:
                         value expressions: _col1 (type: map<int,string>)
             Execution mode: llap
             LLAP IO: all inputs
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                notVectorizedReason: Select expression for SELECT operator: Data type map<int,string> of Column[b] not supported
+                vectorized: false
 
   Stage: Stage-0
     Fetch Operator
@@ -140,13 +156,17 @@ POSTHOOK: type: QUERY
 POSTHOOK: Output: default@test2b
 POSTHOOK: Lineage: test2b.a EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 _col0
-PREHOOK: query: explain
+PREHOOK: query: explain vectorization expression
 select *  from test2b join test2a on test2b.a = test2a.a[1]
 PREHOOK: type: QUERY
-POSTHOOK: query: explain
+POSTHOOK: query: explain vectorization expression
 select *  from test2b join test2a on test2b.a = test2a.a[1]
 POSTHOOK: type: QUERY
 Explain
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -190,6 +210,12 @@ STAGE PLANS:
                               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
             Execution mode: llap
             LLAP IO: all inputs
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                notVectorizedReason: Small Table expression for MAPJOIN operator: Data type array<int> of Column[a] not supported
+                vectorized: false
         Map 2 
             Map Operator Tree:
                 TableScan
@@ -206,6 +232,12 @@ STAGE PLANS:
                       value expressions: a (type: array<int>)
             Execution mode: llap
             LLAP IO: all inputs
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                notVectorizedReason: Predicate expression for FILTER operator: Data type array<int> of Column[a] not supported
+                vectorized: false
 
   Stage: Stage-0
     Fetch Operator

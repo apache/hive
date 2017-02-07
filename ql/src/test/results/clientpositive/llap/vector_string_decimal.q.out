@@ -1,0 +1,119 @@
+PREHOOK: query: drop table orc_decimal
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table orc_decimal
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: drop table staging
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table staging
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table orc_decimal (id decimal(18,0)) stored as orc
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@orc_decimal
+POSTHOOK: query: create table orc_decimal (id decimal(18,0)) stored as orc
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@orc_decimal
+PREHOOK: query: create table staging (id decimal(18,0))
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@staging
+POSTHOOK: query: create table staging (id decimal(18,0))
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@staging
+PREHOOK: query: insert into staging values (34324.0), (100000000.0), (200000000.0), (300000000.0)
+PREHOOK: type: QUERY
+PREHOOK: Output: default@staging
+POSTHOOK: query: insert into staging values (34324.0), (100000000.0), (200000000.0), (300000000.0)
+POSTHOOK: type: QUERY
+POSTHOOK: Output: default@staging
+POSTHOOK: Lineage: staging.id EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+PREHOOK: query: insert overwrite table orc_decimal select id from staging
+PREHOOK: type: QUERY
+PREHOOK: Input: default@staging
+PREHOOK: Output: default@orc_decimal
+POSTHOOK: query: insert overwrite table orc_decimal select id from staging
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@staging
+POSTHOOK: Output: default@orc_decimal
+POSTHOOK: Lineage: orc_decimal.id SIMPLE [(staging)staging.FieldSchema(name:id, type:decimal(18,0), comment:null), ]
+PREHOOK: query: explain vectorization expression
+select * from orc_decimal where id in ('100000000', '200000000')
+PREHOOK: type: QUERY
+POSTHOOK: query: explain vectorization expression
+select * from orc_decimal where id in ('100000000', '200000000')
+POSTHOOK: type: QUERY
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: orc_decimal
+                  Statistics: Num rows: 4 Data size: 448 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: (id) IN ('100000000', '200000000') (type: boolean)
+                    Statistics: Num rows: 2 Data size: 224 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: id (type: decimal(18,0))
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 2 Data size: 224 Basic stats: COMPLETE Column stats: NONE
+                      File Output Operator
+                        compressed: false
+                        Statistics: Num rows: 2 Data size: 224 Basic stats: COMPLETE Column stats: NONE
+                        table:
+                            input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                            output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: llap
+            LLAP IO: all inputs
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                notVectorizedReason: Predicate expression for FILTER operator: Cannot vectorize IN() - casting a column is not supported. Column type is decimal(18,0) but the common type is string
+                vectorized: false
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select * from orc_decimal where id in ('100000000', '200000000')
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_decimal
+#### A masked pattern was here ####
+POSTHOOK: query: select * from orc_decimal where id in ('100000000', '200000000')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_decimal
+#### A masked pattern was here ####
+100000000
+200000000
+PREHOOK: query: drop table orc_decimal
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@orc_decimal
+PREHOOK: Output: default@orc_decimal
+POSTHOOK: query: drop table orc_decimal
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@orc_decimal
+POSTHOOK: Output: default@orc_decimal
+PREHOOK: query: drop table staging
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@staging
+PREHOOK: Output: default@staging
+POSTHOOK: query: drop table staging
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@staging
+POSTHOOK: Output: default@staging

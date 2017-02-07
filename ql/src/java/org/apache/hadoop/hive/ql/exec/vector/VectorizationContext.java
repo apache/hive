@@ -94,6 +94,7 @@ import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.*;
 import org.apache.hadoop.hive.ql.exec.vector.udf.VectorUDFAdaptor;
 import org.apache.hadoop.hive.ql.exec.vector.udf.VectorUDFArgDesc;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.optimizer.physical.Vectorizer;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.AggregationDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
@@ -563,7 +564,7 @@ public class VectorizationContext {
             } else {
               throw new HiveException(
                   "Could not vectorize expression (mode = " + mode.name() + "): " + exprDesc.toString()
-                    + " because hive.vectorized.adaptor.usage.mode=chosen "
+                    + " because hive.vectorized.adaptor.usage.mode=chosen"
                     + " and the UDF wasn't one of the chosen ones");
             }
             break;
@@ -1286,6 +1287,35 @@ public class VectorizationContext {
     return "arguments: " + Arrays.toString(args) + ", argument classes: " + argClasses.toString();
   }
 
+  private static int STACK_LENGTH_LIMIT = 15;
+
+  public static String getStackTraceAsSingleLine(Throwable e) {
+    StringBuilder sb = new StringBuilder();
+    sb.append(e);
+    sb.append(" stack trace: ");
+    StackTraceElement[] stackTrace = e.getStackTrace();
+    int length = stackTrace.length;
+    boolean isTruncated = false;
+    if (length > STACK_LENGTH_LIMIT) {
+      length = STACK_LENGTH_LIMIT;
+      isTruncated = true;
+    }
+    for (int i = 0; i < length; i++) {
+      if (i > 0) {
+        sb.append(", ");
+      }
+      sb.append(stackTrace[i]);
+    }
+    if (isTruncated) {
+      sb.append(", ...");
+    }
+
+    // Attempt to cleanup stack trace elements that vary by VM.
+    String cleaned = sb.toString().replaceAll("GeneratedConstructorAccessor[0-9]*", "GeneratedConstructorAccessor<omitted>");
+
+    return cleaned;
+  }
+
   private VectorExpression instantiateExpression(Class<?> vclass, TypeInfo returnType, Object...args)
       throws HiveException {
     VectorExpression ve = null;
@@ -1297,14 +1327,14 @@ public class VectorizationContext {
         ve = (VectorExpression) ctor.newInstance();
       } catch (Exception ex) {
         throw new HiveException("Could not instantiate " + vclass.getSimpleName() + " with 0 arguments, exception: " +
-                    StringUtils.stringifyException(ex));
+            getStackTraceAsSingleLine(ex));
       }
     } else if (numParams == argsLength) {
       try {
         ve = (VectorExpression) ctor.newInstance(args);
       } catch (Exception ex) {
           throw new HiveException("Could not instantiate " + vclass.getSimpleName() + " with " + getNewInstanceArgumentString(args) + ", exception: " +
-                      StringUtils.stringifyException(ex));
+              getStackTraceAsSingleLine(ex));
       }
     } else if (numParams == argsLength + 1) {
       // Additional argument is needed, which is the outputcolumn.
@@ -1332,7 +1362,7 @@ public class VectorizationContext {
         ve.setOutputType(returnTypeName);
       } catch (Exception ex) {
           throw new HiveException("Could not instantiate " + vclass.getSimpleName() + " with arguments " + getNewInstanceArgumentString(newArgs) + ", exception: " +
-                      StringUtils.stringifyException(ex));
+              getStackTraceAsSingleLine(ex));
       }
     }
     // Add maxLength parameter to UDFs that have CHAR or VARCHAR output.

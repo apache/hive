@@ -1,4 +1,4 @@
-PREHOOK: query: EXPLAIN 
+PREHOOK: query: EXPLAIN VECTORIZATION 
 SELECT   ctimestamp1,
          cfloat,
          cstring1,
@@ -31,7 +31,7 @@ WHERE    (((ctinyint <= cbigint)
 GROUP BY ctimestamp1, cfloat, cstring1, cboolean1, cdouble
 ORDER BY cstring1, cfloat, cdouble, ctimestamp1
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN 
+POSTHOOK: query: EXPLAIN VECTORIZATION 
 SELECT   ctimestamp1,
          cfloat,
          cstring1,
@@ -64,6 +64,10 @@ WHERE    (((ctinyint <= cbigint)
 GROUP BY ctimestamp1, cfloat, cstring1, cboolean1, cdouble
 ORDER BY cstring1, cfloat, cdouble, ctimestamp1
 POSTHOOK: type: QUERY
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -101,7 +105,20 @@ STAGE PLANS:
                           Statistics: Num rows: 606 Data size: 18603 Basic stats: COMPLETE Column stats: NONE
                           value expressions: _col5 (type: struct<count:bigint,sum:double,variance:double>), _col6 (type: float), _col7 (type: struct<count:bigint,sum:double,variance:double>), _col8 (type: bigint), _col9 (type: struct<count:bigint,sum:double,variance:double>), _col10 (type: struct<count:bigint,sum:double,variance:double>)
             Execution mode: vectorized
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                groupByVectorOutput: false
+                inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
         Reducer 2 
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true
+                notVectorizedReason: Aggregation Function UDF stddev_samp parameter expression for GROUPBY operator: Data type struct<count:bigint,sum:double,variance:double> of Column[VALUE._col0] not supported
+                vectorized: false
             Reduce Operator Tree:
               Group By Operator
                 aggregations: stddev_samp(VALUE._col0), max(VALUE._col1), stddev_pop(VALUE._col2), count(VALUE._col3), var_pop(VALUE._col4), var_samp(VALUE._col5)
@@ -120,6 +137,13 @@ STAGE PLANS:
                     value expressions: _col3 (type: boolean), _col5 (type: double), _col6 (type: double), _col7 (type: double), _col8 (type: float), _col9 (type: float), _col10 (type: float), _col11 (type: float), _col12 (type: double), _col13 (type: double), _col14 (type: bigint), _col15 (type: double), _col16 (type: double), _col17 (type: double), _col18 (type: double), _col19 (type: double), _col20 (type: double), _col21 (type: double)
         Reducer 3 
             Execution mode: vectorized
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true
+                groupByVectorOutput: true
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey3 (type: timestamp), KEY.reducesinkkey1 (type: float), KEY.reducesinkkey0 (type: string), VALUE._col0 (type: boolean), KEY.reducesinkkey2 (type: double), VALUE._col1 (type: double), VALUE._col2 (type: double), VALUE._col3 (type: double), VALUE._col4 (type: float), VALUE._col5 (type: float), VALUE._col6 (type: float), VALUE._col7 (type: float), VALUE._col8 (type: double), VALUE._col9 (type: double), VALUE._col10 (type: bigint), VALUE._col11 (type: double), VALUE._col12 (type: double), VALUE._col13 (type: double), VALUE._col14 (type: double), VALUE._col15 (type: double), VALUE._col16 (type: double), VALUE._col17 (type: double)

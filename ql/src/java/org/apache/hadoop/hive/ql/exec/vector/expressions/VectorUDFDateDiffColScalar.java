@@ -28,6 +28,7 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.serde2.io.DateWritable;
 import org.apache.hadoop.io.Text;
 
+import java.nio.charset.StandardCharsets;
 import java.sql.Date;
 import java.sql.Timestamp;
 import java.text.ParseException;
@@ -40,7 +41,7 @@ public class VectorUDFDateDiffColScalar extends VectorExpression {
   private int outputColumn;
   private long longValue;
   private Timestamp timestampValue;
-  private byte[] stringValue;
+  private byte[] bytesValue;
   private transient SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
   private transient final Text text = new Text();
   private int baseDate;
@@ -56,7 +57,7 @@ public class VectorUDFDateDiffColScalar extends VectorExpression {
     } else if (object instanceof Timestamp) {
       this.timestampValue = (Timestamp) object;
     } else if (object instanceof byte []) {
-      this.stringValue = (byte []) object;
+      this.bytesValue = (byte []) object;
     } else {
       throw new RuntimeException("Unexpected scalar object " + object.getClass().getName() + " " + object.toString());
     }
@@ -102,7 +103,7 @@ public class VectorUDFDateDiffColScalar extends VectorExpression {
       case CHAR:
       case VARCHAR:
         try {
-          date.setTime(formatter.parse(new String(stringValue, "UTF-8")).getTime());
+          date.setTime(formatter.parse(new String(bytesValue, "UTF-8")).getTime());
           baseDate = DateWritable.dateToDays(date);
           break;
         } catch (Exception e) {
@@ -291,11 +292,16 @@ public class VectorUDFDateDiffColScalar extends VectorExpression {
   }
 
   public byte[] getStringValue() {
-    return stringValue;
+    return bytesValue;
   }
 
-  public void setStringValue(byte[] stringValue) {
-    this.stringValue = stringValue;
+  public void setStringValue(byte[] bytesValue) {
+    this.bytesValue = bytesValue;
+  }
+
+  @Override
+  public String vectorExpressionParameters() {
+    return "col " + colNum + ", val " + displayUtf8Bytes(bytesValue);
   }
 
   @Override

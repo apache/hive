@@ -45,8 +45,17 @@ import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
  */
 public class VectorMapJoinOuterLongOperator extends VectorMapJoinOuterGenerateResultOperator {
   private static final long serialVersionUID = 1L;
-  private static final Logger LOG = LoggerFactory.getLogger(VectorMapJoinOuterLongOperator.class.getName());
+
+  //------------------------------------------------------------------------------------------------
+
   private static final String CLASS_NAME = VectorMapJoinOuterLongOperator.class.getName();
+  private static final Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
+
+  protected String getLoggingPrefix() {
+    return super.getLoggingPrefix(CLASS_NAME);
+  }
+
+  //------------------------------------------------------------------------------------------------
 
   // (none)
 

@@ -196,10 +196,11 @@
                   <exclude>com.sun.jersey.contribs:*</exclude>
                   <exclude>org.eclipse.jetty.aggregate:*</exclude>
                   <exclude>org.tukaani:*</exclude>
-                  <exclude>org.iq80.snappy:*</exclude>
+                  <exclude>io.airlift:*</exclude>
                   <exclude>org.apache.velocity:*</exclude>
                   <exclude>net.sf.jpam:*</exclude>
                   <exclude>org.apache.avro:*</exclude>
+                  <exclude>org.apache.orc:*</exclude>
                   <exclude>net.sf.opencsv:*</exclude>
                   <exclude>org.antlr:*</exclude>
                   <exclude>org.slf4j:slf4j-log4j12</exclude>

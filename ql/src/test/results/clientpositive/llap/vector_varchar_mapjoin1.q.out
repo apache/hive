@@ -124,10 +124,14 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@varchar_join1_str_orc
 POSTHOOK: Lineage: varchar_join1_str_orc.c1 SIMPLE [(varchar_join1_str)varchar_join1_str.FieldSchema(name:c1, type:int, comment:null), ]
 POSTHOOK: Lineage: varchar_join1_str_orc.c2 SIMPLE [(varchar_join1_str)varchar_join1_str.FieldSchema(name:c2, type:string, comment:null), ]
-PREHOOK: query: explain select * from varchar_join1_vc1_orc a join varchar_join1_vc1_orc b on (a.c2 = b.c2) order by a.c1
+PREHOOK: query: explain vectorization select * from varchar_join1_vc1_orc a join varchar_join1_vc1_orc b on (a.c2 = b.c2) order by a.c1
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select * from varchar_join1_vc1_orc a join varchar_join1_vc1_orc b on (a.c2 = b.c2) order by a.c1
+POSTHOOK: query: explain vectorization select * from varchar_join1_vc1_orc a join varchar_join1_vc1_orc b on (a.c2 = b.c2) order by a.c1
 POSTHOOK: type: QUERY
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -170,6 +174,14 @@ STAGE PLANS:
                           value expressions: _col1 (type: varchar(10)), _col2 (type: int), _col3 (type: varchar(10))
             Execution mode: vectorized, llap
             LLAP IO: all inputs
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                groupByVectorOutput: true
+                inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
         Map 3 
             Map Operator Tree:
                 TableScan
@@ -190,8 +202,23 @@ STAGE PLANS:
                         value expressions: _col0 (type: int)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                groupByVectorOutput: true
+                inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                allNative: true
+                usesVectorUDFAdaptor: false
+                vectorized: true
         Reducer 2 
             Execution mode: vectorized, llap
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                groupByVectorOutput: true
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: int), VALUE._col0 (type: varchar(10)), VALUE._col1 (type: int), VALUE._col2 (type: varchar(10))
@@ -222,10 +249,14 @@ POSTHOOK: Input: default@varchar_join1_vc1_orc
 1	abc	1	abc
 2	abc 	2	abc 
 3	 abc	3	 abc
-PREHOOK: query: explain select * from varchar_join1_vc1_orc a join varchar_join1_vc2_orc b on (a.c2 = b.c2) order by a.c1
+PREHOOK: query: explain vectorization select * from varchar_join1_vc1_orc a join varchar_join1_vc2_orc b on (a.c2 = b.c2) order by a.c1
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select * from varchar_join1_vc1_orc a join varchar_join1_vc2_orc b on (a.c2 = b.c2) order by a.c1
+POSTHOOK: query: explain vectorization select * from varchar_join1_vc1_orc a join varchar_join1_vc2_orc b on (a.c2 = b.c2) order by a.c1
 POSTHOOK: type: QUERY
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -268,6 +299,14 @@ STAGE PLANS:
                           value expressions: _col1 (type: varchar(10)), _col2 (type: int), _col3 (type: varchar(20))
             Execution mode: vectorized, llap
             LLAP IO: all inputs
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                groupByVectorOutput: true
+                inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
         Map 3 
             Map Operator Tree:
                 TableScan
@@ -288,8 +327,23 @@ STAGE PLANS:
                         value expressions: _col0 (type: int)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                groupByVectorOutput: true
+                inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                allNative: true
+                usesVectorUDFAdaptor: false
+                vectorized: true
         Reducer 2 
             Execution mode: vectorized, llap
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                groupByVectorOutput: true
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: int), VALUE._col0 (type: varchar(10)), VALUE._col1 (type: int), VALUE._col2 (type: varchar(20))
@@ -322,10 +376,14 @@ POSTHOOK: Input: default@varchar_join1_vc2_orc
 1	abc	1	abc
 2	abc 	2	abc 
 3	 abc	3	 abc
-PREHOOK: query: explain select * from varchar_join1_vc1_orc a join varchar_join1_str_orc b on (a.c2 = b.c2) order by a.c1
+PREHOOK: query: explain vectorization select * from varchar_join1_vc1_orc a join varchar_join1_str_orc b on (a.c2 = b.c2) order by a.c1
 PREHOOK: type: QUERY
-POSTHOOK: query: explain select * from varchar_join1_vc1_orc a join varchar_join1_str_orc b on (a.c2 = b.c2) order by a.c1
+POSTHOOK: query: explain vectorization select * from varchar_join1_vc1_orc a join varchar_join1_str_orc b on (a.c2 = b.c2) order by a.c1
 POSTHOOK: type: QUERY
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -368,6 +426,14 @@ STAGE PLANS:
                           value expressions: _col1 (type: varchar(10)), _col2 (type: int), _col3 (type: string)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                groupByVectorOutput: true
+                inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
         Map 3 
             Map Operator Tree:
                 TableScan
@@ -388,8 +454,23 @@ STAGE PLANS:
                         value expressions: _col0 (type: int)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                groupByVectorOutput: true
+                inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                allNative: true
+                usesVectorUDFAdaptor: false
+                vectorized: true
         Reducer 2 
             Execution mode: vectorized, llap
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                groupByVectorOutput: true
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: int), VALUE._col0 (type: varchar(10)), VALUE._col1 (type: int), VALUE._col2 (type: string)

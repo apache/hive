@@ -20,6 +20,7 @@ import org.apache.calcite.plan.RelOptCluster;
 import org.apache.calcite.plan.RelOptRule;
 import org.apache.calcite.plan.RelOptRuleCall;
 import org.apache.calcite.plan.RelOptUtil;
+import org.apache.calcite.plan.hep.HepRelVertex;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.core.Aggregate;
 import org.apache.calcite.rel.core.Join;
@@ -37,6 +38,7 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Lists;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -84,6 +86,11 @@ public class HiveSemiJoinRule extends RelOptRule {
       // By the way, neither a super-set nor a sub-set would work.
       return;
     }
+    if(join.getJoinType() == JoinRelType.LEFT) {
+      // since for LEFT join we are only interested in rows from LEFT we can get rid of right side
+      call.transformTo(call.builder().push(left).project(project.getProjects(), project.getRowType().getFieldNames()).build());
+      return;
+    }
     if (join.getJoinType() != JoinRelType.INNER) {
       return;
     }
@@ -102,7 +109,23 @@ public class HiveSemiJoinRule extends RelOptRule {
     final RexNode newCondition =
         RelOptUtil.createEquiJoinCondition(left, joinInfo.leftKeys, newRight,
             newRightKeys, rexBuilder);
-    RelNode semi = call.builder().push(left).push(aggregate.getInput()).semiJoin(newCondition).build();
+
+    RelNode semi = null;
+    //HIVE-15458: we need to add a Project on top of Join since SemiJoin with Join as it's right input
+    // is not expected further down the pipeline. see jira for more details
+    if(aggregate.getInput() instanceof HepRelVertex
+          && ((HepRelVertex)aggregate.getInput()).getCurrentRel() instanceof  Join) {
+        Join rightJoin = (Join)(((HepRelVertex)aggregate.getInput()).getCurrentRel());
+        List<RexNode> projects = new ArrayList<>();
+        for(int i=0; i<rightJoin.getRowType().getFieldCount(); i++){
+          projects.add(rexBuilder.makeInputRef(rightJoin, i));
+        }
+       RelNode topProject =  call.builder().push(rightJoin).project(projects, rightJoin.getRowType().getFieldNames(), true).build();
+      semi = call.builder().push(left).push(topProject).semiJoin(newCondition).build();
+    }
+    else {
+      semi = call.builder().push(left).push(aggregate.getInput()).semiJoin(newCondition).build();
+    }
     call.transformTo(call.builder().push(semi).project(project.getProjects(), project.getRowType().getFieldNames()).build());
   }
 }

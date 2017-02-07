@@ -49,11 +49,11 @@ selectClause
 @init { gParent.pushMsg("select clause", state); }
 @after { gParent.popMsg(state); }
     :
-    KW_SELECT hintClause? (((KW_ALL | dist=KW_DISTINCT)? selectList)
+    KW_SELECT QUERY_HINT? (((KW_ALL | dist=KW_DISTINCT)? selectList)
                           | (transform=KW_TRANSFORM selectTrfmClause))
-     -> {$transform == null && $dist == null}? ^(TOK_SELECT hintClause? selectList)
-     -> {$transform == null && $dist != null}? ^(TOK_SELECTDI hintClause? selectList)
-     -> ^(TOK_SELECT hintClause? ^(TOK_SELEXPR selectTrfmClause) )
+     -> {$transform == null && $dist == null}? ^(TOK_SELECT QUERY_HINT? selectList)
+     -> {$transform == null && $dist != null}? ^(TOK_SELECTDI QUERY_HINT? selectList)
+     -> ^(TOK_SELECT QUERY_HINT? ^(TOK_SELEXPR selectTrfmClause) )
     |
     trfmClause  ->^(TOK_SELECT ^(TOK_SELEXPR trfmClause))
     ;
@@ -75,49 +75,6 @@ selectTrfmClause
     ( KW_AS ((LPAREN (aliasList | columnNameTypeList) RPAREN) | (aliasList | columnNameTypeList)))?
     outSerde=rowFormat outRec=recordReader
     -> ^(TOK_TRANSFORM selectExpressionList $inSerde $inRec StringLiteral $outSerde $outRec aliasList? columnNameTypeList?)
-    ;
-
-hintClause
-@init { gParent.pushMsg("hint clause", state); }
-@after { gParent.popMsg(state); }
-    :
-    DIVIDE STAR PLUS hintList STAR DIVIDE -> ^(TOK_HINTLIST hintList)
-    ;
-
-hintList
-@init { gParent.pushMsg("hint list", state); }
-@after { gParent.popMsg(state); }
-    :
-    hintItem (COMMA hintItem)* -> hintItem+
-    ;
-
-hintItem
-@init { gParent.pushMsg("hint item", state); }
-@after { gParent.popMsg(state); }
-    :
-    hintName (LPAREN hintArgs RPAREN)? -> ^(TOK_HINT hintName hintArgs?)
-    ;
-
-hintName
-@init { gParent.pushMsg("hint name", state); }
-@after { gParent.popMsg(state); }
-    :
-    KW_MAPJOIN -> TOK_MAPJOIN
-    | KW_STREAMTABLE -> TOK_STREAMTABLE
-    ;
-
-hintArgs
-@init { gParent.pushMsg("hint arguments", state); }
-@after { gParent.popMsg(state); }
-    :
-    hintArgName (COMMA hintArgName)* -> ^(TOK_HINTARGLIST hintArgName+)
-    ;
-
-hintArgName
-@init { gParent.pushMsg("hint argument name", state); }
-@after { gParent.popMsg(state); }
-    :
-    identifier
     ;
 
 selectItem
@@ -220,4 +177,3 @@ window_frame_boundary
   KW_CURRENT KW_ROW  -> ^(KW_CURRENT) |
   Number (d=KW_PRECEDING | d=KW_FOLLOWING ) -> ^($d Number)
 ;   
-

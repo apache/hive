@@ -171,6 +171,11 @@ public class <ClassName> extends VectorExpression {
   }
 
   @Override
+  public String vectorExpressionParameters() {
+    return "col " + colNum + ", left " + leftValue.toString() + ", right " + rightValue.toString();
+  }
+
+  @Override
   public VectorExpressionDescriptor.Descriptor getDescriptor() {
     return (new VectorExpressionDescriptor.Builder())
         .setMode(

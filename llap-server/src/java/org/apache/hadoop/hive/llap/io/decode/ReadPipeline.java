@@ -22,10 +22,10 @@ import java.util.concurrent.Callable;
 import org.apache.hadoop.hive.llap.ConsumerFeedback;
 import org.apache.hadoop.hive.llap.io.api.impl.ColumnVectorBatch;
 import org.apache.orc.TypeDescription;
+import org.apache.orc.impl.SchemaEvolution;
 
 public interface ReadPipeline extends ConsumerFeedback<ColumnVectorBatch> {
   public Callable<Void> getReadCallable();
-  TypeDescription getFileSchema(); // TODO: this is ORC-specific and should be removed
-  TypeDescription getReaderSchema();
+  SchemaEvolution getSchemaEvolution();
   boolean[] getIncludedColumns();
 }

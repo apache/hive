@@ -148,6 +148,14 @@ module TFetchOrientation
   VALID_VALUES = Set.new([FETCH_NEXT, FETCH_PRIOR, FETCH_RELATIVE, FETCH_ABSOLUTE, FETCH_FIRST, FETCH_LAST]).freeze
 end
 
+module TJobExecutionStatus
+  IN_PROGRESS = 0
+  COMPLETE = 1
+  NOT_AVAILABLE = 2
+  VALUE_MAP = {0 => "IN_PROGRESS", 1 => "COMPLETE", 2 => "NOT_AVAILABLE"}
+  VALID_VALUES = Set.new([IN_PROGRESS, COMPLETE, NOT_AVAILABLE]).freeze
+end
+
 class TTypeQualifierValue < ::Thrift::Union
   include ::Thrift::Struct_Union
   class << self
@@ -1548,9 +1556,11 @@ end
 class TGetOperationStatusReq
   include ::Thrift::Struct, ::Thrift::Struct_Union
   OPERATIONHANDLE = 1
+  GETPROGRESSUPDATE = 2
 
   FIELDS = {
-    OPERATIONHANDLE => {:type => ::Thrift::Types::STRUCT, :name => 'operationHandle', :class => ::TOperationHandle}
+    OPERATIONHANDLE => {:type => ::Thrift::Types::STRUCT, :name => 'operationHandle', :class => ::TOperationHandle},
+    GETPROGRESSUPDATE => {:type => ::Thrift::Types::BOOL, :name => 'getProgressUpdate', :optional => true}
   }
 
   def struct_fields; FIELDS; end
@@ -1573,6 +1583,7 @@ class TGetOperationStatusResp
   OPERATIONSTARTED = 7
   OPERATIONCOMPLETED = 8
   HASRESULTSET = 9
+  PROGRESSUPDATERESPONSE = 10
 
   FIELDS = {
     STATUS => {:type => ::Thrift::Types::STRUCT, :name => 'status', :class => ::TStatus},
@@ -1583,7 +1594,8 @@ class TGetOperationStatusResp
     TASKSTATUS => {:type => ::Thrift::Types::STRING, :name => 'taskStatus', :optional => true},
     OPERATIONSTARTED => {:type => ::Thrift::Types::I64, :name => 'operationStarted', :optional => true},
     OPERATIONCOMPLETED => {:type => ::Thrift::Types::I64, :name => 'operationCompleted', :optional => true},
-    HASRESULTSET => {:type => ::Thrift::Types::BOOL, :name => 'hasResultSet', :optional => true}
+    HASRESULTSET => {:type => ::Thrift::Types::BOOL, :name => 'hasResultSet', :optional => true},
+    PROGRESSUPDATERESPONSE => {:type => ::Thrift::Types::STRUCT, :name => 'progressUpdateResponse', :class => ::TProgressUpdateResp, :optional => true}
   }
 
   def struct_fields; FIELDS; end
@@ -1862,6 +1874,41 @@ class TRenewDelegationTokenResp
 
   def validate
     raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field status is unset!') unless @status
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class TProgressUpdateResp
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  HEADERNAMES = 1
+  ROWS = 2
+  PROGRESSEDPERCENTAGE = 3
+  STATUS = 4
+  FOOTERSUMMARY = 5
+  STARTTIME = 6
+
+  FIELDS = {
+    HEADERNAMES => {:type => ::Thrift::Types::LIST, :name => 'headerNames', :element => {:type => ::Thrift::Types::STRING}},
+    ROWS => {:type => ::Thrift::Types::LIST, :name => 'rows', :element => {:type => ::Thrift::Types::LIST, :element => {:type => ::Thrift::Types::STRING}}},
+    PROGRESSEDPERCENTAGE => {:type => ::Thrift::Types::DOUBLE, :name => 'progressedPercentage'},
+    STATUS => {:type => ::Thrift::Types::I32, :name => 'status', :enum_class => ::TJobExecutionStatus},
+    FOOTERSUMMARY => {:type => ::Thrift::Types::STRING, :name => 'footerSummary'},
+    STARTTIME => {:type => ::Thrift::Types::I64, :name => 'startTime'}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field headerNames is unset!') unless @headerNames
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field rows is unset!') unless @rows
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field progressedPercentage is unset!') unless @progressedPercentage
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field status is unset!') unless @status
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field footerSummary is unset!') unless @footerSummary
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field startTime is unset!') unless @startTime
+    unless @status.nil? || ::TJobExecutionStatus::VALID_VALUES.include?(@status)
+      raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Invalid value of field status!')
+    end
   end
 
   ::Thrift::Struct.generate_accessors self

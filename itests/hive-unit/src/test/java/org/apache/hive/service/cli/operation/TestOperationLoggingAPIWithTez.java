@@ -50,7 +50,7 @@ public class TestOperationLoggingAPIWithTez extends OperationLoggingAPITestBase 
       "<PERFLOG method=compile from=org.apache.hadoop.hive.ql.Driver>",
       "<PERFLOG method=parse from=org.apache.hadoop.hive.ql.Driver>",
       "<PERFLOG method=Driver.run from=org.apache.hadoop.hive.ql.Driver>",
-      "from=org.apache.hadoop.hive.ql.exec.tez.TezJobMonitor",
+      "from=org.apache.hadoop.hive.ql.exec.tez.monitoring.TezJobMonitor",
       "org.apache.tez.common.counters.DAGCounter",
       "NUM_SUCCEEDED_TASKS",
       "TOTAL_LAUNCHED_TASKS",

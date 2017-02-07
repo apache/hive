@@ -27,6 +27,7 @@ import org.apache.hadoop.hive.llap.io.api.impl.ColumnVectorBatch;
 import org.apache.hadoop.hive.llap.io.api.impl.LlapIoImpl;
 import org.apache.hadoop.hive.llap.io.metadata.ConsumerFileMetadata;
 import org.apache.hadoop.hive.llap.io.metadata.ConsumerStripeMetadata;
+import org.apache.hadoop.hive.llap.io.metadata.OrcStripeMetadata;
 import org.apache.hadoop.hive.llap.metrics.LlapDaemonIOMetrics;
 import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
@@ -47,13 +48,13 @@ import org.apache.hadoop.hive.ql.io.orc.encoded.EncodedTreeReaderFactory.Settabl
 import org.apache.hadoop.hive.ql.io.orc.encoded.OrcBatchKey;
 import org.apache.hadoop.hive.ql.io.orc.encoded.Reader.OrcEncodedColumnBatch;
 import org.apache.hadoop.hive.ql.io.orc.RecordReaderImpl;
-import org.apache.orc.OrcUtils;
 import org.apache.orc.TypeDescription;
-import org.apache.orc.impl.PhysicalFsWriter;
+import org.apache.orc.impl.SchemaEvolution;
 import org.apache.orc.impl.TreeReaderFactory;
 import org.apache.orc.impl.TreeReaderFactory.StructTreeReader;
 import org.apache.orc.impl.TreeReaderFactory.TreeReader;
 import org.apache.orc.OrcProto;
+import org.apache.orc.impl.WriterImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -71,7 +72,7 @@ public class OrcEncodedDataConsumer
   private final boolean skipCorrupt; // TODO: get rid of this
   private final QueryFragmentCounters counters;
   private boolean[] includedColumns;
-  private TypeDescription readerSchema;
+  private SchemaEvolution evolution;
 
   public OrcEncodedDataConsumer(
       Consumer<ColumnVectorBatch> consumer, int colCount, boolean skipCorrupt,
@@ -86,7 +87,7 @@ public class OrcEncodedDataConsumer
     assert fileMetadata == null;
     fileMetadata = f;
     stripes = new ArrayList<>(f.getStripeCount());
-    codec = PhysicalFsWriter.createCodec(f.getCompressionKind());
+    codec = WriterImpl.createCodec(fileMetadata.getCompressionKind());
   }
 
   public void setStripeMetadata(ConsumerStripeMetadata m) {
@@ -124,9 +125,13 @@ public class OrcEncodedDataConsumer
 
       if (columnReaders == null || !sameStripe) {
         int[] columnMapping = new int[schema.getChildren().size()];
+        TreeReaderFactory.Context context =
+            new TreeReaderFactory.ReaderContext()
+                .setSchemaEvolution(evolution)
+                .writerTimeZone(stripeMetadata.getWriterTimezone())
+                .skipCorrupt(skipCorrupt);
         StructTreeReader treeReader = EncodedTreeReaderFactory.createRootTreeReader(
-            schema, stripeMetadata.getEncodings(), batch, codec, skipCorrupt,
-            stripeMetadata.getWriterTimezone(), columnMapping);
+            schema, stripeMetadata.getEncodings(), batch, codec, context, columnMapping);
         this.columnReaders = treeReader.getChildReaders();
         this.columnMapping = Arrays.copyOf(columnMapping, columnReaders.length);
         positionInStreams(columnReaders, batch, stripeMetadata);
@@ -295,11 +300,6 @@ public class OrcEncodedDataConsumer
   }
 
   @Override
-  public TypeDescription getFileSchema() {
-    return OrcUtils.convertTypeFromProtobuf(fileMetadata.getTypes(), 0);
-  }
-
-  @Override
   public boolean[] getIncludedColumns() {
     return includedColumns;
   }
@@ -308,11 +308,11 @@ public class OrcEncodedDataConsumer
     this.includedColumns = includedColumns;
   }
 
-  public void setReaderSchema(TypeDescription readerSchema) {
-    this.readerSchema = readerSchema;
+  public void setSchemaEvolution(SchemaEvolution evolution) {
+    this.evolution = evolution;
   }
 
-  public TypeDescription getReaderSchema() {
-    return readerSchema;
+  public SchemaEvolution getSchemaEvolution() {
+    return evolution;
   }
 }

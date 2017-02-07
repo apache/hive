@@ -163,16 +163,20 @@ POSTHOOK: Lineage: customer_demographics.cd_gender SIMPLE [(customer_demographic
 POSTHOOK: Lineage: customer_demographics.cd_marital_status SIMPLE [(customer_demographics_txt)customer_demographics_txt.FieldSchema(name:cd_marital_status, type:string, comment:null), ]
 POSTHOOK: Lineage: customer_demographics.cd_purchase_estimate SIMPLE [(customer_demographics_txt)customer_demographics_txt.FieldSchema(name:cd_purchase_estimate, type:int, comment:null), ]
 Warning: Map Join MAPJOIN[15][bigTable=store_sales] in task 'Stage-2:MAPRED' is a cross product
-PREHOOK: query: explain
+PREHOOK: query: explain vectorization expression
 select count(1) from customer_demographics,store_sales
 where ((customer_demographics.cd_demo_sk = store_sales.ss_cdemo_sk and customer_demographics.cd_marital_status = 'M') or
        (customer_demographics.cd_demo_sk = store_sales.ss_cdemo_sk and customer_demographics.cd_marital_status = 'U'))
 PREHOOK: type: QUERY
-POSTHOOK: query: explain
+POSTHOOK: query: explain vectorization expression
 select count(1) from customer_demographics,store_sales
 where ((customer_demographics.cd_demo_sk = store_sales.ss_cdemo_sk and customer_demographics.cd_marital_status = 'M') or
        (customer_demographics.cd_demo_sk = store_sales.ss_cdemo_sk and customer_demographics.cd_marital_status = 'U'))
 POSTHOOK: type: QUERY
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
 STAGE DEPENDENCIES:
   Stage-5 is a root stage
   Stage-2 depends on stages: Stage-5
@@ -201,34 +205,77 @@ STAGE PLANS:
           TableScan
             alias: store_sales
             Statistics: Num rows: 1000 Data size: 88276 Basic stats: COMPLETE Column stats: NONE
+            TableScan Vectorization:
+                native: true
+                projectedOutputColumns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22]
             Map Join Operator
               condition map:
                    Inner Join 0 to 1
               keys:
                 0 
                 1 
+              Map Join Vectorization:
+                  className: VectorMapJoinOperator
+                  native: false
+                  nativeConditionsMet: hive.mapjoin.optimized.hashtable IS true, hive.vectorized.execution.mapjoin.native.enabled IS true, One MapJoin Condition IS true, No nullsafe IS true, Small table vectorizes IS true, Optimized Table and Supports Key Types IS true
+                  nativeConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false
               outputColumnNames: _col0, _col2, _col16
               Statistics: Num rows: 200000 Data size: 92055200 Basic stats: COMPLETE Column stats: NONE
               Filter Operator
+                Filter Vectorization:
+                    className: VectorFilterOperator
+                    native: true
+                    predicateExpression: FilterExprOrExpr(children: FilterExprAndExpr(children: FilterLongColEqualLongColumn(col 0, col 2) -> boolean, FilterStringGroupColEqualStringScalar(col 1, val M) -> boolean) -> boolean, FilterExprAndExpr(children: FilterLongColEqualLongColumn(col 0, col 2) -> boolean, FilterStringGroupColEqualStringScalar(col 1, val U) -> boolean) -> boolean) -> boolean
                 predicate: (((_col0 = _col16) and (_col2 = 'M')) or ((_col0 = _col16) and (_col2 = 'U'))) (type: boolean)
                 Statistics: Num rows: 100000 Data size: 46027600 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
+                  Select Vectorization:
+                      className: VectorSelectOperator
+                      native: true
+                      projectedOutputColumns: []
                   Statistics: Num rows: 100000 Data size: 46027600 Basic stats: COMPLETE Column stats: NONE
                   Group By Operator
                     aggregations: count(1)
+                    Group By Vectorization:
+                        aggregators: VectorUDAFCount(ConstantVectorExpression(val 1) -> 3:long) -> bigint
+                        className: VectorGroupByOperator
+                        vectorOutput: true
+                        native: false
+                        projectedOutputColumns: [0]
                     mode: hash
                     outputColumnNames: _col0
                     Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       sort order: 
+                      Reduce Sink Vectorization:
+                          className: VectorReduceSinkOperator
+                          native: false
+                          nativeConditionsMet: Not ACID UPDATE or DELETE IS true, No buckets IS true, No TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                          nativeConditionsNotMet: hive.vectorized.execution.reducesink.new.enabled IS false, hive.execution.engine mr IN [tez, spark] IS false, Uniform Hash IS false
                       Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                       value expressions: _col0 (type: bigint)
       Execution mode: vectorized
+      Map Vectorization:
+          enabled: true
+          enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+          groupByVectorOutput: true
+          inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+          allNative: false
+          usesVectorUDFAdaptor: false
+          vectorized: true
       Local Work:
         Map Reduce Local Work
+      Reduce Vectorization:
+          enabled: false
+          enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true
+          enableConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false
       Reduce Operator Tree:
         Group By Operator
           aggregations: count(VALUE._col0)
+          Group By Vectorization:
+              vectorOutput: false
+              native: false
+              projectedOutputColumns: null
           mode: mergepartial
           outputColumnNames: _col0
           Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE

@@ -22,6 +22,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 import java.util.TreeMap;
 
 import org.apache.hadoop.fs.Path;
@@ -30,14 +31,17 @@ import org.apache.hadoop.hive.ql.exec.ListSinkOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.OperatorFactory;
 import org.apache.hadoop.hive.ql.parse.SplitSample;
+import org.apache.hadoop.hive.ql.plan.BaseWork.BaseExplainVectorization;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
+import org.apache.hadoop.hive.ql.plan.Explain.Vectorization;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 
 /**
  * FetchWork.
  *
  */
-@Explain(displayName = "Fetch Operator", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
+@Explain(displayName = "Fetch Operator", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED },
+    vectorization = Vectorization.SUMMARY_PATH)
 public class FetchWork implements Serializable {
   private static final long serialVersionUID = 1L;
 
@@ -320,5 +324,44 @@ public class FetchWork implements Serializable {
     }
 
     return ret;
+  }
+
+  // -----------------------------------------------------------------------------------------------
+
+  private boolean vectorizationExamined;
+
+  public void setVectorizationExamined(boolean vectorizationExamined) {
+    this.vectorizationExamined = vectorizationExamined;
+  }
+
+  public boolean getVectorizationExamined() {
+    return vectorizationExamined;
+  }
+
+  public class FetchExplainVectorization {
+
+    private final FetchWork fetchWork;
+
+    public FetchExplainVectorization(FetchWork fetchWork) {
+      this.fetchWork = fetchWork;
+    }
+
+    @Explain(vectorization = Vectorization.SUMMARY, displayName = "enabled", explainLevels = { Level.DEFAULT, Level.EXTENDED })
+    public boolean enabled() {
+      return false;
+    }
+
+    @Explain(vectorization = Vectorization.SUMMARY, displayName = "enabledConditionsNotMet", explainLevels = { Level.DEFAULT, Level.EXTENDED })
+    public List<String> enabledConditionsNotMet() {
+      return VectorizationCondition.getConditionsSupported(false);
+    }
+  }
+
+  @Explain(vectorization = Vectorization.SUMMARY, displayName = "Fetch Vectorization", explainLevels = { Level.DEFAULT, Level.EXTENDED })
+  public FetchExplainVectorization getMapExplainVectorization() {
+    if (!getVectorizationExamined()) {
+      return null;
+    }
+    return new FetchExplainVectorization(this);
   }
 }

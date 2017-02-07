@@ -128,6 +128,7 @@ public class LocalSparkJobMonitor extends SparkJobMonitor {
         console.printError(msg, "\n" + org.apache.hadoop.util.StringUtils.stringifyException(e));
         rc = 1;
         done = true;
+        sparkJobStatus.setError(e);
       } finally {
         if (done) {
           break;

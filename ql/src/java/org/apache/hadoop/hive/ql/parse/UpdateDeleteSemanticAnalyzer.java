@@ -1205,6 +1205,15 @@ public class UpdateDeleteSemanticAnalyzer extends SemanticAnalyzer {
     private String getPredicate() {
       //normilize table name for mapping
       List<String> targetCols = table2column.get(targetTableNameInSourceQuery.toLowerCase());
+      if(targetCols == null) {
+        /*e.g. ON source.t=1
+        * this is not strictly speaking invlaid but it does ensure that all columns from target
+        * table are all NULL for every row.  This would make any WHEN MATCHED clause invalid since
+        * we don't have a ROW__ID.  The WHEN NOT MATCHED could be meaningful but it's just data from
+        * source satisfying source.t=1...  not worth the effort to support this*/
+        throw new IllegalArgumentException(ErrorMsg.INVALID_TABLE_IN_ON_CLAUSE_OF_MERGE
+          .format(targetTableNameInSourceQuery, onClauseAsString));
+      }
       StringBuilder sb = new StringBuilder();
       for(String col : targetCols) {
         if(sb.length() > 0) {

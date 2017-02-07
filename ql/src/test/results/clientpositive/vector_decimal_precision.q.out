@@ -545,10 +545,14 @@ NULL	NULL
 123456789.0123456789	15241578753238836.75019051998750191
 1234567890.1234560000	1524157875323881726.87092138393600000
 1234567890.1234567890	1524157875323883675.01905199875019052
-PREHOOK: query: EXPLAIN SELECT avg(dec), sum(dec) FROM DECIMAL_PRECISION
+PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION SELECT avg(dec), sum(dec) FROM DECIMAL_PRECISION
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN SELECT avg(dec), sum(dec) FROM DECIMAL_PRECISION
+POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION SELECT avg(dec), sum(dec) FROM DECIMAL_PRECISION
 POSTHOOK: type: QUERY
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -560,12 +564,26 @@ STAGE PLANS:
           TableScan
             alias: decimal_precision
             Statistics: Num rows: 75 Data size: 3472 Basic stats: COMPLETE Column stats: NONE
+            TableScan Vectorization:
+                native: true
+                projectedOutputColumns: [0]
             Select Operator
               expressions: dec (type: decimal(20,10))
               outputColumnNames: dec
+              Select Vectorization:
+                  className: VectorSelectOperator
+                  native: true
+                  projectedOutputColumns: [0]
               Statistics: Num rows: 75 Data size: 3472 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
                 aggregations: avg(dec), sum(dec)
+                Group By Vectorization:
+                    aggregators: VectorUDAFAvgDecimal(col 0) -> struct<count:bigint,sum:decimal(30,10)>, VectorUDAFSumDecimal(col 0) -> decimal(38,18)
+                    className: VectorGroupByOperator
+                    vectorOutput: false
+                    native: false
+                    projectedOutputColumns: [0, 1]
+                    vectorOutputConditionsNotMet: Vector output of VectorUDAFAvgDecimal(col 0) -> struct<count:bigint,sum:decimal(30,10)> output type STRUCT requires PRIMITIVE IS false
                 mode: hash
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 1 Data size: 400 Basic stats: COMPLETE Column stats: NONE
@@ -574,9 +592,25 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 400 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col0 (type: struct<count:bigint,sum:decimal(30,10),input:decimal(20,10)>), _col1 (type: decimal(30,10))
       Execution mode: vectorized
+      Map Vectorization:
+          enabled: true
+          enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+          groupByVectorOutput: false
+          inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+          allNative: false
+          usesVectorUDFAdaptor: false
+          vectorized: true
+      Reduce Vectorization:
+          enabled: false
+          enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true
+          enableConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false
       Reduce Operator Tree:
         Group By Operator
           aggregations: avg(VALUE._col0), sum(VALUE._col1)
+          Group By Vectorization:
+              vectorOutput: false
+              native: false
+              projectedOutputColumns: null
           mode: mergepartial
           outputColumnNames: _col0, _col1
           Statistics: Num rows: 1 Data size: 400 Basic stats: COMPLETE Column stats: NONE

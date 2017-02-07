@@ -46,6 +46,8 @@ import org.apache.hive.service.rpc.thrift.TProtocolVersion;
 import org.apache.hive.service.server.HiveServer2;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.apache.hadoop.hive.common.log.ProgressMonitor;
+import org.apache.hive.service.cli.session.HiveSession;
 
 /**
  * CLIService.
@@ -255,8 +257,11 @@ public class CLIService extends CompositeService implements ICLIService {
   @Override
   public OperationHandle executeStatement(SessionHandle sessionHandle, String statement,
       Map<String, String> confOverlay) throws HiveSQLException {
-    OperationHandle opHandle =
-        sessionManager.getSession(sessionHandle).executeStatement(statement, confOverlay);
+    HiveSession session = sessionManager.getSession(sessionHandle);
+    // need to reset the monitor, as operation handle is not available down stream, Ideally the
+    // monitor should be associated with the operation handle.
+    session.getSessionState().updateProgressMonitor(null);
+    OperationHandle opHandle = session.executeStatement(statement, confOverlay);
     LOG.debug(sessionHandle + ": executeStatement()");
     return opHandle;
   }
@@ -267,9 +272,11 @@ public class CLIService extends CompositeService implements ICLIService {
   @Override
   public OperationHandle executeStatement(SessionHandle sessionHandle, String statement,
       Map<String, String> confOverlay, long queryTimeout) throws HiveSQLException {
-    OperationHandle opHandle =
-        sessionManager.getSession(sessionHandle).executeStatement(statement, confOverlay,
-            queryTimeout);
+    HiveSession session = sessionManager.getSession(sessionHandle);
+    // need to reset the monitor, as operation handle is not available down stream, Ideally the
+    // monitor should be associated with the operation handle.
+    session.getSessionState().updateProgressMonitor(null);
+    OperationHandle opHandle = session.executeStatement(statement, confOverlay, queryTimeout);
     LOG.debug(sessionHandle + ": executeStatement()");
     return opHandle;
   }
@@ -280,8 +287,11 @@ public class CLIService extends CompositeService implements ICLIService {
   @Override
   public OperationHandle executeStatementAsync(SessionHandle sessionHandle, String statement,
       Map<String, String> confOverlay) throws HiveSQLException {
-    OperationHandle opHandle =
-        sessionManager.getSession(sessionHandle).executeStatementAsync(statement, confOverlay);
+    HiveSession session = sessionManager.getSession(sessionHandle);
+    // need to reset the monitor, as operation handle is not available down stream, Ideally the
+    // monitor should be associated with the operation handle.
+    session.getSessionState().updateProgressMonitor(null);
+    OperationHandle opHandle = session.executeStatementAsync(statement, confOverlay);
     LOG.debug(sessionHandle + ": executeStatementAsync()");
     return opHandle;
   }
@@ -292,9 +302,11 @@ public class CLIService extends CompositeService implements ICLIService {
   @Override
   public OperationHandle executeStatementAsync(SessionHandle sessionHandle, String statement,
       Map<String, String> confOverlay, long queryTimeout) throws HiveSQLException {
-    OperationHandle opHandle =
-        sessionManager.getSession(sessionHandle).executeStatementAsync(statement, confOverlay,
-            queryTimeout);
+    HiveSession session = sessionManager.getSession(sessionHandle);
+    // need to reset the monitor, as operation handle is not available down stream, Ideally the
+    // monitor should be associated with the operation handle.
+    session.getSessionState().updateProgressMonitor(null);
+    OperationHandle opHandle = session.executeStatementAsync(statement, confOverlay, queryTimeout);
     LOG.debug(sessionHandle + ": executeStatementAsync()");
     return opHandle;
   }
@@ -410,18 +422,18 @@ public class CLIService extends CompositeService implements ICLIService {
 	      String foreignSchema, String foreignTable)
           throws HiveSQLException {
     OperationHandle opHandle = sessionManager.getSession(sessionHandle)
-        .getCrossReference(primaryCatalog, primarySchema, primaryTable, 
+        .getCrossReference(primaryCatalog, primarySchema, primaryTable,
          foreignCatalog,
          foreignSchema, foreignTable);
     LOG.debug(sessionHandle + ": getCrossReference()");
     return opHandle;
   }
-  
+
   /* (non-Javadoc)
    * @see org.apache.hive.service.cli.ICLIService#getOperationStatus(org.apache.hive.service.cli.OperationHandle)
    */
   @Override
-  public OperationStatus getOperationStatus(OperationHandle opHandle)
+  public OperationStatus getOperationStatus(OperationHandle opHandle, boolean getProgressUpdate)
       throws HiveSQLException {
     Operation operation = sessionManager.getOperationManager().getOperation(opHandle);
     /**
@@ -457,7 +469,32 @@ public class CLIService extends CompositeService implements ICLIService {
     }
     OperationStatus opStatus = operation.getStatus();
     LOG.debug(opHandle + ": getOperationStatus()");
+    opStatus.setJobProgressUpdate(progressUpdateLog(getProgressUpdate, operation));
     return opStatus;
+  }
+
+  private JobProgressUpdate progressUpdateLog(boolean isProgressLogRequested, Operation operation) {
+    if (isProgressLogRequested && canProvideProgressLog()) {
+        if (OperationType.EXECUTE_STATEMENT.equals(operation.getType())) {
+          SessionState sessionState = operation.getParentSession().getSessionState();
+          try {
+            while (sessionState.getProgressMonitor() == null && !operation.isFinished()) {
+              Thread.sleep(10L); // sleep for 10 ms
+            }
+          } catch (InterruptedException e) {
+            LOG.warn("Error while getting progress update", e);
+          }
+          if (sessionState.getProgressMonitor() != null) {
+            return new JobProgressUpdate(sessionState.getProgressMonitor());
+          }
+        }
+    }
+    return new JobProgressUpdate(ProgressMonitor.NULL);
+  }
+
+  private boolean canProvideProgressLog() {
+    return "tez".equals(hiveConf.getVar(ConfVars.HIVE_EXECUTION_ENGINE))
+        && hiveConf.getBoolVar(ConfVars.HIVE_SERVER2_INPLACE_PROGRESS);
   }
 
   /* (non-Javadoc)

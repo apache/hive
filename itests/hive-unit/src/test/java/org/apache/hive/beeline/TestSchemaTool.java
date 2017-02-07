@@ -25,6 +25,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
+import java.net.URI;
 import java.sql.Connection;
 import java.util.Random;
 
@@ -600,11 +601,12 @@ public class TestSchemaTool extends TestCase {
    */
   public void testValidateLocations() throws Exception {
     schemaTool.doInit();
-    String defaultRoot = "hdfs://myhost.com:8020";
+    URI defaultRoot = new URI("hdfs://myhost.com:8020");
+    URI defaultRoot2 = new URI("s3://myhost2.com:8888");
     //check empty DB
     boolean isValid = schemaTool.validateLocations(conn, null);
     assertTrue(isValid);
-    isValid = schemaTool.validateLocations(conn, defaultRoot);
+    isValid = schemaTool.validateLocations(conn, new URI[] {defaultRoot,defaultRoot2});
     assertTrue(isValid);
 
  // Test valid case
@@ -621,7 +623,7 @@ public class TestSchemaTool extends TestCase {
     schemaTool.runBeeLine(scriptFile.getPath());
     isValid = schemaTool.validateLocations(conn, null);
     assertTrue(isValid);
-    isValid = schemaTool.validateLocations(conn, defaultRoot);
+    isValid = schemaTool.validateLocations(conn, new URI[] {defaultRoot, defaultRoot2});
     assertTrue(isValid);
     scripts = new String[] {
         "delete from PARTITIONS",
@@ -642,7 +644,7 @@ public class TestSchemaTool extends TestCase {
     schemaTool.runBeeLine(scriptFile.getPath());
     isValid = schemaTool.validateLocations(conn, null);
     assertFalse(isValid);
-    isValid = schemaTool.validateLocations(conn, defaultRoot);
+    isValid = schemaTool.validateLocations(conn, new URI[] {defaultRoot, defaultRoot2});
     assertFalse(isValid);
   }
 

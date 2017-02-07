@@ -42,7 +42,7 @@ POSTHOOK: Lineage: vector_interval_2.str2 EXPRESSION []
 POSTHOOK: Lineage: vector_interval_2.str3 EXPRESSION []
 POSTHOOK: Lineage: vector_interval_2.str4 EXPRESSION []
 POSTHOOK: Lineage: vector_interval_2.ts EXPRESSION []
-PREHOOK: query: explain
+PREHOOK: query: explain vectorization expression
 select
   str1,
   -- Should all be true
@@ -74,7 +74,7 @@ select
   interval '1-2' year to month != interval_year_month(str2)
 from vector_interval_2 order by str1
 PREHOOK: type: QUERY
-POSTHOOK: query: explain
+POSTHOOK: query: explain vectorization expression
 select
   str1,
   -- Should all be true
@@ -106,6 +106,10 @@ select
   interval '1-2' year to month != interval_year_month(str2)
 from vector_interval_2 order by str1
 POSTHOOK: type: QUERY
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -123,26 +127,61 @@ STAGE PLANS:
                 TableScan
                   alias: vector_interval_2
                   Statistics: Num rows: 2 Data size: 788 Basic stats: COMPLETE Column stats: NONE
+                  TableScan Vectorization:
+                      native: true
+                      projectedOutputColumns: [0, 1, 2, 3, 4, 5]
                   Select Operator
                     expressions: str1 (type: string), (CAST( str1 AS INTERVAL YEAR TO MONTH) = CAST( str1 AS INTERVAL YEAR TO MONTH)) (type: boolean), (CAST( str1 AS INTERVAL YEAR TO MONTH) <= CAST( str1 AS INTERVAL YEAR TO MONTH)) (type: boolean), (CAST( str1 AS INTERVAL YEAR TO MONTH) <= CAST( str2 AS INTERVAL YEAR TO MONTH)) (type: boolean), (CAST( str1 AS INTERVAL YEAR TO MONTH) < CAST( str2 AS INTERVAL YEAR TO MONTH)) (type: boolean), (CAST( str1 AS INTERVAL YEAR TO MONTH) >= CAST( str1 AS INTERVAL YEAR TO MONTH)) (type: boolean), (CAST( str2 AS INTERVAL YEAR TO MONTH) >= CAST( str1 AS INTERVAL YEAR TO MONTH)) (type: boolean), (CAST( str2 AS INTERVAL YEAR TO MONTH) > CAST( str1 AS INTERVAL YEAR TO MONTH)) (type: boolean), (CAST( str1 AS INTERVAL YEAR TO MONTH) <> CAST( str2 AS INTERVAL YEAR TO MONTH)) (type: boolean), (CAST( str1 AS INTERVAL YEAR TO MONTH) = 1-2) (type: boolean), (CAST( str1 AS INTERVAL YEAR TO MONTH) <= 1-2) (type: boolean), (CAST( str1 AS INTERVAL YEAR TO MONTH) <= 1-3) (type: boolean), (CAST( str1 AS INTERVAL YEAR TO MONTH) < 1-3) (type: boolean), (CAST( str1 AS INTERVAL YEAR TO MONTH) >= 1-2) (type: boolean), (CAST( str2 AS INTERVAL YEAR TO MONTH) >= 1-2) (type: boolean), (CAST( str2 AS INTERVAL YEAR TO MONTH) > 1-2) (type: boolean), (CAST( str1 AS INTERVAL YEAR TO MONTH) <> 1-3) (type: boolean), (1-2 = CAST( str1 AS INTERVAL YEAR TO MONTH)) (type: boolean), (1-2 <= CAST( str1 AS INTERVAL YEAR TO MONTH)) (type: boolean), (1-2 <= CAST( str2 AS INTERVAL YEAR TO MONTH)) (type: boolean), (1-2 < CAST( str2 AS INTERVAL YEAR TO MONTH)) (type: boolean), (1-2 >= CAST( str1 AS INTERVAL YEAR TO MONTH)) (type: boolean), (1-3 >= CAST( str1 AS INTERVAL YEAR TO MONTH)) (type: boolean), (1-3 > CAST( str1 AS INTERVAL YEAR TO MONTH)) (type: boolean), (1-2 <> CAST( str2 AS INTERVAL YEAR TO MONTH)) (type: boolean)
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18, _col19, _col20, _col21, _col22, _col23, _col24
+                    Select Vectorization:
+                        className: VectorSelectOperator
+                        native: true
+                        projectedOutputColumns: [2, 8, 9, 10, 11, 12, 13, 14, 15, 7, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30]
+                        selectExpressions: LongColEqualLongColumn(col 6, col 7)(children: CastStringToIntervalYearMonth(col 2) -> 6:interval_year_month, CastStringToIntervalYearMonth(col 2) -> 7:interval_year_month) -> 8:long, LongColLessEqualLongColumn(col 6, col 7)(children: CastStringToIntervalYearMonth(col 2) -> 6:interval_year_month, CastStringToIntervalYearMonth(col 2) -> 7:interval_year_month) -> 9:long, LongColLessEqualLongColumn(col 6, col 7)(children: CastStringToIntervalYearMonth(col 2) -> 6:interval_year_month, CastStringToIntervalYearMonth(col 3) -> 7:interval_year_month) -> 10:long, LongColLessLongColumn(col 6, col 7)(children: CastStringToIntervalYearMonth(col 2) -> 6:interval_year_month, CastStringToIntervalYearMonth(col 3) -> 7:interval_year_month) -> 11:long, LongColGreaterEqualLongColumn(col 6, col 7)(children: CastStringToIntervalYearMonth(col 2) -> 6:interval_year_month, CastStringToIntervalYearMonth(col 2) -> 7:interval_year_month) -> 12:long, LongColGreaterEqualLongColumn(col 6, col 7)(children: CastStringToIntervalYearMonth(col 3) -> 6:interval_year_month, CastStringToIntervalYearMonth(col 2) -> 7:interval_year_month) -> 13:long, LongColGreaterLongColumn(col 6, col 7)(children: CastStringToIntervalYearMonth(col 3) -> 6:interval_year_month, CastStringToIntervalYearMonth(col 2) -> 7:interval_year_month) -> 14:long, LongColNotEqualLongColumn(col 6, col 7)(children: CastStringToIntervalYearMonth(col 2) -> 6:interval_year_month, CastStringToIntervalYearMonth(col 3) -> 7:interval_year_month) -> 15:long, IntervalYearMonthColEqualIntervalYearMonthScalar(col 6, val 14)(children: CastStringToIntervalYearMonth(col 2) -> 6:interval_year_month) -> 7:long, IntervalYearMonthColLessEqualIntervalYearMonthScalar(col 6, val 14)(children: CastStringToIntervalYearMonth(col 2) -> 6:interval_year_month) -> 16:long, IntervalYearMonthColLessEqualIntervalYearMonthScalar(col 6, val 15)(children: CastStringToIntervalYearMonth(col 2) -> 6:interval_year_month) -> 17:long, IntervalYearMonthColLessIntervalYearMonthScalar(col 6, val 15)(children: CastStringToIntervalYearMonth(col 2) -> 6:interval_year_month) -> 18:long, IntervalYearMonthColGreaterEqualIntervalYearMonthScalar(col 6, val 14)(children: CastStringToIntervalYearMonth(col 2) -> 6:interval_year_month) -> 19:long, IntervalYearMonthColGreaterEqualIntervalYearMonthScalar(col 6, val 14)(children: CastStringToIntervalYearMonth(col 3) -> 6:interval_year_month) -> 20:long, IntervalYearMonthColGreaterIntervalYearMonthScalar(col 6, val 14)(children: CastStringToIntervalYearMonth(col 3) -> 6:interval_year_month) -> 21:long, IntervalYearMonthColNotEqualIntervalYearMonthScalar(col 6, val 15)(children: CastStringToIntervalYearMonth(col 2) -> 6:interval_year_month) -> 22:long, IntervalYearMonthScalarEqualIntervalYearMonthColumn(val 14, col 6)(children: CastStringToIntervalYearMonth(col 2) -> 6:interval_year_month) -> 23:long, IntervalYearMonthScalarLessEqualIntervalYearMonthColumn(val 14, col 6)(children: CastStringToIntervalYearMonth(col 2) -> 6:interval_year_month) -> 24:long, IntervalYearMonthScalarLessEqualIntervalYearMonthColumn(val 14, col 6)(children: CastStringToIntervalYearMonth(col 3) -> 6:interval_year_month) -> 25:long, IntervalYearMonthScalarLessIntervalYearMonthColumn(val 14, col 6)(children: CastStringToIntervalYearMonth(col 3) -> 6:interval_year_month) -> 26:long, IntervalYearMonthScalarGreaterEqualIntervalYearMonthColumn(val 14, col 6)(children: CastStringToIntervalYearMonth(col 2) -> 6:interval_year_month) -> 27:long, IntervalYearMonthScalarGreaterEqualIntervalYearMonthColumn(val 15, col 6)(children: CastStringToIntervalYearMonth(col 2) -> 6:interval_year_month) -> 28:long, IntervalYearMonthScalarGreaterIntervalYearMonthColumn(val 15, col 6)(children: CastStringToIntervalYearMonth(col 2) -> 6:interval_year_month) -> 29:long, IntervalYearMonthScalarNotEqualIntervalYearMonthColumn(val 14, col 6)(children: CastStringToIntervalYearMonth(col 3) -> 6:interval_year_month) -> 30:long
                     Statistics: Num rows: 2 Data size: 788 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col0 (type: string)
                       sort order: +
+                      Reduce Sink Vectorization:
+                          className: VectorReduceSinkOperator
+                          native: false
+                          nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, Not ACID UPDATE or DELETE IS true, No buckets IS true, No TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                          nativeConditionsNotMet: Uniform Hash IS false
                       Statistics: Num rows: 2 Data size: 788 Basic stats: COMPLETE Column stats: NONE
                       value expressions: _col1 (type: boolean), _col2 (type: boolean), _col3 (type: boolean), _col4 (type: boolean), _col5 (type: boolean), _col6 (type: boolean), _col7 (type: boolean), _col8 (type: boolean), _col9 (type: boolean), _col10 (type: boolean), _col11 (type: boolean), _col12 (type: boolean), _col13 (type: boolean), _col14 (type: boolean), _col15 (type: boolean), _col16 (type: boolean), _col17 (type: boolean), _col18 (type: boolean), _col19 (type: boolean), _col20 (type: boolean), _col21 (type: boolean), _col22 (type: boolean), _col23 (type: boolean), _col24 (type: boolean)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                groupByVectorOutput: true
+                inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
         Reducer 2 
             Execution mode: vectorized, llap
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                groupByVectorOutput: true
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: string), VALUE._col0 (type: boolean), VALUE._col1 (type: boolean), VALUE._col2 (type: boolean), VALUE._col3 (type: boolean), VALUE._col4 (type: boolean), VALUE._col5 (type: boolean), VALUE._col6 (type: boolean), VALUE._col7 (type: boolean), VALUE._col8 (type: boolean), VALUE._col9 (type: boolean), VALUE._col10 (type: boolean), VALUE._col11 (type: boolean), VALUE._col12 (type: boolean), VALUE._col13 (type: boolean), VALUE._col14 (type: boolean), VALUE._col15 (type: boolean), VALUE._col16 (type: boolean), VALUE._col17 (type: boolean), VALUE._col18 (type: boolean), VALUE._col19 (type: boolean), VALUE._col20 (type: boolean), VALUE._col21 (type: boolean), VALUE._col22 (type: boolean), VALUE._col23 (type: boolean)
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18, _col19, _col20, _col21, _col22, _col23, _col24
+                Select Vectorization:
+                    className: VectorSelectOperator
+                    native: true
+                    projectedOutputColumns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24]
                 Statistics: Num rows: 2 Data size: 788 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
+                  File Sink Vectorization:
+                      className: VectorFileSinkOperator
+                      native: false
                   Statistics: Num rows: 2 Data size: 788 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
@@ -223,7 +262,7 @@ POSTHOOK: Input: default@vector_interval_2
 #### A masked pattern was here ####
 NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
 1-2	true	true	true	true	true	true	true	true	true	true	true	true	true	true	true	true	true	true	true	true	true	true	true	true
-PREHOOK: query: explain
+PREHOOK: query: explain vectorization expression
 select
   str1,
   -- Should all be false
@@ -249,7 +288,7 @@ select
   interval '1-2' year to month != interval_year_month(str1)
 from vector_interval_2 order by str1
 PREHOOK: type: QUERY
-POSTHOOK: query: explain
+POSTHOOK: query: explain vectorization expression
 select
   str1,
   -- Should all be false
@@ -275,6 +314,10 @@ select
   interval '1-2' year to month != interval_year_month(str1)
 from vector_interval_2 order by str1
 POSTHOOK: type: QUERY
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -292,26 +335,61 @@ STAGE PLANS:
                 TableScan
                   alias: vector_interval_2
                   Statistics: Num rows: 2 Data size: 788 Basic stats: COMPLETE Column stats: NONE
+                  TableScan Vectorization:
+                      native: true
+                      projectedOutputColumns: [0, 1, 2, 3, 4, 5]
                   Select Operator
                     expressions: str1 (type: string), (CAST( str1 AS INTERVAL YEAR TO MONTH) <> CAST( str1 AS INTERVAL YEAR TO MONTH)) (type: boolean), (CAST( str2 AS INTERVAL YEAR TO MONTH) <= 1-2) (type: boolean), (CAST( str2 AS INTERVAL YEAR TO MONTH) < 1-2) (type: boolean), (1-2 <> CAST( str1 AS INTERVAL YEAR TO MONTH)) (type: boolean), (1-2 >= CAST( str2 AS INTERVAL YEAR TO MONTH)) (type: boolean), (1-2 > CAST( str2 AS INTERVAL YEAR TO MONTH)) (type: boolean), (1-3 <= CAST( str1 AS INTERVAL YEAR TO MONTH)) (type: boolean), (1-3 < CAST( str1 AS INTERVAL YEAR TO MONTH)) (type: boolean), (CAST( str1 AS INTERVAL YEAR TO MONTH) >= CAST( str2 AS INTERVAL YEAR TO MONTH)) (type: boolean), (CAST( str1 AS INTERVAL YEAR TO MONTH) > CAST( str2 AS INTERVAL YEAR TO MONTH)) (type: boolean), (CAST( str2 AS INTERVAL YEAR TO MONTH) <= CAST( str1 AS INTERVAL YEAR TO MONTH)) (type: boolean), (CAST( str2 AS INTERVAL YEAR TO MONTH) < CAST( str1 AS INTERVAL YEAR TO MONTH)) (type: boolean), (CAST( str1 AS INTERVAL YEAR TO MONTH) <> 1-2) (type: boolean), (CAST( str1 AS INTERVAL YEAR TO MONTH) >= 1-3) (type: boolean), (CAST( str1 AS INTERVAL YEAR TO MONTH) > 1-3) (type: boolean)
                     outputColumnNames: _col0, _col1, _col10, _col11, _col13, _col14, _col15, _col16, _col17, _col2, _col3, _col4, _col5, _col7, _col8, _col9
+                    Select Vectorization:
+                        className: VectorSelectOperator
+                        native: true
+                        projectedOutputColumns: [2, 8, 7, 9, 10, 11, 12, 13, 14, 16, 17, 18, 19, 15, 20, 21]
+                        selectExpressions: LongColNotEqualLongColumn(col 6, col 7)(children: CastStringToIntervalYearMonth(col 2) -> 6:interval_year_month, CastStringToIntervalYearMonth(col 2) -> 7:interval_year_month) -> 8:long, IntervalYearMonthColLessEqualIntervalYearMonthScalar(col 6, val 14)(children: CastStringToIntervalYearMonth(col 3) -> 6:interval_year_month) -> 7:long, IntervalYearMonthColLessIntervalYearMonthScalar(col 6, val 14)(children: CastStringToIntervalYearMonth(col 3) -> 6:interval_year_month) -> 9:long, IntervalYearMonthScalarNotEqualIntervalYearMonthColumn(val 14, col 6)(children: CastStringToIntervalYearMonth(col 2) -> 6:interval_year_month) -> 10:long, IntervalYearMonthScalarGreaterEqualIntervalYearMonthColumn(val 14, col 6)(children: CastStringToIntervalYearMonth(col 3) -> 6:interval_year_month) -> 11:long, IntervalYearMonthScalarGreaterIntervalYearMonthColumn(val 14, col 6)(children: CastStringToIntervalYearMonth(col 3) -> 6:interval_year_month) -> 12:long, IntervalYearMonthScalarLessEqualIntervalYearMonthColumn(val 15, col 6)(children: CastStringToIntervalYearMonth(col 2) -> 6:interval_year_month) -> 13:long, IntervalYearMonthScalarLessIntervalYearMonthColumn(val 15, col 6)(children: CastStringToIntervalYearMonth(col 2) -> 6:interval_year_month) -> 14:long, LongColGreaterEqualLongColumn(col 6, col 15)(children: CastStringToIntervalYearMonth(col 2) -> 6:interval_year_month, CastStringToIntervalYearMonth(col 3) -> 15:interval_year_month) -> 16:long, LongColGreaterLongColumn(col 6, col 15)(children: CastStringToIntervalYearMonth(col 2) -> 6:interval_year_month, CastStringToIntervalYearMonth(col 3) -> 15:interval_year_month) -> 17:long, LongColLessEqualLongColumn(col 6, col 15)(children: CastStringToIntervalYearMonth(col 3) -> 6:interval_year_month, CastStringToIntervalYearMonth(col 2) -> 15:interval_year_month) -> 18:long, LongColLessLongColumn(col 6, col 15)(children: CastStringToIntervalYearMonth(col 3) -> 6:interval_year_month, CastStringToIntervalYearMonth(col 2) -> 15:interval_year_month) -> 19:long, IntervalYearMonthColNotEqualIntervalYearMonthScalar(col 6, val 14)(children: CastStringToIntervalYearMonth(col 2) -> 6:interval_year_month) -> 15:long, IntervalYearMonthColGreaterEqualIntervalYearMonthScalar(col 6, val 15)(children: CastStringToIntervalYearMonth(col 2) -> 6:interval_year_month) -> 20:long, IntervalYearMonthColGreaterIntervalYearMonthScalar(col 6, val 15)(children: CastStringToIntervalYearMonth(col 2) -> 6:interval_year_month) -> 21:long
                     Statistics: Num rows: 2 Data size: 788 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col0 (type: string)
                       sort order: +
+                      Reduce Sink Vectorization:
+                          className: VectorReduceSinkOperator
+                          native: false
+                          nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, Not ACID UPDATE or DELETE IS true, No buckets IS true, No TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                          nativeConditionsNotMet: Uniform Hash IS false
                       Statistics: Num rows: 2 Data size: 788 Basic stats: COMPLETE Column stats: NONE
                       value expressions: _col1 (type: boolean), _col2 (type: boolean), _col3 (type: boolean), _col4 (type: boolean), _col5 (type: boolean), _col7 (type: boolean), _col8 (type: boolean), _col9 (type: boolean), _col10 (type: boolean), _col11 (type: boolean), _col13 (type: boolean), _col14 (type: boolean), _col15 (type: boolean), _col16 (type: boolean), _col17 (type: boolean)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                groupByVectorOutput: true
+                inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
         Reducer 2 
             Execution mode: vectorized, llap
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                groupByVectorOutput: true
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: string), VALUE._col0 (type: boolean), VALUE._col1 (type: boolean), VALUE._col2 (type: boolean), VALUE._col3 (type: boolean), VALUE._col4 (type: boolean), VALUE._col0 (type: boolean), VALUE._col5 (type: boolean), VALUE._col6 (type: boolean), VALUE._col7 (type: boolean), VALUE._col8 (type: boolean), VALUE._col9 (type: boolean), VALUE._col5 (type: boolean), VALUE._col10 (type: boolean), VALUE._col11 (type: boolean), VALUE._col12 (type: boolean), VALUE._col13 (type: boolean), VALUE._col14 (type: boolean), VALUE._col10 (type: boolean)
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18
+                Select Vectorization:
+                    className: VectorSelectOperator
+                    native: true
+                    projectedOutputColumns: [0, 1, 2, 3, 4, 5, 1, 6, 7, 8, 9, 10, 6, 11, 12, 13, 14, 15, 11]
                 Statistics: Num rows: 2 Data size: 788 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
+                  File Sink Vectorization:
+                      className: VectorFileSinkOperator
+                      native: false
                   Statistics: Num rows: 2 Data size: 788 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
@@ -380,7 +458,7 @@ POSTHOOK: Input: default@vector_interval_2
 #### A masked pattern was here ####
 NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
 1-2	false	false	false	false	false	false	false	false	false	false	false	false	false	false	false	false	false	false
-PREHOOK: query: explain
+PREHOOK: query: explain vectorization expression
 select
   str3,
   -- Should all be true
@@ -412,7 +490,7 @@ select
   interval '1 2:3:4' day to second != interval_day_time(str4)
 from vector_interval_2 order by str3
 PREHOOK: type: QUERY
-POSTHOOK: query: explain
+POSTHOOK: query: explain vectorization expression
 select
   str3,
   -- Should all be true
@@ -444,6 +522,10 @@ select
   interval '1 2:3:4' day to second != interval_day_time(str4)
 from vector_interval_2 order by str3
 POSTHOOK: type: QUERY
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -461,26 +543,61 @@ STAGE PLANS:
                 TableScan
                   alias: vector_interval_2
                   Statistics: Num rows: 2 Data size: 788 Basic stats: COMPLETE Column stats: NONE
+                  TableScan Vectorization:
+                      native: true
+                      projectedOutputColumns: [0, 1, 2, 3, 4, 5]
                   Select Operator
                     expressions: str3 (type: string), (CAST( str3 AS INTERVAL DAY TO SECOND) = CAST( str3 AS INTERVAL DAY TO SECOND)) (type: boolean), (CAST( str3 AS INTERVAL DAY TO SECOND) <= CAST( str3 AS INTERVAL DAY TO SECOND)) (type: boolean), (CAST( str3 AS INTERVAL DAY TO SECOND) <= CAST( str4 AS INTERVAL DAY TO SECOND)) (type: boolean), (CAST( str3 AS INTERVAL DAY TO SECOND) < CAST( str4 AS INTERVAL DAY TO SECOND)) (type: boolean), (CAST( str3 AS INTERVAL DAY TO SECOND) >= CAST( str3 AS INTERVAL DAY TO SECOND)) (type: boolean), (CAST( str4 AS INTERVAL DAY TO SECOND) >= CAST( str3 AS INTERVAL DAY TO SECOND)) (type: boolean), (CAST( str4 AS INTERVAL DAY TO SECOND) > CAST( str3 AS INTERVAL DAY TO SECOND)) (type: boolean), (CAST( str3 AS INTERVAL DAY TO SECOND) <> CAST( str4 AS INTERVAL DAY TO SECOND)) (type: boolean), (CAST( str3 AS INTERVAL DAY TO SECOND) = 1 02:03:04.000000000) (type: boolean), (CAST( str3 AS INTERVAL DAY TO SECOND) <= 1 02:03:04.000000000) (type: boolean), (CAST( str3 AS INTERVAL DAY TO SECOND) <= 1 02:03:05.000000000) (type: boolean), (CAST( str3 AS INTERVAL DAY TO SECOND) < 1 02:03:05.000000000) (type: boolean), (CAST( str3 AS INTERVAL DAY TO SECOND) >= 1 02:03:04.000000000) (type: boolean), (CAST( str4 AS INTERVAL DAY TO SECOND) >= 1 02:03:04.000000000) (type: boolean), (CAST( str4 AS INTERVAL DAY TO SECOND) > 1 02:03:04.000000000) (type: boolean), (CAST( str3 AS INTERVAL DAY TO SECOND) <> 1 02:03:05.000000000) (type: boolean), (1 02:03:04.000000000 = CAST( str3 AS INTERVAL DAY TO SECOND)) (type: boolean), (1 02:03:04.000000000 <= CAST( str3 AS INTERVAL DAY TO SECOND)) (type: boolean), (1 02:03:04.000000000 <= CAST( str4 AS INTERVAL DAY TO SECOND)) (type: boolean), (1 02:03:04.000000000 < CAST( str4 AS INTERVAL DAY TO SECOND)) (type: boolean), (1 02:03:04.000000000 >= CAST( str3 AS INTERVAL DAY TO SECOND)) (type: boolean), (1 02:03:05.000000000 >= CAST( str3 AS INTERVAL DAY TO SECOND)) (type: boolean), (1 02:03:05.000000000 > CAST( str3 AS INTERVAL DAY TO SECOND)) (type: boolean), (1 02:03:04.000000000 <> CAST( str4 AS INTERVAL DAY TO SECOND)) (type: boolean)
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18, _col19, _col20, _col21, _col22, _col23, _col24
+                    Select Vectorization:
+                        className: VectorSelectOperator
+                        native: true
+                        projectedOutputColumns: [4, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31]
+                        selectExpressions: IntervalDayTimeColEqualIntervalDayTimeColumn(col 6, col 7)(children: CastStringToIntervalDayTime(col 4) -> 6:interval_day_time, CastStringToIntervalDayTime(col 4) -> 7:interval_day_time) -> 8:long, IntervalDayTimeColLessEqualIntervalDayTimeColumn(col 6, col 7)(children: CastStringToIntervalDayTime(col 4) -> 6:interval_day_time, CastStringToIntervalDayTime(col 4) -> 7:interval_day_time) -> 9:long, IntervalDayTimeColLessEqualIntervalDayTimeColumn(col 6, col 7)(children: CastStringToIntervalDayTime(col 4) -> 6:interval_day_time, CastStringToIntervalDayTime(col 5) -> 7:interval_day_time) -> 10:long, IntervalDayTimeColLessIntervalDayTimeColumn(col 6, col 7)(children: CastStringToIntervalDayTime(col 4) -> 6:interval_day_time, CastStringToIntervalDayTime(col 5) -> 7:interval_day_time) -> 11:long, IntervalDayTimeColGreaterEqualIntervalDayTimeColumn(col 6, col 7)(children: CastStringToIntervalDayTime(col 4) -> 6:interval_day_time, CastStringToIntervalDayTime(col 4) -> 7:interval_day_time) -> 12:long, IntervalDayTimeColGreaterEqualIntervalDayTimeColumn(col 6, col 7)(children: CastStringToIntervalDayTime(col 5) -> 6:interval_day_time, CastStringToIntervalDayTime(col 4) -> 7:interval_day_time) -> 13:long, IntervalDayTimeColGreaterIntervalDayTimeColumn(col 6, col 7)(children: CastStringToIntervalDayTime(col 5) -> 6:interval_day_time, CastStringToIntervalDayTime(col 4) -> 7:interval_day_time) -> 14:long, IntervalDayTimeColNotEqualIntervalDayTimeColumn(col 6, col 7)(children: CastStringToIntervalDayTime(col 4) -> 6:interval_day_time, CastStringToIntervalDayTime(col 5) -> 7:interval_day_time) -> 15:long, IntervalDayTimeColEqualIntervalDayTimeScalar(col 6, val 1 02:03:04.000000000)(children: CastStringToIntervalDayTime(col 4) -> 6:interval_day_time) -> 16:long, IntervalDayTimeColLessEqualIntervalDayTimeScalar(col 6, val 1 02:03:04.000000000)(children: CastStringToIntervalDayTime(col 4) -> 6:interval_day_time) -> 17:long, IntervalDayTimeColLessEqualIntervalDayTimeScalar(col 6, val 1 02:03:05.000000000)(children: CastStringToIntervalDayTime(col 4) -> 6:interval_day_time) -> 18:long, IntervalDayTimeColLessIntervalDayTimeScalar(col 6, val 1 02:03:05.000000000)(children: CastStringToIntervalDayTime(col 4) -> 6:interval_day_time) -> 19:long, IntervalDayTimeColGreaterEqualIntervalDayTimeScalar(col 6, val 1 02:03:04.000000000)(children: CastStringToIntervalDayTime(col 4) -> 6:interval_day_time) -> 20:long, IntervalDayTimeColGreaterEqualIntervalDayTimeScalar(col 6, val 1 02:03:04.000000000)(children: CastStringToIntervalDayTime(col 5) -> 6:interval_day_time) -> 21:long, IntervalDayTimeColGreaterIntervalDayTimeScalar(col 6, val 1 02:03:04.000000000)(children: CastStringToIntervalDayTime(col 5) -> 6:interval_day_time) -> 22:long, IntervalDayTimeColNotEqualIntervalDayTimeScalar(col 6, val 1 02:03:05.000000000)(children: CastStringToIntervalDayTime(col 4) -> 6:interval_day_time) -> 23:long, IntervalDayTimeScalarEqualIntervalDayTimeColumn(val 1 02:03:04.000000000, col 6)(children: CastStringToIntervalDayTime(col 4) -> 6:interval_day_time) -> 24:long, IntervalDayTimeScalarLessEqualIntervalDayTimeColumn(val 1 02:03:04.000000000, col 6)(children: CastStringToIntervalDayTime(col 4) -> 6:interval_day_time) -> 25:long, IntervalDayTimeScalarLessEqualIntervalDayTimeColumn(val 1 02:03:04.000000000, col 6)(children: CastStringToIntervalDayTime(col 5) -> 6:interval_day_time) -> 26:long, IntervalDayTimeScalarLessIntervalDayTimeColumn(val 1 02:03:04.000000000, col 6)(children: CastStringToIntervalDayTime(col 5) -> 6:interval_day_time) -> 27:long, IntervalDayTimeScalarGreaterEqualIntervalDayTimeColumn(val 1 02:03:04.000000000, col 6)(children: CastStringToIntervalDayTime(col 4) -> 6:interval_day_time) -> 28:long, IntervalDayTimeScalarGreaterEqualIntervalDayTimeColumn(val 1 02:03:05.000000000, col 6)(children: CastStringToIntervalDayTime(col 4) -> 6:interval_day_time) -> 29:long, IntervalDayTimeScalarGreaterIntervalDayTimeColumn(val 1 02:03:05.000000000, col 6)(children: CastStringToIntervalDayTime(col 4) -> 6:interval_day_time) -> 30:long, IntervalDayTimeScalarNotEqualIntervalDayTimeColumn(val 1 02:03:04.000000000, col 6)(children: CastStringToIntervalDayTime(col 5) -> 6:interval_day_time) -> 31:long
                     Statistics: Num rows: 2 Data size: 788 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col0 (type: string)
                       sort order: +
+                      Reduce Sink Vectorization:
+                          className: VectorReduceSinkOperator
+                          native: false
+                          nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, Not ACID UPDATE or DELETE IS true, No buckets IS true, No TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                          nativeConditionsNotMet: Uniform Hash IS false
                       Statistics: Num rows: 2 Data size: 788 Basic stats: COMPLETE Column stats: NONE
                       value expressions: _col1 (type: boolean), _col2 (type: boolean), _col3 (type: boolean), _col4 (type: boolean), _col5 (type: boolean), _col6 (type: boolean), _col7 (type: boolean), _col8 (type: boolean), _col9 (type: boolean), _col10 (type: boolean), _col11 (type: boolean), _col12 (type: boolean), _col13 (type: boolean), _col14 (type: boolean), _col15 (type: boolean), _col16 (type: boolean), _col17 (type: boolean), _col18 (type: boolean), _col19 (type: boolean), _col20 (type: boolean), _col21 (type: boolean), _col22 (type: boolean), _col23 (type: boolean), _col24 (type: boolean)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                groupByVectorOutput: true
+                inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
         Reducer 2 
             Execution mode: vectorized, llap
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                groupByVectorOutput: true
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: string), VALUE._col0 (type: boolean), VALUE._col1 (type: boolean), VALUE._col2 (type: boolean), VALUE._col3 (type: boolean), VALUE._col4 (type: boolean), VALUE._col5 (type: boolean), VALUE._col6 (type: boolean), VALUE._col7 (type: boolean), VALUE._col8 (type: boolean), VALUE._col9 (type: boolean), VALUE._col10 (type: boolean), VALUE._col11 (type: boolean), VALUE._col12 (type: boolean), VALUE._col13 (type: boolean), VALUE._col14 (type: boolean), VALUE._col15 (type: boolean), VALUE._col16 (type: boolean), VALUE._col17 (type: boolean), VALUE._col18 (type: boolean), VALUE._col19 (type: boolean), VALUE._col20 (type: boolean), VALUE._col21 (type: boolean), VALUE._col22 (type: boolean), VALUE._col23 (type: boolean)
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18, _col19, _col20, _col21, _col22, _col23, _col24
+                Select Vectorization:
+                    className: VectorSelectOperator
+                    native: true
+                    projectedOutputColumns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24]
                 Statistics: Num rows: 2 Data size: 788 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
+                  File Sink Vectorization:
+                      className: VectorFileSinkOperator
+                      native: false
                   Statistics: Num rows: 2 Data size: 788 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
@@ -561,7 +678,7 @@ POSTHOOK: Input: default@vector_interval_2
 #### A masked pattern was here ####
 NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
 1 2:3:4	true	true	true	true	true	true	true	true	true	true	true	true	true	true	true	true	true	true	true	true	true	true	true	true
-PREHOOK: query: explain
+PREHOOK: query: explain vectorization expression
 select
   str3,
   -- Should all be false
@@ -587,7 +704,7 @@ select
   interval '1 2:3:4' day to second != interval_day_time(str3)
 from vector_interval_2 order by str3
 PREHOOK: type: QUERY
-POSTHOOK: query: explain
+POSTHOOK: query: explain vectorization expression
 select
   str3,
   -- Should all be false
@@ -613,6 +730,10 @@ select
   interval '1 2:3:4' day to second != interval_day_time(str3)
 from vector_interval_2 order by str3
 POSTHOOK: type: QUERY
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -630,26 +751,61 @@ STAGE PLANS:
                 TableScan
                   alias: vector_interval_2
                   Statistics: Num rows: 2 Data size: 788 Basic stats: COMPLETE Column stats: NONE
+                  TableScan Vectorization:
+                      native: true
+                      projectedOutputColumns: [0, 1, 2, 3, 4, 5]
                   Select Operator
                     expressions: str3 (type: string), (CAST( str3 AS INTERVAL DAY TO SECOND) <> CAST( str3 AS INTERVAL DAY TO SECOND)) (type: boolean), (CAST( str4 AS INTERVAL DAY TO SECOND) <= 1 02:03:04.000000000) (type: boolean), (CAST( str4 AS INTERVAL DAY TO SECOND) < 1 02:03:04.000000000) (type: boolean), (1 02:03:04.000000000 <> CAST( str3 AS INTERVAL DAY TO SECOND)) (type: boolean), (1 02:03:04.000000000 >= CAST( str4 AS INTERVAL DAY TO SECOND)) (type: boolean), (1 02:03:04.000000000 > CAST( str4 AS INTERVAL DAY TO SECOND)) (type: boolean), (1 02:03:05.000000000 <= CAST( str3 AS INTERVAL DAY TO SECOND)) (type: boolean), (1 02:03:05.000000000 < CAST( str3 AS INTERVAL DAY TO SECOND)) (type: boolean), (CAST( str3 AS INTERVAL DAY TO SECOND) >= CAST( str4 AS INTERVAL DAY TO SECOND)) (type: boolean), (CAST( str3 AS INTERVAL DAY TO SECOND) > CAST( str4 AS INTERVAL DAY TO SECOND)) (type: boolean), (CAST( str4 AS INTERVAL DAY TO SECOND) <= CAST( str3 AS INTERVAL DAY TO SECOND)) (type: boolean), (CAST( str4 AS INTERVAL DAY TO SECOND) < CAST( str3 AS INTERVAL DAY TO SECOND)) (type: boolean), (CAST( str3 AS INTERVAL DAY TO SECOND) <> 1 02:03:04.000000000) (type: boolean), (CAST( str3 AS INTERVAL DAY TO SECOND) >= 1 02:03:05.000000000) (type: boolean), (CAST( str3 AS INTERVAL DAY TO SECOND) > 1 02:03:05.000000000) (type: boolean)
                     outputColumnNames: _col0, _col1, _col10, _col11, _col13, _col14, _col15, _col16, _col17, _col2, _col3, _col4, _col5, _col7, _col8, _col9
+                    Select Vectorization:
+                        className: VectorSelectOperator
+                        native: true
+                        projectedOutputColumns: [4, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22]
+                        selectExpressions: IntervalDayTimeColNotEqualIntervalDayTimeColumn(col 6, col 7)(children: CastStringToIntervalDayTime(col 4) -> 6:interval_day_time, CastStringToIntervalDayTime(col 4) -> 7:interval_day_time) -> 8:long, IntervalDayTimeColLessEqualIntervalDayTimeScalar(col 6, val 1 02:03:04.000000000)(children: CastStringToIntervalDayTime(col 5) -> 6:interval_day_time) -> 9:long, IntervalDayTimeColLessIntervalDayTimeScalar(col 6, val 1 02:03:04.000000000)(children: CastStringToIntervalDayTime(col 5) -> 6:interval_day_time) -> 10:long, IntervalDayTimeScalarNotEqualIntervalDayTimeColumn(val 1 02:03:04.000000000, col 6)(children: CastStringToIntervalDayTime(col 4) -> 6:interval_day_time) -> 11:long, IntervalDayTimeScalarGreaterEqualIntervalDayTimeColumn(val 1 02:03:04.000000000, col 6)(children: CastStringToIntervalDayTime(col 5) -> 6:interval_day_time) -> 12:long, IntervalDayTimeScalarGreaterIntervalDayTimeColumn(val 1 02:03:04.000000000, col 6)(children: CastStringToIntervalDayTime(col 5) -> 6:interval_day_time) -> 13:long, IntervalDayTimeScalarLessEqualIntervalDayTimeColumn(val 1 02:03:05.000000000, col 6)(children: CastStringToIntervalDayTime(col 4) -> 6:interval_day_time) -> 14:long, IntervalDayTimeScalarLessIntervalDayTimeColumn(val 1 02:03:05.000000000, col 6)(children: CastStringToIntervalDayTime(col 4) -> 6:interval_day_time) -> 15:long, IntervalDayTimeColGreaterEqualIntervalDayTimeColumn(col 6, col 7)(children: CastStringToIntervalDayTime(col 4) -> 6:interval_day_time, CastStringToIntervalDayTime(col 5) -> 7:interval_day_time) -> 16:long, IntervalDayTimeColGreaterIntervalDayTimeColumn(col 6, col 7)(children: CastStringToIntervalDayTime(col 4) -> 6:interval_day_time, CastStringToIntervalDayTime(col 5) -> 7:interval_day_time) -> 17:long, IntervalDayTimeColLessEqualIntervalDayTimeColumn(col 6, col 7)(children: CastStringToIntervalDayTime(col 5) -> 6:interval_day_time, CastStringToIntervalDayTime(col 4) -> 7:interval_day_time) -> 18:long, IntervalDayTimeColLessIntervalDayTimeColumn(col 6, col 7)(children: CastStringToIntervalDayTime(col 5) -> 6:interval_day_time, CastStringToIntervalDayTime(col 4) -> 7:interval_day_time) -> 19:long, IntervalDayTimeColNotEqualIntervalDayTimeScalar(col 6, val 1 02:03:04.000000000)(children: CastStringToIntervalDayTime(col 4) -> 6:interval_day_time) -> 20:long, IntervalDayTimeColGreaterEqualIntervalDayTimeScalar(col 6, val 1 02:03:05.000000000)(children: CastStringToIntervalDayTime(col 4) -> 6:interval_day_time) -> 21:long, IntervalDayTimeColGreaterIntervalDayTimeScalar(col 6, val 1 02:03:05.000000000)(children: CastStringToIntervalDayTime(col 4) -> 6:interval_day_time) -> 22:long
                     Statistics: Num rows: 2 Data size: 788 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col0 (type: string)
                       sort order: +
+                      Reduce Sink Vectorization:
+                          className: VectorReduceSinkOperator
+                          native: false
+                          nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, Not ACID UPDATE or DELETE IS true, No buckets IS true, No TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                          nativeConditionsNotMet: Uniform Hash IS false
                       Statistics: Num rows: 2 Data size: 788 Basic stats: COMPLETE Column stats: NONE
                       value expressions: _col1 (type: boolean), _col2 (type: boolean), _col3 (type: boolean), _col4 (type: boolean), _col5 (type: boolean), _col7 (type: boolean), _col8 (type: boolean), _col9 (type: boolean), _col10 (type: boolean), _col11 (type: boolean), _col13 (type: boolean), _col14 (type: boolean), _col15 (type: boolean), _col16 (type: boolean), _col17 (type: boolean)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                groupByVectorOutput: true
+                inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
         Reducer 2 
             Execution mode: vectorized, llap
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                groupByVectorOutput: true
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: string), VALUE._col0 (type: boolean), VALUE._col1 (type: boolean), VALUE._col2 (type: boolean), VALUE._col3 (type: boolean), VALUE._col4 (type: boolean), VALUE._col0 (type: boolean), VALUE._col5 (type: boolean), VALUE._col6 (type: boolean), VALUE._col7 (type: boolean), VALUE._col8 (type: boolean), VALUE._col9 (type: boolean), VALUE._col5 (type: boolean), VALUE._col10 (type: boolean), VALUE._col11 (type: boolean), VALUE._col12 (type: boolean), VALUE._col13 (type: boolean), VALUE._col14 (type: boolean), VALUE._col10 (type: boolean)
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18
+                Select Vectorization:
+                    className: VectorSelectOperator
+                    native: true
+                    projectedOutputColumns: [0, 1, 2, 3, 4, 5, 1, 6, 7, 8, 9, 10, 6, 11, 12, 13, 14, 15, 11]
                 Statistics: Num rows: 2 Data size: 788 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
+                  File Sink Vectorization:
+                      className: VectorFileSinkOperator
+                      native: false
                   Statistics: Num rows: 2 Data size: 788 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
@@ -718,7 +874,7 @@ POSTHOOK: Input: default@vector_interval_2
 #### A masked pattern was here ####
 NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
 1 2:3:4	false	false	false	false	false	false	false	false	false	false	false	false	false	false	false	false	false	false
-PREHOOK: query: explain
+PREHOOK: query: explain vectorization expression
 select ts from vector_interval_2
 where
   interval_year_month(str1) = interval_year_month(str1)
@@ -743,7 +899,7 @@ where
   and interval '1-3' year to month > interval_year_month(str1)
 order by ts
 PREHOOK: type: QUERY
-POSTHOOK: query: explain
+POSTHOOK: query: explain vectorization expression
 select ts from vector_interval_2
 where
   interval_year_month(str1) = interval_year_month(str1)
@@ -768,6 +924,10 @@ where
   and interval '1-3' year to month > interval_year_month(str1)
 order by ts
 POSTHOOK: type: QUERY
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -785,28 +945,66 @@ STAGE PLANS:
                 TableScan
                   alias: vector_interval_2
                   Statistics: Num rows: 2 Data size: 788 Basic stats: COMPLETE Column stats: NONE
+                  TableScan Vectorization:
+                      native: true
+                      projectedOutputColumns: [0, 1, 2, 3, 4, 5]
                   Filter Operator
+                    Filter Vectorization:
+                        className: VectorFilterOperator
+                        native: true
+                        predicateExpression: FilterExprAndExpr(children: FilterLongColEqualLongColumn(col 6, col 7)(children: CastStringToIntervalYearMonth(col 2) -> 6:interval_year_month, CastStringToIntervalYearMonth(col 2) -> 7:interval_year_month) -> boolean, FilterLongColNotEqualLongColumn(col 6, col 7)(children: CastStringToIntervalYearMonth(col 2) -> 6:interval_year_month, CastStringToIntervalYearMonth(col 3) -> 7:interval_year_month) -> boolean, FilterLongColLessEqualLongColumn(col 6, col 7)(children: CastStringToIntervalYearMonth(col 2) -> 6:interval_year_month, CastStringToIntervalYearMonth(col 3) -> 7:interval_year_month) -> boolean, FilterLongColLessLongColumn(col 6, col 7)(children: CastStringToIntervalYearMonth(col 2) -> 6:interval_year_month, CastStringToIntervalYearMonth(col 3) -> 7:interval_year_month) -> boolean, FilterLongColGreaterEqualLongColumn(col 6, col 7)(children: CastStringToIntervalYearMonth(col 3) -> 6:interval_year_month, CastStringToIntervalYearMonth(col 2) -> 7:interval_year_month) -> boolean, FilterLongColGreaterLongColumn(col 6, col 7)(children: CastStringToIntervalYearMonth(col 3) -> 6:interval_year_month, CastStringToIntervalYearMonth(col 2) -> 7:interval_year_month) -> boolean, FilterIntervalYearMonthColEqualIntervalYearMonthScalar(col 6, val 14)(children: CastStringToIntervalYearMonth(col 2) -> 6:interval_year_month) -> boolean, FilterIntervalYearMonthColNotEqualIntervalYearMonthScalar(col 6, val 15)(children: CastStringToIntervalYearMonth(col 2) -> 6:interval_year_month) -> boolean, FilterIntervalYearMonthColLessEqualIntervalYearMonthScalar(col 6, val 15)(children: CastStringToIntervalYearMonth(col 2) -> 6:interval_year_month) -> boolean, FilterIntervalYearMonthColLessIntervalYearMonthScalar(col 6, val 15)(children: CastStringToIntervalYearMonth(col 2) -> 6:interval_year_month) -> boolean, FilterIntervalYearMonthColGreaterEqualIntervalYearMonthScalar(col 6, val 14)(children: CastStringToIntervalYearMonth(col 3) -> 6:interval_year_month) -> boolean, FilterIntervalYearMonthColGreaterIntervalYearMonthScalar(col 6, val 14)(children: CastStringToIntervalYearMonth(col 3) -> 6:interval_year_month) -> boolean, FilterIntervalYearMonthScalarEqualIntervalYearMonthColumn(val 14, col 6)(children: CastStringToIntervalYearMonth(col 2) -> 6:interval_year_month) -> boolean, FilterIntervalYearMonthScalarNotEqualIntervalYearMonthColumn(val 14, col 6)(children: CastStringToIntervalYearMonth(col 3) -> 6:interval_year_month) -> boolean, FilterIntervalYearMonthScalarLessEqualIntervalYearMonthColumn(val 14, col 6)(children: CastStringToIntervalYearMonth(col 3) -> 6:interval_year_month) -> boolean, FilterIntervalYearMonthScalarLessIntervalYearMonthColumn(val 14, col 6)(children: CastStringToIntervalYearMonth(col 3) -> 6:interval_year_month) -> boolean, FilterIntervalYearMonthScalarGreaterEqualIntervalYearMonthColumn(val 15, col 6)(children: CastStringToIntervalYearMonth(col 2) -> 6:interval_year_month) -> boolean, FilterIntervalYearMonthScalarGreaterIntervalYearMonthColumn(val 15, col 6)(children: CastStringToIntervalYearMonth(col 2) -> 6:interval_year_month) -> boolean) -> boolean
                     predicate: ((CAST( str1 AS INTERVAL YEAR TO MONTH) = CAST( str1 AS INTERVAL YEAR TO MONTH)) and (CAST( str1 AS INTERVAL YEAR TO MONTH) <> CAST( str2 AS INTERVAL YEAR TO MONTH)) and (CAST( str1 AS INTERVAL YEAR TO MONTH) <= CAST( str2 AS INTERVAL YEAR TO MONTH)) and (CAST( str1 AS INTERVAL YEAR TO MONTH) < CAST( str2 AS INTERVAL YEAR TO MONTH)) and (CAST( str2 AS INTERVAL YEAR TO MONTH) >= CAST( str1 AS INTERVAL YEAR TO MONTH)) and (CAST( str2 AS INTERVAL YEAR TO MONTH) > CAST( str1 AS INTERVAL YEAR TO MONTH)) and (CAST( str1 AS INTERVAL YEAR TO MONTH) = 1-2) and (CAST( str1 AS INTERVAL YEAR TO MONTH) <> 1-3) and (CAST( str1 AS INTERVAL YEAR TO MONTH) <= 1-3) and (CAST( str1 AS INTERVAL YEAR TO MONTH) < 1-3) and (CAST( str2 AS INTERVAL YEAR TO MONTH) >= 1-2) and (CAST( str2 AS INTERVAL YEAR TO MONTH) > 1-2) and (1-2 = CAST( str1 AS INTERVAL YEAR TO MONTH)) and (1-2 <> CAST( str2 AS INTERVAL YEAR TO MONTH)) and (1-2 <= CAST( str2 AS INTERVAL YEAR TO MONTH)) and (1-2 < CAST( str2 AS INTERVAL YEAR TO MONTH)) and (1-3 >= CAST( str1 AS INTERVAL YEAR TO MONTH)) and (1-3 > CAST( str1 AS INTERVAL YEAR TO MONTH))) (type: boolean)
                     Statistics: Num rows: 1 Data size: 394 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: ts (type: timestamp)
                       outputColumnNames: _col0
+                      Select Vectorization:
+                          className: VectorSelectOperator
+                          native: true
+                          projectedOutputColumns: [0]
                       Statistics: Num rows: 1 Data size: 394 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: timestamp)
                         sort order: +
+                        Reduce Sink Vectorization:
+                            className: VectorReduceSinkOperator
+                            native: false
+                            nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, Not ACID UPDATE or DELETE IS true, No buckets IS true, No TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                            nativeConditionsNotMet: Uniform Hash IS false
                         Statistics: Num rows: 1 Data size: 394 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                groupByVectorOutput: true
+                inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
         Reducer 2 
             Execution mode: vectorized, llap
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                groupByVectorOutput: true
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: timestamp)
                 outputColumnNames: _col0
+                Select Vectorization:
+                    className: VectorSelectOperator
+                    native: true
+                    projectedOutputColumns: [0]
                 Statistics: Num rows: 1 Data size: 394 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
+                  File Sink Vectorization:
+                      className: VectorFileSinkOperator
+                      native: false
                   Statistics: Num rows: 1 Data size: 394 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
@@ -872,7 +1070,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@vector_interval_2
 #### A masked pattern was here ####
 2001-01-01 01:02:03
-PREHOOK: query: explain
+PREHOOK: query: explain vectorization expression
 select ts from vector_interval_2
 where
   interval_day_time(str3) = interval_day_time(str3)
@@ -897,7 +1095,7 @@ where
   and interval '1 2:3:5' day to second > interval_day_time(str3)
 order by ts
 PREHOOK: type: QUERY
-POSTHOOK: query: explain
+POSTHOOK: query: explain vectorization expression
 select ts from vector_interval_2
 where
   interval_day_time(str3) = interval_day_time(str3)
@@ -922,6 +1120,10 @@ where
   and interval '1 2:3:5' day to second > interval_day_time(str3)
 order by ts
 POSTHOOK: type: QUERY
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -939,28 +1141,66 @@ STAGE PLANS:
                 TableScan
                   alias: vector_interval_2
                   Statistics: Num rows: 2 Data size: 788 Basic stats: COMPLETE Column stats: NONE
+                  TableScan Vectorization:
+                      native: true
+                      projectedOutputColumns: [0, 1, 2, 3, 4, 5]
                   Filter Operator
+                    Filter Vectorization:
+                        className: VectorFilterOperator
+                        native: true
+                        predicateExpression: FilterExprAndExpr(children: FilterIntervalDayTimeColEqualIntervalDayTimeColumn(col 6, col 7)(children: CastStringToIntervalDayTime(col 4) -> 6:interval_day_time, CastStringToIntervalDayTime(col 4) -> 7:interval_day_time) -> boolean, FilterIntervalDayTimeColNotEqualIntervalDayTimeColumn(col 6, col 7)(children: CastStringToIntervalDayTime(col 4) -> 6:interval_day_time, CastStringToIntervalDayTime(col 5) -> 7:interval_day_time) -> boolean, FilterIntervalDayTimeColLessEqualIntervalDayTimeColumn(col 6, col 7)(children: CastStringToIntervalDayTime(col 4) -> 6:interval_day_time, CastStringToIntervalDayTime(col 5) -> 7:interval_day_time) -> boolean, FilterIntervalDayTimeColLessIntervalDayTimeColumn(col 6, col 7)(children: CastStringToIntervalDayTime(col 4) -> 6:interval_day_time, CastStringToIntervalDayTime(col 5) -> 7:interval_day_time) -> boolean, FilterIntervalDayTimeColGreaterEqualIntervalDayTimeColumn(col 6, col 7)(children: CastStringToIntervalDayTime(col 5) -> 6:interval_day_time, CastStringToIntervalDayTime(col 4) -> 7:interval_day_time) -> boolean, FilterIntervalDayTimeColGreaterIntervalDayTimeColumn(col 6, col 7)(children: CastStringToIntervalDayTime(col 5) -> 6:interval_day_time, CastStringToIntervalDayTime(col 4) -> 7:interval_day_time) -> boolean, FilterIntervalDayTimeColEqualIntervalDayTimeScalar(col 6, val 1 02:03:04.000000000)(children: CastStringToIntervalDayTime(col 4) -> 6:interval_day_time) -> boolean, FilterIntervalDayTimeColNotEqualIntervalDayTimeScalar(col 6, val 1 02:03:05.000000000)(children: CastStringToIntervalDayTime(col 4) -> 6:interval_day_time) -> boolean, FilterIntervalDayTimeColLessEqualIntervalDayTimeScalar(col 6, val 1 02:03:05.000000000)(children: CastStringToIntervalDayTime(col 4) -> 6:interval_day_time) -> boolean, FilterIntervalDayTimeColLessIntervalDayTimeScalar(col 6, val 1 02:03:05.000000000)(children: CastStringToIntervalDayTime(col 4) -> 6:interval_day_time) -> boolean, FilterIntervalDayTimeColGreaterEqualIntervalDayTimeScalar(col 6, val 1 02:03:04.000000000)(children: CastStringToIntervalDayTime(col 5) -> 6:interval_day_time) -> boolean, FilterIntervalDayTimeColGreaterIntervalDayTimeScalar(col 6, val 1 02:03:04.000000000)(children: CastStringToIntervalDayTime(col 5) -> 6:interval_day_time) -> boolean, FilterIntervalDayTimeScalarEqualIntervalDayTimeColumn(val 1 02:03:04.000000000, col 6)(children: CastStringToIntervalDayTime(col 4) -> 6:interval_day_time) -> boolean, FilterIntervalDayTimeScalarNotEqualIntervalDayTimeColumn(val 1 02:03:04.000000000, col 6)(children: CastStringToIntervalDayTime(col 5) -> 6:interval_day_time) -> boolean, FilterIntervalDayTimeScalarLessEqualIntervalDayTimeColumn(val 1 02:03:04.000000000, col 6)(children: CastStringToIntervalDayTime(col 5) -> 6:interval_day_time) -> boolean, FilterIntervalDayTimeScalarLessIntervalDayTimeColumn(val 1 02:03:04.000000000, col 6)(children: CastStringToIntervalDayTime(col 5) -> 6:interval_day_time) -> boolean, FilterIntervalDayTimeScalarGreaterEqualIntervalDayTimeColumn(val 1 02:03:05.000000000, col 6)(children: CastStringToIntervalDayTime(col 4) -> 6:interval_day_time) -> boolean, FilterIntervalDayTimeScalarGreaterIntervalDayTimeColumn(val 1 02:03:05.000000000, col 6)(children: CastStringToIntervalDayTime(col 4) -> 6:interval_day_time) -> boolean) -> boolean
                     predicate: ((CAST( str3 AS INTERVAL DAY TO SECOND) = CAST( str3 AS INTERVAL DAY TO SECOND)) and (CAST( str3 AS INTERVAL DAY TO SECOND) <> CAST( str4 AS INTERVAL DAY TO SECOND)) and (CAST( str3 AS INTERVAL DAY TO SECOND) <= CAST( str4 AS INTERVAL DAY TO SECOND)) and (CAST( str3 AS INTERVAL DAY TO SECOND) < CAST( str4 AS INTERVAL DAY TO SECOND)) and (CAST( str4 AS INTERVAL DAY TO SECOND) >= CAST( str3 AS INTERVAL DAY TO SECOND)) and (CAST( str4 AS INTERVAL DAY TO SECOND) > CAST( str3 AS INTERVAL DAY TO SECOND)) and (CAST( str3 AS INTERVAL DAY TO SECOND) = 1 02:03:04.000000000) and (CAST( str3 AS INTERVAL DAY TO SECOND) <> 1 02:03:05.000000000) and (CAST( str3 AS INTERVAL DAY TO SECOND) <= 1 02:03:05.000000000) and (CAST( str3 AS INTERVAL DAY TO SECOND) < 1 02:03:05.000000000) and (CAST( str4 AS INTERVAL DAY TO SECOND) >= 1 02:03:04.000000000) and (CAST( str4 AS INTERVAL DAY TO SECOND) > 1 02:03:04.000000000) and (1 02:03:04.000000000 = CAST( str3 AS INTERVAL DAY TO SECOND)) and (1 02:03:04.000000000 <> CAST( str4 AS INTERVAL DAY TO SECOND)) and (1 02:03:04.000000000 <= CAST( str4 AS INTERVAL DAY TO SECOND)) and (1 02:03:04.000000000 < CAST( str4 AS INTERVAL DAY TO SECOND)) and (1 02:03:05.000000000 >= CAST( str3 AS INTERVAL DAY TO SECOND)) and (1 02:03:05.000000000 > CAST( str3 AS INTERVAL DAY TO SECOND))) (type: boolean)
                     Statistics: Num rows: 1 Data size: 394 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: ts (type: timestamp)
                       outputColumnNames: _col0
+                      Select Vectorization:
+                          className: VectorSelectOperator
+                          native: true
+                          projectedOutputColumns: [0]
                       Statistics: Num rows: 1 Data size: 394 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: timestamp)
                         sort order: +
+                        Reduce Sink Vectorization:
+                            className: VectorReduceSinkOperator
+                            native: false
+                            nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, Not ACID UPDATE or DELETE IS true, No buckets IS true, No TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                            nativeConditionsNotMet: Uniform Hash IS false
                         Statistics: Num rows: 1 Data size: 394 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                groupByVectorOutput: true
+                inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
         Reducer 2 
             Execution mode: vectorized, llap
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                groupByVectorOutput: true
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: timestamp)
                 outputColumnNames: _col0
+                Select Vectorization:
+                    className: VectorSelectOperator
+                    native: true
+                    projectedOutputColumns: [0]
                 Statistics: Num rows: 1 Data size: 394 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
+                  File Sink Vectorization:
+                      className: VectorFileSinkOperator
+                      native: false
                   Statistics: Num rows: 1 Data size: 394 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
@@ -1026,7 +1266,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@vector_interval_2
 #### A masked pattern was here ####
 2001-01-01 01:02:03
-PREHOOK: query: explain
+PREHOOK: query: explain vectorization expression
 select ts from vector_interval_2
 where
   date '2002-03-01' = dt + interval_year_month(str1)
@@ -1046,7 +1286,7 @@ where
   and dt != dt + interval '1-2' year to month
 order by ts
 PREHOOK: type: QUERY
-POSTHOOK: query: explain
+POSTHOOK: query: explain vectorization expression
 select ts from vector_interval_2
 where
   date '2002-03-01' = dt + interval_year_month(str1)
@@ -1066,6 +1306,10 @@ where
   and dt != dt + interval '1-2' year to month
 order by ts
 POSTHOOK: type: QUERY
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1083,28 +1327,66 @@ STAGE PLANS:
                 TableScan
                   alias: vector_interval_2
                   Statistics: Num rows: 2 Data size: 788 Basic stats: COMPLETE Column stats: NONE
+                  TableScan Vectorization:
+                      native: true
+                      projectedOutputColumns: [0, 1, 2, 3, 4, 5]
                   Filter Operator
+                    Filter Vectorization:
+                        className: VectorFilterOperator
+                        native: true
+                        predicateExpression: FilterExprAndExpr(children: FilterDateScalarEqualDateColumn(val 11747, col 7)(children: DateColAddIntervalYearMonthColumn(col 1, col 6)(children: CastStringToIntervalYearMonth(col 2) -> 6:interval_year_month) -> 7:long) -> boolean, FilterDateScalarLessEqualDateColumn(val 11747, col 7)(children: DateColAddIntervalYearMonthColumn(col 1, col 6)(children: CastStringToIntervalYearMonth(col 2) -> 6:interval_year_month) -> 7:long) -> boolean, FilterDateScalarGreaterEqualDateColumn(val 11747, col 7)(children: DateColAddIntervalYearMonthColumn(col 1, col 6)(children: CastStringToIntervalYearMonth(col 2) -> 6:interval_year_month) -> 7:long) -> boolean, FilterDateColEqualDateScalar(col 7, val 11747)(children: DateColAddIntervalYearMonthColumn(col 1, col 6)(children: CastStringToIntervalYearMonth(col 2) -> 6:interval_year_month) -> 7:long) -> boolean, FilterDateColLessEqualDateScalar(col 7, val 11747)(children: DateColAddIntervalYearMonthColumn(col 1, col 6)(children: CastStringToIntervalYearMonth(col 2) -> 6:interval_year_month) -> 7:long) -> boolean, FilterDateColGreaterEqualDateScalar(col 7, val 11747)(children: DateColAddIntervalYearMonthColumn(col 1, col 6)(children: CastStringToIntervalYearMonth(col 2) -> 6:interval_year_month) -> 7:long) -> boolean, FilterLongColNotEqualLongColumn(col 1, col 7)(children: DateColAddIntervalYearMonthColumn(col 1, col 6)(children: CastStringToIntervalYearMonth(col 2) -> 6:interval_year_month) -> 7:long) -> boolean, FilterDateScalarEqualDateColumn(val 11747, col 6)(children: DateColAddIntervalYearMonthScalar(col 1, val 1-2) -> 6:long) -> boolean, FilterDateScalarLessEqualDateColumn(val 11747, col 6)(children: DateColAddIntervalYearMonthScalar(col 1, val 1-2) -> 6:long) -> boolean, FilterDateScalarGreaterEqualDateColumn(val 11747, col 6)(children: DateColAddIntervalYearMonthScalar(col 1, val 1-2) -> 6:long) -> boolean, FilterDateColEqualDateScalar(col 6, val 11747)(children: DateColAddIntervalYearMonthScalar(col 1, val 1-2) -> 6:long) -> boolean, FilterDateColLessEqualDateScalar(col 6, val 11747)(children: DateColAddIntervalYearMonthScalar(col 1, val 1-2) -> 6:long) -> boolean, FilterDateColGreaterEqualDateScalar(col 6, val 11747)(children: DateColAddIntervalYearMonthScalar(col 1, val 1-2) -> 6:long) -> boolean, FilterLongColNotEqualLongColumn(col 1, col 6)(children: DateColAddIntervalYearMonthScalar(col 1, val 1-2) -> 6:long) -> boolean) -> boolean
                     predicate: ((2002-03-01 = (dt + CAST( str1 AS INTERVAL YEAR TO MONTH))) and (2002-03-01 <= (dt + CAST( str1 AS INTERVAL YEAR TO MONTH))) and (2002-03-01 >= (dt + CAST( str1 AS INTERVAL YEAR TO MONTH))) and ((dt + CAST( str1 AS INTERVAL YEAR TO MONTH)) = 2002-03-01) and ((dt + CAST( str1 AS INTERVAL YEAR TO MONTH)) <= 2002-03-01) and ((dt + CAST( str1 AS INTERVAL YEAR TO MONTH)) >= 2002-03-01) and (dt <> (dt + CAST( str1 AS INTERVAL YEAR TO MONTH))) and (2002-03-01 = (dt + 1-2)) and (2002-03-01 <= (dt + 1-2)) and (2002-03-01 >= (dt + 1-2)) and ((dt + 1-2) = 2002-03-01) and ((dt + 1-2) <= 2002-03-01) and ((dt + 1-2) >= 2002-03-01) and (dt <> (dt + 1-2))) (type: boolean)
                     Statistics: Num rows: 1 Data size: 394 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: ts (type: timestamp)
                       outputColumnNames: _col0
+                      Select Vectorization:
+                          className: VectorSelectOperator
+                          native: true
+                          projectedOutputColumns: [0]
                       Statistics: Num rows: 1 Data size: 394 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: timestamp)
                         sort order: +
+                        Reduce Sink Vectorization:
+                            className: VectorReduceSinkOperator
+                            native: false
+                            nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, Not ACID UPDATE or DELETE IS true, No buckets IS true, No TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                            nativeConditionsNotMet: Uniform Hash IS false
                         Statistics: Num rows: 1 Data size: 394 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                groupByVectorOutput: true
+                inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
         Reducer 2 
             Execution mode: vectorized, llap
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                groupByVectorOutput: true
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: timestamp)
                 outputColumnNames: _col0
+                Select Vectorization:
+                    className: VectorSelectOperator
+                    native: true
+                    projectedOutputColumns: [0]
                 Statistics: Num rows: 1 Data size: 394 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
+                  File Sink Vectorization:
+                      className: VectorFileSinkOperator
+                      native: false
                   Statistics: Num rows: 1 Data size: 394 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
@@ -1160,7 +1442,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@vector_interval_2
 #### A masked pattern was here ####
 2001-01-01 01:02:03
-PREHOOK: query: explain
+PREHOOK: query: explain vectorization expression
 select ts from vector_interval_2
 where
   timestamp '2002-03-01 01:02:03' = ts + interval '1-2' year to month
@@ -1185,7 +1467,7 @@ where
   and ts > ts - interval '1' year
 order by ts
 PREHOOK: type: QUERY
-POSTHOOK: query: explain
+POSTHOOK: query: explain vectorization expression
 select ts from vector_interval_2
 where
   timestamp '2002-03-01 01:02:03' = ts + interval '1-2' year to month
@@ -1210,6 +1492,10 @@ where
   and ts > ts - interval '1' year
 order by ts
 POSTHOOK: type: QUERY
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1227,28 +1513,66 @@ STAGE PLANS:
                 TableScan
                   alias: vector_interval_2
                   Statistics: Num rows: 2 Data size: 788 Basic stats: COMPLETE Column stats: NONE
+                  TableScan Vectorization:
+                      native: true
+                      projectedOutputColumns: [0, 1, 2, 3, 4, 5]
                   Filter Operator
+                    Filter Vectorization:
+                        className: VectorFilterOperator
+                        native: true
+                        predicateExpression: FilterExprAndExpr(children: FilterTimestampScalarEqualTimestampColumn(val 2002-03-01 01:02:03.0, col 6)(children: TimestampColAddIntervalYearMonthScalar(col 0, val 1-2) -> 6:timestamp) -> boolean, FilterTimestampScalarLessEqualTimestampColumn(val 2002-03-01 01:02:03.0, col 6)(children: TimestampColAddIntervalYearMonthScalar(col 0, val 1-2) -> 6:timestamp) -> boolean, FilterTimestampScalarGreaterEqualTimestampColumn(val 2002-03-01 01:02:03.0, col 6)(children: TimestampColAddIntervalYearMonthScalar(col 0, val 1-2) -> 6:timestamp) -> boolean, FilterTimestampScalarNotEqualTimestampColumn(val 2002-04-01 01:02:03.0, col 6)(children: TimestampColAddIntervalYearMonthScalar(col 0, val 1-2) -> 6:timestamp) -> boolean, FilterTimestampScalarLessTimestampColumn(val 2002-02-01 01:02:03.0, col 6)(children: TimestampColAddIntervalYearMonthScalar(col 0, val 1-2) -> 6:timestamp) -> boolean, FilterTimestampScalarGreaterTimestampColumn(val 2002-04-01 01:02:03.0, col 6)(children: TimestampColAddIntervalYearMonthScalar(col 0, val 1-2) -> 6:timestamp) -> boolean, FilterTimestampColEqualTimestampScalar(col 6, val 2002-03-01 01:02:03.0)(children: TimestampColAddIntervalYearMonthScalar(col 0, val 1-2) -> 6:timestamp) -> boolean, FilterTimestampColGreaterEqualTimestampScalar(col 6, val 2002-03-01 01:02:03.0)(children: TimestampColAddIntervalYearMonthScalar(col 0, val 1-2) -> 6:timestamp) -> boolean, FilterTimestampColLessEqualTimestampScalar(col 6, val 2002-03-01 01:02:03.0)(children: TimestampColAddIntervalYearMonthScalar(col 0, val 1-2) -> 6:timestamp) -> boolean, FilterTimestampColNotEqualTimestampScalar(col 6, val 2002-04-01 01:02:03.0)(children: TimestampColAddIntervalYearMonthScalar(col 0, val 1-2) -> 6:timestamp) -> boolean, FilterTimestampColGreaterTimestampScalar(col 6, val 2002-02-01 01:02:03.0)(children: TimestampColAddIntervalYearMonthScalar(col 0, val 1-2) -> 6:timestamp) -> boolean, FilterTimestampColLessTimestampScalar(col 6, val 2002-04-01 01:02:03.0)(children: TimestampColAddIntervalYearMonthScalar(col 0, val 1-2) -> 6:timestamp) -> boolean, FilterTimestampColEqualTimestampColumn(col 0, col 6)(children: TimestampColAddIntervalYearMonthScalar(col 0, val 0-0) -> 6:timestamp) -> boolean, FilterTimestampColNotEqualTimestampColumn(col 0, col 6)(children: TimestampColAddIntervalYearMonthScalar(col 0, val 1-0) -> 6:timestamp) -> boolean, FilterTimestampColLessEqualTimestampColumn(col 0, col 6)(children: TimestampColAddIntervalYearMonthScalar(col 0, val 1-0) -> 6:timestamp) -> boolean, FilterTimestampColLessTimestampColumn(col 0, col 6)(children: TimestampColAddIntervalYearMonthScalar(col 0, val 1-0) -> 6:timestamp) -> boolean, FilterTimestampColGreaterEqualTimestampColumn(col 0, col 6)(children: TimestampColSubtractIntervalYearMonthScalar(col 0, val 1-0) -> 6:timestamp) -> boolean, FilterTimestampColGreaterTimestampColumn(col 0, col 6)(children: TimestampColSubtractIntervalYearMonthScalar(col 0, val 1-0) -> 6:timestamp) -> boolean) -> boolean
                     predicate: ((2002-03-01 01:02:03.0 = (ts + 1-2)) and (2002-03-01 01:02:03.0 <= (ts + 1-2)) and (2002-03-01 01:02:03.0 >= (ts + 1-2)) and (2002-04-01 01:02:03.0 <> (ts + 1-2)) and (2002-02-01 01:02:03.0 < (ts + 1-2)) and (2002-04-01 01:02:03.0 > (ts + 1-2)) and ((ts + 1-2) = 2002-03-01 01:02:03.0) and ((ts + 1-2) >= 2002-03-01 01:02:03.0) and ((ts + 1-2) <= 2002-03-01 01:02:03.0) and ((ts + 1-2) <> 2002-04-01 01:02:03.0) and ((ts + 1-2) > 2002-02-01 01:02:03.0) and ((ts + 1-2) < 2002-04-01 01:02:03.0) and (ts = (ts + 0-0)) and (ts <> (ts + 1-0)) and (ts <= (ts + 1-0)) and (ts < (ts + 1-0)) and (ts >= (ts - 1-0)) and (ts > (ts - 1-0))) (type: boolean)
                     Statistics: Num rows: 1 Data size: 394 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: ts (type: timestamp)
                       outputColumnNames: _col0
+                      Select Vectorization:
+                          className: VectorSelectOperator
+                          native: true
+                          projectedOutputColumns: [0]
                       Statistics: Num rows: 1 Data size: 394 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: timestamp)
                         sort order: +
+                        Reduce Sink Vectorization:
+                            className: VectorReduceSinkOperator
+                            native: false
+                            nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, Not ACID UPDATE or DELETE IS true, No buckets IS true, No TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                            nativeConditionsNotMet: Uniform Hash IS false
                         Statistics: Num rows: 1 Data size: 394 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                groupByVectorOutput: true
+                inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
         Reducer 2 
             Execution mode: vectorized, llap
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                groupByVectorOutput: true
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: timestamp)
                 outputColumnNames: _col0
+                Select Vectorization:
+                    className: VectorSelectOperator
+                    native: true
+                    projectedOutputColumns: [0]
                 Statistics: Num rows: 1 Data size: 394 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
+                  File Sink Vectorization:
+                      className: VectorFileSinkOperator
+                      native: false
                   Statistics: Num rows: 1 Data size: 394 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
@@ -1314,7 +1638,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@vector_interval_2
 #### A masked pattern was here ####
 2001-01-01 01:02:03
-PREHOOK: query: explain
+PREHOOK: query: explain vectorization expression
 select ts from vector_interval_2
 where
   timestamp '2001-01-01 01:02:03' = dt + interval '0 1:2:3' day to second
@@ -1339,7 +1663,7 @@ where
   and ts > dt - interval '0 1:2:4' day to second
 order by ts
 PREHOOK: type: QUERY
-POSTHOOK: query: explain
+POSTHOOK: query: explain vectorization expression
 select ts from vector_interval_2
 where
   timestamp '2001-01-01 01:02:03' = dt + interval '0 1:2:3' day to second
@@ -1364,6 +1688,10 @@ where
   and ts > dt - interval '0 1:2:4' day to second
 order by ts
 POSTHOOK: type: QUERY
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1381,28 +1709,66 @@ STAGE PLANS:
                 TableScan
                   alias: vector_interval_2
                   Statistics: Num rows: 2 Data size: 788 Basic stats: COMPLETE Column stats: NONE
+                  TableScan Vectorization:
+                      native: true
+                      projectedOutputColumns: [0, 1, 2, 3, 4, 5]
                   Filter Operator
+                    Filter Vectorization:
+                        className: VectorFilterOperator
+                        native: true
+                        predicateExpression: FilterExprAndExpr(children: FilterTimestampScalarEqualTimestampColumn(val 2001-01-01 01:02:03.0, col 6)(children: DateColAddIntervalDayTimeScalar(col 1, val 0 01:02:03.000000000) -> 6:timestamp) -> boolean, FilterTimestampScalarNotEqualTimestampColumn(val 2001-01-01 01:02:03.0, col 6)(children: DateColAddIntervalDayTimeScalar(col 1, val 0 01:02:04.000000000) -> 6:timestamp) -> boolean, FilterTimestampScalarLessEqualTimestampColumn(val 2001-01-01 01:02:03.0, col 6)(children: DateColAddIntervalDayTimeScalar(col 1, val 0 01:02:03.000000000) -> 6:timestamp) -> boolean, FilterTimestampScalarLessTimestampColumn(val 2001-01-01 01:02:03.0, col 6)(children: DateColAddIntervalDayTimeScalar(col 1, val 0 01:02:04.000000000) -> 6:timestamp) -> boolean, FilterTimestampScalarGreaterEqualTimestampColumn(val 2001-01-01 01:02:03.0, col 6)(children: DateColSubtractIntervalDayTimeScalar(col 1, val 0 01:02:03.000000000) -> 6:timestamp) -> boolean, FilterTimestampScalarGreaterTimestampColumn(val 2001-01-01 01:02:03.0, col 6)(children: DateColSubtractIntervalDayTimeScalar(col 1, val 0 01:02:04.000000000) -> 6:timestamp) -> boolean, FilterTimestampColEqualTimestampScalar(col 6, val 2001-01-01 01:02:03.0)(children: DateColAddIntervalDayTimeScalar(col 1, val 0 01:02:03.000000000) -> 6:timestamp) -> boolean, FilterTimestampColNotEqualTimestampScalar(col 6, val 2001-01-01 01:02:03.0)(children: DateColAddIntervalDayTimeScalar(col 1, val 0 01:02:04.000000000) -> 6:timestamp) -> boolean, FilterTimestampColGreaterEqualTimestampScalar(col 6, val 2001-01-01 01:02:03.0)(children: DateColAddIntervalDayTimeScalar(col 1, val 0 01:02:03.000000000) -> 6:timestamp) -> boolean, FilterTimestampColGreaterTimestampScalar(col 6, val 2001-01-01 01:02:03.0)(children: DateColAddIntervalDayTimeScalar(col 1, val 0 01:02:04.000000000) -> 6:timestamp) -> boolean, FilterTimestampColLessEqualTimestampScalar(col 6, val 2001-01-01 01:02:03.0)(children: DateColSubtractIntervalDayTimeScalar(col 1, val 0 01:02:03.000000000) -> 6:timestamp) -> boolean, FilterTimestampColLessTimestampScalar(col 6, val 2001-01-01 01:02:03.0)(children: DateColSubtractIntervalDayTimeScalar(col 1, val 0 01:02:04.000000000) -> 6:timestamp) -> boolean, FilterTimestampColEqualTimestampColumn(col 0, col 6)(children: DateColAddIntervalDayTimeScalar(col 1, val 0 01:02:03.000000000) -> 6:timestamp) -> boolean, FilterTimestampColNotEqualTimestampColumn(col 0, col 6)(children: DateColAddIntervalDayTimeScalar(col 1, val 0 01:02:04.000000000) -> 6:timestamp) -> boolean, FilterTimestampColLessEqualTimestampColumn(col 0, col 6)(children: DateColAddIntervalDayTimeScalar(col 1, val 0 01:02:03.000000000) -> 6:timestamp) -> boolean, FilterTimestampColLessTimestampColumn(col 0, col 6)(children: DateColAddIntervalDayTimeScalar(col 1, val 0 01:02:04.000000000) -> 6:timestamp) -> boolean, FilterTimestampColGreaterEqualTimestampColumn(col 0, col 6)(children: DateColSubtractIntervalDayTimeScalar(col 1, val 0 01:02:03.000000000) -> 6:timestamp) -> boolean, FilterTimestampColGreaterTimestampColumn(col 0, col 6)(children: DateColSubtractIntervalDayTimeScalar(col 1, val 0 01:02:04.000000000) -> 6:timestamp) -> boolean) -> boolean
                     predicate: ((2001-01-01 01:02:03.0 = (dt + 0 01:02:03.000000000)) and (2001-01-01 01:02:03.0 <> (dt + 0 01:02:04.000000000)) and (2001-01-01 01:02:03.0 <= (dt + 0 01:02:03.000000000)) and (2001-01-01 01:02:03.0 < (dt + 0 01:02:04.000000000)) and (2001-01-01 01:02:03.0 >= (dt - 0 01:02:03.000000000)) and (2001-01-01 01:02:03.0 > (dt - 0 01:02:04.000000000)) and ((dt + 0 01:02:03.000000000) = 2001-01-01 01:02:03.0) and ((dt + 0 01:02:04.000000000) <> 2001-01-01 01:02:03.0) and ((dt + 0 01:02:03.000000000) >= 2001-01-01 01:02:03.0) and ((dt + 0 01:02:04.000000000) > 2001-01-01 01:02:03.0) and ((dt - 0 01:02:03.000000000) <= 2001-01-01 01:02:03.0) and ((dt - 0 01:02:04.000000000) < 2001-01-01 01:02:03.0) and (ts = (dt + 0 01:02:03.000000000)) and (ts <> (dt + 0 01:02:04.000000000)) and (ts <= (dt + 0 01:02:03.000000000)) and (ts < (dt + 0 01:02:04.000000000)) and (ts >= (dt - 0 01:02:03.000000000)) and (ts > (dt - 0 01:02:04.000000000))) (type: boolean)
                     Statistics: Num rows: 1 Data size: 394 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: ts (type: timestamp)
                       outputColumnNames: _col0
+                      Select Vectorization:
+                          className: VectorSelectOperator
+                          native: true
+                          projectedOutputColumns: [0]
                       Statistics: Num rows: 1 Data size: 394 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: timestamp)
                         sort order: +
+                        Reduce Sink Vectorization:
+                            className: VectorReduceSinkOperator
+                            native: false
+                            nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, Not ACID UPDATE or DELETE IS true, No buckets IS true, No TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                            nativeConditionsNotMet: Uniform Hash IS false
                         Statistics: Num rows: 1 Data size: 394 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                groupByVectorOutput: true
+                inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
         Reducer 2 
             Execution mode: vectorized, llap
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                groupByVectorOutput: true
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: timestamp)
                 outputColumnNames: _col0
+                Select Vectorization:
+                    className: VectorSelectOperator
+                    native: true
+                    projectedOutputColumns: [0]
                 Statistics: Num rows: 1 Data size: 394 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
+                  File Sink Vectorization:
+                      className: VectorFileSinkOperator
+                      native: false
                   Statistics: Num rows: 1 Data size: 394 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
@@ -1468,7 +1834,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@vector_interval_2
 #### A masked pattern was here ####
 2001-01-01 01:02:03
-PREHOOK: query: explain
+PREHOOK: query: explain vectorization expression
 select ts from vector_interval_2
 where
   timestamp '2001-01-01 01:02:03' = ts + interval '0' day
@@ -1493,7 +1859,7 @@ where
   and ts > ts - interval '1' day
 order by ts
 PREHOOK: type: QUERY
-POSTHOOK: query: explain
+POSTHOOK: query: explain vectorization expression
 select ts from vector_interval_2
 where
   timestamp '2001-01-01 01:02:03' = ts + interval '0' day
@@ -1518,6 +1884,10 @@ where
   and ts > ts - interval '1' day
 order by ts
 POSTHOOK: type: QUERY
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1535,28 +1905,66 @@ STAGE PLANS:
                 TableScan
                   alias: vector_interval_2
                   Statistics: Num rows: 2 Data size: 788 Basic stats: COMPLETE Column stats: NONE
+                  TableScan Vectorization:
+                      native: true
+                      projectedOutputColumns: [0, 1, 2, 3, 4, 5]
                   Filter Operator
+                    Filter Vectorization:
+                        className: VectorFilterOperator
+                        native: true
+                        predicateExpression: FilterExprAndExpr(children: FilterTimestampScalarEqualTimestampColumn(val 2001-01-01 01:02:03.0, col 6)(children: TimestampColAddIntervalDayTimeScalar(col 0, val 0 00:00:00.000000000) -> 6:timestamp) -> boolean, FilterTimestampScalarNotEqualTimestampColumn(val 2001-01-01 01:02:03.0, col 6)(children: TimestampColAddIntervalDayTimeScalar(col 0, val 1 00:00:00.000000000) -> 6:timestamp) -> boolean, FilterTimestampScalarLessEqualTimestampColumn(val 2001-01-01 01:02:03.0, col 6)(children: TimestampColAddIntervalDayTimeScalar(col 0, val 1 00:00:00.000000000) -> 6:timestamp) -> boolean, FilterTimestampScalarLessTimestampColumn(val 2001-01-01 01:02:03.0, col 6)(children: TimestampColAddIntervalDayTimeScalar(col 0, val 1 00:00:00.000000000) -> 6:timestamp) -> boolean, FilterTimestampScalarGreaterEqualTimestampColumn(val 2001-01-01 01:02:03.0, col 6)(children: TimestampColSubtractIntervalDayTimeScalar(col 0, val 1 00:00:00.000000000) -> 6:timestamp) -> boolean, FilterTimestampScalarGreaterTimestampColumn(val 2001-01-01 01:02:03.0, col 6)(children: TimestampColSubtractIntervalDayTimeScalar(col 0, val 1 00:00:00.000000000) -> 6:timestamp) -> boolean, FilterTimestampColEqualTimestampScalar(col 6, val 2001-01-01 01:02:03.0)(children: TimestampColAddIntervalDayTimeScalar(col 0, val 0 00:00:00.000000000) -> 6:timestamp) -> boolean, FilterTimestampColNotEqualTimestampScalar(col 6, val 2001-01-01 01:02:03.0)(children: TimestampColAddIntervalDayTimeScalar(col 0, val 1 00:00:00.000000000) -> 6:timestamp) -> boolean, FilterTimestampColGreaterEqualTimestampScalar(col 6, val 2001-01-01 01:02:03.0)(children: TimestampColAddIntervalDayTimeScalar(col 0, val 1 00:00:00.000000000) -> 6:timestamp) -> boolean, FilterTimestampColGreaterTimestampScalar(col 6, val 2001-01-01 01:02:03.0)(children: TimestampColAddIntervalDayTimeScalar(col 0, val 1 00:00:00.000000000) -> 6:timestamp) -> boolean, FilterTimestampColLessEqualTimestampScalar(col 6, val 2001-01-01 01:02:03.0)(children: TimestampColSubtractIntervalDayTimeScalar(col 0, val 1 00:00:00.000000000) -> 6:timestamp) -> boolean, FilterTimestampColLessTimestampScalar(col 6, val 2001-01-01 01:02:03.0)(children: TimestampColSubtractIntervalDayTimeScalar(col 0, val 1 00:00:00.000000000) -> 6:timestamp) -> boolean, FilterTimestampColEqualTimestampColumn(col 0, col 6)(children: TimestampColAddIntervalDayTimeScalar(col 0, val 0 00:00:00.000000000) -> 6:timestamp) -> boolean, FilterTimestampColNotEqualTimestampColumn(col 0, col 6)(children: TimestampColAddIntervalDayTimeScalar(col 0, val 1 00:00:00.000000000) -> 6:timestamp) -> boolean, FilterTimestampColLessEqualTimestampColumn(col 0, col 6)(children: TimestampColAddIntervalDayTimeScalar(col 0, val 1 00:00:00.000000000) -> 6:timestamp) -> boolean, FilterTimestampColLessTimestampColumn(col 0, col 6)(children: TimestampColAddIntervalDayTimeScalar(col 0, val 1 00:00:00.000000000) -> 6:timestamp) -> boolean, FilterTimestampColGreaterEqualTimestampColumn(col 0, col 6)(children: TimestampColSubtractIntervalDayTimeScalar(col 0, val 1 00:00:00.000000000) -> 6:timestamp) -> boolean, FilterTimestampColGreaterTimestampColumn(col 0, col 6)(children: TimestampColSubtractIntervalDayTimeScalar(col 0, val 1 00:00:00.000000000) -> 6:timestamp) -> boolean) -> boolean
                     predicate: ((2001-01-01 01:02:03.0 = (ts + 0 00:00:00.000000000)) and (2001-01-01 01:02:03.0 <> (ts + 1 00:00:00.000000000)) and (2001-01-01 01:02:03.0 <= (ts + 1 00:00:00.000000000)) and (2001-01-01 01:02:03.0 < (ts + 1 00:00:00.000000000)) and (2001-01-01 01:02:03.0 >= (ts - 1 00:00:00.000000000)) and (2001-01-01 01:02:03.0 > (ts - 1 00:00:00.000000000)) and ((ts + 0 00:00:00.000000000) = 2001-01-01 01:02:03.0) and ((ts + 1 00:00:00.000000000) <> 2001-01-01 01:02:03.0) and ((ts + 1 00:00:00.000000000) >= 2001-01-01 01:02:03.0) and ((ts + 1 00:00:00.000000000) > 2001-01-01 01:02:03.0) and ((ts - 1 00:00:00.000000000) <= 2001-01-01 01:02:03.0) and ((ts - 1 00:00:00.000000000) < 2001-01-01 01:02:03.0) and (ts = (ts + 0 00:00:00.000000000)) and (ts <> (ts + 1 00:00:00.000000000)) and (ts <= (ts + 1 00:00:00.000000000)) and (ts < (ts + 1 00:00:00.000000000)) and (ts >= (ts - 1 00:00:00.000000000)) and (ts > (ts - 1 00:00:00.000000000))) (type: boolean)
                     Statistics: Num rows: 1 Data size: 394 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: ts (type: timestamp)
                       outputColumnNames: _col0
+                      Select Vectorization:
+                          className: VectorSelectOperator
+                          native: true
+                          projectedOutputColumns: [0]
                       Statistics: Num rows: 1 Data size: 394 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: timestamp)
                         sort order: +
+                        Reduce Sink Vectorization:
+                            className: VectorReduceSinkOperator
+                            native: false
+                            nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, Not ACID UPDATE or DELETE IS true, No buckets IS true, No TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                            nativeConditionsNotMet: Uniform Hash IS false
                         Statistics: Num rows: 1 Data size: 394 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                groupByVectorOutput: true
+                inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
         Reducer 2 
             Execution mode: vectorized, llap
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                groupByVectorOutput: true
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: timestamp)
                 outputColumnNames: _col0
+                Select Vectorization:
+                    className: VectorSelectOperator
+                    native: true
+                    projectedOutputColumns: [0]
                 Statistics: Num rows: 1 Data size: 394 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
+                  File Sink Vectorization:
+                      className: VectorFileSinkOperator
+                      native: false
                   Statistics: Num rows: 1 Data size: 394 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat

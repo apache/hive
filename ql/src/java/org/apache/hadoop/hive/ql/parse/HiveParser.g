@@ -273,11 +273,6 @@ TOK_TABLEPROPERTY;
 TOK_IFEXISTS;
 TOK_IFNOTEXISTS;
 TOK_ORREPLACE;
-TOK_HINTLIST;
-TOK_HINT;
-TOK_MAPJOIN;
-TOK_STREAMTABLE;
-TOK_HINTARGLIST;
 TOK_USERSCRIPTCOLNAMES;
 TOK_USERSCRIPTCOLSCHEMA;
 TOK_RECORDREADER;
@@ -395,6 +390,11 @@ TOK_REPL_LOAD;
 TOK_REPL_STATUS;
 TOK_BATCH;
 TOK_TO;
+TOK_ONLY;
+TOK_SUMMARY;
+TOK_OPERATOR;
+TOK_EXPRESSION;
+TOK_DETAIL;
 }
 
 
@@ -734,7 +734,28 @@ explainStatement
 explainOption
 @init { msgs.push("explain option"); }
 @after { msgs.pop(); }
-    : KW_EXTENDED|KW_FORMATTED|KW_DEPENDENCY|KW_LOGICAL|KW_AUTHORIZATION|KW_ANALYZE
+    : KW_EXTENDED|KW_FORMATTED|KW_DEPENDENCY|KW_LOGICAL|KW_AUTHORIZATION|KW_ANALYZE|
+      (KW_VECTORIZATION vectorizationOnly? vectorizatonDetail?)
+    ;
+
+vectorizationOnly
+@init { pushMsg("vectorization's only clause", state); }
+@after { popMsg(state); }
+    : KW_ONLY
+    -> ^(TOK_ONLY)
+    ;
+
+vectorizatonDetail
+@init { pushMsg("vectorization's detail level clause", state); }
+@after { popMsg(state); }
+    : KW_SUMMARY
+    -> ^(TOK_SUMMARY)
+    | KW_OPERATOR
+    -> ^(TOK_OPERATOR)
+    | KW_EXPRESSION
+    -> ^(TOK_EXPRESSION)
+    | KW_DETAIL
+    -> ^(TOK_DETAIL)
     ;
 
 execStatement

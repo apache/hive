@@ -29,6 +29,7 @@ import java.util.Properties;
 
 import org.apache.calcite.adapter.druid.DruidTable;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.druid.DruidStorageHandlerUtils;
@@ -38,6 +39,7 @@ import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.SerDeSpec;
 import org.apache.hadoop.hive.serde2.SerDeStats;
+import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.serde2.io.TimestampWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
@@ -55,8 +57,12 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.StringObjectInspe
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.TimestampObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
+import org.apache.hadoop.io.ByteWritable;
+import org.apache.hadoop.io.DoubleWritable;
 import org.apache.hadoop.io.FloatWritable;
+import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
+import org.apache.hadoop.io.ShortWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.util.StringUtils;
@@ -205,25 +211,30 @@ public class DruidSerDe extends AbstractSerDe {
       Query<?> query;
       try {
         query = DruidStorageHandlerUtils.JSON_MAPPER.readValue(druidQuery, Query.class);
+
+        switch (query.getType()) {
+          case Query.TIMESERIES:
+            inferSchema((TimeseriesQuery) query, columnNames, columnTypes);
+            break;
+          case Query.TOPN:
+            inferSchema((TopNQuery) query, columnNames, columnTypes);
+            break;
+          case Query.SELECT:
+            String address = HiveConf.getVar(configuration,
+                    HiveConf.ConfVars.HIVE_DRUID_BROKER_DEFAULT_ADDRESS);
+            if (org.apache.commons.lang3.StringUtils.isEmpty(address)) {
+              throw new SerDeException("Druid broker address not specified in configuration");
+            }
+            inferSchema((SelectQuery) query, columnNames, columnTypes, address);
+            break;
+          case Query.GROUP_BY:
+            inferSchema((GroupByQuery) query, columnNames, columnTypes);
+            break;
+          default:
+            throw new SerDeException("Not supported Druid query");
+        }
       } catch (Exception e) {
         throw new SerDeException(e);
-      }
-
-      switch (query.getType()) {
-        case Query.TIMESERIES:
-          inferSchema((TimeseriesQuery) query, columnNames, columnTypes);
-          break;
-        case Query.TOPN:
-          inferSchema((TopNQuery) query, columnNames, columnTypes);
-          break;
-        case Query.SELECT:
-          inferSchema((SelectQuery) query, columnNames, columnTypes);
-          break;
-        case Query.GROUP_BY:
-          inferSchema((GroupByQuery) query, columnNames, columnTypes);
-          break;
-        default:
-          throw new SerDeException("Not supported Druid query");
       }
 
       columns = new String[columnNames.size()];
@@ -297,6 +308,9 @@ public class DruidSerDe extends AbstractSerDe {
       columnTypes.add(DruidSerDeUtils.convertDruidToHiveType(af.getTypeName()));
     }
     // Post-aggregator columns
+    // TODO: Currently Calcite only infers avg for post-aggregate,
+    // but once we recognize other functions, we will need to infer
+    // different types for post-aggregation functions
     for (PostAggregator pa : query.getPostAggregatorSpecs()) {
       columnNames.add(pa.getName());
       columnTypes.add(TypeInfoFactory.floatTypeInfo);
@@ -319,6 +333,9 @@ public class DruidSerDe extends AbstractSerDe {
       columnTypes.add(DruidSerDeUtils.convertDruidToHiveType(af.getTypeName()));
     }
     // Post-aggregator columns
+    // TODO: Currently Calcite only infers avg for post-aggregate,
+    // but once we recognize other functions, we will need to infer
+    // different types for post-aggregation functions
     for (PostAggregator pa : query.getPostAggregatorSpecs()) {
       columnNames.add(pa.getName());
       columnTypes.add(TypeInfoFactory.floatTypeInfo);
@@ -327,8 +344,7 @@ public class DruidSerDe extends AbstractSerDe {
 
   /* Select query */
   private void inferSchema(SelectQuery query, List<String> columnNames,
-          List<PrimitiveTypeInfo> columnTypes
-  ) {
+          List<PrimitiveTypeInfo> columnTypes, String address) throws SerDeException {
     // Timestamp column
     columnNames.add(DruidTable.DEFAULT_TIMESTAMP_COLUMN);
     columnTypes.add(TypeInfoFactory.timestampTypeInfo);
@@ -337,10 +353,27 @@ public class DruidSerDe extends AbstractSerDe {
       columnNames.add(ds.getOutputName());
       columnTypes.add(TypeInfoFactory.stringTypeInfo);
     }
-    // Metric columns
+    // The type for metric columns is not explicit in the query, thus in this case
+    // we need to emit a metadata query to know their type
+    SegmentMetadataQueryBuilder builder = new Druids.SegmentMetadataQueryBuilder();
+    builder.dataSource(query.getDataSource());
+    builder.merge(true);
+    builder.analysisTypes();
+    SegmentMetadataQuery metadataQuery = builder.build();
+    // Execute query in Druid
+    SegmentAnalysis schemaInfo;
+    try {
+      schemaInfo = submitMetadataRequest(address, metadataQuery);
+    } catch (IOException e) {
+      throw new SerDeException(e);
+    }
+    if (schemaInfo == null) {
+      throw new SerDeException("Connected to Druid but could not retrieve datasource information");
+    }
     for (String metric : query.getMetrics()) {
       columnNames.add(metric);
-      columnTypes.add(TypeInfoFactory.floatTypeInfo);
+      columnTypes.add(DruidSerDeUtils.convertDruidToHiveType(
+              schemaInfo.getColumns().get(metric).getType()));
     }
   }
 
@@ -362,6 +395,9 @@ public class DruidSerDe extends AbstractSerDe {
       columnTypes.add(DruidSerDeUtils.convertDruidToHiveType(af.getTypeName()));
     }
     // Post-aggregator columns
+    // TODO: Currently Calcite only infers avg for post-aggregate,
+    // but once we recognize other functions, we will need to infer
+    // different types for post-aggregation functions
     for (PostAggregator pa : query.getPostAggregatorSpecs()) {
       columnNames.add(pa.getName());
       columnTypes.add(TypeInfoFactory.floatTypeInfo);
@@ -460,11 +496,26 @@ public class DruidSerDe extends AbstractSerDe {
         case TIMESTAMP:
           output.add(new TimestampWritable(new Timestamp((Long) value)));
           break;
+        case BYTE:
+          output.add(new ByteWritable(((Number) value).byteValue()));
+          break;
+        case SHORT:
+          output.add(new ShortWritable(((Number) value).shortValue()));
+          break;
+        case INT:
+          output.add(new IntWritable(((Number) value).intValue()));
+          break;
         case LONG:
           output.add(new LongWritable(((Number) value).longValue()));
           break;
         case FLOAT:
           output.add(new FloatWritable(((Number) value).floatValue()));
+          break;
+        case DOUBLE:
+          output.add(new DoubleWritable(((Number) value).doubleValue()));
+          break;
+        case DECIMAL:
+          output.add(new HiveDecimalWritable(HiveDecimal.create(((Number) value).doubleValue())));
           break;
         case STRING:
           output.add(new Text(value.toString()));

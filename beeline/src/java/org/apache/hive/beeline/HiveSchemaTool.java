@@ -27,6 +27,7 @@ import org.apache.commons.cli.OptionGroup;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.io.output.NullOutputStream;
+import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.fs.Path;
@@ -70,6 +71,7 @@ public class HiveSchemaTool {
   private boolean dryRun = false;
   private boolean verbose = false;
   private String dbOpts = null;
+  private URI[] validationServers = null; // The list of servers the database/partition/table can locate on
   private final HiveConf hiveConf;
   private final String dbType;
   private final MetaStoreSchemaInfo metaStoreSchemaInfo;
@@ -119,6 +121,16 @@ public class HiveSchemaTool {
 
   public void setDbOpts(String dbOpts) {
     this.dbOpts = dbOpts;
+  }
+
+  public void setValidationServers(String servers) {
+    if(StringUtils.isNotEmpty(servers)) {
+      String[] strServers = servers.split(",");
+      this.validationServers = new URI[strServers.length];
+      for (int i = 0; i < validationServers.length; i++) {
+        validationServers[i] = new Path(strServers[i]).toUri();
+      }
+    }
   }
 
   private static void printAndExit(Options cmdLineOptions) {
@@ -181,12 +193,12 @@ public class HiveSchemaTool {
     }
   }
 
-  boolean validateLocations(Connection conn, String defaultLocPrefix) throws HiveMetaException {
+  boolean validateLocations(Connection conn, URI[] defaultServers) throws HiveMetaException {
     System.out.println("Validating database/table/partition locations");
     boolean rtn;
-    rtn = checkMetaStoreDBLocation(conn, defaultLocPrefix);
-    rtn = checkMetaStoreTableLocation(conn, defaultLocPrefix) && rtn;
-    rtn = checkMetaStorePartitionLocation(conn, defaultLocPrefix) && rtn;
+    rtn = checkMetaStoreDBLocation(conn, defaultServers);
+    rtn = checkMetaStoreTableLocation(conn, defaultServers) && rtn;
+    rtn = checkMetaStorePartitionLocation(conn, defaultServers) && rtn;
     System.out.println((rtn ? "Succeeded" : "Failed") + " in database/table/partition location validation");
     return rtn;
   }
@@ -196,10 +208,8 @@ public class HiveSchemaTool {
     return  (itemName == null || itemName.isEmpty()) ? "ID: " + res.getString(idInx) : "Name: " + itemName;
   }
 
-  // read schema version from metastore
-  private boolean checkMetaStoreDBLocation(Connection conn, String locHeader)
+  private boolean checkMetaStoreDBLocation(Connection conn, URI[] defaultServers)
       throws HiveMetaException {
-    String defaultPrefix = locHeader;
     String dbLoc;
     boolean isValid = true;
     int numOfInvalid = 0;
@@ -213,33 +223,11 @@ public class HiveSchemaTool {
         ResultSet res = stmt.executeQuery(dbLoc)) {
       while (res.next()) {
         String locValue = res.getString(3);
-        if (locValue == null) {
-          System.err.println("NULL Location for DB with " + getNameOrID(res,2,1));
+        String dbName = getNameOrID(res,2,1);
+        if (!checkLocation("Database " + dbName, locValue, defaultServers)) {
           numOfInvalid++;
-        } else {
-          URI currentUri = null;
-          try {
-            currentUri = new Path(locValue).toUri();
-          } catch (Exception pe) {
-            System.err.println("Invalid Location for DB with " + getNameOrID(res,2,1));
-            System.err.println(pe.getMessage());
-            numOfInvalid++;
-            continue;
-          }
-          
-          if (currentUri.getScheme() == null || currentUri.getScheme().isEmpty()) {
-            System.err.println("Missing Location scheme for DB with " + getNameOrID(res,2,1));
-            System.err.println("The Location is: " + locValue);
-            numOfInvalid++;
-          } else if (defaultPrefix != null && !defaultPrefix.isEmpty() && locValue.substring(0,defaultPrefix.length())
-              .compareToIgnoreCase(defaultPrefix) != 0) {
-            System.err.println("Mismatch root Location for DB with " + getNameOrID(res,2,1));
-            System.err.println("The Location is: " + locValue);
-            numOfInvalid++;
-          }
         }
       }
-
     } catch (SQLException e) {
       throw new HiveMetaException("Failed to get DB Location Info.", e);
     }
@@ -250,9 +238,8 @@ public class HiveSchemaTool {
     return isValid;
   }
 
-  private boolean checkMetaStoreTableLocation(Connection conn, String locHeader)
+  private boolean checkMetaStoreTableLocation(Connection conn, URI[] defaultServers)
       throws HiveMetaException {
-    String defaultPrefix = locHeader;
     String tabLoc, tabIDRange;
     boolean isValid = true;
     int numOfInvalid = 0;
@@ -290,33 +277,10 @@ public class HiveSchemaTool {
         res = pStmt.executeQuery();
         while (res.next()) {
           String locValue = res.getString(3);
-          if (locValue == null) {
-            System.err.println("In DB with " + getNameOrID(res,5,4));
-            System.err.println("NULL Location for TABLE with " + getNameOrID(res,2,1));
+          String entity = "Database " + getNameOrID(res, 5, 4) +
+              ", Table "  + getNameOrID(res,2,1);
+          if (!checkLocation(entity, locValue, defaultServers)) {
             numOfInvalid++;
-          } else {
-            URI currentUri = null;
-            try {
-              currentUri = new Path(locValue).toUri();
-            } catch (Exception pe) {
-              System.err.println("In DB with " + getNameOrID(res,5,4));
-              System.err.println("Invalid location for Table with " + getNameOrID(res,2,1));
-              System.err.println(pe.getMessage());
-              numOfInvalid++;
-              continue;
-            }
-            if (currentUri.getScheme() == null || currentUri.getScheme().isEmpty()) {
-              System.err.println("In DB with " + getNameOrID(res,5,4));
-              System.err.println("Missing Location scheme for Table with " + getNameOrID(res,2,1));
-              System.err.println("The Location is: " + locValue);
-              numOfInvalid++;
-            } else if(defaultPrefix != null && !defaultPrefix.isEmpty() && locValue.substring(0,defaultPrefix.length())
-                .compareToIgnoreCase(defaultPrefix) != 0) {
-              System.err.println("In DB with " + getNameOrID(res,5,4));
-              System.err.println("Mismatch root Location for Table with " + getNameOrID(res,2,1));
-              System.err.println("The Location is: " + locValue);
-              numOfInvalid++;
-            }
           }
         }
         res.close();
@@ -335,9 +299,8 @@ public class HiveSchemaTool {
     return isValid;
   }
 
-  private boolean checkMetaStorePartitionLocation(Connection conn, String locHeader)
+  private boolean checkMetaStorePartitionLocation(Connection conn, URI[] defaultServers)
       throws HiveMetaException {
-    String defaultPrefix = locHeader;
     String partLoc, partIDRange;
     boolean isValid = true;
     int numOfInvalid = 0;
@@ -377,33 +340,11 @@ public class HiveSchemaTool {
         res = pStmt.executeQuery();
         while (res.next()) {
           String locValue = res.getString(3);
-          if (locValue == null) {
-            System.err.println("In DB with " + getNameOrID(res,7,6) + ", TABLE with " + getNameOrID(res,5,4));
-            System.err.println("NULL Location for PARTITION with " + getNameOrID(res,2,1));
+          String entity = "Database " + getNameOrID(res,7,6) +
+              ", Table "  + getNameOrID(res,5,4) +
+              ", Partition " + getNameOrID(res,2,1);
+          if (!checkLocation(entity, locValue, defaultServers)) {
             numOfInvalid++;
-          } else {
-            URI currentUri = null;
-            try {
-              currentUri = new Path(locValue).toUri();
-            } catch (Exception pe) {
-              System.err.println("In DB with " + getNameOrID(res,7,6) + ", TABLE with " + getNameOrID(res,5,4));
-              System.err.println("Invalid location for PARTITON with " + getNameOrID(res,2,1));
-              System.err.println(pe.getMessage());
-              numOfInvalid++;
-              continue;
-            }
-            if (currentUri.getScheme() == null || currentUri.getScheme().isEmpty()) {
-              System.err.println("In DB with " + getNameOrID(res,7,6) + ", TABLE with " + getNameOrID(res,5,4));
-              System.err.println("Missing Location scheme for PARTITON with " + getNameOrID(res,2,1));
-              System.err.println("The Location is: " + locValue);
-              numOfInvalid++;
-            } else if (defaultPrefix != null && !defaultPrefix.isEmpty() && locValue.substring(0,defaultPrefix.length())
-                .compareToIgnoreCase(defaultPrefix) != 0) {
-              System.err.println("In DB with " + getNameOrID(res,7,6) + ", TABLE with " + getNameOrID(res,5,4));
-              System.err.println("Mismatch root Location for PARTITON with " + getNameOrID(res,2,1));
-              System.err.println("The Location is: " + locValue);
-              numOfInvalid++;
-            }
           }
         }
         res.close();
@@ -417,6 +358,54 @@ public class HiveSchemaTool {
       isValid = false;
       System.err.println("Total number of invalid PARTITION locations is: "+ numOfInvalid);
     }
+    return isValid;
+  }
+
+  /**
+   * Check if the location is valid for the given entity
+   * @param entity          the entity to represent a database, partition or table
+   * @param entityLocation  the location
+   * @param defaultServers  a list of the servers that the location needs to match.
+   *                        The location host needs to match one of the given servers.
+   *                        If empty, then no check against such list.
+   * @return true if the location is valid
+   */
+  private boolean checkLocation(
+      String entity,
+      String entityLocation,
+      URI[] defaultServers) {
+    boolean isValid = true;
+    if (entityLocation == null) {
+      System.err.println(entity + ", error: empty location");
+      isValid = false;
+    } else {
+      try {
+        URI currentUri = new Path(entityLocation).toUri();
+        String scheme = currentUri.getScheme();
+        if (StringUtils.isEmpty(scheme)) {
+          System.err.println(entity + ", location: "+ entityLocation + ", error: missing location scheme");
+          isValid = false;
+        } else if (ArrayUtils.isNotEmpty(defaultServers) && currentUri.getAuthority() != null) {
+          String authority = currentUri.getAuthority();
+          boolean matchServer = false;
+          for(URI server : defaultServers) {
+            if (StringUtils.equalsIgnoreCase(server.getScheme(), scheme) &&
+                StringUtils.equalsIgnoreCase(server.getAuthority(), authority)) {
+              matchServer = true;
+              break;
+            }
+          }
+          if (!matchServer) {
+            System.err.println(entity + ", location: " + entityLocation + ", error: mismatched server");
+            isValid = false;
+          }
+        }
+      } catch (Exception pe) {
+        System.err.println(entity + ", error: invalid location " + pe.getMessage());
+        isValid =false;
+      }
+    }
+
     return isValid;
   }
 
@@ -551,7 +540,7 @@ public class HiveSchemaTool {
       validateSchemaVersions(conn);
       validateSequences(conn);
       validateSchemaTables(conn);
-      validateLocations(conn, null);
+      validateLocations(conn, this.validationServers);
       validateColumnNullValues(conn);
     } finally {
       if (conn != null) {
@@ -605,9 +594,12 @@ public class HiveSchemaTool {
              long maxId = res.getLong(1);
              if (maxId > 0) {
                ResultSet resSeq = stmt.executeQuery(seqQuery);
-               if (!resSeq.next() || resSeq.getLong(1) < maxId) {
+               if (!resSeq.next()) {
                  isValid = false;
-                 System.err.println("Incorrect sequence number: table - " + tableName);
+                 System.err.println("Missing SEQUENCE_NAME " + seqName + " from SEQUENCE_TABLE");
+               } else if (resSeq.getLong(1) < maxId) {
+                 isValid = false;
+                 System.err.println("NEXT_VAL for " + seqName + " in SEQUENCE_TABLE < max("+ tableKey + ") in " + tableName);
                }
              }
           }
@@ -749,7 +741,7 @@ public class HiveSchemaTool {
          String tableName = res.getString("TBL_NAME");
          String tableType = res.getString("TBL_TYPE");
          isValid = false;
-         System.err.println("Value of SD_ID in TBLS should not be NULL: hive table - " + tableName + " tableId - " + tableId + " tableType - " + tableType);
+         System.err.println("SD_ID in TBLS should not be NULL for Table Name=" + tableName + ", Table ID=" + tableId + ", Table Type=" + tableType);
       }
 
       System.out.println((isValid ? "Succeeded" : "Failed") + " in column validation for incorrect NULL values");
@@ -915,7 +907,9 @@ public class HiveSchemaTool {
                 .create("dbOpts");
     Option dryRunOpt = new Option("dryRun", "list SQL scripts (no execute)");
     Option verboseOpt = new Option("verbose", "only print SQL statements");
-
+    Option serversOpt = OptionBuilder.withArgName("serverList")
+        .hasArgs().withDescription("a comma-separated list of servers used in location validation")
+        .create("servers");
     cmdLineOptions.addOption(help);
     cmdLineOptions.addOption(dryRunOpt);
     cmdLineOptions.addOption(userNameOpt);
@@ -923,6 +917,7 @@ public class HiveSchemaTool {
     cmdLineOptions.addOption(dbTypeOpt);
     cmdLineOptions.addOption(verboseOpt);
     cmdLineOptions.addOption(dbOpts);
+    cmdLineOptions.addOption(serversOpt);
     cmdLineOptions.addOptionGroup(optGroup);
   }
 
@@ -981,6 +976,9 @@ public class HiveSchemaTool {
       }
       if (line.hasOption("dbOpts")) {
         schemaTool.setDbOpts(line.getOptionValue("dbOpts"));
+      }
+      if (line.hasOption("validate") && line.hasOption("servers")) {
+        schemaTool.setValidationServers(line.getOptionValue("servers"));
       }
       if (line.hasOption("info")) {
         schemaTool.showInfo();

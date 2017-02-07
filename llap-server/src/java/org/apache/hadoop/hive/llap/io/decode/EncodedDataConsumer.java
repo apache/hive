@@ -133,10 +133,4 @@ public abstract class EncodedDataConsumer<BatchKey, BatchType extends EncodedCol
     // We are just a relay; send unpause to encoded data producer.
     upstreamFeedback.unpause();
   }
-
-  @Override
-  public TypeDescription getFileSchema() {
-    // TODO: the ORC-specific method should be removed from the interface instead.
-    throw new UnsupportedOperationException();
-  }
 }

@@ -18,6 +18,8 @@
  
 package org.apache.hadoop.hive.ql.exec.vector.expressions.gen;
 
+import java.nio.charset.StandardCharsets;
+
 import org.apache.hadoop.hive.common.type.<TruncStringHiveType>;
 
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
@@ -178,7 +180,13 @@ public class <ClassName> extends VectorExpression {
   public void setRightValue(byte[] value) {
     this.right = value;
   }
-  
+
+  @Override
+  public String vectorExpressionParameters() {
+     return "col " + colNum + ", left " + displayUtf8Bytes(left) +
+         ", right " + displayUtf8Bytes(right);
+  }
+
   @Override
   public VectorExpressionDescriptor.Descriptor getDescriptor() {
     return (new VectorExpressionDescriptor.Builder())

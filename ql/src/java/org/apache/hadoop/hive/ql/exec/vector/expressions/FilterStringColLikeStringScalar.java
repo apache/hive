@@ -18,10 +18,9 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
-import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.udf.UDFLike;
-import org.apache.hadoop.io.Text;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -45,13 +44,9 @@ public class FilterStringColLikeStringScalar extends AbstractFilterStringColLike
     super();
   }
 
-  public FilterStringColLikeStringScalar(int colNum, byte[] likePattern) throws HiveException {
+  public FilterStringColLikeStringScalar(int colNum, byte[] likePattern) {
     super(colNum, null);
-    try {
-      super.setPattern(new String(likePattern, "UTF-8"));
-    } catch (Exception ex) {
-      throw new HiveException(ex);
-    }
+    super.setPattern(new String(likePattern, StandardCharsets.UTF_8));
   }
 
   @Override

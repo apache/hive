@@ -24,13 +24,13 @@ create table TSINT stored as orc AS SELECT * FROM TSINT_txt;
 create table TINT stored as orc AS SELECT * FROM TINT_txt;
 
 
-explain
+explain vectorization expression
 select tint.rnum, tsint.rnum, tint.cint, tsint.csint, (case when (tint.cint between tsint.csint and tsint.csint) then "Ok" else "NoOk" end) as between_col from tint , tsint;
 
 select tint.rnum, tsint.rnum, tint.cint, tsint.csint, (case when (tint.cint between tsint.csint and tsint.csint) then "Ok" else "NoOk" end) as between_col from tint , tsint;
 
 
-explain
+explain vectorization expression
 select tint.rnum, tsint.rnum, tint.cint, tsint.csint from tint , tsint where tint.cint between tsint.csint and tsint.csint;
 
 select tint.rnum, tsint.rnum, tint.cint, tsint.csint from tint , tsint where tint.cint between tsint.csint and tsint.csint;

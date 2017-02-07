@@ -63,7 +63,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc
 POSTHOOK: Output: default@alltypesorc_wrong
 POSTHOOK: Lineage: alltypesorc_wrong.stimestamp1 SIMPLE []
-PREHOOK: query: EXPLAIN SELECT
+PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION  SELECT
   to_unix_timestamp(ctimestamp1) AS c1,
   year(ctimestamp1),
   month(ctimestamp1),
@@ -76,7 +76,7 @@ PREHOOK: query: EXPLAIN SELECT
 FROM alltypesorc_string
 ORDER BY c1
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN SELECT
+POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION  SELECT
   to_unix_timestamp(ctimestamp1) AS c1,
   year(ctimestamp1),
   month(ctimestamp1),
@@ -89,6 +89,10 @@ POSTHOOK: query: EXPLAIN SELECT
 FROM alltypesorc_string
 ORDER BY c1
 POSTHOOK: type: QUERY
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -100,16 +104,41 @@ STAGE PLANS:
           TableScan
             alias: alltypesorc_string
             Statistics: Num rows: 40 Data size: 84 Basic stats: COMPLETE Column stats: NONE
+            TableScan Vectorization:
+                native: true
+                projectedOutputColumns: [0, 1]
             Select Operator
               expressions: to_unix_timestamp(ctimestamp1) (type: bigint), year(ctimestamp1) (type: int), month(ctimestamp1) (type: int), day(ctimestamp1) (type: int), dayofmonth(ctimestamp1) (type: int), weekofyear(ctimestamp1) (type: int), hour(ctimestamp1) (type: int), minute(ctimestamp1) (type: int), second(ctimestamp1) (type: int)
               outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
+              Select Vectorization:
+                  className: VectorSelectOperator
+                  native: true
+                  projectedOutputColumns: [2, 3, 4, 5, 6, 7, 8, 9, 10]
+                  selectExpressions: VectorUDFUnixTimeStampTimestamp(col 0) -> 2:long, VectorUDFYearTimestamp(col 0, field YEAR) -> 3:long, VectorUDFMonthTimestamp(col 0, field MONTH) -> 4:long, VectorUDFDayOfMonthTimestamp(col 0, field DAY_OF_MONTH) -> 5:long, VectorUDFDayOfMonthTimestamp(col 0, field DAY_OF_MONTH) -> 6:long, VectorUDFWeekOfYearTimestamp(col 0, field WEEK_OF_YEAR) -> 7:long, VectorUDFHourTimestamp(col 0, field HOUR_OF_DAY) -> 8:long, VectorUDFMinuteTimestamp(col 0, field MINUTE) -> 9:long, VectorUDFSecondTimestamp(col 0, field SECOND) -> 10:long
               Statistics: Num rows: 40 Data size: 84 Basic stats: COMPLETE Column stats: NONE
               Reduce Output Operator
                 key expressions: _col0 (type: bigint)
                 sort order: +
+                Reduce Sink Vectorization:
+                    className: VectorReduceSinkOperator
+                    native: false
+                    nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, Not ACID UPDATE or DELETE IS true, No buckets IS true, No TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                    nativeConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false, Uniform Hash IS false
                 Statistics: Num rows: 40 Data size: 84 Basic stats: COMPLETE Column stats: NONE
                 value expressions: _col1 (type: int), _col2 (type: int), _col3 (type: int), _col4 (type: int), _col5 (type: int), _col6 (type: int), _col7 (type: int), _col8 (type: int)
       Execution mode: vectorized
+      Map Vectorization:
+          enabled: true
+          enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+          groupByVectorOutput: true
+          inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+          allNative: false
+          usesVectorUDFAdaptor: false
+          vectorized: true
+      Reduce Vectorization:
+          enabled: false
+          enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true
+          enableConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: bigint), VALUE._col0 (type: int), VALUE._col1 (type: int), VALUE._col2 (type: int), VALUE._col3 (type: int), VALUE._col4 (type: int), VALUE._col5 (type: int), VALUE._col6 (type: int), VALUE._col7 (type: int)
@@ -199,7 +228,7 @@ NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
 NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
 NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
 NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
-PREHOOK: query: EXPLAIN SELECT
+PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION  SELECT
   to_unix_timestamp(stimestamp1) AS c1,
   year(stimestamp1),
   month(stimestamp1),
@@ -212,7 +241,7 @@ PREHOOK: query: EXPLAIN SELECT
 FROM alltypesorc_string
 ORDER BY c1
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN SELECT
+POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION  SELECT
   to_unix_timestamp(stimestamp1) AS c1,
   year(stimestamp1),
   month(stimestamp1),
@@ -225,6 +254,10 @@ POSTHOOK: query: EXPLAIN SELECT
 FROM alltypesorc_string
 ORDER BY c1
 POSTHOOK: type: QUERY
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -236,16 +269,41 @@ STAGE PLANS:
           TableScan
             alias: alltypesorc_string
             Statistics: Num rows: 40 Data size: 84 Basic stats: COMPLETE Column stats: NONE
+            TableScan Vectorization:
+                native: true
+                projectedOutputColumns: [0, 1]
             Select Operator
               expressions: to_unix_timestamp(stimestamp1) (type: bigint), year(stimestamp1) (type: int), month(stimestamp1) (type: int), day(stimestamp1) (type: int), dayofmonth(stimestamp1) (type: int), weekofyear(stimestamp1) (type: int), hour(stimestamp1) (type: int), minute(stimestamp1) (type: int), second(stimestamp1) (type: int)
               outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
+              Select Vectorization:
+                  className: VectorSelectOperator
+                  native: true
+                  projectedOutputColumns: [2, 3, 4, 5, 6, 7, 8, 9, 10]
+                  selectExpressions: VectorUDFUnixTimeStampString(col 1) -> 2:long, VectorUDFYearString(col 1, fieldStart 0, fieldLength 4) -> 3:long, VectorUDFMonthString(col 1, fieldStart 5, fieldLength 2) -> 4:long, VectorUDFDayOfMonthString(col 1, fieldStart 8, fieldLength 2) -> 5:long, VectorUDFDayOfMonthString(col 1, fieldStart 8, fieldLength 2) -> 6:long, VectorUDFWeekOfYearString(col 1) -> 7:long, VectorUDFHourString(col 1, fieldStart 11, fieldLength 2) -> 8:long, VectorUDFMinuteString(col 1, fieldStart 14, fieldLength 2) -> 9:long, VectorUDFSecondString(col 1, fieldStart 17, fieldLength 2) -> 10:long
               Statistics: Num rows: 40 Data size: 84 Basic stats: COMPLETE Column stats: NONE
               Reduce Output Operator
                 key expressions: _col0 (type: bigint)
                 sort order: +
+                Reduce Sink Vectorization:
+                    className: VectorReduceSinkOperator
+                    native: false
+                    nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, Not ACID UPDATE or DELETE IS true, No buckets IS true, No TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                    nativeConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false, Uniform Hash IS false
                 Statistics: Num rows: 40 Data size: 84 Basic stats: COMPLETE Column stats: NONE
                 value expressions: _col1 (type: int), _col2 (type: int), _col3 (type: int), _col4 (type: int), _col5 (type: int), _col6 (type: int), _col7 (type: int), _col8 (type: int)
       Execution mode: vectorized
+      Map Vectorization:
+          enabled: true
+          enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+          groupByVectorOutput: true
+          inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+          allNative: false
+          usesVectorUDFAdaptor: false
+          vectorized: true
+      Reduce Vectorization:
+          enabled: false
+          enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true
+          enableConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: bigint), VALUE._col0 (type: int), VALUE._col1 (type: int), VALUE._col2 (type: int), VALUE._col3 (type: int), VALUE._col4 (type: int), VALUE._col5 (type: int), VALUE._col6 (type: int), VALUE._col7 (type: int)
@@ -335,7 +393,7 @@ NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
 NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
 NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
 NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
-PREHOOK: query: EXPLAIN SELECT
+PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION  SELECT
   to_unix_timestamp(ctimestamp1) = to_unix_timestamp(stimestamp1) AS c1,
   year(ctimestamp1) = year(stimestamp1),
   month(ctimestamp1) = month(stimestamp1),
@@ -348,7 +406,7 @@ PREHOOK: query: EXPLAIN SELECT
 FROM alltypesorc_string
 ORDER BY c1
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN SELECT
+POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION  SELECT
   to_unix_timestamp(ctimestamp1) = to_unix_timestamp(stimestamp1) AS c1,
   year(ctimestamp1) = year(stimestamp1),
   month(ctimestamp1) = month(stimestamp1),
@@ -361,6 +419,10 @@ POSTHOOK: query: EXPLAIN SELECT
 FROM alltypesorc_string
 ORDER BY c1
 POSTHOOK: type: QUERY
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -372,16 +434,41 @@ STAGE PLANS:
           TableScan
             alias: alltypesorc_string
             Statistics: Num rows: 40 Data size: 84 Basic stats: COMPLETE Column stats: NONE
+            TableScan Vectorization:
+                native: true
+                projectedOutputColumns: [0, 1]
             Select Operator
               expressions: (to_unix_timestamp(ctimestamp1) = to_unix_timestamp(stimestamp1)) (type: boolean), (year(ctimestamp1) = year(stimestamp1)) (type: boolean), (month(ctimestamp1) = month(stimestamp1)) (type: boolean), (day(ctimestamp1) = day(stimestamp1)) (type: boolean), (dayofmonth(ctimestamp1) = dayofmonth(stimestamp1)) (type: boolean), (weekofyear(ctimestamp1) = weekofyear(stimestamp1)) (type: boolean), (hour(ctimestamp1) = hour(stimestamp1)) (type: boolean), (minute(ctimestamp1) = minute(stimestamp1)) (type: boolean), (second(ctimestamp1) = second(stimestamp1)) (type: boolean)
               outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
+              Select Vectorization:
+                  className: VectorSelectOperator
+                  native: true
+                  projectedOutputColumns: [4, 5, 6, 7, 8, 9, 10, 11, 12]
+                  selectExpressions: LongColEqualLongColumn(col 2, col 3)(children: VectorUDFUnixTimeStampTimestamp(col 0) -> 2:long, VectorUDFUnixTimeStampString(col 1) -> 3:long) -> 4:long, LongColEqualLongColumn(col 2, col 3)(children: VectorUDFYearTimestamp(col 0, field YEAR) -> 2:long, VectorUDFYearString(col 1, fieldStart 0, fieldLength 4) -> 3:long) -> 5:long, LongColEqualLongColumn(col 2, col 3)(children: VectorUDFMonthTimestamp(col 0, field MONTH) -> 2:long, VectorUDFMonthString(col 1, fieldStart 5, fieldLength 2) -> 3:long) -> 6:long, LongColEqualLongColumn(col 2, col 3)(children: VectorUDFDayOfMonthTimestamp(col 0, field DAY_OF_MONTH) -> 2:long, VectorUDFDayOfMonthString(col 1, fieldStart 8, fieldLength 2) -> 3:long) -> 7:long, LongColEqualLongColumn(col 2, col 3)(children: VectorUDFDayOfMonthTimestamp(col 0, field DAY_OF_MONTH) -> 2:long, VectorUDFDayOfMonthString(col 1, fieldStart 8, fieldLength 2) -> 3:long) -> 8:long, LongColEqualLongColumn(col 2, col 3)(children: VectorUDFWeekOfYearTimestamp(col 0, field WEEK_OF_YEAR) -> 2:long, VectorUDFWeekOfYearString(col 1) -> 3:long) -> 9:long, LongColEqualLongColumn(col 2, col 3)(children: VectorUDFHourTimestamp(col 0, field HOUR_OF_DAY) -> 2:long, VectorUDFHourString(col 1, fieldStart 11, fieldLength 2) -> 3:long) -> 10:long, LongColEqualLongColumn(col 2, col 3)(children: VectorUDFMinuteTimestamp(col 0, field MINUTE) -> 2:long, VectorUDFMinuteString(col 1, fieldStart 14, fieldLength 2) -> 3:long) -> 11:long, LongColEqualLongColumn(col 2, col 3)(children: VectorUDFSecondTimestamp(col 0, field SECOND) -> 2:long, VectorUDFSecondString(col 1, fieldStart 17, fieldLength 2) -> 3:long) -> 12:long
               Statistics: Num rows: 40 Data size: 84 Basic stats: COMPLETE Column stats: NONE
               Reduce Output Operator
                 key expressions: _col0 (type: boolean)
                 sort order: +
+                Reduce Sink Vectorization:
+                    className: VectorReduceSinkOperator
+                    native: false
+                    nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, Not ACID UPDATE or DELETE IS true, No buckets IS true, No TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                    nativeConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false, Uniform Hash IS false
                 Statistics: Num rows: 40 Data size: 84 Basic stats: COMPLETE Column stats: NONE
                 value expressions: _col1 (type: boolean), _col2 (type: boolean), _col3 (type: boolean), _col4 (type: boolean), _col5 (type: boolean), _col6 (type: boolean), _col7 (type: boolean), _col8 (type: boolean)
       Execution mode: vectorized
+      Map Vectorization:
+          enabled: true
+          enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+          groupByVectorOutput: true
+          inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+          allNative: false
+          usesVectorUDFAdaptor: false
+          vectorized: true
+      Reduce Vectorization:
+          enabled: false
+          enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true
+          enableConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: boolean), VALUE._col0 (type: boolean), VALUE._col1 (type: boolean), VALUE._col2 (type: boolean), VALUE._col3 (type: boolean), VALUE._col4 (type: boolean), VALUE._col5 (type: boolean), VALUE._col6 (type: boolean), VALUE._col7 (type: boolean)
@@ -471,7 +558,7 @@ NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
 NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
 NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
 NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
-PREHOOK: query: EXPLAIN SELECT
+PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION  SELECT
   to_unix_timestamp(stimestamp1) AS c1,
   year(stimestamp1),
   month(stimestamp1),
@@ -484,7 +571,7 @@ PREHOOK: query: EXPLAIN SELECT
 FROM alltypesorc_wrong
 ORDER BY c1
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN SELECT
+POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION  SELECT
   to_unix_timestamp(stimestamp1) AS c1,
   year(stimestamp1),
   month(stimestamp1),
@@ -497,6 +584,10 @@ POSTHOOK: query: EXPLAIN SELECT
 FROM alltypesorc_wrong
 ORDER BY c1
 POSTHOOK: type: QUERY
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -508,16 +599,41 @@ STAGE PLANS:
           TableScan
             alias: alltypesorc_wrong
             Statistics: Num rows: 3 Data size: 294 Basic stats: COMPLETE Column stats: NONE
+            TableScan Vectorization:
+                native: true
+                projectedOutputColumns: [0]
             Select Operator
               expressions: to_unix_timestamp(stimestamp1) (type: bigint), year(stimestamp1) (type: int), month(stimestamp1) (type: int), day(stimestamp1) (type: int), dayofmonth(stimestamp1) (type: int), weekofyear(stimestamp1) (type: int), hour(stimestamp1) (type: int), minute(stimestamp1) (type: int), second(stimestamp1) (type: int)
               outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
+              Select Vectorization:
+                  className: VectorSelectOperator
+                  native: true
+                  projectedOutputColumns: [1, 2, 3, 4, 5, 6, 7, 8, 9]
+                  selectExpressions: VectorUDFUnixTimeStampString(col 0) -> 1:long, VectorUDFYearString(col 0, fieldStart 0, fieldLength 4) -> 2:long, VectorUDFMonthString(col 0, fieldStart 5, fieldLength 2) -> 3:long, VectorUDFDayOfMonthString(col 0, fieldStart 8, fieldLength 2) -> 4:long, VectorUDFDayOfMonthString(col 0, fieldStart 8, fieldLength 2) -> 5:long, VectorUDFWeekOfYearString(col 0) -> 6:long, VectorUDFHourString(col 0, fieldStart 11, fieldLength 2) -> 7:long, VectorUDFMinuteString(col 0, fieldStart 14, fieldLength 2) -> 8:long, VectorUDFSecondString(col 0, fieldStart 17, fieldLength 2) -> 9:long
               Statistics: Num rows: 3 Data size: 294 Basic stats: COMPLETE Column stats: NONE
               Reduce Output Operator
                 key expressions: _col0 (type: bigint)
                 sort order: +
+                Reduce Sink Vectorization:
+                    className: VectorReduceSinkOperator
+                    native: false
+                    nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, Not ACID UPDATE or DELETE IS true, No buckets IS true, No TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                    nativeConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false, Uniform Hash IS false
                 Statistics: Num rows: 3 Data size: 294 Basic stats: COMPLETE Column stats: NONE
                 value expressions: _col1 (type: int), _col2 (type: int), _col3 (type: int), _col4 (type: int), _col5 (type: int), _col6 (type: int), _col7 (type: int), _col8 (type: int)
       Execution mode: vectorized
+      Map Vectorization:
+          enabled: true
+          enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+          groupByVectorOutput: true
+          inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+          allNative: false
+          usesVectorUDFAdaptor: false
+          vectorized: true
+      Reduce Vectorization:
+          enabled: false
+          enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true
+          enableConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false
       Reduce Operator Tree:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: bigint), VALUE._col0 (type: int), VALUE._col1 (type: int), VALUE._col2 (type: int), VALUE._col3 (type: int), VALUE._col4 (type: int), VALUE._col5 (type: int), VALUE._col6 (type: int), VALUE._col7 (type: int)
@@ -570,20 +686,24 @@ POSTHOOK: Input: default@alltypesorc_wrong
 NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
 NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
 NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
-PREHOOK: query: EXPLAIN SELECT
+PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION  SELECT
   min(ctimestamp1),
   max(ctimestamp1),
   count(ctimestamp1),
   count(*)
 FROM alltypesorc_string
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN SELECT
+POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION  SELECT
   min(ctimestamp1),
   max(ctimestamp1),
   count(ctimestamp1),
   count(*)
 FROM alltypesorc_string
 POSTHOOK: type: QUERY
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -595,23 +715,57 @@ STAGE PLANS:
           TableScan
             alias: alltypesorc_string
             Statistics: Num rows: 40 Data size: 84 Basic stats: COMPLETE Column stats: NONE
+            TableScan Vectorization:
+                native: true
+                projectedOutputColumns: [0, 1]
             Select Operator
               expressions: ctimestamp1 (type: timestamp)
               outputColumnNames: ctimestamp1
+              Select Vectorization:
+                  className: VectorSelectOperator
+                  native: true
+                  projectedOutputColumns: [0]
               Statistics: Num rows: 40 Data size: 84 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
                 aggregations: min(ctimestamp1), max(ctimestamp1), count(ctimestamp1), count()
+                Group By Vectorization:
+                    aggregators: VectorUDAFMinTimestamp(col 0) -> timestamp, VectorUDAFMaxTimestamp(col 0) -> timestamp, VectorUDAFCount(col 0) -> bigint, VectorUDAFCountStar(*) -> bigint
+                    className: VectorGroupByOperator
+                    vectorOutput: true
+                    native: false
+                    projectedOutputColumns: [0, 1, 2, 3]
                 mode: hash
                 outputColumnNames: _col0, _col1, _col2, _col3
                 Statistics: Num rows: 1 Data size: 96 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   sort order: 
+                  Reduce Sink Vectorization:
+                      className: VectorReduceSinkOperator
+                      native: false
+                      nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, Not ACID UPDATE or DELETE IS true, No buckets IS true, No TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                      nativeConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false, Uniform Hash IS false
                   Statistics: Num rows: 1 Data size: 96 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col0 (type: timestamp), _col1 (type: timestamp), _col2 (type: bigint), _col3 (type: bigint)
       Execution mode: vectorized
+      Map Vectorization:
+          enabled: true
+          enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+          groupByVectorOutput: true
+          inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+          allNative: false
+          usesVectorUDFAdaptor: false
+          vectorized: true
+      Reduce Vectorization:
+          enabled: false
+          enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true
+          enableConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false
       Reduce Operator Tree:
         Group By Operator
           aggregations: min(VALUE._col0), max(VALUE._col1), count(VALUE._col2), count(VALUE._col3)
+          Group By Vectorization:
+              vectorOutput: false
+              native: false
+              projectedOutputColumns: null
           mode: mergepartial
           outputColumnNames: _col0, _col1, _col2, _col3
           Statistics: Num rows: 1 Data size: 96 Basic stats: COMPLETE Column stats: NONE
@@ -648,14 +802,18 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc_string
 #### A masked pattern was here ####
 NULL	NULL	0	40
-PREHOOK: query: EXPLAIN SELECT
+PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION  SELECT
   round(sum(ctimestamp1), 3)
 FROM alltypesorc_string
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN SELECT
+POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION  SELECT
   round(sum(ctimestamp1), 3)
 FROM alltypesorc_string
 POSTHOOK: type: QUERY
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -680,9 +838,23 @@ STAGE PLANS:
                   sort order: 
                   Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col0 (type: double)
+      Map Vectorization:
+          enabled: true
+          enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+          inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+          notVectorizedReason: Aggregation Function expression for GROUPBY operator: Vectorization of aggreation should have succeeded org.apache.hadoop.hive.ql.metadata.HiveException: Vector aggregate not implemented: "sum" for type: "TIMESTAMP (UDAF evaluator mode = PARTIAL1)
+          vectorized: false
+      Reduce Vectorization:
+          enabled: false
+          enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true
+          enableConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false
       Reduce Operator Tree:
         Group By Operator
           aggregations: sum(VALUE._col0)
+          Group By Vectorization:
+              vectorOutput: false
+              native: false
+              projectedOutputColumns: null
           mode: mergepartial
           outputColumnNames: _col0
           Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
@@ -717,7 +889,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc_string
 #### A masked pattern was here ####
 NULL
-PREHOOK: query: EXPLAIN SELECT
+PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION  SELECT
   round(avg(ctimestamp1), 0),
   variance(ctimestamp1) between 8.97077295279421E19 and 8.97077295279422E19,
   var_pop(ctimestamp1) between 8.97077295279421E19 and 8.97077295279422E19,
@@ -728,7 +900,7 @@ PREHOOK: query: EXPLAIN SELECT
   round(stddev_samp(ctimestamp1), 3)
 FROM alltypesorc_string
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN SELECT
+POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION  SELECT
   round(avg(ctimestamp1), 0),
   variance(ctimestamp1) between 8.97077295279421E19 and 8.97077295279422E19,
   var_pop(ctimestamp1) between 8.97077295279421E19 and 8.97077295279422E19,
@@ -739,6 +911,10 @@ POSTHOOK: query: EXPLAIN SELECT
   round(stddev_samp(ctimestamp1), 3)
 FROM alltypesorc_string
 POSTHOOK: type: QUERY
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -750,12 +926,26 @@ STAGE PLANS:
           TableScan
             alias: alltypesorc_string
             Statistics: Num rows: 40 Data size: 84 Basic stats: COMPLETE Column stats: NONE
+            TableScan Vectorization:
+                native: true
+                projectedOutputColumns: [0, 1]
             Select Operator
               expressions: ctimestamp1 (type: timestamp)
               outputColumnNames: ctimestamp1
+              Select Vectorization:
+                  className: VectorSelectOperator
+                  native: true
+                  projectedOutputColumns: [0]
               Statistics: Num rows: 40 Data size: 84 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
                 aggregations: avg(ctimestamp1), variance(ctimestamp1), var_pop(ctimestamp1), var_samp(ctimestamp1), std(ctimestamp1), stddev(ctimestamp1), stddev_pop(ctimestamp1), stddev_samp(ctimestamp1)
+                Group By Vectorization:
+                    aggregators: VectorUDAFAvgTimestamp(col 0) -> struct<count:bigint,sum:double>, VectorUDAFVarPopTimestamp(col 0) -> struct<count:bigint,sum:double,variance:double>, VectorUDAFVarPopTimestamp(col 0) -> struct<count:bigint,sum:double,variance:double>, VectorUDAFVarSampTimestamp(col 0) -> struct<count:bigint,sum:double,variance:double>, VectorUDAFStdPopTimestamp(col 0) -> struct<count:bigint,sum:double,variance:double>, VectorUDAFStdPopTimestamp(col 0) -> struct<count:bigint,sum:double,variance:double>, VectorUDAFStdPopTimestamp(col 0) -> struct<count:bigint,sum:double,variance:double>, VectorUDAFStdSampTimestamp(col 0) -> struct<count:bigint,sum:double,variance:double>
+                    className: VectorGroupByOperator
+                    vectorOutput: false
+                    native: false
+                    projectedOutputColumns: [0, 1, 2, 3, 4, 5, 6, 7]
+                    vectorOutputConditionsNotMet: Vector output of VectorUDAFAvgTimestamp(col 0) -> struct<count:bigint,sum:double> output type STRUCT requires PRIMITIVE IS false, Vector output of VectorUDAFVarPopTimestamp(col 0) -> struct<count:bigint,sum:double,variance:double> output type STRUCT requires PRIMITIVE IS false, Vector output of VectorUDAFVarPopTimestamp(col 0) -> struct<count:bigint,sum:double,variance:double> output type STRUCT requires PRIMITIVE IS false, Vector output of VectorUDAFVarSampTimestamp(col 0) -> struct<count:bigint,sum:double,variance:double> output type STRUCT requires PRIMITIVE IS false, Vector output of VectorUDAFStdPopTimestamp(col 0) -> struct<count:bigint,sum:double,variance:double> output type STRUCT requires PRIMITIVE IS false, Vector output of VectorUDAFStdPopTimestamp(col 0) -> struct<count:bigint,sum:double,variance:double> output type STRUCT requires PRIMITIVE IS false, Vector output of VectorUDAFStdPopTimestamp(col 0) -> struct<count:bigint,sum:double,variance:double> output type STRUCT requires PRIMITIVE IS false, Vector output of VectorUDAFStdSampTimestamp(col 0) -> struct<count:bigint,sum:double,variance:double> output type STRUCT requires PRIMITIVE IS false
                 mode: hash
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7
                 Statistics: Num rows: 1 Data size: 672 Basic stats: COMPLETE Column stats: NONE
@@ -764,9 +954,25 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 672 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col0 (type: struct<count:bigint,sum:double,input:timestamp>), _col1 (type: struct<count:bigint,sum:double,variance:double>), _col2 (type: struct<count:bigint,sum:double,variance:double>), _col3 (type: struct<count:bigint,sum:double,variance:double>), _col4 (type: struct<count:bigint,sum:double,variance:double>), _col5 (type: struct<count:bigint,sum:double,variance:double>), _col6 (type: struct<count:bigint,sum:double,variance:double>), _col7 (type: struct<count:bigint,sum:double,variance:double>)
       Execution mode: vectorized
+      Map Vectorization:
+          enabled: true
+          enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+          groupByVectorOutput: false
+          inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+          allNative: false
+          usesVectorUDFAdaptor: false
+          vectorized: true
+      Reduce Vectorization:
+          enabled: false
+          enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true
+          enableConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false
       Reduce Operator Tree:
         Group By Operator
           aggregations: avg(VALUE._col0), variance(VALUE._col1), var_pop(VALUE._col2), var_samp(VALUE._col3), std(VALUE._col4), stddev(VALUE._col5), stddev_pop(VALUE._col6), stddev_samp(VALUE._col7)
+          Group By Vectorization:
+              vectorOutput: false
+              native: false
+              projectedOutputColumns: null
           mode: mergepartial
           outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7
           Statistics: Num rows: 1 Data size: 672 Basic stats: COMPLETE Column stats: NONE

@@ -1,6 +1,7 @@
 set hive.explain.user=false;
 SET hive.vectorized.execution.enabled=true;
 SET hive.auto.convert.join=true;
+set hive.fetch.task.conversion=none;
 
 -- SORT_QUERY_RESULTS
 --
@@ -20,19 +21,19 @@ CREATE TABLE myinput1 STORED AS ORC AS SELECT * FROM myinput1_txt;
 SET hive.vectorized.execution.mapjoin.native.enabled=false;
 
 -- merging
-explain select * from myinput1 a join myinput1 b on a.key<=>b.value;
+explain vectorization expression select * from myinput1 a join myinput1 b on a.key<=>b.value;
 select * from myinput1 a join myinput1 b on a.key<=>b.value;
 
-explain select * from myinput1 a join myinput1 b on a.key<=>b.value join myinput1 c on a.key=c.key;
+explain vectorization expression select * from myinput1 a join myinput1 b on a.key<=>b.value join myinput1 c on a.key=c.key;
 select * from myinput1 a join myinput1 b on a.key<=>b.value join myinput1 c on a.key=c.key;
 
-explain select * from myinput1 a join myinput1 b on a.key<=>b.value join myinput1 c on a.key<=>c.key;
+explain vectorization expression select * from myinput1 a join myinput1 b on a.key<=>b.value join myinput1 c on a.key<=>c.key;
 select * from myinput1 a join myinput1 b on a.key<=>b.value join myinput1 c on a.key<=>c.key;
 
-explain select * from myinput1 a join myinput1 b on a.key<=>b.value AND a.value=b.key join myinput1 c on a.key<=>c.key AND a.value=c.value;
+explain vectorization expression select * from myinput1 a join myinput1 b on a.key<=>b.value AND a.value=b.key join myinput1 c on a.key<=>c.key AND a.value=c.value;
 select * from myinput1 a join myinput1 b on a.key<=>b.value AND a.value=b.key join myinput1 c on a.key<=>c.key AND a.value=c.value;
 
-explain select * from myinput1 a join myinput1 b on a.key<=>b.value AND a.value<=>b.key join myinput1 c on a.key<=>c.key AND a.value<=>c.value;
+explain vectorization expression select * from myinput1 a join myinput1 b on a.key<=>b.value AND a.value<=>b.key join myinput1 c on a.key<=>c.key AND a.value<=>c.value;
 select * from myinput1 a join myinput1 b on a.key<=>b.value AND a.value<=>b.key join myinput1 c on a.key<=>c.key AND a.value<=>c.value;
 
 -- outer joins
@@ -47,19 +48,19 @@ SELECT /*+ MAPJOIN(b) */ * FROM myinput1 a JOIN myinput1 b ON a.key<=>b.value;
 SET hive.vectorized.execution.mapjoin.native.enabled=true;
 
 -- merging
-explain select * from myinput1 a join myinput1 b on a.key<=>b.value;
+explain vectorization expression select * from myinput1 a join myinput1 b on a.key<=>b.value;
 select * from myinput1 a join myinput1 b on a.key<=>b.value;
 
-explain select * from myinput1 a join myinput1 b on a.key<=>b.value join myinput1 c on a.key=c.key;
+explain vectorization expression select * from myinput1 a join myinput1 b on a.key<=>b.value join myinput1 c on a.key=c.key;
 select * from myinput1 a join myinput1 b on a.key<=>b.value join myinput1 c on a.key=c.key;
 
-explain select * from myinput1 a join myinput1 b on a.key<=>b.value join myinput1 c on a.key<=>c.key;
+explain vectorization expression select * from myinput1 a join myinput1 b on a.key<=>b.value join myinput1 c on a.key<=>c.key;
 select * from myinput1 a join myinput1 b on a.key<=>b.value join myinput1 c on a.key<=>c.key;
 
-explain select * from myinput1 a join myinput1 b on a.key<=>b.value AND a.value=b.key join myinput1 c on a.key<=>c.key AND a.value=c.value;
+explain vectorization expression select * from myinput1 a join myinput1 b on a.key<=>b.value AND a.value=b.key join myinput1 c on a.key<=>c.key AND a.value=c.value;
 select * from myinput1 a join myinput1 b on a.key<=>b.value AND a.value=b.key join myinput1 c on a.key<=>c.key AND a.value=c.value;
 
-explain select * from myinput1 a join myinput1 b on a.key<=>b.value AND a.value<=>b.key join myinput1 c on a.key<=>c.key AND a.value<=>c.value;
+explain vectorization expression select * from myinput1 a join myinput1 b on a.key<=>b.value AND a.value<=>b.key join myinput1 c on a.key<=>c.key AND a.value<=>c.value;
 select * from myinput1 a join myinput1 b on a.key<=>b.value AND a.value<=>b.key join myinput1 c on a.key<=>c.key AND a.value<=>c.value;
 
 -- outer joins

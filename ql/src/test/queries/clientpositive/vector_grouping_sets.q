@@ -45,7 +45,7 @@ create table store
 stored as orc as
 select * from store_txt;
 
-explain
+explain vectorization expression
 select s_store_id
  from store
  group by s_store_id with rollup;
@@ -54,7 +54,7 @@ select s_store_id
  from store
  group by s_store_id with rollup;
 
-explain
+explain vectorization expression
 select s_store_id, GROUPING__ID
  from store
  group by s_store_id with rollup;

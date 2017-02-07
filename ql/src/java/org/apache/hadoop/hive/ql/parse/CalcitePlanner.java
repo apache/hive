@@ -136,8 +136,17 @@ import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
-import org.apache.hadoop.hive.ql.optimizer.calcite.*;
+import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException;
+import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSubquerySemanticException;
 import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException.UnsupportedFeature;
+import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
+import org.apache.hadoop.hive.ql.optimizer.calcite.HiveDefaultRelMetadataProvider;
+import org.apache.hadoop.hive.ql.optimizer.calcite.HivePlannerContext;
+import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelFactories;
+import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRexExecutorImpl;
+import org.apache.hadoop.hive.ql.optimizer.calcite.HiveTypeSystemImpl;
+import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
+import org.apache.hadoop.hive.ql.optimizer.calcite.TraitsUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.cost.HiveAlgorithmsConf;
 import org.apache.hadoop.hive.ql.optimizer.calcite.cost.HiveVolcanoPlanner;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAggregate;
@@ -337,10 +346,6 @@ public class CalcitePlanner extends SemanticAnalyzer {
         boolean reAnalyzeAST = false;
         final boolean materializedView = getQB().isMaterializedView();
 
-        // currently semi-join optimization doesn't work with subqueries
-        // so this will be turned off for if we find subqueries and will later be
-        // restored to its original state
-        boolean originalSemiOptVal = this.conf.getBoolVar(ConfVars.SEMIJOIN_CONVERSION);
         try {
           if (this.conf.getBoolVar(HiveConf.ConfVars.HIVE_CBO_RETPATH_HIVEOP)) {
             sinkOp = getOptimizedHiveOPDag();
@@ -446,8 +451,6 @@ public class CalcitePlanner extends SemanticAnalyzer {
             super.genResolvedParseTree(ast, new PlannerContext());
             skipCalcitePlan = true;
           }
-          // restore semi-join opt flag
-          this.conf.setBoolVar(ConfVars.SEMIJOIN_CONVERSION, originalSemiOptVal);
         }
       } else {
         this.ctx.setCboInfo("Plan not optimized by CBO.");
@@ -2315,6 +2318,14 @@ public class CalcitePlanner extends SemanticAnalyzer {
                     subQueryAST, "Only SubQuery expressions that are top level conjuncts are allowed"));
 
           }
+          ASTNode outerQueryExpr = (ASTNode) subQueryAST.getChild(2);
+
+          if (outerQueryExpr != null && outerQueryExpr.getType() == HiveParser.TOK_SUBQUERY_EXPR ) {
+
+            throw new CalciteSubquerySemanticException(ErrorMsg.UNSUPPORTED_SUBQUERY_EXPRESSION.getMsg(
+                    outerQueryExpr, "IN/NOT IN subqueries are not allowed in LHS"));
+          }
+
 
           QBSubQuery subQuery = SubQueryUtils.buildSubQuery(qb.getId(), sqIdx, subQueryAST,
                   originalSubQueryAST, ctx);
@@ -2408,9 +2419,6 @@ public class CalcitePlanner extends SemanticAnalyzer {
                 .get(srcRel));
         relToHiveRR.put(filterRel, relToHiveRR.get(srcRel));
         this.subqueryId++;
-
-        // semi-join opt doesn't work with subqueries
-        conf.setBoolVar(ConfVars.SEMIJOIN_CONVERSION, false);
         return filterRel;
       } else {
         return genFilterRelNode(searchCond, srcRel, outerNameToPosMap, outerRR, forHavingClause);
@@ -3400,7 +3408,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
       // TODO: Handle Query Hints; currently we ignore them
       boolean selectStar = false;
       int posn = 0;
-      boolean hintPresent = (selExprList.getChild(0).getType() == HiveParser.TOK_HINTLIST);
+      boolean hintPresent = (selExprList.getChild(0).getType() == HiveParser.QUERY_HINT);
       if (hintPresent) {
         String hint = ctx.getTokenRewriteStream().toString(
             selExprList.getChild(0).getTokenStartIndex(),

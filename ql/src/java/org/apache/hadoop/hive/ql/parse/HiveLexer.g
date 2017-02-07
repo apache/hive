@@ -342,6 +342,11 @@ KW_REPL: 'REPL';
 KW_DUMP: 'DUMP';
 KW_BATCH: 'BATCH';
 KW_STATUS: 'STATUS';
+KW_VECTORIZATION: 'VECTORIZATION';
+KW_SUMMARY: 'SUMMARY';
+KW_OPERATOR: 'OPERATOR';
+KW_EXPRESSION: 'EXPRESSION';
+KW_DETAIL: 'DETAIL';
 
 // Operators
 // NOTE: if you add a new function/operator, add it to sysFuncNames so that describe function _FUNC_ will work.
@@ -488,8 +493,10 @@ CharSetName
 WS  :  (' '|'\r'|'\t'|'\n') {$channel=HIDDEN;}
     ;
 
-COMMENT
-  : '--' (~('\n'|'\r'))*
-    { $channel=HIDDEN; }
-  ;
+LINE_COMMENT
+    : '--' (~('\n'|'\r'))* { $channel=HIDDEN; }
+    ;
 
+QUERY_HINT
+    : '/*' (options { greedy=false; } : QUERY_HINT|.)* '*/' { if(getText().charAt(2) != '+') { $channel=HIDDEN; } else { setText(getText().substring(3, getText().length() - 2)); } }
+    ;

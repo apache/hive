@@ -775,51 +775,57 @@ public class ConvertJoinMapJoin implements NodeProcessor {
     return mapJoinOp;
   }
 
-  // Remove any semijoin branch associated with mapjoin's parent's operator
-  // pipeline which can cause a cycle after mapjoin optimization.
+  // Remove any semijoin branch associated with hashjoin's parent's operator
+  // pipeline which can cause a cycle after hashjoin optimization.
   private void removeCycleCreatingSemiJoinOps(MapJoinOperator mapjoinOp,
                                               Operator<?> parentSelectOpOfBigTable,
                                               ParseContext parseContext) throws SemanticException {
-    boolean semiJoinCycle = false;
-    ReduceSinkOperator rs = null;
-    TableScanOperator ts = null;
+    Map<ReduceSinkOperator, TableScanOperator> semiJoinMap =
+            new HashMap<ReduceSinkOperator, TableScanOperator>();
     for (Operator<?> op : parentSelectOpOfBigTable.getChildOperators()) {
       if (!(op instanceof SelectOperator)) {
         continue;
       }
 
-      while (op.getChildOperators().size() > 0 ) {
+      while (op.getChildOperators().size() > 0) {
         op = op.getChildOperators().get(0);
-        if (!(op instanceof ReduceSinkOperator)) {
-          continue;
-        }
-        rs = (ReduceSinkOperator) op;
-        ts = parseContext.getRsOpToTsOpMap().get(rs);
-        if (ts == null) {
-          continue;
-        }
-        for (Operator<?> parent : mapjoinOp.getParentOperators()) {
-          if (!(parent instanceof ReduceSinkOperator)) {
-            continue;
-          }
+      }
 
-          Set<TableScanOperator> tsOps = OperatorUtils.findOperatorsUpstream(parent,
-                  TableScanOperator.class);
-          for (TableScanOperator parentTS : tsOps) {
-            // If the parent is same as the ts, then we have a cycle.
-            if (ts == parentTS) {
-              semiJoinCycle = true;
-              break;
-            }
+      // If not ReduceSink Op, skip
+      if (!(op instanceof ReduceSinkOperator)) {
+        continue;
+      }
+
+      ReduceSinkOperator rs = (ReduceSinkOperator) op;
+      TableScanOperator ts = parseContext.getRsOpToTsOpMap().get(rs);
+      if (ts == null) {
+        // skip, no semijoin branch
+        continue;
+      }
+
+      // Found a semijoin branch.
+      for (Operator<?> parent : mapjoinOp.getParentOperators()) {
+        if (!(parent instanceof ReduceSinkOperator)) {
+          continue;
+        }
+
+        Set<TableScanOperator> tsOps = OperatorUtils.findOperatorsUpstream(parent,
+                TableScanOperator.class);
+        for (TableScanOperator parentTS : tsOps) {
+          // If the parent is same as the ts, then we have a cycle.
+          if (ts == parentTS) {
+            semiJoinMap.put(rs, ts);
+            break;
           }
         }
       }
     }
-
-    // By design there can be atmost 1 such cycle.
-    if (semiJoinCycle) {
-      GenTezUtils.removeBranch(rs);
-      GenTezUtils.removeSemiJoinOperator(parseContext, rs, ts);
+    if (semiJoinMap.size() > 0) {
+      for (ReduceSinkOperator rs : semiJoinMap.keySet()) {
+        GenTezUtils.removeBranch(rs);
+        GenTezUtils.removeSemiJoinOperator(parseContext, rs,
+                semiJoinMap.get(rs));
+      }
     }
   }
 

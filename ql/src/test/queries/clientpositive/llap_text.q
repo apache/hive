@@ -6,6 +6,7 @@ set hive.fetch.task.conversion=none;
 SET hive.llap.io.enabled=false;
 set hive.llap.cache.allow.synthetic.fileid=true;
 
+-- SORT_QUERY_RESULTS
 
 DROP TABLE text_llap;
 

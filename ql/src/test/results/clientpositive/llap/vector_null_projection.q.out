@@ -28,12 +28,16 @@ POSTHOOK: query: insert into table b values('aaa')
 POSTHOOK: type: QUERY
 POSTHOOK: Output: default@b
 POSTHOOK: Lineage: b.s SIMPLE [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-PREHOOK: query: explain
+PREHOOK: query: explain vectorization expression
 select NULL from a
 PREHOOK: type: QUERY
-POSTHOOK: query: explain
+POSTHOOK: query: explain vectorization expression
 select NULL from a
 POSTHOOK: type: QUERY
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -61,6 +65,12 @@ STAGE PLANS:
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
             Execution mode: llap
             LLAP IO: all inputs
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                notVectorizedReason: Select expression for SELECT operator: Data type void of Const void null not supported
+                vectorized: false
 
   Stage: Stage-0
     Fetch Operator
@@ -77,12 +87,16 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@a
 #### A masked pattern was here ####
 NULL
-PREHOOK: query: explain
+PREHOOK: query: explain vectorization expression
 select NULL as x from a union distinct select NULL as x from b
 PREHOOK: type: QUERY
-POSTHOOK: query: explain
+POSTHOOK: query: explain vectorization expression
 select NULL as x from a union distinct select NULL as x from b
 POSTHOOK: type: QUERY
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -118,6 +132,12 @@ STAGE PLANS:
                           Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: llap
             LLAP IO: all inputs
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                notVectorizedReason: Key expression for GROUPBY operator: Data type void of Const void null not supported
+                vectorized: false
         Map 4 
             Map Operator Tree:
                 TableScan
@@ -139,8 +159,19 @@ STAGE PLANS:
                           Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: llap
             LLAP IO: all inputs
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                notVectorizedReason: Key expression for GROUPBY operator: Data type void of Const void null not supported
+                vectorized: false
         Reducer 3 
             Execution mode: llap
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                notVectorizedReason: Key expression for GROUPBY operator: Data type void of Column[KEY._col0] not supported
+                vectorized: false
             Reduce Operator Tree:
               Group By Operator
                 keys: KEY._col0 (type: void)

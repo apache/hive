@@ -25,6 +25,7 @@ import java.util.concurrent.locks.ReentrantLock;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.llap.daemon.FragmentCompletionHandler;
 import org.apache.hadoop.hive.llap.daemon.KilledTaskHandler;
+import org.apache.hadoop.hive.llap.daemon.SchedulerFragmentCompletingListener;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.QueryIdentifierProto;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SignableVertexSpec;
@@ -51,6 +52,18 @@ public class TaskExecutorTestHelpers {
     long currentAttemptStartTime, boolean canFinish, long workTime) {
     SubmitWorkRequestProto
         request = createSubmitWorkRequestProto(fragmentNum, parallelism, firstAttemptStartTime, currentAttemptStartTime);
+    return createMockRequest(canFinish, workTime, request);
+  }
+
+  public static MockRequest createMockRequest(int fragmentNum, int parallelism,
+                                              int withinDagPriority,
+                                              long firstAttemptStartTime,
+                                              long currentAttemptStartTime,
+                                              boolean canFinish,
+                                              long workTime) {
+    SubmitWorkRequestProto
+        request = createSubmitWorkRequestProto(fragmentNum, parallelism, 0,
+        firstAttemptStartTime, currentAttemptStartTime, withinDagPriority);
     return createMockRequest(canFinish, workTime, request);
   }
 
@@ -90,9 +103,24 @@ public class TaskExecutorTestHelpers {
   }
 
   public static SubmitWorkRequestProto createSubmitWorkRequestProto(
+      int fragmentNumber, int selfAndUpstreamParallelism, long firstAttemptStartTime,
+      long currentAttemptStartTime, String dagName) {
+    return createSubmitWorkRequestProto(fragmentNumber, selfAndUpstreamParallelism, 0, firstAttemptStartTime,
+        currentAttemptStartTime, 1, dagName);
+  }
+
+  public static SubmitWorkRequestProto createSubmitWorkRequestProto(
       int fragmentNumber, int selfAndUpstreamParallelism,
       int selfAndUpstreamComplete, long firstAttemptStartTime,
       long currentAttemptStartTime, int withinDagPriority) {
+    return createSubmitWorkRequestProto(fragmentNumber, selfAndUpstreamParallelism, 0, firstAttemptStartTime,
+        currentAttemptStartTime, withinDagPriority, "MockDag");
+  }
+
+  public static SubmitWorkRequestProto createSubmitWorkRequestProto(
+      int fragmentNumber, int selfAndUpstreamParallelism,
+      int selfAndUpstreamComplete, long firstAttemptStartTime,
+      long currentAttemptStartTime, int withinDagPriority, String dagName) {
     ApplicationId appId = ApplicationId.newInstance(9999, 72);
     TezDAGID dagId = TezDAGID.getInstance(appId, 1);
     TezVertexID vId = TezVertexID.getInstance(dagId, 35);
@@ -103,7 +131,7 @@ public class TaskExecutorTestHelpers {
         .setWorkSpec(
             VertexOrBinary.newBuilder().setVertex(
             SignableVertexSpec.newBuilder()
-                .setDagName("MockDag")
+                .setDagName(dagName)
                 .setUser("MockUser")
                 .setTokenIdentifier("MockToken_1")
                 .setQueryIdentifier(
@@ -155,7 +183,8 @@ public class TaskExecutorTestHelpers {
               LlapDaemonExecutorMetrics.class),
           mock(KilledTaskHandler.class), mock(
               FragmentCompletionHandler.class), new DefaultHadoopShim(), null,
-              requestProto.getWorkSpec().getVertex(), initialEvent, null);
+              requestProto.getWorkSpec().getVertex(), initialEvent, null, mock(
+              SchedulerFragmentCompletingListener.class));
       this.workTime = workTime;
       this.canFinish = canFinish;
     }
@@ -269,5 +298,6 @@ public class TaskExecutorTestHelpers {
   private static void logInfo(String message) {
     logInfo(message, null);
   }
+
 
 }

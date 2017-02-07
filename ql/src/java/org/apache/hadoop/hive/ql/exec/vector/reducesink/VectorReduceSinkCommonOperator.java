@@ -160,7 +160,7 @@ public abstract class VectorReduceSinkCommonOperator extends TerminalOperator<Re
 
     ReduceSinkDesc desc = (ReduceSinkDesc) conf;
     this.conf = desc;
-    vectorDesc = desc.getVectorDesc();
+    vectorDesc = (VectorReduceSinkDesc) desc.getVectorDesc();
     vectorReduceSinkInfo = vectorDesc.getVectorReduceSinkInfo();
     this.vContext = vContext;
 
