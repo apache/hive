@@ -32,6 +32,7 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
@@ -76,6 +77,7 @@ import org.apache.hadoop.yarn.api.records.ContainerId;
 import org.apache.hadoop.yarn.api.records.Resource;
 import org.apache.hadoop.yarn.conf.YarnConfiguration;
 import org.apache.zookeeper.ZooDefs;
+import org.apache.zookeeper.KeeperException.InvalidACLException;
 import org.apache.zookeeper.client.ZooKeeperSaslClient;
 import org.apache.zookeeper.data.ACL;
 import org.apache.zookeeper.data.Id;
@@ -781,8 +783,9 @@ public class LlapZookeeperRegistryImpl implements ServiceRegistry {
   }
   
   @Override
-  public ServiceInstanceSet getInstances(String component) throws IOException {
-    checkPathChildrenCache();
+  public ServiceInstanceSet getInstances(
+      String component, long clusterReadyTimeoutMs) throws IOException {
+    checkPathChildrenCache(clusterReadyTimeoutMs);
 
     // lazily create instances
     if (instances == null) {
@@ -793,7 +796,7 @@ public class LlapZookeeperRegistryImpl implements ServiceRegistry {
 
   @Override
   public ApplicationId getApplicationId() throws IOException {
-    getInstances(null);
+    getInstances("LLAP", 0);
     return instances.getApplicationId();
   }
 
@@ -801,28 +804,46 @@ public class LlapZookeeperRegistryImpl implements ServiceRegistry {
   public synchronized void registerStateChangeListener(
       final ServiceInstanceStateChangeListener listener)
       throws IOException {
-    checkPathChildrenCache();
+    checkPathChildrenCache(0);
 
     this.stateChangeListeners.add(listener);
   }
 
-  private synchronized void checkPathChildrenCache() throws IOException {
+  private synchronized void checkPathChildrenCache(long clusterReadyTimeoutMs) throws IOException {
     Preconditions.checkArgument(zooKeeperClient != null &&
-            zooKeeperClient.getState() == CuratorFrameworkState.STARTED,
-        "client is not started");
-
+            zooKeeperClient.getState() == CuratorFrameworkState.STARTED, "client is not started");
     // lazily create PathChildrenCache
-    if (instancesCache == null) {
-      this.instancesCache = new PathChildrenCache(zooKeeperClient, workersPath, true);
-      instancesCache.getListenable().addListener(new InstanceStateChangeListener(),
-          Executors.newFixedThreadPool(1, new ThreadFactoryBuilder()
-              .setDaemon(true)
-              .setNameFormat("StateChangeNotificationHandler")
-              .build()));
+    if (instancesCache != null) return;
+    ExecutorService tp = Executors.newFixedThreadPool(1, new ThreadFactoryBuilder()
+              .setDaemon(true).setNameFormat("StateChangeNotificationHandler").build());
+    long startTimeNs = System.nanoTime(), deltaNs = clusterReadyTimeoutMs * 1000000L;
+    long sleepTimeMs = Math.min(16, clusterReadyTimeoutMs);
+    while (true) {
+      PathChildrenCache instancesCache = new PathChildrenCache(zooKeeperClient, workersPath, true);
+      instancesCache.getListenable().addListener(new InstanceStateChangeListener(), tp);
       try {
-        this.instancesCache.start(PathChildrenCache.StartMode.BUILD_INITIAL_CACHE);
+        instancesCache.start(PathChildrenCache.StartMode.BUILD_INITIAL_CACHE);
+        this.instancesCache = instancesCache;
+        break;
+      } catch (InvalidACLException e) {
+        // PathChildrenCache tried to mkdir when the znode wasn't there, and failed.
+        CloseableUtils.closeQuietly(instancesCache);
+        long elapsedNs = System.nanoTime() - startTimeNs;
+        if (deltaNs == 0 || deltaNs <= elapsedNs) {
+          LOG.error("Unable to start curator PathChildrenCache", e);
+          throw new IOException(e);
+        }
+        LOG.warn("The cluster is not started yet (InvalidACL); will retry");
+        try {
+          Thread.sleep(Math.min(sleepTimeMs, (deltaNs - elapsedNs)/1000000L));
+        } catch (InterruptedException e1) {
+          LOG.error("Interrupted while retrying the PathChildrenCache startup");
+          throw new IOException(e1);
+        }
+        sleepTimeMs = sleepTimeMs << 1;
       } catch (Exception e) {
-        LOG.error("Unable to start curator PathChildrenCache. Exception: {}", e);
+        CloseableUtils.closeQuietly(instancesCache);
+        LOG.error("Unable to start curator PathChildrenCache", e);
         throw new IOException(e);
       }
     }
