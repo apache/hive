@@ -186,7 +186,7 @@ public class SessionState {
   private HiveAuthorizationProvider authorizer;
 
   private HiveAuthorizer authorizerV2;
-  private ProgressMonitor progressMonitor;
+  private volatile ProgressMonitor progressMonitor;
 
   public enum AuthorizationMode{V1, V2};
 

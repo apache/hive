@@ -479,7 +479,7 @@ public class CLIService extends CompositeService implements ICLIService {
           SessionState sessionState = operation.getParentSession().getSessionState();
           try {
             while (sessionState.getProgressMonitor() == null && !operation.isFinished()) {
-              Thread.sleep(100L); // sleep for 100 ms
+              Thread.sleep(10L); // sleep for 10 ms
             }
           } catch (InterruptedException e) {
             LOG.warn("Error while getting progress update", e);

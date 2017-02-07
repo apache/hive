@@ -1,11 +1,9 @@
 package org.apache.hive.service.cli;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hive.service.rpc.thrift.TJobExecutionStatus;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class TezProgressMonitorStatusMapper implements ProgressMonitorStatusMapper {
-  private final Logger LOG = LoggerFactory.getLogger(TezProgressMonitorStatusMapper.class.getName());
 
   /**
    * These states are taken form DAGStatus.State, could not use that here directly as it was
@@ -18,7 +16,9 @@ public class TezProgressMonitorStatusMapper implements ProgressMonitorStatusMapp
 
   @Override
   public TJobExecutionStatus forStatus(String status) {
-    try {
+    if (StringUtils.isEmpty(status)) {
+      return TJobExecutionStatus.NOT_AVAILABLE;
+    }
       TezStatus tezStatus = TezStatus.valueOf(status);
       switch (tezStatus) {
       case SUBMITTED:
@@ -28,9 +28,5 @@ public class TezProgressMonitorStatusMapper implements ProgressMonitorStatusMapp
       default:
         return TJobExecutionStatus.COMPLETE;
       }
-    } catch (IllegalArgumentException ex) {
-      LOG.debug("Could not understand the status from tez execution engine : " + status);
-      return TJobExecutionStatus.NOT_AVAILABLE;
-    }
   }
 }
