@@ -13,6 +13,7 @@
  */
 package org.apache.hive.benchmark.vectorization;
 
+import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.DoubleColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
@@ -35,7 +36,7 @@ import java.util.concurrent.TimeUnit;
 @BenchmarkMode(Mode.AverageTime)
 @Fork(1)
 @State(Scope.Thread)
-@OutputTimeUnit(TimeUnit.NANOSECONDS)
+@OutputTimeUnit(TimeUnit.MILLISECONDS)
 public abstract class AbstractExpression {
   private static final int DEFAULT_ITER_TIME = 1000000;
   protected VectorExpression expression;
@@ -59,6 +60,9 @@ public abstract class AbstractExpression {
   @Measurement(iterations = 2, time = 2, timeUnit = TimeUnit.MILLISECONDS)
   public void bench() {
     for (int i = 0; i < DEFAULT_ITER_TIME; i++) {
+      rowBatch.selectedInUse = false;
+      rowBatch.size = VectorizedRowBatch.DEFAULT_SIZE;
+
       expression.evaluate(rowBatch);
     }
   }
@@ -147,4 +151,18 @@ public abstract class AbstractExpression {
     return columnVector;
   }
 
+  protected BytesColumnVector getBytesColumnVector() {
+    BytesColumnVector columnVector = new BytesColumnVector(VectorizedRowBatch.DEFAULT_SIZE);
+    Random random = new Random();
+    int length = 16;
+    for (int i = 0; i != VectorizedRowBatch.DEFAULT_SIZE; i++) {
+      columnVector.vector[i] = new byte[length];
+      columnVector.start[i] = 0;
+      columnVector.length[i] = length;
+      for (int j = 0; j < length; j++) {
+        columnVector.vector[i][j] = (byte)(random.nextInt(+ 'c' - 'a' + 1) + 'a');
+      }
+    }
+    return columnVector;
+  }
 }
