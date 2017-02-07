@@ -10868,6 +10868,7 @@ class NotificationEvent:
    - dbName
    - tableName
    - message
+   - messageFormat
   """
 
   thrift_spec = (
@@ -10878,15 +10879,17 @@ class NotificationEvent:
     (4, TType.STRING, 'dbName', None, None, ), # 4
     (5, TType.STRING, 'tableName', None, None, ), # 5
     (6, TType.STRING, 'message', None, None, ), # 6
+    (7, TType.STRING, 'messageFormat', None, None, ), # 7
   )
 
-  def __init__(self, eventId=None, eventTime=None, eventType=None, dbName=None, tableName=None, message=None,):
+  def __init__(self, eventId=None, eventTime=None, eventType=None, dbName=None, tableName=None, message=None, messageFormat=None,):
     self.eventId = eventId
     self.eventTime = eventTime
     self.eventType = eventType
     self.dbName = dbName
     self.tableName = tableName
     self.message = message
+    self.messageFormat = messageFormat
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -10927,6 +10930,11 @@ class NotificationEvent:
           self.message = iprot.readString()
         else:
           iprot.skip(ftype)
+      elif fid == 7:
+        if ftype == TType.STRING:
+          self.messageFormat = iprot.readString()
+        else:
+          iprot.skip(ftype)
       else:
         iprot.skip(ftype)
       iprot.readFieldEnd()
@@ -10961,6 +10969,10 @@ class NotificationEvent:
       oprot.writeFieldBegin('message', TType.STRING, 6)
       oprot.writeString(self.message)
       oprot.writeFieldEnd()
+    if self.messageFormat is not None:
+      oprot.writeFieldBegin('messageFormat', TType.STRING, 7)
+      oprot.writeString(self.messageFormat)
+      oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
@@ -10984,6 +10996,7 @@ class NotificationEvent:
     value = (value * 31) ^ hash(self.dbName)
     value = (value * 31) ^ hash(self.tableName)
     value = (value * 31) ^ hash(self.message)
+    value = (value * 31) ^ hash(self.messageFormat)
     return value
 
   def __repr__(self):

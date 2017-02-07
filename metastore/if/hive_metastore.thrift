@@ -800,6 +800,7 @@ struct NotificationEvent {
     4: optional string dbName,
     5: optional string tableName,
     6: required string message,
+    7: optional string messageFormat,
 }
 
 struct NotificationEventResponse {

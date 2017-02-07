@@ -1049,6 +1049,9 @@
       <field name="message">
         <column name="MESSAGE" jdbc-type="LONGVARCHAR"/>
       </field>
+      <field name="messageFormat">
+        <column name="MESSAGE_FORMAT" length="16" jdbc-type="VARCHAR" allows-null="true"/>
+      </field>
     </class>
 
     <!-- I tried to use a sequence here but derby didn't handle it well. -->

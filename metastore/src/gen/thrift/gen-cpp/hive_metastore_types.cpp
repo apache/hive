@@ -15736,6 +15736,11 @@ void NotificationEvent::__set_message(const std::string& val) {
   this->message = val;
 }
 
+void NotificationEvent::__set_messageFormat(const std::string& val) {
+  this->messageFormat = val;
+__isset.messageFormat = true;
+}
+
 uint32_t NotificationEvent::read(::apache::thrift::protocol::TProtocol* iprot) {
 
   apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
@@ -15809,6 +15814,14 @@ uint32_t NotificationEvent::read(::apache::thrift::protocol::TProtocol* iprot) {
           xfer += iprot->skip(ftype);
         }
         break;
+      case 7:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->messageFormat);
+          this->__isset.messageFormat = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
       default:
         xfer += iprot->skip(ftype);
         break;
@@ -15860,6 +15873,11 @@ uint32_t NotificationEvent::write(::apache::thrift::protocol::TProtocol* oprot) 
   xfer += oprot->writeString(this->message);
   xfer += oprot->writeFieldEnd();
 
+  if (this->__isset.messageFormat) {
+    xfer += oprot->writeFieldBegin("messageFormat", ::apache::thrift::protocol::T_STRING, 7);
+    xfer += oprot->writeString(this->messageFormat);
+    xfer += oprot->writeFieldEnd();
+  }
   xfer += oprot->writeFieldStop();
   xfer += oprot->writeStructEnd();
   return xfer;
@@ -15873,6 +15891,7 @@ void swap(NotificationEvent &a, NotificationEvent &b) {
   swap(a.dbName, b.dbName);
   swap(a.tableName, b.tableName);
   swap(a.message, b.message);
+  swap(a.messageFormat, b.messageFormat);
   swap(a.__isset, b.__isset);
 }
 
@@ -15883,6 +15902,7 @@ NotificationEvent::NotificationEvent(const NotificationEvent& other639) {
   dbName = other639.dbName;
   tableName = other639.tableName;
   message = other639.message;
+  messageFormat = other639.messageFormat;
   __isset = other639.__isset;
 }
 NotificationEvent& NotificationEvent::operator=(const NotificationEvent& other640) {
@@ -15892,6 +15912,7 @@ NotificationEvent& NotificationEvent::operator=(const NotificationEvent& other64
   dbName = other640.dbName;
   tableName = other640.tableName;
   message = other640.message;
+  messageFormat = other640.messageFormat;
   __isset = other640.__isset;
   return *this;
 }
@@ -15904,6 +15925,7 @@ void NotificationEvent::printTo(std::ostream& out) const {
   out << ", " << "dbName="; (__isset.dbName ? (out << to_string(dbName)) : (out << "<null>"));
   out << ", " << "tableName="; (__isset.tableName ? (out << to_string(tableName)) : (out << "<null>"));
   out << ", " << "message=" << to_string(message);
+  out << ", " << "messageFormat="; (__isset.messageFormat ? (out << to_string(messageFormat)) : (out << "<null>"));
   out << ")";
 }
 
