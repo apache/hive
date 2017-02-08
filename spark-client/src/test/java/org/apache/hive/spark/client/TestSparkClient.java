@@ -61,7 +61,9 @@ import org.apache.spark.api.java.function.VoidFunction;
 import org.junit.Test;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
+import org.junit.Ignore;
 
+@Ignore("Flaky Tests")
 public class TestSparkClient {
 
   // Timeouts are bad... mmmkay.
