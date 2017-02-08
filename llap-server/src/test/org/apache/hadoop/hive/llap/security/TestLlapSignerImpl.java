@@ -45,8 +45,8 @@ public class TestLlapSignerImpl {
     byte theByte = 1;
     TestSignable in = new TestSignable(theByte);
     TestSignable in2 = new TestSignable(++theByte);
-    SignedMessage sm2 = signer.serializeAndSign(in2);
     SignedMessage sm = signer.serializeAndSign(in);
+    SignedMessage sm2 = signer.serializeAndSign(in2);
     TestSignable out = TestSignable.deserialize(sm.message);
     TestSignable out2 = TestSignable.deserialize(sm2.message);
     assertEquals(in, out);
@@ -72,12 +72,7 @@ public class TestLlapSignerImpl {
     }
     sm.signature[index] = (byte)(sm.signature[index] - 1);
 
-    // Adding keys is PITA - there's no way to plug into timed rolling; just create a new fsm.
-    DelegationKey dk = fsm.getCurrentKey();
-    fsm.stopThreads();
-    fsm = new FakeSecretManager();
-    fsm.addKey(dk);
-    fsm.startThreads();
+    fsm = rollKey(fsm, out.masterKeyId);
     signer = new LlapSignerImpl(fsm);
     // Sign in2 with a different key.
     sm2 = signer.serializeAndSign(in2);
@@ -95,12 +90,7 @@ public class TestLlapSignerImpl {
     }
 
     // The same for rolling the key; re-create the fsm with only the key #2.
-    dk = fsm.getCurrentKey();
-    fsm.stopThreads();
-
-    fsm = new FakeSecretManager();
-    fsm.addKey(dk);
-    fsm.startThreads();
+    fsm = rollKey(fsm, out2.masterKeyId);
     signer = new LlapSignerImpl(fsm);
     signer.checkSignature(sm2.message, sm2.signature, out2.masterKeyId);
     // The key is missing - shouldn't be able to verify.
@@ -111,6 +101,24 @@ public class TestLlapSignerImpl {
       // Expected.
     }
     fsm.stopThreads();
+  }
+
+  private FakeSecretManager rollKey(FakeSecretManager fsm, int idToPreserve) throws IOException {
+    // Adding keys is PITA - there's no way to plug into timed rolling; just create a new fsm.
+    DelegationKey dk = fsm.getDelegationKey(idToPreserve), curDk = fsm.getCurrentKey();
+    if (curDk.getKeyId() != idToPreserve) {
+      LOG.warn("The current key is not the one we expect; key rolled in background? Signed with "
+          + idToPreserve + " but got " + curDk.getKeyId());
+    }
+    // Regardless of the above, we should have the key we've signed with.
+    assertNotNull(dk);
+    assertEquals(idToPreserve, dk.getKeyId());
+    fsm.stopThreads();
+    fsm = new FakeSecretManager();
+    fsm.addKey(dk);
+    assertNotNull("Couldn't add key", fsm.getDelegationKey(dk.getKeyId()));
+    fsm.startThreads();
+    return fsm;
   }
 
   private static class TestSignable implements Signable {
@@ -175,6 +183,11 @@ public class TestLlapSignerImpl {
     @Override
     public DelegationKey getCurrentKey() {
       return getDelegationKey(getCurrentKeyId());
+    }
+
+    @Override
+    public DelegationKey getDelegationKey(int keyId) {
+      return super.getDelegationKey(keyId);
     }
 
     @Override
