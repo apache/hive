@@ -182,6 +182,11 @@ public class HiveSparkClientFactory {
         sparkConf.put("spark.hadoop." + propertyName, value);
         LOG.info(String.format(
           "load HBase configuration (%s -> %s).", propertyName, LogUtils.maskIfPassword(propertyName,value)));
+      } else if (propertyName.startsWith("oozie")) {
+        String value = hiveConf.get(propertyName);
+        sparkConf.put("spark." + propertyName, value);
+        LOG.info(String.format(
+          "Pass Oozie configuration (%s -> %s).", propertyName, LogUtils.maskIfPassword(propertyName,value)));
       }
 
       if (RpcConfiguration.HIVE_SPARK_RSC_CONFIGS.contains(propertyName)) {
