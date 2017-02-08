@@ -114,6 +114,7 @@ resources = """
     "LLAP": {
       "yarn.role.priority": "1",
       "yarn.component.instances": "%(instances)d",
+      "yarn.resource.normalization.enabled": "false",
       "yarn.memory": "%(container.mb)d",
       "yarn.component.placement.policy" : "%(placement)d"
     }
