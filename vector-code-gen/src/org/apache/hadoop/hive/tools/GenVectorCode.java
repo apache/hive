@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ant;
+package org.apache.hadoop.hive.tools;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;

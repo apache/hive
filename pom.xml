@@ -32,7 +32,7 @@
 
   <modules>
     <module>accumulo-handler</module>
-    <module>ant</module>
+    <module>vector-code-gen</module>
     <module>beeline</module>
     <module>cli</module>
     <module>common</module>
@@ -414,11 +414,6 @@
         <groupId>org.antlr</groupId>
         <artifactId>ST4</artifactId>
         <version>${ST4.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.apache.ant</groupId>
-        <artifactId>ant</artifactId>
-        <version>${ant.version}</version>
       </dependency>
       <dependency>
         <groupId>org.apache.commons</groupId>

@@ -37,7 +37,7 @@
     <!-- used for vector code-gen -->
     <dependency>
       <groupId>org.apache.hive</groupId>
-      <artifactId>hive-ant</artifactId>
+      <artifactId>hive-vector-code-gen</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
@@ -770,7 +770,7 @@
             <configuration>
               <target>
                 <property name="compile.classpath" refid="maven.compile.classpath"/>
-                <taskdef name="vectorcodegen" classname="org.apache.hadoop.hive.ant.GenVectorCode"
+                <taskdef name="vectorcodegen" classname="org.apache.hadoop.hive.tools.GenVectorCode"
                     classpath="${compile.classpath}"/>
                 <mkdir dir="${project.build.directory}/generated-sources/java/org/apache/hadoop/hive/ql/exec/vector/expressions/gen/"/>
                 <mkdir dir="${project.build.directory}/generated-sources/java/org/apache/hadoop/hive/ql/exec/vector/expressions/aggregates/gen/"/>

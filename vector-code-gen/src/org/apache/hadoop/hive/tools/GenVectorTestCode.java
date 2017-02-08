@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ant;
+package org.apache.hadoop.hive.tools;
 
 import java.io.File;
 import java.io.IOException;

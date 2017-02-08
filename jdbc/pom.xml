@@ -186,7 +186,7 @@
                   <exclude>org.apache.hadoop:hadoop-client</exclude>
                   <exclude>org.apache.hadoop:hadoop-annotations</exclude>
                   <exclude>org.apache.hadoop:hadoop-auth</exclude>
-                  <exclude>org.apache.hive:hive-ant</exclude>
+                  <exclude>org.apache.hive:hive-vector-code-gen</exclude>
                   <exclude>org.apache.ant:*</exclude>
                   <exclude>junit:*</exclude>
                   <exclude>org.hamcrest:*</exclude>
