@@ -49,7 +49,6 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.Shell;
 import org.apache.hadoop.util.StringUtils;
@@ -119,7 +118,17 @@ public class TempletonUtils {
    * "(Map|Reducer) (\\d+:) ((-/-)|(\\d+(\\(\\+\\d+\\))?/\\d+))" is the complete pattern but we'll drop "-/-" to exclude
    * groups that don't add information such as "Map 1: -/-"
    */
-  public static final Pattern TEZ_COMPLETE = Pattern.compile("(Map|Reducer) (\\d+:) (\\d+(\\(\\+\\d+\\))?/\\d+)");
+  public static final Pattern HIVE_TEZ_COMPLETE = Pattern.compile("(Map|Reducer) (\\d+:) (\\d+(\\(\\+\\d+\\))?/\\d+)");
+  /**
+   * Pig on Tez produces progress report that looks like this
+   * DAG Status: status=RUNNING, progress=TotalTasks: 3 Succeeded: 0 Running: 0 Failed: 0 Killed: 0
+   *
+   * Use Succeeded/TotalTasks to report progress
+   * There is a hole as Pig might launch more than one DAGs. If this happens, user might
+   * see progress rewind since the percentage is for the new DAG. To fix this, We need to fix
+   * Pig print total number of DAGs on console, and track complete DAGs in WebHCat.
+   */
+  public static final Pattern PIG_TEZ_COMPLETE = Pattern.compile("progress=TotalTasks: (\\d+) Succeeded: (\\d+)");
   public static final Pattern TEZ_COUNTERS = Pattern.compile("\\d+");
 
   /**
@@ -138,14 +147,14 @@ public class TempletonUtils {
     if(hive.find()) {
       return "map " + hive.group(1) + " reduce " + hive.group(2);
     }
-    Matcher tez = TEZ_COMPLETE.matcher(line);
-    if(tez.find()) {
+    Matcher hiveTez = HIVE_TEZ_COMPLETE.matcher(line);
+    if(hiveTez.find()) {
       int totalTasks = 0;
       int completedTasks = 0;
       do {
         //here each group looks something like "Map 2: 2/4" "Reducer 3: 1(+2)/4"
         //just parse the numbers and ignore one from "Map 2" and from "(+2)" if it's there
-        Matcher counts = TEZ_COUNTERS.matcher(tez.group());
+        Matcher counts = TEZ_COUNTERS.matcher(hiveTez.group());
         List<String> items = new ArrayList<String>(4);
         while(counts.find()) {
           items.add(counts.group());
@@ -157,11 +166,20 @@ public class TempletonUtils {
         else {
           totalTasks += Integer.parseInt(items.get(3));
         }
-      } while(tez.find());
+      } while(hiveTez.find());
       if(totalTasks == 0) {
         return "0% complete (0 total tasks)";
       }
       return completedTasks * 100 / totalTasks + "% complete";
+    }
+    Matcher pigTez = PIG_TEZ_COMPLETE.matcher(line);
+    if(pigTez.find()) {
+      int totalTasks = Integer.parseInt(pigTez.group(1));
+      int completedTasks = Integer.parseInt(pigTez.group(2));
+      if(totalTasks == 0) {
+          return "0% complete (0 total tasks)";
+        }
+        return completedTasks * 100 / totalTasks + "% complete";
     }
     return null;
   }
