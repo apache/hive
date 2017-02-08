@@ -39,6 +39,8 @@ import org.apache.htrace.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.htrace.fasterxml.jackson.databind.node.ObjectNode;
 import org.apache.thrift.TDeserializer;
 import org.apache.thrift.protocol.TJSONProtocol;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Lists;
 import org.apache.hadoop.hive.cli.CliSessionState;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
@@ -64,6 +66,7 @@ import org.junit.Test;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -409,6 +412,74 @@ public class TestDbNotificationListener {
 
     rsp = msClient.getNextNotification(firstEventId, 0, null);
     assertEquals(4, rsp.getEventsSize());
+  }
+
+  @Test
+  public void exchangePartition() throws Exception {
+    String dbName = "default";
+    List<FieldSchema> cols = new ArrayList<FieldSchema>();
+    cols.add(new FieldSchema("col1", "int", "nocomment"));
+    List<FieldSchema> partCols = new ArrayList<FieldSchema>();
+    partCols.add(new FieldSchema("part", "int", ""));
+    SerDeInfo serde = new SerDeInfo("serde", "seriallib", null);
+    StorageDescriptor sd1 = new StorageDescriptor(cols, "file:/tmp/1", "input", "output", false, 0,
+        serde, null, null, emptyParameters);
+    Table tab1 = new Table("tab1", dbName, "me", startTime, startTime, 0, sd1, partCols,
+        emptyParameters, null, null, null);
+    msClient.createTable(tab1);
+    NotificationEventResponse rsp = msClient.getNextNotification(firstEventId, 0, null);
+    assertEquals(1, rsp.getEventsSize()); // add_table
+
+    StorageDescriptor sd2 = new StorageDescriptor(cols, "file:/tmp/2", "input", "output", false, 0,
+        serde, null, null, emptyParameters);
+    Table tab2 = new Table("tab2", dbName, "me", startTime, startTime, 0, sd2, partCols,
+        emptyParameters, null, null, null); // add_table
+    msClient.createTable(tab2);
+    rsp = msClient.getNextNotification(firstEventId + 1, 0, null);
+    assertEquals(1, rsp.getEventsSize());
+
+    StorageDescriptor sd1part = new StorageDescriptor(cols, "file:/tmp/1/part=1", "input", "output", false, 0,
+        serde, null, null, emptyParameters);
+    StorageDescriptor sd2part = new StorageDescriptor(cols, "file:/tmp/1/part=2", "input", "output", false, 0,
+        serde, null, null, emptyParameters);
+    StorageDescriptor sd3part = new StorageDescriptor(cols, "file:/tmp/1/part=3", "input", "output", false, 0,
+        serde, null, null, emptyParameters);
+    Partition part1 = new Partition(Arrays.asList("1"), "default", tab1.getTableName(),
+        startTime, startTime, sd1part, emptyParameters);
+    Partition part2 = new Partition(Arrays.asList("2"), "default", tab1.getTableName(),
+        startTime, startTime, sd2part, emptyParameters);
+    Partition part3 = new Partition(Arrays.asList("3"), "default", tab1.getTableName(),
+        startTime, startTime, sd3part, emptyParameters);
+    msClient.add_partitions(Arrays.asList(part1, part2, part3));
+    rsp = msClient.getNextNotification(firstEventId + 2, 0, null);
+    assertEquals(1, rsp.getEventsSize()); // add_partition
+
+    msClient.exchange_partition(ImmutableMap.of("part", "1"),
+        dbName, tab1.getTableName(), dbName, tab2.getTableName());
+
+    rsp = msClient.getNextNotification(firstEventId + 3, 0, null);
+    assertEquals(2, rsp.getEventsSize());
+
+    NotificationEvent event = rsp.getEvents().get(0);
+    assertEquals(firstEventId + 4, event.getEventId());
+    assertTrue(event.getEventTime() >= startTime);
+    assertEquals(HCatConstants.HCAT_ADD_PARTITION_EVENT, event.getEventType());
+    assertEquals(dbName, event.getDbName());
+    assertEquals(tab2.getTableName(), event.getTableName());
+    assertTrue(event.getMessage().matches("\\{\"eventType\":\"ADD_PARTITION\",\"server\":\"\"," +
+        "\"servicePrincipal\":\"\",\"db\":\"default\",\"table\":" +
+        "\"tab2\",\"timestamp\":[0-9]+,\"partitions\":\\[\\{\"part\":\"1\"}]}"));
+
+    event = rsp.getEvents().get(1);
+    assertEquals(firstEventId + 5, event.getEventId());
+    assertTrue(event.getEventTime() >= startTime);
+    assertEquals(HCatConstants.HCAT_DROP_PARTITION_EVENT, event.getEventType());
+    assertEquals(dbName, event.getDbName());
+    assertEquals(tab1.getTableName(), event.getTableName());
+    assertTrue(event.getMessage().matches("\\{\"eventType\":\"DROP_PARTITION\",\"server\":\"\"," +
+        "\"servicePrincipal\":\"\",\"db\":\"default\",\"table\":" +
+        "\"tab1\",\"timestamp\":[0-9]+,\"partitions\":\\[\\{\"part\":\"1\"}]}"));
+
   }
 
   @Test
