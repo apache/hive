@@ -20,3 +20,13 @@ MSCK REPAIR TABLE default.repairtable;
 MSCK TABLE repairtable;
 
 DROP TABLE default.repairtable;
+
+
+dfs  ${system:test.dfs.mkdir} -p ${system:test.tmp.dir}/apps/hive/warehouse/test.db/repairtable/p1=c/p2=a/p3=b;
+CREATE TABLE `repairtable`( `col` string) PARTITIONED BY (  `p1` string,  `p2` string) location '${system:test.tmp.dir}/apps/hive/warehouse/test.db/repairtable/';
+
+dfs -touchz ${system:test.tmp.dir}/apps/hive/warehouse/test.db/repairtable/p1=c/p2=a/p3=b/datafile;
+set hive.mv.files.thread=1;
+MSCK TABLE repairtable;
+
+DROP TABLE default.repairtable;
