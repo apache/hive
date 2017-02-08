@@ -123,7 +123,7 @@ import org.apache.hive.jdbc.Utils.JdbcConnectionParams;
 public class BeeLine implements Closeable {
   private static final ResourceBundle resourceBundle =
       ResourceBundle.getBundle(BeeLine.class.getSimpleName());
-  private final BeeLineSignalHandler signalHandler = null;
+  private final BeeLineSignalHandler signalHandler;
   private static final String separator = System.getProperty("line.separator");
   private boolean exit = false;
   private final DatabaseConnections connections = new DatabaseConnections();
@@ -531,6 +531,7 @@ public class BeeLine implements Closeable {
 
   public BeeLine(boolean isBeeLine) {
     this.isBeeLine = isBeeLine;
+    this.signalHandler = new SunSignalHandler(this);
   }
 
   DatabaseConnection getDatabaseConnection() {
