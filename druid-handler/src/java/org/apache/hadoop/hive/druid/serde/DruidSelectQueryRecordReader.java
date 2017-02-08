@@ -81,7 +81,7 @@ public class DruidSelectQueryRecordReader
     // Create new value
     DruidWritable value = new DruidWritable();
     EventHolder e = values.next();
-    value.getValue().put(DruidTable.DEFAULT_TIMESTAMP_COLUMN, e.getTimestamp().getMillis());
+    value.getValue().put(DruidTable.DEFAULT_TIMESTAMP_COLUMN, e.getTimestamp());
     value.getValue().putAll(e.getEvent());
     return value;
   }
@@ -92,7 +92,7 @@ public class DruidSelectQueryRecordReader
       // Update value
       value.getValue().clear();
       EventHolder e = values.next();
-      value.getValue().put(DruidTable.DEFAULT_TIMESTAMP_COLUMN, e.getTimestamp().getMillis());
+      value.getValue().put(DruidTable.DEFAULT_TIMESTAMP_COLUMN, e.getTimestamp());
       value.getValue().putAll(e.getEvent());
       return true;
     }

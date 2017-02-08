@@ -127,7 +127,7 @@ public class DruidGroupByQueryRecordReader
     // Create new value
     DruidWritable value = new DruidWritable();
     // 1) The timestamp column
-    value.getValue().put(DruidTable.DEFAULT_TIMESTAMP_COLUMN, current.getTimestamp().getMillis());
+    value.getValue().put(DruidTable.DEFAULT_TIMESTAMP_COLUMN, current.getTimestamp());
     // 2) The dimension columns
     for (int i = 0; i < query.getDimensions().size(); i++) {
       DimensionSpec ds = query.getDimensions().get(i);
@@ -166,7 +166,7 @@ public class DruidGroupByQueryRecordReader
       // Update value
       value.getValue().clear();
       // 1) The timestamp column
-      value.getValue().put(DruidTable.DEFAULT_TIMESTAMP_COLUMN, current.getTimestamp().getMillis());
+      value.getValue().put(DruidTable.DEFAULT_TIMESTAMP_COLUMN, current.getTimestamp());
       // 2) The dimension columns
       for (int i = 0; i < query.getDimensions().size(); i++) {
         DimensionSpec ds = query.getDimensions().get(i);

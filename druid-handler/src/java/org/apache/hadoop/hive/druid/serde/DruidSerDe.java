@@ -66,6 +66,8 @@ import org.apache.hadoop.io.ShortWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.util.StringUtils;
+import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
 import org.joda.time.Period;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -432,9 +434,9 @@ public class DruidSerDe extends AbstractSerDe {
       final Object res;
       switch (types[i].getPrimitiveCategory()) {
         case TIMESTAMP:
-          res = ((TimestampObjectInspector) fields.get(i).getFieldObjectInspector())
-                  .getPrimitiveJavaObject(
-                          values.get(i)).getTime();
+          final Timestamp t = ((TimestampObjectInspector) fields.get(i)
+                  .getFieldObjectInspector()).getPrimitiveJavaObject(values.get(i));
+          res = new DateTime(t.getTime());
           break;
         case BYTE:
           res = ((ByteObjectInspector) fields.get(i).getFieldObjectInspector()).get(values.get(i));
@@ -469,10 +471,9 @@ public class DruidSerDe extends AbstractSerDe {
       }
       value.put(columns[i], res);
     }
-    value.put(Constants.DRUID_TIMESTAMP_GRANULARITY_COL_NAME,
-            ((TimestampObjectInspector) fields.get(columns.length).getFieldObjectInspector())
-                    .getPrimitiveJavaObject(values.get(columns.length)).getTime()
-    );
+    final Timestamp tGranulariy = ((TimestampObjectInspector) fields.get(columns.length)
+            .getFieldObjectInspector()).getPrimitiveJavaObject(values.get(columns.length));
+    value.put(Constants.DRUID_TIMESTAMP_GRANULARITY_COL_NAME, new DateTime(tGranulariy.getTime()));
     return new DruidWritable(value);
   }
 
@@ -494,7 +495,9 @@ public class DruidSerDe extends AbstractSerDe {
       }
       switch (types[i].getPrimitiveCategory()) {
         case TIMESTAMP:
-          output.add(new TimestampWritable(new Timestamp((Long) value)));
+          final DateTime dt = (DateTime) value;
+          final long millis = dt.withZone(DateTimeZone.getDefault()).getMillis();
+          output.add(new TimestampWritable(new Timestamp(millis)));
           break;
         case BYTE:
           output.add(new ByteWritable(((Number) value).byteValue()));

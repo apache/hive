@@ -23,7 +23,6 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.GregorianCalendar;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -38,8 +37,8 @@ import org.apache.calcite.rel.type.RelDataTypeFactory;
 import org.apache.calcite.rex.RexBuilder;
 import org.apache.calcite.rex.RexCall;
 import org.apache.calcite.rex.RexNode;
-import org.apache.calcite.rex.RexUtil;
 import org.apache.calcite.rex.RexSubQuery;
+import org.apache.calcite.rex.RexUtil;
 import org.apache.calcite.sql.SqlCollation;
 import org.apache.calcite.sql.SqlIntervalQualifier;
 import org.apache.calcite.sql.SqlKind;
@@ -634,14 +633,14 @@ public class RexNodeConverter {
       calciteLiteral = rexBuilder.makeCharLiteral(asUnicodeString((String) value));
       break;
     case DATE:
-      Calendar cal = new GregorianCalendar();
+      Calendar cal = Calendar.getInstance();
       cal.setTime((Date) value);
       calciteLiteral = rexBuilder.makeDateLiteral(cal);
       break;
     case TIMESTAMP:
       Calendar c = null;
       if (value instanceof Calendar) {
-        c = (Calendar)value;
+        c = (Calendar) value;
       } else {
         c = Calendar.getInstance();
         c.setTimeInMillis(((Timestamp)value).getTime());

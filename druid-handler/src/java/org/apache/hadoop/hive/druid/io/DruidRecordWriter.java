@@ -119,15 +119,13 @@ public class DruidRecordWriter implements RecordWriter<NullWritable, DruidWritab
    *
    * @return segmentIdentifier with of the truncatedTime and maybe push the current open segment.
    */
-  private SegmentIdentifier getSegmentIdentifierAndMaybePush(long truncatedTime) {
+  private SegmentIdentifier getSegmentIdentifierAndMaybePush(DateTime truncatedTime) {
 
     final Granularity segmentGranularity = dataSchema.getGranularitySpec()
             .getSegmentGranularity();
 
-    final Interval interval = new Interval(
-            new DateTime(truncatedTime),
-            segmentGranularity.increment(new DateTime(truncatedTime))
-    );
+    final Interval interval = new Interval(truncatedTime,
+            segmentGranularity.increment(truncatedTime));
 
     SegmentIdentifier retVal;
     if (currentOpenSegment == null) {
@@ -227,8 +225,8 @@ public class DruidRecordWriter implements RecordWriter<NullWritable, DruidWritab
   @Override
   public void write(Writable w) throws IOException {
     DruidWritable record = (DruidWritable) w;
-    final long timestamp = (long) record.getValue().get(DruidTable.DEFAULT_TIMESTAMP_COLUMN);
-    final long truncatedTime = (long) record.getValue()
+    final DateTime timestamp = (DateTime) record.getValue().get(DruidTable.DEFAULT_TIMESTAMP_COLUMN);
+    final DateTime truncatedTime = (DateTime) record.getValue()
             .get(Constants.DRUID_TIMESTAMP_GRANULARITY_COL_NAME);
 
     InputRow inputRow = new MapBasedInputRow(
