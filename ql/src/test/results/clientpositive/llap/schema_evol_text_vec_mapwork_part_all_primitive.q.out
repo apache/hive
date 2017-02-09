@@ -173,7 +173,7 @@ insert_num	part	c1	c2	c3	c4	c5	c6	c7	c8	c9	b
 2	1	true	true	true	true	true	true	true	false	true	original
 3	1	NULL	NULL	true	true	true	true	true	true	true	original
 4	1	true	NULL	true	true	true	true	true	true	true	original
-5	2	NULL	NULL	false	NULL	NULL	false	false	NULL	false	new
+5	2	true	true	false	true	true	false	false	true	false	new
 6	1	NULL	NULL	NULL	NULL	NULL	NULL	NULL	true	NULL	new
 PREHOOK: query: drop table part_change_various_various_boolean
 PREHOOK: type: DROPTABLE
@@ -238,10 +238,10 @@ POSTHOOK: Input: default@part_change_various_various_tinyint
 POSTHOOK: Input: default@part_change_various_various_tinyint@part=1
 #### A masked pattern was here ####
 insert_num	part	c1	c2	c3	c4	c5	c6	c7	c8	c9	c10	c11	b
-1	1	NULL	2000	72909	3244222	-29.0764	4.70614135E8	470614135.000000000000000000	-2999	-2999                    	-2999	0004-09-22 18:26:29.519542222	original
-2	1	NULL	1000	483777	-23866739993	-3651.672	46114.284799488	46114.284799488000000000		                         		2007-02-09 05:17:29.368756876	original
+1	1	true	2000	72909	3244222	-29.0764	4.70614135E8	470614135.000000000000000000	-2999	-2999                    	-2999	0004-09-22 18:26:29.519542222	original
+2	1	true	1000	483777	-23866739993	-3651.672	46114.284799488	46114.284799488000000000		                         		2007-02-09 05:17:29.368756876	original
 3	1	false	NULL	3244222	-93222	30.774	-66475.561431	-66475.561431000000000000	1	1                        	1	6229-06-28 02:54:28.970117179	original
-4	1	NULL	NULL	754072151	3289094	46114.285	9250340.75	9250340.750000000000000000	5299	5299                     	5299	2002-05-10 05:29:48.990818073	original
+4	1	true	NULL	754072151	3289094	46114.285	9250340.75	9250340.750000000000000000	5299	5299                     	5299	2002-05-10 05:29:48.990818073	original
 PREHOOK: query: -- Table-Non-Cascade CHANGE COLUMNS ...
 alter table part_change_various_various_tinyint replace columns (insert_num int, c1 TINYINT, c2 TINYINT, c3 TINYINT, c4 TINYINT, c5 TINYINT, c6 TINYINT, c7 TINYINT, c8 TINYINT, c9 TINYINT, c10 TINYINT, c11 TINYINT, b STRING)
 PREHOOK: type: ALTERTABLE_REPLACECOLS
@@ -340,10 +340,10 @@ POSTHOOK: Input: default@part_change_various_various_tinyint@part=1
 POSTHOOK: Input: default@part_change_various_various_tinyint@part=2
 #### A masked pattern was here ####
 insert_num	part	c1	c2	c3	c4	c5	c6	c7	c8	c9	c10	c11	b
-1	1	NULL	-48	-51	-66	-29	119	NULL	73	73	73	-43	original
-2	1	NULL	-24	-63	-25	-67	34	NULL	NULL	NULL	NULL	105	original
+1	1	1	-48	-51	-66	-29	119	NULL	73	73	73	-43	original
+2	1	1	-24	-63	-25	-67	34	NULL	NULL	NULL	NULL	105	original
 3	1	0	NULL	-66	-38	30	85	NULL	1	1	1	84	original
-4	1	NULL	NULL	87	6	34	36	NULL	-77	-77	-77	60	original
+4	1	1	NULL	87	6	34	36	NULL	-77	-77	-77	60	original
 5	2	23	71	127	1	NULL	-60	68	NULL	NULL	40	93	new
 6	1	NULL	85	-126	NULL	91	113	-28	-63	0	8	NULL	new
 PREHOOK: query: drop table part_change_various_various_tinyint
@@ -409,10 +409,10 @@ POSTHOOK: Input: default@part_change_various_various_smallint
 POSTHOOK: Input: default@part_change_various_various_smallint@part=1
 #### A masked pattern was here ####
 insert_num	part	c1	c2	c3	c4	c5	c6	c7	c8	c9	c10	c11	b
-1	1	NULL	NULL	72909	3244222	-29.0764	4.70614135E8	470614135.000000000000000000	-2999	-2999                    	-2999	0004-09-22 18:26:29.519542222	original
-2	1	NULL	100	483777	-23866739993	-3651.672	46114.284799488	46114.284799488000000000		                         		2007-02-09 05:17:29.368756876	original
+1	1	true	NULL	72909	3244222	-29.0764	4.70614135E8	470614135.000000000000000000	-2999	-2999                    	-2999	0004-09-22 18:26:29.519542222	original
+2	1	true	100	483777	-23866739993	-3651.672	46114.284799488	46114.284799488000000000		                         		2007-02-09 05:17:29.368756876	original
 3	1	false	72	3244222	-93222	30.774	-66475.561431	-66475.561431000000000000	1	1                        	1	6229-06-28 02:54:28.970117179	original
-4	1	NULL	-90	754072151	3289094	46114.285	9250340.75	9250340.750000000000000000	5299	5299                     	5299	2002-05-10 05:29:48.990818073	original
+4	1	true	-90	754072151	3289094	46114.285	9250340.75	9250340.750000000000000000	5299	5299                     	5299	2002-05-10 05:29:48.990818073	original
 PREHOOK: query: -- Table-Non-Cascade CHANGE COLUMNS ...
 alter table part_change_various_various_smallint replace columns (insert_num int, c1 SMALLINT, c2 SMALLINT, c3 SMALLINT, c4 SMALLINT, c5 SMALLINT, c6 SMALLINT, c7 SMALLINT, c8 SMALLINT, c9 SMALLINT, c10 SMALLINT, c11 SMALLINT, b STRING)
 PREHOOK: type: ALTERTABLE_REPLACECOLS
@@ -511,10 +511,10 @@ POSTHOOK: Input: default@part_change_various_various_smallint@part=1
 POSTHOOK: Input: default@part_change_various_various_smallint@part=2
 #### A masked pattern was here ####
 insert_num	part	c1	c2	c3	c4	c5	c6	c7	c8	c9	c10	c11	b
-1	1	NULL	NULL	7373	-32578	-29	119	NULL	-2999	-2999	-2999	-11819	original
-2	1	NULL	100	25025	29415	-3651	-19422	NULL	NULL	NULL	NULL	29801	original
+1	1	1	NULL	7373	-32578	-29	119	NULL	-2999	-2999	-2999	-11819	original
+2	1	1	100	25025	29415	-3651	-19422	NULL	NULL	NULL	NULL	29801	original
 3	1	0	72	-32578	-27686	30	-939	NULL	1	1	1	-8620	original
-4	1	NULL	-90	14935	12294	-19422	9764	NULL	5299	5299	5299	-17092	original
+4	1	1	-90	14935	12294	-19422	9764	NULL	5299	5299	5299	-17092	original
 5	2	-30486	15230	3117	1	-117	-7131	20227	-24858	-28771	NULL	NULL	new
 6	1	NULL	NULL	-4844	15507	91	22385	-28	-12268	0	NULL	NULL	new
 PREHOOK: query: drop table part_change_various_various_smallint
@@ -580,10 +580,10 @@ POSTHOOK: Input: default@part_change_various_various_int
 POSTHOOK: Input: default@part_change_various_various_int@part=1
 #### A masked pattern was here ####
 insert_num	part	c1	c2	c3	c4	c5	c6	c7	c8	c9	c10	c11	b
-1	1	NULL	NULL	NULL	3244222	-29.0764	4.70614135E8	470614135.000000000000000000	-2999	-2999                    	-2999	0004-09-22 18:26:29.519542222	original
-2	1	NULL	100	NULL	-23866739993	-3651.672	46114.284799488	46114.284799488000000000		                         		2007-02-09 05:17:29.368756876	original
+1	1	true	NULL	NULL	3244222	-29.0764	4.70614135E8	470614135.000000000000000000	-2999	-2999                    	-2999	0004-09-22 18:26:29.519542222	original
+2	1	true	100	NULL	-23866739993	-3651.672	46114.284799488	46114.284799488000000000		                         		2007-02-09 05:17:29.368756876	original
 3	1	false	72	NULL	-93222	30.774	-66475.561431	-66475.561431000000000000	1	1                        	1	6229-06-28 02:54:28.970117179	original
-4	1	NULL	-90	NULL	3289094	46114.285	9250340.75	9250340.750000000000000000	5299	5299                     	5299	2002-05-10 05:29:48.990818073	original
+4	1	true	-90	NULL	3289094	46114.285	9250340.75	9250340.750000000000000000	5299	5299                     	5299	2002-05-10 05:29:48.990818073	original
 PREHOOK: query: -- Table-Non-Cascade CHANGE COLUMNS ...
 alter table part_change_various_various_int replace columns (insert_num int, c1 INT, c2 INT, c3 INT, c4 INT, c5 INT, c6 INT, c7 INT, c8 INT, c9 INT, c10 INT, c11 INT, b STRING)
 PREHOOK: type: ALTERTABLE_REPLACECOLS
@@ -682,10 +682,10 @@ POSTHOOK: Input: default@part_change_various_various_int@part=1
 POSTHOOK: Input: default@part_change_various_various_int@part=2
 #### A masked pattern was here ####
 insert_num	part	c1	c2	c3	c4	c5	c6	c7	c8	c9	c10	c11	b
-1	1	NULL	NULL	NULL	3244222	-29	470614135	470614135	-2999	-2999	-2999	-1888628267	original
-2	1	NULL	100	NULL	1903063783	-3651	46114	46114	NULL	NULL	NULL	1171027049	original
+1	1	1	NULL	NULL	3244222	-29	470614135	470614135	-2999	-2999	-2999	-1888628267	original
+2	1	1	100	NULL	1903063783	-3651	46114	46114	NULL	NULL	NULL	1171027049	original
 3	1	0	72	NULL	-93222	30	-66475	-66475	1	1	1	1272503892	original
-4	1	NULL	-90	NULL	3289094	46114	9250340	9250340	5299	5299	5299	1021033788	original
+4	1	1	-90	NULL	3289094	46114	9250340	9250340	5299	5299	5299	1021033788	original
 5	2	560930	-1281818	127	1	84269672	-60	27094665	-36016110	-182	3244222	561431	new
 6	1	NULL	NULL	NULL	-167	91	113	-164341325	-134237413	0	6229	NULL	new
 PREHOOK: query: drop table part_change_various_various_int
@@ -751,10 +751,10 @@ POSTHOOK: Input: default@part_change_various_various_bigint
 POSTHOOK: Input: default@part_change_various_various_bigint@part=1
 #### A masked pattern was here ####
 insert_num	part	c1	c2	c3	c4	c5	c6	c7	c8	c9	c10	c11	b
-1	1	NULL	NULL	NULL	3244222	-29.0764	4.70614135E8	470614135.000000000000000000	-2999	-2999                    	-2999	0004-09-22 18:26:29.519542222	original
-2	1	NULL	100	NULL	NULL	-3651.672	46114.284799488	46114.284799488000000000		                         		2007-02-09 05:17:29.368756876	original
+1	1	true	NULL	NULL	3244222	-29.0764	4.70614135E8	470614135.000000000000000000	-2999	-2999                    	-2999	0004-09-22 18:26:29.519542222	original
+2	1	true	100	NULL	NULL	-3651.672	46114.284799488	46114.284799488000000000		                         		2007-02-09 05:17:29.368756876	original
 3	1	false	72	NULL	-93222	30.774	-66475.561431	-66475.561431000000000000	1	1                        	1	6229-06-28 02:54:28.970117179	original
-4	1	NULL	-90	NULL	3289094	46114.285	9250340.75	9250340.750000000000000000	1998287.3541	1998287.3541             	1998287.3541	2002-05-10 05:29:48.990818073	original
+4	1	true	-90	NULL	3289094	46114.285	9250340.75	9250340.750000000000000000	1998287.3541	1998287.3541             	1998287.3541	2002-05-10 05:29:48.990818073	original
 PREHOOK: query: -- Table-Non-Cascade CHANGE COLUMNS ...
 alter table part_change_various_various_bigint replace columns (insert_num int, c1 BIGINT, c2 BIGINT, c3 BIGINT, c4 BIGINT, c5 BIGINT, c6 BIGINT, c7 BIGINT, c8 BIGINT, c9 BIGINT, c10 BIGINT, c11 BIGINT, b STRING)
 PREHOOK: type: ALTERTABLE_REPLACECOLS
@@ -853,10 +853,10 @@ POSTHOOK: Input: default@part_change_various_various_bigint@part=1
 POSTHOOK: Input: default@part_change_various_various_bigint@part=2
 #### A masked pattern was here ####
 insert_num	part	c1	c2	c3	c4	c5	c6	c7	c8	c9	c10	c11	b
-1	1	NULL	NULL	NULL	3244222	-29	470614135	470614135	-2999	-2999	-2999	-62018170411	original
-2	1	NULL	100	NULL	NULL	-3651	46114	46114	NULL	NULL	NULL	1171027049	original
+1	1	1	NULL	NULL	3244222	-29	470614135	470614135	-2999	-2999	-2999	-62018170411	original
+2	1	1	100	NULL	NULL	-3651	46114	46114	NULL	NULL	NULL	1171027049	original
 3	1	0	72	NULL	-93222	30	-66475	-66475	1	1	1	134416490068	original
-4	1	NULL	-90	NULL	3289094	46114	9250340	9250340	1998287	NULL	NULL	1021033788	original
+4	1	1	-90	NULL	3289094	46114	9250340	9250340	1998287	NULL	NULL	1021033788	original
 5	2	5573199346255528403	71	151775655	1	131	-60	6275638713485623898	-230	-695025	519542222	-29	new
 6	1	NULL	NULL	-126	NULL	91	113	-28	-63	0	3244222	NULL	new
 PREHOOK: query: drop table part_change_various_various_bigint
@@ -922,10 +922,10 @@ POSTHOOK: Input: default@part_change_various_various_float
 POSTHOOK: Input: default@part_change_various_various_float@part=1
 #### A masked pattern was here ####
 insert_num	part	c1	c2	c3	c4	c5	c6	c7	c8	c9	c10	c11	b
-1	1	NULL	NULL	NULL	3244222	-29	4.70614135E8	470614135.000000000000000000	-2999	-2999                    	-2999	0004-09-22 18:26:29.519542222	original
-2	1	NULL	100	NULL	NULL	-3651	46114.284799488	46114.284799488000000000		                         		2007-02-09 05:17:29.368756876	original
+1	1	true	NULL	NULL	3244222	-29	4.70614135E8	470614135.000000000000000000	-2999	-2999                    	-2999	0004-09-22 18:26:29.519542222	original
+2	1	true	100	NULL	NULL	-3651	46114.284799488	46114.284799488000000000		                         		2007-02-09 05:17:29.368756876	original
 3	1	false	72	NULL	-93222	30	-66475.561431	-66475.561431000000000000	2402.3	2402.3                   	2402.3	6229-06-28 02:54:28.970117179	original
-4	1	NULL	-90	NULL	3289094	46114	9250340.75	9250340.750000000000000000	5299	5299                     	5299	2002-05-10 05:29:48.990818073	original
+4	1	true	-90	NULL	3289094	46114	9250340.75	9250340.750000000000000000	5299	5299                     	5299	2002-05-10 05:29:48.990818073	original
 PREHOOK: query: -- Table-Non-Cascade CHANGE COLUMNS ...
 alter table part_change_various_various_float replace columns (insert_num int, c1 FLOAT, c2 FLOAT, c3 FLOAT, c4 FLOAT, c5 FLOAT, c6 FLOAT, c7 FLOAT, c8 FLOAT, c9 FLOAT, c10 FLOAT, c11 FLOAT, b STRING)
 PREHOOK: type: ALTERTABLE_REPLACECOLS
@@ -1024,10 +1024,10 @@ POSTHOOK: Input: default@part_change_various_various_float@part=1
 POSTHOOK: Input: default@part_change_various_various_float@part=2
 #### A masked pattern was here ####
 insert_num	part	c1	c2	c3	c4	c5	c6	c7	c8	c9	c10	c11	b
-1	1	NULL	NULL	NULL	3244222.0	-29.0	4.70614144E8	4.70614144E8	-2999.0	-2999.0	-2999.0	-6.2018171E10	original
-2	1	NULL	100.0	NULL	NULL	-3651.0	46114.285	46114.285	NULL	NULL	NULL	1.17102707E9	original
+1	1	1.0	NULL	NULL	3244222.0	-29.0	4.70614144E8	4.70614144E8	-2999.0	-2999.0	-2999.0	-6.2018171E10	original
+2	1	1.0	100.0	NULL	NULL	-3651.0	46114.285	46114.285	NULL	NULL	NULL	1.17102707E9	original
 3	1	0.0	72.0	NULL	-93222.0	30.0	-66475.56	-66475.56	2402.3	2402.3	2402.3	1.3441649E11	original
-4	1	NULL	-90.0	NULL	3289094.0	46114.0	9250341.0	9250341.0	5299.0	5299.0	5299.0	1.02103379E9	original
+4	1	1.0	-90.0	NULL	3289094.0	46114.0	9250341.0	9250341.0	5299.0	5299.0	5299.0	1.02103379E9	original
 5	2	9.5396704E8	62.079155	718.78	1.0	203.19955	-60.0	6.2756385E18	-230.0	-695025.0	-3651.672	46114.28	new
 6	1	NULL	NULL	-4314.0	NULL	91.0	1698.95	-100.35978	-63.0	0.0	-93222.2	NULL	new
 PREHOOK: query: drop table part_change_various_various_float
@@ -1093,10 +1093,10 @@ POSTHOOK: Input: default@part_change_various_various_double
 POSTHOOK: Input: default@part_change_various_various_double@part=1
 #### A masked pattern was here ####
 insert_num	part	c1	c2	c3	c4	c5	c6	c7	c8	c9	c10	c11	b
-1	1	NULL	NULL	NULL	3244222	-29	4.70614135E8	470614135.000000000000000000	-2999	-2999                    	-2999	0004-09-22 18:26:29.519542222	original
-2	1	NULL	100	NULL	NULL	-3651	46114.284799488	46114.284799488000000000		                         		2007-02-09 05:17:29.368756876	original
+1	1	true	NULL	NULL	3244222	-29	4.70614135E8	470614135.000000000000000000	-2999	-2999                    	-2999	0004-09-22 18:26:29.519542222	original
+2	1	true	100	NULL	NULL	-3651	46114.284799488	46114.284799488000000000		                         		2007-02-09 05:17:29.368756876	original
 3	1	false	72	NULL	-93222	30	-66475.561431	-66475.561431000000000000	1	1                        	1	6229-06-28 02:54:28.970117179	original
-4	1	NULL	-90	NULL	3289094	46114	9250340.75	9250340.750000000000000000	5299	5299                     	5299	2002-05-10 05:29:48.990818073	original
+4	1	true	-90	NULL	3289094	46114	9250340.75	9250340.750000000000000000	5299	5299                     	5299	2002-05-10 05:29:48.990818073	original
 PREHOOK: query: -- Table-Non-Cascade CHANGE COLUMNS ...
 alter table part_change_various_various_double replace columns (insert_num int, c1 DOUBLE, c2 DOUBLE, c3 DOUBLE, c4 DOUBLE, c5 DOUBLE, c6 DOUBLE, c7 DOUBLE, c8 DOUBLE, c9 DOUBLE, c10 DOUBLE, c11 DOUBLE, b STRING)
 PREHOOK: type: ALTERTABLE_REPLACECOLS
@@ -1195,10 +1195,10 @@ POSTHOOK: Input: default@part_change_various_various_double@part=1
 POSTHOOK: Input: default@part_change_various_various_double@part=2
 #### A masked pattern was here ####
 insert_num	part	c1	c2	c3	c4	c5	c6	c7	c8	c9	c10	c11	b
-1	1	NULL	NULL	NULL	3244222.0	-29.0	4.70614135E8	4.70614135E8	-2999.0	-2999.0	-2999.0	-6.201817041048046E10	original
-2	1	NULL	100.0	NULL	NULL	-3651.0	46114.284799488	46114.284799488	NULL	NULL	NULL	1.1710270493687568E9	original
+1	1	1.0	NULL	NULL	3244222.0	-29.0	4.70614135E8	4.70614135E8	-2999.0	-2999.0	-2999.0	-6.201817041048046E10	original
+2	1	1.0	100.0	NULL	NULL	-3651.0	46114.284799488	46114.284799488	NULL	NULL	NULL	1.1710270493687568E9	original
 3	1	0.0	72.0	NULL	-93222.0	30.0	-66475.561431	-66475.561431	1.0	1.0	1.0	1.3441649006897012E11	original
-4	1	NULL	-90.0	NULL	3289094.0	46114.0	9250340.75	9250340.75	5299.0	5299.0	5299.0	1.021033788990818E9	original
+4	1	1.0	-90.0	NULL	3289094.0	46114.0	9250340.75	9250340.75	5299.0	5299.0	5299.0	1.021033788990818E9	original
 5	2	9.53967041E8	62.07915395590135	718.78	1.0	203.199548118	-60.0	6.2756387134856243E18	-230.0	-695025.0	7.011717E-5	4.28479948	new
 6	1	NULL	NULL	-4314.0	NULL	91.0	1698.95	-100.3597812	-63.0	0.0	-66475.0000008	NULL	new
 PREHOOK: query: drop table part_change_various_various_double
@@ -1264,10 +1264,10 @@ POSTHOOK: Input: default@part_change_various_various_decimal
 POSTHOOK: Input: default@part_change_various_various_decimal@part=1
 #### A masked pattern was here ####
 insert_num	part	c1	c2	c3	c4	c5	c6	c7	c8	c9	c10	c11	b
-1	1	NULL	NULL	NULL	3244222	-29	4.70614144E8	4.70614135E8	--1551801.09502	--1551801.09502          	--1551801.09502	0004-09-22 18:26:29.519542222	original
-2	1	NULL	100	NULL	NULL	-3651	46114.285	46114.284799488		                         		2007-02-09 05:17:29.368756876	original
+1	1	true	NULL	NULL	3244222	-29	4.70614144E8	4.70614135E8	--1551801.09502	--1551801.09502          	--1551801.09502	0004-09-22 18:26:29.519542222	original
+2	1	true	100	NULL	NULL	-3651	46114.285	46114.284799488		                         		2007-02-09 05:17:29.368756876	original
 3	1	false	72	NULL	-93222	30	-66475.56	-66475.561431	1	1                        	1	6229-06-28 02:54:28.970117179	original
-4	1	NULL	-90	NULL	3289094	46114	9250341.0	9250340.75	2402.3	2402.3                   	2402.3	2002-05-10 05:29:48.990818073	original
+4	1	true	-90	NULL	3289094	46114	9250341.0	9250340.75	2402.3	2402.3                   	2402.3	2002-05-10 05:29:48.990818073	original
 PREHOOK: query: -- Table-Non-Cascade CHANGE COLUMNS ...
 alter table part_change_various_various_decimal replace columns (insert_num int, c1 DECIMAL(38,18), c2 DECIMAL(38,18), c3 DECIMAL(38,18), c4 DECIMAL(38,18), c5 DECIMAL(38,18), c6 DECIMAL(38,18), c7 DECIMAL(38,18), c8 DECIMAL(38,18), c9 DECIMAL(38,18), c10 DECIMAL(38,18), c11 DECIMAL(38,18), b STRING)
 PREHOOK: type: ALTERTABLE_REPLACECOLS
@@ -1366,10 +1366,10 @@ POSTHOOK: Input: default@part_change_various_various_decimal@part=1
 POSTHOOK: Input: default@part_change_various_various_decimal@part=2
 #### A masked pattern was here ####
 insert_num	part	c1	c2	c3	c4	c5	c6	c7	c8	c9	c10	c11	b
-1	1	NULL	NULL	NULL	3244222.000000000000000000	-29.000000000000000000	470614144.000000000000000000	470614135.000000000000000000	NULL	NULL	NULL	-62018170410.480460000000000000	original
-2	1	NULL	100.000000000000000000	NULL	NULL	-3651.000000000000000000	46114.285000000000000000	46114.284799488000000000	NULL	NULL	NULL	1171027049.368756800000000000	original
+1	1	1.000000000000000000	NULL	NULL	3244222.000000000000000000	-29.000000000000000000	470614144.000000000000000000	470614135.000000000000000000	NULL	NULL	NULL	-62018170410.480460000000000000	original
+2	1	1.000000000000000000	100.000000000000000000	NULL	NULL	-3651.000000000000000000	46114.285000000000000000	46114.284799488000000000	NULL	NULL	NULL	1171027049.368756800000000000	original
 3	1	0.000000000000000000	72.000000000000000000	NULL	-93222.000000000000000000	30.000000000000000000	-66475.560000000000000000	-66475.561431000000000000	1.000000000000000000	1.000000000000000000	1.000000000000000000	134416490068.970120000000000000	original
-4	1	NULL	-90.000000000000000000	NULL	3289094.000000000000000000	46114.000000000000000000	9250341.000000000000000000	9250340.750000000000000000	2402.300000000000000000	2402.300000000000000000	2402.300000000000000000	1021033788.990818000000000000	original
+4	1	1.000000000000000000	-90.000000000000000000	NULL	3289094.000000000000000000	46114.000000000000000000	9250341.000000000000000000	9250340.750000000000000000	2402.300000000000000000	2402.300000000000000000	2402.300000000000000000	1021033788.990818000000000000	original
 5	2	953967041.000000000000000000	62.079153955901346600	718.780000000000000000	1.000000000000000000	203.199548118000000000	-60.000000000000000000	6275638713485623898.000000000000000000	-230.000000000000000000	-695025.000000000000000000	0.000070117170000000	4.284799480000000000	new
 6	1	NULL	NULL	-4314.000000000000000000	-1240033819.000000000000000000	91.000000000000000000	1698.950000000000000000	-100.359781200000000000	-63.000000000000000000	0.000000000000000000	-66475.000000800000000000	NULL	new
 PREHOOK: query: drop table part_change_various_various_decimal
@@ -1437,10 +1437,10 @@ POSTHOOK: Input: default@part_change_various_various_string
 POSTHOOK: Input: default@part_change_various_various_string@part=1
 #### A masked pattern was here ####
 insert_num	part	c1	c2	c3	c4	c5	c6	c7	c8	c9	c10	c11	c12	c13	b
-1	1	NULL	NULL	NULL	3244222	-99999999999	-29.0764	4.70614135E8	470614135.000000000000000000	dynamic reptile          	dynamic reptile  	0004-09-22 18:26:29.519542222	2007-02-09	binary	original
-2	1	NULL	100	NULL	14	-23866739993	-3651.672	46114.284799488	46114.284799488000000000	  baffling               	  baffling    	2007-02-09 05:17:29.368756876	0004-09-22	binary	original
+1	1	true	NULL	NULL	3244222	-99999999999	-29.0764	4.70614135E8	470614135.000000000000000000	dynamic reptile          	dynamic reptile  	0004-09-22 18:26:29.519542222	2007-02-09	binary	original
+2	1	true	100	NULL	14	-23866739993	-3651.672	46114.284799488	46114.284799488000000000	  baffling               	  baffling    	2007-02-09 05:17:29.368756876	0004-09-22	binary	original
 3	1	false	72	NULL	-93222	30	-66475.56	-66475.561431	0.561431000000000000	1                        	1	6229-06-28 02:54:28.970117179	5966-07-09	binary	original
-4	1	NULL	-90	NULL	3289094	46114	9250341.0	9250340.75	9250340.750000000000000000	junkyard                 	junkyard	2002-05-10 05:29:48.990818073	1815-05-06	binary	original
+4	1	true	-90	NULL	3289094	46114	9250341.0	9250340.75	9250340.750000000000000000	junkyard                 	junkyard	2002-05-10 05:29:48.990818073	1815-05-06	binary	original
 PREHOOK: query: -- Table-Non-Cascade CHANGE COLUMNS ...
 alter table part_change_various_various_string replace columns (insert_num int, c1 STRING, c2 STRING, c3 STRING, c4 STRING, c5 STRING, c6 STRING, c7 STRING, c8 STRING, c9 STRING, c10 STRING, c11 STRING, c12 STRING, c13 STRING, b STRING)
 PREHOOK: type: ALTERTABLE_REPLACECOLS
@@ -1543,10 +1543,10 @@ POSTHOOK: Input: default@part_change_various_various_string@part=1
 POSTHOOK: Input: default@part_change_various_various_string@part=2
 #### A masked pattern was here ####
 insert_num	part	c1	c2	c3	c4	c5	c6	c7	c8	c9	c10	c11	c12	c13	b
-1	1	NULL	NULL	NULL	3244222	-99999999999	-29.0764	4.70614135E8	470614135	dynamic reptile	dynamic reptile  	0004-09-22 18:26:29.519542222	2007-02-09	binary	original
-2	1	NULL	100	NULL	14	-23866739993	-3651.672	46114.284799488	46114.284799488	  baffling	  baffling    	2007-02-09 05:17:29.368756876	0004-09-22	binary	original
+1	1	true	NULL	NULL	3244222	-99999999999	-29.0764	4.70614135E8	470614135	dynamic reptile	dynamic reptile  	0004-09-22 18:26:29.519542222	2007-02-09	binary	original
+2	1	true	100	NULL	14	-23866739993	-3651.672	46114.284799488	46114.284799488	  baffling	  baffling    	2007-02-09 05:17:29.368756876	0004-09-22	binary	original
 3	1	false	72	NULL	-93222	30	-66475.56	-66475.561431	0.561431	1	1	6229-06-28 02:54:28.970117179	5966-07-09	binary	original
-4	1	NULL	-90	NULL	3289094	46114	9250341.0	9250340.75	9250340.75	junkyard	junkyard	2002-05-10 05:29:48.990818073	1815-05-06	binary	original
+4	1	true	-90	NULL	3289094	46114	9250341.0	9250340.75	9250340.75	junkyard	junkyard	2002-05-10 05:29:48.990818073	1815-05-06	binary	original
 5	2	true	400	44388	-100	953967041.	62.079153	718.78	1	verdict	verdict	timestamp	date	binary	new
 6	1	NULL	-67	833	63993	NULL	905071.0	-4314.7918	-1240033819	trial	trial	2016-03-07 03:02:22	2016-03-07	n)گ	new
 PREHOOK: query: drop table part_change_various_various_string
@@ -1614,10 +1614,10 @@ POSTHOOK: Input: default@part_change_various_various_char
 POSTHOOK: Input: default@part_change_various_various_char@part=1
 #### A masked pattern was here ####
 insert_num	part	c1	c2	c3	c4	c5	c6	c7	c8	c9	c10	c11	c12	c13	b
-1	1	NULL	NULL	NULL	3244222	-99999999999	-29.0764	4.70614135E8	470614135.000000000000000000	dynamic reptile  	dynamic reptile  	0004-09-22 18:26:29.519542222	2007-02-09	binary	original
-2	1	NULL	100	NULL	14	-23866739993	-3651.672	46114.284799488	46114.284799488000000000	  baffling    	  baffling    	2007-02-09 05:17:29.368756876	0004-09-22	binary	original
+1	1	true	NULL	NULL	3244222	-99999999999	-29.0764	4.70614135E8	470614135.000000000000000000	dynamic reptile  	dynamic reptile  	0004-09-22 18:26:29.519542222	2007-02-09	binary	original
+2	1	true	100	NULL	14	-23866739993	-3651.672	46114.284799488	46114.284799488000000000	  baffling    	  baffling    	2007-02-09 05:17:29.368756876	0004-09-22	binary	original
 3	1	false	72	NULL	-93222	30	-66475.56	-66475.561431	0.561431000000000000	1	1	6229-06-28 02:54:28.970117179	5966-07-09	binary	original
-4	1	NULL	-90	NULL	3289094	46114	9250341.0	9250340.75	9250340.750000000000000000	junkyard	junkyard	2002-05-10 05:29:48.990818073	1815-05-06	binary	original
+4	1	true	-90	NULL	3289094	46114	9250341.0	9250340.75	9250340.750000000000000000	junkyard	junkyard	2002-05-10 05:29:48.990818073	1815-05-06	binary	original
 PREHOOK: query: -- Table-Non-Cascade CHANGE COLUMNS ...
 alter table part_change_various_various_char replace columns (insert_num int, c1 CHAR(25), c2 CHAR(25), c3 CHAR(25), c4 CHAR(25), c5 CHAR(25), c6 CHAR(25), c7 CHAR(25), c8 CHAR(25), c9 CHAR(25), c10 CHAR(25), c11 CHAR(25), c12 CHAR(25), c13 CHAR(25), b STRING)
 PREHOOK: type: ALTERTABLE_REPLACECOLS
@@ -1720,10 +1720,10 @@ POSTHOOK: Input: default@part_change_various_various_char@part=1
 POSTHOOK: Input: default@part_change_various_various_char@part=2
 #### A masked pattern was here ####
 insert_num	part	c1	c2	c3	c4	c5	c6	c7	c8	c9	c10	c11	c12	c13	b
-1	1	NULL	NULL	NULL	3244222                  	-99999999999             	-29.0764                 	4.70614135E8             	470614135                	dynamic reptile          	dynamic reptile          	0004-09-22 18:26:29.51954	2007-02-09               	binary                   	original
-2	1	NULL	100                      	NULL	14                       	-23866739993             	-3651.672                	46114.284799488          	46114.284799488          	  baffling               	  baffling               	2007-02-09 05:17:29.36875	0004-09-22               	binary                   	original
+1	1	true                     	NULL	NULL	3244222                  	-99999999999             	-29.0764                 	4.70614135E8             	470614135                	dynamic reptile          	dynamic reptile          	0004-09-22 18:26:29.51954	2007-02-09               	binary                   	original
+2	1	true                     	100                      	NULL	14                       	-23866739993             	-3651.672                	46114.284799488          	46114.284799488          	  baffling               	  baffling               	2007-02-09 05:17:29.36875	0004-09-22               	binary                   	original
 3	1	false                    	72                       	NULL	-93222                   	30                       	-66475.56                	-66475.561431            	0.561431                 	1                        	1                        	6229-06-28 02:54:28.97011	5966-07-09               	binary                   	original
-4	1	NULL	-90                      	NULL	3289094                  	46114                    	9250341.0                	9250340.75               	9250340.75               	junkyard                 	junkyard                 	2002-05-10 05:29:48.99081	1815-05-06               	binary                   	original
+4	1	true                     	-90                      	NULL	3289094                  	46114                    	9250341.0                	9250340.75               	9250340.75               	junkyard                 	junkyard                 	2002-05-10 05:29:48.99081	1815-05-06               	binary                   	original
 5	2	true                     	400                      	44388                    	-100                     	953967041.               	62.079153                	718.78                   	1                        	verdict                  	verdict                  	timestamp                	date                     	binary                   	new
 6	1	NULL	NULL	NULL	NULL	NULL	905071.0                 	-4314.7918               	-1240033819              	trial                    	trial                    	2016-03-07 03:02:22      	NULL	n)گ                      	new
 PREHOOK: query: drop table part_change_various_various_char
@@ -1791,10 +1791,10 @@ POSTHOOK: Input: default@part_change_various_various_char_trunc
 POSTHOOK: Input: default@part_change_various_various_char_trunc@part=1
 #### A masked pattern was here ####
 insert_num	part	c1	c2	c3	c4	c5	c6	c7	c8	c9	c10	c11	c12	c13	b
-1	1	NULL	NULL	NULL	3244222	-99999999999	-29.0764	4.70614135E8	470614135.000000000000000000	dynamic reptile  	dynamic 	0004-09-22 18:26:29.519542222	2007-02-09	binary	original
-2	1	NULL	100	NULL	14	-23866739993	-3651.672	46114.284799488	46114.284799488000000000	  baffling    	  baffli	2007-02-09 05:17:29.368756876	0004-09-22	binary	original
+1	1	true	NULL	NULL	3244222	-99999999999	-29.0764	4.70614135E8	470614135.000000000000000000	dynamic reptile  	dynamic 	0004-09-22 18:26:29.519542222	2007-02-09	binary	original
+2	1	true	100	NULL	14	-23866739993	-3651.672	46114.284799488	46114.284799488000000000	  baffling    	  baffli	2007-02-09 05:17:29.368756876	0004-09-22	binary	original
 3	1	false	72	NULL	-93222	30	-66475.56	-66475.561431	0.561431000000000000	1	1	6229-06-28 02:54:28.970117179	5966-07-09	binary	original
-4	1	NULL	-90	NULL	3289094	46114	9250341.0	9250340.75	9250340.750000000000000000	junkyard	junkyard	2002-05-10 05:29:48.990818073	1815-05-06	binary	original
+4	1	true	-90	NULL	3289094	46114	9250341.0	9250340.75	9250340.750000000000000000	junkyard	junkyard	2002-05-10 05:29:48.990818073	1815-05-06	binary	original
 PREHOOK: query: -- Table-Non-Cascade CHANGE COLUMNS ...
 alter table part_change_various_various_char_trunc replace columns (insert_num int, c1 CHAR(8), c2 CHAR(8), c3 CHAR(8), c4 CHAR(8), c5 CHAR(8), c6 CHAR(8), c7 CHAR(8), c8 CHAR(8), c9 CHAR(8), c10 CHAR(8), c11 CHAR(8), c12 CHAR(8), c13 CHAR(8), b STRING)
 PREHOOK: type: ALTERTABLE_REPLACECOLS
@@ -1897,10 +1897,10 @@ POSTHOOK: Input: default@part_change_various_various_char_trunc@part=1
 POSTHOOK: Input: default@part_change_various_various_char_trunc@part=2
 #### A masked pattern was here ####
 insert_num	part	c1	c2	c3	c4	c5	c6	c7	c8	c9	c10	c11	c12	c13	b
-1	1	NULL	NULL	NULL	3244222 	-9999999	-29.0764	4.706141	47061413	dynamic 	dynamic 	0004-09-	2007-02-	binary  	original
-2	1	NULL	100     	NULL	14      	-2386673	-3651.67	46114.28	46114.28	  baffli	  baffli	2007-02-	0004-09-	binary  	original
+1	1	true    	NULL	NULL	3244222 	-9999999	-29.0764	4.706141	47061413	dynamic 	dynamic 	0004-09-	2007-02-	binary  	original
+2	1	true    	100     	NULL	14      	-2386673	-3651.67	46114.28	46114.28	  baffli	  baffli	2007-02-	0004-09-	binary  	original
 3	1	false   	72      	NULL	-93222  	30      	-66475.5	-66475.5	0.561431	1       	1       	6229-06-	5966-07-	binary  	original
-4	1	NULL	-90     	NULL	3289094 	46114   	9250341.	9250340.	9250340.	junkyard	junkyard	2002-05-	1815-05-	binary  	original
+4	1	true    	-90     	NULL	3289094 	46114   	9250341.	9250340.	9250340.	junkyard	junkyard	2002-05-	1815-05-	binary  	original
 5	2	true    	400     	44388   	-100    	95396704	62.07915	718.78  	1       	verdict 	verdict 	timestam	date    	binary  	new
 6	1	NULL	NULL	NULL	NULL	NULL	905070.9	-4314.79	-1240033	trial   	trial   	NULL	NULL	n)گ     	new
 PREHOOK: query: drop table part_change_various_various_char_trunc
@@ -1968,10 +1968,10 @@ POSTHOOK: Input: default@part_change_various_various_varchar
 POSTHOOK: Input: default@part_change_various_various_varchar@part=1
 #### A masked pattern was here ####
 insert_num	part	c1	c2	c3	c4	c5	c6	c7	c8	c9	c10	c11	c12	c13	b
-1	1	NULL	NULL	NULL	3244222	-99999999999	-29.0764	4.70614135E8	470614135.000000000000000000	dynamic reptile  	dynamic reptile          	0004-09-22 18:26:29.519542222	2007-02-09	binary	original
-2	1	NULL	100	NULL	14	-23866739993	-3651.672	46114.284799488	46114.284799488000000000	  baffling    	  baffling               	2007-02-09 05:17:29.368756876	0004-09-22	binary	original
+1	1	true	NULL	NULL	3244222	-99999999999	-29.0764	4.70614135E8	470614135.000000000000000000	dynamic reptile  	dynamic reptile          	0004-09-22 18:26:29.519542222	2007-02-09	binary	original
+2	1	true	100	NULL	14	-23866739993	-3651.672	46114.284799488	46114.284799488000000000	  baffling    	  baffling               	2007-02-09 05:17:29.368756876	0004-09-22	binary	original
 3	1	false	72	NULL	-93222	30	-66475.56	-66475.561431	0.561431000000000000	1	1                        	6229-06-28 02:54:28.970117179	5966-07-09	binary	original
-4	1	NULL	-90	NULL	3289094	46114	9250341.0	9250340.75	9250340.750000000000000000	junkyard	junkyard                 	2002-05-10 05:29:48.990818073	1815-05-06	binary	original
+4	1	true	-90	NULL	3289094	46114	9250341.0	9250340.75	9250340.750000000000000000	junkyard	junkyard                 	2002-05-10 05:29:48.990818073	1815-05-06	binary	original
 PREHOOK: query: -- Table-Non-Cascade CHANGE COLUMNS ...
 alter table part_change_various_various_varchar replace columns (insert_num int, c1 VARCHAR(25), c2 VARCHAR(25), c3 VARCHAR(25), c4 VARCHAR(25), c5 VARCHAR(25), c6 VARCHAR(25), c7 VARCHAR(25), c8 VARCHAR(25), c9 VARCHAR(25), c10 VARCHAR(25), c11 VARCHAR(25), c12 VARCHAR(25), c13 VARCHAR(25), b STRING)
 PREHOOK: type: ALTERTABLE_REPLACECOLS
@@ -2074,10 +2074,10 @@ POSTHOOK: Input: default@part_change_various_various_varchar@part=1
 POSTHOOK: Input: default@part_change_various_various_varchar@part=2
 #### A masked pattern was here ####
 insert_num	part	c1	c2	c3	c4	c5	c6	c7	c8	c9	c10	c11	c12	c13	b
-1	1	NULL	NULL	NULL	3244222	-99999999999	-29.0764	4.70614135E8	470614135	dynamic reptile  	dynamic reptile	0004-09-22 18:26:29.51954	2007-02-09	binary	original
-2	1	NULL	100	NULL	14	-23866739993	-3651.672	46114.284799488	46114.284799488	  baffling    	  baffling	2007-02-09 05:17:29.36875	0004-09-22	binary	original
+1	1	true	NULL	NULL	3244222	-99999999999	-29.0764	4.70614135E8	470614135	dynamic reptile  	dynamic reptile	0004-09-22 18:26:29.51954	2007-02-09	binary	original
+2	1	true	100	NULL	14	-23866739993	-3651.672	46114.284799488	46114.284799488	  baffling    	  baffling	2007-02-09 05:17:29.36875	0004-09-22	binary	original
 3	1	false	72	NULL	-93222	30	-66475.56	-66475.561431	0.561431	1	1	6229-06-28 02:54:28.97011	5966-07-09	binary	original
-4	1	NULL	-90	NULL	3289094	46114	9250341.0	9250340.75	9250340.75	junkyard	junkyard	2002-05-10 05:29:48.99081	1815-05-06	binary	original
+4	1	true	-90	NULL	3289094	46114	9250341.0	9250340.75	9250340.75	junkyard	junkyard	2002-05-10 05:29:48.99081	1815-05-06	binary	original
 5	2	true	400	44388	-100	953967041.	62.079153	718.78	1	verdict	verdict	timestamp	date	binary	new
 6	1	NULL	-67	833	63993	NULL	905071.0	-4314.7918	-1240033819	trial	trial	2016-03-07 03:02:22	2016-03-07	n)گ	new
 PREHOOK: query: drop table part_change_various_various_varchar
@@ -2145,10 +2145,10 @@ POSTHOOK: Input: default@part_change_various_various_varchar_trunc
 POSTHOOK: Input: default@part_change_various_various_varchar_trunc@part=1
 #### A masked pattern was here ####
 insert_num	part	c1	c2	c3	c4	c5	c6	c7	c8	c9	c10	c11	c12	c13	b
-1	1	NULL	NULL	NULL	3244222	-99999999999	-29.0764	4.70614135E8	470614135.000000000000000000	dynamic reptile  	dynamic reptile          	0004-09-22 18:26:29.519542222	2007-02-09	binary	original
-2	1	NULL	100	NULL	14	-23866739993	-3651.672	46114.284799488	46114.284799488000000000	  baffling    	  baffling               	2007-02-09 05:17:29.368756876	0004-09-22	binary	original
+1	1	true	NULL	NULL	3244222	-99999999999	-29.0764	4.70614135E8	470614135.000000000000000000	dynamic reptile  	dynamic reptile          	0004-09-22 18:26:29.519542222	2007-02-09	binary	original
+2	1	true	100	NULL	14	-23866739993	-3651.672	46114.284799488	46114.284799488000000000	  baffling    	  baffling               	2007-02-09 05:17:29.368756876	0004-09-22	binary	original
 3	1	false	72	NULL	-93222	30	-66475.56	-66475.561431	0.561431000000000000	1	1                        	6229-06-28 02:54:28.970117179	5966-07-09	binary	original
-4	1	NULL	-90	NULL	3289094	46114	9250341.0	9250340.75	9250340.750000000000000000	junkyard	junkyard                 	2002-05-10 05:29:48.990818073	1815-05-06	binary	original
+4	1	true	-90	NULL	3289094	46114	9250341.0	9250340.75	9250340.750000000000000000	junkyard	junkyard                 	2002-05-10 05:29:48.990818073	1815-05-06	binary	original
 PREHOOK: query: -- Table-Non-Cascade CHANGE COLUMNS ...
 alter table part_change_various_various_varchar_trunc replace columns (insert_num int, c1 VARCHAR(8), c2 VARCHAR(8), c3 VARCHAR(8), c4 VARCHAR(8), c5 VARCHAR(8), c6 VARCHAR(8), c7 VARCHAR(8), c8 VARCHAR(8), c9 VARCHAR(8), c10 VARCHAR(8), c11 VARCHAR(8), c12 VARCHAR(8), c13 VARCHAR(8), b STRING)
 PREHOOK: type: ALTERTABLE_REPLACECOLS
@@ -2251,10 +2251,10 @@ POSTHOOK: Input: default@part_change_various_various_varchar_trunc@part=1
 POSTHOOK: Input: default@part_change_various_various_varchar_trunc@part=2
 #### A masked pattern was here ####
 insert_num	part	c1	c2	c3	c4	c5	c6	c7	c8	c9	c10	c11	c12	c13	b
-1	1	NULL	NULL	NULL	3244222	-9999999	-29.0764	4.706141	47061413	dynamic 	dynamic 	0004-09-	2007-02-	binary	original
-2	1	NULL	100	NULL	14	-2386673	-3651.67	46114.28	46114.28	  baffli	  baffli	2007-02-	0004-09-	binary	original
+1	1	true	NULL	NULL	3244222	-9999999	-29.0764	4.706141	47061413	dynamic 	dynamic 	0004-09-	2007-02-	binary	original
+2	1	true	100	NULL	14	-2386673	-3651.67	46114.28	46114.28	  baffli	  baffli	2007-02-	0004-09-	binary	original
 3	1	false	72	NULL	-93222	30	-66475.5	-66475.5	0.561431	1	1	6229-06-	5966-07-	binary	original
-4	1	NULL	-90	NULL	3289094	46114	9250341.	9250340.	9250340.	junkyard	junkyard	2002-05-	1815-05-	binary	original
+4	1	true	-90	NULL	3289094	46114	9250341.	9250340.	9250340.	junkyard	junkyard	2002-05-	1815-05-	binary	original
 5	2	true	400	44388	-100	95396704	62.07915	718.78	1	verdict	verdict	timestam	date	binary	new
 6	1	NULL	-67	833	63993	NULL	905070.9	-4314.79	-1240033	trial	trial	NULL	NULL	n)گ	new
 PREHOOK: query: drop table part_change_various_various_varchar_trunc
@@ -2321,10 +2321,10 @@ POSTHOOK: Input: default@part_change_various_various_timestamp
 POSTHOOK: Input: default@part_change_various_various_timestamp@part=1
 #### A masked pattern was here ####
 insert_num	part	c1	c2	c3	c4	c5	c6	c7	c8	c9	c10	c11	c12	b
-1	1	NULL	NULL	NULL	3244222	-99999999999	-29.0764	4.70614135E8	470614135.000000000000000000	0004-09-22 18:26:29.519542222	0004-09-22 18:26:29.51954	0004-09-22 18:26:29.51954	2007-02-09	original
-2	1	NULL	100	NULL	14	-23866739993	-3651.672	46114.284799488	46114.284799488000000000	2007-02-09 05:17:29.368756876	2007-02-09 05:17:29.36875	2007-02-09 05:17:29.36875	0004-09-22	original
+1	1	true	NULL	NULL	3244222	-99999999999	-29.0764	4.70614135E8	470614135.000000000000000000	0004-09-22 18:26:29.519542222	0004-09-22 18:26:29.51954	0004-09-22 18:26:29.51954	2007-02-09	original
+2	1	true	100	NULL	14	-23866739993	-3651.672	46114.284799488	46114.284799488000000000	2007-02-09 05:17:29.368756876	2007-02-09 05:17:29.36875	2007-02-09 05:17:29.36875	0004-09-22	original
 3	1	false	72	NULL	-93222	30	-66475.56	-66475.561431	0.561431000000000000	6229-06-28 02:54:28.970117179	6229-06-28 02:54:28.97011	6229-06-28 02:54:28.97011	5966-07-09	original
-4	1	NULL	-90	NULL	3289094	46114	9250341.0	9250340.75	9250340.750000000000000000	2002-05-10 05:29:48.990818073	2002-05-10 05:29:48.99081	2002-05-10 05:29:48.99081	1815-05-06	original
+4	1	true	-90	NULL	3289094	46114	9250341.0	9250340.75	9250340.750000000000000000	2002-05-10 05:29:48.990818073	2002-05-10 05:29:48.99081	2002-05-10 05:29:48.99081	1815-05-06	original
 PREHOOK: query: -- Table-Non-Cascade CHANGE COLUMNS ...
 alter table part_change_various_various_timestamp replace columns (insert_num int, c1 TIMESTAMP, c2 TIMESTAMP, c3 TIMESTAMP, c4 TIMESTAMP, c5 TIMESTAMP, c6 TIMESTAMP, c7 TIMESTAMP, c8 TIMESTAMP, c9 TIMESTAMP, c10 TIMESTAMP, c11 TIMESTAMP, c12 TIMESTAMP, b STRING)
 PREHOOK: type: ALTERTABLE_REPLACECOLS
@@ -2425,10 +2425,10 @@ POSTHOOK: Input: default@part_change_various_various_timestamp@part=1
 POSTHOOK: Input: default@part_change_various_various_timestamp@part=2
 #### A masked pattern was here ####
 insert_num	part	c1	c2	c3	c4	c5	c6	c7	c8	c9	c10	c11	c12	b
-1	1	NULL	NULL	NULL	1969-12-31 16:54:04.222	1966-10-31 06:13:20.001	1969-12-31 15:59:30.923599244	1984-11-29 14:08:55	1984-11-29 14:08:55	0004-09-22 18:26:29.519542222	0004-09-22 18:26:29.51954	0004-09-22 18:26:29.51954	2007-02-09 00:00:00	original
-2	1	NULL	1969-12-31 16:00:00.1	NULL	1969-12-31 16:00:00.014	1969-03-30 10:21:00.007	1969-12-31 14:59:08.32788086	1970-01-01 04:48:34.284799488	1970-01-01 04:48:34.284799488	2007-02-09 05:17:29.368756876	2007-02-09 05:17:29.36875	2007-02-09 05:17:29.36875	0004-09-22 00:00:00	original
+1	1	1969-12-31 16:00:00.001	NULL	NULL	1969-12-31 16:54:04.222	1966-10-31 06:13:20.001	1969-12-31 15:59:30.923599244	1984-11-29 14:08:55	1984-11-29 14:08:55	0004-09-22 18:26:29.519542222	0004-09-22 18:26:29.51954	0004-09-22 18:26:29.51954	2007-02-09 00:00:00	original
+2	1	1969-12-31 16:00:00.001	1969-12-31 16:00:00.1	NULL	1969-12-31 16:00:00.014	1969-03-30 10:21:00.007	1969-12-31 14:59:08.32788086	1970-01-01 04:48:34.284799488	1970-01-01 04:48:34.284799488	2007-02-09 05:17:29.368756876	2007-02-09 05:17:29.36875	2007-02-09 05:17:29.36875	0004-09-22 00:00:00	original
 3	1	1969-12-31 16:00:00	1969-12-31 16:00:00.072	NULL	1969-12-31 15:58:26.778	1969-12-31 16:00:00.03	1969-12-30 21:32:04.4375	1969-12-30 21:32:04.438569	1969-12-31 16:00:00.561431	6229-06-28 02:54:28.970117179	6229-06-28 02:54:28.97011	6229-06-28 02:54:28.97011	5966-07-09 00:00:00	original
-4	1	NULL	1969-12-31 15:59:59.91	NULL	1969-12-31 16:54:49.094	1969-12-31 16:00:46.114	1970-04-17 17:32:21	1970-04-17 17:32:20.75	1970-04-17 17:32:20.75	2002-05-10 05:29:48.990818073	2002-05-10 05:29:48.99081	2002-05-10 05:29:48.99081	1815-05-06 00:00:00	original
+4	1	1969-12-31 16:00:00.001	1969-12-31 15:59:59.91	NULL	1969-12-31 16:54:49.094	1969-12-31 16:00:46.114	1970-04-17 17:32:21	1970-04-17 17:32:20.75	1970-04-17 17:32:20.75	2002-05-10 05:29:48.990818073	2002-05-10 05:29:48.99081	2002-05-10 05:29:48.99081	1815-05-06 00:00:00	original
 5	2	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	new
 6	1	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	2016-03-07 03:02:22	2016-03-07 03:02:22	2016-03-07 03:02:22	NULL	new
 PREHOOK: query: drop table part_change_various_various_timestamp
