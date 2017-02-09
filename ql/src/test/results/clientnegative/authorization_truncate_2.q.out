@@ -1,0 +1,16 @@
+PREHOOK: query: create table auth_trunc2(i int) partitioned by (j int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@auth_trunc2
+POSTHOOK: query: create table auth_trunc2(i int) partitioned by (j int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@auth_trunc2
+PREHOOK: query: alter table auth_trunc2 add partition (j=42)
+PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Output: default@auth_trunc2
+POSTHOOK: query: alter table auth_trunc2 add partition (j=42)
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Output: default@auth_trunc2
+POSTHOOK: Output: default@auth_trunc2@j=42
+FAILED: HiveAccessControlException Permission denied: Principal [name=user1, type=USER] does not have following privileges for operation TRUNCATETABLE [[OBJECT OWNERSHIP] on Object [type=TABLE_OR_VIEW, name=default.auth_trunc2]]
