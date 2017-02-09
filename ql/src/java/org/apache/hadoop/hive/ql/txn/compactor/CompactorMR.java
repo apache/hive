@@ -309,7 +309,7 @@ public class CompactorMR {
       job.getJobName() + "' to " + job.getQueueName() + " queue.  " +
       "(current delta dirs count=" + curDirNumber +
       ", obsolete delta dirs count=" + obsoleteDirNumber + ". TxnIdRange[" + minTxn + "," + maxTxn + "]");
-    RunningJob rj = JobClient.runJob(job);
+    RunningJob rj = new JobClient(job).submitJob(job);
     LOG.info("Submitted compaction job '" + job.getJobName() + "' with jobID=" + rj.getID() + " compaction ID=" + id);
     txnHandler.setHadoopJobId(rj.getID().toString(), id);
     rj.waitForCompletion();
