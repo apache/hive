@@ -75,7 +75,7 @@ public class HiveDataSource implements DataSource {
   @Override
   public PrintWriter getLogWriter() throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -87,7 +87,7 @@ public class HiveDataSource implements DataSource {
   @Override
   public int getLoginTimeout() throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   public Logger getParentLogger() throws SQLFeatureNotSupportedException {
@@ -104,7 +104,7 @@ public class HiveDataSource implements DataSource {
   @Override
   public void setLogWriter(PrintWriter arg0) throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -116,7 +116,7 @@ public class HiveDataSource implements DataSource {
   @Override
   public void setLoginTimeout(int arg0) throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -128,7 +128,7 @@ public class HiveDataSource implements DataSource {
   @Override
   public boolean isWrapperFor(Class<?> arg0) throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -140,7 +140,7 @@ public class HiveDataSource implements DataSource {
   @Override
   public <T> T unwrap(Class<T> arg0) throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
 }
