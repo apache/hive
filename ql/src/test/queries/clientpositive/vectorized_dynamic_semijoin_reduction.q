@@ -39,5 +39,11 @@ select count(*) from dsrv_big a join dsrv_small b on (a.key_str = b.key_str and 
 EXPLAIN VECTORIZATION EXPRESSION select count(*) from dsrv_big a join dsrv_small b on (a.key_int = b.key_int) where b.value in ('nonexistent1', 'nonexistent2');
 select count(*) from dsrv_big a join dsrv_small b on (a.key_int = b.key_int) where b.value in ('nonexistent1', 'nonexistent2');
 
+-- bloomfilter expectedEntries should use ndv if available. Compare to first query
+analyze table dsrv_small compute statistics;
+analyze table dsrv_small compute statistics for columns;
+set hive.stats.fetch.column.stats=true;
+EXPLAIN select count(*) from dsrv_big a join dsrv_small b on (a.key_int = b.key_int);
+
 drop table dsrv_big;
 drop table dsrv_small;
