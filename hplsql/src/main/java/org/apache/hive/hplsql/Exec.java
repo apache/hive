@@ -144,7 +144,9 @@ public class Exec extends HplsqlBaseVisitor<Integer> {
     else {
       var = new Var(value);
       var.setName(name);
-      exec.currentScope.addVariable(var);
+      if(exec.currentScope != null) {
+        exec.currentScope.addVariable(var);
+      }
     }    
     return var;
   }
@@ -172,7 +174,9 @@ public class Exec extends HplsqlBaseVisitor<Integer> {
     else {
       var = new Var();
       var.setName(name);
-      exec.currentScope.addVariable(var);
+      if(exec.currentScope != null) {
+        exec.currentScope.addVariable(var);
+      }
     }    
     return var;
   }
