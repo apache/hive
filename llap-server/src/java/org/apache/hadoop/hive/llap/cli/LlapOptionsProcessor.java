@@ -67,7 +67,7 @@ public class LlapOptionsProcessor {
   public static final String OPTION_SLIDER_PLACEMENT = "slider-placement";
   public static final String OPTION_SLIDER_DEFAULT_KEYTAB = "slider-default-keytab";
   public static final String OPTION_OUTPUT_DIR = "output";
-
+  public static final String OPTION_START = "startImmediately";
 
   public static class LlapOptions {
     private final int instances;
@@ -84,12 +84,13 @@ public class LlapOptionsProcessor {
     private final String javaPath;
     private final String llapQueueName;
     private final String logger;
+    private final boolean isStarting;
+    private final String output;
 
     public LlapOptions(String name, int instances, String directory, int executors, int ioThreads,
                        long cache, long size, long xmx, String jars, boolean isHbase,
                        @Nonnull Properties hiveconf, String javaPath, String llapQueueName,
-                       String logger)
-        throws ParseException {
+                       String logger, boolean isStarting, String output) throws ParseException {
       if (instances <= 0) {
         throw new ParseException("Invalid configuration: " + instances
             + " (should be greater than 0)");
@@ -108,6 +109,12 @@ public class LlapOptionsProcessor {
       this.javaPath = javaPath;
       this.llapQueueName = llapQueueName;
       this.logger = logger;
+      this.isStarting = isStarting;
+      this.output = output;
+    }
+
+    public String getOutput() {
+      return output;
     }
 
     public String getName() {
@@ -164,6 +171,10 @@ public class LlapOptionsProcessor {
 
     public String getLogger() {
       return logger;
+    }
+
+    public boolean isStarting() {
+      return isStarting;
     }
   }
 
@@ -265,6 +276,10 @@ public class LlapOptionsProcessor {
     options.addOption(OptionBuilder.hasArg().withArgName(OPTION_IO_THREADS)
         .withLongOpt(OPTION_IO_THREADS).withDescription("executor per instance").create('t'));
 
+    options.addOption(OptionBuilder.hasArg(false).withArgName(OPTION_START)
+        .withLongOpt(OPTION_START).withDescription("immediately start the cluster")
+        .create('z'));
+
     // [-H|--help]
     options.addOption(new Option("H", "help", false, "Print help information"));
   }
@@ -293,7 +308,10 @@ public class LlapOptionsProcessor {
     final long cache = parseSuffixed(commandLine.getOptionValue(OPTION_CACHE, "-1"));
     final long size = parseSuffixed(commandLine.getOptionValue(OPTION_SIZE, "-1"));
     final long xmx = parseSuffixed(commandLine.getOptionValue(OPTION_XMX, "-1"));
-    final boolean isHbase = Boolean.parseBoolean(commandLine.getOptionValue(OPTION_AUXHBASE, "true"));
+    final boolean isHbase = Boolean.parseBoolean(
+        commandLine.getOptionValue(OPTION_AUXHBASE, "true"));
+    final boolean doStart = commandLine.hasOption(OPTION_START);
+    final String output = commandLine.getOptionValue(OPTION_OUTPUT_DIR, null);
 
     final String queueName = commandLine.getOptionValue(OPTION_LLAP_QUEUE,
         HiveConf.ConfVars.LLAP_DAEMON_QUEUE_NAME.getDefaultValue());
@@ -323,7 +341,7 @@ public class LlapOptionsProcessor {
     // loglevel, chaosmonkey & args are parsed by the python processor
 
     return new LlapOptions(name, instances, directory, executors, ioThreads, cache,
-        size, xmx, jars, isHbase, hiveconf, javaHome, queueName, logger);
+        size, xmx, jars, isHbase, hiveconf, javaHome, queueName, logger, doStart, output);
   }
 
   private void printUsage() {

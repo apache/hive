@@ -93,11 +93,23 @@ def main(args):
 	parser.add_argument("--slider-keytab", default="")
 	parser.add_argument("--slider-principal", default="")
 	parser.add_argument("--slider-default-keytab", dest='slider_default_keytab', action='store_true')
-	parser.set_defaults(slider_default_keytab=False)
 	parser.add_argument("--slider-placement", type=int, default=4)
+	parser.set_defaults(slider_default_keytab=False)
+	parser.add_argument("--startImmediately", dest='start_immediately', action='store_true')
+	parser.add_argument("--javaChild", dest='java_child', action='store_true')
+	parser.set_defaults(start_immediately=False)
+	parser.set_defaults(java_child=False)
 	# Unneeded here for now: parser.add_argument("--hiveconf", action='append')
 	#parser.add_argument("--size") parser.add_argument("--xmx") parser.add_argument("--cache") parser.add_argument("--executors")
 	(args, unknown_args) = parser.parse_known_args(args)
+	if args.start_immediately and not args.java_child:
+		sys.exit(0)
+		return
+	if args.java_child:
+		print "%s Running as a child of LlapServiceDriver" % (strftime("%H:%M:%S", gmtime()))
+	else:
+		print "%s Running after LlapServiceDriver" % (strftime("%H:%M:%S", gmtime()))
+
 	input = args.input
 	output = args.output
 	slider_am_jvm_heapsize = max(args.slider_am_container_mb * 0.8, args.slider_am_container_mb - 1024)
@@ -160,7 +172,6 @@ def main(args):
 		shutil.rmtree(dst)
 	shutil.copytree(src, dst)
 
-
 	# Make the zip package
 	tmp = join(output, "tmp")
 	pkg = join(tmp, "package")
@@ -175,6 +186,8 @@ def main(args):
 		f.write(metainfo % vars)
 
 	os.mkdir(join(pkg, "files"))
+	print "%s Prepared the files" % (strftime("%H:%M:%S", gmtime()))
+
 	tarball = tarfile.open(join(pkg, "files", "llap-%s.tar.gz" %  version), "w:gz")
 	# recursive add + -C chdir inside
 	tarball.add(input, "")
@@ -183,6 +196,7 @@ def main(args):
 	zipped = zipfile.ZipFile(join(output, "llap-%s.zip" % version), "w")
 	zipdir(tmp, zipped)
 	zipped.close()
+	print "%s Packaged the files" % (strftime("%H:%M:%S", gmtime()))
 
 	# cleanup after making zip pkg
 	shutil.rmtree(tmp)
@@ -197,7 +211,8 @@ def main(args):
 		f.write(runner % vars)
 	os.chmod(join(output, "run.sh"), 0700)
 
-	print "Prepared %s/run.sh for running LLAP on Slider" % (output)
+	if not args.java_child:
+		print "%s Prepared %s/run.sh for running LLAP on Slider" % (strftime("%H:%M:%S", gmtime()), output)
 
 if __name__ == "__main__":
 	main(sys.argv[1:])
