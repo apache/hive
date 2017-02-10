@@ -20,7 +20,6 @@ package org.apache.hadoop.hive.druid;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.jsontype.NamedType;
 import com.fasterxml.jackson.dataformat.smile.SmileFactory;
-import com.google.common.base.Strings;
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Interner;
@@ -28,13 +27,10 @@ import com.google.common.collect.Interners;
 import com.google.common.collect.Lists;
 import com.google.common.io.CharStreams;
 import com.metamx.common.MapUtils;
-import com.metamx.common.lifecycle.Lifecycle;
 import com.metamx.emitter.EmittingLogger;
 import com.metamx.emitter.core.NoopEmitter;
 import com.metamx.emitter.service.ServiceEmitter;
 import com.metamx.http.client.HttpClient;
-import com.metamx.http.client.HttpClientConfig;
-import com.metamx.http.client.HttpClientInit;
 import com.metamx.http.client.Request;
 import com.metamx.http.client.response.InputStreamResponseHandler;
 import io.druid.jackson.DefaultObjectMapper;
@@ -51,14 +47,13 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.metastore.api.MetaException;
-import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.hadoop.hive.common.JavaUtils;
+import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.io.retry.RetryPolicies;
 import org.apache.hadoop.io.retry.RetryProxy;
+import org.apache.hadoop.util.StringUtils;
 import org.jboss.netty.handler.codec.http.HttpHeaders;
 import org.jboss.netty.handler.codec.http.HttpMethod;
-import org.joda.time.Period;
 import org.skife.jdbi.v2.FoldController;
 import org.skife.jdbi.v2.Folder3;
 import org.skife.jdbi.v2.Handle;
@@ -67,31 +62,46 @@ import org.skife.jdbi.v2.TransactionCallback;
 import org.skife.jdbi.v2.TransactionStatus;
 import org.skife.jdbi.v2.tweak.HandleCallback;
 import org.skife.jdbi.v2.util.ByteArrayMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.Reader;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.net.InetAddress;
-import java.net.URI;
 import java.net.URL;
+import java.net.URLDecoder;
 import java.net.UnknownHostException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TimeZone;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
+
+import static org.apache.hadoop.hive.ql.exec.Utilities.jarFinderGetJar;
 
 /**
  * Utils class for Druid storage handler.
  */
 public final class DruidStorageHandlerUtils {
 
+  private static final Logger LOG = LoggerFactory.getLogger(DruidStorageHandlerUtils.class);
+
   private static final String SMILE_CONTENT_TYPE = "application/x-jackson-smile";
+
   /**
    * Mapper to use to serialize/deserialize Druid objects (JSON)
    */
@@ -190,18 +200,17 @@ public final class DruidStorageHandlerUtils {
     return response;
   }
 
-
   public static String getURL(HttpClient client, URL url) throws IOException {
     try (Reader reader = new InputStreamReader(
             DruidStorageHandlerUtils.submitRequest(client, new Request(HttpMethod.GET, url)))) {
-      return  CharStreams.toString(reader);
+      return CharStreams.toString(reader);
     }
   }
 
   /**
    * @param taskDir path to the  directory containing the segments descriptor info
-   *                 the descriptor path will be .../workingPath/task_id/{@link DruidStorageHandler#SEGMENTS_DESCRIPTOR_DIR_NAME}/*.json
-   * @param conf     hadoop conf to get the file system
+   *                the descriptor path will be .../workingPath/task_id/{@link DruidStorageHandler#SEGMENTS_DESCRIPTOR_DIR_NAME}/*.json
+   * @param conf    hadoop conf to get the file system
    *
    * @return List of DataSegments
    *
@@ -290,7 +299,8 @@ public final class DruidStorageHandlerUtils {
                                   public ArrayList<String> fold(ArrayList<String> druidDataSources,
                                           Map<String, Object> stringObjectMap,
                                           FoldController foldController,
-                                          StatementContext statementContext) throws SQLException {
+                                          StatementContext statementContext
+                                  ) throws SQLException {
                                     druidDataSources.add(
                                             MapUtils.getString(stringObjectMap, "datasource")
                                     );
@@ -431,4 +441,30 @@ public final class DruidStorageHandlerUtils {
   public interface DataPusher {
     long push() throws IOException;
   }
+
+  // Thanks, HBase Storage handler
+  public static void addDependencyJars(Configuration conf, Class<?>... classes) throws IOException {
+    FileSystem localFs = FileSystem.getLocal(conf);
+    Set<String> jars = new HashSet<String>();
+    jars.addAll(conf.getStringCollection("tmpjars"));
+    for (Class<?> clazz : classes) {
+      if (clazz == null) {
+        continue;
+      }
+      String path = Utilities.jarFinderGetJar(clazz);
+      if (path == null) {
+        throw new RuntimeException(
+                "Could not find jar for class " + clazz + " in order to ship it to the cluster.");
+      }
+      if (!localFs.exists(new Path(path))) {
+        throw new RuntimeException("Could not validate jar file " + path + " for class " + clazz);
+      }
+      jars.add(path.toString());
+    }
+    if (jars.isEmpty()) {
+      return;
+    }
+    conf.set("tmpjars", StringUtils.arrayToString(jars.toArray(new String[jars.size()])));
+  }
+
 }

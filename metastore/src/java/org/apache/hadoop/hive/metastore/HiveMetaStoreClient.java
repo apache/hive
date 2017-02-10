@@ -750,7 +750,10 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
         hook.commitCreateTable(tbl);
       }
       success = true;
-    } finally {
+    } catch (Exception e){
+      LOG.error("Got exception from createTable", e);
+    }
+    finally {
       if (!success && (hook != null)) {
         hook.rollbackCreateTable(tbl);
       }

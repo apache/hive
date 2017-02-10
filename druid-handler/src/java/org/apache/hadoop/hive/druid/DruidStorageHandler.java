@@ -49,6 +49,7 @@ import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.druid.io.DruidOutputFormat;
 import org.apache.hadoop.hive.druid.io.DruidQueryBasedInputFormat;
+import org.apache.hadoop.hive.druid.io.DruidRecordWriter;
 import org.apache.hadoop.hive.druid.serde.DruidSerDe;
 import org.apache.hadoop.hive.metastore.DefaultHiveMetaHook;
 import org.apache.hadoop.hive.metastore.HiveMetaHook;
@@ -520,7 +521,11 @@ public class DruidStorageHandler extends DefaultHiveMetaHook implements HiveStor
 
   @Override
   public void configureJobConf(TableDesc tableDesc, JobConf jobConf) {
-
+    try {
+      DruidStorageHandlerUtils.addDependencyJars(jobConf, DruidRecordWriter.class);
+    } catch (IOException e) {
+      Throwables.propagate(e);
+    }
   }
 
   @Override
