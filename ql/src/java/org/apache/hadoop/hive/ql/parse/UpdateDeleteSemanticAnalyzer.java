@@ -696,14 +696,14 @@ public class UpdateDeleteSemanticAnalyzer extends SemanticAnalyzer {
     if(numWhenMatchedDeleteClauses + numWhenMatchedUpdateClauses == 2 && extraPredicate == null) {
       throw new SemanticException(ErrorMsg.MERGE_PREDIACTE_REQUIRED, ctx.getCmd());
     }
-    handleCardinalityViolation(rewrittenQueryStr, target, onClauseAsText, targetTable);
+    boolean validating = handleCardinalityViolation(rewrittenQueryStr, target, onClauseAsText, targetTable);
     ReparseResult rr = parseRewrittenQuery(rewrittenQueryStr, ctx.getCmd());
     Context rewrittenCtx = rr.rewrittenCtx;
     ASTNode rewrittenTree = rr.rewrittenTree;
 
     //set dest name mapping on new context
     for(int insClauseIdx = 1, whenClauseIdx = 0;
-        insClauseIdx < rewrittenTree.getChildCount() - 1/*skip cardinality violation clause*/;
+        insClauseIdx < rewrittenTree.getChildCount() - (validating ? 1 : 0/*skip cardinality violation clause*/);
         insClauseIdx++, whenClauseIdx++) {
       //we've added Insert clauses in order or WHEN items in whenClauses
       ASTNode insertClause = (ASTNode) rewrittenTree.getChild(insClauseIdx);
@@ -825,14 +825,15 @@ public class UpdateDeleteSemanticAnalyzer extends SemanticAnalyzer {
    * This should not affect the runtime of the query as it's running in parallel with other
    * branches of the multi-insert.  It won't actually write any data to merge_tmp_table since the
    * cardinality_violation() UDF throws an error whenever it's called killing the query
+   * @return true if another Insert clause was added
    */
-  private void handleCardinalityViolation(StringBuilder rewrittenQueryStr, ASTNode target,
+  private boolean handleCardinalityViolation(StringBuilder rewrittenQueryStr, ASTNode target,
                                           String onClauseAsString, Table targetTable)
               throws SemanticException {
     if(!conf.getBoolVar(HiveConf.ConfVars.MERGE_CARDINALITY_VIOLATION_CHECK)) {
       LOG.info("Merge statement cardinality violation check is disabled: " +
         HiveConf.ConfVars.MERGE_CARDINALITY_VIOLATION_CHECK.varname);
-      return;
+      return false;
     }
     //this is a tmp table and thus Session scoped and acid requires SQL statement to be serial in a
     // given session, i.e. the name can be fixed across all invocations
@@ -872,6 +873,7 @@ public class UpdateDeleteSemanticAnalyzer extends SemanticAnalyzer {
     catch(HiveException|MetaException e) {
       throw new SemanticException(e.getMessage(), e);
     }
+    return true;
   }
   /**
    * @param onClauseAsString - because there is no clone() and we need to use in multiple places

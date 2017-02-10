@@ -789,6 +789,28 @@ public class TestTxnCommands {
     Assert.assertEquals(stringifyValues(rExpected), r);
   }
   @Test
+  public void testMergeUpdateDeleteNoCardCheck() throws Exception {
+    d.destroy();
+    HiveConf hc = new HiveConf(hiveConf);
+    hc.setBoolVar(HiveConf.ConfVars.MERGE_CARDINALITY_VIOLATION_CHECK, false);
+    d = new Driver(hc);
+    d.setMaxRows(10000);
+
+    int[][] baseValsOdd = {{2,2},{4,44},{5,5},{11,11}};
+    runStatementOnDriver("insert into " + Table.NONACIDORCTBL + " " + makeValuesClause(baseValsOdd));
+    int[][] vals = {{2,1},{4,3},{5,6},{7,8}};
+    runStatementOnDriver("insert into " + Table.ACIDTBL + " " + makeValuesClause(vals));
+    String query = "merge into " + Table.ACIDTBL +
+      " as t using " + Table.NONACIDORCTBL + " s ON t.a = s.a " +
+      "WHEN MATCHED AND s.a < 3 THEN update set b = 0 " +
+      "WHEN MATCHED and t.a > 3 and t.a < 5 THEN DELETE ";
+    runStatementOnDriver(query);
+
+    List<String> r = runStatementOnDriver("select a,b from " + Table.ACIDTBL + " order by a,b");
+    int[][] rExpected = {{2,0},{5,6},{7,8}};
+    Assert.assertEquals(stringifyValues(rExpected), r);
+  }
+  @Test
   public void testMergeDeleteUpdate() throws Exception {
     int[][] sourceVals = {{2,2},{4,44},{5,5},{11,11}};
     runStatementOnDriver("insert into " + Table.NONACIDORCTBL + " " + makeValuesClause(sourceVals));
