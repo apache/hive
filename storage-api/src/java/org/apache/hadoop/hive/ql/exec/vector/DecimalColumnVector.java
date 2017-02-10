@@ -18,11 +18,9 @@
 
 package org.apache.hadoop.hive.ql.exec.vector;
 
-import java.math.BigInteger;
 
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
-import org.apache.hadoop.hive.common.type.FastHiveDecimal;
 
 public class DecimalColumnVector extends ColumnVector {
 
@@ -141,5 +139,14 @@ public class DecimalColumnVector extends ColumnVector {
     for (int i = initPos; i < vector.length; ++i) {
       vector[i] = new HiveDecimalWritable(0);  // Initially zero.
     }
+  }
+
+  @Override
+  public void shallowCopyTo(ColumnVector otherCv) {
+    DecimalColumnVector other = (DecimalColumnVector)otherCv;
+    super.shallowCopyTo(other);
+    other.scale = scale;
+    other.precision = precision;
+    other.vector = vector;
   }
 }
