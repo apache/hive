@@ -94,8 +94,6 @@ public class ScriptOperator extends Operator<ScriptDesc> implements
 
   static final String IO_EXCEPTION_BROKEN_PIPE_STRING = "Broken pipe";
   static final String IO_EXCEPTION_STREAM_CLOSED = "Stream closed";
-  static final String IO_EXCEPTION_PIPE_ENDED_WIN = "The pipe has been ended";
-  static final String IO_EXCEPTION_PIPE_CLOSED_WIN = "The pipe is being closed";
 
   /**
    * sends periodic reports back to the tracker.
@@ -247,16 +245,6 @@ public class ScriptOperator extends Operator<ScriptDesc> implements
           if (f.isFile() && f.canRead()) {
             return f;
           }
-          if (Shell.WINDOWS) {
-            // Try filename with executable extentions
-            String[] exts = new String[] {".exe", ".bat"};
-            for (String ext : exts) {
-              File fileWithExt = new File(f.toString() + ext);
-              if (fileWithExt.isFile() && fileWithExt.canRead()) {
-                return fileWithExt;
-              }
-            }
-          }
         } catch (Exception exp) {
         }
         classvalue = classvalue.substring(val + 1).trim();
@@ -303,11 +291,6 @@ public class ScriptOperator extends Operator<ScriptDesc> implements
   }
 
   boolean isBrokenPipeException(IOException e) {
-  if (Shell.WINDOWS) {
-      String errMsg = e.getMessage();
-      return errMsg.equalsIgnoreCase(IO_EXCEPTION_PIPE_CLOSED_WIN) ||
-          errMsg.equalsIgnoreCase(IO_EXCEPTION_PIPE_ENDED_WIN);
-    }
     return (e.getMessage().equalsIgnoreCase(IO_EXCEPTION_BROKEN_PIPE_STRING) ||
             e.getMessage().equalsIgnoreCase(IO_EXCEPTION_STREAM_CLOSED));
   }

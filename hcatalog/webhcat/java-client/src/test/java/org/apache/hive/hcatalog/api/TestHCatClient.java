@@ -40,7 +40,6 @@ import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NotificationEvent;
 import org.apache.hadoop.hive.metastore.api.PartitionEventType;
-import org.apache.hadoop.hive.ql.WindowsPathUtil;
 import org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat;
 import org.apache.hadoop.hive.ql.io.RCFileInputFormat;
 import org.apache.hadoop.hive.ql.io.RCFileOutputFormat;
@@ -109,9 +108,6 @@ public class TestHCatClient {
       useExternalMS = true;
       return;
     }
-    if (Shell.WINDOWS) {
-      WindowsPathUtil.convertPathsFromWindowsToHdfs(hcatConf);
-    }
 
     System.setProperty(HiveConf.ConfVars.METASTORE_EVENT_LISTENERS.varname,
         DbNotificationListener.class.getName()); // turn on db notification listener on metastore
@@ -136,9 +132,6 @@ public class TestHCatClient {
   }
 
   public static String fixPath(String path) {
-    if(!Shell.WINDOWS) {
-      return path;
-    }
     String expectedDir = path.replaceAll("\\\\", "/");
     if (!expectedDir.startsWith("/")) {
       expectedDir = "/" + expectedDir;

@@ -3469,13 +3469,13 @@ public class HiveConf extends Configuration {
       val = (val == null ? File.separator + "usr" : val)
           + File.separator + "bin" + File.separator + "hadoop";
       // Launch hadoop command file on windows.
-      return val + (Shell.WINDOWS ? ".cmd" : "");
+      return val;
     }
 
     private static String findYarnBinary() {
       String val = findHadoopHome();
       val = (val == null ? "yarn" : val + File.separator + "bin" + File.separator + "yarn");
-      return val + (Shell.WINDOWS ? ".cmd" : "");
+      return val;
     }
 
     private static String findHadoopHome() {

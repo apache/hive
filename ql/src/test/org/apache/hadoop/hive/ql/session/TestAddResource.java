@@ -183,13 +183,7 @@ public class TestAddResource {
    * @return URI corresponding to the path.
    */
   private static URI createURI(String path) throws URISyntaxException {
-    if (!Shell.WINDOWS) {
-      // If this is not windows shell, path better follow unix convention.
-      // Else, the below call will throw an URISyntaxException
-      return new URI(path);
-    } else {
-      return new Path(path).toUri();
-    }
+    return new URI(path);
   }
 
   // Test when two jars are added with shared dependencies and one jar is deleted, the shared dependencies should not be deleted

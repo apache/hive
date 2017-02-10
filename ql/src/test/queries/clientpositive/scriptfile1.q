@@ -2,8 +2,6 @@ set hive.input.format=org.apache.hadoop.hive.ql.io.HiveInputFormat;
 
 -- SORT_QUERY_RESULTS
 
--- EXCLUDE_OS_WINDOWS
-
 -- NO_SESSION_REUSE
 
 CREATE TABLE dest1(key INT, value STRING);

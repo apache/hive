@@ -102,11 +102,11 @@ public class StreamingDelegator extends LauncherDelegator {
 
     for (String e : cmdenvs) {
       args.add("-cmdenv");
-      args.add(TempletonUtils.quoteForWindows(e));
+      args.add(e);
     }
 
     for (String arg : jarArgs) {
-      args.add(TempletonUtils.quoteForWindows(arg));
+      args.add(arg);
     }
 
     return args;

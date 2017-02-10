@@ -240,15 +240,6 @@ public final class FileUtils {
     for (char c : clist) {
       charToEscape.set(c);
     }
-
-    if(Shell.WINDOWS){
-      //On windows, following chars need to be escaped as well
-      char [] winClist = {' ', '<','>','|'};
-      for (char c : winClist) {
-        charToEscape.set(c);
-      }
-    }
-
   }
 
   static boolean needsEscaping(char c) {

@@ -100,41 +100,9 @@ public class MiniLlapCluster extends AbstractService {
       throw new RuntimeException("Could not cleanup test workDir: " + targetWorkDir, e);
     }
 
-    if (Shell.WINDOWS) {
-      // The test working directory can exceed the maximum path length supported
-      // by some Windows APIs and cmd.exe (260 characters).  To work around this,
-      // create a symlink in temporary storage with a much shorter path,
-      // targeting the full path to the test working directory.  Then, use the
-      // symlink as the test working directory.
-      String targetPath = targetWorkDir.getAbsolutePath();
-      File link = new File(System.getProperty("java.io.tmpdir"),
-          String.valueOf(System.currentTimeMillis()));
-      String linkPath = link.getAbsolutePath();
+    targetWorkDir.mkdir();
+    this.testWorkDir = targetWorkDir;
 
-      try {
-        FileContext.getLocalFSFileContext().delete(new Path(linkPath), true);
-      } catch (IOException e) {
-        throw new YarnRuntimeException("could not cleanup symlink: " + linkPath, e);
-      }
-
-      // Guarantee target exists before creating symlink.
-      targetWorkDir.mkdirs();
-
-      Shell.ShellCommandExecutor shexec = new Shell.ShellCommandExecutor(
-          Shell.getSymlinkCommand(targetPath, linkPath));
-      try {
-        shexec.execute();
-      } catch (IOException e) {
-        throw new YarnRuntimeException(String.format(
-            "failed to create symlink from %s to %s, shell output: %s", linkPath,
-            targetPath, shexec.getOutput()), e);
-      }
-
-      this.testWorkDir = link;
-    } else {
-      targetWorkDir.mkdir();
-      this.testWorkDir = targetWorkDir;
-    }
     if (miniZkCluster == null) {
       ownZkCluster = true;
       this.zkWorkDir = new File(testWorkDir, "mini-zk-cluster");

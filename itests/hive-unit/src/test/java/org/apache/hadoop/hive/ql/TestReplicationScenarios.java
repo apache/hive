@@ -86,9 +86,6 @@ public class TestReplicationScenarios {
       useExternalMS = true;
       return;
     }
-    if (Shell.WINDOWS) {
-      WindowsPathUtil.convertPathsFromWindowsToHdfs(hconf);
-    }
 
     hconf.setVar(HiveConf.ConfVars.METASTORE_EVENT_LISTENERS,
         DBNOTIF_LISTENER_CLASSNAME); // turn on db notification listener on metastore

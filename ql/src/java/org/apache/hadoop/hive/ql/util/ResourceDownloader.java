@@ -28,7 +28,6 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.FileUtil;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.ql.util.DosToUnix;
 import org.apache.hadoop.util.Shell;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -53,13 +52,7 @@ public class ResourceDownloader {
    * @return URI corresponding to the path.
    */
   public static URI createURI(String path) throws URISyntaxException {
-    if (!Shell.WINDOWS) {
-      // If this is not windows shell, path better follow unix convention.
-      // Else, the below call will throw an URISyntaxException
-      return new URI(path);
-    } else {
-      return new Path(path).toUri();
-    }
+    return new URI(path);
   }
 
   public static boolean isIvyUri(String value) throws URISyntaxException {
@@ -111,9 +104,6 @@ public class ResourceDownloader {
     fs.copyToLocalFile(new Path(srcUri.toString()), new Path(dest));
     // add "execute" permission to downloaded resource file (needed when loading dll file)
     FileUtil.chmod(dest, "ugo+rx", true);
-    if (convertToUnix && DosToUnix.isWindowsScript(destinationFile)) {
-      DosToUnix.convertWindowsScriptToUnix(destinationFile);
-    }
     return dest;
   }
 
