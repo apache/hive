@@ -1,3 +1,48 @@
+PREHOOK: query: select 1+1 in (1,2,3,4)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select 1+1 in (1,2,3,4)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+true
+PREHOOK: query: select (1+1) in (1,2,3,4)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select (1+1) in (1,2,3,4)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+true
+PREHOOK: query: select true=false in (true,false)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select true=false in (true,false)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+true
+PREHOOK: query: select false=false in (true,false)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select false=false in (true,false)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+false
+PREHOOK: query: select interval '5-5' year to month
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select interval '5-5' year to month
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+5-5
 PREHOOK: query: select
 	(1) second,
 	 2  seconds,
@@ -66,18 +111,18 @@ POSTHOOK: Output: default@t
 POSTHOOK: Lineage: t.dt EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 PREHOOK: query: explain
 select
-	date '2012-01-01' +          (-dt*dt) day,
+	date '2012-01-01' + interval (-dt*dt) day,
 	date '2012-01-01' - interval (-dt*dt) day,
 	date '2012-01-01' + 1 day + '2' days,
-	date '2012-01-01' + (dt || '-1') year to month
+	date '2012-01-01' + interval (dt || '-1') year to month
 	from t
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
 select
-	date '2012-01-01' +          (-dt*dt) day,
+	date '2012-01-01' + interval (-dt*dt) day,
 	date '2012-01-01' - interval (-dt*dt) day,
 	date '2012-01-01' + 1 day + '2' days,
-	date '2012-01-01' + (dt || '-1') year to month
+	date '2012-01-01' + interval (dt || '-1') year to month
 	from t
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -110,20 +155,20 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: select
-	date '2012-01-01' +          (-dt*dt) day,
-	date '2012-01-01' - interval (-dt*dt) day,
-	date '2012-01-01' + 1 day + '2' days,
-	date '2012-01-01' + (dt || '-1') year to month
-	from t
+        date '2012-01-01' + interval (-dt*dt) day,
+        date '2012-01-01' - interval (-dt*dt) day,
+        date '2012-01-01' + 1 day + '2' days,
+        date '2012-01-01' + interval (dt || '-1') year to month
+        from t
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t
 #### A masked pattern was here ####
 POSTHOOK: query: select
-	date '2012-01-01' +          (-dt*dt) day,
-	date '2012-01-01' - interval (-dt*dt) day,
-	date '2012-01-01' + 1 day + '2' days,
-	date '2012-01-01' + (dt || '-1') year to month
-	from t
+        date '2012-01-01' + interval (-dt*dt) day,
+        date '2012-01-01' - interval (-dt*dt) day,
+        date '2012-01-01' + 1 day + '2' days,
+        date '2012-01-01' + interval (dt || '-1') year to month
+        from t
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t
 #### A masked pattern was here ####

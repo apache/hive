@@ -553,8 +553,8 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterLongColumnNotBetween(col 3, left -610, right 608) -> boolean
-                    predicate: cdate NOT BETWEEN 1968-05-01 AND 1971-09-01 (type: boolean)
+                        predicateExpression: SelectColumnIsFalse(col 4)(children: VectorUDFAdaptor(cdate BETWEEN 1968-05-01 AND 1971-09-01) -> 4:boolean) -> boolean
+                    predicate: (not cdate BETWEEN 1968-05-01 AND 1971-09-01) (type: boolean)
                     Statistics: Num rows: 10923 Data size: 2193503 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: cdate (type: date)
@@ -581,7 +581,7 @@ STAGE PLANS:
                 groupByVectorOutput: true
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                 allNative: false
-                usesVectorUDFAdaptor: false
+                usesVectorUDFAdaptor: true
                 vectorized: true
         Reducer 2 
             Execution mode: vectorized, llap
@@ -747,8 +747,8 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterDecimalColumnNotBetween(col 1, left -2000, right 4390.1351351351) -> boolean
-                    predicate: cdecimal1 NOT BETWEEN -2000 AND 4390.1351351351 (type: boolean)
+                        predicateExpression: SelectColumnIsFalse(col 4)(children: VectorUDFAdaptor(cdecimal1 BETWEEN -2000 AND 4390.1351351351) -> 4:boolean) -> boolean
+                    predicate: (not cdecimal1 BETWEEN -2000 AND 4390.1351351351) (type: boolean)
                     Statistics: Num rows: 10923 Data size: 2193503 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       Select Vectorization:
@@ -784,7 +784,7 @@ STAGE PLANS:
                 groupByVectorOutput: true
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                 allNative: false
-                usesVectorUDFAdaptor: false
+                usesVectorUDFAdaptor: true
                 vectorized: true
         Reducer 2 
             Execution mode: vectorized, llap
@@ -1516,21 +1516,21 @@ STAGE PLANS:
                       native: true
                       projectedOutputColumns: [0, 1, 2, 3]
                   Select Operator
-                    expressions: cdecimal1 NOT BETWEEN -2000 AND 4390.1351351351 (type: boolean)
+                    expressions: (not cdecimal1 BETWEEN -2000 AND 4390.1351351351) (type: boolean)
                     outputColumnNames: _col0
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumns: [4]
-                        selectExpressions: VectorUDFAdaptor(cdecimal1 NOT BETWEEN -2000 AND 4390.1351351351) -> 4:boolean
+                        projectedOutputColumns: [5]
+                        selectExpressions: NotCol(col 4)(children: VectorUDFAdaptor(cdecimal1 BETWEEN -2000 AND 4390.1351351351) -> 4:boolean) -> 5:boolean
                     Statistics: Num rows: 12288 Data size: 2467616 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       aggregations: count(1)
                       Group By Vectorization:
-                          aggregators: VectorUDAFCount(ConstantVectorExpression(val 1) -> 5:long) -> bigint
+                          aggregators: VectorUDAFCount(ConstantVectorExpression(val 1) -> 4:long) -> bigint
                           className: VectorGroupByOperator
                           vectorOutput: true
-                          keyExpressions: col 4
+                          keyExpressions: col 5
                           native: false
                           projectedOutputColumns: [0]
                       keys: _col0 (type: boolean)

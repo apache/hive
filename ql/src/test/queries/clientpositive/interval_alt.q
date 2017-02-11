@@ -1,3 +1,8 @@
+select 1+1 in (1,2,3,4);
+select (1+1) in (1,2,3,4);
+select true=false in (true,false);
+select false=false in (true,false);
+select interval '5-5' year to month;
 
 select
 	(1) second,
@@ -22,15 +27,15 @@ insert into t values (1),(2);
 -- expressions/columnref
 explain
 select
-	date '2012-01-01' +          (-dt*dt) day,
+	date '2012-01-01' + interval (-dt*dt) day,
 	date '2012-01-01' - interval (-dt*dt) day,
 	date '2012-01-01' + 1 day + '2' days,
-	date '2012-01-01' + (dt || '-1') year to month
+	date '2012-01-01' + interval (dt || '-1') year to month
 	from t;
 
 select
-	date '2012-01-01' +          (-dt*dt) day,
-	date '2012-01-01' - interval (-dt*dt) day,
-	date '2012-01-01' + 1 day + '2' days,
-	date '2012-01-01' + (dt || '-1') year to month
-	from t;
+        date '2012-01-01' + interval (-dt*dt) day,
+        date '2012-01-01' - interval (-dt*dt) day,
+        date '2012-01-01' + 1 day + '2' days,
+        date '2012-01-01' + interval (dt || '-1') year to month
+        from t;

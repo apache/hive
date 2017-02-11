@@ -76,14 +76,14 @@ rollupOldSyntax
 @init { gParent.pushMsg("rollup old syntax", state); }
 @after { gParent.popMsg(state); }
     :
-    expressionsNotInParenthese
+    expr=expressionsNotInParenthesis[false]
     ((rollup=KW_WITH KW_ROLLUP) | (cube=KW_WITH KW_CUBE)) ?
     (sets=KW_GROUPING KW_SETS
     LPAREN groupingSetExpression ( COMMA groupingSetExpression)*  RPAREN ) ?
-    -> {rollup != null}? ^(TOK_ROLLUP_GROUPBY expressionsNotInParenthese)
-    -> {cube != null}? ^(TOK_CUBE_GROUPBY expressionsNotInParenthese)
-    -> {sets != null}? ^(TOK_GROUPING_SETS expressionsNotInParenthese groupingSetExpression+)
-    -> ^(TOK_GROUPBY expressionsNotInParenthese)
+    -> {rollup != null}? ^(TOK_ROLLUP_GROUPBY {$expr.tree})
+    -> {cube != null}? ^(TOK_CUBE_GROUPBY {$expr.tree})
+    -> {sets != null}? ^(TOK_GROUPING_SETS {$expr.tree} groupingSetExpression+)
+    -> ^(TOK_GROUPBY {$expr.tree})
     ;
 
 
@@ -127,29 +127,39 @@ havingCondition
     expression
     ;
 
-expressionsInParenthese
+expressionsInParenthesis[boolean isStruct]
     :
-    LPAREN! expressionsNotInParenthese RPAREN!
+    LPAREN! expressionsNotInParenthesis[isStruct] RPAREN!
     ;
 
-expressionsNotInParenthese
+expressionsNotInParenthesis[boolean isStruct]
     :
-    expression (COMMA expression)* -> expression+
+    first=expression more=expressionPart[$expression.tree, isStruct]?
+    -> {more==null}?
+       {$first.tree}
+    -> {$more.tree}
+    ;
+
+expressionPart[CommonTree t, boolean isStruct]
+    :
+    (COMMA expression)+
+    -> {isStruct}? ^(TOK_FUNCTION Identifier["struct"] {$t} expression+)
+    -> {$t} expression+
     ;
 
 expressions
     :
-    (expressionsInParenthese) => expressionsInParenthese
+    (expressionsInParenthesis[false]) => expressionsInParenthesis[false]
     |
-    expressionsNotInParenthese
+    expressionsNotInParenthesis[false]
     ;
 
-columnRefOrderInParenthese
+columnRefOrderInParenthesis
     :
     LPAREN columnRefOrder (COMMA columnRefOrder)* RPAREN -> columnRefOrder+
     ;
 
-columnRefOrderNotInParenthese
+columnRefOrderNotInParenthesis
     :
     columnRefOrder (COMMA columnRefOrder)* -> columnRefOrder+
     ;
@@ -189,9 +199,9 @@ sortByClause
     :
     KW_SORT KW_BY
     (
-    (LPAREN) => columnRefOrderInParenthese -> ^(TOK_SORTBY columnRefOrderInParenthese)
+    (LPAREN) => columnRefOrderInParenthesis -> ^(TOK_SORTBY columnRefOrderInParenthesis)
     |
-    columnRefOrderNotInParenthese -> ^(TOK_SORTBY columnRefOrderNotInParenthese)
+    columnRefOrderNotInParenthesis -> ^(TOK_SORTBY columnRefOrderNotInParenthesis)
     )
     ;
 
@@ -303,7 +313,9 @@ timeQualifiers
 constant
 @init { gParent.pushMsg("constant", state); }
 @after { gParent.popMsg(state); }
-    : Number
+    : 
+    (intervalLiteral) => intervalLiteral
+    | Number
     | dateLiteral
     | timestampLiteral
     | StringLiteral
@@ -349,13 +361,27 @@ timestampLiteral
     KW_CURRENT_TIMESTAMP -> ^(TOK_FUNCTION KW_CURRENT_TIMESTAMP)
     ;
 
+intervalValue
+    :
+    StringLiteral | Number
+    ;
+
+intervalLiteral
+    :
+    value=intervalValue qualifiers=intervalQualifiers
+    -> ^(TOK_FUNCTION Identifier["internal_interval"] NumberLiteral[Integer.toString(((CommonTree)qualifiers.getTree()).token.getType())] $value)
+    ;
+
 intervalExpression
     :
-    KW_INTERVAL? k1=(StringLiteral|Number) q1=intervalQualifiers ->
-		^(TOK_FUNCTION Identifier["internal_interval"] NumberLiteral[Integer.toString(((CommonTree)q1.getTree()).token.getType())] $k1)
+    LPAREN value=intervalValue RPAREN qualifiers=intervalQualifiers
+    -> ^(TOK_FUNCTION Identifier["internal_interval"] NumberLiteral[Integer.toString(((CommonTree)qualifiers.getTree()).token.getType())] $value)
     |
-    KW_INTERVAL? LPAREN k2=expression RPAREN q2=intervalQualifiers ->
-		^(TOK_FUNCTION Identifier["internal_interval"] NumberLiteral[Integer.toString(((CommonTree)q2.getTree()).token.getType())] $k2)
+    KW_INTERVAL value=intervalValue qualifiers=intervalQualifiers
+    -> ^(TOK_FUNCTION Identifier["internal_interval"] NumberLiteral[Integer.toString(((CommonTree)qualifiers.getTree()).token.getType())] $value)
+    |
+    KW_INTERVAL LPAREN expr=expression RPAREN qualifiers=intervalQualifiers
+    -> ^(TOK_FUNCTION Identifier["internal_interval"] NumberLiteral[Integer.toString(((CommonTree)qualifiers.getTree()).token.getType())] $expr)
     ;
 
 intervalQualifiers
@@ -379,8 +405,8 @@ expression
 
 atomExpression
     :
-    (intervalExpression)=>intervalExpression
-    | (constant) => constant
+    constant
+    | (intervalExpression) => intervalExpression
     | castExpression
     | extractExpression
     | floorExpression
@@ -390,7 +416,7 @@ atomExpression
         -> ^(TOK_SUBQUERY_EXPR TOK_SUBQUERY_OP subQueryExpression)
     | (function) => function
     | tableOrColumn
-    | LPAREN! expression RPAREN!
+    | expressionsInParenthesis[true]
     ;
 
 precedenceFieldExpression
@@ -490,69 +516,79 @@ precedenceBitwiseOrExpression
     ;
 
 
-// Equal operators supporting NOT prefix
-precedenceEqualNegatableOperator
+precedenceRegexpOperator
     :
     KW_LIKE | KW_RLIKE | KW_REGEXP
     ;
 
-precedenceEqualOperator
+precedenceSimilarOperator
     :
-    precedenceEqualNegatableOperator | EQUAL | EQUAL_NS | NOTEQUAL | LESSTHANOREQUALTO | LESSTHAN | GREATERTHANOREQUALTO | GREATERTHAN
+    precedenceRegexpOperator | LESSTHANOREQUALTO | LESSTHAN | GREATERTHANOREQUALTO | GREATERTHAN
     ;
 
-subQueryExpression 
-    : 
+subQueryExpression
+    :
     LPAREN! selectStatement RPAREN!
+    ;
+
+precedenceSimilarExpression
+    :
+    precedenceSimilarExpressionMain
+    |
+    KW_EXISTS subQueryExpression -> ^(TOK_SUBQUERY_EXPR ^(TOK_SUBQUERY_OP KW_EXISTS) subQueryExpression)    
+    ;
+
+precedenceSimilarExpressionMain
+    :
+    a=precedenceBitwiseOrExpression part=precedenceSimilarExpressionPart[$precedenceBitwiseOrExpression.tree]?
+    -> {part == null}? {$a.tree}
+    -> {$part.tree}
+    ;
+    
+precedenceSimilarExpressionPart[CommonTree t]
+    :
+    (precedenceSimilarOperator equalExpr=precedenceBitwiseOrExpression)
+    -> ^(precedenceSimilarOperator {$t} $equalExpr)
+    |
+    precedenceSimilarExpressionAtom[$t]
+    |
+    (KW_NOT^ precedenceSimilarExpressionPartNot[$t])
+    ;
+
+precedenceSimilarExpressionAtom[CommonTree t]
+    :
+    KW_IN! precedenceSimilarExpressionIn[$t]
+    |
+    KW_BETWEEN (min=precedenceBitwiseOrExpression) KW_AND (max=precedenceBitwiseOrExpression)
+    -> ^(TOK_FUNCTION Identifier["between"] KW_FALSE {$t} $min $max)
+    ;
+
+precedenceSimilarExpressionIn[CommonTree t]
+    :
+    (subQueryExpression) => subQueryExpression -> ^(TOK_SUBQUERY_EXPR ^(TOK_SUBQUERY_OP KW_IN) subQueryExpression {$t})
+    |
+    expr=expressionsInParenthesis[false]
+    -> ^(TOK_FUNCTION Identifier["in"] {$t} {$expr.tree})
+    ;
+
+precedenceSimilarExpressionPartNot[CommonTree t]
+    :
+    precedenceRegexpOperator notExpr=precedenceBitwiseOrExpression
+    -> ^(precedenceRegexpOperator {$t} $notExpr)
+    |
+    precedenceSimilarExpressionAtom[$t]
+    ;
+
+precedenceEqualOperator
+    :
+    EQUAL | EQUAL_NS | NOTEQUAL
     ;
 
 precedenceEqualExpression
     :
-    (precedenceEqualExpressionSingle) => precedenceEqualExpressionSingle
-    |
-    precedenceEqualExpressionMutiple
+    precedenceSimilarExpression (precedenceEqualOperator^ precedenceSimilarExpression)*
     ;
- 
-precedenceEqualExpressionSingle
-    :
-    (left=precedenceBitwiseOrExpression -> $left)
-    (
-      (KW_NOT precedenceEqualNegatableOperator notExpr=precedenceBitwiseOrExpression)
-       -> ^(KW_NOT ^(precedenceEqualNegatableOperator $precedenceEqualExpressionSingle $notExpr))
-    | (precedenceEqualOperator equalExpr=precedenceBitwiseOrExpression)
-       -> ^(precedenceEqualOperator $precedenceEqualExpressionSingle $equalExpr)
-    | (KW_NOT KW_IN LPAREN KW_SELECT)=>  (KW_NOT KW_IN subQueryExpression)
-       -> ^(KW_NOT ^(TOK_SUBQUERY_EXPR ^(TOK_SUBQUERY_OP KW_IN) subQueryExpression $precedenceEqualExpressionSingle))
-    | (KW_NOT KW_IN expressionsInParenthese)
-       -> ^(KW_NOT ^(TOK_FUNCTION KW_IN $precedenceEqualExpressionSingle expressionsInParenthese))
-    | (KW_IN LPAREN KW_SELECT)=>  (KW_IN subQueryExpression)
-       -> ^(TOK_SUBQUERY_EXPR ^(TOK_SUBQUERY_OP KW_IN) subQueryExpression $precedenceEqualExpressionSingle)
-    | (KW_IN expressionsInParenthese)
-       -> ^(TOK_FUNCTION KW_IN $precedenceEqualExpressionSingle expressionsInParenthese)
-    | ( KW_NOT KW_BETWEEN (min=precedenceBitwiseOrExpression) KW_AND (max=precedenceBitwiseOrExpression) )
-       -> ^(TOK_FUNCTION Identifier["between"] KW_TRUE $precedenceEqualExpressionSingle $min $max)
-    | ( KW_BETWEEN (min=precedenceBitwiseOrExpression) KW_AND (max=precedenceBitwiseOrExpression) )
-       -> ^(TOK_FUNCTION Identifier["between"] KW_FALSE $precedenceEqualExpressionSingle $min $max)
-    )*
-    | KW_EXISTS subQueryExpression -> ^(TOK_SUBQUERY_EXPR ^(TOK_SUBQUERY_OP KW_EXISTS) subQueryExpression)    
-    ;
-
-
-//we transform the (col0, col1) in ((v00,v01),(v10,v11)) into struct(col0, col1) in (struct(v00,v01),struct(v10,v11))
-precedenceEqualExpressionMutiple
-    :
-    (LPAREN precedenceBitwiseOrExpression (COMMA precedenceBitwiseOrExpression)+ RPAREN -> ^(TOK_FUNCTION Identifier["struct"] precedenceBitwiseOrExpression+))
-    ( (KW_IN LPAREN expressionsToStruct (COMMA expressionsToStruct)* RPAREN)
-       -> ^(TOK_FUNCTION KW_IN $precedenceEqualExpressionMutiple expressionsToStruct*)
-    | (KW_NOT KW_IN LPAREN expressionsToStruct (COMMA expressionsToStruct)* RPAREN)
-       -> ^(KW_NOT ^(TOK_FUNCTION KW_IN $precedenceEqualExpressionMutiple expressionsToStruct*)))
-    ;
-
-expressionsToStruct
-    :
-    LPAREN expression (COMMA expression)* RPAREN -> ^(TOK_FUNCTION Identifier["struct"] expression+)
-    ;
-
+    
 precedenceNotOperator
     :
     KW_NOT
