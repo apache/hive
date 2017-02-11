@@ -131,10 +131,10 @@ POSTHOOK: query: explain
 CREATE VIEW priceview AS SELECT items.id, items.info['price'] FROM items
 POSTHOOK: type: CREATEVIEW
 STAGE DEPENDENCIES:
-  Stage-0 is a root stage
+  Stage-1 is a root stage
 
 STAGE PLANS:
-  Stage: Stage-0
+  Stage: Stage-1
       Create View Operator:
         Create View
           or replace: false

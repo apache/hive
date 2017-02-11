@@ -5178,9 +5178,9 @@ sum(p_retailprice) as s
 from part 
 group by p_mfgr, p_brand
 POSTHOOK: type: CREATEVIEW
-Plan not optimized by CBO.
+Plan optimized by CBO.
 
-Stage-0
+Stage-1
   Create View Operator:
     name:default.mfgr_price_view,original text:select p_mfgr, p_brand, 
 sum(p_retailprice) as s 

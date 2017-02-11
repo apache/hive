@@ -10720,7 +10720,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       this.ctx_1 = ctx_1;
     }
 
-    void setCTASOrMVToken(ASTNode child) {
+    void setCTASToken(ASTNode child) {
+    }
+    
+    void setViewToken(ASTNode child) {
     }
 
     void setInsertToken(ASTNode ast, boolean isTmpFileDest) {
@@ -11033,7 +11036,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
 
     // 3. Deduce Resultset Schema
-    if (createVwDesc != null) {
+    if (createVwDesc != null && !this.ctx.isCboSucceeded()) {
       resultSchema = convertRowSchemaToViewSchema(opParseCtx.get(sinkOp).getRowResolver());
     } else {
       // resultSchema will be null if
@@ -11064,7 +11067,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       if (ctx.getExplainAnalyze() == AnalyzeState.RUNNING) {
         return;
       }
-      saveViewDefinition();
+      
+      if (!ctx.isCboSucceeded()) {
+        saveViewDefinition();
+      }
 
       // validate the create view statement at this point, the createVwDesc gets
       // all the information for semanticcheck
@@ -11232,7 +11238,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     return resultSchema;
   }
 
-  private void saveViewDefinition() throws SemanticException {
+  protected void saveViewDefinition() throws SemanticException {
     // Make a copy of the statement's result schema, since we may
     // modify it below as part of imposing view column names.
     List<FieldSchema> derivedSchema =
@@ -11524,6 +11530,11 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         continue;
       }
       String[] tmp = input.reverseLookup(columnDesc.getColumn());
+      // in subquery case, tmp may be from outside.
+      if (tmp[0] != null && columnDesc.getTabAlias() != null
+          && !tmp[0].equals(columnDesc.getTabAlias()) && tcCtx.getOuterRR() != null) {
+        tmp = tcCtx.getOuterRR().reverseLookup(columnDesc.getColumn());
+      }
       StringBuilder replacementText = new StringBuilder();
       replacementText.append(HiveUtils.unparseIdentifier(tmp[0], conf));
       replacementText.append(".");
@@ -11807,7 +11818,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         }
         command_type = CTAS;
         if (plannerCtx != null) {
-          plannerCtx.setCTASOrMVToken(child);
+          plannerCtx.setCTASToken(child);
         }
         selectStmt = child;
         break;
@@ -12084,7 +12095,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       case HiveParser.TOK_QUERY:
         // For CBO
         if (plannerCtx != null) {
-          plannerCtx.setCTASOrMVToken(child);
+          plannerCtx.setViewToken(child);
         }
         selectStmt = child;
         break;
@@ -12144,7 +12155,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           storageFormat.getSerdeProps());
       addDbAndTabToOutputs(qualTabName, TableType.MATERIALIZED_VIEW);
       queryState.setCommandType(HiveOperation.CREATE_MATERIALIZED_VIEW);
-      qb.setViewDesc(createVwDesc);
     } else {
       createVwDesc = new CreateViewDesc(
           dbDotTable, cols, comment, tblProps, partColNames,
@@ -12155,6 +12165,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       addDbAndTabToOutputs(qualTabName, TableType.VIRTUAL_VIEW);
       queryState.setCommandType(HiveOperation.CREATEVIEW);
     }
+    qb.setViewDesc(createVwDesc);
 
     return selectStmt;
   }

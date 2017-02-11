@@ -1343,10 +1343,10 @@ PREHOOK: type: CREATEVIEW
 POSTHOOK: query: explain create view sdi as select distinct * from src order by key limit 2
 POSTHOOK: type: CREATEVIEW
 STAGE DEPENDENCIES:
-  Stage-0 is a root stage
+  Stage-1 is a root stage
 
 STAGE PLANS:
-  Stage: Stage-0
+  Stage: Stage-1
       Create View Operator:
         Create View
           or replace: false
@@ -3807,10 +3807,10 @@ PREHOOK: type: CREATEVIEW
 POSTHOOK: query: explain create view sdi as select distinct * from src order by key limit 2
 POSTHOOK: type: CREATEVIEW
 STAGE DEPENDENCIES:
-  Stage-0 is a root stage
+  Stage-1 is a root stage
 
 STAGE PLANS:
-  Stage: Stage-0
+  Stage: Stage-1
       Create View Operator:
         Create View
           or replace: false
