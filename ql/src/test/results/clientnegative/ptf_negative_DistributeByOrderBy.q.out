@@ -1,1 +1,1 @@
-FAILED: ParseException line 3:0 cannot recognize input near 'sum' '(' 'p_retailprice' in expression specification
+FAILED: ParseException line 3:3 cannot recognize input near 'sum' '(' 'p_retailprice' in expression specification

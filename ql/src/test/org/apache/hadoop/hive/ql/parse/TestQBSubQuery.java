@@ -72,7 +72,7 @@ public class TestQBSubQuery {
     Assert.assertEquals(1,sqs.size());
 
     ASTNode sq = sqs.get(0);
-    Assert.assertEquals("(tok_subquery_expr (tok_subquery_op in) (tok_query (tok_from (tok_tabref (tok_tabname src) s1)) (tok_insert (tok_destination (tok_dir tok_tmp_file)) (tok_select (tok_selexpr (tok_table_or_col key))) (tok_where (and (> (. (tok_table_or_col s1) key) '9') (> (. (tok_table_or_col s1) value) '9'))))) (. (tok_table_or_col src) key))"
+    Assert.assertEquals("(tok_subquery_expr (tok_subquery_op kw_in) (tok_query (tok_from (tok_tabref (tok_tabname src) s1)) (tok_insert (tok_destination (tok_dir tok_tmp_file)) (tok_select (tok_selexpr (tok_table_or_col key))) (tok_where (and (> (. (tok_table_or_col s1) key) '9') (> (. (tok_table_or_col s1) value) '9'))))) (. (tok_table_or_col src) key))"
         ,sq.toStringTree());
   }
 
