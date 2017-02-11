@@ -99,6 +99,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.hive.common.BlobStorageUtils;
+import org.apache.hadoop.hive.common.CopyOnFirstWriteProperties;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.common.HiveInterruptCallback;
 import org.apache.hadoop.hive.common.HiveInterruptUtils;
@@ -907,7 +908,7 @@ public final class Utilities {
     }
 
     @Override
-  public void write(Kryo kryo, Output output, CommonToken token) {
+    public void write(Kryo kryo, Output output, CommonToken token) {
       output.writeInt(token.getType());
       output.writeString(token.getText());
     }
@@ -923,6 +924,33 @@ public final class Utilities {
     @Override
     public Path read(Kryo kryo, Input input, Class<Path> type) {
       return new Path(URI.create(input.readString()));
+    }
+  }
+
+  /**
+   * CopyOnFirstWriteProperties needs a special serializer, since it extends Properties,
+   * which implements Map, so MapSerializer would be used for it by default. Yet it has
+   * the additional 'interned' field that the standard MapSerializer doesn't handle
+   * properly. But FieldSerializer doesn't work for it as well, because the Hashtable
+   * superclass declares most of its fields transient.
+   */
+  private static class CopyOnFirstWritePropertiesSerializer extends
+      com.esotericsoftware.kryo.serializers.MapSerializer {
+
+    @Override
+    public void write(Kryo kryo, Output output, Map map) {
+      super.write(kryo, output, map);
+      CopyOnFirstWriteProperties p = (CopyOnFirstWriteProperties) map;
+      Properties ip = p.getInterned();
+      kryo.writeObjectOrNull(output, ip, Properties.class);
+    }
+
+    @Override
+    public Map read(Kryo kryo, Input input, Class<Map> type) {
+      Map map = super.read(kryo, input, type);
+      Properties ip = kryo.readObjectOrNull(input, Properties.class);
+      ((CopyOnFirstWriteProperties) map).setInterned(ip);
+      return map;
     }
   }
 
@@ -1101,6 +1129,7 @@ public final class Utilities {
       kryo.setInstantiatorStrategy(new StdInstantiatorStrategy());
       removeField(kryo, Operator.class, "colExprMap");
       removeField(kryo, ColumnInfo.class, "objectInspector");
+      kryo.register(CopyOnFirstWriteProperties.class, new CopyOnFirstWritePropertiesSerializer());
       return kryo;
     };
   };
@@ -1128,6 +1157,7 @@ public final class Utilities {
       kryo.register(SparkWork.class);
       kryo.register(TableDesc.class);
       kryo.register(Pair.class);
+      kryo.register(CopyOnFirstWriteProperties.class, new CopyOnFirstWritePropertiesSerializer());
       return kryo;
     };
   };
@@ -1141,6 +1171,7 @@ public final class Utilities {
       kryo.register(java.sql.Date.class, new SqlDateSerializer());
       kryo.register(java.sql.Timestamp.class, new TimestampSerializer());
       kryo.register(Path.class, new PathSerializer());
+      kryo.register(CopyOnFirstWriteProperties.class, new CopyOnFirstWritePropertiesSerializer());
       kryo.setInstantiatorStrategy(new StdInstantiatorStrategy());
       return kryo;
     };
