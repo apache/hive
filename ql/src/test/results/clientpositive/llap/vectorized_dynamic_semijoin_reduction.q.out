@@ -914,13 +914,11 @@ POSTHOOK: Input: default@dsrv_big
 POSTHOOK: Input: default@dsrv_small
 #### A masked pattern was here ####
 0
-PREHOOK: query: -- bloomfilter expectedEntries should use ndv if available. Compare to first query
-analyze table dsrv_small compute statistics
+PREHOOK: query: analyze table dsrv_small compute statistics
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dsrv_small
 PREHOOK: Output: default@dsrv_small
-POSTHOOK: query: -- bloomfilter expectedEntries should use ndv if available. Compare to first query
-analyze table dsrv_small compute statistics
+POSTHOOK: query: analyze table dsrv_small compute statistics
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dsrv_small
 POSTHOOK: Output: default@dsrv_small

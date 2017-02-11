@@ -138,6 +138,7 @@ import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException;
 import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSubquerySemanticException;
 import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException.UnsupportedFeature;
+import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteViewSemanticException;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveDefaultRelMetadataProvider;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HivePlannerContext;
@@ -288,6 +289,33 @@ public class CalcitePlanner extends SemanticAnalyzer {
     }
   }
 
+  /**
+   * This method is useful if we want to obtain the logical plan after being parsed and
+   * optimized by Calcite.
+   *
+   * @return the Calcite plan for the query, null if it could not be generated
+   */
+  public RelNode genLogicalPlan(ASTNode ast) throws SemanticException {
+    LOG.info("Starting generating logical plan");
+    PreCboCtx cboCtx = new PreCboCtx();
+    if (!genResolvedParseTree(ast, cboCtx)) {
+      return null;
+    }
+    ASTNode queryForCbo = ast;
+    if (cboCtx.type == PreCboCtx.Type.CTAS || cboCtx.type == PreCboCtx.Type.VIEW) {
+      queryForCbo = cboCtx.nodeOfInterest; // nodeOfInterest is the query
+    }
+    runCBO = canCBOHandleAst(queryForCbo, getQB(), cboCtx);
+    if (!runCBO) {
+      return null;
+    }
+    profilesCBO = obtainCBOProfiles(queryProperties);
+    disableJoinMerge = true;
+    final RelNode resPlan = logicalPlan();
+    LOG.info("Finished generating logical plan");
+    return resPlan;
+  }
+
   @Override
   @SuppressWarnings("rawtypes")
   Operator genOPTree(ASTNode ast, PlannerContext plannerCtx) throws SemanticException {
@@ -305,7 +333,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
       // table, destination), so if the query is otherwise ok, it is as if we
       // did remove those and gave CBO the proper AST. That is kinda hacky.
       ASTNode queryForCbo = ast;
-      if (cboCtx.type == PreCboCtx.Type.CTAS) {
+      if (cboCtx.type == PreCboCtx.Type.CTAS || cboCtx.type == PreCboCtx.Type.VIEW) {
         queryForCbo = cboCtx.nodeOfInterest; // nodeOfInterest is the query
       }
       runCBO = canCBOHandleAst(queryForCbo, getQB(), cboCtx);
@@ -321,6 +349,9 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
         try {
           if (this.conf.getBoolVar(HiveConf.ConfVars.HIVE_CBO_RETPATH_HIVEOP)) {
+            if (cboCtx.type == PreCboCtx.Type.VIEW) {
+              throw new SemanticException("Create view is not supported in cbo return path.");
+            }
             sinkOp = getOptimizedHiveOPDag();
             LOG.info("CBO Succeeded; optimized logical plan.");
             this.ctx.setCboInfo("Plan optimized by CBO.");
@@ -333,11 +364,19 @@ public class CalcitePlanner extends SemanticAnalyzer {
             newAST = fixUpCtasAndInsertAfterCbo(ast, newAST, cboCtx);
 
             // 2. Regen OP plan from optimized AST
-            init(false);
-            if (cboCtx.type == PreCboCtx.Type.CTAS) {
-              // Redo create-table analysis, because it's not part of doPhase1.
-              setAST(newAST);
-              newAST = reAnalyzeCtasAfterCbo(newAST);
+            if (cboCtx.type == PreCboCtx.Type.VIEW) {
+              try {
+                handleCreateViewDDL(newAST);
+              } catch (SemanticException e) {
+                throw new CalciteViewSemanticException(e.getMessage());
+              }
+            } else {
+              init(false);
+              if (cboCtx.type == PreCboCtx.Type.CTAS) {
+                // CTAS
+                setAST(newAST);
+                newAST = reAnalyzeCtasAfterCbo(newAST);
+              }
             }
             Phase1Ctx ctx_1 = initPhase1Ctx();
             if (!doPhase1(newAST, getQB(), ctx_1, null)) {
@@ -385,6 +424,11 @@ public class CalcitePlanner extends SemanticAnalyzer {
             // so avoid executing subqueries on non-cbo
             throw new SemanticException(e);
           }
+          else if( e instanceof CalciteViewSemanticException) {
+            // non-cbo path retries to execute create view and 
+            // we believe it will throw the same error message
+            throw new SemanticException(e);
+          }
           else if (!conf.getBoolVar(ConfVars.HIVE_IN_TEST) || isMissingStats
               || e instanceof CalciteSemanticException ) {
               reAnalyzeAST = true;
@@ -421,6 +465,21 @@ public class CalcitePlanner extends SemanticAnalyzer {
     }
 
     return sinkOp;
+  }
+
+  private void handleCreateViewDDL(ASTNode newAST) throws SemanticException {
+    saveViewDefinition();
+    String originalText = createVwDesc.getViewOriginalText();
+    String expandedText = createVwDesc.getViewExpandedText();
+    List<FieldSchema> schema = createVwDesc.getSchema();
+    List<FieldSchema> partitionColumns = createVwDesc.getPartCols();
+    init(false);
+    setAST(newAST);
+    newAST = reAnalyzeViewAfterCbo(newAST);
+    createVwDesc.setViewOriginalText(originalText);
+    createVwDesc.setViewExpandedText(expandedText);
+    createVwDesc.setSchema(schema);
+    createVwDesc.setPartCols(partitionColumns);
   }
 
   /*
@@ -607,8 +666,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
     boolean isSupportedType = qb.getIsQuery() || qb.isCTAS()
         || cboCtx.type == PreCboCtx.Type.INSERT || cboCtx.type == PreCboCtx.Type.MULTI_INSERT;
     boolean noBadTokens = HiveCalciteUtil.validateASTForUnsupportedTokens(ast);
-    boolean result = isSupportedRoot && isSupportedType && getCreateViewDesc() == null
-        && noBadTokens;
+    boolean result = isSupportedRoot && isSupportedType && noBadTokens;
 
     if (!result) {
       if (needToLogMessage) {
@@ -618,9 +676,6 @@ public class CalcitePlanner extends SemanticAnalyzer {
         }
         if (!isSupportedType) {
           msg += "is not a query, CTAS, or insert; ";
-        }
-        if (getCreateViewDesc() != null) {
-          msg += "has create view; ";
         }
         if (!noBadTokens) {
           msg += "has unsupported tokens; ";
@@ -789,7 +844,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
    */
   static class PreCboCtx extends PlannerContext {
     enum Type {
-      NONE, INSERT, MULTI_INSERT, CTAS, UNEXPECTED
+      NONE, INSERT, MULTI_INSERT, CTAS, VIEW, UNEXPECTED
     }
 
     private ASTNode nodeOfInterest;
@@ -809,6 +864,11 @@ public class CalcitePlanner extends SemanticAnalyzer {
     @Override
     void setCTASToken(ASTNode child) {
       set(PreCboCtx.Type.CTAS, child);
+    }
+
+    @Override
+    void setViewToken(ASTNode child) {
+      set(PreCboCtx.Type.VIEW, child);
     }
 
     @Override
@@ -838,7 +898,8 @@ public class CalcitePlanner extends SemanticAnalyzer {
       // nothing to do
       return newAst;
 
-    case CTAS: {
+    case CTAS:
+    case VIEW: {
       // Patch the optimized query back into original CTAS AST, replacing the
       // original query.
       replaceASTChild(cboCtx.nodeOfInterest, newAst);
@@ -877,6 +938,18 @@ public class CalcitePlanner extends SemanticAnalyzer {
       LOG.error("analyzeCreateTable failed to initialize CTAS after CBO;" + " new ast is "
           + getAST().dump());
       throw new SemanticException("analyzeCreateTable failed to initialize CTAS after CBO");
+    }
+    return newAst;
+  }
+
+  ASTNode reAnalyzeViewAfterCbo(ASTNode newAst) throws SemanticException {
+    // analyzeCreateView uses this.ast, but doPhase1 doesn't, so only reset it
+    // here.
+    newAst = analyzeCreateView(newAst, getQB(), null);
+    if (newAst == null) {
+      LOG.error("analyzeCreateTable failed to initialize materialized view after CBO;" + " new ast is "
+          + getAST().dump());
+      throw new SemanticException("analyzeCreateTable failed to initialize materialized view after CBO");
     }
     return newAst;
   }
@@ -925,13 +998,12 @@ public class CalcitePlanner extends SemanticAnalyzer {
   }
 
   /**
-   * Get Optimized AST for the given QB tree in the semAnalyzer.
+   * Get optimized logical plan for the given QB tree in the semAnalyzer.
    *
-   * @return Optimized operator tree translated in to Hive AST
+   * @return
    * @throws SemanticException
    */
-  ASTNode getOptimizedAST() throws SemanticException {
-    ASTNode optiqOptimizedAST = null;
+  RelNode logicalPlan() throws SemanticException {
     RelNode optimizedOptiqPlan = null;
 
     CalcitePlannerAction calcitePlannerAction = null;
@@ -947,9 +1019,19 @@ public class CalcitePlanner extends SemanticAnalyzer {
       rethrowCalciteException(e);
       throw new AssertionError("rethrowCalciteException didn't throw for " + e.getMessage());
     }
-    optiqOptimizedAST = ASTConverter.convert(optimizedOptiqPlan, resultSchema,
-            HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_COLUMN_ALIGNMENT));
+    return optimizedOptiqPlan;
+  }
 
+  /**
+   * Get Optimized AST for the given QB tree in the semAnalyzer.
+   *
+   * @return Optimized operator tree translated in to Hive AST
+   * @throws SemanticException
+   */
+  ASTNode getOptimizedAST() throws SemanticException {
+    RelNode optimizedOptiqPlan = logicalPlan();
+    ASTNode optiqOptimizedAST = ASTConverter.convert(optimizedOptiqPlan, resultSchema,
+            HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_COLUMN_ALIGNMENT));
     return optiqOptimizedAST;
   }
 
@@ -1179,9 +1261,11 @@ public class CalcitePlanner extends SemanticAnalyzer {
       perfLogger.PerfLogBegin(this.getClass().getName(), PerfLogger.OPTIMIZER);
       try {
         calciteGenPlan = genLogicalPlan(getQB(), true, null, null);
+        // if it is to create view, we do not use table alias
         resultSchema = SemanticAnalyzer.convertRowSchemaToResultSetSchema(
             relToHiveRR.get(calciteGenPlan),
-            HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_RESULTSET_USE_UNIQUE_COLUMN_NAMES));
+            getQB().isView() ? false : HiveConf.getBoolVar(conf,
+                HiveConf.ConfVars.HIVE_RESULTSET_USE_UNIQUE_COLUMN_NAMES));
       } catch (SemanticException e) {
         semanticException = e;
         throw new RuntimeException(e);
@@ -1739,6 +1823,10 @@ public class CalcitePlanner extends SemanticAnalyzer {
       RexNode calciteJoinCond = null;
       if (joinCond != null) {
         JoinTypeCheckCtx jCtx = new JoinTypeCheckCtx(leftRR, rightRR, hiveJoinType);
+        RowResolver input = RowResolver.getCombinedRR(leftRR, rightRR);
+        if (unparseTranslator != null && unparseTranslator.isEnabled()) {
+          genAllExprNodeDesc(joinCond, input, jCtx);
+        }
         Map<ASTNode, ExprNodeDesc> exprNodes = JoinCondTypeCheckProcFactory.genExprNode(joinCond,
             jCtx);
         if (jCtx.getError() != null) {
@@ -2690,8 +2778,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
           // 4. Construct GB Keys (ExprNode)
           for (int i = 0; i < grpByAstExprs.size(); ++i) {
             ASTNode grpbyExpr = grpByAstExprs.get(i);
-            Map<ASTNode, ExprNodeDesc> astToExprNDescMap = TypeCheckProcFactory.genExprNode(
-                grpbyExpr, new TypeCheckCtx(groupByInputRowResolver));
+            Map<ASTNode, ExprNodeDesc> astToExprNDescMap = genAllExprNodeDesc(grpbyExpr, groupByInputRowResolver);
             ExprNodeDesc grpbyExprNDesc = astToExprNDescMap.get(grpbyExpr);
             if (grpbyExprNDesc == null)
               throw new CalciteSemanticException("Invalid Column Reference: " + grpbyExpr.dump(),
@@ -2840,8 +2927,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
           obASTExpr = (ASTNode) obASTExprLst.get(i);
           nullObASTExpr = (ASTNode) obASTExpr.getChild(0);
           ASTNode ref = (ASTNode) nullObASTExpr.getChild(0);
-          Map<ASTNode, ExprNodeDesc> astToExprNDescMap = TypeCheckProcFactory.genExprNode(
-              obASTExpr, new TypeCheckCtx(inputRR));
+          Map<ASTNode, ExprNodeDesc> astToExprNDescMap = genAllExprNodeDesc(ref, inputRR);
           ExprNodeDesc obExprNDesc = astToExprNDescMap.get(ref);
           if (obExprNDesc == null)
             throw new SemanticException("Invalid order by expression: " + obASTExpr.toString());
@@ -3324,6 +3410,9 @@ public class CalcitePlanner extends SemanticAnalyzer {
           LOG.debug("Find UDTF " + funcName);
           genericUDTF = fi.getGenericUDTF();
           genericUDTFName = funcName;
+          if (!fi.isNative()) {
+            unparseTranslator.addIdentifierTranslation((ASTNode) expr.getChild(0));
+          }
           if (genericUDTF != null && (selectStar = exprType == HiveParser.TOK_FUNCTIONSTAR)) {
             genColListRegex(".*", null, (ASTNode) expr.getChild(0),
                 col_list, null, inputRR, starRR, pos, out_rwsch, qb.getAliases(), false);
@@ -3349,12 +3438,15 @@ public class CalcitePlanner extends SemanticAnalyzer {
           switch (selExprChild.getType()) {
           case HiveParser.Identifier:
             udtfColAliases.add(unescapeIdentifier(selExprChild.getText().toLowerCase()));
+            unparseTranslator.addIdentifierTranslation(selExprChild);
             break;
           case HiveParser.TOK_TABALIAS:
             assert (selExprChild.getChildCount() == 1);
             udtfTableAlias = unescapeIdentifier(selExprChild.getChild(0)
                 .getText());
             qb.addAlias(udtfTableAlias);
+            unparseTranslator.addIdentifierTranslation((ASTNode) selExprChild
+                .getChild(0));
             break;
           default:
             throw new SemanticException("Find invalid token type " + selExprChild.getType()
@@ -3403,6 +3495,10 @@ public class CalcitePlanner extends SemanticAnalyzer {
               inputRR, autogenColAliasPrfxIncludeFuncName(), i);
           tabAlias = colRef[0];
           colAlias = colRef[1];
+          if (hasAsClause) {
+            unparseTranslator.addIdentifierTranslation((ASTNode) child
+                .getChild(1));
+          }
         }
 
         // 6.4 Build ExprNode corresponding to colums

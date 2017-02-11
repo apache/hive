@@ -310,7 +310,7 @@ STAGE PLANS:
                   alias: decimal_date_test
                   Statistics: Num rows: 12288 Data size: 2467616 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: cdate NOT BETWEEN 1968-05-01 AND 1971-09-01 (type: boolean)
+                    predicate: (not cdate BETWEEN 1968-05-01 AND 1971-09-01) (type: boolean)
                     Statistics: Num rows: 10923 Data size: 2193503 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: cdate (type: date)
@@ -418,7 +418,7 @@ STAGE PLANS:
                   alias: decimal_date_test
                   Statistics: Num rows: 12288 Data size: 2467616 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: cdecimal1 NOT BETWEEN -2000 AND 4390.1351351351 (type: boolean)
+                    predicate: (not cdecimal1 BETWEEN -2000 AND 4390.1351351351) (type: boolean)
                     Statistics: Num rows: 10923 Data size: 2193503 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       Statistics: Num rows: 10923 Data size: 2193503 Basic stats: COMPLETE Column stats: NONE
@@ -903,7 +903,7 @@ STAGE PLANS:
                   alias: decimal_date_test
                   Statistics: Num rows: 12288 Data size: 2467616 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
-                    expressions: cdecimal1 NOT BETWEEN -2000 AND 4390.1351351351 (type: boolean)
+                    expressions: (not cdecimal1 BETWEEN -2000 AND 4390.1351351351) (type: boolean)
                     outputColumnNames: _col0
                     Statistics: Num rows: 12288 Data size: 2467616 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator

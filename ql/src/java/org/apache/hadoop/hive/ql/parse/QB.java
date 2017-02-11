@@ -32,6 +32,7 @@ import org.slf4j.LoggerFactory;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.plan.CreateTableDesc;
+import org.apache.hadoop.hive.ql.plan.CreateViewDesc;
 
 /**
  * Implementation of the query block.
@@ -63,6 +64,7 @@ public class QB {
   private boolean insideView;
   private Set<String> aliasInsideView;
 
+  private CreateViewDesc viewDesc;
   // used by PTFs
   /*
    * This map maintains the PTFInvocationSpec for each PTF chain invocation in this QB.
@@ -402,6 +404,18 @@ public class QB {
 
   public QBSubQuery getHavingClauseSubQueryPredicate() {
     return havingClauseSubQueryPredicate;
+  }
+
+  public CreateViewDesc getViewDesc() {
+    return viewDesc;
+  }
+
+  public void setViewDesc(CreateViewDesc viewDesc) {
+    this.viewDesc = viewDesc;
+  }
+
+  public boolean isView() {
+    return viewDesc != null;
   }
 
   void addEncryptedTargetTablePath(Path p) {
