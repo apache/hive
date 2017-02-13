@@ -2435,6 +2435,7 @@ class NotificationEvent
   DBNAME = 4
   TABLENAME = 5
   MESSAGE = 6
+  MESSAGEFORMAT = 7
 
   FIELDS = {
     EVENTID => {:type => ::Thrift::Types::I64, :name => 'eventId'},
@@ -2442,7 +2443,8 @@ class NotificationEvent
     EVENTTYPE => {:type => ::Thrift::Types::STRING, :name => 'eventType'},
     DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbName', :optional => true},
     TABLENAME => {:type => ::Thrift::Types::STRING, :name => 'tableName', :optional => true},
-    MESSAGE => {:type => ::Thrift::Types::STRING, :name => 'message'}
+    MESSAGE => {:type => ::Thrift::Types::STRING, :name => 'message'},
+    MESSAGEFORMAT => {:type => ::Thrift::Types::STRING, :name => 'messageFormat', :optional => true}
   }
 
   def struct_fields; FIELDS; end
