@@ -120,7 +120,7 @@ public class Rpc implements Closeable {
       }
     };
     final ScheduledFuture<?> timeoutFuture = eloop.schedule(timeoutTask,
-        rpcConf.getServerConnectTimeoutMs(), TimeUnit.MILLISECONDS);
+        connectTimeoutMs, TimeUnit.MILLISECONDS);
 
     // The channel listener instantiates the Rpc instance when the connection is established,
     // and initiates the SASL handshake.
