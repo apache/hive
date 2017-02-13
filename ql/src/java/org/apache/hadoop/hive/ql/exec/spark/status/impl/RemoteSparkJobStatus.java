@@ -151,6 +151,14 @@ public class RemoteSparkJobStatus implements SparkJobStatus {
     this.error = e;
   }
 
+  /**
+   * Indicates whether the remote context is active. SparkJobMonitor can use this to decide whether
+   * to stop monitoring.
+   */
+  public boolean isRemoteActive() {
+    return sparkClient.isActive();
+  }
+
   private SparkJobInfo getSparkJobInfo() throws HiveException {
     Integer sparkJobId = jobHandle.getSparkJobIds().size() == 1
       ? jobHandle.getSparkJobIds().get(0) : null;
