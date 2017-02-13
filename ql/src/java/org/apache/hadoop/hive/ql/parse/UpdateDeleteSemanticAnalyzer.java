@@ -696,7 +696,8 @@ public class UpdateDeleteSemanticAnalyzer extends SemanticAnalyzer {
     if(numWhenMatchedDeleteClauses + numWhenMatchedUpdateClauses == 2 && extraPredicate == null) {
       throw new SemanticException(ErrorMsg.MERGE_PREDIACTE_REQUIRED, ctx.getCmd());
     }
-    boolean validating = handleCardinalityViolation(rewrittenQueryStr, target, onClauseAsText, targetTable);
+    boolean validating = handleCardinalityViolation(rewrittenQueryStr, target, onClauseAsText,
+      targetTable, numWhenMatchedDeleteClauses == 0 && numWhenMatchedUpdateClauses == 0);
     ReparseResult rr = parseRewrittenQuery(rewrittenQueryStr, ctx.getCmd());
     Context rewrittenCtx = rr.rewrittenCtx;
     ASTNode rewrittenTree = rr.rewrittenTree;
@@ -828,11 +829,16 @@ public class UpdateDeleteSemanticAnalyzer extends SemanticAnalyzer {
    * @return true if another Insert clause was added
    */
   private boolean handleCardinalityViolation(StringBuilder rewrittenQueryStr, ASTNode target,
-                                          String onClauseAsString, Table targetTable)
+                                             String onClauseAsString, Table targetTable,
+                                             boolean onlyHaveWhenNotMatchedClause)
               throws SemanticException {
     if(!conf.getBoolVar(HiveConf.ConfVars.MERGE_CARDINALITY_VIOLATION_CHECK)) {
       LOG.info("Merge statement cardinality violation check is disabled: " +
         HiveConf.ConfVars.MERGE_CARDINALITY_VIOLATION_CHECK.varname);
+      return false;
+    }
+    if(onlyHaveWhenNotMatchedClause) {
+      //if no update or delete in Merge, there is no need to to do cardinality check
       return false;
     }
     //this is a tmp table and thus Session scoped and acid requires SQL statement to be serial in a
