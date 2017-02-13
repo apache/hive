@@ -9669,7 +9669,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       tsDesc.setGatherStats(false);
     } else {
       if (HiveConf.getVar(conf, HIVESTATSDBCLASS).equalsIgnoreCase(StatDB.fs.name())) {
-        String statsTmpLoc = ctx.getExtTmpPathRelTo(tab.getPath()).toString();
+        String statsTmpLoc = ctx.getTempDirForPath(tab.getPath()).toString();
         LOG.info("Set stats collection dir : " + statsTmpLoc);
         conf.set(StatsSetupConst.STATS_TMP_LOC, statsTmpLoc);
       }
