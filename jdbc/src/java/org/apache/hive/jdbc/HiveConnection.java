@@ -168,6 +168,7 @@ public class HiveConnection implements java.sql.Connection {
     supportedProtocols.add(TProtocolVersion.HIVE_CLI_SERVICE_PROTOCOL_V7);
     supportedProtocols.add(TProtocolVersion.HIVE_CLI_SERVICE_PROTOCOL_V8);
     supportedProtocols.add(TProtocolVersion.HIVE_CLI_SERVICE_PROTOCOL_V9);
+    supportedProtocols.add(TProtocolVersion.HIVE_CLI_SERVICE_PROTOCOL_V10);
 
     if (isEmbeddedMode) {
       EmbeddedThriftBinaryCLIService embeddedClient = new EmbeddedThriftBinaryCLIService();

@@ -26,6 +26,7 @@ class TProtocolVersion:
   HIVE_CLI_SERVICE_PROTOCOL_V7 = 6
   HIVE_CLI_SERVICE_PROTOCOL_V8 = 7
   HIVE_CLI_SERVICE_PROTOCOL_V9 = 8
+  HIVE_CLI_SERVICE_PROTOCOL_V10 = 9
 
   _VALUES_TO_NAMES = {
     0: "HIVE_CLI_SERVICE_PROTOCOL_V1",
@@ -37,6 +38,7 @@ class TProtocolVersion:
     6: "HIVE_CLI_SERVICE_PROTOCOL_V7",
     7: "HIVE_CLI_SERVICE_PROTOCOL_V8",
     8: "HIVE_CLI_SERVICE_PROTOCOL_V9",
+    9: "HIVE_CLI_SERVICE_PROTOCOL_V10",
   }
 
   _NAMES_TO_VALUES = {
@@ -49,6 +51,7 @@ class TProtocolVersion:
     "HIVE_CLI_SERVICE_PROTOCOL_V7": 6,
     "HIVE_CLI_SERVICE_PROTOCOL_V8": 7,
     "HIVE_CLI_SERVICE_PROTOCOL_V9": 8,
+    "HIVE_CLI_SERVICE_PROTOCOL_V10": 9,
   }
 
 class TTypeId:
@@ -3520,7 +3523,7 @@ class TOpenSessionReq:
 
   thrift_spec = (
     None, # 0
-    (1, TType.I32, 'client_protocol', None,     8, ), # 1
+    (1, TType.I32, 'client_protocol', None,     9, ), # 1
     (2, TType.STRING, 'username', None, None, ), # 2
     (3, TType.STRING, 'password', None, None, ), # 3
     (4, TType.MAP, 'configuration', (TType.STRING,None,TType.STRING,None), None, ), # 4
@@ -3637,7 +3640,7 @@ class TOpenSessionResp:
   thrift_spec = (
     None, # 0
     (1, TType.STRUCT, 'status', (TStatus, TStatus.thrift_spec), None, ), # 1
-    (2, TType.I32, 'serverProtocolVersion', None,     8, ), # 2
+    (2, TType.I32, 'serverProtocolVersion', None,     9, ), # 2
     (3, TType.STRUCT, 'sessionHandle', (TSessionHandle, TSessionHandle.thrift_spec), None, ), # 3
     (4, TType.MAP, 'configuration', (TType.STRING,None,TType.STRING,None), None, ), # 4
   )
