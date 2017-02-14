@@ -612,3 +612,12 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@bucket
 #### A masked pattern was here ####
 true
+PREHOOK: query: select percentile_approx(key, array(0.50, 0.70, 0.90, 0.95, 0.99)) from bucket where key > 10000
+PREHOOK: type: QUERY
+PREHOOK: Input: default@bucket
+#### A masked pattern was here ####
+POSTHOOK: query: select percentile_approx(key, array(0.50, 0.70, 0.90, 0.95, 0.99)) from bucket where key > 10000
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@bucket
+#### A masked pattern was here ####
+NULL
