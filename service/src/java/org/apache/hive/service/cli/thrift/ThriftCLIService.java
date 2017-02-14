@@ -18,6 +18,8 @@
 
 package org.apache.hive.service.cli.thrift;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -27,9 +29,11 @@ import java.util.concurrent.TimeUnit;
 
 import javax.security.auth.login.LoginException;
 
+import org.apache.hadoop.hive.common.ServerUtils;
+import org.apache.hadoop.hive.common.log.ProgressMonitor;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
-import org.apache.hadoop.hive.common.ServerUtils;
+import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.shims.HadoopShims.KerberosNameShim;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hive.service.AbstractService;
@@ -46,11 +50,13 @@ import org.apache.hive.service.cli.HiveSQLException;
 import org.apache.hive.service.cli.JobProgressUpdate;
 import org.apache.hive.service.cli.OperationHandle;
 import org.apache.hive.service.cli.OperationStatus;
+import org.apache.hive.service.cli.OperationType;
 import org.apache.hive.service.cli.ProgressMonitorStatusMapper;
 import org.apache.hive.service.cli.RowSet;
 import org.apache.hive.service.cli.SessionHandle;
 import org.apache.hive.service.cli.TableSchema;
 import org.apache.hive.service.cli.TezProgressMonitorStatusMapper;
+import org.apache.hive.service.cli.operation.Operation;
 import org.apache.hive.service.cli.session.SessionManager;
 import org.apache.hive.service.rpc.thrift.TCLIService;
 import org.apache.hive.service.rpc.thrift.TCancelDelegationTokenReq;
@@ -91,6 +97,7 @@ import org.apache.hive.service.rpc.thrift.TGetTablesReq;
 import org.apache.hive.service.rpc.thrift.TGetTablesResp;
 import org.apache.hive.service.rpc.thrift.TGetTypeInfoReq;
 import org.apache.hive.service.rpc.thrift.TGetTypeInfoResp;
+import org.apache.hive.service.rpc.thrift.TJobExecutionStatus;
 import org.apache.hive.service.rpc.thrift.TOpenSessionReq;
 import org.apache.hive.service.rpc.thrift.TOpenSessionResp;
 import org.apache.hive.service.rpc.thrift.TProgressUpdateResp;
@@ -431,6 +438,13 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
     return sessionHandle;
   }
 
+  private double getProgressedPercentage(OperationHandle opHandle) throws HiveSQLException {
+    checkArgument(OperationType.EXECUTE_STATEMENT.equals(opHandle.getOperationType()));
+    Operation operation = cliService.getSessionManager().getOperationManager().getOperation(opHandle);
+    SessionState state = operation.getParentSession().getSessionState();
+    ProgressMonitor monitor = state.getProgressMonitor();
+    return monitor == null ? 0.0 : monitor.progressedPercentage();
+  }
 
   private String getDelegationToken(String userName)
       throws HiveSQLException, LoginException, IOException {
@@ -646,11 +660,13 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
         mapper = new TezProgressMonitorStatusMapper();
       }
 
+      TJobExecutionStatus executionStatus =
+          mapper.forStatus(progressUpdate.status);
       resp.setProgressUpdateResponse(new TProgressUpdateResp(
           progressUpdate.headers(),
           progressUpdate.rows(),
           progressUpdate.progressedPercentage,
-          mapper.forStatus(progressUpdate.status),
+          executionStatus,
           progressUpdate.footerSummary,
           progressUpdate.startTimeMillis
       ));
@@ -659,6 +675,10 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
         resp.setErrorCode(opException.getErrorCode());
         resp.setErrorMessage(org.apache.hadoop.util.StringUtils.
             stringifyException(opException));
+      } else if (executionStatus == TJobExecutionStatus.NOT_AVAILABLE
+          && OperationType.EXECUTE_STATEMENT.equals(operationHandle.getOperationType())) {
+        resp.getProgressUpdateResponse().setProgressedPercentage(
+            getProgressedPercentage(operationHandle));
       }
       resp.setStatus(OK_STATUS);
     } catch (Exception e) {

@@ -179,6 +179,10 @@ abstract class SparkJobMonitor {
     String currentDate = dt.format(new Date());
     reportBuffer.append(currentDate + "\t");
 
+    // Num of total and completed tasks
+    int sumTotal = 0;
+    int sumComplete = 0;
+
     SortedSet<String> keys = new TreeSet<String>(progressMap.keySet());
     for (String s : keys) {
       SparkStageProgress progress = progressMap.get(s);
@@ -186,6 +190,9 @@ abstract class SparkJobMonitor {
       final int total = progress.getTotalTaskCount();
       final int running = progress.getRunningTaskCount();
       final int failed = progress.getFailedTaskCount();
+      sumTotal += total;
+      sumComplete += complete;
+
       String stageName = "Stage-" + s;
       if (total <= 0) {
         reportBuffer.append(String.format("%s: -/-\t", stageName));
@@ -229,6 +236,11 @@ abstract class SparkJobMonitor {
           }
         }
       }
+    }
+
+    if (SessionState.get() != null) {
+      final float progress = (sumTotal == 0) ? 1.0f : (float) sumComplete / (float) sumTotal;
+      SessionState.get().updateProgressedPercentage(progress);
     }
     return reportBuffer.toString();
   }
