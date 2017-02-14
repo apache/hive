@@ -310,6 +310,8 @@ public class GenericUDAFPercentileApprox extends AbstractGenericUDAFResolver {
           myagg.quantiles[i-1] = partialHistogram.get(i).get();
         }
         partialHistogram.subList(0, nquantiles+1).clear();
+      } else {
+        partialHistogram.subList(0, 1).clear();
       }
 
       // merge histograms
