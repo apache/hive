@@ -60,7 +60,7 @@ import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.TextInputFormat;
 
 /** The class that writes rows from a text reader to an ORC writer using VectorDeserializeRow. */
-class VertorDeserializeOrcWriter extends EncodingWriter implements Runnable {
+class VectorDeserializeOrcWriter extends EncodingWriter implements Runnable {
   private final VectorizedRowBatchCtx vrbCtx;
   private Writer orcWriter;
   private final LazySimpleDeserializeRead deserializeRead;
@@ -113,11 +113,11 @@ class VertorDeserializeOrcWriter extends EncodingWriter implements Runnable {
       }
     }
     LlapIoImpl.LOG.info("Creating VertorDeserializeOrcWriter for " + path);
-    return new VertorDeserializeOrcWriter(
+    return new VectorDeserializeOrcWriter(
         daemonConf, tblProps, sourceOi, sourceIncludes, cacheIncludes, allocSize);
   }
 
-  private VertorDeserializeOrcWriter(Configuration conf, Properties tblProps,
+  private VectorDeserializeOrcWriter(Configuration conf, Properties tblProps,
       StructObjectInspector sourceOi, List<Integer> sourceIncludes, boolean[] cacheIncludes,
       int allocSize) throws IOException {
     super(sourceOi, allocSize);
@@ -219,7 +219,7 @@ class VertorDeserializeOrcWriter extends EncodingWriter implements Runnable {
   }
 
   public interface AsyncCallback {
-    void onComplete(VertorDeserializeOrcWriter writer);
+    void onComplete(VectorDeserializeOrcWriter writer);
   }
 
   @Override
