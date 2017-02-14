@@ -1475,8 +1475,7 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
         Path path, StructObjectInspector oi) throws IOException {
       // TODO: this is currently broken. We need to set memory manager to a bogus implementation
       //       to avoid problems with memory manager actually tracking the usage.
-      return OrcFile.createWriter(path, createOrcWriterOptions(
-          sourceOi, conf, cacheWriter, allocSize));
+      return OrcFile.createWriter(path, createOrcWriterOptions(oi, conf, cacheWriter, allocSize));
     }
   }
 
