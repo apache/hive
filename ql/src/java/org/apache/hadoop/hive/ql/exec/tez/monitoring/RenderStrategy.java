@@ -12,13 +12,13 @@ import java.util.Map;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
-class Strategy {
+class RenderStrategy {
 
   interface UpdateFunction {
     void update(DAGStatus status, Map<String, Progress> vertexProgressMap);
   }
 
-  private abstract static class DefaultFunction implements UpdateFunction {
+  private abstract static class DefaultUpdateFunction implements UpdateFunction {
     private static final int PRINT_INTERVAL = 3000;
 
     final TezJobMonitor monitor;
@@ -27,7 +27,7 @@ class Strategy {
     private long lastPrintTime = 0L;
     private String lastReport = null;
 
-    DefaultFunction(TezJobMonitor monitor) {
+    DefaultUpdateFunction(TezJobMonitor monitor) {
       this.monitor = monitor;
       perfLogger = SessionState.getPerfLogger();
     }
@@ -104,7 +104,7 @@ class Strategy {
     abstract void renderReport(String report);
   }
 
-  static class LogToFileFunction extends DefaultFunction {
+  static class LogToFileFunction extends DefaultUpdateFunction {
 
     LogToFileFunction(TezJobMonitor monitor) {
       super(monitor);
@@ -121,7 +121,7 @@ class Strategy {
     }
   }
 
-  static class InPlaceUpdateFunction extends DefaultFunction {
+  static class InPlaceUpdateFunction extends DefaultUpdateFunction {
     /**
      * Have to use the same instance to render else the number lines printed earlier is lost and the
      * screen will print the table again and again.

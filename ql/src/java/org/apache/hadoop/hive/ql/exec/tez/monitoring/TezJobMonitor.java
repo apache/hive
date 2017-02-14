@@ -94,7 +94,7 @@ public class TezJobMonitor {
   private final DAG dag;
   private final Context context;
   private long executionStartTime = 0;
-  private final Strategy.UpdateFunction updateFunction;
+  private final RenderStrategy.UpdateFunction updateFunction;
 
   public TezJobMonitor(Map<String, BaseWork> workMap, final DAGClient dagClient, HiveConf conf, DAG dag,
                        Context ctx) {
@@ -107,11 +107,12 @@ public class TezJobMonitor {
     updateFunction = updateFunction();
   }
 
-  private Strategy.UpdateFunction updateFunction() {
+  private RenderStrategy.UpdateFunction updateFunction() {
     return InPlaceUpdate.canRenderInPlace(hiveConf)
         && !SessionState.getConsole().getIsSilent()
         && !SessionState.get().isHiveServerQuery()
-        ? new Strategy.InPlaceUpdateFunction(this) : new Strategy.LogToFileFunction(this);
+        ? new RenderStrategy.InPlaceUpdateFunction(this)
+        : new RenderStrategy.LogToFileFunction(this);
   }
 
   private boolean isProfilingEnabled() {
