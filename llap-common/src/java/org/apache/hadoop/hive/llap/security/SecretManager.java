@@ -50,15 +50,27 @@ public class SecretManager extends ZKDelegationTokenSecretManager<LlapTokenIdent
   implements SigningSecretManager {
   private static final Logger LOG = LoggerFactory.getLogger(SecretManager.class);
   private static final String DISABLE_MESSAGE =
-      "Set " + ConfVars.LLAP_VALIDATE_ACLS.varname + " to false to disable ACL validation";
+      "Set " + ConfVars.LLAP_VALIDATE_ACLS.varname + " to false to disable ACL validation (note"
+      +  " that invalid ACLs on secret key paths would mean that security is compromised)";
   private final Configuration conf;
   private final String clusterId;
 
   public SecretManager(Configuration conf, String clusterId) {
-    super(conf);
+    super(validateConfigBeforeCtor(conf));
     this.clusterId = clusterId;
     this.conf = conf;
     checkForZKDTSMBug();
+  }
+
+  private static Configuration validateConfigBeforeCtor(Configuration conf) {
+    setCurator(null); // Ensure there's no threadlocal. We don't expect one.
+    // We don't ever want to create key paths with world visibility. Why is that even an option?!!
+    String authType = conf.get(ZK_DTSM_ZK_AUTH_TYPE);
+    if (!"sasl".equals(authType)) {
+      throw new RuntimeException("Inconsistent configuration: secure cluster, but ZK auth is "
+          + authType + " instead of sasl");
+    }
+    return conf;
   }
 
   @Override
@@ -172,7 +184,8 @@ public class SecretManager extends ZKDelegationTokenSecretManager<LlapTokenIdent
     String zkPath = "zkdtsm_" + clusterId;
     LOG.info("Using {} as ZK secret manager path", zkPath);
     zkConf.set(SecretManager.ZK_DTSM_ZNODE_WORKING_PATH, zkPath);
-    setZkConfIfNotSet(zkConf, SecretManager.ZK_DTSM_ZK_AUTH_TYPE, "sasl");
+    // Hardcode SASL here. ZKDTSM only supports none or sasl and we never want none.
+    zkConf.set(SecretManager.ZK_DTSM_ZK_AUTH_TYPE, "sasl");
     setZkConfIfNotSet(zkConf, SecretManager.ZK_DTSM_ZK_CONNECTION_STRING,
         HiveConf.getVar(zkConf, ConfVars.LLAP_ZKSM_ZK_CONNECTION_STRING));
 
