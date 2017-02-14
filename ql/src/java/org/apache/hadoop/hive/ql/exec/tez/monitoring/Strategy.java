@@ -34,10 +34,11 @@ class Strategy {
 
     @Override
     public void update(DAGStatus status, Map<String, Progress> vertexProgressMap) {
-      progressRender(monitor.progressMonitor(status, vertexProgressMap));
+      renderProgress(monitor.progressMonitor(status, vertexProgressMap));
       String report = getReport(vertexProgressMap);
       if (showReport(report)) {
-        reportRender(report);
+        renderReport(report);
+        lastReport = report;
         lastPrintTime = System.currentTimeMillis();
       }
     }
@@ -98,9 +99,9 @@ class Strategy {
       return reportBuffer.toString();
     }
 
-    abstract void progressRender(ProgressMonitor progressMonitor);
+    abstract void renderProgress(ProgressMonitor progressMonitor);
 
-    abstract void reportRender(String report);
+    abstract void renderReport(String report);
   }
 
   static class LogToFileFunction extends DefaultFunction {
@@ -110,12 +111,12 @@ class Strategy {
     }
 
     @Override
-    public void progressRender(ProgressMonitor progressMonitor) {
+    public void renderProgress(ProgressMonitor progressMonitor) {
       SessionState.get().updateProgressMonitor(progressMonitor);
     }
 
     @Override
-    public void reportRender(String report) {
+    public void renderReport(String report) {
       monitor.console.printInfo(report);
     }
   }
@@ -133,12 +134,12 @@ class Strategy {
     }
 
     @Override
-    public void progressRender(ProgressMonitor progressMonitor) {
+    public void renderProgress(ProgressMonitor progressMonitor) {
       inPlaceUpdate.render(progressMonitor);
     }
 
     @Override
-    public void reportRender(String report) {
+    public void renderReport(String report) {
       monitor.console.logInfo(report);
     }
   }
