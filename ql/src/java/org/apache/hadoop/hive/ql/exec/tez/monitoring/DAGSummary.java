@@ -27,7 +27,7 @@ import java.util.*;
 class DAGSummary implements PrintSummary {
 
   private static final String FILE_HEADER_SEPARATOR = new String(new char[InPlaceUpdate.MIN_TERMINAL_WIDTH]).replace("\0", "-");
-  private static final String FORMATTING_PATTERN = "%10s %14s %13s %12s %14s %15s";
+  private static final String FORMATTING_PATTERN = "%10s %17s %14s %14s %15s %16s";
   private static final String FILE_HEADER = String.format(
       FORMATTING_PATTERN,
       "VERTICES",
