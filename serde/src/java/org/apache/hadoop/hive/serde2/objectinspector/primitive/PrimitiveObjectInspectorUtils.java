@@ -532,10 +532,10 @@ public final class PrimitiveObjectInspectorUtils {
       StringObjectInspector soi = (StringObjectInspector) oi;
       if (soi.preferWritable()) {
         Text t = soi.getPrimitiveWritableObject(o);
-        result = t.getLength() != 0;
+        result = parseBoolean(t);
       } else {
         String s = soi.getPrimitiveJavaObject(o);
-        result = s.length() != 0;
+        result = parseBoolean(s);
       }
       break;
     case TIMESTAMP:
@@ -552,6 +552,24 @@ public final class PrimitiveObjectInspectorUtils {
           + oi.getTypeName());
     }
     return result;
+  }
+
+
+  private static final String falseBooleans[] = { "false", "no", "off", "0", "" };
+
+  private static boolean parseBoolean(String s) {
+    for(int i=0;i<falseBooleans.length;i++){
+      if(falseBooleans[i].equalsIgnoreCase(s))
+        return false;
+    }
+    return true;
+  }
+
+  private static boolean parseBoolean(Text t) {
+    if(t.getLength()>5)
+      return true;
+    String strVal=t.toString();
+    return parseBoolean(strVal);
   }
 
   /**

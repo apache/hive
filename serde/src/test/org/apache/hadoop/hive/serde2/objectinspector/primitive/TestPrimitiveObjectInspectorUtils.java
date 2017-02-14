@@ -27,7 +27,6 @@ import java.util.TimeZone;
 import org.apache.hadoop.hive.common.type.HiveChar;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.common.type.HiveVarchar;
-import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils.PrimitiveGrouping;
@@ -222,5 +221,20 @@ public class TestPrimitiveObjectInspectorUtils extends TestCase {
   public void testGetTimestampFromString() {
     DateFormat localDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
     assertEquals("2015-02-07 00:00:00.000", localDateFormat.format(PrimitiveObjectInspectorUtils.getTimestampFromString("2015-02-07")));
+  }
+
+  @Test
+  public void testGetBoolean() {
+    String mustEvaluateToTrue[] = { "yes", "Yes", "ON", "on", "True", "1", "ANYTHING?" };
+    String mustEvaluateToFalse[] = { "", "No", "OFF", "FaLsE", "0" };
+
+    for (String falseStr : mustEvaluateToFalse) {
+      assertFalse(falseStr, PrimitiveObjectInspectorUtils.getBoolean(falseStr,
+          PrimitiveObjectInspectorFactory.javaStringObjectInspector));
+    }
+    for (String trueStr : mustEvaluateToTrue) {
+      assertTrue(trueStr, PrimitiveObjectInspectorUtils.getBoolean(trueStr,
+          PrimitiveObjectInspectorFactory.javaStringObjectInspector));
+    }
   }
 }
