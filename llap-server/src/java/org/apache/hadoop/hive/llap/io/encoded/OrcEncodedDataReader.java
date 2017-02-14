@@ -834,11 +834,11 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
           fileKey, range, baseOffset, factory, counters, gotAllData);
       if (LlapIoImpl.ORC_LOGGER.isTraceEnabled()) {
         LlapIoImpl.ORC_LOGGER.trace("Disk ranges after data cache (file " + fileKey +
-            ", base offset " + baseOffset + "): " + RecordReaderUtils.stringifyDiskRanges(range));
+            ", base offset " + baseOffset + "): " + RecordReaderUtils.stringifyDiskRanges(result));
       }
       if (gotAllData.value) return result;
-      return (metadataCache == null) ? range
-          : metadataCache.getIncompleteCbs(fileKey, range, baseOffset, factory, gotAllData);
+      return (metadataCache == null) ? result
+          : metadataCache.getIncompleteCbs(fileKey, result, baseOffset, factory, gotAllData);
     }
 
     @Override
