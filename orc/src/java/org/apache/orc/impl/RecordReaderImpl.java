@@ -385,8 +385,10 @@ public class RecordReaderImpl implements RecordReader {
 
     // TODO: Enabling PPD for timestamp requires ORC-101 and ORC-135
     if (min != null && min instanceof Timestamp) {
-      LOG.warn("Not using predication pushdown on {} because it doesn't " +
-        "include ORC-135.", predicate.getColumnName());
+      if (LOG.isDebugEnabled()) {
+        LOG.debug("Not using predication pushdown on {} because it doesn't " +
+          "include ORC-135.", predicate.getColumnName());
+      }
       return TruthValue.YES_NO_NULL;
     }
 
@@ -404,7 +406,7 @@ public class RecordReaderImpl implements RecordReader {
       }
       // in case failed conversion, return the default YES_NO_NULL truth value
     } catch (Exception e) {
-      if (LOG.isWarnEnabled()) {
+      if (LOG.isDebugEnabled()) {
         final String statsType = min == null ?
             (max == null ? "null" : max.getClass().getSimpleName()) :
             min.getClass().getSimpleName();
@@ -414,8 +416,7 @@ public class RecordReaderImpl implements RecordReader {
             " Exception: " + e.getMessage() +
             " StatsType: " + statsType +
             " PredicateType: " + predicateType;
-        LOG.warn(reason);
-        LOG.debug(reason, e);
+        LOG.debug(reason);
       }
       if (predicate.getOperator().equals(PredicateLeaf.Operator.NULL_SAFE_EQUALS) || !hasNull) {
         result = TruthValue.YES_NO;
