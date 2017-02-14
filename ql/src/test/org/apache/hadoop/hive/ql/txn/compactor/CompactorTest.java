@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.ql.txn.compactor;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FSDataOutputStream;
@@ -66,6 +67,7 @@ import org.slf4j.LoggerFactory;
 import java.io.EOFException;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -96,10 +98,11 @@ public abstract class CompactorTest {
     TxnDbUtil.cleanDb();
     ms = new HiveMetaStoreClient(conf);
     txnHandler = TxnUtils.getTxnStore(conf);
-    tmpdir = new File(System.getProperty("java.io.tmpdir") +
-        System.getProperty("file.separator") + "compactor_test_tables");
-    tmpdir.mkdir();
-    tmpdir.deleteOnExit();
+    tmpdir = new File (Files.createTempDirectory("compactor_test_table_").toString());
+  }
+
+  protected void compactorTestCleanup() throws IOException {
+    FileUtils.deleteDirectory(tmpdir);
   }
 
   protected void startInitiator() throws Exception {
