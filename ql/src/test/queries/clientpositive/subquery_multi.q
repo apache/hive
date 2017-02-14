@@ -58,8 +58,12 @@ explain select * from part_null where p_name IN (select p_name from part_null) A
 select * from part_null where p_name IN (select p_name from part_null) AND NOT EXISTS (select c from tempty);
 
 -- corr, mix of IN/NOT IN
-explain select * from part_null where p_name IN ( select p_name from part where part.p_type = part_null.p_type) AND p_brand NOT IN (select p_container from part where part.p_type = part_null.p_type AND p_brand IN (select p_brand from part pp where part.p_type = pp.p_type));
-select * from part_null where p_name IN ( select p_name from part where part.p_type = part_null.p_type) AND p_brand NOT IN (select p_container from part where part.p_type = part_null.p_type AND p_brand IN (select p_brand from part pp where part.p_type = pp.p_type));
+explain select * from part_null where p_name IN ( select p_name from part where part.p_type = part_null.p_type)
+        AND p_brand NOT IN (select p_container from part where part.p_type = part_null.p_type
+                                AND p_brand IN (select p_brand from part pp where part.p_type = pp.p_type));
+select * from part_null where p_name IN ( select p_name from part where part.p_type = part_null.p_type)
+        AND p_brand NOT IN (select p_container from part where part.p_type = part_null.p_type
+                                AND p_brand IN (select p_brand from part pp where part.p_type = pp.p_type));
 
 -- mix of corr and uncorr
 explain select * from part_null where p_name IN ( select p_name from part) AND p_brand IN (select p_brand from part where part.p_type = part_null.p_type);
