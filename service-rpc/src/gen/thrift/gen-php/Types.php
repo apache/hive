@@ -25,6 +25,7 @@ final class TProtocolVersion {
   const HIVE_CLI_SERVICE_PROTOCOL_V7 = 6;
   const HIVE_CLI_SERVICE_PROTOCOL_V8 = 7;
   const HIVE_CLI_SERVICE_PROTOCOL_V9 = 8;
+  const HIVE_CLI_SERVICE_PROTOCOL_V10 = 9;
   static public $__names = array(
     0 => 'HIVE_CLI_SERVICE_PROTOCOL_V1',
     1 => 'HIVE_CLI_SERVICE_PROTOCOL_V2',
@@ -35,6 +36,7 @@ final class TProtocolVersion {
     6 => 'HIVE_CLI_SERVICE_PROTOCOL_V7',
     7 => 'HIVE_CLI_SERVICE_PROTOCOL_V8',
     8 => 'HIVE_CLI_SERVICE_PROTOCOL_V9',
+    9 => 'HIVE_CLI_SERVICE_PROTOCOL_V10',
   );
 }
 
@@ -4521,7 +4523,7 @@ class TOpenSessionReq {
   /**
    * @var int
    */
-  public $client_protocol =   8;
+  public $client_protocol =   9;
   /**
    * @var string
    */
@@ -4703,7 +4705,7 @@ class TOpenSessionResp {
   /**
    * @var int
    */
-  public $serverProtocolVersion =   8;
+  public $serverProtocolVersion =   9;
   /**
    * @var \TSessionHandle
    */
