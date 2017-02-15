@@ -204,6 +204,8 @@ public class MiniHS2 extends AbstractHiveService {
       // Initialize the execution engine based on cluster type
       switch (miniClusterType) {
       case TEZ:
+        // Change the engine to tez
+        hiveConf.setVar(ConfVars.HIVE_EXECUTION_ENGINE, "tez");
         // TODO: This should be making use of confDir to load configs setup for Tez, etc.
         mr = ShimLoader.getHadoopShims().getMiniTezCluster(hiveConf, 2, uriString, false);
         break;
