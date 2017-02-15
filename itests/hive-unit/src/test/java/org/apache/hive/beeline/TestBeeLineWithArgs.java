@@ -64,8 +64,6 @@ public class TestBeeLineWithArgs {
   // Default location of HiveServer2
   private static final String tableName = "TestBeelineTable1";
   private static final String tableComment = "Test table comment";
-  private static String dataFileDir;
-  private static Path kvDataFilePath;
   private static MiniHS2 miniHS2;
   private static final String userName = System.getProperty("user.name");
 
