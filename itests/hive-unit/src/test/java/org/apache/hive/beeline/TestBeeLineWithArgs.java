@@ -29,7 +29,6 @@ import java.io.InputStream;
 import java.io.PrintStream;
 import java.io.StringBufferInputStream;
 import java.io.UnsupportedEncodingException;
-import java.net.URL;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -57,7 +56,7 @@ import org.junit.Test;
  *
  */
 public class TestBeeLineWithArgs {
-  private enum OUTSTREAM {
+  private enum OutStream {
     ERR, OUT
   };
 
@@ -151,7 +150,7 @@ public class TestBeeLineWithArgs {
    * @return The stderr and stdout from running the script
    * @throws Throwable
    */
-  private String testCommandLineScript(List<String> argList, InputStream inputStream, OUTSTREAM streamType)
+  private String testCommandLineScript(List<String> argList, InputStream inputStream, OutStream streamType)
       throws Throwable {
     BeeLine beeLine = new BeeLine();
     ByteArrayOutputStream os = new ByteArrayOutputStream();
@@ -188,7 +187,7 @@ public class TestBeeLineWithArgs {
    */
   private void testScriptFile(String scriptText, String expectedRegex,
       boolean shouldMatch, List<String> argList) throws Throwable {
-    testScriptFile(scriptText, expectedRegex, shouldMatch, argList, true, true, OUTSTREAM.OUT);
+    testScriptFile(scriptText, expectedRegex, shouldMatch, argList, true, true, OutStream.OUT);
   }
 
   /**
@@ -203,7 +202,7 @@ public class TestBeeLineWithArgs {
    * @throws Throwable
    */
   private void testScriptFile(String scriptText, String expectedRegex,
-      boolean shouldMatch, List<String> argList, OUTSTREAM outType) throws Throwable {
+      boolean shouldMatch, List<String> argList, OutStream outType) throws Throwable {
     testScriptFile(scriptText, expectedRegex, shouldMatch, argList, true, true, outType);
   }
   
@@ -221,7 +220,7 @@ public class TestBeeLineWithArgs {
    */
   private void testScriptFile(String scriptText, String expectedRegex,
       boolean shouldMatch, List<String> argList,
-      boolean testScript, boolean testInit, OUTSTREAM streamType) throws Throwable {
+      boolean testScript, boolean testInit, OutStream streamType) throws Throwable {
 
     // Put the script content in a temp file
     File scriptFile = File.createTempFile(this.getClass().getSimpleName(), "temp");
@@ -279,7 +278,7 @@ public class TestBeeLineWithArgs {
    */
 
   private void testCommandEnclosedQuery(String enclosedQuery, String expectedPattern,
-      boolean shouldMatch, List<String> argList, OUTSTREAM out) throws Throwable {
+      boolean shouldMatch, List<String> argList, OutStream out) throws Throwable {
 
     List<String> copy = new ArrayList<String>(argList);
     copy.add("-e");
@@ -404,7 +403,8 @@ public class TestBeeLineWithArgs {
   @Test
   public void testTabInScriptFile() throws Throwable {
     List<String> argList = getBaseArgs(miniHS2.getBaseJdbcURL());
-    final String SCRIPT_TEXT = "CREATE\tTABLE IF NOT EXISTS testTabInScriptFile\n(id\tint);\nSHOW TABLES;";
+    final String SCRIPT_TEXT = "CREATE\tTABLE IF NOT EXISTS testTabInScriptFile\n(id\tint);\nSHOW TABLES;"
+        + "\ndrop table testTabInScriptFile";
     final String EXPECTED_PATTERN = "testTabInScriptFile";
     testScriptFile(SCRIPT_TEXT, EXPECTED_PATTERN, true, argList);
   }
@@ -593,7 +593,7 @@ public class TestBeeLineWithArgs {
     argList.add("--outputformat=tsv");
 
     final String EXPECTED_PATTERN = "Format tsv is deprecated, please use tsv2";
-    testScriptFile(SCRIPT_TEXT, EXPECTED_PATTERN, true, argList, OUTSTREAM.ERR);
+    testScriptFile(SCRIPT_TEXT, EXPECTED_PATTERN, true, argList, OutStream.ERR);
   }
 
   /**
@@ -607,7 +607,7 @@ public class TestBeeLineWithArgs {
     argList.add("--outputformat=csv");
 
     final String EXPECTED_PATTERN = "Format csv is deprecated, please use csv2";
-    testScriptFile(SCRIPT_TEXT, EXPECTED_PATTERN, true, argList, true, true, OUTSTREAM.ERR);
+    testScriptFile(SCRIPT_TEXT, EXPECTED_PATTERN, true, argList, true, true, OutStream.ERR);
   }
 
   /**
@@ -668,7 +668,7 @@ public class TestBeeLineWithArgs {
     argList.add(scriptFile.getAbsolutePath());
 
     try {
-      String output = testCommandLineScript(argList, null, OUTSTREAM.OUT);
+      String output = testCommandLineScript(argList, null, OutStream.OUT);
       if (output.contains(EXPECTED_PATTERN)) {
         fail("Output: " + output +  " Negative pattern: " + EXPECTED_PATTERN);
       }
@@ -737,7 +737,7 @@ public class TestBeeLineWithArgs {
     // Check for part of log message as well as part of progress information
     final String EXPECTED_PATTERN = "Number of reducers determined to be.*ELAPSED TIME";
     testScriptFile(SCRIPT_TEXT, EXPECTED_PATTERN, true, getBaseArgs(miniHS2.getBaseJdbcURL()),
-        OUTSTREAM.ERR);
+        OutStream.ERR);
   }
 
   /**
@@ -753,7 +753,7 @@ public class TestBeeLineWithArgs {
     // Check for part of log message as well as part of progress information
     final String EXPECTED_PATTERN = "Number of reducers determined to be.*ELAPSED TIME";
     testScriptFile(SCRIPT_TEXT, EXPECTED_PATTERN, true, getBaseArgs(miniHS2.getBaseJdbcURL()),
-        OUTSTREAM.ERR);
+        OutStream.ERR);
   }
 
   /**
@@ -766,7 +766,7 @@ public class TestBeeLineWithArgs {
         "!set silent true\n" +
         "select count(*) from " + tableName + ";\n";
     final String EXPECTED_PATTERN = "Executing command";
-    testScriptFile(SCRIPT_TEXT, EXPECTED_PATTERN, false, getBaseArgs(miniHS2.getBaseJdbcURL()), OUTSTREAM.ERR);
+    testScriptFile(SCRIPT_TEXT, EXPECTED_PATTERN, false, getBaseArgs(miniHS2.getBaseJdbcURL()), OutStream.ERR);
   }
 
   @Test
@@ -787,10 +787,10 @@ public class TestBeeLineWithArgs {
         +"(key int);show tables; --multicommands in one line";
     final String EXPECTED_PATTERN = " multicmdtbl ";
     List<String> argList = getBaseArgs(miniHS2.getBaseJdbcURL());
-    testCommandEnclosedQuery(QUERY_TEXT, EXPECTED_PATTERN, true, argList, OUTSTREAM.OUT);
+    testCommandEnclosedQuery(QUERY_TEXT, EXPECTED_PATTERN, true, argList, OutStream.OUT);
 
     final String QUERY_TEXT_DROP = "drop table multiCmdTbl;show tables;";
-    testCommandEnclosedQuery(QUERY_TEXT_DROP, EXPECTED_PATTERN, false, argList, OUTSTREAM.OUT);
+    testCommandEnclosedQuery(QUERY_TEXT_DROP, EXPECTED_PATTERN, false, argList, OutStream.OUT);
   }
 
   @Test
@@ -825,10 +825,10 @@ public class TestBeeLineWithArgs {
         + " TERMINATED BY '\\n';show tables;";
     final String EXPECTED_PATTERN = " multicmdtbl ";
     List<String> argList = getBaseArgs(miniHS2.getBaseJdbcURL());
-    testCommandEnclosedQuery(QUERY_TEXT, EXPECTED_PATTERN, true, argList, OUTSTREAM.OUT);
+    testCommandEnclosedQuery(QUERY_TEXT, EXPECTED_PATTERN, true, argList, OutStream.OUT);
 
     final String QUERY_TEXT_DROP = "drop table multiCmdTbl;show tables;";
-    testCommandEnclosedQuery(QUERY_TEXT_DROP, EXPECTED_PATTERN, false, argList, OUTSTREAM.OUT);
+    testCommandEnclosedQuery(QUERY_TEXT_DROP, EXPECTED_PATTERN, false, argList, OutStream.OUT);
   }
 
   @Test
@@ -839,9 +839,10 @@ public class TestBeeLineWithArgs {
     final String SCRIPT_TEXT = "set hive.lock.manager=org.apache.hadoop.hive.ql.lockmgr.EmbeddedLockManager;\n"
         + "set hive.compute.query.using.stats=false;\n"
         + "create table if not exists embeddedBeelineOutputs(d int);\n"
-        + "set a=1;\nselect count(*) from embeddedBeelineOutputs;\n";
+        + "set a=1;\nselect count(*) from embeddedBeelineOutputs;\n"
+        + "drop table embeddedBeelineOutputs;\n";
     final String EXPECTED_PATTERN = "Stage-1 map =";
-    testScriptFile(SCRIPT_TEXT, EXPECTED_PATTERN, true, argList, OUTSTREAM.ERR);
+    testScriptFile(SCRIPT_TEXT, EXPECTED_PATTERN, true, argList, OutStream.ERR);
   }
 
   @Test
@@ -866,7 +867,7 @@ public class TestBeeLineWithArgs {
     argList.add(BeeLine.BEELINE_DEFAULT_JDBC_DRIVER);
 
     final String SCRIPT_TEXT =
-        "create table blueconnecttest (d int);\nshow tables;\n";
+        "create table blueconnecttest (d int);\nshow tables;\ndrop table blueconnecttest;\n";
     final String EXPECTED_PATTERN = "blueconnecttest";
 
     // We go through these hijinxes because java considers System.getEnv
@@ -886,7 +887,7 @@ public class TestBeeLineWithArgs {
     };
     BeeLineOpts.setEnv(newEnv);
 
-    testScriptFile(SCRIPT_TEXT, EXPECTED_PATTERN, true, argList, true, false, OUTSTREAM.OUT);
+    testScriptFile(SCRIPT_TEXT, EXPECTED_PATTERN, true, argList, true, false, OutStream.OUT);
   }
 
   /**
@@ -899,10 +900,10 @@ public class TestBeeLineWithArgs {
     final String SCRIPT_TEXT =
         "!close\n" +
         "!reconnect\n\n\n" +
-        "create table reconnecttest (d int);\nshow tables;\n";
+        "create table reconnecttest (d int);\nshow tables;\ndrop table reconnecttest;\n";
     final String EXPECTED_PATTERN = "reconnecttest";
 
-    testScriptFile(SCRIPT_TEXT, EXPECTED_PATTERN, true, argList, true, false, OUTSTREAM.OUT);
+    testScriptFile(SCRIPT_TEXT, EXPECTED_PATTERN, true, argList, true, false, OutStream.OUT);
 
   }
 
@@ -969,7 +970,7 @@ public class TestBeeLineWithArgs {
     List<String> argList = new ArrayList<String>();
     final String SCRIPT_TEXT = "!sh echo hello world";
     final String EXPECTED_PATTERN = "hello world";
-    testScriptFile(SCRIPT_TEXT, EXPECTED_PATTERN, true, argList, true, false, OUTSTREAM.OUT);
+    testScriptFile(SCRIPT_TEXT, EXPECTED_PATTERN, true, argList, true, false, OutStream.OUT);
   }
 
   /**
@@ -984,6 +985,6 @@ public class TestBeeLineWithArgs {
     final String EXPECTED_PATTERN = "2 rows selected";
     List<String> argList = getBaseArgs(miniHS2.getBaseJdbcURL());
     argList.add("--force");
-    testScriptFile(SCRIPT_TEXT, EXPECTED_PATTERN, true, argList, OUTSTREAM.ERR);
+    testScriptFile(SCRIPT_TEXT, EXPECTED_PATTERN, true, argList, OutStream.ERR);
   }
 }
