@@ -29,6 +29,7 @@ import java.io.InputStream;
 import java.io.PrintStream;
 import java.io.StringBufferInputStream;
 import java.io.UnsupportedEncodingException;
+import java.net.URL;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -36,9 +37,13 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hive.jdbc.Utils;
 import org.apache.hive.jdbc.miniHS2.MiniHS2;
 import org.apache.hive.jdbc.miniHS2.MiniHS2.MiniClusterType;
@@ -59,7 +64,10 @@ public class TestBeeLineWithArgs {
   // Default location of HiveServer2
   private static final String tableName = "TestBeelineTable1";
   private static final String tableComment = "Test table comment";
+  private static String dataFileDir;
+  private static Path kvDataFilePath;
   private static MiniHS2 miniHS2;
+  private static final String userName = System.getProperty("user.name");
 
   private List<String> getBaseArgs(String jdbcUrl) {
     List<String> argList = new ArrayList<String>(8);
@@ -67,6 +75,8 @@ public class TestBeeLineWithArgs {
     argList.add(BeeLine.BEELINE_DEFAULT_JDBC_DRIVER);
     argList.add("-u");
     argList.add(jdbcUrl);
+    argList.add("-n");
+    argList.add(userName);
     return argList;
   }
   /**
@@ -75,11 +85,15 @@ public class TestBeeLineWithArgs {
   @BeforeClass
   public static void preTests() throws Exception {
     HiveConf hiveConf = new HiveConf();
-    // Set to non-zk lock manager to prevent HS2 from trying to connect
-    hiveConf.setVar(HiveConf.ConfVars.HIVE_LOCK_MANAGER, "org.apache.hadoop.hive.ql.lockmgr.EmbeddedLockManager");
+    hiveConf.setVar(HiveConf.ConfVars.HIVE_LOCK_MANAGER,
+        "org.apache.hadoop.hive.ql.lockmgr.EmbeddedLockManager");
     hiveConf.setBoolVar(HiveConf.ConfVars.HIVEOPTIMIZEMETADATAQUERIES, false);
+    hiveConf.set(ConfVars.HIVE_SERVER2_LOGGING_OPERATION_LEVEL.varname, "verbose");
     miniHS2 = new MiniHS2(hiveConf, MiniClusterType.TEZ);
-    miniHS2.start(new HashMap<String,  String>());
+
+    Map<String, String> confOverlay = new HashMap<String, String>();
+    miniHS2.start(confOverlay);
+
     createTable();
   }
 
@@ -90,7 +104,8 @@ public class TestBeeLineWithArgs {
    */
   private static void createTable() throws ClassNotFoundException, SQLException {
     Class.forName(BeeLine.BEELINE_DEFAULT_JDBC_DRIVER);
-    Connection con = DriverManager.getConnection(miniHS2.getBaseJdbcURL(),"", "");
+    Connection con = DriverManager.getConnection(miniHS2.getBaseJdbcURL(),
+        userName , "");
 
     assertNotNull("Connection is null", con);
     assertFalse("Connection should not be closed", con.isClosed());
@@ -166,16 +181,16 @@ public class TestBeeLineWithArgs {
    * BeeLine to test for presence of an expected pattern in the output (stdout
    * or stderr), fail if not found. Print PASSED or FAILED
    * 
-   * @param expectedPattern
+   * @param expectedRegex
    *          Text to look for in command output (stdout)
    * @param shouldMatch
    *          true if the pattern should be found, false if it should not
    * @throws Exception
    *           on command execution error
    */
-  private void testScriptFile(String scriptText, String expectedPattern,
+  private void testScriptFile(String scriptText, String expectedRegex,
       boolean shouldMatch, List<String> argList) throws Throwable {
-    testScriptFile(scriptText, expectedPattern, shouldMatch, argList, true, true, OUTSTREAM.OUT);
+    testScriptFile(scriptText, expectedRegex, shouldMatch, argList, true, true, OUTSTREAM.OUT);
   }
 
   /**
@@ -183,15 +198,15 @@ public class TestBeeLineWithArgs {
    * to BeeLine to test for presence of an expected pattern
    * in the output (stdout or stderr), fail if not found.
    * Print PASSED or FAILED
-   * @param expectedPattern Text to look for in command output (stdout)
+   * @param expectedRegex Text to look for in command output (stdout)
    * @param shouldMatch true if the pattern should be found, false if it should not
    * @param argList arguments
    * @param outType output stream type
    * @throws Throwable
    */
-  private void testScriptFile(String scriptText, String expectedPattern,
+  private void testScriptFile(String scriptText, String expectedRegex,
       boolean shouldMatch, List<String> argList, OUTSTREAM outType) throws Throwable {
-    testScriptFile(scriptText, expectedPattern, shouldMatch, argList, true, true, outType);
+    testScriptFile(scriptText, expectedRegex, shouldMatch, argList, true, true, outType);
   }
   
   /**
@@ -199,14 +214,14 @@ public class TestBeeLineWithArgs {
    * to BeeLine (or both) to  test for presence of an expected pattern
    * in the output (stdout or stderr), fail if not found.
    * Print PASSED or FAILED
-   * @param expectedPattern Text to look for in command output/error
+   * @param expectedRegex Text to look for in command output/error
    * @param shouldMatch true if the pattern should be found, false if it should not
    * @param testScript Whether we should test -f
    * @param testInit Whether we should test -i
    * @param streamType Whether match should be done against STDERR or STDOUT
    * @throws Exception on command execution error
    */
-  private void testScriptFile(String scriptText, String expectedPattern,
+  private void testScriptFile(String scriptText, String expectedRegex,
       boolean shouldMatch, List<String> argList,
       boolean testScript, boolean testInit, OUTSTREAM streamType) throws Throwable {
 
@@ -218,17 +233,20 @@ public class TestBeeLineWithArgs {
     os.print(scriptText);
     os.close();
 
+    Pattern expectedPattern = Pattern.compile(".*" + expectedRegex + ".*", Pattern.DOTALL);
     if (testScript) {
       List<String> copy = new ArrayList<String>(argList);
       copy.add("-f");
       copy.add(scriptFile.getAbsolutePath());
 
       String output = testCommandLineScript(copy, null, streamType);
-      boolean matches = output.contains(expectedPattern);
+
+      Matcher m = expectedPattern.matcher(output);
+      boolean matches = m.matches();
       if (shouldMatch != matches) {
         //failed
         fail("Output" + output + " should" +  (shouldMatch ? "" : " not") +
-            " contain " + expectedPattern);
+            " contain " + expectedRegex);
       }
     }
 
@@ -241,11 +259,12 @@ public class TestBeeLineWithArgs {
       copy.add(scriptFile.getAbsolutePath());
 
       String output = testCommandLineScript(copy, new StringBufferInputStream("!quit\n"), streamType);
-      boolean matches = output.contains(expectedPattern);
+      Matcher m = expectedPattern.matcher(output);
+      boolean matches = m.matches();
       if (shouldMatch != matches) {
         //failed
         fail("Output" + output + " should" +  (shouldMatch ? "" : " not") +
-            " contain " + expectedPattern);
+            " contain " + expectedRegex);
       }
     }
     scriptFile.delete();
@@ -717,7 +736,8 @@ public class TestBeeLineWithArgs {
   public void testQueryProgress() throws Throwable {
     final String SCRIPT_TEXT = "set hive.support.concurrency = false;\n" +
         "select count(*) from " + tableName + ";\n";
-    final String EXPECTED_PATTERN = "number of splits";
+    // Check for part of log message as well as part of progress information
+    final String EXPECTED_PATTERN = "Number of reducers determined to be.*ELAPSED TIME";
     testScriptFile(SCRIPT_TEXT, EXPECTED_PATTERN, true, getBaseArgs(miniHS2.getBaseJdbcURL()),
         OUTSTREAM.ERR);
   }
@@ -732,7 +752,8 @@ public class TestBeeLineWithArgs {
     final String SCRIPT_TEXT = "set hive.support.concurrency = false;\n" +
         "set hive.exec.parallel = true;\n" +
         "select count(*) from " + tableName + ";\n";
-    final String EXPECTED_PATTERN = "number of splits";
+    // Check for part of log message as well as part of progress information
+    final String EXPECTED_PATTERN = "Number of reducers determined to be.*ELAPSED TIME";
     testScriptFile(SCRIPT_TEXT, EXPECTED_PATTERN, true, getBaseArgs(miniHS2.getBaseJdbcURL()),
         OUTSTREAM.ERR);
   }
