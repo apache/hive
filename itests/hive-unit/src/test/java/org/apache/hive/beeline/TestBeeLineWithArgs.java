@@ -955,7 +955,7 @@ public class TestBeeLineWithArgs {
    */
   @Test
   public void testShowDbInPrompt() throws Throwable {
-    final String EXPECTED_PATTERN = " (default)>";
+    final String EXPECTED_PATTERN = " \\(default\\)>";
     List<String> argList = new ArrayList<String>();
     argList.add("--showDbInPrompt");
     argList.add("-u");
