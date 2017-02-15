@@ -950,7 +950,8 @@ public final class HiveDecimalWritable extends FastHiveDecimal
   @HiveDecimalWritableVersionV1
   public byte[] getInternalStorage() {
     if (!isSet()) {
-      throw new RuntimeException("no value set");
+      // don't break old callers that are trying to reuse storages
+      return new byte[0];
     }
 
     if (internalScratchLongs == null) {
