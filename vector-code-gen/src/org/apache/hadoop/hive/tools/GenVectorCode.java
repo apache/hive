@@ -796,6 +796,7 @@ public class GenVectorCode extends Task {
       {"FilterColumnBetweenDynamicValue", "string", ""},
       {"FilterColumnBetweenDynamicValue", "char", ""},
       {"FilterColumnBetweenDynamicValue", "varchar", ""},
+      {"FilterColumnBetweenDynamicValue", "date", ""},
       {"FilterColumnBetweenDynamicValue", "timestamp", ""},
 
       {"ColumnCompareColumn", "Equal", "long", "double", "=="},
@@ -1402,42 +1403,58 @@ public class GenVectorCode extends Task {
     String vectorType;
     String getPrimitiveMethod;
     String getValueMethod;
+    String conversionMethod;
 
     if (operandType.equals("long")) {
       defaultValue = "0";
       vectorType = "long";
       getPrimitiveMethod = "getLong";
       getValueMethod = "";
+      conversionMethod = "";
     } else if (operandType.equals("double")) {
       defaultValue = "0";
       vectorType = "double";
       getPrimitiveMethod = "getDouble";
       getValueMethod = "";
+      conversionMethod = "";
     } else if (operandType.equals("decimal")) {
       defaultValue = "null";
       vectorType = "HiveDecimal";
       getPrimitiveMethod = "getHiveDecimal";
       getValueMethod = "";
+      conversionMethod = "";
     } else if (operandType.equals("string")) {
       defaultValue = "null";
       vectorType = "byte[]";
       getPrimitiveMethod = "getString";
       getValueMethod = ".getBytes()";
+      conversionMethod = "";
     } else if (operandType.equals("char")) {
       defaultValue = "null";
       vectorType = "byte[]";
       getPrimitiveMethod = "getHiveChar";
       getValueMethod = ".getStrippedValue().getBytes()";  // Does vectorization use stripped char values?
+      conversionMethod = "";
     } else if (operandType.equals("varchar")) {
       defaultValue = "null";
       vectorType = "byte[]";
       getPrimitiveMethod = "getHiveVarchar";
       getValueMethod = ".getValue().getBytes()";
+      conversionMethod = "";
+    } else if (operandType.equals("date")) {
+      defaultValue = "0";
+      vectorType = "long";
+      getPrimitiveMethod = "getDate";
+      getValueMethod = "";
+      conversionMethod = "DateWritable.dateToDays";
+      // Special case - Date requires its own specific BetweenDynamicValue class, but derives from FilterLongColumnBetween
+      typeName = "Long";
     } else if (operandType.equals("timestamp")) {
       defaultValue = "null";
       vectorType = "Timestamp";
       getPrimitiveMethod = "getTimestamp";
       getValueMethod = "";
+      conversionMethod = "";
     } else {
       throw new IllegalArgumentException("Type " + operandType + " not supported");
     }
@@ -1451,6 +1468,7 @@ public class GenVectorCode extends Task {
     templateString = templateString.replaceAll("<VectorType>", vectorType);
     templateString = templateString.replaceAll("<GetPrimitiveMethod>", getPrimitiveMethod);
     templateString = templateString.replaceAll("<GetValueMethod>", getValueMethod);
+    templateString = templateString.replaceAll("<ConversionMethod>", conversionMethod);
 
     writeFile(templateFile.lastModified(), expressionOutputDirectory, expressionClassesDirectory,
         className, templateString);
