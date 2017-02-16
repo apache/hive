@@ -31,11 +31,27 @@ public abstract class VectorMapJoinFastHashTable implements VectorMapJoinHashTab
   protected float loadFactor;
   protected final int writeBuffersSize;
 
+  protected long estimatedKeyCount;
+
   protected int metricPutConflict;
   protected int largestNumberOfSteps;
   protected int keysAssigned;
   protected int resizeThreshold;
   protected int metricExpands;
+
+  // 2^30 (we cannot use Integer.MAX_VALUE which is 2^31-1).
+  public static int HIGHEST_INT_POWER_OF_2 = 1073741824;
+
+  public static int ONE_QUARTER_LIMIT = HIGHEST_INT_POWER_OF_2 / 4;
+  public static int ONE_SIXTH_LIMIT = HIGHEST_INT_POWER_OF_2 / 6;
+
+  public void throwExpandError(int limit, String dataTypeName) {
+    throw new RuntimeException(
+        "Vector MapJoin " + dataTypeName + " Hash Table cannot grow any more -- use a smaller container size. " +
+        "Current logical size is " + logicalHashBucketCount + " and " +
+        "the limit is " + limit + ". " +
+        "Estimated key count was " + (estimatedKeyCount == -1 ? "not available" : estimatedKeyCount) + ".");
+  }
 
   private static void validateCapacity(long capacity) {
     if (Long.bitCount(capacity) != 1) {
@@ -51,12 +67,14 @@ public abstract class VectorMapJoinFastHashTable implements VectorMapJoinHashTab
   }
 
   public VectorMapJoinFastHashTable(
-        int initialCapacity, float loadFactor, int writeBuffersSize) {
+        int initialCapacity, float loadFactor, int writeBuffersSize, long estimatedKeyCount) {
 
     initialCapacity = (Long.bitCount(initialCapacity) == 1)
         ? initialCapacity : nextHighestPowerOfTwo(initialCapacity);
 
     validateCapacity(initialCapacity);
+
+    this.estimatedKeyCount = estimatedKeyCount;
 
     logicalHashBucketCount = initialCapacity;
     logicalHashBucketMask = logicalHashBucketCount - 1;

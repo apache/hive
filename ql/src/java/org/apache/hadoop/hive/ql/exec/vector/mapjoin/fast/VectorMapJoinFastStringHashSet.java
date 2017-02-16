@@ -39,8 +39,8 @@ public class VectorMapJoinFastStringHashSet extends VectorMapJoinFastBytesHashSe
 
   public VectorMapJoinFastStringHashSet(
       boolean isOuterJoin,
-      int initialCapacity, float loadFactor, int writeBuffersSize) {
-    super(initialCapacity, loadFactor, writeBuffersSize);
+      int initialCapacity, float loadFactor, int writeBuffersSize, long estimatedKeyCount) {
+    super(initialCapacity, loadFactor, writeBuffersSize, estimatedKeyCount);
     stringCommon = new VectorMapJoinFastStringCommon(isOuterJoin);
   }
 }
