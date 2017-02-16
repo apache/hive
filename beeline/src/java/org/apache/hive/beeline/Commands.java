@@ -985,7 +985,7 @@ public class Commands {
             logThread.start();
             if (stmnt instanceof HiveStatement) {
               ((HiveStatement) stmnt).setInPlaceUpdateStream(
-                  new BeelineInPlaceUpdateStream(beeLine.getOutputStream())
+                  new BeelineInPlaceUpdateStream(beeLine.getErrorStream())
               );
             }
             hasResults = stmnt.execute(sql);
