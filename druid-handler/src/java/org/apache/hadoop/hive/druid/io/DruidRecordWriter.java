@@ -25,6 +25,7 @@ import io.druid.segment.realtime.plumber.Committers;
 import io.druid.timeline.DataSegment;
 import io.druid.timeline.partition.LinearShardSpec;
 import org.apache.calcite.adapter.druid.DruidTable;
+import org.apache.commons.io.FileUtils;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.Constants;
@@ -40,9 +41,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nullable;
+import java.io.File;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 
 public class DruidRecordWriter implements RecordWriter<NullWritable, DruidWritable>,
@@ -73,16 +76,19 @@ public class DruidRecordWriter implements RecordWriter<NullWritable, DruidWritab
           final Path segmentsDescriptorsDir,
           final FileSystem fileSystem
   ) {
+    File basePersistDir = new File(realtimeTuningConfig.getBasePersistDirectory(),
+            UUID.randomUUID().toString()
+    );
     this.tuningConfig = Preconditions
-            .checkNotNull(realtimeTuningConfig, "realtimeTuningConfig is null");
+            .checkNotNull(realtimeTuningConfig.withBasePersistDirectory(basePersistDir),
+                    "realtimeTuningConfig is null"
+            );
     this.dataSchema = Preconditions.checkNotNull(dataSchema, "data schema is null");
+
     appenderator = Appenderators
-            .createOffline(this.dataSchema,
-                    tuningConfig,
-                    new FireDepartmentMetrics(), dataSegmentPusher,
-                    DruidStorageHandlerUtils.JSON_MAPPER,
-                    DruidStorageHandlerUtils.INDEX_IO,
-                    DruidStorageHandlerUtils.INDEX_MERGER_V9
+            .createOffline(this.dataSchema, tuningConfig, new FireDepartmentMetrics(),
+                    dataSegmentPusher, DruidStorageHandlerUtils.JSON_MAPPER,
+                    DruidStorageHandlerUtils.INDEX_IO, DruidStorageHandlerUtils.INDEX_MERGER_V9
             );
     Preconditions.checkArgument(maxPartitionSize > 0, "maxPartitionSize need to be greater than 0");
     this.maxPartitionSize = maxPartitionSize;
@@ -243,6 +249,11 @@ public class DruidRecordWriter implements RecordWriter<NullWritable, DruidWritab
     } catch (InterruptedException e) {
       Throwables.propagate(e);
     } finally {
+      try {
+        FileUtils.deleteDirectory(tuningConfig.getBasePersistDirectory());
+      } catch (Exception e){
+        LOG.error("error cleaning of base persist directory", e);
+      }
       appenderator.close();
     }
   }
