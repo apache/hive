@@ -377,6 +377,13 @@ public class ReduceSinkDeDuplication extends Transform {
       if (movePartitionColTo == null) {
         return null;
       }
+      // HIVE-15848
+      // If child-RS has more than one DistinctColumn,
+      // can't make sure the second column order.
+      List<List<Integer>> childDistinctColumnIndices = cConf.getDistinctColumnIndices();
+      if (childDistinctColumnIndices != null && childDistinctColumnIndices.size() >= 2) {
+        return null;
+      }
       Integer moveNumDistKeyTo = checkNumDistributionKey(cConf.getNumDistributionKeys(),
           pConf.getNumDistributionKeys());
       return new int[] {moveKeyColTo, movePartitionColTo, moveRSOrderTo,
