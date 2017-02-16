@@ -2206,7 +2206,7 @@ public class VectorizationContext {
       cl = FilterDecimalColumnNotBetween.class;
     } else if (isDateFamily(colType) && !notKeywordPresent) {
       cl =  (hasDynamicValues ?
-          FilterLongColumnBetweenDynamicValue.class :
+          FilterDateColumnBetweenDynamicValue.class :
           FilterLongColumnBetween.class);
     } else if (isDateFamily(colType) && notKeywordPresent) {
       cl = FilterLongColumnNotBetween.class;
