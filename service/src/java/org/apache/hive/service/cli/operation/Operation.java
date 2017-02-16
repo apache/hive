@@ -205,20 +205,8 @@ public abstract class Operation {
     this.lastAccessTime = System.currentTimeMillis();
   }
 
-  public boolean isRunning() {
-    return OperationState.RUNNING.equals(state);
-  }
-
-  public boolean isFinished() {
-    return OperationState.FINISHED.equals(state);
-  }
-
-  public boolean isCanceled() {
-    return OperationState.CANCELED.equals(state);
-  }
-
-  public boolean isFailed() {
-    return OperationState.ERROR.equals(state);
+  public boolean isDone() {
+    return state.isTerminal();
   }
 
   protected void createOperationLog() {

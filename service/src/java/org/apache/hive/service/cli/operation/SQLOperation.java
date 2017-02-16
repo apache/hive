@@ -333,6 +333,7 @@ public class SQLOperation extends ExecuteStatementOperation {
             }
             runQuery();
           } catch (HiveSQLException e) {
+            // TODO: why do we invent our own error path op top of the one from Future.get?
             setOperationException(e);
             LOG.error("Error running hive query: ", e);
           } finally {
@@ -348,8 +349,7 @@ public class SQLOperation extends ExecuteStatementOperation {
       } catch (Exception e) {
         setOperationException(new HiveSQLException(e));
         LOG.error("Error running hive query as user : " + currentUGI.getShortUserName(), e);
-      }
-      finally {
+      } finally {
         /**
          * We'll cache the ThreadLocal RawStore object for this background thread for an orderly cleanup
          * when this thread is garbage collected later.

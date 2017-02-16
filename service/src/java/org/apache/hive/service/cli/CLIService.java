@@ -403,7 +403,7 @@ public class CLIService extends CompositeService implements ICLIService {
    */
   @Override
   public OperationHandle getPrimaryKeys(SessionHandle sessionHandle,
-		  String catalog, String schema, String table)
+      String catalog, String schema, String table)
           throws HiveSQLException {
     OperationHandle opHandle = sessionManager.getSession(sessionHandle)
         .getPrimaryKeys(catalog, schema, table);
@@ -416,9 +416,9 @@ public class CLIService extends CompositeService implements ICLIService {
    */
   @Override
   public OperationHandle getCrossReference(SessionHandle sessionHandle,
-		  String primaryCatalog,
-	      String primarySchema, String primaryTable, String foreignCatalog,
-	      String foreignSchema, String foreignTable)
+      String primaryCatalog,
+        String primarySchema, String primaryTable, String foreignCatalog,
+        String foreignSchema, String foreignTable)
           throws HiveSQLException {
     OperationHandle opHandle = sessionManager.getSession(sessionHandle)
         .getCrossReference(primaryCatalog, primarySchema, primaryTable,
@@ -459,6 +459,8 @@ public class CLIService extends CompositeService implements ICLIService {
         // The background operation thread was cancelled
         LOG.trace(opHandle + ": The background operation was cancelled", e);
       } catch (ExecutionException e) {
+        // Note: Hive ops do not use the normal Future failure path, so this will not happen
+        //       in case of actual failure; the Future will just be done.
         // The background operation thread was aborted
         LOG.warn(opHandle + ": The background operation was aborted", e);
       } catch (InterruptedException e) {
@@ -472,23 +474,28 @@ public class CLIService extends CompositeService implements ICLIService {
     return opStatus;
   }
 
+  private static final long PROGRESS_MAX_WAIT_NS = 30 * 1000000000l;
   private JobProgressUpdate progressUpdateLog(boolean isProgressLogRequested, Operation operation) {
-    if (isProgressLogRequested && canProvideProgressLog()) {
-        if (OperationType.EXECUTE_STATEMENT.equals(operation.getType())) {
-          SessionState sessionState = operation.getParentSession().getSessionState();
-          try {
-            while (sessionState.getProgressMonitor() == null && !operation.isFinished()) {
-              Thread.sleep(10L); // sleep for 10 ms
-            }
-          } catch (InterruptedException e) {
-            LOG.warn("Error while getting progress update", e);
-          }
-          if (sessionState.getProgressMonitor() != null) {
-            return new JobProgressUpdate(sessionState.getProgressMonitor());
-          }
-        }
+    if (!isProgressLogRequested || !canProvideProgressLog()
+        || !OperationType.EXECUTE_STATEMENT.equals(operation.getType())) {
+      return new JobProgressUpdate(ProgressMonitor.NULL);
     }
-    return new JobProgressUpdate(ProgressMonitor.NULL);
+    
+    SessionState sessionState = operation.getParentSession().getSessionState();
+    long startTime = System.nanoTime();
+    int timeOutMs = 8;
+    try {
+      while (sessionState.getProgressMonitor() == null && !operation.isDone()) {
+        long remainingMs = (PROGRESS_MAX_WAIT_NS - (System.nanoTime() - startTime)) / 1000000l;
+        if (remainingMs <= 0) return new JobProgressUpdate(ProgressMonitor.NULL);
+        Thread.sleep(Math.min(remainingMs, timeOutMs));
+        timeOutMs <<= 1;
+      }
+    } catch (InterruptedException e) {
+      LOG.warn("Error while getting progress update", e);
+    }
+    ProgressMonitor pm = sessionState.getProgressMonitor();
+    return new JobProgressUpdate(pm != null ? pm : ProgressMonitor.NULL);
   }
 
   private boolean canProvideProgressLog() {
