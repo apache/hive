@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.druid.io;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -51,6 +52,7 @@ import org.apache.hadoop.mapreduce.JobContext;
 import org.apache.hadoop.mapreduce.RecordReader;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
+import org.jboss.netty.handler.codec.http.HttpMethod;
 import org.joda.time.Interval;
 import org.joda.time.Period;
 import org.joda.time.chrono.ISOChronology;
@@ -60,23 +62,28 @@ import org.slf4j.LoggerFactory;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonMappingException;
+import com.google.common.collect.Lists;
 import com.metamx.common.lifecycle.Lifecycle;
 import com.metamx.http.client.HttpClient;
 import com.metamx.http.client.HttpClientConfig;
 import com.metamx.http.client.HttpClientInit;
+import com.metamx.http.client.Request;
 
 import io.druid.query.BaseQuery;
 import io.druid.query.Druids;
 import io.druid.query.Druids.SegmentMetadataQueryBuilder;
 import io.druid.query.Druids.SelectQueryBuilder;
 import io.druid.query.Druids.TimeBoundaryQueryBuilder;
+import io.druid.query.LocatedSegmentDescriptor;
 import io.druid.query.Query;
 import io.druid.query.Result;
+import io.druid.query.SegmentDescriptor;
 import io.druid.query.metadata.metadata.SegmentAnalysis;
 import io.druid.query.metadata.metadata.SegmentMetadataQuery;
 import io.druid.query.select.PagingSpec;
 import io.druid.query.select.SelectQuery;
 import io.druid.query.spec.MultipleIntervalSegmentSpec;
+import io.druid.query.spec.MultipleSpecificSegmentSpec;
 import io.druid.query.timeboundary.TimeBoundaryQuery;
 import io.druid.query.timeboundary.TimeBoundaryResultValue;
 
@@ -143,12 +150,17 @@ public class DruidQueryBasedInputFormat extends InputFormat<NullWritable, DruidW
       case Query.TIMESERIES:
       case Query.TOPN:
       case Query.GROUP_BY:
-        return new HiveDruidSplit[] { new HiveDruidSplit(address,
-                deserializeSerialize(druidQuery), paths[0]) };
+        return new HiveDruidSplit[] { new HiveDruidSplit(deserializeSerialize(druidQuery),
+                paths[0], new String[] {address}) };
       case Query.SELECT:
         SelectQuery selectQuery = DruidStorageHandlerUtils.JSON_MAPPER.readValue(
                 druidQuery, SelectQuery.class);
-        return splitSelectQuery(conf, address, selectQuery, paths[0]);
+        boolean distributed = HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_DRUID_SELECT_DISTRIBUTE);
+        if (distributed) {
+          return distributeSelectQuery(conf, address, selectQuery, paths[0]);
+        } else {
+          return splitSelectQuery(conf, address, selectQuery, paths[0]);
+        }
       default:
         throw new IOException("Druid query type not recognized");
     }
@@ -166,8 +178,83 @@ public class DruidQueryBasedInputFormat extends InputFormat<NullWritable, DruidW
     return DruidStorageHandlerUtils.JSON_MAPPER.writeValueAsString(builder.build());
   }
 
+  /* New method that distributes the Select query by creating splits containing
+   * information about different Druid nodes that have the data for the given
+   * query. */
+  private static HiveDruidSplit[] distributeSelectQuery(Configuration conf, String address,
+      SelectQuery query, Path dummyPath) throws IOException {
+    // If it has a limit, we use it and we do not distribute the query
+    final boolean isFetch = query.getContextBoolean(Constants.DRUID_QUERY_FETCH, false);
+    if (isFetch) {
+      return new HiveDruidSplit[] { new HiveDruidSplit(
+              DruidStorageHandlerUtils.JSON_MAPPER.writeValueAsString(query), dummyPath,
+              new String[]{address} ) };
+    }
+
+    // Properties from configuration
+    final int numConnection = HiveConf.getIntVar(conf,
+            HiveConf.ConfVars.HIVE_DRUID_NUM_HTTP_CONNECTION);
+    final Period readTimeout = new Period(
+            HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_DRUID_HTTP_READ_TIMEOUT));
+
+    // Create request to obtain nodes that are holding data for the given datasource and intervals
+    final Lifecycle lifecycle = new Lifecycle();
+    final HttpClient client = HttpClientInit.createClient(
+            HttpClientConfig.builder().withNumConnections(numConnection)
+                    .withReadTimeout(readTimeout.toStandardDuration()).build(), lifecycle);
+    try {
+      lifecycle.start();
+    } catch (Exception e) {
+      LOG.error("Lifecycle start issue");
+      throw new IOException(org.apache.hadoop.util.StringUtils.stringifyException(e));
+    }
+    final String intervals =
+            StringUtils.join(query.getIntervals(), ","); // Comma-separated intervals without brackets
+    final String request = String.format(
+            "http://%s/druid/v2/datasources/%s/candidates?intervals=%s",
+            address, query.getDataSource().getNames().get(0), intervals);
+    final InputStream response;
+    try {
+      response = DruidStorageHandlerUtils.submitRequest(client, new Request(HttpMethod.GET, new URL(request)));
+    } catch (Exception e) {
+      lifecycle.stop();
+      throw new IOException(org.apache.hadoop.util.StringUtils.stringifyException(e));
+    }
+
+    // Retrieve results
+    final List<LocatedSegmentDescriptor> segmentDescriptors;
+    try {
+      segmentDescriptors = DruidStorageHandlerUtils.JSON_MAPPER.readValue(response,
+              new TypeReference<List<LocatedSegmentDescriptor>>() {});
+    } catch (Exception e) {
+      response.close();
+      throw new IOException(org.apache.hadoop.util.StringUtils.stringifyException(e));
+    } finally {
+      lifecycle.stop();
+    }
+
+    // Create one input split for each segment
+    final int numSplits = segmentDescriptors.size();
+    final HiveDruidSplit[] splits = new HiveDruidSplit[segmentDescriptors.size()];
+    for (int i = 0; i < numSplits; i++) {
+      final LocatedSegmentDescriptor locatedSD = segmentDescriptors.get(i);
+      final String[] hosts = new String[locatedSD.getLocations().size()];
+      for (int j = 0; j < locatedSD.getLocations().size(); j++) {
+        hosts[j] = locatedSD.getLocations().get(j).getHost();
+      }
+      // Create partial Select query
+      final SegmentDescriptor newSD = new SegmentDescriptor(
+              locatedSD.getInterval(), locatedSD.getVersion(), locatedSD.getPartitionNumber());
+      final SelectQuery partialQuery = query.withQuerySegmentSpec(
+              new MultipleSpecificSegmentSpec(Lists.newArrayList(newSD)));
+      splits[i] = new HiveDruidSplit(DruidStorageHandlerUtils.JSON_MAPPER.writeValueAsString(partialQuery),
+              dummyPath, hosts);
+    }
+    return splits;
+  }
+
   /* Method that splits Select query depending on the threshold so read can be
-   * parallelized */
+   * parallelized. We will only contact the Druid broker to obtain all results. */
   private static HiveDruidSplit[] splitSelectQuery(Configuration conf, String address,
           SelectQuery query, Path dummyPath
   ) throws IOException {
@@ -182,7 +269,8 @@ public class DruidQueryBasedInputFormat extends InputFormat<NullWritable, DruidW
     if (isFetch) {
       // If it has a limit, we use it and we do not split the query
       return new HiveDruidSplit[] { new HiveDruidSplit(
-              address, DruidStorageHandlerUtils.JSON_MAPPER.writeValueAsString(query), dummyPath) };
+              DruidStorageHandlerUtils.JSON_MAPPER.writeValueAsString(query), dummyPath,
+              new String[] {address} ) };
     }
 
     // We do not have the number of rows, thus we need to execute a
@@ -200,7 +288,8 @@ public class DruidQueryBasedInputFormat extends InputFormat<NullWritable, DruidW
     try {
       lifecycle.start();
     } catch (Exception e) {
-      LOG.error("Lifecycle start issue", e);
+      LOG.error("Lifecycle start issue");
+      throw new IOException(org.apache.hadoop.util.StringUtils.stringifyException(e));
     }
     InputStream response;
     try {
@@ -231,7 +320,8 @@ public class DruidQueryBasedInputFormat extends InputFormat<NullWritable, DruidW
     if (metadataList.isEmpty()) {
       // There are no rows for that time range, we can submit query as it is
       return new HiveDruidSplit[] { new HiveDruidSplit(
-              address, DruidStorageHandlerUtils.JSON_MAPPER.writeValueAsString(query), dummyPath) };
+              DruidStorageHandlerUtils.JSON_MAPPER.writeValueAsString(query), dummyPath,
+              new String[] {address} ) };
     }
     if (metadataList.size() != 1) {
       throw new IOException("Information about segments should have been merged");
@@ -242,9 +332,9 @@ public class DruidQueryBasedInputFormat extends InputFormat<NullWritable, DruidW
     query = query.withPagingSpec(PagingSpec.newSpec(Integer.MAX_VALUE));
     if (numRows <= selectThreshold) {
       // We are not going to split it
-      return new HiveDruidSplit[] { new HiveDruidSplit(address,
-              DruidStorageHandlerUtils.JSON_MAPPER.writeValueAsString(query), dummyPath
-      ) };
+      return new HiveDruidSplit[] { new HiveDruidSplit(
+              DruidStorageHandlerUtils.JSON_MAPPER.writeValueAsString(query), dummyPath,
+              new String[] {address} ) };
     }
 
     // If the query does not specify a timestamp, we obtain the total time using
@@ -266,12 +356,8 @@ public class DruidQueryBasedInputFormat extends InputFormat<NullWritable, DruidW
       try {
         lifecycle.start();
       } catch (Exception e) {
-        LOG.error("Lifecycle start issue", e);
-      }
-      try {
-        lifecycle.start();
-      } catch (Exception e) {
-        LOG.error("Lifecycle start issue", e);
+        LOG.error("Lifecycle start issue");
+        throw new IOException(org.apache.hadoop.util.StringUtils.stringifyException(e));
       }
       try {
         response = DruidStorageHandlerUtils.submitRequest(client,
@@ -318,9 +404,9 @@ public class DruidQueryBasedInputFormat extends InputFormat<NullWritable, DruidW
       // Create partial Select query
       final SelectQuery partialQuery = query.withQuerySegmentSpec(
               new MultipleIntervalSegmentSpec(newIntervals.get(i)));
-      splits[i] = new HiveDruidSplit(address,
-              DruidStorageHandlerUtils.JSON_MAPPER.writeValueAsString(partialQuery), dummyPath
-      );
+      splits[i] = new HiveDruidSplit(
+              DruidStorageHandlerUtils.JSON_MAPPER.writeValueAsString(partialQuery), dummyPath,
+              new String[] {address});
     }
     return splits;
   }

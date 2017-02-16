@@ -143,8 +143,7 @@ public class TestHiveDruidQueryBasedInputFormat extends TestCase {
           + " \"descending\": \"true\", "
           + " \"intervals\": [ \"2012-01-01T00:00:00.000/2012-01-03T00:00:00.000\" ]}";
   private static final String TIMESERIES_QUERY_SPLIT =
-      "[HiveDruidSplit{localhost:8082, "
-          + "{\"queryType\":\"timeseries\","
+      "[HiveDruidSplit{{\"queryType\":\"timeseries\","
           + "\"dataSource\":{\"type\":\"table\",\"name\":\"sample_datasource\"},"
           + "\"intervals\":{\"type\":\"LegacySegmentSpec\",\"intervals\":[\"2012-01-01T00:00:00.000-08:00/2012-01-03T00:00:00.000-08:00\"]},"
           + "\"descending\":true,"
@@ -152,7 +151,7 @@ public class TestHiveDruidQueryBasedInputFormat extends TestCase {
           + "\"granularity\":{\"type\":\"duration\",\"duration\":86400000,\"origin\":\"1969-12-31T16:00:00.000-08:00\"},"
           + "\"aggregations\":[],"
           + "\"postAggregations\":[],"
-          + "\"context\":null}}]";
+          + "\"context\":null}, [localhost:8082]}]";
 
   private static final String TOPN_QUERY =
       "{  \"queryType\": \"topN\", "
@@ -177,8 +176,7 @@ public class TestHiveDruidQueryBasedInputFormat extends TestCase {
           + "  \"2013-08-31T00:00:00.000/2013-09-03T00:00:00.000\" "
           + " ]}";
   private static final String TOPN_QUERY_SPLIT =
-      "[HiveDruidSplit{localhost:8082, "
-          + "{\"queryType\":\"topN\","
+      "[HiveDruidSplit{{\"queryType\":\"topN\","
           + "\"dataSource\":{\"type\":\"table\",\"name\":\"sample_data\"},"
           + "\"dimension\":{\"type\":\"LegacyDimensionSpec\",\"dimension\":\"sample_dim\",\"outputName\":\"sample_dim\"},"
           + "\"metric\":{\"type\":\"LegacyTopNMetricSpec\",\"metric\":\"count\"},"
@@ -190,7 +188,7 @@ public class TestHiveDruidQueryBasedInputFormat extends TestCase {
           + "{\"type\":\"doubleSum\",\"name\":\"some_metric\",\"fieldName\":\"some_metric\"}],"
           + "\"postAggregations\":[],"
           + "\"context\":null,"
-          + "\"descending\":false}}]";
+          + "\"descending\":false}, [localhost:8082]}]";
 
   private static final String GROUP_BY_QUERY =
       "{  \"queryType\": \"groupBy\", "
@@ -208,8 +206,7 @@ public class TestHiveDruidQueryBasedInputFormat extends TestCase {
           + " \"intervals\": [ \"2012-01-01T00:00:00.000/2012-01-03T00:00:00.000\" ]"
           + " }";
   private static final String GROUP_BY_QUERY_SPLIT =
-      "[HiveDruidSplit{localhost:8082, "
-          + "{\"queryType\":\"groupBy\","
+      "[HiveDruidSplit{{\"queryType\":\"groupBy\","
           + "\"dataSource\":{\"type\":\"table\",\"name\":\"sample_datasource\"},"
           + "\"intervals\":{\"type\":\"LegacySegmentSpec\",\"intervals\":[\"2012-01-01T00:00:00.000-08:00/2012-01-03T00:00:00.000-08:00\"]},"
           + "\"filter\":null,"
@@ -223,7 +220,7 @@ public class TestHiveDruidQueryBasedInputFormat extends TestCase {
           + "\"limitSpec\":{\"type\":\"default\",\"columns\":[{\"dimension\":\"country\",\"direction\":\"ascending\",\"dimensionOrder\":{\"type\":\"lexicographic\"}},"
           + "{\"dimension\":\"data_transfer\",\"direction\":\"ascending\",\"dimensionOrder\":{\"type\":\"lexicographic\"}}],\"limit\":5000},"
           + "\"context\":null,"
-          + "\"descending\":false}}]";
+          + "\"descending\":false}, [localhost:8082]}]";
 
   private static final String SELECT_QUERY =
       "{   \"queryType\": \"select\",  "
@@ -235,8 +232,7 @@ public class TestHiveDruidQueryBasedInputFormat extends TestCase {
           + " \"pagingSpec\":{\"pagingIdentifiers\": {}, \"threshold\":5}, "
           + " \"context\":{\"druid.query.fetch\":true}}";
   private static final String SELECT_QUERY_SPLIT =
-      "[HiveDruidSplit{localhost:8082, "
-          + "{\"queryType\":\"select\","
+      "[HiveDruidSplit{{\"queryType\":\"select\","
           + "\"dataSource\":{\"type\":\"table\",\"name\":\"wikipedia\"},"
           + "\"intervals\":{\"type\":\"LegacySegmentSpec\",\"intervals\":[\"2013-01-01T00:00:00.000-08:00/2013-01-02T00:00:00.000-08:00\"]},"
           + "\"descending\":false,"
@@ -252,7 +248,7 @@ public class TestHiveDruidQueryBasedInputFormat extends TestCase {
           + "{\"type\":\"LegacyDimensionSpec\",\"dimension\":\"user\",\"outputName\":\"user\"}],"
           + "\"metrics\":[\"count\",\"added\",\"delta\",\"variation\",\"deleted\"],"
           + "\"pagingSpec\":{\"pagingIdentifiers\":{},\"threshold\":5,\"fromNext\":false},"
-          + "\"context\":{\"druid.query.fetch\":true}}}]";
+          + "\"context\":{\"druid.query.fetch\":true}}, [localhost:8082]}]";
 
   @Test
   public void testTimeZone() throws Exception {
@@ -289,6 +285,7 @@ public class TestHiveDruidQueryBasedInputFormat extends TestCase {
     conf.set(Constants.DRUID_DATA_SOURCE, dataSource);
     conf.set(Constants.DRUID_QUERY_JSON, jsonQuery);
     conf.set(Constants.DRUID_QUERY_TYPE, queryType);
+    conf.setBoolean(HiveConf.ConfVars.HIVE_DRUID_SELECT_DISTRIBUTE.varname, false);
     return conf;
   }
 
