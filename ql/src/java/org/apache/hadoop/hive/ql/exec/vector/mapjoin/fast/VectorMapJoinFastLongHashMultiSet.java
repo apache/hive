@@ -96,8 +96,8 @@ public class VectorMapJoinFastLongHashMultiSet
 
   public VectorMapJoinFastLongHashMultiSet(
       boolean minMaxEnabled, boolean isOuterJoin, HashTableKeyType hashTableKeyType,
-      int initialCapacity, float loadFactor, int writeBuffersSize) {
+      int initialCapacity, float loadFactor, int writeBuffersSize, long estimatedKeyCount) {
     super(minMaxEnabled, isOuterJoin, hashTableKeyType,
-        initialCapacity, loadFactor, writeBuffersSize);
+        initialCapacity, loadFactor, writeBuffersSize, estimatedKeyCount);
   }
 }

@@ -48,8 +48,8 @@ public class VectorMapJoinFastMultiKeyHashMultiSet
 
   public VectorMapJoinFastMultiKeyHashMultiSet(
         boolean isOuterJoin,
-        int initialCapacity, float loadFactor, int writeBuffersSize) {
-    super(initialCapacity, loadFactor, writeBuffersSize);
+        int initialCapacity, float loadFactor, int writeBuffersSize, long estimatedKeyCount) {
+    super(initialCapacity, loadFactor, writeBuffersSize, estimatedKeyCount);
   }
 
 }

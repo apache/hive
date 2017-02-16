@@ -39,7 +39,7 @@ public class TestVectorMapJoinFastLongHashMultiSet extends CommonFastHashTable {
 
     VectorMapJoinFastLongHashMultiSet map =
         new VectorMapJoinFastLongHashMultiSet(
-            false, false, HashTableKeyType.LONG, CAPACITY, LOAD_FACTOR, WB_SIZE);
+            false, false, HashTableKeyType.LONG, CAPACITY, LOAD_FACTOR, WB_SIZE, -1);
 
     VerifyFastLongHashMultiSet verifyTable = new VerifyFastLongHashMultiSet();
 
@@ -66,7 +66,7 @@ public class TestVectorMapJoinFastLongHashMultiSet extends CommonFastHashTable {
 
     VectorMapJoinFastLongHashMultiSet map =
         new VectorMapJoinFastLongHashMultiSet(
-            false, false, HashTableKeyType.LONG, CAPACITY, LOAD_FACTOR, WB_SIZE);
+            false, false, HashTableKeyType.LONG, CAPACITY, LOAD_FACTOR, WB_SIZE, -1);
 
     VerifyFastLongHashMultiSet verifyTable = new VerifyFastLongHashMultiSet();
 
@@ -94,7 +94,7 @@ public class TestVectorMapJoinFastLongHashMultiSet extends CommonFastHashTable {
 
     VectorMapJoinFastLongHashMultiSet map =
         new VectorMapJoinFastLongHashMultiSet(
-            false, false, HashTableKeyType.LONG, CAPACITY, LOAD_FACTOR, WB_SIZE);
+            false, false, HashTableKeyType.LONG, CAPACITY, LOAD_FACTOR, WB_SIZE, -1);
 
     VerifyFastLongHashMultiSet verifyTable = new VerifyFastLongHashMultiSet();
 
@@ -128,7 +128,7 @@ public class TestVectorMapJoinFastLongHashMultiSet extends CommonFastHashTable {
     // Make sure the map does not expand; should be able to find space.
     VectorMapJoinFastLongHashMultiSet map =
         new VectorMapJoinFastLongHashMultiSet(
-            false, false, HashTableKeyType.LONG, CAPACITY, 1f, WB_SIZE);
+            false, false, HashTableKeyType.LONG, CAPACITY, 1f, WB_SIZE, -1);
 
     VerifyFastLongHashMultiSet verifyTable = new VerifyFastLongHashMultiSet();
 
@@ -169,7 +169,7 @@ public class TestVectorMapJoinFastLongHashMultiSet extends CommonFastHashTable {
     // Start with capacity 1; make sure we expand on every put.
     VectorMapJoinFastLongHashMultiSet map =
         new VectorMapJoinFastLongHashMultiSet(
-            false, false, HashTableKeyType.LONG, 1, 0.0000001f, WB_SIZE);
+            false, false, HashTableKeyType.LONG, 1, 0.0000001f, WB_SIZE, -1);
 
     VerifyFastLongHashMultiSet verifyTable = new VerifyFastLongHashMultiSet();
 
@@ -227,7 +227,7 @@ public class TestVectorMapJoinFastLongHashMultiSet extends CommonFastHashTable {
     // Use a large capacity that doesn't require expansion, yet.
     VectorMapJoinFastLongHashMultiSet map =
         new VectorMapJoinFastLongHashMultiSet(
-            false, false, HashTableKeyType.LONG, LARGE_CAPACITY, LOAD_FACTOR, LARGE_WB_SIZE);
+            false, false, HashTableKeyType.LONG, LARGE_CAPACITY, LOAD_FACTOR, LARGE_WB_SIZE, -1);
 
     VerifyFastLongHashMultiSet verifyTable = new VerifyFastLongHashMultiSet();
 
@@ -242,7 +242,7 @@ public class TestVectorMapJoinFastLongHashMultiSet extends CommonFastHashTable {
     // Use a large capacity that doesn't require expansion, yet.
     VectorMapJoinFastLongHashMultiSet map =
         new VectorMapJoinFastLongHashMultiSet(
-            false, false, HashTableKeyType.LONG, MODERATE_CAPACITY, LOAD_FACTOR, MODERATE_WB_SIZE);
+            false, false, HashTableKeyType.LONG, MODERATE_CAPACITY, LOAD_FACTOR, MODERATE_WB_SIZE, -1);
 
     VerifyFastLongHashMultiSet verifyTable = new VerifyFastLongHashMultiSet();
 

@@ -92,8 +92,8 @@ public abstract class VectorMapJoinFastBytesHashMultiSet
   }
 
   public VectorMapJoinFastBytesHashMultiSet(
-      int initialCapacity, float loadFactor, int writeBuffersSize) {
-    super(initialCapacity, loadFactor, writeBuffersSize);
+      int initialCapacity, float loadFactor, int writeBuffersSize, long estimatedKeyCount) {
+    super(initialCapacity, loadFactor, writeBuffersSize, estimatedKeyCount);
 
     keyStore = new VectorMapJoinFastKeyStore(writeBuffersSize);
   }
