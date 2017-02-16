@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.common;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -53,4 +54,57 @@ public class TestStatsSetupConst {
     assertEquals("{\"BASIC_STATS\":\"true\"}",params.get(StatsSetupConst.COLUMN_STATS_ACCURATE));
   }
 
+  @Test
+  public void testSetBasicStatsState_falseIsAbsent() {
+    Map<String, String> params=new HashMap<>();
+    StatsSetupConst.setBasicStatsState(params, String.valueOf(true));
+    StatsSetupConst.setBasicStatsState(params, String.valueOf(false));
+    assertNull(params.get(StatsSetupConst.COLUMN_STATS_ACCURATE));
+  }
+
+  // earlier implementation have quoted boolean values...so the new implementation should preserve this
+  @Test
+  public void testStatColumnEntriesCompat() {
+    Map<String, String> params0=new HashMap<>();
+    StatsSetupConst.setBasicStatsState(params0, String.valueOf(true));
+    StatsSetupConst.setColumnStatsState(params0, Lists.newArrayList("Foo"));
+
+    assertEquals("{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"Foo\":\"true\"}}",params0.get(StatsSetupConst.COLUMN_STATS_ACCURATE));
+  }
+
+  @Test
+  public void testColumnEntries_orderIndependence() {
+    Map<String, String> params0=new HashMap<>();
+    StatsSetupConst.setBasicStatsState(params0, String.valueOf(true));
+    StatsSetupConst.setColumnStatsState(params0, Lists.newArrayList("Foo","Bar"));
+    Map<String, String> params1=new HashMap<>();
+    StatsSetupConst.setColumnStatsState(params1, Lists.newArrayList("Bar","Foo"));
+    StatsSetupConst.setBasicStatsState(params1, String.valueOf(true));
+
+    assertEquals(params0.get(StatsSetupConst.COLUMN_STATS_ACCURATE),params1.get(StatsSetupConst.COLUMN_STATS_ACCURATE));
+  }
+
+  @Test
+  public void testColumnEntries_orderIndependence2() {
+    Map<String, String> params0=new HashMap<>();
+    // in case jackson is able to deserialize...it may use a different implementation for the map - which may not preserve order
+    StatsSetupConst.setBasicStatsState(params0, String.valueOf(true));
+    StatsSetupConst.setColumnStatsState(params0, Lists.newArrayList("year"));
+    StatsSetupConst.setColumnStatsState(params0, Lists.newArrayList("year","month"));
+    Map<String, String> params1=new HashMap<>();
+    StatsSetupConst.setColumnStatsState(params1, Lists.newArrayList("month","year"));
+    StatsSetupConst.setBasicStatsState(params1, String.valueOf(true));
+
+    System.out.println(params0.get(StatsSetupConst.COLUMN_STATS_ACCURATE));
+    assertEquals(params0.get(StatsSetupConst.COLUMN_STATS_ACCURATE),params1.get(StatsSetupConst.COLUMN_STATS_ACCURATE));
+  }
+
+  // FIXME: current objective is to keep the previous outputs...but this is possibly bad..
+  @Test
+  public void testColumnEntries_areKept_whenBasicIsAbsent() {
+    Map<String, String> params=new HashMap<>();
+    StatsSetupConst.setBasicStatsState(params, String.valueOf(false));
+    StatsSetupConst.setColumnStatsState(params, Lists.newArrayList("Foo"));
+    assertEquals("{\"COLUMN_STATS\":{\"Foo\":\"true\"}}",params.get(StatsSetupConst.COLUMN_STATS_ACCURATE));
+  }
 }
