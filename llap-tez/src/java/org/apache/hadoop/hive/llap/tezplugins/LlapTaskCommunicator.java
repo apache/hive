@@ -317,8 +317,22 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
     nodesForQuery.add(nodeId);
 
     sourceStateTracker.registerTaskForStateUpdates(host, port, taskSpec.getInputs());
-    FragmentRuntimeInfo fragmentRuntimeInfo = sourceStateTracker.getFragmentRuntimeInfo(
-        taskSpec.getVertexName(), taskSpec.getTaskAttemptID().getTaskID().getId(), priority);
+    FragmentRuntimeInfo fragmentRuntimeInfo;
+    try {
+      fragmentRuntimeInfo = sourceStateTracker.getFragmentRuntimeInfo(
+          taskSpec.getVertexName(),
+          taskSpec.getTaskAttemptID().getTaskID().getId(), priority);
+    } catch (Exception e) {
+      LOG.error(
+          "Error while trying to get runtimeFragmentInfo for fragmentId={}, containerId={}, currentQI={}, currentQueryId={}",
+          taskSpec.getTaskAttemptID(), containerId, currentQueryIdentifierProto,
+          currentHiveQueryId, e);
+      if (e instanceof RuntimeException) {
+        throw (RuntimeException) e;
+      } else {
+        throw new RuntimeException(e);
+      }
+    }
     SubmitWorkRequestProto requestProto;
 
     try {

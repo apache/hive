@@ -120,8 +120,8 @@ public class SourceStateTracker {
     SourceInfo sourceInfo = getSourceInfo(sourceName);
     // Update source info if the state is SUCCEEDED
     if (sourceState == VertexState.SUCCEEDED) {
-      sourceInfo.numCompletedTasks = taskCommunicatorContext.getVertexCompletedTaskCount(sourceName);
-      sourceInfo.numTasks = taskCommunicatorContext.getVertexTotalTaskCount(sourceName);
+      sourceInfo.numCompletedTasks = getVertexCompletedTaskCount(sourceName);
+      sourceInfo.numTasks = getVertexTotalTaskCount(sourceName);
     }
     sourceInfo.lastKnownState = sourceState;
     // Checking state per node for future failure handling scenarios, where an update
@@ -172,8 +172,9 @@ public class SourceStateTracker {
       completedTaskCount.add(sourceInfo.numCompletedTasks);
       totalTaskCount.add(sourceInfo.numTasks);
     } else {
-      completedTaskCount.add(taskCommunicatorContext.getVertexCompletedTaskCount(sourceName));
-      int totalCount =taskCommunicatorContext.getVertexTotalTaskCount(sourceName);
+      completedTaskCount.add(getVertexCompletedTaskCount(sourceName));
+      int totalCount = getVertexTotalTaskCount(sourceName);
+
       // Uninitialized vertices will report count as 0.
       totalCount = totalCount == -1 ? 0 : totalCount;
       totalTaskCount.add(totalCount);
@@ -271,6 +272,41 @@ public class SourceStateTracker {
           VertexState.RUNNING, VertexState.SUCCEEDED));
     }
   }
+
+  private int getVertexCompletedTaskCount(String vname) {
+    int completedTaskCount;
+    try {
+      completedTaskCount =
+          taskCommunicatorContext.getVertexCompletedTaskCount(vname);
+      return completedTaskCount;
+    } catch (Exception e) {
+      LOG.error("Failed to get vertex completed task count for sourceName={}",
+          vname);
+      if (e instanceof RuntimeException) {
+        throw (RuntimeException) e;
+      } else {
+        throw new RuntimeException(e);
+      }
+    }
+  }
+
+  private int getVertexTotalTaskCount(String vname) {
+    int totalCount;
+    try {
+      totalCount =
+          taskCommunicatorContext.getVertexTotalTaskCount(vname);
+      return totalCount;
+    } catch (Exception e) {
+      LOG.error("Failed to get total task count for sourceName={}", vname);
+      if (e instanceof RuntimeException) {
+        throw (RuntimeException)e;
+      } else {
+        throw new RuntimeException(e);
+      }
+    }
+  }
+
+
 
 
 
