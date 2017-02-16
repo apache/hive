@@ -529,6 +529,22 @@ public class LlapTaskSchedulerService extends TaskScheduler {
     try {
       dagRunning = false;
       dagStats = new StatsPerDag();
+      int pendingCount = 0;
+      for (Entry<Priority, List<TaskInfo>> entry : pendingTasks.entrySet()) {
+        if (entry.getValue() != null) {
+          pendingCount += entry.getValue().size();
+        }
+      }
+      int runningCount = 0;
+      for (Entry<Integer, TreeSet<TaskInfo>> entry : runningTasks.entrySet()) {
+        if (entry.getValue() != null) {
+          runningCount += entry.getValue().size();
+        }
+      }
+
+      LOG.info(
+          "DAG reset. Current knownTaskCount={}, pendingTaskCount={}, runningTaskCount={}",
+          knownTasks.size(), pendingCount, runningCount);
     } finally {
       writeLock.unlock();
     }
