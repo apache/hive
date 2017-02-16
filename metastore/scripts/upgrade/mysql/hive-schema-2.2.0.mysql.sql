@@ -799,7 +799,7 @@ CREATE TABLE IF NOT EXISTS `NOTIFICATION_LOG`
     `DB_NAME` varchar(128),
     `TBL_NAME` varchar(128),
     `MESSAGE` longtext,
-    `MESSAGE_FORMAT` varchar(16)
+    `MESSAGE_FORMAT` varchar(16),
     PRIMARY KEY (`NL_ID`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
