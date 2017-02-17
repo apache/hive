@@ -739,12 +739,14 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
         hook.commitCreateTable(tbl);
       }
       success = true;
-    } catch (Exception e){
-      LOG.error("Got exception from createTable", e);
     }
     finally {
       if (!success && (hook != null)) {
-        hook.rollbackCreateTable(tbl);
+        try {
+          hook.rollbackCreateTable(tbl);
+        } catch (Exception e){
+          LOG.error("Create rollback failed with", e);
+        }
       }
     }
   }
