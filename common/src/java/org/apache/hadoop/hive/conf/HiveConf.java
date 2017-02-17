@@ -3310,7 +3310,11 @@ public class HiveConf extends Configuration {
             "This parameter enables a number of optimizations when running on blobstores:\n" +
             "(1) If hive.blobstore.use.blobstore.as.scratchdir is false, force the last Hive job to write to the blobstore.\n" +
             "This is a performance optimization that forces the final FileSinkOperator to write to the blobstore.\n" +
-            "See HIVE-15121 for details.");
+            "See HIVE-15121 for details."),
+
+    // log4j reload variable , when you set hive.session.id in conf hive-log4j2.properties
+    HIVE_LOG_RELOAD_VARIABLE_ENABLE("hive.log.reload.variable.enable", false, "Print hive.session.id in your logs," +
+            "if you set true.");
 
     public final String varname;
     public final String altName;
