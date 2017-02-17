@@ -124,7 +124,7 @@ STAGE PLANS:
               Filter Vectorization:
                   className: VectorFilterOperator
                   native: true
-                  predicateExpression: SelectColumnIsNotNull(col 1)(children: CastDecimalToBoolean(col 0) -> 1:Boolean) -> boolean
+                  predicateExpression: SelectColumnIsNotNull(col 0) -> boolean
               predicate: dec is not null (type: boolean)
               Statistics: Num rows: 1049 Data size: 117488 Basic stats: COMPLETE Column stats: NONE
               Select Operator
