@@ -142,6 +142,11 @@ public class ATSHook implements ExecuteWithHookContext {
     final QueryState queryState = hookContext.getQueryState();
     final String queryId = queryState.getQueryId();
 
+    final Map<String, Long> durations = new HashMap<String, Long>();
+    for (String key : hookContext.getPerfLogger().getEndTimes().keySet()) {
+      durations.put(key, hookContext.getPerfLogger().getDuration(key));
+    }
+
     try {
       setupAtsExecutor(conf);
 
@@ -205,10 +210,10 @@ public class ATSHook implements ExecuteWithHookContext {
                         tablesRead, tablesWritten, conf));
                 break;
               case POST_EXEC_HOOK:
-                fireAndForget(createPostHookEvent(queryId, currentTime, user, requestuser, true, opId, hookContext.getPerfLogger()));
+                fireAndForget(createPostHookEvent(queryId, currentTime, user, requestuser, true, opId, durations));
                 break;
               case ON_FAILURE_HOOK:
-                fireAndForget(createPostHookEvent(queryId, currentTime, user, requestuser , false, opId, hookContext.getPerfLogger()));
+                fireAndForget(createPostHookEvent(queryId, currentTime, user, requestuser , false, opId, durations));
                 break;
               default:
                 //ignore
@@ -323,7 +328,7 @@ public class ATSHook implements ExecuteWithHookContext {
   }
 
   TimelineEntity createPostHookEvent(String queryId, long stopTime, String user, String requestuser, boolean success,
-      String opId, PerfLogger perfLogger) throws Exception {
+      String opId, Map<String, Long> durations) throws Exception {
     LOG.info("Received post-hook notification for :" + queryId);
 
     TimelineEntity atsEntity = new TimelineEntity();
@@ -344,8 +349,8 @@ public class ATSHook implements ExecuteWithHookContext {
 
     // Perf times
     JSONObject perfObj = new JSONObject(new LinkedHashMap<>());
-    for (String key : perfLogger.getEndTimes().keySet()) {
-      perfObj.put(key, perfLogger.getDuration(key));
+    for (Map.Entry<String, Long> entry : durations.entrySet()) {
+      perfObj.put(entry.getKey(), entry.getValue());
     }
     atsEntity.addOtherInfo(OtherInfoTypes.PERF.name(), perfObj.toString());
 
