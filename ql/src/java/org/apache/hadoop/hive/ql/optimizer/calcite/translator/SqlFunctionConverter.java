@@ -329,6 +329,7 @@ public class SqlFunctionConverter {
 
     StaticBlockBuilder() {
       registerFunction("+", SqlStdOperatorTable.PLUS, hToken(HiveParser.PLUS, "+"));
+      registerFunction("-", SqlStdOperatorTable.MINUS, hToken(HiveParser.MINUS, "-"));
       registerFunction("*", SqlStdOperatorTable.MULTIPLY, hToken(HiveParser.STAR, "*"));
       registerFunction("/", SqlStdOperatorTable.DIVIDE, hToken(HiveParser.DIVIDE, "/"));
       registerFunction("%", SqlStdOperatorTable.MOD, hToken(HiveParser.Identifier, "%"));
@@ -482,21 +483,29 @@ public class SqlFunctionConverter {
       // this.So, bail out for now.
       throw new CalciteSemanticException("<=> is not yet supported for cbo.", UnsupportedFeature.Less_than_equal_greater_than);
     }
-    SqlOperator calciteOp = hiveToCalcite.get(hiveUdfName);
-    if (calciteOp == null) {
-      CalciteUDFInfo uInf = getUDFInfo(hiveUdfName, calciteArgTypes, calciteRetType);
-      if ("-".equals(hiveUdfName)) {
-        // Calcite native - has broken inference for return type, so we override it with explicit return type
-        // e.g. timestamp - timestamp is inferred as timestamp, where it really should be interval.
+    SqlOperator calciteOp;
+    CalciteUDFInfo uInf = getUDFInfo(hiveUdfName, calciteArgTypes, calciteRetType);
+    switch (hiveUdfName) {
+      // Follow hive's rules for type inference as oppose to Calcite's
+      // for return type.
+      //TODO: Perhaps we should do this for all functions, not just +,-
+      case "-":
         calciteOp = new SqlMonotonicBinaryOperator("-", SqlKind.MINUS, 40, true,
             uInf.returnTypeInference, uInf.operandTypeInference, OperandTypes.MINUS_OPERATOR);
-      } else {
-        calciteOp = new CalciteSqlFn(uInf.udfName, SqlKind.OTHER_FUNCTION, uInf.returnTypeInference,
-            uInf.operandTypeInference, uInf.operandTypeChecker,
-            SqlFunctionCategory.USER_DEFINED_FUNCTION, deterministic);
-      }
+        break;
+      case "+":
+        calciteOp = new SqlMonotonicBinaryOperator("+", SqlKind.PLUS, 40, true,
+            uInf.returnTypeInference, uInf.operandTypeInference, OperandTypes.PLUS_OPERATOR);
+        break;
+      default:
+        calciteOp = hiveToCalcite.get(hiveUdfName);
+        if (null == calciteOp) {
+          calciteOp = new CalciteSqlFn(uInf.udfName, SqlKind.OTHER_FUNCTION, uInf.returnTypeInference,
+              uInf.operandTypeInference, uInf.operandTypeChecker,
+              SqlFunctionCategory.USER_DEFINED_FUNCTION, deterministic);
+        }
+        break;
     }
-
     return calciteOp;
   }
 
