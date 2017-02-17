@@ -3202,8 +3202,13 @@ public class HiveConf extends Configuration {
             Constants.LLAP_LOGGER_NAME_CONSOLE),
         "logger used for llap-daemons."),
 
+    SPARK_USE_OP_STATS("hive.spark.use.op.stats", true,
+        "Whether to use operator stats to determine reducer parallelism for Hive on Spark. "
+            + "If this is false, Hive will use source table stats to determine reducer "
+            + "parallelism for all first level reduce tasks, and the maximum reducer parallelism "
+            + "from all parents for all the rest (second level and onward) reducer tasks."),
     SPARK_USE_FILE_SIZE_FOR_MAPJOIN("hive.spark.use.file.size.for.mapjoin", false,
-        "If this is set to true, mapjoin optimization in Hive/Spark will use source file sizes associated"
+        "If this is set to true, mapjoin optimization in Hive/Spark will use source file sizes associated "
             + "with TableScan operator on the root of operator tree, instead of using operator statistics."),
     SPARK_CLIENT_FUTURE_TIMEOUT("hive.spark.client.future.timeout",
       "60s", new TimeValidator(TimeUnit.SECONDS),

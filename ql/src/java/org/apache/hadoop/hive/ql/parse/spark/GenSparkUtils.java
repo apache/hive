@@ -102,21 +102,21 @@ public class GenSparkUtils {
     reduceWork.setReducer(root);
     reduceWork.setNeedsTagging(GenMapRedUtils.needsTagging(reduceWork));
 
-    // All parents should be reduce sinks. We pick the one we just walked
-    // to choose the number of reducers. In the join/union case they will
-    // all be -1. In sort/order case where it matters there will be only
-    // one parent.
-    Preconditions.checkArgument(context.parentOfRoot instanceof ReduceSinkOperator,
-      "AssertionError: expected context.parentOfRoot to be an instance of ReduceSinkOperator, but was "
-      + context.parentOfRoot.getClass().getName());
+    // Pick the maximum # reducers across all parents as the # of reduce tasks.
+    int maxExecutors = -1;
+    for (Operator<? extends OperatorDesc> parentOfRoot : root.getParentOperators()) {
+      Preconditions.checkArgument(parentOfRoot instanceof ReduceSinkOperator,
+          "AssertionError: expected parentOfRoot to be an "
+              + "instance of ReduceSinkOperator, but was "
+              + parentOfRoot.getClass().getName());
+      ReduceSinkOperator reduceSink = (ReduceSinkOperator) parentOfRoot;
+      maxExecutors = Math.max(maxExecutors, reduceSink.getConf().getNumReducers());
+    }
+    reduceWork.setNumReduceTasks(maxExecutors);
+
     ReduceSinkOperator reduceSink = (ReduceSinkOperator) context.parentOfRoot;
-
-    reduceWork.setNumReduceTasks(reduceSink.getConf().getNumReducers());
-
     setupReduceSink(context, reduceWork, reduceSink);
-
     sparkWork.add(reduceWork);
-
     SparkEdgeProperty edgeProp = getEdgeProperty(reduceSink, reduceWork);
 
     sparkWork.connect(context.preceedingWork, reduceWork, edgeProp);
