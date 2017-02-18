@@ -58,9 +58,9 @@ import org.apache.hadoop.hive.ql.session.SessionState;
  */
 public class UpdateDeleteSemanticAnalyzer extends SemanticAnalyzer {
 
-  boolean useSuper = false;
+  private boolean useSuper = false;
 
-  public UpdateDeleteSemanticAnalyzer(QueryState queryState) throws SemanticException {
+  UpdateDeleteSemanticAnalyzer(QueryState queryState) throws SemanticException {
     super(queryState);
   }
 
@@ -92,19 +92,19 @@ public class UpdateDeleteSemanticAnalyzer extends SemanticAnalyzer {
     }
   }
   private boolean updating() {
-    return currentOperation == Operation.UPDATE;
+    return currentOperation == Context.Operation.UPDATE;
   }
   private boolean deleting() {
-    return currentOperation == Operation.DELETE;
+    return currentOperation == Context.Operation.DELETE;
   }
 
   private void analyzeUpdate(ASTNode tree) throws SemanticException {
-    currentOperation = Operation.UPDATE;
+    currentOperation = Context.Operation.UPDATE;
     reparseAndSuperAnalyze(tree);
   }
 
   private void analyzeDelete(ASTNode tree) throws SemanticException {
-    currentOperation = Operation.DELETE;
+    currentOperation = Context.Operation.DELETE;
     reparseAndSuperAnalyze(tree);
   }
   /**
@@ -408,10 +408,12 @@ public class UpdateDeleteSemanticAnalyzer extends SemanticAnalyzer {
         "Expected TOK_INSERT as second child of TOK_QUERY but found " + rewrittenInsert.getName();
     
     if(updating()) {
-      rewrittenCtx.addDestNamePrefix(rewrittenInsert, Context.DestClausePrefix.UPDATE);
+      rewrittenCtx.setOperation(Context.Operation.UPDATE);
+      rewrittenCtx.addDestNamePrefix(1, Context.DestClausePrefix.UPDATE);
     }
     else if(deleting()) {
-      rewrittenCtx.addDestNamePrefix(rewrittenInsert, Context.DestClausePrefix.DELETE);
+      rewrittenCtx.setOperation(Context.Operation.DELETE);
+      rewrittenCtx.addDestNamePrefix(1, Context.DestClausePrefix.DELETE);
     }
 
     if (where != null) {
@@ -487,7 +489,7 @@ public class UpdateDeleteSemanticAnalyzer extends SemanticAnalyzer {
     return false;
   }
   private String operation() {
-    if (currentOperation == Operation.NOT_ACID) {
+    if (currentOperation == Context.Operation.OTHER) {
       throw new IllegalStateException("UpdateDeleteSemanticAnalyzer neither updating nor " +
         "deleting, operation not known.");
     }
@@ -521,8 +523,7 @@ public class UpdateDeleteSemanticAnalyzer extends SemanticAnalyzer {
     return colName.toLowerCase();
   }
 
-  private enum Operation {UPDATE, DELETE, MERGE, NOT_ACID};
-  private Operation currentOperation = Operation.NOT_ACID;
+  private Context.Operation currentOperation = Context.Operation.OTHER;
   private static final String Indent = "  ";
 
   private IdentifierQuoter quotedIdenfierHelper;
@@ -587,7 +588,7 @@ public class UpdateDeleteSemanticAnalyzer extends SemanticAnalyzer {
    * @throws SemanticException
    */
   private void analyzeMerge(ASTNode tree) throws SemanticException {
-    currentOperation = Operation.MERGE;
+    currentOperation = Context.Operation.MERGE;
     quotedIdenfierHelper = new IdentifierQuoter(ctx.getTokenRewriteStream());
     /*
      * See org.apache.hadoop.hive.ql.parse.TestMergeStatement for some examples of the merge AST
@@ -699,8 +700,9 @@ public class UpdateDeleteSemanticAnalyzer extends SemanticAnalyzer {
     ReparseResult rr = parseRewrittenQuery(rewrittenQueryStr, ctx.getCmd());
     Context rewrittenCtx = rr.rewrittenCtx;
     ASTNode rewrittenTree = rr.rewrittenTree;
+    rewrittenCtx.setOperation(Context.Operation.MERGE);
 
-    //set dest name mapping on new context
+    //set dest name mapping on new context; 1st chid is TOK_FROM
     for(int insClauseIdx = 1, whenClauseIdx = 0;
         insClauseIdx < rewrittenTree.getChildCount() - (validating ? 1 : 0/*skip cardinality violation clause*/);
         insClauseIdx++, whenClauseIdx++) {
@@ -708,17 +710,21 @@ public class UpdateDeleteSemanticAnalyzer extends SemanticAnalyzer {
       ASTNode insertClause = (ASTNode) rewrittenTree.getChild(insClauseIdx);
       switch (getWhenClauseOperation(whenClauses.get(whenClauseIdx)).getType()) {
         case HiveParser.TOK_INSERT:
-          rewrittenCtx.addDestNamePrefix(insertClause, Context.DestClausePrefix.INSERT);
+          rewrittenCtx.addDestNamePrefix(insClauseIdx, Context.DestClausePrefix.INSERT);
           break;
         case HiveParser.TOK_UPDATE:
-          rewrittenCtx.addDestNamePrefix(insertClause, Context.DestClausePrefix.UPDATE);
+          rewrittenCtx.addDestNamePrefix(insClauseIdx, Context.DestClausePrefix.UPDATE);
           break;
         case HiveParser.TOK_DELETE:
-          rewrittenCtx.addDestNamePrefix(insertClause, Context.DestClausePrefix.DELETE);
+          rewrittenCtx.addDestNamePrefix(insClauseIdx, Context.DestClausePrefix.DELETE);
           break;
         default:
           assert false;
       }
+    }
+    if(validating) {
+      //here means the last branch of the multi-insert is Cardinality Validation
+      rewrittenCtx.addDestNamePrefix(rewrittenTree.getChildCount() - 1, Context.DestClausePrefix.INSERT);
     }
     try {
       useSuper = true;
