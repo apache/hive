@@ -168,6 +168,7 @@
                     <exclude>META-INF/*.SF</exclude>
                     <exclude>META-INF/*.DSA</exclude>
                     <exclude>META-INF/*.RSA</exclude>
+                    <exclude>core-default.xml</exclude>
                   </excludes>
                 </filter>
               </filters>
@@ -191,6 +192,7 @@
                   <exclude>org.tukaani:*</exclude>
                   <exclude>org.iq80.snappy:*</exclude>
                   <exclude>org.apache.velocity:*</exclude>
+                  <exclude>io.dropwizard.metrics:*</exclude>
                   <exclude>net.sf.jpam:*</exclude>
                   <exclude>org.apache.avro:*</exclude>
                   <exclude>net.sf.opencsv:*</exclude>
@@ -220,6 +222,7 @@
                   <exclude>com.sun.xml.bind:*</exclude>
                   <exclude>com.thoughtworks.paranamer:*</exclude>
                   <exclude>com.twitter:*</exclude>
+                  <exclude>com.zaxxer:*</exclude>
                   <exclude>io.netty:*</exclude>
                   <exclude>javax.activation:*</exclude>
                   <exclude>javax.inject:*</exclude>
@@ -228,8 +231,7 @@
                   <exclude>javax.servlet:*</exclude>
                   <exclude>javax.servlet.jsp:*</exclude>
                   <exclude>javax.transaction:*</exclude>
-                  <exclude>javax.xml.bind:*</exclude>
-                  <exclude>javax.xml.stream:*</exclude>
+                  <exclude>javax.xml.*:*</exclude>
                   <exclude>jline:*</exclude>
                   <exclude>joda-time:*</exclude>
                   <exclude>net.java.dev.jets3t:*</exclude>
@@ -238,6 +240,8 @@
                   <exclude>org.apache.directory.api:*</exclude>
                   <exclude>org.apache.directory.server:*</exclude>
                   <exclude>org.apache.geronimo.specs:*</exclude>
+                  <exclude>org.apache.htrace:*</exclude>
+                  <exclude>org.apache.slider:*</exclude>
                   <exclude>org.codehaus.jackson:*</exclude>
                   <exclude>org.codehaus.jettison:*</exclude>
                   <exclude>org.datanucleus:*</exclude>
@@ -245,8 +249,11 @@
                   <exclude>org.htrace:*</exclude>
                   <exclude>org.mortbay.jetty:*</exclude>
                   <exclude>org.xerial.snappy:*</exclude>
+                  <exclude>org.json:*</exclude>
                   <exclude>tomcat:*</exclude>
                   <exclude>xmlenc:*</exclude>
+                  <exclude>xerces:*</exclude>
+                  <exclude>xml-apis:*</exclude>
                 </excludes>
               </artifactSet>
               <relocations>
@@ -281,6 +288,14 @@
                 <relocation>
                   <pattern>org.apache.hadoop</pattern>
                   <shadedPattern>org.apache.hive.org.apache.hadoop</shadedPattern>
+                </relocation>
+                <relocation>
+                  <pattern>org.apache.zookeeper</pattern>
+                  <shadedPattern>org.apache.hive.org.apache.zookeeper</shadedPattern>
+                </relocation>
+                <relocation>
+                  <pattern>org.apache.curator</pattern>
+                  <shadedPattern>org.apache.hive.org.apache.curator</shadedPattern>
                 </relocation>
                 <relocation>
                   <pattern>com.beust</pattern>
