@@ -10820,6 +10820,11 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         .applyRowFilterAndColumnMasking(basicPrivObjs);
     if (needRewritePrivObjs != null && !needRewritePrivObjs.isEmpty()) {
       for (HivePrivilegeObject privObj : needRewritePrivObjs) {
+        // We don't support masking/filtering against ACID query at the moment
+        if (ctx.getIsUpdateDeleteMerge()) {
+          throw new SemanticException(ErrorMsg.MASKING_FILTERING_ON_ACID_NOT_SUPPORTED,
+              privObj.getDbname(), privObj.getObjectName());
+        }
         MaskAndFilterInfo info = basicInfos.get(privObj);
         String replacementText = tableMask.create(privObj, info);
         if (replacementText != null) {

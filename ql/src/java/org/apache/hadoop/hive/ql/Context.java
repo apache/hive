@@ -125,6 +125,10 @@ public class Context {
   private Heartbeater heartbeater;
 
   private boolean skipTableMasking;
+
+  // Identify whether the query involves an UPDATE, DELETE or MERGE
+  private boolean isUpdateDeleteMerge;
+
   /**
    * This determines the prefix of the
    * {@link org.apache.hadoop.hive.ql.parse.SemanticAnalyzer.Phase1Ctx#dest}
@@ -954,5 +958,13 @@ public class Context {
   public void resetOpContext(){
     opContext = new CompilationOpContext();
     sequencer = new AtomicInteger();
+  }
+
+  public boolean getIsUpdateDeleteMerge() {
+    return isUpdateDeleteMerge;
+  }
+
+  public void setIsUpdateDeleteMerge(boolean isUpdate) {
+    this.isUpdateDeleteMerge = isUpdate;
   }
 }
