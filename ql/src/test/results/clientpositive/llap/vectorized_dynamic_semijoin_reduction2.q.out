@@ -345,7 +345,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dsrv2_big
 POSTHOOK: Input: default@dsrv2_small
 #### A masked pattern was here ####
-0
+20
 PREHOOK: query: EXPLAIN select count(*) from dsrv2_big a join dsrv2_small b on (a.partkey_double = b.partkey_double)
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN select count(*) from dsrv2_big a join dsrv2_small b on (a.partkey_double = b.partkey_double)
