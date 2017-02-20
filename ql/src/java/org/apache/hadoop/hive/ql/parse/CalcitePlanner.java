@@ -297,6 +297,8 @@ public class CalcitePlanner extends SemanticAnalyzer {
   public RelNode genLogicalPlan(ASTNode ast) throws SemanticException {
     LOG.info("Starting generating logical plan");
     PreCboCtx cboCtx = new PreCboCtx();
+    //change the location of position alias process here
+    processPositionAlias(ast);
     if (!genResolvedParseTree(ast, cboCtx)) {
       return null;
     }
