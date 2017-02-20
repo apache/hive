@@ -627,6 +627,17 @@ public class TezTask extends Task<TezWork> {
       dagClient.close(); // Don't sync.
     }
 
+    public String getDagIdentifierString() {
+      // TODO: Implement this when tez is upgraded. TEZ-3550
+      return null;
+    }
+
+    public String getSessionIdentifierString() {
+      // TODO: Implement this when tez is upgraded. TEZ-3550
+      return null;
+    }
+
+
     @Override
     public String getExecutionContext() {
       return dagClient.getExecutionContext(); // Don't sync.
