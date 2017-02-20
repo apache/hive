@@ -1418,7 +1418,7 @@ public class GenVectorCode extends Task {
       getValueMethod = "";
       conversionMethod = "";
     } else if (operandType.equals("decimal")) {
-      defaultValue = "null";
+      defaultValue = "HiveDecimal.ZERO";
       vectorType = "HiveDecimal";
       getPrimitiveMethod = "getHiveDecimal";
       getValueMethod = "";
@@ -1430,13 +1430,13 @@ public class GenVectorCode extends Task {
       getValueMethod = ".getBytes()";
       conversionMethod = "";
     } else if (operandType.equals("char")) {
-      defaultValue = "null";
+      defaultValue = "new HiveChar(\"\", 1)";
       vectorType = "byte[]";
       getPrimitiveMethod = "getHiveChar";
       getValueMethod = ".getStrippedValue().getBytes()";  // Does vectorization use stripped char values?
       conversionMethod = "";
     } else if (operandType.equals("varchar")) {
-      defaultValue = "null";
+      defaultValue = "new HiveVarchar(\"\", 1)";
       vectorType = "byte[]";
       getPrimitiveMethod = "getHiveVarchar";
       getValueMethod = ".getValue().getBytes()";
@@ -1450,7 +1450,7 @@ public class GenVectorCode extends Task {
       // Special case - Date requires its own specific BetweenDynamicValue class, but derives from FilterLongColumnBetween
       typeName = "Long";
     } else if (operandType.equals("timestamp")) {
-      defaultValue = "null";
+      defaultValue = "new Timestamp(0)";
       vectorType = "Timestamp";
       getPrimitiveMethod = "getTimestamp";
       getValueMethod = "";

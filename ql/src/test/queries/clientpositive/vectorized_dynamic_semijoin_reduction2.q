@@ -18,7 +18,10 @@ create table dsrv2_big stored as orc as
   cast(L_PARTKEY as decimal(10,1)) as partkey_decimal,
   cast(L_PARTKEY as double) as partkey_double,
   cast(l_shipdate as date) as shipdate_date,
-  cast(cast(l_shipdate as date) as timestamp) as shipdate_ts
+  cast(cast(l_shipdate as date) as timestamp) as shipdate_ts,
+  cast(l_shipdate as string) as shipdate_string,
+  cast(l_shipdate as char(10)) as shipdate_char,
+  cast(l_shipdate as varchar(10)) as shipdate_varchar
   from lineitem;
 create table dsrv2_small stored as orc as select * from dsrv2_big limit 20;
 analyze table dsrv2_big compute statistics;
@@ -45,6 +48,18 @@ select count(*) from dsrv2_big a join dsrv2_small b on (a.shipdate_date = b.ship
 -- single key (timestamp)
 EXPLAIN select count(*) from dsrv2_big a join dsrv2_small b on (a.shipdate_ts = b.shipdate_ts);
 select count(*) from dsrv2_big a join dsrv2_small b on (a.shipdate_ts = b.shipdate_ts);
+
+-- single key (string)
+EXPLAIN select count(*) from dsrv2_big a join dsrv2_small b on (a.shipdate_string = b.shipdate_string);
+select count(*) from dsrv2_big a join dsrv2_small b on (a.shipdate_string = b.shipdate_string);
+
+-- single key (char)
+EXPLAIN select count(*) from dsrv2_big a join dsrv2_small b on (a.shipdate_char = b.shipdate_char);
+select count(*) from dsrv2_big a join dsrv2_small b on (a.shipdate_char = b.shipdate_char);
+
+-- single key (varchar)
+EXPLAIN select count(*) from dsrv2_big a join dsrv2_small b on (a.shipdate_varchar = b.shipdate_varchar);
+select count(*) from dsrv2_big a join dsrv2_small b on (a.shipdate_varchar = b.shipdate_varchar);
 
 drop table dsrv2_big;
 drop table dsrv2_small;
