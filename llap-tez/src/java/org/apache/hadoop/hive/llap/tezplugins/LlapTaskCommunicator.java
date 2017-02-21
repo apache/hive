@@ -541,7 +541,7 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
   @Override
   public String getInProgressLogsUrl(TezTaskAttemptID attemptID, NodeId containerNodeId) {
     String url = "";
-    if (timelineServerUri != null) {
+    if (timelineServerUri != null && containerNodeId != null) {
       LlapNodeId llapNodeId = LlapNodeId.getInstance(containerNodeId.getHost(), containerNodeId.getPort());
       BiMap<ContainerId, TezTaskAttemptID> biMap = entityTracker.getContainerAttemptMapForNode(llapNodeId);
       ContainerId containerId = biMap.inverse().get(attemptID);
@@ -559,7 +559,7 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
   @Override
   public String getCompletedLogsUrl(TezTaskAttemptID attemptID, NodeId containerNodeId) {
     String url = "";
-    if (timelineServerUri != null) {
+    if (timelineServerUri != null && containerNodeId != null) {
       LlapNodeId llapNodeId = LlapNodeId.getInstance(containerNodeId.getHost(), containerNodeId.getPort());
       BiMap<ContainerId, TezTaskAttemptID> biMap = entityTracker.getContainerAttemptMapForNode(llapNodeId);
       ContainerId containerId = biMap.inverse().get(attemptID);
