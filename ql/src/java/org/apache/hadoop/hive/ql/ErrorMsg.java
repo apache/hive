@@ -401,6 +401,9 @@ public enum ErrorMsg {
       "time."),
   DISTINCT_NOT_SUPPORTED(10285, "Distinct keyword is not support in current context"),
   NONACID_COMPACTION_NOT_SUPPORTED(10286, "Compaction is not allowed on non-ACID table {0}.{1}", true),
+  MASKING_FILTERING_ON_ACID_NOT_SUPPORTED(10287,
+      "Detected {0}.{1} has row masking/column filtering enabled, " +
+      "which is not supported for query involving ACID operations", true),
 
   UPDATEDELETE_PARSE_ERROR(10290, "Encountered parse error while parsing rewritten merge/update or " +
       "delete query"),
