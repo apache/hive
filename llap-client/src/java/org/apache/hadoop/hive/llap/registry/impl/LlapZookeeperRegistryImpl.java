@@ -451,9 +451,14 @@ public class LlapZookeeperRegistryImpl implements ServiceRegistry {
               AddressTypes.ADDRESS_PORT_FIELD));
       this.serviceAddress =
           RegistryTypeUtils.getAddressField(services.addresses.get(0), AddressTypes.ADDRESS_URI);
-      int memory = Integer.parseInt(srv.get(ConfVars.LLAP_DAEMON_MEMORY_PER_INSTANCE_MB.varname));
-      int vCores = Integer.parseInt(srv.get(ConfVars.LLAP_DAEMON_NUM_EXECUTORS.varname));
-      this.resource = Resource.newInstance(memory, vCores);
+      String memStr = srv.get(ConfVars.LLAP_DAEMON_MEMORY_PER_INSTANCE_MB.varname, "");
+      String coreStr = srv.get(ConfVars.LLAP_DAEMON_NUM_EXECUTORS.varname, "");
+      try {
+        this.resource = Resource.newInstance(Integer.parseInt(memStr), Integer.parseInt(coreStr));
+      } catch (NumberFormatException ex) {
+        throw new IOException("Invalid resource configuration for a LLAP node: memory "
+            + memStr + ", vcores " + coreStr);
+      }
     }
 
     @Override
