@@ -87,3 +87,32 @@ from T1
 group by cube(key, value)
 having grouping(key) = 1 OR grouping(value) = 1
 order by x desc, case when x = 1 then key end;
+
+explain
+select key, value, grouping(key), grouping(value)
+from T1
+group by key, value;
+
+select key, value, grouping(key), grouping(value)
+from T1
+group by key, value;
+
+explain
+select key, value, grouping(value)
+from T1
+group by key, value;
+
+select key, value, grouping(value)
+from T1
+group by key, value;
+
+explain
+select key, value
+from T1
+group by key, value
+having grouping(key) = 0;
+
+select key, value
+from T1
+group by key, value
+having grouping(key) = 0;

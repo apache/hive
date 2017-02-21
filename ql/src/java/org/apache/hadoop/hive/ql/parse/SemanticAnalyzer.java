@@ -3039,16 +3039,15 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
     ASTNode condn = (ASTNode) havingExpr.getChild(0);
 
-    if (!isCBOExecuted()) {
+    if (!isCBOExecuted() && !qb.getParseInfo().getDestToGroupBy().isEmpty()) {
       // If CBO did not optimize the query, we might need to replace grouping function
       final String destClauseName = qb.getParseInfo().getClauseNames().iterator().next();
       final boolean cubeRollupGrpSetPresent = (!qb.getParseInfo().getDestRollups().isEmpty()
               || !qb.getParseInfo().getDestGroupingSets().isEmpty()
               || !qb.getParseInfo().getDestCubes().isEmpty());
-      if (cubeRollupGrpSetPresent) {
-        // Special handling of grouping function
-        condn = rewriteGroupingFunctionAST(getGroupByForClause(qb.getParseInfo(), destClauseName), condn);
-      }
+      // Special handling of grouping function
+      condn = rewriteGroupingFunctionAST(getGroupByForClause(qb.getParseInfo(), destClauseName), condn,
+          !cubeRollupGrpSetPresent);
     }
 
     /*
@@ -3061,7 +3060,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     return output;
   }
 
-  protected static ASTNode rewriteGroupingFunctionAST(final List<ASTNode> grpByAstExprs, ASTNode targetNode) throws SemanticException {
+  protected static ASTNode rewriteGroupingFunctionAST(final List<ASTNode> grpByAstExprs, ASTNode targetNode,
+          final boolean noneSet) throws SemanticException {
     final MutableBoolean visited = new MutableBoolean(false);
     final MutableBoolean found = new MutableBoolean(false);
 
@@ -3083,10 +3083,19 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
             for (int i = 0; i < grpByAstExprs.size(); i++) {
               ASTNode grpByExpr = grpByAstExprs.get(i);
               if (grpByExpr.toStringTree().equals(c.toStringTree())) {
-                ASTNode child1 = (ASTNode) ParseDriver.adaptor.create(
-                        HiveParser.TOK_TABLE_OR_COL, "TOK_TABLE_OR_COL");
-                ParseDriver.adaptor.addChild(child1, ParseDriver.adaptor.create(
-                        HiveParser.Identifier, VirtualColumn.GROUPINGID.getName()));
+                ASTNode child1;
+                if (noneSet) {
+                  // Query does not contain CUBE, ROLLUP, or GROUPING SETS, and thus,
+                  // grouping should return 0
+                  child1 = (ASTNode) ParseDriver.adaptor.create(HiveParser.IntegralLiteral,
+                        String.valueOf(0));
+                } else {
+                  // We refer to grouping_id column
+                  child1 = (ASTNode) ParseDriver.adaptor.create(
+                          HiveParser.TOK_TABLE_OR_COL, "TOK_TABLE_OR_COL");
+                  ParseDriver.adaptor.addChild(child1, ParseDriver.adaptor.create(
+                          HiveParser.Identifier, VirtualColumn.GROUPINGID.getName()));
+                }
                 ASTNode child2 = (ASTNode) ParseDriver.adaptor.create(HiveParser.IntegralLiteral,
                         String.valueOf(IntMath.mod(-i-1, grpByAstExprs.size())));
                 root.setChild(1, child1);
@@ -4294,10 +4303,11 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         // We allow stateful functions in the SELECT list (but nowhere else)
         tcCtx.setAllowStatefulFunctions(true);
         tcCtx.setAllowDistinctFunctions(false);
-        if (!isCBOExecuted() && cubeRollupGrpSetPresent) {
+        if (!isCBOExecuted() && !qb.getParseInfo().getDestToGroupBy().isEmpty()) {
           // If CBO did not optimize the query, we might need to replace grouping function
           // Special handling of grouping function
-          expr = rewriteGroupingFunctionAST(getGroupByForClause(qb.getParseInfo(), dest), expr);
+          expr = rewriteGroupingFunctionAST(getGroupByForClause(qb.getParseInfo(), dest), expr,
+              !cubeRollupGrpSetPresent);
         }
         ExprNodeDesc exp = genExprNodeDesc(expr, inputRR, tcCtx);
         String recommended = recommendName(exp, colAlias);
@@ -13136,18 +13146,17 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   Operator genWindowingPlan(QB qb, WindowingSpec wSpec, Operator input) throws SemanticException {
     wSpec.validateAndMakeEffective();
 
-    if (!isCBOExecuted()) {
+    if (!isCBOExecuted() && !qb.getParseInfo().getDestToGroupBy().isEmpty()) {
       // If CBO did not optimize the query, we might need to replace grouping function
       final String selClauseName = qb.getParseInfo().getClauseNames().iterator().next();
       final boolean cubeRollupGrpSetPresent = (!qb.getParseInfo().getDestRollups().isEmpty()
               || !qb.getParseInfo().getDestGroupingSets().isEmpty()
               || !qb.getParseInfo().getDestCubes().isEmpty());
-      if (cubeRollupGrpSetPresent) {
-        for (WindowExpressionSpec wExprSpec : wSpec.getWindowExpressions()) {
-          // Special handling of grouping function
-          wExprSpec.setExpression(rewriteGroupingFunctionAST(
-                  getGroupByForClause(qb.getParseInfo(), selClauseName), wExprSpec.getExpression()));
-        }
+      for (WindowExpressionSpec wExprSpec : wSpec.getWindowExpressions()) {
+        // Special handling of grouping function
+        wExprSpec.setExpression(rewriteGroupingFunctionAST(
+                getGroupByForClause(qb.getParseInfo(), selClauseName), wExprSpec.getExpression(),
+                !cubeRollupGrpSetPresent));
       }
     }
 
