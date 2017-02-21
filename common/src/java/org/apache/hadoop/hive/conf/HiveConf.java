@@ -373,7 +373,7 @@ public class HiveConf extends Configuration {
     llapDaemonVarsSetLocal.add(ConfVars.LLAP_DAEMON_NUM_EXECUTORS.varname);
     llapDaemonVarsSetLocal.add(ConfVars.LLAP_DAEMON_RPC_PORT.varname);
     llapDaemonVarsSetLocal.add(ConfVars.LLAP_DAEMON_MEMORY_PER_INSTANCE_MB.varname);
-    llapDaemonVarsSetLocal.add(ConfVars.LLAP_DAEMON_HEADROOM_MEMORY_PER_INSTANCE_MB.varname);
+    llapDaemonVarsSetLocal.add(ConfVars.LLAP_DAEMON_XMX_HEADROOM.varname);
     llapDaemonVarsSetLocal.add(ConfVars.LLAP_DAEMON_VCPUS_PER_INSTANCE.varname);
     llapDaemonVarsSetLocal.add(ConfVars.LLAP_DAEMON_NUM_FILE_CLEANER_THREADS.varname);
     llapDaemonVarsSetLocal.add(ConfVars.LLAP_FILE_CLEANUP_DELAY_SECONDS.varname);
@@ -3066,11 +3066,11 @@ public class HiveConf extends Configuration {
     LLAP_DAEMON_MEMORY_PER_INSTANCE_MB("hive.llap.daemon.memory.per.instance.mb", 4096,
       "The total amount of memory to use for the executors inside LLAP (in megabytes).",
       "llap.daemon.memory.per.instance.mb"),
-    LLAP_DAEMON_HEADROOM_MEMORY_PER_INSTANCE_MB("hive.llap.daemon.headroom.memory.per.instance.mb", 512,
-      "The total amount of memory deducted from daemon memory required for other LLAP services. The remaining memory" +
-      " will be used by the executors. If the cache is off-heap, Executor memory + Headroom memory = Xmx. If the " +
-        "cache is on-heap, Executor memory + Cache memory + Headroom memory = Xmx. The headroom memory has to be " +
-        "minimum of 5% from the daemon memory."),
+    LLAP_DAEMON_XMX_HEADROOM("hive.llap.daemon.xmx.headroom", "5%",
+      "The total amount of heap memory set aside by LLAP and not used by the executors. Can\n" +
+      "be specified as size (e.g. '512Mb'), or percentage (e.g. '5%'). Note that the latter is\n" +
+      "derived from the total daemon XMX, which can be different from the total executor\n" +
+      "memory if the cache is on-heap; although that's not the default configuration."),
     LLAP_DAEMON_VCPUS_PER_INSTANCE("hive.llap.daemon.vcpus.per.instance", 4,
       "The total number of vcpus to use for the executors inside LLAP.",
       "llap.daemon.vcpus.per.instance"),

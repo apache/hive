@@ -46,7 +46,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.hive.llap.LlapUtil;
 import org.apache.hadoop.hive.llap.configuration.LlapDaemonConfiguration;
 import org.apache.hadoop.hive.llap.daemon.impl.LlapConstants;
-import org.apache.hadoop.hive.llap.daemon.impl.LlapDaemon;
 import org.apache.hadoop.hive.llap.daemon.impl.StaticPermanentFunctionChecker;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos;
 import org.apache.hadoop.hive.llap.tezplugins.LlapTezUtils;
@@ -232,6 +231,7 @@ public class LlapServiceDriver {
         HiveConf.setVar(conf, ConfVars.LLAP_DAEMON_LOGGER, options.getLogger());
         propsDirectOptions.setProperty(ConfVars.LLAP_DAEMON_LOGGER.varname, options.getLogger());
       }
+      boolean isDirect = HiveConf.getBoolVar(conf, HiveConf.ConfVars.LLAP_ALLOCATOR_DIRECT);
 
       if (options.getSize() != -1) {
         if (options.getCache() != -1) {
@@ -251,8 +251,7 @@ public class LlapServiceDriver {
               + " smaller than the container sizing (" + LlapUtil.humanReadableByteCount(options.getSize())
               + ")");
         }
-        if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.LLAP_ALLOCATOR_DIRECT)
-            && false == HiveConf.getBoolVar(conf, HiveConf.ConfVars.LLAP_ALLOCATOR_MAPPED)) {
+        if (isDirect && !HiveConf.getBoolVar(conf, HiveConf.ConfVars.LLAP_ALLOCATOR_MAPPED)) {
           // direct and not memory mapped
           Preconditions.checkArgument(options.getXmx() + options.getCache() <= options.getSize(),
             "Working memory (Xmx=" + LlapUtil.humanReadableByteCount(options.getXmx()) + ") + cache size ("
@@ -261,19 +260,6 @@ public class LlapServiceDriver {
         }
       }
 
-      // This parameter is read in package.py - and nowhere else. Does not need to be part of
-      // HiveConf - that's just confusing.
-      final long minAlloc = conf.getInt(YarnConfiguration.RM_SCHEDULER_MINIMUM_ALLOCATION_MB, -1);
-      long containerSize = -1;
-      if (options.getSize() != -1) {
-        containerSize = options.getSize() / (1024 * 1024);
-        Preconditions.checkArgument(containerSize >= minAlloc, "Container size ("
-            + LlapUtil.humanReadableByteCount(options.getSize()) + ") should be greater"
-            + " than minimum allocation(" + LlapUtil.humanReadableByteCount(minAlloc * 1024L * 1024L) + ")");
-        conf.setLong(ConfVars.LLAP_DAEMON_YARN_CONTAINER_MB.varname, containerSize);
-        propsDirectOptions.setProperty(ConfVars.LLAP_DAEMON_YARN_CONTAINER_MB.varname,
-            String.valueOf(containerSize));
-      }
 
       if (options.getExecutors() != -1) {
         conf.setLong(ConfVars.LLAP_DAEMON_NUM_EXECUTORS.varname, options.getExecutors());
@@ -307,17 +293,30 @@ public class LlapServiceDriver {
             String.valueOf(xmxMb));
       }
 
-      final long currentHeadRoom = options.getSize() - options.getXmx() - options.getCache();
-      final long minHeadRoom = (long) (options.getXmx() * LlapDaemon.MIN_HEADROOM_PERCENT);
-      final long headRoom = currentHeadRoom < minHeadRoom ? minHeadRoom : currentHeadRoom;
-      final long headRoomMb = headRoom / (1024L * 1024L);
-      conf.setLong(ConfVars.LLAP_DAEMON_HEADROOM_MEMORY_PER_INSTANCE_MB.varname, headRoomMb);
-      propsDirectOptions.setProperty(ConfVars.LLAP_DAEMON_HEADROOM_MEMORY_PER_INSTANCE_MB.varname,
-        String.valueOf(headRoomMb));
+      long size = options.getSize();
+      if (size == -1) {
+        long heapSize = xmx;
+        if (!isDirect) {
+          heapSize += cache;
+        }
+        size = Math.min((long)(heapSize * 1.2), heapSize + 1024L*1024*1024);
+        if (isDirect) {
+          size += cache;
+        }
+      }
+      long containerSize = size / (1024 * 1024);
+      final long minAlloc = conf.getInt(YarnConfiguration.RM_SCHEDULER_MINIMUM_ALLOCATION_MB, -1);
+      Preconditions.checkArgument(containerSize >= minAlloc, "Container size ("
+          + LlapUtil.humanReadableByteCount(options.getSize()) + ") should be greater"
+          + " than minimum allocation(" + LlapUtil.humanReadableByteCount(minAlloc * 1024L * 1024L) + ")");
+      conf.setLong(ConfVars.LLAP_DAEMON_YARN_CONTAINER_MB.varname, containerSize);
+      propsDirectOptions.setProperty(ConfVars.LLAP_DAEMON_YARN_CONTAINER_MB.varname,
+          String.valueOf(containerSize));
 
-      LOG.info("Memory settings: container memory: {} executor memory: {} cache memory: {} headroom memory: {}",
-        LlapUtil.humanReadableByteCount(options.getSize()), LlapUtil.humanReadableByteCount(options.getXmx()),
-        LlapUtil.humanReadableByteCount(options.getCache()), LlapUtil.humanReadableByteCount(headRoom));
+      LOG.info("Memory settings: container memory: {} executor memory: {} cache memory: {}",
+        LlapUtil.humanReadableByteCount(options.getSize()),
+        LlapUtil.humanReadableByteCount(options.getXmx()),
+        LlapUtil.humanReadableByteCount(options.getCache()));
 
       if (options.getLlapQueueName() != null && !options.getLlapQueueName().isEmpty()) {
         conf.set(ConfVars.LLAP_DAEMON_QUEUE_NAME.varname, options.getLlapQueueName());
@@ -563,9 +562,6 @@ public class LlapServiceDriver {
 
       configs.put(ConfVars.LLAP_DAEMON_MEMORY_PER_INSTANCE_MB.varname,
           HiveConf.getIntVar(conf, ConfVars.LLAP_DAEMON_MEMORY_PER_INSTANCE_MB));
-
-      configs.put(ConfVars.LLAP_DAEMON_HEADROOM_MEMORY_PER_INSTANCE_MB.varname,
-        HiveConf.getIntVar(conf, ConfVars.LLAP_DAEMON_HEADROOM_MEMORY_PER_INSTANCE_MB));
 
       configs.put(ConfVars.LLAP_DAEMON_VCPUS_PER_INSTANCE.varname,
           HiveConf.getIntVar(conf, ConfVars.LLAP_DAEMON_VCPUS_PER_INSTANCE));

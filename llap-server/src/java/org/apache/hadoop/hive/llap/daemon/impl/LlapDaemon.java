@@ -84,7 +84,6 @@ import com.google.common.primitives.Ints;
 public class LlapDaemon extends CompositeService implements ContainerRunner, LlapDaemonMXBean {
 
   private static final Logger LOG = LoggerFactory.getLogger(LlapDaemon.class);
-  public static final double MIN_HEADROOM_PERCENT = 0.05;
 
   private final Configuration shuffleHandlerConf;
   private final SecretManager secretManager;
@@ -115,7 +114,7 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
 
   public LlapDaemon(Configuration daemonConf, int numExecutors, long executorMemoryBytes,
     boolean ioEnabled, boolean isDirectCache, long ioMemoryBytes, String[] localDirs, int srvPort,
-    int mngPort, int shufflePort, int webPort, String appName, final long headRoomBytes) {
+    int mngPort, int shufflePort, int webPort, String appName) {
     super("LlapDaemon");
 
     printAsciiArt();
@@ -159,11 +158,9 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
 
     this.maxJvmMemory = getTotalHeapSize();
     this.llapIoEnabled = ioEnabled;
-    Preconditions.checkArgument(headRoomBytes < executorMemoryBytes, "LLAP daemon headroom size should be less " +
-      "than daemon max memory size. headRoomBytes: " + headRoomBytes + " executorMemoryBytes: " + executorMemoryBytes);
-    final long minHeadRoomBytes = (long) (executorMemoryBytes * MIN_HEADROOM_PERCENT);
-    final long headroom = headRoomBytes < minHeadRoomBytes ? minHeadRoomBytes : headRoomBytes;
-    this.executorMemoryPerInstance = executorMemoryBytes - headroom;
+
+    long xmxHeadRoomBytes = determineXmxHeadroom(daemonConf, executorMemoryBytes, maxJvmMemory);
+    this.executorMemoryPerInstance = executorMemoryBytes - xmxHeadRoomBytes;
     this.ioMemoryPerInstance = ioMemoryBytes;
     this.numExecutors = numExecutors;
     this.localDirs = localDirs;
@@ -174,11 +171,14 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
     boolean enablePreemption = HiveConf.getBoolVar(
         daemonConf, ConfVars.LLAP_DAEMON_TASK_SCHEDULER_ENABLE_PREEMPTION);
     LOG.warn("Attempting to start LlapDaemonConf with the following configuration: " +
-        "maxJvmMemory=" + maxJvmMemory + " (" + LlapUtil.humanReadableByteCount(maxJvmMemory) + ")" +
+        "maxJvmMemory=" + maxJvmMemory + " ("
+          + LlapUtil.humanReadableByteCount(maxJvmMemory) + ")" +
         ", requestedExecutorMemory=" + executorMemoryBytes +
         " (" + LlapUtil.humanReadableByteCount(executorMemoryBytes) + ")" +
-        ", llapIoCacheSize=" + ioMemoryBytes + " (" + LlapUtil.humanReadableByteCount(ioMemoryBytes) + ")" +
-        ", headRoomMemory=" + headroom + " (" + LlapUtil.humanReadableByteCount(headroom) + ")" +
+        ", llapIoCacheSize=" + ioMemoryBytes + " ("
+          + LlapUtil.humanReadableByteCount(ioMemoryBytes) + ")" +
+        ", xmxHeadRoomMemory=" + xmxHeadRoomBytes + " ("
+          + LlapUtil.humanReadableByteCount(xmxHeadRoomBytes) + ")" +
         ", adjustedExecutorMemory=" + executorMemoryPerInstance +
         " (" + LlapUtil.humanReadableByteCount(executorMemoryPerInstance) + ")" +
         ", numExecutors=" + numExecutors +
@@ -293,6 +293,30 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
     // AMReporter after the server so that it gets the correct address. It knows how to deal with
     // requests before it is started.
     addIfService(amReporter);
+  }
+
+  private static long determineXmxHeadroom(
+      Configuration daemonConf, long executorMemoryBytes, long maxJvmMemory) {
+    String headroomStr = HiveConf.getVar(daemonConf, ConfVars.LLAP_DAEMON_XMX_HEADROOM).trim();
+    long xmxHeadRoomBytes = Long.MAX_VALUE;
+    try {
+      if (headroomStr.endsWith("%")) {
+        long percentage = Integer.parseInt(headroomStr.substring(0, headroomStr.length() - 1));
+        Preconditions.checkState(percentage >= 0 && percentage < 100,
+            "Headroom percentage should be in [0, 100) range; found " + headroomStr);
+        xmxHeadRoomBytes = maxJvmMemory * percentage / 100L;
+      } else {
+        xmxHeadRoomBytes = HiveConf.toSizeBytes(headroomStr);
+      }
+    } catch (NumberFormatException ex) {
+      throw new RuntimeException("Invalid headroom configuration " + headroomStr);
+    }
+
+    Preconditions.checkArgument(xmxHeadRoomBytes < executorMemoryBytes,
+        "LLAP daemon headroom size should be less than daemon max memory size. headRoomBytes: "
+          + xmxHeadRoomBytes + " executorMemoryBytes: " + executorMemoryBytes + " (derived from "
+          + headroomStr + " out of xmx of " + maxJvmMemory + ")");
+    return xmxHeadRoomBytes;
   }
 
   private static void initializeLogging(final Configuration conf) {
@@ -469,15 +493,14 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
       int webPort = HiveConf.getIntVar(daemonConf, ConfVars.LLAP_DAEMON_WEB_PORT);
       long executorMemoryBytes = HiveConf.getIntVar(
           daemonConf, ConfVars.LLAP_DAEMON_MEMORY_PER_INSTANCE_MB) * 1024l * 1024l;
-      long headroomBytes = HiveConf.getIntVar(
-        daemonConf, ConfVars.LLAP_DAEMON_HEADROOM_MEMORY_PER_INSTANCE_MB) * 1024l * 1024l;
       long ioMemoryBytes = HiveConf.getSizeVar(daemonConf, ConfVars.LLAP_IO_MEMORY_MAX_SIZE);
       boolean isDirectCache = HiveConf.getBoolVar(daemonConf, ConfVars.LLAP_ALLOCATOR_DIRECT);
       boolean isLlapIo = HiveConf.getBoolVar(daemonConf, HiveConf.ConfVars.LLAP_IO_ENABLED, true);
+
       LlapDaemon.initializeLogging(daemonConf);
       llapDaemon = new LlapDaemon(daemonConf, numExecutors, executorMemoryBytes, isLlapIo,
           isDirectCache, ioMemoryBytes, localDirs, rpcPort, mngPort, shufflePort, webPort,
-          appName, headroomBytes);
+          appName);
 
       LOG.info("Adding shutdown hook for LlapDaemon");
       ShutdownHookManager.addShutdownHook(new CompositeServiceShutdownHook(llapDaemon), 1);

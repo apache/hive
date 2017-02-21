@@ -20,17 +20,15 @@ class LlapResource(object):
 		# convert to Mb
 		self.cache = config["hive.llap.io.memory.size"] / (1024*1024.0)
 		self.direct = config["hive.llap.io.allocator.direct"]
-		self.min_mb = -1
 		self.min_cores = -1
 		# compute heap + cache as final Xmx
 		h = self.memory 
 		if (not self.direct):
 			h += self.cache
 		if size == -1:
-			c = min(h*1.2, h + 1024) # + 1024 or 20%
-			c += (self.direct and self.cache) or 0
-			if self.min_mb > 0:
-				c = c + c%self.min_mb
+			print "Cannot determine the container size"
+			sys.exit(1)
+			return
 		else:
 			# do not mess with user input
 			c = size
