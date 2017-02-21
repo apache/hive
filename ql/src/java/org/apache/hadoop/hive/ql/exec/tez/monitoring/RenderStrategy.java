@@ -18,7 +18,7 @@ class RenderStrategy {
     void update(DAGStatus status, Map<String, Progress> vertexProgressMap);
   }
 
-  private abstract static class DefaultUpdateFunction implements UpdateFunction {
+  private abstract static class BaseUpdateFunction implements UpdateFunction {
     private static final int PRINT_INTERVAL = 3000;
 
     final TezJobMonitor monitor;
@@ -27,7 +27,7 @@ class RenderStrategy {
     private long lastPrintTime = 0L;
     private String lastReport = null;
 
-    DefaultUpdateFunction(TezJobMonitor monitor) {
+    BaseUpdateFunction(TezJobMonitor monitor) {
       this.monitor = monitor;
       perfLogger = SessionState.getPerfLogger();
     }
@@ -104,7 +104,11 @@ class RenderStrategy {
     abstract void renderReport(String report);
   }
 
-  static class LogToFileFunction extends DefaultUpdateFunction {
+  /**
+   * this adds the required progress update to the session state that is used by HS2 to send the
+   * same information to beeline client when requested.
+   */
+  static class LogToFileFunction extends BaseUpdateFunction {
 
     LogToFileFunction(TezJobMonitor monitor) {
       super(monitor);
@@ -121,7 +125,11 @@ class RenderStrategy {
     }
   }
 
-  static class InPlaceUpdateFunction extends DefaultUpdateFunction {
+  /**
+   * This used when we want the progress update to printed in the same process typically used via
+   * hive-cli mode.
+   */
+  static class InPlaceUpdateFunction extends BaseUpdateFunction {
     /**
      * Have to use the same instance to render else the number lines printed earlier is lost and the
      * screen will print the table again and again.
