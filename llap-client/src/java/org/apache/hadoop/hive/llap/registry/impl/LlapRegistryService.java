@@ -23,6 +23,7 @@ import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.llap.registry.ServiceInstanceSet;
 import org.apache.hadoop.hive.llap.registry.ServiceInstanceStateChangeListener;
 import org.apache.hadoop.hive.llap.registry.ServiceRegistry;
+import org.apache.hadoop.registry.client.binding.RegistryUtils;
 import org.apache.hadoop.service.AbstractService;
 import org.apache.hadoop.yarn.api.records.ApplicationId;
 import org.slf4j.Logger;
@@ -57,17 +58,17 @@ public class LlapRegistryService extends AbstractService {
     String hosts = HiveConf.getTrimmedVar(conf, HiveConf.ConfVars.LLAP_DAEMON_SERVICE_HOSTS);
     Preconditions.checkNotNull(hosts, ConfVars.LLAP_DAEMON_SERVICE_HOSTS.toString() + " must be defined");
     LlapRegistryService registry;
-    // TODO: this is not going to work with multiple users.
     if (hosts.startsWith("@")) {
       // Caching instances only in case of the YARN registry. Each host based list will get it's own copy.
-      String name = hosts.substring(1);
-      if (yarnRegistries.containsKey(name) && yarnRegistries.get(name).isInState(STATE.STARTED)) {
-        registry = yarnRegistries.get(name);
-      } else {
+      String appName = hosts.substring(1);
+      String userName = HiveConf.getVar(conf, ConfVars.LLAP_ZK_REGISTRY_USER, RegistryUtils.currentUser());
+      String key = appName + "-" + userName;
+      registry = yarnRegistries.get(key);
+      if (registry == null || !registry.isInState(STATE.STARTED)) {
         registry = new LlapRegistryService(false);
         registry.init(conf);
         registry.start();
-        yarnRegistries.put(name, registry);
+        yarnRegistries.put(key, registry);
       }
     } else {
       registry = new LlapRegistryService(false);
