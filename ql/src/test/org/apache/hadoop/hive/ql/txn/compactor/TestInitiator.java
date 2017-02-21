@@ -35,6 +35,7 @@ import org.apache.hadoop.hive.metastore.api.ShowCompactResponse;
 import org.apache.hadoop.hive.metastore.api.ShowCompactResponseElement;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -752,4 +753,8 @@ public class TestInitiator extends CompactorTest {
     return false;
   }
 
+  @After
+  public void tearDown() throws Exception {
+    compactorTestCleanup();
+  }
 }
