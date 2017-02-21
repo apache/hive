@@ -47,8 +47,6 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.SortedSet;
-import java.util.TreeSet;
 
 import static org.apache.tez.dag.api.client.DAGStatus.State.RUNNING;
 
@@ -59,23 +57,17 @@ import static org.apache.tez.dag.api.client.DAGStatus.State.RUNNING;
  */
 public class TezJobMonitor {
 
-  private static final String CLASS_NAME = TezJobMonitor.class.getName();
+  static final String CLASS_NAME = TezJobMonitor.class.getName();
   private static final int CHECK_INTERVAL = 200;
   private static final int MAX_RETRY_INTERVAL = 2500;
-  private static final int PRINT_INTERVAL = 3000;
 
   private final PerfLogger perfLogger = SessionState.getPerfLogger();
   private static final List<DAGClient> shutdownList;
   private final Map<String, BaseWork> workMap;
 
-  private transient LogHelper console;
+  transient LogHelper console;
 
-  private long lastPrintTime;
   private StringWriter diagnostics = new StringWriter();
-
-  interface UpdateFunction {
-    void update(DAGStatus status, Map<String, Progress> vertexProgressMap, String report);
-  }
 
   static {
     shutdownList = new LinkedList<>();
@@ -102,12 +94,7 @@ public class TezJobMonitor {
   private final DAG dag;
   private final Context context;
   private long executionStartTime = 0;
-  private final UpdateFunction updateFunction;
-  /**
-   * Have to use the same instance to render else the number lines printed earlier is lost and the
-   * screen will print the table again and again.
-   */
-  private final InPlaceUpdate inPlaceUpdate;
+  private final RenderStrategy.UpdateFunction updateFunction;
 
   public TezJobMonitor(Map<String, BaseWork> workMap, final DAGClient dagClient, HiveConf conf, DAG dag,
                        Context ctx) {
@@ -117,29 +104,15 @@ public class TezJobMonitor {
     this.dag = dag;
     this.context = ctx;
     console = SessionState.getConsole();
-    inPlaceUpdate = new InPlaceUpdate(LogHelper.getInfoStream());
     updateFunction = updateFunction();
   }
 
-  private UpdateFunction updateFunction() {
-    UpdateFunction logToFileFunction = new UpdateFunction() {
-      @Override
-      public void update(DAGStatus status, Map<String, Progress> vertexProgressMap, String report) {
-        SessionState.get().updateProgressMonitor(progressMonitor(status, vertexProgressMap));
-        console.printInfo(report);
-      }
-    };
-    UpdateFunction inPlaceUpdateFunction = new UpdateFunction() {
-      @Override
-      public void update(DAGStatus status, Map<String, Progress> vertexProgressMap, String report) {
-        inPlaceUpdate.render(progressMonitor(status, vertexProgressMap));
-        console.logInfo(report);
-      }
-    };
+  private RenderStrategy.UpdateFunction updateFunction() {
     return InPlaceUpdate.canRenderInPlace(hiveConf)
         && !SessionState.getConsole().getIsSilent()
         && !SessionState.get().isHiveServerQuery()
-        ? inPlaceUpdateFunction : logToFileFunction;
+        ? new RenderStrategy.InPlaceUpdateFunction(this)
+        : new RenderStrategy.LogToFileFunction(this);
   }
 
   private boolean isProfilingEnabled() {
@@ -163,7 +136,6 @@ public class TezJobMonitor {
     perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.TEZ_RUN_DAG);
     perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.TEZ_SUBMIT_TO_RUNNING);
     DAGStatus.State lastState = null;
-    String lastReport = null;
     boolean running = false;
 
     while (true) {
@@ -195,13 +167,13 @@ public class TezJobMonitor {
                 this.executionStartTime = System.currentTimeMillis();
                 running = true;
               }
-              lastReport = updateStatus(status, vertexProgressMap, lastReport);
+              updateFunction.update(status, vertexProgressMap);
               break;
             case SUCCEEDED:
               if (!running) {
                 this.executionStartTime = monitorStartTime;
               }
-              lastReport = updateStatus(status, vertexProgressMap, lastReport);
+              updateFunction.update(status, vertexProgressMap);
               success = true;
               running = false;
               done = true;
@@ -210,7 +182,7 @@ public class TezJobMonitor {
               if (!running) {
                 this.executionStartTime = monitorStartTime;
               }
-              lastReport = updateStatus(status, vertexProgressMap, lastReport);
+              updateFunction.update(status, vertexProgressMap);
               console.printInfo("Status: Killed");
               running = false;
               done = true;
@@ -221,7 +193,7 @@ public class TezJobMonitor {
               if (!running) {
                 this.executionStartTime = monitorStartTime;
               }
-              lastReport = updateStatus(status, vertexProgressMap, lastReport);
+              updateFunction.update(status, vertexProgressMap);
               console.printError("Status: Failed");
               running = false;
               done = true;
@@ -323,71 +295,11 @@ public class TezJobMonitor {
     return (tezCounter == null) ? 0 : tezCounter.getValue();
   }
 
-  private String updateStatus(DAGStatus status, Map<String, Progress> vertexProgressMap,
-      String lastReport) {
-    String report = getReport(vertexProgressMap);
-    if (!report.equals(lastReport) || System.currentTimeMillis() >= lastPrintTime + PRINT_INTERVAL) {
-      updateFunction.update(status, vertexProgressMap, report);
-      lastPrintTime = System.currentTimeMillis();
-    }
-    return report;
-  }
-
-  private String getReport(Map<String, Progress> progressMap) {
-    StringBuilder reportBuffer = new StringBuilder();
-
-    SortedSet<String> keys = new TreeSet<String>(progressMap.keySet());
-    for (String s : keys) {
-      Progress progress = progressMap.get(s);
-      final int complete = progress.getSucceededTaskCount();
-      final int total = progress.getTotalTaskCount();
-      final int running = progress.getRunningTaskCount();
-      final int failed = progress.getFailedTaskAttemptCount();
-      if (total <= 0) {
-        reportBuffer.append(String.format("%s: -/-\t", s));
-      } else {
-        if (complete == total) {
-          /*
-           * We may have missed the start of the vertex due to the 3 seconds interval
-           */
-          if (!perfLogger.startTimeHasMethod(PerfLogger.TEZ_RUN_VERTEX + s)) {
-            perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.TEZ_RUN_VERTEX + s);
-          }
-
-          perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.TEZ_RUN_VERTEX + s);
-        }
-        if (complete < total && (complete > 0 || running > 0 || failed > 0)) {
-
-          if (!perfLogger.startTimeHasMethod(PerfLogger.TEZ_RUN_VERTEX + s)) {
-            perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.TEZ_RUN_VERTEX + s);
-          }
-
-          /* vertex is started, but not complete */
-          if (failed > 0) {
-            reportBuffer.append(String.format("%s: %d(+%d,-%d)/%d\t", s, complete, running, failed, total));
-          } else {
-            reportBuffer.append(String.format("%s: %d(+%d)/%d\t", s, complete, running, total));
-          }
-        } else {
-          /* vertex is waiting for input/slots or complete */
-          if (failed > 0) {
-            /* tasks finished but some failed */
-            reportBuffer.append(String.format("%s: %d(-%d)/%d\t", s, complete, failed, total));
-          } else {
-            reportBuffer.append(String.format("%s: %d/%d\t", s, complete, total));
-          }
-        }
-      }
-    }
-
-    return reportBuffer.toString();
-  }
-
   public String getDiagnostics() {
     return diagnostics.toString();
   }
 
-  private ProgressMonitor progressMonitor(DAGStatus status, Map<String, Progress> progressMap) {
+  ProgressMonitor progressMonitor(DAGStatus status, Map<String, Progress> progressMap) {
     try {
       return new TezProgressMonitor(dagClient, status, workMap, progressMap, console,
           executionStartTime);
