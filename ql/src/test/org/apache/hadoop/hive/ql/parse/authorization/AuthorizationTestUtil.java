@@ -67,7 +67,7 @@ public class AuthorizationTestUtil {
   }
 
   private static ASTNode parse(String command) throws Exception {
-    return ParseUtils.findRootNonNullToken((new ParseDriver()).parse(command));
+    return ParseUtils.parse(command);
   }
 
   /**

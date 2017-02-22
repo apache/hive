@@ -973,17 +973,18 @@ public class CalcitePlanner extends SemanticAnalyzer {
     return newAst;
   }
 
-  /**
-   * Performs breadth-first search of the AST for a nested set of tokens. Tokens
-   * don't have to be each others' direct children, they can be separated by
-   * layers of other tokens. For each token in the list, the first one found is
-   * matched and there's no backtracking; thus, if AST has multiple instances of
-   * some token, of which only one matches, it is not guaranteed to be found. We
-   * use this for simple things. Not thread-safe - reuses searchQueue.
-   */
-  static class ASTSearcher {
+
+  public static class ASTSearcher {
     private final LinkedList<ASTNode> searchQueue = new LinkedList<ASTNode>();
 
+    /**
+     * Performs breadth-first search of the AST for a nested set of tokens. Tokens
+     * don't have to be each others' direct children, they can be separated by
+     * layers of other tokens. For each token in the list, the first one found is
+     * matched and there's no backtracking; thus, if AST has multiple instances of
+     * some token, of which only one matches, it is not guaranteed to be found. We
+     * use this for simple things. Not thread-safe - reuses searchQueue.
+     */
     public ASTNode simpleBreadthFirstSearch(ASTNode ast, int... tokens) {
       searchQueue.clear();
       searchQueue.add(ast);
@@ -1006,6 +1007,38 @@ public class CalcitePlanner extends SemanticAnalyzer {
           return null;
       }
       return null;
+    }
+ 
+    public ASTNode depthFirstSearch(ASTNode ast, int token) {
+      searchQueue.clear();
+      searchQueue.add(ast);
+      while (!searchQueue.isEmpty()) {
+        ASTNode next = searchQueue.poll();
+        if (next.getType() == token) return next;
+        for (int j = 0; j < next.getChildCount(); ++j) {
+          searchQueue.add((ASTNode) next.getChild(j));
+        }
+      }
+      return null;
+    }
+
+    public ASTNode simpleBreadthFirstSearchAny(ASTNode ast, int... tokens) {
+      searchQueue.clear();
+      searchQueue.add(ast);
+      while (!searchQueue.isEmpty()) {
+        ASTNode next = searchQueue.poll();
+        for (int i = 0; i < tokens.length; ++i) {
+          if (next.getType() == tokens[i]) return next;
+        }
+        for (int i = 0; i < next.getChildCount(); ++i) {
+          searchQueue.add((ASTNode) next.getChild(i));
+        }
+      }
+      return null;
+    }
+
+    public void reset() {
+      searchQueue.clear();
     }
   }
 
