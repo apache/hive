@@ -2707,7 +2707,12 @@ private void constructOneLBLocationMap(FileStatus fSta,
        */
     
     int counter = 1;
-    if (!isRenameAllowed || isBlobStoragePath) {
+    // A call to fs.exists is necessary for the local filesystem due to CDH-47856 - while there is a fix for the reported
+    // bug upstream, that fix breaks CM metrics integration, so a custom fix has been added. The issue is that the standard
+    // local filesystem object allows rename-overwrites operations. However, HDFS does not, and this part of the commit logic
+    // requires that data be committed to a unique path (so that data is not overwritten).
+    final boolean isDestLocal = destFs.getUri().getScheme().equals("file") || destFs.getUri().getScheme().equals("pfile");
+    if (!isRenameAllowed || isBlobStoragePath ||isDestLocal) {
       while (destFs.exists(destFilePath)) {
         destFilePath =  new Path(destDirPath, name + ("_copy_" + counter) + (!type.isEmpty() ? "." + type : ""));
         counter++;
