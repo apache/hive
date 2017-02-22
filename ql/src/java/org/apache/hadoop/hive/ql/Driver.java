@@ -441,9 +441,7 @@ public class Driver implements CommandProcessor {
       ctx.setHDFSCleanup(true);
 
       perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.PARSE);
-      ParseDriver pd = new ParseDriver();
-      ASTNode tree = pd.parse(command, ctx);
-      tree = ParseUtils.findRootNonNullToken(tree);
+      ASTNode tree = ParseUtils.parse(command, ctx);
       perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.PARSE);
 
 

@@ -258,9 +258,7 @@ public class TestUpdateDeleteSemanticAnalyzer {
     ctx.setCmd(query);
     ctx.setHDFSCleanup(true);
 
-    ParseDriver pd = new ParseDriver();
-    ASTNode tree = pd.parse(query, ctx);
-    tree = ParseUtils.findRootNonNullToken(tree);
+    ASTNode tree = ParseUtils.parse(query, ctx);
 
     BaseSemanticAnalyzer sem = SemanticAnalyzerFactory.get(queryState, tree);
     SessionState.get().initTxnMgr(conf);

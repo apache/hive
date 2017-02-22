@@ -129,9 +129,7 @@ public class ColumnStatsAutoGatherContext {
   private Operator genSelOpForAnalyze(String analyzeCommand) throws IOException, ParseException, SemanticException{
     //0. initialization
     Context ctx = new Context(conf);
-    ParseDriver pd = new ParseDriver();
-    ASTNode tree = pd.parse(analyzeCommand, ctx);
-    tree = ParseUtils.findRootNonNullToken(tree);
+    ASTNode tree = ParseUtils.parse(analyzeCommand, ctx);
 
     //1. get the ColumnStatsSemanticAnalyzer
     BaseSemanticAnalyzer baseSem = SemanticAnalyzerFactory.get(new QueryState(conf), tree);

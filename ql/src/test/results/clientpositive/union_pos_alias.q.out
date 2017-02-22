@@ -1,0 +1,308 @@
+PREHOOK: query: explain 
+select 'tst1' as key, count(1) as value from src s1
+UNION ALL
+select key, value from (select 'tst2' as key, count(1) as value from src s2 UNION ALL select 'tst3' as key, count(1) as value from src s3) s4
+order by 1
+PREHOOK: type: QUERY
+POSTHOOK: query: explain 
+select 'tst1' as key, count(1) as value from src s1
+UNION ALL
+select key, value from (select 'tst2' as key, count(1) as value from src s2 UNION ALL select 'tst3' as key, count(1) as value from src s3) s4
+order by 1
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-2 depends on stages: Stage-1, Stage-3, Stage-4
+  Stage-3 is a root stage
+  Stage-4 is a root stage
+  Stage-0 depends on stages: Stage-2
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: s1
+            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: COMPLETE
+            Select Operator
+              Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: COMPLETE
+              Group By Operator
+                aggregations: count(1)
+                mode: hash
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                Reduce Output Operator
+                  sort order: 
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                  value expressions: _col0 (type: bigint)
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations: count(VALUE._col0)
+          mode: mergepartial
+          outputColumnNames: _col0
+          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+          Select Operator
+            expressions: 'tst1' (type: string), _col0 (type: bigint)
+            outputColumnNames: _col0, _col1
+            Statistics: Num rows: 1 Data size: 96 Basic stats: COMPLETE Column stats: COMPLETE
+            File Output Operator
+              compressed: false
+              table:
+                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+
+  Stage: Stage-2
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            Union
+              Statistics: Num rows: 3 Data size: 288 Basic stats: COMPLETE Column stats: COMPLETE
+              Reduce Output Operator
+                key expressions: _col0 (type: string)
+                sort order: +
+                Statistics: Num rows: 3 Data size: 288 Basic stats: COMPLETE Column stats: COMPLETE
+                value expressions: _col1 (type: bigint)
+          TableScan
+            Union
+              Statistics: Num rows: 3 Data size: 288 Basic stats: COMPLETE Column stats: COMPLETE
+              Reduce Output Operator
+                key expressions: _col0 (type: string)
+                sort order: +
+                Statistics: Num rows: 3 Data size: 288 Basic stats: COMPLETE Column stats: COMPLETE
+                value expressions: _col1 (type: bigint)
+          TableScan
+            Union
+              Statistics: Num rows: 3 Data size: 288 Basic stats: COMPLETE Column stats: COMPLETE
+              Reduce Output Operator
+                key expressions: _col0 (type: string)
+                sort order: +
+                Statistics: Num rows: 3 Data size: 288 Basic stats: COMPLETE Column stats: COMPLETE
+                value expressions: _col1 (type: bigint)
+      Reduce Operator Tree:
+        Select Operator
+          expressions: KEY.reducesinkkey0 (type: string), VALUE._col0 (type: bigint)
+          outputColumnNames: _col0, _col1
+          Statistics: Num rows: 3 Data size: 288 Basic stats: COMPLETE Column stats: COMPLETE
+          File Output Operator
+            compressed: false
+            Statistics: Num rows: 3 Data size: 288 Basic stats: COMPLETE Column stats: COMPLETE
+            table:
+                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-3
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: s2
+            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: COMPLETE
+            Select Operator
+              Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: COMPLETE
+              Group By Operator
+                aggregations: count(1)
+                mode: hash
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                Reduce Output Operator
+                  sort order: 
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                  value expressions: _col0 (type: bigint)
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations: count(VALUE._col0)
+          mode: mergepartial
+          outputColumnNames: _col0
+          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+          Select Operator
+            expressions: 'tst2' (type: string), _col0 (type: bigint)
+            outputColumnNames: _col0, _col1
+            Statistics: Num rows: 1 Data size: 96 Basic stats: COMPLETE Column stats: COMPLETE
+            File Output Operator
+              compressed: false
+              table:
+                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+
+  Stage: Stage-4
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: s3
+            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: COMPLETE
+            Select Operator
+              Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: COMPLETE
+              Group By Operator
+                aggregations: count(1)
+                mode: hash
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                Reduce Output Operator
+                  sort order: 
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                  value expressions: _col0 (type: bigint)
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations: count(VALUE._col0)
+          mode: mergepartial
+          outputColumnNames: _col0
+          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+          Select Operator
+            expressions: 'tst3' (type: string), _col0 (type: bigint)
+            outputColumnNames: _col0, _col1
+            Statistics: Num rows: 1 Data size: 96 Basic stats: COMPLETE Column stats: COMPLETE
+            File Output Operator
+              compressed: false
+              table:
+                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select 'tst1' as key, count(1) as value from src s1
+UNION ALL
+select key, value from (select 'tst2' as key, count(1) as value from src s2 UNION ALL select 'tst3' as key, count(1) as value from src s3) s4
+order by 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: select 'tst1' as key, count(1) as value from src s1
+UNION ALL
+select key, value from (select 'tst2' as key, count(1) as value from src s2 UNION ALL select 'tst3' as key, count(1) as value from src s3) s4
+order by 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+tst1	500
+tst2	500
+tst3	500
+PREHOOK: query: drop table src_10
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table src_10
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table src_10 as select * from src limit 10
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@src_10
+POSTHOOK: query: create table src_10 as select * from src limit 10
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@src
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@src_10
+POSTHOOK: Lineage: src_10.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_10.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: explain 
+select key as value, value as key from src_10
+UNION ALL
+select 'test', value from src_10 s3
+order by 2, 1 desc
+PREHOOK: type: QUERY
+POSTHOOK: query: explain 
+select key as value, value as key from src_10
+UNION ALL
+select 'test', value from src_10 s3
+order by 2, 1 desc
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: src_10
+            Statistics: Num rows: 10 Data size: 104 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: key (type: string), value (type: string)
+              outputColumnNames: _col0, _col1
+              Statistics: Num rows: 10 Data size: 104 Basic stats: COMPLETE Column stats: NONE
+              Union
+                Statistics: Num rows: 20 Data size: 208 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col1 (type: string), _col0 (type: string)
+                  sort order: +-
+                  Statistics: Num rows: 20 Data size: 208 Basic stats: COMPLETE Column stats: NONE
+          TableScan
+            alias: s3
+            Statistics: Num rows: 10 Data size: 104 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: 'test' (type: string), value (type: string)
+              outputColumnNames: _col0, _col1
+              Statistics: Num rows: 10 Data size: 104 Basic stats: COMPLETE Column stats: NONE
+              Union
+                Statistics: Num rows: 20 Data size: 208 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col1 (type: string), _col0 (type: string)
+                  sort order: +-
+                  Statistics: Num rows: 20 Data size: 208 Basic stats: COMPLETE Column stats: NONE
+      Reduce Operator Tree:
+        Select Operator
+          expressions: KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string)
+          outputColumnNames: _col0, _col1
+          Statistics: Num rows: 20 Data size: 208 Basic stats: COMPLETE Column stats: NONE
+          File Output Operator
+            compressed: false
+            Statistics: Num rows: 20 Data size: 208 Basic stats: COMPLETE Column stats: NONE
+            table:
+                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select key as value, value as key from src_10
+UNION ALL
+select 'test', value from src_10 s3
+order by 2, 1 desc
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src_10
+#### A masked pattern was here ####
+POSTHOOK: query: select key as value, value as key from src_10
+UNION ALL
+select 'test', value from src_10 s3
+order by 2, 1 desc
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_10
+#### A masked pattern was here ####
+test	val_165
+165	val_165
+test	val_238
+238	val_238
+test	val_255
+255	val_255
+test	val_27
+27	val_27
+test	val_278
+278	val_278
+test	val_311
+311	val_311
+test	val_409
+409	val_409
+test	val_484
+484	val_484
+test	val_86
+86	val_86
+test	val_98
+98	val_98
+PREHOOK: query: drop table src_10
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@src_10
+PREHOOK: Output: default@src_10
+POSTHOOK: query: drop table src_10
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@src_10
+POSTHOOK: Output: default@src_10

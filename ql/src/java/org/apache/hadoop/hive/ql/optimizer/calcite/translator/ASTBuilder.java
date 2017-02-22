@@ -38,19 +38,19 @@ import org.apache.hadoop.hive.ql.parse.HiveParser;
 import org.apache.hadoop.hive.ql.parse.ParseDriver;
 import org.apache.hadoop.hive.ql.parse.SemanticAnalyzer;
 
-class ASTBuilder {
+public class ASTBuilder {
 
-  static ASTBuilder construct(int tokenType, String text) {
+  public static ASTBuilder construct(int tokenType, String text) {
     ASTBuilder b = new ASTBuilder();
     b.curr = createAST(tokenType, text);
     return b;
   }
 
-  static ASTNode createAST(int tokenType, String text) {
+  public static ASTNode createAST(int tokenType, String text) {
     return (ASTNode) ParseDriver.adaptor.create(tokenType, text);
   }
 
-  static ASTNode destNode() {
+  public static ASTNode destNode() {
     return ASTBuilder
         .construct(HiveParser.TOK_DESTINATION, "TOK_DESTINATION")
         .add(
@@ -58,7 +58,7 @@ class ASTBuilder {
                 "TOK_TMP_FILE")).node();
   }
 
-  static ASTNode table(RelNode scan) {
+  public static ASTNode table(RelNode scan) {
     HiveTableScan hts;
     if (scan instanceof DruidQuery) {
       hts = (HiveTableScan) ((DruidQuery)scan).getTableScan();
@@ -102,7 +102,7 @@ class ASTBuilder {
     return b.node();
   }
 
-  static ASTNode join(ASTNode left, ASTNode right, JoinRelType joinType, ASTNode cond,
+  public static ASTNode join(ASTNode left, ASTNode right, JoinRelType joinType, ASTNode cond,
       boolean semiJoin) {
     ASTBuilder b = null;
 
@@ -129,12 +129,12 @@ class ASTBuilder {
     return b.node();
   }
 
-  static ASTNode subQuery(ASTNode qry, String alias) {
+  public static ASTNode subQuery(ASTNode qry, String alias) {
     return ASTBuilder.construct(HiveParser.TOK_SUBQUERY, "TOK_SUBQUERY").add(qry)
         .add(HiveParser.Identifier, alias).node();
   }
 
-  static ASTNode qualifiedName(String tableName, String colName) {
+  public static ASTNode qualifiedName(String tableName, String colName) {
     ASTBuilder b = ASTBuilder
         .construct(HiveParser.DOT, ".")
         .add(
@@ -143,36 +143,36 @@ class ASTBuilder {
     return b.node();
   }
 
-  static ASTNode unqualifiedName(String colName) {
+  public static ASTNode unqualifiedName(String colName) {
     ASTBuilder b = ASTBuilder.construct(HiveParser.TOK_TABLE_OR_COL, "TOK_TABLE_OR_COL").add(
         HiveParser.Identifier, colName);
     return b.node();
   }
 
-  static ASTNode where(ASTNode cond) {
+  public static ASTNode where(ASTNode cond) {
     return ASTBuilder.construct(HiveParser.TOK_WHERE, "TOK_WHERE").add(cond).node();
   }
 
-  static ASTNode having(ASTNode cond) {
+  public static ASTNode having(ASTNode cond) {
     return ASTBuilder.construct(HiveParser.TOK_HAVING, "TOK_HAVING").add(cond).node();
   }
 
-  static ASTNode limit(Object offset, Object limit) {
+  public static ASTNode limit(Object offset, Object limit) {
     return ASTBuilder.construct(HiveParser.TOK_LIMIT, "TOK_LIMIT")
         .add(HiveParser.Number, offset.toString())
         .add(HiveParser.Number, limit.toString()).node();
   }
 
-  static ASTNode selectExpr(ASTNode expr, String alias) {
+  public static ASTNode selectExpr(ASTNode expr, String alias) {
     return ASTBuilder.construct(HiveParser.TOK_SELEXPR, "TOK_SELEXPR").add(expr)
         .add(HiveParser.Identifier, alias).node();
   }
 
-  static ASTNode literal(RexLiteral literal) {
+  public static ASTNode literal(RexLiteral literal) {
     return literal(literal, false);
   }
 
-  static ASTNode literal(RexLiteral literal, boolean useTypeQualInLiteral) {
+  public static ASTNode literal(RexLiteral literal, boolean useTypeQualInLiteral) {
     Object val = null;
     int type = 0;
     SqlTypeName sqlType = literal.getType().getSqlTypeName();
@@ -328,21 +328,21 @@ class ASTBuilder {
 
   ASTNode curr;
 
-  ASTNode node() {
+  public ASTNode node() {
     return curr;
   }
 
-  ASTBuilder add(int tokenType, String text) {
+  public ASTBuilder add(int tokenType, String text) {
     ParseDriver.adaptor.addChild(curr, createAST(tokenType, text));
     return this;
   }
 
-  ASTBuilder add(ASTBuilder b) {
+  public ASTBuilder add(ASTBuilder b) {
     ParseDriver.adaptor.addChild(curr, b.curr);
     return this;
   }
 
-  ASTBuilder add(ASTNode n) {
+  public ASTBuilder add(ASTNode n) {
     if (n != null) {
       ParseDriver.adaptor.addChild(curr, n);
     }

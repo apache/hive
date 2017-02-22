@@ -2408,7 +2408,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   private void replaceViewReferenceWithDefinition(QB qb, Table tab,
       String tab_name, String alias) throws SemanticException {
 
-    ParseDriver pd = new ParseDriver();
     ASTNode viewTree;
     final ASTNodeOrigin viewOrigin = new ASTNodeOrigin("VIEW", tab.getTableName(),
         tab.getViewExpandedText(), alias, qb.getParseInfo().getSrcForAlias(
@@ -2417,8 +2416,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       String viewText = tab.getViewExpandedText();
       // Reparse text, passing null for context to avoid clobbering
       // the top-level token stream.
-      ASTNode tree = pd.parse(viewText, ctx, false);
-      tree = ParseUtils.findRootNonNullToken(tree);
+      ASTNode tree = ParseUtils.parse(viewText, ctx, false);
       viewTree = tree;
       Dispatcher nodeOriginDispatcher = new Dispatcher() {
         @Override
@@ -10886,11 +10884,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       // check if we need to ctx.setCmd(rewrittenQuery);
       ParseDriver pd = new ParseDriver();
       try {
-        rewrittenTree = pd.parse(rewrittenQuery);
+        rewrittenTree = ParseUtils.parse(rewrittenQuery);
       } catch (ParseException e) {
         throw new SemanticException(e);
       }
-      rewrittenTree = ParseUtils.findRootNonNullToken(rewrittenTree);
       return rewrittenTree;
     } else {
       return ast;
