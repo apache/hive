@@ -3162,10 +3162,11 @@ public class HiveConf extends Configuration {
       "llap.daemon.service.port"),
     LLAP_DAEMON_WEB_SSL("hive.llap.daemon.web.ssl", false,
       "Whether LLAP daemon web UI should use SSL.", "llap.daemon.service.ssl"),
-    LLAP_CLIENT_CONSISTENT_SPLITS("hive.llap.client.consistent.splits",
-        false,
-        "Whether to setup split locations to match nodes on which llap daemons are running," +
-            " instead of using the locations provided by the split itself"),
+    LLAP_CLIENT_CONSISTENT_SPLITS("hive.llap.client.consistent.splits", false,
+        "Whether to setup split locations to match nodes on which llap daemons are running, " +
+        "instead of using the locations provided by the split itself. If there is no llap daemon " +
+        "running, fall back to locations provided by the split. This is effective only if " +
+        "hive.execution.mode is llap"),
     LLAP_VALIDATE_ACLS("hive.llap.validate.acls", true,
         "Whether LLAP should reject permissive ACLs in some cases (e.g. its own management\n" +
         "protocol or ZK paths), similar to how ssh refuses a key with bad access permissions."),
