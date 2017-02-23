@@ -61,11 +61,8 @@ public class GenericUDFSQCountCheck extends GenericUDF {
 
   @Override
   public Object evaluate(DeferredObject[] arguments) throws HiveException {
-    Object valObject = arguments[0].get();
-    assert(valObject != null);
 
     Long val = getLongValue(arguments, 0, converters);
-    assert(val >= 0);
 
     switch (arguments.length){
       case 1: //Scalar queries, should expect value/count less than 1
@@ -75,7 +72,13 @@ public class GenericUDFSQCountCheck extends GenericUDF {
         }
         break;
       case 2:
-        if (val == 0) { // IN/NOT IN subqueries with aggregate
+        Object valObject = arguments[0].get();
+        if( valObject != null
+                && getLongValue(arguments, 0, converters) == 0){
+          throw new UDFArgumentException(
+                  " IN/NOT IN subquery with aggregate returning zero result. Currently this is not supported.");
+        }
+        else if(valObject == null) {
           throw new UDFArgumentException(
                   " IN/NOT IN subquery with aggregate returning zero result. Currently this is not supported.");
         }
