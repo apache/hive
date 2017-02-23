@@ -94,7 +94,7 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
   private String tblNameOrPattern;
   private Long eventFrom;
   private Long eventTo;
-  private Integer batchSize;
+  private Integer maxEventLimit;
   // Base path for REPL LOAD
   private String path;
 
@@ -276,8 +276,8 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
                 Long.parseLong(PlanUtils.stripQuotes(fromNode.getChild(numChild + 1).getText()));
             // skip the next child, since we already took care of it
             numChild++;
-          } else if (fromNode.getChild(numChild).getType() == TOK_BATCH) {
-            batchSize =
+          } else if (fromNode.getChild(numChild).getType() == TOK_LIMIT) {
+            maxEventLimit =
                 Integer.parseInt(PlanUtils.stripQuotes(fromNode.getChild(numChild + 1).getText()));
             // skip the next child, since we already took care of it
             numChild++;
@@ -297,7 +297,7 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
   private void analyzeReplDump(ASTNode ast) throws SemanticException {
     LOG.debug("ReplicationSemanticAnalyzer.analyzeReplDump: " + String.valueOf(dbNameOrPattern)
         + "." + String.valueOf(tblNameOrPattern) + " from " + String.valueOf(eventFrom) + " to "
-        + String.valueOf(eventTo) + " batchsize " + String.valueOf(batchSize));
+        + String.valueOf(eventTo) + " maxEventLimit " + String.valueOf(maxEventLimit));
     String replRoot = conf.getVar(HiveConf.ConfVars.REPLDIR);
     Path dumpRoot = new Path(replRoot, getNextDumpDir());
     DumpMetaData dmd = new DumpMetaData(dumpRoot);
@@ -354,12 +354,8 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
         }
 
         Integer maxRange = Ints.checkedCast(eventTo - eventFrom + 1);
-        if (batchSize == null){
-          batchSize = maxRange;
-        } else {
-          if (batchSize > maxRange){
-            batchSize = maxRange;
-          }
+        if ((maxEventLimit == null) || (maxEventLimit > maxRange)){
+          maxEventLimit = maxRange;
         }
 
         // TODO : instead of simply restricting by message format, we should eventually
@@ -377,7 +373,7 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
             = new EventUtils.MSClientNotificationFetcher(db.getMSC());
 
         EventUtils.NotificationEventIterator evIter = new EventUtils.NotificationEventIterator(
-            evFetcher, eventFrom, batchSize, evFilter);
+            evFetcher, eventFrom, maxEventLimit, evFilter);
 
         while (evIter.hasNext()){
           NotificationEvent ev = evIter.next();
