@@ -741,12 +741,18 @@ class ColumnStatisticsImpl implements ColumnStatistics {
 
     @Override
     public DateWritable getMinimum() {
+      if (minimum == null) {
+        return null;
+      }
       minDate.set(minimum);
       return minDate;
     }
 
     @Override
     public DateWritable getMaximum() {
+      if (maximum == null) {
+        return null;
+      }
       maxDate.set(maximum);
       return maxDate;
     }
@@ -841,14 +847,12 @@ class ColumnStatisticsImpl implements ColumnStatistics {
 
     @Override
     public Timestamp getMinimum() {
-      Timestamp minTimestamp = new Timestamp(minimum);
-      return minTimestamp;
+      return minimum == null ? null : new Timestamp(minimum);
     }
 
     @Override
     public Timestamp getMaximum() {
-      Timestamp maxTimestamp = new Timestamp(maximum);
-      return maxTimestamp;
+      return maximum == null ? null : new Timestamp(maximum);
     }
 
     @Override
@@ -856,9 +860,9 @@ class ColumnStatisticsImpl implements ColumnStatistics {
       StringBuilder buf = new StringBuilder(super.toString());
       if (getNumberOfValues() != 0) {
         buf.append(" min: ");
-        buf.append(minimum);
+        buf.append(getMinimum());
         buf.append(" max: ");
-        buf.append(maximum);
+        buf.append(getMaximum());
       }
       return buf.toString();
     }
