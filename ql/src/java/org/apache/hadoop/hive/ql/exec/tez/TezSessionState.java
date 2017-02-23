@@ -308,6 +308,8 @@ public class TezSessionState {
       tezConfig.setInt(TezConfiguration.TEZ_AM_SESSION_MIN_HELD_CONTAINERS, n);
     }
 
+    setupSessionAcls(tezConfig, conf);
+
     final TezClient session = TezClient.newBuilder("HIVE-" + sessionId, tezConfig)
         .setIsSession(true).setLocalResources(commonLocalResources)
         .setCredentials(llapCredentials).setServicePluginDescriptor(servicePluginsDescriptor)
@@ -431,6 +433,31 @@ public class TezSessionState {
     } catch (ExecutionException e) {
       throw new RuntimeException(e);
     }
+  }
+
+  private void setupSessionAcls(Configuration tezConf, HiveConf hiveConf) throws
+      IOException {
+
+    String user = SessionState.getUserFromAuthenticator();
+    UserGroupInformation loginUserUgi = UserGroupInformation.getLoginUser();
+    String loginUser =
+        loginUserUgi == null ? null : loginUserUgi.getShortUserName();
+    boolean addHs2User =
+        HiveConf.getBoolVar(hiveConf, ConfVars.HIVETEZHS2USERACCESS);
+
+    String viewStr = Utilities.getAclStringWithHiveModification(tezConf,
+            TezConfiguration.TEZ_AM_VIEW_ACLS, addHs2User, user, loginUser);
+    String modifyStr = Utilities.getAclStringWithHiveModification(tezConf,
+            TezConfiguration.TEZ_AM_MODIFY_ACLS, addHs2User, user, loginUser);
+
+    if (LOG.isDebugEnabled()) {
+      LOG.debug(
+          "Setting Tez Session access for sessionId={} with viewAclString={}, modifyStr={}",
+          SessionState.get().getSessionId(), viewStr, modifyStr);
+    }
+
+    tezConf.set(TezConfiguration.TEZ_AM_VIEW_ACLS, viewStr);
+    tezConf.set(TezConfiguration.TEZ_AM_MODIFY_ACLS, modifyStr);
   }
 
   public void refreshLocalResourcesFromConf(HiveConf conf)

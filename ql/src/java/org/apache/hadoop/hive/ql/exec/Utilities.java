@@ -143,6 +143,7 @@ import org.apache.hadoop.mapred.SequenceFileInputFormat;
 import org.apache.hadoop.mapred.SequenceFileOutputFormat;
 import org.apache.hadoop.util.Progressable;
 import org.apache.hadoop.util.Shell;
+import org.apache.hive.common.util.ACLConfigurationParser;
 import org.apache.hive.common.util.ReflectionUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -3793,5 +3794,27 @@ public final class Utilities {
     int exp = (int) (Math.log(bytes) / Math.log(unit));
     String suffix = "KMGTPE".charAt(exp-1) + "";
     return String.format("%.2f%sB", bytes / Math.pow(unit, exp), suffix);
+  }
+
+
+  public static String getAclStringWithHiveModification(Configuration tezConf,
+                                                        String propertyName,
+                                                        boolean addHs2User,
+                                                        String user,
+                                                        String hs2User) throws
+      IOException {
+
+    // Start with initial ACLs
+    ACLConfigurationParser aclConf =
+        new ACLConfigurationParser(tezConf, propertyName);
+
+    // Always give access to the user
+    aclConf.addAllowedUser(user);
+
+    // Give access to the process user if the config is set.
+    if (addHs2User && hs2User != null) {
+      aclConf.addAllowedUser(hs2User);
+    }
+    return aclConf.toAclString();
   }
 }
