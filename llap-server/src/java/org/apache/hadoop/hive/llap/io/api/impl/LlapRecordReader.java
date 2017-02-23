@@ -93,6 +93,8 @@ class LlapRecordReader
 
   private SchemaEvolution evolution;
 
+  private final boolean isAcidScan;
+
   public LlapRecordReader(JobConf job, FileSplit split, List<Integer> includedCols,
       String hostName, ColumnVectorProducer cvp, ExecutorService executor,
       InputFormat<?, ?> sourceInputFormat, Deserializer sourceSerDe, Reporter reporter)
@@ -139,7 +141,7 @@ class LlapRecordReader
       partitionValues = null;
     }
 
-    boolean isAcidScan = HiveConf.getBoolVar(jobConf, ConfVars.HIVE_TRANSACTIONAL_TABLE_SCAN);
+    isAcidScan = HiveConf.getBoolVar(jobConf, ConfVars.HIVE_TRANSACTIONAL_TABLE_SCAN);
     TypeDescription schema = OrcInputFormat.getDesiredRowTypeDescr(
         job, isAcidScan, Integer.MAX_VALUE);
 
@@ -169,8 +171,11 @@ class LlapRecordReader
 
   private boolean checkOrcSchemaEvolution() {
     for (int i = 0; i < columnCount; ++i) {
-      int colId = columnIds == null ? i : columnIds.get(i);
-      if (!evolution.isPPDSafeConversion(colId)) {
+      int projectedColId = columnIds == null ? i : columnIds.get(i);
+      // Adjust file column index for ORC struct.
+      // LLAP IO does not support ACID. When it supports, this would be auto adjusted.
+      int fileColId =  OrcInputFormat.getRootColumn(!isAcidScan) + projectedColId + 1;
+      if (!evolution.isPPDSafeConversion(fileColId)) {
         LlapIoImpl.LOG.warn("Unsupported schema evolution! Disabling Llap IO for {}", split);
         return false;
       }
