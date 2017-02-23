@@ -353,6 +353,7 @@ public class SparkReduceRecordHandler extends SparkRecordHandler {
   private <E> boolean processVectors(Iterator<E> values, byte tag) throws HiveException {
     VectorizedRowBatch batch = batches[tag];
     batch.reset();
+    buffer.reset();
 
     /* deserialize key into columns */
     VectorizedBatchUtil.addRowToBatchFrom(keyObject, keyStructInspector, 0, 0, batch, buffer);
