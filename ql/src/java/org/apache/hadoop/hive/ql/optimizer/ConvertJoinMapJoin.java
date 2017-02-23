@@ -19,7 +19,6 @@
 package org.apache.hadoop.hive.ql.optimizer;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -53,6 +52,7 @@ import org.apache.hadoop.hive.ql.parse.GenTezUtils;
 import org.apache.hadoop.hive.ql.parse.OptimizeTezProcContext;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hadoop.hive.ql.plan.ColStatistics;
 import org.apache.hadoop.hive.ql.plan.CommonMergeJoinDesc;
 import org.apache.hadoop.hive.ql.plan.DynamicPruningEventDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
@@ -63,6 +63,7 @@ import org.apache.hadoop.hive.ql.plan.MapJoinDesc;
 import org.apache.hadoop.hive.ql.plan.OpTraits;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.Statistics;
+import org.apache.hadoop.hive.ql.stats.StatsUtils;
 import org.apache.hadoop.util.ReflectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -117,7 +118,7 @@ public class ConvertJoinMapJoin implements NodeProcessor {
       numBuckets = 1;
     }
     LOG.info("Estimated number of buckets " + numBuckets);
-    int mapJoinConversionPos = getMapJoinConversionPos(joinOp, context, numBuckets, false, maxSize);
+    int mapJoinConversionPos = getMapJoinConversionPos(joinOp, context, numBuckets, false, maxSize, true);
     if (mapJoinConversionPos < 0) {
       Object retval = checkAndConvertSMBJoin(context, joinOp, tezBucketJoinProcCtx);
       if (retval == null) {
@@ -141,7 +142,7 @@ public class ConvertJoinMapJoin implements NodeProcessor {
     // check if we can convert to map join no bucket scaling.
     LOG.info("Convert to non-bucketed map join");
     if (numBuckets != 1) {
-      mapJoinConversionPos = getMapJoinConversionPos(joinOp, context, 1, false, maxSize);
+      mapJoinConversionPos = getMapJoinConversionPos(joinOp, context, 1, false, maxSize, true);
     }
     if (mapJoinConversionPos < 0) {
       // we are just converting to a common merge join operator. The shuffle
@@ -519,8 +520,22 @@ public class ConvertJoinMapJoin implements NodeProcessor {
     return false;
   }
 
+  /**
+   * Obtain big table position for join.
+   *
+   * @param joinOp join operator
+   * @param context optimization context
+   * @param buckets bucket count for Bucket Map Join conversion consideration or reduce count
+   * for Dynamic Hash Join conversion consideration
+   * @param skipJoinTypeChecks whether to skip join type checking
+   * @param maxSize size threshold for Map Join conversion
+   * @param checkHashTableEntries whether to check threshold for distinct keys in hash table for Map Join
+   * @return returns big table position or -1 if it cannot be determined
+   * @throws SemanticException
+   */
   public int getMapJoinConversionPos(JoinOperator joinOp, OptimizeTezProcContext context,
-      int buckets, boolean skipJoinTypeChecks, long maxSize) throws SemanticException {
+      int buckets, boolean skipJoinTypeChecks, long maxSize, boolean checkHashTableEntries)
+              throws SemanticException {
     if (!skipJoinTypeChecks) {
       /*
        * HIVE-9038: Join tests fail in tez when we have more than 1 join on the same key and there is
@@ -628,10 +643,20 @@ public class ConvertJoinMapJoin implements NodeProcessor {
         // We are replacing the current big table with a new one, thus
         // we need to count the current one as a map table then.
         totalSize += bigInputStat.getDataSize();
+        // Check if number of distinct keys is larger than given max
+        // number of entries for HashMap. If it is, we do not convert.
+        if (checkHashTableEntries && !checkNumberOfEntriesForHashTable(joinOp, bigTablePosition, context)) {
+          return -1;
+        }
       } else if (!selectedBigTable) {
         // This is not the first table and we are not using it as big table,
         // in fact, we're adding this table as a map table
         totalSize += inputSize;
+        // Check if number of distinct keys is larger than given max
+        // number of entries for HashMap. If it is, we do not convert.
+        if (checkHashTableEntries && !checkNumberOfEntriesForHashTable(joinOp, pos, context)) {
+          return -1;
+        }
       }
 
       if (totalSize/buckets > maxSize) {
@@ -905,8 +930,8 @@ public class ConvertJoinMapJoin implements NodeProcessor {
     int numReducers = estimateNumBuckets(joinOp, false);
     LOG.info("Try dynamic partitioned hash join with estimated " + numReducers + " reducers");
     int bigTablePos = getMapJoinConversionPos(joinOp, context, numReducers, false,
-                          context.conf.getLongVar(
-                              HiveConf.ConfVars.HIVECONVERTJOINNOCONDITIONALTASKTHRESHOLD));
+            context.conf.getLongVar(HiveConf.ConfVars.HIVECONVERTJOINNOCONDITIONALTASKTHRESHOLD),
+            false);
     if (bigTablePos >= 0) {
       // Now that we have the big table index, get real numReducers value based on big table RS
       ReduceSinkOperator bigTableParentRS =
@@ -951,7 +976,7 @@ public class ConvertJoinMapJoin implements NodeProcessor {
     }
 
     int pos = getMapJoinConversionPos(joinOp, context, estimateNumBuckets(joinOp, false),
-                  true, Long.MAX_VALUE);
+                  true, Long.MAX_VALUE, false);
     if (pos < 0) {
       LOG.info("Could not get a valid join position. Defaulting to position 0");
       pos = 0;
@@ -960,5 +985,72 @@ public class ConvertJoinMapJoin implements NodeProcessor {
     // join in map-reduce case.
     LOG.info("Fallback to common merge join operator");
     convertJoinSMBJoin(joinOp, context, pos, 0, false);
+  }
+
+  /* Returns true if it passes the test, false otherwise. */
+  private boolean checkNumberOfEntriesForHashTable(JoinOperator joinOp, int position,
+          OptimizeTezProcContext context) {
+    long max = HiveConf.getLongVar(context.parseContext.getConf(),
+            HiveConf.ConfVars.HIVECONVERTJOINMAXENTRIESHASHTABLE);
+    if (max < 1) {
+      // Max is disabled, we can safely return true
+      return true;
+    }
+    // Calculate number of different entries and evaluate
+    ReduceSinkOperator rsOp = (ReduceSinkOperator) joinOp.getParentOperators().get(position);
+    List<String> keys = StatsUtils.getQualifedReducerKeyNames(rsOp.getConf().getOutputKeyColumnNames());
+    Statistics inputStats = rsOp.getStatistics();
+    List<ColStatistics> columnStats = new ArrayList<>();
+    for (String key : keys) {
+      ColStatistics cs = inputStats.getColumnStatisticsFromColName(key);
+      if (cs == null) {
+        LOG.debug("Couldn't get statistics for: {}", key);
+        return true;
+      }
+      columnStats.add(cs);
+    }
+    long numRows = inputStats.getNumRows();
+    long estimation = estimateNDV(numRows, columnStats);
+    LOG.debug("Estimated NDV for input {}: {}; Max NDV for MapJoin conversion: {}",
+            position, estimation, max);
+    if (estimation > max) {
+      // Estimation larger than max
+      LOG.debug("Number of different entries for HashTable is greater than the max; "
+          + "we do not converting to MapJoin");
+      return false;
+    }
+    // We can proceed with the conversion
+    return true;
+  }
+
+  private static long estimateNDV(long numRows, List<ColStatistics> columnStats) {
+    // If there is a single column, return the number of distinct values
+    if (columnStats.size() == 1) {
+      return columnStats.get(0).getCountDistint();
+    }
+
+    // The expected number of distinct values when choosing p values
+    // with replacement from n integers is n . (1 - ((n - 1) / n) ^ p).
+    //
+    // If we have several uniformly distributed attributes A1 ... Am
+    // with N1 ... Nm distinct values, they behave as one uniformly
+    // distributed attribute with N1 * ... * Nm distinct values.
+    long n = 1L;
+    for (ColStatistics cs : columnStats) {
+      final long ndv = cs.getCountDistint();
+      if (ndv > 1) {
+        n = StatsUtils.safeMult(n, ndv);
+      }
+    }
+    final double nn = (double) n;
+    final double a = (nn - 1d) / nn;
+    if (a == 1d) {
+      // A under-flows if nn is large.
+      return numRows;
+    }
+    final double v = nn * (1d - Math.pow(a, numRows));
+    // Cap at fact-row-count, because numerical artifacts can cause it
+    // to go a few % over.
+    return Math.min(Math.round(v), numRows);
   }
 }
