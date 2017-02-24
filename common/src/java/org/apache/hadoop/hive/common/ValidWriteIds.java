@@ -120,7 +120,7 @@ public class ValidWriteIds {
     conf.set(key, source);
   }
 
-  public static void clearConf(HiveConf conf, String dbName, String tblName) {
+  public static void clearConf(Configuration conf, String dbName, String tblName) {
     if (LOG.isDebugEnabled()) {
       LOG.debug("Unsetting " + createConfKey(dbName, tblName));
     }

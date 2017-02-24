@@ -39,6 +39,7 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import com.google.common.collect.Iterables;
 import org.apache.commons.lang.StringUtils;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.ValidWriteIds;
@@ -1595,20 +1596,29 @@ public class Driver implements CommandProcessor {
     }
   }
 
+
   private static void acquireWriteIds(QueryPlan plan, HiveConf conf) throws HiveException {
     // Output IDs are put directly into FileSinkDesc; here, we only need to take care of inputs.
+    Configuration fetchConf = null;
+    if (plan.getFetchTask() != null) {
+      fetchConf = plan.getFetchTask().getFetchConf();
+    }
     for (ReadEntity input : plan.getInputs()) {
+      Utilities.LOG14535.debug("Looking at " + input);
       Table t = extractTable(input);
       if (t == null) continue;
       Utilities.LOG14535.info("Checking " + t.getTableName() + " for being a MM table: " + t.getParameters());
       if (!MetaStoreUtils.isInsertOnlyTable(t.getParameters())) {
         ValidWriteIds.clearConf(conf, t.getDbName(), t.getTableName());
+        if (fetchConf != null) {
+          ValidWriteIds.clearConf(fetchConf, t.getDbName(), t.getTableName());
+        }
         continue;
       }
       ValidWriteIds ids = Hive.get().getValidWriteIdsForTable(t.getDbName(), t.getTableName());
       ids.addToConf(conf, t.getDbName(), t.getTableName());
-      if (plan.getFetchTask() != null) {
-        ids.addToConf(plan.getFetchTask().getFetchConf(), t.getDbName(), t.getTableName());
+      if (fetchConf != null) {
+        ids.addToConf(fetchConf, t.getDbName(), t.getTableName());
       }
     }
   }
@@ -1866,6 +1876,7 @@ public class Driver implements CommandProcessor {
       for (Task<? extends Serializable> tsk : plan.getRootTasks()) {
         // This should never happen, if it does, it's a bug with the potential to produce
         // incorrect results.
+        LOG.error("TODO# running " + tsk);
         assert tsk.getParentTasks() == null || tsk.getParentTasks().isEmpty();
         driverCxt.addToRunnable(tsk);
 

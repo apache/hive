@@ -269,11 +269,15 @@ public class FetchOperator implements Serializable {
     while (iterPath.hasNext()) {
       currPath = iterPath.next();
       currDesc = iterPartDesc.next();
+      Utilities.LOG14535.debug("Considering " + currPath);
       if (isNonNativeTable) {
         return true;
       }
       FileSystem fs = currPath.getFileSystem(job);
       if (fs.exists(currPath)) {
+        if (extractWriteIdsForCurrentTable() != null) {
+          return true;
+        }
         for (FileStatus fStat : listStatusUnderPath(fs, currPath)) {
           if (fStat.getLen() > 0) {
             return true;
@@ -281,6 +285,7 @@ public class FetchOperator implements Serializable {
         }
       }
     }
+    Utilities.LOG14535.debug("Done with all the paths");
     return false;
   }
 
@@ -310,6 +315,7 @@ public class FetchOperator implements Serializable {
       if (splits == null) {
         return null;
       }
+
       if (!isPartitioned || convertedOI == null) {
         currSerDe = tableSerDe;
         ObjectConverter = null;
@@ -397,11 +403,7 @@ public class FetchOperator implements Serializable {
     if (inputFormat instanceof HiveInputFormat) {
       return StringUtils.escapeString(currPath.toString()); // No need to process here.
     }
-    if (writeIdMap == null) {
-      writeIdMap = new HashMap<String, ValidWriteIds>();
-    }
-    // No need to check for MM table - if it is, the IDs should be in the job config.
-    ValidWriteIds ids = HiveInputFormat.extractWriteIds(writeIdMap, job, currDesc.getTableName());
+    ValidWriteIds ids = extractWriteIdsForCurrentTable();
     if (ids != null) {
       Utilities.LOG14535.info("Observing " + currDesc.getTableName() + ": " + ids);
     }
@@ -415,6 +417,13 @@ public class FetchOperator implements Serializable {
       str.append(",").append(StringUtils.escapeString(dirs[i].toString()));
     }
     return str.toString();
+  }
+
+  private ValidWriteIds extractWriteIdsForCurrentTable() {
+    if (writeIdMap == null) {
+      writeIdMap = new HashMap<String, ValidWriteIds>();
+    }
+    return HiveInputFormat.extractWriteIds(writeIdMap, job, currDesc.getTableName());
   }
 
   private FetchInputFormatSplit[] splitSampling(SplitSample splitSample,
@@ -725,6 +734,7 @@ public class FetchOperator implements Serializable {
     }
 
     public RecordReader<WritableComparable, Writable> getRecordReader(JobConf job) throws IOException {
+      LOG.error("TODO# calling origina getRr on " + inputFormat + "; " + getInputSplit());
       return inputFormat.getRecordReader(getInputSplit(), job, Reporter.NULL);
     }
   }
