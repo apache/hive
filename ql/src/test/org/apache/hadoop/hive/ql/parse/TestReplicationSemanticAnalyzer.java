@@ -72,7 +72,7 @@ public class TestReplicationSemanticAnalyzer {
     ParseDriver pd = new ParseDriver();
     String fromEventId = "100";
     String toEventId = "200";
-    String batchSize = "50";
+    String maxEventLimit = "50";
     ASTNode root;
     ASTNode child;
 
@@ -148,7 +148,7 @@ public class TestReplicationSemanticAnalyzer {
 
     query =
         "repl dump " + defaultDB + "." + tblName + " from " + fromEventId + " to " + toEventId
-            + " batch " + batchSize;
+            + " limit " + maxEventLimit;
 
     root = (ASTNode) pd.parse(query).getChild(0);
     assertEquals(root.getChildCount(), 3);
@@ -178,11 +178,11 @@ public class TestReplicationSemanticAnalyzer {
     assertEquals(child.getChildCount(), 0);
 
     child =  (ASTNode) root.getChild(3);
-    assertEquals(child.getText(), "TOK_BATCH");
+    assertEquals(child.getText(), "TOK_LIMIT");
     assertEquals(child.getChildCount(), 0);
 
     child =  (ASTNode) root.getChild(4);
-    assertEquals(child.getText(), batchSize);
+    assertEquals(child.getText(), maxEventLimit);
     assertEquals(child.getChildCount(), 0);
   }
 
