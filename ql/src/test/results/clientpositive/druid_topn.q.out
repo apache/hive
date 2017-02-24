@@ -85,11 +85,11 @@ STAGE PLANS:
         TableScan
           alias: druid_table_1
           properties:
-            druid.query.json {"queryType":"topN","dataSource":"wikipedia","granularity":"all","dimension":"robot","metric":"$f1","aggregations":[{"type":"longMax","name":"$f1","fieldName":"added"},{"type":"doubleSum","name":"$f2","fieldName":"variation"}],"intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"],"threshold":100}
-            druid.query.type topN
+            druid.query.json {"queryType":"groupBy","dataSource":"wikipedia","granularity":"all","dimensions":["robot"],"limitSpec":{"type":"default","limit":100,"columns":[{"dimension":"$f1","direction":"descending"}]},"aggregations":[{"type":"doubleMax","name":"$f1","fieldName":"added"},{"type":"doubleSum","name":"$f2","fieldName":"variation"}],"intervals":["1900-01-01T00:00:00.000/3000-01-01T00:00:00.000"]}
+            druid.query.type groupBy
           Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
           Select Operator
-            expressions: robot (type: string), $f1 (type: bigint), $f2 (type: float)
+            expressions: robot (type: string), $f1 (type: float), $f2 (type: float)
             outputColumnNames: _col0, _col1, _col2
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             ListSink
@@ -109,24 +109,54 @@ ORDER BY s DESC
 LIMIT 100
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
-  Stage-0 is a root stage
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: druid_table_1
+            properties:
+              druid.query.json {"queryType":"groupBy","dataSource":"wikipedia","granularity":"none","dimensions":["robot"],"limitSpec":{"type":"default"},"aggregations":[{"type":"doubleMax","name":"$f2","fieldName":"added"},{"type":"doubleSum","name":"$f3","fieldName":"variation"}],"intervals":["1900-01-01T00:00:00.000/3000-01-01T00:00:00.000"]}
+              druid.query.type groupBy
+            Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+            Select Operator
+              expressions: __time (type: timestamp), robot (type: string), $f2 (type: float), $f3 (type: float)
+              outputColumnNames: _col0, _col1, _col2, _col3
+              Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+              Reduce Output Operator
+                key expressions: _col3 (type: float)
+                sort order: -
+                Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                TopN Hash Memory Usage: 0.1
+                value expressions: _col0 (type: timestamp), _col1 (type: string), _col2 (type: float)
+      Reduce Operator Tree:
+        Select Operator
+          expressions: VALUE._col0 (type: timestamp), VALUE._col1 (type: string), VALUE._col2 (type: float), KEY.reducesinkkey0 (type: float)
+          outputColumnNames: _col0, _col1, _col2, _col3
+          Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+          Limit
+            Number of rows: 100
+            Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+            Select Operator
+              expressions: _col1 (type: string), _col0 (type: timestamp), _col2 (type: float), _col3 (type: float)
+              outputColumnNames: _col0, _col1, _col2, _col3
+              Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+              File Output Operator
+                compressed: false
+                Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                table:
+                    input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
   Stage: Stage-0
     Fetch Operator
       limit: -1
       Processor Tree:
-        TableScan
-          alias: druid_table_1
-          properties:
-            druid.query.json {"queryType":"topN","dataSource":"wikipedia","granularity":"NONE","dimension":"robot","metric":"$f3","aggregations":[{"type":"longMax","name":"$f2","fieldName":"added"},{"type":"doubleSum","name":"$f3","fieldName":"variation"}],"intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"],"threshold":100}
-            druid.query.type topN
-          Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
-          Select Operator
-            expressions: robot (type: string), __time (type: timestamp), $f2 (type: bigint), $f3 (type: float)
-            outputColumnNames: _col0, _col1, _col2, _col3
-            Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
-            ListSink
+        ListSink
 
 PREHOOK: query: EXPLAIN
 SELECT robot, floor_year(`__time`), max(added), sum(variation) as s
@@ -143,24 +173,50 @@ ORDER BY s DESC
 LIMIT 10
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
-  Stage-0 is a root stage
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: druid_table_1
+            properties:
+              druid.query.json {"queryType":"groupBy","dataSource":"wikipedia","granularity":"year","dimensions":["robot"],"limitSpec":{"type":"default"},"aggregations":[{"type":"doubleMax","name":"$f2","fieldName":"added"},{"type":"doubleSum","name":"$f3","fieldName":"variation"}],"intervals":["1900-01-01T00:00:00.000/3000-01-01T00:00:00.000"]}
+              druid.query.type groupBy
+            Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+            Select Operator
+              expressions: robot (type: string), __time (type: timestamp), $f2 (type: float), $f3 (type: float)
+              outputColumnNames: _col0, _col1, _col2, _col3
+              Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+              Reduce Output Operator
+                key expressions: _col3 (type: float)
+                sort order: -
+                Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                TopN Hash Memory Usage: 0.1
+                value expressions: _col0 (type: string), _col1 (type: timestamp), _col2 (type: float)
+      Reduce Operator Tree:
+        Select Operator
+          expressions: VALUE._col0 (type: string), VALUE._col1 (type: timestamp), VALUE._col2 (type: float), KEY.reducesinkkey0 (type: float)
+          outputColumnNames: _col0, _col1, _col2, _col3
+          Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+          Limit
+            Number of rows: 10
+            Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+            File Output Operator
+              compressed: false
+              Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+              table:
+                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
   Stage: Stage-0
     Fetch Operator
-      limit: -1
+      limit: 10
       Processor Tree:
-        TableScan
-          alias: druid_table_1
-          properties:
-            druid.query.json {"queryType":"topN","dataSource":"wikipedia","granularity":"YEAR","dimension":"robot","metric":"$f3","aggregations":[{"type":"longMax","name":"$f2","fieldName":"added"},{"type":"doubleSum","name":"$f3","fieldName":"variation"}],"intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"],"threshold":10}
-            druid.query.type topN
-          Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
-          Select Operator
-            expressions: robot (type: string), __time (type: timestamp), $f2 (type: bigint), $f3 (type: float)
-            outputColumnNames: _col0, _col1, _col2, _col3
-            Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
-            ListSink
+        ListSink
 
 PREHOOK: query: EXPLAIN
 SELECT robot, floor_month(`__time`), max(added), sum(variation) as s
@@ -177,24 +233,50 @@ ORDER BY s
 LIMIT 10
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
-  Stage-0 is a root stage
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: druid_table_1
+            properties:
+              druid.query.json {"queryType":"groupBy","dataSource":"wikipedia","granularity":"month","dimensions":["robot"],"limitSpec":{"type":"default"},"aggregations":[{"type":"doubleMax","name":"$f2","fieldName":"added"},{"type":"doubleSum","name":"$f3","fieldName":"variation"}],"intervals":["1900-01-01T00:00:00.000/3000-01-01T00:00:00.000"]}
+              druid.query.type groupBy
+            Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+            Select Operator
+              expressions: robot (type: string), __time (type: timestamp), $f2 (type: float), $f3 (type: float)
+              outputColumnNames: _col0, _col1, _col2, _col3
+              Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+              Reduce Output Operator
+                key expressions: _col3 (type: float)
+                sort order: +
+                Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                TopN Hash Memory Usage: 0.1
+                value expressions: _col0 (type: string), _col1 (type: timestamp), _col2 (type: float)
+      Reduce Operator Tree:
+        Select Operator
+          expressions: VALUE._col0 (type: string), VALUE._col1 (type: timestamp), VALUE._col2 (type: float), KEY.reducesinkkey0 (type: float)
+          outputColumnNames: _col0, _col1, _col2, _col3
+          Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+          Limit
+            Number of rows: 10
+            Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+            File Output Operator
+              compressed: false
+              Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+              table:
+                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
   Stage: Stage-0
     Fetch Operator
-      limit: -1
+      limit: 10
       Processor Tree:
-        TableScan
-          alias: druid_table_1
-          properties:
-            druid.query.json {"queryType":"groupBy","dataSource":"wikipedia","granularity":"MONTH","dimensions":["robot"],"limitSpec":{"type":"default","limit":10,"columns":[{"dimension":"$f3","direction":"ascending"}]},"aggregations":[{"type":"longMax","name":"$f2","fieldName":"added"},{"type":"doubleSum","name":"$f3","fieldName":"variation"}],"intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"]}
-            druid.query.type groupBy
-          Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
-          Select Operator
-            expressions: robot (type: string), __time (type: timestamp), $f2 (type: bigint), $f3 (type: float)
-            outputColumnNames: _col0, _col1, _col2, _col3
-            Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
-            ListSink
+        ListSink
 
 PREHOOK: query: EXPLAIN
 SELECT robot, floor_month(`__time`), max(added) as m, sum(variation) as s
@@ -211,24 +293,54 @@ ORDER BY s DESC, m DESC
 LIMIT 10
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
-  Stage-0 is a root stage
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: druid_table_1
+            properties:
+              druid.query.json {"queryType":"groupBy","dataSource":"wikipedia","granularity":"month","dimensions":["robot","namespace"],"limitSpec":{"type":"default"},"aggregations":[{"type":"doubleMax","name":"$f3","fieldName":"added"},{"type":"doubleSum","name":"$f4","fieldName":"variation"}],"intervals":["1900-01-01T00:00:00.000/3000-01-01T00:00:00.000"]}
+              druid.query.type groupBy
+            Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+            Select Operator
+              expressions: robot (type: string), __time (type: timestamp), $f3 (type: float), $f4 (type: float)
+              outputColumnNames: _col0, _col2, _col3, _col4
+              Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+              Reduce Output Operator
+                key expressions: _col4 (type: float), _col3 (type: float)
+                sort order: --
+                Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                TopN Hash Memory Usage: 0.1
+                value expressions: _col0 (type: string), _col2 (type: timestamp)
+      Reduce Operator Tree:
+        Select Operator
+          expressions: VALUE._col0 (type: string), VALUE._col2 (type: timestamp), KEY.reducesinkkey1 (type: float), KEY.reducesinkkey0 (type: float)
+          outputColumnNames: _col0, _col2, _col3, _col4
+          Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+          Limit
+            Number of rows: 10
+            Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+            Select Operator
+              expressions: _col0 (type: string), _col2 (type: timestamp), _col3 (type: float), _col4 (type: float)
+              outputColumnNames: _col0, _col1, _col2, _col3
+              Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+              File Output Operator
+                compressed: false
+                Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                table:
+                    input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
   Stage: Stage-0
     Fetch Operator
       limit: -1
       Processor Tree:
-        TableScan
-          alias: druid_table_1
-          properties:
-            druid.query.json {"queryType":"groupBy","dataSource":"wikipedia","granularity":"MONTH","dimensions":["robot","namespace"],"limitSpec":{"type":"default","limit":10,"columns":[{"dimension":"$f4","direction":"descending"},{"dimension":"$f3","direction":"descending"}]},"aggregations":[{"type":"longMax","name":"$f3","fieldName":"added"},{"type":"doubleSum","name":"$f4","fieldName":"variation"}],"intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"]}
-            druid.query.type groupBy
-          Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
-          Select Operator
-            expressions: robot (type: string), __time (type: timestamp), $f3 (type: bigint), $f4 (type: float)
-            outputColumnNames: _col0, _col1, _col2, _col3
-            Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
-            ListSink
+        ListSink
 
 PREHOOK: query: EXPLAIN
 SELECT robot, floor_month(`__time`), max(added) as m, sum(variation) as s
@@ -245,24 +357,54 @@ ORDER BY robot ASC, m DESC
 LIMIT 10
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
-  Stage-0 is a root stage
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: druid_table_1
+            properties:
+              druid.query.json {"queryType":"groupBy","dataSource":"wikipedia","granularity":"month","dimensions":["robot","namespace"],"limitSpec":{"type":"default"},"aggregations":[{"type":"doubleMax","name":"$f3","fieldName":"added"},{"type":"doubleSum","name":"$f4","fieldName":"variation"}],"intervals":["1900-01-01T00:00:00.000/3000-01-01T00:00:00.000"]}
+              druid.query.type groupBy
+            Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+            Select Operator
+              expressions: robot (type: string), __time (type: timestamp), $f3 (type: float), $f4 (type: float)
+              outputColumnNames: _col0, _col2, _col3, _col4
+              Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+              Reduce Output Operator
+                key expressions: _col0 (type: string), _col3 (type: float)
+                sort order: +-
+                Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                TopN Hash Memory Usage: 0.1
+                value expressions: _col2 (type: timestamp), _col4 (type: float)
+      Reduce Operator Tree:
+        Select Operator
+          expressions: KEY.reducesinkkey0 (type: string), VALUE._col1 (type: timestamp), KEY.reducesinkkey1 (type: float), VALUE._col2 (type: float)
+          outputColumnNames: _col0, _col2, _col3, _col4
+          Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+          Limit
+            Number of rows: 10
+            Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+            Select Operator
+              expressions: _col0 (type: string), _col2 (type: timestamp), _col3 (type: float), _col4 (type: float)
+              outputColumnNames: _col0, _col1, _col2, _col3
+              Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+              File Output Operator
+                compressed: false
+                Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                table:
+                    input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
   Stage: Stage-0
     Fetch Operator
       limit: -1
       Processor Tree:
-        TableScan
-          alias: druid_table_1
-          properties:
-            druid.query.json {"queryType":"groupBy","dataSource":"wikipedia","granularity":"MONTH","dimensions":["robot","namespace"],"limitSpec":{"type":"default","limit":10,"columns":[{"dimension":"robot","direction":"ascending"},{"dimension":"$f3","direction":"descending"}]},"aggregations":[{"type":"longMax","name":"$f3","fieldName":"added"},{"type":"doubleSum","name":"$f4","fieldName":"variation"}],"intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"]}
-            druid.query.type groupBy
-          Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
-          Select Operator
-            expressions: robot (type: string), __time (type: timestamp), $f3 (type: bigint), $f4 (type: float)
-            outputColumnNames: _col0, _col1, _col2, _col3
-            Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
-            ListSink
+        ListSink
 
 PREHOOK: query: EXPLAIN
 SELECT robot, floor_year(`__time`), max(added), sum(variation) as s
@@ -281,24 +423,54 @@ ORDER BY s
 LIMIT 10
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
-  Stage-0 is a root stage
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: druid_table_1
+            properties:
+              druid.query.json {"queryType":"timeseries","dataSource":"wikipedia","descending":false,"granularity":"year","filter":{"type":"selector","dimension":"robot","value":"1"},"aggregations":[{"type":"doubleMax","name":"$f1_0","fieldName":"added"},{"type":"doubleSum","name":"$f2","fieldName":"variation"}],"intervals":["1900-01-01T00:00:00.000/3000-01-01T00:00:00.000"],"context":{"skipEmptyBuckets":true}}
+              druid.query.type timeseries
+            Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+            Select Operator
+              expressions: __time (type: timestamp), $f1_0 (type: float), $f2 (type: float)
+              outputColumnNames: _col0, _col1, _col2
+              Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+              Reduce Output Operator
+                key expressions: _col2 (type: float)
+                sort order: +
+                Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                TopN Hash Memory Usage: 0.1
+                value expressions: _col0 (type: timestamp), _col1 (type: float)
+      Reduce Operator Tree:
+        Select Operator
+          expressions: VALUE._col0 (type: timestamp), VALUE._col1 (type: float), KEY.reducesinkkey0 (type: float)
+          outputColumnNames: _col0, _col1, _col2
+          Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+          Limit
+            Number of rows: 10
+            Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+            Select Operator
+              expressions: '1' (type: string), _col0 (type: timestamp), _col1 (type: float), _col2 (type: float)
+              outputColumnNames: _col0, _col1, _col2, _col3
+              Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+              File Output Operator
+                compressed: false
+                Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
+                table:
+                    input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
   Stage: Stage-0
     Fetch Operator
       limit: -1
       Processor Tree:
-        TableScan
-          alias: druid_table_1
-          properties:
-            druid.query.json {"queryType":"groupBy","dataSource":"wikipedia","granularity":"YEAR","dimensions":[],"limitSpec":{"type":"default","limit":10,"columns":[{"dimension":"$f2","direction":"ascending"}]},"filter":{"type":"selector","dimension":"robot","value":"1"},"aggregations":[{"type":"longMax","name":"$f1_0","fieldName":"added"},{"type":"doubleSum","name":"$f2","fieldName":"variation"}],"intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"]}
-            druid.query.type groupBy
-          Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
-          Select Operator
-            expressions: '1' (type: string), __time (type: timestamp), $f1_0 (type: bigint), $f2 (type: float)
-            outputColumnNames: _col0, _col1, _col2, _col3
-            Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
-            ListSink
+        ListSink
 
 PREHOOK: query: EXPLAIN
 SELECT robot, floor_hour(`__time`), max(added) as m, sum(variation)
@@ -333,7 +505,7 @@ STAGE PLANS:
             alias: druid_table_1
             filterExpr: floor_hour(__time) BETWEEN 2010-01-01 00:00:00.0 AND 2014-01-01 00:00:00.0 (type: boolean)
             properties:
-              druid.query.json {"queryType":"select","dataSource":"wikipedia","descending":false,"intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"],"dimensions":["robot","namespace","anonymous","unpatrolled","page","language","newpage","user"],"metrics":["count","added","delta","variation","deleted"],"granularity":"all","pagingSpec":{"threshold":16384},"context":{"druid.query.fetch":false}}
+              druid.query.json {"queryType":"select","dataSource":"wikipedia","descending":false,"intervals":["1900-01-01T00:00:00.000/3000-01-01T00:00:00.000"],"dimensions":["robot","namespace","anonymous","unpatrolled","page","language","newpage","user"],"metrics":["count","added","delta","variation","deleted"],"granularity":"all","pagingSpec":{"threshold":16384,"fromNext":true},"context":{"druid.query.fetch":false}}
               druid.query.type select
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
