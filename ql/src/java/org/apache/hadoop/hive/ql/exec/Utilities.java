@@ -203,6 +203,7 @@ import org.apache.hadoop.mapred.SequenceFileOutputFormat;
 import org.apache.hadoop.mapred.TextInputFormat;
 import org.apache.hadoop.util.Progressable;
 import org.apache.hadoop.util.Shell;
+import org.apache.hive.common.util.ACLConfigurationParser;
 import org.apache.hive.common.util.ReflectionUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -942,22 +943,6 @@ public final class Utilities {
         b = in.readByte();
       } catch (EOFException e) {
         return StreamStatus.EOF;
-      }
-
-      // Default new line characters on windows are "CRLF" so detect if there are any windows
-      // native newline characters and handle them.
-      if (Shell.WINDOWS) {
-        // if the CR is not followed by the LF on windows then add it back to the stream and
-        // proceed with next characters in the input stream.
-        if (foundCrChar && b != Utilities.newLineCode) {
-          out.write(Utilities.carriageReturnCode);
-          foundCrChar = false;
-        }
-
-        if (b == Utilities.carriageReturnCode) {
-          foundCrChar = true;
-          continue;
-        }
       }
 
       if (b == Utilities.newLineCode) {
@@ -4292,5 +4277,26 @@ public final class Utilities {
       }
     }
     return result;
+  }
+
+  public static String getAclStringWithHiveModification(Configuration tezConf,
+                                                        String propertyName,
+                                                        boolean addHs2User,
+                                                        String user,
+                                                        String hs2User) throws
+      IOException {
+
+    // Start with initial ACLs
+    ACLConfigurationParser aclConf =
+        new ACLConfigurationParser(tezConf, propertyName);
+
+    // Always give access to the user
+    aclConf.addAllowedUser(user);
+
+    // Give access to the process user if the config is set.
+    if (addHs2User && hs2User != null) {
+      aclConf.addAllowedUser(hs2User);
+    }
+    return aclConf.toAclString();
   }
 }

@@ -1,5 +1,6 @@
 -- Upgrade MetaStore schema from 2.1.0 to 2.2.0
 RUN '037-HIVE-14496.derby.sql';
+RUN '038-HIVE-10562.derby.sql';
 
 RUN '037-HIVE-14637.derby.sql';
 

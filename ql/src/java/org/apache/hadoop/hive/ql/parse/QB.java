@@ -420,6 +420,10 @@ public class QB {
     return viewDesc != null && viewDesc.isMaterialized();
   }
 
+  public boolean isView() {
+    return viewDesc != null && !viewDesc.isMaterialized();
+  }
+
   void addEncryptedTargetTablePath(Path p) {
     if(encryptedTargetTablePaths == null) {
       encryptedTargetTablePaths = new ArrayList<>();

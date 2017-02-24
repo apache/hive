@@ -74,12 +74,11 @@ public class SqoopDelegator extends LauncherDelegator {
       args.addAll(makeBasicArgs(optionsFile, otherFiles, statusdir, completedUrl, enablelog,
           enableJobReconnect, libdir));
       args.add("--");
-      TempletonUtils.addCmdForWindows(args);
       args.add(appConf.sqoopPath());
       if (TempletonUtils.isset(command)) {
         String[] temArgs = command.split(" ");
         for (int i = 0; i < temArgs.length; i++) {
-          args.add(TempletonUtils.quoteForWindows(temArgs[i]));
+          args.add(temArgs[i]);
 
           // The token file location and mapreduce job tag should be right after the tool argument
           if (i == 0 && !temArgs[i].startsWith("--")) {
@@ -97,8 +96,8 @@ public class SqoopDelegator extends LauncherDelegator {
             }
             //the jars in libJars will be localized to CWD of the launcher task; then -libjars will
             //cause them to be localized for the Sqoop MR job tasks
-            args.add(TempletonUtils.quoteForWindows("-libjars"));
-            args.add(TempletonUtils.quoteForWindows(libJars));
+            args.add("-libjars");
+            args.add(libJars);
           }
         }
       } else if (TempletonUtils.isset(optionsFile)) {

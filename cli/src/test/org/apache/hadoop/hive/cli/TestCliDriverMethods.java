@@ -316,13 +316,6 @@ public class TestCliDriverMethods extends TestCase {
   }
 
   private static void setEnv(String key, String value) throws Exception {
-    if (Shell.WINDOWS)
-      setEnvWindows(key, value);
-    else
-      setEnvLinux(key, value);
-  }
-
-  private static void setEnvLinux(String key, String value) throws Exception {
     Class[] classes = Collections.class.getDeclaredClasses();
     Map<String, String> env = System.getenv();
     for (Class cl : classes) {
@@ -337,27 +330,6 @@ public class TestCliDriverMethods extends TestCase {
           map.put(key, value);
         }
       }
-    }
-  }
-
-  private static void setEnvWindows(String key, String value) throws Exception {
-    Class<?> processEnvironmentClass = Class.forName("java.lang.ProcessEnvironment");
-    Field theEnvironmentField = processEnvironmentClass.getDeclaredField("theEnvironment");
-    theEnvironmentField.setAccessible(true);
-    Map<String, String> env = (Map<String, String>) theEnvironmentField.get(null);
-    if (value == null) {
-      env.remove(key);
-    } else {
-      env.put(key, value);
-    }
-
-    Field theCaseInsensitiveEnvironmentField = processEnvironmentClass.getDeclaredField("theCaseInsensitiveEnvironment");
-    theCaseInsensitiveEnvironmentField.setAccessible(true);
-    Map<String, String> cienv = (Map<String, String>) theCaseInsensitiveEnvironmentField.get(null);
-    if (value == null) {
-      cienv.remove(key);
-    } else {
-      cienv.put(key, value);
     }
   }
 

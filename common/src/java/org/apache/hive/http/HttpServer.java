@@ -365,7 +365,7 @@ public class HttpServer {
     connector.setResolveNames(false);
     connector.setUseDirectBuffers(false);
     connector.setRequestHeaderSize(1024*64);
-    connector.setReuseAddress(!Shell.WINDOWS);
+    connector.setReuseAddress(true);
     return connector;
   }
 

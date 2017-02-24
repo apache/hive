@@ -47,3 +47,28 @@ POSTHOOK: query: DROP TABLE default.repairtable
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@repairtable
 POSTHOOK: Output: default@repairtable
+#### A masked pattern was here ####
+PREHOOK: type: CREATETABLE
+#### A masked pattern was here ####
+PREHOOK: Output: database:default
+PREHOOK: Output: default@repairtable
+#### A masked pattern was here ####
+POSTHOOK: type: CREATETABLE
+#### A masked pattern was here ####
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@repairtable
+PREHOOK: query: MSCK TABLE repairtable
+PREHOOK: type: MSCK
+PREHOOK: Output: default@repairtable
+POSTHOOK: query: MSCK TABLE repairtable
+POSTHOOK: type: MSCK
+POSTHOOK: Output: default@repairtable
+Partitions not in metastore:	repairtable:p1=c/p2=a
+PREHOOK: query: DROP TABLE default.repairtable
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@repairtable
+PREHOOK: Output: default@repairtable
+POSTHOOK: query: DROP TABLE default.repairtable
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@repairtable
+POSTHOOK: Output: default@repairtable

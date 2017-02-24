@@ -25,6 +25,7 @@ public class MNotificationLog {
   private String dbName;
   private String tableName;
   private String message;
+  private String messageFormat;
 
   public MNotificationLog() {
   }
@@ -85,5 +86,13 @@ public class MNotificationLog {
 
   public void setMessage(String message) {
     this.message = message;
+  }
+
+  public String getMessageFormat() {
+    return messageFormat;
+  }
+
+  public void setMessageFormat(String messageFormat) {
+    this.messageFormat = messageFormat;
   }
 }

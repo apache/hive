@@ -29,7 +29,8 @@ struct TProtocolVersion {
     HIVE_CLI_SERVICE_PROTOCOL_V6 = 5,
     HIVE_CLI_SERVICE_PROTOCOL_V7 = 6,
     HIVE_CLI_SERVICE_PROTOCOL_V8 = 7,
-    HIVE_CLI_SERVICE_PROTOCOL_V9 = 8
+    HIVE_CLI_SERVICE_PROTOCOL_V9 = 8,
+    HIVE_CLI_SERVICE_PROTOCOL_V10 = 9
   };
 };
 
@@ -2141,8 +2142,8 @@ class TOpenSessionReq {
 
   TOpenSessionReq(const TOpenSessionReq&);
   TOpenSessionReq& operator=(const TOpenSessionReq&);
-  TOpenSessionReq() : client_protocol((TProtocolVersion::type)8), username(), password() {
-    client_protocol = (TProtocolVersion::type)8;
+  TOpenSessionReq() : client_protocol((TProtocolVersion::type)9), username(), password() {
+    client_protocol = (TProtocolVersion::type)9;
 
   }
 
@@ -2211,8 +2212,8 @@ class TOpenSessionResp {
 
   TOpenSessionResp(const TOpenSessionResp&);
   TOpenSessionResp& operator=(const TOpenSessionResp&);
-  TOpenSessionResp() : serverProtocolVersion((TProtocolVersion::type)8) {
-    serverProtocolVersion = (TProtocolVersion::type)8;
+  TOpenSessionResp() : serverProtocolVersion((TProtocolVersion::type)9) {
+    serverProtocolVersion = (TProtocolVersion::type)9;
 
   }
 

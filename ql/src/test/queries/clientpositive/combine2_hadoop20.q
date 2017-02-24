@@ -10,9 +10,6 @@ set hive.exec.dynamic.partition.mode=nonstrict;
 set mapred.cache.shared.enabled=false;
 set hive.merge.smallfiles.avgsize=0;
 
--- EXCLUDE_OS_WINDOWS
--- excluded on windows because of difference in file name encoding logic
-
 -- SORT_QUERY_RESULTS
 
 create table combine2(key string) partitioned by (value string);

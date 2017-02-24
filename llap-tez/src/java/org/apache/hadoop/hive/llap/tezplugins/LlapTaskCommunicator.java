@@ -14,6 +14,7 @@
 
 package org.apache.hadoop.hive.llap.tezplugins;
 
+import org.apache.hadoop.hive.llap.registry.ServiceInstance;
 import org.apache.hadoop.io.Writable;
 
 import org.apache.hadoop.hive.llap.protocol.LlapTaskUmbilicalProtocol.TezAttemptArray;
@@ -30,6 +31,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
@@ -73,6 +75,7 @@ import org.apache.hadoop.yarn.api.ApplicationConstants;
 import org.apache.hadoop.yarn.api.records.ContainerId;
 import org.apache.hadoop.yarn.api.records.LocalResource;
 import org.apache.hadoop.yarn.api.records.NodeId;
+import org.apache.hadoop.yarn.webapp.util.WebAppUtils;
 import org.apache.tez.common.TezTaskUmbilicalProtocol;
 import org.apache.tez.common.TezUtils;
 import org.apache.tez.common.security.JobTokenSecretManager;
@@ -99,7 +102,9 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
   private static final Logger LOG = LoggerFactory.getLogger(LlapTaskCommunicator.class);
 
   private static final boolean isInfoEnabled = LOG.isInfoEnabled();
-  
+  private static final String RESOURCE_URI_STR = "/ws/v1/applicationhistory";
+  private static final Joiner JOINER = Joiner.on("");
+  private static final Joiner PATH_JOINER = Joiner.on("/");
   private final ConcurrentMap<QueryIdentifierProto, ByteBuffer> credentialMap;
 
   // Tracks containerIds and taskAttemptIds, so can be kept independent of the running DAG.
@@ -114,6 +119,8 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
   private final Token<LlapTokenIdentifier> token;
   private final String user;
   private String amHost;
+  private String timelineServerUri;
+  private int nmPort;
 
   // These two structures track the list of known nodes, and the list of nodes which are sending in keep-alive heartbeats.
   // Primarily for debugging purposes a.t.m, since there's some unexplained TASK_TIMEOUTS which are currently being observed.
@@ -143,7 +150,6 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
     Preconditions.checkState((token != null) == UserGroupInformation.isSecurityEnabled());
 
     // Not closing this at the moment at shutdown, since this could be a shared instance.
-    // TODO: this is unused.
     serviceRegistry = LlapRegistryService.getClient(conf);
 
     umbilical = new LlapTaskUmbilicalProtocolImpl(getUmbilical());
@@ -185,6 +191,10 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
         + "fileCleanupDelay=" + deleteDelayOnDagComplete
         + ", numCommunicatorThreads=" + numThreads);
     this.communicator.init(conf);
+    String scheme = WebAppUtils.getHttpSchemePrefix(conf);
+    String ahsUrl = WebAppUtils.getAHSWebAppURLWithoutScheme(conf);
+    this.timelineServerUri = WebAppUtils.getURLWithScheme(scheme, ahsUrl);
+    this.nmPort = Integer.valueOf(WebAppUtils.getNMWebAppURLWithoutScheme(conf).split(":")[1]);
   }
 
   @Override
@@ -303,8 +313,22 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
     nodesForQuery.add(nodeId);
 
     sourceStateTracker.registerTaskForStateUpdates(host, port, taskSpec.getInputs());
-    FragmentRuntimeInfo fragmentRuntimeInfo = sourceStateTracker.getFragmentRuntimeInfo(
-        taskSpec.getVertexName(), taskSpec.getTaskAttemptID().getTaskID().getId(), priority);
+    FragmentRuntimeInfo fragmentRuntimeInfo;
+    try {
+      fragmentRuntimeInfo = sourceStateTracker.getFragmentRuntimeInfo(
+          taskSpec.getVertexName(),
+          taskSpec.getTaskAttemptID().getTaskID().getId(), priority);
+    } catch (Exception e) {
+      LOG.error(
+          "Error while trying to get runtimeFragmentInfo for fragmentId={}, containerId={}, currentQI={}, currentQueryId={}",
+          taskSpec.getTaskAttemptID(), containerId, currentQueryIdentifierProto,
+          currentHiveQueryId, e);
+      if (e instanceof RuntimeException) {
+        throw (RuntimeException) e;
+      } else {
+        throw new RuntimeException(e);
+      }
+    }
     SubmitWorkRequestProto requestProto;
 
     try {
@@ -508,16 +532,55 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
 
   @Override
   public String getInProgressLogsUrl(TezTaskAttemptID attemptID, NodeId containerNodeId) {
-    // Not supported yet.
-    // Need support from YARN to link to an already aggregated log, or at least list them.
-    return null;
+    return constructLogUrl(attemptID, containerNodeId, false);
   }
 
   @Override
   public String getCompletedLogsUrl(TezTaskAttemptID attemptID, NodeId containerNodeId) {
-    // Not supported yet.
-    // Need support from YARN to link to an already aggregated log, or at least list them.
+    return constructLogUrl(attemptID, containerNodeId, true);
+  }
+
+  private String constructLogUrl(final TezTaskAttemptID attemptID, final NodeId containerNodeId, final boolean isDone) {
+    if (timelineServerUri == null || containerNodeId == null) {
+      return null;
+    }
+    Set<ServiceInstance> instanceSet;
+    try {
+      instanceSet = serviceRegistry.getInstances().getByHost(containerNodeId.getHost());
+    } catch (IOException e) {
+      // Not failing the job due to a failure constructing the log url
+      LOG.warn(
+        "Unable to find instance for yarnNodeId={} to construct the log url. Exception message={}",
+        containerNodeId, e.getMessage());
+      return null;
+    }
+    if (instanceSet != null) {
+      ServiceInstance matchedInstance = null;
+      for (ServiceInstance instance : instanceSet) {
+        if (instance.getRpcPort() == containerNodeId.getPort()) {
+          matchedInstance = instance;
+          break;
+        }
+      }
+      if (matchedInstance != null) {
+        String containerIdString = matchedInstance.getProperties()
+          .get(HiveConf.ConfVars.LLAP_DAEMON_CONTAINER_ID.varname);
+        if (containerIdString != null) {
+          return constructLlapLogUrl(attemptID, containerIdString, isDone, containerNodeId.getHost());
+        }
+      }
+    }
     return null;
+  }
+
+  private String constructLlapLogUrl(final TezTaskAttemptID attemptID, final String containerIdString,
+    final boolean isDone, final String nmHost) {
+    String dagId = attemptID.getTaskID().getVertexID().getDAGId().toString();
+    String filename = JOINER.join(currentHiveQueryId, "-", dagId, ".log", (isDone ? ".done" : ""),
+      "?nm.id=", nmHost, ":", nmPort);
+    String url = PATH_JOINER.join(timelineServerUri, "ws", "v1", "applicationhistory", "containers",
+      containerIdString, "logs", filename);
+    return url;
   }
 
   private static class PingingNodeInfo {

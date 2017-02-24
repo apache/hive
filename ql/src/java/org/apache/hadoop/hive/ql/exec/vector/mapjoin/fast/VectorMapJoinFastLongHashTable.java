@@ -156,6 +156,10 @@ public abstract class VectorMapJoinFastLongHashTable
 
   private void expandAndRehash() {
 
+    // We allocate pairs, so we cannot go above highest Integer power of 2 / 4.
+    if (logicalHashBucketCount > ONE_QUARTER_LIMIT) {
+      throwExpandError(ONE_QUARTER_LIMIT, "Long");
+    }
     int newLogicalHashBucketCount = logicalHashBucketCount * 2;
     int newLogicalHashBucketMask = newLogicalHashBucketCount - 1;
     int newMetricPutConflict = 0;
@@ -262,8 +266,8 @@ public abstract class VectorMapJoinFastLongHashTable
 
   public VectorMapJoinFastLongHashTable(
         boolean minMaxEnabled, boolean isOuterJoin, HashTableKeyType hashTableKeyType,
-        int initialCapacity, float loadFactor, int writeBuffersSize) {
-    super(initialCapacity, loadFactor, writeBuffersSize);
+        int initialCapacity, float loadFactor, int writeBuffersSize, long estimatedKeyCount) {
+    super(initialCapacity, loadFactor, writeBuffersSize, estimatedKeyCount);
     this.isOuterJoin = isOuterJoin;
     this.hashTableKeyType = hashTableKeyType;
     PrimitiveTypeInfo[] primitiveTypeInfos = { hashTableKeyType.getPrimitiveTypeInfo() };

@@ -41,11 +41,6 @@ public class TestHiveConf {
   public void testHiveSitePath() throws Exception {
     String expectedPath = HiveTestUtils.getFileFromClasspath("hive-site.xml");
     String hiveSiteLocation = HiveConf.getHiveSiteLocation().getPath();
-    if (Shell.WINDOWS) {
-      // Do case-insensitive comparison on Windows, as drive letter can have different case.
-      expectedPath = expectedPath.toLowerCase();
-      hiveSiteLocation = hiveSiteLocation.toLowerCase();
-    }
     Assert.assertEquals(expectedPath, hiveSiteLocation);
   }
 

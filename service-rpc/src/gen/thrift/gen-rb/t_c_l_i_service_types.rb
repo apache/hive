@@ -16,8 +16,9 @@ module TProtocolVersion
   HIVE_CLI_SERVICE_PROTOCOL_V7 = 6
   HIVE_CLI_SERVICE_PROTOCOL_V8 = 7
   HIVE_CLI_SERVICE_PROTOCOL_V9 = 8
-  VALUE_MAP = {0 => "HIVE_CLI_SERVICE_PROTOCOL_V1", 1 => "HIVE_CLI_SERVICE_PROTOCOL_V2", 2 => "HIVE_CLI_SERVICE_PROTOCOL_V3", 3 => "HIVE_CLI_SERVICE_PROTOCOL_V4", 4 => "HIVE_CLI_SERVICE_PROTOCOL_V5", 5 => "HIVE_CLI_SERVICE_PROTOCOL_V6", 6 => "HIVE_CLI_SERVICE_PROTOCOL_V7", 7 => "HIVE_CLI_SERVICE_PROTOCOL_V8", 8 => "HIVE_CLI_SERVICE_PROTOCOL_V9"}
-  VALID_VALUES = Set.new([HIVE_CLI_SERVICE_PROTOCOL_V1, HIVE_CLI_SERVICE_PROTOCOL_V2, HIVE_CLI_SERVICE_PROTOCOL_V3, HIVE_CLI_SERVICE_PROTOCOL_V4, HIVE_CLI_SERVICE_PROTOCOL_V5, HIVE_CLI_SERVICE_PROTOCOL_V6, HIVE_CLI_SERVICE_PROTOCOL_V7, HIVE_CLI_SERVICE_PROTOCOL_V8, HIVE_CLI_SERVICE_PROTOCOL_V9]).freeze
+  HIVE_CLI_SERVICE_PROTOCOL_V10 = 9
+  VALUE_MAP = {0 => "HIVE_CLI_SERVICE_PROTOCOL_V1", 1 => "HIVE_CLI_SERVICE_PROTOCOL_V2", 2 => "HIVE_CLI_SERVICE_PROTOCOL_V3", 3 => "HIVE_CLI_SERVICE_PROTOCOL_V4", 4 => "HIVE_CLI_SERVICE_PROTOCOL_V5", 5 => "HIVE_CLI_SERVICE_PROTOCOL_V6", 6 => "HIVE_CLI_SERVICE_PROTOCOL_V7", 7 => "HIVE_CLI_SERVICE_PROTOCOL_V8", 8 => "HIVE_CLI_SERVICE_PROTOCOL_V9", 9 => "HIVE_CLI_SERVICE_PROTOCOL_V10"}
+  VALID_VALUES = Set.new([HIVE_CLI_SERVICE_PROTOCOL_V1, HIVE_CLI_SERVICE_PROTOCOL_V2, HIVE_CLI_SERVICE_PROTOCOL_V3, HIVE_CLI_SERVICE_PROTOCOL_V4, HIVE_CLI_SERVICE_PROTOCOL_V5, HIVE_CLI_SERVICE_PROTOCOL_V6, HIVE_CLI_SERVICE_PROTOCOL_V7, HIVE_CLI_SERVICE_PROTOCOL_V8, HIVE_CLI_SERVICE_PROTOCOL_V9, HIVE_CLI_SERVICE_PROTOCOL_V10]).freeze
 end
 
 module TTypeId
@@ -964,7 +965,7 @@ class TOpenSessionReq
   CONFIGURATION = 4
 
   FIELDS = {
-    CLIENT_PROTOCOL => {:type => ::Thrift::Types::I32, :name => 'client_protocol', :default =>     8, :enum_class => ::TProtocolVersion},
+    CLIENT_PROTOCOL => {:type => ::Thrift::Types::I32, :name => 'client_protocol', :default =>     9, :enum_class => ::TProtocolVersion},
     USERNAME => {:type => ::Thrift::Types::STRING, :name => 'username', :optional => true},
     PASSWORD => {:type => ::Thrift::Types::STRING, :name => 'password', :optional => true},
     CONFIGURATION => {:type => ::Thrift::Types::MAP, :name => 'configuration', :key => {:type => ::Thrift::Types::STRING}, :value => {:type => ::Thrift::Types::STRING}, :optional => true}
@@ -991,7 +992,7 @@ class TOpenSessionResp
 
   FIELDS = {
     STATUS => {:type => ::Thrift::Types::STRUCT, :name => 'status', :class => ::TStatus},
-    SERVERPROTOCOLVERSION => {:type => ::Thrift::Types::I32, :name => 'serverProtocolVersion', :default =>     8, :enum_class => ::TProtocolVersion},
+    SERVERPROTOCOLVERSION => {:type => ::Thrift::Types::I32, :name => 'serverProtocolVersion', :default =>     9, :enum_class => ::TProtocolVersion},
     SESSIONHANDLE => {:type => ::Thrift::Types::STRUCT, :name => 'sessionHandle', :class => ::TSessionHandle, :optional => true},
     CONFIGURATION => {:type => ::Thrift::Types::MAP, :name => 'configuration', :key => {:type => ::Thrift::Types::STRING}, :value => {:type => ::Thrift::Types::STRING}, :optional => true}
   }

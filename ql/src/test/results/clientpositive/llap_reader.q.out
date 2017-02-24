@@ -1,0 +1,86 @@
+PREHOOK: query: CREATE TABLE test(f1 int, f2 int, f3 int) stored as orc
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test
+PREHOOK: query: INSERT INTO TABLE test VALUES (1,1,1), (2,2,2), (3,3,3), (4,4,4)
+PREHOOK: type: QUERY
+PREHOOK: Output: default@test
+PREHOOK: query: ALTER TABLE test CHANGE f1 f1 bigint
+PREHOOK: type: ALTERTABLE_RENAMECOL
+PREHOOK: Input: default@test
+PREHOOK: Output: default@test
+PREHOOK: query: ALTER TABLE test CHANGE f2 f2 bigint
+PREHOOK: type: ALTERTABLE_RENAMECOL
+PREHOOK: Input: default@test
+PREHOOK: Output: default@test
+PREHOOK: query: ALTER TABLE test CHANGE f3 f3 bigint
+PREHOOK: type: ALTERTABLE_RENAMECOL
+PREHOOK: Input: default@test
+PREHOOK: Output: default@test
+PREHOOK: query: SELECT count(f1) FROM test GROUP BY f1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test
+#### A masked pattern was here ####
+1
+1
+1
+1
+PREHOOK: query: SELECT count(f1) FROM test GROUP BY f1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test
+#### A masked pattern was here ####
+1
+1
+1
+1
+PREHOOK: query: CREATE TABLE test_bigint(f1 bigint, f2 bigint, f3 bigint) stored as orc
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test_bigint
+PREHOOK: query: INSERT OVERWRITE TABLE test_bigint select * from test
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test
+PREHOOK: Output: default@test_bigint
+PREHOOK: query: ALTER TABLE test_bigint CHANGE f1 f1 double
+PREHOOK: type: ALTERTABLE_RENAMECOL
+PREHOOK: Input: default@test_bigint
+PREHOOK: Output: default@test_bigint
+PREHOOK: query: ALTER TABLE test_bigint CHANGE f2 f2 double
+PREHOOK: type: ALTERTABLE_RENAMECOL
+PREHOOK: Input: default@test_bigint
+PREHOOK: Output: default@test_bigint
+PREHOOK: query: ALTER TABLE test_bigint CHANGE f3 f3 double
+PREHOOK: type: ALTERTABLE_RENAMECOL
+PREHOOK: Input: default@test_bigint
+PREHOOK: Output: default@test_bigint
+PREHOOK: query: select count(f1) from test_bigint group by f1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_bigint
+#### A masked pattern was here ####
+1
+1
+1
+1
+PREHOOK: query: select count(f1) from test_bigint group by f1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_bigint
+#### A masked pattern was here ####
+1
+1
+1
+1
+PREHOOK: query: CREATE TABLE test_acid (f1 int, f2 int, val string) clustered by (val) into 2 buckets stored as orc TBLPROPERTIES ('transactional'='true')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test_acid
+PREHOOK: query: INSERT INTO TABLE test_acid VALUES (1,1,'b1'), (2,2,'b2'), (3,3,'b3'), (4,4,'b4')
+PREHOOK: type: QUERY
+PREHOOK: Output: default@test_acid
+PREHOOK: query: SELECT count(f1) FROM test_acid GROUP BY f1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_acid
+#### A masked pattern was here ####
+1
+1
+1
+1

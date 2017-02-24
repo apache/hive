@@ -1165,10 +1165,10 @@ POSTHOOK: Input: default@merge1_mm@key=103
 POSTHOOK: Input: default@merge1_mm@key=97
 POSTHOOK: Input: default@merge1_mm@key=98
 #### A masked pattern was here ####
-97	97
+100	100
 103	103
 98	98
-100	100
+97	97
 10	10
 0	0
 PREHOOK: query: insert into table merge1_mm partition (key) select key, key from intermediate
@@ -1216,18 +1216,18 @@ POSTHOOK: Input: default@merge1_mm@key=103
 POSTHOOK: Input: default@merge1_mm@key=97
 POSTHOOK: Input: default@merge1_mm@key=98
 #### A masked pattern was here ####
+103	103
 100	100
+103	103
 97	97
-103	103
-103	103
 100	100
 97	97
 98	98
 98	98
-0	0
 10	10
 0	0
 10	10
+0	0
 PREHOOK: query: drop table merge1_mm
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@merge1_mm

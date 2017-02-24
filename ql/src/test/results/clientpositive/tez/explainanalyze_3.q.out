@@ -573,9 +573,9 @@ PREHOOK: type: CREATEVIEW
 POSTHOOK: query: explain analyze create view v as with cte as (select * from src  order by key limit 5)
 select * from cte
 POSTHOOK: type: CREATEVIEW
-Plan not optimized by CBO.
+Plan optimized by CBO.
 
-Stage-0
+Stage-1
   Create View Operator:
     name:default.v,original text:with cte as (select * from src  order by key limit 5)
 select * from cte

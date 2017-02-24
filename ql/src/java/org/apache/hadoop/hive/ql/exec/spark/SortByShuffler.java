@@ -25,7 +25,7 @@ import org.apache.spark.Partitioner;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.storage.StorageLevel;
 
-public class SortByShuffler implements SparkShuffler {
+public class SortByShuffler implements SparkShuffler<BytesWritable> {
 
   private final boolean totalOrder;
   private final SparkPlan sparkPlan;

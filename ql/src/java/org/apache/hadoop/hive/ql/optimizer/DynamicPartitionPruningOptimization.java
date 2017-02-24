@@ -398,25 +398,33 @@ public class DynamicPartitionPruningOptimization implements NodeProcessor {
       String internalColName = null;
       ExprNodeDesc exprNodeDesc = key;
       // Find the ExprNodeColumnDesc
-      while (!(exprNodeDesc instanceof ExprNodeColumnDesc)) {
+      while (!(exprNodeDesc instanceof ExprNodeColumnDesc) &&
+              (exprNodeDesc.getChildren() != null)) {
         exprNodeDesc = exprNodeDesc.getChildren().get(0);
       }
-      internalColName = ((ExprNodeColumnDesc) exprNodeDesc).getColumn();
 
-      ExprNodeColumnDesc colExpr = ((ExprNodeColumnDesc)(parentOfRS.
-              getColumnExprMap().get(internalColName)));
-      String colName = ExprNodeDescUtils.extractColName(colExpr);
+      if (exprNodeDesc instanceof ExprNodeColumnDesc) {
+        internalColName = ((ExprNodeColumnDesc) exprNodeDesc).getColumn();
 
-      // Fetch the TableScan Operator.
-      Operator<?> op = parentOfRS.getParentOperators().get(0);
-      while (op != null && !(op instanceof TableScanOperator)) {
-        op = op.getParentOperators().get(0);
-      }
-      assert op != null;
+        ExprNodeColumnDesc colExpr = ((ExprNodeColumnDesc) (parentOfRS.
+                getColumnExprMap().get(internalColName)));
+        String colName = ExprNodeDescUtils.extractColName(colExpr);
 
-      Table table = ((TableScanOperator) op).getConf().getTableMetadata();
-      if (table.isPartitionKey(colName)) {
-        // The column is partition column, skip the optimization.
+        // Fetch the TableScan Operator.
+        Operator<?> op = parentOfRS.getParentOperators().get(0);
+        while (op != null && !(op instanceof TableScanOperator)) {
+          op = op.getParentOperators().get(0);
+        }
+        assert op != null;
+
+        Table table = ((TableScanOperator) op).getConf().getTableMetadata();
+        if (table.isPartitionKey(colName)) {
+          // The column is partition column, skip the optimization.
+          return false;
+        }
+      } else {
+        // No column found!
+        // Bail out
         return false;
       }
     }

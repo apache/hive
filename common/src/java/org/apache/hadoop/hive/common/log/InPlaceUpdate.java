@@ -163,6 +163,7 @@ public class InPlaceUpdate {
       progressStr,
       elapsedTime);
 
+    reprintLine(SEPARATOR);
     reprintLineWithColorAsBold(footer, Ansi.Color.RED);
     reprintLine(SEPARATOR);
   }

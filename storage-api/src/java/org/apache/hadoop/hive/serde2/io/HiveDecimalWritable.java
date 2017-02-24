@@ -947,10 +947,13 @@ public final class HiveDecimalWritable extends FastHiveDecimal
     return fastHashCode();
   }
 
+  private static final byte[] EMPTY_ARRAY = new byte[0];
+
   @HiveDecimalWritableVersionV1
   public byte[] getInternalStorage() {
     if (!isSet()) {
-      throw new RuntimeException("no value set");
+      // don't break old callers that are trying to reuse storages
+      return EMPTY_ARRAY;
     }
 
     if (internalScratchLongs == null) {

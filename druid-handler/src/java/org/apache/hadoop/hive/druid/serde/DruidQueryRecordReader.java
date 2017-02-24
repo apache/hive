@@ -98,8 +98,7 @@ public abstract class DruidQueryRecordReader<T extends BaseQuery<R>, R extends C
     InputStream response;
     try {
       response = DruidStorageHandlerUtils.submitRequest(client,
-              DruidStorageHandlerUtils.createRequest(hiveDruidSplit.getAddress(), query)
-      );
+              DruidStorageHandlerUtils.createRequest(hiveDruidSplit.getLocations()[0], query));
     } catch (Exception e) {
       lifecycle.stop();
       throw new IOException(org.apache.hadoop.util.StringUtils.stringifyException(e));

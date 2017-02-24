@@ -37,6 +37,7 @@ import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.UnlockRequest;
 import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -516,5 +517,10 @@ public class TestCleaner extends CompactorTest {
   @Override
   boolean useHive130DeltaDirName() {
     return false;
+  }
+
+  @After
+  public void tearDown() throws Exception {
+    compactorTestCleanup();
   }
 }

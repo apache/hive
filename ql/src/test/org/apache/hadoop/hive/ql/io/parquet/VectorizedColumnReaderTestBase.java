@@ -295,7 +295,7 @@ public class VectorizedColumnReaderTestBase {
     writer.close();
   }
 
-  private void initialVectorizedRowBatchCtx(Configuration conf) throws HiveException {
+  protected void initialVectorizedRowBatchCtx(Configuration conf) throws HiveException {
     MapWork mapWork = new MapWork();
     VectorizedRowBatchCtx rbCtx = new VectorizedRowBatchCtx();
     rbCtx.init(createStructObjectInspector(conf), new String[0]);

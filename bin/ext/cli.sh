@@ -22,13 +22,6 @@ if [ -z "$USE_DEPRECATED_CLI" ] || [ "$USE_DEPRECATED_CLI" != "false" ]; then
   USE_DEPRECATED_CLI="true"
 fi
 
-updateBeelineOpts() {
-  # If process is backgrounded, don't change terminal settings
-  if [[ ( ! $(ps -o stat= -p $$) =~ *+ ) && ! ( -p /dev/stdin ) ]]; then
-    export HADOOP_CLIENT_OPTS="$HADOOP_CLIENT_OPTS -Djline.terminal=jline.UnsupportedTerminal"
-  fi
-}
-
 updateCli() {
   if [ "$USE_DEPRECATED_CLI" == "true" ]; then
     CLASS=org.apache.hadoop.hive.cli.CliDriver
@@ -37,7 +30,6 @@ updateCli() {
     export HADOOP_CLIENT_OPTS="$HADOOP_CLIENT_OPTS -Dlog4j.configurationFile=beeline-log4j2.properties"
     CLASS=org.apache.hive.beeline.cli.HiveCli
     JAR=hive-beeline-*.jar
-    updateBeelineOpts
   fi
 }
 

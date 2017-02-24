@@ -361,16 +361,10 @@ public class QTestUtil {
         conf.set(confEntry.getKey(), clusterSpecificConf.get(confEntry.getKey()));
       }
     }
-
-    // Windows paths should be converted after MiniMrShim.setupConfiguration()
-    // since setupConfiguration may overwrite configuration values.
-    if (Shell.WINDOWS) {
-      WindowsPathUtil.convertPathsFromWindowsToHdfs(conf);
-    }
   }
 
   private void setFsRelatedProperties(HiveConf conf, boolean isLocalFs, FileSystem fs) {
-    String fsUriString = WindowsPathUtil.getHdfsUriString(fs.getUri().toString());
+    String fsUriString = fs.getUri().toString();
 
     // Different paths if running locally vs a remote fileSystem. Ideally this difference should not exist.
     Path warehousePath;
@@ -650,7 +644,7 @@ public class QTestUtil {
   private void setupMiniCluster(HadoopShims shims, String confDir) throws
       IOException {
 
-    String uriString = WindowsPathUtil.getHdfsUriString(fs.getUri().toString());
+    String uriString = fs.getUri().toString();
 
     if (clusterType.getCoreClusterType() == CoreClusterType.TEZ) {
       if (confDir != null && !confDir.isEmpty()) {
@@ -740,8 +734,7 @@ public class QTestUtil {
     qMap.put(qf.getName(), query);
     if (partial) return;
 
-    if(checkHadoopVersionExclude(qf.getName(), query)
-      || checkOSExclude(qf.getName(), query)) {
+    if(checkHadoopVersionExclude(qf.getName(), query)) {
       qSkipSet.add(qf.getName());
     }
 
@@ -832,35 +825,6 @@ public class QTestUtil {
       System.out.println("QTestUtil: " + fileName
         + " INCLUDE list does not contain Hadoop Version " + hadoopVer + ". Skipping...");
       return true;
-    }
-    return false;
-  }
-
-  private boolean checkOSExclude(String fileName, String query){
-    // Look for a hint to not run a test on some Hadoop versions
-    Pattern pattern = Pattern.compile("-- (EX|IN)CLUDE_OS_WINDOWS");
-
-    // detect whether this query wants to be excluded or included
-    // on windows
-    Matcher matcher = pattern.matcher(query);
-    if (matcher.find()) {
-      String prefix = matcher.group(1);
-      if ("EX".equals(prefix)) {
-        //windows is to be exluded
-        if(Shell.WINDOWS){
-          System.out.println("Due to the OS being windows " +
-                             "adding the  query " + fileName +
-                             " to the set of tests to skip");
-          return true;
-        }
-      }
-      else  if(!Shell.WINDOWS){
-        //non windows to be exluded
-        System.out.println("Due to the OS not being windows " +
-                           "adding the  query " + fileName +
-                           " to the set of tests to skip");
-        return true;
-      }
     }
     return false;
   }
@@ -1827,19 +1791,10 @@ public class QTestUtil {
     diffCommandArgs.add("-a");
 
     // Ignore changes in the amount of white space
-    if (ignoreWhiteSpace || Shell.WINDOWS) {
+    if (ignoreWhiteSpace) {
       diffCommandArgs.add("-b");
     }
 
-    // Files created on Windows machines have different line endings
-    // than files created on Unix/Linux. Windows uses carriage return and line feed
-    // ("\r\n") as a line ending, whereas Unix uses just line feed ("\n").
-    // Also StringBuilder.toString(), Stream to String conversions adds extra
-    // spaces at the end of the line.
-    if (Shell.WINDOWS) {
-      diffCommandArgs.add("--strip-trailing-cr"); // Strip trailing carriage return on input
-      diffCommandArgs.add("-B"); // Ignore changes whose lines are all blank
-    }
     // Add files to compare to the arguments list
     diffCommandArgs.add(getQuotedString(inFileName));
     diffCommandArgs.add(getQuotedString(outFileName));
@@ -1909,7 +1864,7 @@ public class QTestUtil {
   }
 
   private static String getQuotedString(String str){
-    return Shell.WINDOWS ? String.format("\"%s\"", str) : str;
+    return str;
   }
 
   public ASTNode parseQuery(String tname) throws Exception {

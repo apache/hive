@@ -113,6 +113,7 @@ public class EncodedColumnBatch<BatchKey> {
     }
   }
 
+
   public void initColumn(int colIx, int streamCount) {
     hasData[colIx] = true;
     if (columnData[colIx] == null || columnData[colIx].length != streamCount) {

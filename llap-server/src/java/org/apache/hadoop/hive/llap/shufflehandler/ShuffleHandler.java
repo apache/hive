@@ -197,8 +197,6 @@ public class ShuffleHandler implements AttemptRegistrationListener {
   public static final String  SHUFFLE_TRANSFERTO_ALLOWED = 
       "llap.shuffle.transferTo.allowed";
   public static final boolean DEFAULT_SHUFFLE_TRANSFERTO_ALLOWED = true;
-  public static final boolean WINDOWS_DEFAULT_SHUFFLE_TRANSFERTO_ALLOWED = 
-      false;
 
   static final String DATA_FILE_NAME = "file.out";
   static final String INDEX_FILE_NAME = "file.out.index";
@@ -266,8 +264,7 @@ public class ShuffleHandler implements AttemptRegistrationListener {
         DEFAULT_SHUFFLE_BUFFER_SIZE);
 
     shuffleTransferToAllowed = conf.getBoolean(SHUFFLE_TRANSFERTO_ALLOWED,
-        (Shell.WINDOWS)?WINDOWS_DEFAULT_SHUFFLE_TRANSFERTO_ALLOWED:
-            DEFAULT_SHUFFLE_TRANSFERTO_ALLOWED);
+        DEFAULT_SHUFFLE_TRANSFERTO_ALLOWED);
 
     ThreadFactory bossFactory = new ThreadFactoryBuilder()
         .setNameFormat("ShuffleHandler Netty Boss #%d")

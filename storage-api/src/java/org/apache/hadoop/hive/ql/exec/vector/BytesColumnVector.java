@@ -472,4 +472,15 @@ public class BytesColumnVector extends ColumnVector {
       }
     }
   }
+
+  @Override
+  public void shallowCopyTo(ColumnVector otherCv) {
+    BytesColumnVector other = (BytesColumnVector)otherCv;
+    super.shallowCopyTo(other);
+    other.nextFree = nextFree;
+    other.vector = vector;
+    other.start = start;
+    other.length = length;
+    other.buffer = buffer;
+  }
 }

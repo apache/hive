@@ -377,9 +377,16 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
           }
         }
 
+        // TODO : instead of simply restricting by message format, we should eventually
+        // move to a jdbc-driver-stype registering of message format, and picking message
+        // factory per event to decode. For now, however, since all messages have the
+        // same factory, restricting by message format is effectively a guard against
+        // older leftover data that would cause us problems.
+
         IMetaStoreClient.NotificationFilter evFilter = EventUtils.andFilter(
             EventUtils.getDbTblNotificationFilter(dbNameOrPattern, tblNameOrPattern),
-            EventUtils.getEventBoundaryFilter(eventFrom, eventTo));
+            EventUtils.getEventBoundaryFilter(eventFrom, eventTo),
+            EventUtils.restrictByMessageFormat(MessageFactory.getInstance().getMessageFormat()));
 
         EventUtils.MSClientNotificationFetcher evFetcher
             = new EventUtils.MSClientNotificationFetcher(db.getMSC());

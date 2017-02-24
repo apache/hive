@@ -123,7 +123,8 @@ import org.apache.hive.jdbc.Utils.JdbcConnectionParams;
 public class BeeLine implements Closeable {
   private static final ResourceBundle resourceBundle =
       ResourceBundle.getBundle(BeeLine.class.getSimpleName());
-  private final BeeLineSignalHandler signalHandler = null;
+  private final BeeLineSignalHandler signalHandler;
+  private final Runnable shutdownHook;
   private static final String separator = System.getProperty("line.separator");
   private boolean exit = false;
   private final DatabaseConnections connections = new DatabaseConnections();
@@ -531,12 +532,26 @@ public class BeeLine implements Closeable {
 
   public BeeLine(boolean isBeeLine) {
     this.isBeeLine = isBeeLine;
+    this.signalHandler = new SunSignalHandler(this);
+    this.shutdownHook = new Runnable() {
+      @Override
+      public void run() {
+        try {
+          if (history != null) {
+            history.flush();
+          }
+        } catch (IOException e) {
+          error(e);
+        } finally {
+          close();
+        }
+      }
+    };
   }
 
   DatabaseConnection getDatabaseConnection() {
     return getDatabaseConnections().current();
   }
-
 
   Connection getConnection() throws SQLException {
     if (getDatabaseConnections().current() == null
@@ -984,6 +999,9 @@ public class BeeLine implements Closeable {
 
     setupHistory();
 
+    //add shutdown hook to cleanup the beeline for smooth exit
+    addBeelineShutdownHook();
+
     //this method also initializes the consoleReader which is
     //needed by initArgs for certain execution paths
     ConsoleReader reader = initializeConsoleReader(inputStream);
@@ -1183,17 +1201,11 @@ public class BeeLine implements Closeable {
     }
 
     this.history = new FileHistory(new File(getOpts().getHistoryFile()));
-    // add shutdown hook to flush the history to history file
-    ShutdownHookManager.addShutdownHook(new Runnable() {
-      @Override
-      public void run() {
-        try {
-          history.flush();
-        } catch (IOException e) {
-          error(e);
-        }
-      }
-    });
+  }
+
+  private void addBeelineShutdownHook() throws IOException {
+    // add shutdown hook to flush the history to history file and it also close all open connections
+    ShutdownHookManager.addShutdownHook(getShutdownHook());
   }
 
   public ConsoleReader initializeConsoleReader(InputStream inputStream) throws IOException {
@@ -2269,6 +2281,10 @@ public class BeeLine implements Closeable {
 
   DatabaseConnections getDatabaseConnections() {
     return connections;
+  }
+
+  Runnable getShutdownHook() {
+    return shutdownHook;
   }
 
   Completer getCommandCompletor() {

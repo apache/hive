@@ -1,6 +1,3 @@
--- EXCLUDE_OS_WINDOWS
--- excluded on windows because of difference in file name encoding logic
-
 -- SORT_QUERY_RESULTS
 
 create table if not exists nzhang_part14 (key string)

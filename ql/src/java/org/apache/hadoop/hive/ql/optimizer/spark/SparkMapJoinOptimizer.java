@@ -24,6 +24,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
 
+import org.apache.hadoop.hive.ql.exec.OperatorUtils;
+import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -191,12 +193,40 @@ public class SparkMapJoinOptimizer implements NodeProcessor {
     int pos = 0;
 
     // bigTableFound means we've encountered a table that's bigger than the
-    // max. This table is either the the big table or we cannot convert.
+    // max. This table is either the big table or we cannot convert.
     boolean bigTableFound = false;
+    boolean useTsStats = context.getConf().getBoolean(HiveConf.ConfVars.SPARK_USE_FILE_SIZE_FOR_MAPJOIN.varname, false);
+    boolean hasUpstreamSinks = false;
+
+    // Check whether there's any upstream RS.
+    // If so, don't use TS stats because they could be inaccurate.
+    for (Operator<? extends OperatorDesc> parentOp : joinOp.getParentOperators()) {
+      Set<ReduceSinkOperator> parentSinks =
+          OperatorUtils.findOperatorsUpstream(parentOp, ReduceSinkOperator.class);
+      parentSinks.remove(parentOp);
+      if (!parentSinks.isEmpty()) {
+        hasUpstreamSinks = true;
+      }
+    }
+
+    // If we are using TS stats and this JOIN has at least one upstream RS, disable MapJoin conversion.
+    if (useTsStats && hasUpstreamSinks) {
+      return new long[]{-1, 0, 0};
+    }
 
     for (Operator<? extends OperatorDesc> parentOp : joinOp.getParentOperators()) {
+      Statistics currInputStat;
+      if (useTsStats) {
+        currInputStat = new Statistics();
+        // Find all root TSs and add up all data sizes
+        // Not adding other stats (e.g., # of rows, col stats) since only data size is used here
+        for (TableScanOperator root : OperatorUtils.findOperatorsUpstream(parentOp, TableScanOperator.class)) {
+          currInputStat.addToDataSize(root.getStatistics().getDataSize());
+        }
+      } else {
+         currInputStat = parentOp.getStatistics();
+      }
 
-      Statistics currInputStat = parentOp.getStatistics();
       if (currInputStat == null) {
         LOG.warn("Couldn't get statistics from: " + parentOp);
         return new long[]{-1, 0, 0};

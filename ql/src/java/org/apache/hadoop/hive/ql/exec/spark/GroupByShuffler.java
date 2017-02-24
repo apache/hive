@@ -20,18 +20,17 @@ package org.apache.hadoop.hive.ql.exec.spark;
 
 import org.apache.hadoop.hive.ql.io.HiveKey;
 import org.apache.hadoop.io.BytesWritable;
-import org.apache.spark.HashPartitioner;
 import org.apache.spark.api.java.JavaPairRDD;
 
-public class GroupByShuffler implements SparkShuffler {
+public class GroupByShuffler implements SparkShuffler<Iterable<BytesWritable>> {
 
   @Override
-  public JavaPairRDD<HiveKey, BytesWritable> shuffle(
+  public JavaPairRDD<HiveKey, Iterable<BytesWritable>> shuffle(
       JavaPairRDD<HiveKey, BytesWritable> input, int numPartitions) {
-    if (numPartitions < 0) {
-      numPartitions = 1;
+    if (numPartitions > 0) {
+      return input.groupByKey(numPartitions);
     }
-    return input.repartitionAndSortWithinPartitions(new HashPartitioner(numPartitions));
+    return input.groupByKey();
   }
 
   @Override

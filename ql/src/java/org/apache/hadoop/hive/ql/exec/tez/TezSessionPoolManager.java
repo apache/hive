@@ -314,7 +314,7 @@ public class TezSessionPoolManager {
         LOG.warn("User has specified " + queueName + " queue; ignoring the setting");
         queueName = null;
         hasQueue = false;
-        conf.set("tez.queue.name", null);
+        conf.unset("tez.queue.name");
       }
       default: // All good.
       }

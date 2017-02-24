@@ -22,10 +22,14 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.cli.CliSessionState;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
+import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
+import org.apache.hadoop.hive.metastore.api.NotificationEvent;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.metastore.messaging.EventUtils;
+import org.apache.hadoop.hive.metastore.messaging.MessageFactory;
 import org.apache.hadoop.hive.ql.parse.ReplicationSemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.ReplicationSpec.ReplStateMap;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
@@ -45,10 +49,12 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
 import static junit.framework.Assert.assertTrue;
+import static junit.framework.Assert.assertFalse;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -85,9 +91,6 @@ public class TestReplicationScenarios {
       hconf.setVar(HiveConf.ConfVars.METASTOREURIS, metastoreUri);
       useExternalMS = true;
       return;
-    }
-    if (Shell.WINDOWS) {
-      WindowsPathUtil.convertPathsFromWindowsToHdfs(hconf);
     }
 
     hconf.setVar(HiveConf.ConfVars.METASTORE_EVENT_LISTENERS,
@@ -956,6 +959,120 @@ public class TestReplicationScenarios {
     //   a) Multi-db wh-level REPL LOAD - need to add that
     //   b) Insert into tables - quite a few cases need to be enumerated there, including dyn adds.
 
+  }
+
+  @Test
+  public void testEventFilters(){
+    // Test testing that the filters introduced by EventUtils are working correctly.
+
+    // The current filters we use in ReplicationSemanticAnalyzer is as follows:
+    //    IMetaStoreClient.NotificationFilter evFilter = EventUtils.andFilter(
+    //        EventUtils.getDbTblNotificationFilter(dbNameOrPattern, tblNameOrPattern),
+    //        EventUtils.getEventBoundaryFilter(eventFrom, eventTo),
+    //        EventUtils.restrictByMessageFormat(MessageFactory.getInstance().getMessageFormat()));
+    // So, we test each of those three filters, and then test andFilter itself.
+
+
+    String dbname = "testfilter_db";
+    String tblname = "testfilter_tbl";
+
+    // Test EventUtils.getDbTblNotificationFilter - this is supposed to restrict
+    // events to those that match the dbname and tblname provided to the filter.
+    // If the tblname passed in to the filter is null, then it restricts itself
+    // to dbname-matching alone.
+    IMetaStoreClient.NotificationFilter dbTblFilter = EventUtils.getDbTblNotificationFilter(dbname,tblname);
+    IMetaStoreClient.NotificationFilter dbFilter = EventUtils.getDbTblNotificationFilter(dbname,null);
+
+    assertFalse(dbTblFilter.accept(null));
+    assertTrue(dbTblFilter.accept(createDummyEvent(dbname, tblname, 0)));
+    assertFalse(dbTblFilter.accept(createDummyEvent(dbname, tblname + "extra",0)));
+    assertFalse(dbTblFilter.accept(createDummyEvent(dbname + "extra", tblname,0)));
+
+    assertFalse(dbFilter.accept(null));
+    assertTrue(dbFilter.accept(createDummyEvent(dbname, tblname,0)));
+    assertTrue(dbFilter.accept(createDummyEvent(dbname, tblname + "extra", 0)));
+    assertFalse(dbFilter.accept(createDummyEvent(dbname + "extra", tblname,0)));
+
+
+    // Test EventUtils.getEventBoundaryFilter - this is supposed to only allow events
+    // within a range specified.
+    long evBegin = 50;
+    long evEnd = 75;
+    IMetaStoreClient.NotificationFilter evRangeFilter = EventUtils.getEventBoundaryFilter(evBegin,evEnd);
+
+    assertTrue(evBegin < evEnd);
+    assertFalse(evRangeFilter.accept(null));
+    assertFalse(evRangeFilter.accept(createDummyEvent(dbname, tblname, evBegin - 1)));
+    assertTrue(evRangeFilter.accept(createDummyEvent(dbname, tblname, evBegin)));
+    assertTrue(evRangeFilter.accept(createDummyEvent(dbname, tblname, evBegin + 1)));
+    assertTrue(evRangeFilter.accept(createDummyEvent(dbname, tblname, evEnd - 1)));
+    assertTrue(evRangeFilter.accept(createDummyEvent(dbname, tblname, evEnd)));
+    assertFalse(evRangeFilter.accept(createDummyEvent(dbname, tblname, evEnd + 1)));
+
+
+    // Test EventUtils.restrictByMessageFormat - this restricts events generated to those
+    // that match a provided message format
+
+    IMetaStoreClient.NotificationFilter restrictByDefaultMessageFormat =
+        EventUtils.restrictByMessageFormat(MessageFactory.getInstance().getMessageFormat());
+    IMetaStoreClient.NotificationFilter restrictByArbitraryMessageFormat =
+        EventUtils.restrictByMessageFormat(MessageFactory.getInstance().getMessageFormat() + "_bogus");
+    NotificationEvent dummyEvent = createDummyEvent(dbname,tblname,0);
+
+    assertEquals(MessageFactory.getInstance().getMessageFormat(),dummyEvent.getMessageFormat());
+
+    assertFalse(restrictByDefaultMessageFormat.accept(null));
+    assertTrue(restrictByDefaultMessageFormat.accept(dummyEvent));
+    assertFalse(restrictByArbitraryMessageFormat.accept(dummyEvent));
+
+    // Test andFilter operation.
+
+    IMetaStoreClient.NotificationFilter yes = new IMetaStoreClient.NotificationFilter() {
+      @Override
+      public boolean accept(NotificationEvent notificationEvent) {
+        return true;
+      }
+    };
+
+    IMetaStoreClient.NotificationFilter no = new IMetaStoreClient.NotificationFilter() {
+      @Override
+      public boolean accept(NotificationEvent notificationEvent) {
+        return false;
+      }
+    };
+
+    assertTrue(EventUtils.andFilter(yes, yes).accept(dummyEvent));
+    assertFalse(EventUtils.andFilter(yes, no).accept(dummyEvent));
+    assertFalse(EventUtils.andFilter(no, yes).accept(dummyEvent));
+    assertFalse(EventUtils.andFilter(no, no).accept(dummyEvent));
+
+    assertTrue(EventUtils.andFilter(yes, yes, yes).accept(dummyEvent));
+    assertFalse(EventUtils.andFilter(yes, yes, no).accept(dummyEvent));
+    assertFalse(EventUtils.andFilter(yes, no, yes).accept(dummyEvent));
+    assertFalse(EventUtils.andFilter(yes, no, no).accept(dummyEvent));
+    assertFalse(EventUtils.andFilter(no, yes, yes).accept(dummyEvent));
+    assertFalse(EventUtils.andFilter(no, yes, no).accept(dummyEvent));
+    assertFalse(EventUtils.andFilter(no, no, yes).accept(dummyEvent));
+    assertFalse(EventUtils.andFilter(no, no, no).accept(dummyEvent));
+
+
+  }
+
+  private NotificationEvent createDummyEvent(String dbname, String tblname, long evid) {
+    MessageFactory msgFactory = MessageFactory.getInstance();
+    Table t = new Table();
+    t.setDbName(dbname);
+    t.setTableName(tblname);
+    NotificationEvent event = new NotificationEvent(
+        evid,
+        (int)System.currentTimeMillis(),
+        MessageFactory.CREATE_TABLE_EVENT,
+        msgFactory.buildCreateTableMessage(t, Arrays.asList("/tmp/").iterator()).toString()
+    );
+    event.setDbName(t.getDbName());
+    event.setTableName(t.getTableName());
+    event.setMessageFormat(msgFactory.getMessageFormat());
+    return event;
   }
 
   private String verifyAndReturnDbReplStatus(String dbName, String tblName, String prevReplDumpId, String cmd) throws IOException {

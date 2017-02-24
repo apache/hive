@@ -139,7 +139,7 @@ public class QueryTracker extends AbstractService {
   QueryFragmentInfo registerFragment(QueryIdentifier queryIdentifier, String appIdString, String dagIdString,
       String dagName, String hiveQueryIdString, int dagIdentifier, String vertexName, int fragmentNumber, int attemptNumber,
       String user, SignableVertexSpec vertex, Token<JobTokenIdentifier> appToken,
-      String fragmentIdString, LlapTokenInfo tokenInfo) throws IOException {
+      String fragmentIdString, LlapTokenInfo tokenInfo, String amHost, int amPort) throws IOException {
 
     ReadWriteLock dagLock = getDagLock(queryIdentifier);
     // Note: This is a readLock to prevent a race with queryComplete. Operations
@@ -174,6 +174,8 @@ public class QueryTracker extends AbstractService {
         if (old != null) {
           queryInfo = old;
         } else {
+          // Ensure the UGI is setup once.
+          queryInfo.setupUmbilicalUgi(vertex.getTokenIdentifier(), appToken, amHost, amPort);
           isExistingQueryInfo = false;
         }
       }

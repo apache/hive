@@ -328,8 +328,7 @@ public final class HiveMaterializedViewsRegistry {
 
   private static RelNode parseQuery(String viewQuery) {
     try {
-      final ParseDriver pd = new ParseDriver();
-      final ASTNode node = ParseUtils.findRootNonNullToken(pd.parse(viewQuery));
+      final ASTNode node = ParseUtils.parse(viewQuery);
       final QueryState qs = new QueryState(SessionState.get().getConf());
       CalcitePlanner analyzer = new CalcitePlanner(qs);
       analyzer.initCtx(new Context(SessionState.get().getConf()));

@@ -58,9 +58,9 @@ import org.apache.hadoop.hive.ql.session.SessionState;
  */
 public class UpdateDeleteSemanticAnalyzer extends SemanticAnalyzer {
 
-  boolean useSuper = false;
+  private boolean useSuper = false;
 
-  public UpdateDeleteSemanticAnalyzer(QueryState queryState) throws SemanticException {
+  UpdateDeleteSemanticAnalyzer(QueryState queryState) throws SemanticException {
     super(queryState);
   }
 
@@ -92,19 +92,19 @@ public class UpdateDeleteSemanticAnalyzer extends SemanticAnalyzer {
     }
   }
   private boolean updating() {
-    return currentOperation == Operation.UPDATE;
+    return currentOperation == Context.Operation.UPDATE;
   }
   private boolean deleting() {
-    return currentOperation == Operation.DELETE;
+    return currentOperation == Context.Operation.DELETE;
   }
 
   private void analyzeUpdate(ASTNode tree) throws SemanticException {
-    currentOperation = Operation.UPDATE;
+    currentOperation = Context.Operation.UPDATE;
     reparseAndSuperAnalyze(tree);
   }
 
   private void analyzeDelete(ASTNode tree) throws SemanticException {
-    currentOperation = Operation.DELETE;
+    currentOperation = Context.Operation.DELETE;
     reparseAndSuperAnalyze(tree);
   }
   /**
@@ -293,18 +293,16 @@ public class UpdateDeleteSemanticAnalyzer extends SemanticAnalyzer {
       HiveConf.setVar(conf, HiveConf.ConfVars.DYNAMICPARTITIONINGMODE, "nonstrict");
       rewrittenCtx = new Context(conf);
       rewrittenCtx.setExplainConfig(ctx.getExplainConfig());
+      rewrittenCtx.setIsUpdateDeleteMerge(true);
     } catch (IOException e) {
       throw new SemanticException(ErrorMsg.UPDATEDELETE_IO_ERROR.getMsg());
     }
     rewrittenCtx.setCmd(rewrittenQueryStr.toString());
 
-    ParseDriver pd = new ParseDriver();
     ASTNode rewrittenTree;
     try {
       LOG.info("Going to reparse <" + originalQuery + "> as \n<" + rewrittenQueryStr.toString() + ">");
-      rewrittenTree = pd.parse(rewrittenQueryStr.toString(), rewrittenCtx);
-      rewrittenTree = ParseUtils.findRootNonNullToken(rewrittenTree);
-
+      rewrittenTree = ParseUtils.parse(rewrittenQueryStr.toString(), rewrittenCtx);
     } catch (ParseException e) {
       throw new SemanticException(ErrorMsg.UPDATEDELETE_PARSE_ERROR.getMsg(), e);
     }
@@ -410,10 +408,12 @@ public class UpdateDeleteSemanticAnalyzer extends SemanticAnalyzer {
         "Expected TOK_INSERT as second child of TOK_QUERY but found " + rewrittenInsert.getName();
 
     if(updating()) {
-      rewrittenCtx.addDestNamePrefix(rewrittenInsert, Context.DestClausePrefix.UPDATE);
+      rewrittenCtx.setOperation(Context.Operation.UPDATE);
+      rewrittenCtx.addDestNamePrefix(1, Context.DestClausePrefix.UPDATE);
     }
     else if(deleting()) {
-      rewrittenCtx.addDestNamePrefix(rewrittenInsert, Context.DestClausePrefix.DELETE);
+      rewrittenCtx.setOperation(Context.Operation.DELETE);
+      rewrittenCtx.addDestNamePrefix(1, Context.DestClausePrefix.DELETE);
     }
 
     if (where != null) {
@@ -489,7 +489,7 @@ public class UpdateDeleteSemanticAnalyzer extends SemanticAnalyzer {
     return false;
   }
   private String operation() {
-    if (currentOperation == Operation.NOT_ACID) {
+    if (currentOperation == Context.Operation.OTHER) {
       throw new IllegalStateException("UpdateDeleteSemanticAnalyzer neither updating nor " +
         "deleting, operation not known.");
     }
@@ -523,8 +523,7 @@ public class UpdateDeleteSemanticAnalyzer extends SemanticAnalyzer {
     return colName.toLowerCase();
   }
 
-  private enum Operation {UPDATE, DELETE, MERGE, NOT_ACID};
-  private Operation currentOperation = Operation.NOT_ACID;
+  private Context.Operation currentOperation = Context.Operation.OTHER;
   private static final String Indent = "  ";
 
   private IdentifierQuoter quotedIdenfierHelper;
@@ -589,7 +588,7 @@ public class UpdateDeleteSemanticAnalyzer extends SemanticAnalyzer {
    * @throws SemanticException
    */
   private void analyzeMerge(ASTNode tree) throws SemanticException {
-    currentOperation = Operation.MERGE;
+    currentOperation = Context.Operation.MERGE;
     quotedIdenfierHelper = new IdentifierQuoter(ctx.getTokenRewriteStream());
     /*
      * See org.apache.hadoop.hive.ql.parse.TestMergeStatement for some examples of the merge AST
@@ -696,30 +695,36 @@ public class UpdateDeleteSemanticAnalyzer extends SemanticAnalyzer {
     if(numWhenMatchedDeleteClauses + numWhenMatchedUpdateClauses == 2 && extraPredicate == null) {
       throw new SemanticException(ErrorMsg.MERGE_PREDIACTE_REQUIRED, ctx.getCmd());
     }
-    handleCardinalityViolation(rewrittenQueryStr, target, onClauseAsText, targetTable);
+    boolean validating = handleCardinalityViolation(rewrittenQueryStr, target, onClauseAsText,
+      targetTable, numWhenMatchedDeleteClauses == 0 && numWhenMatchedUpdateClauses == 0);
     ReparseResult rr = parseRewrittenQuery(rewrittenQueryStr, ctx.getCmd());
     Context rewrittenCtx = rr.rewrittenCtx;
     ASTNode rewrittenTree = rr.rewrittenTree;
+    rewrittenCtx.setOperation(Context.Operation.MERGE);
 
-    //set dest name mapping on new context
+    //set dest name mapping on new context; 1st chid is TOK_FROM
     for(int insClauseIdx = 1, whenClauseIdx = 0;
-        insClauseIdx < rewrittenTree.getChildCount() - 1/*skip cardinality violation clause*/;
+        insClauseIdx < rewrittenTree.getChildCount() - (validating ? 1 : 0/*skip cardinality violation clause*/);
         insClauseIdx++, whenClauseIdx++) {
       //we've added Insert clauses in order or WHEN items in whenClauses
       ASTNode insertClause = (ASTNode) rewrittenTree.getChild(insClauseIdx);
       switch (getWhenClauseOperation(whenClauses.get(whenClauseIdx)).getType()) {
         case HiveParser.TOK_INSERT:
-          rewrittenCtx.addDestNamePrefix(insertClause, Context.DestClausePrefix.INSERT);
+          rewrittenCtx.addDestNamePrefix(insClauseIdx, Context.DestClausePrefix.INSERT);
           break;
         case HiveParser.TOK_UPDATE:
-          rewrittenCtx.addDestNamePrefix(insertClause, Context.DestClausePrefix.UPDATE);
+          rewrittenCtx.addDestNamePrefix(insClauseIdx, Context.DestClausePrefix.UPDATE);
           break;
         case HiveParser.TOK_DELETE:
-          rewrittenCtx.addDestNamePrefix(insertClause, Context.DestClausePrefix.DELETE);
+          rewrittenCtx.addDestNamePrefix(insClauseIdx, Context.DestClausePrefix.DELETE);
           break;
         default:
           assert false;
       }
+    }
+    if(validating) {
+      //here means the last branch of the multi-insert is Cardinality Validation
+      rewrittenCtx.addDestNamePrefix(rewrittenTree.getChildCount() - 1, Context.DestClausePrefix.INSERT);
     }
     try {
       useSuper = true;
@@ -825,14 +830,20 @@ public class UpdateDeleteSemanticAnalyzer extends SemanticAnalyzer {
    * This should not affect the runtime of the query as it's running in parallel with other
    * branches of the multi-insert.  It won't actually write any data to merge_tmp_table since the
    * cardinality_violation() UDF throws an error whenever it's called killing the query
+   * @return true if another Insert clause was added
    */
-  private void handleCardinalityViolation(StringBuilder rewrittenQueryStr, ASTNode target,
-                                          String onClauseAsString, Table targetTable)
+  private boolean handleCardinalityViolation(StringBuilder rewrittenQueryStr, ASTNode target,
+                                             String onClauseAsString, Table targetTable,
+                                             boolean onlyHaveWhenNotMatchedClause)
               throws SemanticException {
     if(!conf.getBoolVar(HiveConf.ConfVars.MERGE_CARDINALITY_VIOLATION_CHECK)) {
       LOG.info("Merge statement cardinality violation check is disabled: " +
         HiveConf.ConfVars.MERGE_CARDINALITY_VIOLATION_CHECK.varname);
-      return;
+      return false;
+    }
+    if(onlyHaveWhenNotMatchedClause) {
+      //if no update or delete in Merge, there is no need to to do cardinality check
+      return false;
     }
     //this is a tmp table and thus Session scoped and acid requires SQL statement to be serial in a
     // given session, i.e. the name can be fixed across all invocations
@@ -872,6 +883,7 @@ public class UpdateDeleteSemanticAnalyzer extends SemanticAnalyzer {
     catch(HiveException|MetaException e) {
       throw new SemanticException(e.getMessage(), e);
     }
+    return true;
   }
   /**
    * @param onClauseAsString - because there is no clone() and we need to use in multiple places

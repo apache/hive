@@ -126,7 +126,6 @@ public class PigDelegator extends LauncherDelegator {
                 appConf.get(AppConfig.HIVE_PROPS_NAME));
       }
       args.add("--");
-      TempletonUtils.addCmdForWindows(args);
       args.add(appConf.pigPath());
       //the token file location should be first argument of pig
       args.add("-D" + TempletonControllerJob.TOKEN_FILE_ARG_PLACEHOLDER);
@@ -135,7 +134,7 @@ public class PigDelegator extends LauncherDelegator {
       args.add("-D" + TempletonControllerJob.MAPREDUCE_JOB_TAGS_ARG_PLACEHOLDER);
 
       for (String pigArg : pigArgs) {
-        args.add(TempletonUtils.quoteForWindows(pigArg));
+        args.add(pigArg);
       }
       if(needsMetastoreAccess) {
         addHiveMetaStoreTokenArg();
@@ -143,7 +142,7 @@ public class PigDelegator extends LauncherDelegator {
       
       if (TempletonUtils.isset(execute)) {
         args.add("-execute");
-        args.add(TempletonUtils.quoteForWindows(execute));
+        args.add(execute);
       } else if (TempletonUtils.isset(srcFile)) {
         args.add("-file");
         args.add(TempletonUtils.hadoopFsPath(srcFile, appConf, runAs)

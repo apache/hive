@@ -159,4 +159,7 @@ select
 from interval_arithmetic_1
 limit 2;
 
+explain
+select date '2016-11-08' + interval '1 2:02:00' day to second + interval '2' day + interval '1' hour + interval '1' minute + interval '60' second from interval_arithmetic_1 limit 1;
+select date '2016-11-08' + interval '1 2:02:00' day to second + interval '2' day + interval '1' hour + interval '1' minute + interval '60' second from interval_arithmetic_1 limit 1;
 drop table interval_arithmetic_1;

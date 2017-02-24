@@ -58,8 +58,6 @@ public class TestOperationLoggingAPIWithTez extends OperationLoggingAPITestBase 
     };
     hiveConf = new HiveConf();
     hiveConf.set(ConfVars.HIVE_SERVER2_LOGGING_OPERATION_LEVEL.varname, "verbose");
-    // Change the engine to tez
-    hiveConf.setVar(ConfVars.HIVE_EXECUTION_ENGINE, "tez");
     // Set tez execution summary to false.
     hiveConf.setBoolVar(ConfVars.TEZ_EXEC_SUMMARY, false);
     miniHS2 = new MiniHS2(hiveConf, MiniClusterType.TEZ);

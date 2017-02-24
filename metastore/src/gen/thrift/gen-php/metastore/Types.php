@@ -15687,6 +15687,10 @@ class NotificationEvent {
    * @var string
    */
   public $message = null;
+  /**
+   * @var string
+   */
+  public $messageFormat = null;
 
   public function __construct($vals=null) {
     if (!isset(self::$_TSPEC)) {
@@ -15715,6 +15719,10 @@ class NotificationEvent {
           'var' => 'message',
           'type' => TType::STRING,
           ),
+        7 => array(
+          'var' => 'messageFormat',
+          'type' => TType::STRING,
+          ),
         );
     }
     if (is_array($vals)) {
@@ -15735,6 +15743,9 @@ class NotificationEvent {
       }
       if (isset($vals['message'])) {
         $this->message = $vals['message'];
+      }
+      if (isset($vals['messageFormat'])) {
+        $this->messageFormat = $vals['messageFormat'];
       }
     }
   }
@@ -15800,6 +15811,13 @@ class NotificationEvent {
             $xfer += $input->skip($ftype);
           }
           break;
+        case 7:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->messageFormat);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
         default:
           $xfer += $input->skip($ftype);
           break;
@@ -15841,6 +15859,11 @@ class NotificationEvent {
     if ($this->message !== null) {
       $xfer += $output->writeFieldBegin('message', TType::STRING, 6);
       $xfer += $output->writeString($this->message);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->messageFormat !== null) {
+      $xfer += $output->writeFieldBegin('messageFormat', TType::STRING, 7);
+      $xfer += $output->writeString($this->messageFormat);
       $xfer += $output->writeFieldEnd();
     }
     $xfer += $output->writeFieldStop();

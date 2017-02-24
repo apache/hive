@@ -22,7 +22,8 @@ int _kTProtocolVersionValues[] = {
   TProtocolVersion::HIVE_CLI_SERVICE_PROTOCOL_V6,
   TProtocolVersion::HIVE_CLI_SERVICE_PROTOCOL_V7,
   TProtocolVersion::HIVE_CLI_SERVICE_PROTOCOL_V8,
-  TProtocolVersion::HIVE_CLI_SERVICE_PROTOCOL_V9
+  TProtocolVersion::HIVE_CLI_SERVICE_PROTOCOL_V9,
+  TProtocolVersion::HIVE_CLI_SERVICE_PROTOCOL_V10
 };
 const char* _kTProtocolVersionNames[] = {
   "HIVE_CLI_SERVICE_PROTOCOL_V1",
@@ -33,9 +34,10 @@ const char* _kTProtocolVersionNames[] = {
   "HIVE_CLI_SERVICE_PROTOCOL_V6",
   "HIVE_CLI_SERVICE_PROTOCOL_V7",
   "HIVE_CLI_SERVICE_PROTOCOL_V8",
-  "HIVE_CLI_SERVICE_PROTOCOL_V9"
+  "HIVE_CLI_SERVICE_PROTOCOL_V9",
+  "HIVE_CLI_SERVICE_PROTOCOL_V10"
 };
-const std::map<int, const char*> _TProtocolVersion_VALUES_TO_NAMES(::apache::thrift::TEnumIterator(9, _kTProtocolVersionValues, _kTProtocolVersionNames), ::apache::thrift::TEnumIterator(-1, NULL, NULL));
+const std::map<int, const char*> _TProtocolVersion_VALUES_TO_NAMES(::apache::thrift::TEnumIterator(10, _kTProtocolVersionValues, _kTProtocolVersionNames), ::apache::thrift::TEnumIterator(-1, NULL, NULL));
 
 int _kTTypeIdValues[] = {
   TTypeId::BOOLEAN_TYPE,

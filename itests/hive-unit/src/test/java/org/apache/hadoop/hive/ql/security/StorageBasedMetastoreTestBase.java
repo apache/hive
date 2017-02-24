@@ -34,7 +34,6 @@ import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.security.authorization.AuthorizationPreEventListener;
 import org.apache.hadoop.hive.ql.security.authorization.StorageBasedAuthorizationProvider;
 import org.apache.hadoop.hive.ql.session.SessionState;
-import org.apache.hadoop.hive.ql.WindowsPathUtil;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.hive.shims.Utils;
 import org.apache.hadoop.security.UserGroupInformation;
@@ -59,9 +58,6 @@ public class StorageBasedMetastoreTestBase {
 
   protected HiveConf createHiveConf() throws Exception {
     HiveConf conf = new HiveConf(this.getClass());
-    if (Shell.WINDOWS) {
-      WindowsPathUtil.convertPathsFromWindowsToHdfs(conf);
-    }
     return conf;
   }
 

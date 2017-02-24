@@ -22,9 +22,9 @@ import org.apache.hadoop.hive.ql.io.HiveKey;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.spark.api.java.JavaPairRDD;
 
-public interface SparkShuffler {
+public interface SparkShuffler<V> {
 
-  JavaPairRDD<HiveKey, BytesWritable> shuffle(
+  JavaPairRDD<HiveKey, V> shuffle(
       JavaPairRDD<HiveKey, BytesWritable> input, int numPartitions);
 
   public String getName();

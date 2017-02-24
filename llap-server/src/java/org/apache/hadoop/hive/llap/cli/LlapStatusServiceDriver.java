@@ -288,23 +288,12 @@ public class LlapStatusServiceDriver {
     }
 
     try {
-      sliderClient = new SliderClient() {
-        @Override
-        public void serviceInit(Configuration conf) throws Exception {
-          super.serviceInit(conf);
-          initHadoopBinding();
-        }
-      };
-      Configuration sliderClientConf = new Configuration(conf);
-      sliderClientConf = sliderClient.bindArgs(sliderClientConf,
-        new String[]{"help"});
-      sliderClient.init(sliderClientConf);
-      sliderClient.start();
-      return sliderClient;
+      sliderClient = LlapSliderUtils.createSliderClient(conf);
     } catch (Exception e) {
       throw new LlapStatusCliException(ExitCode.SLIDER_CLIENT_ERROR_CREATE_FAILED,
         "Failed to create slider client", e);
     }
+    return sliderClient;
   }
 
   private ApplicationReport getAppReport(String appName, SliderClient sliderClient,

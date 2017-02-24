@@ -91,6 +91,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLClientInfoException;
 import java.sql.SQLException;
+import java.sql.SQLFeatureNotSupportedException;
 import java.sql.SQLWarning;
 import java.sql.SQLXML;
 import java.sql.Savepoint;
@@ -167,6 +168,7 @@ public class HiveConnection implements java.sql.Connection {
     supportedProtocols.add(TProtocolVersion.HIVE_CLI_SERVICE_PROTOCOL_V7);
     supportedProtocols.add(TProtocolVersion.HIVE_CLI_SERVICE_PROTOCOL_V8);
     supportedProtocols.add(TProtocolVersion.HIVE_CLI_SERVICE_PROTOCOL_V9);
+    supportedProtocols.add(TProtocolVersion.HIVE_CLI_SERVICE_PROTOCOL_V10);
 
     if (isEmbeddedMode) {
       EmbeddedThriftBinaryCLIService embeddedClient = new EmbeddedThriftBinaryCLIService();
@@ -740,7 +742,7 @@ public class HiveConnection implements java.sql.Connection {
 
   public void abort(Executor executor) throws SQLException {
     // JDK 1.7
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   public String getDelegationToken(String owner, String renewer) throws SQLException {
@@ -824,7 +826,7 @@ public class HiveConnection implements java.sql.Connection {
   @Override
   public void commit() throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -837,7 +839,7 @@ public class HiveConnection implements java.sql.Connection {
   @Override
   public Array createArrayOf(String arg0, Object[] arg1) throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -849,7 +851,7 @@ public class HiveConnection implements java.sql.Connection {
   @Override
   public Blob createBlob() throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -861,7 +863,7 @@ public class HiveConnection implements java.sql.Connection {
   @Override
   public Clob createClob() throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -873,7 +875,7 @@ public class HiveConnection implements java.sql.Connection {
   @Override
   public NClob createNClob() throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -885,7 +887,7 @@ public class HiveConnection implements java.sql.Connection {
   @Override
   public SQLXML createSQLXML() throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /**
@@ -935,7 +937,7 @@ public class HiveConnection implements java.sql.Connection {
   public Statement createStatement(int resultSetType, int resultSetConcurrency,
       int resultSetHoldability) throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -948,7 +950,7 @@ public class HiveConnection implements java.sql.Connection {
   public Struct createStruct(String typeName, Object[] attributes)
       throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -982,7 +984,7 @@ public class HiveConnection implements java.sql.Connection {
   @Override
   public Properties getClientInfo() throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -994,7 +996,7 @@ public class HiveConnection implements java.sql.Connection {
   @Override
   public String getClientInfo(String name) throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -1006,7 +1008,7 @@ public class HiveConnection implements java.sql.Connection {
   @Override
   public int getHoldability() throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -1025,7 +1027,7 @@ public class HiveConnection implements java.sql.Connection {
 
   public int getNetworkTimeout() throws SQLException {
     // JDK 1.7
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   public String getSchema() throws SQLException {
@@ -1061,7 +1063,7 @@ public class HiveConnection implements java.sql.Connection {
   @Override
   public Map<String, Class<?>> getTypeMap() throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -1128,7 +1130,7 @@ public class HiveConnection implements java.sql.Connection {
   @Override
   public String nativeSQL(String sql) throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -1140,7 +1142,7 @@ public class HiveConnection implements java.sql.Connection {
   @Override
   public CallableStatement prepareCall(String sql) throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -1153,7 +1155,7 @@ public class HiveConnection implements java.sql.Connection {
   public CallableStatement prepareCall(String sql, int resultSetType,
       int resultSetConcurrency) throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -1166,7 +1168,7 @@ public class HiveConnection implements java.sql.Connection {
   public CallableStatement prepareCall(String sql, int resultSetType,
       int resultSetConcurrency, int resultSetHoldability) throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -1202,7 +1204,7 @@ public class HiveConnection implements java.sql.Connection {
   public PreparedStatement prepareStatement(String sql, int[] columnIndexes)
       throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -1216,7 +1218,7 @@ public class HiveConnection implements java.sql.Connection {
   public PreparedStatement prepareStatement(String sql, String[] columnNames)
       throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -1241,7 +1243,7 @@ public class HiveConnection implements java.sql.Connection {
   public PreparedStatement prepareStatement(String sql, int resultSetType,
       int resultSetConcurrency, int resultSetHoldability) throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -1253,7 +1255,7 @@ public class HiveConnection implements java.sql.Connection {
   @Override
   public void releaseSavepoint(Savepoint savepoint) throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -1265,7 +1267,7 @@ public class HiveConnection implements java.sql.Connection {
   @Override
   public void rollback() throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -1277,7 +1279,7 @@ public class HiveConnection implements java.sql.Connection {
   @Override
   public void rollback(Savepoint savepoint) throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -1353,12 +1355,12 @@ public class HiveConnection implements java.sql.Connection {
   @Override
   public void setHoldability(int holdability) throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   public void setNetworkTimeout(Executor executor, int milliseconds) throws SQLException {
     // JDK 1.7
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -1390,7 +1392,7 @@ public class HiveConnection implements java.sql.Connection {
   @Override
   public Savepoint setSavepoint() throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -1402,7 +1404,7 @@ public class HiveConnection implements java.sql.Connection {
   @Override
   public Savepoint setSavepoint(String name) throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   public void setSchema(String schema) throws SQLException {
@@ -1438,7 +1440,7 @@ public class HiveConnection implements java.sql.Connection {
   @Override
   public void setTypeMap(Map<String, Class<?>> map) throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -1450,7 +1452,7 @@ public class HiveConnection implements java.sql.Connection {
   @Override
   public boolean isWrapperFor(Class<?> iface) throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   /*
@@ -1462,7 +1464,7 @@ public class HiveConnection implements java.sql.Connection {
   @Override
   public <T> T unwrap(Class<T> iface) throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    throw new SQLFeatureNotSupportedException("Method not supported");
   }
 
   public TProtocolVersion getProtocol() {

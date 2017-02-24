@@ -43,6 +43,7 @@ public class CacheChunk extends DiskRangeList {
     this.buffer = buffer;
     this.offset = offset;
     this.end = end;
+    this.next = this.prev = null; // Just in case.
   }
 
   @Override

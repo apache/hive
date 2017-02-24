@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.optimizer.spark;
 
 import java.util.List;
+import java.util.Set;
 import java.util.Stack;
 
 import org.slf4j.Logger;
@@ -29,7 +30,9 @@ import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
 import org.apache.hadoop.hive.ql.exec.LimitOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
+import org.apache.hadoop.hive.ql.exec.OperatorUtils;
 import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
+import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.spark.SparkUtilities;
 import org.apache.hadoop.hive.ql.exec.spark.session.SparkSession;
@@ -57,6 +60,12 @@ public class SetSparkReducerParallelism implements NodeProcessor {
 
   // Spark memory per task, and total number of cores
   private ObjectPair<Long, Integer> sparkMemoryAndCores;
+  private final boolean useOpStats;
+
+  public SetSparkReducerParallelism(HiveConf conf) {
+    sparkMemoryAndCores = null;
+    useOpStats = conf.getBoolVar(HiveConf.ConfVars.SPARK_USE_OP_STATS);
+  }
 
   @Override
   public Object process(Node nd, Stack<Node> stack,
@@ -67,16 +76,28 @@ public class SetSparkReducerParallelism implements NodeProcessor {
 
     ReduceSinkOperator sink = (ReduceSinkOperator) nd;
     ReduceSinkDesc desc = sink.getConf();
+    Set<ReduceSinkOperator> parentSinks = null;
 
     int maxReducers = context.getConf().getIntVar(HiveConf.ConfVars.MAXREDUCERS);
     int constantReducers = context.getConf().getIntVar(HiveConf.ConfVars.HADOOPNUMREDUCERS);
+
+    if (!useOpStats) {
+      parentSinks = OperatorUtils.findOperatorsUpstream(sink, ReduceSinkOperator.class);
+      parentSinks.remove(sink);
+      if (!context.getVisitedReduceSinks().containsAll(parentSinks)) {
+        // We haven't processed all the parent sinks, and we need
+        // them to be done in order to compute the parallelism for this sink.
+        // In this case, skip. We should visit this again from another path.
+        LOG.debug("Skipping sink " + sink + " for now as we haven't seen all its parents.");
+        return false;
+      }
+    }
 
     if (context.getVisitedReduceSinks().contains(sink)) {
       // skip walking the children
       LOG.debug("Already processed reduce sink: " + sink.getName());
       return true;
     }
-
     context.getVisitedReduceSinks().add(sink);
 
     if (needSetParallelism(sink, context.getConf())) {
@@ -96,19 +117,52 @@ public class SetSparkReducerParallelism implements NodeProcessor {
             return false;
           }
         }
+
         long numberOfBytes = 0;
 
-        // we need to add up all the estimates from the siblings of this reduce sink
-        for (Operator<? extends OperatorDesc> sibling
-          : sink.getChildOperators().get(0).getParentOperators()) {
-          if (sibling.getStatistics() != null) {
-            numberOfBytes += sibling.getStatistics().getDataSize();
-            if (LOG.isDebugEnabled()) {
-              LOG.debug("Sibling " + sibling + " has stats: " + sibling.getStatistics());
+        if (useOpStats) {
+          // we need to add up all the estimates from the siblings of this reduce sink
+          for (Operator<? extends OperatorDesc> sibling
+              : sink.getChildOperators().get(0).getParentOperators()) {
+            if (sibling.getStatistics() != null) {
+              numberOfBytes += sibling.getStatistics().getDataSize();
+              if (LOG.isDebugEnabled()) {
+                LOG.debug("Sibling " + sibling + " has stats: " + sibling.getStatistics());
+              }
+            } else {
+              LOG.warn("No stats available from: " + sibling);
             }
-          } else {
-            LOG.warn("No stats available from: " + sibling);
           }
+        } else if (parentSinks.isEmpty()) {
+          // Not using OP stats and this is the first sink in the path, meaning that
+          // we should use TS stats to infer parallelism
+          for (Operator<? extends OperatorDesc> sibling
+              : sink.getChildOperators().get(0).getParentOperators()) {
+            Set<TableScanOperator> sources =
+                OperatorUtils.findOperatorsUpstream(sibling, TableScanOperator.class);
+            for (TableScanOperator source : sources) {
+              if (source.getStatistics() != null) {
+                numberOfBytes += source.getStatistics().getDataSize();
+                if (LOG.isDebugEnabled()) {
+                  LOG.debug("Table source " + source + " has stats: " + source.getStatistics());
+                }
+              } else {
+                LOG.warn("No stats available from table source: " + source);
+              }
+            }
+          }
+          LOG.debug("Gathered stats for sink " + sink + ". Total size is "
+              + numberOfBytes + " bytes.");
+        } else {
+          // Use the maximum parallelism from all parent reduce sinks
+          int numberOfReducers = 0;
+          for (ReduceSinkOperator parent : parentSinks) {
+            numberOfReducers = Math.max(numberOfReducers, parent.getConf().getNumReducers());
+          }
+          desc.setNumReducers(numberOfReducers);
+          LOG.debug("Set parallelism for sink " + sink + " to " + numberOfReducers
+              + " based on its parents");
+          return false;
         }
 
         // Divide it by 2 so that we can have more reducers
@@ -134,7 +188,7 @@ public class SetSparkReducerParallelism implements NodeProcessor {
         desc.setNumReducers(numReducers);
       }
     } else {
-      LOG.info("Number of reducers determined to be: " + desc.getNumReducers());
+      LOG.info("Number of reducers for sink " + sink + " was already determined to be: " + desc.getNumReducers());
     }
 
     return false;
@@ -165,6 +219,9 @@ public class SetSparkReducerParallelism implements NodeProcessor {
   }
 
   private void getSparkMemoryAndCores(OptimizeSparkProcContext context) throws SemanticException {
+    if (sparkMemoryAndCores != null) {
+      return;
+    }
     if (context.getConf().getBoolean(SPARK_DYNAMIC_ALLOCATION_ENABLED, false)) {
       // If dynamic allocation is enabled, numbers for memory and cores are meaningless. So, we don't
       // try to get it.

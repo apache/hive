@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.exec.spark.status;
 import java.util.Arrays;
 import java.util.Map;
 
+import com.google.common.base.Preconditions;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.spark.status.impl.RemoteSparkJobStatus;
@@ -103,6 +104,10 @@ public class RemoteSparkJobMonitor extends SparkJobMonitor {
 
             printStatus(progressMap, lastProgressMap);
             lastProgressMap = progressMap;
+          } else if (sparkJobState == null) {
+            // in case the remote context crashes between JobStarted and JobSubmitted
+            Preconditions.checkState(sparkJobStatus.isRemoteActive(),
+                "Remote context becomes inactive.");
           }
           break;
         case SUCCEEDED:
@@ -150,7 +155,7 @@ public class RemoteSparkJobMonitor extends SparkJobMonitor {
         }
       } catch (Exception e) {
         String msg = " with exception '" + Utilities.getNameMessage(e) + "'";
-        msg = "Failed to monitor Job[ " + sparkJobStatus.getJobId() + "]" + msg;
+        msg = "Failed to monitor Job[" + sparkJobStatus.getJobId() + "]" + msg;
 
         // Has to use full name to make sure it does not conflict with
         // org.apache.commons.lang.StringUtils

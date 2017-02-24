@@ -6424,9 +6424,10 @@ inline std::ostream& operator<<(std::ostream& out, const NotificationEventReques
 }
 
 typedef struct _NotificationEvent__isset {
-  _NotificationEvent__isset() : dbName(false), tableName(false) {}
+  _NotificationEvent__isset() : dbName(false), tableName(false), messageFormat(false) {}
   bool dbName :1;
   bool tableName :1;
+  bool messageFormat :1;
 } _NotificationEvent__isset;
 
 class NotificationEvent {
@@ -6434,7 +6435,7 @@ class NotificationEvent {
 
   NotificationEvent(const NotificationEvent&);
   NotificationEvent& operator=(const NotificationEvent&);
-  NotificationEvent() : eventId(0), eventTime(0), eventType(), dbName(), tableName(), message() {
+  NotificationEvent() : eventId(0), eventTime(0), eventType(), dbName(), tableName(), message(), messageFormat() {
   }
 
   virtual ~NotificationEvent() throw();
@@ -6444,6 +6445,7 @@ class NotificationEvent {
   std::string dbName;
   std::string tableName;
   std::string message;
+  std::string messageFormat;
 
   _NotificationEvent__isset __isset;
 
@@ -6458,6 +6460,8 @@ class NotificationEvent {
   void __set_tableName(const std::string& val);
 
   void __set_message(const std::string& val);
+
+  void __set_messageFormat(const std::string& val);
 
   bool operator == (const NotificationEvent & rhs) const
   {
@@ -6476,6 +6480,10 @@ class NotificationEvent {
     else if (__isset.tableName && !(tableName == rhs.tableName))
       return false;
     if (!(message == rhs.message))
+      return false;
+    if (__isset.messageFormat != rhs.__isset.messageFormat)
+      return false;
+    else if (__isset.messageFormat && !(messageFormat == rhs.messageFormat))
       return false;
     return true;
   }

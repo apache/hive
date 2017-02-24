@@ -294,14 +294,12 @@ public class ColumnStatsSemanticAnalyzer extends SemanticAnalyzer {
       throw new SemanticException(ErrorMsg.COLUMNSTATSCOLLECTOR_IO_ERROR.getMsg());
     }
     ctx.setCmd(rewrittenQuery);
-    ParseDriver pd = new ParseDriver();
 
     try {
-      rewrittenTree = pd.parse(rewrittenQuery, ctx);
+      rewrittenTree = ParseUtils.parse(rewrittenQuery, ctx);
     } catch (ParseException e) {
       throw new SemanticException(ErrorMsg.COLUMNSTATSCOLLECTOR_PARSE_ERROR.getMsg());
     }
-    rewrittenTree = ParseUtils.findRootNonNullToken(rewrittenTree);
     return rewrittenTree;
   }
 

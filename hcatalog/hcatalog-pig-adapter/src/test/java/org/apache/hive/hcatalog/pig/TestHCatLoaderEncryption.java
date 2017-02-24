@@ -29,7 +29,6 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.CommandNeedRetryException;
 import org.apache.hadoop.hive.ql.Driver;
-import org.apache.hadoop.hive.ql.WindowsPathUtil;
 import org.apache.hadoop.hive.ql.io.IOConstants;
 import org.apache.hadoop.hive.ql.io.StorageFormats;
 import org.apache.hadoop.hive.ql.processors.CommandProcessor;
@@ -187,9 +186,6 @@ public class TestHCatLoaderEncryption {
         System.getProperty("test.build.data", "build/test/data") + "_" + System.currentTimeMillis() +
           "_" + salt.getAndIncrement() + "/dfs/");
     }
-    if (Shell.WINDOWS) {
-      WindowsPathUtil.convertPathsFromWindowsToHdfs(hiveConf);
-    }
 
     driver = new Driver(hiveConf);
 
@@ -201,9 +197,9 @@ public class TestHCatLoaderEncryption {
 
     createTable(BASIC_TABLE, "a int, b string");
     createTableInSpecifiedPath(ENCRYPTED_TABLE, "a int, b string",
-      WindowsPathUtil.getHdfsUriString(encryptedTablePath), driver);
+        encryptedTablePath, driver);
 
-    associateEncryptionZoneWithPath(WindowsPathUtil.getHdfsUriString(encryptedTablePath));
+    associateEncryptionZoneWithPath(encryptedTablePath);
 
     int LOOP_SIZE = 3;
     String[] input = new String[LOOP_SIZE * LOOP_SIZE];
@@ -231,7 +227,6 @@ public class TestHCatLoaderEncryption {
     FileSystem fs;
     HadoopShims shims = ShimLoader.getHadoopShims();
     conf.set(SECURITY_KEY_PROVIDER_URI_NAME, getKeyProviderURI());
-    WindowsPathUtil.convertPathsFromWindowsToHdfs(conf);
     int numberOfDataNodes = 4;
     dfs = shims.getMiniDfs(conf, numberOfDataNodes, true, null);
     fs = dfs.getFileSystem();
@@ -359,7 +354,7 @@ public class TestHCatLoaderEncryption {
       fs.delete(path, true);
     }
 
-    TextOutputFormat.setOutputPath(job, new Path(WindowsPathUtil.getHdfsUriString(pathLoc)));
+    TextOutputFormat.setOutputPath(job, new Path(pathLoc));
 
     job.waitForCompletion(true);
 

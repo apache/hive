@@ -18,10 +18,8 @@
 package org.apache.hadoop.hive.ql.udf.generic;
 
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF.DeferredJavaObject;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF.DeferredObject;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDFLpad;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.io.IntWritable;
@@ -43,6 +41,7 @@ public class TestGenericUDFRpad extends TestCase {
     runAndVerify("hi", 1, "??", "h", udf);
     runAndVerify("ｈｉ", 5, "？？", "ｈｉ？？？", udf);
     runAndVerify("ｈｉ", 1, "？？", "ｈ", udf);
+    runAndVerify("hi", 3, "", null, udf);
   }
 
   private void runAndVerify(String str, int len, String pad, String expResult, GenericUDF udf)
@@ -51,7 +50,11 @@ public class TestGenericUDFRpad extends TestCase {
     DeferredObject valueObj2 = new DeferredJavaObject(new IntWritable(len));
     DeferredObject valueObj3 = new DeferredJavaObject(new Text(pad));
     DeferredObject[] args = { valueObj1, valueObj2, valueObj3 };
-    Text output = (Text) udf.evaluate(args);
-    assertEquals("rpad() test ", expResult, output.toString());
+    Object output = udf.evaluate(args);
+    if(expResult != null) {
+      assertEquals("rpad() test ", expResult, output.toString());
+    } else {
+      assertNull("rpad() test ", output);
+    }
   }
 }

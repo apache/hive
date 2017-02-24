@@ -22,11 +22,14 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.Filter<TypeName>ColumnBetween;
 import org.apache.hadoop.hive.ql.plan.DynamicValue;
+import org.apache.hadoop.hive.serde2.io.DateWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.sql.Timestamp;
+import org.apache.hadoop.hive.common.type.HiveChar;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
+import org.apache.hadoop.hive.common.type.HiveVarchar;
 
 public class <ClassName> extends Filter<TypeName>ColumnBetween {
 
@@ -79,12 +82,12 @@ public class <ClassName> extends Filter<TypeName>ColumnBetween {
       if (lVal == null || rVal == null) {
         isLeftOrRightNull = true;
       } else {
-        <VectorType> min = PrimitiveObjectInspectorUtils.<GetPrimitiveMethod>(
-            lVal, leftDynamicValue.getObjectInspector())<GetValueMethod>;
+        <VectorType> min = <ConversionMethod>(PrimitiveObjectInspectorUtils.<GetPrimitiveMethod>(
+            lVal, leftDynamicValue.getObjectInspector())<GetValueMethod>);
         setLeftValue(min);
 
-        <VectorType> max = PrimitiveObjectInspectorUtils.<GetPrimitiveMethod>(
-            rVal, rightDynamicValue.getObjectInspector())<GetValueMethod>;
+        <VectorType> max = <ConversionMethod>(PrimitiveObjectInspectorUtils.<GetPrimitiveMethod>(
+            rVal, rightDynamicValue.getObjectInspector())<GetValueMethod>);
         setRightValue(max);
       }
       initialized = true;

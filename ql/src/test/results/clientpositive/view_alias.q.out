@@ -146,7 +146,7 @@ POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@v
-POSTHOOK: Lineage: v._c2 SIMPLE []
+POSTHOOK: Lineage: v._c1 SIMPLE []
 POSTHOOK: Lineage: v.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: v.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: desc formatted v
@@ -159,7 +159,7 @@ POSTHOOK: Input: default@v
 	 	 
 key                 	string              	                    
 value               	string              	                    
-_c2                 	string              	                    
+_c1                 	string              	                    
 	 	 
 # Detailed Table Information	 	 
 Database:           	default             	 
@@ -390,8 +390,8 @@ POSTHOOK: Input: default@b
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@v
 POSTHOOK: Lineage: v._c0 SIMPLE []
-POSTHOOK: Lineage: v._c3 SIMPLE []
-POSTHOOK: Lineage: v._c6 SIMPLE []
+POSTHOOK: Lineage: v._c2 SIMPLE []
+POSTHOOK: Lineage: v._c4 SIMPLE []
 POSTHOOK: Lineage: v.ca SIMPLE [(a)a.FieldSchema(name:ca, type:string, comment:null), ]
 POSTHOOK: Lineage: v.caa SIMPLE [(a)a.FieldSchema(name:caa, type:string, comment:null), ]
 POSTHOOK: Lineage: v.cb SIMPLE [(b)b.FieldSchema(name:cb, type:string, comment:null), ]
@@ -407,10 +407,10 @@ POSTHOOK: Input: default@v
 _c0                 	string              	                    
 ca                  	string              	                    
 caa                 	string              	                    
-_c3                 	int                 	                    
+_c2                 	int                 	                    
 cb                  	string              	                    
 cbb                 	string              	                    
-_c6                 	int                 	                    
+_c4                 	int                 	                    
 	 	 
 # Detailed Table Information	 	 
 Database:           	default             	 

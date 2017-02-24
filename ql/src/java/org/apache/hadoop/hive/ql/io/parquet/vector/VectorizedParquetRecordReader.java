@@ -82,7 +82,7 @@ public class VectorizedParquetRecordReader extends ParquetRecordReaderBase
   /**
    * The number of rows that have been returned.
    */
-  private long rowsReturned;
+  private long rowsReturned = 0;
 
   /**
    * The number of rows that have been reading, including the current in flight row group.
@@ -93,7 +93,7 @@ public class VectorizedParquetRecordReader extends ParquetRecordReaderBase
    * The total number of rows this RecordReader will eventually read. The sum of the
    * rows of all the row groups.
    */
-  protected long totalRowCount;
+  protected long totalRowCount = 0;
 
   @VisibleForTesting
   public VectorizedParquetRecordReader(
@@ -129,6 +129,10 @@ public class VectorizedParquetRecordReader extends ParquetRecordReaderBase
   public void initialize(
     InputSplit oldSplit,
     JobConf configuration) throws IOException, InterruptedException {
+    // the oldSplit may be null during the split phase
+    if (oldSplit == null) {
+      return;
+    }
     jobConf = configuration;
     ParquetMetadata footer;
     List<BlockMetaData> blocks;

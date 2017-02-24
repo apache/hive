@@ -472,7 +472,7 @@ POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@srcpart
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@V5
-POSTHOOK: Lineage: V5.ds SIMPLE [(srcpart)srcpart.FieldSchema(name:ds, type:string, comment:null), ]
+POSTHOOK: Lineage: V5.ds SIMPLE []
 POSTHOOK: Lineage: V5.hr SIMPLE [(srcpart)srcpart.FieldSchema(name:hr, type:string, comment:null), ]
 POSTHOOK: Lineage: V5.key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: V5.value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]

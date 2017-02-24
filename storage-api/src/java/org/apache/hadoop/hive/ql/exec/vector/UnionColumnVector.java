@@ -137,4 +137,9 @@ public class UnionColumnVector extends ColumnVector {
       fields[i].setRepeating(isRepeating);
     }
   }
+
+  @Override
+  public void shallowCopyTo(ColumnVector otherCv) {
+    throw new UnsupportedOperationException(); // Implement if needed.
+  }
 }

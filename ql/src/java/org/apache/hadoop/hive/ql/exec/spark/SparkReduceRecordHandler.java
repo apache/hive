@@ -211,30 +211,44 @@ public class SparkReduceRecordHandler extends SparkRecordHandler {
   }
 
   /**
-   * TODO: Instead of creating a dummy iterator per row, we can implement a private method that's
-   * similar to processRow(Object key, Iterator<E> values) but processes one row at a time. Then,
-   * we just call that private method here.
+   * A reusable dummy iterator that has only one value.
+   *
+   */
+  private static class DummyIterator implements Iterator<Object> {
+    private boolean done = false;
+    private Object value = null;
+
+    public void setValue(Object v) {
+      this.value = v;
+      done = false;
+    }
+
+    @Override
+    public boolean hasNext() {
+      return !done;
+    }
+
+    @Override
+    public Object next() {
+      done = true;
+      return value;
+    }
+
+    @Override
+    public void remove() {
+      throw new UnsupportedOperationException("Iterator.remove() is not implemented/supported");
+    }
+  }
+
+  private DummyIterator dummyIterator = new DummyIterator();
+
+  /**
+   * Process one row using a dummy iterator.
    */
   @Override
   public void processRow(Object key, final Object value) throws IOException {
-    processRow(key, new Iterator<Object>() {
-      boolean done = false;
-      @Override
-      public boolean hasNext() {
-        return !done;
-      }
-
-      @Override
-      public Object next() {
-        done = true;
-        return value;
-      }
-
-      @Override
-      public void remove() {
-        throw new UnsupportedOperationException("Iterator.remove() is not implemented/supported");
-      }
-    });
+    dummyIterator.setValue(value);
+    processRow(key, dummyIterator);
   }
 
   @Override

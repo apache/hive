@@ -26,16 +26,11 @@ import java.util.*;
 
 class DAGSummary implements PrintSummary {
 
-  private static final int FILE_HEADER_SEPARATOR_WIDTH = InPlaceUpdate.MIN_TERMINAL_WIDTH + 34;
-  private static final String FILE_HEADER_SEPARATOR = new String(new char[FILE_HEADER_SEPARATOR_WIDTH]).replace("\0", "-");
-
-  private static final String FORMATTING_PATTERN = "%10s %12s %16s %13s %14s %13s %12s %14s %15s";
+  private static final String FILE_HEADER_SEPARATOR = new String(new char[InPlaceUpdate.MIN_TERMINAL_WIDTH]).replace("\0", "-");
+  private static final String FORMATTING_PATTERN = "%10s %17s %14s %14s %15s %16s";
   private static final String FILE_HEADER = String.format(
       FORMATTING_PATTERN,
       "VERTICES",
-      "TOTAL_TASKS",
-      "FAILED_ATTEMPTS",
-      "KILLED_TASKS",
       "DURATION(ms)",
       "CPU_TIME(ms)",
       "GC_TIME(ms)",
@@ -170,9 +165,6 @@ class DAGSummary implements PrintSummary {
 
     return String.format(FORMATTING_PATTERN,
         vertexName,
-        progress.getTotalTaskCount(),
-        progress.getFailedTaskAttemptCount(),
-        progress.getKilledTaskAttemptCount(),
         secondsFormatter.format((duration)),
         commaFormatter.format(cpuTimeMillis),
         commaFormatter.format(gcTimeMillis),

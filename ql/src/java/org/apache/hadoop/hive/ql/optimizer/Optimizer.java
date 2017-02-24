@@ -232,6 +232,10 @@ public class Optimizer {
       transformations.add(new SimpleFetchAggregation());
     }
 
+    if (pctx.getContext().getExplainConfig() != null
+        && pctx.getContext().getExplainConfig().isFormatted()) {
+      transformations.add(new AnnotateReduceSinkOutputOperator());
+    }
   }
 
   /**

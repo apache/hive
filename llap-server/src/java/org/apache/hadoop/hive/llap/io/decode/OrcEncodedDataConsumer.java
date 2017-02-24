@@ -27,7 +27,6 @@ import org.apache.hadoop.hive.llap.io.api.impl.ColumnVectorBatch;
 import org.apache.hadoop.hive.llap.io.api.impl.LlapIoImpl;
 import org.apache.hadoop.hive.llap.io.metadata.ConsumerFileMetadata;
 import org.apache.hadoop.hive.llap.io.metadata.ConsumerStripeMetadata;
-import org.apache.hadoop.hive.llap.io.metadata.OrcStripeMetadata;
 import org.apache.hadoop.hive.llap.metrics.LlapDaemonIOMetrics;
 import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
@@ -53,12 +52,8 @@ import org.apache.orc.impl.SchemaEvolution;
 import org.apache.orc.impl.TreeReaderFactory;
 import org.apache.orc.impl.TreeReaderFactory.StructTreeReader;
 import org.apache.orc.impl.TreeReaderFactory.TreeReader;
-import org.apache.orc.OrcProto;
 import org.apache.orc.impl.WriterImpl;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.google.common.collect.Lists;
+import org.apache.orc.OrcProto;
 
 
 public class OrcEncodedDataConsumer
@@ -134,7 +129,7 @@ public class OrcEncodedDataConsumer
             schema, stripeMetadata.getEncodings(), batch, codec, context, columnMapping);
         this.columnReaders = treeReader.getChildReaders();
         this.columnMapping = Arrays.copyOf(columnMapping, columnReaders.length);
-        positionInStreams(columnReaders, batch, stripeMetadata);
+        positionInStreams(columnReaders, batch.getBatchKey(), stripeMetadata);
       } else {
         repositionInStreams(this.columnReaders, batch, sameStripe, stripeMetadata);
       }
@@ -225,8 +220,8 @@ public class OrcEncodedDataConsumer
   }
 
   private void positionInStreams(TreeReaderFactory.TreeReader[] columnReaders,
-      EncodedColumnBatch<OrcBatchKey> batch, ConsumerStripeMetadata stripeMetadata) throws IOException {
-    PositionProvider[] pps = createPositionProviders(columnReaders, batch, stripeMetadata);
+      OrcBatchKey batchKey, ConsumerStripeMetadata stripeMetadata) throws IOException {
+    PositionProvider[] pps = createPositionProviders(columnReaders, batchKey, stripeMetadata);
     if (pps == null) return;
     for (int i = 0; i < columnReaders.length; i++) {
       columnReaders[i].seek(pps);
@@ -236,10 +231,13 @@ public class OrcEncodedDataConsumer
   private void repositionInStreams(TreeReaderFactory.TreeReader[] columnReaders,
       EncodedColumnBatch<OrcBatchKey> batch, boolean sameStripe,
       ConsumerStripeMetadata stripeMetadata) throws IOException {
-    PositionProvider[] pps = createPositionProviders(columnReaders, batch, stripeMetadata);
+    PositionProvider[] pps = createPositionProviders(
+        columnReaders, batch.getBatchKey(), stripeMetadata);
     if (pps == null) return;
     for (int i = 0; i < columnReaders.length; i++) {
       TreeReader reader = columnReaders[i];
+      // Note: we assume this never happens for SerDe reader - the batch would never have vectors.
+      // That is always true now; but it wasn't some day, the below would throw in getColumnData.
       ((SettableTreeReader) reader).setBuffers(batch, sameStripe);
       // TODO: When hive moves to java8, make updateTimezone() as default method in
       // SettableTreeReader so that we can avoid this check.
@@ -268,7 +266,7 @@ public class OrcEncodedDataConsumer
   }
 
   private PositionProvider[] createPositionProviders(
-      TreeReaderFactory.TreeReader[] columnReaders, EncodedColumnBatch<OrcBatchKey> batch,
+      TreeReaderFactory.TreeReader[] columnReaders, OrcBatchKey batchKey,
       ConsumerStripeMetadata stripeMetadata) throws IOException {
     if (columnReaders.length == 0) return null;
     PositionProvider[] pps = null;
@@ -279,7 +277,7 @@ public class OrcEncodedDataConsumer
         pps[i] = singleRgPp;
       }
     } else {
-      int rowGroupIndex = batch.getBatchKey().rgIx;
+      int rowGroupIndex = batchKey.rgIx;
       if (rowGroupIndex == OrcEncodedColumnBatch.ALL_RGS) {
         throw new IOException("Cannot position readers without RG information");
       }
