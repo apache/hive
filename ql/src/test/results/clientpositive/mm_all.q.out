@@ -1,8 +1,6 @@
-PREHOOK: query: -- Force multiple writers when reading
-drop table intermediate
+PREHOOK: query: drop table intermediate
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: -- Force multiple writers when reading
-drop table intermediate
+POSTHOOK: query: drop table intermediate
 POSTHOOK: type: DROPTABLE
 PREHOOK: query: create table intermediate(key int) partitioned by (p int) stored as orc
 PREHOOK: type: CREATETABLE
@@ -205,15 +203,13 @@ POSTHOOK: Input: default@part_mm@key_mm=456
 103	455
 103	455
 103	456
-PREHOOK: query: -- TODO: doesn't work truncate table part_mm partition(key_mm=455);
-select * from part_mm order by key, key_mm
+PREHOOK: query: select * from part_mm order by key, key_mm
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part_mm
 PREHOOK: Input: default@part_mm@key_mm=455
 PREHOOK: Input: default@part_mm@key_mm=456
 #### A masked pattern was here ####
-POSTHOOK: query: -- TODO: doesn't work truncate table part_mm partition(key_mm=455);
-select * from part_mm order by key, key_mm
+POSTHOOK: query: select * from part_mm order by key, key_mm
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part_mm
 POSTHOOK: Input: default@part_mm@key_mm=455
@@ -378,11 +374,9 @@ POSTHOOK: query: drop table simple_mm
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@simple_mm
 POSTHOOK: Output: default@simple_mm
-PREHOOK: query: -- simple DP (no bucketing)
-drop table dp_mm
+PREHOOK: query: drop table dp_mm
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: -- simple DP (no bucketing)
-drop table dp_mm
+POSTHOOK: query: drop table dp_mm
 POSTHOOK: type: DROPTABLE
 PREHOOK: query: create table dp_mm (key int) partitioned by (key1 string, key2 int) stored as orc
   tblproperties ("transactional"="true", "transactional_properties"="insert_only")
@@ -453,15 +447,11 @@ POSTHOOK: query: drop table dp_mm
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@dp_mm
 POSTHOOK: Output: default@dp_mm
-PREHOOK: query: -- union
-
-create table union_mm(id int)  tblproperties ("transactional"="true", "transactional_properties"="insert_only")
+PREHOOK: query: create table union_mm(id int)  tblproperties ("transactional"="true", "transactional_properties"="insert_only")
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@union_mm
-POSTHOOK: query: -- union
-
-create table union_mm(id int)  tblproperties ("transactional"="true", "transactional_properties"="insert_only")
+POSTHOOK: query: create table union_mm(id int)  tblproperties ("transactional"="true", "transactional_properties"="insert_only")
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@union_mm
@@ -949,8 +939,8 @@ POSTHOOK: Input: default@skew_dp_union_mm@k3=98
 97	97	97	97
 98	98	98	98
 98	99	100	101
-100	100	100	100
 99	100	101	102
+100	100	100	100
 101	102	103	104
 103	103	103	103
 104	105	106	107
@@ -1175,9 +1165,9 @@ POSTHOOK: Input: default@merge1_mm@key=103
 POSTHOOK: Input: default@merge1_mm@key=97
 POSTHOOK: Input: default@merge1_mm@key=98
 #### A masked pattern was here ####
-98	98
 97	97
 103	103
+98	98
 100	100
 10	10
 0	0
@@ -1227,17 +1217,17 @@ POSTHOOK: Input: default@merge1_mm@key=97
 POSTHOOK: Input: default@merge1_mm@key=98
 #### A masked pattern was here ####
 100	100
+97	97
+103	103
+103	103
 100	100
 97	97
-103	103
-103	103
-97	97
 98	98
 98	98
-10	10
+0	0
 10	10
 0	0
-0	0
+10	10
 PREHOOK: query: drop table merge1_mm
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@merge1_mm
@@ -1246,15 +1236,9 @@ POSTHOOK: query: drop table merge1_mm
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@merge1_mm
 POSTHOOK: Output: default@merge1_mm
-PREHOOK: query: -- TODO: need to include merge+union+DP, but it's broken for now
-
-
-drop table ctas0_mm
+PREHOOK: query: drop table ctas0_mm
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: -- TODO: need to include merge+union+DP, but it's broken for now
-
-
-drop table ctas0_mm
+POSTHOOK: query: drop table ctas0_mm
 POSTHOOK: type: DROPTABLE
 PREHOOK: query: create table ctas0_mm tblproperties ("transactional"="true", "transactional_properties"="insert_only") as select * from intermediate
 PREHOOK: type: CREATETABLE_AS_SELECT
@@ -2162,13 +2146,9 @@ POSTHOOK: query: drop table intermmediate_nonpart
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@intermmediate_nonpart
 POSTHOOK: Output: default@intermmediate_nonpart
-PREHOOK: query: -- non-MM export to MM table, with and without partitions
-
-drop table import0_mm
+PREHOOK: query: drop table import0_mm
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: -- non-MM export to MM table, with and without partitions
-
-drop table import0_mm
+POSTHOOK: query: drop table import0_mm
 POSTHOOK: type: DROPTABLE
 PREHOOK: query: create table import0_mm(key int, p int) tblproperties("transactional"="true", "transactional_properties"="insert_only")
 PREHOOK: type: CREATETABLE
@@ -2261,13 +2241,9 @@ POSTHOOK: query: drop table import1_mm
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@import1_mm
 POSTHOOK: Output: default@import1_mm
-PREHOOK: query: -- MM export into new MM table, non-part and part
-
-drop table import2_mm
+PREHOOK: query: drop table import2_mm
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: -- MM export into new MM table, non-part and part
-
-drop table import2_mm
+POSTHOOK: query: drop table import2_mm
 POSTHOOK: type: DROPTABLE
 PREHOOK: query: import table import2_mm from 'ql/test/data/exports/intermmediate_nonpart'
 PREHOOK: type: IMPORT
@@ -2365,13 +2341,9 @@ POSTHOOK: query: drop table import3_mm
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@import3_mm
 POSTHOOK: Output: default@import3_mm
-PREHOOK: query: -- MM export into existing MM table, non-part and partial part
-
-drop table import4_mm
+PREHOOK: query: drop table import4_mm
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: -- MM export into existing MM table, non-part and partial part
-
-drop table import4_mm
+POSTHOOK: query: drop table import4_mm
 POSTHOOK: type: DROPTABLE
 PREHOOK: query: create table import4_mm(key int, p int) tblproperties("transactional"="true", "transactional_properties"="insert_only")
 PREHOOK: type: CREATETABLE
@@ -2452,13 +2424,9 @@ POSTHOOK: query: drop table import5_mm
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@import5_mm
 POSTHOOK: Output: default@import5_mm
-PREHOOK: query: -- MM export into existing non-MM table, non-part and part
-
-drop table import6_mm
+PREHOOK: query: drop table import6_mm
 PREHOOK: type: DROPTABLE
-POSTHOOK: query: -- MM export into existing non-MM table, non-part and part
-
-drop table import6_mm
+POSTHOOK: query: drop table import6_mm
 POSTHOOK: type: DROPTABLE
 PREHOOK: query: create table import6_mm(key int, p int)
 PREHOOK: type: CREATETABLE
@@ -3136,7 +3104,7 @@ POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@stats2_mm
-POSTHOOK: Lineage: stats2_mm.c0 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: stats2_mm._c0 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: desc formatted stats2_mm
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@stats2_mm
@@ -3145,7 +3113,7 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@stats2_mm
 # col_name            	data_type           	comment             
 	 	 
-c0                  	array<string>       	                    
+_c0                 	array<string>       	                    
 	 	 
 # Detailed Table Information	 	 
 Database:           	default             	 

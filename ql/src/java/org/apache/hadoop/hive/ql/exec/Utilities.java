@@ -3187,7 +3187,7 @@ public final class Utilities {
             continue;
           }
 
-          pathsProcessed.add(path);
+          pathsProcessed.add(file);
           if (LOG.isDebugEnabled()) {
             LOG.debug("Adding input file " + file);
           } else if (!hasLogged) {
