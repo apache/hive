@@ -71,8 +71,7 @@ public class TestDbTxnManager2 {
   private Driver driver;
   TxnStore txnHandler;
 
-  @BeforeClass
-  public static void setUpClass() throws Exception {
+  public TestDbTxnManager2() throws Exception {
     conf
     .setVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER,
         "org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory");
@@ -374,6 +373,8 @@ public class TestDbTxnManager2 {
     cpr = driver.compileAndRespond("delete from T10");
     Assert.assertEquals(ErrorMsg.ACID_OP_ON_NONACID_TXNMGR.getErrorCode(), cpr.getResponseCode());
     Assert.assertTrue(cpr.getErrorMessage().contains("Attempt to do update or delete using transaction manager that does not support these operations."));
+
+    conf.setVar(HiveConf.ConfVars.HIVE_TXN_MANAGER, "org.apache.hadoop.hive.ql.lockmgr.DbTxnManager");
   }
 
   /**
