@@ -31,6 +31,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.QueryState;
+import org.apache.hadoop.hive.ql.exec.FetchTask;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.io.orc.OrcInputFormat;
 import org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat;
@@ -255,5 +256,20 @@ public class TestReplicationSemanticAnalyzer {
     rs.analyze(root, new Context(conf));
     roots = rs.getRootTasks();
     assertEquals(1, roots.size());
+  }
+
+  @Test
+  public void testReplStatusAnalyze() throws Exception {
+    ParseDriver pd = new ParseDriver();
+    ASTNode root;
+
+    // Repl status command
+    String query = "repl status " + defaultDB;
+    root = (ASTNode) pd.parse(query).getChild(0);
+    ReplicationSemanticAnalyzer rs = (ReplicationSemanticAnalyzer) SemanticAnalyzerFactory.get(queryState, root);
+    rs.analyze(root, new Context(conf));
+
+    FetchTask fetchTask = rs.getFetchTask();
+    assertNotNull(fetchTask);
   }
 }
