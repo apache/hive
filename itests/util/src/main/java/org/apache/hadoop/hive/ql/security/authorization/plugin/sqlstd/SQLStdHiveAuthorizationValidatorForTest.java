@@ -135,6 +135,9 @@ public class SQLStdHiveAuthorizationValidatorForTest extends SQLStdHiveAuthoriza
         privObj
             .setRowFilterExpression("key in (select key from src where src.key = masking_test_subq.key)");
         needRewritePrivObjs.add(privObj);
+      } else if (privObj.getObjectName().equals("masking_acid_no_masking")) {
+        // testing acid usage when no masking/filtering is present
+        needRewritePrivObjs.add(privObj);
       }
     }
     return needRewritePrivObjs;

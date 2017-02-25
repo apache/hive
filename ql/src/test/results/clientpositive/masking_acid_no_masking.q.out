@@ -1,0 +1,61 @@
+PREHOOK: query: create table nonacid (key int, value string) stored as orc
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@nonacid
+POSTHOOK: query: create table nonacid (key int, value string) stored as orc
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@nonacid
+PREHOOK: query: create table masking_acid_no_masking (key int, value string)
+clustered by (value) into 2 buckets stored as orc
+tblproperties ("transactional"="true")
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@masking_acid_no_masking
+POSTHOOK: query: create table masking_acid_no_masking (key int, value string)
+clustered by (value) into 2 buckets stored as orc
+tblproperties ("transactional"="true")
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@masking_acid_no_masking
+PREHOOK: query: update masking_acid_no_masking set key=1 where value='ddd'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@masking_acid_no_masking
+PREHOOK: Output: default@masking_acid_no_masking
+POSTHOOK: query: update masking_acid_no_masking set key=1 where value='ddd'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@masking_acid_no_masking
+POSTHOOK: Output: default@masking_acid_no_masking
+PREHOOK: query: delete from masking_acid_no_masking where value='ddd'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@masking_acid_no_masking
+PREHOOK: Output: default@masking_acid_no_masking
+POSTHOOK: query: delete from masking_acid_no_masking where value='ddd'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@masking_acid_no_masking
+POSTHOOK: Output: default@masking_acid_no_masking
+PREHOOK: query: MERGE INTO masking_acid_no_masking as t using nonacid as s ON t.key = s.key
+WHEN MATCHED AND s.key < 5 THEN DELETE
+WHEN MATCHED AND s.key < 3 THEN UPDATE set key = 1
+WHEN NOT MATCHED THEN INSERT VALUES (s.key, s.value)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@masking_acid_no_masking
+PREHOOK: Input: default@nonacid
+PREHOOK: Output: default@masking_acid_no_masking
+PREHOOK: Output: default@masking_acid_no_masking
+PREHOOK: Output: default@masking_acid_no_masking
+PREHOOK: Output: default@merge_tmp_table
+POSTHOOK: query: MERGE INTO masking_acid_no_masking as t using nonacid as s ON t.key = s.key
+WHEN MATCHED AND s.key < 5 THEN DELETE
+WHEN MATCHED AND s.key < 3 THEN UPDATE set key = 1
+WHEN NOT MATCHED THEN INSERT VALUES (s.key, s.value)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@masking_acid_no_masking
+POSTHOOK: Input: default@nonacid
+POSTHOOK: Output: default@masking_acid_no_masking
+POSTHOOK: Output: default@masking_acid_no_masking
+POSTHOOK: Output: default@masking_acid_no_masking
+POSTHOOK: Output: default@merge_tmp_table
+POSTHOOK: Lineage: masking_acid_no_masking.key SIMPLE [(nonacid)s.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: masking_acid_no_masking.value SIMPLE [(nonacid)s.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: merge_tmp_table.val EXPRESSION [(masking_acid_no_masking)t.FieldSchema(name:ROW__ID, type:struct<transactionId:bigint,bucketId:int,rowId:bigint>, comment:), ]
