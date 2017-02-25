@@ -49,10 +49,10 @@ import java.util.Arrays;
 import java.util.Map;
 import java.util.UUID;
 
-public class DruidStorageHandlerTest {
+public class TestDruidStorageHandler {
 
   @Rule
-  public final TestDerbyConnector.DerbyConnectorRule derbyConnectorRule = new TestDerbyConnector.DerbyConnectorRule();
+  public final DerbyConnectorTestUtility.DerbyConnectorRule derbyConnectorRule = new DerbyConnectorTestUtility.DerbyConnectorRule();
 
   @Rule
   public final TemporaryFolder temporaryFolder = new TemporaryFolder();
