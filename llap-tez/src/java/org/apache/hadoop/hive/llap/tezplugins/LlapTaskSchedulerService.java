@@ -63,6 +63,8 @@ import org.apache.hadoop.hive.llap.metrics.MetricsUtils;
 import org.apache.hadoop.hive.llap.registry.ServiceInstance;
 import org.apache.hadoop.hive.llap.registry.ServiceInstanceSet;
 import org.apache.hadoop.hive.llap.registry.ServiceInstanceStateChangeListener;
+import org.apache.hadoop.hive.llap.registry.ServiceRegistry;
+import org.apache.hadoop.hive.llap.registry.impl.InactiveServiceInstance;
 import org.apache.hadoop.hive.llap.registry.impl.LlapRegistryService;
 import org.apache.hadoop.hive.llap.tezplugins.helpers.MonotonicClock;
 import org.apache.hadoop.hive.llap.tezplugins.scheduler.LoggingFutureCallback;
@@ -193,6 +195,7 @@ public class LlapTaskSchedulerService extends TaskScheduler {
 
   private final LlapTaskSchedulerMetrics metrics;
   private final JvmPauseMonitor pauseMonitor;
+  private final Random random = new Random();
 
   public LlapTaskSchedulerService(TaskSchedulerContext taskSchedulerContext) {
     this(taskSchedulerContext, new MonotonicClock(), true);
@@ -328,6 +331,11 @@ public class LlapTaskSchedulerService extends TaskScheduler {
     } finally {
       writeLock.unlock();
     }
+  }
+
+  @VisibleForTesting
+  public void setServiceInstanceSet(ServiceInstanceSet serviceInstanceSet) {
+    this.activeInstances = serviceInstanceSet;
   }
 
   private class NodeStateChangeListener implements ServiceInstanceStateChangeListener {
@@ -804,54 +812,73 @@ public class LlapTaskSchedulerService extends TaskScheduler {
 
       /* fall through - miss in locality or no locality-requested */
       Collection<ServiceInstance> instances = activeInstances.getAllInstancesOrdered(true);
-      ArrayList<NodeInfo> allNodes = new ArrayList<>(instances.size());
+      List<NodeInfo> allNodes = new ArrayList<>(instances.size());
+      List<NodeInfo> activeNodesWithFreeSlots = new ArrayList<>();
       for (ServiceInstance inst : instances) {
-        NodeInfo nodeInfo = instanceToNodeMap.get(inst.getWorkerIdentity());
-        if (nodeInfo != null) {
-          allNodes.add(nodeInfo);
+        if (inst instanceof InactiveServiceInstance) {
+          allNodes.add(null);
+        } else {
+          NodeInfo nodeInfo = instanceToNodeMap.get(inst.getWorkerIdentity());
+          if (nodeInfo == null) {
+            allNodes.add(null);
+          } else {
+            allNodes.add(nodeInfo);
+            if (nodeInfo.canAcceptTask()) {
+              activeNodesWithFreeSlots.add(nodeInfo);
+            }
+          }
         }
       }
 
+      if (allNodes.isEmpty()) {
+        return SELECT_HOST_RESULT_DELAYED_RESOURCES;
+      }
+
+      // no locality-requested, randomly pick a node containing free slots
       if (requestedHosts == null || requestedHosts.length == 0) {
-        // no locality-requested, iterate the available hosts in consistent order from the beginning
         if (LOG.isDebugEnabled()) {
-          LOG.debug("No-locality requested. Attempting to allocate next available host for task={}", request.task);
+          LOG.debug("No-locality requested. Selecting a random host for task={}", request.task);
         }
-        for (NodeInfo nodeInfo : allNodes) {
-          if (nodeInfo.canAcceptTask()) {
-            LOG.info("Assigning {} when looking for any host, from #hosts={}, requestedHosts={}",
-                nodeInfo.toShortString(), allNodes.size(), ((requestedHosts == null || requestedHosts.length == 0)
-                    ? "null" : requestedHostsDebugStr));
-            return new SelectHostResult(nodeInfo);
-          }
-        }
-      } else {
-        // miss in locality request, try the next available host that can accept tasks (assume the consistent instances
-        // list as a ring) from the index of first requested host
-        final String firstRequestedHost = requestedHosts[0];
-        if (LOG.isDebugEnabled()) {
-          LOG.debug("Locality miss. Attempting to allocate next available host from first requested host({}) for " +
-            "task={}", firstRequestedHost, request.task);
-        }
-        int requestedHostIdx = -1;
-        for (int i = 0; i < allNodes.size(); i++) {
-          if (allNodes.get(i).getHost().equals(firstRequestedHost)) {
+        return randomSelection(activeNodesWithFreeSlots);
+      }
+
+      // miss in locality request, try picking consistent location with fallback to random selection
+      final String firstRequestedHost = requestedHosts[0];
+      int requestedHostIdx = -1;
+      for (int i = 0; i < allNodes.size(); i++) {
+        NodeInfo nodeInfo = allNodes.get(i);
+        if (nodeInfo != null) {
+          if (nodeInfo.getHost().equals(firstRequestedHost)){
             requestedHostIdx = i;
             break;
           }
         }
+      }
 
-        for (int i = 0; i < allNodes.size(); i++) {
-          NodeInfo nodeInfo = allNodes.get((i + requestedHostIdx + 1) % allNodes.size());
-          if (nodeInfo.canAcceptTask()) {
-            if (LOG.isInfoEnabled()) {
-              LOG.info("Assigning {} when looking for first requested host, from #hosts={},"
-                      + " requestedHosts={}", nodeInfo.toShortString(), allNodes.size(),
-                  ((requestedHosts == null || requestedHosts.length == 0) ? "null" :
-                      requestedHostsDebugStr));
-            }
-            return new SelectHostResult(nodeInfo);
+      // requested host died or unknown host requested, fallback to random selection.
+      // TODO: At this point we don't know the slot number of the requested host, so can't rollover to next available
+      if (requestedHostIdx == -1) {
+        if (LOG.isDebugEnabled()) {
+          LOG.debug("Requested node [{}] in consistent order does not exist. Falling back to random selection for " +
+            "request {}", firstRequestedHost, request);
+        }
+        return randomSelection(activeNodesWithFreeSlots);
+      }
+
+      // requested host is still alive but cannot accept task, pick the next available host in consistent order
+      for (int i = 0; i < allNodes.size(); i++) {
+        NodeInfo nodeInfo = allNodes.get((i + requestedHostIdx + 1) % allNodes.size());
+        // next node in consistent order died or does not have free slots, rollover to next
+        if (nodeInfo == null || !nodeInfo.canAcceptTask()) {
+          continue;
+        } else {
+          if (LOG.isDebugEnabled()) {
+            LOG.debug("Assigning {} in consistent order when looking for first requested host, from #hosts={},"
+                + " requestedHosts={}", nodeInfo.toShortString(), allNodes.size(),
+              ((requestedHosts == null || requestedHosts.length == 0) ? "null" :
+                requestedHostsDebugStr));
           }
+          return new SelectHostResult(nodeInfo);
         }
       }
 
@@ -859,6 +886,19 @@ public class LlapTaskSchedulerService extends TaskScheduler {
     } finally {
       readLock.unlock();
     }
+  }
+
+  private SelectHostResult randomSelection(final List<NodeInfo> nodesWithFreeSlots) {
+    if (nodesWithFreeSlots.isEmpty()) {
+      return SELECT_HOST_RESULT_DELAYED_RESOURCES;
+    }
+
+    NodeInfo randomNode = nodesWithFreeSlots.get(random.nextInt(nodesWithFreeSlots.size()));
+    if (LOG.isInfoEnabled()) {
+      LOG.info("Assigning {} when looking for any host, from #hosts={}, requestedHosts=null",
+        randomNode.toShortString(), nodesWithFreeSlots.size());
+    }
+    return new SelectHostResult(randomNode);
   }
 
   private void addNode(NodeInfo node, ServiceInstance serviceInstance) {
