@@ -154,6 +154,7 @@ max
 md5
 min
 minute
+mod
 month
 months_between
 named_struct
@@ -382,6 +383,7 @@ max
 md5
 min
 minute
+mod
 month
 months_between
 xpath
