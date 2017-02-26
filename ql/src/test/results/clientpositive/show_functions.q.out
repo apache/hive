@@ -43,6 +43,8 @@ case
 cbrt
 ceil
 ceiling
+char_length
+character_length
 chr
 coalesce
 collect_list
@@ -169,6 +171,7 @@ not
 ntile
 nullif
 nvl
+octet_length
 or
 parse_url
 parse_url_tuple
@@ -279,6 +282,8 @@ case
 cbrt
 ceil
 ceiling
+char_length
+character_length
 chr
 coalesce
 collect_list
