@@ -13,3 +13,16 @@ FROM t
 GROUP BY category
 GROUPING SETS ((), (category))
 HAVING max(comments) > 0;
+
+SELECT grouping(category), lead(live) over(partition by grouping(category))
+FROM t
+GROUP BY category, live
+GROUPING SETS ((), (category));
+
+SELECT grouping(category), lead(live) over(partition by grouping(category))
+FROM t
+GROUP BY category, live;
+
+SELECT grouping(category), lag(live) over(partition by grouping(category))
+FROM t
+GROUP BY category, live;

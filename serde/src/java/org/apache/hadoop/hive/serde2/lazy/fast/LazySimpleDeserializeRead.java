@@ -446,9 +446,7 @@ public final class LazySimpleDeserializeRead extends DeserializeRead {
         if (!LazyUtils.isNumberMaybe(bytes, fieldStart, fieldLength)) {
           return false;
         }
-        currentDouble =
-            Double.parseDouble(
-                new String(bytes, fieldStart, fieldLength, StandardCharsets.UTF_8));
+        currentDouble = StringToDouble.strtod(bytes, fieldStart, fieldLength);
         return true;
       case STRING:
       case CHAR:

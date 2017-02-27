@@ -74,7 +74,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
-public class DruidRecordWriterTest {
+public class TestDruidRecordWriter {
   private ObjectMapper objectMapper = DruidStorageHandlerUtils.JSON_MAPPER;
 
   private static final Interval INTERVAL_FULL = new Interval("2014-10-22T00:00:00Z/P1D");

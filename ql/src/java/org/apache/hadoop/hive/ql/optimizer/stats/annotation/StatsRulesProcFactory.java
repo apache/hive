@@ -320,8 +320,13 @@ public class StatsRulesProcFactory {
       long newNumRows = 0;
       Statistics andStats = null;
 
-      if (stats.getNumRows() <= 1 || stats.getDataSize() <= 0)
+      if (stats.getNumRows() <= 1 || stats.getDataSize() <= 0) {
+        if (isDebugEnabled) {
+          LOG.debug("Estimating row count for " + pred + " Original num rows: " + stats.getNumRows() +
+              " Original data size: " + stats.getDataSize() + " New num rows: 1");
+        }
         return 1;
+      }
 
       if (pred instanceof ExprNodeGenericFuncDesc) {
         ExprNodeGenericFuncDesc genFunc = (ExprNodeGenericFuncDesc) pred;
@@ -378,21 +383,29 @@ public class StatsRulesProcFactory {
         if (colType.equalsIgnoreCase(serdeConstants.BOOLEAN_TYPE_NAME)) {
           ColStatistics cs = stats.getColumnStatisticsFromColName(colName);
           if (cs != null) {
-            return cs.getNumTrues();
+            newNumRows = cs.getNumTrues();
+          } else {
+            // default
+            newNumRows = stats.getNumRows() / 2;
           }
+        } else {
+          // if not boolean column return half the number of rows
+          newNumRows = stats.getNumRows() / 2;
         }
-
-        // if not boolean column return half the number of rows
-        return stats.getNumRows() / 2;
       } else if (pred instanceof ExprNodeConstantDesc) {
 
         // special case for handling false constants
         ExprNodeConstantDesc encd = (ExprNodeConstantDesc) pred;
         if (Boolean.FALSE.equals(encd.getValue())) {
-          return 0;
+          newNumRows = 0;
         } else {
-          return stats.getNumRows();
+          newNumRows = stats.getNumRows();
         }
+      }
+
+      if (isDebugEnabled) {
+        LOG.debug("Estimating row count for " + pred + " Original num rows: " + stats.getNumRows() +
+            " New num rows: " + newNumRows);
       }
 
       return newNumRows;
@@ -476,15 +489,16 @@ public class StatsRulesProcFactory {
       }
 
       // 3. Calculate IN selectivity
-      float factor = 1;
+      double factor = 1d;
       for (int i = 0; i < columnStats.size(); i++) {
         long dvs = columnStats.get(i) == null ? 0 : columnStats.get(i).getCountDistint();
-        // ( num of distinct vals for col / num of rows ) * num of distinct vals for col in IN clause
-        float columnFactor = dvs == 0 ? 0.5f : ((float)dvs / numRows) * values.get(i).size();
-        factor *= columnFactor;
+        // (num of distinct vals for col in IN clause  / num of distinct vals for col )
+        double columnFactor = dvs == 0 ? 0.5d : ((double) values.get(i).size() / dvs);
+        // max can be 1, even when ndv is larger in IN clause than in column stats
+        factor *= columnFactor > 1d ? 1d : columnFactor;
       }
       float inFactor = HiveConf.getFloatVar(aspCtx.getConf(), HiveConf.ConfVars.HIVE_STATS_IN_CLAUSE_FACTOR);
-      return Math.round( (double)numRows * factor * inFactor);
+      return Math.round( (double) numRows * factor * inFactor);
     }
 
     private long evaluateBetweenExpr(Statistics stats, ExprNodeDesc pred, AnnotateStatsProcCtx aspCtx,
@@ -1828,11 +1842,11 @@ public class StatsRulesProcFactory {
         Map<Integer, Long> rowCountParents) {
 
       if (newNumRows < 0) {
-        LOG.info("STATS-" + jop.toString() + ": Overflow in number of rows."
+        LOG.debug("STATS-" + jop.toString() + ": Overflow in number of rows. "
           + newNumRows + " rows will be set to Long.MAX_VALUE");
       }
       if (newNumRows == 0) {
-        LOG.info("STATS-" + jop.toString() + ": Equals 0 in number of rows."
+        LOG.debug("STATS-" + jop.toString() + ": Equals 0 in number of rows. "
             + newNumRows + " rows will be set to 1");
         newNumRows = 1;
       }
@@ -2252,12 +2266,12 @@ public class StatsRulesProcFactory {
       boolean updateNDV) {
 
     if (newNumRows < 0) {
-      LOG.info("STATS-" + op.toString() + ": Overflow in number of rows."
+      LOG.debug("STATS-" + op.toString() + ": Overflow in number of rows. "
           + newNumRows + " rows will be set to Long.MAX_VALUE");
       newNumRows = StatsUtils.getMaxIfOverflow(newNumRows);
     }
     if (newNumRows == 0) {
-      LOG.info("STATS-" + op.toString() + ": Equals 0 in number of rows."
+      LOG.debug("STATS-" + op.toString() + ": Equals 0 in number of rows. "
           + newNumRows + " rows will be set to 1");
       newNumRows = 1;
     }

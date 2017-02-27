@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.exec;
 
+import static org.apache.hadoop.hive.ql.exec.Utilities.DEPRECATED_MAPRED_DFSCLIENT_PARALLELISM_MAX;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 import static org.apache.hadoop.hive.ql.exec.Utilities.getFileExtension;
@@ -34,7 +35,6 @@ import java.util.List;
 import java.util.Properties;
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.ContentSummary;
@@ -301,60 +301,142 @@ public class TestUtilities {
   }
 
   /**
-   * Test for {@link Utilities#getInputPaths(JobConf, MapWork, Path, Context, boolean, ExecutorService)} with a single
-   * threaded {@link ExecutorService}.
+   * Check that calling {@link Utilities#getMaxExecutorsForInputListing(JobConf, int)}
+   * returns the maximum number of executors to use based on the number of input locations.
    */
   @Test
-  public void testGetInputPathsWithPool() throws Exception {
-    ExecutorService pool = Executors.newSingleThreadExecutor();
+  public void testGetMaxExecutorsForInputListing() {
+    Configuration conf = new Configuration();
+
+    final int ZERO_EXECUTORS = 0;
+    final int ONE_EXECUTOR = 1;
+    final int TWO_EXECUTORS = 2;
+
+    final int ZERO_THREADS = 0;
+    final int ONE_THREAD = 1;
+    final int TWO_THREADS = 2;
+
+    final int ZERO_LOCATIONS = 0;
+    final int ONE_LOCATION = 1;
+    final int TWO_LOCATIONS = 2;
+    final int THREE_LOCATIONS = 3;
+
+    conf.setInt(HiveConf.ConfVars.HIVE_EXEC_INPUT_LISTING_MAX_THREADS.varname, ONE_THREAD);
+
+    assertEquals(ZERO_EXECUTORS, Utilities.getMaxExecutorsForInputListing(conf, ZERO_LOCATIONS));
+    assertEquals(ONE_EXECUTOR, Utilities.getMaxExecutorsForInputListing(conf, ONE_LOCATION));
+    assertEquals(ONE_EXECUTOR, Utilities.getMaxExecutorsForInputListing(conf, TWO_LOCATIONS));
+    assertEquals(ONE_EXECUTOR, Utilities.getMaxExecutorsForInputListing(conf, THREE_LOCATIONS));
+
+    conf.setInt(HiveConf.ConfVars.HIVE_EXEC_INPUT_LISTING_MAX_THREADS.varname, TWO_THREADS);
+
+    assertEquals(ZERO_EXECUTORS,  Utilities.getMaxExecutorsForInputListing(conf, ZERO_LOCATIONS));
+    assertEquals(ONE_EXECUTOR,  Utilities.getMaxExecutorsForInputListing(conf, ONE_LOCATION));
+    assertEquals(TWO_EXECUTORS, Utilities.getMaxExecutorsForInputListing(conf, TWO_LOCATIONS));
+    assertEquals(TWO_EXECUTORS, Utilities.getMaxExecutorsForInputListing(conf, THREE_LOCATIONS));
+
+    /*
+     * The following tests will verify the deprecation variable is still usable.
+     */
+
+    conf.setInt(HiveConf.ConfVars.HIVE_EXEC_INPUT_LISTING_MAX_THREADS.varname, ZERO_THREADS);
+    conf.setInt(DEPRECATED_MAPRED_DFSCLIENT_PARALLELISM_MAX, ZERO_THREADS);
+
+    assertEquals(ZERO_EXECUTORS, Utilities.getMaxExecutorsForInputListing(conf, ZERO_LOCATIONS));
+    assertEquals(ONE_EXECUTOR, Utilities.getMaxExecutorsForInputListing(conf, ONE_LOCATION));
+    assertEquals(ONE_EXECUTOR, Utilities.getMaxExecutorsForInputListing(conf, TWO_LOCATIONS));
+    assertEquals(ONE_EXECUTOR, Utilities.getMaxExecutorsForInputListing(conf, THREE_LOCATIONS));
+
+    conf.setInt(HiveConf.ConfVars.HIVE_EXEC_INPUT_LISTING_MAX_THREADS.varname, ZERO_THREADS);
+    conf.setInt(DEPRECATED_MAPRED_DFSCLIENT_PARALLELISM_MAX, ONE_THREAD);
+
+    assertEquals(ZERO_EXECUTORS, Utilities.getMaxExecutorsForInputListing(conf, ZERO_LOCATIONS));
+    assertEquals(ONE_EXECUTOR, Utilities.getMaxExecutorsForInputListing(conf, ONE_LOCATION));
+    assertEquals(ONE_EXECUTOR, Utilities.getMaxExecutorsForInputListing(conf, TWO_LOCATIONS));
+    assertEquals(ONE_EXECUTOR, Utilities.getMaxExecutorsForInputListing(conf, THREE_LOCATIONS));
+
+    conf.setInt(HiveConf.ConfVars.HIVE_EXEC_INPUT_LISTING_MAX_THREADS.varname, ZERO_THREADS);
+    conf.setInt(DEPRECATED_MAPRED_DFSCLIENT_PARALLELISM_MAX, TWO_THREADS);
+
+    assertEquals(ZERO_EXECUTORS, Utilities.getMaxExecutorsForInputListing(conf, ZERO_LOCATIONS));
+    assertEquals(ONE_EXECUTOR, Utilities.getMaxExecutorsForInputListing(conf, ONE_LOCATION));
+    assertEquals(TWO_EXECUTORS, Utilities.getMaxExecutorsForInputListing(conf, TWO_LOCATIONS));
+    assertEquals(TWO_EXECUTORS, Utilities.getMaxExecutorsForInputListing(conf, THREE_LOCATIONS));
+
+    // Check that HIVE_EXEC_INPUT_LISTING_MAX_THREADS has priority overr DEPRECATED_MAPRED_DFSCLIENT_PARALLELISM_MAX
+
+    conf.setInt(HiveConf.ConfVars.HIVE_EXEC_INPUT_LISTING_MAX_THREADS.varname, TWO_THREADS);
+    conf.setInt(DEPRECATED_MAPRED_DFSCLIENT_PARALLELISM_MAX, ONE_THREAD);
+
+    assertEquals(ZERO_EXECUTORS, Utilities.getMaxExecutorsForInputListing(conf, ZERO_LOCATIONS));
+    assertEquals(ONE_EXECUTOR, Utilities.getMaxExecutorsForInputListing(conf, ONE_LOCATION));
+    assertEquals(TWO_EXECUTORS, Utilities.getMaxExecutorsForInputListing(conf, TWO_LOCATIONS));
+    assertEquals(TWO_EXECUTORS, Utilities.getMaxExecutorsForInputListing(conf, THREE_LOCATIONS));
+  }
+
+  /**
+   * Test for {@link Utilities#getInputPaths(JobConf, MapWork, Path, Context, boolean)} with a single
+   * threaded.
+   */
+  @Test
+  public void testGetInputPathsWithASingleThread() throws Exception {
+    final int NUM_PARTITIONS = 5;
 
     JobConf jobConf = new JobConf();
+
+    jobConf.setInt(HiveConf.ConfVars.HIVE_EXEC_INPUT_LISTING_MAX_THREADS.varname, 1);
+    runTestGetInputPaths(jobConf, NUM_PARTITIONS);
+  }
+
+  /**
+   * Test for {@link Utilities#getInputPaths(JobConf, MapWork, Path, Context, boolean)} with multiple
+   * threads.
+   */
+  @Test
+  public void testGetInputPathsWithMultipleThreads() throws Exception {
+    final int NUM_PARTITIONS = 5;
+
+    JobConf jobConf = new JobConf();
+
+    jobConf.setInt(HiveConf.ConfVars.HIVE_EXEC_INPUT_LISTING_MAX_THREADS.varname, 2);
+    runTestGetInputPaths(jobConf, NUM_PARTITIONS);
+  }
+
+  private void runTestGetInputPaths(JobConf jobConf, int numOfPartitions) throws Exception {
     MapWork mapWork = new MapWork();
     Path scratchDir = new Path(HiveConf.getVar(jobConf, HiveConf.ConfVars.LOCALSCRATCHDIR));
 
+    LinkedHashMap<Path, ArrayList<String>> pathToAliasTable = new LinkedHashMap<>();
+
     String testTableName = "testTable";
-    String testPartitionName = "testPartition";
 
     Path testTablePath = new Path(testTableName);
-    Path testPartitionPath = new Path(testTablePath, testPartitionName);
-    Path testFileTablePath = new Path(testTablePath, "test.txt");
-    Path testFilePartitionPath = new Path(testPartitionPath, "test.txt");
+    Path[] testPartitionsPaths = new Path[numOfPartitions];
+    for (int i=0; i<numOfPartitions; i++) {
+      String testPartitionName = "p=" + 1;
+      testPartitionsPaths[i] = new Path(testTablePath, "p=" + i);
 
-    TableDesc mockTableDesc = mock(TableDesc.class);
+      pathToAliasTable.put(testPartitionsPaths[i], Lists.newArrayList(testPartitionName));
 
-    when(mockTableDesc.isNonNative()).thenReturn(false);
-    when(mockTableDesc.getProperties()).thenReturn(new Properties());
+      mapWork.getAliasToWork().put(testPartitionName, (Operator<?>) mock(Operator.class));
+    }
 
-    LinkedHashMap<Path, ArrayList<String>> pathToAliasTable = new LinkedHashMap<>();
-    pathToAliasTable.put(testTablePath, Lists.newArrayList(testTableName));
     mapWork.setPathToAliases(pathToAliasTable);
-
-    mapWork.getAliasToWork().put(testTableName, (Operator<?>) mock(Operator.class));
 
     FileSystem fs = FileSystem.getLocal(jobConf);
     try {
       fs.mkdirs(testTablePath);
-      fs.create(testFileTablePath).close();
 
-      // Run a test with an un-partitioned table with a single file as the input
-      List<Path> tableInputPaths = Utilities.getInputPaths(jobConf, mapWork, scratchDir, mock(Context.class), false,
-              pool);
-      assertEquals(tableInputPaths.size(), 1);
-      assertEquals(tableInputPaths.get(0), testTablePath);
+      for (int i=0; i<numOfPartitions; i++) {
+        fs.mkdirs(testPartitionsPaths[i]);
+        fs.create(new Path(testPartitionsPaths[i], "test1.txt")).close();
+      }
 
-      LinkedHashMap<Path, ArrayList<String>> pathToAliasPartition = new LinkedHashMap<>();
-      pathToAliasPartition.put(testPartitionPath, Lists.newArrayList(testTableName));
-      mapWork.setPathToAliases(pathToAliasPartition);
-
-      fs.delete(testFileTablePath, false);
-      fs.mkdirs(testPartitionPath);
-      fs.create(testFilePartitionPath).close();
-
-      // Run a test with a partitioned table with a single partition and a single file as the input
-      List<Path> tablePartitionInputPaths = Utilities.getInputPaths(jobConf, mapWork, scratchDir, mock(Context.class),
-              false, pool);
-      assertEquals(tablePartitionInputPaths.size(), 1);
-      assertEquals(tablePartitionInputPaths.get(0), testPartitionPath);
+      List<Path> inputPaths = Utilities.getInputPaths(jobConf, mapWork, scratchDir, mock(Context.class), false);
+      assertEquals(inputPaths.size(), numOfPartitions);
+      for (int i=0; i<numOfPartitions; i++) {
+        assertEquals(inputPaths.get(i), testPartitionsPaths[i]);
+      }
     } finally {
       if (fs.exists(testTablePath)) {
         fs.delete(testTablePath, true);
@@ -370,7 +452,7 @@ public class TestUtilities {
     JobConf jobConf = new JobConf();
     Properties properties = new Properties();
 
-    jobConf.setInt("mapred.dfsclient.parallelism.max", 0);
+    jobConf.setInt(HiveConf.ConfVars.HIVE_EXEC_INPUT_LISTING_MAX_THREADS.varname, 0);
     ContentSummary summary = runTestGetInputSummary(jobConf, properties, NUM_PARTITIONS, BYTES_PER_FILE, HiveInputFormat.class);
     assertEquals(NUM_PARTITIONS * BYTES_PER_FILE, summary.getLength());
     assertEquals(NUM_PARTITIONS, summary.getFileCount());
@@ -385,8 +467,16 @@ public class TestUtilities {
     JobConf jobConf = new JobConf();
     Properties properties = new Properties();
 
-    jobConf.setInt("mapred.dfsclient.parallelism.max", 2);
+    jobConf.setInt(HiveConf.ConfVars.HIVE_EXEC_INPUT_LISTING_MAX_THREADS.varname, 2);
     ContentSummary summary = runTestGetInputSummary(jobConf, properties, NUM_PARTITIONS, BYTES_PER_FILE, HiveInputFormat.class);
+    assertEquals(NUM_PARTITIONS * BYTES_PER_FILE, summary.getLength());
+    assertEquals(NUM_PARTITIONS, summary.getFileCount());
+    assertEquals(NUM_PARTITIONS, summary.getDirectoryCount());
+
+    // Test deprecated mapred.dfsclient.parallelism.max
+    jobConf.setInt(HiveConf.ConfVars.HIVE_EXEC_INPUT_LISTING_MAX_THREADS.varname, 0);
+    jobConf.setInt(Utilities.DEPRECATED_MAPRED_DFSCLIENT_PARALLELISM_MAX, 2);
+    summary = runTestGetInputSummary(jobConf, properties, NUM_PARTITIONS, BYTES_PER_FILE, HiveInputFormat.class);
     assertEquals(NUM_PARTITIONS * BYTES_PER_FILE, summary.getLength());
     assertEquals(NUM_PARTITIONS, summary.getFileCount());
     assertEquals(NUM_PARTITIONS, summary.getDirectoryCount());
@@ -401,13 +491,26 @@ public class TestUtilities {
     JobConf jobConf = new JobConf();
     Properties properties = new Properties();
 
-    jobConf.setInt("mapred.dfsclient.parallelism.max", 2);
+    jobConf.setInt(Utilities.DEPRECATED_MAPRED_DFSCLIENT_PARALLELISM_MAX, 2);
 
     properties.setProperty(hive_metastoreConstants.META_TABLE_STORAGE, InputEstimatorTestClass.class.getName());
     InputEstimatorTestClass.setEstimation(new InputEstimator.Estimation(NUM_OF_ROWS, BYTES_PER_FILE));
 
     /* Let's write more bytes to the files to test that Estimator is actually working returning the file size not from the filesystem */
     ContentSummary summary = runTestGetInputSummary(jobConf, properties, NUM_PARTITIONS, BYTES_PER_FILE * 2, HiveInputFormat.class);
+    assertEquals(NUM_PARTITIONS * BYTES_PER_FILE, summary.getLength());
+    assertEquals(NUM_PARTITIONS * -1, summary.getFileCount());        // Current getInputSummary() returns -1 for each file found
+    assertEquals(NUM_PARTITIONS * -1, summary.getDirectoryCount());   // Current getInputSummary() returns -1 for each file found
+
+    // Test deprecated mapred.dfsclient.parallelism.max
+    jobConf.setInt(HiveConf.ConfVars.HIVE_EXEC_INPUT_LISTING_MAX_THREADS.varname, 0);
+    jobConf.setInt(HiveConf.ConfVars.HIVE_EXEC_INPUT_LISTING_MAX_THREADS.varname, 2);
+
+    properties.setProperty(hive_metastoreConstants.META_TABLE_STORAGE, InputEstimatorTestClass.class.getName());
+    InputEstimatorTestClass.setEstimation(new InputEstimator.Estimation(NUM_OF_ROWS, BYTES_PER_FILE));
+
+    /* Let's write more bytes to the files to test that Estimator is actually working returning the file size not from the filesystem */
+    summary = runTestGetInputSummary(jobConf, properties, NUM_PARTITIONS, BYTES_PER_FILE * 2, HiveInputFormat.class);
     assertEquals(NUM_PARTITIONS * BYTES_PER_FILE, summary.getLength());
     assertEquals(NUM_PARTITIONS * -1, summary.getFileCount());        // Current getInputSummary() returns -1 for each file found
     assertEquals(NUM_PARTITIONS * -1, summary.getDirectoryCount());   // Current getInputSummary() returns -1 for each file found
@@ -439,7 +542,7 @@ public class TestUtilities {
     JobConf jobConf = new JobConf();
     Properties properties = new Properties();
 
-    jobConf.setInt("mapred.dfsclient.parallelism.max", 2);
+    jobConf.setInt(Utilities.DEPRECATED_MAPRED_DFSCLIENT_PARALLELISM_MAX, 2);
 
     ContentSummaryInputFormatTestClass.setContentSummary(
         new ContentSummary.Builder().length(BYTES_PER_FILE).fileCount(2).directoryCount(1).build());

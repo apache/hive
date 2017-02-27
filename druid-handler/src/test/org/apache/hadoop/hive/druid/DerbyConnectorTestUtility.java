@@ -31,17 +31,17 @@ import org.skife.jdbi.v2.exceptions.UnableToObtainConnectionException;
 import java.sql.SQLException;
 import java.util.UUID;
 
-public class TestDerbyConnector extends DerbyConnector {
+public class DerbyConnectorTestUtility extends DerbyConnector {
   private final String jdbcUri;
 
-  public TestDerbyConnector(
+  public DerbyConnectorTestUtility(
           Supplier<MetadataStorageConnectorConfig> config,
           Supplier<MetadataStorageTablesConfig> dbTables
   ) {
     this(config, dbTables, "jdbc:derby:memory:druidTest" + dbSafeUUID());
   }
 
-  protected TestDerbyConnector(
+  protected DerbyConnectorTestUtility(
           Supplier<MetadataStorageConnectorConfig> config,
           Supplier<MetadataStorageTablesConfig> dbTables,
           String jdbcUri
@@ -71,7 +71,7 @@ public class TestDerbyConnector extends DerbyConnector {
   }
 
   public static class DerbyConnectorRule extends ExternalResource {
-    private TestDerbyConnector connector;
+    private DerbyConnectorTestUtility connector;
 
     private final Supplier<MetadataStorageTablesConfig> dbTables;
 
@@ -101,7 +101,7 @@ public class TestDerbyConnector extends DerbyConnector {
 
     @Override
     protected void before() throws Throwable {
-      connector = new TestDerbyConnector(Suppliers.ofInstance(connectorConfig), dbTables);
+      connector = new DerbyConnectorTestUtility(Suppliers.ofInstance(connectorConfig), dbTables);
       connector.getDBI().open().close(); // create db
     }
 
@@ -110,7 +110,7 @@ public class TestDerbyConnector extends DerbyConnector {
       connector.tearDown();
     }
 
-    public TestDerbyConnector getConnector() {
+    public DerbyConnectorTestUtility getConnector() {
       return connector;
     }
 

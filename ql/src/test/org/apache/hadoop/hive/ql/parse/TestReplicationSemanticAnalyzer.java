@@ -31,6 +31,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.QueryState;
+import org.apache.hadoop.hive.ql.exec.FetchTask;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.io.orc.OrcInputFormat;
 import org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat;
@@ -72,7 +73,7 @@ public class TestReplicationSemanticAnalyzer {
     ParseDriver pd = new ParseDriver();
     String fromEventId = "100";
     String toEventId = "200";
-    String batchSize = "50";
+    String maxEventLimit = "50";
     ASTNode root;
     ASTNode child;
 
@@ -148,7 +149,7 @@ public class TestReplicationSemanticAnalyzer {
 
     query =
         "repl dump " + defaultDB + "." + tblName + " from " + fromEventId + " to " + toEventId
-            + " batch " + batchSize;
+            + " limit " + maxEventLimit;
 
     root = (ASTNode) pd.parse(query).getChild(0);
     assertEquals(root.getChildCount(), 3);
@@ -178,11 +179,11 @@ public class TestReplicationSemanticAnalyzer {
     assertEquals(child.getChildCount(), 0);
 
     child =  (ASTNode) root.getChild(3);
-    assertEquals(child.getText(), "TOK_BATCH");
+    assertEquals(child.getText(), "TOK_LIMIT");
     assertEquals(child.getChildCount(), 0);
 
     child =  (ASTNode) root.getChild(4);
-    assertEquals(child.getText(), batchSize);
+    assertEquals(child.getText(), maxEventLimit);
     assertEquals(child.getChildCount(), 0);
   }
 
@@ -255,5 +256,20 @@ public class TestReplicationSemanticAnalyzer {
     rs.analyze(root, new Context(conf));
     roots = rs.getRootTasks();
     assertEquals(1, roots.size());
+  }
+
+  @Test
+  public void testReplStatusAnalyze() throws Exception {
+    ParseDriver pd = new ParseDriver();
+    ASTNode root;
+
+    // Repl status command
+    String query = "repl status " + defaultDB;
+    root = (ASTNode) pd.parse(query).getChild(0);
+    ReplicationSemanticAnalyzer rs = (ReplicationSemanticAnalyzer) SemanticAnalyzerFactory.get(queryState, root);
+    rs.analyze(root, new Context(conf));
+
+    FetchTask fetchTask = rs.getFetchTask();
+    assertNotNull(fetchTask);
   }
 }

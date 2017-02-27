@@ -585,6 +585,14 @@ public class DynamicPartitionPruningOptimization implements NodeProcessor {
             groupByDescFinal, new RowSchema(rsOp.getSchema()), rsOp);
     groupByOpFinal.setColumnExprMap(new HashMap<String, ExprNodeDesc>());
 
+    // for explain purpose
+    if (parseContext.getContext().getExplainConfig() != null
+        && parseContext.getContext().getExplainConfig().isFormatted()) {
+      List<String> outputOperators = new ArrayList<>();
+      outputOperators.add(groupByOpFinal.getOperatorId());
+      rsOp.getConf().setOutputOperators(outputOperators);
+    }
+
     // Create the final Reduce Sink Operator
     ReduceSinkDesc rsDescFinal = PlanUtils.getReduceSinkDesc(
             new ArrayList<ExprNodeDesc>(), rsValueCols, gbOutputNames, false,
@@ -595,6 +603,14 @@ public class DynamicPartitionPruningOptimization implements NodeProcessor {
 
     LOG.debug("DynamicMinMaxPushdown: Saving RS to TS mapping: " + rsOpFinal + ": " + ts);
     parseContext.getRsOpToTsOpMap().put(rsOpFinal, ts);
+
+    // for explain purpose
+    if (parseContext.getContext().getExplainConfig() != null
+        && parseContext.getContext().getExplainConfig().isFormatted()) {
+      List<String> outputOperators = new ArrayList<>();
+      outputOperators.add(ts.getOperatorId());
+      rsOpFinal.getConf().setOutputOperators(outputOperators);
+    }
 
     // Save the info that is required at query time to resolve dynamic/runtime values.
     RuntimeValuesInfo runtimeValuesInfo = new RuntimeValuesInfo();

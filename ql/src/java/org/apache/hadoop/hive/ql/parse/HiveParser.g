@@ -386,10 +386,10 @@ TOK_MERGE;
 TOK_MATCHED;
 TOK_NOT_MATCHED;
 TOK_UPDATE;
-TOK_DELETE;TOK_REPL_DUMP;
+TOK_DELETE;
+TOK_REPL_DUMP;
 TOK_REPL_LOAD;
 TOK_REPL_STATUS;
-TOK_BATCH;
 TOK_TO;
 TOK_ONLY;
 TOK_SUMMARY;
@@ -817,9 +817,9 @@ replDumpStatement
         (dbName=identifier) (DOT tblName=identifier)?
         (KW_FROM (eventId=Number)
           (KW_TO (rangeEnd=Number))?
-          (KW_BATCH (batchSize=Number))?
+          (KW_LIMIT (batchSize=Number))?
         )?
-    -> ^(TOK_REPL_DUMP $dbName $tblName? ^(TOK_FROM $eventId (TOK_TO $rangeEnd)? (TOK_BATCH $batchSize)?)? )
+    -> ^(TOK_REPL_DUMP $dbName $tblName? ^(TOK_FROM $eventId (TOK_TO $rangeEnd)? (TOK_LIMIT $batchSize)?)? )
     ;
 
 replLoadStatement

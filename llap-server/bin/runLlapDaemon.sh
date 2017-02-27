@@ -51,7 +51,7 @@ shift
 JAVA=$JAVA_HOME/bin/java
 LOG_LEVEL_DEFAULT="INFO"
 LOGGER_DEFAULT="console"
-JAVA_OPTS_BASE="-server -Djava.net.preferIPv4Stack=true -XX:NewRatio=8 -XX:+UseNUMA -XX:+PrintGCDetails -verbose:gc -XX:+UseGCLogFileRotation -XX:NumberOfGCLogFiles=4 -XX:GCLogFileSize=100M"
+JAVA_OPTS_BASE="-server -Djava.net.preferIPv4Stack=true -XX:NewRatio=8 -XX:+UseNUMA -XX:+PrintGCDetails -verbose:gc -XX:+UseGCLogFileRotation -XX:NumberOfGCLogFiles=4 -XX:GCLogFileSize=100M -XX:+PrintGCDateStamps"
 
 if [ ! -d "${LLAP_DAEMON_HOME}" ]; then
   echo No LLAP_DAEMON_HOME set, or is not a directory. 
