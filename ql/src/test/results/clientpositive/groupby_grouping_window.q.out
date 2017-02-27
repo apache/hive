@@ -151,3 +151,51 @@ NULL	0	2	1
 86	0	2	1
 238	0	2	1
 311	0	2	1
+PREHOOK: query: SELECT grouping(category), lead(live) over(partition by grouping(category))
+FROM t
+GROUP BY category, live
+GROUPING SETS ((), (category))
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT grouping(category), lead(live) over(partition by grouping(category))
+FROM t
+GROUP BY category, live
+GROUPING SETS ((), (category))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t
+#### A masked pattern was here ####
+0	NULL
+0	NULL
+0	NULL
+0	NULL
+PREHOOK: query: SELECT grouping(category), lead(live) over(partition by grouping(category))
+FROM t
+GROUP BY category, live
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT grouping(category), lead(live) over(partition by grouping(category))
+FROM t
+GROUP BY category, live
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t
+#### A masked pattern was here ####
+0	0
+0	0
+0	NULL
+PREHOOK: query: SELECT grouping(category), lag(live) over(partition by grouping(category))
+FROM t
+GROUP BY category, live
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT grouping(category), lag(live) over(partition by grouping(category))
+FROM t
+GROUP BY category, live
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t
+#### A masked pattern was here ####
+0	NULL
+0	0
+0	0
