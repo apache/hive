@@ -1348,9 +1348,8 @@ public class Commands {
             commands.debug("going to print operations logs");
             updateQueryLog();
             commands.debug("printed operations logs");
-          } else {
-            Thread.sleep(queryProgressInterval);
           }
+          Thread.sleep(queryProgressInterval);
         }
       } catch (InterruptedException e) {
         commands.debug("Getting log thread is interrupted, since query is done!");
