@@ -119,3 +119,39 @@ select key, value
 from T1
 group by key, value
 having grouping(key) = 0;
+
+explain
+select key, value, `grouping__id`, grouping(key, value)
+from T1
+group by cube(key, value);
+
+select key, value, `grouping__id`, grouping(key, value)
+from T1
+group by cube(key, value);
+
+explain
+select key, value, `grouping__id`, grouping(value, key)
+from T1
+group by cube(key, value);
+
+select key, value, `grouping__id`, grouping(value, key)
+from T1
+group by cube(key, value);
+
+explain
+select key, value, `grouping__id`, grouping(key, value)
+from T1
+group by rollup(key, value);
+
+select key, value, `grouping__id`, grouping(key, value)
+from T1
+group by rollup(key, value);
+
+explain
+select key, value, `grouping__id`, grouping(value, key)
+from T1
+group by rollup(key, value);
+
+select key, value, `grouping__id`, grouping(value, key)
+from T1
+group by rollup(key, value);

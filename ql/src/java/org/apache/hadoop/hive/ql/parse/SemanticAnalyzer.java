@@ -53,7 +53,6 @@ import org.antlr.runtime.tree.TreeWizard;
 import org.antlr.runtime.tree.TreeWizard.ContextVisitor;
 import org.apache.calcite.rel.RelNode;
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.mutable.MutableBoolean;
 import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
@@ -3062,8 +3061,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
   protected static ASTNode rewriteGroupingFunctionAST(final List<ASTNode> grpByAstExprs, ASTNode targetNode,
           final boolean noneSet) throws SemanticException {
-    final MutableBoolean visited = new MutableBoolean(false);
-    final MutableBoolean found = new MutableBoolean(false);
 
     TreeVisitorAction action = new TreeVisitorAction() {
 
@@ -3075,45 +3072,62 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       @Override
       public Object post(Object t) {
         ASTNode root = (ASTNode) t;
-        if (root.getType() == HiveParser.TOK_FUNCTION && root.getChildCount() == 2) {
+        if (root.getType() == HiveParser.TOK_FUNCTION) {
           ASTNode func = (ASTNode) ParseDriver.adaptor.getChild(root, 0);
-          if (func.getText().equals("grouping")) {
-            ASTNode c = (ASTNode) ParseDriver.adaptor.getChild(root, 1);
-            visited.setValue(true);
-            for (int i = 0; i < grpByAstExprs.size(); i++) {
-              ASTNode grpByExpr = grpByAstExprs.get(i);
-              if (grpByExpr.toStringTree().equals(c.toStringTree())) {
-                ASTNode child1;
-                if (noneSet) {
-                  // Query does not contain CUBE, ROLLUP, or GROUPING SETS, and thus,
-                  // grouping should return 0
-                  child1 = (ASTNode) ParseDriver.adaptor.create(HiveParser.IntegralLiteral,
-                        String.valueOf(0));
-                } else {
-                  // We refer to grouping_id column
-                  child1 = (ASTNode) ParseDriver.adaptor.create(
-                          HiveParser.TOK_TABLE_OR_COL, "TOK_TABLE_OR_COL");
-                  ParseDriver.adaptor.addChild(child1, ParseDriver.adaptor.create(
-                          HiveParser.Identifier, VirtualColumn.GROUPINGID.getName()));
+          if (func.getText().equals("grouping") && func.getChildCount() == 0) {
+            int numberOperands = ParseDriver.adaptor.getChildCount(root);
+            // We implement this logic using replaceChildren instead of replacing
+            // the root node itself because windowing logic stores multiple
+            // pointers to the AST, and replacing root might lead to some pointers
+            // leading to non-rewritten version
+            ASTNode newRoot = new ASTNode();
+            // Rewritten grouping function
+            ASTNode groupingFunc = (ASTNode) ParseDriver.adaptor.create(
+                    HiveParser.Identifier, "grouping");
+            ParseDriver.adaptor.addChild(groupingFunc, ParseDriver.adaptor.create(
+                    HiveParser.Identifier, "rewritten"));
+            newRoot.addChild(groupingFunc);
+            // Grouping ID reference
+            ASTNode childGroupingID;
+            if (noneSet) {
+              // Query does not contain CUBE, ROLLUP, or GROUPING SETS, and thus,
+              // grouping should return 0
+              childGroupingID = (ASTNode) ParseDriver.adaptor.create(HiveParser.IntegralLiteral,
+                    String.valueOf(0));
+            } else {
+              // We refer to grouping_id column
+              childGroupingID = (ASTNode) ParseDriver.adaptor.create(
+                      HiveParser.TOK_TABLE_OR_COL, "TOK_TABLE_OR_COL");
+              ParseDriver.adaptor.addChild(childGroupingID, ParseDriver.adaptor.create(
+                      HiveParser.Identifier, VirtualColumn.GROUPINGID.getName()));
+            }
+            newRoot.addChild(childGroupingID);
+            // Indices
+            for (int i = 1; i < numberOperands; i++) {
+              ASTNode c = (ASTNode) ParseDriver.adaptor.getChild(root, i);
+              for (int j = 0; j < grpByAstExprs.size(); j++) {
+                ASTNode grpByExpr = grpByAstExprs.get(j);
+                if (grpByExpr.toStringTree().equals(c.toStringTree())) {
+                  // Create and add AST node with position of grouping function input
+                  // in group by clause
+                  ASTNode childN = (ASTNode) ParseDriver.adaptor.create(HiveParser.IntegralLiteral,
+                          String.valueOf(IntMath.mod(-j-1, grpByAstExprs.size())));
+                  newRoot.addChild(childN);
+                  break;
                 }
-                ASTNode child2 = (ASTNode) ParseDriver.adaptor.create(HiveParser.IntegralLiteral,
-                        String.valueOf(IntMath.mod(-i-1, grpByAstExprs.size())));
-                root.setChild(1, child1);
-                root.addChild(child2);
-                found.setValue(true);
-                break;
               }
             }
+            if (numberOperands + 1 != ParseDriver.adaptor.getChildCount(newRoot)) {
+              throw new RuntimeException(ErrorMsg.HIVE_GROUPING_FUNCTION_EXPR_NOT_IN_GROUPBY.getMsg());
+            }
+            // Replace expression
+            root.replaceChildren(0, numberOperands - 1, newRoot);
           }
         }
         return t;
       }
     };
-    ASTNode newTargetNode = (ASTNode) new TreeVisitor(ParseDriver.adaptor).visit(targetNode, action);
-    if (visited.booleanValue() && !found.booleanValue()) {
-      throw new SemanticException(ErrorMsg.HIVE_GROUPING_FUNCTION_EXPR_NOT_IN_GROUPBY.getMsg());
-    }
-    return newTargetNode;
+    return (ASTNode) new TreeVisitor(ParseDriver.adaptor).visit(targetNode, action);
   }
 
   private Operator genPlanForSubQueryPredicate(
