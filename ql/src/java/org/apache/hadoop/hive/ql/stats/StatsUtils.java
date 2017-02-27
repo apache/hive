@@ -1274,7 +1274,11 @@ public class StatsUtils {
         ColStatistics colStats = parentStats.getColumnStatisticsFromColName(colName);
         if (colStats != null) {
           /* If statistics for the column already exist use it. */
-          return colStats;
+          try {
+            return colStats.clone();
+          } catch (CloneNotSupportedException e) {
+            return null;
+          }
         }
 
         // virtual columns
