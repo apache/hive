@@ -2190,6 +2190,10 @@ public class HiveConf extends Configuration {
             + "it will execute batch wise with the configured batch size. "
             + "The default value is zero. Zero means it will execute directly (Not batch wise)"),
 
+
+    HIVE_EXEC_INPUT_LISTING_MAX_THREADS("hive.exec.input.listing.max.threads", 0,
+        "Maximum number of threads that Hive uses to list file information from file systems (recommended > 1 for blobstore)."),
+
     /* BLOBSTORE section */
 
     HIVE_BLOBSTORE_SUPPORTED_SCHEMES("hive.blobstore.supported.schemes", "s3,s3a,s3n",
