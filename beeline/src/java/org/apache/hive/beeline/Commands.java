@@ -1339,12 +1339,12 @@ public class Commands {
 
     @Override public void run() {
       try {
-        while (!Thread.currentThread().isInterrupted()) {
+        while (hiveStatement.hasMoreLogs()) {
           /*
             get the operation logs once and print it, then wait till progress bar update is complete
             before printing the remaining logs.
           */
-          if (notifier.canOutputOperationLogs() && hiveStatement.hasMoreLogs()) {
+          if (notifier.canOutputOperationLogs()) {
             commands.debug("going to print operations logs");
             updateQueryLog();
             commands.debug("printed operations logs");
