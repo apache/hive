@@ -152,12 +152,7 @@ public abstract class RpcDispatcher extends SimpleChannelInboundHandler<Object> 
 
   @Override
   public final void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
-    if (LOG.isDebugEnabled()) {
-      LOG.debug(String.format("[%s] Caught exception in channel pipeline.", name()), cause);
-    } else {
-      LOG.info("[{}] Closing channel due to exception in pipeline ({}).", name(),
-          cause.getMessage());
-    }
+    LOG.error(String.format("[%s] Closing channel due to exception in pipeline.", name()), cause);
 
     if (lastHeader != null) {
       // There's an RPC waiting for a reply. Exception was most probably caught while processing

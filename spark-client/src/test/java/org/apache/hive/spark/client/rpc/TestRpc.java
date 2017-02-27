@@ -282,6 +282,9 @@ public class TestRpc {
     EmbeddedChannel client = (EmbeddedChannel) clientRpc.getChannel();
     EmbeddedChannel server = (EmbeddedChannel) serverRpc.getChannel();
 
+    server.runPendingTasks();
+    client.runPendingTasks();
+
     int count = 0;
     while (!client.outboundMessages().isEmpty()) {
       server.writeInbound(client.readOutbound());
