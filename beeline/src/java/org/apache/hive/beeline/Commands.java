@@ -1353,13 +1353,6 @@ public class Commands {
         }
       } catch (InterruptedException e) {
         commands.debug("Getting log thread is interrupted, since query is done!");
-      } finally {
-      /*
-      Have this additionally since the above loop might have been broken due to interrupted exception
-      or as part of the false condition of while loop, if its due to the interrupted exception then
-      the internal state "interrupt" flag state of the thread will be reset and it will be false so
-      the below condition will not be executed anyways.
-       */
         commands.showRemainingLogsIfAny(hiveStatement);
       }
     }
