@@ -64,9 +64,8 @@ import org.apache.hive.beeline.logs.BeelineInPlaceUpdateStream;
 import org.apache.hive.jdbc.HiveStatement;
 import org.apache.hive.jdbc.Utils;
 import org.apache.hive.jdbc.Utils.JdbcConnectionParams;
-
 import com.google.common.annotations.VisibleForTesting;
-
+import org.apache.hive.jdbc.logs.InPlaceUpdateStream;
 
 public class Commands {
   private final BeeLine beeLine;
@@ -982,13 +981,18 @@ public class Commands {
           if (beeLine.getOpts().isSilent()) {
             hasResults = stmnt.execute(sql);
           } else {
-            logThread = new Thread(createLogRunnable(stmnt));
+            InPlaceUpdateStream.EventNotifier eventNotifier =
+                new InPlaceUpdateStream.EventNotifier();
+            logThread = new Thread(createLogRunnable(stmnt, eventNotifier));
             logThread.setDaemon(true);
             logThread.start();
             if (stmnt instanceof HiveStatement) {
-              ((HiveStatement) stmnt).setInPlaceUpdateStream(
-                  new BeelineInPlaceUpdateStream(beeLine.getErrorStream())
-              );
+              HiveStatement hiveStatement = (HiveStatement) stmnt;
+              hiveStatement.setInPlaceUpdateStream(
+                  new BeelineInPlaceUpdateStream(
+                      beeLine.getErrorStream(),
+                      eventNotifier
+                  ));
             }
             hasResults = stmnt.execute(sql);
             logThread.interrupt();
@@ -1279,16 +1283,18 @@ public class Commands {
     command.setLength(0);
   }
 
-  private Runnable createLogRunnable(final Statement statement) {
+  private Runnable createLogRunnable(final Statement statement,
+      InPlaceUpdateStream.EventNotifier eventNotifier) {
     if (statement instanceof HiveStatement) {
-      return new LogRunnable(this, (HiveStatement) statement,
-          DEFAULT_QUERY_PROGRESS_INTERVAL);
+      return new LogRunnable(this, (HiveStatement) statement, DEFAULT_QUERY_PROGRESS_INTERVAL,
+          eventNotifier);
     } else {
       beeLine.debug(
           "The statement instance is not HiveStatement type: " + statement
               .getClass());
       return new Runnable() {
-        @Override public void run() {
+        @Override
+        public void run() {
           // do nothing.
         }
       };
@@ -1303,37 +1309,59 @@ public class Commands {
     beeLine.debug(message);
   }
 
-
-
   static class LogRunnable implements Runnable {
     private final Commands commands;
     private final HiveStatement hiveStatement;
     private final long queryProgressInterval;
+    private final InPlaceUpdateStream.EventNotifier notifier;
 
     LogRunnable(Commands commands, HiveStatement hiveStatement,
-        long queryProgressInterval) {
+        long queryProgressInterval, InPlaceUpdateStream.EventNotifier eventNotifier) {
       this.hiveStatement = hiveStatement;
       this.commands = commands;
       this.queryProgressInterval = queryProgressInterval;
+      this.notifier = eventNotifier;
     }
 
-    private void updateQueryLog() throws SQLException {
-      for (String log : hiveStatement.getQueryLog()) {
-        commands.beeLine.info(log);
+    private void updateQueryLog() {
+      try {
+        List<String> queryLogs = hiveStatement.getQueryLog();
+        for (String log : queryLogs) {
+          commands.beeLine.info(log);
+        }
+        if (!queryLogs.isEmpty()) {
+          notifier.operationLogShowedToUser();
+        }
+      } catch (SQLException e) {
+        commands.error(new SQLWarning(e));
       }
     }
 
     @Override public void run() {
-      while (hiveStatement.hasMoreLogs()) {
-        try {
-          updateQueryLog();
-          Thread.sleep(queryProgressInterval);
-        } catch (SQLException e) {
-          commands.error(new SQLWarning(e));
-        } catch (InterruptedException e) {
-          commands.debug("Getting log thread is interrupted, since query is done!");
-          commands.showRemainingLogsIfAny(hiveStatement);
+      try {
+        while (!Thread.currentThread().isInterrupted()) {
+          /*
+            get the operation logs once and print it, then wait till progress bar update is complete
+            before printing the remaining logs.
+          */
+          if (notifier.canOutputOperationLogs() && hiveStatement.hasMoreLogs()) {
+            commands.debug("going to print operations logs");
+            updateQueryLog();
+            commands.debug("printed operations logs");
+          } else {
+            Thread.sleep(queryProgressInterval);
+          }
         }
+      } catch (InterruptedException e) {
+        commands.debug("Getting log thread is interrupted, since query is done!");
+      } finally {
+      /*
+      Have this additionally since the above loop might have been broken due to interrupted exception
+      or as part of the false condition of while loop, if its due to the interrupted exception then
+      the internal state "interrupt" flag state of the thread will be reset and it will be false so
+      the below condition will not be executed anyways.
+       */
+        commands.showRemainingLogsIfAny(hiveStatement);
       }
     }
   }

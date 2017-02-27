@@ -39,6 +39,7 @@ import org.apache.hadoop.hive.shims.Utils;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hive.service.CompositeService;
 import org.apache.hive.service.ServiceException;
+import org.apache.hive.service.ServiceUtils;
 import org.apache.hive.service.auth.HiveAuthFactory;
 import org.apache.hive.service.cli.operation.Operation;
 import org.apache.hive.service.cli.session.SessionManager;
@@ -477,7 +478,7 @@ public class CLIService extends CompositeService implements ICLIService {
 
   private static final long PROGRESS_MAX_WAIT_NS = 30 * 1000000000l;
   private JobProgressUpdate progressUpdateLog(boolean isProgressLogRequested, Operation operation) {
-    if (!isProgressLogRequested || !canProvideProgressLog()
+    if (!isProgressLogRequested || !ServiceUtils.canProvideProgressLog(hiveConf)
         || !OperationType.EXECUTE_STATEMENT.equals(operation.getType())) {
       return new JobProgressUpdate(ProgressMonitor.NULL);
     }
@@ -497,11 +498,6 @@ public class CLIService extends CompositeService implements ICLIService {
     }
     ProgressMonitor pm = sessionState.getProgressMonitor();
     return new JobProgressUpdate(pm != null ? pm : ProgressMonitor.NULL);
-  }
-
-  private boolean canProvideProgressLog() {
-    return "tez".equals(hiveConf.getVar(ConfVars.HIVE_EXECUTION_ENGINE))
-        && hiveConf.getBoolVar(ConfVars.HIVE_SERVER2_INPLACE_PROGRESS);
   }
 
   /* (non-Javadoc)
