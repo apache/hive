@@ -161,7 +161,7 @@ public class ATSHook implements ExecuteWithHookContext {
               String queryId = plan.getQueryId();
               String opId = hookContext.getOperationId();
               long queryStartTime = plan.getQueryStartTime();
-              String user = hookContext.getUgi().getUserName();
+              String user = hookContext.getUgi().getShortUserName();
               String requestuser = hookContext.getUserName();
               if (hookContext.getUserName() == null ){
                 requestuser = hookContext.getUgi().getUserName() ;

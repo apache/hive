@@ -33,6 +33,7 @@ import java.util.Set;
 import javax.annotation.Nullable;
 
 import org.apache.hadoop.classification.InterfaceAudience.Private;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -55,6 +56,7 @@ import org.apache.hadoop.hive.ql.plan.UnionWork;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.mapred.JobConf;
+import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.hadoop.yarn.api.records.ApplicationReport;
 import org.apache.hadoop.yarn.api.records.LocalResource;
@@ -69,6 +71,7 @@ import org.apache.tez.dag.api.DAG;
 import org.apache.tez.dag.api.Edge;
 import org.apache.tez.dag.api.GroupInputEdge;
 import org.apache.tez.dag.api.SessionNotRunning;
+import org.apache.tez.dag.api.TezConfiguration;
 import org.apache.tez.dag.api.TezException;
 import org.apache.tez.dag.api.Vertex;
 import org.apache.tez.dag.api.VertexGroup;
@@ -346,7 +349,7 @@ public class TezTask extends Task<TezWork> {
     dag.setDAGInfo(dagInfo);
 
     dag.setCredentials(conf.getCredentials());
-    setAccessControlsForCurrentUser(dag);
+    setAccessControlsForCurrentUser(dag, queryPlan.getQueryId(), conf);
 
     for (BaseWork w: ws) {
 
@@ -429,14 +432,31 @@ public class TezTask extends Task<TezWork> {
     return dag;
   }
 
-  public static void setAccessControlsForCurrentUser(DAG dag) {
-    // get current user
-    String currentUser = SessionState.getUserFromAuthenticator();
-    if(LOG.isDebugEnabled()) {
-      LOG.debug("Setting Tez DAG access for " + currentUser);
+  private static void setAccessControlsForCurrentUser(DAG dag, String queryId,
+                                                     Configuration conf) throws
+      IOException {
+    String user = SessionState.getUserFromAuthenticator();
+    UserGroupInformation loginUserUgi = UserGroupInformation.getLoginUser();
+    String loginUser =
+        loginUserUgi == null ? null : loginUserUgi.getShortUserName();
+    boolean addHs2User =
+        HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVETEZHS2USERACCESS);
+
+    // Temporarily re-using the TEZ AM View ACLs property for individual dag access control.
+    // Hive may want to setup it's own parameters if it wants to control per dag access.
+    // Setting the tez-property per dag should work for now.
+
+    String viewStr = Utilities.getAclStringWithHiveModification(conf,
+            TezConfiguration.TEZ_AM_VIEW_ACLS, addHs2User, user, loginUser);
+    String modifyStr = Utilities.getAclStringWithHiveModification(conf,
+            TezConfiguration.TEZ_AM_MODIFY_ACLS, addHs2User, user, loginUser);
+
+    if (LOG.isDebugEnabled()) {
+      LOG.debug("Setting Tez DAG access for queryId={} with viewAclString={}, modifyStr={}",
+          queryId, viewStr, modifyStr);
     }
     // set permissions for current user on DAG
-    DAGAccessControls ac = new DAGAccessControls(currentUser, currentUser);
+    DAGAccessControls ac = new DAGAccessControls(viewStr, modifyStr);
     dag.setAccessControls(ac);
   }
 

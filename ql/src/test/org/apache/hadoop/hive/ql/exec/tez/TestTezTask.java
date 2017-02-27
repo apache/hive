@@ -23,6 +23,7 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyBoolean;
 import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -35,12 +36,14 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.Context;
+import org.apache.hadoop.hive.ql.QueryPlan;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.BaseWork;
@@ -158,6 +161,9 @@ public class TestTezTask {
     task = new TezTask(utils);
     task.setWork(work);
     task.setConsole(mock(LogHelper.class));
+    QueryPlan mockQueryPlan = mock(QueryPlan.class);
+    doReturn(UUID.randomUUID().toString()).when(mockQueryPlan).getQueryId();
+    task.setQueryPlan(mockQueryPlan);
 
     conf = new JobConf();
     appLr = mock(LocalResource.class);
