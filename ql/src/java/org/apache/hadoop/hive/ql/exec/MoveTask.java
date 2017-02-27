@@ -453,7 +453,7 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
 
     // publish DP columns to its subscribers
     if (dps != null && dps.size() > 0) {
-      pushFeed(FeedType.DYNAMIC_PARTITIONS, dps);
+      pushFeed(FeedType.DYNAMIC_PARTITIONS, dp.values());
     }
 
     String loadTime = "\t Time taken to load dynamic partitions: "  +

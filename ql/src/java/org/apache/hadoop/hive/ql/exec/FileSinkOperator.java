@@ -960,7 +960,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
     fsp2.configureDynPartPath(dirName, !conf.isMmTable() && isUnionDp ? unionPath : null);
     Utilities.LOG14535.info("creating new paths " + System.identityHashCode(fsp2) + " for "
         + dirName + ", childSpec " + unionPath + ": tmpPath " + fsp2.getTmpPath()
-        + ", task path " + fsp2.getTaskOutputTempPath(), new Exception());
+        + ", task path " + fsp2.getTaskOutputTempPath());
     if(!conf.getDpSortState().equals(DPSortState.PARTITION_BUCKET_SORTED)) {
       createBucketFiles(fsp2);
       valToPaths.put(dirName, fsp2);
