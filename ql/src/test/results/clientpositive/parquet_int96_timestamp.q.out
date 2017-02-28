@@ -1,0 +1,535 @@
+PREHOOK: query: create table dummy (id int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@dummy
+POSTHOOK: query: create table dummy (id int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@dummy
+PREHOOK: query: insert into table dummy values (1)
+PREHOOK: type: QUERY
+PREHOOK: Output: default@dummy
+POSTHOOK: query: insert into table dummy values (1)
+POSTHOOK: type: QUERY
+POSTHOOK: Output: default@dummy
+POSTHOOK: Lineage: dummy.id EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+PREHOOK: query: create table timestamps (ts timestamp) stored as parquet
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@timestamps
+POSTHOOK: query: create table timestamps (ts timestamp) stored as parquet
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@timestamps
+PREHOOK: query: insert into table timestamps select cast('2016-01-01 01:01:01' as timestamp) limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@timestamps
+POSTHOOK: query: insert into table timestamps select cast('2016-01-01 01:01:01' as timestamp) limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@timestamps
+POSTHOOK: Lineage: timestamps.ts EXPRESSION []
+PREHOOK: query: select * from timestamps
+PREHOOK: type: QUERY
+PREHOOK: Input: default@timestamps
+#### A masked pattern was here ####
+POSTHOOK: query: select * from timestamps
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@timestamps
+#### A masked pattern was here ####
+2016-01-01 01:01:01
+PREHOOK: query: describe formatted timestamps
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@timestamps
+POSTHOOK: query: describe formatted timestamps
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@timestamps
+# col_name            	data_type           	comment             
+	 	 
+ts                  	timestamp           	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	numFiles            	1                   
+	numRows             	1                   
+	parquet.mr.int96.write.zone	UTC                 
+	rawDataSize         	1                   
+	totalSize           	272                 
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.parquet.MapredParquetOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: drop table timestamps
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@timestamps
+PREHOOK: Output: default@timestamps
+POSTHOOK: query: drop table timestamps
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@timestamps
+POSTHOOK: Output: default@timestamps
+PREHOOK: query: create table timestamps (ts timestamp) stored as parquet tblproperties('parquet.mr.int96.write.zone'='PST')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@timestamps
+POSTHOOK: query: create table timestamps (ts timestamp) stored as parquet tblproperties('parquet.mr.int96.write.zone'='PST')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@timestamps
+PREHOOK: query: insert into table timestamps select cast('2016-01-01 01:01:01' as timestamp) limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@timestamps
+POSTHOOK: query: insert into table timestamps select cast('2016-01-01 01:01:01' as timestamp) limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@timestamps
+POSTHOOK: Lineage: timestamps.ts EXPRESSION []
+PREHOOK: query: select * from timestamps
+PREHOOK: type: QUERY
+PREHOOK: Input: default@timestamps
+#### A masked pattern was here ####
+POSTHOOK: query: select * from timestamps
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@timestamps
+#### A masked pattern was here ####
+2016-01-01 01:01:01
+PREHOOK: query: describe formatted timestamps
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@timestamps
+POSTHOOK: query: describe formatted timestamps
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@timestamps
+# col_name            	data_type           	comment             
+	 	 
+ts                  	timestamp           	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	numFiles            	1                   
+	numRows             	1                   
+	parquet.mr.int96.write.zone	PST                 
+	rawDataSize         	1                   
+	totalSize           	272                 
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.parquet.MapredParquetOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: drop table timestamps
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@timestamps
+PREHOOK: Output: default@timestamps
+POSTHOOK: query: drop table timestamps
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@timestamps
+POSTHOOK: Output: default@timestamps
+PREHOOK: query: create table timestamps (ts timestamp) stored as parquet
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@timestamps
+POSTHOOK: query: create table timestamps (ts timestamp) stored as parquet
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@timestamps
+PREHOOK: query: insert into table timestamps select cast('2016-01-01 01:01:01' as timestamp) limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@timestamps
+POSTHOOK: query: insert into table timestamps select cast('2016-01-01 01:01:01' as timestamp) limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@timestamps
+POSTHOOK: Lineage: timestamps.ts EXPRESSION []
+PREHOOK: query: select * from timestamps
+PREHOOK: type: QUERY
+PREHOOK: Input: default@timestamps
+#### A masked pattern was here ####
+POSTHOOK: query: select * from timestamps
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@timestamps
+#### A masked pattern was here ####
+2016-01-01 01:01:01
+PREHOOK: query: describe formatted timestamps
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@timestamps
+POSTHOOK: query: describe formatted timestamps
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@timestamps
+# col_name            	data_type           	comment             
+	 	 
+ts                  	timestamp           	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	numFiles            	1                   
+	numRows             	1                   
+	rawDataSize         	1                   
+	totalSize           	272                 
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.parquet.MapredParquetOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: drop table timestamps
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@timestamps
+PREHOOK: Output: default@timestamps
+POSTHOOK: query: drop table timestamps
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@timestamps
+POSTHOOK: Output: default@timestamps
+PREHOOK: query: create table timestamps (ts timestamp) stored as parquet tblproperties('parquet.mr.int96.write.zone'='CST')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@timestamps
+POSTHOOK: query: create table timestamps (ts timestamp) stored as parquet tblproperties('parquet.mr.int96.write.zone'='CST')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@timestamps
+PREHOOK: query: insert into table timestamps select cast('2016-01-01 01:01:01' as timestamp) limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@timestamps
+POSTHOOK: query: insert into table timestamps select cast('2016-01-01 01:01:01' as timestamp) limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@timestamps
+POSTHOOK: Lineage: timestamps.ts EXPRESSION []
+PREHOOK: query: select * from timestamps
+PREHOOK: type: QUERY
+PREHOOK: Input: default@timestamps
+#### A masked pattern was here ####
+POSTHOOK: query: select * from timestamps
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@timestamps
+#### A masked pattern was here ####
+2016-01-01 01:01:01
+PREHOOK: query: describe formatted timestamps
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@timestamps
+POSTHOOK: query: describe formatted timestamps
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@timestamps
+# col_name            	data_type           	comment             
+	 	 
+ts                  	timestamp           	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	numFiles            	1                   
+	numRows             	1                   
+	parquet.mr.int96.write.zone	CST                 
+	rawDataSize         	1                   
+	totalSize           	272                 
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.parquet.MapredParquetOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: drop table timestamps
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@timestamps
+PREHOOK: Output: default@timestamps
+POSTHOOK: query: drop table timestamps
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@timestamps
+POSTHOOK: Output: default@timestamps
+PREHOOK: query: create table timestamps (ts timestamp) stored as parquet tblproperties('parquet.mr.int96.write.zone'='PST')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@timestamps
+POSTHOOK: query: create table timestamps (ts timestamp) stored as parquet tblproperties('parquet.mr.int96.write.zone'='PST')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@timestamps
+PREHOOK: query: insert into table timestamps select cast('2016-01-01 01:01:01' as timestamp) limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@timestamps
+POSTHOOK: query: insert into table timestamps select cast('2016-01-01 01:01:01' as timestamp) limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@timestamps
+POSTHOOK: Lineage: timestamps.ts EXPRESSION []
+PREHOOK: query: select * from timestamps
+PREHOOK: type: QUERY
+PREHOOK: Input: default@timestamps
+#### A masked pattern was here ####
+POSTHOOK: query: select * from timestamps
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@timestamps
+#### A masked pattern was here ####
+2016-01-01 01:01:01
+PREHOOK: query: describe formatted timestamps
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@timestamps
+POSTHOOK: query: describe formatted timestamps
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@timestamps
+# col_name            	data_type           	comment             
+	 	 
+ts                  	timestamp           	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	numFiles            	1                   
+	numRows             	1                   
+	parquet.mr.int96.write.zone	PST                 
+	rawDataSize         	1                   
+	totalSize           	272                 
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.parquet.MapredParquetOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: drop table timestamps
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@timestamps
+PREHOOK: Output: default@timestamps
+POSTHOOK: query: drop table timestamps
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@timestamps
+POSTHOOK: Output: default@timestamps
+PREHOOK: query: create table timestamps (ts timestamp) stored as parquet
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@timestamps
+POSTHOOK: query: create table timestamps (ts timestamp) stored as parquet
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@timestamps
+PREHOOK: query: load data local inpath '../../data/files/impala_int96_timestamp.parq' overwrite into table timestamps
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@timestamps
+POSTHOOK: query: load data local inpath '../../data/files/impala_int96_timestamp.parq' overwrite into table timestamps
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@timestamps
+PREHOOK: query: select * from timestamps
+PREHOOK: type: QUERY
+PREHOOK: Input: default@timestamps
+#### A masked pattern was here ####
+POSTHOOK: query: select * from timestamps
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@timestamps
+#### A masked pattern was here ####
+2016-01-01 01:01:01
+PREHOOK: query: drop table timestamps
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@timestamps
+PREHOOK: Output: default@timestamps
+POSTHOOK: query: drop table timestamps
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@timestamps
+POSTHOOK: Output: default@timestamps
+PREHOOK: query: create table timestamps (ts timestamp) stored as parquet tblproperties('parquet.mr.int96.write.zone'='GMT+10')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@timestamps
+POSTHOOK: query: create table timestamps (ts timestamp) stored as parquet tblproperties('parquet.mr.int96.write.zone'='GMT+10')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@timestamps
+PREHOOK: query: load data local inpath '../../data/files/impala_int96_timestamp.parq' overwrite into table timestamps
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@timestamps
+POSTHOOK: query: load data local inpath '../../data/files/impala_int96_timestamp.parq' overwrite into table timestamps
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@timestamps
+PREHOOK: query: select * from timestamps
+PREHOOK: type: QUERY
+PREHOOK: Input: default@timestamps
+#### A masked pattern was here ####
+POSTHOOK: query: select * from timestamps
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@timestamps
+#### A masked pattern was here ####
+2016-01-01 01:01:01
+PREHOOK: query: drop table timestamps
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@timestamps
+PREHOOK: Output: default@timestamps
+POSTHOOK: query: drop table timestamps
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@timestamps
+POSTHOOK: Output: default@timestamps
+PREHOOK: query: create table timestamps (ts timestamp) stored as parquet tblproperties('parquet.mr.int96.write.zone'='GMT+10')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@timestamps
+POSTHOOK: query: create table timestamps (ts timestamp) stored as parquet tblproperties('parquet.mr.int96.write.zone'='GMT+10')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@timestamps
+PREHOOK: query: create table timestamps2 like timestamps
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@timestamps2
+POSTHOOK: query: create table timestamps2 like timestamps
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@timestamps2
+PREHOOK: query: describe formatted timestamps
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@timestamps
+POSTHOOK: query: describe formatted timestamps
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@timestamps
+# col_name            	data_type           	comment             
+	 	 
+ts                  	timestamp           	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	numFiles            	0                   
+	numRows             	0                   
+	parquet.mr.int96.write.zone	GMT+10              
+	rawDataSize         	0                   
+	totalSize           	0                   
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.parquet.MapredParquetOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: describe formatted timestamps2
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@timestamps2
+POSTHOOK: query: describe formatted timestamps2
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@timestamps2
+# col_name            	data_type           	comment             
+	 	 
+ts                  	timestamp           	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	numFiles            	0                   
+	numRows             	0                   
+	parquet.mr.int96.write.zone	GMT+10              
+	rawDataSize         	0                   
+	totalSize           	0                   
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.parquet.MapredParquetOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: drop table timestamps
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@timestamps
+PREHOOK: Output: default@timestamps
+POSTHOOK: query: drop table timestamps
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@timestamps
+POSTHOOK: Output: default@timestamps
+PREHOOK: query: drop table timestamps2
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@timestamps2
+PREHOOK: Output: default@timestamps2
+POSTHOOK: query: drop table timestamps2
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@timestamps2
+POSTHOOK: Output: default@timestamps2
+PREHOOK: query: drop table if exists dummy
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@dummy
+PREHOOK: Output: default@dummy
+POSTHOOK: query: drop table if exists dummy
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@dummy
+POSTHOOK: Output: default@dummy

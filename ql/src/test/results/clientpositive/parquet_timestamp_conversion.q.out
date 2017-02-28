@@ -1,0 +1,68 @@
+PREHOOK: query: create table timestamps (ts timestamp) stored as parquet
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@timestamps
+POSTHOOK: query: create table timestamps (ts timestamp) stored as parquet
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@timestamps
+PREHOOK: query: insert into table timestamps select cast('2016-01-01 01:01:01' as timestamp) limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@timestamps
+POSTHOOK: query: insert into table timestamps select cast('2016-01-01 01:01:01' as timestamp) limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@timestamps
+POSTHOOK: Lineage: timestamps.ts EXPRESSION []
+PREHOOK: query: select * from timestamps
+PREHOOK: type: QUERY
+PREHOOK: Input: default@timestamps
+#### A masked pattern was here ####
+POSTHOOK: query: select * from timestamps
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@timestamps
+#### A masked pattern was here ####
+2016-01-01 01:01:01
+PREHOOK: query: drop table timestamps
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@timestamps
+PREHOOK: Output: default@timestamps
+POSTHOOK: query: drop table timestamps
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@timestamps
+POSTHOOK: Output: default@timestamps
+PREHOOK: query: create table timestamps (ts timestamp) stored as parquet
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@timestamps
+POSTHOOK: query: create table timestamps (ts timestamp) stored as parquet
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@timestamps
+PREHOOK: query: insert into table timestamps select cast('2017-01-01 01:01:01' as timestamp) limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@timestamps
+POSTHOOK: query: insert into table timestamps select cast('2017-01-01 01:01:01' as timestamp) limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@timestamps
+POSTHOOK: Lineage: timestamps.ts EXPRESSION []
+PREHOOK: query: select * from timestamps
+PREHOOK: type: QUERY
+PREHOOK: Input: default@timestamps
+#### A masked pattern was here ####
+POSTHOOK: query: select * from timestamps
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@timestamps
+#### A masked pattern was here ####
+2017-01-01 01:01:01
+PREHOOK: query: drop table timestamps
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@timestamps
+PREHOOK: Output: default@timestamps
+POSTHOOK: query: drop table timestamps
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@timestamps
+POSTHOOK: Output: default@timestamps

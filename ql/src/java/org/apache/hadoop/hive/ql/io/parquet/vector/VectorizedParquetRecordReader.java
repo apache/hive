@@ -21,14 +21,15 @@ import org.apache.hadoop.hive.ql.io.IOConstants;
 import org.apache.hadoop.hive.ql.io.parquet.ParquetRecordReaderBase;
 import org.apache.hadoop.hive.ql.io.parquet.ProjectionPusher;
 import org.apache.hadoop.hive.ql.io.parquet.read.DataWritableReadSupport;
+import org.apache.hadoop.hive.ql.io.parquet.serde.ParquetTableUtils;
 import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
 import org.apache.hadoop.hive.serde2.SerDeStats;
 import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.io.NullWritable;
+import org.apache.hadoop.mapred.FileSplit;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.RecordReader;
-import org.apache.hadoop.mapreduce.InputSplit;
 import org.apache.parquet.ParquetRuntimeException;
 import org.apache.parquet.column.ColumnDescriptor;
 import org.apache.parquet.column.page.PageReadStore;
@@ -97,12 +98,15 @@ public class VectorizedParquetRecordReader extends ParquetRecordReaderBase
 
   @VisibleForTesting
   public VectorizedParquetRecordReader(
-    InputSplit inputSplit,
-    JobConf conf) {
+      ParquetInputSplit inputSplit,
+      JobConf conf) {
     try {
       serDeStats = new SerDeStats();
       projectionPusher = new ProjectionPusher();
-      initialize(inputSplit, conf);
+      if (inputSplit != null) {
+        initialize(inputSplit, conf);
+        setTimeZoneConversion(jobConf, inputSplit.getPath());
+      }
       colsToInclude = ColumnProjectionUtils.getReadColumnIDs(conf);
       rbCtx = Utilities.getVectorizedRowBatchCtx(conf);
     } catch (Throwable e) {
@@ -117,7 +121,10 @@ public class VectorizedParquetRecordReader extends ParquetRecordReaderBase
     try {
       serDeStats = new SerDeStats();
       projectionPusher = new ProjectionPusher();
-      initialize(getSplit(oldInputSplit, conf), conf);
+      if (oldInputSplit != null) {
+        initialize(getSplit(oldInputSplit, conf), conf);
+        setTimeZoneConversion(jobConf, ((FileSplit) oldInputSplit).getPath());
+      }
       colsToInclude = ColumnProjectionUtils.getReadColumnIDs(conf);
       rbCtx = Utilities.getVectorizedRowBatchCtx(conf);
     } catch (Throwable e) {
@@ -127,16 +134,12 @@ public class VectorizedParquetRecordReader extends ParquetRecordReaderBase
   }
 
   public void initialize(
-    InputSplit oldSplit,
-    JobConf configuration) throws IOException, InterruptedException {
-    // the oldSplit may be null during the split phase
-    if (oldSplit == null) {
-      return;
-    }
+      ParquetInputSplit split,
+      JobConf configuration) throws IOException, InterruptedException {
+
     jobConf = configuration;
     ParquetMetadata footer;
     List<BlockMetaData> blocks;
-    ParquetInputSplit split = (ParquetInputSplit) oldSplit;
     boolean indexAccess =
       configuration.getBoolean(DataWritableReadSupport.PARQUET_COLUMN_INDEX_ACCESS, false);
     this.file = split.getPath();
@@ -287,17 +290,18 @@ public class VectorizedParquetRecordReader extends ParquetRecordReaderBase
     List<ColumnDescriptor> columns = requestedSchema.getColumns();
     List<Type> types = requestedSchema.getFields();
     columnReaders = new VectorizedColumnReader[columns.size()];
+    String timeZoneId = jobConf.get(ParquetTableUtils.PARQUET_INT96_WRITE_ZONE_PROPERTY);
 
     if (!ColumnProjectionUtils.isReadAllColumns(jobConf) && !indexColumnsWanted.isEmpty()) {
       for (int i = 0; i < types.size(); ++i) {
         columnReaders[i] =
           buildVectorizedParquetReader(columnTypesList.get(indexColumnsWanted.get(i)), types.get(i),
-            pages, requestedSchema.getColumns(), skipTimestampConversion, 0);
+            pages, requestedSchema.getColumns(), timeZoneId, 0);
       }
     } else {
       for (int i = 0; i < types.size(); ++i) {
         columnReaders[i] = buildVectorizedParquetReader(columnTypesList.get(i), types.get(i), pages,
-          requestedSchema.getColumns(), skipTimestampConversion, 0);
+          requestedSchema.getColumns(), timeZoneId, 0);
       }
     }
 
@@ -326,7 +330,7 @@ public class VectorizedParquetRecordReader extends ParquetRecordReaderBase
     Type type,
     PageReadStore pages,
     List<ColumnDescriptor> columnDescriptors,
-    boolean skipTimestampConversion,
+    String conversionTimeZone,
     int depth) throws IOException {
     List<ColumnDescriptor> descriptors =
       getAllColumnDescriptorByType(depth, type, columnDescriptors);
@@ -337,7 +341,7 @@ public class VectorizedParquetRecordReader extends ParquetRecordReaderBase
           "Failed to find related Parquet column descriptor with type " + type);
       } else {
         return new VectorizedPrimitiveColumnReader(descriptors.get(0),
-          pages.getPageReader(descriptors.get(0)), skipTimestampConversion, type);
+          pages.getPageReader(descriptors.get(0)), conversionTimeZone, type);
       }
     case STRUCT:
       StructTypeInfo structTypeInfo = (StructTypeInfo) typeInfo;
@@ -347,7 +351,7 @@ public class VectorizedParquetRecordReader extends ParquetRecordReaderBase
       for (int i = 0; i < fieldTypes.size(); i++) {
         VectorizedColumnReader r =
           buildVectorizedParquetReader(fieldTypes.get(i), types.get(i), pages, descriptors,
-            skipTimestampConversion, depth + 1);
+              conversionTimeZone, depth + 1);
         if (r != null) {
           fieldReaders.add(r);
         } else {

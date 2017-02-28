@@ -16,13 +16,16 @@ package org.apache.hadoop.hive.ql.io.parquet;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.ql.io.parquet.serde.ArrayWritableObjectInspector;
 import org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe;
+import org.apache.hadoop.hive.ql.io.parquet.timestamp.NanoTimeUtils;
 import org.apache.hadoop.hive.ql.io.parquet.write.DataWritableWriter;
-import org.apache.hadoop.hive.serde2.io.ByteWritable;
-import org.apache.hadoop.hive.serde2.io.ShortWritable;
-import org.apache.hadoop.hive.serde2.io.ParquetHiveRecord;
+
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.SerDeUtils;
+import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
+import org.apache.hadoop.hive.serde2.io.ParquetHiveRecord;
+import org.apache.hadoop.hive.serde2.io.ShortWritable;
+import org.apache.hadoop.hive.serde2.io.TimestampWritable;
 import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
@@ -45,10 +48,14 @@ import org.apache.parquet.schema.MessageType;
 import org.apache.parquet.schema.MessageTypeParser;
 
 import java.io.UnsupportedEncodingException;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.List;
 import java.util.Properties;
+import java.util.TimeZone;
+
 
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
@@ -104,6 +111,10 @@ public class TestDataWritableWriter {
     inOrder.verify(mockRecordConsumer).addBinary(Binary.fromString(value));
   }
 
+  private void addBinary(Binary value) {
+    inOrder.verify(mockRecordConsumer).addBinary(value);
+  }
+
   private void startGroup() {
     inOrder.verify(mockRecordConsumer).startGroup();
   }
@@ -136,6 +147,10 @@ public class TestDataWritableWriter {
     return new BooleanWritable(value);
   }
 
+  private TimestampWritable createTimestamp(Timestamp value) {
+    return new TimestampWritable(value);
+  }
+
   private BytesWritable createString(String value) throws UnsupportedEncodingException {
     return new BytesWritable(value.getBytes("UTF-8"));
   }
@@ -151,7 +166,7 @@ public class TestDataWritableWriter {
   private List<String> createHiveColumnsFrom(final String columnNamesStr) {
     List<String> columnNames;
     if (columnNamesStr.length() == 0) {
-      columnNames = new ArrayList<String>();
+      columnNames = new ArrayList<>();
     } else {
       columnNames = Arrays.asList(columnNamesStr.split(","));
     }
@@ -191,9 +206,49 @@ public class TestDataWritableWriter {
   }
 
   private void writeParquetRecord(String schema, ParquetHiveRecord record) throws SerDeException {
+    writeParquetRecord(schema, record, TimeZone.getTimeZone("GMT"));
+  }
+
+  private void writeParquetRecord(String schema, ParquetHiveRecord record, TimeZone timeZone) throws SerDeException {
     MessageType fileSchema = MessageTypeParser.parseMessageType(schema);
-    DataWritableWriter hiveParquetWriter = new DataWritableWriter(mockRecordConsumer, fileSchema);
+    DataWritableWriter hiveParquetWriter = new DataWritableWriter(mockRecordConsumer, fileSchema, timeZone);
     hiveParquetWriter.write(record);
+  }
+
+  @Test
+  public void testTimestampInt96() throws Exception {
+    String columnNames = "ts";
+    String columnTypes = "timestamp";
+
+    String fileSchema = "message hive_schema {\n"
+        + "  optional int96 ts;\n"
+        + "}\n";
+
+    ArrayWritable hiveRecord = createGroup(
+        createTimestamp(Timestamp.valueOf("2016-01-01 01:01:01"))
+    );
+
+    // Write record to Parquet format using CST timezone
+    writeParquetRecord(fileSchema, getParquetWritable(columnNames, columnTypes, hiveRecord), TimeZone.getTimeZone("CST"));
+
+    // Verify record was written correctly to Parquet
+    startMessage();
+      startField("ts", 0);
+        addBinary(NanoTimeUtils.getNanoTime(Timestamp.valueOf("2016-01-01 01:01:01"),
+            Calendar.getInstance(TimeZone.getTimeZone("CST"))).toBinary());
+      endField("ts", 0);
+    endMessage();
+
+    // Write record to Parquet format using PST timezone
+    writeParquetRecord(fileSchema, getParquetWritable(columnNames, columnTypes, hiveRecord), TimeZone.getTimeZone("PST"));
+
+    // Verify record was written correctly to Parquet
+    startMessage();
+      startField("ts", 0);
+        addBinary(NanoTimeUtils.getNanoTime(Timestamp.valueOf("2016-01-01 01:01:01"),
+          Calendar.getInstance(TimeZone.getTimeZone("PST"))).toBinary());
+      endField("ts", 0);
+    endMessage();
   }
 
   @Test
