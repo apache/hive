@@ -18,9 +18,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
+import java.util.TimeZone;
 
+import com.google.common.base.Strings;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.hive.ql.io.parquet.serde.ParquetTableUtils;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.io.HiveOutputFormat;
@@ -110,6 +113,7 @@ public class MapredParquetOutputFormat extends FileOutputFormat<Void, ParquetHiv
     }
 
     DataWritableWriteSupport.setSchema(HiveSchemaConverter.convert(columnNames, columnTypes), jobConf);
+    DataWritableWriteSupport.setTimeZone(getParquetWriterTimeZone(tableProperties), jobConf);
 
     return getParquerRecordWriterWrapper(realOutputFormat, jobConf, finalOutPath.toString(),
             progress,tableProperties);
@@ -124,5 +128,22 @@ public class MapredParquetOutputFormat extends FileOutputFormat<Void, ParquetHiv
       ) throws IOException {
     return new ParquetRecordWriterWrapper(realOutputFormat, jobConf, finalOutPath.toString(),
             progress,tableProperties);
+  }
+
+  private TimeZone getParquetWriterTimeZone(Properties tableProperties) {
+    // PARQUET_INT96_WRITE_ZONE_PROPERTY is a table property used to detect what timezone
+    // conversion to use when writing Parquet timestamps.
+    String timeZoneID =
+        tableProperties.getProperty(ParquetTableUtils.PARQUET_INT96_WRITE_ZONE_PROPERTY);
+    if (!Strings.isNullOrEmpty(timeZoneID)) {
+      if (!Arrays.asList(TimeZone.getAvailableIDs()).contains(timeZoneID)) {
+        throw new IllegalStateException("Unexpected timezone id found for parquet int96 conversion: " + timeZoneID);
+      }
+      return TimeZone.getTimeZone(timeZoneID);
+    }
+
+    // If no timezone is defined in table properties, then adjust timestamps using
+    // PARQUET_INT96_NO_ADJUSTMENT_ZONE timezone
+    return TimeZone.getTimeZone(ParquetTableUtils.PARQUET_INT96_NO_ADJUSTMENT_ZONE);
   }
 }
