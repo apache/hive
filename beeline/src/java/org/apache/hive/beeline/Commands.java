@@ -1353,6 +1353,7 @@ public class Commands {
         }
       } catch (InterruptedException e) {
         commands.debug("Getting log thread is interrupted, since query is done!");
+      } finally {
         commands.showRemainingLogsIfAny(hiveStatement);
       }
     }

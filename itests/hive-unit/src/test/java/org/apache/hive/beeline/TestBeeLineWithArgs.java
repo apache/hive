@@ -170,6 +170,9 @@ public class TestBeeLineWithArgs {
     String output = os.toString("UTF8");
 
     beeLine.close();
+    System.out.println("START " + streamType.name());
+    System.out.println(output);
+    System.out.println("END " + streamType.name());
     return output;
   }
 
