@@ -49,7 +49,9 @@ import org.apache.hive.jdbc.miniHS2.MiniHS2.MiniClusterType;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestName;
 
 /**
  * TestBeeLineWithArgs - executes tests of the command-line arguments to BeeLine
@@ -58,7 +60,11 @@ import org.junit.Test;
 public class TestBeeLineWithArgs {
   private enum OutStream {
     ERR, OUT
-  };
+  }
+
+  @Rule
+  public TestName methodName = new TestName();
+
 
   // Default location of HiveServer2
   private static final String tableName = "TestBeelineTable1";
@@ -67,7 +73,7 @@ public class TestBeeLineWithArgs {
   private static final String userName = System.getProperty("user.name");
 
   private List<String> getBaseArgs(String jdbcUrl) {
-    List<String> argList = new ArrayList<String>(8);
+    List<String> argList = new ArrayList<>(8);
     argList.add("-d");
     argList.add(BeeLine.BEELINE_DEFAULT_JDBC_DRIVER);
     argList.add("-u");
@@ -170,9 +176,9 @@ public class TestBeeLineWithArgs {
     String output = os.toString("UTF8");
 
     beeLine.close();
-    System.out.println("START " + streamType.name());
+    System.out.println("test: " + methodName.getMethodName() + " START " + streamType.name());
     System.out.println(output);
-    System.out.println("END " + streamType.name());
+    System.out.println("test: " + methodName.getMethodName() + " END " + streamType.name());
     return output;
   }
 
