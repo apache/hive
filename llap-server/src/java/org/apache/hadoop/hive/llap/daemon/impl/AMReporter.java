@@ -113,9 +113,9 @@ public class AMReporter extends AbstractService {
     this.conf = conf;
     this.daemonId = daemonId;
     if (maxThreads < numExecutors) {
-      maxThreads = numExecutors;
       LOG.warn("maxThreads={} is less than numExecutors={}. Setting maxThreads=numExecutors",
-          maxThreads, numExecutors);
+        maxThreads, numExecutors);
+      maxThreads = numExecutors;
     }
     ExecutorService rawExecutor =
         new ThreadPoolExecutor(numExecutors, maxThreads,
@@ -227,12 +227,15 @@ public class AMReporter extends AbstractService {
 
   public void taskKilled(String amLocation, int port, String user, Token<JobTokenIdentifier> jobToken,
                          final QueryIdentifier queryIdentifier, final TezTaskAttemptID taskAttemptId) {
-    // Not re-using the connection for the AM heartbeat - which may or may not be open by this point.
-    // knownAppMasters is used for sending heartbeats for queued tasks. Killed messages use a new connection.
     LlapNodeId amNodeId = LlapNodeId.getInstance(amLocation, port);
-    AMNodeInfo amNodeInfo =
-        new AMNodeInfo(amNodeId, user, jobToken, queryIdentifier, retryPolicy, retryTimeout, socketFactory,
-            conf);
+    AMNodeInfo amNodeInfo;
+    synchronized (knownAppMasters) {
+      amNodeInfo = knownAppMasters.get(amNodeId);
+      if (amNodeInfo == null) {
+        amNodeInfo = new AMNodeInfo(amNodeId, user, jobToken, queryIdentifier, retryPolicy, retryTimeout, socketFactory,
+          conf);
+      }
+    }
 
     // Even if the service hasn't started up. It's OK to make this invocation since this will
     // only happen after the AtomicReference address has been populated. Not adding an additional check.
@@ -252,6 +255,20 @@ public class AMReporter extends AbstractService {
     });
   }
 
+  public void queryComplete(LlapNodeId llapNodeId) {
+    if (llapNodeId != null) {
+      synchronized (knownAppMasters) {
+        AMNodeInfo amNodeInfo = knownAppMasters.remove(llapNodeId);
+        // TODO: not stopping umbilical explicitly as some taskKill requests may get scheduled during queryComplete
+        // which will be using the umbilical. HIVE-16021 should fix this, until then leave umbilical open and wait for
+        // it to be closed after max idle timeout (10s default)
+        if (LOG.isDebugEnabled()) {
+          LOG.debug("Query complete received. Removed {}.", amNodeInfo);
+        }
+      }
+    }
+  }
+
   private class QueueLookupCallable extends CallableWithNdc<Void> {
 
     @Override
@@ -259,7 +276,7 @@ public class AMReporter extends AbstractService {
       while (!isShutdown.get() && !Thread.currentThread().isInterrupted()) {
         try {
           final AMNodeInfo amNodeInfo = pendingHeartbeatQueeu.take();
-          if (amNodeInfo.getTaskCount() == 0 || amNodeInfo.hasAmFailed()) {
+          if (amNodeInfo.hasAmFailed()) {
             synchronized (knownAppMasters) {
               if (LOG.isDebugEnabled()) {
                 LOG.debug(
@@ -269,28 +286,29 @@ public class AMReporter extends AbstractService {
               }
               knownAppMasters.remove(amNodeInfo.amNodeId);
             }
-            amNodeInfo.stopUmbilical();
           } else {
-            // Add back to the queue for the next heartbeat, and schedule the actual heartbeat
-            long next = System.currentTimeMillis() + heartbeatInterval;
-            amNodeInfo.setNextHeartbeatTime(next);
-            pendingHeartbeatQueeu.add(amNodeInfo);
-            ListenableFuture<Void> future = executor.submit(new AMHeartbeatCallable(amNodeInfo));
-            Futures.addCallback(future, new FutureCallback<Void>() {
-              @Override
-              public void onSuccess(Void result) {
-                // Nothing to do.
-              }
+            if (amNodeInfo.getTaskCount() > 0) {
+              // Add back to the queue for the next heartbeat, and schedule the actual heartbeat
+              long next = System.currentTimeMillis() + heartbeatInterval;
+              amNodeInfo.setNextHeartbeatTime(next);
+              pendingHeartbeatQueeu.add(amNodeInfo);
+              ListenableFuture<Void> future = executor.submit(new AMHeartbeatCallable(amNodeInfo));
+              Futures.addCallback(future, new FutureCallback<Void>() {
+                @Override
+                public void onSuccess(Void result) {
+                  // Nothing to do.
+                }
 
-              @Override
-              public void onFailure(Throwable t) {
-                QueryIdentifier currentQueryIdentifier = amNodeInfo.getCurrentQueryIdentifier();
-                amNodeInfo.setAmFailed(true);
-                LOG.warn("Heartbeat failed to AM {}. Killing all other tasks for the query={}",
+                @Override
+                public void onFailure(Throwable t) {
+                  QueryIdentifier currentQueryIdentifier = amNodeInfo.getCurrentQueryIdentifier();
+                  amNodeInfo.setAmFailed(true);
+                  LOG.warn("Heartbeat failed to AM {}. Killing all other tasks for the query={}",
                     amNodeInfo.amNodeId, currentQueryIdentifier, t);
-                queryFailedHandler.queryFailed(currentQueryIdentifier);
-              }
-            });
+                  queryFailedHandler.queryFailed(currentQueryIdentifier);
+                }
+              });
+            }
           }
         } catch (InterruptedException e) {
           if (isShutdown.get()) {

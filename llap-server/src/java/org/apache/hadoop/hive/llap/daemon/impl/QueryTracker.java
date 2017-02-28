@@ -21,6 +21,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.llap.LlapNodeId;
 import org.apache.hadoop.hive.llap.log.Log4jQueryCompleteMarker;
 import org.apache.hadoop.hive.llap.log.LogHelpers;
 import org.apache.hadoop.security.UserGroupInformation;
@@ -68,8 +69,6 @@ public class QueryTracker extends AbstractService {
   private final ScheduledExecutorService executorService;
 
   private final ConcurrentHashMap<QueryIdentifier, QueryInfo> queryInfoMap = new ConcurrentHashMap<>();
-
-
 
   private final String[] localDirsBase;
   private final FileSystem localFs;
@@ -137,9 +136,10 @@ public class QueryTracker extends AbstractService {
    * Register a new fragment for a specific query
    */
   QueryFragmentInfo registerFragment(QueryIdentifier queryIdentifier, String appIdString, String dagIdString,
-      String dagName, String hiveQueryIdString, int dagIdentifier, String vertexName, int fragmentNumber, int attemptNumber,
-      String user, SignableVertexSpec vertex, Token<JobTokenIdentifier> appToken,
-      String fragmentIdString, LlapTokenInfo tokenInfo, String amHost, int amPort) throws IOException {
+    String dagName, String hiveQueryIdString, int dagIdentifier, String vertexName, int fragmentNumber,
+    int attemptNumber,
+    String user, SignableVertexSpec vertex, Token<JobTokenIdentifier> appToken,
+    String fragmentIdString, LlapTokenInfo tokenInfo, final LlapNodeId amNodeId) throws IOException {
 
     ReadWriteLock dagLock = getDagLock(queryIdentifier);
     // Note: This is a readLock to prevent a race with queryComplete. Operations
@@ -169,13 +169,13 @@ public class QueryTracker extends AbstractService {
             new QueryInfo(queryIdentifier, appIdString, dagIdString, dagName, hiveQueryIdString,
                 dagIdentifier, user,
                 getSourceCompletionMap(queryIdentifier), localDirsBase, localFs,
-                tokenInfo.userName, tokenInfo.appId);
+                tokenInfo.userName, tokenInfo.appId, amNodeId);
         QueryInfo old = queryInfoMap.putIfAbsent(queryIdentifier, queryInfo);
         if (old != null) {
           queryInfo = old;
         } else {
           // Ensure the UGI is setup once.
-          queryInfo.setupUmbilicalUgi(vertex.getTokenIdentifier(), appToken, amHost, amPort);
+          queryInfo.setupUmbilicalUgi(vertex.getTokenIdentifier(), appToken, amNodeId.getHostname(), amNodeId.getPort());
           isExistingQueryInfo = false;
         }
       }
@@ -238,7 +238,7 @@ public class QueryTracker extends AbstractService {
    * @param queryIdentifier
    * @param deleteDelay
    */
-  List<QueryFragmentInfo> queryComplete(QueryIdentifier queryIdentifier, long deleteDelay,
+  QueryInfo queryComplete(QueryIdentifier queryIdentifier, long deleteDelay,
       boolean isInternal) throws IOException {
     if (deleteDelay == -1) {
       deleteDelay = defaultDeleteDelaySeconds;
@@ -255,7 +255,7 @@ public class QueryTracker extends AbstractService {
       if (queryInfo == null) {
         // Should not happen.
         LOG.warn("Ignoring query complete for unknown dag: {}", queryIdentifier);
-        return Collections.emptyList();
+        return null;
       }
       String[] localDirs = queryInfo.getLocalDirsNoCreate();
       if (localDirs != null) {
@@ -292,7 +292,7 @@ public class QueryTracker extends AbstractService {
       if (savedQueryId != null) {
         ObjectCacheFactory.removeLlapQueryCache(savedQueryId);
       }
-      return queryInfo.getRegisteredFragments();
+      return queryInfo;
     } finally {
       dagLock.writeLock().unlock();
     }

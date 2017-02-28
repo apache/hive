@@ -35,6 +35,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.llap.LlapNodeId;
 import org.apache.hadoop.hive.llap.LlapUtil;
 import org.apache.hadoop.hive.llap.daemon.FinishableStateUpdateHandler;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SignableVertexSpec;
@@ -56,6 +57,7 @@ public class QueryInfo {
   private final String[] localDirsBase;
   private final FileSystem localFs;
   private String[] localDirs;
+  private final LlapNodeId amNodeId;
   // Map of states for different vertices.
 
   private final Set<QueryFragmentInfo> knownFragments =
@@ -68,11 +70,11 @@ public class QueryInfo {
   private final AtomicReference<UserGroupInformation> umbilicalUgi;
 
   public QueryInfo(QueryIdentifier queryIdentifier, String appIdString, String dagIdString,
-                   String dagName, String hiveQueryIdString,
-                   int dagIdentifier, String user,
-                   ConcurrentMap<String, SourceStateProto> sourceStateMap,
-                   String[] localDirsBase, FileSystem localFs, String tokenUserName,
-                   String tokenAppId) {
+    String dagName, String hiveQueryIdString,
+    int dagIdentifier, String user,
+    ConcurrentMap<String, SourceStateProto> sourceStateMap,
+    String[] localDirsBase, FileSystem localFs, String tokenUserName,
+    String tokenAppId, final LlapNodeId amNodeId) {
     this.queryIdentifier = queryIdentifier;
     this.appIdString = appIdString;
     this.dagIdString = dagIdString;
@@ -86,6 +88,7 @@ public class QueryInfo {
     this.tokenUserName = tokenUserName;
     this.appId = tokenAppId;
     this.umbilicalUgi = new AtomicReference<>();
+    this.amNodeId = amNodeId;
   }
 
   public QueryIdentifier getQueryIdentifier() {
@@ -114,6 +117,10 @@ public class QueryInfo {
 
   public ConcurrentMap<String, SourceStateProto> getSourceStateMap() {
     return sourceStateMap;
+  }
+
+  public LlapNodeId getAmNodeId() {
+    return amNodeId;
   }
 
   public QueryFragmentInfo registerFragment(String vertexName, int fragmentNumber,
