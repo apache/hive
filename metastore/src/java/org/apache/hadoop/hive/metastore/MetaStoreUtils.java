@@ -1947,7 +1947,6 @@ public class MetaStoreUtils {
 
   public static boolean isInsertOnlyTable(Map<String, String> params, boolean isCtas) {
     String transactionalProp = params.get(hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES);
-    // TODO# for the test, all non-ACID tables are MM
     return (transactionalProp != null && "insert_only".equalsIgnoreCase(transactionalProp));
   }
 

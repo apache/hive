@@ -734,7 +734,6 @@ public class FetchOperator implements Serializable {
     }
 
     public RecordReader<WritableComparable, Writable> getRecordReader(JobConf job) throws IOException {
-      LOG.error("TODO# calling origina getRr on " + inputFormat + "; " + getInputSplit());
       return inputFormat.getRecordReader(getInputSplit(), job, Reporter.NULL);
     }
   }
