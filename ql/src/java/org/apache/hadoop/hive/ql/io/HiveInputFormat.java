@@ -669,6 +669,9 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
       throws IOException {
     PartitionDesc partDesc = pathToPartitionInfo.get(dir);
     if (partDesc == null) {
+      // TODO: HiveFileFormatUtils.getPartitionDescFromPathRecursively for MM tables?
+      //       So far, the only case when this is called for a MM directory was in error.
+      //       Keep it like this for now; may need replacement if we find a valid usage like this.
       partDesc = pathToPartitionInfo.get(Path.getPathWithoutSchemeAndAuthority(dir));
     }
     if (partDesc == null) {

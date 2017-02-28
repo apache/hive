@@ -20,6 +20,7 @@
 
 package org.apache.hadoop.hive.ql.optimizer.physical;
 
+import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.exec.GroupByOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.OperatorUtils;
@@ -27,6 +28,7 @@ import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.mr.MapRedTask;
+import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.MapredWork;
@@ -57,6 +59,18 @@ public class SamplingOptimizer implements PhysicalPlanResolver {
       }
       Operator<?> operator = mapWork.getAliasToWork().values().iterator().next();
       if (!(operator instanceof TableScanOperator)) {
+        continue;
+      }
+      TableScanOperator tsop = (TableScanOperator)operator;
+      Table tbl = tsop.getConf().getTableMetadata();
+      if (tbl == null) {
+        continue;
+      }
+      if (MetaStoreUtils.isInsertOnlyTable(tbl.getParameters())) {
+        // Not supported for MM tables - sampler breaks separate MM dirs into splits, resulting in
+        // mismatch when the downstream task looks at them again assuming they are MM table roots.
+        // We could somehow unset the MM flag for the main job when the sampler succeeds, since the
+        // sampler will limit the input to the the correct directories, but we don't care about MR.
         continue;
       }
       ReduceSinkOperator child =
