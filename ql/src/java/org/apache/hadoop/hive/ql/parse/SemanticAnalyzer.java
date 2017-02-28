@@ -267,7 +267,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   protected LinkedHashMap<Operator<? extends OperatorDesc>, OpParseContext> opParseCtx;
   private List<LoadTableDesc> loadTableWork;
   private List<LoadFileDesc> loadFileWork;
-  private List<ColumnStatsAutoGatherContext> columnStatsAutoGatherContexts;
+  private final List<ColumnStatsAutoGatherContext> columnStatsAutoGatherContexts;
   private final Map<JoinOperator, QBJoinTree> joinContext;
   private final Map<SMBMapJoinOperator, QBJoinTree> smbMapJoinContext;
   private final HashMap<TableScanOperator, Table> topToTable;
@@ -1449,7 +1449,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           }
           try {
             ASTNode hintNode = pd.parseHint(queryHintStr);
-            qbp.setHints((ASTNode) hintNode);
+            qbp.setHints(hintNode);
             posn++;
           } catch (ParseException e) {
             throw new SemanticException("failed to parse query hint: "+e.getMessage(), e);
@@ -7270,7 +7270,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     if (ltd != null && SessionState.get() != null) {
       SessionState.get().getLineageState()
-          .mapDirToOp(ltd.getSourcePath(), (FileSinkOperator) output);
+          .mapDirToOp(ltd.getSourcePath(), output);
     } else if ( queryState.getCommandType().equals(HiveOperation.CREATETABLE_AS_SELECT.getOperationName())) {
 
       Path tlocation = null;
@@ -7283,7 +7283,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       }
 
       SessionState.get().getLineageState()
-              .mapDirToOp(tlocation, (FileSinkOperator) output);
+              .mapDirToOp(tlocation, output);
     }
 
     if (LOG.isDebugEnabled()) {
@@ -7357,7 +7357,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     String tableName = tableDesc.getTableName();
     if (!qb.getParseInfo().isInsertIntoTable(tableName)) {
       LOG.debug("Couldn't find table " + tableName + " in insertIntoTable");
-      throw new SemanticException(ErrorMsg.NO_INSERT_OVERWRITE_WITH_ACID.getMsg());
+      throw new SemanticException(ErrorMsg.NO_INSERT_OVERWRITE_WITH_ACID, tableName);
     }
     /*
     LOG.info("Modifying config values for ACID write");
@@ -10443,7 +10443,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       // Currently, partition spec can only be static partition.
       String k = MetaStoreUtils.encodeTableName(tblName) + Path.SEPARATOR;
       tsDesc.setStatsAggPrefix(tab.getDbName()+"."+k);
-      
+
       // set up WriteEntity for replication
       outputs.add(new WriteEntity(tab, WriteEntity.WriteType.DDL_SHARED));
 
@@ -10891,7 +10891,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     void setCTASToken(ASTNode child) {
     }
-    
+
     void setViewToken(ASTNode child) {
     }
 
@@ -11244,7 +11244,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       if (ctx.getExplainAnalyze() == AnalyzeState.RUNNING) {
         return;
       }
-      
+
       if (!ctx.isCboSucceeded()) {
         saveViewDefinition();
       }

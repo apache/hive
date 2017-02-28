@@ -173,7 +173,7 @@ POSTHOOK: Input: default@cbo_t1
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@v4
 POSTHOOK: Lineage: v4.c_int SIMPLE [(cbo_t1)cbo_t1.FieldSchema(name:c_int, type:int, comment:null), ]
-POSTHOOK: Lineage: v4.key SIMPLE [(cbo_t1)cbo_t1.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: v4.key SIMPLE []
 PREHOOK: query: with q1 as ( select c_int from q2 where c_boolean = false),
 q2 as ( select c_int,c_boolean from v1  where value = '1')
 select sum(c_int) from (select c_int from q1) a

@@ -466,12 +466,15 @@ public class CalcitePlanner extends SemanticAnalyzer {
           else if (!conf.getBoolVar(ConfVars.HIVE_IN_TEST) || isMissingStats
               || e instanceof CalciteSemanticException ) {
               reAnalyzeAST = true;
-          } else if (e instanceof SemanticException) {
+          } else if (e instanceof SemanticException && !conf.getBoolVar(ConfVars.HIVE_IN_TEST)) {
             // although, its likely to be a valid exception, we will retry
             // with cbo off anyway.
+            // for tests we would like to avoid retrying to catch cbo failures
               reAnalyzeAST = true;
           } else if (e instanceof RuntimeException) {
             throw (RuntimeException) e;
+          } else if (e instanceof SemanticException) {
+            throw e;
           } else {
             throw new SemanticException(e);
           }
@@ -3497,7 +3500,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
       ParseDriver pd = new ParseDriver();
       try {
         ASTNode hintNode = pd.parseHint(hint);
-        qbp.setHints((ASTNode) hintNode);
+        qbp.setHints(hintNode);
       } catch (ParseException e) {
         throw new SemanticException("failed to parse query hint: "+e.getMessage(), e);
       }

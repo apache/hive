@@ -56,7 +56,7 @@ import java.util.Map;
 /**
  * See additional tests in {@link org.apache.hadoop.hive.ql.lockmgr.TestDbTxnManager}
  * Tests here are "end-to-end"ish and simulate concurrent queries.
- * 
+ *
  * The general approach is to use an instance of Driver to use Driver.run() to create tables
  * Use Driver.compile() to generate QueryPlan which can then be passed to HiveTxnManager.acquireLocks().
  * Same HiveTxnManager is used to openTxn()/commitTxn() etc.  This can exercise almost the entire
@@ -284,7 +284,7 @@ public class TestDbTxnManager2 {
     dropTable(new String[] {"T9"});
     conf.setIntVar(HiveConf.ConfVars.HIVE_LOCK_NUMRETRIES, 2);
     conf.setBoolVar(HiveConf.ConfVars.TXN_MGR_DUMP_LOCK_STATE_ON_ACQUIRE_TIMEOUT, true);
-    HiveTxnManager otherTxnMgr = new DbTxnManager(); 
+    HiveTxnManager otherTxnMgr = new DbTxnManager();
     ((DbTxnManager)otherTxnMgr).setHiveConf(conf);
     CommandProcessorResponse cpr = driver.run("create table T9(a int)");
     checkCmdOnDriver(cpr);
@@ -294,7 +294,7 @@ public class TestDbTxnManager2 {
     List<ShowLocksResponseElement> locks = getLocks(txnMgr);
     Assert.assertEquals("Unexpected lock count", 1, locks.size());
     checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "T9", null, locks);
-    
+
     cpr = driver.compileAndRespond("drop table T9");
     checkCmdOnDriver(cpr);
     try {
@@ -361,7 +361,7 @@ public class TestDbTxnManager2 {
     useDummyTxnManagerTemporarily(conf);
     cpr = driver.compileAndRespond("insert overwrite table T10 select a, b from T11");
     Assert.assertEquals(ErrorMsg.NO_INSERT_OVERWRITE_WITH_ACID.getErrorCode(), cpr.getResponseCode());
-    Assert.assertTrue(cpr.getErrorMessage().contains("INSERT OVERWRITE not allowed on table with OutputFormat" +
+    Assert.assertTrue(cpr.getErrorMessage().contains("INSERT OVERWRITE not allowed on table default.t10 with OutputFormat" +
         " that implements AcidOutputFormat while transaction manager that supports ACID is in use"));
 
     useDummyTxnManagerTemporarily(conf);
@@ -919,7 +919,7 @@ public class TestDbTxnManager2 {
     adp.setOperationType(DataOperationType.UPDATE);
     txnHandler.addDynamicPartitions(adp);
     txnMgr.commitTxn();
-    
+
     adp.setTxnid(txnId2);
     txnHandler.addDynamicPartitions(adp);
     LockException expectedException = null;
@@ -950,13 +950,13 @@ public class TestDbTxnManager2 {
     cpr = driver.run("create table if not exists TAB2 (a int, b int) partitioned by (p string) " +
       "clustered by (a) into 2  buckets stored as orc TBLPROPERTIES ('transactional'='true')");
     checkCmdOnDriver(cpr);
-    
+
     txnMgr.openTxn(ctx, "Long Running");
     checkCmdOnDriver(driver.compileAndRespond("select a from  TAB_PART where p = 'blah'"));
     txnMgr.acquireLocks(driver.getPlan(), ctx, "Long Running");
     List<ShowLocksResponseElement> locks = getLocks(txnMgr);
     Assert.assertEquals("Unexpected lock count", 1, locks.size());
-    //for some reason this just locks the table; if I alter table to add this partition, then 
+    //for some reason this just locks the table; if I alter table to add this partition, then
     //we end up locking both table and partition with share_read.  (Plan has 2 ReadEntities)...?
     //same for other locks below
     checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "TAB_PART", null, locks);
@@ -995,7 +995,7 @@ public class TestDbTxnManager2 {
     txnMgr2.commitTxn();
     Assert.assertEquals("WRITE_SET mismatch: " + TxnDbUtil.queryToString("select * from WRITE_SET"),
       1, TxnDbUtil.countQueryAgent("select count(*) from WRITE_SET"));
-    
+
     AcidWriteSetService houseKeeper = new AcidWriteSetService();
     TestTxnCommands2.runHouseKeeperService(houseKeeper, conf);
     //since T3 overlaps with Long Running (still open) GC does nothing
@@ -1006,7 +1006,7 @@ public class TestDbTxnManager2 {
     adp = new AddDynamicPartitions(txnMgr.getCurrentTxnId(),
       "default", "tab2", Collections.EMPTY_LIST);
     adp.setOperationType(DataOperationType.UPDATE);
-    txnHandler.addDynamicPartitions(adp);     
+    txnHandler.addDynamicPartitions(adp);
     txnMgr.commitTxn();
 
     locks = getLocks(txnMgr);
@@ -1114,14 +1114,14 @@ public class TestDbTxnManager2 {
     Assert.assertEquals("Unexpected lock count", 2, locks.size());
     checkLock(LockType.SHARED_WRITE, LockState.ACQUIRED, "default", "TAB2", "p=two", locks);
     checkLock(LockType.SHARED_WRITE, LockState.ACQUIRED, "default", "TAB2", "p=one", locks);
-    
+
     //this simulates the completion of txnid:2
     AddDynamicPartitions adp = new AddDynamicPartitions(txnMgr2.getCurrentTxnId(), "default", "tab2",
       Collections.singletonList("p=two"));
     adp.setOperationType(DataOperationType.UPDATE);
     txnHandler.addDynamicPartitions(adp);
     txnMgr2.commitTxn();//txnid:2
-    
+
     locks = getLocks(txnMgr2);
     Assert.assertEquals("Unexpected lock count", 1, locks.size());
     checkLock(LockType.SHARED_WRITE, LockState.ACQUIRED, "default", "TAB2", "p=one", locks);
@@ -1132,7 +1132,7 @@ public class TestDbTxnManager2 {
     txnHandler.addDynamicPartitions(adp);
     txnMgr.commitTxn();//txnid:3
     //now both txns concurrently updated TAB2 but different partitions.
-    
+
     Assert.assertEquals("WRITE_SET mismatch: " + TxnDbUtil.queryToString("select * from WRITE_SET"),
       1, TxnDbUtil.countQueryAgent("select count(*) from WRITE_SET where ws_partition='p=one' and ws_operation_type='u'"));
     Assert.assertEquals("WRITE_SET mismatch: " + TxnDbUtil.queryToString("select * from WRITE_SET"),
@@ -1140,7 +1140,7 @@ public class TestDbTxnManager2 {
     //2 from txnid:1, 1 from txnid:2, 1 from txnid:3
     Assert.assertEquals("COMPLETED_TXN_COMPONENTS mismatch: " + TxnDbUtil.queryToString("select * from COMPLETED_TXN_COMPONENTS"),
       4, TxnDbUtil.countQueryAgent("select count(*) from COMPLETED_TXN_COMPONENTS where ctc_table='tab2' and ctc_partition is not null"));
-    
+
     //================
     //test with predicates such that partition pruning doesn't kick in
     cpr = driver.run("create table if not exists tab1 (a int, b int) partitioned by (p string) " +
@@ -1501,7 +1501,7 @@ public class TestDbTxnManager2 {
     ShowLocksResponse rsp = ((DbLockManager)txnMgr.getLockManager()).getLocks(rqst);
     return rsp.getLocks();
   }
-  
+
   @Test
   public void testShowLocksAgentInfo() throws Exception {
     CommandProcessorResponse cpr = driver.run("create table if not exists XYZ (a int, b int)");
@@ -1544,7 +1544,7 @@ public class TestDbTxnManager2 {
     checkCmdOnDriver(driver.run("insert into source2 values " +
   //cc ? -:U-(1/2)     D-(1/2)         cc ? U-(1/3):-             D-(2/2)       I-(1/1) - new part 2
       "(9,100,1,2),      (3,4,1,2),               (5,13,1,3),       (7,8,2,2), (14,15,2,1)"));
-    
+
 
     long txnId1 = txnMgr.openTxn(ctx, "T1");
     checkCmdOnDriver(driver.compileAndRespond("merge into target t using source s on t.a=s.b " +
@@ -1730,7 +1730,7 @@ public class TestDbTxnManager2 {
 
 
   }
-  @Test 
+  @Test
   public void testMergeUnpartitioned01() throws Exception {
     testMergeUnpartitioned(true);
   }
@@ -1753,7 +1753,7 @@ public class TestDbTxnManager2 {
       "stored as orc TBLPROPERTIES ('transactional'='true')"));
     checkCmdOnDriver(driver.run("insert into target values (1,2), (3,4), (5,6), (7,8)"));
     checkCmdOnDriver(driver.run("create table source (a int, b int)"));
-    
+
     long txnid1 = txnMgr.openTxn(ctx, "T1");
     if(causeConflict) {
       checkCmdOnDriver(driver.compileAndRespond("update target set b = 2 where a=1"));
@@ -1791,7 +1791,7 @@ public class TestDbTxnManager2 {
       "default", "target", null, locks).getLockid();
 
     txnMgr.commitTxn();//commit T1
-    
+
     Assert.assertEquals("WRITE_SET mismatch(" + JavaUtils.txnIdToString(txnid1) + "): " +
         TxnDbUtil.queryToString("select * from WRITE_SET"),
       causeConflict ? 1 : 0,//Inserts are not tracked by WRITE_SET
@@ -1817,7 +1817,7 @@ public class TestDbTxnManager2 {
       1,//
       TxnDbUtil.countQueryAgent("select count(*) from TXN_COMPONENTS where tc_txnid=" + txnid2 +
       "and tc_operation_type='d'"));
-    
+
     //complete T2 txn
     LockException expectedException = null;
     try {
@@ -1950,10 +1950,10 @@ public class TestDbTxnManager2 {
 
     checkLock(LockType.SHARED_WRITE, LockState.WAITING, "default", "target", "p=1/q=2", locks);
     checkLock(LockType.SHARED_WRITE, LockState.ACQUIRED, "default", "target", "p=1/q=2", locks);
-    
+
     checkLock(LockType.SHARED_WRITE, LockState.WAITING, "default", "target", "p=1/q=3", locks);
     checkLock(LockType.SHARED_WRITE, LockState.ACQUIRED, "default", "target", "p=1/q=3", locks);
-    
+
     checkLock(LockType.SHARED_WRITE, LockState.WAITING, "default", "target", "p=2/q=2", locks);
 
     Assert.assertEquals(
@@ -1978,7 +1978,7 @@ public class TestDbTxnManager2 {
       2,//2 partitions updated
       TxnDbUtil.countQueryAgent("select count(*) from WRITE_SET where ws_txnid=" + txnId1 +
       " and ws_operation_type='u'"));
-    
+
 
     //re-check locks which were in Waiting state - should now be Acquired
     ((DbLockManager)txnMgr2.getLockManager()).checkLock(extLockId);
@@ -2018,8 +2018,8 @@ public class TestDbTxnManager2 {
         TxnDbUtil.queryToString("select * from TXN_COMPONENTS"),
       1,
       TxnDbUtil.countQueryAgent("select count(*) from TXN_COMPONENTS where tc_txnid=" + txnid2 + " and tc_operation_type='u'"));
-    
-    
+
+
     LockException expectedException = null;
     try {
       txnMgr2.commitTxn();
@@ -2087,7 +2087,7 @@ public class TestDbTxnManager2 {
 
     txnMgr2 = (DbTxnManager) TxnManagerFactory.getTxnManagerFactory().getTxnManager(conf);
     checkCmdOnDriver(driver.compileAndRespond("show tables"));
-    ((DbTxnManager)txnMgr2).acquireLocks(driver.getPlan(), ctx, "Fidler", false);
+    txnMgr2.acquireLocks(driver.getPlan(), ctx, "Fidler", false);
     locks = getLocks();
     Assert.assertEquals("Unexpected lock count", 2, locks.size());
     checkLock(LockType.EXCLUSIVE, LockState.ACQUIRED, "default", "t2", "p=1", locks);

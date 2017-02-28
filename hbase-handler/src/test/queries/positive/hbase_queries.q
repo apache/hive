@@ -180,6 +180,7 @@ DROP TABLE IF EXISTS hbase_table_10;
 CREATE TABLE hbase_table_10 (id bigint, data map<int, int>, str string)
 stored by 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
 with serdeproperties ("hbase.columns.mapping" = ":key,cf:map_col2,cf:str2_col");
+set hive.cbo.enable=false;
 insert overwrite table hbase_table_10 select 1 as id, map(10, cast(null as int)) as data , null as str from src limit 1;
 insert into table hbase_table_10 select 2 as id, map(20, cast(null as int)) as data , '1234' as str from src limit 1;
 insert into table hbase_table_10 select 3 as id, map(30, 31) as data , '1234' as str from src limit 1;

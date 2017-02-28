@@ -198,6 +198,7 @@ row_number() over(distribute by p_mfgr sort by p_mfgr, p_name) as rn
 from part
 window w1 as (distribute by p_mfgr sort by p_mfgr, p_name rows between 2 preceding and 2 following);
 
+set hive.cbo.returnpath.hiveop=false;
 -- 22. testViewAsTableInputWithWindowing
 create view IF NOT EXISTS mfgr_price_view as 
 select p_mfgr, p_brand, 
@@ -205,6 +206,7 @@ round(sum(p_retailprice),2) as s
 from part 
 group by p_mfgr, p_brand;
         
+set hive.cbo.returnpath.hiveop=true;
 select * 
 from (
 select p_mfgr, p_brand, s, 
@@ -219,6 +221,7 @@ round(sum(s) over w1 ,2)  as s1
 from mfgr_price_view 
 window w1 as (distribute by p_mfgr sort by p_brand rows between 2 preceding and current row);
 
+set hive.cbo.returnpath.hiveop=false;
 -- 23. testCreateViewWithWindowingQuery
 create view IF NOT EXISTS mfgr_brand_price_view as 
 select p_mfgr, p_brand, 
@@ -226,6 +229,7 @@ round(sum(p_retailprice) over w1,2) as s
 from part 
 window w1 as (distribute by p_mfgr sort by p_name rows between 2 preceding and current row);
         
+set hive.cbo.returnpath.hiveop=true ;
 select * from mfgr_brand_price_view;        
         
 -- 24. testLateralViews
