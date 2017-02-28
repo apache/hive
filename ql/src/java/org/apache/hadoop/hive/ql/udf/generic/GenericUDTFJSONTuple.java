@@ -93,7 +93,7 @@ public class GenericUDTFJSONTuple extends GenericUDTF {
 
   }
 
-  static Map<String, Object> jsonObjectCache = new HashCache<String, Object>();
+  private transient Map<String, Object> jsonObjectCache;
 
   @Override
   public void close() throws HiveException {
@@ -105,6 +105,7 @@ public class GenericUDTFJSONTuple extends GenericUDTF {
 
     inputOIs = args;
     numCols = args.length - 1;
+    jsonObjectCache = new HashCache<>();
 
     if (numCols < 1) {
       throw new UDFArgumentException("json_tuple() takes at least two arguments: " +
