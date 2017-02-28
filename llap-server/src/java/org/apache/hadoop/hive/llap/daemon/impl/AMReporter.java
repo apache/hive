@@ -105,7 +105,8 @@ public class AMReporter extends AbstractService {
   private final DaemonId daemonId;
 
   public AMReporter(int numExecutors, int maxThreads, AtomicReference<InetSocketAddress>
-      localAddress, QueryFailedHandler queryFailedHandler, Configuration conf, DaemonId daemonId) {
+      localAddress, QueryFailedHandler queryFailedHandler, Configuration conf, DaemonId daemonId,
+      SocketFactory socketFactory) {
     super(AMReporter.class.getName());
     this.localAddress = localAddress;
     this.queryFailedHandler = queryFailedHandler;
@@ -137,7 +138,7 @@ public class AMReporter extends AbstractService {
         .retryUpToMaximumTimeWithFixedSleep(retryTimeout, retrySleep,
             TimeUnit.MILLISECONDS);
 
-    this.socketFactory = NetUtils.getDefaultSocketFactory(conf);
+    this.socketFactory = socketFactory;
 
     LOG.info("Setting up AMReporter with " +
         "heartbeatInterval(ms)=" + heartbeatInterval +
