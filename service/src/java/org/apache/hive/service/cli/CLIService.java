@@ -489,7 +489,10 @@ public class CLIService extends CompositeService implements ICLIService {
     try {
       while (sessionState.getProgressMonitor() == null && !operation.isDone()) {
         long remainingMs = (PROGRESS_MAX_WAIT_NS - (System.nanoTime() - startTime)) / 1000000l;
-        if (remainingMs <= 0) return new JobProgressUpdate(ProgressMonitor.NULL);
+        if (remainingMs <= 0) {
+          LOG.debug("timed out and hence returning progress log as NULL");
+          return new JobProgressUpdate(ProgressMonitor.NULL);
+        }
         Thread.sleep(Math.min(remainingMs, timeOutMs));
         timeOutMs <<= 1;
       }
