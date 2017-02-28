@@ -43,6 +43,7 @@ import org.apache.hadoop.net.NetUtils;
 import org.apache.hadoop.security.Credentials;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.security.token.Token;
+import org.apache.hadoop.yarn.api.records.ApplicationId;
 import org.apache.log4j.MDC;
 import org.apache.log4j.NDC;
 import org.apache.tez.common.CallableWithNdc;
@@ -50,7 +51,10 @@ import org.apache.tez.common.TezCommonUtils;
 import org.apache.tez.common.security.JobTokenIdentifier;
 import org.apache.tez.common.security.TokenCache;
 import org.apache.tez.dag.api.TezConstants;
+import org.apache.tez.dag.records.TezDAGID;
 import org.apache.tez.dag.records.TezTaskAttemptID;
+import org.apache.tez.dag.records.TezTaskID;
+import org.apache.tez.dag.records.TezVertexID;
 import org.apache.tez.hadoop.shim.HadoopShim;
 import org.apache.tez.runtime.api.ExecutionContext;
 import org.apache.tez.runtime.api.impl.TaskSpec;
@@ -105,6 +109,7 @@ public class TaskRunnerCallable extends CallableWithNdc<TaskRunner2Result> {
   private volatile String threadName;
   private final LlapDaemonExecutorMetrics metrics;
   private final String requestId;
+  private final String threadNameSuffix;
   private final String queryId;
   private final HadoopShim tezHadoopShim;
   private boolean shouldRunTask = true;
@@ -149,8 +154,11 @@ public class TaskRunnerCallable extends CallableWithNdc<TaskRunner2Result> {
     }
     this.metrics = metrics;
     this.requestId = taskSpec.getTaskAttemptID().toString();
-    // TODO Change this to the queryId/Name when that's available.
-    this.queryId = vertex.getDagName();
+    threadNameSuffix = constructThreadNameSuffix(taskSpec.getTaskAttemptID());
+
+    this.queryId = ContainerRunnerImpl
+        .constructUniqueQueryId(vertex.getHiveQueryId(),
+            fragmentInfo.getQueryInfo().getDagIdentifier());
     this.killedTaskHandler = killedTaskHandler;
     this.fragmentCompletionHanler = fragmentCompleteHandler;
     this.tezHadoopShim = tezHadoopShim;
@@ -164,14 +172,15 @@ public class TaskRunnerCallable extends CallableWithNdc<TaskRunner2Result> {
     return startTime;
   }
 
+
   @Override
   protected TaskRunner2Result callInternal() throws Exception {
     setMDCFromNDC();
 
     try {
       isStarted.set(true);
-
       this.startTime = System.currentTimeMillis();
+      threadName = Thread.currentThread().getName();
       this.threadName = Thread.currentThread().getName();
       if (LOG.isDebugEnabled()) {
         LOG.debug("canFinish: " + taskSpec.getTaskAttemptID() + ": " + canFinish());
@@ -194,7 +203,7 @@ public class TaskRunnerCallable extends CallableWithNdc<TaskRunner2Result> {
           new LinkedBlockingQueue<Runnable>(),
           new ThreadFactoryBuilder()
               .setDaemon(true)
-              .setNameFormat("TezTaskRunner")
+              .setNameFormat("TezTR-" + threadNameSuffix)
               .build());
 
       // TODO Consolidate this code with TezChild.
@@ -287,6 +296,24 @@ public class TaskRunnerCallable extends CallableWithNdc<TaskRunner2Result> {
     MDC.put("dagId", dagId);
     MDC.put("queryId", queryId);
     MDC.put("fragmentId", fragId);
+  }
+
+  private String constructThreadNameSuffix(TezTaskAttemptID taskAttemptId) {
+    StringBuilder sb = new StringBuilder();
+    TezTaskID taskId = taskAttemptId.getTaskID();
+    TezVertexID vertexId = taskId.getVertexID();
+    TezDAGID dagId = vertexId.getDAGId();
+    ApplicationId appId = dagId.getApplicationId();
+    long clusterTs = appId.getClusterTimestamp();
+    long clusterTsShort = clusterTs % 1_000_000L;
+
+    sb.append(clusterTsShort).append("_");
+    sb.append(appId.getId()).append("_");
+    sb.append(dagId.getId()).append("_");
+    sb.append(vertexId.getId()).append("_");
+    sb.append(taskId.getId()).append("_");
+    sb.append(taskAttemptId.getId());
+    return sb.toString();
   }
 
   /**
@@ -496,7 +523,7 @@ public class TaskRunnerCallable extends CallableWithNdc<TaskRunner2Result> {
     @Override
     public void onFailure(Throwable t) {
       LOG.error("TezTaskRunner execution failed for : "
-          + getTaskIdentifierString(request, vertex), t);
+          + getTaskIdentifierString(request, vertex, queryId), t);
       isCompleted.set(true);
       fragmentCompletionHanler.fragmentComplete(fragmentInfo);
       // TODO HIVE-10236 Report a fatal error over the umbilical
@@ -506,7 +533,7 @@ public class TaskRunnerCallable extends CallableWithNdc<TaskRunner2Result> {
 
     protected void logFragmentEnd(boolean success) {
       HistoryLogger.logFragmentEnd(vertex.getQueryIdentifier().getApplicationIdString(),
-          request.getContainerIdString(), executionContext.getHostName(), vertex.getDagName(),
+          request.getContainerIdString(), executionContext.getHostName(), queryId,
           fragmentInfo.getQueryInfo().getDagIdentifier(), vertex.getVertexName(),
           request.getFragmentNumber(), request.getAttemptNumber(), taskRunnerCallable.threadName,
           taskRunnerCallable.startTime, success);
@@ -527,11 +554,11 @@ public class TaskRunnerCallable extends CallableWithNdc<TaskRunner2Result> {
   }
 
   public static String getTaskIdentifierString(
-      SubmitWorkRequestProto request, SignableVertexSpec vertex) {
+      SubmitWorkRequestProto request, SignableVertexSpec vertex, String queryId) {
     StringBuilder sb = new StringBuilder();
     sb.append("AppId=").append(vertex.getQueryIdentifier().getApplicationIdString())
         .append(", containerId=").append(request.getContainerIdString())
-        .append(", Dag=").append(vertex.getDagName())
+        .append(", QueryId=").append(queryId)
         .append(", Vertex=").append(vertex.getVertexName())
         .append(", FragmentNum=").append(request.getFragmentNumber())
         .append(", Attempt=").append(request.getAttemptNumber());

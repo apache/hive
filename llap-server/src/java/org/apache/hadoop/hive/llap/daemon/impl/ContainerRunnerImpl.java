@@ -201,7 +201,9 @@ public class ContainerRunnerImpl extends CompositeService implements ContainerRu
     QueryIdentifierProto qIdProto = vertex.getQueryIdentifier();
 
     HistoryLogger.logFragmentStart(qIdProto.getApplicationIdString(), request.getContainerIdString(),
-        localAddress.get().getHostName(), vertex.getDagName(), qIdProto.getDagIndex(),
+        localAddress.get().getHostName(),
+        constructUniqueQueryId(vertex.getHiveQueryId(), qIdProto.getDagIndex()),
+        qIdProto.getDagIndex(),
         vertex.getVertexName(), request.getFragmentNumber(), request.getAttemptNumber());
 
     // This is the start of container-annotated logging.
@@ -512,4 +514,10 @@ public class ContainerRunnerImpl extends CompositeService implements ContainerRu
   public Set<String> getExecutorStatus() {
     return executorService.getExecutorsStatus();
   }
+
+  public static String constructUniqueQueryId(String queryId, int dagIndex) {
+    // Hive QueryId is not always unique.
+    return queryId + "-" + dagIndex;
+  }
+
 }

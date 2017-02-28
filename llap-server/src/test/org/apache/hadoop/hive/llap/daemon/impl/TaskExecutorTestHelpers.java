@@ -134,6 +134,7 @@ public class TaskExecutorTestHelpers {
             VertexOrBinary.newBuilder().setVertex(
             SignableVertexSpec.newBuilder()
                 .setDagName(dagName)
+                .setHiveQueryId(dagName)
                 .setUser("MockUser")
                 .setTokenIdentifier("MockToken_1")
                 .setQueryIdentifier(
