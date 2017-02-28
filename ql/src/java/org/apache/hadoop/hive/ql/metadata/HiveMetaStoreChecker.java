@@ -24,16 +24,21 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.Callable;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.ThreadPoolExecutor;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.Sets;
+import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -376,16 +381,11 @@ public class HiveMetaStoreChecker {
    */
 
   private void checkPartitionDirs(Path basePath, Set<Path> allDirs, int maxDepth) throws IOException, HiveException {
-    ConcurrentLinkedQueue<Path> basePaths = new ConcurrentLinkedQueue<>();
-    basePaths.add(basePath);
-    Set<Path> dirSet = Collections.newSetFromMap(new ConcurrentHashMap<Path, Boolean>());
-    // Here we just reuse the THREAD_COUNT configuration for
-    // HIVE_MOVE_FILES_THREAD_COUNT
     int poolSize = conf.getInt(ConfVars.HIVE_MOVE_FILES_THREAD_COUNT.varname, 15);
 
     // Check if too low config is provided for move files. 2x CPU is reasonable max count.
     poolSize = poolSize == 0 ? poolSize : Math.max(poolSize,
-        Runtime.getRuntime().availableProcessors() * 2);
+        getMinPoolSize());
 
     // Fixed thread pool on need basis
     final ThreadPoolExecutor pool = poolSize > 0 ? (ThreadPoolExecutor)
@@ -394,135 +394,176 @@ public class HiveMetaStoreChecker {
 
     if (pool == null) {
       LOG.debug("Not-using threaded version of MSCK-GetPaths");
+      Queue<Path> basePaths = new LinkedList<>();
+      basePaths.add(basePath);
+      checkPartitionDirsSingleThreaded(basePaths, allDirs, basePath.getFileSystem(conf), maxDepth,
+          maxDepth);
     } else {
-      LOG.debug("Using threaded version of MSCK-GetPaths with number of threads "
+      LOG.debug("Using multi-threaded version of MSCK-GetPaths with number of threads "
           + pool.getMaximumPoolSize());
+      checkPartitionDirsInParallel((ThreadPoolExecutor) pool, basePath, allDirs,
+          basePath.getFileSystem(conf), maxDepth);
     }
-    checkPartitionDirs(pool, basePaths, dirSet, basePath.getFileSystem(conf), maxDepth, maxDepth);
     if (pool != null) {
       pool.shutdown();
     }
-    allDirs.addAll(dirSet);
   }
 
-  // process the basePaths in parallel and then the next level of basePaths
-  private void checkPartitionDirs(final ThreadPoolExecutor pool,
-      final ConcurrentLinkedQueue<Path> basePaths, final Set<Path> allDirs,
-      final FileSystem fs, final int depth, final int maxDepth) throws IOException, HiveException {
-    final ConcurrentLinkedQueue<Path> nextLevel = new ConcurrentLinkedQueue<>();
+  @VisibleForTesting
+  int getMinPoolSize() {
+    return Runtime.getRuntime().availableProcessors() * 2;
+  }
 
-    // Check if thread pool can be used.
-    boolean useThreadPool = false;
-    if (pool != null) {
-      synchronized (pool) {
-        // In case of recursive calls, it is possible to deadlock with TP. Check TP usage here.
-        if (pool.getActiveCount() < pool.getMaximumPoolSize()) {
-          useThreadPool = true;
-        }
+  private final class PathDepthInfoCallable implements Callable<Path> {
+    private final int maxDepth;
+    private final FileSystem fs;
+    private final ConcurrentLinkedQueue<PathDepthInfo> pendingPaths;
+    private final boolean throwException;
+    private final PathDepthInfo pd;
 
-        if (!useThreadPool) {
-          if (LOG.isDebugEnabled()) {
-            LOG.debug("Not using threadPool as active count:" + pool.getActiveCount()
-                + ", max:" + pool.getMaximumPoolSize());
-          }
-        }
-      }
+    private PathDepthInfoCallable(PathDepthInfo pd, int maxDepth, FileSystem fs,
+        ConcurrentLinkedQueue<PathDepthInfo> basePaths) {
+      this.maxDepth = maxDepth;
+      this.pd = pd;
+      this.fs = fs;
+      this.pendingPaths = basePaths;
+      this.throwException = "throw"
+      .equals(HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_MSCK_PATH_VALIDATION));
     }
 
-    if (null == pool || !useThreadPool) {
-      for (final Path path : basePaths) {
-        FileStatus[] statuses = fs.listStatus(path, FileUtils.HIDDEN_FILES_PATH_FILTER);
-        boolean fileFound = false;
-        for (FileStatus status : statuses) {
-          if (status.isDirectory()) {
-            nextLevel.add(status.getPath());
-          } else {
-            fileFound = true;
-          }
-        }
-        if (depth != 0) {
-          // we are in the middle of the search and we find a file
-          if (fileFound) {
-            if ("throw".equals(HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_MSCK_PATH_VALIDATION))) {
-              throw new HiveException(
-                  "MSCK finds a file rather than a folder when it searches for " + path.toString());
-            } else {
-              LOG.warn("MSCK finds a file rather than a folder when it searches for "
-                  + path.toString());
-            }
-          }
-          if (!nextLevel.isEmpty()) {
-            checkPartitionDirs(pool, nextLevel, allDirs, fs, depth - 1, maxDepth);
-          } else if (depth != maxDepth) {
-            // since nextLevel is empty, we are missing partition columns.
-            if ("throw".equals(HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_MSCK_PATH_VALIDATION))) {
-              throw new HiveException("MSCK is missing partition columns under " + path.toString());
-            } else {
-              LOG.warn("MSCK is missing partition columns under " + path.toString());
-            }
-          }
+    @Override
+    public Path call() throws Exception {
+      return processPathDepthInfo(pd);
+    }
+
+    private Path processPathDepthInfo(final PathDepthInfo pd)
+        throws IOException, HiveException, InterruptedException {
+      final Path currentPath = pd.p;
+      final int currentDepth = pd.depth;
+      FileStatus[] fileStatuses = fs.listStatus(currentPath, FileUtils.HIDDEN_FILES_PATH_FILTER);
+      // found no files under a sub-directory under table base path; it is possible that the table
+      // is empty and hence there are no partition sub-directories created under base path
+      if (fileStatuses.length == 0 && currentDepth > 0 && currentDepth < maxDepth) {
+        // since maxDepth is not yet reached, we are missing partition
+        // columns in currentPath
+        if (throwException) {
+          throw new HiveException(
+              "MSCK is missing partition columns under " + currentPath.toString());
         } else {
-          allDirs.add(path);
+          LOG.warn("MSCK is missing partition columns under " + currentPath.toString());
         }
-      }
-    } else {
-      final List<Future<Void>> futures = new LinkedList<>();
-      for (final Path path : basePaths) {
-        futures.add(pool.submit(new Callable<Void>() {
-          @Override
-          public Void call() throws Exception {
-            FileStatus[] statuses = fs.listStatus(path, FileUtils.HIDDEN_FILES_PATH_FILTER);
-            boolean fileFound = false;
-            for (FileStatus status : statuses) {
-              if (status.isDirectory()) {
-                nextLevel.add(status.getPath());
-              } else {
-                fileFound = true;
-              }
-            }
-            if (depth != 0) {
-              // we are in the middle of the search and we find a file
-              if (fileFound) {
-                if ("throw".equals(HiveConf.getVar(conf,
-                    HiveConf.ConfVars.HIVE_MSCK_PATH_VALIDATION))) {
-                  throw new HiveException(
-                      "MSCK finds a file rather than a folder when it searches for "
-                          + path.toString());
-                } else {
-                  LOG.warn("MSCK finds a file rather than a folder when it searches for "
-                      + path.toString());
-                }
-              }
-              if (!nextLevel.isEmpty()) {
-                checkPartitionDirs(pool, nextLevel, allDirs, fs, depth - 1, maxDepth);
-              } else if (depth != maxDepth) {
-                // since nextLevel is empty, we are missing partition columns.
-                if ("throw".equals(HiveConf.getVar(conf,
-                    HiveConf.ConfVars.HIVE_MSCK_PATH_VALIDATION))) {
-                  throw new HiveException("MSCK is missing partition columns under "
-                      + path.toString());
-                } else {
-                  LOG.warn("MSCK is missing partition columns under " + path.toString());
-                }
-              }
+      } else {
+        // found files under currentPath add them to the queue if it is a directory
+        for (FileStatus fileStatus : fileStatuses) {
+          if (!fileStatus.isDirectory() && currentDepth < maxDepth) {
+            // found a file at depth which is less than number of partition keys
+            if (throwException) {
+              throw new HiveException(
+                  "MSCK finds a file rather than a directory when it searches for "
+                      + fileStatus.getPath().toString());
             } else {
-              allDirs.add(path);
+              LOG.warn("MSCK finds a file rather than a directory when it searches for "
+                  + fileStatus.getPath().toString());
             }
-            return null;
+          } else if (fileStatus.isDirectory() && currentDepth < maxDepth) {
+            // add sub-directory to the work queue if maxDepth is not yet reached
+            pendingPaths.add(new PathDepthInfo(fileStatus.getPath(), currentDepth + 1));
           }
-        }));
-      }
-      for (Future<Void> future : futures) {
-        try {
-          future.get();
-        } catch (Exception e) {
-          LOG.error(e.getMessage());
-          pool.shutdownNow();
-          throw new HiveException(e.getCause());
+        }
+        if (currentDepth == maxDepth) {
+          return currentPath;
         }
       }
-      if (!nextLevel.isEmpty() && depth != 0) {
-        checkPartitionDirs(pool, nextLevel, allDirs, fs, depth - 1, maxDepth);
+      return null;
+    }
+  }
+
+  private static class PathDepthInfo {
+    private final Path p;
+    private final int depth;
+    PathDepthInfo(Path p, int depth) {
+      this.p = p;
+      this.depth = depth;
+    }
+  }
+
+  private void checkPartitionDirsInParallel(final ThreadPoolExecutor pool,
+      final Path basePath, final Set<Path> result,
+      final FileSystem fs, final int maxDepth) throws HiveException {
+    try {
+      Queue<Future<Path>> futures = new LinkedList<Future<Path>>();
+      ConcurrentLinkedQueue<PathDepthInfo> nextLevel = new ConcurrentLinkedQueue<>();
+      nextLevel.add(new PathDepthInfo(basePath, 0));
+      //Uses level parallel implementation of a bfs. Recursive DFS implementations
+      //have a issue where the number of threads can run out if the number of
+      //nested sub-directories is more than the pool size.
+      //Using a two queue implementation is simpler than one queue since then we will
+      //have to add the complex mechanisms to let the free worker threads know when new levels are
+      //discovered using notify()/wait() mechanisms which can potentially lead to bugs if
+      //not done right
+      while(!nextLevel.isEmpty()) {
+        ConcurrentLinkedQueue<PathDepthInfo> tempQueue = new ConcurrentLinkedQueue<>();
+        //process each level in parallel
+        while(!nextLevel.isEmpty()) {
+          futures.add(
+              pool.submit(new PathDepthInfoCallable(nextLevel.poll(), maxDepth, fs, tempQueue)));
+        }
+        while(!futures.isEmpty()) {
+          Path p = futures.poll().get();
+          if (p != null) {
+            result.add(p);
+          }
+        }
+        //update the nextlevel with newly discovered sub-directories from the above
+        nextLevel = tempQueue;
+      }
+    } catch (InterruptedException | ExecutionException e) {
+      LOG.error(e.getMessage());
+      pool.shutdownNow();
+      throw new HiveException(e.getCause());
+    }
+  }
+
+  /*
+   * Original recursive implementation works well for single threaded use-case but has limitations
+   * if we attempt to parallelize this directly
+   */
+  private void checkPartitionDirsSingleThreaded(Queue<Path> basePaths, final Set<Path> allDirs,
+      final FileSystem fs, final int depth, final int maxDepth) throws IOException, HiveException {
+    final Queue<Path> nextLevel = new LinkedList<>();
+    for (final Path path : basePaths) {
+      FileStatus[] statuses = fs.listStatus(path, FileUtils.HIDDEN_FILES_PATH_FILTER);
+      boolean fileFound = false;
+      for (FileStatus status : statuses) {
+        if (status.isDirectory()) {
+          nextLevel.add(status.getPath());
+        } else {
+          fileFound = true;
+        }
+      }
+      if (depth != 0) {
+        // we are in the middle of the search and we find a file
+        if (fileFound) {
+          if ("throw".equals(HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_MSCK_PATH_VALIDATION))) {
+            throw new HiveException(
+                "MSCK finds a file rather than a folder when it searches for " + path.toString());
+          } else {
+            LOG.warn("MSCK finds a file rather than a folder when it searches for "
+                + path.toString());
+          }
+        }
+        if (!nextLevel.isEmpty()) {
+          checkPartitionDirsSingleThreaded(nextLevel, allDirs, fs, depth - 1, maxDepth);
+        } else if (depth != maxDepth) {
+          // since nextLevel is empty, we are missing partition columns.
+          if ("throw".equals(HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_MSCK_PATH_VALIDATION))) {
+            throw new HiveException("MSCK is missing partition columns under " + path.toString());
+          } else {
+            LOG.warn("MSCK is missing partition columns under " + path.toString());
+          }
+        }
+      } else {
+        allDirs.add(path);
       }
     }
   }
