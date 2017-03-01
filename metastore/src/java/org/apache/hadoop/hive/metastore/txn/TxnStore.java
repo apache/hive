@@ -58,7 +58,7 @@ public interface TxnStore {
   static final public String SUCCEEDED_RESPONSE = "succeeded";
   static final public String ATTEMPTED_RESPONSE = "attempted";
 
-  public static final int TIMED_OUT_TXN_ABORT_BATCH_SIZE = 1000;
+  public static final int TIMED_OUT_TXN_ABORT_BATCH_SIZE = 50000;
 
   public void setConf(HiveConf conf);
 
