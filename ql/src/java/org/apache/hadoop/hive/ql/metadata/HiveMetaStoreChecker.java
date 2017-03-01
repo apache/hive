@@ -404,7 +404,12 @@ public class HiveMetaStoreChecker {
    */
 
   private void checkPartitionDirs(Path basePath, Set<Path> allDirs, int maxDepth) throws IOException, HiveException {
-    int poolSize = conf.getInt(ConfVars.HIVE_MOVE_FILES_THREAD_COUNT.varname, 15);
+    // Here we just reuse the THREAD_COUNT configuration for
+    // METASTORE_FS_HANDLER_THREADS_COUNT since this results in better performance
+    // The number of missing partitions discovered are later added by metastore using a
+    // threadpool of size METASTORE_FS_HANDLER_THREADS_COUNT. If we have different sized
+    // pool here the smaller sized pool of the two becomes a bottleneck
+    int poolSize = conf.getInt(ConfVars.METASTORE_FS_HANDLER_THREADS_COUNT.varname, 15);
 
     // Check if too low config is provided for move files. 2x CPU is reasonable max count.
     poolSize = poolSize == 0 ? poolSize : Math.max(poolSize,
