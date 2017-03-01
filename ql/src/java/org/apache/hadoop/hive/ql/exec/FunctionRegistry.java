@@ -725,6 +725,15 @@ public final class FunctionRegistry {
 
     PrimitiveGrouping pgA = PrimitiveObjectInspectorUtils.getPrimitiveGrouping(pcA);
     PrimitiveGrouping pgB = PrimitiveObjectInspectorUtils.getPrimitiveGrouping(pcB);
+
+    // untyped nulls
+    if (pgA == PrimitiveGrouping.VOID_GROUP) {
+      return b;
+    }
+    if (pgB == PrimitiveGrouping.VOID_GROUP) {
+      return a;
+    }
+
     if (pgA != pgB) {
       return null;
     }
