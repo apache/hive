@@ -346,4 +346,11 @@ public class OperatorUtils {
       }
     }
   }
+
+  public static String getOpNamePretty(Operator<?> op) {
+    if (op instanceof TableScanOperator) {
+      return op.toString() + " (" + ((TableScanOperator) op).getConf().getAlias() + ")";
+    }
+    return op.toString();
+  }
 }

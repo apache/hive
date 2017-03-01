@@ -563,10 +563,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: o2
-                  filterExpr: (csmallint is not null and cbigint is not null and csmallint BETWEEN DynamicValue(RS_6_o1_csmallint_min) AND DynamicValue(RS_6_o1_csmallint_max) and in_bloom_filter(csmallint, DynamicValue(RS_6_o1_csmallint_bloom_filter))) (type: boolean)
+                  filterExpr: (csmallint is not null and cbigint is not null and (csmallint BETWEEN DynamicValue(RS_6_o1_csmallint_min) AND DynamicValue(RS_6_o1_csmallint_max) and in_bloom_filter(csmallint, DynamicValue(RS_6_o1_csmallint_bloom_filter)))) (type: boolean)
                   Statistics: Num rows: 122880 Data size: 29079940 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (csmallint is not null and cbigint is not null and csmallint BETWEEN DynamicValue(RS_6_o1_csmallint_min) AND DynamicValue(RS_6_o1_csmallint_max) and in_bloom_filter(csmallint, DynamicValue(RS_6_o1_csmallint_bloom_filter))) (type: boolean)
+                    predicate: (csmallint is not null and cbigint is not null and (csmallint BETWEEN DynamicValue(RS_6_o1_csmallint_min) AND DynamicValue(RS_6_o1_csmallint_max) and in_bloom_filter(csmallint, DynamicValue(RS_6_o1_csmallint_bloom_filter)))) (type: boolean)
                     Statistics: Num rows: 122880 Data size: 29079940 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: csmallint (type: smallint), cstring2 (type: string)
@@ -1016,10 +1016,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: o2
-                  filterExpr: (csmallint is not null and cbigint is not null and csmallint BETWEEN DynamicValue(RS_6_o1_csmallint_min) AND DynamicValue(RS_6_o1_csmallint_max) and in_bloom_filter(csmallint, DynamicValue(RS_6_o1_csmallint_bloom_filter))) (type: boolean)
+                  filterExpr: (csmallint is not null and cbigint is not null and (csmallint BETWEEN DynamicValue(RS_6_o1_csmallint_min) AND DynamicValue(RS_6_o1_csmallint_max) and in_bloom_filter(csmallint, DynamicValue(RS_6_o1_csmallint_bloom_filter)))) (type: boolean)
                   Statistics: Num rows: 245760 Data size: 58159880 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (csmallint is not null and cbigint is not null and csmallint BETWEEN DynamicValue(RS_6_o1_csmallint_min) AND DynamicValue(RS_6_o1_csmallint_max) and in_bloom_filter(csmallint, DynamicValue(RS_6_o1_csmallint_bloom_filter))) (type: boolean)
+                    predicate: (csmallint is not null and cbigint is not null and (csmallint BETWEEN DynamicValue(RS_6_o1_csmallint_min) AND DynamicValue(RS_6_o1_csmallint_max) and in_bloom_filter(csmallint, DynamicValue(RS_6_o1_csmallint_bloom_filter)))) (type: boolean)
                     Statistics: Num rows: 245760 Data size: 58159880 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: csmallint (type: smallint), cstring2 (type: string)

@@ -239,7 +239,6 @@ public class DynamicPartitionPruningOptimization implements NodeProcessor {
           betweenArgs.add(new ExprNodeDynamicValueDesc(new DynamicValue(keyBaseAlias + "_max", ctx.desc.getTypeInfo())));
           ExprNodeDesc betweenNode = ExprNodeGenericFuncDesc.newInstance(
                   FunctionRegistry.getFunctionInfo("between").getGenericUDF(), betweenArgs);
-          replaceExprNode(ctx, desc, betweenNode);
           // add column expression for bloom filter
           List<ExprNodeDesc> bloomFilterArgs = new ArrayList<ExprNodeDesc>();
           bloomFilterArgs.add(ctx.parent.getChildren().get(0));
@@ -249,10 +248,12 @@ public class DynamicPartitionPruningOptimization implements NodeProcessor {
           ExprNodeDesc bloomFilterNode = ExprNodeGenericFuncDesc.newInstance(
                   FunctionRegistry.getFunctionInfo("in_bloom_filter").
                           getGenericUDF(), bloomFilterArgs);
-          // ctx may not have the grandparent but it is set in filterDesc by now.
-          ExprNodeDesc grandParent = ctx.grandParent == null ?
-                  desc.getPredicate() : ctx.grandParent;
-          grandParent.getChildren().add(bloomFilterNode);
+          List<ExprNodeDesc> andArgs = new ArrayList<ExprNodeDesc>();
+          andArgs.add(betweenNode);
+          andArgs.add(bloomFilterNode);
+          ExprNodeDesc andExpr = ExprNodeGenericFuncDesc.newInstance(
+              FunctionRegistry.getFunctionInfo("and").getGenericUDF(), andArgs);
+          replaceExprNode(ctx, desc, andExpr);
         } else {
           ExprNodeDesc replaceNode = new ExprNodeConstantDesc(ctx.parent.getTypeInfo(), true);
           replaceExprNode(ctx, desc, replaceNode);

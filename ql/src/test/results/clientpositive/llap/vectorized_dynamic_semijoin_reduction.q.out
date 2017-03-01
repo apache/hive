@@ -47,10 +47,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
-                  filterExpr: (key_int is not null and key_int BETWEEN DynamicValue(RS_7_b_key_int_min) AND DynamicValue(RS_7_b_key_int_max) and in_bloom_filter(key_int, DynamicValue(RS_7_b_key_int_bloom_filter))) (type: boolean)
+                  filterExpr: (key_int is not null and (key_int BETWEEN DynamicValue(RS_7_b_key_int_min) AND DynamicValue(RS_7_b_key_int_max) and in_bloom_filter(key_int, DynamicValue(RS_7_b_key_int_bloom_filter)))) (type: boolean)
                   Statistics: Num rows: 500 Data size: 90000 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (key_int is not null and key_int BETWEEN DynamicValue(RS_7_b_key_int_min) AND DynamicValue(RS_7_b_key_int_max) and in_bloom_filter(key_int, DynamicValue(RS_7_b_key_int_bloom_filter))) (type: boolean)
+                    predicate: (key_int is not null and (key_int BETWEEN DynamicValue(RS_7_b_key_int_min) AND DynamicValue(RS_7_b_key_int_max) and in_bloom_filter(key_int, DynamicValue(RS_7_b_key_int_bloom_filter)))) (type: boolean)
                     Statistics: Num rows: 500 Data size: 90000 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key_int (type: int)
@@ -183,10 +183,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
-                  filterExpr: (key_str is not null and key_str BETWEEN DynamicValue(RS_7_b_key_str_min) AND DynamicValue(RS_7_b_key_str_max) and in_bloom_filter(key_str, DynamicValue(RS_7_b_key_str_bloom_filter))) (type: boolean)
+                  filterExpr: (key_str is not null and (key_str BETWEEN DynamicValue(RS_7_b_key_str_min) AND DynamicValue(RS_7_b_key_str_max) and in_bloom_filter(key_str, DynamicValue(RS_7_b_key_str_bloom_filter)))) (type: boolean)
                   Statistics: Num rows: 500 Data size: 90000 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (key_str is not null and key_str BETWEEN DynamicValue(RS_7_b_key_str_min) AND DynamicValue(RS_7_b_key_str_max) and in_bloom_filter(key_str, DynamicValue(RS_7_b_key_str_bloom_filter))) (type: boolean)
+                    predicate: (key_str is not null and (key_str BETWEEN DynamicValue(RS_7_b_key_str_min) AND DynamicValue(RS_7_b_key_str_max) and in_bloom_filter(key_str, DynamicValue(RS_7_b_key_str_bloom_filter)))) (type: boolean)
                     Statistics: Num rows: 500 Data size: 90000 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key_str (type: string)
@@ -319,10 +319,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
-                  filterExpr: (key_str is not null and key_str BETWEEN DynamicValue(RS_7_b_key_str_min) AND DynamicValue(RS_7_b_key_str_max) and in_bloom_filter(key_str, DynamicValue(RS_7_b_key_str_bloom_filter))) (type: boolean)
+                  filterExpr: (key_str is not null and (key_str BETWEEN DynamicValue(RS_7_b_key_str_min) AND DynamicValue(RS_7_b_key_str_max) and in_bloom_filter(key_str, DynamicValue(RS_7_b_key_str_bloom_filter)))) (type: boolean)
                   Statistics: Num rows: 500 Data size: 90000 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (key_str is not null and key_str BETWEEN DynamicValue(RS_7_b_key_str_min) AND DynamicValue(RS_7_b_key_str_max) and in_bloom_filter(key_str, DynamicValue(RS_7_b_key_str_bloom_filter))) (type: boolean)
+                    predicate: (key_str is not null and (key_str BETWEEN DynamicValue(RS_7_b_key_str_min) AND DynamicValue(RS_7_b_key_str_max) and in_bloom_filter(key_str, DynamicValue(RS_7_b_key_str_bloom_filter)))) (type: boolean)
                     Statistics: Num rows: 500 Data size: 90000 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key_str (type: string)
@@ -456,10 +456,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
-                  filterExpr: (key_int is not null and key_int BETWEEN DynamicValue(RS_10_b_key_int_min) AND DynamicValue(RS_10_b_key_int_max) and key_int BETWEEN DynamicValue(RS_11_c_key_int_min) AND DynamicValue(RS_11_c_key_int_max) and in_bloom_filter(key_int, DynamicValue(RS_10_b_key_int_bloom_filter)) and in_bloom_filter(key_int, DynamicValue(RS_11_c_key_int_bloom_filter))) (type: boolean)
+                  filterExpr: (key_int is not null and (key_int BETWEEN DynamicValue(RS_10_b_key_int_min) AND DynamicValue(RS_10_b_key_int_max) and in_bloom_filter(key_int, DynamicValue(RS_10_b_key_int_bloom_filter))) and (key_int BETWEEN DynamicValue(RS_11_c_key_int_min) AND DynamicValue(RS_11_c_key_int_max) and in_bloom_filter(key_int, DynamicValue(RS_11_c_key_int_bloom_filter)))) (type: boolean)
                   Statistics: Num rows: 500 Data size: 90000 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (key_int is not null and key_int BETWEEN DynamicValue(RS_10_b_key_int_min) AND DynamicValue(RS_10_b_key_int_max) and key_int BETWEEN DynamicValue(RS_11_c_key_int_min) AND DynamicValue(RS_11_c_key_int_max) and in_bloom_filter(key_int, DynamicValue(RS_10_b_key_int_bloom_filter)) and in_bloom_filter(key_int, DynamicValue(RS_11_c_key_int_bloom_filter))) (type: boolean)
+                    predicate: (key_int is not null and (key_int BETWEEN DynamicValue(RS_10_b_key_int_min) AND DynamicValue(RS_10_b_key_int_max) and in_bloom_filter(key_int, DynamicValue(RS_10_b_key_int_bloom_filter))) and (key_int BETWEEN DynamicValue(RS_11_c_key_int_min) AND DynamicValue(RS_11_c_key_int_max) and in_bloom_filter(key_int, DynamicValue(RS_11_c_key_int_bloom_filter)))) (type: boolean)
                     Statistics: Num rows: 500 Data size: 90000 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key_int (type: int)
@@ -640,10 +640,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
-                  filterExpr: (key_str is not null and key_int is not null and key_str BETWEEN DynamicValue(RS_7_b_key_str_min) AND DynamicValue(RS_7_b_key_str_max) and key_int BETWEEN DynamicValue(RS_7_b_key_int_min) AND DynamicValue(RS_7_b_key_int_max) and in_bloom_filter(key_str, DynamicValue(RS_7_b_key_str_bloom_filter)) and in_bloom_filter(key_int, DynamicValue(RS_7_b_key_int_bloom_filter))) (type: boolean)
+                  filterExpr: (key_str is not null and key_int is not null and (key_str BETWEEN DynamicValue(RS_7_b_key_str_min) AND DynamicValue(RS_7_b_key_str_max) and in_bloom_filter(key_str, DynamicValue(RS_7_b_key_str_bloom_filter))) and (key_int BETWEEN DynamicValue(RS_7_b_key_int_min) AND DynamicValue(RS_7_b_key_int_max) and in_bloom_filter(key_int, DynamicValue(RS_7_b_key_int_bloom_filter)))) (type: boolean)
                   Statistics: Num rows: 500 Data size: 90000 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (key_str is not null and key_int is not null and key_str BETWEEN DynamicValue(RS_7_b_key_str_min) AND DynamicValue(RS_7_b_key_str_max) and key_int BETWEEN DynamicValue(RS_7_b_key_int_min) AND DynamicValue(RS_7_b_key_int_max) and in_bloom_filter(key_str, DynamicValue(RS_7_b_key_str_bloom_filter)) and in_bloom_filter(key_int, DynamicValue(RS_7_b_key_int_bloom_filter))) (type: boolean)
+                    predicate: (key_str is not null and key_int is not null and (key_str BETWEEN DynamicValue(RS_7_b_key_str_min) AND DynamicValue(RS_7_b_key_str_max) and in_bloom_filter(key_str, DynamicValue(RS_7_b_key_str_bloom_filter))) and (key_int BETWEEN DynamicValue(RS_7_b_key_int_min) AND DynamicValue(RS_7_b_key_int_max) and in_bloom_filter(key_int, DynamicValue(RS_7_b_key_int_bloom_filter)))) (type: boolean)
                     Statistics: Num rows: 500 Data size: 90000 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key_str (type: string), key_int (type: int)
@@ -801,10 +801,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
-                  filterExpr: (key_int is not null and key_int BETWEEN DynamicValue(RS_7_b_key_int_min) AND DynamicValue(RS_7_b_key_int_max) and in_bloom_filter(key_int, DynamicValue(RS_7_b_key_int_bloom_filter))) (type: boolean)
+                  filterExpr: (key_int is not null and (key_int BETWEEN DynamicValue(RS_7_b_key_int_min) AND DynamicValue(RS_7_b_key_int_max) and in_bloom_filter(key_int, DynamicValue(RS_7_b_key_int_bloom_filter)))) (type: boolean)
                   Statistics: Num rows: 500 Data size: 90000 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (key_int is not null and key_int BETWEEN DynamicValue(RS_7_b_key_int_min) AND DynamicValue(RS_7_b_key_int_max) and in_bloom_filter(key_int, DynamicValue(RS_7_b_key_int_bloom_filter))) (type: boolean)
+                    predicate: (key_int is not null and (key_int BETWEEN DynamicValue(RS_7_b_key_int_min) AND DynamicValue(RS_7_b_key_int_max) and in_bloom_filter(key_int, DynamicValue(RS_7_b_key_int_bloom_filter)))) (type: boolean)
                     Statistics: Num rows: 500 Data size: 90000 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key_int (type: int)
@@ -953,10 +953,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
-                  filterExpr: (key_int is not null and key_int BETWEEN DynamicValue(RS_7_b_key_int_min) AND DynamicValue(RS_7_b_key_int_max) and in_bloom_filter(key_int, DynamicValue(RS_7_b_key_int_bloom_filter))) (type: boolean)
+                  filterExpr: (key_int is not null and (key_int BETWEEN DynamicValue(RS_7_b_key_int_min) AND DynamicValue(RS_7_b_key_int_max) and in_bloom_filter(key_int, DynamicValue(RS_7_b_key_int_bloom_filter)))) (type: boolean)
                   Statistics: Num rows: 500 Data size: 90000 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (key_int is not null and key_int BETWEEN DynamicValue(RS_7_b_key_int_min) AND DynamicValue(RS_7_b_key_int_max) and in_bloom_filter(key_int, DynamicValue(RS_7_b_key_int_bloom_filter))) (type: boolean)
+                    predicate: (key_int is not null and (key_int BETWEEN DynamicValue(RS_7_b_key_int_min) AND DynamicValue(RS_7_b_key_int_max) and in_bloom_filter(key_int, DynamicValue(RS_7_b_key_int_bloom_filter)))) (type: boolean)
                     Statistics: Num rows: 500 Data size: 90000 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key_int (type: int)
