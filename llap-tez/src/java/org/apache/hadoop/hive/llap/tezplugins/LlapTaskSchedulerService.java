@@ -72,6 +72,8 @@ import org.apache.hadoop.hive.llap.tezplugins.metrics.LlapTaskSchedulerMetrics;
 import org.apache.hadoop.util.JvmPauseMonitor;
 import org.apache.hadoop.yarn.api.records.Container;
 import org.apache.hadoop.yarn.api.records.ContainerId;
+import org.apache.hadoop.yarn.api.records.ContainerState;
+import org.apache.hadoop.yarn.api.records.ContainerStatus;
 import org.apache.hadoop.yarn.api.records.NodeId;
 import org.apache.hadoop.yarn.api.records.NodeReport;
 import org.apache.hadoop.yarn.api.records.NodeState;
@@ -703,12 +705,17 @@ public class LlapTaskSchedulerService extends TaskScheduler {
       writeLock.unlock();
     }
     getContext().containerBeingReleased(taskInfo.containerId);
+    getContext().containerCompleted(taskInfo.task, ContainerStatus.newInstance(taskInfo.containerId,
+        ContainerState.COMPLETE, "", 0));
     return true;
   }
 
   @Override
   public Object deallocateContainer(ContainerId containerId) {
-    LOG.debug("Ignoring deallocateContainer for containerId: " + containerId);
+    if (LOG.isDebugEnabled()) {
+      LOG.debug("Ignoring deallocateContainer for containerId: {}",
+          containerId);
+    }
     // Containers are not being tracked for re-use.
     // This is safe to ignore since a deallocate task will come in.
     return null;
