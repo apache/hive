@@ -2172,7 +2172,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
         destPath = new Path(destPath, ValidWriteIds.getMmFilePrefix(mmWriteId));
         filter = replace ? new ValidWriteIds.IdPathFilter(mmWriteId, false, true) : filter;
       }
-      Utilities.LOG14535.info("moving " + loadPath + " to " + tblPath);
+      Utilities.LOG14535.info("moving " + loadPath + " to " + tblPath + " (replace = " + replace + ")");
       if (replace) {
         replaceFiles(tblPath, loadPath, destPath, tblPath,
             sessionConf, isSrcLocal, filter, mmWriteId != null);
@@ -3104,7 +3104,6 @@ private void constructOneLBLocationMap(FileStatus fSta,
               SessionState.setCurrentSessionState(parentSession);
 
               Path destPath = mvFile(conf, srcFs, srcP, destFs, destf, isSrcLocal, isRenameAllowed);
-
               if (inheritPerms) {
                 HdfsUtils.setFullFileStatus(conf, fullDestStatus, srcGroup, destFs, destPath, false);
               }

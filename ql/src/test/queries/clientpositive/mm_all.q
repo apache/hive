@@ -437,12 +437,20 @@ desc formatted stats2_mm;
 drop table stats2_mm;
 
 
+set hive.optimize.skewjoin=true;
+set hive.skewjoin.key=2;
+set hive.optimize.metadataonly=false;
+
+CREATE TABLE skewjoin_mm(key INT, value STRING) STORED AS TEXTFILE tblproperties ("transactional"="true", "transactional_properties"="insert_only");
+FROM src src1 JOIN src src2 ON (src1.key = src2.key) INSERT OVERWRITE TABLE skewjoin_mm SELECT src1.key, src2.value;
+select count(distinct key) from skewjoin_mm;
+drop table skewjoin_mm;
+
+set hive.optimize.skewjoin=false;
+
+
 
 drop table intermediate;
 
 
 
-
-
-
-drop table intermediate;

@@ -1165,12 +1165,12 @@ POSTHOOK: Input: default@merge1_mm@key=103
 POSTHOOK: Input: default@merge1_mm@key=97
 POSTHOOK: Input: default@merge1_mm@key=98
 #### A masked pattern was here ####
-100	100
 103	103
+100	100
 98	98
 97	97
-10	10
 0	0
+10	10
 PREHOOK: query: insert into table merge1_mm partition (key) select key, key from intermediate
 PREHOOK: type: QUERY
 PREHOOK: Input: default@intermediate
@@ -1216,18 +1216,18 @@ POSTHOOK: Input: default@merge1_mm@key=103
 POSTHOOK: Input: default@merge1_mm@key=97
 POSTHOOK: Input: default@merge1_mm@key=98
 #### A masked pattern was here ####
-103	103
 100	100
 103	103
 97	97
 100	100
+103	103
 97	97
 98	98
 98	98
-10	10
+0	0
 0	0
 10	10
-0	0
+10	10
 PREHOOK: query: drop table merge1_mm
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@merge1_mm
@@ -2890,10 +2890,10 @@ POSTHOOK: Input: default@intermediate@p=455
 POSTHOOK: Input: default@intermediate@p=456
 POSTHOOK: Input: default@intermediate@p=457
 POSTHOOK: Output: default@multi1_mm@p=1
-POSTHOOK: Lineage: multi1_mm PARTITION(p=1).key SIMPLE [(intermediate)intermediate.FieldSchema(name:p, type:int, comment:null), ]
 POSTHOOK: Lineage: multi1_mm PARTITION(p=1).key SIMPLE [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: multi1_mm PARTITION(p=1).key2 SIMPLE [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: multi1_mm PARTITION(p=1).key2 SIMPLE [(intermediate)intermediate.FieldSchema(name:p, type:int, comment:null), ]
+POSTHOOK: Lineage: multi1_mm PARTITION(p=1).key SIMPLE [(intermediate)intermediate.FieldSchema(name:p, type:int, comment:null), ]
+POSTHOOK: Lineage: multi1_mm PARTITION(p=1).key2 SIMPLE [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
 PREHOOK: query: select key, key2, p from multi1_mm order by key, key2, p
 PREHOOK: type: QUERY
 PREHOOK: Input: default@multi1_mm
@@ -3149,6 +3149,41 @@ POSTHOOK: query: drop table stats2_mm
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@stats2_mm
 POSTHOOK: Output: default@stats2_mm
+PREHOOK: query: CREATE TABLE skewjoin_mm(key INT, value STRING) STORED AS TEXTFILE tblproperties ("transactional"="true", "transactional_properties"="insert_only")
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@skewjoin_mm
+POSTHOOK: query: CREATE TABLE skewjoin_mm(key INT, value STRING) STORED AS TEXTFILE tblproperties ("transactional"="true", "transactional_properties"="insert_only")
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@skewjoin_mm
+PREHOOK: query: FROM src src1 JOIN src src2 ON (src1.key = src2.key) INSERT OVERWRITE TABLE skewjoin_mm SELECT src1.key, src2.value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@skewjoin_mm
+POSTHOOK: query: FROM src src1 JOIN src src2 ON (src1.key = src2.key) INSERT OVERWRITE TABLE skewjoin_mm SELECT src1.key, src2.value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@skewjoin_mm
+POSTHOOK: Lineage: skewjoin_mm.key EXPRESSION [(src)src1.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: skewjoin_mm.value SIMPLE [(src)src2.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: select count(distinct key) from skewjoin_mm
+PREHOOK: type: QUERY
+PREHOOK: Input: default@skewjoin_mm
+#### A masked pattern was here ####
+POSTHOOK: query: select count(distinct key) from skewjoin_mm
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@skewjoin_mm
+#### A masked pattern was here ####
+309
+PREHOOK: query: drop table skewjoin_mm
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@skewjoin_mm
+PREHOOK: Output: default@skewjoin_mm
+POSTHOOK: query: drop table skewjoin_mm
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@skewjoin_mm
+POSTHOOK: Output: default@skewjoin_mm
 PREHOOK: query: drop table intermediate
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@intermediate
@@ -3157,7 +3192,3 @@ POSTHOOK: query: drop table intermediate
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@intermediate
 POSTHOOK: Output: default@intermediate
-PREHOOK: query: drop table intermediate
-PREHOOK: type: DROPTABLE
-POSTHOOK: query: drop table intermediate
-POSTHOOK: type: DROPTABLE

@@ -36,6 +36,7 @@ public class LoadFileDesc extends LoadDesc implements Serializable {
   private String columns;
   private String columnTypes;
   private String destinationCreateTable;
+  private boolean isMmCtas;
 
   public LoadFileDesc() {
   }
@@ -48,12 +49,13 @@ public class LoadFileDesc extends LoadDesc implements Serializable {
     this.columns = o.columns;
     this.columnTypes = o.columnTypes;
     this.destinationCreateTable = o.destinationCreateTable;
+    this.isMmCtas = o.isMmCtas;
   }
 
   public LoadFileDesc(final CreateTableDesc createTableDesc, final CreateViewDesc  createViewDesc,
                       final Path sourcePath, final Path targetDir, final boolean isDfsDir,
-                      final String columns, final String columnTypes) {
-    this(sourcePath, targetDir, isDfsDir, columns, columnTypes);
+                      final String columns, final String columnTypes, boolean isMmCtas) {
+    this(sourcePath, targetDir, isDfsDir, columns, columnTypes, isMmCtas);
     if (createTableDesc != null && createTableDesc.getDatabaseName() != null
         && createTableDesc.getTableName() != null) {
       destinationCreateTable = (createTableDesc.getTableName().contains(".") ? "" : createTableDesc
@@ -66,15 +68,15 @@ public class LoadFileDesc extends LoadDesc implements Serializable {
     }
   }
 
-  public LoadFileDesc(final Path sourcePath, final Path targetDir,
-      final boolean isDfsDir, final String columns, final String columnTypes) {
-
+  public LoadFileDesc(final Path sourcePath, final Path targetDir, final boolean isDfsDir,
+      final String columns, final String columnTypes, boolean isMmCtas) {
     super(sourcePath);
     Utilities.LOG14535.info("creating LFD from " + sourcePath + " to " + targetDir);
     this.targetDir = targetDir;
     this.isDfsDir = isDfsDir;
     this.columns = columns;
     this.columnTypes = columnTypes;
+    this.isMmCtas = isMmCtas;
   }
 
   @Explain(displayName = "destination")
@@ -130,5 +132,9 @@ public class LoadFileDesc extends LoadDesc implements Serializable {
    */
   public String getDestinationCreateTable(){
     return destinationCreateTable;
+  }
+
+  public boolean isMmCtas() {
+    return isMmCtas;
   }
 }

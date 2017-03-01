@@ -6900,9 +6900,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       }
 
       boolean isDfsDir = (dest_type.intValue() == QBMetaData.DEST_DFS_FILE);
-      // Create LFD even for MM CTAS - it's a no-op move, but it still seems to be uses for stats.
+      // Create LFD even for MM CTAS - it's a no-op move, but it still seems to be used for stats.
       loadFileWork.add(new LoadFileDesc(tblDesc, viewDesc,
-          queryTmpdir, dest_path, isDfsDir, cols, colTypes));
+          queryTmpdir, dest_path, isDfsDir, cols, colTypes, isMmCtas));
 
       if (tblDesc == null) {
         if (viewDesc != null) {

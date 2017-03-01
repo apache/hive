@@ -1876,7 +1876,6 @@ public class Driver implements CommandProcessor {
       for (Task<? extends Serializable> tsk : plan.getRootTasks()) {
         // This should never happen, if it does, it's a bug with the potential to produce
         // incorrect results.
-        LOG.error("TODO# running " + tsk);
         assert tsk.getParentTasks() == null || tsk.getParentTasks().isEmpty();
         driverCxt.addToRunnable(tsk);
 

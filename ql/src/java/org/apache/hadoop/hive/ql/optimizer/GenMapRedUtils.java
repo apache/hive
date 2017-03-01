@@ -1367,11 +1367,11 @@ public final class GenMapRedUtils {
       // Only create the movework for non-MM table. No action needed for a MM table.
       Utilities.LOG14535.info("creating dummy movetask for merge (with lfd)");
       dummyMv = new MoveWork(null, null, null,
-         new LoadFileDesc(inputDirName, finalName, true, null, null), false);
+         new LoadFileDesc(inputDirName, finalName, true, null, null, false), false);
     } else {
-      // TODO# create the noop MoveWork to avoid q file changes for now. else should be removed.
+      // TODO# create the noop MoveWork to avoid q file changes for now. Should be removed.
       dummyMv = new MoveWork(null, null, null,
-          new LoadFileDesc(inputDirName, finalName, true, null, null), false);
+          new LoadFileDesc(inputDirName, finalName, true, null, null, false), false);
       dummyMv.setNoop(true);
     }
     // Use the original fsOp path here in case of MM - while the new FSOP merges files inside the

@@ -326,13 +326,28 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
             // MM tables don't support concat so we don't expect the merge of merged files.
             subdirPath += ".merged";
           }
+          Path finalPath = null;
           if (!bDynParts && !isSkewedStoredAsSubDirectories) {
-            finalPaths[filesIdx] = getFinalPath(subdirPath, specPath, extension);
+            finalPath = getFinalPath(subdirPath, specPath, extension);
           } else {
             // Note: tmpPath here has the correct partition key
-            finalPaths[filesIdx] = getFinalPath(subdirPath, tmpPath, extension);
+            finalPath = getFinalPath(subdirPath, tmpPath, extension);
           }
-          outPaths[filesIdx] = finalPaths[filesIdx];
+          // In the cases that have multi-stage insert, e.g. a "hive.skewjoin.key"-based skew join,
+          // it can happen that we want multiple commits into the same directory from different
+          // tasks (not just task instances). In non-MM case, Utilities.renameOrMoveFiles ensures
+          // unique names. We could do the same here, but this will still cause the old file to be
+          // deleted because it has not been committed in /this/ FSOP. We are going to fail to be
+          // safe. Potentially, we could implement some partial commit between stages, if this
+          // affects some less obscure scenario.
+          try {
+            FileSystem fpfs = finalPath.getFileSystem(hconf);
+            if (fpfs.exists(finalPath)) throw new RuntimeException(finalPath + " already exists");
+          } catch (IOException e) {
+            throw new RuntimeException(e);
+          }
+          finalPaths[filesIdx] = finalPath;
+          outPaths[filesIdx] = finalPath;
         }
         if (isInfoEnabled) {
           LOG.info("Final Path: FS " + finalPaths[filesIdx]);
