@@ -74,7 +74,8 @@ public class OrcRawRecordMerger implements AcidInputFormat.RawReader<OrcStruct>{
    * reader is collapsing events to just the last update, just the first
    * instance of each record is required.
    */
-  final static class ReaderKey extends RecordIdentifier{
+  @VisibleForTesting
+  public final static class ReaderKey extends RecordIdentifier{
     private long currentTransactionId;
     private int statementId;//sort on this descending, like currentTransactionId
 
@@ -120,6 +121,14 @@ public class OrcRawRecordMerger implements AcidInputFormat.RawReader<OrcStruct>{
             && statementId == ((ReaderKey) other).statementId//consistent with compareTo()
           ;
     }
+    @Override
+    public int hashCode() {
+      int result = super.hashCode();
+      result = 31 * result + (int)(currentTransactionId ^ (currentTransactionId >>> 32));
+      result = 31 * result + statementId;
+      return result;
+    }
+
 
     @Override
     public int compareTo(RecordIdentifier other) {
