@@ -360,6 +360,10 @@ public class ReduceSinkDeDuplication extends Transform {
       if (moveRSOrderTo == null) {
         return null;
       }
+      // if cRS is being used for distinct - the two reduce sinks are incompatible
+      if (cConf.getDistinctColumnIndices().size() >= 2) {
+        return null;
+      }
       Integer moveReducerNumTo = checkNumReducer(cConf.getNumReducers(), pConf.getNumReducers());
       if (moveReducerNumTo == null ||
           moveReducerNumTo > 0 && cConf.getNumReducers() < minReducer) {
