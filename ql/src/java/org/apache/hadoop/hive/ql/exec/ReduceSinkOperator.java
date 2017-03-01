@@ -18,16 +18,15 @@
 
 package org.apache.hadoop.hive.ql.exec;
 
+import static org.apache.hadoop.hive.ql.optimizer.SortedDynPartitionOptimizer.BUCKET_NUMBER_COL_NAME;
 import static org.apache.hadoop.hive.ql.plan.ReduceSinkDesc.ReducerTraits.UNIFORM;
 
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
 import java.util.Random;
-import java.util.concurrent.Future;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -35,7 +34,6 @@ import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.io.HiveKey;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDescUtils;
@@ -44,15 +42,12 @@ import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.plan.api.OperatorType;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.Serializer;
-import org.apache.hadoop.hive.serde2.objectinspector.InspectableObject;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.StandardUnionObjectInspector.StandardUnion;
-import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.UnionObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.IntObjectInspector;
 import org.apache.hadoop.io.BinaryComparable;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.LongWritable;
@@ -80,11 +75,13 @@ public class ReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
   private transient ObjectInspector[] partitionObjectInspectors;
   private transient ObjectInspector[] bucketObjectInspectors;
   private transient int buckColIdxInKey;
-  private transient int buckColIdxInKeyForAcid = -1;
+  /**
+   * {@link org.apache.hadoop.hive.ql.optimizer.SortedDynPartitionOptimizer}
+   */
+  private transient int buckColIdxInKeyForSdpo = -1;
   private boolean firstRow;
   private transient int tag;
   private boolean skipTag = false;
-  private transient InspectableObject tempInspectableObject = new InspectableObject();
   private transient int[] valueIndex; // index for value(+ from keys, - from values)
 
   protected transient OutputCollector out;
@@ -143,12 +140,6 @@ public class ReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
   // TODO: we only ever use one row of these at a time. Why do we need to cache multiple?
   protected transient Object[][] cachedKeys;
 
-  private StructField recIdField; // field to look for record identifier in
-  private StructField bucketField; // field to look for bucket in record identifier
-  private StructObjectInspector acidRowInspector; // row inspector used by acid options
-  private StructObjectInspector recIdInspector; // OI for the record identifier
-  private IntObjectInspector bucketInspector; // OI for the bucket field in the record id
-
   protected transient long numRows = 0;
   protected transient long cntr = 1;
   protected transient long logEveryNRows = 0;
@@ -186,8 +177,8 @@ public class ReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
       keyEval = new ExprNodeEvaluator[keys.size()];
       int i = 0;
       for (ExprNodeDesc e : keys) {
-        if (e instanceof ExprNodeConstantDesc && ("_bucket_number").equals(((ExprNodeConstantDesc)e).getValue())) {
-          buckColIdxInKeyForAcid = i;
+        if (e instanceof ExprNodeConstantDesc && (BUCKET_NUMBER_COL_NAME).equals(((ExprNodeConstantDesc)e).getValue())) {
+          buckColIdxInKeyForSdpo = i;
         }
         keyEval[i++] = ExprNodeEvaluatorFactory.get(e);
       }
@@ -319,20 +310,6 @@ public class ReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
         // TODO: this is fishy - we init object inspectors based on first tag. We
         //       should either init for each tag, or if rowInspector doesn't really
         //       matter, then we can create this in ctor and get rid of firstRow.
-        if (conf.getWriteType() == AcidUtils.Operation.UPDATE ||
-            conf.getWriteType() == AcidUtils.Operation.DELETE) {
-          assert rowInspector instanceof StructObjectInspector :
-              "Expected rowInspector to be instance of StructObjectInspector but it is a " +
-                  rowInspector.getClass().getName();
-          acidRowInspector = (StructObjectInspector)rowInspector;
-          // The record identifier is always in the first column
-          recIdField = acidRowInspector.getAllStructFieldRefs().get(0);
-          recIdInspector = (StructObjectInspector)recIdField.getFieldObjectInspector();
-          // The bucket field is in the second position
-          bucketField = recIdInspector.getAllStructFieldRefs().get(1);
-          bucketInspector = (IntObjectInspector)bucketField.getFieldObjectInspector();
-        }
-
         if (isLogInfoEnabled) {
           LOG.info("keys are " + conf.getOutputKeyColumnNames() + " num distributions: " +
               conf.getNumDistributionKeys());
@@ -360,14 +337,9 @@ public class ReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
       if (bucketEval != null) {
         bucketNumber = computeBucketNumber(row, conf.getNumBuckets());
         cachedKeys[0][buckColIdxInKey] = new Text(String.valueOf(bucketNumber));
-      } else if (conf.getWriteType() == AcidUtils.Operation.UPDATE ||
-          conf.getWriteType() == AcidUtils.Operation.DELETE) {
-        // In the non-partitioned case we still want to compute the bucket number for updates and
-        // deletes.
-        bucketNumber = computeBucketNumber(row, conf.getNumBuckets());
-        if (buckColIdxInKeyForAcid != -1) {
-          cachedKeys[0][buckColIdxInKeyForAcid] = new Text(String.valueOf(bucketNumber));
-        }
+      }
+      if (buckColIdxInKeyForSdpo != -1) {
+        cachedKeys[0][buckColIdxInKeyForSdpo] = new Text(String.valueOf(bucketNumber));
       }
 
       HiveKey firstKey = toHiveKey(cachedKeys[0], tag, null);
@@ -427,24 +399,11 @@ public class ReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
   }
 
   private int computeBucketNumber(Object row, int numBuckets) throws HiveException {
-    if (conf.getWriteType() == AcidUtils.Operation.UPDATE ||
-        conf.getWriteType() == AcidUtils.Operation.DELETE) {
-      // We don't need to evaluate the hash code.  Instead read the bucket number directly from
-      // the row.  I don't need to evaluate any expressions as I know I am reading the ROW__ID
-      // column directly.
-      Object recIdValue = acidRowInspector.getStructFieldData(row, recIdField);
-      int buckNum = bucketInspector.get(recIdInspector.getStructFieldData(recIdValue, bucketField));
-      if (isLogTraceEnabled) {
-        LOG.trace("Acid choosing bucket number " + buckNum);
-      }
-      return buckNum;
-    } else {
-      Object[] bucketFieldValues = new Object[bucketEval.length];
-      for (int i = 0; i < bucketEval.length; i++) {
-        bucketFieldValues[i] = bucketEval[i].evaluate(row);
-      }
-      return ObjectInspectorUtils.getBucketNumber(bucketFieldValues, bucketObjectInspectors, numBuckets);
+    Object[] bucketFieldValues = new Object[bucketEval.length];
+    for (int i = 0; i < bucketEval.length; i++) {
+      bucketFieldValues[i] = bucketEval[i].evaluate(row);
     }
+    return ObjectInspectorUtils.getBucketNumber(bucketFieldValues, bucketObjectInspectors, numBuckets);
   }
 
   private void populateCachedDistributionKeys(Object row, int index) throws HiveException {
@@ -477,23 +436,23 @@ public class ReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
     return hash.hash(firstKey.getBytes(), firstKey.getDistKeyLength(), 0);
   }
 
+  /**
+   * For Acid Update/Delete case, we expect a single partitionEval of the form
+   * UDFToInteger(ROW__ID) and buckNum == -1 so that the result of this method
+   * is to return the bucketId extracted from ROW__ID unless it optimized by
+   * {@link org.apache.hadoop.hive.ql.optimizer.SortedDynPartitionOptimizer} 
+   */
   private int computeHashCode(Object row, int buckNum) throws HiveException {
     // Evaluate the HashCode
     int keyHashCode = 0;
     if (partitionEval.length == 0) {
-      // If no partition cols and not doing an update or delete, just distribute the data uniformly
+      // If no partition cols, just distribute the data uniformly
       // to provide better load balance. If the requirement is to have a single reducer, we should
       // set the number of reducers to 1. Use a constant seed to make the code deterministic.
-      // For acid operations make sure to send all records with the same key to the same
-      // FileSinkOperator, as the RecordUpdater interface can't manage multiple writers for a file.
-      if (conf.getWriteType() == AcidUtils.Operation.NOT_ACID) {
-        if (random == null) {
-          random = new Random(12345);
-        }
-        keyHashCode = random.nextInt();
-      } else {
-        keyHashCode = 1;
+      if (random == null) {
+        random = new Random(12345);
       }
+      keyHashCode = random.nextInt();
     } else {
       Object[] bucketFieldValues = new Object[partitionEval.length];
       for(int i = 0; i < partitionEval.length; i++) {

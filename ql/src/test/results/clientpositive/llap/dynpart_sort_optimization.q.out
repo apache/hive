@@ -155,6 +155,7 @@ STAGE PLANS:
                 Statistics: Num rows: 4442 Data size: 106611 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
+                  Dp Sort State: PARTITION_SORTED
                   Statistics: Num rows: 4442 Data size: 106611 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.TextInputFormat
@@ -247,6 +248,7 @@ STAGE PLANS:
                 Statistics: Num rows: 10 Data size: 240 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
+                  Dp Sort State: PARTITION_SORTED
                   Statistics: Num rows: 10 Data size: 240 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.TextInputFormat
@@ -320,6 +322,7 @@ STAGE PLANS:
                 Statistics: Num rows: 4442 Data size: 106611 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
+                  Dp Sort State: PARTITION_BUCKET_SORTED
                   Statistics: Num rows: 4442 Data size: 106611 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.TextInputFormat
@@ -392,6 +395,7 @@ STAGE PLANS:
                 Statistics: Num rows: 4442 Data size: 106611 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
+                  Dp Sort State: PARTITION_BUCKET_SORTED
                   Statistics: Num rows: 4442 Data size: 106611 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.TextInputFormat
@@ -532,6 +536,7 @@ STAGE PLANS:
                 Statistics: Num rows: 4442 Data size: 106611 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
+                  Dp Sort State: PARTITION_SORTED
                   Statistics: Num rows: 4442 Data size: 106611 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.TextInputFormat
@@ -624,6 +629,7 @@ STAGE PLANS:
                 Statistics: Num rows: 10 Data size: 240 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
+                  Dp Sort State: PARTITION_SORTED
                   Statistics: Num rows: 10 Data size: 240 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.TextInputFormat
@@ -697,6 +703,7 @@ STAGE PLANS:
                 Statistics: Num rows: 4442 Data size: 106611 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
+                  Dp Sort State: PARTITION_BUCKET_SORTED
                   Statistics: Num rows: 4442 Data size: 106611 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.TextInputFormat
@@ -769,6 +776,7 @@ STAGE PLANS:
                 Statistics: Num rows: 4442 Data size: 106611 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
+                  Dp Sort State: PARTITION_BUCKET_SORTED
                   Statistics: Num rows: 4442 Data size: 106611 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.TextInputFormat
@@ -1383,6 +1391,7 @@ STAGE PLANS:
                 Statistics: Num rows: 4442 Data size: 106611 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
+                  Dp Sort State: PARTITION_SORTED
                   Statistics: Num rows: 4442 Data size: 106611 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.TextInputFormat
@@ -1477,6 +1486,7 @@ STAGE PLANS:
                 Statistics: Num rows: 10 Data size: 240 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
+                  Dp Sort State: PARTITION_SORTED
                   Statistics: Num rows: 10 Data size: 240 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.TextInputFormat
@@ -1633,6 +1643,7 @@ STAGE PLANS:
                   Statistics: Num rows: 2221 Data size: 53305 Basic stats: COMPLETE Column stats: NONE
                   File Output Operator
                     compressed: false
+                    Dp Sort State: PARTITION_SORTED
                     Statistics: Num rows: 2221 Data size: 53305 Basic stats: COMPLETE Column stats: NONE
                     table:
                         input format: org.apache.hadoop.mapred.TextInputFormat
@@ -2090,6 +2101,7 @@ STAGE PLANS:
                 Statistics: Num rows: 4442 Data size: 106611 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
+                  Dp Sort State: PARTITION_BUCKET_SORTED
                   Statistics: Num rows: 4442 Data size: 106611 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.TextInputFormat
@@ -2464,6 +2476,7 @@ STAGE PLANS:
                 Statistics: Num rows: 429 Data size: 53255 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
+                  Dp Sort State: PARTITION_SORTED
                   Statistics: Num rows: 429 Data size: 53255 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.TextInputFormat
@@ -2538,6 +2551,7 @@ STAGE PLANS:
                 Statistics: Num rows: 429 Data size: 53255 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
+                  Dp Sort State: PARTITION_SORTED
                   Statistics: Num rows: 429 Data size: 53255 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.TextInputFormat
@@ -2612,6 +2626,7 @@ STAGE PLANS:
                 Statistics: Num rows: 429 Data size: 53255 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
+                  Dp Sort State: PARTITION_SORTED
                   Statistics: Num rows: 429 Data size: 53255 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.TextInputFormat
@@ -2686,6 +2701,7 @@ STAGE PLANS:
                 Statistics: Num rows: 214 Data size: 26565 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
+                  Dp Sort State: PARTITION_SORTED
                   Statistics: Num rows: 214 Data size: 26565 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.TextInputFormat
@@ -2760,6 +2776,7 @@ STAGE PLANS:
                 Statistics: Num rows: 214 Data size: 26565 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
+                  Dp Sort State: PARTITION_SORTED
                   Statistics: Num rows: 214 Data size: 26565 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.TextInputFormat
@@ -2834,6 +2851,7 @@ STAGE PLANS:
                 Statistics: Num rows: 214 Data size: 26565 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
+                  Dp Sort State: PARTITION_SORTED
                   Statistics: Num rows: 214 Data size: 26565 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.TextInputFormat

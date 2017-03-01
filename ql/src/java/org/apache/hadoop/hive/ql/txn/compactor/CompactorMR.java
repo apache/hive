@@ -266,7 +266,7 @@ public class CompactorMR {
 
     if (parsedDeltas.size() == 0 && dir.getOriginalFiles() == null) {
       // Skip compaction if there's no delta files AND there's no original files
-      LOG.error("No delta files or original files found to compact in " + sd.getLocation());
+      LOG.error("No delta files or original files found to compact in " + sd.getLocation() + " for compactionId=" + ci.id);
       return;
     }
 

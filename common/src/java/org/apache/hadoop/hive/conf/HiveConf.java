@@ -1794,8 +1794,8 @@ public class HiveConf extends Configuration {
         "org.apache.hadoop.hive.ql.lockmgr.DummyTxnManager",
         "Set to org.apache.hadoop.hive.ql.lockmgr.DbTxnManager as part of turning on Hive\n" +
         "transactions, which also requires appropriate settings for hive.compactor.initiator.on,\n" +
-        "hive.compactor.worker.threads, hive.support.concurrency (true), hive.enforce.bucketing\n" +
-        "(true), and hive.exec.dynamic.partition.mode (nonstrict).\n" +
+        "hive.compactor.worker.threads, hive.support.concurrency (true),\n" +
+        "and hive.exec.dynamic.partition.mode (nonstrict).\n" +
         "The default DummyTxnManager replicates pre-Hive-0.13 behavior and provides\n" +
         "no transactions."),
     HIVE_TXN_STRICT_LOCKING_MODE("hive.txn.strict.locking.mode", true, "In strict mode non-ACID\n" +

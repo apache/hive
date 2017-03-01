@@ -170,7 +170,7 @@ public class SortedDynPartitionTimeGranularityOptimizer extends Transform {
       List<Integer> sortNullOrder = new ArrayList<Integer>(1);
       sortNullOrder.add(0); // nulls first
       ReduceSinkOperator rsOp = getReduceSinkOp(keyPositions, sortOrder,
-          sortNullOrder, allRSCols, granularitySelOp, fsOp.getConf().getWriteType());
+          sortNullOrder, allRSCols, granularitySelOp);
 
       // Create backtrack SelectOp
       List<ExprNodeDesc> descs = new ArrayList<ExprNodeDesc>(allRSCols.size());
@@ -295,8 +295,8 @@ public class SortedDynPartitionTimeGranularityOptimizer extends Transform {
     }
 
     private ReduceSinkOperator getReduceSinkOp(List<Integer> keyPositions, List<Integer> sortOrder,
-        List<Integer> sortNullOrder, ArrayList<ExprNodeDesc> allCols, Operator<? extends OperatorDesc> parent,
-        AcidUtils.Operation writeType) throws SemanticException {
+        List<Integer> sortNullOrder, ArrayList<ExprNodeDesc> allCols, Operator<? extends OperatorDesc> parent
+    ) throws SemanticException {
 
       ArrayList<ExprNodeDesc> keyCols = Lists.newArrayList();
       // we will clone here as RS will update bucket column key with its
@@ -353,7 +353,7 @@ public class SortedDynPartitionTimeGranularityOptimizer extends Transform {
       // Number of reducers is set to default (-1)
       ReduceSinkDesc rsConf = new ReduceSinkDesc(keyCols, keyCols.size(), valCols,
           keyColNames, distinctColumnIndices, valColNames, -1, partCols, -1, keyTable,
-          valueTable, writeType);
+          valueTable);
 
       ArrayList<ColumnInfo> signature = new ArrayList<>();
       for (int index = 0; index < parent.getSchema().getSignature().size(); index++) {

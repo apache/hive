@@ -78,7 +78,7 @@ STAGE PLANS:
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkLongOperator
                             native: true
-                            nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, Not ACID UPDATE or DELETE IS true, No buckets IS true, No TopN IS true, Uniform Hash IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                            nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No buckets IS true, No TopN IS true, Uniform Hash IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                         Statistics: Num rows: 500 Data size: 90000 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -121,7 +121,7 @@ STAGE PLANS:
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkLongOperator
                             native: true
-                            nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, Not ACID UPDATE or DELETE IS true, No buckets IS true, No TopN IS true, Uniform Hash IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                            nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No buckets IS true, No TopN IS true, Uniform Hash IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                         Statistics: Num rows: 57 Data size: 10146 Basic stats: COMPLETE Column stats: NONE
                       Select Operator
                         expressions: _col0 (type: int)
@@ -147,7 +147,7 @@ STAGE PLANS:
                             Reduce Sink Vectorization:
                                 className: VectorReduceSinkOperator
                                 native: false
-                                nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, Not ACID UPDATE or DELETE IS true, No buckets IS true, No TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                                nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No buckets IS true, No TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                                 nativeConditionsNotMet: Uniform Hash IS false
                             Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
                             value expressions: _col0 (type: int), _col1 (type: int), _col2 (type: binary)
@@ -241,7 +241,7 @@ STAGE PLANS:
                   Reduce Sink Vectorization:
                       className: VectorReduceSinkOperator
                       native: false
-                      nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, Not ACID UPDATE or DELETE IS true, No buckets IS true, No TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                      nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No buckets IS true, No TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                       nativeConditionsNotMet: Uniform Hash IS false
                   Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col0 (type: int), _col1 (type: int), _col2 (type: binary)
@@ -317,7 +317,7 @@ STAGE PLANS:
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkStringOperator
                             native: true
-                            nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, Not ACID UPDATE or DELETE IS true, No buckets IS true, No TopN IS true, Uniform Hash IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                            nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No buckets IS true, No TopN IS true, Uniform Hash IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                         Statistics: Num rows: 500 Data size: 90000 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -360,7 +360,7 @@ STAGE PLANS:
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkStringOperator
                             native: true
-                            nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, Not ACID UPDATE or DELETE IS true, No buckets IS true, No TopN IS true, Uniform Hash IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                            nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No buckets IS true, No TopN IS true, Uniform Hash IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                         Statistics: Num rows: 57 Data size: 10146 Basic stats: COMPLETE Column stats: NONE
                       Select Operator
                         expressions: _col0 (type: string)
@@ -386,7 +386,7 @@ STAGE PLANS:
                             Reduce Sink Vectorization:
                                 className: VectorReduceSinkOperator
                                 native: false
-                                nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, Not ACID UPDATE or DELETE IS true, No buckets IS true, No TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                                nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No buckets IS true, No TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                                 nativeConditionsNotMet: Uniform Hash IS false
                             Statistics: Num rows: 1 Data size: 552 Basic stats: COMPLETE Column stats: NONE
                             value expressions: _col0 (type: string), _col1 (type: string), _col2 (type: binary)
@@ -480,7 +480,7 @@ STAGE PLANS:
                   Reduce Sink Vectorization:
                       className: VectorReduceSinkOperator
                       native: false
-                      nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, Not ACID UPDATE or DELETE IS true, No buckets IS true, No TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                      nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No buckets IS true, No TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                       nativeConditionsNotMet: Uniform Hash IS false
                   Statistics: Num rows: 1 Data size: 552 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col0 (type: string), _col1 (type: string), _col2 (type: binary)
@@ -556,7 +556,7 @@ STAGE PLANS:
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkStringOperator
                             native: true
-                            nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, Not ACID UPDATE or DELETE IS true, No buckets IS true, No TopN IS true, Uniform Hash IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                            nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No buckets IS true, No TopN IS true, Uniform Hash IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                         Statistics: Num rows: 500 Data size: 90000 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -599,7 +599,7 @@ STAGE PLANS:
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkStringOperator
                             native: true
-                            nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, Not ACID UPDATE or DELETE IS true, No buckets IS true, No TopN IS true, Uniform Hash IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                            nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No buckets IS true, No TopN IS true, Uniform Hash IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                         Statistics: Num rows: 57 Data size: 10146 Basic stats: COMPLETE Column stats: NONE
                       Select Operator
                         expressions: _col0 (type: string)
@@ -625,7 +625,7 @@ STAGE PLANS:
                             Reduce Sink Vectorization:
                                 className: VectorReduceSinkOperator
                                 native: false
-                                nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, Not ACID UPDATE or DELETE IS true, No buckets IS true, No TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                                nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No buckets IS true, No TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                                 nativeConditionsNotMet: Uniform Hash IS false
                             Statistics: Num rows: 1 Data size: 552 Basic stats: COMPLETE Column stats: NONE
                             value expressions: _col0 (type: string), _col1 (type: string), _col2 (type: binary)
@@ -719,7 +719,7 @@ STAGE PLANS:
                   Reduce Sink Vectorization:
                       className: VectorReduceSinkOperator
                       native: false
-                      nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, Not ACID UPDATE or DELETE IS true, No buckets IS true, No TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                      nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No buckets IS true, No TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                       nativeConditionsNotMet: Uniform Hash IS false
                   Statistics: Num rows: 1 Data size: 552 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col0 (type: string), _col1 (type: string), _col2 (type: binary)
@@ -796,7 +796,7 @@ STAGE PLANS:
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkLongOperator
                             native: true
-                            nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, Not ACID UPDATE or DELETE IS true, No buckets IS true, No TopN IS true, Uniform Hash IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                            nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No buckets IS true, No TopN IS true, Uniform Hash IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                         Statistics: Num rows: 500 Data size: 90000 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -839,7 +839,7 @@ STAGE PLANS:
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkLongOperator
                             native: true
-                            nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, Not ACID UPDATE or DELETE IS true, No buckets IS true, No TopN IS true, Uniform Hash IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                            nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No buckets IS true, No TopN IS true, Uniform Hash IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                         Statistics: Num rows: 57 Data size: 10146 Basic stats: COMPLETE Column stats: NONE
                       Select Operator
                         expressions: _col0 (type: int)
@@ -865,7 +865,7 @@ STAGE PLANS:
                             Reduce Sink Vectorization:
                                 className: VectorReduceSinkOperator
                                 native: false
-                                nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, Not ACID UPDATE or DELETE IS true, No buckets IS true, No TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                                nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No buckets IS true, No TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                                 nativeConditionsNotMet: Uniform Hash IS false
                             Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
                             value expressions: _col0 (type: int), _col1 (type: int), _col2 (type: binary)
@@ -910,7 +910,7 @@ STAGE PLANS:
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkLongOperator
                             native: true
-                            nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, Not ACID UPDATE or DELETE IS true, No buckets IS true, No TopN IS true, Uniform Hash IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                            nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No buckets IS true, No TopN IS true, Uniform Hash IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                         Statistics: Num rows: 57 Data size: 10146 Basic stats: COMPLETE Column stats: NONE
                       Select Operator
                         expressions: _col0 (type: int)
@@ -936,7 +936,7 @@ STAGE PLANS:
                             Reduce Sink Vectorization:
                                 className: VectorReduceSinkOperator
                                 native: false
-                                nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, Not ACID UPDATE or DELETE IS true, No buckets IS true, No TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                                nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No buckets IS true, No TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                                 nativeConditionsNotMet: Uniform Hash IS false
                             Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
                             value expressions: _col0 (type: int), _col1 (type: int), _col2 (type: binary)
@@ -1032,7 +1032,7 @@ STAGE PLANS:
                   Reduce Sink Vectorization:
                       className: VectorReduceSinkOperator
                       native: false
-                      nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, Not ACID UPDATE or DELETE IS true, No buckets IS true, No TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                      nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No buckets IS true, No TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                       nativeConditionsNotMet: Uniform Hash IS false
                   Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col0 (type: int), _col1 (type: int), _col2 (type: binary)
@@ -1062,7 +1062,7 @@ STAGE PLANS:
                   Reduce Sink Vectorization:
                       className: VectorReduceSinkOperator
                       native: false
-                      nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, Not ACID UPDATE or DELETE IS true, No buckets IS true, No TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                      nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No buckets IS true, No TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                       nativeConditionsNotMet: Uniform Hash IS false
                   Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col0 (type: int), _col1 (type: int), _col2 (type: binary)
@@ -1139,7 +1139,7 @@ STAGE PLANS:
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkMultiKeyOperator
                             native: true
-                            nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, Not ACID UPDATE or DELETE IS true, No buckets IS true, No TopN IS true, Uniform Hash IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                            nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No buckets IS true, No TopN IS true, Uniform Hash IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                         Statistics: Num rows: 500 Data size: 90000 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -1182,7 +1182,7 @@ STAGE PLANS:
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkMultiKeyOperator
                             native: true
-                            nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, Not ACID UPDATE or DELETE IS true, No buckets IS true, No TopN IS true, Uniform Hash IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                            nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No buckets IS true, No TopN IS true, Uniform Hash IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                         Statistics: Num rows: 57 Data size: 10146 Basic stats: COMPLETE Column stats: NONE
                       Select Operator
                         expressions: _col0 (type: string)
@@ -1208,7 +1208,7 @@ STAGE PLANS:
                             Reduce Sink Vectorization:
                                 className: VectorReduceSinkOperator
                                 native: false
-                                nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, Not ACID UPDATE or DELETE IS true, No buckets IS true, No TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                                nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No buckets IS true, No TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                                 nativeConditionsNotMet: Uniform Hash IS false
                             Statistics: Num rows: 1 Data size: 552 Basic stats: COMPLETE Column stats: NONE
                             value expressions: _col0 (type: string), _col1 (type: string), _col2 (type: binary)
@@ -1236,7 +1236,7 @@ STAGE PLANS:
                             Reduce Sink Vectorization:
                                 className: VectorReduceSinkOperator
                                 native: false
-                                nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, Not ACID UPDATE or DELETE IS true, No buckets IS true, No TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                                nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No buckets IS true, No TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                                 nativeConditionsNotMet: Uniform Hash IS false
                             Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
                             value expressions: _col0 (type: int), _col1 (type: int), _col2 (type: binary)
@@ -1330,7 +1330,7 @@ STAGE PLANS:
                   Reduce Sink Vectorization:
                       className: VectorReduceSinkOperator
                       native: false
-                      nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, Not ACID UPDATE or DELETE IS true, No buckets IS true, No TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                      nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No buckets IS true, No TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                       nativeConditionsNotMet: Uniform Hash IS false
                   Statistics: Num rows: 1 Data size: 552 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col0 (type: string), _col1 (type: string), _col2 (type: binary)
@@ -1360,7 +1360,7 @@ STAGE PLANS:
                   Reduce Sink Vectorization:
                       className: VectorReduceSinkOperator
                       native: false
-                      nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, Not ACID UPDATE or DELETE IS true, No buckets IS true, No TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                      nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No buckets IS true, No TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                       nativeConditionsNotMet: Uniform Hash IS false
                   Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col0 (type: int), _col1 (type: int), _col2 (type: binary)
@@ -1436,7 +1436,7 @@ STAGE PLANS:
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkLongOperator
                             native: true
-                            nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, Not ACID UPDATE or DELETE IS true, No buckets IS true, No TopN IS true, Uniform Hash IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                            nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No buckets IS true, No TopN IS true, Uniform Hash IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                         Statistics: Num rows: 500 Data size: 90000 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -1479,7 +1479,7 @@ STAGE PLANS:
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkLongOperator
                             native: true
-                            nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, Not ACID UPDATE or DELETE IS true, No buckets IS true, No TopN IS true, Uniform Hash IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                            nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No buckets IS true, No TopN IS true, Uniform Hash IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                         Statistics: Num rows: 29 Data size: 5162 Basic stats: COMPLETE Column stats: NONE
                       Select Operator
                         expressions: _col0 (type: int)
@@ -1505,7 +1505,7 @@ STAGE PLANS:
                             Reduce Sink Vectorization:
                                 className: VectorReduceSinkOperator
                                 native: false
-                                nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, Not ACID UPDATE or DELETE IS true, No buckets IS true, No TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                                nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No buckets IS true, No TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                                 nativeConditionsNotMet: Uniform Hash IS false
                             Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
                             value expressions: _col0 (type: int), _col1 (type: int), _col2 (type: binary)
@@ -1599,7 +1599,7 @@ STAGE PLANS:
                   Reduce Sink Vectorization:
                       className: VectorReduceSinkOperator
                       native: false
-                      nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, Not ACID UPDATE or DELETE IS true, No buckets IS true, No TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                      nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No buckets IS true, No TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                       nativeConditionsNotMet: Uniform Hash IS false
                   Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
                   value expressions: _col0 (type: int), _col1 (type: int), _col2 (type: binary)

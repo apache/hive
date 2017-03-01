@@ -174,6 +174,7 @@ STAGE PLANS:
                       output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
                       serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                       name: default.acidtbl
+                  Write Type: DELETE
         Reducer 4 
             Execution mode: llap
             Reduce Operator Tree:
@@ -189,6 +190,7 @@ STAGE PLANS:
                       output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
                       serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                       name: default.acidtbl
+                  Write Type: UPDATE
         Reducer 5 
             Execution mode: llap
             Reduce Operator Tree:
@@ -228,6 +230,7 @@ STAGE PLANS:
                       output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
                       serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                       name: default.acidtbl
+                  Write Type: INSERT
         Reducer 8 
             Execution mode: llap
             Reduce Operator Tree:
@@ -398,6 +401,7 @@ STAGE PLANS:
                       output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
                       serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                       name: default.acidtbl
+                  Write Type: INSERT
         Reducer 5 
             Execution mode: llap
             Reduce Operator Tree:
@@ -639,6 +643,7 @@ STAGE PLANS:
                       output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
                       serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                       name: default.acidtbl
+                  Write Type: DELETE
         Reducer 5 
             Execution mode: llap
             Reduce Operator Tree:
@@ -654,6 +659,7 @@ STAGE PLANS:
                       output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
                       serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                       name: default.acidtbl
+                  Write Type: UPDATE
         Reducer 6 
             Execution mode: llap
             Reduce Operator Tree:
@@ -693,6 +699,7 @@ STAGE PLANS:
                       output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
                       serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                       name: default.acidtbl
+                  Write Type: INSERT
         Reducer 8 
             Execution mode: llap
             Reduce Operator Tree:

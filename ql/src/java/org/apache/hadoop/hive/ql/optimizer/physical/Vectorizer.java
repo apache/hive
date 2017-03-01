@@ -2980,11 +2980,7 @@ public class Vectorizer implements PhysicalPlanResolver {
         HiveConf.ConfVars.HIVE_VECTORIZATION_REDUCESINK_NEW_ENABLED);
 
     String engine = HiveConf.getVar(hiveConf, HiveConf.ConfVars.HIVE_EXECUTION_ENGINE);
-
-    boolean acidChange =
-        desc.getWriteType() == AcidUtils.Operation.UPDATE ||
-            desc.getWriteType() == AcidUtils.Operation.DELETE;
-
+    
     boolean hasBuckets = desc.getBucketCols() != null && !desc.getBucketCols().isEmpty();
 
     boolean hasTopN = desc.getTopN() >= 0;
@@ -3004,7 +3000,6 @@ public class Vectorizer implements PhysicalPlanResolver {
     // Remember the condition variables for EXPLAIN regardless.
     vectorDesc.setIsVectorizationReduceSinkNativeEnabled(isVectorizationReduceSinkNativeEnabled);
     vectorDesc.setEngine(engine);
-    vectorDesc.setAcidChange(acidChange);
     vectorDesc.setHasBuckets(hasBuckets);
     vectorDesc.setHasTopN(hasTopN);
     vectorDesc.setUseUniformHash(useUniformHash);
@@ -3015,7 +3010,6 @@ public class Vectorizer implements PhysicalPlanResolver {
     // Many restrictions.
     if (!isVectorizationReduceSinkNativeEnabled ||
         !isTezOrSpark ||
-        acidChange ||
         hasBuckets ||
         hasTopN ||
         !useUniformHash ||
