@@ -21,12 +21,15 @@ package org.apache.hive.beeline.util;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.regex.Pattern;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.hadoop.util.Shell;
+import org.apache.hive.common.util.StreamPrinter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -49,6 +52,8 @@ public class QFileClient {
   private File expectedDirectory;
   private final File scratchDirectory;
   private final File warehouseDirectory;
+  private final File initScript;
+  private final File cleanupScript;
 
   private File testDataDirectory;
   private File testScriptDirectory;
@@ -73,11 +78,13 @@ public class QFileClient {
 
 
   public QFileClient(HiveConf hiveConf, String hiveRootDirectory, String qFileDirectory, String outputDirectory,
-      String expectedDirectory) {
+      String expectedDirectory, String initScript, String cleanupScript) {
     this.hiveRootDirectory = new File(hiveRootDirectory);
     this.qFileDirectory = new File(qFileDirectory);
     this.outputDirectory = new File(outputDirectory);
     this.expectedDirectory = new File(expectedDirectory);
+    this.initScript = new File(initScript);
+    this.cleanupScript = new File(cleanupScript);
     this.scratchDirectory = new File(hiveConf.getVar(ConfVars.SCRATCHDIR));
     this.warehouseDirectory = new File(hiveConf.getVar(ConfVars.METASTOREWAREHOUSE));
   }
@@ -110,6 +117,9 @@ public class QFileClient {
     String timePattern = "(Mon|Tue|Wed|Thu|Fri|Sat|Sun) "
         + "(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec) "
         + "\\d{2} \\d{2}:\\d{2}:\\d{2} \\w+ 20\\d{2}";
+    // Pattern to remove the timestamp and other infrastructural info from the out file
+    String logPattern = "\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2},\\d*\\s+\\S+\\s+\\[" +
+                            ".*\\]\\s+\\S+:\\s+";
     String unixTimePattern = "\\D" + currentTimePrefix + "\\d{6}\\D";
     String unixTimeMillisPattern = "\\D" + currentTimePrefix + "\\d{9}\\D";
 
@@ -119,12 +129,15 @@ public class QFileClient {
       + "|SCR|SEL|STATS|TS|UDTF|UNION)_\\d+\"";
 
     filterSet = new RegexFilterSet()
+    .addFilter(logPattern,"")
+    .addFilter("Getting log thread is interrupted, since query is done!\n","")
     .addFilter(scratchDirectory.toString() + "[\\w\\-/]+", "!!{hive.exec.scratchdir}!!")
     .addFilter(warehouseDirectory.toString(), "!!{hive.metastore.warehouse.dir}!!")
     .addFilter(expectedDirectory.toString(), "!!{expectedDirectory}!!")
     .addFilter(outputDirectory.toString(), "!!{outputDirectory}!!")
     .addFilter(qFileDirectory.toString(), "!!{qFileDirectory}!!")
     .addFilter(hiveRootDirectory.toString(), "!!{hive.root}!!")
+    .addFilter("\\(queryId=[^\\)]*\\)","queryId=(!!{queryId}!!)")
     .addFilter("file:/\\w\\S+", "file:/!!ELIDED!!")
     .addFilter("pfile:/\\w\\S+", "pfile:/!!ELIDED!!")
     .addFilter("hdfs:/\\w\\S+", "hdfs:/!!ELIDED!!")
@@ -134,6 +147,7 @@ public class QFileClient {
     .addFilter("(\\D)" + currentTimePrefix + "\\d{9}(\\D)", "$1!!UNIXTIMEMILLIS!!$2")
     .addFilter(userName, "!!{user.name}!!")
     .addFilter(operatorPattern, "\"$1_!!ELIDED!!\"")
+    .addFilter("Time taken: [0-9\\.]* seconds", "Time taken: !!ELIDED!! seconds")
     ;
   };
 
@@ -219,7 +233,7 @@ public class QFileClient {
         "USE `" + testname + "`;",
         "set test.data.dir=" + testDataDirectory + ";",
         "set test.script.dir=" + testScriptDirectory + ";",
-        "!run " + testScriptDirectory + "/q_test_init.sql",
+        "!run " + testScriptDirectory + "/" + initScript,
     });
   }
 
@@ -228,6 +242,7 @@ public class QFileClient {
         "!set outputformat table",
         "USE default;",
         "DROP DATABASE IF EXISTS `" + testname + "` CASCADE;",
+        "!run " + testScriptDirectory + "/" + cleanupScript,
     });
   }
 
@@ -295,12 +310,61 @@ public class QFileClient {
     return expectedFile.exists();
   }
 
-  public boolean compareResults() throws IOException {
+  public boolean compareResults() throws IOException, InterruptedException {
     if (!expectedFile.exists()) {
       LOG.error("Expected results file does not exist: " + expectedFile);
       return false;
     }
-    return FileUtils.contentEquals(expectedFile, outputFile);
+    return executeDiff();
+  }
+
+  private boolean executeDiff() throws IOException, InterruptedException {
+    ArrayList<String> diffCommandArgs = new ArrayList<String>();
+    diffCommandArgs.add("diff");
+
+    // Text file comparison
+    diffCommandArgs.add("-a");
+
+    if (Shell.WINDOWS) {
+      // Ignore changes in the amount of white space
+      diffCommandArgs.add("-b");
+
+      // Files created on Windows machines have different line endings
+      // than files created on Unix/Linux. Windows uses carriage return and line feed
+      // ("\r\n") as a line ending, whereas Unix uses just line feed ("\n").
+      // Also StringBuilder.toString(), Stream to String conversions adds extra
+      // spaces at the end of the line.
+      diffCommandArgs.add("--strip-trailing-cr"); // Strip trailing carriage return on input
+      diffCommandArgs.add("-B"); // Ignore changes whose lines are all blank
+    }
+
+    // Add files to compare to the arguments list
+    diffCommandArgs.add(getQuotedString(expectedFile));
+    diffCommandArgs.add(getQuotedString(outputFile));
+
+    System.out.println("Running: " + org.apache.commons.lang.StringUtils.join(diffCommandArgs,
+        ' '));
+    Process executor = Runtime.getRuntime().exec(diffCommandArgs.toArray(
+        new String[diffCommandArgs.size()]));
+
+    StreamPrinter errPrinter = new StreamPrinter(executor.getErrorStream(), null, System.err);
+    StreamPrinter outPrinter = new StreamPrinter(executor.getInputStream(), null, System.out);
+
+    outPrinter.start();
+    errPrinter.start();
+
+    int result = executor.waitFor();
+
+    outPrinter.join();
+    errPrinter.join();
+
+    executor.waitFor();
+
+    return (result == 0);
+  }
+
+  private static String getQuotedString(File file) {
+    return Shell.WINDOWS ? String.format("\"%s\"", file.getAbsolutePath()) : file.getAbsolutePath();
   }
 
   public void overwriteResults() {

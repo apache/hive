@@ -16,104 +16,87 @@
  * limitations under the License.
  */
 package org.apache.hadoop.hive.cli.control;
-//beeline is excluded by default
-//AFAIK contains broken tests
-//and produces compile errors...i'll comment out this whole class for now...
-/*
 
 import static org.junit.Assert.fail;
-import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.*;
 
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.ql.QTestUtil;
 import org.apache.hive.beeline.util.QFileClient;
-import org.apache.hive.service.server.HiveServer2;
+import org.apache.hive.jdbc.miniHS2.MiniHS2;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
-// HIVE-14444: i've dropped this: @RunWith(ConcurrentTestRunner.class)
+
+import java.util.HashMap;
+
 public class CoreBeeLineDriver extends CliAdapter {
   private final String hiveRootDirectory = AbstractCliConfig.HIVE_ROOT;
   private final String queryDirectory;
   private final String logDirectory;
   private final String resultsDirectory;
+  private final String initScript;
+  private final String cleanupScript;
   private boolean overwrite = false;
-  private static String scratchDirectory;
-  private static QTestUtil.QTestSetup miniZKCluster = null;
-
-  private static HiveServer2 hiveServer2;
+  private MiniHS2 miniHS2;
+//  private static QTestUtil.QTestSetup miniZKCluster = null;
 
   public CoreBeeLineDriver(AbstractCliConfig testCliConfig) {
     super(testCliConfig);
     queryDirectory = testCliConfig.getQueryDirectory();
     logDirectory = testCliConfig.getLogDir();
     resultsDirectory = testCliConfig.getResultsDir();
+    initScript = testCliConfig.getInitScript();
+    cleanupScript = testCliConfig.getCleanupScript();
   }
 
   @Override
   @BeforeClass
   public void beforeClass() throws Exception {
-    HiveConf hiveConf = new HiveConf();
-    hiveConf.logVars(System.err);
-    System.err.flush();
-
-    scratchDirectory = hiveConf.getVar(SCRATCHDIR);
-
     String testOutputOverwrite = System.getProperty("test.output.overwrite");
     if (testOutputOverwrite != null && "true".equalsIgnoreCase(testOutputOverwrite)) {
       overwrite = true;
     }
 
-    miniZKCluster = new QTestUtil.QTestSetup();
-    miniZKCluster.preTest(hiveConf);
-
-    System.setProperty("hive.zookeeper.quorum",
-        hiveConf.get("hive.zookeeper.quorum"));
-    System.setProperty("hive.zookeeper.client.port",
-        hiveConf.get("hive.zookeeper.client.port"));
-
     String disableserver = System.getProperty("test.service.disable.server");
     if (null != disableserver && disableserver.equalsIgnoreCase("true")) {
-      System.err.println("test.service.disable.server=true "
-        + "Skipping HiveServer2 initialization!");
+      System.err.println("test.service.disable.server=true Skipping HiveServer2 initialization!");
       return;
     }
 
-    hiveServer2 = new HiveServer2();
-    hiveServer2.init(hiveConf);
-    System.err.println("Starting HiveServer2...");
-    hiveServer2.start();
-    Thread.sleep(5000);
+    HiveConf hiveConf = new HiveConf();
+    // We do not need Zookeeper at the moment
+    hiveConf.set(HiveConf.ConfVars.HIVE_LOCK_MANAGER.varname,
+        "org.apache.hadoop.hive.ql.lockmgr.EmbeddedLockManager");
+
+    // But if we need later we can enable it with this, or create one ourself
+//    miniZKCluster = new QTestUtil.QTestSetup();
+//    miniZKCluster.preTest(hiveConf);
+
+    hiveConf.logVars(System.err);
+    System.err.flush();
+
+    miniHS2 = new MiniHS2.Builder().withConf(hiveConf).cleanupLocalDirOnStartup(true).build();
+
+    miniHS2.start(new HashMap<String, String>());
   }
 
 
   @Override
   @AfterClass
-  public void shutdown() {
-    try {
-      if (hiveServer2 != null) {
-        System.err.println("Stopping HiveServer2...");
-        hiveServer2.stop();
-      }
-    } catch (Throwable t) {
-      t.printStackTrace();
+  public void shutdown() throws Exception {
+    if (miniHS2 != null) {
+      miniHS2.stop();
     }
-
-    if (miniZKCluster != null) {
-      try {
-        miniZKCluster.tearDown();
-      } catch (Exception e) {
-        e.printStackTrace();
-      }
-    }
+//    if (miniZKCluster != null) {
+//      miniZKCluster.tearDown();
+//    }
   }
 
   public void runTest(String qFileName) throws Exception {
-    QFileClient qClient = new QFileClient(new HiveConf(), hiveRootDirectory,
-        queryDirectory, logDirectory, resultsDirectory)
+    QFileClient qClient = new QFileClient(miniHS2.getHiveConf(), hiveRootDirectory,
+        queryDirectory, logDirectory, resultsDirectory, initScript, cleanupScript)
     .setQFileName(qFileName)
     .setUsername("user")
     .setPassword("password")
-    .setJdbcUrl("jdbc:hive2://localhost:10000")
+    .setJdbcUrl(miniHS2.getJdbcURL())
     .setJdbcDriver("org.apache.hive.jdbc.HiveDriver")
     .setTestDataDirectory(hiveRootDirectory + "/data/files")
     .setTestScriptDirectory(hiveRootDirectory + "/data/scripts");
@@ -150,22 +133,14 @@ public class CoreBeeLineDriver extends CliAdapter {
 
   @Override
   public void setUp() {
-    // TODO Auto-generated method stub
-
   }
 
   @Override
   public void tearDown() {
-    // TODO Auto-generated method stub
-
   }
 
   @Override
   public void runTest(String name, String name2, String absolutePath) throws Exception {
     runTest(name2);
   }
-
 }
-
-
-*/

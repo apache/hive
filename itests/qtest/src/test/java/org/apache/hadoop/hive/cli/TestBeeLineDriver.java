@@ -31,7 +31,7 @@ import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
 @RunWith(Parameterized.class)
-public class DisabledTestBeeLineDriver {
+public class TestBeeLineDriver {
 
   static CliAdapter adapter = new CliConfigs.BeeLineConfig().getCliAdapter();
 
@@ -49,7 +49,7 @@ public class DisabledTestBeeLineDriver {
   private String name;
   private File qfile;
 
-  public DisabledTestBeeLineDriver(String name, File qfile) {
+  public TestBeeLineDriver(String name, File qfile) {
     this.name = name;
     this.qfile = qfile;
   }
