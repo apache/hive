@@ -305,16 +305,16 @@ public class TezSessionPoolManager {
 
   private TezSessionState getSession(HiveConf conf, boolean doOpen)
       throws Exception {
-    String queueName = conf.get("tez.queue.name");
+    String queueName = conf.get(TezConfiguration.TEZ_QUEUE_NAME);
     boolean hasQueue = (queueName != null) && !queueName.isEmpty();
     if (hasQueue) {
       switch (customQueueAllowed) {
-      case FALSE: throw new HiveException("Specifying tez.queue.name is not allowed");
+      case FALSE: throw new HiveException("Specifying " + TezConfiguration.TEZ_QUEUE_NAME + " is not allowed");
       case IGNORE: {
         LOG.warn("User has specified " + queueName + " queue; ignoring the setting");
         queueName = null;
         hasQueue = false;
-        conf.unset("tez.queue.name");
+        conf.unset(TezConfiguration.TEZ_QUEUE_NAME);
       }
       default: // All good.
       }
@@ -375,7 +375,7 @@ public class TezSessionPoolManager {
       String queueName, boolean doOpen) throws Exception {
     TezSessionPoolSession retTezSessionState = createAndInitSession(queueName, false);
     if (queueName != null) {
-      conf.set("tez.queue.name", queueName);
+      conf.set(TezConfiguration.TEZ_QUEUE_NAME, queueName);
     }
     if (doOpen) {
       retTezSessionState.open(conf);
