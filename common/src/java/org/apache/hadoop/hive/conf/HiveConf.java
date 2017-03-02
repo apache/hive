@@ -1322,7 +1322,7 @@ public class HiveConf extends Configuration {
     HIVE_PARQUET_TIMESTAMP_SKIP_CONVERSION("hive.parquet.timestamp.skip.conversion", true,
         "Current Hive implementation of parquet stores timestamps to UTC, this flag allows skipping of the conversion" +
             "on reading parquet files from other tools"),
-    PARQUET_INT96_DEFAULT_UTC_WRITE_ZONE("parquet.mr.int96.enable.utc.write.zone", false,
+    HIVE_PARQUET_INT96_DEFAULT_UTC_WRITE_ZONE("hive.parquet.mr.int96.enable.utc.write.zone", false,
         "Enable this variable to use UTC as the default timezone for new Parquet tables."),
     HIVE_INT_TIMESTAMP_CONVERSION_IN_SECONDS("hive.int.timestamp.conversion.in.seconds", false,
         "Boolean/tinyint/smallint/int/bigint value is interpreted as milliseconds during the timestamp conversion.\n" +
