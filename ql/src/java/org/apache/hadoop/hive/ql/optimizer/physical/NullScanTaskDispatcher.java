@@ -18,10 +18,9 @@
 
 package org.apache.hadoop.hive.ql.optimizer.physical;
 
-import org.apache.hadoop.mapred.InputFormat;
-
 import java.io.IOException;
 
+import org.apache.hadoop.hive.common.StringInternUtils;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 
 import org.apache.hadoop.hive.ql.io.ZeroRowsInputFormat;
@@ -35,7 +34,6 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.ServiceLoader;
 import java.util.Map.Entry;
 import java.util.Stack;
 
@@ -125,8 +123,9 @@ public class NullScanTaskDispatcher implements Dispatcher {
       // Prefix partition with something to avoid it being a hidden file.
       Path fakePath = new Path(NullScanFileSystem.getBase() + newPartition.getTableName()
           + "/part" + encode(newPartition.getPartSpec()));
+      StringInternUtils.internUriStringsInPath(fakePath);
       work.addPathToPartitionInfo(fakePath, newPartition);
-      work.addPathToAlias(fakePath, new ArrayList<String>(allowed));
+      work.addPathToAlias(fakePath, new ArrayList<>(allowed));
       aliasesAffected.removeAll(allowed);
       if (aliasesAffected.isEmpty()) {
         work.removePathToAlias(path);
