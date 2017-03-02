@@ -311,8 +311,8 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: SelectColumnIsFalse(col 4)(children: VectorUDFAdaptor(cdate BETWEEN 1968-05-01 AND 1971-09-01) -> 4:boolean) -> boolean
-                    predicate: (not cdate BETWEEN 1968-05-01 AND 1971-09-01) (type: boolean)
+                        predicateExpression: FilterLongColumnNotBetween(col 3, left -610, right 608) -> boolean
+                    predicate: cdate NOT BETWEEN 1968-05-01 AND 1971-09-01 (type: boolean)
                     Statistics: Num rows: 10923 Data size: 2193503 Basic stats: COMPLETE Column stats: NONE
 >>>>>>> eb1da30... HIVE-15388: HiveParser spends lots of time in parsing queries with lots of '(' (Pengcheng Xiong, reviewed by Ashutosh Chauhan, Gunther Hagleitner)
                     Select Operator
@@ -332,7 +332,7 @@ STAGE PLANS:
                 groupByVectorOutput: true
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                 allNative: false
-                usesVectorUDFAdaptor: true
+                usesVectorUDFAdaptor: false
                 vectorized: true
 >>>>>>> eb1da30... HIVE-15388: HiveParser spends lots of time in parsing queries with lots of '(' (Pengcheng Xiong, reviewed by Ashutosh Chauhan, Gunther Hagleitner)
         Reducer 2 
@@ -437,8 +437,8 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: SelectColumnIsFalse(col 4)(children: VectorUDFAdaptor(cdecimal1 BETWEEN -2000 AND 4390.1351351351) -> 4:boolean) -> boolean
-                    predicate: (not cdecimal1 BETWEEN -2000 AND 4390.1351351351) (type: boolean)
+                        predicateExpression: FilterDecimalColumnNotBetween(col 1, left -2000, right 4390.1351351351) -> boolean
+                    predicate: cdecimal1 NOT BETWEEN -2000 AND 4390.1351351351 (type: boolean)
                     Statistics: Num rows: 10923 Data size: 2193503 Basic stats: COMPLETE Column stats: NONE
 >>>>>>> eb1da30... HIVE-15388: HiveParser spends lots of time in parsing queries with lots of '(' (Pengcheng Xiong, reviewed by Ashutosh Chauhan, Gunther Hagleitner)
                     Select Operator
@@ -461,7 +461,7 @@ STAGE PLANS:
                 groupByVectorOutput: true
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                 allNative: false
-                usesVectorUDFAdaptor: true
+                usesVectorUDFAdaptor: false
                 vectorized: true
 >>>>>>> eb1da30... HIVE-15388: HiveParser spends lots of time in parsing queries with lots of '(' (Pengcheng Xiong, reviewed by Ashutosh Chauhan, Gunther Hagleitner)
         Reducer 2 
