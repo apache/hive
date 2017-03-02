@@ -4123,11 +4123,11 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       }
     }
 
-    // If PARQUET_INT96_DEFAULT_UTC_WRITE_ZONE is set to True, then set new Parquet tables timezone
+    // If HIVE_PARQUET_INT96_DEFAULT_UTC_WRITE_ZONE is set to True, then set new Parquet tables timezone
     // to UTC by default (only if the table property is not set)
     if (tbl.getSerializationLib().equals(ParquetHiveSerDe.class.getName())) {
       SessionState ss = SessionState.get();
-      if (ss.getConf().getBoolVar(ConfVars.PARQUET_INT96_DEFAULT_UTC_WRITE_ZONE)) {
+      if (ss.getConf().getBoolVar(ConfVars.HIVE_PARQUET_INT96_DEFAULT_UTC_WRITE_ZONE)) {
         String parquetTimezone = tbl.getProperty(ParquetTableUtils.PARQUET_INT96_WRITE_ZONE_PROPERTY);
         if (parquetTimezone == null || parquetTimezone.isEmpty()) {
           tbl.setProperty(ParquetTableUtils.PARQUET_INT96_WRITE_ZONE_PROPERTY, ParquetTableUtils.PARQUET_INT96_NO_ADJUSTMENT_ZONE);
