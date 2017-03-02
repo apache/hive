@@ -11,17 +11,34 @@ import java.util.List;
 
 public class BeelineInPlaceUpdateStream implements InPlaceUpdateStream {
   private InPlaceUpdate inPlaceUpdate;
+  private EventNotifier notifier;
 
-  public BeelineInPlaceUpdateStream(PrintStream out) {
+  public BeelineInPlaceUpdateStream(PrintStream out, InPlaceUpdateStream.EventNotifier notifier) {
     this.inPlaceUpdate = new InPlaceUpdate(out);
+    this.notifier = notifier;
   }
 
   @Override
   public void update(TProgressUpdateResp response) {
-    if (response == null || response.getStatus().equals(TJobExecutionStatus.NOT_AVAILABLE))
-      return;
+    if (response == null || response.getStatus().equals(TJobExecutionStatus.NOT_AVAILABLE)) {
+      /*
+        we set it to completed if there is nothing the server has to report
+        for example, DDL statements
+      */
+      notifier.progressBarCompleted();
+    } else if (notifier.isOperationLogUpdatedAtLeastOnce()) {
+      /*
+        try to render in place update progress bar only if the operations logs is update at least once
+        as this will hopefully allow printing the metadata information like query id, application id
+        etc. have to remove these notifiers when the operation logs get merged into GetOperationStatus
+      */
+      inPlaceUpdate.render(new ProgressMonitorWrapper(response));
+    }
+  }
 
-    inPlaceUpdate.render(new ProgressMonitorWrapper(response));
+  @Override
+  public EventNotifier getEventNotifier() {
+    return notifier;
   }
 
   static class ProgressMonitorWrapper implements ProgressMonitor {
