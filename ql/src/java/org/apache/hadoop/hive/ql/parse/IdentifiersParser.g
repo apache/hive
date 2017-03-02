@@ -781,7 +781,6 @@ nonReserved
     | KW_VALIDATE
     | KW_NOVALIDATE
     | KW_KEY
-    | KW_MERGE
     | KW_MATCHED
     | KW_REPL | KW_DUMP | KW_BATCH | KW_STATUS
     | KW_CACHE | KW_DAYOFWEEK | KW_VIEWS
