@@ -51,6 +51,8 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.hive.serde2.typeinfo.VarcharTypeInfo;
 
+import com.google.common.base.Preconditions;
+
 
 /**
  * Library of utility functions used in the parse code.
@@ -402,10 +404,9 @@ public final class ParseUtils {
           }
         }
       }
-      // We find the SELECT closest to the top. This assumes there's only one FROM or FROM-s
-      // are all equivalent (union case). Also, this assumption could be false for an already
-      // malformed query; we don't check for that here - it will fail later anyway.
-      // TODO: Maybe we should find ALL the SELECT-s not nested in another from, and compare.
+      // Note: we assume that this isn't an already malformed query;
+      //       we don't check for that here - it will fail later anyway.
+      // First, we find the SELECT closest to the top.
       ASTNode select = searcher.simpleBreadthFirstSearchAny((ASTNode)fromNode,
           HiveParser.TOK_SELECT, HiveParser.TOK_SELECTDI);
       if (select == null) {
@@ -414,6 +415,29 @@ public final class ParseUtils {
         setCols.token.setType(HiveParser.TOK_ALLCOLREF);
         return;
       }
+
+      // Then, find the leftmost logical sibling select, because that's what Hive uses for aliases. 
+      while (true) {
+        CommonTree queryOfSelect = select.parent;
+        while (queryOfSelect != null && queryOfSelect.getType() != HiveParser.TOK_QUERY) {
+          queryOfSelect = queryOfSelect.parent;
+        }
+        // We should have some QUERY; and also its parent because by supposition we are in subq.
+        if (queryOfSelect == null || queryOfSelect.parent == null) {
+          LOG.debug("Replacing SETCOLREF with ALLCOLREF because we couldn't find the QUERY");
+          setCols.token.setType(HiveParser.TOK_ALLCOLREF);
+          return;
+        }
+        if (queryOfSelect.childIndex == 0) break; // We are the left-most child.
+        Tree moreToTheLeft = queryOfSelect.parent.getChild(0);
+        Preconditions.checkState(moreToTheLeft != queryOfSelect);
+        ASTNode newSelect = searcher.simpleBreadthFirstSearchAny((ASTNode)moreToTheLeft,
+          HiveParser.TOK_SELECT, HiveParser.TOK_SELECTDI);
+        Preconditions.checkState(newSelect != select);
+        select = newSelect;
+        // Repeat the procedure for the new select.
+      }
+
       // Found the proper columns.
       List<ASTNode> newChildren = new ArrayList<>(select.getChildCount());
       HashSet<String> aliases = new HashSet<>();
