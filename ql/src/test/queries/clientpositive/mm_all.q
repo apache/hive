@@ -448,7 +448,21 @@ drop table skewjoin_mm;
 
 set hive.optimize.skewjoin=false;
 
+set hive.optimize.index.filter=true;
+set hive.auto.convert.join=false;
+CREATE TABLE parquet1_mm(id INT) STORED AS PARQUET tblproperties ("transactional"="true", "transactional_properties"="insert_only");
+INSERT INTO parquet1_mm VALUES(1), (2);
+CREATE TABLE parquet2_mm(id INT, value STRING) STORED AS PARQUET tblproperties ("transactional"="true", "transactional_properties"="insert_only");
+INSERT INTO parquet2_mm VALUES(1, 'value1');
+INSERT INTO parquet2_mm VALUES(1, 'value2');
+select parquet1_mm.id, t1.value, t2.value FROM parquet1_mm
+  JOIN parquet2_mm t1 ON parquet1_mm.id=t1.id
+  JOIN parquet2_mm t2 ON parquet1_mm.id=t2.id
+where t1.value = 'value1' and t2.value = 'value2';
+drop table parquet1_mm;
+drop table parquet2_mm;
 
+set hive.auto.convert.join=true;
 
 drop table intermediate;
 

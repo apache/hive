@@ -102,7 +102,7 @@ public class CombineHiveInputFormat<K extends WritableComparable, V extends Writ
     public Set<Integer> call() throws Exception {
       Set<Integer> nonCombinablePathIndices = new HashSet<Integer>();
       for (int i = 0; i < length; i++) {
-        PartitionDesc part = HiveFileFormatUtils.getPartitionDescFromPathRecursively(
+        PartitionDesc part = HiveFileFormatUtils.getFromPathRecursively(
                 pathToPartitionInfo, paths[i + start],
                 IOPrepareCache.get().allocatePartitionDescMap());
         // Use HiveInputFormat if any of the paths is not splittable
@@ -170,7 +170,7 @@ public class CombineHiveInputFormat<K extends WritableComparable, V extends Writ
         Path[] ipaths = inputSplitShim.getPaths();
         if (ipaths.length > 0) {
           PartitionDesc part = HiveFileFormatUtils
-              .getPartitionDescFromPathRecursively(this.pathToPartitionInfo,
+              .getFromPathRecursively(this.pathToPartitionInfo,
                   ipaths[0], IOPrepareCache.get().getPartitionDescMap());
           inputFormatClassName = part.getInputFileFormatClass().getName();
         }
@@ -284,7 +284,7 @@ public class CombineHiveInputFormat<K extends WritableComparable, V extends Writ
 
         // extract all the inputFormatClass names for each chunk in the
         // CombinedSplit.
-        PartitionDesc part = HiveFileFormatUtils.getPartitionDescFromPathRecursively(pathToPartitionInfo,
+        PartitionDesc part = HiveFileFormatUtils.getFromPathRecursively(pathToPartitionInfo,
             inputSplitShim.getPath(0), IOPrepareCache.get().getPartitionDescMap());
 
         // create a new InputFormat instance if this is the first time to see
@@ -364,7 +364,7 @@ public class CombineHiveInputFormat<K extends WritableComparable, V extends Writ
     Set<Path> poolSet = new HashSet<Path>();
 
     for (Path path : paths) {
-      PartitionDesc part = HiveFileFormatUtils.getPartitionDescFromPathRecursively(
+      PartitionDesc part = HiveFileFormatUtils.getFromPathRecursively(
           pathToPartitionInfo, path, IOPrepareCache.get().allocatePartitionDescMap());
       TableDesc tableDesc = part.getTableDesc();
       if ((tableDesc != null) && tableDesc.isNonNative()) {

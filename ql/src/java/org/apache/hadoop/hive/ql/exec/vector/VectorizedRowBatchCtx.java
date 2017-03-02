@@ -150,7 +150,7 @@ public class VectorizedRowBatchCtx {
         .getMapWork(hiveConf).getPathToPartitionInfo();
 
     PartitionDesc partDesc = HiveFileFormatUtils
-        .getPartitionDescFromPathRecursively(pathToPartitionInfo,
+        .getFromPathRecursively(pathToPartitionInfo,
             split.getPath(), IOPrepareCache.get().getPartitionDescMap());
 
     getPartitionValues(vrbCtx, partDesc, partitionValues);

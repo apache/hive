@@ -75,7 +75,7 @@ public class HiveIndexedInputFormat extends HiveInputFormat {
     PartitionDesc part;
     for (Path dir : dirs) {
       part = HiveFileFormatUtils
-          .getPartitionDescFromPathRecursively(pathToPartitionInfo, dir,
+          .getFromPathRecursively(pathToPartitionInfo, dir,
               IOPrepareCache.get().allocatePartitionDescMap(), true);
       // create a new InputFormat instance if this is the first time to see this
       // class

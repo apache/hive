@@ -908,6 +908,7 @@ public class Vectorizer implements PhysicalPlanResolver {
           setOperatorIssue("Alias " + alias + " not present in aliases " + aliases);
           return new ImmutablePair<Boolean,Boolean>(false, false);
         }
+        // TODO: should this use getPartitionDescFromPathRecursively?
         PartitionDesc partDesc = pathToPartitionInfo.get(path);
         if (partDesc.getVectorPartitionDesc() != null) {
           // We've seen this already.

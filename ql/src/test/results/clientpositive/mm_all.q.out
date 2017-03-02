@@ -1165,10 +1165,10 @@ POSTHOOK: Input: default@merge1_mm@key=103
 POSTHOOK: Input: default@merge1_mm@key=97
 POSTHOOK: Input: default@merge1_mm@key=98
 #### A masked pattern was here ####
-103	103
-100	100
 98	98
+103	103
 97	97
+100	100
 0	0
 10	10
 PREHOOK: query: insert into table merge1_mm partition (key) select key, key from intermediate
@@ -1217,16 +1217,16 @@ POSTHOOK: Input: default@merge1_mm@key=97
 POSTHOOK: Input: default@merge1_mm@key=98
 #### A masked pattern was here ####
 100	100
-103	103
-97	97
 100	100
 103	103
 97	97
+103	103
+97	97
 98	98
 98	98
-0	0
 0	0
 10	10
+0	0
 10	10
 PREHOOK: query: drop table merge1_mm
 PREHOOK: type: DROPTABLE
@@ -3184,6 +3184,78 @@ POSTHOOK: query: drop table skewjoin_mm
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@skewjoin_mm
 POSTHOOK: Output: default@skewjoin_mm
+PREHOOK: query: CREATE TABLE parquet1_mm(id INT) STORED AS PARQUET tblproperties ("transactional"="true", "transactional_properties"="insert_only")
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@parquet1_mm
+POSTHOOK: query: CREATE TABLE parquet1_mm(id INT) STORED AS PARQUET tblproperties ("transactional"="true", "transactional_properties"="insert_only")
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@parquet1_mm
+PREHOOK: query: INSERT INTO parquet1_mm VALUES(1), (2)
+PREHOOK: type: QUERY
+PREHOOK: Output: default@parquet1_mm
+POSTHOOK: query: INSERT INTO parquet1_mm VALUES(1), (2)
+POSTHOOK: type: QUERY
+POSTHOOK: Output: default@parquet1_mm
+POSTHOOK: Lineage: parquet1_mm.id EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+PREHOOK: query: CREATE TABLE parquet2_mm(id INT, value STRING) STORED AS PARQUET tblproperties ("transactional"="true", "transactional_properties"="insert_only")
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@parquet2_mm
+POSTHOOK: query: CREATE TABLE parquet2_mm(id INT, value STRING) STORED AS PARQUET tblproperties ("transactional"="true", "transactional_properties"="insert_only")
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@parquet2_mm
+PREHOOK: query: INSERT INTO parquet2_mm VALUES(1, 'value1')
+PREHOOK: type: QUERY
+PREHOOK: Output: default@parquet2_mm
+POSTHOOK: query: INSERT INTO parquet2_mm VALUES(1, 'value1')
+POSTHOOK: type: QUERY
+POSTHOOK: Output: default@parquet2_mm
+POSTHOOK: Lineage: parquet2_mm.id EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: parquet2_mm.value SIMPLE [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+PREHOOK: query: INSERT INTO parquet2_mm VALUES(1, 'value2')
+PREHOOK: type: QUERY
+PREHOOK: Output: default@parquet2_mm
+POSTHOOK: query: INSERT INTO parquet2_mm VALUES(1, 'value2')
+POSTHOOK: type: QUERY
+POSTHOOK: Output: default@parquet2_mm
+POSTHOOK: Lineage: parquet2_mm.id EXPRESSION [(values__tmp__table__3)values__tmp__table__3.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+POSTHOOK: Lineage: parquet2_mm.value SIMPLE [(values__tmp__table__3)values__tmp__table__3.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
+PREHOOK: query: select parquet1_mm.id, t1.value, t2.value FROM parquet1_mm
+  JOIN parquet2_mm t1 ON parquet1_mm.id=t1.id
+  JOIN parquet2_mm t2 ON parquet1_mm.id=t2.id
+where t1.value = 'value1' and t2.value = 'value2'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@parquet1_mm
+PREHOOK: Input: default@parquet2_mm
+#### A masked pattern was here ####
+POSTHOOK: query: select parquet1_mm.id, t1.value, t2.value FROM parquet1_mm
+  JOIN parquet2_mm t1 ON parquet1_mm.id=t1.id
+  JOIN parquet2_mm t2 ON parquet1_mm.id=t2.id
+where t1.value = 'value1' and t2.value = 'value2'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@parquet1_mm
+POSTHOOK: Input: default@parquet2_mm
+#### A masked pattern was here ####
+1	value1	value2
+PREHOOK: query: drop table parquet1_mm
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@parquet1_mm
+PREHOOK: Output: default@parquet1_mm
+POSTHOOK: query: drop table parquet1_mm
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@parquet1_mm
+POSTHOOK: Output: default@parquet1_mm
+PREHOOK: query: drop table parquet2_mm
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@parquet2_mm
+PREHOOK: Output: default@parquet2_mm
+POSTHOOK: query: drop table parquet2_mm
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@parquet2_mm
+POSTHOOK: Output: default@parquet2_mm
 PREHOOK: query: drop table intermediate
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@intermediate

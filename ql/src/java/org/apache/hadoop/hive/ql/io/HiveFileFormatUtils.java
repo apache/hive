@@ -350,39 +350,33 @@ public final class HiveFileFormatUtils {
         .finalDestination(conf.getDestPath()));
   }
 
-  public static PartitionDesc getPartitionDescFromPathRecursively(
-      Map<Path, PartitionDesc> pathToPartitionInfo, Path dir,
-      Map<Map<Path, PartitionDesc>, Map<Path, PartitionDesc>> cacheMap)
-      throws IOException {
-    return getPartitionDescFromPathRecursively(pathToPartitionInfo, dir,
-        cacheMap, false);
+  public static <T> T getFromPathRecursively(Map<Path, T> pathToPartitionInfo, Path dir,
+      Map<Map<Path, T>, Map<Path, T>> cacheMap) throws IOException {
+    return getFromPathRecursively(pathToPartitionInfo, dir, cacheMap, false);
   }
 
-  public static PartitionDesc getPartitionDescFromPathRecursively(
-      Map<Path, PartitionDesc> pathToPartitionInfo, Path dir,
-      Map<Map<Path, PartitionDesc>, Map<Path, PartitionDesc>> cacheMap, boolean ignoreSchema)
-          throws IOException {
-
-    PartitionDesc part = doGetPartitionDescFromPath(pathToPartitionInfo, dir);
+  public static <T> T getFromPathRecursively(Map<Path, T> pathToPartitionInfo, Path dir,
+      Map<Map<Path, T>, Map<Path, T>> cacheMap, boolean ignoreSchema) throws IOException {
+    T part = getFromPath(pathToPartitionInfo, dir);
 
     if (part == null
         && (ignoreSchema
             || (dir.toUri().getScheme() == null || dir.toUri().getScheme().trim().equals(""))
             || FileUtils.pathsContainNoScheme(pathToPartitionInfo.keySet()))) {
 
-      Map<Path, PartitionDesc> newPathToPartitionInfo = null;
+      Map<Path, T> newPathToPartitionInfo = null;
       if (cacheMap != null) {
         newPathToPartitionInfo = cacheMap.get(pathToPartitionInfo);
       }
 
       if (newPathToPartitionInfo == null) { // still null
-        newPathToPartitionInfo = populateNewPartitionDesc(pathToPartitionInfo);
+        newPathToPartitionInfo = populateNewT(pathToPartitionInfo);
 
         if (cacheMap != null) {
           cacheMap.put(pathToPartitionInfo, newPathToPartitionInfo);
         }
       }
-      part = doGetPartitionDescFromPath(newPathToPartitionInfo, dir);
+      part = getFromPath(newPathToPartitionInfo, dir);
     }
     if (part != null) {
       return part;
@@ -392,18 +386,18 @@ public final class HiveFileFormatUtils {
     }
   }
 
-  private static Map<Path, PartitionDesc> populateNewPartitionDesc(Map<Path, PartitionDesc> pathToPartitionInfo) {
-    Map<Path, PartitionDesc> newPathToPartitionInfo = new HashMap<>();
-    for (Map.Entry<Path, PartitionDesc> entry: pathToPartitionInfo.entrySet()) {
-      PartitionDesc partDesc = entry.getValue();
+  private static <T> Map<Path, T> populateNewT(Map<Path, T> pathToPartitionInfo) {
+    Map<Path, T> newPathToPartitionInfo = new HashMap<>();
+    for (Map.Entry<Path, T> entry: pathToPartitionInfo.entrySet()) {
+      T partDesc = entry.getValue();
       Path pathOnly = Path.getPathWithoutSchemeAndAuthority(entry.getKey());
       newPathToPartitionInfo.put(pathOnly, partDesc);
     }
     return newPathToPartitionInfo;
   }
 
-  private static PartitionDesc doGetPartitionDescFromPath(
-      Map<Path, PartitionDesc> pathToPartitionInfo, Path dir) {
+  private static <T> T getFromPath(
+      Map<Path, T> pathToPartitionInfo, Path dir) {
     
     // We first do exact match, and then do prefix matching. The latter is due to input dir
     // could be /dir/ds='2001-02-21'/part-03 where part-03 is not part of partition
