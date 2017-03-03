@@ -90,13 +90,6 @@ public class HiveSchemaTool {
     this.hiveConf = hiveConf;
     this.dbType = dbType;
     this.metaStoreSchemaInfo = new MetaStoreSchemaInfo(hiveHome, hiveConf, dbType);
-    userName = hiveConf.get(ConfVars.METASTORE_CONNECTION_USER_NAME.varname);
-    try {
-      passWord = ShimLoader.getHadoopShims().getPassword(hiveConf,
-          HiveConf.ConfVars.METASTOREPWD.varname);
-    } catch (IOException err) {
-      throw new HiveMetaException("Error getting metastore password", err);
-    }
   }
 
   public HiveConf getHiveConf() {
@@ -1102,9 +1095,19 @@ public class HiveSchemaTool {
 
       if (line.hasOption("userName")) {
         schemaTool.setUserName(line.getOptionValue("userName"));
+      } else {
+        schemaTool.setUserName(
+            schemaTool.getHiveConf().get(ConfVars.METASTORE_CONNECTION_USER_NAME.varname));
       }
       if (line.hasOption("passWord")) {
         schemaTool.setPassWord(line.getOptionValue("passWord"));
+      } else {
+        try {
+          schemaTool.setPassWord(ShimLoader.getHadoopShims().getPassword(schemaTool.getHiveConf(),
+              HiveConf.ConfVars.METASTOREPWD.varname));
+        } catch (IOException err) {
+          throw new HiveMetaException("Error getting metastore password", err);
+        }
       }
       if (line.hasOption("dryRun")) {
         schemaTool.setDryRun(true);
