@@ -491,10 +491,10 @@ public final class MetaDataFormatUtils {
   static String getComment(FieldSchema col) {
     return col.getComment() != null ? col.getComment() : "";
   }
-  
+
   /**
    * Compares to lists of object T as vectors
-   * 
+   *
    * @param <T> the base object type. Must be {@link Comparable}
    */
   private static class VectorComparator<T extends Comparable<T>>  implements Comparator<List<T>>{
@@ -518,7 +518,7 @@ public final class MetaDataFormatUtils {
       return Integer.compare(listA.size(), listB.size());
     }
   }
-  
+
   /**
    * Returns a sorted version of the given list
    */
@@ -544,7 +544,7 @@ public final class MetaDataFormatUtils {
     Collections.sort(ret,comp);
     return ret;
   }
-  
+
   private static String formatDate(long timeInSeconds) {
     if (timeInSeconds != 0) {
       Date date = new Date(timeInSeconds * 1000);
@@ -616,7 +616,7 @@ public final class MetaDataFormatUtils {
    * @param tableInfo The target builder
    * @param isOutputPadded Should the value printed as a padded string?
    */
-  private static void formatOutput(String name, String value, StringBuilder tableInfo,
+  protected static void formatOutput(String name, String value, StringBuilder tableInfo,
       boolean isOutputPadded) {
     String unescapedValue =
         (isOutputPadded && value != null) ? value.replaceAll("\\\\n|\\\\r|\\\\r\\\\n","\n"):value;
@@ -646,8 +646,8 @@ public final class MetaDataFormatUtils {
               bcsd.getNumTrues(), bcsd.getNumFalses());
         } else if (csd.isSetDecimalStats()) {
           DecimalColumnStatsData dcsd = csd.getDecimalStats();
-          appendColumnStats(tableInfo, convertToString(dcsd.getLowValue()), 
-              convertToString(dcsd.getHighValue()), dcsd.getNumNulls(), dcsd.getNumDVs(), 
+          appendColumnStats(tableInfo, convertToString(dcsd.getLowValue()),
+              convertToString(dcsd.getHighValue()), dcsd.getNumNulls(), dcsd.getNumDVs(),
               "", "", "", "");
         } else if (csd.isSetDoubleStats()) {
           DoubleColumnStatsData dcsd = csd.getDoubleStats();

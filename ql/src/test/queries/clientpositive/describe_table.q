@@ -22,6 +22,10 @@ describe formatted `srcpart`;
 describe formatted `srcpart` `key`;
 describe formatted `srcpart` PARTITION(ds='2008-04-08', hr='12');
 
+
+describe formatted `srcpart` `ds`;
+describe formatted `srcpart` `hr`;
+
 create table srcpart_serdeprops like srcpart;
 alter table srcpart_serdeprops set serdeproperties('xyz'='0');
 alter table srcpart_serdeprops set serdeproperties('pqrs'='1');

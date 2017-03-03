@@ -97,6 +97,11 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	numFiles            	0                   
+	numRows             	0                   
+	rawDataSize         	0                   
+	totalSize           	0                   
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -167,6 +172,11 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	numFiles            	0                   
+	numRows             	0                   
+	rawDataSize         	0                   
+	totalSize           	0                   
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -202,6 +212,7 @@ POSTHOOK: Input: db1@t1
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
 	 	 	 	 	 	 	 	 	 	 
 key1                	int                 	                    	                    	                    	                    	                    	                    	                    	                    	from deserializer   
+COLUMN_STATS_ACCURATE	{}                  	 	 	 	 	 	 	 	 	 
 PREHOOK: query: DESCRIBE db1.t1 key1
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: db1@t1
@@ -225,6 +236,7 @@ POSTHOOK: Input: db1@t1
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
 	 	 	 	 	 	 	 	 	 	 
 key1                	int                 	                    	                    	                    	                    	                    	                    	                    	                    	from deserializer   
+COLUMN_STATS_ACCURATE	{}                  	 	 	 	 	 	 	 	 	 
 PREHOOK: query: DESCRIBE t1 key1
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: db1@t1
@@ -248,6 +260,7 @@ POSTHOOK: Input: db1@t1
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
 	 	 	 	 	 	 	 	 	 	 
 key1                	int                 	                    	                    	                    	                    	                    	                    	                    	                    	from deserializer   
+COLUMN_STATS_ACCURATE	{}                  	 	 	 	 	 	 	 	 	 
 PREHOOK: query: DESCRIBE t1 PARTITION(ds='4', part='5')
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: db1@t1

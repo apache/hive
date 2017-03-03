@@ -227,7 +227,12 @@ Shutting down query describe formatted escape_comments_tbl1
 'Location:           ','!!{hive.metastore.warehouse.dir}!!/escape_comments_db.db/escape_comments_tbl1','NULL'
 'Table Type:         ','MANAGED_TABLE       ','NULL'
 'Table Parameters:','NULL','NULL'
+'','COLUMN_STATS_ACCURATE','{\"BASIC_STATS\":\"true\"}'
 '','comment             ','a\nb                '
+'','numFiles            ','0                   '
+'','numRows             ','0                   '
+'','rawDataSize         ','0                   '
+'','totalSize           ','0                   '
 '','transient_lastDdlTime','!!UNIXTIME!!          '
 '','NULL','NULL'
 '# Storage Information','NULL','NULL'
@@ -240,7 +245,7 @@ Shutting down query describe formatted escape_comments_tbl1
 'Sort Columns:       ','[]                  ','NULL'
 'Storage Desc Params:','NULL','NULL'
 '','serialization.format','1                   '
-31 rows selected 
+36 rows selected 
 >>>  describe pretty escape_comments_tbl1;
 Acquired the compile lock.
 Compiling commandqueryId=(!!{queryId}!!): describe pretty escape_comments_tbl1

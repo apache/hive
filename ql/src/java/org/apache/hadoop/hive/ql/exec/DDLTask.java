@@ -67,9 +67,12 @@ import org.apache.hadoop.hive.metastore.HiveMetaHook;
 import org.apache.hadoop.hive.metastore.DefaultHiveMetaHook;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.PartitionDropOptions;
+import org.apache.hadoop.hive.metastore.StatObjectConverter;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.Warehouse;
+import org.apache.hadoop.hive.metastore.api.AggrStats;
 import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
+import org.apache.hadoop.hive.metastore.api.ColumnStatisticsData;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.CompactionResponse;
 import org.apache.hadoop.hive.metastore.api.Database;
@@ -155,6 +158,7 @@ import org.apache.hadoop.hive.ql.plan.AlterTableDesc.AlterTableTypes;
 import org.apache.hadoop.hive.ql.plan.AlterTableExchangePartition;
 import org.apache.hadoop.hive.ql.plan.AlterTableSimpleDesc;
 import org.apache.hadoop.hive.ql.plan.CacheMetadataDesc;
+import org.apache.hadoop.hive.ql.plan.ColStatistics;
 import org.apache.hadoop.hive.ql.plan.CreateDatabaseDesc;
 import org.apache.hadoop.hive.ql.plan.CreateIndexDesc;
 import org.apache.hadoop.hive.ql.plan.CreateTableDesc;
@@ -217,6 +221,7 @@ import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObje
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveRoleGrant;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveV1Authorizer;
 import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.hadoop.hive.ql.stats.StatsUtils;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.Deserializer;
@@ -2136,14 +2141,6 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     return 0;
   }
 
-  private static final String[] DELIMITER_PREFIXES = new String[] {
-      "FIELDS TERMINATED BY",
-      "COLLECTION ITEMS TERMINATED BY",
-      "MAP KEYS TERMINATED BY",
-      "LINES TERMINATED BY",
-      "NULL DEFINED AS"
-  };
-
   private int showCreateDatabase(Hive db, ShowCreateDatabaseDesc showCreateDb) throws HiveException {
     DataOutputStream outStream = getOutputStream(showCreateDb.getResFile());
     try {
@@ -3279,8 +3276,9 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
    * @return Returns 0 when execution succeeds and above 0 if it fails.
    * @throws HiveException
    *           Throws this exception if an unexpected error occurs.
+   * @throws MetaException
    */
-  private int describeTable(Hive db, DescTableDesc descTbl) throws HiveException {
+  private int describeTable(Hive db, DescTableDesc descTbl) throws HiveException, MetaException {
     String colPath = descTbl.getColumnPath();
     String tableName = descTbl.getTableName();
 
@@ -3301,7 +3299,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 
     DataOutputStream outStream = getOutputStream(descTbl.getResFile());
     try {
-      LOG.info("DDLTask: got data for " + tbl.getTableName());
+      LOG.debug("DDLTask: got data for " + tbl.getTableName());
 
       List<FieldSchema> cols = null;
       List<ColumnStatisticsObj> colStats = null;
@@ -3321,8 +3319,27 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         if (!descTbl.isFormatted()) {
           cols.addAll(tbl.getPartCols());
         }
+
+        if (tbl.isPartitioned() && part == null) {
+          // No partitioned specified for partitioned table, lets fetch all.
+          Map<String,String> tblProps = tbl.getParameters() == null ? new HashMap<String,String>() : tbl.getParameters();
+          PartitionIterable parts = new PartitionIterable(db, tbl, null, conf.getIntVar(HiveConf.ConfVars.METASTORE_BATCH_RETRIEVE_MAX));
+          for (String stat : StatsSetupConst.supportedStats) {
+            boolean state = true;
+            long statVal = 0l;
+            for (Partition partition : parts) {
+              Map<String,String> props = partition.getParameters();
+              state &= StatsSetupConst.areBasicStatsUptoDate(props);
+              if (props != null && props.get(stat) != null) {
+                statVal += Long.parseLong(props.get(stat));
+              }
+            }
+            StatsSetupConst.setBasicStatsState(tblProps, Boolean.toString(state));
+            tblProps.put(stat, String.valueOf(statVal));
+          }
+          tbl.setParameters(tblProps);
+        }
       } else {
-        cols = Hive.getFieldsFromDeserializer(colPath, deserializer);
         if (descTbl.isFormatted()) {
           // when column name is specified in describe table DDL, colPath will
           // will be table_name.column_name
@@ -3331,12 +3348,46 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
           List<String> colNames = new ArrayList<String>();
           colNames.add(colName.toLowerCase());
           if (null == part) {
-            colStats = db.getTableColumnStatistics(dbTab[0].toLowerCase(), dbTab[1].toLowerCase(), colNames);
+            if (tbl.isPartitioned()) {
+              Map<String,String> tblProps = tbl.getParameters() == null ? new HashMap<String,String>() : tbl.getParameters();
+              if (tbl.isPartitionKey(colNames.get(0))) {
+                FieldSchema partCol = tbl.getPartColByName(colNames.get(0));
+                cols = Collections.singletonList(partCol);
+                PartitionIterable parts = new PartitionIterable(db, tbl, null, conf.getIntVar(HiveConf.ConfVars.METASTORE_BATCH_RETRIEVE_MAX));
+                ColumnInfo ci = new ColumnInfo(partCol.getName(),TypeInfoUtils.getTypeInfoFromTypeString(partCol.getType()),null,false);
+                ColStatistics cs = StatsUtils.getColStatsForPartCol(ci, parts, conf);
+                ColumnStatisticsData data = new ColumnStatisticsData();
+                ColStatistics.Range r = cs.getRange();
+                StatObjectConverter.fillColumnStatisticsData(partCol.getType(), data, r == null ? null : r.minValue, r == null ? null : r.maxValue,
+                    r == null ? null : r.minValue, r == null ? null : r.maxValue, r == null ? null : r.minValue.toString(), r == null ? null : r.maxValue.toString(),
+                    cs.getNumNulls(), cs.getCountDistint(), cs.getAvgColLen(), cs.getAvgColLen(), cs.getNumTrues(), cs.getNumFalses());
+                ColumnStatisticsObj cso = new ColumnStatisticsObj(partCol.getName(), partCol.getType(), data);
+                colStats = Collections.singletonList(cso);
+                StatsSetupConst.setColumnStatsState(tblProps, colNames);
+              } else {
+                cols = Hive.getFieldsFromDeserializer(colPath, deserializer);
+                List<String> parts = db.getPartitionNames(dbTab[0].toLowerCase(), dbTab[1].toLowerCase(), (short) -1);
+                AggrStats aggrStats = db.getAggrColStatsFor(dbTab[0].toLowerCase(), dbTab[1].toLowerCase(), colNames, parts);
+                colStats = aggrStats.getColStats();
+                if (parts.size() == aggrStats.getPartsFound()) {
+                  StatsSetupConst.setColumnStatsState(tblProps, colNames);
+                } else {
+                  StatsSetupConst.removeColumnStatsState(tblProps, colNames);
+                }
+              }
+              tbl.setParameters(tblProps);
+            } else {
+              cols = Hive.getFieldsFromDeserializer(colPath, deserializer);
+              colStats = db.getTableColumnStatistics(dbTab[0].toLowerCase(), dbTab[1].toLowerCase(), colNames);
+            }
           } else {
             List<String> partitions = new ArrayList<String>();
             partitions.add(part.getName());
+            cols = Hive.getFieldsFromDeserializer(colPath, deserializer);
             colStats = db.getPartitionColumnStatistics(dbTab[0].toLowerCase(), dbTab[1].toLowerCase(), partitions, colNames).get(part.getName());
           }
+        } else {
+          cols = Hive.getFieldsFromDeserializer(colPath, deserializer);
         }
       }
       PrimaryKeyInfo pkInfo = null;
@@ -3353,7 +3404,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
           cols, descTbl.isFormatted(), descTbl.isExt(),
           descTbl.isPretty(), isOutputPadded, colStats, pkInfo, fkInfo);
 
-      LOG.info("DDLTask: written data for " + tbl.getTableName());
+      LOG.debug("DDLTask: written data for " + tbl.getTableName());
 
     } catch (SQLException e) {
       throw new HiveException(e, ErrorMsg.GENERIC_ERROR, tableName);
@@ -4698,18 +4749,6 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     //then invalidate column stats
     StatsSetupConst.clearColumnStatsState(props);
     return statsPresent;
-  }
-
-  private String escapeHiveCommand(String str) {
-    StringBuilder sb = new StringBuilder();
-    for (int i = 0; i < str.length(); i ++) {
-      char c = str.charAt(i);
-      if (c == '\'') {
-        sb.append('\\');
-      }
-      sb.append(c);
-    }
-    return sb.toString();
   }
 
   @Override

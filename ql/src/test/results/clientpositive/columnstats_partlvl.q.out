@@ -682,6 +682,7 @@ POSTHOOK: Input: default@employee_part
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
 	 	 	 	 	 	 	 	 	 	 
 employeeID          	int                 	16                  	34                  	2                   	14                  	                    	                    	                    	                    	from deserializer   
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"employeeid\":\"true\",\"employeename\":\"true\"}}	 	 	 	 	 	 	 	 	 
 PREHOOK: query: create database if not exists dummydb
 PREHOOK: type: CREATEDATABASE
 PREHOOK: Output: database:dummydb
@@ -713,6 +714,7 @@ POSTHOOK: Input: default@employee_part
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
 	 	 	 	 	 	 	 	 	 	 
 employeeID          	int                 	16                  	34                  	1                   	14                  	                    	                    	                    	                    	from deserializer   
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"employeeid\":\"true\",\"employeename\":\"true\"}}	 	 	 	 	 	 	 	 	 
 PREHOOK: query: analyze table default.Employee_Part  compute statistics for columns
 PREHOOK: type: QUERY
 PREHOOK: Input: default@employee_part

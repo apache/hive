@@ -288,6 +288,7 @@ POSTHOOK: Input: default@uservisits_web_text_none
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
 	 	 	 	 	 	 	 	 	 	 
 destURL             	string              	                    	                    	0                   	56                  	48.945454545454545  	96                  	                    	                    	from deserializer   
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"adrevenue\":\"true\",\"avgtimeonsite\":\"true\",\"ccode\":\"true\",\"desturl\":\"true\",\"lcode\":\"true\",\"skeyword\":\"true\",\"sourceip\":\"true\",\"useragent\":\"true\",\"visitdate\":\"true\"}}	 	 	 	 	 	 	 	 	 
 PREHOOK: query: describe formatted UserVisits_web_text_none adRevenue
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@uservisits_web_text_none
@@ -297,6 +298,7 @@ POSTHOOK: Input: default@uservisits_web_text_none
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
 	 	 	 	 	 	 	 	 	 	 
 adRevenue           	float               	13.099044799804688  	492.98870849609375  	0                   	58                  	                    	                    	                    	                    	from deserializer   
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"adrevenue\":\"true\",\"avgtimeonsite\":\"true\",\"ccode\":\"true\",\"desturl\":\"true\",\"lcode\":\"true\",\"skeyword\":\"true\",\"sourceip\":\"true\",\"useragent\":\"true\",\"visitdate\":\"true\"}}	 	 	 	 	 	 	 	 	 
 PREHOOK: query: describe formatted UserVisits_web_text_none avgTimeOnSite
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@uservisits_web_text_none
@@ -306,6 +308,7 @@ POSTHOOK: Input: default@uservisits_web_text_none
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
 	 	 	 	 	 	 	 	 	 	 
 avgTimeOnSite       	int                 	1                   	9                   	0                   	11                  	                    	                    	                    	                    	from deserializer   
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"adrevenue\":\"true\",\"avgtimeonsite\":\"true\",\"ccode\":\"true\",\"desturl\":\"true\",\"lcode\":\"true\",\"skeyword\":\"true\",\"sourceip\":\"true\",\"useragent\":\"true\",\"visitdate\":\"true\"}}	 	 	 	 	 	 	 	 	 
 PREHOOK: query: CREATE TABLE empty_tab(
    a int,
    b double,
@@ -414,6 +417,7 @@ POSTHOOK: Input: default@uservisits_web_text_none
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
 	 	 	 	 	 	 	 	 	 	 
 destURL             	string              	                    	                    	0                   	56                  	48.945454545454545  	96                  	                    	                    	from deserializer   
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"adrevenue\":\"true\",\"avgtimeonsite\":\"true\",\"ccode\":\"true\",\"desturl\":\"true\",\"lcode\":\"true\",\"skeyword\":\"true\",\"sourceip\":\"true\",\"useragent\":\"true\",\"visitdate\":\"true\"}}	 	 	 	 	 	 	 	 	 
 PREHOOK: query: CREATE TABLE UserVisits_in_dummy_db (
   sourceIP string,
   destURL string,
@@ -706,6 +710,7 @@ POSTHOOK: Input: dummydb@uservisits_in_dummy_db
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
 	 	 	 	 	 	 	 	 	 	 
 destURL             	string              	                    	                    	0                   	56                  	48.945454545454545  	96                  	                    	                    	from deserializer   
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"adrevenue\":\"true\",\"avgtimeonsite\":\"true\",\"ccode\":\"true\",\"desturl\":\"true\",\"lcode\":\"true\",\"skeyword\":\"true\",\"sourceip\":\"true\",\"useragent\":\"true\",\"visitdate\":\"true\"}}	 	 	 	 	 	 	 	 	 
 PREHOOK: query: describe formatted dummydb.UserVisits_in_dummy_db adRevenue
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: dummydb@uservisits_in_dummy_db
@@ -715,6 +720,7 @@ POSTHOOK: Input: dummydb@uservisits_in_dummy_db
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
 	 	 	 	 	 	 	 	 	 	 
 adRevenue           	float               	13.099044799804688  	492.98870849609375  	0                   	58                  	                    	                    	                    	                    	from deserializer   
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"adrevenue\":\"true\",\"avgtimeonsite\":\"true\",\"ccode\":\"true\",\"desturl\":\"true\",\"lcode\":\"true\",\"skeyword\":\"true\",\"sourceip\":\"true\",\"useragent\":\"true\",\"visitdate\":\"true\"}}	 	 	 	 	 	 	 	 	 
 PREHOOK: query: describe formatted dummydb.UserVisits_in_dummy_db avgTimeOnSite
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: dummydb@uservisits_in_dummy_db
@@ -724,6 +730,7 @@ POSTHOOK: Input: dummydb@uservisits_in_dummy_db
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
 	 	 	 	 	 	 	 	 	 	 
 avgTimeOnSite       	int                 	1                   	9                   	0                   	11                  	                    	                    	                    	                    	from deserializer   
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"adrevenue\":\"true\",\"avgtimeonsite\":\"true\",\"ccode\":\"true\",\"desturl\":\"true\",\"lcode\":\"true\",\"skeyword\":\"true\",\"sourceip\":\"true\",\"useragent\":\"true\",\"visitdate\":\"true\"}}	 	 	 	 	 	 	 	 	 
 PREHOOK: query: drop table dummydb.UserVisits_in_dummy_db
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: dummydb@uservisits_in_dummy_db
