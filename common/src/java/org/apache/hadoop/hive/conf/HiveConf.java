@@ -3153,6 +3153,9 @@ public class HiveConf extends Configuration {
       new TimeValidator(TimeUnit.MILLISECONDS),
       "Connection timeout (in milliseconds) before a failure to an LLAP daemon from Tez AM.",
       "llap.task.communicator.connection.timeout-millis"),
+    LLAP_TASK_COMMUNICATOR_LISTENER_THREAD_COUNT(
+        "hive.llap.task.communicator.listener.thread-count", 30,
+        "The number of task communicator listener threads."),
     LLAP_TASK_COMMUNICATOR_CONNECTION_SLEEP_BETWEEN_RETRIES_MS(
       "hive.llap.task.communicator.connection.sleep.between.retries.ms", "2000ms",
       new TimeValidator(TimeUnit.MILLISECONDS),
