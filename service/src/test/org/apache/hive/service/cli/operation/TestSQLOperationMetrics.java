@@ -101,27 +101,27 @@ public class TestSQLOperationMetrics {
     String json = ((CodahaleMetrics) metrics).dumpJson();
 
     MetricsTestUtils.verifyMetricsJson(json, MetricsTestUtils.METER,
-        MetricsConstant.HS2_SUCEEDED_QUERIES, "");
+        MetricsConstant.HS2_SUCCEEDED_QUERIES, "");
 
     operation.onNewState(OperationState.FINISHED, OperationState.RUNNING);
     json = ((CodahaleMetrics) metrics).dumpJson();
     MetricsTestUtils.verifyMetricsJson(json, MetricsTestUtils.METER,
-        MetricsConstant.HS2_SUCEEDED_QUERIES, "1");
+        MetricsConstant.HS2_SUCCEEDED_QUERIES, "1");
 
     operation.onNewState(OperationState.ERROR, OperationState.RUNNING);
     json = ((CodahaleMetrics) metrics).dumpJson();
     MetricsTestUtils.verifyMetricsJson(json, MetricsTestUtils.METER,
-        MetricsConstant.HS2_SUCEEDED_QUERIES, "1");
+        MetricsConstant.HS2_SUCCEEDED_QUERIES, "1");
 
     operation.onNewState(OperationState.CANCELED, OperationState.RUNNING);
     json = ((CodahaleMetrics) metrics).dumpJson();
     MetricsTestUtils.verifyMetricsJson(json, MetricsTestUtils.METER,
-        MetricsConstant.HS2_SUCEEDED_QUERIES, "1");
+        MetricsConstant.HS2_SUCCEEDED_QUERIES, "1");
 
     operation.onNewState(OperationState.FINISHED, OperationState.RUNNING);
     json = ((CodahaleMetrics) metrics).dumpJson();
     MetricsTestUtils.verifyMetricsJson(json, MetricsTestUtils.METER,
-        MetricsConstant.HS2_SUCEEDED_QUERIES, "2");
+        MetricsConstant.HS2_SUCCEEDED_QUERIES, "2");
   }
 
   @Test

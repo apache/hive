@@ -666,7 +666,7 @@ public class SQLOperation extends ExecuteStatementOperation {
       markQueryMetric(MetricsFactory.getInstance(), MetricsConstant.HS2_FAILED_QUERIES);
     }
     if (state == OperationState.FINISHED) {
-      markQueryMetric(MetricsFactory.getInstance(), MetricsConstant.HS2_SUCEEDED_QUERIES);
+      markQueryMetric(MetricsFactory.getInstance(), MetricsConstant.HS2_SUCCEEDED_QUERIES);
     }
   }
 
