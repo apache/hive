@@ -607,6 +607,12 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   private void doPhase1GetAllAggregations(ASTNode expressionTree,
       HashMap<String, ASTNode> aggregations, List<ASTNode> wdwFns) throws SemanticException {
     int exprTokenType = expressionTree.getToken().getType();
+    if(exprTokenType == HiveParser.TOK_SUBQUERY_EXPR) {
+      //since now we have scalar subqueries we can get subquery expression in having
+      // we don't want to include aggregate from within subquery
+      return;
+    }
+
     if (exprTokenType == HiveParser.TOK_FUNCTION
         || exprTokenType == HiveParser.TOK_FUNCTIONDI
         || exprTokenType == HiveParser.TOK_FUNCTIONSTAR) {
