@@ -744,10 +744,10 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
 
     @Override
     public void nodeHeartbeat(Text hostname, Text uniqueId, int port) throws IOException {
-      nodePinged(hostname.toString(), uniqueId.toString(), port);
       if (LOG.isDebugEnabled()) {
         LOG.debug("Received heartbeat from [" + hostname + ":" + port +" (" + uniqueId +")]");
       }
+      nodePinged(hostname.toString(), uniqueId.toString(), port);
     }
 
     @Override
