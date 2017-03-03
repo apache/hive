@@ -558,9 +558,9 @@ public class HiveMetaStoreChecker {
    */
   private void checkPartitionDirsSingleThreaded(Queue<Path> basePaths, final Set<Path> allDirs,
       final FileSystem fs, final int depth, final int maxDepth) throws IOException, HiveException {
-    final Queue<Path> nextLevel = new LinkedList<>();
     for (final Path path : basePaths) {
       FileStatus[] statuses = fs.listStatus(path, FileUtils.HIDDEN_FILES_PATH_FILTER);
+      final Queue<Path> nextLevel = new LinkedList<>();
       boolean fileFound = false;
       for (FileStatus status : statuses) {
         if (status.isDirectory()) {
