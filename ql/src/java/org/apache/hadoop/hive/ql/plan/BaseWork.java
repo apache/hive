@@ -73,6 +73,8 @@ public abstract class BaseWork extends AbstractOperatorDesc {
 
   protected boolean useVectorizedInputFileFormat;
 
+  protected long vectorizedVertexNum;
+
   protected boolean llapMode = false;
   protected boolean uberMode = false;
 
@@ -165,6 +167,14 @@ public abstract class BaseWork extends AbstractOperatorDesc {
     }
 
     return returnSet;
+  }
+
+  public void setVectorizedVertexNum(long vectorizedVertexNum) {
+    this.vectorizedVertexNum = vectorizedVertexNum;
+  }
+
+  public long getVectorizedVertexNum() {
+    return vectorizedVertexNum;
   }
 
   // -----------------------------------------------------------------------------------------------

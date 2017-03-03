@@ -120,11 +120,14 @@ public class ReduceRecordSource implements RecordSource {
 
   private final GroupIterator groupIterator = new GroupIterator();
 
+  private long vectorizedVertexNum;
+
   void init(JobConf jconf, Operator<?> reducer, boolean vectorized, TableDesc keyTableDesc,
       TableDesc valueTableDesc, Reader reader, boolean handleGroupKey, byte tag,
-      VectorizedRowBatchCtx batchContext)
+      VectorizedRowBatchCtx batchContext, long vectorizedVertexNum)
       throws Exception {
 
+    this.vectorizedVertexNum = vectorizedVertexNum;
     ObjectInspector keyObjectInspector;
 
     this.reducer = reducer;
@@ -471,7 +474,8 @@ public class ReduceRecordSource implements RecordSource {
             + StringUtils.stringifyException(e2) + " ]";
       }
       throw new HiveException("Hive Runtime Error while processing vector batch (tag="
-          + tag + ") " + rowString, e);
+          + tag + ") (vectorizedVertexNum " + vectorizedVertexNum + ") " +
+          rowString, e);
     }
   }
 
