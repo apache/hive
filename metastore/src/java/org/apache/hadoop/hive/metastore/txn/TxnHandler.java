@@ -2597,10 +2597,10 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       // Turn the tree set into an array so we can move back and forth easily
       // in it.
       LockInfo[] locks = lockSet.toArray(new LockInfo[lockSet.size()]);
-      if(LOG.isDebugEnabled()) {
-        LOG.debug("Locks to check(full): ");
+      if(LOG.isTraceEnabled()) {
+        LOG.trace("Locks to check(full): ");
         for(LockInfo info : locks) {
-          LOG.debug("  " + info);
+          LOG.trace("  " + info);
         }
       }
 
