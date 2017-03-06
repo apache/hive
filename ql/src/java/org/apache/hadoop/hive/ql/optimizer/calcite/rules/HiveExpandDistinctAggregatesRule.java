@@ -61,6 +61,7 @@ import org.slf4j.LoggerFactory;
 import com.google.common.base.Function;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
+import com.google.common.math.IntMath;
 
 /**
  * Planner rule that expands distinct aggregates
@@ -206,10 +207,11 @@ public final class HiveExpandDistinctAggregatesRule extends RelOptRule {
     return createCount(groupingSets, argList, cleanArgList, map, sourceOfForCountDistinct);
   }
 
-  private long getGroupingIdValue(List<Integer> list, List<Integer> sourceOfForCountDistinct) {
-    long ind = 0;
+  private int getGroupingIdValue(List<Integer> list, List<Integer> sourceOfForCountDistinct,
+          int groupCount) {
+    int ind = IntMath.pow(2, groupCount) - 1;
     for (int i : list) {
-      ind |= 1 << sourceOfForCountDistinct.indexOf(i);
+      ind &= ~(1 << groupCount - sourceOfForCountDistinct.indexOf(i) - 1);
     }
     return ind;
   }
@@ -240,7 +242,7 @@ public final class HiveExpandDistinctAggregatesRule extends RelOptRule {
     for (List<Integer> list : cleanArgList) {
       RexNode condition = rexBuilder.makeCall(SqlStdOperatorTable.EQUALS, originalInputRefs
           .get(originalInputRefs.size() - 1), rexBuilder.makeExactLiteral(new BigDecimal(
-          getGroupingIdValue(list, sourceOfForCountDistinct))));
+          getGroupingIdValue(list, sourceOfForCountDistinct, aggr.getGroupCount()))));
       if (list.size() == 1) {
         int pos = list.get(0);
         RexNode notNull = rexBuilder.makeCall(SqlStdOperatorTable.IS_NOT_NULL,

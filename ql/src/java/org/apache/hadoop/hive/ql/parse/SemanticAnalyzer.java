@@ -3918,7 +3918,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         if (child.getType() != HiveParser.TOK_GROUPING_SETS_EXPRESSION) {
           continue;
         }
-        int bitmap = 0;
+        int bitmap = IntMath.pow(2, groupByExpr.size()) - 1;
         for (int j = 0; j < child.getChildCount(); ++j) {
           String treeAsString = child.getChild(j).toStringTree();
           Integer pos = exprPos.get(treeAsString);
@@ -3927,28 +3927,32 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
                 generateErrorMessage((ASTNode) child.getChild(j),
                     ErrorMsg.HIVE_GROUPING_SETS_EXPR_NOT_IN_GROUPBY.getErrorCodedMsg()));
           }
-          bitmap = setBit(bitmap, pos);
+          bitmap = unsetBit(bitmap, groupByExpr.size() - pos - 1);
         }
         result.add(bitmap);
       }
     }
-    if (checkForNoAggr(result)) {
+    if (checkForEmptyGroupingSets(result, IntMath.pow(2, groupByExpr.size()) - 1)) {
       throw new SemanticException(
-          ErrorMsg.HIVE_GROUPING_SETS_AGGR_NOFUNC.getMsg());
+          ErrorMsg.HIVE_GROUPING_SETS_EMPTY.getMsg());
     }
     return result;
   }
 
-  private boolean checkForNoAggr(List<Integer> bitmaps) {
+  private boolean checkForEmptyGroupingSets(List<Integer> bitmaps, int groupingIdAllSet) {
     boolean ret = true;
     for (int mask : bitmaps) {
-      ret &= mask == 0;
+      ret &= mask == groupingIdAllSet;
     }
     return ret;
   }
 
   public static int setBit(int bitmap, int bitIdx) {
     return bitmap | (1 << bitIdx);
+  }
+
+  public static int unsetBit(int bitmap, int bitIdx) {
+    return bitmap & ~(1 << bitIdx);
   }
 
   /**
