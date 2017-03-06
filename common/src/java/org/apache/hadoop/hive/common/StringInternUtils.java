@@ -104,13 +104,21 @@ public class StringInternUtils {
    * This method interns all the strings in the given list in place. That is,
    * it iterates over the list, replaces each element with the interned copy
    * and eventually returns the same list.
+   *
+   * Note that the provided List implementation should return an iterator
+   * (via list.listIterator()) method, and that iterator should implement
+   * the set(Object) method. That's what all List implementations in the JDK
+   * provide. However, if some custom List implementation doesn't have this
+   * functionality, this method will return without interning its elements.
    */
   public static List<String> internStringsInList(List<String> list) {
     if (list != null) {
-      ListIterator<String> it = list.listIterator();
-      while (it.hasNext()) {
-        it.set(it.next().intern());
-      }
+      try {
+        ListIterator<String> it = list.listIterator();
+        while (it.hasNext()) {
+          it.set(it.next().intern());
+        }
+      } catch (UnsupportedOperationException e) { } // set() not implemented - ignore
     }
     return list;
   }

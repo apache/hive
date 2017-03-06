@@ -29,6 +29,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.apache.hadoop.hive.common.StringInternUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
 import org.apache.thrift.TUnion;
@@ -303,8 +304,8 @@ public final class ObjectInspectorFactory {
     return result;
   }
 
-  static ConcurrentHashMap<ArrayList<List<?>>, StandardStructObjectInspector> cachedStandardStructObjectInspector =
-      new ConcurrentHashMap<ArrayList<List<?>>, StandardStructObjectInspector>();
+  private static ConcurrentHashMap<ArrayList<List<?>>, StandardStructObjectInspector>
+      cachedStandardStructObjectInspector = new ConcurrentHashMap<ArrayList<List<?>>, StandardStructObjectInspector>();
 
   public static StandardStructObjectInspector getStandardStructObjectInspector(
       List<String> structFieldNames,
@@ -317,13 +318,15 @@ public final class ObjectInspectorFactory {
       List<ObjectInspector> structFieldObjectInspectors,
       List<String> structComments) {
     ArrayList<List<?>> signature = new ArrayList<List<?>>(3);
+    StringInternUtils.internStringsInList(structFieldNames);
     signature.add(structFieldNames);
     signature.add(structFieldObjectInspectors);
-    if(structComments != null) {
+    if (structComments != null) {
+      StringInternUtils.internStringsInList(structComments);
       signature.add(structComments);
     }
     StandardStructObjectInspector result = cachedStandardStructObjectInspector.get(signature);
-    if(result == null) {
+    if (result == null) {
       result = new StandardStructObjectInspector(structFieldNames, structFieldObjectInspectors, structComments);
       StandardStructObjectInspector prev =
         cachedStandardStructObjectInspector.putIfAbsent(signature, result);

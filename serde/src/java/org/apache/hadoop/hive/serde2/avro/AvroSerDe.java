@@ -26,6 +26,7 @@ import org.apache.avro.Schema;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.common.StringInternUtils;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
@@ -103,7 +104,7 @@ public class AvroSerDe extends AbstractSerDe {
       schema = determineSchemaOrReturnErrorSchema(configuration, properties);
     } else {
       // Get column names and sort order
-      columnNames = Arrays.asList(columnNameProperty.split(","));
+      columnNames = StringInternUtils.internStringsInList(Arrays.asList(columnNameProperty.split(",")));
       columnTypes = TypeInfoUtils.getTypeInfosFromTypeString(columnTypeProperty);
 
       schema = getSchemaFromCols(properties, columnNames, columnTypes, columnCommentProperty);
@@ -124,7 +125,7 @@ public class AvroSerDe extends AbstractSerDe {
     badSchema = schema.equals(SchemaResolutionProblem.SIGNAL_BAD_SCHEMA);
 
     AvroObjectInspectorGenerator aoig = new AvroObjectInspectorGenerator(schema);
-    this.columnNames = aoig.getColumnNames();
+    this.columnNames = StringInternUtils.internStringsInList(aoig.getColumnNames());
     this.columnTypes = aoig.getColumnTypes();
     this.oi = aoig.getObjectInspector();
   }

@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.plan;
 import java.io.Serializable;
 
 import org.apache.commons.lang.builder.HashCodeBuilder;
+import org.apache.hadoop.hive.common.StringInternUtils;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.objectinspector.ConstantObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
@@ -64,7 +65,7 @@ public class ExprNodeConstantDesc extends ExprNodeDesc implements Serializable {
 
   public ExprNodeConstantDesc(TypeInfo typeInfo, Object value) {
     super(typeInfo);
-    this.value = value;
+    setValue(value);
   }
 
   public ExprNodeConstantDesc(Object value) {
@@ -73,6 +74,9 @@ public class ExprNodeConstantDesc extends ExprNodeDesc implements Serializable {
   }
 
   public void setValue(Object value) {
+    if (value instanceof String) {
+      value = StringInternUtils.internIfNotNull((String) value);
+    }
     this.value = value;
   }
 
