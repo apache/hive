@@ -168,6 +168,18 @@
                   </includes>
                 </filter>
                 <filter>
+                  <artifact>org.apache.parquet:parquet-hadoop-bundle</artifact>
+                  <excludes>
+                    <exclude>shaded/parquet/org/codehaus/jackson/**</exclude>
+                  </excludes>
+                </filter>
+                <filter>
+                  <artifact>org.apache.logging.log4j:log4j-core</artifact>
+                  <excludes>
+                    <exclude>org/apache/logging/log4j/core/jackson/**</exclude>
+                  </excludes>
+                </filter>
+                <filter>
                   <artifact>*:*</artifact>
                   <excludes>
                     <exclude>META-INF/*.SF</exclude>
@@ -229,6 +241,7 @@
                   <exclude>com.thoughtworks.paranamer:*</exclude>
                   <exclude>com.twitter:*</exclude>
                   <exclude>com.zaxxer:*</exclude>
+                  <exclude>com.fasterxml.jackson.core:*</exclude>
                   <exclude>io.netty:*</exclude>
                   <exclude>javax.activation:*</exclude>
                   <exclude>javax.inject:*</exclude>
