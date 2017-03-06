@@ -81,7 +81,7 @@ public class CLIService extends CompositeService implements ICLIService {
   public synchronized void init(HiveConf hiveConf) {
     this.hiveConf = hiveConf;
     sessionManager = new SessionManager(hiveServer2);
-    defaultFetchRows = hiveConf.getIntVar(ConfVars.HIVE_SERVER2_RESULTSET_DEFAULT_FETCH_SIZE);
+    defaultFetchRows = hiveConf.getIntVar(ConfVars.HIVE_SERVER2_THRIFT_RESULTSET_DEFAULT_FETCH_SIZE);
     addService(sessionManager);
     //  If the hadoop cluster is secure, do a kerberos login for the service from the keytab
     if (UserGroupInformation.isSecurityEnabled()) {
@@ -474,6 +474,11 @@ public class CLIService extends CompositeService implements ICLIService {
     LOG.debug(opHandle + ": getOperationStatus()");
     opStatus.setJobProgressUpdate(progressUpdateLog(getProgressUpdate, operation));
     return opStatus;
+  }
+
+  public HiveConf getSessionConf(SessionHandle sessionHandle)
+      throws HiveSQLException {
+	  return sessionManager.getSession(sessionHandle).getSessionConf();
   }
 
   private static final long PROGRESS_MAX_WAIT_NS = 30 * 1000000000l;

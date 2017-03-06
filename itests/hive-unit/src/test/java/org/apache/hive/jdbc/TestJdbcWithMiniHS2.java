@@ -1321,4 +1321,34 @@ public class TestJdbcWithMiniHS2 {
       fs.delete(testPath, true);
     }
   }
+
+  @Test
+  public void testFetchSize() throws Exception {
+    // Test setting fetch size below max
+    Connection fsConn = getConnection(miniHS2.getJdbcURL("default", "fetchSize=50", ""),
+      System.getProperty("user.name"), "bar");
+    Statement stmt = fsConn.createStatement();
+    stmt.execute("set hive.server2.thrift.resultset.serialize.in.tasks=true");
+    int fetchSize = stmt.getFetchSize();
+    assertEquals(50, fetchSize);
+    stmt.close();
+    fsConn.close();
+    // Test setting fetch size above max
+    fsConn = getConnection(
+      miniHS2.getJdbcURL(
+        "default",
+        "fetchSize=" + (miniHS2.getHiveConf().getIntVar(
+          HiveConf.ConfVars.HIVE_SERVER2_THRIFT_RESULTSET_MAX_FETCH_SIZE) + 1),
+        ""),
+      System.getProperty("user.name"), "bar");
+    stmt = fsConn.createStatement();
+    stmt.execute("set hive.server2.thrift.resultset.serialize.in.tasks=true");
+    fetchSize = stmt.getFetchSize();
+    assertEquals(
+      miniHS2.getHiveConf().getIntVar(
+        HiveConf.ConfVars.HIVE_SERVER2_THRIFT_RESULTSET_MAX_FETCH_SIZE),
+      fetchSize);
+    stmt.close();
+    fsConn.close();
+  }
 }
