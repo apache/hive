@@ -138,12 +138,6 @@
     </dependency>
     <dependency>
       <groupId>org.apache.hive</groupId>
-      <artifactId>hive-jdbc</artifactId>
-      <version>${project.version}</version>
-      <scope>test</scope>
-      </dependency>
-    <dependency>
-      <groupId>org.apache.hive</groupId>
       <artifactId>hive-metastore</artifactId>
       <version>${project.version}</version>
       <classifier>tests</classifier>
@@ -380,12 +374,6 @@
       <artifactId>hadoop-yarn-registry</artifactId>
       <version>${hadoop.version}</version>
       <optional>true</optional>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.hadoop</groupId>
-      <artifactId>hadoop-yarn-api</artifactId>
-      <version>${hadoop.version}</version>
-      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.apache.curator</groupId>
