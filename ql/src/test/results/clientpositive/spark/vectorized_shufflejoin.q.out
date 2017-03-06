@@ -111,7 +111,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true
-                notVectorizedReason: Tez doesn't use tagging
+                notVectorizedReason: Tagging not supported
                 vectorized: false
             Reduce Operator Tree:
               Join Operator
