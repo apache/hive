@@ -150,7 +150,7 @@ public class TaskRunnerCallable extends CallableWithNdc<TaskRunner2Result> {
     // Register with the AMReporter when the callable is setup. Unregister once it starts running.
     if (amReporter != null && jobToken != null) {
       this.amReporter.registerTask(request.getAmHost(), request.getAmPort(),
-          vertex.getUser(), jobToken, fragmentInfo.getQueryInfo().getQueryIdentifier(), attemptId);
+          vertex.getTokenIdentifier(), jobToken, fragmentInfo.getQueryInfo().getQueryIdentifier(), attemptId);
     }
     this.metrics = metrics;
     this.requestId = taskSpec.getTaskAttemptID().toString();
@@ -377,7 +377,7 @@ public class TaskRunnerCallable extends CallableWithNdc<TaskRunner2Result> {
    */
   public void reportTaskKilled() {
     killedTaskHandler
-        .taskKilled(request.getAmHost(), request.getAmPort(), vertex.getUser(), jobToken,
+        .taskKilled(request.getAmHost(), request.getAmPort(), vertex.getTokenIdentifier(), jobToken,
             fragmentInfo.getQueryInfo().getQueryIdentifier(), taskSpec.getTaskAttemptID());
   }
 

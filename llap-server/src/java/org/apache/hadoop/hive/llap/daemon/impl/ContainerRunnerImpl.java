@@ -508,10 +508,10 @@ public class ContainerRunnerImpl extends CompositeService implements ContainerRu
   private class KilledTaskHandlerImpl implements KilledTaskHandler {
 
     @Override
-    public void taskKilled(String amLocation, int port, String user,
+    public void taskKilled(String amLocation, int port, String umbilicalUser,
                            Token<JobTokenIdentifier> jobToken, QueryIdentifier queryIdentifier,
                            TezTaskAttemptID taskAttemptId) {
-      amReporter.taskKilled(amLocation, port, user, jobToken, queryIdentifier, taskAttemptId);
+      amReporter.taskKilled(amLocation, port, umbilicalUser, jobToken, queryIdentifier, taskAttemptId);
     }
   }
 
