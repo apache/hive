@@ -789,6 +789,7 @@ nonReserved
     | KW_OPERATOR
     | KW_EXPRESSION
     | KW_DETAIL
+    | KW_WAIT
 
 ;
 

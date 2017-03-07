@@ -516,7 +516,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
      analyzeCacheMetadata(ast);
      break;
    default:
-      throw new SemanticException("Unsupported command.");
+      throw new SemanticException("Unsupported command: " + ast);
     }
     if (fetchTask != null && !rootTasks.isEmpty()) {
       rootTasks.get(rootTasks.size() - 1).setFetchSource(true);
@@ -1748,13 +1748,22 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     LinkedHashMap<String, String> newPartSpec = null;
     if (partSpec != null) newPartSpec = new LinkedHashMap<String, String>(partSpec);
 
-    AlterTableSimpleDesc desc = new AlterTableSimpleDesc(
-        tableName, newPartSpec, type);
+    HashMap<String, String> mapProp = null;
+    boolean isBlocking = false;
 
-    if (ast.getChildCount() > 1) {
-      HashMap<String, String> mapProp = getProps((ASTNode) (ast.getChild(1)).getChild(0));
-      desc.setProps(mapProp);
+    for(int i = 0; i < ast.getChildCount(); i++) {
+      switch(ast.getChild(i).getType()) {
+        case HiveParser.TOK_TABLEPROPERTIES:
+          mapProp = getProps((ASTNode) (ast.getChild(i)).getChild(0));
+          break;
+        case HiveParser.TOK_BLOCKING:
+          isBlocking = true;
+          break;
+      }
     }
+    AlterTableSimpleDesc desc = new AlterTableSimpleDesc(
+      tableName, newPartSpec, type, isBlocking);
+    desc.setProps(mapProp);
 
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), desc), conf));
   }

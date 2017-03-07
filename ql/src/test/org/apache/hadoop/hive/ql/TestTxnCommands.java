@@ -54,6 +54,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -872,5 +874,28 @@ public class TestTxnCommands {
     Assert.assertTrue("Error didn't match: " + cpr, cpr.getErrorMessage().contains(
       "No columns from target table 'trgt' found in ON clause '`sub`.`a` = `target`.`a`' of MERGE statement."));
 
+  }
+
+  /**
+   * Writing UTs that need multiple threads is challenging since Derby chokes on concurrent access.
+   * This tests that "AND WAIT" actually blocks and responds to interrupt
+   * @throws Exception
+   */
+  @Test
+  public void testCompactionBlocking() throws Exception {
+    Timer cancelCompact = new Timer("CancelCompactionTimer", false);
+    final Thread threadToInterrupt= Thread.currentThread();
+    cancelCompact.schedule(new TimerTask() {
+      @Override
+      public void run() {
+        threadToInterrupt.interrupt();
+      }
+    }, 5000);
+    long start = System.currentTimeMillis();
+    runStatementOnDriver("alter table "+ TestTxnCommands2.Table.ACIDTBL +" compact 'major' AND WAIT");
+    //no Worker so it stays in initiated state
+    //w/o AND WAIT the above alter table retunrs almost immediately, so the test here to check that
+    //> 2 seconds pass, i.e. that the command in Driver actually blocks before cancel is fired
+    Assert.assertTrue(System.currentTimeMillis() > start + 2);
   }
 }
