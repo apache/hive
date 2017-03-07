@@ -1,3 +1,4 @@
+-- SORT_BEFORE_DIFF
 set hive.strict.checks.cartesian.product=false;
 
 explain
