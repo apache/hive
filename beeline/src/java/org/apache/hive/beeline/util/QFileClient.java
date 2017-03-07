@@ -130,6 +130,8 @@ public class QFileClient {
 
     filterSet = new RegexFilterSet()
     .addFilter(logPattern,"")
+    .addFilter("going to print operations logs\n","")
+    .addFilter("printed operations logs\n","")
     .addFilter("Getting log thread is interrupted, since query is done!\n","")
     .addFilter(scratchDirectory.toString() + "[\\w\\-/]+", "!!{hive.exec.scratchdir}!!")
     .addFilter(warehouseDirectory.toString(), "!!{hive.metastore.warehouse.dir}!!")
