@@ -30,6 +30,7 @@ import junit.framework.TestCase;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
@@ -69,7 +70,7 @@ public class TestHiveMetaStoreChecker extends TestCase {
     if (Shell.WINDOWS) {
       WindowsPathUtil.convertPathsFromWindowsToHdfs(hive.getConf());
     }
-    hive.getConf().setIntVar(HiveConf.ConfVars.HIVE_MOVE_FILES_THREAD_COUNT, 15);
+    hive.getConf().setIntVar(HiveConf.ConfVars.METASTORE_FS_HANDLER_THREADS_COUNT, 15);
     hive.getConf().set(HiveConf.ConfVars.HIVE_MSCK_PATH_VALIDATION.varname, "throw");
     checker = new HiveMetaStoreChecker(hive);
 
@@ -330,7 +331,7 @@ public class TestHiveMetaStoreChecker extends TestCase {
   public void testSingleThreadedCheckMetastore()
       throws HiveException, AlreadyExistsException, IOException {
     // set num of threads to 0 so that single-threaded checkMetastore is called
-    hive.getConf().setIntVar(HiveConf.ConfVars.HIVE_MOVE_FILES_THREAD_COUNT, 0);
+    hive.getConf().setIntVar(HiveConf.ConfVars.METASTORE_FS_HANDLER_THREADS_COUNT, 0);
     Table testTable = createPartitionedTestTable(dbName, tableName, 2, 0);
     // add 10 partitions on the filesystem
     createPartitionsDirectoriesOnFS(testTable, 10);
@@ -352,7 +353,7 @@ public class TestHiveMetaStoreChecker extends TestCase {
   public void testSingleThreadedDeeplyNestedTables()
       throws HiveException, AlreadyExistsException, IOException {
     // set num of threads to 0 so that single-threaded checkMetastore is called
-    hive.getConf().setIntVar(HiveConf.ConfVars.HIVE_MOVE_FILES_THREAD_COUNT, 0);
+    hive.getConf().setIntVar(HiveConf.ConfVars.METASTORE_FS_HANDLER_THREADS_COUNT, 0);
     // currently HiveMetastoreChecker uses a minimum pool size of 2*numOfProcs
     // no other easy way to set it deterministically for this test case
     checker = Mockito.spy(checker);
@@ -435,7 +436,7 @@ public class TestHiveMetaStoreChecker extends TestCase {
   public void testErrorForMissingPartitionsSingleThreaded()
       throws AlreadyExistsException, HiveException, IOException {
     // set num of threads to 0 so that single-threaded checkMetastore is called
-    hive.getConf().setIntVar(HiveConf.ConfVars.HIVE_MOVE_FILES_THREAD_COUNT, 0);
+    hive.getConf().setIntVar(HiveConf.ConfVars.METASTORE_FS_HANDLER_THREADS_COUNT, 0);
     Table testTable = createPartitionedTestTable(dbName, tableName, 2, 0);
     // add 10 partitions on the filesystem
     createPartitionsDirectoriesOnFS(testTable, 10);
