@@ -28,6 +28,7 @@ import io.druid.data.input.impl.MapInputRowParser;
 import io.druid.data.input.impl.StringDimensionSchema;
 import io.druid.data.input.impl.TimeAndDimsParseSpec;
 import io.druid.data.input.impl.TimestampSpec;
+import io.druid.granularity.QueryGranularity;
 import io.druid.query.aggregation.AggregatorFactory;
 import io.druid.query.aggregation.DoubleSumAggregatorFactory;
 import io.druid.query.aggregation.LongSumAggregatorFactory;
@@ -102,7 +103,10 @@ public class DruidOutputFormat<K, V> implements HiveOutputFormat<K, DruidWritabl
 
     final GranularitySpec granularitySpec = new UniformGranularitySpec(
             Granularity.valueOf(segmentGranularity),
-            null,
+            QueryGranularity.fromString(
+                    tableProperties.getProperty(Constants.DRUID_QUERY_GRANULARITY) == null
+                            ? "NONE"
+                            : tableProperties.getProperty(Constants.DRUID_QUERY_GRANULARITY)),
             null
     );
 
@@ -190,10 +194,23 @@ public class DruidOutputFormat<K, V> implements HiveOutputFormat<K, DruidWritabl
             .getIntVar(jc, HiveConf.ConfVars.HIVE_DRUID_MAX_PARTITION_SIZE);
     String basePersistDirectory = HiveConf
             .getVar(jc, HiveConf.ConfVars.HIVE_DRUID_BASE_PERSIST_DIRECTORY);
-    final RealtimeTuningConfig realtimeTuningConfig = RealtimeTuningConfig
-            .makeDefaultTuningConfig(new File(
-                    basePersistDirectory))
-            .withVersioningPolicy(new CustomVersioningPolicy(version));
+    Integer maxRowInMemory = HiveConf.getIntVar(jc, HiveConf.ConfVars.HIVE_DRUID_MAX_ROW_IN_MEMORY);
+
+    RealtimeTuningConfig realtimeTuningConfig = new RealtimeTuningConfig(maxRowInMemory,
+            null,
+            null,
+            new File(basePersistDirectory),
+            new CustomVersioningPolicy(version),
+            null,
+            null,
+            null,
+            null,
+            true,
+            0,
+            0,
+            true,
+            null
+    );
 
     LOG.debug(String.format("running with Data schema [%s] ", dataSchema));
     return new DruidRecordWriter(dataSchema, realtimeTuningConfig, hdfsDataSegmentPusher,
