@@ -949,7 +949,8 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
           return; // silently return, table is newer than our replacement.
         }
         if (!replicationSpec.isMetadataOnly()) {
-          loadTable(fromURI, table, true, new Path(fromURI), replicationSpec, x); // repl-imports are replace-into
+          // repl-imports are replace-into unless the event is insert-into
+          loadTable(fromURI, table, !replicationSpec.isInsert(), new Path(fromURI), replicationSpec, x);
         } else {
           x.getTasks().add(alterTableTask(tblDesc, x, replicationSpec));
         }

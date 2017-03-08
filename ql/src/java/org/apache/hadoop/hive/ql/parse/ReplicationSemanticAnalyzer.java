@@ -614,14 +614,17 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
       }
       case MessageFactory.INSERT_EVENT: {
         InsertMessage insertMsg = md.getInsertMessage(ev.getMessage());
+        String dbName = insertMsg.getDB();
         String tblName = insertMsg.getTable();
-        Table qlMdTable = db.getTable(tblName);
+        org.apache.hadoop.hive.metastore.api.Table tobj = db.getMSC().getTable(dbName, tblName);
+        Table qlMdTable = new Table(tobj);
         Map<String, String> partSpec = insertMsg.getPartitionKeyValues();
         List<Partition> qlPtns  = null;
         if (qlMdTable.isPartitioned() && !partSpec.isEmpty()) {
           qlPtns = Arrays.asList(db.getPartition(qlMdTable, partSpec, false));
         }
         Path metaDataPath = new Path(evRoot, EximUtil.METADATA_NAME);
+        replicationSpec.setIsInsert(true); // Mark the replication type as insert into to avoid overwrite while import
         EximUtil.createExportDump(metaDataPath.getFileSystem(conf), metaDataPath, qlMdTable, qlPtns,
             replicationSpec);
         Iterable<String> files = insertMsg.getFiles();
@@ -1156,9 +1159,11 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
       case EVENT_INSERT: {
         md = MessageFactory.getInstance().getDeserializer();
         InsertMessage insertMessage = md.getInsertMessage(dmd.getPayload());
+        String actualDbName = ((dbName == null) || dbName.isEmpty() ? insertMessage.getDB() : dbName);
+        String actualTblName = ((tblName == null) || tblName.isEmpty() ? insertMessage.getTable() : tblName);
+
         // Piggybacking in Import logic for now
-        return analyzeTableLoad(
-            insertMessage.getDB(), insertMessage.getTable(), locn, precursor, dbsUpdated, tablesUpdated);
+        return analyzeTableLoad(actualDbName, actualTblName, locn, precursor, dbsUpdated, tablesUpdated);
       }
       case EVENT_UNKNOWN: {
         break;
@@ -1395,7 +1400,7 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
 
   // Use for specifying object state as well as event state
   private ReplicationSpec getNewReplicationSpec(String evState, String objState) throws SemanticException {
-    return new ReplicationSpec(true, false, evState, objState, false, true);
+    return new ReplicationSpec(true, false, evState, objState, false, true, false);
   }
 
   // Use for replication states focussed on event only, where the obj state will be the event state
