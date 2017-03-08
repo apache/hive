@@ -797,10 +797,11 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
                 operator.getOperatorId());
             if (!this.work.isUserLevelExplain() && this.work.isFormatted()
                 && operator instanceof ReduceSinkOperator) {
-              ((JSONObject) jsonOut.get(JSONObject.getNames(jsonOut)[0])).put(
-                  OUTPUT_OPERATORS,
-                  Arrays.toString(((ReduceSinkOperator) operator).getConf().getOutputOperators()
-                      .toArray()));
+              List<String> outputOperators = ((ReduceSinkOperator) operator).getConf().getOutputOperators();
+              if (outputOperators != null) {
+                ((JSONObject) jsonOut.get(JSONObject.getNames(jsonOut)[0])).put(OUTPUT_OPERATORS,
+                    Arrays.toString(outputOperators.toArray()));
+              }
             }
           }
         }
