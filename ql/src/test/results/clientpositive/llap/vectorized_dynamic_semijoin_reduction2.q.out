@@ -73,18 +73,22 @@ POSTHOOK: Output: default@dsrv2_small
 PREHOOK: query: analyze table dsrv2_big compute statistics for columns
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dsrv2_big
+PREHOOK: Output: default@dsrv2_big
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table dsrv2_big compute statistics for columns
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dsrv2_big
+POSTHOOK: Output: default@dsrv2_big
 #### A masked pattern was here ####
 PREHOOK: query: analyze table dsrv2_small compute statistics for columns
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dsrv2_small
+PREHOOK: Output: default@dsrv2_small
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table dsrv2_small compute statistics for columns
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dsrv2_small
+POSTHOOK: Output: default@dsrv2_small
 #### A masked pattern was here ####
 PREHOOK: query: EXPLAIN select count(*) from dsrv2_big a join dsrv2_small b on (a.partkey_bigint = b.partkey_bigint)
 PREHOOK: type: QUERY

@@ -94,6 +94,7 @@ POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
   Stage-2 depends on stages: Stage-0
+  Stage-3 depends on stages: Stage-2
 
 STAGE PLANS:
   Stage: Stage-0
@@ -148,6 +149,9 @@ STAGE PLANS:
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-2
+    Stats-Aggr Operator
+
+  Stage: Stage-3
     Column Stats Work
       Column Stats Desc:
           Columns: ctinyint, csmallint
@@ -167,6 +171,17 @@ PREHOOK: Input: default@llap_stats@cint=-9566
 PREHOOK: Input: default@llap_stats@cint=15007
 PREHOOK: Input: default@llap_stats@cint=4963
 PREHOOK: Input: default@llap_stats@cint=7021
+PREHOOK: Output: default@llap_stats
+PREHOOK: Output: default@llap_stats@cint=-13326
+PREHOOK: Output: default@llap_stats@cint=-15431
+PREHOOK: Output: default@llap_stats@cint=-15549
+PREHOOK: Output: default@llap_stats@cint=-15813
+PREHOOK: Output: default@llap_stats@cint=-4213
+PREHOOK: Output: default@llap_stats@cint=-7824
+PREHOOK: Output: default@llap_stats@cint=-9566
+PREHOOK: Output: default@llap_stats@cint=15007
+PREHOOK: Output: default@llap_stats@cint=4963
+PREHOOK: Output: default@llap_stats@cint=7021
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table llap_stats partition (cint) compute statistics for columns
 POSTHOOK: type: QUERY
@@ -181,6 +196,17 @@ POSTHOOK: Input: default@llap_stats@cint=-9566
 POSTHOOK: Input: default@llap_stats@cint=15007
 POSTHOOK: Input: default@llap_stats@cint=4963
 POSTHOOK: Input: default@llap_stats@cint=7021
+POSTHOOK: Output: default@llap_stats
+POSTHOOK: Output: default@llap_stats@cint=-13326
+POSTHOOK: Output: default@llap_stats@cint=-15431
+POSTHOOK: Output: default@llap_stats@cint=-15549
+POSTHOOK: Output: default@llap_stats@cint=-15813
+POSTHOOK: Output: default@llap_stats@cint=-4213
+POSTHOOK: Output: default@llap_stats@cint=-7824
+POSTHOOK: Output: default@llap_stats@cint=-9566
+POSTHOOK: Output: default@llap_stats@cint=15007
+POSTHOOK: Output: default@llap_stats@cint=4963
+POSTHOOK: Output: default@llap_stats@cint=7021
 #### A masked pattern was here ####
 PREHOOK: query: DROP TABLE llap_stats
 PREHOOK: type: DROPTABLE

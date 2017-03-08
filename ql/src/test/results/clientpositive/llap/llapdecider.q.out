@@ -230,10 +230,12 @@ STAGE PLANS:
 PREHOOK: query: analyze table src_orc compute statistics for columns
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_orc
+PREHOOK: Output: default@src_orc
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table src_orc compute statistics for columns
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_orc
+POSTHOOK: Output: default@src_orc
 #### A masked pattern was here ####
 PREHOOK: query: EXPLAIN SELECT key, count(value) as cnt FROM src_orc GROUP BY key ORDER BY cnt
 PREHOOK: type: QUERY

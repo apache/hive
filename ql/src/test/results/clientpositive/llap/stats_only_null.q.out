@@ -189,30 +189,40 @@ STAGE PLANS:
 PREHOOK: query: analyze table stats_null compute statistics for columns a,b,c,d
 PREHOOK: type: QUERY
 PREHOOK: Input: default@stats_null
+PREHOOK: Output: default@stats_null
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table stats_null compute statistics for columns a,b,c,d
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@stats_null
+POSTHOOK: Output: default@stats_null
 #### A masked pattern was here ####
 PREHOOK: query: analyze table stats_null_part partition(dt='2010') compute statistics for columns a,b,c,d
 PREHOOK: type: QUERY
 PREHOOK: Input: default@stats_null_part
 PREHOOK: Input: default@stats_null_part@dt=2010
+PREHOOK: Output: default@stats_null_part
+PREHOOK: Output: default@stats_null_part@dt=2010
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table stats_null_part partition(dt='2010') compute statistics for columns a,b,c,d
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@stats_null_part
 POSTHOOK: Input: default@stats_null_part@dt=2010
+POSTHOOK: Output: default@stats_null_part
+POSTHOOK: Output: default@stats_null_part@dt=2010
 #### A masked pattern was here ####
 PREHOOK: query: analyze table stats_null_part partition(dt='2011') compute statistics for columns a,b,c,d
 PREHOOK: type: QUERY
 PREHOOK: Input: default@stats_null_part
 PREHOOK: Input: default@stats_null_part@dt=2011
+PREHOOK: Output: default@stats_null_part
+PREHOOK: Output: default@stats_null_part@dt=2011
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table stats_null_part partition(dt='2011') compute statistics for columns a,b,c,d
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@stats_null_part
 POSTHOOK: Input: default@stats_null_part@dt=2011
+POSTHOOK: Output: default@stats_null_part
+POSTHOOK: Output: default@stats_null_part@dt=2011
 #### A masked pattern was here ####
 PREHOOK: query: describe formatted stats_null_part partition (dt='2010')
 PREHOOK: type: DESCTABLE
@@ -384,12 +394,18 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@stats_null_part
 PREHOOK: Input: default@stats_null_part@dt=1
 PREHOOK: Input: default@stats_null_part@dt=__HIVE_DEFAULT_PARTITION__
+PREHOOK: Output: default@stats_null_part
+PREHOOK: Output: default@stats_null_part@dt=1
+PREHOOK: Output: default@stats_null_part@dt=__HIVE_DEFAULT_PARTITION__
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table stats_null_part compute statistics for columns
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@stats_null_part
 POSTHOOK: Input: default@stats_null_part@dt=1
 POSTHOOK: Input: default@stats_null_part@dt=__HIVE_DEFAULT_PARTITION__
+POSTHOOK: Output: default@stats_null_part
+POSTHOOK: Output: default@stats_null_part@dt=1
+POSTHOOK: Output: default@stats_null_part@dt=__HIVE_DEFAULT_PARTITION__
 #### A masked pattern was here ####
 PREHOOK: query: describe formatted stats_null_part partition(dt = 1) a
 PREHOOK: type: DESCTABLE

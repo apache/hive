@@ -19,10 +19,12 @@ POSTHOOK: Lineage: acid_vectorized.b SIMPLE [(alltypesorc)alltypesorc.FieldSchem
 PREHOOK: query: analyze table acid_vectorized compute statistics for columns
 PREHOOK: type: QUERY
 PREHOOK: Input: default@acid_vectorized
+PREHOOK: Output: default@acid_vectorized
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table acid_vectorized compute statistics for columns
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@acid_vectorized
+POSTHOOK: Output: default@acid_vectorized
 #### A masked pattern was here ####
 PREHOOK: query: explain select a, b from acid_vectorized order by a, b
 PREHOOK: type: QUERY
@@ -39,13 +41,13 @@ Stage-0
     Stage-1
       Reducer 2 vectorized
       File Output Operator [FS_8]
-        Select Operator [SEL_7] (rows=16 width=101)
+        Select Operator [SEL_7] (rows=10 width=101)
           Output:["_col0","_col1"]
         <-Map 1 [SIMPLE_EDGE] vectorized
           SHUFFLE [RS_6]
-            Select Operator [SEL_5] (rows=16 width=101)
+            Select Operator [SEL_5] (rows=10 width=101)
               Output:["_col0","_col1"]
-              TableScan [TS_0] (rows=16 width=101)
+              TableScan [TS_0] (rows=10 width=101)
                 default@acid_vectorized,acid_vectorized, ACID table,Tbl:COMPLETE,Col:COMPLETE,Output:["a","b"]
 
 PREHOOK: query: explain select key, value
@@ -200,21 +202,23 @@ POSTHOOK: type: QUERY
 Vertex dependency in root stage
 Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
 
-Stage-2
+Stage-3
   Column Stats Work{}
-    Stage-0
-      Reducer 2
-      File Output Operator [FS_6]
-        Group By Operator [GBY_4] (rows=1 width=960)
-          Output:["_col0","_col1"],aggregations:["compute_stats(VALUE._col0)","compute_stats(VALUE._col1)"]
-        <-Map 1 [CUSTOM_SIMPLE_EDGE]
-          PARTITION_ONLY_SHUFFLE [RS_3]
-            Group By Operator [GBY_2] (rows=1 width=984)
-              Output:["_col0","_col1"],aggregations:["compute_stats(key, 16)","compute_stats(value, 16)"]
-              Select Operator [SEL_1] (rows=500 width=178)
-                Output:["key","value"]
-                TableScan [TS_0] (rows=500 width=178)
-                  default@src,src,Tbl:COMPLETE,Col:COMPLETE,Output:["key","value"]
+    Stage-2
+      Stats-Aggr Operator
+        Stage-0
+          Reducer 2
+          File Output Operator [FS_6]
+            Group By Operator [GBY_4] (rows=1 width=960)
+              Output:["_col0","_col1"],aggregations:["compute_stats(VALUE._col0)","compute_stats(VALUE._col1)"]
+            <-Map 1 [CUSTOM_SIMPLE_EDGE]
+              PARTITION_ONLY_SHUFFLE [RS_3]
+                Group By Operator [GBY_2] (rows=1 width=984)
+                  Output:["_col0","_col1"],aggregations:["compute_stats(key, 16)","compute_stats(value, 16)"]
+                  Select Operator [SEL_1] (rows=500 width=178)
+                    Output:["key","value"]
+                    TableScan [TS_0] (rows=500 width=178)
+                      default@src,src,Tbl:COMPLETE,Col:COMPLETE,Output:["key","value"]
 
 PREHOOK: query: explain
 CREATE TEMPORARY MACRO SIGMOID (x DOUBLE) 1.0 / (1.0 + EXP(-x))

@@ -77,10 +77,12 @@ PREHOOK: query: analyze table testtable1 compute statistics for columns
 PREHOOK: type: QUERY
 PREHOOK: Input: statsdb1@testtable1
 #### A masked pattern was here ####
+PREHOOK: Output: statsdb1@testtable1
 POSTHOOK: query: analyze table testtable1 compute statistics for columns
 POSTHOOK: type: QUERY
 POSTHOOK: Input: statsdb1@testtable1
 #### A masked pattern was here ####
+POSTHOOK: Output: statsdb1@testtable1
 PREHOOK: query: describe formatted statsdb1.testtable1 col1
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: statsdb1@testtable1
@@ -202,12 +204,18 @@ PREHOOK: Input: statsdb1@testpart1
 PREHOOK: Input: statsdb1@testpart1@part=part1
 PREHOOK: Input: statsdb1@testpart1@part=part2
 #### A masked pattern was here ####
+PREHOOK: Output: statsdb1@testpart1
+PREHOOK: Output: statsdb1@testpart1@part=part1
+PREHOOK: Output: statsdb1@testpart1@part=part2
 POSTHOOK: query: analyze table testpart1 compute statistics for columns
 POSTHOOK: type: QUERY
 POSTHOOK: Input: statsdb1@testpart1
 POSTHOOK: Input: statsdb1@testpart1@part=part1
 POSTHOOK: Input: statsdb1@testpart1@part=part2
 #### A masked pattern was here ####
+POSTHOOK: Output: statsdb1@testpart1
+POSTHOOK: Output: statsdb1@testpart1@part=part1
+POSTHOOK: Output: statsdb1@testpart1@part=part2
 PREHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part1') col1
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: statsdb1@testpart1
@@ -552,10 +560,12 @@ PREHOOK: query: analyze table testtable1 compute statistics for columns
 PREHOOK: type: QUERY
 PREHOOK: Input: statsdb1@testtable1
 #### A masked pattern was here ####
+PREHOOK: Output: statsdb1@testtable1
 POSTHOOK: query: analyze table testtable1 compute statistics for columns
 POSTHOOK: type: QUERY
 POSTHOOK: Input: statsdb1@testtable1
 #### A masked pattern was here ####
+POSTHOOK: Output: statsdb1@testtable1
 PREHOOK: query: describe formatted statsdb1.testtable1 col1
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: statsdb1@testtable1
@@ -677,12 +687,18 @@ PREHOOK: Input: statsdb1@testpart1
 PREHOOK: Input: statsdb1@testpart1@part=part1
 PREHOOK: Input: statsdb1@testpart1@part=part2
 #### A masked pattern was here ####
+PREHOOK: Output: statsdb1@testpart1
+PREHOOK: Output: statsdb1@testpart1@part=part1
+PREHOOK: Output: statsdb1@testpart1@part=part2
 POSTHOOK: query: analyze table testpart1 compute statistics for columns
 POSTHOOK: type: QUERY
 POSTHOOK: Input: statsdb1@testpart1
 POSTHOOK: Input: statsdb1@testpart1@part=part1
 POSTHOOK: Input: statsdb1@testpart1@part=part2
 #### A masked pattern was here ####
+POSTHOOK: Output: statsdb1@testpart1
+POSTHOOK: Output: statsdb1@testpart1@part=part1
+POSTHOOK: Output: statsdb1@testpart1@part=part2
 PREHOOK: query: describe formatted statsdb1.testpart1 partition (part = 'part1') col1
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: statsdb1@testpart1
