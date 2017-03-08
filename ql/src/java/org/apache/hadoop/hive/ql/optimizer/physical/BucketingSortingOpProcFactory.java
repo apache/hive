@@ -49,11 +49,14 @@ import org.apache.hadoop.hive.ql.plan.JoinDesc;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.ReduceSinkDesc;
 import org.apache.hadoop.hive.ql.plan.SelectDesc;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Operator factory for the rule processors for inferring bucketing/sorting columns.
  */
 public class BucketingSortingOpProcFactory {
+  private static final Logger LOG = LoggerFactory.getLogger(BucketingSortingOpProcFactory.class);
 
   public static class DefaultInferrer implements NodeProcessor {
 
@@ -460,6 +463,10 @@ public class BucketingSortingOpProcFactory {
 
       BucketingSortingCtx bctx = (BucketingSortingCtx)procCtx;
       FileSinkOperator fop = (FileSinkOperator)nd;
+      if (fop.getConf().isMmTable()) {
+        // See the comment inside updatePartitionBucketSortColumns.
+        LOG.warn("Currently, inferring buckets is not going to work for MM tables (by design).");
+      }
 
       Operator<? extends OperatorDesc> parent = getParent(stack);
       List<BucketCol> bucketCols = bctx.getBucketedCols(parent);

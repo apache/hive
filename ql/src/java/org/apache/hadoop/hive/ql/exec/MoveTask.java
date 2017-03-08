@@ -405,7 +405,8 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
         hasFollowingStatsTask(), tbd.getMmWriteId(), isCommitMmWrite);
     Partition partn = db.getPartition(table, tbd.getPartitionSpec(), false);
 
-    if (ti.bucketCols != null || ti.sortCols != null) {
+    // See the comment inside updatePartitionBucketSortColumns.
+    if (!tbd.isMmTable() && (ti.bucketCols != null || ti.sortCols != null)) {
       updatePartitionBucketSortColumns(db, table, partn, ti.bucketCols,
           ti.numBuckets, ti.sortCols);
     }
@@ -472,7 +473,8 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
     for(Map.Entry<Map<String, String>, Partition> entry : dp.entrySet()) {
       Partition partn = entry.getValue();
 
-      if (ti.bucketCols != null || ti.sortCols != null) {
+      // See the comment inside updatePartitionBucketSortColumns.
+      if (!tbd.isMmTable() && (ti.bucketCols != null || ti.sortCols != null)) {
         updatePartitionBucketSortColumns(
             db, table, partn, ti.bucketCols, ti.numBuckets, ti.sortCols);
       }
@@ -658,6 +660,11 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
 
     boolean updateBucketCols = false;
     if (bucketCols != null) {
+      // TODO: this particular bit will not work for MM tables, as there can be multiple
+      //       directories for different MM IDs. We could put the path here that would account
+      //       for the current MM ID being written, but it will not guarantee that other MM IDs
+      //       have the correct buckets. The existing code discards the inferred data when the
+      //       reducers don't produce enough files; we'll do the same for MM tables for now.
       FileSystem fileSys = partn.getDataLocation().getFileSystem(conf);
       FileStatus[] fileStatus = HiveStatsUtils.getFileStatusRecurse(
           partn.getDataLocation(), 1, fileSys);
