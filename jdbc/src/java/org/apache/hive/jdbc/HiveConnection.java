@@ -639,6 +639,9 @@ public class HiveConnection implements java.sql.Connection {
     }
     // switch the database
     openConf.put("use:database", connParams.getDbName());
+    // set the fetchSize
+    openConf.put("set:hiveconf:hive.server2.thrift.resultset.default.fetch.size",
+      Integer.toString(fetchSize));
 
     // set the session configuration
     Map<String, String> sessVars = connParams.getSessionVars();
@@ -664,6 +667,13 @@ public class HiveConnection implements java.sql.Connection {
       }
       protocol = openResp.getServerProtocolVersion();
       sessHandle = openResp.getSessionHandle();
+
+      // Update fetchSize if modified by server
+      String serverFetchSize =
+        openResp.getConfiguration().get("hive.server2.thrift.resultset.default.fetch.size");
+      if (serverFetchSize != null) {
+        fetchSize = Integer.parseInt(serverFetchSize);
+      }
     } catch (TException e) {
       LOG.error("Error opening session", e);
       throw new SQLException("Could not establish connection to "

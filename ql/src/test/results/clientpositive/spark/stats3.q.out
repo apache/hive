@@ -220,6 +220,11 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	numFiles            	1                   
+	numRows             	6                   
+	rawDataSize         	6                   
+	totalSize           	171                 
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 

@@ -80,5 +80,5 @@ public class MetricsConstant {
   public static final String HS2_COMPILING_QUERIES = "hs2_compiling_queries";
   public static final String HS2_EXECUTING_QUERIES = "hs2_executing_queries";
   public static final String HS2_FAILED_QUERIES = "hs2_failed_queries";
-  public static final String HS2_SUCEEDED_QUERIES = "hs2_suceeded_queries";
+  public static final String HS2_SUCCEEDED_QUERIES = "hs2_succeeded_queries";
 }

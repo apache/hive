@@ -198,6 +198,7 @@ STAGE PLANS:
                 Statistics: Num rows: 1048 Data size: 310873 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
+                  Dp Sort State: PARTITION_SORTED
                   Statistics: Num rows: 1048 Data size: 310873 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
@@ -290,6 +291,7 @@ STAGE PLANS:
                 Statistics: Num rows: 10 Data size: 2960 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
+                  Dp Sort State: PARTITION_SORTED
                   Statistics: Num rows: 10 Data size: 2960 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
@@ -363,6 +365,7 @@ STAGE PLANS:
                 Statistics: Num rows: 1048 Data size: 310873 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
+                  Dp Sort State: PARTITION_BUCKET_SORTED
                   Statistics: Num rows: 1048 Data size: 310873 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
@@ -435,6 +438,7 @@ STAGE PLANS:
                 Statistics: Num rows: 1048 Data size: 310873 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
+                  Dp Sort State: PARTITION_BUCKET_SORTED
                   Statistics: Num rows: 1048 Data size: 310873 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
@@ -575,6 +579,7 @@ STAGE PLANS:
                 Statistics: Num rows: 1048 Data size: 310873 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
+                  Dp Sort State: PARTITION_SORTED
                   Statistics: Num rows: 1048 Data size: 310873 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
@@ -667,6 +672,7 @@ STAGE PLANS:
                 Statistics: Num rows: 10 Data size: 2960 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
+                  Dp Sort State: PARTITION_SORTED
                   Statistics: Num rows: 10 Data size: 2960 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
@@ -740,6 +746,7 @@ STAGE PLANS:
                 Statistics: Num rows: 1048 Data size: 310873 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
+                  Dp Sort State: PARTITION_BUCKET_SORTED
                   Statistics: Num rows: 1048 Data size: 310873 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
@@ -812,6 +819,7 @@ STAGE PLANS:
                 Statistics: Num rows: 1048 Data size: 310873 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
+                  Dp Sort State: PARTITION_BUCKET_SORTED
                   Statistics: Num rows: 1048 Data size: 310873 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
@@ -1426,6 +1434,7 @@ STAGE PLANS:
                 Statistics: Num rows: 1048 Data size: 310873 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
+                  Dp Sort State: PARTITION_SORTED
                   Statistics: Num rows: 1048 Data size: 310873 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.TextInputFormat
@@ -1520,6 +1529,7 @@ STAGE PLANS:
                 Statistics: Num rows: 10 Data size: 2960 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
+                  Dp Sort State: PARTITION_SORTED
                   Statistics: Num rows: 10 Data size: 2960 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.TextInputFormat
@@ -1676,6 +1686,7 @@ STAGE PLANS:
                   Statistics: Num rows: 524 Data size: 155436 Basic stats: COMPLETE Column stats: NONE
                   File Output Operator
                     compressed: false
+                    Dp Sort State: PARTITION_SORTED
                     Statistics: Num rows: 524 Data size: 155436 Basic stats: COMPLETE Column stats: NONE
                     table:
                         input format: org.apache.hadoop.mapred.TextInputFormat
@@ -2133,6 +2144,7 @@ STAGE PLANS:
                 Statistics: Num rows: 1048 Data size: 310873 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
+                  Dp Sort State: PARTITION_BUCKET_SORTED
                   Statistics: Num rows: 1048 Data size: 310873 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.TextInputFormat

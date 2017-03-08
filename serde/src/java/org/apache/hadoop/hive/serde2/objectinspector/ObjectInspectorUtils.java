@@ -617,6 +617,11 @@ public final class ObjectInspectorUtils {
    * @param hashCode as produced by {@link #getBucketHashCode(Object[], ObjectInspector[])}
    */
   public static int getBucketNumber(int hashCode, int numberOfBuckets) {
+    if(numberOfBuckets <= 0) {
+      //note that (X % 0) is illegal and (X % -1) = 0
+      // -1 is a common default when the value is missing
+      throw new IllegalArgumentException("Number of Buckets must be > 0");
+    }
     return (hashCode & Integer.MAX_VALUE) % numberOfBuckets;
   }
   /**

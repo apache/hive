@@ -44,6 +44,7 @@ POSTHOOK: Input: default@all_nulls
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
 	 	 	 	 	 	 	 	 	 	 
 a                   	bigint              	0                   	0                   	5                   	1                   	                    	                    	                    	                    	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"a\":\"true\",\"b\":\"true\",\"c\":\"true\"}}	 	 	 	 	 	 	 	 	 
 PREHOOK: query: describe formatted all_nulls b
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@all_nulls
@@ -53,6 +54,7 @@ POSTHOOK: Input: default@all_nulls
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
 	 	 	 	 	 	 	 	 	 	 
 b                   	double              	0.0                 	0.0                 	5                   	1                   	                    	                    	                    	                    	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"a\":\"true\",\"b\":\"true\",\"c\":\"true\"}}	 	 	 	 	 	 	 	 	 
 PREHOOK: query: drop table all_nulls
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@all_nulls

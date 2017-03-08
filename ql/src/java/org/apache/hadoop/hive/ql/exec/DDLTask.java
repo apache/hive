@@ -68,9 +68,12 @@ import org.apache.hadoop.hive.metastore.HiveMetaHook;
 import org.apache.hadoop.hive.metastore.DefaultHiveMetaHook;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.PartitionDropOptions;
+import org.apache.hadoop.hive.metastore.StatObjectConverter;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.Warehouse;
+import org.apache.hadoop.hive.metastore.api.AggrStats;
 import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
+import org.apache.hadoop.hive.metastore.api.ColumnStatisticsData;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.CompactionResponse;
 import org.apache.hadoop.hive.metastore.api.Database;
@@ -96,6 +99,7 @@ import org.apache.hadoop.hive.metastore.api.SkewedInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.TxnInfo;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
+import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.DriverContext;
@@ -115,6 +119,7 @@ import org.apache.hadoop.hive.ql.io.merge.MergeFileWork;
 import org.apache.hadoop.hive.ql.io.orc.OrcInputFormat;
 import org.apache.hadoop.hive.ql.io.orc.OrcSerde;
 import org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe;
+import org.apache.hadoop.hive.ql.io.parquet.serde.ParquetTableUtils;
 import org.apache.hadoop.hive.ql.io.rcfile.truncate.ColumnTruncateTask;
 import org.apache.hadoop.hive.ql.io.rcfile.truncate.ColumnTruncateWork;
 import org.apache.hadoop.hive.ql.lockmgr.DbLockManager;
@@ -155,6 +160,7 @@ import org.apache.hadoop.hive.ql.plan.AlterTableDesc.AlterTableTypes;
 import org.apache.hadoop.hive.ql.plan.AlterTableExchangePartition;
 import org.apache.hadoop.hive.ql.plan.AlterTableSimpleDesc;
 import org.apache.hadoop.hive.ql.plan.CacheMetadataDesc;
+import org.apache.hadoop.hive.ql.plan.ColStatistics;
 import org.apache.hadoop.hive.ql.plan.CreateDatabaseDesc;
 import org.apache.hadoop.hive.ql.plan.CreateIndexDesc;
 import org.apache.hadoop.hive.ql.plan.CreateTableDesc;
@@ -219,6 +225,7 @@ import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObje
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveRoleGrant;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveV1Authorizer;
 import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.hadoop.hive.ql.stats.StatsUtils;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.Deserializer;
@@ -1023,9 +1030,20 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
           }
           if (baseParts != null) {
             for (Partition p : baseParts) {
-              FileSystem fs = p.getDataLocation().getFileSystem(db.getConf());
-              FileStatus fss = fs.getFileStatus(p.getDataLocation());
-              basePartTs.put(p.getSpec(), fss.getModificationTime());
+              Path dataLocation = p.getDataLocation();
+              FileSystem fs = dataLocation.getFileSystem(db.getConf());
+              FileStatus fss = fs.getFileStatus(dataLocation);
+              long lastModificationTime = fss.getModificationTime();
+
+              FileStatus[] parts = fs.listStatus(dataLocation, FileUtils.HIDDEN_FILES_PATH_FILTER);
+              if (parts != null && parts.length > 0) {
+                for (FileStatus status : parts) {
+                  if (status.getModificationTime() > lastModificationTime) {
+                    lastModificationTime = status.getModificationTime();
+                  }
+                }
+              }
+              basePartTs.put(p.getSpec(), lastModificationTime);
             }
           }
         } else {
@@ -1880,6 +1898,42 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       console.printInfo("Compaction already enqueued with id " + resp.getId() +
         "; State is " + resp.getState());
     }
+    if(desc.isBlocking() && resp.isAccepted()) {
+      StringBuilder progressDots = new StringBuilder();
+      long waitTimeMs = 1000;
+      wait: while (true) {
+        //double wait time until 5min
+        waitTimeMs = waitTimeMs*2;
+        waitTimeMs = waitTimeMs < 5*60*1000 ? waitTimeMs : 5*60*1000;
+        try {
+          Thread.sleep(waitTimeMs);
+        }
+        catch(InterruptedException ex) {
+          console.printInfo("Interrupted while waiting for compaction with id=" + resp.getId());
+          break;
+        }
+        //this could be expensive when there are a lot of compactions....
+        //todo: update to search by ID once HIVE-13353 is done
+        ShowCompactResponse allCompactions = db.showCompactions();
+        for(ShowCompactResponseElement compaction : allCompactions.getCompacts()) {
+          if (resp.getId() != compaction.getId()) {
+            continue;
+          }
+          switch (compaction.getState()) {
+            case TxnStore.WORKING_RESPONSE:
+            case TxnStore.INITIATED_RESPONSE:
+              //still working
+              console.printInfo(progressDots.toString());
+              progressDots.append(".");
+              continue wait;
+            default:
+              //done
+              console.printInfo("Compaction with id " + resp.getId() + " finished with status: " + compaction.getState());
+              break wait;
+          }
+        }
+      }
+    }
     return 0;
   }
 
@@ -2092,14 +2146,6 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 
     return 0;
   }
-
-  private static final String[] DELIMITER_PREFIXES = new String[] {
-      "FIELDS TERMINATED BY",
-      "COLLECTION ITEMS TERMINATED BY",
-      "MAP KEYS TERMINATED BY",
-      "LINES TERMINATED BY",
-      "NULL DEFINED AS"
-  };
 
   private int showCreateDatabase(Hive db, ShowCreateDatabaseDesc showCreateDb) throws HiveException {
     DataOutputStream outStream = getOutputStream(showCreateDb.getResFile());
@@ -2817,7 +2863,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
   }
 
   private int showCompactions(Hive db, ShowCompactionsDesc desc) throws HiveException {
-    // Call the metastore to get the currently queued and running compactions.
+    // Call the metastore to get the status of all known compactions (completed get purged eventually)
     ShowCompactResponse rsp = db.showCompactions();
 
     // Write the results into the file
@@ -3236,8 +3282,9 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
    * @return Returns 0 when execution succeeds and above 0 if it fails.
    * @throws HiveException
    *           Throws this exception if an unexpected error occurs.
+   * @throws MetaException
    */
-  private int describeTable(Hive db, DescTableDesc descTbl) throws HiveException {
+  private int describeTable(Hive db, DescTableDesc descTbl) throws HiveException, MetaException {
     String colPath = descTbl.getColumnPath();
     String tableName = descTbl.getTableName();
 
@@ -3258,7 +3305,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 
     DataOutputStream outStream = getOutputStream(descTbl.getResFile());
     try {
-      LOG.info("DDLTask: got data for " + tbl.getTableName());
+      LOG.debug("DDLTask: got data for " + tbl.getTableName());
 
       List<FieldSchema> cols = null;
       List<ColumnStatisticsObj> colStats = null;
@@ -3278,8 +3325,27 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         if (!descTbl.isFormatted()) {
           cols.addAll(tbl.getPartCols());
         }
+
+        if (tbl.isPartitioned() && part == null) {
+          // No partitioned specified for partitioned table, lets fetch all.
+          Map<String,String> tblProps = tbl.getParameters() == null ? new HashMap<String,String>() : tbl.getParameters();
+          PartitionIterable parts = new PartitionIterable(db, tbl, null, conf.getIntVar(HiveConf.ConfVars.METASTORE_BATCH_RETRIEVE_MAX));
+          for (String stat : StatsSetupConst.supportedStats) {
+            boolean state = true;
+            long statVal = 0l;
+            for (Partition partition : parts) {
+              Map<String,String> props = partition.getParameters();
+              state &= StatsSetupConst.areBasicStatsUptoDate(props);
+              if (props != null && props.get(stat) != null) {
+                statVal += Long.parseLong(props.get(stat));
+              }
+            }
+            StatsSetupConst.setBasicStatsState(tblProps, Boolean.toString(state));
+            tblProps.put(stat, String.valueOf(statVal));
+          }
+          tbl.setParameters(tblProps);
+        }
       } else {
-        cols = Hive.getFieldsFromDeserializer(colPath, deserializer);
         if (descTbl.isFormatted()) {
           // when column name is specified in describe table DDL, colPath will
           // will be table_name.column_name
@@ -3288,12 +3354,46 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
           List<String> colNames = new ArrayList<String>();
           colNames.add(colName.toLowerCase());
           if (null == part) {
-            colStats = db.getTableColumnStatistics(dbTab[0].toLowerCase(), dbTab[1].toLowerCase(), colNames);
+            if (tbl.isPartitioned()) {
+              Map<String,String> tblProps = tbl.getParameters() == null ? new HashMap<String,String>() : tbl.getParameters();
+              if (tbl.isPartitionKey(colNames.get(0))) {
+                FieldSchema partCol = tbl.getPartColByName(colNames.get(0));
+                cols = Collections.singletonList(partCol);
+                PartitionIterable parts = new PartitionIterable(db, tbl, null, conf.getIntVar(HiveConf.ConfVars.METASTORE_BATCH_RETRIEVE_MAX));
+                ColumnInfo ci = new ColumnInfo(partCol.getName(),TypeInfoUtils.getTypeInfoFromTypeString(partCol.getType()),null,false);
+                ColStatistics cs = StatsUtils.getColStatsForPartCol(ci, parts, conf);
+                ColumnStatisticsData data = new ColumnStatisticsData();
+                ColStatistics.Range r = cs.getRange();
+                StatObjectConverter.fillColumnStatisticsData(partCol.getType(), data, r == null ? null : r.minValue, r == null ? null : r.maxValue,
+                    r == null ? null : r.minValue, r == null ? null : r.maxValue, r == null ? null : r.minValue.toString(), r == null ? null : r.maxValue.toString(),
+                    cs.getNumNulls(), cs.getCountDistint(), cs.getAvgColLen(), cs.getAvgColLen(), cs.getNumTrues(), cs.getNumFalses());
+                ColumnStatisticsObj cso = new ColumnStatisticsObj(partCol.getName(), partCol.getType(), data);
+                colStats = Collections.singletonList(cso);
+                StatsSetupConst.setColumnStatsState(tblProps, colNames);
+              } else {
+                cols = Hive.getFieldsFromDeserializer(colPath, deserializer);
+                List<String> parts = db.getPartitionNames(dbTab[0].toLowerCase(), dbTab[1].toLowerCase(), (short) -1);
+                AggrStats aggrStats = db.getAggrColStatsFor(dbTab[0].toLowerCase(), dbTab[1].toLowerCase(), colNames, parts);
+                colStats = aggrStats.getColStats();
+                if (parts.size() == aggrStats.getPartsFound()) {
+                  StatsSetupConst.setColumnStatsState(tblProps, colNames);
+                } else {
+                  StatsSetupConst.removeColumnStatsState(tblProps, colNames);
+                }
+              }
+              tbl.setParameters(tblProps);
+            } else {
+              cols = Hive.getFieldsFromDeserializer(colPath, deserializer);
+              colStats = db.getTableColumnStatistics(dbTab[0].toLowerCase(), dbTab[1].toLowerCase(), colNames);
+            }
           } else {
             List<String> partitions = new ArrayList<String>();
             partitions.add(part.getName());
+            cols = Hive.getFieldsFromDeserializer(colPath, deserializer);
             colStats = db.getPartitionColumnStatistics(dbTab[0].toLowerCase(), dbTab[1].toLowerCase(), partitions, colNames).get(part.getName());
           }
+        } else {
+          cols = Hive.getFieldsFromDeserializer(colPath, deserializer);
         }
       }
       PrimaryKeyInfo pkInfo = null;
@@ -3310,7 +3410,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
           cols, descTbl.isFormatted(), descTbl.isExt(),
           descTbl.isPretty(), isOutputPadded, colStats, pkInfo, fkInfo);
 
-      LOG.info("DDLTask: written data for " + tbl.getTableName());
+      LOG.debug("DDLTask: written data for " + tbl.getTableName());
 
     } catch (SQLException e) {
       throw new HiveException(e, ErrorMsg.GENERIC_ERROR, tableName);
@@ -4405,6 +4505,18 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       }
     }
 
+    // If HIVE_PARQUET_INT96_DEFAULT_UTC_WRITE_ZONE is set to True, then set new Parquet tables timezone
+    // to UTC by default (only if the table property is not set)
+    if (tbl.getSerializationLib().equals(ParquetHiveSerDe.class.getName())) {
+      SessionState ss = SessionState.get();
+      if (ss.getConf().getBoolVar(ConfVars.HIVE_PARQUET_INT96_DEFAULT_UTC_WRITE_ZONE)) {
+        String parquetTimezone = tbl.getProperty(ParquetTableUtils.PARQUET_INT96_WRITE_ZONE_PROPERTY);
+        if (parquetTimezone == null || parquetTimezone.isEmpty()) {
+          tbl.setProperty(ParquetTableUtils.PARQUET_INT96_WRITE_ZONE_PROPERTY, ParquetTableUtils.PARQUET_INT96_NO_ADJUSTMENT_ZONE);
+        }
+      }
+    }
+
     // create the table
     if (crtTbl.getReplaceMode()) {
       // replace-mode creates are really alters using CreateTableDesc.
@@ -4544,6 +4656,12 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       if (paramsStr != null) {
         retainer.addAll(Arrays.asList(paramsStr.split(",")));
       }
+
+      // Retain Parquet INT96 write zone property to keep Parquet timezone bugfixes.
+      if (params.get(ParquetTableUtils.PARQUET_INT96_WRITE_ZONE_PROPERTY) != null) {
+        retainer.add(ParquetTableUtils.PARQUET_INT96_WRITE_ZONE_PROPERTY);
+      }
+
       if (!retainer.isEmpty()) {
         params.keySet().retainAll(retainer);
       } else {
@@ -4831,18 +4949,6 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     //then invalidate column stats
     StatsSetupConst.clearColumnStatsState(props);
     return statsPresent;
-  }
-
-  private String escapeHiveCommand(String str) {
-    StringBuilder sb = new StringBuilder();
-    for (int i = 0; i < str.length(); i ++) {
-      char c = str.charAt(i);
-      if (c == '\'') {
-        sb.append('\\');
-      }
-      sb.append(c);
-    }
-    return sb.toString();
   }
 
   @Override

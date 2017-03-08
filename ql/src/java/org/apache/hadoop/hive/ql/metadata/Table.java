@@ -865,7 +865,7 @@ public class Table implements Serializable {
 
     List<FieldSchema> fsl = getPartCols();
     List<String> tpl = tp.getValues();
-    LinkedHashMap<String, String> spec = new LinkedHashMap<String, String>();
+    LinkedHashMap<String, String> spec = new LinkedHashMap<String, String>(fsl.size());
     for (int i = 0; i < fsl.size(); i++) {
       FieldSchema fs = fsl.get(i);
       String value = tpl.get(i);

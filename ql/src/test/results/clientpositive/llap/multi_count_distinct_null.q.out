@@ -66,7 +66,7 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1, _col2, _col3
                 Statistics: Num rows: 18 Data size: 99 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
-                  expressions: CASE WHEN (((_col3 = 1) and _col0 is not null)) THEN (1) ELSE (null) END (type: int), CASE WHEN (((_col3 = 2) and _col1 is not null)) THEN (1) ELSE (null) END (type: int), CASE WHEN (((_col3 = 4) and _col2 is not null)) THEN (1) ELSE (null) END (type: int)
+                  expressions: CASE WHEN (((_col3 = 3) and _col0 is not null)) THEN (1) ELSE (null) END (type: int), CASE WHEN (((_col3 = 5) and _col1 is not null)) THEN (1) ELSE (null) END (type: int), CASE WHEN (((_col3 = 6) and _col2 is not null)) THEN (1) ELSE (null) END (type: int)
                   outputColumnNames: _col0, _col1, _col2
                   Statistics: Num rows: 18 Data size: 99 Basic stats: COMPLETE Column stats: NONE
                   Group By Operator
@@ -207,7 +207,7 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1, _col2, _col3
                 Statistics: Num rows: 30 Data size: 165 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
-                  expressions: CASE WHEN (((_col3 = 1) and _col0 is not null)) THEN (1) ELSE (null) END (type: int), CASE WHEN (((_col3 = 2) and _col1 is not null)) THEN (1) ELSE (null) END (type: int), CASE WHEN (((_col3 = 4) and _col2 is not null)) THEN (1) ELSE (null) END (type: int), CASE WHEN ((_col3 = 6)) THEN (1) ELSE (null) END (type: int), CASE WHEN ((_col3 = 7)) THEN (1) ELSE (null) END (type: int)
+                  expressions: CASE WHEN (((_col3 = 3) and _col0 is not null)) THEN (1) ELSE (null) END (type: int), CASE WHEN (((_col3 = 5) and _col1 is not null)) THEN (1) ELSE (null) END (type: int), CASE WHEN (((_col3 = 6) and _col2 is not null)) THEN (1) ELSE (null) END (type: int), CASE WHEN ((_col3 = 4)) THEN (1) ELSE (null) END (type: int), CASE WHEN ((_col3 = 0)) THEN (1) ELSE (null) END (type: int)
                   outputColumnNames: _col0, _col1, _col2, _col3, _col4
                   Statistics: Num rows: 30 Data size: 165 Basic stats: COMPLETE Column stats: NONE
                   Group By Operator
@@ -257,9 +257,9 @@ POSTHOOK: Input: default@employee
 #### A masked pattern was here ####
 2	4	2	3	9	9	10
 PREHOOK: query: select 
-count(case when i=1 and department_id is not null then 1 else null end) as c0, 
-count(case when i=2 and gender is not null then 1 else null end) as c1, 
-count(case when i=4 and education_level is not null then 1 else null end) as c2 from 
+count(case when i=3 and department_id is not null then 1 else null end) as c0, 
+count(case when i=5 and gender is not null then 1 else null end) as c1, 
+count(case when i=6 and education_level is not null then 1 else null end) as c2 from 
 (select grouping__id as i, department_id, gender, 
 education_level from employee group by department_id, gender, education_level grouping sets 
 (department_id, gender, education_level))subq
@@ -267,9 +267,9 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@employee
 #### A masked pattern was here ####
 POSTHOOK: query: select 
-count(case when i=1 and department_id is not null then 1 else null end) as c0, 
-count(case when i=2 and gender is not null then 1 else null end) as c1, 
-count(case when i=4 and education_level is not null then 1 else null end) as c2 from 
+count(case when i=3 and department_id is not null then 1 else null end) as c0, 
+count(case when i=5 and gender is not null then 1 else null end) as c1, 
+count(case when i=6 and education_level is not null then 1 else null end) as c2 from 
 (select grouping__id as i, department_id, gender, 
 education_level from employee group by department_id, gender, education_level grouping sets 
 (department_id, gender, education_level))subq
@@ -289,24 +289,24 @@ group by department_id, gender, education_level grouping sets
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@employee
 #### A masked pattern was here ####
-1	NULL	NULL	NULL
 2	NULL	NULL	NULL
-4	NULL	NULL	NULL
+3	NULL	NULL	NULL
 5	NULL	NULL	NULL
-4	NULL	NULL	1
-5	NULL	NULL	1
-4	NULL	NULL	2
-4	NULL	NULL	3
-2	NULL	F	NULL
-2	NULL	M	NULL
-1	1	NULL	NULL
-5	1	NULL	1
-5	1	NULL	2
-5	1	NULL	3
-1	2	NULL	NULL
-5	2	NULL	1
-5	2	NULL	3
-1	3	NULL	NULL
-5	3	NULL	2
-1	4	NULL	NULL
-5	4	NULL	1
+6	NULL	NULL	NULL
+2	NULL	NULL	1
+6	NULL	NULL	1
+6	NULL	NULL	2
+6	NULL	NULL	3
+5	NULL	F	NULL
+5	NULL	M	NULL
+3	1	NULL	NULL
+2	1	NULL	1
+2	1	NULL	2
+2	1	NULL	3
+3	2	NULL	NULL
+2	2	NULL	1
+2	2	NULL	3
+3	3	NULL	NULL
+2	3	NULL	2
+3	4	NULL	NULL
+2	4	NULL	1

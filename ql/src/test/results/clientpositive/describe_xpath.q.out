@@ -5,6 +5,7 @@ POSTHOOK: query: describe src_thrift lint
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@src_thrift
 lint                	array<int>          	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}	 
 PREHOOK: query: describe src_thrift lint.$elem$
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@src_thrift
@@ -12,6 +13,7 @@ POSTHOOK: query: describe src_thrift lint.$elem$
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@src_thrift
 $elem$              	int                 	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}	 
 PREHOOK: query: describe src_thrift mStringString.$key$
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@src_thrift
@@ -19,6 +21,7 @@ POSTHOOK: query: describe src_thrift mStringString.$key$
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@src_thrift
 $key$               	string              	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}	 
 PREHOOK: query: describe src_thrift mStringString.$value$
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@src_thrift
@@ -26,6 +29,7 @@ POSTHOOK: query: describe src_thrift mStringString.$value$
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@src_thrift
 $value$             	string              	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}	 
 PREHOOK: query: describe src_thrift lintString.$elem$
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@src_thrift
@@ -35,6 +39,7 @@ POSTHOOK: Input: default@src_thrift
 myint               	int                 	from deserializer   
 mystring            	string              	from deserializer   
 underscore_int      	int                 	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}	 
 PREHOOK: query: describe src_thrift lintString.$elem$.myint
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@src_thrift
@@ -42,3 +47,4 @@ POSTHOOK: query: describe src_thrift lintString.$elem$.myint
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@src_thrift
 myint               	int                 	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}	 

@@ -112,37 +112,6 @@ public class ReduceWork extends BaseWork {
      return keyDesc;
   }
 
-  private ObjectInspector getObjectInspector(TableDesc desc) {
-    ObjectInspector objectInspector;
-    try {
-      Deserializer deserializer = ReflectionUtil.newInstance(desc
-                .getDeserializerClass(), null);
-      SerDeUtils.initializeSerDe(deserializer, null, desc.getProperties(), null);
-      objectInspector = deserializer.getObjectInspector();
-    } catch (Exception e) {
-      return null;
-    }
-    return objectInspector;
-  }
-
-  public ObjectInspector getKeyObjectInspector() {
-    if (keyObjectInspector == null) {
-      keyObjectInspector = getObjectInspector(keyDesc);
-    }
-    return keyObjectInspector;
-  }
-
-  // Only works when not tagging.
-  public ObjectInspector getValueObjectInspector() {
-    if (needsTagging) {
-      return null;
-    }
-    if (valueObjectInspector == null) {
-      valueObjectInspector = getObjectInspector(tagToValueDesc.get(tag));
-    }
-    return valueObjectInspector;
-  }
-
   public List<TableDesc> getTagToValueDesc() {
     return tagToValueDesc;
   }

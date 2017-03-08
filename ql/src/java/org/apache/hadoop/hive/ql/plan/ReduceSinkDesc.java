@@ -21,13 +21,11 @@ package org.apache.hadoop.hive.ql.plan;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.EnumSet;
-import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 import org.apache.hadoop.hive.ql.plan.Explain.Vectorization;
 import org.apache.hadoop.hive.ql.plan.VectorReduceSinkDesc.ReduceSinkKeyType;
@@ -123,9 +121,6 @@ public class ReduceSinkDesc extends AbstractOperatorDesc {
   // Is reducer auto-parallelism unset (FIXED, UNIFORM, PARALLEL)
   private EnumSet<ReducerTraits> reduceTraits = EnumSet.of(ReducerTraits.UNSET);
 
-  // Write type, since this needs to calculate buckets differently for updates and deletes
-  private AcidUtils.Operation writeType;
-
   // whether this RS is deduplicated
   private transient boolean isDeduplicated = false;
 
@@ -144,8 +139,7 @@ public class ReduceSinkDesc extends AbstractOperatorDesc {
       List<List<Integer>> distinctColumnIndices,
       ArrayList<String> outputValueColumnNames, int tag,
       ArrayList<ExprNodeDesc> partitionCols, int numReducers,
-      final TableDesc keySerializeInfo, final TableDesc valueSerializeInfo,
-      AcidUtils.Operation writeType) {
+      final TableDesc keySerializeInfo, final TableDesc valueSerializeInfo) {
     this.keyCols = keyCols;
     this.numDistributionKeys = numDistributionKeys;
     this.valueCols = valueCols;
@@ -159,7 +153,6 @@ public class ReduceSinkDesc extends AbstractOperatorDesc {
     this.distinctColumnIndices = distinctColumnIndices;
     this.setNumBuckets(-1);
     this.setBucketCols(null);
-    this.writeType = writeType;
     this.vectorDesc = null;
   }
 
@@ -472,10 +465,6 @@ public class ReduceSinkDesc extends AbstractOperatorDesc {
     }
   }
 
-  public AcidUtils.Operation getWriteType() {
-    return writeType;
-  }
-
   public boolean isDeduplicated() {
     return isDeduplicated;
   }
@@ -544,9 +533,6 @@ public class ReduceSinkDesc extends AbstractOperatorDesc {
           new VectorizationCondition(
               engineInSupported,
               engineInSupportedCondName),
-          new VectorizationCondition(
-              !vectorReduceSinkDesc.getAcidChange(),
-              "Not ACID UPDATE or DELETE"),
           new VectorizationCondition(
               !vectorReduceSinkDesc.getHasBuckets(),
               "No buckets"),

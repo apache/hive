@@ -277,8 +277,8 @@ public enum ErrorMsg {
     "Grouping sets aggregations (with rollups or cubes) are not allowed if aggregation function " +
     "parameters overlap with the aggregation functions columns"),
 
-  HIVE_GROUPING_SETS_AGGR_NOFUNC(10211,
-    "Grouping sets aggregations are not allowed if no aggregation function is presented"),
+  HIVE_GROUPING_SETS_EMPTY(10211,
+    "Empty grouping sets not allowed"),
 
   HIVE_UNION_REMOVE_OPTIMIZATION_NEEDS_SUBDIRECTORIES(10212,
     "In order to use hive.optimize.union.remove, the hadoop version that you are using " +

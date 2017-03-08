@@ -24,10 +24,11 @@ fi
 
 updateCli() {
   if [ "$USE_DEPRECATED_CLI" == "true" ]; then
+    export HADOOP_CLIENT_OPTS=" -Dproc_hivecli $HADOOP_CLIENT_OPTS "
     CLASS=org.apache.hadoop.hive.cli.CliDriver
     JAR=hive-cli-*.jar
   else
-    export HADOOP_CLIENT_OPTS="$HADOOP_CLIENT_OPTS -Dlog4j.configurationFile=beeline-log4j2.properties"
+    export HADOOP_CLIENT_OPTS=" -Dproc_beeline $HADOOP_CLIENT_OPTS -Dlog4j.configurationFile=beeline-log4j2.properties"
     CLASS=org.apache.hive.beeline.cli.HiveCli
     JAR=hive-beeline-*.jar
   fi

@@ -30,6 +30,7 @@ import org.apache.hadoop.hive.common.UgiFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.llap.DaemonId;
+import org.apache.hadoop.hive.llap.LlapNodeId;
 import org.apache.hadoop.hive.llap.NotTezEventHelper;
 import org.apache.hadoop.hive.llap.daemon.ContainerRunner;
 import org.apache.hadoop.hive.llap.daemon.FragmentCompletionHandler;
@@ -201,7 +202,9 @@ public class ContainerRunnerImpl extends CompositeService implements ContainerRu
     QueryIdentifierProto qIdProto = vertex.getQueryIdentifier();
 
     HistoryLogger.logFragmentStart(qIdProto.getApplicationIdString(), request.getContainerIdString(),
-        localAddress.get().getHostName(), vertex.getDagName(), qIdProto.getDagIndex(),
+        localAddress.get().getHostName(),
+        constructUniqueQueryId(vertex.getHiveQueryId(), qIdProto.getDagIndex()),
+        qIdProto.getDagIndex(),
         vertex.getVertexName(), request.getFragmentNumber(), request.getAttemptNumber());
 
     // This is the start of container-annotated logging.
@@ -240,12 +243,12 @@ public class ContainerRunnerImpl extends CompositeService implements ContainerRu
 
       Token<JobTokenIdentifier> jobToken = TokenCache.getSessionToken(credentials);
 
+      LlapNodeId amNodeId = LlapNodeId.getInstance(request.getAmHost(), request.getAmPort());
       QueryFragmentInfo fragmentInfo = queryTracker.registerFragment(
           queryIdentifier, qIdProto.getApplicationIdString(), dagId,
           vertex.getDagName(), vertex.getHiveQueryId(), dagIdentifier,
           vertex.getVertexName(), request.getFragmentNumber(), request.getAttemptNumber(),
-          vertex.getUser(), vertex, jobToken, fragmentIdString, tokenInfo, request.getAmHost(),
-          request.getAmPort());
+          vertex.getUser(), vertex, jobToken, fragmentIdString, tokenInfo, amNodeId);
 
       String[] localDirs = fragmentInfo.getLocalDirs();
       Preconditions.checkNotNull(localDirs);
@@ -388,14 +391,17 @@ public class ContainerRunnerImpl extends CompositeService implements ContainerRu
         new QueryIdentifier(request.getQueryIdentifier().getApplicationIdString(),
             request.getQueryIdentifier().getDagIndex());
     LOG.info("Processing queryComplete notification for {}", queryIdentifier);
-    List<QueryFragmentInfo> knownFragments = queryTracker.queryComplete(
-        queryIdentifier, request.getDeleteDelay(), false);
-    LOG.info("DBG: Pending fragment count for completed query {} = {}", queryIdentifier,
+    QueryInfo queryInfo = queryTracker.queryComplete(queryIdentifier, request.getDeleteDelay(), false);
+    if (queryInfo != null) {
+      List<QueryFragmentInfo> knownFragments = queryInfo.getRegisteredFragments();
+      LOG.info("DBG: Pending fragment count for completed query {} = {}", queryIdentifier,
         knownFragments.size());
-    for (QueryFragmentInfo fragmentInfo : knownFragments) {
-      LOG.info("Issuing killFragment for completed query {} {}", queryIdentifier,
+      for (QueryFragmentInfo fragmentInfo : knownFragments) {
+        LOG.info("Issuing killFragment for completed query {} {}", queryIdentifier,
           fragmentInfo.getFragmentIdentifierString());
-      executorService.killFragment(fragmentInfo.getFragmentIdentifierString());
+        executorService.killFragment(fragmentInfo.getFragmentIdentifierString());
+      }
+      amReporter.queryComplete(queryIdentifier);
     }
     return QueryCompleteResponseProto.getDefaultInstance();
   }
@@ -502,14 +508,20 @@ public class ContainerRunnerImpl extends CompositeService implements ContainerRu
   private class KilledTaskHandlerImpl implements KilledTaskHandler {
 
     @Override
-    public void taskKilled(String amLocation, int port, String user,
+    public void taskKilled(String amLocation, int port, String umbilicalUser,
                            Token<JobTokenIdentifier> jobToken, QueryIdentifier queryIdentifier,
                            TezTaskAttemptID taskAttemptId) {
-      amReporter.taskKilled(amLocation, port, user, jobToken, queryIdentifier, taskAttemptId);
+      amReporter.taskKilled(amLocation, port, umbilicalUser, jobToken, queryIdentifier, taskAttemptId);
     }
   }
 
   public Set<String> getExecutorStatus() {
     return executorService.getExecutorsStatus();
   }
+
+  public static String constructUniqueQueryId(String queryId, int dagIndex) {
+    // Hive QueryId is not always unique.
+    return queryId + "-" + dagIndex;
+  }
+
 }

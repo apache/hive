@@ -43,7 +43,7 @@ public class RecordIdentifier implements WritableComparable<RecordIdentifier> {
    * Each field of RecordIdentifier which should be part of ROWID should be in this enum... which 
    * really means that it should be part of VirtualColumn (so make a subclass for rowid).
    */
-  public static enum Field {
+  public enum Field {
     //note the enum names match field names in the struct
     transactionId(TypeInfoFactory.longTypeInfo,
       PrimitiveObjectInspectorFactory.javaLongObjectInspector),
@@ -197,6 +197,9 @@ public class RecordIdentifier implements WritableComparable<RecordIdentifier> {
 
   @Override
   public boolean equals(Object other) {
+    if(other == this) {
+      return true;
+    }
     if (other == null || other.getClass() != getClass()) {
       return false;
     }
@@ -204,6 +207,14 @@ public class RecordIdentifier implements WritableComparable<RecordIdentifier> {
     return oth.transactionId == transactionId &&
         oth.bucketId == bucketId &&
         oth.rowId == rowId;
+  }
+  @Override
+  public int hashCode() {
+    int result = 17;
+    result = 31 * result + (int)(transactionId ^ (transactionId >>> 32));
+    result = 31 * result + bucketId;
+    result = 31 * result + (int)(rowId ^ (rowId >>> 32));
+    return result;
   }
 
   @Override

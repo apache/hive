@@ -13,6 +13,7 @@
  */
 package org.apache.hadoop.hive.ql.io.parquet.vector;
 
+import com.google.common.base.Strings;
 import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.DecimalColumnVector;
@@ -45,6 +46,8 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.sql.Timestamp;
+import java.util.Calendar;
+import java.util.TimeZone;
 
 import static org.apache.parquet.column.ValuesType.DEFINITION_LEVEL;
 import static org.apache.parquet.column.ValuesType.REPETITION_LEVEL;
@@ -58,7 +61,7 @@ public class VectorizedPrimitiveColumnReader implements VectorizedColumnReader {
 
   private static final Logger LOG = LoggerFactory.getLogger(VectorizedPrimitiveColumnReader.class);
 
-  private boolean skipTimestampConversion = false;
+  private String conversionTimeZone;
 
   /**
    * Total number of values read.
@@ -108,13 +111,13 @@ public class VectorizedPrimitiveColumnReader implements VectorizedColumnReader {
   public VectorizedPrimitiveColumnReader(
     ColumnDescriptor descriptor,
     PageReader pageReader,
-    boolean skipTimestampConversion,
+    String conversionTimeZone,
     Type type) throws IOException {
     this.descriptor = descriptor;
     this.type = type;
     this.pageReader = pageReader;
     this.maxDefLevel = descriptor.getMaxDefinitionLevel();
-    this.skipTimestampConversion = skipTimestampConversion;
+    this.conversionTimeZone = conversionTimeZone;
 
     DictionaryPage dictionaryPage = pageReader.readDictionaryPage();
     if (dictionaryPage != null) {
@@ -411,13 +414,20 @@ public class VectorizedPrimitiveColumnReader implements VectorizedColumnReader {
       }
       break;
     case INT96:
+      final Calendar calendar;
+      if (Strings.isNullOrEmpty(this.conversionTimeZone)) {
+        // Local time should be used if no timezone is specified
+        calendar = Calendar.getInstance();
+      } else {
+        calendar = Calendar.getInstance(TimeZone.getTimeZone(this.conversionTimeZone));
+      }
       for (int i = rowId; i < rowId + num; ++i) {
         ByteBuffer buf = dictionary.decodeToBinary((int) dictionaryIds.vector[i]).toByteBuffer();
         buf.order(ByteOrder.LITTLE_ENDIAN);
         long timeOfDayNanos = buf.getLong();
         int julianDay = buf.getInt();
         NanoTime nt = new NanoTime(julianDay, timeOfDayNanos);
-        Timestamp ts = NanoTimeUtils.getTimestamp(nt, skipTimestampConversion);
+        Timestamp ts = NanoTimeUtils.getTimestamp(nt, calendar);
         ((TimestampColumnVector) column).set(i, ts);
       }
       break;

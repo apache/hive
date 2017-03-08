@@ -17,8 +17,13 @@
  */
 package org.apache.hadoop.hive.ql.io;
 
+import org.apache.hadoop.hive.ql.io.orc.OrcRawRecordMerger;
 import org.junit.Test;
 
+import java.util.concurrent.ThreadLocalRandom;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 
 public class TestRecordIdentifier {
@@ -41,5 +46,28 @@ public class TestRecordIdentifier {
     right.setValues(1, 100, 3);
     assertTrue(left.compareTo(right) < 0);
     assertTrue(right.compareTo(left) > 0);
+  }
+
+  @Test
+  public void testHashEquals() throws Exception {
+    long origTxn = ThreadLocalRandom.current().nextLong(1, 10000000000L);
+    int bucketId = ThreadLocalRandom.current().nextInt(1, 512);
+    long rowId = ThreadLocalRandom.current().nextLong(1, 10000000000L);
+    long currTxn = origTxn + ThreadLocalRandom.current().nextLong(0, 10000000000L);
+    int stmtId = ThreadLocalRandom.current().nextInt(1, 512);
+
+    RecordIdentifier left = new RecordIdentifier(origTxn, bucketId, rowId);
+    RecordIdentifier right = new RecordIdentifier(origTxn, bucketId, rowId);
+    OrcRawRecordMerger.ReaderKey rkLeft = new OrcRawRecordMerger.ReaderKey(origTxn, bucketId, rowId, currTxn, stmtId);
+    OrcRawRecordMerger.ReaderKey rkRight = new OrcRawRecordMerger.ReaderKey(origTxn, bucketId, rowId, currTxn, stmtId);
+
+    assertEquals("RecordIdentifier.equals", left, right);
+    assertEquals("RecordIdentifier.hashCode", left.hashCode(), right.hashCode());
+
+    assertEquals("ReaderKey", rkLeft, rkLeft);
+    assertEquals("ReaderKey.hashCode", rkLeft.hashCode(), rkRight.hashCode());
+
+    //debatable if this is correct, but that's how it's implemented
+    assertNotEquals("RecordIdentifier <> ReaderKey", left, rkRight);
   }
 }

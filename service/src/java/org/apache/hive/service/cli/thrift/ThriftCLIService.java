@@ -317,10 +317,19 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
     LOG.info("Client protocol version: " + req.getClient_protocol());
     TOpenSessionResp resp = new TOpenSessionResp();
     try {
+      Map<String, String> openConf = req.getConfiguration();
+
       SessionHandle sessionHandle = getSessionHandle(req, resp);
       resp.setSessionHandle(sessionHandle.toTSessionHandle());
-      // TODO: set real configuration map
-      resp.setConfiguration(new HashMap<String, String>());
+      Map<String, String> configurationMap = new HashMap<String, String>();
+      // Set the updated fetch size from the server into the configuration map for the client
+      HiveConf sessionConf = cliService.getSessionConf(sessionHandle);
+      configurationMap.put(
+        HiveConf.ConfVars.HIVE_SERVER2_THRIFT_RESULTSET_DEFAULT_FETCH_SIZE.varname,
+        Integer.toString(sessionConf != null ?
+          sessionConf.getIntVar(HiveConf.ConfVars.HIVE_SERVER2_THRIFT_RESULTSET_DEFAULT_FETCH_SIZE) :
+          hiveConf.getIntVar(HiveConf.ConfVars.HIVE_SERVER2_THRIFT_RESULTSET_DEFAULT_FETCH_SIZE)));
+      resp.setConfiguration(configurationMap);
       resp.setStatus(OK_STATUS);
       ThriftCLIServerContext context =
         (ThriftCLIServerContext)currentServerContext.get();
@@ -733,6 +742,12 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
   public TFetchResultsResp FetchResults(TFetchResultsReq req) throws TException {
     TFetchResultsResp resp = new TFetchResultsResp();
     try {
+      // Set fetch size
+      int maxFetchSize =
+        hiveConf.getIntVar(HiveConf.ConfVars.HIVE_SERVER2_THRIFT_RESULTSET_MAX_FETCH_SIZE);
+      if (req.getMaxRows() > maxFetchSize) {
+        req.setMaxRows(maxFetchSize);
+      }
       RowSet rowSet = cliService.fetchResults(
           new OperationHandle(req.getOperationHandle()),
           FetchOrientation.getFetchOrientation(req.getOrientation()),

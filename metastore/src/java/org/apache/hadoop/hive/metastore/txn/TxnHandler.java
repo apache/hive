@@ -2597,10 +2597,10 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       // Turn the tree set into an array so we can move back and forth easily
       // in it.
       LockInfo[] locks = lockSet.toArray(new LockInfo[lockSet.size()]);
-      if(LOG.isDebugEnabled()) {
-        LOG.debug("Locks to check(full): ");
+      if(LOG.isTraceEnabled()) {
+        LOG.trace("Locks to check(full): ");
         for(LockInfo info : locks) {
-          LOG.debug("  " + info);
+          LOG.trace("  " + info);
         }
       }
 
@@ -3050,7 +3050,8 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         stmt = dbConn.createStatement();
         String s = " txn_id from TXNS where txn_state = '" + TXN_OPEN +
           "' and txn_last_heartbeat <  " + (now - timeout);
-        s = sqlGenerator.addLimitClause(250 * TIMED_OUT_TXN_ABORT_BATCH_SIZE, s);
+        //safety valve for extreme cases
+        s = sqlGenerator.addLimitClause(10 * TIMED_OUT_TXN_ABORT_BATCH_SIZE, s);
         LOG.debug("Going to execute query <" + s + ">");
         rs = stmt.executeQuery(s);
         if(!rs.next()) {

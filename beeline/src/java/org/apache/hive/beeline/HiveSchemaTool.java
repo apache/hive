@@ -181,7 +181,7 @@ public class HiveSchemaTool {
     try(Statement stmt = metastoreConn.createStatement();
         ResultSet res = stmt.executeQuery(versionQuery)) {
       if (!res.next()) {
-        throw new HiveMetaException("Didn't find version data in metastore");
+        throw new HiveMetaException("Could not find version info in metastore VERSION table");
       }
       String currentSchemaVersion = res.getString(1);
       if (checkDuplicatedVersion && res.next()) {
@@ -189,7 +189,7 @@ public class HiveSchemaTool {
       }
       return currentSchemaVersion;
     } catch (SQLException e) {
-      throw new HiveMetaException("Failed to get schema version.", e);
+      throw new HiveMetaException("Failed to get schema version, Cause:" + e.getMessage());
     }
   }
 
@@ -199,6 +199,7 @@ public class HiveSchemaTool {
     rtn = checkMetaStoreDBLocation(conn, defaultServers);
     rtn = checkMetaStoreTableLocation(conn, defaultServers) && rtn;
     rtn = checkMetaStorePartitionLocation(conn, defaultServers) && rtn;
+    rtn = checkMetaStoreSkewedColumnsLocation(conn, defaultServers) && rtn;
     System.out.println((rtn ? "Succeeded" : "Failed") + " in database/table/partition location validation");
     return rtn;
   }
@@ -357,6 +358,64 @@ public class HiveSchemaTool {
     if (numOfInvalid > 0) {
       isValid = false;
       System.err.println("Total number of invalid PARTITION locations is: "+ numOfInvalid);
+    }
+    return isValid;
+  }
+
+  private boolean checkMetaStoreSkewedColumnsLocation(Connection conn, URI[] defaultServers)
+      throws HiveMetaException {
+    String skewedColLoc, skewedColIDRange;
+    boolean isValid = true;
+    int numOfInvalid = 0;
+    if (getDbCommandParser(dbType).needsQuotedIdentifier()) {
+      skewedColIDRange = "select max(\"STRING_LIST_ID_KID\"), min(\"STRING_LIST_ID_KID\") from \"SKEWED_COL_VALUE_LOC_MAP\" ";
+    } else {
+      skewedColIDRange = "select max(STRING_LIST_ID_KID), min(STRING_LIST_ID_KID) from SKEWED_COL_VALUE_LOC_MAP";
+    }
+
+    if (getDbCommandParser(dbType).needsQuotedIdentifier()) {
+      skewedColLoc = "select t.\"TBL_NAME\", t.\"TBL_ID\", sk.\"STRING_LIST_ID_KID\", sk.\"LOCATION\" from \"TBLS\" t, \"SDS\" s, \"SKEWED_COL_VALUE_LOC_MAP\" sk "
+           + "where sk.\"SD_ID\" = s.\"SD_ID\" and s.\"SD_ID\" = t.\"SD_ID\" and sk.\"STRING_LIST_ID_KID\" >= ? and sk.\"STRING_LIST_ID_KID\" <= ? ";
+    } else {
+      skewedColLoc = "select t.TBL_NAME, t.TBL_ID, sk.STRING_LIST_ID_KID, sk.LOCATION from TBLS t, SDS s, SKEWED_COL_VALUE_LOC_MAP sk "
+           + "where sk.SD_ID = s.SD_ID and s.SD_ID = t.SD_ID and sk.STRING_LIST_ID_KID >= ? and sk.STRING_LIST_ID_KID <= ? ";
+    }
+
+    long maxID = 0, minID = 0;
+    long rtnSize = 2000;
+
+    try {
+      Statement stmt = conn.createStatement();
+      ResultSet res = stmt.executeQuery(skewedColIDRange);
+      if (res.next()) {
+        maxID = res.getLong(1);
+        minID = res.getLong(2);
+      }
+      res.close();
+      stmt.close();
+      PreparedStatement pStmt = conn.prepareStatement(skewedColLoc);
+      while (minID <= maxID) {
+        pStmt.setLong(1, minID);
+        pStmt.setLong(2, minID + rtnSize);
+        res = pStmt.executeQuery();
+        while (res.next()) {
+          String locValue = res.getString(4);
+          String entity = "Table "  + getNameOrID(res,1,2) +
+              ", String list " + res.getString(3);
+          if (!checkLocation(entity, locValue, defaultServers)) {
+            numOfInvalid++;
+          }
+        }
+        res.close();
+        minID += rtnSize + 1;
+      }
+      pStmt.close();
+    } catch (SQLException e) {
+      throw new HiveMetaException("Failed to get skewed columns location info.", e);
+    }
+    if (numOfInvalid > 0) {
+      isValid = false;
+      System.err.println("Total number of invalid SKEWED_COL_VALUE_LOC_MAP locations is: "+ numOfInvalid);
     }
     return isValid;
   }
@@ -537,11 +596,26 @@ public class HiveSchemaTool {
     System.out.println("Starting metastore validation");
     Connection conn = getConnectionToMetastore(false);
     try {
-      validateSchemaVersions(conn);
-      validateSequences(conn);
-      validateSchemaTables(conn);
-      validateLocations(conn, this.validationServers);
-      validateColumnNullValues(conn);
+      if (validateSchemaVersions(conn))
+        System.out.println("[SUCCESS]\n");
+      else
+        System.out.println("[FAIL]\n");
+      if (validateSequences(conn))
+        System.out.println("[SUCCESS]\n");
+      else
+        System.out.println("[FAIL]\n");
+      if (validateSchemaTables(conn))
+        System.out.println("[SUCCESS]\n");
+      else
+        System.out.println("[FAIL]\n");
+      if (validateLocations(conn, this.validationServers))
+        System.out.println("[SUCCESS]\n");
+      else
+        System.out.println("[FAIL]\n");
+      if (validateColumnNullValues(conn))
+        System.out.println("[SUCCESS]\n");
+      else
+        System.out.println("[FAIL]\n");
     } finally {
       if (conn != null) {
         try {
@@ -620,7 +694,7 @@ public class HiveSchemaTool {
     } catch (HiveMetaException hme) {
       if (hme.getMessage().contains("Metastore schema version is not compatible")
         || hme.getMessage().contains("Multiple versions were found in metastore")
-        || hme.getMessage().contains("Didn't find version data in metastore")) {
+        || hme.getMessage().contains("Could not find version info in metastore VERSION table")) {
         System.out.println("Failed in schema version validation: " + hme.getMessage());
           return false;
         } else {
@@ -632,14 +706,27 @@ public class HiveSchemaTool {
   }
 
   boolean validateSchemaTables(Connection conn) throws HiveMetaException {
+    String version            = null;
     ResultSet rs              = null;
     DatabaseMetaData metadata = null;
     List<String> dbTables     = new ArrayList<String>();
     List<String> schemaTables = new ArrayList<String>();
     List<String> subScripts   = new ArrayList<String>();
-    String version            = getMetaStoreSchemaVersion(conn);
+    Connection hmsConn        = getConnectionToMetastore(false);
 
-    System.out.println("Validating tables in the schema for version " + version);
+    System.out.println("Validating metastore schema tables");
+    try {
+      version = getMetaStoreSchemaVersion(hmsConn);
+    } catch (HiveMetaException he) {
+      System.err.println("Failed to determine schema version from Hive Metastore DB," + he.getMessage());
+      LOG.error("Failed to determine schema version from Hive Metastore DB," + he.getMessage());
+      return false;
+    }
+
+    // re-open the hms connection
+    hmsConn = getConnectionToMetastore(false);
+
+    LOG.info("Validating tables in the schema for version " + version);
     try {
       metadata       = conn.getMetaData();
       String[] types = {"TABLE"};
@@ -652,7 +739,7 @@ public class HiveSchemaTool {
         LOG.debug("Found table " + table + " in HMS dbstore");
       }
     } catch (SQLException e) {
-      throw new HiveMetaException(e);
+      throw new HiveMetaException("Failed to retrieve schema tables from Hive Metastore DB," + e.getMessage());
     } finally {
       if (rs != null) {
         try {
@@ -666,20 +753,24 @@ public class HiveSchemaTool {
     // parse the schema file to determine the tables that are expected to exist
     // we are using oracle schema because it is simpler to parse, no quotes or backticks etc
     String baseDir    = new File(metaStoreSchemaInfo.getMetaStoreScriptDir()).getParent();
-    String schemaFile = baseDir + "/oracle/hive-schema-" + version + ".oracle.sql";
+    String schemaFile = baseDir  + "/" + dbType + "/hive-schema-" + version + "." + dbType + ".sql";
 
     try {
       LOG.debug("Parsing schema script " + schemaFile);
       subScripts.addAll(findCreateTable(schemaFile, schemaTables));
       while (subScripts.size() > 0) {
-        schemaFile = baseDir + "/oracle/" + subScripts.remove(0);
-        LOG.debug("Parsing subscript " + schemaFile);
+        schemaFile = baseDir + "/" + dbType + "/" + subScripts.remove(0);
+        LOG.info("Parsing subscript " + schemaFile);
         subScripts.addAll(findCreateTable(schemaFile, schemaTables));
       }
     } catch (Exception e) {
+      System.err.println("Exception in parsing schema file. Cause:" + e.getMessage());
+      System.out.println("Schema table validation failed!!!");
       return false;
     }
 
+    LOG.debug("Schema tables:[ " + Arrays.toString(schemaTables.toArray()) + " ]");
+    LOG.debug("DB tables:[ " + Arrays.toString(dbTables.toArray()) + " ]");
     // now diff the lists
     int schemaSize = schemaTables.size();
     schemaTables.removeAll(dbTables);
@@ -690,37 +781,84 @@ public class HiveSchemaTool {
       System.out.println("Schema table validation failed!!!");
       return false;
     } else {
-      System.out.println("Succeeded in schema table validation");
+      System.out.println("Succeeded in schema table validation. " + schemaSize + " tables matched");
       return true;
     }
   }
 
-  private List<String> findCreateTable(String path, List<String> tableList) {
-    Matcher matcher                       = null;
-    String line                           = null;
-    List<String> subs                     = new ArrayList<String>();
-    final String NESTED_SCRIPT_IDENTIFIER = "@";
-    Pattern regexp                        = Pattern.compile("(CREATE TABLE(IF NOT EXISTS)*) (\\S+).*");
+  private List<String> findCreateTable(String path, List<String> tableList)
+      throws Exception {
+    NestedScriptParser sp           = HiveSchemaHelper.getDbCommandParser(dbType);
+    Matcher matcher                 = null;
+    Pattern regexp                  = null;
+    List<String> subs               = new ArrayList<String>();
+    int groupNo                     = 0;
+
+    switch (dbType) {
+      case HiveSchemaHelper.DB_ORACLE:
+        regexp = Pattern.compile("(CREATE TABLE(IF NOT EXISTS)*) (\\S+).*");
+        groupNo = 3;
+        break;
+
+      case HiveSchemaHelper.DB_MYSQL:
+        regexp = Pattern.compile("(CREATE TABLE) (\\S+).*");
+        groupNo = 2;
+        break;
+
+      case HiveSchemaHelper.DB_MSSQL:
+        regexp = Pattern.compile("(CREATE TABLE) (\\S+).*");
+        groupNo = 2;
+        break;
+
+      case HiveSchemaHelper.DB_DERBY:
+        regexp = Pattern.compile("(CREATE TABLE(IF NOT EXISTS)*) (\\S+).*");
+        groupNo = 3;
+        break;
+
+      case HiveSchemaHelper.DB_POSTGRACE:
+        regexp = Pattern.compile("(CREATE TABLE(IF NOT EXISTS)*) (\\S+).*");
+        groupNo = 3;
+        break;
+
+      default:
+        regexp = Pattern.compile("(CREATE TABLE(IF NOT EXISTS)*) (\\S+).*");
+        groupNo = 3;
+        break;
+    }
+
+    if (!(new File(path)).exists()) {
+      throw new Exception(path + " does not exist. Potentially incorrect version in the metastore VERSION table");
+    }
 
     try (
       BufferedReader reader = new BufferedReader(new FileReader(path));
     ){
+      String line = null;
       while ((line = reader.readLine()) != null) {
-        if (line.startsWith(NESTED_SCRIPT_IDENTIFIER)) {
-          int endIndex = (line.indexOf(";") > -1 ) ? line.indexOf(";") : line.length();
-          // remove the trailing SEMI-COLON if any
-          subs.add(line.substring(NESTED_SCRIPT_IDENTIFIER.length(), endIndex));
+        if (sp.isNestedScript(line)) {
+          String subScript = null;
+          subScript = sp.getScriptName(line);
+          LOG.debug("Schema subscript " + subScript + " found");
+          subs.add(subScript);
           continue;
         }
+        line    = line.replaceAll("\\(", " ");
+        line    = line.replaceAll("IF NOT EXISTS ", "");
+        line    = line.replaceAll("`","");
+        line    = line.replaceAll("'","");
+        line    = line.replaceAll("\"","");
         matcher = regexp.matcher(line);
+
         if (matcher.find()) {
-          String table = matcher.group(3);
+          String table = matcher.group(groupNo);
+          if (dbType.equals("derby"))
+            table  = table.replaceAll("APP.","");
           tableList.add(table.toLowerCase());
           LOG.debug("Found table " + table + " in the schema");
         }
       }
     } catch (IOException ex){
-      ex.printStackTrace();
+      throw new Exception(ex.getMessage());
     }
 
     return subs;

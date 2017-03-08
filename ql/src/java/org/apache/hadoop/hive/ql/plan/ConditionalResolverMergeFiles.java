@@ -323,15 +323,13 @@ public class ConditionalResolverMergeFiles implements ConditionalResolver,
 
   private PartitionDesc generateDPFullPartSpec(DynamicPartitionCtx dpCtx, FileStatus[] status,
       TableDesc tblDesc, int i) {
-    Map<String, String> fullPartSpec = new LinkedHashMap<String, String>(
-        dpCtx.getPartSpec());
+    LinkedHashMap<String, String> fullPartSpec = new LinkedHashMap<>( dpCtx.getPartSpec());
     // Require all the directories to be present with some values.
     if (!Warehouse.makeSpecFromName(fullPartSpec, status[i].getPath(),
         new HashSet<>(dpCtx.getPartSpec().keySet()))) {
       return null;
     }
-    PartitionDesc pDesc = new PartitionDesc(tblDesc, (LinkedHashMap) fullPartSpec);
-    return pDesc;
+    return new PartitionDesc(tblDesc, fullPartSpec);
   }
 
   private void setupMapRedWork(HiveConf conf, MapWork mWork, long targetSize, long totalSize) {

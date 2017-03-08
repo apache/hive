@@ -19,7 +19,7 @@
 package org.apache.hadoop.hive.ql.optimizer;
 
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -40,7 +40,7 @@ import org.apache.hadoop.hive.ql.exec.SelectOperator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.Utilities.ReduceField;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
-import org.apache.hadoop.hive.ql.io.AcidUtils.Operation;
+import org.apache.hadoop.hive.ql.io.RecordIdentifier;
 import org.apache.hadoop.hive.ql.lib.DefaultGraphWalker;
 import org.apache.hadoop.hive.ql.lib.DefaultRuleDispatcher;
 import org.apache.hadoop.hive.ql.lib.Dispatcher;
@@ -51,6 +51,7 @@ import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 import org.apache.hadoop.hive.ql.lib.Rule;
 import org.apache.hadoop.hive.ql.lib.RuleRegExp;
 import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.DynamicPartitionCtx;
@@ -81,7 +82,7 @@ import com.google.common.collect.Sets;
  */
 public class SortedDynPartitionOptimizer extends Transform {
 
-  private static final String BUCKET_NUMBER_COL_NAME = "_bucket_number";
+  public static final String BUCKET_NUMBER_COL_NAME = "_bucket_number";
   @Override
   public ParseContext transform(ParseContext pCtx) throws SemanticException {
 
@@ -191,9 +192,21 @@ public class SortedDynPartitionOptimizer extends Transform {
         // When doing updates and deletes we always want to sort on the rowid because the ACID
         // reader will expect this sort order when doing reads.  So
         // ignore whatever comes from the table and enforce this sort order instead.
-        sortPositions = Arrays.asList(0);
-        sortOrder = Arrays.asList(1); // 1 means asc, could really use enum here in the thrift if
-        bucketColumns = new ArrayList<>(); // Bucketing column is already present in ROW__ID, which is specially handled in ReduceSink
+        sortPositions = Collections.singletonList(0);
+        sortOrder = Collections.singletonList(1); // 1 means asc, could really use enum here in the thrift if
+        bucketColumns = new ArrayList<>();
+        /**
+         * ROW__ID is always the 1st column of Insert representing Update/Delete operation
+         * (set up in {@link org.apache.hadoop.hive.ql.parse.UpdateDeleteSemanticAnalyzer})
+         * and we wrap it in UDFToInteger 
+         * (in {@link org.apache.hadoop.hive.ql.parse.SemanticAnalyzer#getPartitionColsFromBucketColsForUpdateDelete(Operator, boolean)})
+         * which extracts bucketId from it
+         * see {@link org.apache.hadoop.hive.ql.udf.UDFToInteger#evaluate(RecordIdentifier)}*/
+        ColumnInfo ci = fsParent.getSchema().getSignature().get(0);
+        if(!VirtualColumn.ROWID.getTypeInfo().equals(ci.getType())) {
+          throw new IllegalStateException("expected 1st column to be ROW__ID but got wrong type: " + ci.toString());
+        }
+        bucketColumns.add(new ExprNodeColumnDesc(ci));
       } else {
         if (!destTable.getSortCols().isEmpty()) {
           // Sort columns specified by table
@@ -231,7 +244,7 @@ public class SortedDynPartitionOptimizer extends Transform {
 
       // Create ReduceSink operator
       ReduceSinkOperator rsOp = getReduceSinkOp(partitionPositions, sortPositions, sortOrder, sortNullOrder,
-          allRSCols, bucketColumns, numBuckets, fsParent, fsOp.getConf().getWriteType());
+          allRSCols, bucketColumns, numBuckets, fsParent);
 
       List<ExprNodeDesc> descs = new ArrayList<ExprNodeDesc>(allRSCols.size());
       List<String> colNames = new ArrayList<String>();
@@ -247,7 +260,7 @@ public class SortedDynPartitionOptimizer extends Transform {
         }
       }
       RowSchema selRS = new RowSchema(fsParent.getSchema());
-      if (!bucketColumns.isEmpty() || fsOp.getConf().getWriteType() == Operation.DELETE || fsOp.getConf().getWriteType() == Operation.UPDATE) {
+      if (!bucketColumns.isEmpty()) {
         descs.add(new ExprNodeColumnDesc(TypeInfoFactory.stringTypeInfo, ReduceField.KEY.toString()+".'"+BUCKET_NUMBER_COL_NAME+"'", null, false));
         colNames.add("'"+BUCKET_NUMBER_COL_NAME+"'");
         ColumnInfo ci = new ColumnInfo(BUCKET_NUMBER_COL_NAME, TypeInfoFactory.stringTypeInfo, selRS.getSignature().get(0).getTabAlias(), true, true);
@@ -268,7 +281,7 @@ public class SortedDynPartitionOptimizer extends Transform {
 
       // Set if partition sorted or partition bucket sorted
       fsOp.getConf().setDpSortState(FileSinkDesc.DPSortState.PARTITION_SORTED);
-      if (bucketColumns.size() > 0 || fsOp.getConf().getWriteType() == Operation.DELETE || fsOp.getConf().getWriteType() == Operation.UPDATE) {
+      if (!bucketColumns.isEmpty()) {
         fsOp.getConf().setDpSortState(FileSinkDesc.DPSortState.PARTITION_BUCKET_SORTED);
       }
 
@@ -428,7 +441,7 @@ public class SortedDynPartitionOptimizer extends Transform {
     public ReduceSinkOperator getReduceSinkOp(List<Integer> partitionPositions,
         List<Integer> sortPositions, List<Integer> sortOrder, List<Integer> sortNullOrder,
         ArrayList<ExprNodeDesc> allCols, ArrayList<ExprNodeDesc> bucketColumns, int numBuckets,
-        Operator<? extends OperatorDesc> parent, AcidUtils.Operation writeType) throws SemanticException {
+        Operator<? extends OperatorDesc> parent) throws SemanticException {
 
       // Order of KEY columns
       // 1) Partition columns
@@ -441,7 +454,7 @@ public class SortedDynPartitionOptimizer extends Transform {
       int numPartAndBuck = partitionPositions.size();
 
       keyColsPosInVal.addAll(partitionPositions);
-      if (!bucketColumns.isEmpty() || writeType == Operation.DELETE || writeType == Operation.UPDATE) {
+      if (!bucketColumns.isEmpty()) {
         keyColsPosInVal.add(-1);
         numPartAndBuck += 1;
       }
@@ -450,7 +463,7 @@ public class SortedDynPartitionOptimizer extends Transform {
       // by default partition and bucket columns are sorted in ascending order
       Integer order = 1;
       if (sortOrder != null && !sortOrder.isEmpty()) {
-        if (sortOrder.get(0).intValue() == 0) {
+        if (sortOrder.get(0) == 0) {
           order = 0;
         }
       }
@@ -461,7 +474,7 @@ public class SortedDynPartitionOptimizer extends Transform {
 
       String orderStr = "";
       for (Integer i : newSortOrder) {
-        if(i.intValue() == 1) {
+        if(i == 1) {
           orderStr += "+";
         } else {
           orderStr += "-";
@@ -472,7 +485,7 @@ public class SortedDynPartitionOptimizer extends Transform {
       // nulls come first; otherwise nulls come last
       Integer nullOrder = order == 1 ? 0 : 1;
       if (sortNullOrder != null && !sortNullOrder.isEmpty()) {
-        if (sortNullOrder.get(0).intValue() == 0) {
+        if (sortNullOrder.get(0) == 0) {
           nullOrder = 0;
         } else {
           nullOrder = 1;
@@ -485,7 +498,7 @@ public class SortedDynPartitionOptimizer extends Transform {
 
       String nullOrderStr = "";
       for (Integer i : newSortNullOrder) {
-        if(i.intValue() == 0) {
+        if(i == 0) {
           nullOrderStr += "a";
         } else {
           nullOrderStr += "z";
@@ -563,7 +576,7 @@ public class SortedDynPartitionOptimizer extends Transform {
       // Number of reducers is set to default (-1)
       ReduceSinkDesc rsConf = new ReduceSinkDesc(keyCols, keyCols.size(), valCols,
           keyColNames, distinctColumnIndices, valColNames, -1, partCols, -1, keyTable,
-          valueTable, writeType);
+          valueTable);
       rsConf.setBucketCols(bucketColumns);
       rsConf.setNumBuckets(numBuckets);
 

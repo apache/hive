@@ -28,3 +28,21 @@ select 'test', value from src_10 s3
 order by 2, 1 desc;
 
 drop table src_10;
+
+
+drop view v;
+create view v as select key as k from src intersect all select key as k1 from src;
+desc formatted v;
+
+set hive.mapred.mode=nonstrict;
+set hive.security.authorization.manager=org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactoryForTest;
+
+create table masking_test as select cast(key as int) as key, value from src;
+
+explain
+select * from masking_test  union all select * from masking_test ;
+select * from masking_test  union all select * from masking_test ;
+
+explain
+select key as k1, value as v1 from masking_test where key > 0 intersect all select key as k2, value as v2 from masking_test where key > 0;
+select key as k1, value as v1 from masking_test where key > 0 intersect all select key as k2, value as v2 from masking_test where key > 0;

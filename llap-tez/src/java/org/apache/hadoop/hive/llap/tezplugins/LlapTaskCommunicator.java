@@ -219,8 +219,8 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
           new JobTokenSecretManager();
       jobTokenSecretManager.addTokenForJob(tokenIdentifier, sessionToken);
 
-      int numHandlers = conf.getInt(TezConfiguration.TEZ_AM_TASK_LISTENER_THREAD_COUNT,
-          TezConfiguration.TEZ_AM_TASK_LISTENER_THREAD_COUNT_DEFAULT);
+      int numHandlers =
+          HiveConf.getIntVar(conf, ConfVars.LLAP_TASK_COMMUNICATOR_LISTENER_THREAD_COUNT);
       server = new RPC.Builder(conf)
           .setProtocol(LlapTaskUmbilicalProtocol.class)
           .setBindAddress("0.0.0.0")
@@ -761,10 +761,10 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
     @Override
     public void nodeHeartbeat(
         Text hostname, Text uniqueId, int port, TezAttemptArray aw) throws IOException {
-      nodePinged(hostname.toString(), uniqueId.toString(), port, aw);
       if (LOG.isDebugEnabled()) {
         LOG.debug("Received heartbeat from [" + hostname + ":" + port +" (" + uniqueId +")]");
       }
+      nodePinged(hostname.toString(), uniqueId.toString(), port, aw);
     }
 
     @Override

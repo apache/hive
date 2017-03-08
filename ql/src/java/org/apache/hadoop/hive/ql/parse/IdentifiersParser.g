@@ -214,7 +214,7 @@ function
     LPAREN
       (
         (STAR) => (star=STAR)
-        | (dist=KW_DISTINCT)? (selectExpression (COMMA selectExpression)*)?
+        | (dist=KW_DISTINCT | KW_ALL)? (selectExpression (COMMA selectExpression)*)?
       )
     RPAREN (KW_OVER ws=window_specification)?
            -> {$star != null}? ^(TOK_FUNCTIONSTAR functionName $ws?)
@@ -781,7 +781,6 @@ nonReserved
     | KW_VALIDATE
     | KW_NOVALIDATE
     | KW_KEY
-    | KW_MERGE
     | KW_MATCHED
     | KW_REPL | KW_DUMP | KW_BATCH | KW_STATUS
     | KW_CACHE | KW_DAYOFWEEK | KW_VIEWS
@@ -790,6 +789,7 @@ nonReserved
     | KW_OPERATOR
     | KW_EXPRESSION
     | KW_DETAIL
+    | KW_WAIT
 
 ;
 

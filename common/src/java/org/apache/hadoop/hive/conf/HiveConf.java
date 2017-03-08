@@ -1323,9 +1323,12 @@ public class HiveConf extends Configuration {
         "Maximum fraction of heap that can be used by Parquet file writers in one task.\n" +
         "It is for avoiding OutOfMemory error in tasks. Work with Parquet 1.6.0 and above.\n" +
         "This config parameter is defined in Parquet, so that it does not start with 'hive.'."),
+    @Deprecated
     HIVE_PARQUET_TIMESTAMP_SKIP_CONVERSION("hive.parquet.timestamp.skip.conversion", true,
-      "Current Hive implementation of parquet stores timestamps to UTC, this flag allows skipping of the conversion" +
-      "on reading parquet files from other tools"),
+        "Current Hive implementation of parquet stores timestamps to UTC, this flag allows skipping of the conversion" +
+            "on reading parquet files from other tools"),
+    HIVE_PARQUET_INT96_DEFAULT_UTC_WRITE_ZONE("hive.parquet.mr.int96.enable.utc.write.zone", false,
+        "Enable this variable to use UTC as the default timezone for new Parquet tables."),
     HIVE_INT_TIMESTAMP_CONVERSION_IN_SECONDS("hive.int.timestamp.conversion.in.seconds", false,
         "Boolean/tinyint/smallint/int/bigint value is interpreted as milliseconds during the timestamp conversion.\n" +
         "Set this flag to true to interpret the value as seconds to be consistent with float/double." ),
@@ -1427,7 +1430,7 @@ public class HiveConf extends Configuration {
         "This controls how many partitions can be scanned for each partitioned table.\n" +
         "The default value \"-1\" means no limit. (DEPRECATED: Please use " + ConfVars.METASTORE_LIMIT_PARTITION_REQUEST + " in the metastore instead.)"),
 
-    HIVECONVERTJOINMAXENTRIESHASHTABLE("hive.auto.convert.join.hashtable.max.entries", 4194304L,
+    HIVECONVERTJOINMAXENTRIESHASHTABLE("hive.auto.convert.join.hashtable.max.entries", 40000000L,
         "If hive.auto.convert.join.noconditionaltask is off, this parameter does not take affect. \n" +
         "However, if it is on, and the predicated number of entries in hashtable for a given join \n" +
         "input is larger than this number, the join will not be converted to a mapjoin. \n" +
@@ -1796,8 +1799,8 @@ public class HiveConf extends Configuration {
         "org.apache.hadoop.hive.ql.lockmgr.DummyTxnManager",
         "Set to org.apache.hadoop.hive.ql.lockmgr.DbTxnManager as part of turning on Hive\n" +
         "transactions, which also requires appropriate settings for hive.compactor.initiator.on,\n" +
-        "hive.compactor.worker.threads, hive.support.concurrency (true), hive.enforce.bucketing\n" +
-        "(true), and hive.exec.dynamic.partition.mode (nonstrict).\n" +
+        "hive.compactor.worker.threads, hive.support.concurrency (true),\n" +
+        "and hive.exec.dynamic.partition.mode (nonstrict).\n" +
         "The default DummyTxnManager replicates pre-Hive-0.13 behavior and provides\n" +
         "no transactions."),
     HIVE_TXN_STRICT_LOCKING_MODE("hive.txn.strict.locking.mode", true, "In strict mode non-ACID\n" +
@@ -2623,7 +2626,7 @@ public class HiveConf extends Configuration {
     // TODO: Make use of this config to configure fetch size
     HIVE_SERVER2_THRIFT_RESULTSET_MAX_FETCH_SIZE("hive.server2.thrift.resultset.max.fetch.size",
         10000, "Max number of rows sent in one Fetch RPC call by the server to the client."),
-    HIVE_SERVER2_RESULTSET_DEFAULT_FETCH_SIZE("hive.server2.resultset.default.fetch.size", 10000,
+    HIVE_SERVER2_THRIFT_RESULTSET_DEFAULT_FETCH_SIZE("hive.server2.thrift.resultset.default.fetch.size", 1000,
         "The number of rows sent in one Fetch RPC call by the server to the client, if not\n" +
         "specified by the client."),
     HIVE_SERVER2_XSRF_FILTER_ENABLED("hive.server2.xsrf.filter.enabled",false,
@@ -3174,6 +3177,9 @@ public class HiveConf extends Configuration {
       new TimeValidator(TimeUnit.MILLISECONDS),
       "Connection timeout (in milliseconds) before a failure to an LLAP daemon from Tez AM.",
       "llap.task.communicator.connection.timeout-millis"),
+    LLAP_TASK_COMMUNICATOR_LISTENER_THREAD_COUNT(
+        "hive.llap.task.communicator.listener.thread-count", 30,
+        "The number of task communicator listener threads."),
     LLAP_TASK_COMMUNICATOR_CONNECTION_SLEEP_BETWEEN_RETRIES_MS(
       "hive.llap.task.communicator.connection.sleep.between.retries.ms", "2000ms",
       new TimeValidator(TimeUnit.MILLISECONDS),
@@ -4258,6 +4264,7 @@ public class HiveConf extends Configuration {
     "hive\\.parquet\\..*",
     "hive\\.ppd\\..*",
     "hive\\.prewarm\\..*",
+    "hive\\.server2\\.thrift\\.resultset\\.default\\.fetch\\.size",
     "hive\\.server2\\.proxy\\.user",
     "hive\\.skewjoin\\..*",
     "hive\\.smbjoin\\..*",

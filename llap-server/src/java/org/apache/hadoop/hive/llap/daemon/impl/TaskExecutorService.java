@@ -22,7 +22,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.text.SimpleDateFormat;
 import java.util.Comparator;
 import java.util.Date;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.BlockingQueue;
@@ -199,9 +199,12 @@ public class TaskExecutorService extends AbstractService
   @Override
   public Set<String> getExecutorsStatus() {
     // TODO Change this method to make the output easier to parse (parse programmatically)
-    Set<String> result = new HashSet<>();
+    Set<String> result = new LinkedHashSet<>();
+    Set<String> running = new LinkedHashSet<>();
+    Set<String> waiting = new LinkedHashSet<>();
     StringBuilder value = new StringBuilder();
     for (Map.Entry<String, TaskWrapper> e : knownTasks.entrySet()) {
+      boolean isWaiting;
       value.setLength(0);
       value.append(e.getKey());
       TaskWrapper task = e.getValue();
@@ -209,29 +212,39 @@ public class TaskExecutorService extends AbstractService
       TaskRunnerCallable c = task.getTaskRunnerCallable();
       if (c != null && c.getVertexSpec() != null) {
         SignableVertexSpec fs = c.getVertexSpec();
-        value.append(isFirst ? " (" : ", ").append(fs.getDagName())
+        value.append(isFirst ? " (" : ", ").append(c.getQueryId())
           .append("/").append(fs.getVertexName());
         isFirst = false;
       }
       value.append(isFirst ? " (" : ", ");
       if (task.isInWaitQueue()) {
+        isWaiting = true;
         value.append("in queue");
       } else if (c != null) {
         long startTime = c.getStartTime();
         if (startTime != 0) {
+          isWaiting = false;
           value.append("started at ").append(sdf.get().format(new Date(startTime)));
         } else {
+          isWaiting = false;
           value.append("not started");
         }
       } else {
+        isWaiting = true;
         value.append("has no callable");
       }
       if (task.isInPreemptionQueue()) {
         value.append(", ").append("preemptable");
       }
       value.append(")");
-      result.add(value.toString());
+      if (isWaiting) {
+        waiting.add(value.toString());
+      } else {
+        running.add(value.toString());
+      }
     }
+    result.addAll(waiting);
+    result.addAll(running);
     return result;
   }
 
@@ -737,7 +750,7 @@ public class TaskExecutorService extends AbstractService
         if (removed && isInfoEnabled) {
           TaskRunnerCallable trc = taskWrapper.getTaskRunnerCallable();
           LOG.info(TaskRunnerCallable.getTaskIdentifierString(trc.getRequest(),
-              trc.getVertexSpec()) + " request " + state + "! Removed from preemption list.");
+              trc.getVertexSpec(), trc.getQueryId()) + " request " + state + "! Removed from preemption list.");
         }
       }
 

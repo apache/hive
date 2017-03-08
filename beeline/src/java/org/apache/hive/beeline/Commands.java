@@ -64,7 +64,8 @@ import org.apache.hive.beeline.logs.BeelineInPlaceUpdateStream;
 import org.apache.hive.jdbc.HiveStatement;
 import org.apache.hive.jdbc.Utils;
 import org.apache.hive.jdbc.Utils.JdbcConnectionParams;
-
+import com.google.common.annotations.VisibleForTesting;
+import org.apache.hive.jdbc.logs.InPlaceUpdateStream;
 
 public class Commands {
   private final BeeLine beeLine;
@@ -980,13 +981,18 @@ public class Commands {
           if (beeLine.getOpts().isSilent()) {
             hasResults = stmnt.execute(sql);
           } else {
-            logThread = new Thread(createLogRunnable(stmnt));
+            InPlaceUpdateStream.EventNotifier eventNotifier =
+                new InPlaceUpdateStream.EventNotifier();
+            logThread = new Thread(createLogRunnable(stmnt, eventNotifier));
             logThread.setDaemon(true);
             logThread.start();
             if (stmnt instanceof HiveStatement) {
-              ((HiveStatement) stmnt).setInPlaceUpdateStream(
-                  new BeelineInPlaceUpdateStream(beeLine.getErrorStream())
-              );
+              HiveStatement hiveStatement = (HiveStatement) stmnt;
+              hiveStatement.setInPlaceUpdateStream(
+                  new BeelineInPlaceUpdateStream(
+                      beeLine.getErrorStream(),
+                      eventNotifier
+                  ));
             }
             hasResults = stmnt.execute(sql);
             logThread.interrupt();
@@ -1042,11 +1048,39 @@ public class Commands {
     return true;
   }
 
+  //startQuote use array type in order to pass int type as input/output parameter.
+  //This method remove comment from current line of a query.
+  //It does not remove comment like strings inside quotes.
+  @VisibleForTesting
+  String removeComments(String line, int[] startQuote) {
+    if (line == null || line.isEmpty()) return line;
+    if (startQuote[0] == -1 && beeLine.isComment(line)) return "";  //assume # can only be used at the beginning of line.
+    StringBuilder builder = new StringBuilder();
+    for (int index = 0; index < line.length(); index++) {
+      if (startQuote[0] == -1 && index < line.length() - 1 && line.charAt(index) == '-' && line.charAt(index + 1) =='-') {
+        return builder.toString().trim();
+      }
+
+      char letter = line.charAt(index);
+      if (startQuote[0] == letter && (index == 0 || line.charAt(index -1) != '\\') ) {
+        startQuote[0] = -1; // Turn escape off.
+      } else if (startQuote[0] == -1 && (letter == '\'' || letter == '"') && (index == 0 || line.charAt(index -1) != '\\')) {
+        startQuote[0] = letter; // Turn escape on.
+      }
+
+      builder.append(letter);
+    }
+
+    return builder.toString().trim();
+  }
+
   /*
    * Check if the input line is a multi-line command which needs to read further
    */
   public String handleMultiLineCmd(String line) throws IOException {
     //When using -e, console reader is not initialized and command is always a single line
+    int[] startQuote = {-1};
+    line = removeComments(line,startQuote);
     while (isMultiLine(line) && beeLine.getOpts().isAllowMultiLineCommand()) {
       StringBuilder prompt = new StringBuilder(beeLine.getPrompt());
       if (!beeLine.getOpts().isSilent()) {
@@ -1071,7 +1105,8 @@ public class Commands {
       if (extra == null) { //it happens when using -f and the line of cmds does not end with ;
         break;
       }
-      if (!beeLine.isComment(extra)) {
+      extra = removeComments(extra,startQuote);
+      if (extra != null && !extra.isEmpty()) {
         line += "\n" + extra;
       }
     }
@@ -1248,16 +1283,18 @@ public class Commands {
     command.setLength(0);
   }
 
-  private Runnable createLogRunnable(final Statement statement) {
+  private Runnable createLogRunnable(final Statement statement,
+      InPlaceUpdateStream.EventNotifier eventNotifier) {
     if (statement instanceof HiveStatement) {
-      return new LogRunnable(this, (HiveStatement) statement,
-          DEFAULT_QUERY_PROGRESS_INTERVAL);
+      return new LogRunnable(this, (HiveStatement) statement, DEFAULT_QUERY_PROGRESS_INTERVAL,
+          eventNotifier);
     } else {
       beeLine.debug(
           "The statement instance is not HiveStatement type: " + statement
               .getClass());
       return new Runnable() {
-        @Override public void run() {
+        @Override
+        public void run() {
           // do nothing.
         }
       };
@@ -1272,37 +1309,52 @@ public class Commands {
     beeLine.debug(message);
   }
 
-
-
   static class LogRunnable implements Runnable {
     private final Commands commands;
     private final HiveStatement hiveStatement;
     private final long queryProgressInterval;
+    private final InPlaceUpdateStream.EventNotifier notifier;
 
     LogRunnable(Commands commands, HiveStatement hiveStatement,
-        long queryProgressInterval) {
+        long queryProgressInterval, InPlaceUpdateStream.EventNotifier eventNotifier) {
       this.hiveStatement = hiveStatement;
       this.commands = commands;
       this.queryProgressInterval = queryProgressInterval;
+      this.notifier = eventNotifier;
     }
 
-    private void updateQueryLog() throws SQLException {
-      for (String log : hiveStatement.getQueryLog()) {
-        commands.beeLine.info(log);
+    private void updateQueryLog() {
+      try {
+        List<String> queryLogs = hiveStatement.getQueryLog();
+        for (String log : queryLogs) {
+          commands.beeLine.info(log);
+        }
+        if (!queryLogs.isEmpty()) {
+          notifier.operationLogShowedToUser();
+        }
+      } catch (SQLException e) {
+        commands.error(new SQLWarning(e));
       }
     }
 
     @Override public void run() {
-      while (hiveStatement.hasMoreLogs()) {
-        try {
-          updateQueryLog();
+      try {
+        while (hiveStatement.hasMoreLogs()) {
+          /*
+            get the operation logs once and print it, then wait till progress bar update is complete
+            before printing the remaining logs.
+          */
+          if (notifier.canOutputOperationLogs()) {
+            commands.debug("going to print operations logs");
+            updateQueryLog();
+            commands.debug("printed operations logs");
+          }
           Thread.sleep(queryProgressInterval);
-        } catch (SQLException e) {
-          commands.error(new SQLWarning(e));
-        } catch (InterruptedException e) {
-          commands.debug("Getting log thread is interrupted, since query is done!");
-          commands.showRemainingLogsIfAny(hiveStatement);
         }
+      } catch (InterruptedException e) {
+        commands.debug("Getting log thread is interrupted, since query is done!");
+      } finally {
+        commands.showRemainingLogsIfAny(hiveStatement);
       }
     }
   }

@@ -380,4 +380,11 @@ public class OperatorUtils {
 
     curr.removeChild(child);
   }
+
+  public static String getOpNamePretty(Operator<?> op) {
+    if (op instanceof TableScanOperator) {
+      return op.toString() + " (" + ((TableScanOperator) op).getConf().getAlias() + ")";
+    }
+    return op.toString();
+  }
 }

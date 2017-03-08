@@ -57,7 +57,7 @@ import static junit.framework.Assert.assertEquals;
  * See additional tests in {@link org.apache.hadoop.hive.ql.lockmgr.TestDbTxnManager2}
  */
 public class TestDbTxnManager {
-
+  private static final int TEST_TIMED_OUT_TXN_ABORT_BATCH_SIZE = 1000;
   private final HiveConf conf = new HiveConf();
   private HiveTxnManager txnMgr;
   private AcidHouseKeeperService houseKeeperService = null;
@@ -257,10 +257,10 @@ public class TestDbTxnManager {
     testLockExpiration(txnMgr, 5, true);
 
     //create a lot of locks
-    for(int i = 0; i < TxnStore.TIMED_OUT_TXN_ABORT_BATCH_SIZE + 17; i++) {
+    for(int i = 0; i < TEST_TIMED_OUT_TXN_ABORT_BATCH_SIZE + 17; i++) {
       ((DbTxnManager)txnMgr).acquireLocks(qp, ctx, "PeterI" + i, true); // No heartbeat
     }
-    testLockExpiration(txnMgr, TxnStore.TIMED_OUT_TXN_ABORT_BATCH_SIZE + 17, true);
+    testLockExpiration(txnMgr, TEST_TIMED_OUT_TXN_ABORT_BATCH_SIZE + 17, true);
 
     // Create a lock, but send the heartbeat with a long delay. The lock will get expired.
     ((DbTxnManager)txnMgr).acquireLocksWithHeartbeatDelay(qp, ctx, "bob",

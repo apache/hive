@@ -201,6 +201,7 @@ import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.hive.serde2.NullStructSerDe;
+import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
 import org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
@@ -220,6 +221,7 @@ import org.apache.hadoop.mapred.TextInputFormat;
 import org.apache.hive.common.util.AnnotationUtils;
 import org.apache.hive.common.util.HiveStringUtils;
 import org.apache.hive.common.util.ReflectionUtil;
+import org.apache.hadoop.util.ReflectionUtils;
 
 import com.google.common.base.Preconditions;
 
@@ -306,6 +308,8 @@ public class Vectorizer implements PhysicalPlanResolver {
   private void clearNotVectorizedReason() {
     currentBaseWork.setNotVectorizedReason(null);
   }
+
+  private long vectorizedVertexNum = -1;
 
   public Vectorizer() {
 
@@ -603,6 +607,8 @@ public class Vectorizer implements PhysicalPlanResolver {
 
       VectorTaskColumnInfo vectorTaskColumnInfo = new VectorTaskColumnInfo();
       vectorTaskColumnInfo.assume();
+
+      mapWork.setVectorizedVertexNum(++vectorizedVertexNum);
 
       boolean ret;
       try {
@@ -1138,6 +1144,8 @@ public class Vectorizer implements PhysicalPlanResolver {
       VectorTaskColumnInfo vectorTaskColumnInfo = new VectorTaskColumnInfo();
       vectorTaskColumnInfo.assume();
 
+      reduceWork.setVectorizedVertexNum(++vectorizedVertexNum);
+
       boolean ret;
       try {
         ret = validateReduceWork(reduceWork, vectorTaskColumnInfo);
@@ -1165,38 +1173,56 @@ public class Vectorizer implements PhysicalPlanResolver {
       ArrayList<String> reduceColumnNames = new ArrayList<String>();
       ArrayList<TypeInfo> reduceTypeInfos = new ArrayList<TypeInfo>();
 
+      if (reduceWork.getNeedsTagging()) {
+        setNodeIssue("Tagging not supported");
+        return false;
+      }
+
       try {
-        // Check key ObjectInspector.
-        ObjectInspector keyObjectInspector = reduceWork.getKeyObjectInspector();
-        if (keyObjectInspector == null || !(keyObjectInspector instanceof StructObjectInspector)) {
-          setNodeIssue("Key object inspector missing or not StructObjectInspector");
+        TableDesc keyTableDesc = reduceWork.getKeyDesc();
+        if (LOG.isDebugEnabled()) {
+          LOG.debug("Using reduce tag " + reduceWork.getTag());
+        }
+        TableDesc valueTableDesc = reduceWork.getTagToValueDesc().get(reduceWork.getTag());
+
+        Deserializer keyDeserializer =
+            ReflectionUtils.newInstance(
+                keyTableDesc.getDeserializerClass(), null);
+        SerDeUtils.initializeSerDe(keyDeserializer, null, keyTableDesc.getProperties(), null);
+        ObjectInspector keyObjectInspector = keyDeserializer.getObjectInspector();
+        if (keyObjectInspector == null) {
+          setNodeIssue("Key object inspector null");
           return false;
         }
-        StructObjectInspector keyStructObjectInspector = (StructObjectInspector)keyObjectInspector;
+        if (!(keyObjectInspector instanceof StructObjectInspector)) {
+          setNodeIssue("Key object inspector not StructObjectInspector");
+          return false;
+        }
+        StructObjectInspector keyStructObjectInspector = (StructObjectInspector) keyObjectInspector;
         List<? extends StructField> keyFields = keyStructObjectInspector.getAllStructFieldRefs();
-
-        if (reduceWork.getNeedsTagging()) {
-          setNodeIssue("Tez doesn't use tagging");
-          return false;
-        }
-
-        // Check value ObjectInspector.
-        ObjectInspector valueObjectInspector = reduceWork.getValueObjectInspector();
-        if (valueObjectInspector == null ||
-                !(valueObjectInspector instanceof StructObjectInspector)) {
-          setNodeIssue("Value object inspector missing or not StructObjectInspector");
-          return false;
-        }
-        StructObjectInspector valueStructObjectInspector = (StructObjectInspector)valueObjectInspector;
-        List<? extends StructField> valueFields = valueStructObjectInspector.getAllStructFieldRefs();
 
         for (StructField field: keyFields) {
           reduceColumnNames.add(Utilities.ReduceField.KEY.toString() + "." + field.getFieldName());
           reduceTypeInfos.add(TypeInfoUtils.getTypeInfoFromTypeString(field.getFieldObjectInspector().getTypeName()));
         }
-        for (StructField field: valueFields) {
-          reduceColumnNames.add(Utilities.ReduceField.VALUE.toString() + "." + field.getFieldName());
-          reduceTypeInfos.add(TypeInfoUtils.getTypeInfoFromTypeString(field.getFieldObjectInspector().getTypeName()));
+
+        Deserializer valueDeserializer =
+            ReflectionUtils.newInstance(
+                valueTableDesc.getDeserializerClass(), null);
+        SerDeUtils.initializeSerDe(valueDeserializer, null, valueTableDesc.getProperties(), null);
+        ObjectInspector valueObjectInspector = valueDeserializer.getObjectInspector();
+        if (valueObjectInspector != null) {
+          if (!(valueObjectInspector instanceof StructObjectInspector)) {
+            setNodeIssue("Value object inspector not StructObjectInspector");
+            return false;
+          }
+          StructObjectInspector valueStructObjectInspector = (StructObjectInspector) valueObjectInspector;
+          List<? extends StructField> valueFields = valueStructObjectInspector.getAllStructFieldRefs();
+
+          for (StructField field: valueFields) {
+            reduceColumnNames.add(Utilities.ReduceField.VALUE.toString() + "." + field.getFieldName());
+            reduceTypeInfos.add(TypeInfoUtils.getTypeInfoFromTypeString(field.getFieldObjectInspector().getTypeName()));
+          }
         }
       } catch (Exception e) {
         throw new SemanticException(e);
@@ -1521,6 +1547,10 @@ public class Vectorizer implements PhysicalPlanResolver {
       if (op instanceof TableScanOperator) {
         if (taskVectorizationContext == null) {
           taskVectorizationContext = getVectorizationContext(op.getName(), vectorTaskColumnInfo);
+          if (LOG.isInfoEnabled()) {
+            LOG.info("MapWorkVectorizationNodeProcessor process vectorizedVertexNum " + vectorizedVertexNum + " mapColumnNames " + vectorTaskColumnInfo.allColumnNames.toString());
+            LOG.info("MapWorkVectorizationNodeProcessor process vectorizedVertexNum " + vectorizedVertexNum + " mapTypeInfos " + vectorTaskColumnInfo.allTypeInfos.toString());
+          }
         }
         vContext = taskVectorizationContext;
       } else {
@@ -1585,8 +1615,10 @@ public class Vectorizer implements PhysicalPlanResolver {
 
       currentOperator = op;
       if (op.getParentOperators().size() == 0) {
-        LOG.info("ReduceWorkVectorizationNodeProcessor process reduceColumnNames " + vectorTaskColumnInfo.allColumnNames.toString());
-
+        if (LOG.isInfoEnabled()) {
+          LOG.info("ReduceWorkVectorizationNodeProcessor process vectorizedVertexNum " + vectorizedVertexNum + " reduceColumnNames " + vectorTaskColumnInfo.allColumnNames.toString());
+          LOG.info("ReduceWorkVectorizationNodeProcessor process vectorizedVertexNum " + vectorizedVertexNum + " reduceTypeInfos " + vectorTaskColumnInfo.allTypeInfos.toString());
+        }
         vContext = new VectorizationContext("__Reduce_Shuffle__", vectorTaskColumnInfo.allColumnNames, hiveConf);
         taskVectorizationContext = vContext;
 
@@ -2981,11 +3013,7 @@ public class Vectorizer implements PhysicalPlanResolver {
         HiveConf.ConfVars.HIVE_VECTORIZATION_REDUCESINK_NEW_ENABLED);
 
     String engine = HiveConf.getVar(hiveConf, HiveConf.ConfVars.HIVE_EXECUTION_ENGINE);
-
-    boolean acidChange =
-        desc.getWriteType() == AcidUtils.Operation.UPDATE ||
-            desc.getWriteType() == AcidUtils.Operation.DELETE;
-
+    
     boolean hasBuckets = desc.getBucketCols() != null && !desc.getBucketCols().isEmpty();
 
     boolean hasTopN = desc.getTopN() >= 0;
@@ -3005,7 +3033,6 @@ public class Vectorizer implements PhysicalPlanResolver {
     // Remember the condition variables for EXPLAIN regardless.
     vectorDesc.setIsVectorizationReduceSinkNativeEnabled(isVectorizationReduceSinkNativeEnabled);
     vectorDesc.setEngine(engine);
-    vectorDesc.setAcidChange(acidChange);
     vectorDesc.setHasBuckets(hasBuckets);
     vectorDesc.setHasTopN(hasTopN);
     vectorDesc.setUseUniformHash(useUniformHash);
@@ -3016,7 +3043,6 @@ public class Vectorizer implements PhysicalPlanResolver {
     // Many restrictions.
     if (!isVectorizationReduceSinkNativeEnabled ||
         !isTezOrSpark ||
-        acidChange ||
         hasBuckets ||
         hasTopN ||
         !useUniformHash ||

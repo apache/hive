@@ -406,19 +406,17 @@ public class CliConfigs {
 
   public static class BeeLineConfig extends AbstractCliConfig {
     public BeeLineConfig() {
-      // FIXME: beeline is disabled...
-      super(null);
-      // super(CoreBeeLineDriver.class);
+      super(CoreBeeLineDriver.class);
       try {
         setQueryDir("ql/src/test/queries/clientpositive");
 
-        excludesFrom(testConfigProps, "beeline.positive.exclude");
+        includesFrom(testConfigProps, "beeline.positive.include");
 
-        setResultsDir("ql/src/test/results/clientpositive");
+        setResultsDir("ql/src/test/results/clientpositive/beeline");
         setLogDir("itests/qtest/target/qfile-results/beelinepositive");
 
-        setInitScript("q_test_init.sql");
-        setCleanupScript("q_test_cleanup.sql");
+        setInitScript("q_test_init_src.sql");
+        setCleanupScript("q_test_cleanup_src.sql");
 
         setHiveConfDir("");
         setClusterType(MiniClusterType.none);
@@ -433,8 +431,6 @@ public class CliConfigs {
       super(CoreAccumuloCliDriver.class);
       try {
         setQueryDir("accumulo-handler/src/test/queries/positive");
-
-        excludesFrom(testConfigProps, "beeline.positive.exclude");
 
         setResultsDir("accumulo-handler/src/test/results/positive");
         setLogDir("itests/qtest/target/qfile-results/accumulo-handler/positive");

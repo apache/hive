@@ -64,7 +64,6 @@ public class VectorReduceSinkDesc extends AbstractVectorDesc  {
 
   private boolean isVectorizationReduceSinkNativeEnabled;
   private String engine;
-  private boolean acidChange;
   private boolean hasBuckets;
   private boolean hasTopN;
   private boolean useUniformHash;
@@ -86,12 +85,6 @@ public class VectorReduceSinkDesc extends AbstractVectorDesc  {
   }
   public String getEngine() {
     return engine;
-  }
-  public void setAcidChange(boolean acidChange) {
-    this.acidChange = acidChange;
-  }
-  public boolean getAcidChange() {
-    return acidChange;
   }
   public void setHasBuckets(boolean hasBuckets) {
     this.hasBuckets = hasBuckets;

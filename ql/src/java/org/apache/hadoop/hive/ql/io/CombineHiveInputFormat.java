@@ -37,6 +37,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
 import com.google.common.annotations.VisibleForTesting;
+import org.apache.hadoop.hive.common.StringInternUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -355,7 +356,7 @@ public class CombineHiveInputFormat<K extends WritableComparable, V extends Writ
 
     // combine splits only from same tables and same partitions. Do not combine splits from multiple
     // tables or multiple partitions.
-    Path[] paths = combine.getInputPathsShim(job);
+    Path[] paths = StringInternUtils.internUriStringsInPathArray(combine.getInputPathsShim(job));
 
     List<Path> inpDirs = new ArrayList<Path>();
     List<Path> inpFiles = new ArrayList<Path>();
@@ -676,6 +677,7 @@ public class CombineHiveInputFormat<K extends WritableComparable, V extends Writ
     Map<Path, ArrayList<String>> result = new HashMap<>();
     for (Map.Entry <Path, ArrayList<String>> entry : pathToAliases.entrySet()) {
       Path newKey = Path.getPathWithoutSchemeAndAuthority(entry.getKey());
+      StringInternUtils.internUriStringsInPath(newKey);
       result.put(newKey, entry.getValue());
     }
     return result;

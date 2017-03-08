@@ -39,6 +39,7 @@ import org.apache.hadoop.hive.shims.Utils;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hive.service.CompositeService;
 import org.apache.hive.service.ServiceException;
+import org.apache.hive.service.ServiceUtils;
 import org.apache.hive.service.auth.HiveAuthFactory;
 import org.apache.hive.service.cli.operation.Operation;
 import org.apache.hive.service.cli.session.SessionManager;
@@ -80,7 +81,7 @@ public class CLIService extends CompositeService implements ICLIService {
   public synchronized void init(HiveConf hiveConf) {
     this.hiveConf = hiveConf;
     sessionManager = new SessionManager(hiveServer2);
-    defaultFetchRows = hiveConf.getIntVar(ConfVars.HIVE_SERVER2_RESULTSET_DEFAULT_FETCH_SIZE);
+    defaultFetchRows = hiveConf.getIntVar(ConfVars.HIVE_SERVER2_THRIFT_RESULTSET_DEFAULT_FETCH_SIZE);
     addService(sessionManager);
     //  If the hadoop cluster is secure, do a kerberos login for the service from the keytab
     if (UserGroupInformation.isSecurityEnabled()) {
@@ -475,9 +476,14 @@ public class CLIService extends CompositeService implements ICLIService {
     return opStatus;
   }
 
+  public HiveConf getSessionConf(SessionHandle sessionHandle)
+      throws HiveSQLException {
+	  return sessionManager.getSession(sessionHandle).getSessionConf();
+  }
+
   private static final long PROGRESS_MAX_WAIT_NS = 30 * 1000000000l;
   private JobProgressUpdate progressUpdateLog(boolean isProgressLogRequested, Operation operation) {
-    if (!isProgressLogRequested || !canProvideProgressLog()
+    if (!isProgressLogRequested || !ServiceUtils.canProvideProgressLog(hiveConf)
         || !OperationType.EXECUTE_STATEMENT.equals(operation.getType())) {
       return new JobProgressUpdate(ProgressMonitor.NULL);
     }
@@ -488,7 +494,10 @@ public class CLIService extends CompositeService implements ICLIService {
     try {
       while (sessionState.getProgressMonitor() == null && !operation.isDone()) {
         long remainingMs = (PROGRESS_MAX_WAIT_NS - (System.nanoTime() - startTime)) / 1000000l;
-        if (remainingMs <= 0) return new JobProgressUpdate(ProgressMonitor.NULL);
+        if (remainingMs <= 0) {
+          LOG.debug("timed out and hence returning progress log as NULL");
+          return new JobProgressUpdate(ProgressMonitor.NULL);
+        }
         Thread.sleep(Math.min(remainingMs, timeOutMs));
         timeOutMs <<= 1;
       }
@@ -497,11 +506,6 @@ public class CLIService extends CompositeService implements ICLIService {
     }
     ProgressMonitor pm = sessionState.getProgressMonitor();
     return new JobProgressUpdate(pm != null ? pm : ProgressMonitor.NULL);
-  }
-
-  private boolean canProvideProgressLog() {
-    return "tez".equals(hiveConf.getVar(ConfVars.HIVE_EXECUTION_ENGINE))
-        && hiveConf.getBoolVar(ConfVars.HIVE_SERVER2_INPLACE_PROGRESS);
   }
 
   /* (non-Javadoc)

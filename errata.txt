@@ -85,3 +85,4 @@ d8298e1c85a515150562b0df68af89c18c468638 llap       HIVE-9418  https://issues.ap
 5c58dceeaf662b6314eedb9afa01a2896657ef77 master     HIVE-14182 https://issues.apache.org/jira/browse/HIVE-14182
 d16d4f1bcc43d6ebcab0eaf5bc635fb88b60be5f master     HIVE-9423  https://issues.apache.org/jira/browse/HIVE-9423
 130617443bb05d79c18420c0c4e903a76da3651c master     HIVE-14909 https://issues.apache.org/jira/browse/HIVE-14909
+6dace60af4b6ab4d5200310a0ad94c4530c2bec3 master     HIVE-13335 https://issues.apache.org/jira/browse/HIVE-13335

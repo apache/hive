@@ -3464,10 +3464,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart_hour
-                  filterExpr: ((UDFToDouble(hr) = 13.0) and hr BETWEEN DynamicValue(RS_12_srcpart_hr_min) AND DynamicValue(RS_12_srcpart_hr_max) and in_bloom_filter(hr, DynamicValue(RS_12_srcpart_hr_bloom_filter))) (type: boolean)
+                  filterExpr: ((UDFToDouble(hr) = 13.0) and (hr BETWEEN DynamicValue(RS_12_srcpart_hr_min) AND DynamicValue(RS_12_srcpart_hr_max) and in_bloom_filter(hr, DynamicValue(RS_12_srcpart_hr_bloom_filter)))) (type: boolean)
                   Statistics: Num rows: 2 Data size: 344 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((UDFToDouble(hr) = 13.0) and hr BETWEEN DynamicValue(RS_12_srcpart_hr_min) AND DynamicValue(RS_12_srcpart_hr_max) and in_bloom_filter(hr, DynamicValue(RS_12_srcpart_hr_bloom_filter))) (type: boolean)
+                    predicate: ((UDFToDouble(hr) = 13.0) and (hr BETWEEN DynamicValue(RS_12_srcpart_hr_min) AND DynamicValue(RS_12_srcpart_hr_max) and in_bloom_filter(hr, DynamicValue(RS_12_srcpart_hr_bloom_filter)))) (type: boolean)
                     Statistics: Num rows: 1 Data size: 172 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: hr (type: string)

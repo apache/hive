@@ -120,6 +120,7 @@ STAGE PLANS:
                   Statistics: Num rows: 2 Data size: 24 Basic stats: COMPLETE Column stats: NONE
                   File Output Operator
                     compressed: false
+                    Dp Sort State: PARTITION_SORTED
                     Statistics: Num rows: 2 Data size: 24 Basic stats: COMPLETE Column stats: NONE
                     table:
                         input format: org.apache.hadoop.mapred.TextInputFormat
@@ -357,6 +358,7 @@ STAGE PLANS:
                 Statistics: Num rows: 5 Data size: 60 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
+                  Dp Sort State: PARTITION_SORTED
                   Statistics: Num rows: 5 Data size: 60 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.TextInputFormat

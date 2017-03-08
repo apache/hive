@@ -2621,7 +2621,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
         Set<ImmutableBitSet> setTransformedGroupSets =
                 new HashSet<ImmutableBitSet>(groupSets.size());
         for(int val: groupSets) {
-          setTransformedGroupSets.add(convert(val));
+          setTransformedGroupSets.add(convert(val, groupSet.cardinality()));
         }
         // Calcite expects the grouping sets sorted and without duplicates
         transformedGroupSets = new ArrayList<ImmutableBitSet>(setTransformedGroupSets);
@@ -2656,16 +2656,19 @@ public class CalcitePlanner extends SemanticAnalyzer {
       return aggregateRel;
     }
 
-    private ImmutableBitSet convert(int value) {
+    /* This method returns the flip big-endian representation of value */
+    private ImmutableBitSet convert(int value, int length) {
       BitSet bits = new BitSet();
-      int index = 0;
-      while (value != 0L) {
+      for (int index = length - 1; index >= 0; index--) {
         if (value % 2 != 0) {
           bits.set(index);
         }
-        ++index;
         value = value >>> 1;
       }
+      // We flip the bits because Calcite considers that '1'
+      // means that the column participates in the GroupBy
+      // and '0' does not, as opposed to grouping_id.
+      bits.flip(0, length);
       return ImmutableBitSet.FROM_BIT_SET.apply(bits);
     }
 

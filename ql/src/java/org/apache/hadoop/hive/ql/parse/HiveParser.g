@@ -396,6 +396,7 @@ TOK_SUMMARY;
 TOK_OPERATOR;
 TOK_EXPRESSION;
 TOK_DETAIL;
+TOK_BLOCKING;
 }
 
 
@@ -559,6 +560,9 @@ import org.apache.hadoop.hive.conf.HiveConf;
     xlateMap.put("KW_NORELY", "NORELY");
     xlateMap.put("KW_ABORT", "ABORT");
     xlateMap.put("KW_TRANSACTIONS", "TRANSACTIONS");
+    xlateMap.put("KW_COMPACTIONS", "COMPACTIONS");
+    xlateMap.put("KW_COMPACT", "COMPACT");
+    xlateMap.put("KW_WAIT", "WAIT");
 
     // Operators
     xlateMap.put("DOT", ".");
@@ -1446,11 +1450,16 @@ alterStatementSuffixBucketNum
     -> ^(TOK_ALTERTABLE_BUCKETS $num)
     ;
 
+blocking
+  : KW_AND KW_WAIT
+  -> TOK_BLOCKING
+  ;
+
 alterStatementSuffixCompact
 @init { msgs.push("compaction request"); }
 @after { msgs.pop(); }
-    : KW_COMPACT compactType=StringLiteral (KW_WITH KW_OVERWRITE KW_TBLPROPERTIES tableProperties)?
-    -> ^(TOK_ALTERTABLE_COMPACT $compactType tableProperties?)
+    : KW_COMPACT compactType=StringLiteral blocking? (KW_WITH KW_OVERWRITE KW_TBLPROPERTIES tableProperties)?
+    -> ^(TOK_ALTERTABLE_COMPACT $compactType blocking? tableProperties?)
     ;
 
 

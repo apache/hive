@@ -112,6 +112,7 @@ POSTHOOK: Input: default@tab_date
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
 	 	 	 	 	 	 	 	 	 	 
 fl_date             	date                	2000-11-20          	2010-10-29          	0                   	18                  	                    	                    	                    	                    	from deserializer   
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"fl_date\":\"true\"}}	 	 	 	 	 	 	 	 	 
 PREHOOK: query: alter table tab_date update statistics for column fl_date set ('numDVs'='19', 'highValue'='2015-01-01', 'lowValue'='0')
 PREHOOK: type: ALTERTABLE_UPDATETABLESTATS
 POSTHOOK: query: alter table tab_date update statistics for column fl_date set ('numDVs'='19', 'highValue'='2015-01-01', 'lowValue'='0')
@@ -125,3 +126,4 @@ POSTHOOK: Input: default@tab_date
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
 	 	 	 	 	 	 	 	 	 	 
 fl_date             	date                	1970-01-01          	2015-01-01          	0                   	19                  	                    	                    	                    	                    	from deserializer   
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"fl_date\":\"true\"}}	 	 	 	 	 	 	 	 	 

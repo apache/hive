@@ -217,7 +217,7 @@ public class LlapTaskReporter implements TaskReporterInterface {
 
         if (response.shouldDie) {
           // AM sent a shouldDie=true
-          LOG.info("Asked to die via task heartbeat");
+          LOG.info("Asked to die via task heartbeat: {}", task.getTaskAttemptID());
           return false;
         } else {
           if (response.numEvents < maxEventsToGet) {
@@ -297,7 +297,7 @@ public class LlapTaskReporter implements TaskReporterInterface {
       }
 
       if (response.shouldDie()) {
-        LOG.info("Received should die response from AM");
+        LOG.info("Received should die response from AM: {}", task.getTaskAttemptID());
         askedToDie.set(true);
         return new ResponseWrapper(true, 1);
       }

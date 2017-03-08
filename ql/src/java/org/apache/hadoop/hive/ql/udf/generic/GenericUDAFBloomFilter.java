@@ -20,10 +20,13 @@ package org.apache.hadoop.hive.ql.udf.generic;
 
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.ql.exec.Operator;
+import org.apache.hadoop.hive.ql.exec.SelectOperator;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.ColStatistics;
+import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeDescUtils;
 import org.apache.hadoop.hive.ql.plan.Statistics;
 import org.apache.hadoop.hive.ql.plan.Statistics.State;
 import org.apache.hadoop.hive.serde2.io.DateWritable;
@@ -68,7 +71,7 @@ public class GenericUDAFBloomFilter implements GenericUDAFResolver2 {
    */
   public static class GenericUDAFBloomFilterEvaluator extends GenericUDAFEvaluator {
     // Source operator to get the number of entries
-    private Operator<?> sourceOperator;
+    private SelectOperator sourceOperator;
     private long maxEntries = 0;
 
     // ObjectInspector for input data.
@@ -258,10 +261,13 @@ public class GenericUDAFBloomFilter implements GenericUDAFResolver2 {
         switch (stats.getColumnStatsState()) {
           case COMPLETE:
           case PARTIAL:
-            // There should only be column stats for one column, use if that is the case.
+            // There should only be column in sourceOperator
             List<ColStatistics> colStats = stats.getColumnStats();
-            if (colStats.size() == 1) {
-              long ndv = colStats.get(0).getCountDistint();
+            ExprNodeColumnDesc colExpr = ExprNodeDescUtils.getColumnExpr(
+                sourceOperator.getConf().getColList().get(0));
+            if (colExpr != null
+                && stats.getColumnStatisticsFromColName(colExpr.getColumn()) != null) {
+              long ndv = stats.getColumnStatisticsFromColName(colExpr.getColumn()).getCountDistint();
               if (ndv > 0) {
                 expectedEntries = ndv;
               }
@@ -279,7 +285,7 @@ public class GenericUDAFBloomFilter implements GenericUDAFResolver2 {
       return sourceOperator;
     }
 
-    public void setSourceOperator(Operator<?> sourceOperator) {
+    public void setSourceOperator(SelectOperator sourceOperator) {
       this.sourceOperator = sourceOperator;
     }
 

@@ -16,7 +16,6 @@ package org.apache.hadoop.hive.llap.daemon.impl;
 
 import org.apache.hadoop.hive.llap.protocol.LlapTaskUmbilicalProtocol.TezAttemptArray;
 
-import org.apache.hadoop.io.ArrayWritable;
 
 import java.util.ArrayList;
 
@@ -26,7 +25,6 @@ import java.util.HashSet;
 
 import java.util.Set;
 
-import java.util.concurrent.ConcurrentHashMap;
 
 import javax.net.SocketFactory;
 
@@ -44,7 +42,6 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
 import com.google.common.util.concurrent.FutureCallback;
@@ -114,7 +111,7 @@ public class AMReporter extends AbstractService {
   private final AtomicBoolean isShutdown = new AtomicBoolean(false);
   // Tracks appMasters to which heartbeats are being sent. This should not be used for any other
   // messages like taskKilled, etc.
-  private final Map<LlapNodeId, AMNodeInfo> knownAppMasters = new HashMap<>();
+  private final Map<QueryIdentifier, AMNodeInfo> knownAppMasters = new HashMap<>();
   volatile ListenableFuture<Void> queueLookupFuture;
   private final DaemonId daemonId;
 
@@ -127,9 +124,9 @@ public class AMReporter extends AbstractService {
     this.conf = conf;
     this.daemonId = daemonId;
     if (maxThreads < numExecutors) {
-      maxThreads = numExecutors;
       LOG.warn("maxThreads={} is less than numExecutors={}. Setting maxThreads=numExecutors",
-          maxThreads, numExecutors);
+        maxThreads, numExecutors);
+      maxThreads = numExecutors;
     }
     ExecutorService rawExecutor =
         new ThreadPoolExecutor(numExecutors, maxThreads,
@@ -197,38 +194,46 @@ public class AMReporter extends AbstractService {
     }
   }
 
-  public void registerTask(String amLocation, int port, String user,
+  public void registerTask(String amLocation, int port, String umbilicalUser,
       Token<JobTokenIdentifier> jobToken, QueryIdentifier queryIdentifier,
       TezTaskAttemptID attemptId) {
     if (LOG.isTraceEnabled()) {
-      LOG.trace("Registering for heartbeat: " + amLocation + ":" + port + " for queryIdentifier=" + queryIdentifier);
+      LOG.trace(
+          "Registering for heartbeat: {}, queryIdentifier={}, attemptId={}",
+          (amLocation + ":" + port), queryIdentifier, attemptId);
     }
     AMNodeInfo amNodeInfo;
+
+    // Since we don't have an explicit AM end signal yet - we're going to create
+    // and discard AMNodeInfo instances per query.
     synchronized (knownAppMasters) {
       LlapNodeId amNodeId = LlapNodeId.getInstance(amLocation, port);
-      amNodeInfo = knownAppMasters.get(amNodeId);
+      amNodeInfo = knownAppMasters.get(queryIdentifier);
       if (amNodeInfo == null) {
-        amNodeInfo = new AMNodeInfo(amNodeId, user, jobToken, queryIdentifier,
+        amNodeInfo = new AMNodeInfo(amNodeId, umbilicalUser, jobToken, queryIdentifier,
             retryPolicy, retryTimeout, socketFactory, conf);
-        knownAppMasters.put(amNodeId, amNodeInfo);
+        knownAppMasters.put(queryIdentifier, amNodeInfo);
         // Add to the queue only the first time this is registered, and on
         // subsequent instances when it's taken off the queue.
         amNodeInfo.setNextHeartbeatTime(System.currentTimeMillis() + heartbeatInterval);
         pendingHeartbeatQueeu.add(amNodeInfo);
+        // AMNodeInfo will only be cleared when a queryComplete is received for this query, or
+        // when we detect a failure on the AM side (failure to heartbeat).
+        // A single queueLookupCallable is added here. We have to make sure one instance stays
+        // in the queue till the query completes.
       }
-      amNodeInfo.setCurrentQueryIdentifier(queryIdentifier);
       amNodeInfo.addTaskAttempt(attemptId);
     }
   }
 
-  public void unregisterTask(String amLocation, int port, TezTaskAttemptID ta) {
+  public void unregisterTask(String amLocation, int port, QueryIdentifier queryIdentifier, TezTaskAttemptID ta) {
+
     if (LOG.isTraceEnabled()) {
-      LOG.trace("Un-registering for heartbeat: " + amLocation + ":" + port);
+      LOG.trace("Un-registering for heartbeat: {}, attempt={}", (amLocation + ":" + port), ta);
     }
     AMNodeInfo amNodeInfo;
-    LlapNodeId amNodeId = LlapNodeId.getInstance(amLocation, port);
     synchronized (knownAppMasters) {
-      amNodeInfo = knownAppMasters.get(amNodeId);
+      amNodeInfo = knownAppMasters.get(queryIdentifier);
       if (amNodeInfo == null) {
         LOG.info(("Ignoring duplicate unregisterRequest for am at: " + amLocation + ":" + port));
       } else {
@@ -239,14 +244,17 @@ public class AMReporter extends AbstractService {
     }
   }
 
-  public void taskKilled(String amLocation, int port, String user, Token<JobTokenIdentifier> jobToken,
+  public void taskKilled(String amLocation, int port, String umbilicalUser, Token<JobTokenIdentifier> jobToken,
                          final QueryIdentifier queryIdentifier, final TezTaskAttemptID taskAttemptId) {
-    // Not re-using the connection for the AM heartbeat - which may or may not be open by this point.
-    // knownAppMasters is used for sending heartbeats for queued tasks. Killed messages use a new connection.
     LlapNodeId amNodeId = LlapNodeId.getInstance(amLocation, port);
-    AMNodeInfo amNodeInfo =
-        new AMNodeInfo(amNodeId, user, jobToken, queryIdentifier, retryPolicy, retryTimeout, socketFactory,
-            conf);
+    AMNodeInfo amNodeInfo;
+    synchronized (knownAppMasters) {
+      amNodeInfo = knownAppMasters.get(queryIdentifier);
+      if (amNodeInfo == null) {
+        amNodeInfo = new AMNodeInfo(amNodeId, umbilicalUser, jobToken, queryIdentifier, retryPolicy, retryTimeout, socketFactory,
+          conf);
+      }
+    }
 
     // Even if the service hasn't started up. It's OK to make this invocation since this will
     // only happen after the AtomicReference address has been populated. Not adding an additional check.
@@ -266,6 +274,27 @@ public class AMReporter extends AbstractService {
     });
   }
 
+  public void queryComplete(QueryIdentifier queryIdentifier) {
+    if (queryIdentifier != null) {
+      synchronized (knownAppMasters) {
+        AMNodeInfo amNodeInfo = knownAppMasters.remove(queryIdentifier);
+
+        // The AM can be used for multiple queries. This is an indication that a single query is complete.
+        // We don't have a good mechanism to know when an app ends. Removing this right now ensures
+        // that a new one gets created for the next query on the same AM.
+        if (amNodeInfo != null) {
+          amNodeInfo.setIsDone(true);
+        }
+        // TODO: not stopping umbilical explicitly as some taskKill requests may get scheduled during queryComplete
+        // which will be using the umbilical. HIVE-16021 should fix this, until then leave umbilical open and wait for
+        // it to be closed after max idle timeout (10s default)
+        if (LOG.isDebugEnabled()) {
+          LOG.debug("Query complete received. Removed {}.", amNodeInfo);
+        }
+      }
+    }
+  }
+
   private class QueueLookupCallable extends CallableWithNdc<Void> {
 
     @Override
@@ -273,38 +302,43 @@ public class AMReporter extends AbstractService {
       while (!isShutdown.get() && !Thread.currentThread().isInterrupted()) {
         try {
           final AMNodeInfo amNodeInfo = pendingHeartbeatQueeu.take();
-          if (amNodeInfo.getTaskCount() == 0 || amNodeInfo.hasAmFailed()) {
+          if (amNodeInfo.hasAmFailed() || amNodeInfo.isDone()) {
             synchronized (knownAppMasters) {
               if (LOG.isDebugEnabled()) {
                 LOG.debug(
-                    "Removing am {} with last associated dag {} from heartbeat with taskCount={}, amFailed={}",
-                    amNodeInfo.amNodeId, amNodeInfo.getCurrentQueryIdentifier(), amNodeInfo.getTaskCount(),
-                    amNodeInfo.hasAmFailed(), amNodeInfo);
+                    "Removing am {} with last associated dag {} from heartbeat with taskCount={}, amFailed={}, isDone={}",
+                    amNodeInfo.amNodeId, amNodeInfo.getQueryIdentifier(), amNodeInfo.getTaskCount(),
+                    amNodeInfo.hasAmFailed(), amNodeInfo.isDone());
               }
-              knownAppMasters.remove(amNodeInfo.amNodeId);
+              knownAppMasters.remove(amNodeInfo.getQueryIdentifier());
             }
-            amNodeInfo.stopUmbilical();
           } else {
-            // Add back to the queue for the next heartbeat, and schedule the actual heartbeat
+            // Always re-schedule the next callable - irrespective of task count,
+            // in case new tasks come in later.
             long next = System.currentTimeMillis() + heartbeatInterval;
             amNodeInfo.setNextHeartbeatTime(next);
             pendingHeartbeatQueeu.add(amNodeInfo);
-            ListenableFuture<Void> future = executor.submit(new AMHeartbeatCallable(amNodeInfo));
-            Futures.addCallback(future, new FutureCallback<Void>() {
-              @Override
-              public void onSuccess(Void result) {
-                // Nothing to do.
-              }
 
-              @Override
-              public void onFailure(Throwable t) {
-                QueryIdentifier currentQueryIdentifier = amNodeInfo.getCurrentQueryIdentifier();
-                amNodeInfo.setAmFailed(true);
-                LOG.warn("Heartbeat failed to AM {}. Killing all other tasks for the query={}",
+            // Send an actual heartbeat only if the task count is > 0
+            if (amNodeInfo.getTaskCount() > 0) {
+              // Add back to the queue for the next heartbeat, and schedule the actual heartbeat
+              ListenableFuture<Void> future = executor.submit(new AMHeartbeatCallable(amNodeInfo));
+              Futures.addCallback(future, new FutureCallback<Void>() {
+                @Override
+                public void onSuccess(Void result) {
+                  // Nothing to do.
+                }
+
+                @Override
+                public void onFailure(Throwable t) {
+                  QueryIdentifier currentQueryIdentifier = amNodeInfo.getQueryIdentifier();
+                  amNodeInfo.setAmFailed(true);
+                  LOG.warn("Heartbeat failed to AM {}. Marking query as failed. query={}",
                     amNodeInfo.amNodeId, currentQueryIdentifier, t);
-                queryFailedHandler.queryFailed(currentQueryIdentifier);
-              }
-            });
+                  queryFailedHandler.queryFailed(currentQueryIdentifier);
+                }
+              });
+            }
           }
         } catch (InterruptedException e) {
           if (isShutdown.get()) {
@@ -359,9 +393,6 @@ public class AMReporter extends AbstractService {
       }
       List<TezTaskAttemptID> tasks = amNodeInfo.getTasksSnapshot();
       if (tasks.isEmpty()) {
-        if (LOG.isDebugEnabled()) {
-          LOG.debug("Skipping node heartbeat to AM: " + amNodeInfo + ", since ref count is 0");
-        }
         return null;
       }
       try {
@@ -373,7 +404,7 @@ public class AMReporter extends AbstractService {
         amNodeInfo.getUmbilical().nodeHeartbeat(new Text(nodeId.getHostname()),
             new Text(daemonId.getUniqueNodeIdInCluster()), nodeId.getPort(), aw);
       } catch (IOException e) {
-        QueryIdentifier currentQueryIdentifier = amNodeInfo.getCurrentQueryIdentifier();
+        QueryIdentifier currentQueryIdentifier = amNodeInfo.getQueryIdentifier();
         amNodeInfo.setAmFailed(true);
         LOG.warn("Failed to communicated with AM at {}. Killing remaining fragments for query {}",
             amNodeInfo.amNodeId, currentQueryIdentifier, e);
@@ -393,7 +424,7 @@ public class AMReporter extends AbstractService {
   private static class AMNodeInfo implements Delayed {
     // Serves as lock for itself.
     private final Set<TezTaskAttemptID> tasks = new HashSet<>();
-    private final String user;
+    private final String umbilicalUser;
     private final Token<JobTokenIdentifier> jobToken;
     private final Configuration conf;
     private final LlapNodeId amNodeId;
@@ -401,21 +432,22 @@ public class AMReporter extends AbstractService {
     private final long timeout;
     private final SocketFactory socketFactory;
     private final AtomicBoolean amFailed = new AtomicBoolean(false);
-    private QueryIdentifier currentQueryIdentifier;
+    private final QueryIdentifier queryIdentifier;
     private LlapTaskUmbilicalProtocol umbilical;
     private long nextHeartbeatTime;
+    private final AtomicBoolean isDone = new AtomicBoolean(false);
 
 
-    public AMNodeInfo(LlapNodeId amNodeId, String user,
+    public AMNodeInfo(LlapNodeId amNodeId, String umbilicalUser,
                       Token<JobTokenIdentifier> jobToken,
                       QueryIdentifier currentQueryIdentifier,
                       RetryPolicy retryPolicy,
                       long timeout,
                       SocketFactory socketFactory,
                       Configuration conf) {
-      this.user = user;
+      this.umbilicalUser = umbilicalUser;
       this.jobToken = jobToken;
-      this.currentQueryIdentifier = currentQueryIdentifier;
+      this.queryIdentifier = currentQueryIdentifier;
       this.retryPolicy = retryPolicy;
       this.timeout = timeout;
       this.socketFactory = socketFactory;
@@ -428,7 +460,7 @@ public class AMReporter extends AbstractService {
         final InetSocketAddress address =
             NetUtils.createSocketAddrForHost(amNodeId.getHostname(), amNodeId.getPort());
         SecurityUtil.setTokenService(this.jobToken, address);
-        UserGroupInformation ugi = UserGroupInformation.createRemoteUser(user);
+        UserGroupInformation ugi = UserGroupInformation.createRemoteUser(umbilicalUser);
         ugi.addToken(jobToken);
         umbilical = ugi.doAs(new PrivilegedExceptionAction<LlapTaskUmbilicalProtocol>() {
           @Override
@@ -476,6 +508,14 @@ public class AMReporter extends AbstractService {
       return amFailed.get();
     }
 
+    void setIsDone(boolean val) {
+      isDone.set(val);
+    }
+
+    boolean isDone() {
+      return isDone.get();
+    }
+
     List<TezTaskAttemptID> getTasksSnapshot() {
       List<TezTaskAttemptID> result = new ArrayList<>();
       synchronized (tasks) {
@@ -484,12 +524,8 @@ public class AMReporter extends AbstractService {
       return result;
     }
 
-    public synchronized QueryIdentifier getCurrentQueryIdentifier() {
-      return currentQueryIdentifier;
-    }
-
-    public synchronized void setCurrentQueryIdentifier(QueryIdentifier queryIdentifier) {
-      this.currentQueryIdentifier = queryIdentifier;
+    public QueryIdentifier getQueryIdentifier() {
+      return queryIdentifier;
     }
 
     synchronized void setNextHeartbeatTime(long nextTime) {
@@ -515,7 +551,7 @@ public class AMReporter extends AbstractService {
 
     @Override
     public String toString() {
-      return "AMInfo: " + amNodeId + ", taskCount=" + getTaskCount();
+      return "AMInfo: " + amNodeId + ", taskCount=" + getTaskCount() + ", queryIdentifier=" + queryIdentifier;
     }
 
     private int getTaskCount() {

@@ -37,7 +37,7 @@ STAGE PLANS:
                   Reduce Sink Vectorization:
                       className: VectorReduceSinkOperator
                       native: false
-                      nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, Not ACID UPDATE or DELETE IS true, No buckets IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                      nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, No buckets IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                       nativeConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false, No TopN IS false, Uniform Hash IS false
       Execution mode: vectorized
       Map Vectorization:
@@ -122,7 +122,7 @@ STAGE PLANS:
                   Reduce Sink Vectorization:
                       className: VectorReduceSinkOperator
                       native: false
-                      nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, Not ACID UPDATE or DELETE IS true, No buckets IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                      nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, No buckets IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                       nativeConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false, No TopN IS false, Uniform Hash IS false
       Execution mode: vectorized
       Map Vectorization:
@@ -206,7 +206,7 @@ STAGE PLANS:
                   Reduce Sink Vectorization:
                       className: VectorReduceSinkOperator
                       native: false
-                      nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, Not ACID UPDATE or DELETE IS true, No buckets IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                      nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, No buckets IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                       nativeConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false, No TopN IS false, Uniform Hash IS false
       Execution mode: vectorized
       Map Vectorization:
@@ -291,7 +291,7 @@ STAGE PLANS:
                   Reduce Sink Vectorization:
                       className: VectorReduceSinkOperator
                       native: false
-                      nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, Not ACID UPDATE or DELETE IS true, No buckets IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                      nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, No buckets IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                       nativeConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false, No TopN IS false, Uniform Hash IS false
       Execution mode: vectorized
       Map Vectorization:
@@ -375,7 +375,7 @@ STAGE PLANS:
                   Reduce Sink Vectorization:
                       className: VectorReduceSinkOperator
                       native: false
-                      nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, Not ACID UPDATE or DELETE IS true, No buckets IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                      nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, No buckets IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                       nativeConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false, No TopN IS false, Uniform Hash IS false
       Execution mode: vectorized
       Map Vectorization:

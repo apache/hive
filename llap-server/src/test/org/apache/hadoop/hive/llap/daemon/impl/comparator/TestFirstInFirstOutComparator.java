@@ -77,6 +77,7 @@ public class TestFirstInFirstOutComparator {
                             .build())
                     .setVertexIndex(vId.getId())
                     .setDagName(dagName)
+                    .setHiveQueryId(dagName)
                     .setVertexName("MockVertex")
                     .setUser("MockUser")
                     .setTokenIdentifier("MockToken_1")

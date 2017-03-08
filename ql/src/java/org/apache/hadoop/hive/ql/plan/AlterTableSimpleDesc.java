@@ -31,6 +31,7 @@ public class AlterTableSimpleDesc extends DDLDesc {
   private String tableName;
   private LinkedHashMap<String, String> partSpec;
   private String compactionType;
+  private boolean isBlocking = false;
 
   AlterTableTypes type;
   private Map<String, String> props;
@@ -61,11 +62,12 @@ public class AlterTableSimpleDesc extends DDLDesc {
    * @param compactionType currently supported values: 'major' and 'minor'
    */
   public AlterTableSimpleDesc(String tableName,
-      LinkedHashMap<String, String> partSpec, String compactionType) {
+      LinkedHashMap<String, String> partSpec, String compactionType, boolean isBlocking) {
     type = AlterTableTypes.COMPACT;
     this.compactionType = compactionType;
     this.tableName = tableName;
     this.partSpec = partSpec;
+    this.isBlocking = isBlocking;
   }
 
   public String getTableName() {
@@ -98,6 +100,13 @@ public class AlterTableSimpleDesc extends DDLDesc {
    */
   public String getCompactionType() {
     return compactionType;
+  }
+
+  /**
+   * if compaction request should block until completion
+   */
+  public boolean isBlocking() {
+    return isBlocking;
   }
 
   public Map<String, String> getProps() {
