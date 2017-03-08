@@ -793,7 +793,7 @@ public class Stmt {
       return 1;
     }
     exec.setSqlSuccess();
-    exec.closeQuery(query, exec.conf.defaultConnection);
+    exec.closeQuery(query, conn);
     return 0; 
   }
   
