@@ -225,6 +225,11 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
     Path emptyScratchDir;
     JobClient jc = null;
 
+    if (driverContext.isShutdown()) {
+      LOG.warn("Task was cancelled");
+      return 5;
+    }
+
     MapWork mWork = work.getMapWork();
     ReduceWork rWork = work.getReduceWork();
 
@@ -398,7 +403,22 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
 
       HiveConfUtil.updateJobCredentialProviders(job);
       // Finally SUBMIT the JOB!
+      if (driverContext.isShutdown()) {
+        LOG.warn("Task was cancelled");
+        return 5;
+      }
+
       rj = jc.submitJob(job);
+
+      if (driverContext.isShutdown()) {
+        LOG.warn("Task was cancelled");
+        if (rj != null) {
+          rj.killJob();
+          rj = null;
+        }
+        return 5;
+      }
+
       this.jobID = rj.getJobID();
       updateStatusInQueryDisplay();
       returnVal = jobExecHelper.progress(rj, jc, ctx);

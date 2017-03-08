@@ -486,12 +486,26 @@ public class ZooKeeperHiveLockManager implements HiveLockManager {
     HiveLockObject obj = zLock.getHiveLockObject();
     String name  = getLastObjectName(parent, obj);
     try {
-      curatorFramework.delete().forPath(zLock.getPath());
+      //catch InterruptedException to make sure locks can be released when the query is cancelled.
+      try {
+        curatorFramework.delete().forPath(zLock.getPath());
+      } catch (InterruptedException ie) {
+        curatorFramework.delete().forPath(zLock.getPath());
+      }
 
       // Delete the parent node if all the children have been deleted
-      List<String> children = curatorFramework.getChildren().forPath(name);
+      List<String> children = null;
+      try {
+        children = curatorFramework.getChildren().forPath(name);
+      } catch (InterruptedException ie) {
+        children = curatorFramework.getChildren().forPath(name);
+      }
       if (children == null || children.isEmpty()) {
-        curatorFramework.delete().forPath(name);
+        try {
+          curatorFramework.delete().forPath(name);
+        } catch (InterruptedException ie) {
+          curatorFramework.delete().forPath(name);
+        }
       }
       Metrics metrics = MetricsFactory.getInstance();
       if (metrics != null) {
