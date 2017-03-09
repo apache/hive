@@ -86,6 +86,36 @@ POSTHOOK: Input: default@test
 #### A masked pattern was here ####
 0001-01-01 00:00:00	9999-12-31 23:59:59.999999999	3652060 23:59:59.999999999
 PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
+SELECT ts FROM test WHERE ts IN (timestamp '0001-01-01 00:00:00.000000000', timestamp '0002-02-02 00:00:00.000000000')
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
+SELECT ts FROM test WHERE ts IN (timestamp '0001-01-01 00:00:00.000000000', timestamp '0002-02-02 00:00:00.000000000')
+POSTHOOK: type: QUERY
+Plan optimized by CBO.
+
+Stage-0
+  Fetch Operator
+    limit:-1
+    Stage-1
+      Map 1 llap
+      File Output Operator [FS_3]
+        Select Operator [SEL_2] (rows=1 width=40)
+          Output:["_col0"]
+          Filter Operator [FIL_4] (rows=1 width=40)
+            predicate:(ts) IN (0001-01-01 00:00:00.0, 0002-02-02 00:00:00.0)
+            TableScan [TS_0] (rows=2 width=40)
+              default@test,test,Tbl:COMPLETE,Col:NONE,Output:["ts"]
+
+PREHOOK: query: SELECT ts FROM test WHERE ts IN (timestamp '0001-01-01 00:00:00.000000000', timestamp '0002-02-02 00:00:00.000000000')
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT ts FROM test WHERE ts IN (timestamp '0001-01-01 00:00:00.000000000', timestamp '0002-02-02 00:00:00.000000000')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test
+#### A masked pattern was here ####
+0001-01-01 00:00:00
+PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT ts FROM test
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
@@ -153,3 +183,33 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test
 #### A masked pattern was here ####
 0001-01-01 00:00:00	9999-12-31 23:59:59.999999999	3652060 23:59:59.999999999
+PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
+SELECT ts FROM test WHERE ts IN (timestamp '0001-01-01 00:00:00.000000000', timestamp '0002-02-02 00:00:00.000000000')
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
+SELECT ts FROM test WHERE ts IN (timestamp '0001-01-01 00:00:00.000000000', timestamp '0002-02-02 00:00:00.000000000')
+POSTHOOK: type: QUERY
+Plan optimized by CBO.
+
+Stage-0
+  Fetch Operator
+    limit:-1
+    Stage-1
+      Map 1 vectorized, llap
+      File Output Operator [FS_7]
+        Select Operator [SEL_6] (rows=1 width=40)
+          Output:["_col0"]
+          Filter Operator [FIL_5] (rows=1 width=40)
+            predicate:(ts) IN (0001-01-01 00:00:00.0, 0002-02-02 00:00:00.0)
+            TableScan [TS_0] (rows=2 width=40)
+              default@test,test,Tbl:COMPLETE,Col:NONE,Output:["ts"]
+
+PREHOOK: query: SELECT ts FROM test WHERE ts IN (timestamp '0001-01-01 00:00:00.000000000', timestamp '0002-02-02 00:00:00.000000000')
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT ts FROM test WHERE ts IN (timestamp '0001-01-01 00:00:00.000000000', timestamp '0002-02-02 00:00:00.000000000')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test
+#### A masked pattern was here ####
+0001-01-01 00:00:00
