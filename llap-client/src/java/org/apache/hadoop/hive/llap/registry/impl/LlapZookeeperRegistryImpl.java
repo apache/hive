@@ -711,7 +711,8 @@ public class LlapZookeeperRegistryImpl implements ServiceRegistry {
 
     @Override
     public int size() {
-      return instancesCache.getCurrentData().size();
+      // not using the path child cache here as there could be more than 1 path per host (worker and slot znodes)
+      return nodeToInstanceCache.size();
     }
   }
 

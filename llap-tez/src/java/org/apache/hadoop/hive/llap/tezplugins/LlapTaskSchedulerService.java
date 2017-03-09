@@ -47,6 +47,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -181,6 +182,7 @@ public class LlapTaskSchedulerService extends TaskScheduler {
   private final ScheduledExecutorService scheduledLoggingExecutor;
   private final SchedulerTimeoutMonitor timeoutMonitor;
   private ScheduledFuture<?> timeoutFuture;
+  private final AtomicReference<ScheduledFuture<?>> timeoutFutureRef = new AtomicReference<>(null);
 
   private final AtomicInteger assignedTaskCounter = new AtomicInteger(0);
 
@@ -389,6 +391,7 @@ public class LlapTaskSchedulerService extends TaskScheduler {
       if ((timeoutFuture == null || (timeoutFuture != null && timeoutFuture.isDone()))
           && activeInstances.size() == 0) {
         timeoutFuture = timeoutExecutor.schedule(timeoutMonitor, timeout, TimeUnit.MILLISECONDS);
+        timeoutFutureRef.set(timeoutFuture);
         LOG.info("Scheduled timeout monitor task to run after {} ms", timeout);
       } else {
         LOG.info("Timeout monitor task not started. Timeout future state: {}, #instances: {}",
@@ -403,6 +406,7 @@ public class LlapTaskSchedulerService extends TaskScheduler {
     timeoutLock.lock();
     try {
       if (timeoutFuture != null && activeInstances.size() != 0 && timeoutFuture.cancel(false)) {
+        timeoutFutureRef.set(null);
         LOG.info("Stopped timeout monitor task");
       } else {
         LOG.info("Timeout monitor task not stopped. Timeout future state: {}, #instances: {}",
@@ -916,7 +920,7 @@ public class LlapTaskSchedulerService extends TaskScheduler {
 
   private void addNode(NodeInfo node, ServiceInstance serviceInstance) {
     // we have just added a new node. Signal timeout monitor to reset timer
-    if (activeInstances.size() == 1) {
+    if (activeInstances.size() != 0 && timeoutFutureRef.get() != null) {
       LOG.info("New node added. Signalling scheduler timeout monitor thread to stop timer.");
       stopTimeoutMonitor();
     }
