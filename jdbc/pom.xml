@@ -127,7 +127,7 @@
    <profile>
       <id>dist</id>
       <properties>
-        <packaging.minimizeJar>true</packaging.minimizeJar>
+        <packaging.minimizeJar>false</packaging.minimizeJar>
       </properties>
     </profile>
   </profiles>
