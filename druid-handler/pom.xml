@@ -156,7 +156,13 @@
       <groupId>io.druid.extensions</groupId>
       <artifactId>mysql-metadata-storage</artifactId>
       <version>${druid.version}</version>
-    </dependency>
+       <exclusions>
+        <exclusion>
+          <groupId>mysql</groupId>
+          <artifactId>mysql-connector-java</artifactId>
+        </exclusion>
+      </exclusions>
+   </dependency>
     <dependency>
       <groupId>io.druid.extensions</groupId>
       <artifactId>postgresql-metadata-storage</artifactId>
