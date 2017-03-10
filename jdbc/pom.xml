@@ -294,6 +294,9 @@
                 <relocation>
                   <pattern>org.apache.hadoop</pattern>
                   <shadedPattern>org.apache.hive.org.apache.hadoop</shadedPattern>
+                  <excludes>
+                    <exclude>org.apache.hadoop.security.*</exclude>
+                  </excludes>
                 </relocation>
                 <relocation>
                   <pattern>org.apache.zookeeper</pattern>
