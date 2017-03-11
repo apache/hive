@@ -223,9 +223,19 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
               needToRename = false;
             }
           }
-          if (needToRename && !fs.rename(outPaths[idx], finalPaths[idx])) {
-            throw new HiveException("Unable to rename output from: " +
+          if (needToRename && outPaths[idx] != null && !fs.rename(outPaths[idx], finalPaths[idx])) {
+            FileStatus fileStatus = FileUtils.getFileStatusOrNull(fs, finalPaths[idx]);
+            if (fileStatus != null) {
+              LOG.warn("Target path " + finalPaths[idx] + " with a size " + fileStatus.getLen() + " exists. Trying to delete it.");
+              if (!fs.delete(finalPaths[idx], true)) {
+                throw new HiveException("Unable to delete existing target output: " + finalPaths[idx]);
+              }
+            }
+
+            if (!fs.rename(outPaths[idx], finalPaths[idx])) {
+              throw new HiveException("Unable to rename output from: " +
                 outPaths[idx] + " to: " + finalPaths[idx]);
+            }
           }
           updateProgress();
         } catch (IOException e) {
