@@ -203,8 +203,8 @@ const string PRECISION = "precision"
 const string SCALE = "scale"
 
 union TTypeQualifierValue {
-  1: optional i32 i32Value
-  2: optional string stringValue
+  1: i32 i32Value
+  2: string stringValue
 }
 
 // Type qualifiers for primitive type.
@@ -1016,6 +1016,21 @@ struct TGetCrossReferenceResp {
   2: optional TOperationHandle operationHandle
 }
 
+enum TJobExecutionStatus {
+    IN_PROGRESS,
+    COMPLETE,
+    NOT_AVAILABLE
+}
+
+struct TProgressUpdateResp {
+  1: required list<string> headerNames
+  2: required list<list<string>> rows
+  3: required double progressedPercentage
+  4: required TJobExecutionStatus status
+  5: required string footerSummary
+  6: required i64 startTime
+}
+
 // GetOperationStatus()
 //
 // Get the status of an operation running on the server.
@@ -1207,21 +1222,6 @@ struct TRenewDelegationTokenReq {
 struct TRenewDelegationTokenResp {
   // status of the request
   1: required TStatus status
-}
-
-enum TJobExecutionStatus {
-    IN_PROGRESS,
-    COMPLETE,
-    NOT_AVAILABLE
-}
-
-struct TProgressUpdateResp {
-  1: required list<string> headerNames
-  2: required list<list<string>> rows
-  3: required double progressedPercentage
-  4: required TJobExecutionStatus status
-  5: required string footerSummary
-  6: required i64 startTime
 }
 
 service TCLIService {
