@@ -463,8 +463,7 @@ public class TestInputOutputFormat {
   public void testSplitStrategySelection() throws Exception {
 
     conf.set("mapreduce.input.fileinputformat.split.maxsize", "500");
-    conf.setLong(HiveConf.ConfVars.HIVE_ORC_CACHE_STRIPE_DETAILS_SIZE.varname,
-        100);
+    conf.set(HiveConf.ConfVars.HIVE_ORC_CACHE_STRIPE_DETAILS_MEMORY_SIZE.varname, "10Mb");
     final int[] counts = { 1, 10, 100, 256 };
     final int[] sizes = { 100, 1000 };
     final int[] numSplits = { 1, 9, 10, 11, 99, 111 };
@@ -543,7 +542,7 @@ public class TestInputOutputFormat {
     }
 
     k = 0;
-    conf.set("hive.orc.cache.stripe.details.size", "-1");
+    conf.set(ConfVars.HIVE_ORC_CACHE_STRIPE_DETAILS_MEMORY_SIZE.varname, "0");
     for (int c : counts) {
       for (int s : sizes) {
         final FileSystem fs = generateMockFiles(c, s);
@@ -2707,7 +2706,7 @@ public class TestInputOutputFormat {
     MockFileSystem fs = new MockFileSystem(conf);
     // creates the static cache
     MockPath mockPath = new MockPath(fs, "mock:///mocktbl");
-    conf.set("hive.orc.cache.stripe.details.size", "-1");
+    conf.set(ConfVars.HIVE_ORC_CACHE_STRIPE_DETAILS_MEMORY_SIZE.varname, "0");
     conf.set("mapred.input.dir", mockPath.toString());
     conf.set("fs.defaultFS", "mock:///");
     conf.set("fs.mock.impl", MockFileSystem.class.getName());
@@ -2774,7 +2773,7 @@ public class TestInputOutputFormat {
     assertEquals(1, readOpsDelta);
 
     // enable cache and use default strategy
-    conf.set("hive.orc.cache.stripe.details.size", "100");
+    conf.set(ConfVars.HIVE_ORC_CACHE_STRIPE_DETAILS_MEMORY_SIZE.varname, "10Mb");
     conf.set(HiveConf.ConfVars.HIVE_ORC_SPLIT_STRATEGY.varname, "HYBRID");
     for (FileSystem.Statistics statistics : FileSystem.getAllStatistics()) {
       if (statistics.getScheme().equalsIgnoreCase("mock")) {
