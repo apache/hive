@@ -476,7 +476,29 @@ public class CliConfigs {
         setInitScript("blobstore_test_init.q");
         setCleanupScript("blobstore_test_cleanup.q");
 
-        setHiveConfDir("itests/hive-blobstore/src/test/resources");
+        setHiveConfDir("itests/hive-blobstore/src/test/resources/core-blobstore");
+        setClusterType(MiniClusterType.none);
+      } catch (Exception e) {
+        throw new RuntimeException("can't construct cliconfig", e);
+      }
+    }
+  }
+
+  public static class HdfsBlobstoreCliConfig extends AbstractCliConfig {
+    public HdfsBlobstoreCliConfig() {
+      super(HdfsBlobstoreCliDriver.class);
+      try {
+        setQueryDir("ql/src/test/queries/clientpositive");
+
+        includesFrom(testConfigProps, "hdfs.blobstore.query.files");
+
+        setResultsDir("ql/src/test/results/clientpositive");
+        setLogDir("itests/hive-blobstore/target/qfile-results/clientpositive");
+
+        setInitScript("q_test_init.sql");
+        setCleanupScript("q_test_cleanup.sql");
+
+        setHiveConfDir("itests/hive-blobstore/src/test/resources/hdfs-blobstore");
         setClusterType(MiniClusterType.none);
       } catch (Exception e) {
         throw new RuntimeException("can't construct cliconfig", e);
@@ -496,7 +518,7 @@ public class CliConfigs {
         setInitScript("blobstore_test_init.q");
         setCleanupScript("blobstore_test_cleanup.q");
 
-        setHiveConfDir("itests/hive-blobstore/src/test/resources");
+        setHiveConfDir("itests/hive-blobstore/src/test/resources/core-blobstore");
         setClusterType(MiniClusterType.none);
       } catch (Exception e) {
         throw new RuntimeException("can't construct cliconfig", e);

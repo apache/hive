@@ -39,7 +39,7 @@ import org.junit.BeforeClass;
 public abstract class AbstractCoreBlobstoreCliDriver extends CliAdapter {
 
   protected static QTestUtil qt;
-  private static final String HCONF_TEST_BLOBSTORE_PATH = "test.blobstore.path";
+  protected static final String HCONF_TEST_BLOBSTORE_PATH = "test.blobstore.path";
   private static final String HCONF_TEST_BLOBSTORE_PATH_UNIQUE = HCONF_TEST_BLOBSTORE_PATH + ".unique";
   private static String testBlobstorePathUnique;
 
@@ -174,6 +174,11 @@ public abstract class AbstractCoreBlobstoreCliDriver extends CliAdapter {
         + "-" + String.format("%03d", (int)(Math.random() * 999));
     testBlobstorePathUnique = testBlobstorePath + uid;
 
+    maskAdditionalPatterns();
     qt.addPatternWithMaskComment(testBlobstorePathUnique, String.format("### %s ###", HCONF_TEST_BLOBSTORE_PATH));
+  }
+
+  protected void maskAdditionalPatterns() {
+    // Implement me
   }
 }

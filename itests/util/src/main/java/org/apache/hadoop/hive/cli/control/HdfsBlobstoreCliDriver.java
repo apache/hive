@@ -17,18 +17,27 @@
  */
 package org.apache.hadoop.hive.cli.control;
 
-public class CoreBlobstoreNegativeCliDriver extends AbstractCoreBlobstoreCliDriver {
-  public CoreBlobstoreNegativeCliDriver(AbstractCliConfig testCliConfig) {
+import org.apache.hadoop.hive.conf.HiveConf;
+
+import org.junit.Before;
+import org.junit.BeforeClass;
+
+
+public class HdfsBlobstoreCliDriver extends AbstractCoreBlobstoreCliDriver {
+
+  public HdfsBlobstoreCliDriver(AbstractCliConfig testCliConfig) {
     super(testCliConfig);
   }
 
   @Override
-  public void runTest(String tname, String fname, String fpath) throws Exception {
-    super.runTestHelper(tname, fname, fpath, false);
+  @BeforeClass
+  public void beforeClass() {
+    super.beforeClass();
+    qt.getConf().set(HiveConf.ConfVars.METASTOREWAREHOUSE.varname, qt.getConf().get(HCONF_TEST_BLOBSTORE_PATH));
   }
 
   @Override
-  protected void maskAdditionalPatterns() {
-    qt.addPatternWithMaskComment("(pblob|s3.?|swift|wasb.?).*hive-staging.*", "### BLOBSTORE_STAGING_PATH ###");
+  public void runTest(String tname, String fname, String fpath) throws Exception {
+    super.runTestHelper(tname, fname, fpath, true);
   }
 }

@@ -65,6 +65,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import com.google.common.base.Preconditions;
+import com.google.common.collect.Lists;
 import junit.framework.TestSuite;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
@@ -120,6 +121,7 @@ import org.apache.zookeeper.ZooKeeper;
 
 import com.google.common.collect.ImmutableList;
 import org.junit.Assert;
+import parquet.Strings;
 
 /**
  * QTestUtil.
@@ -141,6 +143,7 @@ public class QTestUtil {
 
   private static final String TEST_TMP_DIR_PROPERTY = "test.tmp.dir"; // typically target/tmp
   private static final String BUILD_DIR_PROPERTY = "build.dir"; // typically target
+  private static final String ADDITIONAL_PLAN_MASKS = "additional.plan.masks";
 
   private String testWarehouse;
   private final String testFiles;
@@ -172,6 +175,7 @@ public class QTestUtil {
   private QTestSetup setup = null;
   private SparkSession sparkSession = null;
   private boolean isSessionStateStarted = false;
+  private Pattern[] planMask;
   private static final String javaVersion = getJavaVersion();
 
   private final String initScript;
@@ -484,7 +488,7 @@ public class QTestUtil {
     qSortNHashQuerySet = new HashSet<String>();
     qJavaVersionSpecificOutput = new HashSet<String>();
     this.clusterType = clusterType;
-
+    this.planMask = buildPlanMask(Strings.isNullOrEmpty(this.conf.get(ADDITIONAL_PLAN_MASKS)) ? Lists.<String>newArrayList() : Lists.newArrayList(this.conf.get(ADDITIONAL_PLAN_MASKS).split(",")));
     HadoopShims shims = ShimLoader.getHadoopShims();
 
     setupFileSystem(shims);
@@ -517,6 +521,46 @@ public class QTestUtil {
     setup = new QTestSetup();
     setup.preTest(conf);
     init();
+  }
+
+  private Pattern[] buildPlanMask(List<String> additionalPlanMasks) {
+    List<String> planMasks = Lists.newArrayList(
+      ".*file:.*",
+      ".*pfile:.*",
+      ".*hdfs:.*",
+      ".*/tmp/.*",
+      ".*invalidscheme:.*",
+      ".*lastUpdateTime.*",
+      ".*lastAccessTime.*",
+      ".*lastModifiedTime.*",
+      ".*[Oo]wner.*",
+      ".*CreateTime.*",
+      ".*LastAccessTime.*",
+      ".*Location.*",
+      ".*LOCATION '.*",
+      ".*transient_lastDdlTime.*",
+      ".*last_modified_.*",
+      ".*at org.*",
+      ".*at sun.*",
+      ".*at java.*",
+      ".*at junit.*",
+      ".*Caused by:.*",
+      ".*LOCK_QUERYID:.*",
+      ".*LOCK_TIME:.*",
+      ".*grantTime.*",
+      ".*[.][.][.] [0-9]* more.*",
+      ".*job_[0-9_]*.*",
+      ".*job_local[0-9_]*.*",
+      ".*USING 'java -cp.*",
+      "^Deleted.*",
+      ".*DagName:.*",
+      ".*Input:.*/data/files/.*",
+      ".*Output:.*/data/files/.*",
+      ".*total number of created files now is.*",
+      ".*.hive-staging.*",
+      "org\\.apache\\.hadoop\\.hive\\.metastore\\.model\\.MConstraint@([0-9]|[a-z])*");
+    planMasks.addAll(additionalPlanMasks);
+    return toPattern(planMasks.toArray(new String[]{}));
   }
 
   private void setupFileSystem(HadoopShims shims) throws IOException {
@@ -1674,52 +1718,13 @@ public class QTestUtil {
     out.close();
   }
 
-  private final Pattern[] planMask = toPattern(new String[] {
-      ".*file:.*",
-      ".*pfile:.*",
-      ".*hdfs:.*",
-      ".*/tmp/.*",
-      ".*invalidscheme:.*",
-      ".*lastUpdateTime.*",
-      ".*lastAccessTime.*",
-      ".*lastModifiedTime.*",
-      ".*[Oo]wner.*",
-      ".*CreateTime.*",
-      ".*LastAccessTime.*",
-      ".*Location.*",
-      ".*LOCATION '.*",
-      ".*transient_lastDdlTime.*",
-      ".*last_modified_.*",
-      ".*at org.*",
-      ".*at sun.*",
-      ".*at java.*",
-      ".*at junit.*",
-      ".*Caused by:.*",
-      ".*LOCK_QUERYID:.*",
-      ".*LOCK_TIME:.*",
-      ".*grantTime.*",
-      ".*[.][.][.] [0-9]* more.*",
-      ".*job_[0-9_]*.*",
-      ".*job_local[0-9_]*.*",
-      ".*USING 'java -cp.*",
-      "^Deleted.*",
-      ".*DagName:.*",
-      ".*Input:.*/data/files/.*",
-      ".*Output:.*/data/files/.*",
-      ".*total number of created files now is.*",
-      ".*.hive-staging.*",
-      "org\\.apache\\.hadoop\\.hive\\.metastore\\.model\\.MConstraint@([0-9]|[a-z])*"
-  });
-
   private final Pattern[] partialReservedPlanMask = toPattern(new String[] {
       "data/warehouse/(.*?/)+\\.hive-staging"  // the directory might be db/table/partition
       //TODO: add more expected test result here
   });
 
   /* This list may be modified by specific cli drivers to mask strings that change on every test */
-  private List<Pair<Pattern, String>> patternsWithMaskComments = new ArrayList<Pair<Pattern, String>>() {{
-    add(toPatternPair("(pblob|s3.?|swift|wasb.?).*hive-staging.*","### BLOBSTORE_STAGING_PATH ###"));
-  }};
+  private List<Pair<Pattern, String>> patternsWithMaskComments = new ArrayList<Pair<Pattern, String>>();
 
   private Pair<Pattern, String> toPatternPair(String patternStr, String maskComment) {
     return ImmutablePair.of(Pattern.compile(patternStr), maskComment);

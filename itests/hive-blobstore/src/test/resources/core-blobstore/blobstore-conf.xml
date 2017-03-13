@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<?xml-stylesheet type="text/xsl" href="configuration.xsl"?>
+<!--
+# Copy this file to blobstore-conf.xml
+# update the properties + credentials according to the blobstore being tested
+
+# The following is an example template file for s3a
+-->
+<configuration>
+  <property>
+    <name>test.blobstore.path</name>
+    <value>s3a://cloudera-dev-hive-on-s3/core-blobstore-path/</value>
+  </property>
+</configuration>
