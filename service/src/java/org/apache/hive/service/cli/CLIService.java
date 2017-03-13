@@ -442,8 +442,8 @@ public class CLIService extends CompositeService implements ICLIService {
      * we block for a duration determined by a step function, before we return
      * However, if the background operation is complete, we return immediately.
      */
+    HiveConf conf = operation.getParentSession().getHiveConf();
     if (operation.shouldRunAsync()) {
-      HiveConf conf = operation.getParentSession().getHiveConf();
       long maxTimeout = HiveConf.getTimeVar(conf,
           HiveConf.ConfVars.HIVE_SERVER2_LONG_POLLING_TIMEOUT, TimeUnit.MILLISECONDS);
 
@@ -472,7 +472,7 @@ public class CLIService extends CompositeService implements ICLIService {
     }
     OperationStatus opStatus = operation.getStatus();
     LOG.debug(opHandle + ": getOperationStatus()");
-    opStatus.setJobProgressUpdate(progressUpdateLog(getProgressUpdate, operation));
+    opStatus.setJobProgressUpdate(progressUpdateLog(getProgressUpdate, operation, conf));
     return opStatus;
   }
 
@@ -482,8 +482,8 @@ public class CLIService extends CompositeService implements ICLIService {
   }
 
   private static final long PROGRESS_MAX_WAIT_NS = 30 * 1000000000l;
-  private JobProgressUpdate progressUpdateLog(boolean isProgressLogRequested, Operation operation) {
-    if (!isProgressLogRequested || !ServiceUtils.canProvideProgressLog(hiveConf)
+  private JobProgressUpdate progressUpdateLog(boolean isProgressLogRequested, Operation operation, HiveConf conf) {
+    if (!isProgressLogRequested || !ServiceUtils.canProvideProgressLog(conf)
         || !OperationType.EXECUTE_STATEMENT.equals(operation.getType())) {
       return new JobProgressUpdate(ProgressMonitor.NULL);
     }
