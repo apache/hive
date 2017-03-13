@@ -47,6 +47,8 @@ public class VectorHashKeyWrapper extends KeyWrapper {
   private static final Timestamp[] EMPTY_TIMESTAMP_ARRAY = new Timestamp[0];
   private static final HiveIntervalDayTime[] EMPTY_INTERVAL_DAY_TIME_ARRAY = new HiveIntervalDayTime[0];
 
+  public static final VectorHashKeyWrapper EMPTY_KEY_WRAPPER = new EmptyVectorHashKeyWrapper();
+
   private long[] longValues;
   private double[] doubleValues;
 
@@ -63,7 +65,7 @@ public class VectorHashKeyWrapper extends KeyWrapper {
   private boolean[] isNull;
   private int hashcode;
 
-  public VectorHashKeyWrapper(int longValuesCount, int doubleValuesCount,
+  private VectorHashKeyWrapper(int longValuesCount, int doubleValuesCount,
           int byteValuesCount, int decimalValuesCount, int timestampValuesCount,
           int intervalDayTimeValuesCount) {
     longValues = longValuesCount > 0 ? new long[longValuesCount] : EMPTY_LONG_ARRAY;
@@ -95,6 +97,17 @@ public class VectorHashKeyWrapper extends KeyWrapper {
   }
 
   private VectorHashKeyWrapper() {
+  }
+
+  public static VectorHashKeyWrapper allocate(int longValuesCount, int doubleValuesCount,
+      int byteValuesCount, int decimalValuesCount, int timestampValuesCount,
+      int intervalDayTimeValuesCount) {
+    if ((longValuesCount + doubleValuesCount + byteValuesCount + decimalValuesCount
+        + timestampValuesCount + intervalDayTimeValuesCount) == 0) {
+      return EMPTY_KEY_WRAPPER;
+    }
+    return new VectorHashKeyWrapper(longValuesCount, doubleValuesCount, byteValuesCount,
+        decimalValuesCount, timestampValuesCount, intervalDayTimeValuesCount);
   }
 
   @Override
@@ -414,6 +427,28 @@ public class VectorHashKeyWrapper extends KeyWrapper {
 
   public HiveIntervalDayTime getIntervalDayTime(int i) {
     return intervalDayTimeValues[i];
+  }
+
+  public static final class EmptyVectorHashKeyWrapper extends VectorHashKeyWrapper {
+    private EmptyVectorHashKeyWrapper() {
+      super(0, 0, 0, 0, 0, 0);
+      // no need to override assigns - all assign ops will fail due to 0 size
+    }
+
+    @Override
+    protected Object clone() {
+      // immutable
+      return this;
+    }
+
+    @Override
+    public boolean equals(Object that) {
+      if (that == this) {
+        // should only be one object
+        return true;
+      }
+      return super.equals(that);
+    }
   }
 }
 

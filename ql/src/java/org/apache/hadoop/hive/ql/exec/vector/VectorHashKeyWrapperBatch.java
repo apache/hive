@@ -744,7 +744,7 @@ public class VectorHashKeyWrapperBatch extends VectorColumnSetInfo {
   }
 
   public VectorHashKeyWrapper allocateKeyWrapper() {
-    return new VectorHashKeyWrapper(longIndices.length, doubleIndices.length,
+    return VectorHashKeyWrapper.allocate(longIndices.length, doubleIndices.length,
         stringIndices.length, decimalIndices.length, timestampIndices.length,
         intervalDayTimeIndices.length);
   }
