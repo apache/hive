@@ -124,7 +124,7 @@ create table skew_mm(k1 int, k2 int, k4 int) skewed by (k1, k4) on ((0,0),(1,1),
 insert into table skew_mm 
 select key, key, key from intermediate;
 
-select * from skew_mm order by k2;
+select * from skew_mm order by k2, k1, k4;
 drop table skew_mm;
 
 
@@ -137,7 +137,7 @@ union all
 select key +1 as i, key +2 as j, key +3 as k, key +4 as l from intermediate;
 
 
-select * from skew_dp_union_mm order by k2;
+select * from skew_dp_union_mm order by k2, k1, k4;
 drop table skew_dp_union_mm;
 
 
@@ -177,12 +177,12 @@ drop table merge2_mm;
 create table merge1_mm (id int) partitioned by (key int) stored as orc tblproperties("transactional"="true", "transactional_properties"="insert_only");
 
 insert into table merge1_mm partition (key) select key, key from intermediate;
-select * from merge1_mm;
+select * from merge1_mm order by id, key;
 
 set tez.grouping.split-count=1;
 insert into table merge1_mm partition (key) select key, key from intermediate;
 set tez.grouping.split-count=0;
-select * from merge1_mm;
+select * from merge1_mm order by id, key;
 
 drop table merge1_mm;
 

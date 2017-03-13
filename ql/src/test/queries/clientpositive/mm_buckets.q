@@ -24,11 +24,11 @@ create table bucket0_mm(key int, id int)
 clustered by (key) into 2 buckets
 tblproperties("transactional"="true", "transactional_properties"="insert_only");
 insert into table bucket0_mm select key, key from intermediate;
-select * from bucket0_mm;
+select * from bucket0_mm order by key, id;
 select * from bucket0_mm tablesample (bucket 1 out of 2) s;
 select * from bucket0_mm tablesample (bucket 2 out of 2) s;
 insert into table bucket0_mm select key, key from intermediate;
-select * from bucket0_mm;
+select * from bucket0_mm order by key, id;
 select * from bucket0_mm tablesample (bucket 1 out of 2) s;
 select * from bucket0_mm tablesample (bucket 2 out of 2) s;
 drop table bucket0_mm;
@@ -42,9 +42,9 @@ insert into table bucket1_mm partition (key2)
 select key + 1, key, key - 1 from intermediate
 union all 
 select key - 1, key, key + 1 from intermediate;
-select * from bucket1_mm;
-select * from bucket1_mm tablesample (bucket 1 out of 2) s;
-select * from bucket1_mm tablesample (bucket 2 out of 2) s;
+select * from bucket1_mm order by key, id;
+select * from bucket1_mm tablesample (bucket 1 out of 2) s  order by key, id;
+select * from bucket1_mm tablesample (bucket 2 out of 2) s  order by key, id;
 drop table bucket1_mm;
 
 
@@ -54,13 +54,13 @@ create table bucket2_mm(key int, id int)
 clustered by (key) into 10 buckets
 tblproperties("transactional"="true", "transactional_properties"="insert_only");
 insert into table bucket2_mm select key, key from intermediate where key == 0;
-select * from bucket2_mm;
-select * from bucket2_mm tablesample (bucket 1 out of 10) s;
-select * from bucket2_mm tablesample (bucket 4 out of 10) s;
+select * from bucket2_mm order by key, id;
+select * from bucket2_mm tablesample (bucket 1 out of 10) s order by key, id;
+select * from bucket2_mm tablesample (bucket 4 out of 10) s order by key, id;
 insert into table bucket2_mm select key, key from intermediate where key in (0, 103);
 select * from bucket2_mm;
-select * from bucket2_mm tablesample (bucket 1 out of 10) s;
-select * from bucket2_mm tablesample (bucket 4 out of 10) s;
+select * from bucket2_mm tablesample (bucket 1 out of 10) s order by key, id;
+select * from bucket2_mm tablesample (bucket 4 out of 10) s order by key, id;
 drop table bucket2_mm;
 
 drop table intermediate;
