@@ -17,34 +17,48 @@
  */
 package org.apache.hadoop.hive.cli.control;
 
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hive.beeline.util.QFileClient;
+import org.apache.hadoop.hive.ql.hooks.PreExecutePrinter;
+import org.apache.hive.beeline.qfile.QFile;
+import org.apache.hive.beeline.qfile.QFile.QFileBuilder;
+import org.apache.hive.beeline.qfile.QFileBeeLineClient;
+import org.apache.hive.beeline.qfile.QFileBeeLineClient.QFileClientBuilder;
 import org.apache.hive.jdbc.miniHS2.MiniHS2;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.HashMap;
 
 public class CoreBeeLineDriver extends CliAdapter {
-  private final String hiveRootDirectory = AbstractCliConfig.HIVE_ROOT;
-  private final String queryDirectory;
-  private final String logDirectory;
-  private final String resultsDirectory;
-  private final String initScript;
-  private final String cleanupScript;
+  private final File hiveRootDirectory = new File(AbstractCliConfig.HIVE_ROOT);
+  private final File queryDirectory;
+  private final File logDirectory;
+  private final File resultsDirectory;
+  private final File initScript;
+  private final File cleanupScript;
+  private final File testDataDirectory;
+  private final File testScriptDirectory;
   private boolean overwrite = false;
   private MiniHS2 miniHS2;
+  private QFileClientBuilder clientBuilder;
+  private QFileBuilder fileBuilder;
+
 //  private static QTestUtil.QTestSetup miniZKCluster = null;
 
   public CoreBeeLineDriver(AbstractCliConfig testCliConfig) {
     super(testCliConfig);
-    queryDirectory = testCliConfig.getQueryDirectory();
-    logDirectory = testCliConfig.getLogDir();
-    resultsDirectory = testCliConfig.getResultsDir();
-    initScript = testCliConfig.getInitScript();
-    cleanupScript = testCliConfig.getCleanupScript();
+    queryDirectory = new File(testCliConfig.getQueryDirectory());
+    logDirectory = new File(testCliConfig.getLogDir());
+    resultsDirectory = new File(testCliConfig.getResultsDir());
+    testDataDirectory = new File(hiveRootDirectory, "data" + File.separator + "files");
+    testScriptDirectory = new File(hiveRootDirectory, "data" + File.separator + "scripts");
+    initScript = new File(testScriptDirectory, testCliConfig.getInitScript());
+    cleanupScript = new File(testScriptDirectory, testCliConfig.getCleanupScript());
   }
 
   @Override
@@ -53,12 +67,6 @@ public class CoreBeeLineDriver extends CliAdapter {
     String testOutputOverwrite = System.getProperty("test.output.overwrite");
     if (testOutputOverwrite != null && "true".equalsIgnoreCase(testOutputOverwrite)) {
       overwrite = true;
-    }
-
-    String disableserver = System.getProperty("test.service.disable.server");
-    if (null != disableserver && disableserver.equalsIgnoreCase("true")) {
-      System.err.println("test.service.disable.server=true Skipping HiveServer2 initialization!");
-      return;
     }
 
     HiveConf hiveConf = new HiveConf();
@@ -76,57 +84,77 @@ public class CoreBeeLineDriver extends CliAdapter {
     miniHS2 = new MiniHS2.Builder().withConf(hiveConf).cleanupLocalDirOnStartup(true).build();
 
     miniHS2.start(new HashMap<String, String>());
+
+    clientBuilder = new QFileClientBuilder()
+        .setJdbcDriver("org.apache.hive.jdbc.HiveDriver")
+        .setJdbcUrl(miniHS2.getJdbcURL())
+        .setUsername("user")
+        .setPassword("password");
+
+    fileBuilder = new QFileBuilder()
+        .setHiveRootDirectory(hiveRootDirectory)
+        .setLogDirectory(logDirectory)
+        .setQueryDirectory(queryDirectory)
+        .setResultsDirectory(resultsDirectory)
+        .setScratchDirectoryString(hiveConf.getVar(HiveConf.ConfVars.SCRATCHDIR))
+        .setWarehouseDirectoryString(hiveConf.getVar(HiveConf.ConfVars.METASTOREWAREHOUSE));
+
+    runInfraScript(initScript, new File(logDirectory, "init.beeline"),
+        new File(logDirectory, "init.raw"));
   }
 
+  protected void runInfraScript(File script, File beeLineOutput, File log)
+      throws IOException {
+    try (QFileBeeLineClient beeLineClient = clientBuilder.getClient(beeLineOutput)) {
+      beeLineClient.execute(
+          new String[]{
+            "set hive.exec.pre.hooks=" + PreExecutePrinter.class.getName() + ";",
+            "set test.data.dir=" + testDataDirectory + ";",
+            "set test.script.dir=" + testScriptDirectory + ";",
+            "!run " + script,
+          },
+          log);
+    }
+  }
 
   @Override
   @AfterClass
   public void shutdown() throws Exception {
+    runInfraScript(cleanupScript, new File(logDirectory, "cleanup.beeline"),
+        new File(logDirectory, "cleanup.raw"));
     if (miniHS2 != null) {
       miniHS2.stop();
     }
-//    if (miniZKCluster != null) {
-//      miniZKCluster.tearDown();
-//    }
+    //    if (miniZKCluster != null) {
+    //      miniZKCluster.tearDown();
+    //    }
   }
 
-  public void runTest(String qFileName) throws Exception {
-    QFileClient qClient = new QFileClient(miniHS2.getHiveConf(), hiveRootDirectory,
-        queryDirectory, logDirectory, resultsDirectory, initScript, cleanupScript)
-    .setQFileName(qFileName)
-    .setUsername("user")
-    .setPassword("password")
-    .setJdbcUrl(miniHS2.getJdbcURL())
-    .setJdbcDriver("org.apache.hive.jdbc.HiveDriver")
-    .setTestDataDirectory(hiveRootDirectory + "/data/files")
-    .setTestScriptDirectory(hiveRootDirectory + "/data/scripts");
+  public void runTest(QFile qFile) throws Exception {
+    try (QFileBeeLineClient beeLineClient = clientBuilder.getClient(qFile.getLogFile())) {
+      long startTime = System.currentTimeMillis();
+      System.err.println(">>> STARTED " + qFile.getName());
+      assertTrue("QFile execution failed, see logs for details", beeLineClient.execute(qFile));
 
-    long startTime = System.currentTimeMillis();
-    System.err.println(">>> STARTED " + qFileName
-        + " (Thread " + Thread.currentThread().getName() + ")");
-    try {
-      qClient.run();
-    } catch (Exception e) {
-      System.err.println(">>> FAILED " + qFileName + " with exception:");
-      e.printStackTrace();
-      throw e;
-    }
-    long elapsedTime = (System.currentTimeMillis() - startTime)/1000;
-    String time = "(" + elapsedTime + "s)";
+      long endTime = System.currentTimeMillis();
+      System.err.println(">>> EXECUTED " + qFile.getName() + ":" + (endTime - startTime) / 1000
+          + "s");
 
-    if (qClient.compareResults()) {
-      System.err.println(">>> PASSED " + qFileName + " " + time);
-    } else {
-      if (qClient.hasErrors()) {
-        System.err.println(">>> FAILED " + qFileName + " (ERROR) " + time);
-        fail();
-      }
-      if (overwrite) {
-        System.err.println(">>> PASSED " + qFileName + " (OVERWRITE) " + time);
-        qClient.overwriteResults();
+      qFile.filterOutput();
+      long filterEndTime = System.currentTimeMillis();
+      System.err.println(">>> FILTERED " + qFile.getName() + ":" + (filterEndTime - endTime) / 1000
+          + "s");
+
+      if (!overwrite) {
+        if (qFile.compareResults()) {
+          System.err.println(">>> PASSED " + qFile.getName());
+        } else {
+          System.err.println(">>> FAILED " + qFile.getName());
+          fail("Failed diff");
+        }
       } else {
-        System.err.println(">>> FAILED " + qFileName + " (DIFF) " + time);
-        fail();
+        qFile.overwriteResults();
+        System.err.println(">>> PASSED " + qFile.getName());
       }
     }
   }
@@ -141,6 +169,7 @@ public class CoreBeeLineDriver extends CliAdapter {
 
   @Override
   public void runTest(String name, String name2, String absolutePath) throws Exception {
-    runTest(name2);
+    QFile qFile = fileBuilder.getQFile(name);
+    runTest(qFile);
   }
 }
