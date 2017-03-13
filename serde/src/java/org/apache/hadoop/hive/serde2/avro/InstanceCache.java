@@ -51,7 +51,7 @@ public abstract class InstanceCache<SeedObject, Instance> {
    * Retrieve (or create if it doesn't exist) the correct Instance for this
    * SeedObject using 'seenSchemas' to resolve circular references
    */
-  public Instance retrieve(SeedObject hv,
+  public synchronized Instance retrieve(SeedObject hv,
       Set<SeedObject> seenSchemas) throws AvroSerdeException {
     if(LOG.isDebugEnabled()) LOG.debug("Checking for hv: " + hv.toString());
 

@@ -587,14 +587,13 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
           Math.max(conf.getInt(hive_metastoreConstants.BUCKET_COUNT, 0), 0);
       splitStrategyBatchMs = HiveConf.getIntVar(conf, ConfVars.HIVE_ORC_SPLIT_DIRECTORY_BATCH_MS);
       LOG.debug("Number of buckets specified by conf file is " + numBuckets);
-      int cacheStripeDetailsSize = HiveConf.getIntVar(conf,
-          ConfVars.HIVE_ORC_CACHE_STRIPE_DETAILS_SIZE);
-      int numThreads = HiveConf.getIntVar(conf,
-          ConfVars.HIVE_ORC_COMPUTE_SPLITS_NUM_THREADS);
-      boolean useSoftReference = HiveConf.getBoolVar(conf,
-          ConfVars.HIVE_ORC_CACHE_USE_SOFT_REFERENCES);
+      long cacheMemSize = HiveConf.getSizeVar(
+          conf, ConfVars.HIVE_ORC_CACHE_STRIPE_DETAILS_MEMORY_SIZE);
+      int numThreads = HiveConf.getIntVar(conf, ConfVars.HIVE_ORC_COMPUTE_SPLITS_NUM_THREADS);
+      boolean useSoftReference = HiveConf.getBoolVar(
+          conf, ConfVars.HIVE_ORC_CACHE_USE_SOFT_REFERENCES);
 
-      cacheStripeDetails = (cacheStripeDetailsSize > 0);
+      cacheStripeDetails = (cacheMemSize > 0);
 
       this.etlFileThreshold = minSplits <= 0 ? DEFAULT_ETL_FILE_THRESHOLD : minSplits;
 
@@ -621,7 +620,7 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
             useExternalCache = false;
           }
           if (localCache == null) {
-            localCache = new LocalCache(numThreads, cacheStripeDetailsSize, useSoftReference);
+            localCache = new LocalCache(numThreads, cacheMemSize, useSoftReference);
           }
           if (useExternalCache) {
             if (metaCache == null) {

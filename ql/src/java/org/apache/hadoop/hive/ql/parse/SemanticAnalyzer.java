@@ -10322,7 +10322,11 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       RowResolver rwsch)
       throws SemanticException {
 
-    if (!qbp.isAnalyzeCommand()) {
+    // if it is not analyze command and not column stats, then do not gatherstats
+    // if it is column stats, but it is not tez, do not gatherstats
+    if ((!qbp.isAnalyzeCommand() && qbp.getAnalyzeRewrite() == null)
+        || (qbp.getAnalyzeRewrite() != null && !HiveConf.getVar(conf,
+            HiveConf.ConfVars.HIVE_EXECUTION_ENGINE).equals("tez"))) {
       tsDesc.setGatherStats(false);
     } else {
       if (HiveConf.getVar(conf, HIVESTATSDBCLASS).equalsIgnoreCase(StatDB.fs.name())) {
@@ -10345,15 +10349,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       tsDesc.addVirtualCols(vcList);
 
       String tblName = tab.getTableName();
-      TableSpec tblSpec = qbp.getTableSpec(alias);
-      Map<String, String> partSpec = tblSpec.getPartSpec();
-
-      if (partSpec != null) {
-        List<String> cols = new ArrayList<String>();
-        cols.addAll(partSpec.keySet());
-        tsDesc.setPartColumns(cols);
-      }
-
       // Theoretically the key prefix could be any unique string shared
       // between TableScanOperator (when publishing) and StatsTask (when aggregating).
       // Here we use
@@ -10362,13 +10357,27 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       // Currently, partition spec can only be static partition.
       String k = MetaStoreUtils.encodeTableName(tblName) + Path.SEPARATOR;
       tsDesc.setStatsAggPrefix(tab.getDbName()+"."+k);
-
+      
       // set up WriteEntity for replication
       outputs.add(new WriteEntity(tab, WriteEntity.WriteType.DDL_SHARED));
 
       // add WriteEntity for each matching partition
       if (tab.isPartitioned()) {
-        if (partSpec == null) {
+        List<String> cols = new ArrayList<String>();
+        if (qbp.getAnalyzeRewrite() != null) {
+          List<FieldSchema> partitionCols = tab.getPartCols();
+          for (FieldSchema fs : partitionCols) {
+            cols.add(fs.getName());
+          }
+          tsDesc.setPartColumns(cols);
+          return;
+        }
+        TableSpec tblSpec = qbp.getTableSpec(alias);
+        Map<String, String> partSpec = tblSpec.getPartSpec();
+        if (partSpec != null) {
+          cols.addAll(partSpec.keySet());
+          tsDesc.setPartColumns(cols);
+        } else {
           throw new SemanticException(ErrorMsg.NEED_PARTITION_SPECIFICATION.getMsg());
         }
         List<Partition> partitions = qbp.getTableSpec().partitions;

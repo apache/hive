@@ -708,6 +708,84 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@vector_date_1
 #### A masked pattern was here ####
 2001-01-01	2001-06-01
+PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
+SELECT dt1 FROM vector_date_1 WHERE dt1 IN (date '1970-01-01', date '2001-01-01')
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
+SELECT dt1 FROM vector_date_1 WHERE dt1 IN (date '1970-01-01', date '2001-01-01')
+POSTHOOK: type: QUERY
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: vector_date_1
+                  Statistics: Num rows: 3 Data size: 224 Basic stats: COMPLETE Column stats: NONE
+                  TableScan Vectorization:
+                      native: true
+                      projectedOutputColumns: [0, 1]
+                  Filter Operator
+                    Filter Vectorization:
+                        className: VectorFilterOperator
+                        native: true
+                        predicateExpression: FilterLongColumnInList(col 0, values [0, 11323]) -> boolean
+                    predicate: (dt1) IN (1970-01-01, 2001-01-01) (type: boolean)
+                    Statistics: Num rows: 2 Data size: 149 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: dt1 (type: date)
+                      outputColumnNames: _col0
+                      Select Vectorization:
+                          className: VectorSelectOperator
+                          native: true
+                          projectedOutputColumns: [0]
+                      Statistics: Num rows: 2 Data size: 149 Basic stats: COMPLETE Column stats: NONE
+                      File Output Operator
+                        compressed: false
+                        File Sink Vectorization:
+                            className: VectorFileSinkOperator
+                            native: false
+                        Statistics: Num rows: 2 Data size: 149 Basic stats: COMPLETE Column stats: NONE
+                        table:
+                            input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                            output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                groupByVectorOutput: true
+                inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SELECT dt1 FROM vector_date_1 WHERE dt1 IN (date '1970-01-01', date '2001-01-01')
+PREHOOK: type: QUERY
+PREHOOK: Input: default@vector_date_1
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT dt1 FROM vector_date_1 WHERE dt1 IN (date '1970-01-01', date '2001-01-01')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@vector_date_1
+#### A masked pattern was here ####
+2001-01-01
 PREHOOK: query: drop table vector_date_1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@vector_date_1

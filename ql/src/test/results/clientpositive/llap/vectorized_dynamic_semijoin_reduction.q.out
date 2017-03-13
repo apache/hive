@@ -1632,10 +1632,12 @@ POSTHOOK: Output: default@dsrv_small
 PREHOOK: query: analyze table dsrv_small compute statistics for columns
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dsrv_small
+PREHOOK: Output: default@dsrv_small
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table dsrv_small compute statistics for columns
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dsrv_small
+POSTHOOK: Output: default@dsrv_small
 #### A masked pattern was here ####
 PREHOOK: query: EXPLAIN select count(*) from dsrv_big a join dsrv_small b on (a.key_int = b.key_int)
 PREHOOK: type: QUERY

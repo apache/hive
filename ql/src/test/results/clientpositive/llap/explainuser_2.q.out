@@ -127,10 +127,12 @@ POSTHOOK: Output: default@ss
 PREHOOK: query: ANALYZE TABLE ss COMPUTE STATISTICS FOR COLUMNS k1,v1,k2,v2,k3,v3
 PREHOOK: type: QUERY
 PREHOOK: Input: default@ss
+PREHOOK: Output: default@ss
 #### A masked pattern was here ####
 POSTHOOK: query: ANALYZE TABLE ss COMPUTE STATISTICS FOR COLUMNS k1,v1,k2,v2,k3,v3
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@ss
+POSTHOOK: Output: default@ss
 #### A masked pattern was here ####
 PREHOOK: query: ANALYZE TABLE sr COMPUTE STATISTICS
 PREHOOK: type: QUERY
@@ -143,10 +145,12 @@ POSTHOOK: Output: default@sr
 PREHOOK: query: ANALYZE TABLE sr COMPUTE STATISTICS FOR COLUMNS k1,v1,k2,v2,k3,v3
 PREHOOK: type: QUERY
 PREHOOK: Input: default@sr
+PREHOOK: Output: default@sr
 #### A masked pattern was here ####
 POSTHOOK: query: ANALYZE TABLE sr COMPUTE STATISTICS FOR COLUMNS k1,v1,k2,v2,k3,v3
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@sr
+POSTHOOK: Output: default@sr
 #### A masked pattern was here ####
 PREHOOK: query: ANALYZE TABLE cs COMPUTE STATISTICS
 PREHOOK: type: QUERY
@@ -159,10 +163,12 @@ POSTHOOK: Output: default@cs
 PREHOOK: query: ANALYZE TABLE cs COMPUTE STATISTICS FOR COLUMNS k1,v1,k2,v2,k3,v3
 PREHOOK: type: QUERY
 PREHOOK: Input: default@cs
+PREHOOK: Output: default@cs
 #### A masked pattern was here ####
 POSTHOOK: query: ANALYZE TABLE cs COMPUTE STATISTICS FOR COLUMNS k1,v1,k2,v2,k3,v3
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@cs
+POSTHOOK: Output: default@cs
 #### A masked pattern was here ####
 PREHOOK: query: EXPLAIN
 SELECT x.key, z.value, y.value

@@ -127,7 +127,7 @@
    <profile>
       <id>dist</id>
       <properties>
-        <packaging.minimizeJar>true</packaging.minimizeJar>
+        <packaging.minimizeJar>false</packaging.minimizeJar>
       </properties>
     </profile>
   </profiles>
@@ -294,6 +294,9 @@
                 <relocation>
                   <pattern>org.apache.hadoop</pattern>
                   <shadedPattern>org.apache.hive.org.apache.hadoop</shadedPattern>
+                  <excludes>
+                    <exclude>org.apache.hadoop.security.*</exclude>
+                  </excludes>
                 </relocation>
                 <relocation>
                   <pattern>org.apache.zookeeper</pattern>

@@ -2534,7 +2534,8 @@ public class VectorizationContext {
           "Non-constant argument not supported for vectorization.");
     }
     ExprNodeConstantDesc constExpr = (ExprNodeConstantDesc) expr;
-    if (isStringFamily(constExpr.getTypeString())) {
+    String constTypeString = constExpr.getTypeString();
+    if (isStringFamily(constTypeString) || isDatetimeFamily(constTypeString)) {
 
       // create expression tree with type cast from string to timestamp
       ExprNodeGenericFuncDesc expr2 = new ExprNodeGenericFuncDesc();
@@ -2549,7 +2550,7 @@ public class VectorizationContext {
     }
 
     throw new HiveException("Udf: unhandled constant type for scalar argument. "
-        + "Expecting string.");
+        + "Expecting string/date/timestamp.");
   }
 
   private Timestamp evaluateCastToTimestamp(ExprNodeDesc expr) throws HiveException {

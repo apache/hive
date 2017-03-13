@@ -244,7 +244,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
         try {
           commitOneOutPath(idx, fs, commitPaths);
         } catch (IOException e) {
-          throw new HiveException("Unable to rename output from: " +
+          throw new HiveException("Unable to commit output from: " +
               outPaths[idx] + " to: " + finalPaths[idx], e);
         }
       }
@@ -270,8 +270,18 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
           assert outPaths[idx].equals(finalPaths[idx]);
           commitPaths.add(outPaths[idx]);
         } else if (!fs.rename(outPaths[idx], finalPaths[idx])) {
-          throw new HiveException("Unable to rename output from: "
-              + outPaths[idx] + " to: " + finalPaths[idx]);
+            FileStatus fileStatus = FileUtils.getFileStatusOrNull(fs, finalPaths[idx]);
+            if (fileStatus != null) {
+              LOG.warn("Target path " + finalPaths[idx] + " with a size " + fileStatus.getLen() + " exists. Trying to delete it.");
+              if (!fs.delete(finalPaths[idx], true)) {
+                throw new HiveException("Unable to delete existing target output: " + finalPaths[idx]);
+              }
+            }
+
+            if (!fs.rename(outPaths[idx], finalPaths[idx])) {
+              throw new HiveException("Unable to rename output from: "
+                + outPaths[idx] + " to: " + finalPaths[idx]);
+            }
         }
       }
 

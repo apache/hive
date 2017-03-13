@@ -661,7 +661,6 @@ public class Driver implements CommandProcessor {
     lDrvState.stateLock.lock();
     try {
       if (lDrvState.driverState == DriverState.INTERRUPT) {
-        Thread.currentThread().interrupt();
         return true;
       } else {
         return false;

@@ -158,6 +158,8 @@ public class DruidRecordWriter implements RecordWriter<NullWritable, DruidWritab
                 new LinearShardSpec(currentOpenSegment.getShardSpec().getPartitionNum() + 1)
         );
         pushSegments(Lists.newArrayList(currentOpenSegment));
+        LOG.info("Creating new partition for segment {}, partition num {}",
+                retVal.getIdentifierAsString(), retVal.getShardSpec().getPartitionNum());
         currentOpenSegment = retVal;
         return retVal;
       }
@@ -169,6 +171,7 @@ public class DruidRecordWriter implements RecordWriter<NullWritable, DruidWritab
               new LinearShardSpec(0)
       );
       pushSegments(Lists.newArrayList(currentOpenSegment));
+      LOG.info("Creating segment {}", retVal.getIdentifierAsString());
       currentOpenSegment = retVal;
       return retVal;
     }
@@ -187,7 +190,6 @@ public class DruidRecordWriter implements RecordWriter<NullWritable, DruidWritab
                 .makeSegmentDescriptorOutputPath(pushedSegment, segmentsDescriptorDir);
         DruidStorageHandlerUtils
                 .writeSegmentDescriptor(fileSystem, pushedSegment, segmentDescriptorOutputPath);
-
         LOG.info(
                 String.format(
                         "Pushed the segment [%s] and persisted the descriptor located at [%s]",
@@ -216,6 +218,10 @@ public class DruidRecordWriter implements RecordWriter<NullWritable, DruidWritab
                 Joiner.on(", ").join(toPushSegmentsHashSet),
                 Joiner.on(", ").join(pushedSegmentIdentifierHashSet)
         ));
+      }
+      for (SegmentIdentifier dataSegmentId : segmentsToPush) {
+        LOG.info("Dropping segment {}", dataSegmentId.toString());
+        appenderator.drop(dataSegmentId).get();
       }
 
       LOG.info(String.format("Published [%,d] segments.", segmentsToPush.size()));

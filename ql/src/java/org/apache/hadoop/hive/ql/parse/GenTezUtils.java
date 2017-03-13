@@ -199,6 +199,10 @@ public class GenTezUtils {
     // All the setup is done in GenMapRedUtils
     GenMapRedUtils.setMapWork(mapWork, context.parseContext,
         context.inputs, partitions, root, alias, context.conf, false);
+    // we also collect table stats while collecting column stats.
+    if (context.parseContext.getAnalyzeRewrite() != null) {
+      mapWork.setGatheringStats(true);
+    }
   }
 
   // removes any union operator and clones the plan

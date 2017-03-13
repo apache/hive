@@ -36,6 +36,7 @@ import org.apache.hadoop.hive.ql.exec.spark.status.impl.JobMetricsListener;
 import org.apache.hadoop.hive.ql.exec.spark.status.impl.LocalSparkJobRef;
 import org.apache.hadoop.hive.ql.exec.spark.status.impl.LocalSparkJobStatus;
 import org.apache.hadoop.hive.ql.io.HiveKey;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.BaseWork;
 import org.apache.hadoop.hive.ql.plan.SparkWork;
 import org.apache.hadoop.hive.ql.session.SessionState;
@@ -134,6 +135,10 @@ public class LocalHiveSparkClient implements HiveSparkClient {
     SparkPlanGenerator gen =
       new SparkPlanGenerator(sc, ctx, jobConf, emptyScratchDir, sparkReporter);
     SparkPlan plan = gen.generate(sparkWork);
+
+    if (driverContext.isShutdown()) {
+      throw new HiveException("Operation is cancelled.");
+    }
 
     // Execute generated plan.
     JavaPairRDD<HiveKey, BytesWritable> finalRDD = plan.generateGraph();

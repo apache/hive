@@ -182,4 +182,9 @@ where
   and date '1970-01-01' <= dt1
 order by dt1;
 
+EXPLAIN VECTORIZATION EXPRESSION
+SELECT dt1 FROM vector_date_1 WHERE dt1 IN (date '1970-01-01', date '2001-01-01');
+
+SELECT dt1 FROM vector_date_1 WHERE dt1 IN (date '1970-01-01', date '2001-01-01');
+
 drop table vector_date_1;

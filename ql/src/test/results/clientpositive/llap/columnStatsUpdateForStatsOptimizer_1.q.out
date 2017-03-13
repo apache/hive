@@ -189,10 +189,12 @@ POSTHOOK: Input: default@calendar
 PREHOOK: query: analyze table calendar compute statistics for columns
 PREHOOK: type: QUERY
 PREHOOK: Input: default@calendar
+PREHOOK: Output: default@calendar
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table calendar compute statistics for columns
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@calendar
+POSTHOOK: Output: default@calendar
 #### A masked pattern was here ####
 PREHOOK: query: desc formatted calendar
 PREHOOK: type: DESCTABLE
@@ -432,10 +434,12 @@ POSTHOOK: Input: default@calendar
 PREHOOK: query: analyze table calendar compute statistics for columns year
 PREHOOK: type: QUERY
 PREHOOK: Input: default@calendar
+PREHOOK: Output: default@calendar
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table calendar compute statistics for columns year
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@calendar
+POSTHOOK: Output: default@calendar
 #### A masked pattern was here ####
 PREHOOK: query: desc formatted calendar
 PREHOOK: type: DESCTABLE
@@ -565,10 +569,12 @@ POSTHOOK: Input: default@calendar
 PREHOOK: query: analyze table calendar compute statistics for columns month
 PREHOOK: type: QUERY
 PREHOOK: Input: default@calendar
+PREHOOK: Output: default@calendar
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table calendar compute statistics for columns month
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@calendar
+POSTHOOK: Output: default@calendar
 #### A masked pattern was here ####
 PREHOOK: query: desc formatted calendar
 PREHOOK: type: DESCTABLE
@@ -754,11 +760,15 @@ PREHOOK: query: analyze table calendarp partition (p=1) compute statistics for c
 PREHOOK: type: QUERY
 PREHOOK: Input: default@calendarp
 PREHOOK: Input: default@calendarp@p=1
+PREHOOK: Output: default@calendarp
+PREHOOK: Output: default@calendarp@p=1
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table calendarp partition (p=1) compute statistics for columns
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@calendarp
 POSTHOOK: Input: default@calendarp@p=1
+POSTHOOK: Output: default@calendarp
+POSTHOOK: Output: default@calendarp@p=1
 #### A masked pattern was here ####
 PREHOOK: query: desc formatted calendarp partition (p=1)
 PREHOOK: type: DESCTABLE

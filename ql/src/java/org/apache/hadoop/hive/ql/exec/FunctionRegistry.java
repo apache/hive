@@ -333,6 +333,7 @@ public final class FunctionRegistry {
     system.registerGenericUDF("*", GenericUDFOPMultiply.class);
     system.registerGenericUDF("/", GenericUDFOPDivide.class);
     system.registerGenericUDF("%", GenericUDFOPMod.class);
+    system.registerGenericUDF("mod", GenericUDFOPMod.class);
     system.registerUDF("div", UDFOPLongDivide.class, true);
 
     system.registerUDF("&", UDFOPBitAnd.class, true);

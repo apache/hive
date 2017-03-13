@@ -216,6 +216,11 @@ if [ "$HADOOP_HOME" == "" ]; then
   exit 4;
 fi
 
+# add distcp to classpath, hive depends on it
+for f in ${HADOOP_HOME}/share/hadoop/tools/lib/hadoop-distcp-*.jar; do
+  export HADOOP_CLASSPATH=${HADOOP_CLASSPATH}:$f;
+done
+
 HADOOP=$HADOOP_HOME/bin/hadoop
 if [ ! -f ${HADOOP} ]; then
   echo "Cannot find hadoop installation: \$HADOOP_HOME or \$HADOOP_PREFIX must be set or hadoop must be in the path";

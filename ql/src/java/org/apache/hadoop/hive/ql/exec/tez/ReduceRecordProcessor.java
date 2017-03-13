@@ -62,7 +62,7 @@ import com.google.common.collect.Lists;
  * Process input from tez LogicalInput and write output - for a map plan
  * Just pump the records through the query plan.
  */
-public class ReduceRecordProcessor  extends RecordProcessor{
+public class ReduceRecordProcessor extends RecordProcessor {
 
   private static final String REDUCE_PLAN_KEY = "__REDUCE_PLAN__";
 
@@ -84,9 +84,6 @@ public class ReduceRecordProcessor  extends RecordProcessor{
   private ReduceRecordSource[] sources;
 
   private byte bigTablePosition = 0;
-
-
-  private int nRows = 0;
 
   public ReduceRecordProcessor(final JobConf jconf, final ProcessorContext context) throws Exception {
     super(jconf, context);
@@ -256,7 +253,7 @@ public class ReduceRecordProcessor  extends RecordProcessor{
       MapredContext.get().setReporter(reporter);
 
     } catch (Throwable e) {
-      abort = true;
+      super.setAborted(true);
       if (e instanceof OutOfMemoryError) {
         // Don't create a new object if we are already out of memory
         throw (OutOfMemoryError) e;
@@ -309,18 +306,16 @@ public class ReduceRecordProcessor  extends RecordProcessor{
 
     for (Entry<String, LogicalOutput> outputEntry : outputs.entrySet()) {
       l4j.info("Starting Output: " + outputEntry.getKey());
-      if (!abort) {
+      if (!isAborted()) {
         outputEntry.getValue().start();
         ((TezKVOutputCollector) outMap.get(outputEntry.getKey())).initialize();
       }
     }
 
     // run the operator pipeline
+    startAbortChecks();
     while (sources[bigTablePosition].pushRecord()) {
-      if (nRows++ == CHECK_INTERRUPTION_AFTER_ROWS) {
-        checkAbortCondition();
-        nRows = 0;
-      }
+      addRowAndMaybeCheckAbort();
     }
   }
 
@@ -374,10 +369,16 @@ public class ReduceRecordProcessor  extends RecordProcessor{
     }
 
     try {
-      for (ReduceRecordSource rs: sources) {
-        abort = abort && rs.close();
+      if (isAborted()) {
+        for (ReduceRecordSource rs: sources) {
+          if (!rs.close()) {
+            setAborted(false); // Preserving the old logic. Hmm...
+            break;
+          }
+        }
       }
 
+      boolean abort = isAborted();
       reducer.close(abort);
       if (mergeWorkList != null) {
         for (BaseWork redWork : mergeWorkList) {
@@ -398,7 +399,7 @@ public class ReduceRecordProcessor  extends RecordProcessor{
       reducer.preorderMap(rps);
 
     } catch (Exception e) {
-      if (!abort) {
+      if (!isAborted()) {
         // signal new failure to map-reduce
         l4j.error("Hit error while closing operators - failing tree");
         throw new RuntimeException(

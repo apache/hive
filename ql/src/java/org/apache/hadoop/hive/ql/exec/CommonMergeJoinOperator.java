@@ -31,6 +31,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.exec.persistence.RowContainer;
+import org.apache.hadoop.hive.ql.exec.tez.InterruptibleProcessing;
 import org.apache.hadoop.hive.ql.exec.tez.RecordSource;
 import org.apache.hadoop.hive.ql.exec.tez.TezContext;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -85,6 +86,9 @@ public class CommonMergeJoinOperator extends AbstractMapJoinOperator<CommonMerge
   transient List<Operator<? extends OperatorDesc>> originalParents =
       new ArrayList<Operator<? extends OperatorDesc>>();
   transient Set<Integer> fetchInputAtClose;
+
+  // A field because we cannot multi-inherit.
+  transient InterruptibleProcessing interruptChecker;
 
   /** Kryo ctor. */
   protected CommonMergeJoinOperator() {
@@ -156,6 +160,7 @@ public class CommonMergeJoinOperator extends AbstractMapJoinOperator<CommonMerge
     }
 
     sources = ((TezContext) MapredContext.get()).getRecordSources();
+    interruptChecker = new InterruptibleProcessing();
   }
 
   /*
@@ -374,11 +379,17 @@ public class CommonMergeJoinOperator extends AbstractMapJoinOperator<CommonMerge
 
     // for tables other than the big table, we need to fetch more data until reach a new group or
     // done.
+    interruptChecker.startAbortChecks(); // Reset the time, we only want to count it in the loop.
     while (!foundNextKeyGroup[t]) {
       if (fetchDone[t]) {
         break;
       }
       fetchOneRow(t);
+      try {
+        interruptChecker.addRowAndMaybeCheckAbort();
+      } catch (InterruptedException e) {
+        throw new HiveException(e);
+      }
     }
     if (!foundNextKeyGroup[t] && fetchDone[t]) {
       this.nextKeyWritables[t] = null;

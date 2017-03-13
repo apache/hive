@@ -1,3 +1,4 @@
+-- SORT_BEFORE_DIFF
 set hive.mapred.mode=nonstrict;
 
 explain with frequent_ss_items as 

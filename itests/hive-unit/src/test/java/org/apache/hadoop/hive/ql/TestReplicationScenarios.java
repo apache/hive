@@ -96,6 +96,7 @@ public class TestReplicationScenarios {
     hconf.setVar(HiveConf.ConfVars.METASTORE_EVENT_LISTENERS,
         DBNOTIF_LISTENER_CLASSNAME); // turn on db notification listener on metastore
     hconf.setBoolVar(HiveConf.ConfVars.REPLCMENABLED, true);
+    hconf.setBoolVar(HiveConf.ConfVars.FIRE_EVENTS_FOR_DML, true);
     hconf.setVar(HiveConf.ConfVars.REPLCMDIR, TEST_PATH + "/cmroot/");
     msPort = MetaStoreUtils.startMetaStore(hconf);
     hconf.setVar(HiveConf.ConfVars.REPLDIR,TEST_PATH + "/hrepl/");
@@ -790,16 +791,8 @@ public class TestReplicationScenarios {
   }
 
   @Test
-  @Ignore
-  // The test turned off temporarily in HIVE-15478. This test is not running
-  // properly even though it passed before. The reason the test passed before is because
-  // we collect files added by "create table" statement during "repl dump", and it will take
-  // the files added by "insert statement". In HIVE-15478, Hive collect "create table" affected
-  // files during processing "create table" statement, and no data files present at that time.
-  // The inserted files rely on the missing INSERT_EVENT to signal. We need to turn on
-  // FIRE_EVENTS_FOR_DML setting to trigger INSERT_EVENT and this is WIP tracked by other ticket.
-  public void testIncrementalInserts() throws IOException {
-    String testName = "incrementalInserts";
+  public void testIncrementalLoad() throws IOException {
+    String testName = "incrementalLoad";
     LOG.info("Testing " + testName);
     String dbName = testName + "_" + tid;
 
@@ -815,7 +808,7 @@ public class TestReplicationScenarios {
     run("REPL DUMP " + dbName);
     String replDumpLocn = getResult(0, 0);
     String replDumpId = getResult(0, 1, true);
-    LOG.info("Dumped to {} with id {}", replDumpLocn, replDumpId);
+    LOG.info("Bootstrap-Dump: Dumped to {} with id {}", replDumpLocn, replDumpId);
     run("REPL LOAD " + dbName + "_dupe FROM '" + replDumpLocn + "'");
 
     String[] unptn_data = new String[] { "eleven", "twelve" };
@@ -844,7 +837,8 @@ public class TestReplicationScenarios {
     run("REPL DUMP " + dbName + " FROM " + replDumpId);
     String incrementalDumpLocn = getResult(0, 0);
     String incrementalDumpId = getResult(0, 1, true);
-    LOG.info("Dumped to {} with id {}", incrementalDumpLocn, incrementalDumpId);
+    LOG.info("Incremental-Dump: Dumped to {} with id {} from {}", incrementalDumpLocn, incrementalDumpId, replDumpId);
+    replDumpId = incrementalDumpId;
     run("EXPLAIN REPL LOAD " + dbName + "_dupe FROM '" + incrementalDumpLocn + "'");
     printOutput();
     run("REPL LOAD " + dbName + "_dupe FROM '" + incrementalDumpLocn + "'");
@@ -871,13 +865,70 @@ public class TestReplicationScenarios {
     run("REPL DUMP " + dbName + " FROM " + replDumpId);
     incrementalDumpLocn = getResult(0, 0);
     incrementalDumpId = getResult(0, 1, true);
-    LOG.info("Dumped to {} with id {}", incrementalDumpLocn, incrementalDumpId);
+    LOG.info("Incremental-Dump: Dumped to {} with id {} from {}", incrementalDumpLocn, incrementalDumpId, replDumpId);
+    replDumpId = incrementalDumpId;
     run("EXPLAIN REPL LOAD " + dbName + "_dupe FROM '" + incrementalDumpLocn + "'");
     printOutput();
     run("REPL LOAD " + dbName + "_dupe FROM '" + incrementalDumpLocn + "'");
 
     verifyRun("SELECT a from " + dbName + "_dupe.ptned_late WHERE b=1", ptn_data_1);
     verifyRun("SELECT a from " + dbName + "_dupe.ptned_late WHERE b=2", ptn_data_2);
+  }
+
+  @Test
+  public void testIncrementalInserts() throws IOException {
+    String testName = "incrementalInserts";
+    LOG.info("Testing " + testName);
+    String dbName = testName + "_" + tid;
+
+    run("CREATE DATABASE " + dbName);
+    run("CREATE TABLE " + dbName + ".unptned(a string) STORED AS TEXTFILE");
+
+    advanceDumpDir();
+    run("REPL DUMP " + dbName);
+    String replDumpLocn = getResult(0, 0);
+    String replDumpId = getResult(0, 1, true);
+    LOG.info("Bootstrap-Dump: Dumped to {} with id {}", replDumpLocn, replDumpId);
+    run("REPL LOAD " + dbName + "_dupe FROM '" + replDumpLocn + "'");
+
+    String[] unptn_data = new String[] { "eleven", "twelve" };
+    run("INSERT INTO TABLE " + dbName + ".unptned values('" + unptn_data[0] + "')");
+    run("INSERT INTO TABLE " + dbName + ".unptned values('" + unptn_data[1] + "')");
+    verifyRun("SELECT a from " + dbName + ".unptned", unptn_data);
+
+    run("CREATE TABLE " + dbName + ".unptned_late LIKE " + dbName + ".unptned");
+    run("INSERT INTO TABLE " + dbName + ".unptned_late SELECT * FROM " + dbName + ".unptned");
+    verifyRun("SELECT * from " + dbName + ".unptned_late", unptn_data);
+
+    advanceDumpDir();
+    run("REPL DUMP " + dbName + " FROM " + replDumpId);
+    String incrementalDumpLocn = getResult(0, 0);
+    String incrementalDumpId = getResult(0, 1, true);
+    LOG.info("Incremental-Dump: Dumped to {} with id {} from {}", incrementalDumpLocn, incrementalDumpId, replDumpId);
+    replDumpId = incrementalDumpId;
+    run("EXPLAIN REPL LOAD " + dbName + "_dupe FROM '" + incrementalDumpLocn + "'");
+    printOutput();
+    run("REPL LOAD " + dbName + "_dupe FROM '" + incrementalDumpLocn + "'");
+    verifyRun("SELECT a from " + dbName + ".unptned", unptn_data);
+    verifyRun("SELECT a from " + dbName + ".unptned_late", unptn_data);
+    verifyRun("SELECT a from " + dbName + "_dupe.unptned", unptn_data);
+    verifyRun("SELECT a from " + dbName + "_dupe.unptned_late", unptn_data);
+
+    String[] unptn_data_after_ins = new String[] { "eleven", "twelve", "thirteen" };
+    run("INSERT INTO TABLE " + dbName + ".unptned_late values('" + unptn_data_after_ins[2] + "')");
+    verifySetup("SELECT a from " + dbName + ".unptned_late", unptn_data_after_ins);
+
+    advanceDumpDir();
+    run("REPL DUMP " + dbName + " FROM " + replDumpId);
+    incrementalDumpLocn = getResult(0, 0);
+    incrementalDumpId = getResult(0, 1, true);
+    LOG.info("Incremental-Dump: Dumped to {} with id {} from {}", incrementalDumpLocn, incrementalDumpId, replDumpId);
+    replDumpId = incrementalDumpId;
+    run("EXPLAIN REPL LOAD " + dbName + "_dupe FROM '" + incrementalDumpLocn + "'");
+    printOutput();
+    run("REPL LOAD " + dbName + "_dupe FROM '" + incrementalDumpLocn + "'");
+
+    verifyRun("SELECT a from " + dbName + "_dupe.unptned_late", unptn_data_after_ins);
   }
 
   @Test

@@ -42,6 +42,9 @@ public class StringToDouble {
 
   public static double strtod(byte[] utf8, int offset, int length)
   {
+    if (length == 0) {
+      throw new NumberFormatException();
+    }
     boolean signIsNegative = true;
     boolean expSignIsNegative = true;
     double fraction;

@@ -44,7 +44,7 @@ public class ReplicationSpec {
   private String currStateId = null;
   private boolean isNoop = false;
   private boolean isLazy = false; // lazy mode => we only list files, and expect that the eventual copy will pull data in.
-
+  private boolean isInsert = false; // default is that the import mode is replace-into
 
   // Key definitions related to replication
   public enum KEY {
@@ -53,6 +53,7 @@ public class ReplicationSpec {
     CURR_STATE_ID("repl.last.id"),
     NOOP("repl.noop"),
     LAZY("repl.lazy"),
+    IS_INSERT("repl.is.insert")
     ;
     private final String keyName;
 
@@ -134,13 +135,15 @@ public class ReplicationSpec {
   }
 
   public ReplicationSpec(boolean isInReplicationScope, boolean isMetadataOnly,
-      String eventReplicationState, String currentReplicationState, boolean isNoop, boolean isLazy) {
+                         String eventReplicationState, String currentReplicationState,
+                         boolean isNoop, boolean isLazy, boolean isInsert) {
     this.isInReplicationScope = isInReplicationScope;
     this.isMetadataOnly = isMetadataOnly;
     this.eventId = eventReplicationState;
     this.currStateId = currentReplicationState;
     this.isNoop = isNoop;
     this.isLazy = isLazy;
+    this.isInsert = isInsert;
   }
 
   public ReplicationSpec(Function<String, String> keyFetcher) {
@@ -159,6 +162,7 @@ public class ReplicationSpec {
     this.currStateId = keyFetcher.apply(ReplicationSpec.KEY.CURR_STATE_ID.toString());
     this.isNoop = Boolean.parseBoolean(keyFetcher.apply(ReplicationSpec.KEY.NOOP.toString()));
     this.isLazy = Boolean.parseBoolean(keyFetcher.apply(ReplicationSpec.KEY.LAZY.toString()));
+    this.isInsert = Boolean.parseBoolean(keyFetcher.apply(ReplicationSpec.KEY.IS_INSERT.toString()));
   }
 
   /**
@@ -292,6 +296,15 @@ public class ReplicationSpec {
   }
 
   /**
+   * @return true if this statement refers to insert-into operation.
+   */
+  public boolean isInsert(){ return isInsert; }
+
+  public void setIsInsert(boolean isInsert){
+    this.isInsert = isInsert;
+  }
+
+  /**
    * @return the replication state of the event that spawned this statement
    */
   public String getReplicationState() {
@@ -357,6 +370,8 @@ public class ReplicationSpec {
         return String.valueOf(isNoop());
       case LAZY:
         return String.valueOf(isLazy());
+      case IS_INSERT:
+        return String.valueOf(isInsert());
     }
     return null;
   }

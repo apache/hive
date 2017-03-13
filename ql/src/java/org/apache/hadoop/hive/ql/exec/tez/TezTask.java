@@ -137,6 +137,9 @@ public class TezTask extends Task<TezWork> {
       // Need to remove this static hack. But this is the way currently to get a session.
       SessionState ss = SessionState.get();
       session = ss.getTezSession();
+      if (session != null && !session.isOpen()) {
+        LOG.warn("The session: " + session + " has not been opened");
+      }
       session = TezSessionPoolManager.getInstance().getSession(
           session, conf, false, getWork().getLlapMode());
       ss.setTezSession(session);

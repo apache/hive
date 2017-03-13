@@ -49,12 +49,22 @@ public class HiveDruidSplit extends FileSplit implements org.apache.hadoop.mapre
   public void write(DataOutput out) throws IOException {
     super.write(out);
     out.writeUTF(druidQuery);
+    out.writeInt(hosts.length);
+    for (String host : hosts) {
+      out.writeUTF(host);
+    }
   }
 
   @Override
   public void readFields(DataInput in) throws IOException {
     super.readFields(in);
     druidQuery = in.readUTF();
+    int length = in.readInt();
+    String[] listHosts = new String[length];
+    for (int i = 0; i < length; i++) {
+      listHosts[i] = in.readUTF();
+    }
+    hosts = listHosts;
   }
 
   public String getDruidQuery() {
@@ -62,9 +72,14 @@ public class HiveDruidSplit extends FileSplit implements org.apache.hadoop.mapre
   }
 
   @Override
+  public String[] getLocations() throws IOException {
+    return hosts;
+  }
+
+  @Override
   public String toString() {
-    return "HiveDruidSplit{" + druidQuery + ", " 
-            + (hosts == null ? "empty hosts" : Arrays.toString(hosts))  + "}";
+    return "HiveDruidSplit{" + druidQuery + ", "
+            + (hosts == null ? "empty hosts" : Arrays.toString(hosts)) + "}";
   }
 
 }
