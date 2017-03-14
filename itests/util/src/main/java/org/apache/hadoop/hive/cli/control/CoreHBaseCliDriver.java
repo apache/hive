@@ -23,7 +23,6 @@ import static org.junit.Assert.fail;
 
 import org.apache.hadoop.hive.hbase.HBaseQTestUtil;
 import org.apache.hadoop.hive.hbase.HBaseTestSetup;
-import org.apache.hadoop.hive.ql.QTestProcessExecResult;
 import org.apache.hadoop.hive.ql.QTestUtil.MiniClusterType;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -121,12 +120,12 @@ public class CoreHBaseCliDriver extends CliAdapter {
         qt.failed(ecode, fname, null);
       }
 
-      QTestProcessExecResult result = qt.checkCliDriverResults(fname);
-      if (result.getReturnCode() != 0) {
-        qt.failedDiff(result.getReturnCode(), fname, result.getCapturedOutput());
+      ecode = qt.checkCliDriverResults(fname);
+      if (ecode != 0) {
+        qt.failedDiff(ecode, fname, null);
       }
 
-    } catch (Exception e) {
+    } catch (Throwable e) {
       qt.failed(e, fname, null);
     }
 

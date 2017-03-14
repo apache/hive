@@ -18,10 +18,8 @@
 package org.apache.hadoop.hive.cli.control;
 
 import static org.junit.Assert.assertTrue;
-
 import org.apache.hadoop.hive.accumulo.AccumuloQTestUtil;
 import org.apache.hadoop.hive.accumulo.AccumuloTestSetup;
-import org.apache.hadoop.hive.ql.QTestProcessExecResult;
 import org.apache.hadoop.hive.ql.QTestUtil.MiniClusterType;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -94,13 +92,13 @@ public class CoreAccumuloCliDriver extends CliAdapter {
         qt.failed(ecode, fname, null);
       }
 
-      QTestProcessExecResult result = qt.checkCliDriverResults(fname);
-      if (result.getReturnCode() != 0) {
-        qt.failedDiff(result.getReturnCode(), fname, result.getCapturedOutput());
+      ecode = qt.checkCliDriverResults(fname);
+      if (ecode != 0) {
+        qt.failedDiff(ecode, fname, null);
       }
       qt.clearPostTestEffects();
 
-    } catch (Exception e) {
+    } catch (Throwable e) {
       qt.failed(e, fname, null);
     }
 
