@@ -45,6 +45,7 @@ import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Map;
 import java.util.Properties;
 
 /**
@@ -304,6 +305,27 @@ public class AvroSerdeUtils {
         } catch (IOException e) {
           // Ignore
         }
+      }
+    }
+  }
+
+  /**
+   * Called on specific alter table events, removes schema url and schema literal from given tblproperties
+   * After the change, HMS solely will be responsible for handling the schema
+   *
+   * @param conf
+   * @param serializationLib
+   * @param parameters
+   */
+  public static void handleAlterTableForAvro(HiveConf conf, String serializationLib, Map<String, String> parameters) {
+    if (AvroSerDe.class.getName().equals(serializationLib)) {
+      String literalPropName = AvroTableProperties.SCHEMA_LITERAL.getPropName();
+      String urlPropName = AvroTableProperties.SCHEMA_URL.getPropName();
+
+      if (parameters.containsKey(literalPropName) || parameters.containsKey(urlPropName)) {
+          throw new RuntimeException("Not allowed to alter schema of Avro stored table having external schema." +
+                  " Consider removing "+AvroTableProperties.SCHEMA_LITERAL.getPropName() + " or " +
+                  AvroTableProperties.SCHEMA_URL.getPropName() + " from table properties.");
       }
     }
   }
