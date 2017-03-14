@@ -25,7 +25,6 @@ import org.apache.hive.service.auth.HiveAuthFactory;
 import org.apache.hive.service.auth.KerberosSaslHelper;
 import org.apache.hive.service.auth.PlainSaslHelper;
 import org.apache.hive.service.auth.SaslQOP;
-import org.apache.hive.service.cli.thrift.EmbeddedThriftBinaryCLIService;
 import org.apache.hive.service.rpc.thrift.TCLIService;
 import org.apache.hive.service.rpc.thrift.TCancelDelegationTokenReq;
 import org.apache.hive.service.rpc.thrift.TCancelDelegationTokenResp;
@@ -172,13 +171,14 @@ public class HiveConnection implements java.sql.Connection {
     supportedProtocols.add(TProtocolVersion.HIVE_CLI_SERVICE_PROTOCOL_V10);
 
     if (isEmbeddedMode) {
-      EmbeddedThriftBinaryCLIService embeddedClient = new EmbeddedThriftBinaryCLIService();
-      embeddedClient.init(null);
-      client = embeddedClient;
-
-      // open client session
-      openSession();
-      executeInitSql();
+      throw new RuntimeException("crippled");
+//      EmbeddedThriftBinaryCLIService embeddedClient = new EmbeddedThriftBinaryCLIService();
+//      embeddedClient.init(null);
+//      client = embeddedClient;
+//      
+//      // open client session
+//      openSession();
+//      executeInitSql();
     } else {
       int maxRetries = 1;
       try {
