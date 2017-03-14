@@ -46,7 +46,7 @@
     </dependency>
     <dependency>
       <groupId>org.apache.hive</groupId>
-      <artifactId>hive-service-rpc</artifactId>
+      <artifactId>hive-service-client</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
