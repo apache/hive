@@ -67,7 +67,8 @@ public class LoadTableDesc extends org.apache.hadoop.hive.ql.plan.LoadDesc
       final boolean replace,
       final AcidUtils.Operation writeType, Long mmWriteId) {
     super(sourcePath);
-    Utilities.LOG14535.info("creating part LTD from " + sourcePath + " to " + table.getTableName()/*, new Exception()*/);
+    Utilities.LOG14535.info("creating part LTD from " + sourcePath + " to "
+        + ((table.getProperties() == null) ? "null" : table.getTableName()));
     init(table, partitionSpec, replace, writeType, mmWriteId);
   }
 

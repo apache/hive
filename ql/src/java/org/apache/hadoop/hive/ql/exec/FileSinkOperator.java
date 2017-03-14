@@ -49,6 +49,7 @@ import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.Utilities.MissingBucketsContext;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
+import org.apache.hadoop.hive.ql.io.AcidUtils.Operation;
 import org.apache.hadoop.hive.ql.io.HiveFileFormatUtils;
 import org.apache.hadoop.hive.ql.io.HiveKey;
 import org.apache.hadoop.hive.ql.io.HiveOutputFormat;
@@ -262,8 +263,9 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
       // before attempting the rename below, check if our file exists.  If it doesn't,
       // then skip the rename.  If it does try it.  We could just blindly try the rename
       // and avoid the extra stat, but that would mask other errors.
-      boolean needToRename = (conf.getWriteType() != AcidUtils.Operation.UPDATE &&
-          conf.getWriteType() != AcidUtils.Operation.DELETE) || fs.exists(outPaths[idx]);
+      Operation acidOp = conf.getWriteType();
+      boolean needToRename = outPaths[idx] != null && ((acidOp != Operation.UPDATE
+          && acidOp != Operation.DELETE) || fs.exists(outPaths[idx]));
       if (needToRename && outPaths[idx] != null) {
         Utilities.LOG14535.info("committing " + outPaths[idx] + " to " + finalPaths[idx] + " (" + isMmTable + ")");
         if (isMmTable) {
