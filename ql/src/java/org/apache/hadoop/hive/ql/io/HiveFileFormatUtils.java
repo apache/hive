@@ -357,6 +357,12 @@ public final class HiveFileFormatUtils {
 
   public static <T> T getFromPathRecursively(Map<Path, T> pathToPartitionInfo, Path dir,
       Map<Map<Path, T>, Map<Path, T>> cacheMap, boolean ignoreSchema) throws IOException {
+    return getFromPathRecursively(pathToPartitionInfo, dir, cacheMap, ignoreSchema, false);
+  }
+
+  public static <T> T getFromPathRecursively(Map<Path, T> pathToPartitionInfo, Path dir,
+      Map<Map<Path, T>, Map<Path, T>> cacheMap, boolean ignoreSchema, boolean ifPresent)
+          throws IOException {
     T part = getFromPath(pathToPartitionInfo, dir);
 
     if (part == null
@@ -378,7 +384,7 @@ public final class HiveFileFormatUtils {
       }
       part = getFromPath(newPathToPartitionInfo, dir);
     }
-    if (part != null) {
+    if (part != null || ifPresent) {
       return part;
     } else {
       throw new IOException("cannot find dir = " + dir.toString()
