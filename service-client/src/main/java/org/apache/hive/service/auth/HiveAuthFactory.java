@@ -29,7 +29,6 @@ import javax.security.sasl.Sasl;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
-import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.shims.HadoopShims.KerberosNameShim;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.hive.thrift.DBTokenStore;
@@ -41,7 +40,7 @@ import org.apache.hadoop.security.SecurityUtil;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.security.authorize.ProxyUsers;
 import org.apache.hive.service.cli.HiveSQLException;
-import org.apache.hive.service.cli.thrift.ThriftCLIService;
+import org.apache.hive.service.rpc.thrift.TCLIService;
 import org.apache.thrift.TProcessorFactory;
 import org.apache.thrift.transport.TSaslServerTransport;
 import org.apache.thrift.transport.TTransportException;
@@ -198,7 +197,7 @@ public class HiveAuthFactory {
    * @return
    * @throws LoginException
    */
-  public TProcessorFactory getAuthProcFactory(ThriftCLIService service) throws LoginException {
+  public TProcessorFactory getAuthProcFactory(TCLIService.Iface service) throws LoginException {
     if (isSASLWithKerberizedHadoop()) {
       return KerberosSaslHelper.getKerberosProcessorFactory(saslServer, service);
     } else {

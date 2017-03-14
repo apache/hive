@@ -33,7 +33,7 @@ import javax.security.sasl.SaslException;
 
 import org.apache.hive.service.auth.AuthenticationProviderFactory.AuthMethods;
 import org.apache.hive.service.auth.PlainSaslServer.SaslPlainProvider;
-import org.apache.hive.service.cli.thrift.ThriftCLIService;
+import org.apache.hive.service.rpc.thrift.TCLIService;
 import org.apache.hive.service.rpc.thrift.TCLIService.Iface;
 import org.apache.thrift.TProcessor;
 import org.apache.thrift.TProcessorFactory;
@@ -44,7 +44,7 @@ import org.apache.thrift.transport.TTransportFactory;
 
 public final class PlainSaslHelper {
 
-  public static TProcessorFactory getPlainProcessorFactory(ThriftCLIService service) {
+  public static TProcessorFactory getPlainProcessorFactory(TCLIService.Iface service) {
     return new SQLPlainProcessorFactory(service);
   }
 
@@ -139,9 +139,9 @@ public final class PlainSaslHelper {
 
   private static final class SQLPlainProcessorFactory extends TProcessorFactory {
 
-    private final ThriftCLIService service;
+    private final TCLIService.Iface service;
 
-    SQLPlainProcessorFactory(ThriftCLIService service) {
+    SQLPlainProcessorFactory(TCLIService.Iface service) {
       super(null);
       this.service = service;
     }
