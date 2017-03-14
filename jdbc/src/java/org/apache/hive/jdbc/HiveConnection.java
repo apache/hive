@@ -181,7 +181,7 @@ public class HiveConnection implements java.sql.Connection {
 //        embeddedClient.init(null);
 
         Method initMethod = clazz.getMethod("init", HiveConf.class);
-        initMethod.invoke(embeddedClient, null);
+        initMethod.invoke(embeddedClient, (HiveConf)null);
         // init 
       } catch (ClassNotFoundException e) {
         throw new RuntimeException("load hive-service jar to the classpath to enable embedded mode");
