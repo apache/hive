@@ -43,6 +43,7 @@
     <module>hcatalog</module>
     <module>hplsql</module>
     <module>jdbc</module>
+    <module>metastore-api</module>
     <module>metastore</module>
     <module>ql</module>
     <module>serde</module>
