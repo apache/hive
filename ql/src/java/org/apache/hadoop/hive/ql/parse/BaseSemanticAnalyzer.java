@@ -651,22 +651,22 @@ public abstract class BaseSemanticAnalyzer {
    */
   private static void processPrimaryKeyInfos(
     ASTNode child, List<PKInfo> pkInfos) throws SemanticException {
-    if (child.getChildCount() < 6) {
+    if (child.getChildCount() < 4) {
       throw new SemanticException(ErrorMsg.INVALID_PK_SYNTAX.getMsg());
     }
     // The ANTLR grammar looks like :
     // 1. KW_CONSTRAINT idfr=identifier KW_PRIMARY KW_KEY pkCols=columnParenthesesList
     //  enableSpec=enableSpecification validateSpec=validateSpecification relySpec=relySpecification
     // -> ^(TOK_PRIMARY_KEY $pkCols $idfr $relySpec $enableSpec $validateSpec)
-    // when the user specifies the constraint name (i.e. child.getChildCount() == 7)
+    // when the user specifies the constraint name (i.e. child.getChildCount() == 5)
     // 2.  KW_PRIMARY KW_KEY columnParenthesesList
     // enableSpec=enableSpecification validateSpec=validateSpecification relySpec=relySpecification
     // -> ^(TOK_PRIMARY_KEY columnParenthesesList $relySpec $enableSpec $validateSpec)
-    // when the user does not specify the constraint name (i.e. child.getChildCount() == 6)
-    boolean userSpecifiedConstraintName = child.getChildCount() == 7;
-    int relyIndex =  child.getChildCount() == 7 ? 4 : 3;
-    for (int j = 0; j < child.getChild(1).getChildCount(); j++) {
-     Tree grandChild = child.getChild(1).getChild(j);
+    // when the user does not specify the constraint name (i.e. child.getChildCount() == 4)
+    boolean userSpecifiedConstraintName = child.getChildCount() == 5;
+    int relyIndex =  child.getChildCount() == 5 ? 2 : 1;
+    for (int j = 0; j < child.getChild(0).getChildCount(); j++) {
+     Tree grandChild = child.getChild(0).getChild(j);
      boolean rely = child.getChild(relyIndex).getType() == HiveParser.TOK_VALIDATE;
      boolean enable =  child.getChild(relyIndex+1).getType() == HiveParser.TOK_ENABLE;
      boolean validate =  child.getChild(relyIndex+2).getType() == HiveParser.TOK_VALIDATE;
@@ -683,7 +683,7 @@ public abstract class BaseSemanticAnalyzer {
        new PKInfo(
          unescapeIdentifier(grandChild.getText().toLowerCase()),
          (userSpecifiedConstraintName ?
-         unescapeIdentifier(child.getChild(3).getText().toLowerCase()) : null),
+         unescapeIdentifier(child.getChild(1).getText().toLowerCase()) : null),
          rely));
     }
   }
@@ -725,11 +725,11 @@ public abstract class BaseSemanticAnalyzer {
    */
   protected static void processPrimaryKeys(ASTNode parent, ASTNode child, List<SQLPrimaryKey> primaryKeys)
     throws SemanticException {
-    int relyIndex = 4;
+    int relyIndex = 2;
     int cnt = 1;
     String[] qualifiedTabName = getQualifiedTableName((ASTNode) parent.getChild(0));
-    for (int j = 0; j < child.getChild(1).getChildCount(); j++) {
-     Tree grandChild = child.getChild(1).getChild(j);
+    for (int j = 0; j < child.getChild(0).getChildCount(); j++) {
+     Tree grandChild = child.getChild(0).getChild(j);
      boolean rely = child.getChild(relyIndex).getType() == HiveParser.TOK_VALIDATE;
      boolean enable =  child.getChild(relyIndex+1).getType() == HiveParser.TOK_ENABLE;
      boolean validate =  child.getChild(relyIndex+2).getType() == HiveParser.TOK_VALIDATE;
@@ -746,7 +746,7 @@ public abstract class BaseSemanticAnalyzer {
          qualifiedTabName[0], qualifiedTabName[1],
          unescapeIdentifier(grandChild.getText().toLowerCase()),
          cnt++,
-         unescapeIdentifier(child.getChild(3).getText().toLowerCase()), false, false,
+         unescapeIdentifier(child.getChild(1).getText().toLowerCase()), false, false,
          rely));
     }
   }
@@ -766,17 +766,17 @@ public abstract class BaseSemanticAnalyzer {
     // KW_REFERENCES tabName=tableName parCols=columnParenthesesList
     // enableSpec=enableSpecification validateSpec=validateSpecification relySpec=relySpecification
     // -> ^(TOK_FOREIGN_KEY $idfr $fkCols $tabName $parCols $relySpec $enableSpec $validateSpec)
-    // when the user specifies the constraint name (i.e. child.getChildCount() == 11)
+    // when the user specifies the constraint name (i.e. child.getChildCount() == 7)
     // 2.  KW_FOREIGN KW_KEY fkCols=columnParenthesesList
     // KW_REFERENCES tabName=tableName parCols=columnParenthesesList
     // enableSpec=enableSpecification validateSpec=validateSpecification relySpec=relySpecification
     // -> ^(TOK_FOREIGN_KEY $fkCols  $tabName $parCols $relySpec $enableSpec $validateSpec)
-    // when the user does not specify the constraint name (i.e. child.getChildCount() == 10)
-    boolean userSpecifiedConstraintName = child.getChildCount() == 11;
-    int fkIndex = userSpecifiedConstraintName ? 2 : 1;
-    int pkIndex = userSpecifiedConstraintName ? 6 : 5;
-    int ptIndex = userSpecifiedConstraintName ? 4 : 3;
-    int relyIndex =  child.getChildCount() == 11 ? 8 : 7;
+    // when the user does not specify the constraint name (i.e. child.getChildCount() == 6)
+    boolean userSpecifiedConstraintName = child.getChildCount() == 7;
+    int fkIndex = userSpecifiedConstraintName ? 1 : 0;
+    int ptIndex = fkIndex + 1;
+    int pkIndex = ptIndex + 1;
+    int relyIndex = pkIndex + 1;
 
     if (child.getChildCount() <= fkIndex ||child.getChildCount() <= pkIndex ||
       child.getChildCount() <= ptIndex) {
