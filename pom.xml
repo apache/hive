@@ -47,6 +47,7 @@
     <module>ql</module>
     <module>serde</module>
     <module>service-rpc</module>
+    <module>service-client</module>
     <module>service</module>
     <module>llap-common</module>
     <module>llap-client</module>

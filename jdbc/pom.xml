@@ -40,7 +40,7 @@
       <artifactId>hive-common</artifactId>
       <version>${project.version}</version>
     </dependency>
-    <dependency>
+<!--    <dependency>
       <groupId>org.apache.hive</groupId>
       <artifactId>hive-service</artifactId>
       <version>${project.version}</version>
@@ -50,15 +50,20 @@
             <artifactId>hive-exec</artifactId>
         </exclusion>
       </exclusions>
-    </dependency>
+    </dependency> -->
     <dependency>
       <groupId>org.apache.hive</groupId>
       <artifactId>hive-serde</artifactId>
       <version>${project.version}</version>
     </dependency>
-    <dependency>
+<!--    <dependency>
       <groupId>org.apache.hive</groupId>
       <artifactId>hive-metastore</artifactId>
+      <version>${project.version}</version>
+    </dependency>-->
+    <dependency>
+      <groupId>org.apache.hive</groupId>
+      <artifactId>hive-service-client</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
