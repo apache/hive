@@ -898,4 +898,11 @@ public class TestTxnCommands {
     //> 2 seconds pass, i.e. that the command in Driver actually blocks before cancel is fired
     Assert.assertTrue(System.currentTimeMillis() > start + 2);
   }
+
+  @Test
+  public void testMergeCase() throws Exception {
+    runStatementOnDriver("create table merge_test (c1 integer, c2 integer, c3 integer) CLUSTERED BY (c1) into 2 buckets stored as orc tblproperties(\"transactional\"=\"true\")");
+    runStatementOnDriver("create table if not exists e011_02 (c1 float, c2 double, c3 float)");
+    runStatementOnDriver("merge into merge_test using e011_02 on (merge_test.c1 = e011_02.c1) when not matched then insert values (case when e011_02.c1 > 0 then e011_02.c1 + 1 else e011_02.c1 end, e011_02.c2 + e011_02.c3, coalesce(e011_02.c3, 1))");
+  }
 }
