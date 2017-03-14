@@ -88,6 +88,9 @@ public class TaskExecutorService extends AbstractService
   private static final boolean isDebugEnabled = LOG.isDebugEnabled();
   private static final String TASK_EXECUTOR_THREAD_NAME_FORMAT = "Task-Executor-%d";
   private static final String WAIT_QUEUE_SCHEDULER_THREAD_NAME_FORMAT = "Wait-Queue-Scheduler-%d";
+  private static final long PREEMPTION_KILL_GRACE_MS = 500; // 500ms
+  private static final int PREEMPTION_KILL_GRACE_SLEEP_MS = 50; // 50ms
+
 
   private final AtomicBoolean isShutdown = new AtomicBoolean(false);
 
@@ -106,7 +109,7 @@ public class TaskExecutorService extends AbstractService
   private final ThreadPoolExecutor threadPoolExecutor;
   private final AtomicInteger numSlotsAvailable;
   private final int maxParallelExecutors;
-  private final Clock clock = new MonotonicClock();
+  private final Clock clock;
 
   // Tracks running fragments, and completing fragments.
   // Completing since we have a race in the AM being notified and the task actually
@@ -123,7 +126,7 @@ public class TaskExecutorService extends AbstractService
 
   public TaskExecutorService(int numExecutors, int waitQueueSize,
       String waitQueueComparatorClassName, boolean enablePreemption,
-      ClassLoader classLoader, final LlapDaemonExecutorMetrics metrics) {
+      ClassLoader classLoader, final LlapDaemonExecutorMetrics metrics, Clock clock) {
     super(TaskExecutorService.class.getSimpleName());
     LOG.info("TaskExecutorService is being setup with parameters: "
         + "numExecutors=" + numExecutors
@@ -135,6 +138,7 @@ public class TaskExecutorService extends AbstractService
         waitQueueComparatorClassName);
     this.maxParallelExecutors = numExecutors;
     this.waitQueue = new EvictingPriorityBlockingQueue<>(waitQueueComparator, waitQueueSize);
+    this.clock = clock == null ? new MonotonicClock() : clock;
     this.threadPoolExecutor = new ThreadPoolExecutor(numExecutors, // core pool size
         numExecutors, // max pool size
         1, TimeUnit.MINUTES, new SynchronousQueue<Runnable>(), // direct hand-off
@@ -252,20 +256,18 @@ public class TaskExecutorService extends AbstractService
    * Worker that takes tasks from wait queue and schedule it for execution.
    */
   private final class WaitQueueWorker implements Runnable {
-    TaskWrapper task;
+    private TaskWrapper task;
 
     @Override
     public void run() {
-
       try {
-
-
+        Long lastKillTimeMs = null;
         while (!isShutdown.get()) {
           RejectedExecutionException rejectedException = null;
           synchronized (lock) {
-            // Since schedule() can be called from multiple threads, we peek the wait queue,
-            // try scheduling the task and then remove the task if scheduling is successful.
-            // This will make sure the task's place in the wait queue is held until it gets scheduled.
+            // Since schedule() can be called from multiple threads, we peek the wait queue, try
+            // scheduling the task and then remove the task if scheduling is successful. This
+            // will make sure the task's place in the wait queue is held until it gets scheduled.
             task = waitQueue.peek();
             if (task == null) {
               if (!isShutdown.get()) {
@@ -273,22 +275,17 @@ public class TaskExecutorService extends AbstractService
               }
               continue;
             }
-            // if the task cannot finish and if no slots are available then don't schedule it.
-            boolean shouldWait = false;
+            // If the task cannot finish and if no slots are available then don't schedule it.
+            // Also don't wait if we have a task and we just killed something to schedule it.
+            boolean shouldWait = numSlotsAvailable.get() == 0 && lastKillTimeMs == null;
             if (task.getTaskRunnerCallable().canFinish()) {
               if (isDebugEnabled) {
-                LOG.debug(
-                    "Attempting to schedule task {}, canFinish={}. Current state: preemptionQueueSize={}, numSlotsAvailable={}, waitQueueSize={}",
+                LOG.debug("Attempting to schedule task {}, canFinish={}. Current state: "
+                    + "preemptionQueueSize={}, numSlotsAvailable={}, waitQueueSize={}",
                     task.getRequestId(), task.getTaskRunnerCallable().canFinish(),
                     preemptionQueue.size(), numSlotsAvailable.get(), waitQueue.size());
               }
-              if (numSlotsAvailable.get() == 0 && (enablePreemption == false || preemptionQueue.isEmpty())) {
-                shouldWait = true;
-              }
-            } else {
-              if (numSlotsAvailable.get() == 0) {
-                shouldWait = true;
-              }
+              shouldWait = shouldWait && (enablePreemption == false || preemptionQueue.isEmpty());
             }
             if (shouldWait) {
               if (!isShutdown.get()) {
@@ -299,36 +296,43 @@ public class TaskExecutorService extends AbstractService
               continue;
             }
             try {
-              trySchedule(task);
-              // wait queue could have been re-ordered in the mean time because of concurrent task
+              tryScheduleUnderLock(task);
+              // Wait queue could have been re-ordered in the mean time because of concurrent task
               // submission. So remove the specific task instead of the head task.
               if (waitQueue.remove(task)) {
                 if (metrics != null) {
                   metrics.setExecutorNumQueuedRequests(waitQueue.size());
                 }
               }
+              lastKillTimeMs = null; // We have filled the spot we may have killed for (if any).
             } catch (RejectedExecutionException e) {
               rejectedException = e;
             }
-          }
+          } // synchronized (lock)
 
           // Handle the rejection outside of the lock
-          if (rejectedException !=null) {
-            handleScheduleAttemptedRejection(task);
-          }
-
-          synchronized (lock) {
-            while (waitQueue.isEmpty()) {
-              if (!isShutdown.get()) {
-                lock.wait();
+          if (rejectedException != null) {
+            if (lastKillTimeMs != null
+                && (clock.getTime() - lastKillTimeMs) < PREEMPTION_KILL_GRACE_MS) {
+              // We killed something, but still got rejected. Wait a bit to give a chance to our
+              // previous victim to actually die.
+              synchronized (lock) {
+                lock.wait(PREEMPTION_KILL_GRACE_SLEEP_MS);
+              }
+            } else {
+              if (isDebugEnabled && lastKillTimeMs != null) {
+                LOG.debug("Grace period ended for the previous kill; preemtping more tasks");
+              }
+              if (handleScheduleAttemptedRejection(task)) {
+                lastKillTimeMs = clock.getTime(); // We killed something.
               }
             }
           }
         }
-
       } catch (InterruptedException e) {
         if (isShutdown.get()) {
-          LOG.info(WAIT_QUEUE_SCHEDULER_THREAD_NAME_FORMAT + " thread has been interrupted after shutdown.");
+          LOG.info(WAIT_QUEUE_SCHEDULER_THREAD_NAME_FORMAT
+              + " thread has been interrupted after shutdown.");
         } else {
           LOG.warn(WAIT_QUEUE_SCHEDULER_THREAD_NAME_FORMAT + " interrupted without shutdown", e);
           throw new RuntimeException(e);
@@ -459,7 +463,7 @@ public class TaskExecutorService extends AbstractService
       }
     }
     synchronized (lock) {
-      lock.notify();
+      lock.notifyAll();
     }
 
     if (metrics != null) {
@@ -504,7 +508,7 @@ public class TaskExecutorService extends AbstractService
       } else {
         LOG.info("Ignoring killFragment request for {} since it isn't known", fragmentId);
       }
-      lock.notify();
+      lock.notifyAll();
     }
   }
 
@@ -537,72 +541,73 @@ public class TaskExecutorService extends AbstractService
   }
 
   @VisibleForTesting
-  void trySchedule(final TaskWrapper taskWrapper) throws RejectedExecutionException {
+  /** Assumes the epic lock is already taken. */
+  void tryScheduleUnderLock(final TaskWrapper taskWrapper) throws RejectedExecutionException {
+    if (isInfoEnabled) {
+      LOG.info("Attempting to execute {}", taskWrapper);
+    }
+    ListenableFuture<TaskRunner2Result> future = executorService.submit(
+        taskWrapper.getTaskRunnerCallable());
+    runningFragmentCount.incrementAndGet();
+    taskWrapper.setIsInWaitQueue(false);
+    FutureCallback<TaskRunner2Result> wrappedCallback = createInternalCompletionListener(
+      taskWrapper);
+    // Callback on a separate thread so that when a task completes, the thread in the main queue
+    // is actually available for execution and will not potentially result in a RejectedExecution
+    Futures.addCallback(future, wrappedCallback, executionCompletionExecutorService);
 
-      synchronized (lock) {
-        boolean canFinish = taskWrapper.getTaskRunnerCallable().canFinish();
-        LOG.info("Attempting to execute {}", taskWrapper);
-        ListenableFuture<TaskRunner2Result> future = executorService.submit(
-            taskWrapper.getTaskRunnerCallable());
-        runningFragmentCount.incrementAndGet();
-        taskWrapper.setIsInWaitQueue(false);
-        FutureCallback<TaskRunner2Result> wrappedCallback = createInternalCompletionListener(
-            taskWrapper);
-        // Callback on a separate thread so that when a task completes, the thread in the main queue
-        // is actually available for execution and will not potentially result in a RejectedExecution
-        Futures.addCallback(future, wrappedCallback, executionCompletionExecutorService);
+    boolean canFinish = taskWrapper.getTaskRunnerCallable().canFinish();
+    if (isDebugEnabled) {
+      LOG.debug("{} scheduled for execution. canFinish={}", taskWrapper.getRequestId(), canFinish);
+    }
 
-        if (isDebugEnabled) {
-          LOG.debug("{} scheduled for execution. canFinish={}",
-              taskWrapper.getRequestId(), canFinish);
+    // only tasks that cannot finish immediately are pre-emptable. In other words, if all inputs
+    // to the tasks are not ready yet, the task is eligible for pre-emptable.
+    if (enablePreemption) {
+      if (!canFinish) {
+        if (isInfoEnabled) {
+          LOG.info("{} is not finishable. Adding it to pre-emption queue",
+              taskWrapper.getRequestId());
         }
-
-        // only tasks that cannot finish immediately are pre-emptable. In other words, if all inputs
-        // to the tasks are not ready yet, the task is eligible for pre-emptable.
-        if (enablePreemption) {
-          if (!canFinish) {
-            if (isInfoEnabled) {
-              LOG.info("{} is not finishable. Adding it to pre-emption queue",
-                  taskWrapper.getRequestId());
-            }
-            addToPreemptionQueue(taskWrapper);
-          }
-        }
+        addToPreemptionQueue(taskWrapper);
       }
-      numSlotsAvailable.decrementAndGet();
-      if (metrics != null) {
-        metrics.setNumExecutorsAvailable(numSlotsAvailable.get());
-      }
+    }
+    numSlotsAvailable.decrementAndGet();
+    if (metrics != null) {
+      metrics.setNumExecutorsAvailable(numSlotsAvailable.get());
+    }
   }
 
-  private void handleScheduleAttemptedRejection(TaskWrapper taskWrapper) {
+  private boolean handleScheduleAttemptedRejection(TaskWrapper taskWrapper) {
     if (enablePreemption && taskWrapper.getTaskRunnerCallable().canFinish()
         && !preemptionQueue.isEmpty()) {
-
       if (isDebugEnabled) {
         LOG.debug("Preemption Queue: " + preemptionQueue);
       }
 
-      TaskWrapper pRequest = removeAndGetNextFromPreemptionQueue();
-
-      // Avoid preempting tasks which are finishable - callback still to be processed.
-      if (pRequest != null) {
-        if (pRequest.getTaskRunnerCallable().canFinish()) {
-          LOG.info(
-              "Removed {} from preemption queue, but not preempting since it's now finishable",
-              pRequest.getRequestId());
-        } else {
-          if (isInfoEnabled) {
-            LOG.info("Invoking kill task for {} due to pre-emption to run {}",
-                pRequest.getRequestId(), taskWrapper.getRequestId());
-          }
-          // The task will either be killed or is already in the process of completing, which will
-          // trigger the next scheduling run, or result in available slots being higher than 0,
-          // which will cause the scheduler loop to continue.
-          pRequest.getTaskRunnerCallable().killTask();
+      while (true) { // Try to preempt until we have something.
+        TaskWrapper pRequest = removeAndGetNextFromPreemptionQueue();
+        if (pRequest == null) {
+          return false; // Woe us.
         }
+        if (pRequest.getTaskRunnerCallable().canFinish()) {
+          LOG.info("Removed {} from preemption queue, but not preempting since it's now finishable",
+              pRequest.getRequestId());
+          continue; // Try something else.
+        }
+        if (isInfoEnabled) {
+          LOG.info("Invoking kill task for {} due to pre-emption to run {}",
+              pRequest.getRequestId(), taskWrapper.getRequestId());
+        }
+        // The task will either be killed or is already in the process of completing, which will
+        // trigger the next scheduling run, or result in available slots being higher than 0,
+        // which will cause the scheduler loop to continue.
+        pRequest.getTaskRunnerCallable().killTask();
+        // We've killed something and may want to wait for it to die.
+        return true;
       }
     }
+    return false;
   }
 
   private void finishableStateUpdated(TaskWrapper taskWrapper, boolean newFinishableState) {
@@ -628,7 +633,7 @@ public class TaskExecutorService extends AbstractService
             taskWrapper.getRequestId(), newFinishableState);
         addToPreemptionQueue(taskWrapper);
       }
-      lock.notify();
+      lock.notifyAll();
     }
   }
 
@@ -765,7 +770,7 @@ public class TaskExecutorService extends AbstractService
       }
       synchronized (lock) {
         if (!waitQueue.isEmpty()) {
-          lock.notify();
+          lock.notifyAll();
         }
       }
     }

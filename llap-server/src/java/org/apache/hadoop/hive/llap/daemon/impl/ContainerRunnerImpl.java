@@ -136,7 +136,7 @@ public class ContainerRunnerImpl extends CompositeService implements ContainerRu
     String waitQueueSchedulerClassName = HiveConf.getVar(
         conf, ConfVars.LLAP_DAEMON_WAIT_QUEUE_COMPARATOR_CLASS_NAME);
     this.executorService = new TaskExecutorService(numExecutors, waitQueueSize,
-        waitQueueSchedulerClassName, enablePreemption, classLoader, metrics);
+        waitQueueSchedulerClassName, enablePreemption, classLoader, metrics, null);
     completionListener = (SchedulerFragmentCompletingListener) executorService;
 
     addIfService(executorService);

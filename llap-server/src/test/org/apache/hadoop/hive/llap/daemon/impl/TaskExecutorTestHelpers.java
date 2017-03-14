@@ -178,6 +178,8 @@ public class TaskExecutorTestHelpers {
     private final Condition sleepCondition = lock.newCondition();
     private boolean shouldSleep = true;
     private final Condition finishedCondition = lock.newCondition();
+    private final Object killDelay = new Object();
+    private boolean isOkToFinish = true;
 
     public MockRequest(SubmitWorkRequestProto requestProto, QueryFragmentInfo fragmentInfo,
                        boolean canFinish, long workTime, TezEvent initialEvent) {
@@ -207,17 +209,19 @@ public class TaskExecutorTestHelpers {
         lock.lock();
         try {
           if (shouldSleep) {
+            logInfo(super.getRequestId() + " is sleeping for " + workTime, null);
             sleepCondition.await(workTime, TimeUnit.MILLISECONDS);
           }
         } catch (InterruptedException e) {
           wasInterrupted.set(true);
-          return new TaskRunner2Result(EndReason.KILL_REQUESTED, null, null, false);
+          return handleKill();
         } finally {
           lock.unlock();
         }
         if (wasKilled.get()) {
-          return new TaskRunner2Result(EndReason.KILL_REQUESTED, null, null, false);
+          return handleKill();
         } else {
+          logInfo(super.getRequestId() + " succeeded", null);
           return new TaskRunner2Result(EndReason.SUCCESS, null, null, false);
         }
       } finally {
@@ -228,6 +232,33 @@ public class TaskExecutorTestHelpers {
         } finally {
           lock.unlock();
         }
+      }
+    }
+
+    private TaskRunner2Result handleKill() {
+      boolean hasLogged = false;
+      while (true) {
+        synchronized (killDelay) {
+          if (isOkToFinish) break;
+          if (!hasLogged) {
+            logInfo("Waiting after the kill: " + getRequestId());
+            hasLogged = true;
+          }
+          try {
+            killDelay.wait(100);
+          } catch (InterruptedException e) {
+          }
+        }
+      }
+      logInfo("Finished with the kill: " + getRequestId());
+      return new TaskRunner2Result(EndReason.KILL_REQUESTED, null, null, false);
+    }
+
+    public void unblockKill() {
+      synchronized (killDelay) {
+        logInfo("Unblocking the kill: " + getRequestId());
+        isOkToFinish = true;
+        killDelay.notifyAll();
       }
     }
 
@@ -291,6 +322,10 @@ public class TaskExecutorTestHelpers {
     @Override
     public boolean canFinish() {
       return canFinish;
+    }
+
+    public void setSleepAfterKill() {
+      isOkToFinish = false;
     }
   }
 
