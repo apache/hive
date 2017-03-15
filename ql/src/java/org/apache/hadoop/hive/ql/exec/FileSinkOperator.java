@@ -738,7 +738,10 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
       if (conf.getWriteType() == AcidUtils.Operation.NOT_ACID ||
           conf.getWriteType() == AcidUtils.Operation.INSERT_ONLY) {
         Path outPath = fsp.outPaths[filesIdx];
-        mkDirIfPermsAreNeeded(outPath); // Make sure we inherit permissions.
+        if ((conf.getWriteType() == AcidUtils.Operation.INSERT_ONLY || conf.isMmTable())
+            && inheritPerms && !FileUtils.mkdir(fs, outPath.getParent(), inheritPerms, hconf)) {
+          LOG.warn("Unable to create directory with inheritPerms: " + outPath);
+        }
         fsp.outWriters[filesIdx] = HiveFileFormatUtils.getHiveRecordWriter(jc, conf.getTableInfo(),
             outputClass, conf, outPath, reporter);
         // If the record writer provides stats, get it from there instead of the serde
@@ -760,12 +763,6 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
 
     } catch (IOException e) {
       throw new HiveException(e);
-    }
-  }
-
-  private void mkDirIfPermsAreNeeded(Path outPath) throws IOException {
-    if (inheritPerms && !FileUtils.mkdir(fs, outPath.getParent(), inheritPerms, hconf)) {
-      LOG.warn("Unable to create directory with inheritPerms: " + outPath);
     }
   }
 
