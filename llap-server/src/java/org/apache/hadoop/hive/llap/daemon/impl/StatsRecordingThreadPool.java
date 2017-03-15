@@ -31,7 +31,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.hive.llap.LlapUtil;
-import org.apache.hadoop.hive.llap.io.encoded.OrcEncodedDataReader;
+import org.apache.hadoop.hive.llap.io.encoded.TezCounterSource;
 import org.apache.log4j.MDC;
 import org.apache.log4j.NDC;
 import org.apache.tez.common.CallableWithNdc;
@@ -157,9 +157,9 @@ public class StatsRecordingThreadPool extends ThreadPoolExecutor {
         TaskRunner2Callable taskRunner2Callable = (TaskRunner2Callable) actualCallable;
         // counters for task execution side
         tezCounters = taskRunner2Callable.addAndGetTezCounter(FileSystemCounter.class.getName());
-      } else if (actualCallable instanceof OrcEncodedDataReader) {
-        // counters for llap io side
-        tezCounters = ((OrcEncodedDataReader) actualCallable).getTezCounters();
+      } else if (actualCallable instanceof TezCounterSource) {
+        // Other counter sources (currently used in LLAP IO).
+        tezCounters = ((TezCounterSource) actualCallable).getTezCounters();
       }
 
       if (tezCounters != null) {

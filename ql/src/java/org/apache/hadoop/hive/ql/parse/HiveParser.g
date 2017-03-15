@@ -2145,7 +2145,7 @@ columnNameOrderList
 columnParenthesesList
 @init { pushMsg("column parentheses list", state); }
 @after { popMsg(state); }
-    : LPAREN columnNameList RPAREN
+    : LPAREN! columnNameList RPAREN!
     ;
 
 enableSpecification
