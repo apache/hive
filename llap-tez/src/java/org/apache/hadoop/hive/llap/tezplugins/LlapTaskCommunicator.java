@@ -14,6 +14,7 @@
 
 package org.apache.hadoop.hive.llap.tezplugins;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.hive.llap.registry.ServiceInstance;
 import org.apache.hadoop.io.Writable;
 
@@ -120,7 +121,6 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
   private final String user;
   private String amHost;
   private String timelineServerUri;
-  private int nmPort;
 
   // These two structures track the list of known nodes, and the list of nodes which are sending in keep-alive heartbeats.
   // Primarily for debugging purposes a.t.m, since there's some unexplained TASK_TIMEOUTS which are currently being observed.
@@ -194,7 +194,6 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
     String scheme = WebAppUtils.getHttpSchemePrefix(conf);
     String ahsUrl = WebAppUtils.getAHSWebAppURLWithoutScheme(conf);
     this.timelineServerUri = WebAppUtils.getURLWithScheme(scheme, ahsUrl);
-    this.nmPort = Integer.valueOf(WebAppUtils.getNMWebAppURLWithoutScheme(conf).split(":")[1]);
   }
 
   @Override
@@ -554,6 +553,7 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
         containerNodeId, e.getMessage());
       return null;
     }
+    // Once NodeId includes fragmentId - this becomes a lot more reliable.
     if (instanceSet != null) {
       ServiceInstance matchedInstance = null;
       for (ServiceInstance instance : instanceSet) {
@@ -565,8 +565,9 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
       if (matchedInstance != null) {
         String containerIdString = matchedInstance.getProperties()
           .get(HiveConf.ConfVars.LLAP_DAEMON_CONTAINER_ID.varname);
-        if (containerIdString != null) {
-          return constructLlapLogUrl(attemptID, containerIdString, isDone, containerNodeId.getHost());
+        String nmNodeAddress = matchedInstance.getProperties().get(ConfVars.LLAP_DAEMON_NM_ADDRESS.varname);
+        if (!StringUtils.isBlank(containerIdString) && !StringUtils.isBlank(nmNodeAddress)) {
+          return constructLlapLogUrl(attemptID, containerIdString, isDone, nmNodeAddress);
         }
       }
     }
@@ -574,10 +575,10 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
   }
 
   private String constructLlapLogUrl(final TezTaskAttemptID attemptID, final String containerIdString,
-    final boolean isDone, final String nmHost) {
+    final boolean isDone, final String nmAddress) {
     String dagId = attemptID.getTaskID().getVertexID().getDAGId().toString();
     String filename = JOINER.join(currentHiveQueryId, "-", dagId, ".log", (isDone ? ".done" : ""),
-      "?nm.id=", nmHost, ":", nmPort);
+      "?nm.id=", nmAddress);
     String url = PATH_JOINER.join(timelineServerUri, "ws", "v1", "applicationhistory", "containers",
       containerIdString, "logs", filename);
     return url;

@@ -472,6 +472,7 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
       LlapDaemonConfiguration daemonConf = new LlapDaemonConfiguration();
 
       String containerIdStr = System.getenv(ApplicationConstants.Environment.CONTAINER_ID.name());
+
       String appName = null;
       if (containerIdStr != null && !containerIdStr.isEmpty()) {
         daemonConf.set(ConfVars.LLAP_DAEMON_CONTAINER_ID.varname, containerIdStr);
@@ -484,6 +485,19 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
             + "; LLAP tokens may grant access to subsequent instances of the cluster with"
             + " the same name");
         appName = null;
+      }
+
+      String nmHost = System.getenv(ApplicationConstants.Environment.NM_HOST.name());
+      String nmPort = System.getenv(ApplicationConstants.Environment.NM_PORT.name());
+      if (!org.apache.commons.lang3.StringUtils.isBlank(nmHost) && !org.apache.commons.lang3.StringUtils.isBlank(nmPort)) {
+        String nmAddress = nmHost + ":" + nmPort;
+        daemonConf.set(ConfVars.LLAP_DAEMON_NM_ADDRESS.varname, nmAddress);
+      } else {
+        daemonConf.unset(ConfVars.LLAP_DAEMON_NM_ADDRESS.varname);
+        // Unlikely, but log the actual values in case one of the two was empty/null
+        LOG.warn(
+            "NodeManager host/port not found in environment. Values retrieved: host={}, port={}",
+            nmHost, nmPort);
       }
 
       int numExecutors = HiveConf.getIntVar(daemonConf, ConfVars.LLAP_DAEMON_NUM_EXECUTORS);

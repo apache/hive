@@ -3052,8 +3052,12 @@ public class HiveConf extends Configuration {
     LLAP_DAEMON_QUEUE_NAME("hive.llap.daemon.queue.name", null,
         "Queue name within which the llap slider application will run." +
         " Used in LlapServiceDriver and package.py"),
+    // TODO Move the following 2 properties out of Configuration to a constant.
     LLAP_DAEMON_CONTAINER_ID("hive.llap.daemon.container.id", null,
         "ContainerId of a running LlapDaemon. Used to publish to the registry"),
+    LLAP_DAEMON_NM_ADDRESS("hive.llap.daemon.nm.address", null,
+        "NM Address host:rpcPort for the NodeManager on which the instance of the daemon is running.\n" +
+        "Published to the llap registry. Should never be set by users"),
     LLAP_DAEMON_SHUFFLE_DIR_WATCHER_ENABLED("hive.llap.daemon.shuffle.dir.watcher.enabled", false,
       "TODO doc", "llap.daemon.shuffle.dir-watcher.enabled"),
     LLAP_DAEMON_AM_LIVENESS_HEARTBEAT_INTERVAL_MS(
