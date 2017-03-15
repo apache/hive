@@ -1967,8 +1967,8 @@ public class HiveConf extends Configuration {
     HIVE_DRUID_SLEEP_TIME("hive.druid.sleep.time", "PT10S",
             "Sleep time between retries in ISO8601 format (for example P2W, P3M, PT1H30M, PT0.750S), default is period of 10 seconds."
     ),
-    HIVE_DRUID_BASE_PERSIST_DIRECTORY("hive.druid.basePersistDirectory", "/tmp",
-            "Local temporary directory used to persist intermediate indexing state."
+    HIVE_DRUID_BASE_PERSIST_DIRECTORY("hive.druid.basePersistDirectory", "",
+            "Local temporary directory used to persist intermediate indexing state, will default to JVM system property java.io.tmpdir."
     ),
     DRUID_SEGMENT_DIRECTORY("hive.druid.storage.storageDirectory", "/druid/segments"
             , "druid deep storage location."),

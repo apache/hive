@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.druid.io;
 
 import com.google.common.base.Preconditions;
+import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.metamx.common.Granularity;
@@ -194,12 +195,15 @@ public class DruidOutputFormat<K, V> implements HiveOutputFormat<K, DruidWritabl
             .getIntVar(jc, HiveConf.ConfVars.HIVE_DRUID_MAX_PARTITION_SIZE);
     String basePersistDirectory = HiveConf
             .getVar(jc, HiveConf.ConfVars.HIVE_DRUID_BASE_PERSIST_DIRECTORY);
+    if (Strings.isNullOrEmpty(basePersistDirectory)) {
+      basePersistDirectory = System.getProperty("java.io.tmpdir");
+    }
     Integer maxRowInMemory = HiveConf.getIntVar(jc, HiveConf.ConfVars.HIVE_DRUID_MAX_ROW_IN_MEMORY);
 
     RealtimeTuningConfig realtimeTuningConfig = new RealtimeTuningConfig(maxRowInMemory,
             null,
             null,
-            new File(basePersistDirectory),
+            new File(basePersistDirectory, dataSource),
             new CustomVersioningPolicy(version),
             null,
             null,
