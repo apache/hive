@@ -287,17 +287,38 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
       LoadMultiFilesDesc lmfd = work.getLoadMultiFilesWork();
       if (lmfd != null) {
         boolean isDfsDir = lmfd.getIsDfsDir();
-        int i = 0;
-        while (i <lmfd.getSourceDirs().size()) {
+        List<String> targetPrefixes = lmfd.getTargetPrefixes();
+        for (int i = 0; i <lmfd.getSourceDirs().size(); ++i) {
           Path srcPath = lmfd.getSourceDirs().get(i);
           Path destPath = lmfd.getTargetDirs().get(i);
-          FileSystem fs = destPath.getFileSystem(conf);
-          if (!fs.exists(destPath.getParent())) {
-            fs.mkdirs(destPath.getParent());
+          String filePrefix = targetPrefixes == null ? null : targetPrefixes.get(i);
+          FileSystem destFs = destPath.getFileSystem(conf);
+          if (filePrefix == null) {
+            if (!destFs.exists(destPath.getParent())) {
+              destFs.mkdirs(destPath.getParent());
+            }
+            Utilities.LOG14535.info("MoveTask moving LMFD " + srcPath + " to " + destPath);
+            moveFile(srcPath, destPath, isDfsDir);
+          } else {
+            if (!destFs.exists(destPath)) {
+              destFs.mkdirs(destPath);
+            }
+            FileSystem srcFs = srcPath.getFileSystem(conf);
+            FileStatus[] children = srcFs.listStatus(srcPath);
+            if (children != null) {
+              for (FileStatus child : children) {
+                Path childSrc = child.getPath();
+                Path childDest = new Path(destPath, filePrefix + childSrc.getName());
+                Utilities.LOG14535.info("MoveTask moving LMFD " + childSrc + " to " + childDest);
+                moveFile(childSrc, childDest, isDfsDir);
+              }
+            } else {
+              Utilities.LOG14535.info("MoveTask skipping empty directory LMFD " + srcPath);
+            }
+            if (!srcFs.delete(srcPath, false)) {
+              throw new IOException("Couldn't delete " + srcPath + " after moving all the files");
+            }
           }
-          Utilities.LOG14535.info("MoveTask moving LMFD " + srcPath + " to " + destPath);
-          moveFile(srcPath, destPath, isDfsDir);
-          i++;
         }
       }
 

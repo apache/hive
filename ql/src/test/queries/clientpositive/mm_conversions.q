@@ -5,8 +5,6 @@ set tez.grouping.min-size=1;
 set tez.grouping.max-size=2;
 set hive.exec.dynamic.partition.mode=nonstrict;
 
--- Temporary setting
-set mapred.input.dir.recursive=true;
 
 -- Force multiple writers when reading
 drop table intermediate;
