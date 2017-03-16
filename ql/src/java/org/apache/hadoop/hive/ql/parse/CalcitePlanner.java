@@ -205,6 +205,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveSubQueryRemoveRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveUnionPullUpConstantsRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveWindowingFixRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveMaterializedViewFilterScanRule;
+import org.apache.hadoop.hive.ql.optimizer.calcite.translator.ASTBuilder;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.ASTConverter;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.HiveOpConverter;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.JoinCondTypeCheckProcFactory;
@@ -1907,7 +1908,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
       return setOpRel;
     }
 
-    private RelNode genJoinRelNode(RelNode leftRel, RelNode rightRel, JoinType hiveJoinType,
+    private RelNode genJoinRelNode(RelNode leftRel, String leftTableAlias, RelNode rightRel, String rightTableAlias, JoinType hiveJoinType,
         ASTNode joinCond) throws SemanticException {
 
       RowResolver leftRR = this.relToHiveRR.get(leftRel);
@@ -1915,10 +1916,38 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
       // 1. Construct ExpressionNodeDesc representing Join Condition
       RexNode calciteJoinCond = null;
+      List<String> namedColumns = null;
       if (joinCond != null) {
         JoinTypeCheckCtx jCtx = new JoinTypeCheckCtx(leftRR, rightRR, hiveJoinType);
         RowResolver input = RowResolver.getCombinedRR(leftRR, rightRR);
-        if (unparseTranslator != null && unparseTranslator.isEnabled()) {
+        // named columns join
+        // TODO: we can also do the same for semi join but it seems that other
+        // DBMS does not support it yet.
+        if (joinCond.getType() == HiveParser.TOK_TABCOLNAME
+            && !hiveJoinType.equals(JoinType.LEFTSEMI)) {
+          namedColumns = new ArrayList<>();
+          // We will transform using clause and make it look like an on-clause.
+          // So, lets generate a valid on-clause AST from using.
+          ASTNode and = (ASTNode) ParseDriver.adaptor.create(HiveParser.KW_AND, "and");
+          ASTNode equal = null;
+          int count = 0;
+          for (Node child : joinCond.getChildren()) {
+            String columnName = ((ASTNode) child).getText();
+            // dealing with views
+            if (unparseTranslator != null && unparseTranslator.isEnabled()) {
+              unparseTranslator.addIdentifierTranslation((ASTNode) child);
+            }
+            namedColumns.add(columnName);
+            ASTNode left = ASTBuilder.qualifiedName(leftTableAlias, columnName);
+            ASTNode right = ASTBuilder.qualifiedName(rightTableAlias, columnName);
+            equal = (ASTNode) ParseDriver.adaptor.create(HiveParser.EQUAL, "=");
+            ParseDriver.adaptor.addChild(equal, left);
+            ParseDriver.adaptor.addChild(equal, right);
+            ParseDriver.adaptor.addChild(and, equal);
+            count++;
+          }
+          joinCond = count > 1 ? and : equal;
+        } else if (unparseTranslator != null && unparseTranslator.isEnabled()) {
           genAllExprNodeDesc(joinCond, input, jCtx);
         }
         Map<ASTNode, ExprNodeDesc> exprNodes = JoinCondTypeCheckProcFactory.genExprNode(joinCond,
@@ -2032,12 +2061,17 @@ public class CalcitePlanner extends SemanticAnalyzer {
       } else {
         topRel = HiveJoin.getJoin(cluster, leftRel, rightRel, calciteJoinCond, calciteJoinType);
         topRR = RowResolver.getCombinedRR(leftRR, rightRR);
+        if (namedColumns != null) {
+          List<String> tableAliases = new ArrayList<>();
+          tableAliases.add(leftTableAlias);
+          tableAliases.add(rightTableAlias);
+          topRR.setNamedJoinInfo(new NamedJoinInfo(tableAliases, namedColumns, hiveJoinType));
+        }
       }
 
       // 4. Add new rel & its RR to the maps
       relToHiveColNameCalcitePosMap.put(topRel, this.buildHiveToCalciteColumnMap(topRR, topRel));
       relToHiveRR.put(topRel, topRR);
-
       return topRel;
     }
 
@@ -2086,12 +2120,13 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
       // 2. Get Left Table Alias
       ASTNode left = (ASTNode) joinParseTree.getChild(0);
+      String leftTableAlias = null;
       if ((left.getToken().getType() == HiveParser.TOK_TABREF)
           || (left.getToken().getType() == HiveParser.TOK_SUBQUERY)
           || (left.getToken().getType() == HiveParser.TOK_PTBLFUNCTION)) {
         String tableName = SemanticAnalyzer.getUnescapedUnqualifiedTableName(
             (ASTNode) left.getChild(0)).toLowerCase();
-        String leftTableAlias = left.getChildCount() == 1 ? tableName : SemanticAnalyzer
+        leftTableAlias = left.getChildCount() == 1 ? tableName : SemanticAnalyzer
             .unescapeIdentifier(left.getChild(left.getChildCount() - 1).getText().toLowerCase());
         // ptf node form is: ^(TOK_PTBLFUNCTION $name $alias?
         // partitionTableFunctionSource partitioningSpec? expression*)
@@ -2107,12 +2142,13 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
       // 3. Get Right Table Alias
       ASTNode right = (ASTNode) joinParseTree.getChild(1);
+      String rightTableAlias = null;
       if ((right.getToken().getType() == HiveParser.TOK_TABREF)
           || (right.getToken().getType() == HiveParser.TOK_SUBQUERY)
           || (right.getToken().getType() == HiveParser.TOK_PTBLFUNCTION)) {
         String tableName = SemanticAnalyzer.getUnescapedUnqualifiedTableName(
             (ASTNode) right.getChild(0)).toLowerCase();
-        String rightTableAlias = right.getChildCount() == 1 ? tableName : SemanticAnalyzer
+        rightTableAlias = right.getChildCount() == 1 ? tableName : SemanticAnalyzer
             .unescapeIdentifier(right.getChild(right.getChildCount() - 1).getText().toLowerCase());
         // ptf node form is: ^(TOK_PTBLFUNCTION $name $alias?
         // partitionTableFunctionSource partitioningSpec? expression*)
@@ -2128,7 +2164,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
       ASTNode joinCond = (ASTNode) joinParseTree.getChild(2);
 
       // 5. Create Join rel
-      return genJoinRelNode(leftRel, rightRel, hiveJoinType, joinCond);
+      return genJoinRelNode(leftRel, leftTableAlias, rightRel, rightTableAlias, hiveJoinType, joinCond);
     }
 
     private RelNode genTableLogicalPlan(String tableAlias, QB qb) throws SemanticException {

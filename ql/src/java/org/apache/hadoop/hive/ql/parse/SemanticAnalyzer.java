@@ -3427,6 +3427,69 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     Map<ColumnInfo, ColumnInfo> inputColsProcessed = new HashMap<ColumnInfo, ColumnInfo>();
     // For expr "*", aliases should be iterated in the order they are specified
     // in the query.
+
+    if (colSrcRR.getNamedJoinInfo() != null) {
+      // We got using() clause in previous join. Need to generate select list as
+      // per standard. For * we will have joining columns first non-repeated
+      // followed by other columns.
+      HashMap<String, ColumnInfo> leftMap = colSrcRR.getFieldMap(colSrcRR.getNamedJoinInfo().getAliases().get(0));
+      HashMap<String, ColumnInfo> rightMap = colSrcRR.getFieldMap(colSrcRR.getNamedJoinInfo().getAliases().get(1));
+      HashMap<String, ColumnInfo> chosenMap = null;
+      if (colSrcRR.getNamedJoinInfo().getHiveJoinType() != JoinType.RIGHTOUTER) {
+        chosenMap = leftMap;
+      } else {
+        chosenMap = rightMap;
+      }
+      // first get the columns in named columns
+      for (String columnName : colSrcRR.getNamedJoinInfo().getNamedColumns()) {
+        for (Map.Entry<String, ColumnInfo> entry : chosenMap.entrySet()) {
+          ColumnInfo colInfo = entry.getValue();
+          if (!columnName.equals(colInfo.getAlias())) {
+            continue;
+          }
+          String name = colInfo.getInternalName();
+          String[] tmp = colSrcRR.reverseLookup(name);
+
+          // Skip the colinfos which are not for this particular alias
+          if (tabAlias != null && !tmp[0].equalsIgnoreCase(tabAlias)) {
+            continue;
+          }
+
+          if (colInfo.getIsVirtualCol() && colInfo.isHiddenVirtualCol()) {
+            continue;
+          }
+          ColumnInfo oColInfo = inputColsProcessed.get(colInfo);
+          if (oColInfo == null) {
+            ExprNodeColumnDesc expr = new ExprNodeColumnDesc(colInfo.getType(), name,
+                colInfo.getTabAlias(), colInfo.getIsVirtualCol(), colInfo.isSkewedCol());
+            col_list.add(expr);
+            oColInfo = new ColumnInfo(getColumnInternalName(pos), colInfo.getType(),
+                colInfo.getTabAlias(), colInfo.getIsVirtualCol(), colInfo.isHiddenVirtualCol());
+            inputColsProcessed.put(colInfo, oColInfo);
+          }
+          if (ensureUniqueCols) {
+            if (!output.putWithCheck(tmp[0], tmp[1], null, oColInfo)) {
+              throw new CalciteSemanticException("Cannot add column to RR: " + tmp[0] + "."
+                  + tmp[1] + " => " + oColInfo + " due to duplication, see previous warnings",
+                  UnsupportedFeature.Duplicates_in_RR);
+            }
+          } else {
+            output.put(tmp[0], tmp[1], oColInfo);
+          }
+          pos = Integer.valueOf(pos.intValue() + 1);
+          matched++;
+
+          if (unparseTranslator.isEnabled() || tableMask.isEnabled()) {
+            if (replacementText.length() > 0) {
+              replacementText.append(", ");
+            }
+            replacementText.append(HiveUtils.unparseIdentifier(tmp[0], conf));
+            replacementText.append(".");
+            replacementText.append(HiveUtils.unparseIdentifier(tmp[1], conf));
+          }
+        }
+      }
+    }
     for (String alias : aliases) {
       HashMap<String, ColumnInfo> fMap = colSrcRR.getFieldMap(alias);
       if (fMap == null) {
@@ -3436,12 +3499,19 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       // from the input schema
       for (Map.Entry<String, ColumnInfo> entry : fMap.entrySet()) {
         ColumnInfo colInfo = entry.getValue();
+        if (colSrcRR.getNamedJoinInfo() != null && colSrcRR.getNamedJoinInfo().getNamedColumns().contains(colInfo.getAlias())) {
+          // we already added this column in select list.
+          continue;
+        }
         if (excludeCols != null && excludeCols.contains(colInfo)) {
           continue; // This was added during plan generation.
         }
-        // First, look up the column from the source against which * is to be resolved.
-        // We'd later translated this into the column from proper input, if it's valid.
-        // TODO: excludeCols may be possible to remove using the same technique.
+        // First, look up the column from the source against which * is to be
+        // resolved.
+        // We'd later translated this into the column from proper input, if
+        // it's valid.
+        // TODO: excludeCols may be possible to remove using the same
+        // technique.
         String name = colInfo.getInternalName();
         String[] tmp = colSrcRR.reverseLookup(name);
 
@@ -3459,13 +3529,14 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           continue;
         }
 
-        // If input (GBY) is different than the source of columns, find the same column in input.
+        // If input (GBY) is different than the source of columns, find the
+        // same column in input.
         // TODO: This is fraught with peril.
         if (input != colSrcRR) {
           colInfo = input.get(tabAlias, tmp[1]);
           if (colInfo == null) {
-            LOG.error("Cannot find colInfo for " + tabAlias + "." + tmp[1]
-                + ", derived from [" + colSrcRR + "], in [" + input + "]");
+            LOG.error("Cannot find colInfo for " + tabAlias + "." + tmp[1] + ", derived from ["
+                + colSrcRR + "], in [" + input + "]");
             throw new SemanticException(ErrorMsg.NON_KEY_EXPR_IN_GROUPBY, tmp[1]);
           }
           String oldCol = null;
@@ -3482,13 +3553,11 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
         ColumnInfo oColInfo = inputColsProcessed.get(colInfo);
         if (oColInfo == null) {
-          ExprNodeColumnDesc expr = new ExprNodeColumnDesc(colInfo.getType(),
-              name, colInfo.getTabAlias(), colInfo.getIsVirtualCol(),
-              colInfo.isSkewedCol());
+          ExprNodeColumnDesc expr = new ExprNodeColumnDesc(colInfo.getType(), name,
+              colInfo.getTabAlias(), colInfo.getIsVirtualCol(), colInfo.isSkewedCol());
           col_list.add(expr);
-          oColInfo = new ColumnInfo(getColumnInternalName(pos),
-              colInfo.getType(), colInfo.getTabAlias(),
-              colInfo.getIsVirtualCol(), colInfo.isHiddenVirtualCol());
+          oColInfo = new ColumnInfo(getColumnInternalName(pos), colInfo.getType(),
+              colInfo.getTabAlias(), colInfo.getIsVirtualCol(), colInfo.isHiddenVirtualCol());
           inputColsProcessed.put(colInfo, oColInfo);
         }
         if (ensureUniqueCols) {
@@ -3513,6 +3582,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         }
       }
     }
+
     if (matched == 0) {
       throw new SemanticException(ErrorMsg.INVALID_COLUMN.getMsg(sel));
     }
