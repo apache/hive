@@ -402,31 +402,42 @@ public class DynamicPartitionPruningOptimization implements NodeProcessor {
       exprNodeDesc = exprNodeDesc.getChildren().get(0);
     }
 
-    if (exprNodeDesc instanceof ExprNodeColumnDesc) {
-      internalColName = ((ExprNodeColumnDesc) exprNodeDesc).getColumn();
-      if (parentOfRS instanceof SelectOperator) {
-        // Make sure the semijoin branch is not on parition column.
-        ExprNodeColumnDesc colExpr = ((ExprNodeColumnDesc) (parentOfRS.
-                getColumnExprMap().get(internalColName)));
-        String colName = ExprNodeDescUtils.extractColName(colExpr);
-
-        // Fetch the TableScan Operator.
-        Operator<?> op = parentOfRS.getParentOperators().get(0);
-        while (op != null && !(op instanceof TableScanOperator)) {
-          op = op.getParentOperators().get(0);
-        }
-        assert op != null;
-
-        Table table = ((TableScanOperator) op).getConf().getTableMetadata();
-        if (table.isPartitionKey(colName)) {
-          // The column is partition column, skip the optimization.
-          return false;
-        }
-      }
-    } else {
+    if (!(exprNodeDesc instanceof ExprNodeColumnDesc)) {
       // No column found!
       // Bail out
       return false;
+    }
+
+    internalColName = ((ExprNodeColumnDesc) exprNodeDesc).getColumn();
+    if (parentOfRS instanceof SelectOperator) {
+      // Make sure the semijoin branch is not on partition column.
+      ExprNodeDesc expr = parentOfRS.getColumnExprMap().get(internalColName);
+      while (!(expr instanceof ExprNodeColumnDesc) &&
+              (expr.getChildren() != null)) {
+        expr = expr.getChildren().get(0);
+      }
+
+      if (!(expr instanceof ExprNodeColumnDesc)) {
+        // No column found!
+        // Bail out
+        return false;
+      }
+
+      ExprNodeColumnDesc colExpr = (ExprNodeColumnDesc) expr;
+      String colName = ExprNodeDescUtils.extractColName(colExpr);
+
+      // Fetch the TableScan Operator.
+      Operator<?> op = parentOfRS.getParentOperators().get(0);
+      while (op != null && !(op instanceof TableScanOperator)) {
+        op = op.getParentOperators().get(0);
+      }
+      assert op != null;
+
+      Table table = ((TableScanOperator) op).getConf().getTableMetadata();
+      if (table.isPartitionKey(colName)) {
+        // The column is partition column, skip the optimization.
+        return false;
+      }
     }
 
     List<ExprNodeDesc> keyExprs = new ArrayList<ExprNodeDesc>();
