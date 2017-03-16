@@ -156,6 +156,7 @@ import org.apache.hive.common.util.HiveStringUtils;
 import org.apache.thrift.TException;
 import org.datanucleus.AbstractNucleusContext;
 import org.datanucleus.ClassLoaderResolver;
+import org.datanucleus.ClassLoaderResolverImpl;
 import org.datanucleus.NucleusContext;
 import org.datanucleus.api.jdo.JDOPersistenceManagerFactory;
 import org.datanucleus.store.rdbms.exceptions.MissingTableException;
@@ -279,6 +280,9 @@ public class ObjectStore implements RawStore, Configurable {
       boolean propsChanged = !propsFromConf.equals(prop);
 
       if (propsChanged) {
+        if (pmf != null){
+          clearOutPmfClassLoaderCache(pmf);
+        }
         pmf = null;
         prop = null;
       }
@@ -8443,20 +8447,54 @@ public class ObjectStore implements RawStore, Configurable {
    */
   public static void unCacheDataNucleusClassLoaders() {
     PersistenceManagerFactory pmf = ObjectStore.getPMF();
-    if ((pmf != null) && (pmf instanceof JDOPersistenceManagerFactory)) {
-      JDOPersistenceManagerFactory jdoPmf = (JDOPersistenceManagerFactory) pmf;
-      NucleusContext nc = jdoPmf.getNucleusContext();
-      try {
-        Field classLoaderResolverMap = AbstractNucleusContext.class.getDeclaredField(
-            "classLoaderResolverMap");
-        classLoaderResolverMap.setAccessible(true);
-        classLoaderResolverMap.set(nc, new HashMap<String, ClassLoaderResolver>());
-        LOG.debug("Removed cached classloaders from DataNucleus NucleusContext");
-      } catch (Exception e) {
-        LOG.warn("Failed to remove cached classloaders from DataNucleus NucleusContext ", e);
+    clearOutPmfClassLoaderCache(pmf);
+  }
+
+  private static void clearOutPmfClassLoaderCache(PersistenceManagerFactory pmf) {
+    if ((pmf == null) || (!(pmf instanceof JDOPersistenceManagerFactory))) {
+      return;
+    }
+    // NOTE : This is hacky, and this section of code is fragile depending on DN code varnames
+    // so it's likely to stop working at some time in the future, especially if we upgrade DN
+    // versions, so we actively need to find a better way to make sure the leak doesn't happen
+    // instead of just clearing out the cache after every call.
+    JDOPersistenceManagerFactory jdoPmf = (JDOPersistenceManagerFactory) pmf;
+    NucleusContext nc = jdoPmf.getNucleusContext();
+    try {
+      Field classLoaderResolverMap = AbstractNucleusContext.class.getDeclaredField(
+          "classLoaderResolverMap");
+      classLoaderResolverMap.setAccessible(true);
+      Map<String,ClassLoaderResolver> loaderMap =
+          (Map<String, ClassLoaderResolver>) classLoaderResolverMap.get(nc);
+      for (ClassLoaderResolver clr : loaderMap.values()){
+        if (clr != null){
+          if (clr instanceof ClassLoaderResolverImpl){
+            ClassLoaderResolverImpl clri = (ClassLoaderResolverImpl) clr;
+            long resourcesCleared = clearFieldMap(clri,"resources");
+            long loadedClassesCleared = clearFieldMap(clri,"loadedClasses");
+            long unloadedClassesCleared = clearFieldMap(clri, "unloadedClasses");
+            LOG.debug("Cleared ClassLoaderResolverImpl: " +
+                resourcesCleared + "," + loadedClassesCleared + "," + unloadedClassesCleared);
+          }
+        }
       }
+      classLoaderResolverMap.set(nc, new HashMap<String, ClassLoaderResolver>());
+      LOG.debug("Removed cached classloaders from DataNucleus NucleusContext");
+    } catch (Exception e) {
+      LOG.warn("Failed to remove cached classloaders from DataNucleus NucleusContext ", e);
     }
   }
+
+  private static long clearFieldMap(ClassLoaderResolverImpl clri, String mapFieldName) throws Exception {
+    Field mapField = ClassLoaderResolverImpl.class.getDeclaredField(mapFieldName);
+    mapField.setAccessible(true);
+
+    Map<String,Class> map = (Map<String, Class>) mapField.get(clri);
+    long sz = map.size();
+    map.clear();
+    return sz;
+  }
+
 
   @Override
   public List<SQLPrimaryKey> getPrimaryKeys(String db_name, String tbl_name) throws MetaException {
