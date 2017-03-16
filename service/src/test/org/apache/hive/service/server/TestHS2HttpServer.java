@@ -142,7 +142,7 @@ public class TestHS2HttpServer {
   private String getURLResponseAsString(String baseURL) throws IOException {
     URL url = new URL(baseURL);
     HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-    Assert.assertEquals(HttpURLConnection.HTTP_OK, conn.getResponseCode());
+    Assert.assertEquals("Got an HTTP response code other thank OK.", HttpURLConnection.HTTP_OK, conn.getResponseCode());
     StringWriter writer = new StringWriter();
     IOUtils.copy(conn.getInputStream(), writer, "UTF-8");
     return writer.toString();
