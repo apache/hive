@@ -9,7 +9,7 @@ SELECT key, count(1) from src group by key;
 
 INSERT OVERWRITE TABLE tmp2
 SELECT key, count(1) from src group by key;
-
+set hive.auto.convert.join=true;
 EXPLAIN
 INSERT OVERWRITE TABLE dest_j1 
 SELECT /*+ MAPJOIN(x) */ x.key, x.cnt, y.cnt

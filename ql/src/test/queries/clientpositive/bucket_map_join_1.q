@@ -16,7 +16,7 @@ load data local inpath '../../data/files/SortCol2Col1.txt' overwrite into table 
 
 set hive.optimize.bucketmapjoin = true;
 set hive.optimize.bucketmapjoin.sortedmerge = true;
-
+set hive.cbo.enable=false;
 -- The tables are bucketed in same columns in different order,
 -- but sorted in different column orders
 -- Neither bucketed map-join, nor sort-merge join should be performed

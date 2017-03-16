@@ -18,6 +18,7 @@ load data local inpath '../../data/files/T1.txt' overwrite into table table1 par
 load data local inpath '../../data/files/T1.txt' overwrite into table table2;
 load data local inpath '../../data/files/T2.txt' overwrite into table table2;
 
+set hive.cbo.enable=false;
 set hive.optimize.bucketmapjoin = true;
 set hive.input.format = org.apache.hadoop.hive.ql.io.BucketizedHiveInputFormat;
 

@@ -25,7 +25,7 @@ load data local inpath '../../data/files/srcbucket22.txt' INTO TABLE test3;
 load data local inpath '../../data/files/srcbucket20.txt' INTO TABLE test4;
 load data local inpath '../../data/files/srcbucket21.txt' INTO TABLE test4;
 load data local inpath '../../data/files/srcbucket22.txt' INTO TABLE test4;
-
+set hive.cbo.enable=false;
 set hive.optimize.bucketmapjoin = true;
 -- should be allowed
 explain extended select /*+ MAPJOIN(R) */ * from test1 L join test1 R on L.key=R.key AND L.value=R.value;

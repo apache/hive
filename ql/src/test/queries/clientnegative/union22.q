@@ -9,7 +9,7 @@ insert overwrite table dst_union22_delta partition (ds='1')
 select key, key, value, key, value, value from src;
 
 set hive.merge.mapfiles=false;
-
+set hive.cbo.enable=false;
 -- Union followed by Mapjoin is not supported.
 -- The same query would work without the hint
 -- Note that there is a positive test with the same name in clientpositive

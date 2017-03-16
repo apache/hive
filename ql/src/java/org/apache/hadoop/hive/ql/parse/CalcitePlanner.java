@@ -442,7 +442,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
             throw new SemanticException(e);
           }
           else if( e instanceof CalciteViewSemanticException) {
-            // non-cbo path retries to execute create view and 
+            // non-cbo path retries to execute create view and
             // we believe it will throw the same error message
             throw new SemanticException(e);
           }
@@ -1009,7 +1009,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
       }
       return null;
     }
- 
+
     public ASTNode depthFirstSearch(ASTNode ast, int token) {
       searchQueue.clear();
       searchQueue.add(ast);
@@ -1431,7 +1431,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
                   if (viewScan instanceof DruidQuery) {
                     final DruidQuery dq = (DruidQuery) viewScan;
                     newViewScan = DruidQuery.create(optCluster, optCluster.traitSetOf(HiveRelNode.CONVENTION),
-                        (RelOptHiveTable) viewScan.getTable(), dq.getDruidTable(),
+                        viewScan.getTable(), dq.getDruidTable(),
                         ImmutableList.<RelNode>of(dq.getTableScan()));
                   } else {
                     newViewScan = new HiveTableScan(optCluster, optCluster.traitSetOf(HiveRelNode.CONVENTION),
@@ -3520,13 +3520,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
       int posn = 0;
       boolean hintPresent = (selExprList.getChild(0).getType() == HiveParser.QUERY_HINT);
       if (hintPresent) {
-        String hint = ctx.getTokenRewriteStream().toString(
-            selExprList.getChild(0).getTokenStartIndex(),
-            selExprList.getChild(0).getTokenStopIndex());
-        String msg = String.format("Hint specified for %s."
-            + " Currently we don't support hints in CBO, turn off cbo to use hints.", hint);
-        LOG.debug(msg);
-        throw new CalciteSemanticException(msg, UnsupportedFeature.Hint);
+        posn++;
       }
 
       // 4. Bailout if select involves Transform

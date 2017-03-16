@@ -15,7 +15,7 @@ load data local inpath '../../data/files/smbbucket_3.rc' overwrite into table sm
 set hive.optimize.bucketmapjoin = true;
 set hive.optimize.bucketmapjoin.sortedmerge = true;
 set hive.input.format = org.apache.hadoop.hive.ql.io.BucketizedHiveInputFormat;
-
+set hive.cbo.enable=false;
 -- SORT_QUERY_RESULTS
 
 explain

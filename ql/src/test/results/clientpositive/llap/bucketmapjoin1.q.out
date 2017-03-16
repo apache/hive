@@ -54,36 +54,44 @@ STAGE PLANS:
                     isSamplingPred: false
                     predicate: key is not null (type: boolean)
                     Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                    Reduce Output Operator
-                      key expressions: key (type: int)
-                      null sort order: a
-                      sort order: +
-                      Map-reduce partition columns: key (type: int)
+                    Select Operator
+                      expressions: key (type: int), value (type: string)
+                      outputColumnNames: _col0, _col1
                       Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                      tag: 0
-                      value expressions: value (type: string)
-                      auto parallelism: true
+                      Reduce Output Operator
+                        key expressions: _col0 (type: int)
+                        null sort order: a
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: int)
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                        tag: 0
+                        value expressions: _col1 (type: string)
+                        auto parallelism: true
             Execution mode: llap
             LLAP IO: unknown
         Map 3 
             Map Operator Tree:
                 TableScan
                   alias: b
-                  Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: PARTIAL
+                  Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: PARTIAL
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
-                    predicate: (key is not null and (ds = '2008-04-08')) (type: boolean)
-                    Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: PARTIAL
-                    Reduce Output Operator
-                      key expressions: key (type: int)
-                      null sort order: a
-                      sort order: +
-                      Map-reduce partition columns: key (type: int)
+                    predicate: ((ds = '2008-04-08') and key is not null) (type: boolean)
+                    Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: PARTIAL
+                    Select Operator
+                      expressions: key (type: int), value (type: string)
+                      outputColumnNames: _col0, _col1
                       Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: PARTIAL
-                      tag: 1
-                      value expressions: value (type: string)
-                      auto parallelism: true
+                      Reduce Output Operator
+                        key expressions: _col0 (type: int)
+                        null sort order: a
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: int)
+                        Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: PARTIAL
+                        tag: 1
+                        value expressions: _col1 (type: string)
+                        auto parallelism: true
             Execution mode: llap
             LLAP IO: unknown
         Reducer 2 
@@ -94,13 +102,13 @@ STAGE PLANS:
                 condition map:
                      Inner Join 0 to 1
                 keys:
-                  0 key (type: int)
-                  1 key (type: int)
-                outputColumnNames: _col0, _col1, _col7
+                  0 _col0 (type: int)
+                  1 _col0 (type: int)
+                outputColumnNames: _col0, _col1, _col3
                 Position of Big Table: 1
                 Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
-                  expressions: _col0 (type: int), _col1 (type: string), _col7 (type: string)
+                  expressions: _col0 (type: int), _col1 (type: string), _col3 (type: string)
                   outputColumnNames: _col0, _col1, _col2
                   Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                   File Output Operator
@@ -178,36 +186,44 @@ STAGE PLANS:
                     isSamplingPred: false
                     predicate: key is not null (type: boolean)
                     Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                    Reduce Output Operator
-                      key expressions: key (type: int)
-                      null sort order: a
-                      sort order: +
-                      Map-reduce partition columns: key (type: int)
+                    Select Operator
+                      expressions: key (type: int), value (type: string)
+                      outputColumnNames: _col0, _col1
                       Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                      tag: 0
-                      value expressions: value (type: string)
-                      auto parallelism: true
+                      Reduce Output Operator
+                        key expressions: _col0 (type: int)
+                        null sort order: a
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: int)
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                        tag: 0
+                        value expressions: _col1 (type: string)
+                        auto parallelism: true
             Execution mode: llap
             LLAP IO: unknown
         Map 3 
             Map Operator Tree:
                 TableScan
                   alias: b
-                  Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: PARTIAL
+                  Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: PARTIAL
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
-                    predicate: (key is not null and (ds = '2008-04-08')) (type: boolean)
-                    Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: PARTIAL
-                    Reduce Output Operator
-                      key expressions: key (type: int)
-                      null sort order: a
-                      sort order: +
-                      Map-reduce partition columns: key (type: int)
+                    predicate: ((ds = '2008-04-08') and key is not null) (type: boolean)
+                    Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: PARTIAL
+                    Select Operator
+                      expressions: key (type: int), value (type: string)
+                      outputColumnNames: _col0, _col1
                       Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: PARTIAL
-                      tag: 1
-                      value expressions: value (type: string)
-                      auto parallelism: true
+                      Reduce Output Operator
+                        key expressions: _col0 (type: int)
+                        null sort order: a
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: int)
+                        Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: PARTIAL
+                        tag: 1
+                        value expressions: _col1 (type: string)
+                        auto parallelism: true
             Execution mode: llap
             LLAP IO: unknown
         Reducer 2 
@@ -218,13 +234,13 @@ STAGE PLANS:
                 condition map:
                      Inner Join 0 to 1
                 keys:
-                  0 key (type: int)
-                  1 key (type: int)
-                outputColumnNames: _col0, _col1, _col7
+                  0 _col0 (type: int)
+                  1 _col0 (type: int)
+                outputColumnNames: _col0, _col1, _col3
                 Position of Big Table: 1
                 Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
-                  expressions: _col0 (type: int), _col1 (type: string), _col7 (type: string)
+                  expressions: _col0 (type: int), _col1 (type: string), _col3 (type: string)
                   outputColumnNames: _col0, _col1, _col2
                   Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                   File Output Operator
@@ -396,15 +412,19 @@ STAGE PLANS:
                     isSamplingPred: false
                     predicate: key is not null (type: boolean)
                     Statistics: Num rows: 26 Data size: 2750 Basic stats: COMPLETE Column stats: NONE
-                    Reduce Output Operator
-                      key expressions: key (type: int)
-                      null sort order: a
-                      sort order: +
-                      Map-reduce partition columns: key (type: int)
+                    Select Operator
+                      expressions: key (type: int), value (type: string)
+                      outputColumnNames: _col0, _col1
                       Statistics: Num rows: 26 Data size: 2750 Basic stats: COMPLETE Column stats: NONE
-                      tag: 0
-                      value expressions: value (type: string)
-                      auto parallelism: true
+                      Reduce Output Operator
+                        key expressions: _col0 (type: int)
+                        null sort order: a
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: int)
+                        Statistics: Num rows: 26 Data size: 2750 Basic stats: COMPLETE Column stats: NONE
+                        tag: 0
+                        value expressions: _col1 (type: string)
+                        auto parallelism: true
             Execution mode: llap
             LLAP IO: no inputs
             Path -> Alias:
@@ -468,15 +488,19 @@ STAGE PLANS:
                     isSamplingPred: false
                     predicate: key is not null (type: boolean)
                     Statistics: Num rows: 55 Data size: 6252 Basic stats: COMPLETE Column stats: NONE
-                    Reduce Output Operator
-                      key expressions: key (type: int)
-                      null sort order: a
-                      sort order: +
-                      Map-reduce partition columns: key (type: int)
+                    Select Operator
+                      expressions: key (type: int), value (type: string)
+                      outputColumnNames: _col0, _col1
                       Statistics: Num rows: 55 Data size: 6252 Basic stats: COMPLETE Column stats: NONE
-                      tag: 1
-                      value expressions: value (type: string)
-                      auto parallelism: true
+                      Reduce Output Operator
+                        key expressions: _col0 (type: int)
+                        null sort order: a
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: int)
+                        Statistics: Num rows: 55 Data size: 6252 Basic stats: COMPLETE Column stats: NONE
+                        tag: 1
+                        value expressions: _col1 (type: string)
+                        auto parallelism: true
             Execution mode: llap
             LLAP IO: no inputs
             Path -> Alias:
@@ -540,13 +564,13 @@ STAGE PLANS:
                 condition map:
                      Inner Join 0 to 1
                 keys:
-                  0 key (type: int)
-                  1 key (type: int)
-                outputColumnNames: _col0, _col1, _col6
+                  0 _col0 (type: int)
+                  1 _col0 (type: int)
+                outputColumnNames: _col0, _col1, _col3
                 Position of Big Table: 1
                 Statistics: Num rows: 60 Data size: 6877 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
-                  expressions: _col0 (type: int), _col1 (type: string), _col6 (type: string)
+                  expressions: _col0 (type: int), _col1 (type: string), _col3 (type: string)
                   outputColumnNames: _col0, _col1, _col2
                   Statistics: Num rows: 60 Data size: 6877 Basic stats: COMPLETE Column stats: NONE
                   File Output Operator
@@ -754,15 +778,19 @@ STAGE PLANS:
                     isSamplingPred: false
                     predicate: key is not null (type: boolean)
                     Statistics: Num rows: 26 Data size: 2750 Basic stats: COMPLETE Column stats: NONE
-                    Reduce Output Operator
-                      key expressions: key (type: int)
-                      null sort order: a
-                      sort order: +
-                      Map-reduce partition columns: key (type: int)
+                    Select Operator
+                      expressions: key (type: int), value (type: string)
+                      outputColumnNames: _col0, _col1
                       Statistics: Num rows: 26 Data size: 2750 Basic stats: COMPLETE Column stats: NONE
-                      tag: 0
-                      value expressions: value (type: string)
-                      auto parallelism: true
+                      Reduce Output Operator
+                        key expressions: _col0 (type: int)
+                        null sort order: a
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: int)
+                        Statistics: Num rows: 26 Data size: 2750 Basic stats: COMPLETE Column stats: NONE
+                        tag: 0
+                        value expressions: _col1 (type: string)
+                        auto parallelism: true
             Execution mode: llap
             LLAP IO: no inputs
             Path -> Alias:
@@ -826,15 +854,19 @@ STAGE PLANS:
                     isSamplingPred: false
                     predicate: key is not null (type: boolean)
                     Statistics: Num rows: 55 Data size: 6252 Basic stats: COMPLETE Column stats: NONE
-                    Reduce Output Operator
-                      key expressions: key (type: int)
-                      null sort order: a
-                      sort order: +
-                      Map-reduce partition columns: key (type: int)
+                    Select Operator
+                      expressions: key (type: int), value (type: string)
+                      outputColumnNames: _col0, _col1
                       Statistics: Num rows: 55 Data size: 6252 Basic stats: COMPLETE Column stats: NONE
-                      tag: 1
-                      value expressions: value (type: string)
-                      auto parallelism: true
+                      Reduce Output Operator
+                        key expressions: _col0 (type: int)
+                        null sort order: a
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: int)
+                        Statistics: Num rows: 55 Data size: 6252 Basic stats: COMPLETE Column stats: NONE
+                        tag: 1
+                        value expressions: _col1 (type: string)
+                        auto parallelism: true
             Execution mode: llap
             LLAP IO: no inputs
             Path -> Alias:
@@ -898,13 +930,13 @@ STAGE PLANS:
                 condition map:
                      Inner Join 0 to 1
                 keys:
-                  0 key (type: int)
-                  1 key (type: int)
-                outputColumnNames: _col0, _col1, _col6
+                  0 _col0 (type: int)
+                  1 _col0 (type: int)
+                outputColumnNames: _col0, _col1, _col3
                 Position of Big Table: 1
                 Statistics: Num rows: 60 Data size: 6877 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
-                  expressions: _col0 (type: int), _col1 (type: string), _col6 (type: string)
+                  expressions: _col0 (type: int), _col1 (type: string), _col3 (type: string)
                   outputColumnNames: _col0, _col1, _col2
                   Statistics: Num rows: 60 Data size: 6877 Basic stats: COMPLETE Column stats: NONE
                   File Output Operator

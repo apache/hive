@@ -52,6 +52,7 @@ DESCRIBE FORMATTED test_table_out PARTITION (part = '1');
 set hive.map.groupby.sorted=false;
 set hive.optimize.bucketmapjoin = true;
 set hive.optimize.bucketmapjoin.sortedmerge = true;
+set hive.cbo.enable=false;
 
 -- Test SMB join doesn't affect inference, should not be bucketed or sorted
 EXPLAIN INSERT OVERWRITE TABLE test_table_out PARTITION (part = '1')

@@ -20,7 +20,7 @@ CLUSTERED BY (key) INTO 2 BUCKETS;
 -- part=1 partition for srcbucket_mapjoin_part_2 is bucketed by 'key'
 INSERT OVERWRITE TABLE srcbucket_mapjoin_part_2 PARTITION (part='1')
 SELECT * FROM src;
-
+set hive.cbo.enable=false;
 set hive.optimize.bucketmapjoin=true;
 
 -- part=1 partition for srcbucket_mapjoin_part_1 is bucketed by 'value'
