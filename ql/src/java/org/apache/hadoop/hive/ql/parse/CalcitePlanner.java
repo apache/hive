@@ -1341,7 +1341,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
       //Remove subquery
       LOG.debug("Plan before removing subquery:\n" + RelOptUtil.toString(calciteGenPlan));
       calciteGenPlan = hepPlan(calciteGenPlan, false, mdProvider.getMetadataProvider(), null,
-              HiveSubQueryRemoveRule.FILTER, HiveSubQueryRemoveRule.PROJECT);
+              HiveSubQueryRemoveRule.REL_NODE);
       LOG.debug("Plan just after removing subquery:\n" + RelOptUtil.toString(calciteGenPlan));
 
       calciteGenPlan = HiveRelDecorrelator.decorrelateQuery(calciteGenPlan);
@@ -3642,7 +3642,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
                   subQueryToRelNode);
           if(isSubQuery) {
             ExprNodeDesc subQueryExpr = genExprNodeDesc(expr, relToHiveRR.get(srcRel),
-                    outerRR, subQueryToRelNode, false);
+                    outerRR, subQueryToRelNode, true);
             col_list.add(subQueryExpr);
 
             ColumnInfo colInfo = new ColumnInfo(SemanticAnalyzer.getColumnInternalName(pos),
@@ -3652,6 +3652,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
                       + colAlias + " => " + colInfo + " due to duplication, see previous warnings",
                       UnsupportedFeature.Duplicates_in_RR);
             }
+            pos = Integer.valueOf(pos.intValue() + 1);
           } else {
 
             // 6.4 Build ExprNode corresponding to colums

@@ -1,0 +1,1 @@
+FAILED: CalciteSubquerySemanticException [Error 10249]: Unsupported SubQuery Expression  Currently SubQuery expressions are only allowed as Where and Having Clause predicates
