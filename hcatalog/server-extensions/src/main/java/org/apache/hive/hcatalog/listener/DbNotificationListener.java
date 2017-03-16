@@ -439,7 +439,7 @@ public class DbNotificationListener extends MetaStoreEventListener {
   public void onInsert(InsertEvent insertEvent) throws MetaException {
     NotificationEvent event =
         new NotificationEvent(0, now(), EventType.INSERT.toString(), msgFactory.buildInsertMessage(
-            insertEvent.getDb(), insertEvent.getTable(), insertEvent.getPartitionKeyValues(),
+            insertEvent.getDb(), insertEvent.getTable(), insertEvent.getPartitionKeyValues(), insertEvent.isReplace(),
             new FileChksumIterator(insertEvent.getFiles(), insertEvent.getFileChecksums()))
             .toString());
     event.setDbName(insertEvent.getDb());

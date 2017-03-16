@@ -231,9 +231,10 @@ public abstract class MessageFactory {
    * @param table Name of the table the insert occurred in
    * @param partVals Partition values for the partition that the insert occurred in, may be null if
    *          the insert was done into a non-partitioned table
+   * @param replace Flag to represent if INSERT OVERWRITE or INSERT INTO
    * @param files Iterator of file created
    * @return instance of InsertMessage
    */
   public abstract InsertMessage buildInsertMessage(String db, String table,
-      Map<String, String> partVals, Iterator<String> files);
+      Map<String, String> partVals, boolean replace, Iterator<String> files);
 }

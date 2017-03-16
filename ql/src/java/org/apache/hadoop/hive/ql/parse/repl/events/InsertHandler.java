@@ -51,16 +51,30 @@ public class InsertHandler extends AbstractHandler {
       qlPtns = Collections.singletonList(withinContext.db.getPartition(qlMdTable, partSpec, false));
     }
     Path metaDataPath = new Path(withinContext.eventRoot, EximUtil.METADATA_NAME);
-    // Mark the replication type as insert into to avoid overwrite while import
-    withinContext.replicationSpec.setIsInsert(true);
+
+    // Mark the replace type based on INSERT-INTO or INSERT_OVERWRITE operation
+    withinContext.replicationSpec.setIsReplace(insertMsg.isReplace());
     EximUtil.createExportDump(metaDataPath.getFileSystem(withinContext.hiveConf), metaDataPath,
         qlMdTable, qlPtns,
         withinContext.replicationSpec);
     Iterable<String> files = insertMsg.getFiles();
 
     if (files != null) {
+      Path dataPath;
+      if ((null == qlPtns) || qlPtns.isEmpty()) {
+        dataPath = new Path(withinContext.eventRoot, EximUtil.DATA_PATH_NAME);
+      } else {
+        /*
+         * Insert into/overwrite operation shall operate on one or more partitions or even partitions from multiple
+         * tables. But, Insert event is generated for each partition to which the data is inserted. So, qlPtns list
+         * will have only one entry.
+         */
+        assert(1 == qlPtns.size());
+        dataPath = new Path(withinContext.eventRoot, qlPtns.get(0).getName());
+      }
+
       // encoded filename/checksum of files, write into _files
-      try (BufferedWriter fileListWriter = writer(withinContext)) {
+      try (BufferedWriter fileListWriter = writer(withinContext, dataPath)) {
         for (String file : files) {
           fileListWriter.write(file + "\n");
         }
@@ -82,8 +96,7 @@ public class InsertHandler extends AbstractHandler {
     );
   }
 
-  private BufferedWriter writer(Context withinContext) throws IOException {
-    Path dataPath = new Path(withinContext.eventRoot, EximUtil.DATA_PATH_NAME);
+  private BufferedWriter writer(Context withinContext, Path dataPath) throws IOException {
     Path filesPath = new Path(dataPath, EximUtil.FILES_NAME);
     FileSystem fs = dataPath.getFileSystem(withinContext.hiveConf);
     return new BufferedWriter(new OutputStreamWriter(fs.create(filesPath)));

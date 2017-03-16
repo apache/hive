@@ -812,9 +812,10 @@ struct CurrentNotificationEventId {
 }
 
 struct InsertEventRequestData {
-    1: required list<string> filesAdded,
+    1: optional bool replace,
+    2: required list<string> filesAdded,
     // Checksum of files (hex string of checksum byte payload)
-    2: optional list<string> filesAddedChecksum,
+    3: optional list<string> filesAddedChecksum,
 }
 
 union FireEventRequestData {
