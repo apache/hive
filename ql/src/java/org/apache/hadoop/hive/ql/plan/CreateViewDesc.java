@@ -24,6 +24,7 @@ import java.util.Map;
 
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
 
@@ -54,6 +55,7 @@ public class CreateViewDesc extends DDLDesc implements Serializable {
   private String serde; // only used for materialized views
   private String storageHandler; // only used for materialized views
   private Map<String, String> serdeProps; // only used for materialized views
+  private ReplicationSpec replicationSpec = null;
 
   /**
    * For serialization only.
@@ -269,6 +271,9 @@ public class CreateViewDesc extends DDLDesc implements Serializable {
     return isMaterialized;
   }
 
+  public void setLocation(String location) {
+    this.location = location;
+  }
   public String getLocation() {
     return location;
   }
@@ -285,4 +290,21 @@ public class CreateViewDesc extends DDLDesc implements Serializable {
     return serdeProps;
   }
 
+  /**
+   * @param replicationSpec Sets the replication spec governing this create.
+   * This parameter will have meaningful values only for creates happening as a result of a replication.
+   */
+  public void setReplicationSpec(ReplicationSpec replicationSpec) {
+    this.replicationSpec = replicationSpec;
+  }
+
+  /**
+   * @return what kind of replication spec this create is running under.
+   */
+  public ReplicationSpec getReplicationSpec(){
+    if (replicationSpec == null){
+      this.replicationSpec = new ReplicationSpec();
+    }
+    return this.replicationSpec;
+  }
 }

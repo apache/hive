@@ -431,6 +431,9 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
         }
 
         Table qlMdTable = new Table(tobj);
+        if (qlMdTable.isView()) {
+          replicationSpec.setIsMetadataOnly(true);
+        }
 
         Path metaDataPath = new Path(evRoot, EximUtil.METADATA_NAME);
         EximUtil.createExportDump(

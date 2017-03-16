@@ -112,10 +112,12 @@ public class ExportSemanticAnalyzer extends BaseSemanticAnalyzer {
             && ts.tableHandle.isTemporary()){
           // No replication for temporary tables either
           ts = null;
+        } else if (ts.tableHandle.isView()) {
+          replicationSpec.setIsMetadataOnly(true);
         }
 
       } catch (SemanticException e) {
-        // table was a view, a non-native table or an offline table.
+        // table was a non-native table or an offline table.
         // ignore for replication, error if not.
         if (replicationSpec.isInReplicationScope()){
           ts = null; // null out ts so we can't use it.
@@ -204,11 +206,11 @@ public class ExportSemanticAnalyzer extends BaseSemanticAnalyzer {
         Path fromPath = ts.tableHandle.getDataLocation();
         Path toDataPath = new Path(parentPath, EximUtil.DATA_PATH_NAME);
         Task<? extends Serializable> rTask =
-            ReplCopyTask.getDumpCopyTask(replicationSpec, fromPath, toDataPath, conf);
+                ReplCopyTask.getDumpCopyTask(replicationSpec, fromPath, toDataPath, conf);
         rootTasks.add(rTask);
         inputs.add(new ReadEntity(ts.tableHandle));
       }
-      outputs.add(toWriteEntity(parentPath,conf));
+      outputs.add(toWriteEntity(parentPath, conf));
     }
   }
 
