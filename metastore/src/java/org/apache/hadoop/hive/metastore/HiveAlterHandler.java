@@ -29,7 +29,6 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.FileUtils;
-import org.apache.hadoop.hive.common.ObjectPair;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
@@ -111,10 +110,9 @@ public class HiveAlterHandler implements AlterHandler {
     FileSystem destFs = null;
 
     boolean success = false;
-    boolean moveData = false;
+    boolean dataWasMoved = false;
     boolean rename = false;
     Table oldt = null;
-    List<ObjectPair<Partition, String>> altps = new ArrayList<ObjectPair<Partition, String>>();
     List<MetaStoreEventListener> transactionalListeners = null;
     if (handler != null) {
       transactionalListeners = handler.getTransactionalListeners();
@@ -212,7 +210,6 @@ public class HiveAlterHandler implements AlterHandler {
           destFs = wh.getFs(destPath);
 
           newt.getSd().setLocation(destPath.toString());
-          moveData = true;
 
           // check that destination does not exist otherwise we will be
           // overwriting data
@@ -222,18 +219,22 @@ public class HiveAlterHandler implements AlterHandler {
                 + " is on a different file system than the old location "
                 + srcPath + ". This operation is not supported");
           }
+
           try {
-            srcFs.exists(srcPath); // check that src exists and also checks
-                                   // permissions necessary
             if (destFs.exists(destPath)) {
               throw new InvalidOperationException("New location for this table "
                   + newt.getDbName() + "." + newt.getTableName()
                   + " already exists : " + destPath);
             }
+            // check that src exists and also checks permissions necessary, rename src to dest
+            if (srcFs.exists(srcPath) && srcFs.rename(srcPath, destPath)) {
+              dataWasMoved = true;
+            }
           } catch (IOException e) {
-            throw new InvalidOperationException("Unable to access new location "
-                + destPath + " for table " + newt.getDbName() + "."
-                + newt.getTableName());
+            LOG.error("Alter Table operation for " + dbname + "." + name + " failed.", e);
+            throw new InvalidOperationException("Alter Table operation for " + dbname + "." + name +
+                " failed to move data due to: '" + getSimpleMessage(e)
+                + "' See hive log file for details.");
           }
           String oldTblLocPath = srcPath.toUri().getPath();
           String newTblLocPath = destPath.toUri().getPath();
@@ -246,7 +247,6 @@ public class HiveAlterHandler implements AlterHandler {
               URI oldUri = new Path(oldPartLoc).toUri();
               String newPath = oldUri.getPath().replace(oldTblLocPath, newTblLocPath);
               Path newPartLocPath = new Path(oldUri.getScheme(), oldUri.getAuthority(), newPath);
-              altps.add(ObjectPair.create(part, part.getSd().getLocation()));
               part.getSd().setLocation(newPartLocPath.toString());
               String oldPartName = Warehouse.makePartName(oldt.getPartitionKeys(), part.getValues());
               try {
@@ -289,51 +289,22 @@ public class HiveAlterHandler implements AlterHandler {
               + " Check metastore logs for detailed stack." + e.getMessage());
     } finally {
       if (!success) {
+        LOG.error("Failed to alter table " + dbname + "." + name);
         msdb.rollbackTransaction();
-      }
-
-      if (success && moveData) {
-        // change the file name in hdfs
-        // check that src exists otherwise there is no need to copy the data
-        // rename the src to destination
-        try {
-          if (srcFs.exists(srcPath) && !srcFs.rename(srcPath, destPath)) {
-            throw new IOException("Renaming " + srcPath + " to " + destPath + " failed");
-          }
-        } catch (IOException e) {
-          LOG.error("Alter Table operation for " + dbname + "." + name + " failed.", e);
-          boolean revertMetaDataTransaction = false;
+        if (dataWasMoved) {
           try {
-            msdb.openTransaction();
-            msdb.alterTable(newt.getDbName(), newt.getTableName(), oldt);
-            for (ObjectPair<Partition, String> pair : altps) {
-              Partition part = pair.getFirst();
-              part.getSd().setLocation(pair.getSecond());
-              msdb.alterPartition(newt.getDbName(), name, part.getValues(), part);
+            if (destFs.exists(destPath)) {
+              if (!destFs.rename(destPath, srcPath)) {
+                LOG.error("Failed to restore data from " + destPath + " to " + srcPath
+                    + " in alter table failure. Manual restore is needed.");
+              }
             }
-            revertMetaDataTransaction = msdb.commitTransaction();
-          } catch (Exception e1) {
-            // we should log this for manual rollback by administrator
-            LOG.error("Reverting metadata by HDFS operation failure failed During HDFS operation failed", e1);
-            LOG.error("Table " + Warehouse.getQualifiedName(newt) +
-                " should be renamed to " + Warehouse.getQualifiedName(oldt));
-            LOG.error("Table " + Warehouse.getQualifiedName(newt) +
-                " should have path " + srcPath);
-            for (ObjectPair<Partition, String> pair : altps) {
-              LOG.error("Partition " + Warehouse.getQualifiedName(pair.getFirst()) +
-                  " should have path " + pair.getSecond());
-            }
-            if (!revertMetaDataTransaction) {
-              msdb.rollbackTransaction();
-            }
+          } catch (IOException e) {
+            LOG.error("Failed to restore data from " + destPath + " to " + srcPath
+                +  " in alter table failure. Manual restore is needed.");
           }
-          throw new InvalidOperationException("Alter Table operation for " + dbname + "." + name +
-            " failed to move data due to: '" + getSimpleMessage(e) + "' See hive log file for details.");
         }
       }
-    }
-    if (!success) {
-      throw new MetaException("Committing the alter table transaction was not successful.");
     }
   }
 
