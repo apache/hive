@@ -383,11 +383,11 @@ public final class GenMRSkewJoinProcessor {
     return true;
   }
 
-  private static String skewJoinPrefix = "hive_skew_join";
-  private static String UNDERLINE = "_";
-  private static String BIGKEYS = "bigkeys";
-  private static String SMALLKEYS = "smallkeys";
-  private static String RESULTS = "results";
+  private static final String skewJoinPrefix = "hive_skew_join";
+  private static final String UNDERLINE = "_";
+  private static final String BIGKEYS = "bigkeys";
+  private static final String SMALLKEYS = "smallkeys";
+  private static final String RESULTS = "results";
 
   static Path getBigKeysDir(Path baseDir, Byte srcTbl) {
     return StringInternUtils.internUriStringsInPath(

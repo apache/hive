@@ -35,7 +35,7 @@ import com.google.common.base.Preconditions;
  */
 public class VectorMapJoinDesc extends AbstractVectorDesc  {
 
-  private static long serialVersionUID = 1L;
+  private static final long serialVersionUID = 1L;
 
   public static enum HashTableImplementationType {
     NONE,

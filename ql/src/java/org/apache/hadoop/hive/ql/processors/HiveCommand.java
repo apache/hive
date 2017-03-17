@@ -36,7 +36,7 @@ public enum HiveCommand {
   DELETE(),
   COMPILE();
 
-  public static boolean ONLY_FOR_TESTING = true;
+  public static final boolean ONLY_FOR_TESTING = true;
   private boolean usedOnlyForTesting;
 
   HiveCommand() {

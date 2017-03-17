@@ -482,7 +482,7 @@ public class ReduceSinkDesc extends AbstractOperatorDesc {
   }
 
   // Use LinkedHashSet to give predictable display order.
-  private static Set<String> vectorizableReduceSinkNativeEngines =
+  private static final Set<String> vectorizableReduceSinkNativeEngines =
       new LinkedHashSet<String>(Arrays.asList("tez", "spark"));
 
   public class ReduceSinkOperatorExplainVectorization extends OperatorExplainVectorization {

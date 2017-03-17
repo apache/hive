@@ -37,7 +37,6 @@ import java.util.regex.Pattern;
 import org.apache.commons.lang.ArrayUtils;
 
 import org.apache.calcite.util.Pair;
-import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,8 +44,6 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.*;
 import org.apache.hadoop.hive.ql.exec.mr.MapRedTask;
-import org.apache.hadoop.hive.ql.exec.mr.MapredLocalTask;
-import org.apache.hadoop.hive.ql.exec.persistence.MapJoinBytesTableContainer;
 import org.apache.hadoop.hive.ql.exec.persistence.MapJoinKey;
 import org.apache.hadoop.hive.ql.exec.spark.SparkTask;
 import org.apache.hadoop.hive.ql.exec.tez.TezTask;
@@ -70,10 +67,8 @@ import org.apache.hadoop.hive.ql.exec.vector.udf.VectorUDFAdaptor;
 import org.apache.hadoop.hive.ql.exec.vector.ColumnVector.Type;
 import org.apache.hadoop.hive.ql.exec.vector.VectorColumnOutputMapping;
 import org.apache.hadoop.hive.ql.exec.vector.VectorColumnSourceMapping;
-import org.apache.hadoop.hive.ql.exec.vector.VectorFilterOperator;
 import org.apache.hadoop.hive.ql.exec.vector.VectorMapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.vector.VectorMapJoinOuterFilteredOperator;
-import org.apache.hadoop.hive.ql.exec.vector.VectorSMBMapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizationContext;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizationContext.HiveVectorAdaptorUsageMode;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizationContext.InConstantType;
@@ -81,7 +76,6 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorizationContextRegion;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.IdentityExpression;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.VectorAggregateExpression;
-import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.io.orc.OrcInputFormat;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatchCtx;
 import org.apache.hadoop.hive.ql.lib.DefaultGraphWalker;
@@ -107,16 +101,13 @@ import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
-import org.apache.hadoop.hive.ql.plan.FetchWork;
 import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
 import org.apache.hadoop.hive.ql.plan.FilterDesc;
 import org.apache.hadoop.hive.ql.plan.GroupByDesc;
-import org.apache.hadoop.hive.ql.plan.HashTableSinkDesc;
 import org.apache.hadoop.hive.ql.plan.JoinDesc;
 import org.apache.hadoop.hive.ql.plan.LimitDesc;
 import org.apache.hadoop.hive.ql.plan.MapJoinDesc;
 import org.apache.hadoop.hive.ql.plan.MapWork;
-import org.apache.hadoop.hive.ql.plan.MapredLocalWork;
 import org.apache.hadoop.hive.ql.plan.MapredWork;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.SelectDesc;
@@ -130,7 +121,6 @@ import org.apache.hadoop.hive.ql.plan.VectorSparkHashTableSinkDesc;
 import org.apache.hadoop.hive.ql.plan.VectorSparkPartitionPruningSinkDesc;
 import org.apache.hadoop.hive.ql.plan.VectorLimitDesc;
 import org.apache.hadoop.hive.ql.plan.VectorMapJoinInfo;
-import org.apache.hadoop.hive.ql.plan.VectorPartitionConversion;
 import org.apache.hadoop.hive.ql.plan.VectorSMBJoinDesc;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
 import org.apache.hadoop.hive.ql.plan.ReduceSinkDesc;
@@ -149,7 +139,6 @@ import org.apache.hadoop.hive.ql.plan.VectorMapJoinDesc.HashTableKeyType;
 import org.apache.hadoop.hive.ql.plan.VectorMapJoinDesc.HashTableKind;
 import org.apache.hadoop.hive.ql.plan.VectorMapJoinDesc.OperatorVariation;
 import org.apache.hadoop.hive.ql.plan.VectorPartitionDesc.VectorDeserializeType;
-import org.apache.hadoop.hive.ql.plan.VectorMapJoinInfo;
 import org.apache.hadoop.hive.ql.plan.VectorReduceSinkDesc;
 import org.apache.hadoop.hive.ql.plan.VectorReduceSinkInfo;
 import org.apache.hadoop.hive.ql.plan.VectorPartitionDesc;
@@ -198,14 +187,11 @@ import org.apache.hadoop.hive.ql.udf.UDFWeekOfYear;
 import org.apache.hadoop.hive.ql.udf.UDFYear;
 import org.apache.hadoop.hive.ql.udf.generic.*;
 import org.apache.hadoop.hive.serde.serdeConstants;
-import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.hive.serde2.NullStructSerDe;
 import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
 import org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe;
-import org.apache.hadoop.hive.serde2.SerDeException;
-import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
@@ -219,8 +205,6 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.mapred.SequenceFileInputFormat;
 import org.apache.hadoop.mapred.TextInputFormat;
 import org.apache.hive.common.util.AnnotationUtils;
-import org.apache.hive.common.util.HiveStringUtils;
-import org.apache.hive.common.util.ReflectionUtil;
 import org.apache.hadoop.util.ReflectionUtils;
 
 import com.google.common.base.Preconditions;
@@ -264,15 +248,11 @@ public class Vectorizer implements PhysicalPlanResolver {
     supportedDataTypesPattern = Pattern.compile(patternBuilder.toString());
   }
 
-  private List<Task<? extends Serializable>> vectorizableTasks =
-      new ArrayList<Task<? extends Serializable>>();
   private Set<Class<?>> supportedGenericUDFs = new HashSet<Class<?>>();
 
   private Set<String> supportedAggregationUdfs = new HashSet<String>();
 
   private HiveConf hiveConf;
-
-  private boolean isSpark;
 
   private boolean useVectorizedInputFileFormat;
   private boolean useVectorDeserialize;
@@ -456,8 +436,6 @@ public class Vectorizer implements PhysicalPlanResolver {
 
     Set<Operator<? extends OperatorDesc>> nonVectorizedOps;
 
-    TableScanOperator tableScanOperator;
-
     VectorTaskColumnInfo() {
       partitionColumnCount = 0;
     }
@@ -499,9 +477,6 @@ public class Vectorizer implements PhysicalPlanResolver {
     public void setNonVectorizedOps(Set<Operator<? extends OperatorDesc>> nonVectorizedOps) {
       this.nonVectorizedOps = nonVectorizedOps;
     }
-    public void setTableScanOperator(TableScanOperator tableScanOperator) {
-      this.tableScanOperator = tableScanOperator;
-    }
 
     public Set<Operator<? extends OperatorDesc>> getNonVectorizedOps() {
       return nonVectorizedOps;
@@ -539,12 +514,6 @@ public class Vectorizer implements PhysicalPlanResolver {
   }
 
   class VectorizationDispatcher implements Dispatcher {
-
-    private final PhysicalContext physicalContext;
-
-    public VectorizationDispatcher(PhysicalContext physicalContext) {
-      this.physicalContext = physicalContext;
-    }
 
     @Override
     public Object dispatch(Node nd, Stack<Node> stack, Object... nodeOutputs)
@@ -1029,9 +998,6 @@ public class Vectorizer implements PhysicalPlanResolver {
       vectorTaskColumnInfo.setDataColumnNums(dataColumnNums);
       vectorTaskColumnInfo.setPartitionColumnCount(partitionColumnCount);
       vectorTaskColumnInfo.setUseVectorizedInputFileFormat(useVectorizedInputFileFormat);
-
-      // Helps to keep this for debugging.
-      vectorTaskColumnInfo.setTableScanOperator(tableScanOperator);
 
       // Always set these so EXPLAIN can see.
       mapWork.setVectorizationInputFileFormatClassNameSet(inputFileFormatClassNameSet);
@@ -1519,14 +1485,12 @@ public class Vectorizer implements PhysicalPlanResolver {
 
   class MapWorkVectorizationNodeProcessor extends VectorizationNodeProcessor {
 
-    private final MapWork mWork;
     private final VectorTaskColumnInfo vectorTaskColumnInfo;
     private final boolean isTezOrSpark;
 
     public MapWorkVectorizationNodeProcessor(MapWork mWork, boolean isTezOrSpark,
         VectorTaskColumnInfo vectorTaskColumnInfo) {
       super(vectorTaskColumnInfo, vectorTaskColumnInfo.getNonVectorizedOps());
-      this.mWork = mWork;
       this.vectorTaskColumnInfo = vectorTaskColumnInfo;
       this.isTezOrSpark = isTezOrSpark;
     }
@@ -1684,8 +1648,6 @@ public class Vectorizer implements PhysicalPlanResolver {
       return physicalContext;
     }
 
-    isSpark = (HiveConf.getVar(hiveConf, HiveConf.ConfVars.HIVE_EXECUTION_ENGINE).equals("spark"));
-
     useVectorizedInputFileFormat =
         HiveConf.getBoolVar(hiveConf,
             HiveConf.ConfVars.HIVE_VECTORIZATION_USE_VECTORIZED_INPUT_FILE_FORMAT);
@@ -1710,7 +1672,7 @@ public class Vectorizer implements PhysicalPlanResolver {
     hiveVectorAdaptorUsageMode = HiveVectorAdaptorUsageMode.getHiveConfValue(hiveConf);
 
     // create dispatcher and graph walker
-    Dispatcher disp = new VectorizationDispatcher(physicalContext);
+    Dispatcher disp = new VectorizationDispatcher();
     TaskGraphWalker ogw = new TaskGraphWalker(disp);
 
     // get all the tasks nodes from root task
@@ -2579,8 +2541,6 @@ public class Vectorizer implements PhysicalPlanResolver {
     List<ExprNodeDesc> keyDesc = desc.getKeys().get(posBigTable);
     VectorExpression[] allBigTableKeyExpressions = vContext.getVectorExpressions(keyDesc);
     final int allBigTableKeyExpressionsLength = allBigTableKeyExpressions.length;
-    boolean isEmptyKey = (allBigTableKeyExpressionsLength == 0);
-
     boolean supportsKeyTypes = true;  // Assume.
     HashSet<String> notSupportedKeyTypes = new HashSet<String>();
 

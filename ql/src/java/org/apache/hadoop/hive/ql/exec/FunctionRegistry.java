@@ -774,7 +774,7 @@ public final class FunctionRegistry {
    *
    * @return null if no common class could be found.
    */
-  public static TypeInfo getCommonClassForComparison(TypeInfo a, TypeInfo b) {
+  public static synchronized TypeInfo getCommonClassForComparison(TypeInfo a, TypeInfo b) {
     // If same return one of them
     if (a.equals(b)) {
       return a;

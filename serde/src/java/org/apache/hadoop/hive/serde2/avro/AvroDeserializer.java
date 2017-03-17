@@ -75,7 +75,7 @@ class AvroDeserializer {
    * Flag to print the re-encoding warning message only once. Avoid excessive logging for each
    * record encoding.
    */
-  private static boolean warnedOnce = false;
+  private boolean warnedOnce = false;
   /**
    * When encountering a record with an older schema than the one we're trying
    * to read, it is necessary to re-encode with a reader against the newer schema.

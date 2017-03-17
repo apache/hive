@@ -22,7 +22,6 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -32,13 +31,10 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.ql.exec.vector.VectorColumnOutputMapping;
-import org.apache.hadoop.hive.ql.exec.vector.VectorColumnSourceMapping;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 import org.apache.hadoop.hive.ql.plan.Explain.Vectorization;
 import org.apache.hadoop.hive.ql.plan.VectorMapJoinDesc.HashTableImplementationType;
 import org.apache.hadoop.hive.ql.plan.VectorMapJoinDesc.OperatorVariation;
-import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 
 /**
  * Map Join operator Descriptor implementation.
@@ -392,7 +388,7 @@ public class MapJoinDesc extends JoinDesc implements Serializable {
   }
 
   // Use LinkedHashSet to give predictable display order.
-  private static Set<String> vectorizableMapJoinNativeEngines =
+  private static final Set<String> vectorizableMapJoinNativeEngines =
       new LinkedHashSet<String>(Arrays.asList("tez", "spark"));
 
   public class MapJoinOperatorExplainVectorization extends OperatorExplainVectorization {

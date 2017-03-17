@@ -90,16 +90,11 @@ public class CheckFastRowHashMap extends CheckFastHashTable {
     }
   }
 
-  private static String debugDetailedReadPositionString;
-
-  private static String debugDetailedHashMapResultPositionString;
-
-  private static String debugExceptionMessage;
-  private static StackTraceElement[] debugStackTrace;
-
   public static void verifyHashMapRowsMore(List<Object[]> rows, int[] actualToValueMap,
       VectorMapJoinHashMapResult hashMapResult, TypeInfo[] typeInfos,
       int clipIndex, boolean useExactBytes) throws IOException {
+    String debugExceptionMessage = null;
+    StackTraceElement[] debugStackTrace = null;
 
     final int count = rows.size();
     final int columnCount = typeInfos.length;
@@ -134,7 +129,6 @@ public class CheckFastRowHashMap extends CheckFastHashTable {
 
       boolean thrown = false;
       Exception saveException = null;
-      boolean notExpected = false;
       int index = 0;
       try {
         for (index = 0; index < columnCount; index++) {
@@ -144,9 +138,9 @@ public class CheckFastRowHashMap extends CheckFastHashTable {
       } catch (Exception e) {
         thrown = true;
         saveException = e;
-        debugDetailedReadPositionString = lazyBinaryDeserializeRead.getDetailedReadPositionString();
+        lazyBinaryDeserializeRead.getDetailedReadPositionString();
 
-        debugDetailedHashMapResultPositionString = hashMapResult.getDetailedHashMapResultPositionString();
+        hashMapResult.getDetailedHashMapResultPositionString();
 
         debugExceptionMessage = saveException.getMessage();
         debugStackTrace = saveException.getStackTrace();
@@ -159,7 +153,6 @@ public class CheckFastRowHashMap extends CheckFastHashTable {
           if (saveException instanceof EOFException) {
             // This is the one we are expecting.
           } else if (saveException instanceof ArrayIndexOutOfBoundsException) {
-            notExpected = true;
           } else {
             TestCase.fail("Expecting an EOFException to be thrown for the clipped case...");
           }
@@ -385,7 +378,7 @@ public class CheckFastRowHashMap extends CheckFastHashTable {
     }
   }
 
-  static int STACK_LENGTH_LIMIT = 20;
+  static final int STACK_LENGTH_LIMIT = 20;
   public static String getStackTraceAsSingleLine(StackTraceElement[] stackTrace) {
     StringBuilder sb = new StringBuilder();
     sb.append("Stack trace: ");

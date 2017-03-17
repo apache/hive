@@ -49,7 +49,7 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 public class StatsSetupConst {
 
-  protected final static Logger LOG = LoggerFactory.getLogger(StatsSetupConst.class.getName());
+  protected static final Logger LOG = LoggerFactory.getLogger(StatsSetupConst.class.getName());
 
   public enum StatDB {
     fs {

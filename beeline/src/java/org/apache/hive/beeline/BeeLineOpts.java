@@ -62,7 +62,7 @@ class BeeLineOpts implements Completer {
   public static final int DEFAULT_MAX_COLUMN_WIDTH = 50;
   public static final int DEFAULT_INCREMENTAL_BUFFER_ROWS = 1000;
 
-  public static String URL_ENV_PREFIX = "BEELINE_URL_";
+  public static final String URL_ENV_PREFIX = "BEELINE_URL_";
 
   private final BeeLine beeLine;
   private boolean autosave = false;

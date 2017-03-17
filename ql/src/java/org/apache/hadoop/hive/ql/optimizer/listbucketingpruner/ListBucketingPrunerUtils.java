@@ -37,10 +37,10 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqual;
 public final class ListBucketingPrunerUtils {
 
   /* Default list bucketing directory name. internal use only not for client. */
-  public static String HIVE_LIST_BUCKETING_DEFAULT_DIR_NAME =
+  public static final String HIVE_LIST_BUCKETING_DEFAULT_DIR_NAME =
       "HIVE_DEFAULT_LIST_BUCKETING_DIR_NAME";
   /* Default list bucketing directory key. internal use only not for client. */
-  public static String HIVE_LIST_BUCKETING_DEFAULT_KEY = "HIVE_DEFAULT_LIST_BUCKETING_KEY";
+  public static final String HIVE_LIST_BUCKETING_DEFAULT_KEY = "HIVE_DEFAULT_LIST_BUCKETING_KEY";
 
   /**
    * Decide if pruner skips the skewed directory

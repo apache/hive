@@ -49,12 +49,12 @@ import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
 
 public class HdfsUtils {
+  private static final Logger LOG = LoggerFactory.getLogger("shims.HdfsUtils");
 
   // TODO: this relies on HDFS not changing the format; we assume if we could get inode ID, this
   //       is still going to work. Otherwise, file IDs can be turned off. Later, we should use
   //       as public utility method in HDFS to obtain the inode-based path.
-  private static String HDFS_ID_PATH_PREFIX = "/.reserved/.inodes/";
-  static Logger LOG = LoggerFactory.getLogger("shims.HdfsUtils");
+  private static final String HDFS_ID_PATH_PREFIX = "/.reserved/.inodes/";
 
   public static Path getFileIdPath(
       FileSystem fileSystem, Path path, long fileId) {

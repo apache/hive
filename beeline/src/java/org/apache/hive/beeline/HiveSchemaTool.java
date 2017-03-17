@@ -89,7 +89,7 @@ public class HiveSchemaTool {
     }
     this.hiveConf = hiveConf;
     this.dbType = dbType;
-    this.metaStoreSchemaInfo = new MetaStoreSchemaInfo(hiveHome, hiveConf, dbType);
+    this.metaStoreSchemaInfo = new MetaStoreSchemaInfo(hiveHome, dbType);
     userName = hiveConf.get(ConfVars.METASTORE_CONNECTION_USER_NAME.varname);
     try {
       passWord = ShimLoader.getHadoopShims().getPassword(hiveConf,

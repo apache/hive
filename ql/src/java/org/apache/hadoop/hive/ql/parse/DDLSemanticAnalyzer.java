@@ -1808,7 +1808,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
   static class QualifiedNameUtil {
 
     // delimiter to check DOT delimited qualified names
-    static String delimiter = "\\.";
+    static final String delimiter = "\\.";
 
     /**
      * Get the fully qualified name in the ast. e.g. the ast of the form ^(DOT

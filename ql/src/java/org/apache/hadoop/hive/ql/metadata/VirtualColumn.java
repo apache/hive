@@ -60,7 +60,7 @@ public enum VirtualColumn {
    */
   GROUPINGID("GROUPING__ID", TypeInfoFactory.intTypeInfo);
 
-  public static ImmutableSet<String> VIRTUAL_COLUMN_NAMES =
+  public static final ImmutableSet<String> VIRTUAL_COLUMN_NAMES =
       ImmutableSet.of(FILENAME.getName(), BLOCKOFFSET.getName(), ROWOFFSET.getName(),
           RAWDATASIZE.getName(), GROUPINGID.getName(), ROWID.getName());
 

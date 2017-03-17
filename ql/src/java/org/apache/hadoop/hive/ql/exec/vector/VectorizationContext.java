@@ -1359,7 +1359,7 @@ public class VectorizationContext {
     return "arguments: " + Arrays.toString(args) + ", argument classes: " + argClasses.toString();
   }
 
-  private static int STACK_LENGTH_LIMIT = 15;
+  private static final int STACK_LENGTH_LIMIT = 15;
 
   public static String getStackTraceAsSingleLine(Throwable e) {
     StringBuilder sb = new StringBuilder();

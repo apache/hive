@@ -36,7 +36,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
  */
 public class VectorMapJoinInfo {
 
-  private static long serialVersionUID = 1L;
+  private static final long serialVersionUID = 1L;
 
   private int[] bigTableKeyColumnMap;
   private String[] bigTableKeyColumnNames;

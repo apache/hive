@@ -25,7 +25,6 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.core.LoggerContext;
 import org.apache.logging.log4j.core.config.Configurator;
 import org.apache.logging.log4j.core.impl.Log4jContextFactory;
 import org.slf4j.Logger;
@@ -45,8 +44,8 @@ public class LogUtils {
   /**
    * Constants for log masking
    */
-  private static String KEY_TO_MASK_WITH = "password";
-  private static String MASKED_VALUE = "###_MASKED_###";
+  private static final String KEY_TO_MASK_WITH = "password";
+  private static final String MASKED_VALUE = "###_MASKED_###";
 
   @SuppressWarnings("serial")
   public static class LogInitializationException extends Exception {

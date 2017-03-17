@@ -24,10 +24,10 @@ import org.apache.hadoop.mapred.RecordReader;
 
 public class HiveIOExceptionHandlerUtil {
 
-  private static ThreadLocal<HiveIOExceptionHandlerChain> handlerChainInstance =
+  private static final ThreadLocal<HiveIOExceptionHandlerChain> handlerChainInstance =
     new ThreadLocal<HiveIOExceptionHandlerChain>();
 
-  private static HiveIOExceptionHandlerChain get(JobConf job) {
+  private static synchronized HiveIOExceptionHandlerChain get(JobConf job) {
     HiveIOExceptionHandlerChain cache = HiveIOExceptionHandlerUtil.handlerChainInstance
         .get();
     if (cache == null) {

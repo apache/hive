@@ -33,7 +33,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
  */
 public class VectorReduceSinkInfo {
 
-  private static long serialVersionUID = 1L;
+  private static final long serialVersionUID = 1L;
 
   private int[] reduceSinkKeyColumnMap;
   private TypeInfo[] reduceSinkKeyTypeInfos;
