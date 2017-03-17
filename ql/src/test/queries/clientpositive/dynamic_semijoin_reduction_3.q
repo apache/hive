@@ -101,7 +101,7 @@ using (
 on sub.join_key = customer.source_pk
 when matched then update set
   is_current = false,
-  end_date = current_date()
+  end_date = date '2017-03-15' 
 when not matched then insert values
   (sub.source_pk, upper(substr(sub.name, 0, 3)), sub.name, sub.state, true, null);
 select * from customer order by source_pk;
