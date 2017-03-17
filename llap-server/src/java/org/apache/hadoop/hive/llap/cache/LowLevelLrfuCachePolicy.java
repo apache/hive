@@ -210,13 +210,14 @@ public class LowLevelLrfuCachePolicy implements LowLevelCachePolicy {
   }
 
   @Override
-  public int tryEvictContiguousData(int allocationSize, int count) {
+  public long tryEvictContiguousData(int allocationSize, int count) {
     int evicted = evictDataFromList(allocationSize, count);
-    count -= evicted;
-    if (count > 0) {
-      evicted += evictDataFromHeap(timer.get(), count, allocationSize);
-    }
-    return evicted;
+    if (count <= evicted) return evicted * allocationSize;
+    evicted += evictDataFromHeap(timer.get(), count - evicted, allocationSize);
+    long evictedBytes = evicted * allocationSize;
+    if (count <= evicted) return evictedBytes;
+    evictedBytes += evictSomeBlocks(allocationSize * (count - evicted));
+    return evictedBytes;
   }
 
   private long evictFromList(long memoryToReserve) {

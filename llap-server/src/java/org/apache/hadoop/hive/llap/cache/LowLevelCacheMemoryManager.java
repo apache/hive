@@ -114,13 +114,9 @@ public class LowLevelCacheMemoryManager implements MemoryManager {
 
 
   @Override
-  public void forceReservedMemory(int allocationSize, int count) {
-    if (evictor == null) return;
-    while (count > 0) {
-      int evictedCount = evictor.tryEvictContiguousData(allocationSize, count);
-      if (evictedCount == 0) return;
-      count -= evictedCount;
-    }
+  public long forceReservedMemory(int allocationSize, int count) {
+    if (evictor == null) return 0;
+    return evictor.tryEvictContiguousData(allocationSize, count);
   }
 
   @Override
