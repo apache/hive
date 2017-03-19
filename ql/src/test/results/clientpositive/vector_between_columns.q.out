@@ -135,7 +135,7 @@ STAGE PLANS:
                       className: VectorSelectOperator
                       native: true
                       projectedOutputColumns: [0, 2, 1, 3, 5]
-                      selectExpressions: VectorUDFAdaptor(CASE WHEN (_col1 BETWEEN _col3 AND _col3) THEN ('Ok') ELSE ('NoOk') END)(children: VectorUDFAdaptor(_col1 BETWEEN _col3 AND _col3) -> 4:boolean) -> 5:string
+                      selectExpressions: IfExprStringScalarStringScalar(col 4, val Ok, val NoOk)(children: VectorUDFAdaptor(_col1 BETWEEN _col3 AND _col3) -> 4:boolean) -> 5:String
                   Statistics: Num rows: 25 Data size: 385 Basic stats: COMPLETE Column stats: NONE
                   File Output Operator
                     compressed: false

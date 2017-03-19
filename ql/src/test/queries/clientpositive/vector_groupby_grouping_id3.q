@@ -14,7 +14,7 @@ set hive.cbo.enable = false;
 
 -- SORT_QUERY_RESULTS
 
-EXPLAIN
+EXPLAIN VECTORIZATION DETAIL
 SELECT key, value, GROUPING__ID, count(*)
 FROM T1
 GROUP BY key, value
@@ -28,7 +28,7 @@ HAVING GROUPING__ID = 1;
 
 set hive.cbo.enable = true;
 
-EXPLAIN
+EXPLAIN VECTORIZATION DETAIL
 SELECT key, value, GROUPING__ID, count(*)
 FROM T1
 GROUP BY key, value
