@@ -1,10 +1,10 @@
 set hive.explain.user=false;
+set hive.fetch.task.conversion=none;
 set hive.cli.print.header=true;
 SET hive.exec.schema.evolution=true;
 SET hive.vectorized.use.vectorized.input.format=false;
 SET hive.vectorized.use.vector.serde.deserialize=true;
 SET hive.vectorized.use.row.serde.deserialize=false;
-set hive.fetch.task.conversion=none;
 SET hive.vectorized.execution.enabled=true;
 set hive.exec.dynamic.partition.mode=nonstrict;
 set hive.metastore.disallow.incompatible.col.type.changes=true;
