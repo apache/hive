@@ -137,6 +137,43 @@ public class VectorizedRowBatch implements Writable {
       return "";
     }
     StringBuilder b = new StringBuilder();
+    b.append("Column vector types: ");
+    for (int k = 0; k < projectionSize; k++) {
+      int projIndex = projectedColumns[k];
+      ColumnVector cv = cols[projIndex];
+      if (k > 0) {
+        b.append(", ");
+      }
+      b.append(projIndex);
+      b.append(":");
+      String colVectorType = null;
+      if (cv instanceof LongColumnVector) {
+        colVectorType = "LONG";
+      } else if (cv instanceof DoubleColumnVector) {
+        colVectorType = "DOUBLE";
+      } else if (cv instanceof BytesColumnVector) {
+        colVectorType = "BYTES";
+      } else if (cv instanceof DecimalColumnVector) {
+        colVectorType = "DECIMAL";
+      } else if (cv instanceof TimestampColumnVector) {
+        colVectorType = "TIMESTAMP";
+      } else if (cv instanceof IntervalDayTimeColumnVector) {
+        colVectorType = "INTERVAL_DAY_TIME";
+      } else if (cv instanceof ListColumnVector) {
+        colVectorType = "LIST";
+      } else if (cv instanceof MapColumnVector) {
+        colVectorType = "MAP";
+      } else if (cv instanceof StructColumnVector) {
+        colVectorType = "STRUCT";
+      } else if (cv instanceof UnionColumnVector) {
+        colVectorType = "UNION";
+      } else {
+        colVectorType = "Unknown";
+      }
+      b.append(colVectorType);
+    }
+    b.append('\n');
+
     if (this.selectedInUse) {
       for (int j = 0; j < size; j++) {
         int i = selected[j];
