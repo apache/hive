@@ -30,6 +30,8 @@ import org.apache.hadoop.hive.ql.util.JavaDataModel;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 
+import com.google.common.base.Preconditions;
+
 /**
  * A hash map key wrapper for vectorized processing.
  * It stores the key values as primitives in arrays for each supported primitive type.
@@ -59,15 +61,22 @@ public class VectorHashKeyWrapper extends KeyWrapper {
   private HiveDecimalWritable[] decimalValues;
 
   private Timestamp[] timestampValues;
+  private static Timestamp ZERO_TIMESTAMP = new Timestamp(0);
 
   private HiveIntervalDayTime[] intervalDayTimeValues;
+  private static HiveIntervalDayTime ZERO_INTERVALDAYTIME= new HiveIntervalDayTime(0, 0);
 
+  // NOTE: The null array is indexed by keyIndex, which is not available internally.  The mapping
+  //       from a long, double, etc index to key index is kept once in the separate
+  //       VectorColumnSetInfo object.
   private boolean[] isNull;
+
   private int hashcode;
 
   private VectorHashKeyWrapper(int longValuesCount, int doubleValuesCount,
           int byteValuesCount, int decimalValuesCount, int timestampValuesCount,
-          int intervalDayTimeValuesCount) {
+          int intervalDayTimeValuesCount,
+          int keyCount) {
     longValues = longValuesCount > 0 ? new long[longValuesCount] : EMPTY_LONG_ARRAY;
     doubleValues = doubleValuesCount > 0 ? new double[doubleValuesCount] : EMPTY_DOUBLE_ARRAY;
     decimalValues = decimalValuesCount > 0 ? new HiveDecimalWritable[decimalValuesCount] : EMPTY_DECIMAL_ARRAY;
@@ -91,8 +100,7 @@ public class VectorHashKeyWrapper extends KeyWrapper {
     for(int i = 0; i < intervalDayTimeValuesCount; ++i) {
       intervalDayTimeValues[i] = new HiveIntervalDayTime();
     }
-    isNull = new boolean[longValuesCount + doubleValuesCount + byteValuesCount +
-                         decimalValuesCount + timestampValuesCount + intervalDayTimeValuesCount];
+    isNull = new boolean[keyCount];
     hashcode = 0;
   }
 
@@ -101,13 +109,14 @@ public class VectorHashKeyWrapper extends KeyWrapper {
 
   public static VectorHashKeyWrapper allocate(int longValuesCount, int doubleValuesCount,
       int byteValuesCount, int decimalValuesCount, int timestampValuesCount,
-      int intervalDayTimeValuesCount) {
+      int intervalDayTimeValuesCount, int keyCount) {
     if ((longValuesCount + doubleValuesCount + byteValuesCount + decimalValuesCount
         + timestampValuesCount + intervalDayTimeValuesCount) == 0) {
       return EMPTY_KEY_WRAPPER;
     }
     return new VectorHashKeyWrapper(longValuesCount, doubleValuesCount, byteValuesCount,
-        decimalValuesCount, timestampValuesCount, intervalDayTimeValuesCount);
+        decimalValuesCount, timestampValuesCount, intervalDayTimeValuesCount,
+        keyCount);
   }
 
   @Override
@@ -140,19 +149,14 @@ public class VectorHashKeyWrapper extends KeyWrapper {
        *  Hashing the string is potentially expensive so is better to branch.
        *  Additionally not looking at values for nulls allows us not reset the values.
        */
-      if (!isNull[longValues.length + doubleValues.length + i]) {
+      if (byteLengths[i] != -1) {
         byte[] bytes = byteValues[i];
         int start = byteStarts[i];
         int length = byteLengths[i];
-        if (length == bytes.length && start == 0) {
-          hashcode ^= Arrays.hashCode(bytes);
-        }
-        else {
-          // Unfortunately there is no Arrays.hashCode(byte[], start, length)
-          for(int j = start; j < start + length; ++j) {
-            // use 461 as is a (sexy!) prime.
-            hashcode ^= 461 * bytes[j];
-          }
+        // Unfortunately there is no Arrays.hashCode(byte[], start, length)
+        for(int j = start; j < start + length; ++j) {
+          // use 461 as is a (sexy!) prime.
+          hashcode ^= 461 * bytes[j];
         }
       }
     }
@@ -184,7 +188,7 @@ public class VectorHashKeyWrapper extends KeyWrapper {
     //By the time we enter here the byteValues.lentgh and isNull must have already been compared
     for (int i = 0; i < byteValues.length; ++i) {
       // the byte comparison is potentially expensive so is better to branch on null
-      if (!isNull[longValues.length + doubleValues.length + i]) {
+      if (byteLengths[i] != -1) {
         if (!StringExpr.equal(
             byteValues[i],
             byteStarts[i],
@@ -228,7 +232,7 @@ public class VectorHashKeyWrapper extends KeyWrapper {
       for (int i = 0; i < byteValues.length; ++i) {
         // avoid allocation/copy of nulls, because it potentially expensive.
         // branch instead.
-        if (!isNull[longValues.length + doubleValues.length + i]) {
+        if (byteLengths[i] != -1) {
           clone.byteValues[i] = Arrays.copyOfRange(byteValues[i],
               byteStarts[i], byteStarts[i] + byteLengths[i]);
         }
@@ -274,105 +278,140 @@ public class VectorHashKeyWrapper extends KeyWrapper {
     throw new UnsupportedOperationException();
   }
 
-  public void assignDouble(int index, double d) {
-    doubleValues[index] = d;
-    isNull[longValues.length + index] = false;
-  }
-
-  public void assignNullDouble(int index) {
-    doubleValues[index] = 0; // assign 0 to simplify hashcode
-    isNull[longValues.length + index] = true;
-  }
-
   public void assignLong(int index, long v) {
     longValues[index] = v;
-    isNull[index] = false;
   }
 
-  public void assignNullLong(int index) {
+  public void assignNullLong(int keyIndex, int index) {
+    isNull[keyIndex] = true;
     longValues[index] = 0; // assign 0 to simplify hashcode
-    isNull[index] = true;
+  }
+
+  public void assignDouble(int index, double d) {
+    doubleValues[index] = d;
+  }
+
+  public void assignNullDouble(int keyIndex, int index) {
+    isNull[keyIndex] = true;
+    doubleValues[index] = 0; // assign 0 to simplify hashcode
   }
 
   public void assignString(int index, byte[] bytes, int start, int length) {
+    Preconditions.checkState(bytes != null);
     byteValues[index] = bytes;
     byteStarts[index] = start;
     byteLengths[index] = length;
-    isNull[longValues.length + doubleValues.length + index] = false;
   }
 
-  public void assignNullString(int index) {
-    // We do not assign the value to byteValues[] because the value is never used on null
-    isNull[longValues.length + doubleValues.length + index] = true;
+  public void assignNullString(int keyIndex, int index) {
+    isNull[keyIndex] = true;
+    byteValues[index] = null;
+    byteStarts[index] = 0;
+    // We need some value that indicates NULL.
+    byteLengths[index] = -1;
   }
 
   public void assignDecimal(int index, HiveDecimalWritable value) {
     decimalValues[index].set(value);
-    isNull[longValues.length + doubleValues.length + byteValues.length + index] = false;
   }
 
-  public void assignNullDecimal(int index) {
-      isNull[longValues.length + doubleValues.length + byteValues.length + index] = true;
+  public void assignNullDecimal(int keyIndex, int index) {
+    isNull[keyIndex] = true;
+    decimalValues[index].set(HiveDecimal.ZERO); // assign 0 to simplify hashcode
   }
 
   public void assignTimestamp(int index, Timestamp value) {
     timestampValues[index] = value;
-    isNull[longValues.length + doubleValues.length + byteValues.length +
-           decimalValues.length + index] = false;
   }
 
   public void assignTimestamp(int index, TimestampColumnVector colVector, int elementNum) {
     colVector.timestampUpdate(timestampValues[index], elementNum);
-    isNull[longValues.length + doubleValues.length + byteValues.length +
-           decimalValues.length + index] = false;
   }
 
-  public void assignNullTimestamp(int index) {
-      isNull[longValues.length + doubleValues.length + byteValues.length +
-             decimalValues.length + index] = true;
+  public void assignNullTimestamp(int keyIndex, int index) {
+    isNull[keyIndex] = true;
+    timestampValues[index] = ZERO_TIMESTAMP; // assign 0 to simplify hashcode
   }
 
   public void assignIntervalDayTime(int index, HiveIntervalDayTime value) {
     intervalDayTimeValues[index].set(value);
-    isNull[longValues.length + doubleValues.length + byteValues.length +
-           decimalValues.length + timestampValues.length + index] = false;
   }
 
   public void assignIntervalDayTime(int index, IntervalDayTimeColumnVector colVector, int elementNum) {
     intervalDayTimeValues[index].set(colVector.asScratchIntervalDayTime(elementNum));
-    isNull[longValues.length + doubleValues.length + byteValues.length +
-           decimalValues.length + timestampValues.length + index] = false;
   }
 
-  public void assignNullIntervalDayTime(int index) {
-      isNull[longValues.length + doubleValues.length + byteValues.length +
-             decimalValues.length + timestampValues.length + index] = true;
+  public void assignNullIntervalDayTime(int keyIndex, int index) {
+    isNull[keyIndex] = true;
+    intervalDayTimeValues[index] = ZERO_INTERVALDAYTIME; // assign 0 to simplify hashcode
   }
 
   @Override
   public String toString()
   {
-    return String.format("%d[%s] %d[%s] %d[%s] %d[%s] %d[%s] %d[%s]",
-        longValues.length, Arrays.toString(longValues),
-        doubleValues.length, Arrays.toString(doubleValues),
-        byteValues.length, Arrays.toString(byteValues),
-        decimalValues.length, Arrays.toString(decimalValues),
-        timestampValues.length, Arrays.toString(timestampValues),
-        intervalDayTimeValues.length, Arrays.toString(intervalDayTimeValues));
-  }
+    StringBuilder sb = new StringBuilder();
+    boolean isFirst = true;
+    if (longValues.length > 0) {
+      isFirst = false;
+      sb.append("longs ");
+      sb.append(Arrays.toString(longValues));
+    }
+    if (doubleValues.length > 0) {
+      if (isFirst) {
+        isFirst = false;
+      } else {
+        sb.append(", ");
+      }
+      sb.append("doubles ");
+      sb.append(Arrays.toString(doubleValues));
+    }
+    if (byteValues.length > 0) {
+      if (isFirst) {
+        isFirst = false;
+      } else {
+        sb.append(", ");
+      }
+      sb.append("byte lengths ");
+      sb.append(Arrays.toString(byteLengths));
+    }
+    if (decimalValues.length > 0) {
+      if (isFirst) {
+        isFirst = false;
+      } else {
+        sb.append(", ");
+      }
+      sb.append("decimals ");
+      sb.append(Arrays.toString(decimalValues));
+    }
+    if (timestampValues.length > 0) {
+      if (isFirst) {
+        isFirst = false;
+      } else {
+        sb.append(", ");
+      }
+      sb.append("timestamps ");
+      sb.append(Arrays.toString(timestampValues));
+    }
+    if (intervalDayTimeValues.length > 0) {
+      if (isFirst) {
+        isFirst = false;
+      } else {
+        sb.append(", ");
+      }
+      sb.append("interval day times ");
+      sb.append(Arrays.toString(intervalDayTimeValues));
+    }
 
-  public boolean getIsLongNull(int i) {
-    return isNull[i];
-  }
+    if (isFirst) {
+      isFirst = false;
+    } else {
+      sb.append(", ");
+    }
+    sb.append("nulls ");
+    sb.append(Arrays.toString(isNull));
 
-  public boolean getIsDoubleNull(int i) {
-    return isNull[longValues.length + i];
+    return sb.toString();
   }
-
-  public boolean getIsBytesNull(int i) {
-    return isNull[longValues.length + doubleValues.length + i];
-  }
-
 
   public long getLongValue(int i) {
     return longValues[i];
@@ -403,35 +442,29 @@ public class VectorHashKeyWrapper extends KeyWrapper {
     return variableSize;
   }
 
-  public boolean getIsDecimalNull(int i) {
-    return isNull[longValues.length + doubleValues.length + byteValues.length + i];
-  }
-
   public HiveDecimalWritable getDecimal(int i) {
     return decimalValues[i];
-  }
-
-  public boolean getIsTimestampNull(int i) {
-    return isNull[longValues.length + doubleValues.length + byteValues.length +
-                  decimalValues.length + i];
   }
 
   public Timestamp getTimestamp(int i) {
     return timestampValues[i];
   }
 
-  public boolean getIsIntervalDayTimeNull(int i) {
-    return isNull[longValues.length + doubleValues.length + byteValues.length +
-                  decimalValues.length + timestampValues.length + i];
-  }
-
   public HiveIntervalDayTime getIntervalDayTime(int i) {
     return intervalDayTimeValues[i];
   }
 
+  public void clearIsNull() {
+    Arrays.fill(isNull, false);
+  }
+
+  public boolean isNull(int keyIndex) {
+    return isNull[keyIndex];
+  }
+
   public static final class EmptyVectorHashKeyWrapper extends VectorHashKeyWrapper {
     private EmptyVectorHashKeyWrapper() {
-      super(0, 0, 0, 0, 0, 0);
+      super(0, 0, 0, 0, 0, 0, /* keyCount */ 0);
       // no need to override assigns - all assign ops will fail due to 0 size
     }
 
@@ -451,4 +484,3 @@ public class VectorHashKeyWrapper extends KeyWrapper {
     }
   }
 }
-

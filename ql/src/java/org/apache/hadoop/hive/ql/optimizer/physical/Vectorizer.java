@@ -1901,14 +1901,6 @@ public class Vectorizer implements PhysicalPlanResolver {
   private boolean validateGroupByOperator(GroupByOperator op, boolean isReduce, boolean isTezOrSpark) {
     GroupByDesc desc = op.getConf();
 
-    if (desc.isGroupingSetsPresent()) {
-      setOperatorIssue("Grouping sets not supported");
-      return false;
-    }
-    if (desc.pruneGroupingSetId()) {
-      setOperatorIssue("Pruning grouping set id not supported");
-      return false;
-    }
     if (desc.getMode() != GroupByDesc.Mode.HASH && desc.isDistinct()) {
       setOperatorIssue("DISTINCT not supported");
       return false;
@@ -2018,6 +2010,11 @@ public class Vectorizer implements PhysicalPlanResolver {
 
     ProcessingMode processingMode =
         VectorGroupByDesc.groupByDescModeToVectorProcessingMode(desc.getMode(), hasKeys);
+    if (desc.isGroupingSetsPresent() &&
+        (processingMode != ProcessingMode.HASH && processingMode != ProcessingMode.STREAMING)) {
+      LOG.info("Vectorized GROUPING SETS only expected for HASH and STREAMING processing modes");
+      return false;
+    }
 
     Pair<Boolean,Boolean> retPair =
         validateAggregationDescs(desc.getAggregators(), processingMode, hasKeys);
@@ -2222,6 +2219,12 @@ public class Vectorizer implements PhysicalPlanResolver {
       setExpressionIssue("Aggregation Function", "UDF " + udfName + " not supported");
       return new Pair<Boolean,Boolean>(false, false);
     }
+    /*
+    if (aggDesc.getDistinct()) {
+      setExpressionIssue("Aggregation Function", "DISTINCT not supported");
+      return new Pair<Boolean,Boolean>(false, false);
+    }
+    */
     if (aggDesc.getParameters() != null && !validateExprNodeDesc(aggDesc.getParameters(), "Aggregation Function UDF " + udfName + " parameter")) {
       return new Pair<Boolean,Boolean>(false, false);
     }
