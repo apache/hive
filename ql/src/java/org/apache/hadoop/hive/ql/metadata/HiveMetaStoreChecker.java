@@ -39,7 +39,10 @@ import java.util.concurrent.ThreadPoolExecutor;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import com.google.common.collect.Sets;
+import org.apache.hadoop.hive.common.StringInternUtils;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.ql.log.PerfLogger;
+import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -51,8 +54,6 @@ import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.ql.metadata.CheckResult.PartitionResult;
-import org.apache.hadoop.hive.ql.optimizer.ppr.PartitionPruner;
-import org.apache.hadoop.hive.ql.parse.PrunedPartitionList;
 import org.apache.thrift.TException;
 
 import com.google.common.util.concurrent.MoreExecutors;
@@ -66,6 +67,7 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
 public class HiveMetaStoreChecker {
 
   public static final Log LOG = LogFactory.getLog(HiveMetaStoreChecker.class);
+  public static final String CLASS_NAME = HiveMetaStoreChecker.class.getName();
 
   private final Hive hive;
   private final HiveConf conf;
@@ -210,19 +212,28 @@ public class HiveMetaStoreChecker {
       return;
     }
 
-    List<Partition> parts = new ArrayList<Partition>();
+    PartitionIterable parts;
     boolean findUnknownPartitions = true;
 
     if (table.isPartitioned()) {
       if (partitions == null || partitions.isEmpty()) {
-        PrunedPartitionList prunedPartList =
-        PartitionPruner.prune(table, null, conf, toString(), null);
-        // no partitions specified, let's get all
-        parts.addAll(prunedPartList.getPartitions());
+        String mode = HiveConf.getVar(conf, ConfVars.HIVEMAPREDMODE, (String) null);
+        if ("strict".equalsIgnoreCase(mode)) {
+          parts = new PartitionIterable(hive, table, null, conf.getIntVar(
+              HiveConf.ConfVars.METASTORE_BATCH_RETRIEVE_MAX));
+        } else {
+          List<Partition> loadedPartitions = new ArrayList<>();
+          PerfLogger perfLogger = SessionState.getPerfLogger();
+          perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.PARTITION_RETRIEVING);
+          loadedPartitions.addAll(hive.getAllPartitionsOf(table));
+          perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.PARTITION_RETRIEVING);
+          parts = new PartitionIterable(loadedPartitions);
+        }
       } else {
         // we're interested in specific partitions,
         // don't check for any others
         findUnknownPartitions = false;
+        List<Partition> loadedPartitions = new ArrayList<>();
         for (Map<String, String> map : partitions) {
           Partition part = hive.getPartition(table, map, false);
           if (part == null) {
@@ -231,10 +242,13 @@ public class HiveMetaStoreChecker {
             pr.setPartitionName(Warehouse.makePartPath(map));
             result.getPartitionsNotInMs().add(pr);
           } else {
-            parts.add(part);
+            loadedPartitions.add(part);
           }
         }
+        parts = new PartitionIterable(loadedPartitions);
       }
+    } else {
+      parts = new PartitionIterable(Collections.<Partition>emptyList());
     }
 
     checkTable(table, parts, findUnknownPartitions, result);
@@ -257,7 +271,7 @@ public class HiveMetaStoreChecker {
    * @throws HiveException
    *           Could not create Partition object
    */
-  void checkTable(Table table, List<Partition> parts,
+  void checkTable(Table table, PartitionIterable parts,
       boolean findUnknownPartitions, CheckResult result) throws IOException,
       HiveException {
 
@@ -286,7 +300,9 @@ public class HiveMetaStoreChecker {
       }
 
       for (int i = 0; i < partition.getSpec().size(); i++) {
-        partPaths.add(partPath.makeQualified(fs));
+        Path qualifiedPath = partPath.makeQualified(fs);
+        StringInternUtils.internUriStringsInPath(qualifiedPath);
+        partPaths.add(qualifiedPath);
         partPath = partPath.getParent();
       }
     }
