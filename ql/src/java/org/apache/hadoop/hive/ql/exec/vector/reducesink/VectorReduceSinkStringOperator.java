@@ -32,7 +32,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 /*
  * Specialized class for native vectorized reduce sink that is reducing on a single long key column.
  */
-public class VectorReduceSinkStringOperator extends VectorReduceSinkCommonOperator {
+public class VectorReduceSinkStringOperator extends VectorReduceSinkUniformHashOperator {
 
   private static final long serialVersionUID = 1L;
   private static final String CLASS_NAME = VectorReduceSinkStringOperator.class.getName();

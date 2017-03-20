@@ -29,6 +29,7 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
@@ -62,6 +63,7 @@ import org.apache.hadoop.hive.ql.exec.vector.mapjoin.VectorMapJoinOuterMultiKeyO
 import org.apache.hadoop.hive.ql.exec.vector.mapjoin.VectorMapJoinOuterStringOperator;
 import org.apache.hadoop.hive.ql.exec.vector.reducesink.VectorReduceSinkLongOperator;
 import org.apache.hadoop.hive.ql.exec.vector.reducesink.VectorReduceSinkMultiKeyOperator;
+import org.apache.hadoop.hive.ql.exec.vector.reducesink.VectorReduceSinkObjectHashOperator;
 import org.apache.hadoop.hive.ql.exec.vector.reducesink.VectorReduceSinkStringOperator;
 import org.apache.hadoop.hive.ql.exec.vector.udf.VectorUDFAdaptor;
 import org.apache.hadoop.hive.ql.exec.vector.ColumnVector.Type;
@@ -143,6 +145,9 @@ import org.apache.hadoop.hive.ql.plan.VectorReduceSinkDesc;
 import org.apache.hadoop.hive.ql.plan.VectorReduceSinkInfo;
 import org.apache.hadoop.hive.ql.plan.VectorPartitionDesc;
 import org.apache.hadoop.hive.ql.plan.VectorSelectDesc;
+import org.apache.hadoop.hive.ql.plan.VectorReduceSinkDesc;
+import org.apache.hadoop.hive.ql.plan.VectorReduceSinkInfo;
+import org.apache.hadoop.hive.ql.plan.VectorPartitionDesc;
 import org.apache.hadoop.hive.ql.plan.api.OperatorType;
 import org.apache.hadoop.hive.ql.udf.UDFAcos;
 import org.apache.hadoop.hive.ql.udf.UDFAsin;
@@ -2909,9 +2914,6 @@ public class Vectorizer implements PhysicalPlanResolver {
       Operator<? extends OperatorDesc> op, VectorizationContext vContext, ReduceSinkDesc desc,
       VectorReduceSinkInfo vectorReduceSinkInfo) throws HiveException {
 
-    Operator<? extends OperatorDesc> vectorOp = null;
-    Class<? extends Operator<?>> opClass = null;
-
     Type[] reduceSinkKeyColumnVectorTypes = vectorReduceSinkInfo.getReduceSinkKeyColumnVectorTypes();
 
     // By default, we can always use the multi-key class.
@@ -2948,18 +2950,23 @@ public class Vectorizer implements PhysicalPlanResolver {
       }
     }
 
-    switch (reduceSinkKeyType) {
-    case LONG:
-      opClass = VectorReduceSinkLongOperator.class;
-      break;
-    case STRING:
-      opClass = VectorReduceSinkStringOperator.class;
-      break;
-    case MULTI_KEY:
-      opClass = VectorReduceSinkMultiKeyOperator.class;
-      break;
-    default:
-      throw new HiveException("Unknown reduce sink key type " + reduceSinkKeyType);
+    Class<? extends Operator<?>> opClass = null;
+    if (vectorReduceSinkInfo.getUseUniformHash()) {
+      switch (reduceSinkKeyType) {
+      case LONG:
+        opClass = VectorReduceSinkLongOperator.class;
+        break;
+      case STRING:
+        opClass = VectorReduceSinkStringOperator.class;
+        break;
+      case MULTI_KEY:
+        opClass = VectorReduceSinkMultiKeyOperator.class;
+        break;
+      default:
+        throw new HiveException("Unknown reduce sink key type " + reduceSinkKeyType);
+      }
+    } else {
+      opClass = VectorReduceSinkObjectHashOperator.class;
     }
 
     VectorReduceSinkDesc vectorDesc = (VectorReduceSinkDesc) desc.getVectorDesc();
@@ -2967,9 +2974,17 @@ public class Vectorizer implements PhysicalPlanResolver {
     vectorDesc.setReduceSinkKeyType(reduceSinkKeyType);
     vectorDesc.setVectorReduceSinkInfo(vectorReduceSinkInfo);
 
-    vectorOp = OperatorFactory.getVectorOperator(
-        opClass, op.getCompilationOpContext(), op.getConf(), vContext);
-    LOG.info("Vectorizer vectorizeOperator reduce sink class " + vectorOp.getClass().getSimpleName());
+    LOG.info("Vectorizer vectorizeOperator reduce sink class " + opClass.getSimpleName());
+
+    Operator<? extends OperatorDesc> vectorOp = null;
+    try {
+      vectorOp = OperatorFactory.getVectorOperator(
+          opClass, op.getCompilationOpContext(), op.getConf(), vContext);
+    } catch (Exception e) {
+      LOG.info("Vectorizer vectorizeOperator reduce sink class exception " + opClass.getSimpleName() +
+          " exception " + e);
+      throw new HiveException(e);
+    }
 
     return vectorOp;
   }
@@ -2983,18 +2998,20 @@ public class Vectorizer implements PhysicalPlanResolver {
     VectorReduceSinkDesc vectorDesc = new VectorReduceSinkDesc();
     desc.setVectorDesc(vectorDesc);
 
-    boolean isVectorizationReduceSinkNativeEnabled = HiveConf.getBoolVar(hiveConf,
-        HiveConf.ConfVars.HIVE_VECTORIZATION_REDUCESINK_NEW_ENABLED);
+    // Various restrictions.
+
+    // Set this if we encounter a condition we were not expecting.
+    boolean isUnexpectedCondition = false;
+
+    boolean isVectorizationReduceSinkNativeEnabled =
+        HiveConf.getBoolVar(hiveConf,
+            HiveConf.ConfVars.HIVE_VECTORIZATION_REDUCESINK_NEW_ENABLED);
 
     String engine = HiveConf.getVar(hiveConf, HiveConf.ConfVars.HIVE_EXECUTION_ENGINE);
-    
-    boolean hasBuckets = desc.getBucketCols() != null && !desc.getBucketCols().isEmpty();
 
-    boolean hasTopN = desc.getTopN() >= 0;
+    boolean hasTopN = (desc.getTopN() >= 0);
 
-    boolean useUniformHash = desc.getReducerTraits().contains(UNIFORM);
-
-    boolean hasDistinctColumns = desc.getDistinctColumnIndices().size() > 0;
+    boolean hasDistinctColumns = (desc.getDistinctColumnIndices().size() > 0);
 
     TableDesc keyTableDesc = desc.getKeySerializeInfo();
     Class<? extends Deserializer> keySerializerClass = keyTableDesc.getDeserializerClass();
@@ -3003,28 +3020,6 @@ public class Vectorizer implements PhysicalPlanResolver {
     TableDesc valueTableDesc = desc.getValueSerializeInfo();
     Class<? extends Deserializer> valueDeserializerClass = valueTableDesc.getDeserializerClass();
     boolean isValueLazyBinary = (valueDeserializerClass == org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe.class);
-
-    // Remember the condition variables for EXPLAIN regardless.
-    vectorDesc.setIsVectorizationReduceSinkNativeEnabled(isVectorizationReduceSinkNativeEnabled);
-    vectorDesc.setEngine(engine);
-    vectorDesc.setHasBuckets(hasBuckets);
-    vectorDesc.setHasTopN(hasTopN);
-    vectorDesc.setUseUniformHash(useUniformHash);
-    vectorDesc.setHasDistinctColumns(hasDistinctColumns);
-    vectorDesc.setIsKeyBinarySortable(isKeyBinarySortable);
-    vectorDesc.setIsValueLazyBinary(isValueLazyBinary);
-
-    // Many restrictions.
-    if (!isVectorizationReduceSinkNativeEnabled ||
-        !isTezOrSpark ||
-        hasBuckets ||
-        hasTopN ||
-        !useUniformHash ||
-        hasDistinctColumns ||
-        !isKeyBinarySortable ||
-        !isValueLazyBinary) {
-      return false;
-    }
 
     // We are doing work here we'd normally do in VectorGroupByCommonOperator's constructor.
     // So if we later decide not to specialize, we'll just waste any scratch columns allocated...
@@ -3088,6 +3083,129 @@ public class Vectorizer implements PhysicalPlanResolver {
     vectorReduceSinkInfo.setReduceSinkValueTypeInfos(reduceSinkValueTypeInfos);
     vectorReduceSinkInfo.setReduceSinkValueColumnVectorTypes(reduceSinkValueColumnVectorTypes);
     vectorReduceSinkInfo.setReduceSinkValueExpressions(reduceSinkValueExpressions);
+
+    boolean useUniformHash = desc.getReducerTraits().contains(UNIFORM);
+    vectorReduceSinkInfo.setUseUniformHash(useUniformHash);
+
+    boolean hasEmptyBuckets = false;
+    boolean hasNoPartitions = false;
+    if (useUniformHash) {
+
+      // Check for unexpected conditions...
+      hasEmptyBuckets =
+          (desc.getBucketCols() != null && !desc.getBucketCols().isEmpty()) ||
+          (desc.getPartitionCols().size() == 0);
+
+      if (hasEmptyBuckets) {
+        LOG.info("Unexpected condition: UNIFORM hash and empty buckets");
+        isUnexpectedCondition = true;
+      }
+
+      hasNoPartitions = (desc.getPartitionCols() == null);
+
+      if (hasNoPartitions) {
+        LOG.info("Unexpected condition: UNIFORM hash and no partitions");
+        isUnexpectedCondition = true;
+      }
+
+    } else {
+
+      // Collect bucket and/or partition information for object hashing.
+
+      int[] reduceSinkBucketColumnMap = null;
+      TypeInfo[] reduceSinkBucketTypeInfos = null;
+      Type[] reduceSinkBucketColumnVectorTypes = null;
+      VectorExpression[] reduceSinkBucketExpressions = null;
+
+      List<ExprNodeDesc> bucketDescs = desc.getBucketCols();
+      if (bucketDescs != null) {
+        VectorExpression[] allBucketExpressions = vContext.getVectorExpressions(bucketDescs);
+    
+        reduceSinkBucketColumnMap = new int[bucketDescs.size()];
+        reduceSinkBucketTypeInfos = new TypeInfo[bucketDescs.size()];
+        reduceSinkBucketColumnVectorTypes = new Type[bucketDescs.size()];
+        ArrayList<VectorExpression> reduceSinkBucketExpressionsList = new ArrayList<VectorExpression>();
+        for (int i = 0; i < bucketDescs.size(); ++i) {
+          VectorExpression ve = allBucketExpressions[i];
+          reduceSinkBucketColumnMap[i] = ve.getOutputColumn();
+          reduceSinkBucketTypeInfos[i] = bucketDescs.get(i).getTypeInfo();
+          reduceSinkBucketColumnVectorTypes[i] =
+              VectorizationContext.getColumnVectorTypeFromTypeInfo(reduceSinkBucketTypeInfos[i]);
+          if (!IdentityExpression.isColumnOnly(ve)) {
+            reduceSinkBucketExpressionsList.add(ve);
+          }
+        }
+        if (reduceSinkBucketExpressionsList.size() == 0) {
+          reduceSinkBucketExpressions = null;
+        } else {
+          reduceSinkBucketExpressions = reduceSinkBucketExpressionsList.toArray(new VectorExpression[0]);
+        }
+      }
+
+      int[] reduceSinkPartitionColumnMap = null;
+      TypeInfo[] reduceSinkPartitionTypeInfos = null;
+      Type[] reduceSinkPartitionColumnVectorTypes = null;
+      VectorExpression[] reduceSinkPartitionExpressions = null;
+
+      List<ExprNodeDesc> partitionDescs = desc.getPartitionCols();
+      if (partitionDescs != null) {
+        VectorExpression[] allPartitionExpressions = vContext.getVectorExpressions(partitionDescs);
+    
+        reduceSinkPartitionColumnMap = new int[partitionDescs.size()];
+        reduceSinkPartitionTypeInfos = new TypeInfo[partitionDescs.size()];
+        reduceSinkPartitionColumnVectorTypes = new Type[partitionDescs.size()];
+        ArrayList<VectorExpression> reduceSinkPartitionExpressionsList = new ArrayList<VectorExpression>();
+        for (int i = 0; i < partitionDescs.size(); ++i) {
+          VectorExpression ve = allPartitionExpressions[i];
+          reduceSinkPartitionColumnMap[i] = ve.getOutputColumn();
+          reduceSinkPartitionTypeInfos[i] = partitionDescs.get(i).getTypeInfo();
+          reduceSinkPartitionColumnVectorTypes[i] =
+              VectorizationContext.getColumnVectorTypeFromTypeInfo(reduceSinkPartitionTypeInfos[i]);
+          if (!IdentityExpression.isColumnOnly(ve)) {
+            reduceSinkPartitionExpressionsList.add(ve);
+          }
+        }
+        if (reduceSinkPartitionExpressionsList.size() == 0) {
+          reduceSinkPartitionExpressions = null;
+        } else {
+          reduceSinkPartitionExpressions = reduceSinkPartitionExpressionsList.toArray(new VectorExpression[0]);
+        }
+      }
+
+      vectorReduceSinkInfo.setReduceSinkBucketColumnMap(reduceSinkBucketColumnMap);
+      vectorReduceSinkInfo.setReduceSinkBucketTypeInfos(reduceSinkBucketTypeInfos);
+      vectorReduceSinkInfo.setReduceSinkBucketColumnVectorTypes(reduceSinkBucketColumnVectorTypes);
+      vectorReduceSinkInfo.setReduceSinkBucketExpressions(reduceSinkBucketExpressions);
+
+      vectorReduceSinkInfo.setReduceSinkPartitionColumnMap(reduceSinkPartitionColumnMap);
+      vectorReduceSinkInfo.setReduceSinkPartitionTypeInfos(reduceSinkPartitionTypeInfos);
+      vectorReduceSinkInfo.setReduceSinkPartitionColumnVectorTypes(reduceSinkPartitionColumnVectorTypes);
+      vectorReduceSinkInfo.setReduceSinkPartitionExpressions(reduceSinkPartitionExpressions);
+    }
+
+    // Remember the condition variables for EXPLAIN regardless.
+    vectorDesc.setIsVectorizationReduceSinkNativeEnabled(isVectorizationReduceSinkNativeEnabled);
+    vectorDesc.setEngine(engine);
+    vectorDesc.setHasTopN(hasTopN);
+    vectorDesc.setHasDistinctColumns(hasDistinctColumns);
+    vectorDesc.setIsKeyBinarySortable(isKeyBinarySortable);
+    vectorDesc.setIsValueLazyBinary(isValueLazyBinary);
+
+    // This indicates we logged an inconsistency (from our point-of-view) and will not make this
+    // operator native...
+    vectorDesc.setIsUnexpectedCondition(isUnexpectedCondition);
+
+    // Many restrictions.
+    if (!isVectorizationReduceSinkNativeEnabled ||
+        !isTezOrSpark ||
+        (useUniformHash && (hasEmptyBuckets || hasNoPartitions)) ||
+        hasTopN ||
+        hasDistinctColumns ||
+        !isKeyBinarySortable ||
+        !isValueLazyBinary ||
+        isUnexpectedCondition) {
+      return false;
+    }
 
     return true;
   }

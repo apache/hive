@@ -1106,10 +1106,10 @@ Table:              	over1k_part_buck_orc
 #### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
-	numFiles            	8                   
+	numFiles            	2                   
 	numRows             	32                  
 	rawDataSize         	640                 
-	totalSize           	4524                
+	totalSize           	1424                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -1147,10 +1147,10 @@ Table:              	over1k_part_buck_orc
 #### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
-	numFiles            	4                   
-	numRows             	6                   
-	rawDataSize         	120                 
-	totalSize           	2004                
+	numFiles            	2                   
+	numRows             	4                   
+	rawDataSize         	80                  
+	totalSize           	936                 
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -1188,10 +1188,10 @@ Table:              	over1k_part_buck_sort_orc
 #### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
-	numFiles            	8                   
+	numFiles            	2                   
 	numRows             	32                  
 	rawDataSize         	640                 
-	totalSize           	4510                
+	totalSize           	1416                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -1229,10 +1229,10 @@ Table:              	over1k_part_buck_sort_orc
 #### A masked pattern was here ####
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
-	numFiles            	4                   
-	numRows             	6                   
-	rawDataSize         	120                 
-	totalSize           	2004                
+	numFiles            	2                   
+	numRows             	4                   
+	rawDataSize         	80                  
+	totalSize           	944                 
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -1283,7 +1283,7 @@ POSTHOOK: Input: default@over1k_part_buck_orc
 POSTHOOK: Input: default@over1k_part_buck_orc@t=27
 POSTHOOK: Input: default@over1k_part_buck_orc@t=__HIVE_DEFAULT_PARTITION__
 #### A masked pattern was here ####
-38
+34
 PREHOOK: query: select count(*) from over1k_part_buck_sort_orc
 PREHOOK: type: QUERY
 PREHOOK: Input: default@over1k_part_buck_sort_orc
@@ -1296,7 +1296,7 @@ POSTHOOK: Input: default@over1k_part_buck_sort_orc
 POSTHOOK: Input: default@over1k_part_buck_sort_orc@t=27
 POSTHOOK: Input: default@over1k_part_buck_sort_orc@t=__HIVE_DEFAULT_PARTITION__
 #### A masked pattern was here ####
-38
+34
 PREHOOK: query: create table over1k_part2_orc(
            si smallint,
            i int,
@@ -2472,9 +2472,9 @@ Table:              	over1k_part_buck_sort2_orc
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	numFiles            	1                   
-	numRows             	3                   
-	rawDataSize         	78                  
-	totalSize           	81                  
+	numRows             	2                   
+	rawDataSize         	52                  
+	totalSize           	27                  
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -2534,8 +2534,6 @@ POSTHOOK: Input: default@over1k_part_buck_sort2_orc@t=__HIVE_DEFAULT_PARTITION__
 503	65628	4294967371	95.07	27
 401	65779	4294967402	97.39	27
 340	65677	4294967461	98.96	27
-409	65536	4294967490	46.97	NULL
-374	65560	4294967516	65.43	NULL
 473	65720	4294967324	80.74	NULL
 PREHOOK: query: explain select count(*) from over1k_part_buck_sort2_orc
 PREHOOK: type: QUERY
@@ -2557,9 +2555,9 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: over1k_part_buck_sort2_orc
-                  Statistics: Num rows: 19 Data size: 645 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 18 Data size: 611 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
-                    Statistics: Num rows: 19 Data size: 645 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 18 Data size: 611 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       aggregations: count()
                       mode: hash
@@ -2605,4 +2603,4 @@ POSTHOOK: Input: default@over1k_part_buck_sort2_orc
 POSTHOOK: Input: default@over1k_part_buck_sort2_orc@t=27
 POSTHOOK: Input: default@over1k_part_buck_sort2_orc@t=__HIVE_DEFAULT_PARTITION__
 #### A masked pattern was here ####
-19
+17
