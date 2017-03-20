@@ -43,7 +43,7 @@ STAGE DEPENDENCIES:
   Stage-7 depends on stages: Stage-6
   Stage-1 depends on stages: Stage-7
   Stage-8 depends on stages: Stage-1
-  Stage-2 depends on stages: Stage-7
+  Stage-2 depends on stages: Stage-3
   Stage-9 depends on stages: Stage-2
 
 STAGE PLANS:
