@@ -16,4 +16,11 @@ MSCK REPAIR TABLE default.repairtable;
 
 MSCK TABLE repairtable;
 
+set hive.mapred.mode=strict;
+
+dfs ${system:test.dfs.mkdir} ${system:test.warehouse.dir}/repairtable/p1=e/p2=f/p3=g;
+dfs -touchz ${system:test.warehouse.dir}/repairtable/p1=e/p2=f/p3=g/datafile;
+
+MSCK REPAIR TABLE default.repairtable;
+
 DROP TABLE default.repairtable;
