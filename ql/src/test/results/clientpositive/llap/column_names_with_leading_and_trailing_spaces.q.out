@@ -42,6 +42,16 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
+PREHOOK: query: desc formatted space ` left`
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@space
+POSTHOOK: query: desc formatted space ` left`
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@space
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
+	 	 	 	 	 	 	 	 	 	 
+ left               	string              	                    	                    	                    	                    	                    	                    	                    	                    	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}	 	 	 	 	 	 	 	 	 
 PREHOOK: query: insert into space values ("1", "2", "3")
 PREHOOK: type: QUERY
 PREHOOK: Output: default@space
@@ -51,6 +61,16 @@ POSTHOOK: Output: default@space
 POSTHOOK: Lineage: space. left SIMPLE [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 POSTHOOK: Lineage: space. middle  SIMPLE [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col2, type:string, comment:), ]
 POSTHOOK: Lineage: space.right  SIMPLE [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col3, type:string, comment:), ]
+PREHOOK: query: desc formatted space ` left`
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@space
+POSTHOOK: query: desc formatted space ` left`
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@space
+# col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
+	 	 	 	 	 	 	 	 	 	 
+ left               	string              	                    	                    	0                   	1                   	1.0                 	1                   	                    	                    	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\" left\":\"true\",\" middle \":\"true\",\"right \":\"true\"}}	 	 	 	 	 	 	 	 	 
 PREHOOK: query: select * from space
 PREHOOK: type: QUERY
 PREHOOK: Input: default@space
