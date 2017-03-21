@@ -67,7 +67,7 @@ import org.apache.hadoop.hive.ql.udf.UDFFromUnixTime;
 import org.apache.hadoop.hive.ql.udf.UDFHex;
 import org.apache.hadoop.hive.ql.udf.UDFHour;
 import org.apache.hadoop.hive.ql.udf.UDFJson;
-import org.apache.hadoop.hive.ql.udf.UDFLength;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFLength;
 import org.apache.hadoop.hive.ql.udf.UDFLike;
 import org.apache.hadoop.hive.ql.udf.UDFLn;
 import org.apache.hadoop.hive.ql.udf.UDFLog;
@@ -262,7 +262,10 @@ public final class FunctionRegistry {
     system.registerGenericUDF("trim", GenericUDFTrim.class);
     system.registerGenericUDF("ltrim", GenericUDFLTrim.class);
     system.registerGenericUDF("rtrim", GenericUDFRTrim.class);
-    system.registerUDF("length", UDFLength.class, false);
+    system.registerGenericUDF("length", GenericUDFLength.class);
+    system.registerGenericUDF("character_length", GenericUDFCharacterLength.class);
+    system.registerGenericUDF("char_length", GenericUDFCharacterLength.class);
+    system.registerGenericUDF("octet_length", GenericUDFOctetLength.class);
     system.registerUDF("reverse", UDFReverse.class, false);
     system.registerGenericUDF("field", GenericUDFField.class);
     system.registerUDF("find_in_set", UDFFindInSet.class, false);
@@ -333,6 +336,7 @@ public final class FunctionRegistry {
     system.registerGenericUDF("*", GenericUDFOPMultiply.class);
     system.registerGenericUDF("/", GenericUDFOPDivide.class);
     system.registerGenericUDF("%", GenericUDFOPMod.class);
+    system.registerGenericUDF("mod", GenericUDFOPMod.class);
     system.registerUDF("div", UDFOPLongDivide.class, true);
 
     system.registerUDF("&", UDFOPBitAnd.class, true);
@@ -417,6 +421,16 @@ public final class FunctionRegistry {
     system.registerGenericUDAF("covar_pop", new GenericUDAFCovariance());
     system.registerGenericUDAF("covar_samp", new GenericUDAFCovarianceSample());
     system.registerGenericUDAF("corr", new GenericUDAFCorrelation());
+    system.registerGenericUDAF("regr_slope", new GenericUDAFBinarySetFunctions.RegrSlope());
+    system.registerGenericUDAF("regr_intercept", new GenericUDAFBinarySetFunctions.RegrIntercept());
+    system.registerGenericUDAF("regr_r2", new GenericUDAFBinarySetFunctions.RegrR2());
+    system.registerGenericUDAF("regr_sxx", new GenericUDAFBinarySetFunctions.RegrSXX());
+    system.registerGenericUDAF("regr_syy", new GenericUDAFBinarySetFunctions.RegrSYY());
+    system.registerGenericUDAF("regr_sxy", new GenericUDAFBinarySetFunctions.RegrSXY());
+    system.registerGenericUDAF("regr_avgx", new GenericUDAFBinarySetFunctions.RegrAvgX());
+    system.registerGenericUDAF("regr_avgy", new GenericUDAFBinarySetFunctions.RegrAvgY());
+    system.registerGenericUDAF("regr_count", new GenericUDAFBinarySetFunctions.RegrCount());
+
     system.registerGenericUDAF("histogram_numeric", new GenericUDAFHistogramNumeric());
     system.registerGenericUDAF("percentile_approx", new GenericUDAFPercentileApprox());
     system.registerGenericUDAF("collect_set", new GenericUDAFCollectSet());
@@ -763,7 +777,7 @@ public final class FunctionRegistry {
    *
    * @return null if no common class could be found.
    */
-  public static TypeInfo getCommonClassForComparison(TypeInfo a, TypeInfo b) {
+  public static synchronized TypeInfo getCommonClassForComparison(TypeInfo a, TypeInfo b) {
     // If same return one of them
     if (a.equals(b)) {
       return a;

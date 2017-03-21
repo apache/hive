@@ -480,7 +480,7 @@ public class TezSessionPoolManager {
    */
   private static boolean canWorkWithSameSession(TezSessionState session, HiveConf conf)
        throws HiveException {
-    if (session == null || conf == null) {
+    if (session == null || conf == null || !session.isOpen()) {
       return false;
     }
 

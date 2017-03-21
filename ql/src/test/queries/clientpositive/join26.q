@@ -2,6 +2,7 @@
 
 CREATE TABLE dest_j1(key STRING, value STRING, val2 STRING) STORED AS TEXTFILE;
 
+set hive.auto.convert.join=true;
 EXPLAIN EXTENDED
 INSERT OVERWRITE TABLE dest_j1
 SELECT /*+ MAPJOIN(x,y) */ x.key, z.value, y.value

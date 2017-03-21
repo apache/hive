@@ -482,7 +482,7 @@ public class ReduceSinkDesc extends AbstractOperatorDesc {
   }
 
   // Use LinkedHashSet to give predictable display order.
-  private static Set<String> vectorizableReduceSinkNativeEngines =
+  private static final Set<String> vectorizableReduceSinkNativeEngines =
       new LinkedHashSet<String>(Arrays.asList("tez", "spark"));
 
   public class ReduceSinkOperatorExplainVectorization extends OperatorExplainVectorization {
@@ -534,14 +534,8 @@ public class ReduceSinkDesc extends AbstractOperatorDesc {
               engineInSupported,
               engineInSupportedCondName),
           new VectorizationCondition(
-              !vectorReduceSinkDesc.getHasBuckets(),
-              "No buckets"),
-          new VectorizationCondition(
               !vectorReduceSinkDesc.getHasTopN(),
               "No TopN"),
-          new VectorizationCondition(
-              vectorReduceSinkDesc.getUseUniformHash(),
-              "Uniform Hash"),
           new VectorizationCondition(
               !vectorReduceSinkDesc.getHasDistinctColumns(),
               "No DISTINCT columns"),
@@ -552,6 +546,15 @@ public class ReduceSinkDesc extends AbstractOperatorDesc {
               vectorReduceSinkDesc.getIsValueLazyBinary(),
               "LazyBinarySerDe for values")
       };
+      if (vectorReduceSinkDesc.getIsUnexpectedCondition()) {
+        VectorizationCondition[] newConditions = new VectorizationCondition[conditions.length + 1];
+        System.arraycopy(conditions, 0, newConditions, 0, conditions.length);
+        newConditions[conditions.length] =
+            new VectorizationCondition(
+                false,
+                "NOT UnexpectedCondition");
+        conditions = newConditions;
+      }
       return conditions;
     }
 

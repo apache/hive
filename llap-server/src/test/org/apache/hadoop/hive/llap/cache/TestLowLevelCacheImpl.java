@@ -116,8 +116,8 @@ public class TestLowLevelCacheImpl {
     }
 
     @Override
-    public int tryEvictContiguousData(int allocationSize, int count) {
-      return count;
+    public long tryEvictContiguousData(int allocationSize, int count) {
+      return count * allocationSize;
     }
   }
 

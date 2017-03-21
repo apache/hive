@@ -19,6 +19,8 @@
 package org.apache.hive.hcatalog.templeton;
 
 import java.io.IOException;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeoutException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,12 +43,71 @@ import org.apache.hive.hcatalog.templeton.tool.JobState;
  */
 public class StatusDelegator extends TempletonDelegator {
   private static final Logger LOG = LoggerFactory.getLogger(StatusDelegator.class);
+  private final String JOB_STATUS_EXECUTE_THREAD_PREFIX = "JobStatusExecute";
+
+  /**
+   * Current thread id used to set in execution threads.
+   */
+  private final String statusThreadId = Thread.currentThread().getName();
+
+  /*
+   * Job status request executor to get status of a job.
+   */
+  private static JobRequestExecutor<QueueStatusBean> jobRequest =
+                   new JobRequestExecutor<QueueStatusBean>(JobRequestExecutor.JobRequestType.Status,
+                   AppConfig.JOB_STATUS_MAX_THREADS, AppConfig.JOB_STATUS_TIMEOUT);
 
   public StatusDelegator(AppConfig appConf) {
     super(appConf);
   }
 
-  public QueueStatusBean run(String user, String id)
+  /*
+   * Gets status of job form job id. If maximum concurrent job status requests are configured
+   * then status request will be executed on a thread from thread pool. If job status request
+   * time out is configured then request execution thread will be interrupted if thread
+   * times out and does no action.
+   */
+  public QueueStatusBean run(final String user, final String id, boolean enableThreadPool)
+    throws NotAuthorizedException, BadParam, IOException, InterruptedException,
+           BusyException, TimeoutException, ExecutionException, TooManyRequestsException {
+    if (jobRequest.isThreadPoolEnabled() && enableThreadPool) {
+      return jobRequest.execute(getJobStatusCallableTask(user, id));
+    } else {
+      return getJobStatus(user, id);
+    }
+  }
+
+  /*
+   * Job callable task for job status operation. Overrides behavior of execute() to get
+   * status of a job. No need to override behavior of cleanup() as there is nothing to be
+   * done if job sttaus operation is timed out or interrupted.
+   */
+  private JobCallable<QueueStatusBean> getJobStatusCallableTask(final String user,
+                                 final String id) {
+    return new JobCallable<QueueStatusBean>() {
+      @Override
+      public QueueStatusBean execute() throws NotAuthorizedException, BadParam, IOException,
+                                    InterruptedException, BusyException {
+       /*
+        * Change the current thread name to include parent thread Id if it is executed
+        * in thread pool. Useful to extract logs specific to a job request and helpful
+        * to debug job issues.
+        */
+        Thread.currentThread().setName(String.format("%s-%s-%s", JOB_STATUS_EXECUTE_THREAD_PREFIX,
+                                       statusThreadId, Thread.currentThread().getId()));
+
+        return getJobStatus(user, id);
+      }
+    };
+  }
+
+  public QueueStatusBean run(final String user, final String id)
+    throws NotAuthorizedException, BadParam, IOException, InterruptedException,
+           BusyException, TimeoutException, ExecutionException, TooManyRequestsException {
+    return run(user, id, true);
+  }
+
+  public QueueStatusBean getJobStatus(String user, String id)
     throws NotAuthorizedException, BadParam, IOException, InterruptedException
   {
     WebHCatJTShim tracker = null;

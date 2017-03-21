@@ -186,6 +186,10 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
+	numFiles            	12                  
+	numRows             	0                   
+	rawDataSize         	0                   
+	totalSize           	48                  
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 

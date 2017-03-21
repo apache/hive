@@ -49,6 +49,7 @@ POSTHOOK: Input: default@decimal_1
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
 	 	 	 	 	 	 	 	 	 	 
 v                   	decimal(10,0)       	                    	                    	500                 	1                   	                    	                    	                    	                    	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"t\":\"true\",\"u\":\"true\",\"v\":\"true\"}}	 	 	 	 	 	 	 	 	 
 PREHOOK: query: explain select * from decimal_1 order by t limit 100
 PREHOOK: type: QUERY
 POSTHOOK: query: explain select * from decimal_1 order by t limit 100

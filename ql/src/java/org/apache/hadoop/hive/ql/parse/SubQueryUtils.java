@@ -34,6 +34,7 @@ import org.apache.hadoop.hive.ql.parse.QBSubQuery.SubQueryType;
 import org.apache.hadoop.hive.ql.parse.QBSubQuery.SubQueryTypeDef;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFCount;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFResolver;
+import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSubquerySemanticException;
 
 public class SubQueryUtils {
 
@@ -650,6 +651,52 @@ public class SubQueryUtils {
         ParseDriver.adaptor.create(HiveParser.Number, "0"));
     
     return eq;
+  }
+
+  static void checkForSubqueries(ASTNode node) throws SemanticException {
+    // allow NOT but throw an error for rest
+    if(node.getType() == HiveParser.TOK_SUBQUERY_EXPR
+            && node.getParent().getType() != HiveParser.KW_NOT) {
+      throw new CalciteSubquerySemanticException(ErrorMsg.UNSUPPORTED_SUBQUERY_EXPRESSION.getMsg(
+              "Invalid subquery. Subquery in SELECT could only be top-level expression"));
+    }
+    for(int i=0; i<node.getChildCount(); i++) {
+        checkForSubqueries((ASTNode)node.getChild(i));
+    }
+  }
+  /*
+   * Given a TOK_SELECT this checks IF there is a subquery
+   *  it is top level expression, else it throws an error
+   */
+  public static void checkForTopLevelSubqueries(ASTNode selExprList) throws SemanticException{
+   // should be either SELECT or SELECT DISTINCT
+    assert(selExprList.getType() == HiveParser.TOK_SELECT
+            || selExprList.getType() == HiveParser.TOK_SELECTDI);
+    for(int i=0; i<selExprList.getChildCount(); i++) {
+      ASTNode selExpr = (ASTNode)selExprList.getChild(i);
+      // could get either query hint or select expr
+      assert(selExpr.getType() == HiveParser.TOK_SELEXPR
+        || selExpr.getType() == HiveParser.QUERY_HINT);
+
+      if(selExpr.getType() == HiveParser.QUERY_HINT) {
+        // skip query hints
+        continue;
+      }
+
+      if(selExpr.getChildCount() == 1
+        && selExpr.getChild(0).getType() == HiveParser.TOK_SUBQUERY_EXPR) {
+        if(selExprList.getType() == HiveParser.TOK_SELECTDI) {
+          throw new CalciteSubquerySemanticException(ErrorMsg.UNSUPPORTED_SUBQUERY_EXPRESSION.getMsg(
+                  "Invalid subquery. Subquery with DISTINCT clause is not supported!"));
+
+        }
+        continue; //we are good since subquery is top level expression
+      }
+      // otherwise we need to make sure that there is no subquery at any level
+      for(int j=0; j<selExpr.getChildCount(); j++) {
+        checkForSubqueries((ASTNode) selExpr.getChild(j));
+      }
+    }
   }
   
   public static interface ISubQueryJoinInfo {

@@ -35,3 +35,78 @@ explain merge into acidTbl as t using (
 WHEN MATCHED AND s.a > 8 THEN DELETE
 WHEN MATCHED THEN UPDATE SET b = 7
 WHEN NOT MATCHED THEN INSERT VALUES(s.a, s.b);
+
+--HIVE-16211
+drop database if exists type2_scd_helper cascade;
+create database type2_scd_helper;
+use type2_scd_helper;
+
+drop table if exists customer;
+drop table if exists customer_updates;
+drop table if exists new_customer_stage;
+
+create table customer (
+source_pk int,
+sk string,
+name string,
+state string,
+is_current boolean,
+end_date date
+)
+CLUSTERED BY (sk) INTO 2 BUCKETS STORED AS ORC TBLPROPERTIES ("transactional"="true");
+
+insert into customer values
+                     ( 1, "ABC", "Abc Co.", "OH", true, null ),
+                     ( 2, "DEF", "Def Co.", "PA", true, null ),
+                     ( 3, "XYZ", "Xyz Co.", "CA", true, null );
+select * from customer order by source_pk;
+
+create table new_customer_stage (
+source_pk int,
+name string,
+state string
+);
+insert into new_customer_stage values
+                               ( 1, "Abc Co.", "OH" ),
+                               ( 2, "Def Co.", "PA" ),
+                               ( 3, "Xyz Co.", "TX" ),
+                               ( 4, "Pdq Co.", "WI" );
+
+drop table if exists scd_types;
+create table scd_types (
+type int,
+invalid_key int
+);
+insert into scd_types values (1, null), (2, -1), (2, null);
+
+merge into customer
+using (
+  select
+    *,
+    coalesce(invalid_key, source_pk) as join_key
+  from (
+    select
+      stage.source_pk, stage.name, stage.state,
+      case when customer.source_pk is null then 1
+      when stage.name <> customer.name or stage.state <> customer.state then 2
+      else 0 end as scd_row_type
+    from
+      new_customer_stage stage
+    left join
+      customer
+    on (stage.source_pk = customer.source_pk and customer.is_current = true)
+  ) updates
+  join scd_types on scd_types.type = scd_row_type
+) sub
+on sub.join_key = customer.source_pk
+when matched then update set
+  is_current = false,
+  end_date = date '2017-03-15' 
+when not matched then insert values
+  (sub.source_pk, upper(substr(sub.name, 0, 3)), sub.name, sub.state, true, null);
+select * from customer order by source_pk;
+
+drop table customer;
+drop table customer_updates;
+drop table new_customer_stage;
+drop table scd_types;

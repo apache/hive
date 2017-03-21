@@ -22,17 +22,18 @@ POSTHOOK: query: SELECT key, value, GROUPING__ID, count(*) from T1 GROUP BY key,
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 #### A masked pattern was here ####
-1	1	3	1
+key	value	grouping__id	_c3
+1	1	0	1
+1	NULL	0	1
 1	NULL	1	2
-1	NULL	3	1
-2	2	3	1
+2	2	0	1
 2	NULL	1	1
-3	3	3	1
+3	3	0	1
+3	NULL	0	1
 3	NULL	1	2
-3	NULL	3	1
-4	5	3	1
+4	5	0	1
 4	NULL	1	1
-NULL	NULL	0	6
+NULL	NULL	3	6
 PREHOOK: query: SELECT key, value, GROUPING__ID, count(*) from T1 GROUP BY ROLLUP (key, value)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
@@ -41,17 +42,18 @@ POSTHOOK: query: SELECT key, value, GROUPING__ID, count(*) from T1 GROUP BY ROLL
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 #### A masked pattern was here ####
-1	1	3	1
+key	value	grouping__id	_c3
+1	1	0	1
+1	NULL	0	1
 1	NULL	1	2
-1	NULL	3	1
-2	2	3	1
+2	2	0	1
 2	NULL	1	1
-3	3	3	1
+3	3	0	1
+3	NULL	0	1
 3	NULL	1	2
-3	NULL	3	1
-4	5	3	1
+4	5	0	1
 4	NULL	1	1
-NULL	NULL	0	6
+NULL	NULL	3	6
 PREHOOK: query: SELECT GROUPING__ID, count(*)
 FROM
 (
@@ -70,9 +72,10 @@ GROUP BY GROUPING__ID
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 #### A masked pattern was here ####
-0	1
+grouping__id	_c1
+0	6
 1	4
-3	6
+3	1
 PREHOOK: query: SELECT GROUPING__ID, count(*)
 FROM
 (
@@ -91,9 +94,10 @@ GROUP BY GROUPING__ID
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 #### A masked pattern was here ####
-0	1
+grouping__id	_c1
+0	6
 1	4
-3	6
+3	1
 PREHOOK: query: SELECT t1.GROUPING__ID, t2.GROUPING__ID FROM (SELECT GROUPING__ID FROM T1  GROUP BY key,value WITH ROLLUP) t1
 JOIN 
 (SELECT GROUPING__ID FROM T1 GROUP BY key, value WITH ROLLUP) t2
@@ -108,6 +112,42 @@ ON t1.GROUPING__ID = t2.GROUPING__ID
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 #### A masked pattern was here ####
+t1.grouping__id	t2.grouping__id
+0	0
+0	0
+0	0
+0	0
+0	0
+0	0
+0	0
+0	0
+0	0
+0	0
+0	0
+0	0
+0	0
+0	0
+0	0
+0	0
+0	0
+0	0
+0	0
+0	0
+0	0
+0	0
+0	0
+0	0
+0	0
+0	0
+0	0
+0	0
+0	0
+0	0
+0	0
+0	0
+0	0
+0	0
+0	0
 0	0
 1	1
 1	1
@@ -125,41 +165,6 @@ POSTHOOK: Input: default@t1
 1	1
 1	1
 1	1
-3	3
-3	3
-3	3
-3	3
-3	3
-3	3
-3	3
-3	3
-3	3
-3	3
-3	3
-3	3
-3	3
-3	3
-3	3
-3	3
-3	3
-3	3
-3	3
-3	3
-3	3
-3	3
-3	3
-3	3
-3	3
-3	3
-3	3
-3	3
-3	3
-3	3
-3	3
-3	3
-3	3
-3	3
-3	3
 3	3
 PREHOOK: query: SELECT t1.GROUPING__ID, t2.GROUPING__ID FROM (SELECT GROUPING__ID FROM T1  GROUP BY ROLLUP(key,value)) t1
 JOIN
@@ -175,6 +180,42 @@ ON t1.GROUPING__ID = t2.GROUPING__ID
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 #### A masked pattern was here ####
+t1.grouping__id	t2.grouping__id
+0	0
+0	0
+0	0
+0	0
+0	0
+0	0
+0	0
+0	0
+0	0
+0	0
+0	0
+0	0
+0	0
+0	0
+0	0
+0	0
+0	0
+0	0
+0	0
+0	0
+0	0
+0	0
+0	0
+0	0
+0	0
+0	0
+0	0
+0	0
+0	0
+0	0
+0	0
+0	0
+0	0
+0	0
+0	0
 0	0
 1	1
 1	1
@@ -193,41 +234,6 @@ POSTHOOK: Input: default@t1
 1	1
 1	1
 3	3
-3	3
-3	3
-3	3
-3	3
-3	3
-3	3
-3	3
-3	3
-3	3
-3	3
-3	3
-3	3
-3	3
-3	3
-3	3
-3	3
-3	3
-3	3
-3	3
-3	3
-3	3
-3	3
-3	3
-3	3
-3	3
-3	3
-3	3
-3	3
-3	3
-3	3
-3	3
-3	3
-3	3
-3	3
-3	3
 PREHOOK: query: SELECT key, value, GROUPING__ID, count(*) from T1 GROUP BY key, value WITH ROLLUP
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
@@ -236,17 +242,18 @@ POSTHOOK: query: SELECT key, value, GROUPING__ID, count(*) from T1 GROUP BY key,
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 #### A masked pattern was here ####
-1	1	3	1
+key	value	grouping__id	_c3
+1	1	0	1
+1	NULL	0	1
 1	NULL	1	2
-1	NULL	3	1
-2	2	3	1
+2	2	0	1
 2	NULL	1	1
-3	3	3	1
+3	3	0	1
+3	NULL	0	1
 3	NULL	1	2
-3	NULL	3	1
-4	5	3	1
+4	5	0	1
 4	NULL	1	1
-NULL	NULL	0	6
+NULL	NULL	3	6
 PREHOOK: query: SELECT GROUPING__ID, count(*)
 FROM
 (
@@ -265,9 +272,10 @@ GROUP BY GROUPING__ID
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 #### A masked pattern was here ####
-0	1
+grouping__id	_c1
+0	6
 1	4
-3	6
+3	1
 PREHOOK: query: SELECT t1.GROUPING__ID, t2.GROUPING__ID FROM (SELECT GROUPING__ID FROM T1  GROUP BY key,value WITH ROLLUP) t1
 JOIN 
 (SELECT GROUPING__ID FROM T1 GROUP BY key, value WITH ROLLUP) t2
@@ -282,6 +290,42 @@ ON t1.GROUPING__ID = t2.GROUPING__ID
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 #### A masked pattern was here ####
+t1.grouping__id	t2.grouping__id
+0	0
+0	0
+0	0
+0	0
+0	0
+0	0
+0	0
+0	0
+0	0
+0	0
+0	0
+0	0
+0	0
+0	0
+0	0
+0	0
+0	0
+0	0
+0	0
+0	0
+0	0
+0	0
+0	0
+0	0
+0	0
+0	0
+0	0
+0	0
+0	0
+0	0
+0	0
+0	0
+0	0
+0	0
+0	0
 0	0
 1	1
 1	1
@@ -299,39 +343,4 @@ POSTHOOK: Input: default@t1
 1	1
 1	1
 1	1
-3	3
-3	3
-3	3
-3	3
-3	3
-3	3
-3	3
-3	3
-3	3
-3	3
-3	3
-3	3
-3	3
-3	3
-3	3
-3	3
-3	3
-3	3
-3	3
-3	3
-3	3
-3	3
-3	3
-3	3
-3	3
-3	3
-3	3
-3	3
-3	3
-3	3
-3	3
-3	3
-3	3
-3	3
-3	3
 3	3

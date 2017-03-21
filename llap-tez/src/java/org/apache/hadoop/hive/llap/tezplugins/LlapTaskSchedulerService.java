@@ -47,6 +47,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -181,6 +182,9 @@ public class LlapTaskSchedulerService extends TaskScheduler {
   private final ScheduledExecutorService scheduledLoggingExecutor;
   private final SchedulerTimeoutMonitor timeoutMonitor;
   private ScheduledFuture<?> timeoutFuture;
+  private final AtomicReference<ScheduledFuture<?>> timeoutFutureRef = new AtomicReference<>(null);
+
+  private final AtomicInteger assignedTaskCounter = new AtomicInteger(0);
 
   private final LlapRegistryService registry = new LlapRegistryService(false);
 
@@ -362,9 +366,11 @@ public class LlapTaskSchedulerService extends TaskScheduler {
     @Override
     public void onRemove(ServiceInstance serviceInstance) {
       NodeReport nodeReport = constructNodeReport(serviceInstance, false);
+      LOG.info("Sending out nodeReport for onRemove: {}", nodeReport);
       getContext().nodesUpdated(Collections.singletonList(nodeReport));
       instanceToNodeMap.remove(serviceInstance.getWorkerIdentity());
-      LOG.info("Removed node with identity: {}", serviceInstance.getWorkerIdentity());
+      LOG.info("Removed node with identity: {} due to RegistryNotification. currentActiveInstances={}",
+          serviceInstance.getWorkerIdentity(), activeInstances.size());
       if (metrics != null) {
         metrics.setClusterNodeCount(activeInstances.size());
       }
@@ -385,6 +391,7 @@ public class LlapTaskSchedulerService extends TaskScheduler {
       if ((timeoutFuture == null || (timeoutFuture != null && timeoutFuture.isDone()))
           && activeInstances.size() == 0) {
         timeoutFuture = timeoutExecutor.schedule(timeoutMonitor, timeout, TimeUnit.MILLISECONDS);
+        timeoutFutureRef.set(timeoutFuture);
         LOG.info("Scheduled timeout monitor task to run after {} ms", timeout);
       } else {
         LOG.info("Timeout monitor task not started. Timeout future state: {}, #instances: {}",
@@ -399,6 +406,7 @@ public class LlapTaskSchedulerService extends TaskScheduler {
     timeoutLock.lock();
     try {
       if (timeoutFuture != null && activeInstances.size() != 0 && timeoutFuture.cancel(false)) {
+        timeoutFutureRef.set(null);
         LOG.info("Stopped timeout monitor task");
       } else {
         LOG.info("Timeout monitor task not stopped. Timeout future state: {}, #instances: {}",
@@ -650,6 +658,7 @@ public class LlapTaskSchedulerService extends TaskScheduler {
       NodeInfo nodeInfo = taskInfo.assignedNode;
       assert nodeInfo != null;
 
+      //  endReason shows up as OTHER for CONTAINER_TIME_OUT
       LOG.info("Processing de-allocate request for task={}, state={}, endReason={}", taskInfo.task,
           taskInfo.getState(), endReason);
       // Re-enable the node if preempted
@@ -680,6 +689,8 @@ public class LlapTaskSchedulerService extends TaskScheduler {
 
         } else { // Task Failed
           nodeInfo.registerUnsuccessfulTaskEnd(false);
+          // TODO Include EXTERNAL_PREEMPTION in this list?
+          // TODO HIVE-16134. Differentiate between EXTERNAL_PREEMPTION_WAITQUEU vs EXTERNAL_PREEMPTION_FINISHABLE?
           if (endReason != null && EnumSet
               .of(TaskAttemptEndReason.EXECUTOR_BUSY, TaskAttemptEndReason.COMMUNICATION_ERROR)
               .contains(endReason)) {
@@ -762,12 +773,11 @@ public class LlapTaskSchedulerService extends TaskScheduler {
               if (nodeInfo != null) {
                 if  (nodeInfo.canAcceptTask()) {
                   // Successfully scheduled.
-                  LOG.info(
-                      "Assigning {} when looking for {}."
-                          + " local=true FirstRequestedHost={}, #prefLocations={}", nodeInfo
-                          .toShortString(), host, (prefHostCount == 0) +
-                          (requestedHosts.length > 1 ? ", #prefLocations=" + requestedHosts.length :
-                              ""));
+                  LOG.info("Assigning {} when looking for {}." +
+                          " local=true FirstRequestedHost={}, #prefLocations={}",
+                      nodeInfo.toShortString(), host,
+                      (prefHostCount == 0),
+                      requestedHosts.length);
                   return new SelectHostResult(nodeInfo);
                 } else {
                   // The node cannot accept a task at the moment.
@@ -910,7 +920,7 @@ public class LlapTaskSchedulerService extends TaskScheduler {
 
   private void addNode(NodeInfo node, ServiceInstance serviceInstance) {
     // we have just added a new node. Signal timeout monitor to reset timer
-    if (activeInstances.size() == 1) {
+    if (activeInstances.size() != 0 && timeoutFutureRef.get() != null) {
       LOG.info("New node added. Signalling scheduler timeout monitor thread to stop timer.");
       stopTimeoutMonitor();
     }
@@ -918,12 +928,19 @@ public class LlapTaskSchedulerService extends TaskScheduler {
     NodeReport nodeReport = constructNodeReport(serviceInstance, true);
     getContext().nodesUpdated(Collections.singletonList(nodeReport));
 
+    // When the same node goes away and comes back... the old entry will be lost - which means
+    // we don't know how many fragments we have actually scheduled on this node.
+
+    // Replacing it is the right thing to do though, since we expect the AM to kill all the fragments running on the node, via timeouts.
+    // De-allocate messages coming in from the old node are sent to the NodeInfo instance for the old node.
+
     instanceToNodeMap.put(node.getNodeIdentity(), node);
     if (metrics != null) {
       metrics.setClusterNodeCount(activeInstances.size());
     }
     // Trigger scheduling since a new node became available.
-    LOG.info("Adding new node: {}", node);
+    LOG.info("Adding new node: {}. TotalNodeCount={}. activeInstances.size={}",
+        node, instanceToNodeMap.size(), activeInstances.size());
     trySchedulingPendingTasks();
   }
 
@@ -933,6 +950,9 @@ public class LlapTaskSchedulerService extends TaskScheduler {
       LOG.info("Attempting to re-enable node: " + nodeInfo.toShortString());
       if (activeInstances.getInstance(nodeInfo.getNodeIdentity()) != null) {
         nodeInfo.enableNode();
+        if (metrics != null) {
+          metrics.setDisabledNodeCount(disabledNodesQueue.size());
+        }
       } else {
         if (LOG.isInfoEnabled()) {
           LOG.info(
@@ -951,12 +971,10 @@ public class LlapTaskSchedulerService extends TaskScheduler {
    * @param nodeInfo  the node to be re-enabled
    */
   private void queueNodeForReEnablement(final NodeInfo nodeInfo) {
-    nodeInfo.enableNode();
     if ( disabledNodesQueue.remove(nodeInfo)) {
+      LOG.info("Queueing node for re-enablement: {}", nodeInfo.toShortString());
+      nodeInfo.resetExpireInformation();
       disabledNodesQueue.add(nodeInfo);
-    }
-    if (metrics != null) {
-      metrics.setDisabledNodeCount(disabledNodesQueue.size());
     }
   }
 
@@ -1163,9 +1181,9 @@ public class LlapTaskSchedulerService extends TaskScheduler {
               // Preempt on specific host
               boolean shouldPreempt = true;
               for (String host : potentialHosts) {
-                // Preempt only if there are not pending preemptions on the same host
+                // Preempt only if there are no pending preemptions on the same host
                 // When the premption registers, the request at the highest priority will be given the slot,
-                // even if the initial request was for some other task.
+                // even if the initial preemption was caused by some other task.
                 // TODO Maybe register which task the preemption was for, to avoid a bad non-local allocation.
                 MutableInt pendingHostPreemptions = pendingPreemptionsPerHost.get(host);
                 if (pendingHostPreemptions != null && pendingHostPreemptions.intValue() > 0) {
@@ -1178,7 +1196,7 @@ public class LlapTaskSchedulerService extends TaskScheduler {
               }
               if (shouldPreempt) {
                 if (LOG.isDebugEnabled()) {
-                  LOG.debug("Preempting for {} on potential hosts={}. TotalPendingPreemptions={}",
+                  LOG.debug("Attempting to preempt for {} on potential hosts={}. TotalPendingPreemptions={}",
                       taskInfo.task, Arrays.toString(potentialHosts), pendingPreemptions.get());
                 }
                 preemptTasks(entry.getKey().getPriority(), 1, potentialHosts);
@@ -1194,7 +1212,11 @@ public class LlapTaskSchedulerService extends TaskScheduler {
               LOG.debug("Attempting to preempt on any host for task={}, pendingPreemptions={}",
                   taskInfo.task, pendingPreemptions.get());
               if (pendingPreemptions.get() == 0) {
-                LOG.info("Preempting for task={} on any available host", taskInfo.task);
+                if (LOG.isDebugEnabled()) {
+                  LOG.debug(
+                      "Attempting to preempt for task={}, priority={} on any available host",
+                      taskInfo.task, taskInfo.priority);
+                }
                 preemptTasks(entry.getKey().getPriority(), 1, null);
               } else {
                 if (LOG.isDebugEnabled()) {
@@ -1263,7 +1285,10 @@ public class LlapTaskSchedulerService extends TaskScheduler {
               nodeInfo.getServiceAddress());
       writeLock.lock(); // While updating local structures
       try {
-        LOG.info("Assigned task={} on node={}, to container={}",
+        // The canAccept part of this log message does not account for this allocation.
+        assignedTaskCounter.incrementAndGet();
+        LOG.info("Assigned #{}, task={} on node={}, to container={}",
+            assignedTaskCounter.get(),
             taskInfo, nodeInfo.toShortString(), container.getId());
         dagStats.registerTaskAllocated(taskInfo.requestedHosts, taskInfo.requestedRacks,
             nodeInfo.getHost());
@@ -1321,7 +1346,8 @@ public class LlapTaskSchedulerService extends TaskScheduler {
           }
         } else {
           // No tasks qualify as preemptable
-          LOG.debug("No tasks qualify as killable to schedule tasks at priority {}", forPriority);
+          LOG.debug("No tasks qualify as killable to schedule tasks at priority {}. Current priority={}",
+              forPriority, entryAtPriority.getKey());
           break;
         }
       }
@@ -1572,6 +1598,8 @@ public class LlapTaskSchedulerService extends TaskScheduler {
     private final LlapTaskSchedulerMetrics metrics;
     private final Resource resourcePerExecutor;
 
+    private final String shortStringBase;
+
     /**
      * Create a NodeInfo bound to a service instance
      *  @param serviceInstance         the associated serviceInstance
@@ -1612,6 +1640,7 @@ public class LlapTaskSchedulerService extends TaskScheduler {
       if (metrics != null) {
         metrics.incrSchedulableTasksCount(numSchedulableTasks);
       }
+      shortStringBase = setupShortStringBase();
 
     }
 
@@ -1635,10 +1664,14 @@ public class LlapTaskSchedulerService extends TaskScheduler {
       return resourcePerExecutor;
     }
 
-    void enableNode() {
+    void resetExpireInformation() {
       expireTimeMillis = -1;
-      disabled = false;
       hadCommFailure = false;
+    }
+
+    void enableNode() {
+      resetExpireInformation();
+      disabled = false;
     }
 
     void disableNode(boolean commFailure) {
@@ -1662,7 +1695,7 @@ public class LlapTaskSchedulerService extends TaskScheduler {
       }
       if (LOG.isInfoEnabled()) {
         LOG.info("Disabling instance {} for {} milli-seconds. commFailure={}",
-            serviceInstance,
+            toShortString(),
             delayTime, commFailure);
       }
       expireTimeMillis = currentTime + delayTime;
@@ -1716,13 +1749,17 @@ public class LlapTaskSchedulerService extends TaskScheduler {
       return hadCommFailure;
     }
 
+    boolean _canAccepInternal() {
+      return !hadCommFailure && !disabled
+          &&(numSchedulableTasks == -1 || ((numSchedulableTasks - numScheduledTasks) > 0));
+    }
+
     int canAcceptCounter = 0;
     /* Returning true does not guarantee that the task will run, considering other queries
     may be running in the system. Also depends upon the capacity usage configuration
      */
     boolean canAcceptTask() {
-      boolean result = !hadCommFailure && !disabled
-          &&(numSchedulableTasks == -1 || ((numSchedulableTasks - numScheduledTasks) > 0));
+      boolean result = _canAccepInternal();
       if (LOG.isTraceEnabled()) {
         LOG.trace(constructCanAcceptLogResult(result));
       }
@@ -1763,6 +1800,10 @@ public class LlapTaskSchedulerService extends TaskScheduler {
       }
     }
 
+    private String setupShortStringBase() {
+      return "{" + serviceInstance.getHost() + ":" + serviceInstance.getRpcPort() + ", id=" + getNodeIdentity();
+    }
+
     @Override
     public String toString() {
       return "NodeInfo{" + "instance=" + serviceInstance
@@ -1777,10 +1818,16 @@ public class LlapTaskSchedulerService extends TaskScheduler {
     }
 
     private String toShortString() {
-      return "{" + serviceInstance.getHost() + ":" +
-          serviceInstance.getRpcPort() + ", id=" + getNodeIdentity() +
-          ", stc=" + numSchedulableTasks + "}";
+      StringBuilder sb = new StringBuilder();
+      sb.append(", canAcceptTask=").append(_canAccepInternal());
+      sb.append(", st=").append(numScheduledTasks);
+      sb.append(", ac=").append((numSchedulableTasks - numScheduledTasks));
+      sb.append(", commF=").append(hadCommFailure);
+      sb.append(", disabled=").append(disabled);
+      sb.append("}");
+      return shortStringBase + sb.toString();
     }
+
 
   }
 

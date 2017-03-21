@@ -29,9 +29,9 @@ select count(distinct gender), count(distinct department_id), count(distinct gen
 count(distinct education_level, department_id), count(distinct department_id, education_level), count(distinct department_id, education_level, gender) from employee;
 
 select 
-count(case when i=1 and department_id is not null then 1 else null end) as c0, 
-count(case when i=2 and gender is not null then 1 else null end) as c1, 
-count(case when i=4 and education_level is not null then 1 else null end) as c2 from 
+count(case when i=3 and department_id is not null then 1 else null end) as c0, 
+count(case when i=5 and gender is not null then 1 else null end) as c1, 
+count(case when i=6 and education_level is not null then 1 else null end) as c2 from 
 (select grouping__id as i, department_id, gender, 
 education_level from employee group by department_id, gender, education_level grouping sets 
 (department_id, gender, education_level))subq;

@@ -2,10 +2,13 @@ package org.apache.hadoop.hive.ql.exec.tez.monitoring;
 
 import org.apache.hadoop.hive.common.log.InPlaceUpdate;
 import org.apache.hadoop.hive.common.log.ProgressMonitor;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.tez.dag.api.client.DAGStatus;
 import org.apache.tez.dag.api.client.Progress;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.StringWriter;
 import java.util.Map;
@@ -48,10 +51,17 @@ class RenderStrategy {
           || System.currentTimeMillis() >= lastPrintTime + PRINT_INTERVAL;
     }
 
+    /*
+       This is used to print the progress information as pure text , a sample is as below:
+          Map 1: 0/1	Reducer 2: 0/1
+          Map 1: 0(+1)/1	Reducer 2: 0/1
+          Map 1: 1/1	Reducer 2: 0(+1)/1
+          Map 1: 1/1	Reducer 2: 1/1
+     */
     private String getReport(Map<String, Progress> progressMap) {
       StringWriter reportBuffer = new StringWriter();
 
-      SortedSet<String> keys = new TreeSet<String>(progressMap.keySet());
+      SortedSet<String> keys = new TreeSet<>(progressMap.keySet());
       for (String s : keys) {
         Progress progress = progressMap.get(s);
         final int complete = progress.getSucceededTaskCount();
@@ -109,7 +119,9 @@ class RenderStrategy {
    * same information to beeline client when requested.
    */
   static class LogToFileFunction extends BaseUpdateFunction {
-
+    private static final Logger LOGGER = LoggerFactory.getLogger(LogToFileFunction.class);
+    private boolean hiveServer2InPlaceProgressEnabled =
+        SessionState.get().getConf().getBoolVar(HiveConf.ConfVars.HIVE_SERVER2_INPLACE_PROGRESS);
     LogToFileFunction(TezJobMonitor monitor) {
       super(monitor);
     }
@@ -121,7 +133,11 @@ class RenderStrategy {
 
     @Override
     public void renderReport(String report) {
-      monitor.console.printInfo(report);
+      if (hiveServer2InPlaceProgressEnabled) {
+        LOGGER.info(report);
+      } else {
+        monitor.console.printInfo(report);
+      }
     }
   }
 

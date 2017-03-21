@@ -146,15 +146,15 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@employee
 #### A masked pattern was here ####
 2	4	2	3	7	7	7
-PREHOOK: query: select count(case i when 1 then 1 else null end) as c0, count(case i when 2 then 1 else null end) as c1, 
-count(case i when 4 then 1 else null end) as c2 from (select grouping__id as i, department_id, gender, 
+PREHOOK: query: select count(case i when 3 then 1 else null end) as c0, count(case i when 5 then 1 else null end) as c1, 
+count(case i when 6 then 1 else null end) as c2 from (select grouping__id as i, department_id, gender, 
 education_level from employee group by department_id, gender, education_level grouping sets 
 (department_id, gender, education_level))subq
 PREHOOK: type: QUERY
 PREHOOK: Input: default@employee
 #### A masked pattern was here ####
-POSTHOOK: query: select count(case i when 1 then 1 else null end) as c0, count(case i when 2 then 1 else null end) as c1, 
-count(case i when 4 then 1 else null end) as c2 from (select grouping__id as i, department_id, gender, 
+POSTHOOK: query: select count(case i when 3 then 1 else null end) as c0, count(case i when 5 then 1 else null end) as c1, 
+count(case i when 6 then 1 else null end) as c2 from (select grouping__id as i, department_id, gender, 
 education_level from employee group by department_id, gender, education_level grouping sets 
 (department_id, gender, education_level))subq
 POSTHOOK: type: QUERY
@@ -173,19 +173,19 @@ group by department_id, gender, education_level grouping sets
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@employee
 #### A masked pattern was here ####
-4	NULL	NULL	1
-4	NULL	NULL	2
-4	NULL	NULL	3
-2	NULL	F	NULL
-2	NULL	M	NULL
-1	1	NULL	NULL
-5	1	NULL	1
-5	1	NULL	2
-5	1	NULL	3
-1	2	NULL	NULL
-5	2	NULL	1
-5	2	NULL	3
-1	3	NULL	NULL
-5	3	NULL	2
-1	4	NULL	NULL
-5	4	NULL	1
+6	NULL	NULL	1
+6	NULL	NULL	2
+6	NULL	NULL	3
+5	NULL	F	NULL
+5	NULL	M	NULL
+3	1	NULL	NULL
+2	1	NULL	1
+2	1	NULL	2
+2	1	NULL	3
+3	2	NULL	NULL
+2	2	NULL	1
+2	2	NULL	3
+3	3	NULL	NULL
+2	3	NULL	2
+3	4	NULL	NULL
+2	4	NULL	1

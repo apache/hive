@@ -80,7 +80,7 @@ STAGE PLANS:
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkOperator
                             native: false
-                            nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No buckets IS true, Uniform Hash IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                            nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                             nativeConditionsNotMet: No TopN IS false
                         Statistics: Num rows: 6102 Data size: 1440072 Basic stats: COMPLETE Column stats: NONE
                         TopN Hash Memory Usage: 0.1
@@ -124,8 +124,8 @@ STAGE PLANS:
                   Reduce Sink Vectorization:
                       className: VectorReduceSinkOperator
                       native: false
-                      nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No buckets IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                      nativeConditionsNotMet: No TopN IS false, Uniform Hash IS false
+                      nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                      nativeConditionsNotMet: No TopN IS false
                   Statistics: Num rows: 3051 Data size: 720036 Basic stats: COMPLETE Column stats: NONE
                   TopN Hash Memory Usage: 0.1
                   value expressions: _col4 (type: decimal(20,10))

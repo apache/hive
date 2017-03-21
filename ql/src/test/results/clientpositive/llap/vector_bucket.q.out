@@ -57,7 +57,7 @@ STAGE PLANS:
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
                 groupByVectorOutput: true
                 allNative: false
-                usesVectorUDFAdaptor: true
+                usesVectorUDFAdaptor: false
                 vectorized: true
             Reduce Operator Tree:
               Select Operator
@@ -67,7 +67,7 @@ STAGE PLANS:
                     className: VectorSelectOperator
                     native: true
                     projectedOutputColumns: [2, 1]
-                    selectExpressions: VectorUDFAdaptor(UDFToInteger(VALUE._col0)) -> 2:int
+                    selectExpressions: CastStringToLong(col 0) -> 2:int
                 Statistics: Num rows: 1 Data size: 26 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false

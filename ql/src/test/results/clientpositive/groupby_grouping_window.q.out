@@ -168,7 +168,7 @@ POSTHOOK: Input: default@t
 0	NULL
 0	NULL
 0	NULL
-0	NULL
+1	NULL
 PREHOOK: query: SELECT grouping(category), lead(live) over(partition by grouping(category))
 FROM t
 GROUP BY category, live

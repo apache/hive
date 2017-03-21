@@ -103,18 +103,22 @@ POSTHOOK: Lineage: inputtbl3.val SIMPLE [(inputsrctbl3)inputsrctbl3.FieldSchema(
 PREHOOK: query: analyze table inputTbl1 compute statistics for columns
 PREHOOK: type: QUERY
 PREHOOK: Input: default@inputtbl1
+PREHOOK: Output: default@inputtbl1
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table inputTbl1 compute statistics for columns
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@inputtbl1
+POSTHOOK: Output: default@inputtbl1
 #### A masked pattern was here ####
 PREHOOK: query: analyze table inputTbl3 compute statistics for columns
 PREHOOK: type: QUERY
 PREHOOK: Input: default@inputtbl3
+PREHOOK: Output: default@inputtbl3
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table inputTbl3 compute statistics for columns
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@inputtbl3
+POSTHOOK: Output: default@inputtbl3
 #### A masked pattern was here ####
 PREHOOK: query: explain
   SELECT count(1) as rowcnt, min(val) as ms, max(val) as mx from inputTbl1
@@ -282,10 +286,12 @@ POSTHOOK: Input: default@inputtbl3
 PREHOOK: query: analyze table inputTbl2 compute statistics for columns
 PREHOOK: type: QUERY
 PREHOOK: Input: default@inputtbl2
+PREHOOK: Output: default@inputtbl2
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table inputTbl2 compute statistics for columns
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@inputtbl2
+POSTHOOK: Output: default@inputtbl2
 #### A masked pattern was here ####
 PREHOOK: query: explain
   SELECT count(1) as rowcnt, min(val) as ms, max(val) as mx from inputTbl1

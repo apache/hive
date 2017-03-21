@@ -57,8 +57,14 @@ groupByClause
 // support for new and old rollup/cube syntax
 groupby_expression :
  rollupStandard |
- rollupOldSyntax
+ rollupOldSyntax|
+ groupByEmpty
 ;
+
+groupByEmpty
+    :
+    LPAREN RPAREN
+    ;
 
 // standard rollup syntax
 rollupStandard
@@ -214,7 +220,7 @@ function
     LPAREN
       (
         (STAR) => (star=STAR)
-        | (dist=KW_DISTINCT)? (selectExpression (COMMA selectExpression)*)?
+        | (dist=KW_DISTINCT | KW_ALL)? (selectExpression (COMMA selectExpression)*)?
       )
     RPAREN (KW_OVER ws=window_specification)?
            -> {$star != null}? ^(TOK_FUNCTIONSTAR functionName $ws?)
@@ -789,6 +795,7 @@ nonReserved
     | KW_OPERATOR
     | KW_EXPRESSION
     | KW_DETAIL
+    | KW_WAIT
 
 ;
 

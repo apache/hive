@@ -1,0 +1,221 @@
+PREHOOK: query: DESCRIBE FUNCTION octet_length
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION octet_length
+POSTHOOK: type: DESCFUNCTION
+octet_length(str | binary) - Returns the number of bytes in str or binary data
+PREHOOK: query: DESCRIBE FUNCTION EXTENDED octet_length
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION EXTENDED octet_length
+POSTHOOK: type: DESCFUNCTION
+octet_length(str | binary) - Returns the number of bytes in str or binary data
+Example:
+  > SELECT octet_length('HUX8�') FROM src LIMIT 1;
+  15
+Function class:org.apache.hadoop.hive.ql.udf.generic.GenericUDFOctetLength
+Function type:BUILTIN
+PREHOOK: query: CREATE TABLE dest1(len INT)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@dest1
+POSTHOOK: query: CREATE TABLE dest1(len INT)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@dest1
+PREHOOK: query: EXPLAIN FROM src1 INSERT OVERWRITE TABLE dest1 SELECT octet_length(src1.value)
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN FROM src1 INSERT OVERWRITE TABLE dest1 SELECT octet_length(src1.value)
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-7 depends on stages: Stage-1 , consists of Stage-4, Stage-3, Stage-5
+  Stage-4
+  Stage-0 depends on stages: Stage-4, Stage-3, Stage-6
+  Stage-2 depends on stages: Stage-0
+  Stage-3
+  Stage-5
+  Stage-6 depends on stages: Stage-5
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: src1
+            Statistics: Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: octet_length(value) (type: int)
+              outputColumnNames: _col0
+              Statistics: Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: NONE
+              File Output Operator
+                compressed: false
+                Statistics: Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: NONE
+                table:
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    name: default.dest1
+
+  Stage: Stage-7
+    Conditional Operator
+
+  Stage: Stage-4
+    Move Operator
+      files:
+          hdfs directory: true
+#### A masked pattern was here ####
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          replace: true
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.dest1
+
+  Stage: Stage-2
+    Stats-Aggr Operator
+
+  Stage: Stage-3
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            File Output Operator
+              compressed: false
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  name: default.dest1
+
+  Stage: Stage-5
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            File Output Operator
+              compressed: false
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  name: default.dest1
+
+  Stage: Stage-6
+    Move Operator
+      files:
+          hdfs directory: true
+#### A masked pattern was here ####
+
+PREHOOK: query: FROM src1 INSERT OVERWRITE TABLE dest1 SELECT octet_length(src1.value)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src1
+PREHOOK: Output: default@dest1
+POSTHOOK: query: FROM src1 INSERT OVERWRITE TABLE dest1 SELECT octet_length(src1.value)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src1
+POSTHOOK: Output: default@dest1
+POSTHOOK: Lineage: dest1.len EXPRESSION [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: SELECT dest1.* FROM dest1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@dest1
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT dest1.* FROM dest1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dest1
+#### A masked pattern was here ####
+7
+0
+7
+6
+7
+7
+7
+7
+6
+7
+7
+7
+7
+7
+7
+0
+0
+6
+0
+7
+7
+7
+0
+0
+0
+PREHOOK: query: DROP TABLE dest1
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@dest1
+PREHOOK: Output: default@dest1
+POSTHOOK: query: DROP TABLE dest1
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@dest1
+POSTHOOK: Output: default@dest1
+PREHOOK: query: CREATE TABLE dest1(name STRING) STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@dest1
+POSTHOOK: query: CREATE TABLE dest1(name STRING) STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@dest1
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv4.txt' INTO TABLE dest1
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@dest1
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv4.txt' INTO TABLE dest1
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@dest1
+PREHOOK: query: INSERT INTO dest1 VALUES(NULL)
+PREHOOK: type: QUERY
+PREHOOK: Output: default@dest1
+POSTHOOK: query: INSERT INTO dest1 VALUES(NULL)
+POSTHOOK: type: QUERY
+POSTHOOK: Output: default@dest1
+POSTHOOK: Lineage: dest1.name SIMPLE [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
+PREHOOK: query: EXPLAIN SELECT octet_length(dest1.name) FROM dest1
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN SELECT octet_length(dest1.name) FROM dest1
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: dest1
+          Statistics: Num rows: 1 Data size: 9 Basic stats: COMPLETE Column stats: NONE
+          Select Operator
+            expressions: octet_length(name) (type: int)
+            outputColumnNames: _col0
+            Statistics: Num rows: 1 Data size: 9 Basic stats: COMPLETE Column stats: NONE
+            ListSink
+
+PREHOOK: query: SELECT octet_length(dest1.name) FROM dest1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@dest1
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT octet_length(dest1.name) FROM dest1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dest1
+#### A masked pattern was here ####
+NULL
+6
+PREHOOK: query: DROP TABLE dest1
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@dest1
+PREHOOK: Output: default@dest1
+POSTHOOK: query: DROP TABLE dest1
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@dest1
+POSTHOOK: Output: default@dest1

@@ -37,12 +37,18 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@partitioned1
 PREHOOK: Input: default@partitioned1@part=1
 PREHOOK: Input: default@partitioned1@part=2
+PREHOOK: Output: default@partitioned1
+PREHOOK: Output: default@partitioned1@part=1
+PREHOOK: Output: default@partitioned1@part=2
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table partitioned1 compute statistics for columns
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@partitioned1
 POSTHOOK: Input: default@partitioned1@part=1
 POSTHOOK: Input: default@partitioned1@part=2
+POSTHOOK: Output: default@partitioned1
+POSTHOOK: Output: default@partitioned1@part=1
+POSTHOOK: Output: default@partitioned1@part=2
 #### A masked pattern was here ####
 PREHOOK: query: desc formatted partitioned1
 PREHOOK: type: DESCTABLE
@@ -69,6 +75,12 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+#### A masked pattern was here ####
+	numFiles            	2                   
+	numRows             	8                   
+	rawDataSize         	96                  
+	totalSize           	104                 
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -231,12 +243,18 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@partitioned1
 PREHOOK: Input: default@partitioned1@part=1
 PREHOOK: Input: default@partitioned1@part=2
+PREHOOK: Output: default@partitioned1
+PREHOOK: Output: default@partitioned1@part=1
+PREHOOK: Output: default@partitioned1@part=2
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table partitioned1 compute statistics for columns
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@partitioned1
 POSTHOOK: Input: default@partitioned1@part=1
 POSTHOOK: Input: default@partitioned1@part=2
+POSTHOOK: Output: default@partitioned1
+POSTHOOK: Output: default@partitioned1@part=1
+POSTHOOK: Output: default@partitioned1@part=2
 #### A masked pattern was here ####
 PREHOOK: query: desc formatted partitioned1
 PREHOOK: type: DESCTABLE
@@ -263,6 +281,12 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+#### A masked pattern was here ####
+	numFiles            	2                   
+	numRows             	8                   
+	rawDataSize         	1116                
+	totalSize           	819                 
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 

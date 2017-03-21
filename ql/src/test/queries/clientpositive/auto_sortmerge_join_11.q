@@ -33,7 +33,7 @@ set hive.optimize.bucketmapjoin.sortedmerge=true;
 -- bucketized mapjoin is not done
 explain extended select count(*) FROM bucket_small a JOIN bucket_big b ON a.key = b.key;
 select count(*) FROM bucket_small a JOIN bucket_big b ON a.key = b.key;
-
+set hive.cbo.enable=false;
 -- The join is converted to a bucketed mapjoin with a mapjoin hint
 explain extended select /*+ mapjoin(a) */ count(*) FROM bucket_small a JOIN bucket_big b ON a.key = b.key;
 select /*+ mapjoin(a) */ count(*) FROM bucket_small a JOIN bucket_big b ON a.key = b.key;

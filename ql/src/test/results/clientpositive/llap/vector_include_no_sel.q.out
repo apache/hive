@@ -203,8 +203,8 @@ STAGE PLANS:
                     Reduce Sink Vectorization:
                         className: VectorReduceSinkOperator
                         native: false
-                        nativeConditionsMet: hive.execution.engine tez IN [tez, spark] IS true, No buckets IS true, No TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                        nativeConditionsNotMet: hive.vectorized.execution.reducesink.new.enabled IS false, Uniform Hash IS false
+                        nativeConditionsMet: hive.execution.engine tez IN [tez, spark] IS true, No TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                        nativeConditionsNotMet: hive.vectorized.execution.reducesink.new.enabled IS false
                     Statistics: Num rows: 200 Data size: 74200 Basic stats: COMPLETE Column stats: NONE
                     value expressions: cd_demo_sk (type: int), cd_marital_status (type: string)
             Execution mode: vectorized, llap
@@ -268,8 +268,8 @@ STAGE PLANS:
                             Reduce Sink Vectorization:
                                 className: VectorReduceSinkOperator
                                 native: false
-                                nativeConditionsMet: hive.execution.engine tez IN [tez, spark] IS true, No buckets IS true, No TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                                nativeConditionsNotMet: hive.vectorized.execution.reducesink.new.enabled IS false, Uniform Hash IS false
+                                nativeConditionsMet: hive.execution.engine tez IN [tez, spark] IS true, No TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                                nativeConditionsNotMet: hive.vectorized.execution.reducesink.new.enabled IS false
                             Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                             value expressions: _col0 (type: bigint)
             Execution mode: vectorized, llap

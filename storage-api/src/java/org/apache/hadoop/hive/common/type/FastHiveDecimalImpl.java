@@ -145,7 +145,6 @@ public class FastHiveDecimalImpl extends FastHiveDecimal {
    * Int: 8 decimal digits.  An even number and 1/2 of MAX_LONGWORD_DECIMAL.
    */
   private static final int INTWORD_DECIMAL_DIGITS = 8;
-  private static final int MAX_INTWORD_DECIMAL = (int) powerOfTenTable[INTWORD_DECIMAL_DIGITS] - 1;
   private static final int MULTIPLER_INTWORD_DECIMAL = (int) powerOfTenTable[INTWORD_DECIMAL_DIGITS];
 
   /**
@@ -163,9 +162,6 @@ public class FastHiveDecimalImpl extends FastHiveDecimal {
   private static final int HIGHWORD_DECIMAL_DIGITS = MAX_DECIMAL_DIGITS - TWO_X_LONGWORD_DECIMAL_DIGITS;
   private static final long MAX_HIGHWORD_DECIMAL =
       powerOfTenTable[HIGHWORD_DECIMAL_DIGITS] - 1;
-
-  private static long HIGHWORD_DIVIDE_FACTOR = powerOfTenTable[LONGWORD_DECIMAL_DIGITS - HIGHWORD_DECIMAL_DIGITS];
-  private static long HIGHWORD_MULTIPLY_FACTOR = powerOfTenTable[HIGHWORD_DECIMAL_DIGITS];
 
   // 38 * 2 or 76 full decimal maximum - (64 + 8) digits in 4 lower longs (4 digits here).
   private static final long FULL_MAX_HIGHWORD_DECIMAL =
@@ -189,11 +185,6 @@ public class FastHiveDecimalImpl extends FastHiveDecimal {
       BigInteger.ONE.add(BIG_INTEGER_MAX_LONGWORD_DECIMAL);
   private static final BigInteger BIG_INTEGER_LONGWORD_MULTIPLIER_2X =
       BIG_INTEGER_LONGWORD_MULTIPLIER.multiply(BIG_INTEGER_LONGWORD_MULTIPLIER);
-  private static final BigInteger BIG_INTEGER_LONGWORD_MULTIPLIER_3X =
-      BIG_INTEGER_LONGWORD_MULTIPLIER_2X.multiply(BIG_INTEGER_LONGWORD_MULTIPLIER);
-  private static final BigInteger BIG_INTEGER_LONGWORD_MULTIPLIER_4X =
-      BIG_INTEGER_LONGWORD_MULTIPLIER_3X.multiply(BIG_INTEGER_LONGWORD_MULTIPLIER);
-
   private static final BigInteger BIG_INTEGER_MAX_HIGHWORD_DECIMAL =
       BigInteger.valueOf(MAX_HIGHWORD_DECIMAL);
   private static final BigInteger BIG_INTEGER_HIGHWORD_MULTIPLIER =
@@ -203,21 +194,21 @@ public class FastHiveDecimalImpl extends FastHiveDecimal {
   // conversion.
 
   // There is only one blank in UTF-8.
-  private final static byte BYTE_BLANK = (byte) ' ';
+  private static final byte BYTE_BLANK = (byte) ' ';
 
-  private final static byte BYTE_DIGIT_ZERO = (byte) '0';
-  private final static byte BYTE_DIGIT_NINE = (byte) '9';
+  private static final byte BYTE_DIGIT_ZERO = (byte) '0';
+  private static final byte BYTE_DIGIT_NINE = (byte) '9';
 
   // Decimal point.
-  private final static byte BYTE_DOT = (byte) '.';
+  private static final byte BYTE_DOT = (byte) '.';
 
   // Sign.
-  private final static byte BYTE_MINUS = (byte) '-';
-  private final static byte BYTE_PLUS = (byte) '+';
+  private static final byte BYTE_MINUS = (byte) '-';
+  private static final byte BYTE_PLUS = (byte) '+';
 
   // Exponent E or e.
-  private final static byte BYTE_EXPONENT_LOWER = (byte) 'e';
-  private final static byte BYTE_EXPONENT_UPPER = (byte) 'E';
+  private static final byte BYTE_EXPONENT_LOWER = (byte) 'e';
+  private static final byte BYTE_EXPONENT_UPPER = (byte) 'E';
 
   //************************************************************************************************
   // Initialize (fastSetFrom*).
@@ -1758,7 +1749,7 @@ public class FastHiveDecimalImpl extends FastHiveDecimal {
    *      4,611,686,018,427,387,904 or
    *      461,1686018427387904 (16 digit comma'd)
    */
-  private static FastHiveDecimal FAST_HIVE_DECIMAL_TWO_POWER_62 =
+  private static final FastHiveDecimal FAST_HIVE_DECIMAL_TWO_POWER_62 =
       new FastHiveDecimal(1, 1686018427387904L, 461L, 0, 19, 0);
 
   /*
@@ -1769,7 +1760,7 @@ public class FastHiveDecimalImpl extends FastHiveDecimal {
    *      9,223,372,036,854,775,808 or
    *      922,3372036854775808 (16 digit comma'd)
    */
-  private static FastHiveDecimal FAST_HIVE_DECIMAL_TWO_POWER_63 =
+  private static final FastHiveDecimal FAST_HIVE_DECIMAL_TWO_POWER_63 =
       new FastHiveDecimal(1, 3372036854775808L, 922L, 0, 19, 0);
 
   /*
@@ -1784,7 +1775,7 @@ public class FastHiveDecimalImpl extends FastHiveDecimal {
    *      42,535,295,865,117,307,932,921,825,928,971,026,432 or
    *      425352,9586511730793292,1825928971026432  (16 digit comma'd)
    */
-  private static FastHiveDecimal FAST_HIVE_DECIMAL_TWO_POWER_125 =
+  private static final FastHiveDecimal FAST_HIVE_DECIMAL_TWO_POWER_125 =
       new FastHiveDecimal(1, 1825928971026432L, 9586511730793292L, 425352L, 38, 0);
 
   /*
@@ -1797,7 +1788,7 @@ public class FastHiveDecimalImpl extends FastHiveDecimal {
    *
    * 3*16 (48) + 15 --> 63 down shift.
    */
-  private static FastHiveDecimal FAST_HIVE_DECIMAL_TWO_POWER_63_INVERSE =
+  private static final FastHiveDecimal FAST_HIVE_DECIMAL_TWO_POWER_63_INVERSE =
       new FastHiveDecimal(1, 6994171142578125L, 5044340074528008L, 1084202172485L, 45, 0);
 
   /*
@@ -2141,7 +2132,7 @@ public class FastHiveDecimalImpl extends FastHiveDecimal {
    *      72,057,594,037,927,936 or
    *      7,2057594037927936  (16 digit comma'd)
    */
-  private static FastHiveDecimal FAST_HIVE_DECIMAL_TWO_POWER_56 =
+  private static final FastHiveDecimal FAST_HIVE_DECIMAL_TWO_POWER_56 =
       new FastHiveDecimal(1, 2057594037927936L, 7L, 0, 17, 0);
 
   /*
@@ -2154,7 +2145,7 @@ public class FastHiveDecimalImpl extends FastHiveDecimal {
    *      5,192,296,858,534,827,628,530,496,329,220,096 or
    *      51,9229685853482762,8530496329220096  (16 digit comma'd)
    */
-  private static FastHiveDecimal FAST_HIVE_DECIMAL_TWO_POWER_112 =
+  private static final FastHiveDecimal FAST_HIVE_DECIMAL_TWO_POWER_112 =
       new FastHiveDecimal(1, 8530496329220096L, 9229685853482762L, 51L, 34, 0);
 
   // Multiply by 1/2^56 or 1.387778780781445675529539585113525390625e-17 to divide by 2^56.
@@ -2164,7 +2155,7 @@ public class FastHiveDecimalImpl extends FastHiveDecimal {
   //
   // 3*16 (48) + 8 --> 56 down shift.
   //
-  private static FastHiveDecimal FAST_HIVE_DECIMAL_TWO_POWER_56_INVERSE =
+  private static final FastHiveDecimal FAST_HIVE_DECIMAL_TWO_POWER_56_INVERSE =
       new FastHiveDecimal(1, 9585113525390625L, 8078144567552953L, 13877787L, 40, 0);
 
   /*
@@ -2175,16 +2166,16 @@ public class FastHiveDecimalImpl extends FastHiveDecimal {
   private static final int BIG_INTEGER_BYTES_QUOTIENT_INTEGER_WORD_NUM = 3;
   private static final int BIG_INTEGER_BYTES_QUOTIENT_INTEGER_DIGIT_NUM = 8;
 
-  private static int INITIAL_SHIFT = 48;   // 56 bits minus 1 byte.
+  private static final int INITIAL_SHIFT = 48;   // 56 bits minus 1 byte.
 
   // Long masks and values.
-  private static long LONG_56_BIT_MASK = 0xFFFFFFFFFFFFFFL;
-  private static long LONG_TWO_TO_56_POWER = LONG_56_BIT_MASK + 1L;
-  private static long LONG_BYTE_MASK = 0xFFL;
-  private static long LONG_BYTE_HIGH_BIT_MASK = 0x80L;
+  private static final long LONG_56_BIT_MASK = 0xFFFFFFFFFFFFFFL;
+  private static final long LONG_TWO_TO_56_POWER = LONG_56_BIT_MASK + 1L;
+  private static final long LONG_BYTE_MASK = 0xFFL;
+  private static final long LONG_BYTE_HIGH_BIT_MASK = 0x80L;
 
   // Byte values.
-  private static byte BYTE_ALL_BITS = (byte) 0xFF;
+  private static final byte BYTE_ALL_BITS = (byte) 0xFF;
 
   /**
    * Convert bytes in the format used by BigInteger's toByteArray format (and accepted by its
@@ -2838,32 +2829,32 @@ public class FastHiveDecimalImpl extends FastHiveDecimal {
   // Decimal to Integer conversion.
 
   private static final int MAX_BYTE_DIGITS = 3;
-  private static FastHiveDecimal FASTHIVEDECIMAL_MIN_BYTE_VALUE_MINUS_ONE =
+  private static final FastHiveDecimal FASTHIVEDECIMAL_MIN_BYTE_VALUE_MINUS_ONE =
       new FastHiveDecimal((long) Byte.MIN_VALUE - 1L);
-  private static FastHiveDecimal FASTHIVEDECIMAL_MAX_BYTE_VALUE_PLUS_ONE =
+  private static final FastHiveDecimal FASTHIVEDECIMAL_MAX_BYTE_VALUE_PLUS_ONE =
       new FastHiveDecimal((long) Byte.MAX_VALUE + 1L);
 
   private static final int MAX_SHORT_DIGITS = 5;
-  private static FastHiveDecimal FASTHIVEDECIMAL_MIN_SHORT_VALUE_MINUS_ONE =
+  private static final FastHiveDecimal FASTHIVEDECIMAL_MIN_SHORT_VALUE_MINUS_ONE =
       new FastHiveDecimal((long) Short.MIN_VALUE - 1L);
-  private static FastHiveDecimal FASTHIVEDECIMAL_MAX_SHORT_VALUE_PLUS_ONE =
+  private static final FastHiveDecimal FASTHIVEDECIMAL_MAX_SHORT_VALUE_PLUS_ONE =
       new FastHiveDecimal((long) Short.MAX_VALUE + 1L);
 
   private static final int MAX_INT_DIGITS = 10;
-  private static FastHiveDecimal FASTHIVEDECIMAL_MIN_INT_VALUE_MINUS_ONE =
+  private static final FastHiveDecimal FASTHIVEDECIMAL_MIN_INT_VALUE_MINUS_ONE =
       new FastHiveDecimal((long) Integer.MIN_VALUE - 1L);
-  private static FastHiveDecimal FASTHIVEDECIMAL_MAX_INT_VALUE_PLUS_ONE =
+  private static final FastHiveDecimal FASTHIVEDECIMAL_MAX_INT_VALUE_PLUS_ONE =
       new FastHiveDecimal((long) Integer.MAX_VALUE + 1L);
 
-  private static FastHiveDecimal FASTHIVEDECIMAL_MIN_LONG_VALUE =
+  private static final FastHiveDecimal FASTHIVEDECIMAL_MIN_LONG_VALUE =
       new FastHiveDecimal(Long.MIN_VALUE);
-  private static FastHiveDecimal FASTHIVEDECIMAL_MAX_LONG_VALUE =
+  private static final FastHiveDecimal FASTHIVEDECIMAL_MAX_LONG_VALUE =
       new FastHiveDecimal(Long.MAX_VALUE);
   private static final int MAX_LONG_DIGITS =
       FASTHIVEDECIMAL_MAX_LONG_VALUE.fastIntegerDigitCount;
-  private static FastHiveDecimal FASTHIVEDECIMAL_MIN_LONG_VALUE_MINUS_ONE =
+  private static final FastHiveDecimal FASTHIVEDECIMAL_MIN_LONG_VALUE_MINUS_ONE =
       new FastHiveDecimal("-9223372036854775809");
-  private static FastHiveDecimal FASTHIVEDECIMAL_MAX_LONG_VALUE_PLUS_ONE =
+  private static final FastHiveDecimal FASTHIVEDECIMAL_MAX_LONG_VALUE_PLUS_ONE =
       new FastHiveDecimal("9223372036854775808");
 
   private static final BigInteger BIG_INTEGER_UNSIGNED_BYTE_MAX_VALUE = BIG_INTEGER_TWO.pow(Byte.SIZE).subtract(BigInteger.ONE);
@@ -9355,7 +9346,7 @@ public class FastHiveDecimalImpl extends FastHiveDecimal {
   //************************************************************************************************
   // Decimal Debugging.
 
-  static int STACK_LENGTH_LIMIT = 20;
+  static final int STACK_LENGTH_LIMIT = 20;
   public static String getStackTraceAsSingleLine(StackTraceElement[] stackTrace) {
     StringBuilder sb = new StringBuilder();
     sb.append("Stack trace: ");

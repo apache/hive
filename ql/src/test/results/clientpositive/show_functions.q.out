@@ -43,6 +43,8 @@ case
 cbrt
 ceil
 ceiling
+char_length
+character_length
 chr
 coalesce
 collect_list
@@ -154,6 +156,7 @@ max
 md5
 min
 minute
+mod
 month
 months_between
 named_struct
@@ -168,6 +171,7 @@ not
 ntile
 nullif
 nvl
+octet_length
 or
 parse_url
 parse_url_tuple
@@ -190,6 +194,15 @@ reflect2
 regexp
 regexp_extract
 regexp_replace
+regr_avgx
+regr_avgy
+regr_count
+regr_intercept
+regr_r2
+regr_slope
+regr_sxx
+regr_sxy
+regr_syy
 repeat
 replace
 replicate_rows
@@ -269,6 +282,8 @@ case
 cbrt
 ceil
 ceiling
+char_length
+character_length
 chr
 coalesce
 collect_list
@@ -321,6 +336,7 @@ percentile
 posexplode
 positive
 regexp_replace
+regr_slope
 replace
 reverse
 rlike
@@ -382,6 +398,7 @@ max
 md5
 min
 minute
+mod
 month
 months_between
 xpath

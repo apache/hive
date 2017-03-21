@@ -102,7 +102,7 @@ public class LlapServiceDriver {
    * This is a working configuration for the instance to merge various variables.
    * It is not written out for llap server usage
    */
-  private final Configuration conf;
+  private final HiveConf conf;
 
   public LlapServiceDriver() {
     SessionState ss = SessionState.get();
@@ -435,17 +435,33 @@ public class LlapServiceDriver {
             }
           }
 
-          String auxJars = options.getAuxJars();
+          HashSet<String> auxJars = new HashSet<>();
+          // There are many ways to have AUX jars in Hive... sigh
+          if (options.getIsHiveAux()) {
+            // Note: we don't add ADDED jars, RELOADABLE jars, etc. That is by design; there are too many ways
+            // to add jars in Hive, some of which are session/etc. specific. Env + conf + arg should be enough.
+            addAuxJarsToSet(auxJars, conf.getAuxJars());
+            addAuxJarsToSet(auxJars, System.getenv("HIVE_AUX_JARS_PATH"));
+            LOG.info("Adding the following aux jars from the environment and configs: " + auxJars);
+          }
+
+          addAuxJarsToSet(auxJars, options.getAuxJars());
+          for (String jarPath : auxJars) {
+            lfs.copyFromLocalFile(new Path(jarPath), libDir);
+          }
+          return null;
+        }
+
+        private void addAuxJarsToSet(HashSet<String> auxJarSet, String auxJars) {
           if (auxJars != null && !auxJars.isEmpty()) {
             // TODO: transitive dependencies warning?
             String[] jarPaths = auxJars.split(",");
             for (String jarPath : jarPaths) {
               if (!jarPath.isEmpty()) {
-                lfs.copyFromLocalFile(new Path(jarPath), libDir);
+                auxJarSet.add(jarPath);
               }
             }
           }
-          return null;
         }
       };
 

@@ -227,8 +227,8 @@ STAGE PLANS:
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkOperator
                             native: false
-                            nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, No buckets IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                            nativeConditionsNotMet: No TopN IS false, Uniform Hash IS false
+                            nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                            nativeConditionsNotMet: No TopN IS false
                         Statistics: Num rows: 1365 Data size: 41904 Basic stats: COMPLETE Column stats: NONE
                         TopN Hash Memory Usage: 0.1
                         value expressions: _col2 (type: decimal(22,21))
@@ -445,8 +445,8 @@ STAGE PLANS:
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkOperator
                             native: false
-                            nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, No buckets IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                            nativeConditionsNotMet: No TopN IS false, Uniform Hash IS false
+                            nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                            nativeConditionsNotMet: No TopN IS false
                         Statistics: Num rows: 1365 Data size: 41904 Basic stats: COMPLETE Column stats: NONE
                         TopN Hash Memory Usage: 0.1
                         value expressions: _col2 (type: double), _col4 (type: double), _col5 (type: double)

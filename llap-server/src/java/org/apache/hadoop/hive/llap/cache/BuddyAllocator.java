@@ -122,10 +122,10 @@ public final class BuddyAllocator implements EvictionAwareAllocator, BuddyAlloca
     int arenaSizeVal = (arenaCount == 0) ? MAX_ARENA_SIZE : (int)(maxSizeVal / arenaCount);
     arenaSizeVal = Math.max(maxAllocation, Math.min(arenaSizeVal, MAX_ARENA_SIZE));
     if (LlapIoImpl.LOG.isInfoEnabled()) {
-      LlapIoImpl.LOG.info("Buddy allocator with " + (isDirect ? "direct" : "byte") + " buffers;"
-          + (isMapped ? (" memory mapped off " + cacheDir.toString() + "; ") : "")
+      LlapIoImpl.LOG.info("Buddy allocator with " + (isDirect ? "direct" : "byte") + " buffers; "
+          + (isMapped ? ("memory mapped off " + cacheDir.toString() + "; ") : "")
           + "allocation sizes " + minAllocation + " - " + maxAllocation
-          + ", arena size " + arenaSizeVal + ". total size " + maxSizeVal);
+          + ", arena size " + arenaSizeVal + ", total size " + maxSizeVal);
     }
 
     String minName = ConfVars.LLAP_ALLOCATOR_MIN_ALLOC.varname,
@@ -241,38 +241,62 @@ public final class BuddyAllocator implements EvictionAwareAllocator, BuddyAlloca
     // into some sort of queues that deallocate and split will examine), or having and "actor"
     // allocator thread (or threads per arena).
     // The 2nd one is probably much simpler and will allow us to get rid of a lot of sync code.
-    // But for now we will just retry 5 times 0_o
-    for (int attempt = 0; attempt < 5; ++attempt) {
-      // Try to split bigger blocks. TODO: again, ideally we would tryLock at least once
-      {
-        int startArenaIx = (int)((threadId + attempt) % arenaCount), arenaIx = startArenaIx;
-        do {
-          int newDestIx = arenas[arenaIx].allocateWithSplit(
-              arenaIx, freeListIx, dest, destAllocIx, allocationSize);
-          if (newDestIx == dest.length) return;
-          assert newDestIx != -1;
-          destAllocIx = newDestIx;
-          if ((++arenaIx) == arenaCount) {
-            arenaIx = 0;
-          }
-        } while (arenaIx != startArenaIx);
-      }
+    // But for now we will just retry. We will evict more each time.
+    long forceReserved = 0;
+    int attempt = 0;
+    try {
+      while (true) {
+        // Try to split bigger blocks. TODO: again, ideally we would tryLock at least once
+        {
+          int startArenaIx = (int)((threadId + attempt) % arenaCount), arenaIx = startArenaIx;
+          do {
+            int newDestIx = arenas[arenaIx].allocateWithSplit(
+                arenaIx, freeListIx, dest, destAllocIx, allocationSize);
+            if (newDestIx == dest.length) return;
+            assert newDestIx != -1;
+            destAllocIx = newDestIx;
+            if ((++arenaIx) == arenaCount) {
+              arenaIx = 0;
+            }
+          } while (arenaIx != startArenaIx);
+        }
 
-      if (attempt == 0) {
-        // Try to allocate memory if we haven't allocated all the way to maxSize yet; very rare.
-        for (int arenaIx = arenaCount; arenaIx < arenas.length; ++arenaIx) {
-          destAllocIx = arenas[arenaIx].allocateWithExpand(
-              arenaIx, freeListIx, dest, destAllocIx, allocationSize);
-          if (destAllocIx == dest.length) return;
+        if (attempt == 0) {
+          // Try to allocate memory if we haven't allocated all the way to maxSize yet; very rare.
+          for (int arenaIx = arenaCount; arenaIx < arenas.length; ++arenaIx) {
+            destAllocIx = arenas[arenaIx].allocateWithExpand(
+                arenaIx, freeListIx, dest, destAllocIx, allocationSize);
+            if (destAllocIx == dest.length) return;
+          }
+        }
+        int numberToForce = (dest.length - destAllocIx) * attempt;
+        long newReserved = memoryManager.forceReservedMemory(allocationSize, numberToForce);
+        forceReserved += newReserved;
+        if (newReserved == 0) {
+          // Cannot force-evict anything, give up.
+          String msg = "Failed to allocate " + size + "; at " + destAllocIx + " out of "
+              + dest.length + " (entire cache is fragmented and locked, or an internal issue)";
+          LlapIoImpl.LOG.error(msg + "\nALLOCATOR STATE:\n" + debugDump()
+              + "\nPARENT STATE:\n" + memoryManager.debugDumpForOom());
+          throw new AllocatorOutOfMemoryException(msg);
+        }
+        if (attempt == 0) {
+          LlapIoImpl.LOG.warn("Failed to allocate despite reserved memory; will retry");
         }
       }
-      memoryManager.forceReservedMemory(allocationSize, dest.length - destAllocIx);
-      LlapIoImpl.LOG.warn("Failed to allocate despite reserved memory; will retry " + attempt);
+    } finally {
+      if (attempt > 1) {
+        LlapIoImpl.LOG.warn("Allocation of " + dest.length + " buffers of size " + size
+            + " took " + attempt + " attempts to evict enough memory");
+      }
+      // After we succeed (or fail), release the force-evicted memory to memory manager. We have
+      // previously reserved enough to allocate all we need, so we don't take our allocation out
+      // of this - as per the comment above, we basically just wasted a bunch of cache (and CPU).
+      if (forceReserved > 0) {
+        memoryManager.releaseMemory(forceReserved);
+      }
     }
-    String msg = "Failed to allocate " + size + "; at " + destAllocIx + " out of " + dest.length;
-    LlapIoImpl.LOG.error(msg + "\nALLOCATOR STATE:\n" + debugDump()
-        + "\nPARENT STATE:\n" + memoryManager.debugDumpForOom());
-    throw new AllocatorOutOfMemoryException(msg);
+
   }
 
   @Override

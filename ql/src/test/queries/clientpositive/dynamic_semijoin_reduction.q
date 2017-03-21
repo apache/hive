@@ -7,6 +7,7 @@ set hive.tez.dynamic.partition.pruning=true;
 set hive.tez.dynamic.semijoin.reduction=true;
 set hive.optimize.metadataonly=false;
 set hive.optimize.index.filter=true;
+set hive.stats.autogather=true;
 
 -- Create Tables
 create table alltypesorc_int ( cint int, cstring string ) stored as ORC;
@@ -26,6 +27,10 @@ insert overwrite table srcpart_date partition (ds = "2008-04-08" ) select key, v
 insert overwrite table srcpart_date partition (ds = "2008-04-09") select key, value from srcpart where ds = "2008-04-09";
 insert overwrite table srcpart_small partition (ds = "2008-04-09") select key, value from srcpart where ds = "2008-04-09";
 set hive.tez.dynamic.semijoin.reduction=false;
+
+analyze table alltypesorc_int compute statistics for columns;
+analyze table srcpart_date compute statistics for columns;
+analyze table srcpart_small compute statistics for columns;
 
 -- single column, single key
 EXPLAIN select count(*) from srcpart_date join srcpart_small on (srcpart_date.key = srcpart_small.key1);
@@ -52,8 +57,8 @@ set hive.tez.dynamic.semijoin.reduction=false;
 EXPLAIN select count(*) from srcpart_date join srcpart_small on (srcpart_date.key = srcpart_small.key1 and srcpart_date.value = srcpart_small.value1);
 select count(*) from srcpart_date join srcpart_small on (srcpart_date.key = srcpart_small.key1 and srcpart_date.value = srcpart_small.value1);
 set hive.tez.dynamic.semijoin.reduction=true;
-select count(*) from srcpart_date join srcpart_small on (srcpart_date.key = srcpart_small.key1 and srcpart_date.value = srcpart_small.value1);
 EXPLAIN select count(*) from srcpart_date join srcpart_small on (srcpart_date.key = srcpart_small.key1 and srcpart_date.value = srcpart_small.value1);
+select count(*) from srcpart_date join srcpart_small on (srcpart_date.key = srcpart_small.key1 and srcpart_date.value = srcpart_small.value1);
 set hive.tez.dynamic.semijoin.reduction=false;
 
 -- multiple sources, different  keys
@@ -74,6 +79,13 @@ select count(*) from srcpart_date join srcpart_small on (srcpart_date.key = srcp
 set hive.tez.dynamic.semijoin.reduction=true;
 EXPLAIN select count(*) from srcpart_date join srcpart_small on (srcpart_date.key = srcpart_small.key1);
 select count(*) from srcpart_date join srcpart_small on (srcpart_date.key = srcpart_small.key1);
+
+-- With unions
+explain select * from alltypesorc_int join
+                                      (select srcpart_date.key as key from srcpart_date
+                                       union all
+                                       select srcpart_small.key1 as key from srcpart_small) unionsrc on (alltypesorc_int.cstring = unionsrc.key);
+
 
 drop table srcpart_date;
 drop table srcpart_small;

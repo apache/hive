@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -53,6 +54,7 @@ import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
+import org.apache.hadoop.hive.ql.metadata.PartitionIterable;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.PrunedPartitionList;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
@@ -424,34 +426,37 @@ public class StatsUtils {
           // conditions for being partition column
           if (col.equals(ci.getInternalName()) && ci.getIsVirtualCol() &&
               !ci.isHiddenVirtualCol()) {
-            // currently metastore does not store column stats for
-            // partition column, so we calculate the NDV from pruned
-            // partition list
-            ColStatistics partCS = new ColStatistics(ci.getInternalName(), ci.getType()
-                .getTypeName());
-            long numPartitions = getNDVPartitionColumn(partList.getPartitions(),
-                ci.getInternalName());
-            partCS.setCountDistint(numPartitions);
-            partCS.setAvgColLen(StatsUtils.getAvgColLenOf(conf,
-                ci.getObjectInspector(), partCS.getColumnType()));
-            partCS.setRange(getRangePartitionColumn(partList.getPartitions(), ci.getInternalName(),
-                ci.getType().getTypeName(), conf.getVar(ConfVars.DEFAULTPARTITIONNAME)));
-            colStats.add(partCS);
+            colStats.add(getColStatsForPartCol(ci, new PartitionIterable(partList.getPartitions()), conf));
           }
         }
       }
     }
   }
 
-  public static int getNDVPartitionColumn(Set<Partition> partitions, String partColName) {
-    Set<String> distinctVals = new HashSet<String>(partitions.size());
+  public static ColStatistics getColStatsForPartCol(ColumnInfo ci,PartitionIterable partList, HiveConf conf) {
+    // currently metastore does not store column stats for
+    // partition column, so we calculate the NDV from partition list
+    ColStatistics partCS = new ColStatistics(ci.getInternalName(), ci.getType()
+        .getTypeName());
+    long numPartitions = getNDVPartitionColumn(partList,
+        ci.getInternalName());
+    partCS.setCountDistint(numPartitions);
+    partCS.setAvgColLen(StatsUtils.getAvgColLenOf(conf,
+        ci.getObjectInspector(), partCS.getColumnType()));
+    partCS.setRange(getRangePartitionColumn(partList, ci.getInternalName(),
+        ci.getType().getTypeName(), conf.getVar(ConfVars.DEFAULTPARTITIONNAME)));
+    return partCS;
+  }
+
+  public static int getNDVPartitionColumn(PartitionIterable partitions, String partColName) {
+    Set<String> distinctVals = new HashSet<String>();
     for (Partition partition : partitions) {
       distinctVals.add(partition.getSpec().get(partColName));
     }
     return distinctVals.size();
   }
 
-  private static Range getRangePartitionColumn(Set<Partition> partitions, String partColName,
+  private static Range getRangePartitionColumn(PartitionIterable partitions, String partColName,
       String colType, String defaultPartName) {
     Range range = null;
     String partVal;

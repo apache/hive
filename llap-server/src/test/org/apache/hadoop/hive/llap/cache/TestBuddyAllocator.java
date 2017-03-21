@@ -76,7 +76,8 @@ public class TestBuddyAllocator {
     }
 
     @Override
-    public void forceReservedMemory(int allocationSize, int count) {
+    public long forceReservedMemory(int allocationSize, int count) {
+      return allocationSize * count;
     }
   }
 

@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.metadata;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -67,6 +68,7 @@ public class PartitionIterable implements Iterable<Partition> {
         }
       }
 
+      @Override
       public boolean hasNext() {
         initialize();
         if (currType == Type.LIST_PROVIDED){
@@ -120,7 +122,7 @@ public class PartitionIterable implements Iterable<Partition> {
   final Type currType;
 
   // used for LIST_PROVIDED cases
-  private List<Partition> ptnsProvided = null;
+  private Collection<Partition> ptnsProvided = null;
 
   // used for LAZY_FETCH_PARTITIONS cases
   private Hive db = null; // Assumes one instance of this + single-threaded compilation for each query.
@@ -134,7 +136,7 @@ public class PartitionIterable implements Iterable<Partition> {
    * list of partitions, allows for easy drop-in replacement for other methods
    * that already have a List<Partition>
    */
-  public PartitionIterable(List<Partition> ptnsProvided){
+  public PartitionIterable(Collection<Partition> ptnsProvided){
     this.currType = Type.LIST_PROVIDED;
     this.ptnsProvided = ptnsProvided;
   }

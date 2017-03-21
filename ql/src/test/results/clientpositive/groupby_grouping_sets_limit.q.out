@@ -85,16 +85,16 @@ POSTHOOK: query: SELECT a, b, count(*) from T1 group by a, b with cube LIMIT 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 #### A masked pattern was here ####
-NULL	NULL	6
+1	1	1
+1	NULL	1
+2	2	1
+2	3	1
+2	NULL	2
+3	NULL	1
 NULL	1	2
 NULL	2	3
 NULL	3	1
-1	NULL	1
-1	1	1
-2	NULL	2
-2	2	1
-2	3	1
-3	NULL	1
+NULL	NULL	6
 PREHOOK: query: EXPLAIN
 SELECT a, b, count(*) FROM T1 GROUP BY a, b  GROUPING SETS (a, (a, b), b, ()) LIMIT 10
 PREHOOK: type: QUERY
@@ -166,16 +166,16 @@ POSTHOOK: query: SELECT a, b, count(*) FROM T1 GROUP BY a, b  GROUPING SETS (a, 
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 #### A masked pattern was here ####
-NULL	NULL	6
+1	1	1
+1	NULL	1
+2	2	1
+2	3	1
+2	NULL	2
+3	NULL	1
 NULL	1	2
 NULL	2	3
 NULL	3	1
-1	NULL	1
-1	1	1
-2	NULL	2
-2	2	1
-2	3	1
-3	NULL	1
+NULL	NULL	6
 PREHOOK: query: EXPLAIN
 SELECT a, b, count(*) FROM T1 GROUP BY a, b GROUPING SETS (a, (a, b)) LIMIT 10
 PREHOOK: type: QUERY
@@ -247,15 +247,15 @@ POSTHOOK: query: SELECT a, b, count(*) FROM T1 GROUP BY a, b GROUPING SETS (a, (
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 #### A masked pattern was here ####
-1	NULL	1
 1	1	1
-2	NULL	2
+1	NULL	1
 2	2	1
 2	3	1
-3	NULL	1
+2	NULL	2
 3	2	1
-5	NULL	1
+3	NULL	1
 5	2	1
+5	NULL	1
 8	NULL	1
 PREHOOK: query: EXPLAIN
 SELECT a FROM T1 GROUP BY a, b, c GROUPING SETS (a, b, c) LIMIT 10
@@ -325,16 +325,16 @@ POSTHOOK: query: SELECT a FROM T1 GROUP BY a, b, c GROUPING SETS (a, b, c) LIMIT
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 #### A masked pattern was here ####
-NULL
-NULL
-NULL
-NULL
-NULL
-NULL
-NULL
-NULL
-NULL
 1
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
 PREHOOK: query: EXPLAIN
 SELECT a FROM T1 GROUP BY a GROUPING SETS ((a), (a)) LIMIT 10
 PREHOOK: type: QUERY

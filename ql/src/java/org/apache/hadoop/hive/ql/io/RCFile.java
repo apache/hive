@@ -839,7 +839,7 @@ public class RCFile {
     // the max size of memory for buffering records before writes them out
     private int columnsBufferSize = 4 * 1024 * 1024; // 4M
     // the conf string for COLUMNS_BUFFER_SIZE
-    public static String COLUMNS_BUFFER_SIZE_CONF_STR = "hive.io.rcfile.record.buffer.size";
+    public static final String COLUMNS_BUFFER_SIZE_CONF_STR = "hive.io.rcfile.record.buffer.size";
 
     // how many records already buffered
     private int bufferedRecords = 0;

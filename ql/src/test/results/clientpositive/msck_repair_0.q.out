@@ -37,6 +37,14 @@ PREHOOK: Output: default@repairtable
 POSTHOOK: query: MSCK TABLE repairtable
 POSTHOOK: type: MSCK
 POSTHOOK: Output: default@repairtable
+PREHOOK: query: MSCK REPAIR TABLE default.repairtable
+PREHOOK: type: MSCK
+PREHOOK: Output: default@repairtable
+POSTHOOK: query: MSCK REPAIR TABLE default.repairtable
+POSTHOOK: type: MSCK
+POSTHOOK: Output: default@repairtable
+Partitions not in metastore:	repairtable:p1=e/p2=f
+Repair: Added partition to metastore default.repairtable:p1=e/p2=f
 PREHOOK: query: DROP TABLE default.repairtable
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@repairtable

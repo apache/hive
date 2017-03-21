@@ -48,15 +48,15 @@ import java.util.Set;
 @InterfaceStability.Evolving
 public interface TxnStore {
 
-  public static enum MUTEX_KEY {Initiator, Cleaner, HouseKeeper, CompactionHistory, CheckLock,
+  enum MUTEX_KEY {Initiator, Cleaner, HouseKeeper, CompactionHistory, CheckLock,
     WriteSetCleaner, CompactionScheduler}
   // Compactor states (Should really be enum)
-  static final public String INITIATED_RESPONSE = "initiated";
-  static final public String WORKING_RESPONSE = "working";
-  static final public String CLEANING_RESPONSE = "ready for cleaning";
-  static final public String FAILED_RESPONSE = "failed";
-  static final public String SUCCEEDED_RESPONSE = "succeeded";
-  static final public String ATTEMPTED_RESPONSE = "attempted";
+  String INITIATED_RESPONSE = "initiated";
+  String WORKING_RESPONSE = "working";
+  String CLEANING_RESPONSE = "ready for cleaning";
+  String FAILED_RESPONSE = "failed";
+  String SUCCEEDED_RESPONSE = "succeeded";
+  String ATTEMPTED_RESPONSE = "attempted";
 
   public static final int TIMED_OUT_TXN_ABORT_BATCH_SIZE = 50000;
 

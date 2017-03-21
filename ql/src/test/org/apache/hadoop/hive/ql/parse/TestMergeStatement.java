@@ -219,15 +219,8 @@ public class TestMergeStatement {
       "MERGE INTO target USING source ON target.pk = source.pk WHEN NOT MATCHED THEN INSERT VALUES(a,source.b) WHEN MATCHED THEN DELETE");
   }
 
-  /**
-   * why does this fail but next one passes
-   * @throws ParseException
-   */
   @Test
-  public void testNegative5() throws ParseException {
-    expectedException.expect(ParseException.class);
-    expectedException.expectMessage("line 1:103 mismatched input '+' expecting ) near 'b' in value row constructor");
-    //todo: why does this fail but next one passes?
+  public void test5_1() throws ParseException {
     ASTNode ast = parse(
       "MERGE INTO target USING source ON target.pk = source.pk WHEN NOT MATCHED THEN INSERT VALUES(a,source.b + 1)");
   }

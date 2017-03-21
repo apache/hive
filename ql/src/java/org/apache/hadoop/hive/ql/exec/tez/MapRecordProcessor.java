@@ -92,7 +92,6 @@ public class MapRecordProcessor extends RecordProcessor {
   List<MapWork> mergeWorkList;
   List<String> cacheKeys, dynamicValueCacheKeys;
   ObjectCache cache, dynamicValueCache;
-  private int nRows;
 
   public MapRecordProcessor(final JobConf jconf, final ProcessorContext context) throws Exception {
     super(jconf, context);
@@ -106,7 +105,6 @@ public class MapRecordProcessor extends RecordProcessor {
     execContext.setJc(jconf);
     cacheKeys = new ArrayList<String>();
     dynamicValueCacheKeys = new ArrayList<String>();
-    nRows = 0;
   }
 
   private void setLlapOfFragmentId(final ProcessorContext context) {
@@ -343,7 +341,7 @@ public class MapRecordProcessor extends RecordProcessor {
       MapredContext.get().setReporter(reporter);
 
     } catch (Throwable e) {
-      abort = true;
+      setAborted(true);
       if (e instanceof OutOfMemoryError) {
         // will this be true here?
         // Don't create a new object if we are already out of memory
@@ -417,14 +415,11 @@ public class MapRecordProcessor extends RecordProcessor {
 
   @Override
   void run() throws Exception {
+    startAbortChecks();
     while (sources[position].pushRecord()) {
-      if (nRows++ == CHECK_INTERRUPTION_AFTER_ROWS) {
-        checkAbortCondition();
-        nRows = 0;
-      }
+      addRowAndMaybeCheckAbort();
     }
   }
-
 
   @Override
   public void abort() {
@@ -444,8 +439,8 @@ public class MapRecordProcessor extends RecordProcessor {
   @Override
   void close(){
     // check if there are IOExceptions
-    if (!abort) {
-      abort = execContext.getIoCxt().getIOExceptions();
+    if (!isAborted()) {
+      setAborted(execContext.getIoCxt().getIOExceptions());
     }
 
     if (cache != null && cacheKeys != null) {
@@ -465,6 +460,7 @@ public class MapRecordProcessor extends RecordProcessor {
       if (mapOp == null || mapWork == null) {
         return;
       }
+      boolean abort = isAborted();
       mapOp.close(abort);
       if (mergeMapOpList.isEmpty() == false) {
         for (AbstractMapOperator mergeMapOp : mergeMapOpList) {
@@ -486,7 +482,7 @@ public class MapRecordProcessor extends RecordProcessor {
       mapOp.preorderMap(rps);
       return;
     } catch (Exception e) {
-      if (!abort) {
+      if (!isAborted()) {
         // signal new failure to map-reduce
         l4j.error("Hit error while closing operators - failing tree");
         throw new RuntimeException("Hive Runtime Error while closing operators", e);

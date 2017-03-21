@@ -1,0 +1,344 @@
+PREHOOK: query: CREATE TABLE T1_text(key INT, value INT) STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@T1_text
+POSTHOOK: query: CREATE TABLE T1_text(key INT, value INT) STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@T1_text
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/groupby_groupingid.txt' INTO TABLE T1_text
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@t1_text
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/groupby_groupingid.txt' INTO TABLE T1_text
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@t1_text
+PREHOOK: query: CREATE TABLE T1 STORED AS ORC AS SELECT * FROM T1_text
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@t1_text
+PREHOOK: Output: database:default
+PREHOOK: Output: default@T1
+POSTHOOK: query: CREATE TABLE T1 STORED AS ORC AS SELECT * FROM T1_text
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@t1_text
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@T1
+POSTHOOK: Lineage: t1.key SIMPLE [(t1_text)t1_text.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: t1.value SIMPLE [(t1_text)t1_text.FieldSchema(name:value, type:int, comment:null), ]
+t1_text.key	t1_text.value
+PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
+SELECT key, value, GROUPING__ID, count(*)
+FROM T1
+GROUP BY key, value
+GROUPING SETS ((), (key))
+HAVING GROUPING__ID = 1
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
+SELECT key, value, GROUPING__ID, count(*)
+FROM T1
+GROUP BY key, value
+GROUPING SETS ((), (key))
+HAVING GROUPING__ID = 1
+POSTHOOK: type: QUERY
+Explain
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: t1
+                  Statistics: Num rows: 6 Data size: 40 Basic stats: COMPLETE Column stats: NONE
+                  TableScan Vectorization:
+                      native: true
+                      projectedOutputColumns: [0, 1]
+                  Select Operator
+                    expressions: key (type: int), value (type: int)
+                    outputColumnNames: key, value
+                    Select Vectorization:
+                        className: VectorSelectOperator
+                        native: true
+                        projectedOutputColumns: [0, 1]
+                    Statistics: Num rows: 6 Data size: 40 Basic stats: COMPLETE Column stats: NONE
+                    Group By Operator
+                      aggregations: count()
+                      Group By Vectorization:
+                          aggregators: VectorUDAFCountStar(*) -> bigint
+                          className: VectorGroupByOperator
+                          vectorOutput: true
+                          keyExpressions: col 0, col 1, ConstantVectorExpression(val 0) -> 2:long
+                          native: false
+                          projectedOutputColumns: [0]
+                      keys: key (type: int), value (type: int), 0 (type: int)
+                      mode: hash
+                      outputColumnNames: _col0, _col1, _col2, _col3
+                      Statistics: Num rows: 12 Data size: 80 Basic stats: COMPLETE Column stats: NONE
+                      Filter Operator
+                        Filter Vectorization:
+                            className: VectorFilterOperator
+                            native: true
+                            predicateExpression: FilterLongColEqualLongScalar(col 2, val 1) -> boolean
+                        predicate: (_col2 = 1) (type: boolean)
+                        Statistics: Num rows: 6 Data size: 40 Basic stats: COMPLETE Column stats: NONE
+                        Reduce Output Operator
+                          key expressions: _col0 (type: int), _col1 (type: int), 1 (type: int)
+                          sort order: +++
+                          Map-reduce partition columns: _col0 (type: int), _col1 (type: int), 1 (type: int)
+                          Reduce Sink Vectorization:
+                              className: VectorReduceSinkMultiKeyOperator
+                              keyExpressions: ConstantVectorExpression(val 1) -> 4:long
+                              native: true
+                              nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                          Statistics: Num rows: 6 Data size: 40 Basic stats: COMPLETE Column stats: NONE
+                          value expressions: _col3 (type: bigint)
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                groupByVectorOutput: true
+                inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 2
+                    includeColumns: [0, 1]
+                    dataColumns: key:int, value:int
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: bigint
+        Reducer 2 
+            Execution mode: llap
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                notVectorizedReason: Key expression for GROUPBY operator: Non-column key expressions not supported for MERGEPARTIAL
+                vectorized: false
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                keys: KEY._col0 (type: int), KEY._col1 (type: int), 1 (type: int)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col3
+                Statistics: Num rows: 3 Data size: 20 Basic stats: COMPLETE Column stats: NONE
+                pruneGroupingSetId: true
+                Select Operator
+                  expressions: _col0 (type: int), _col1 (type: int), 1 (type: int), _col3 (type: bigint)
+                  outputColumnNames: _col0, _col1, _col2, _col3
+                  Statistics: Num rows: 3 Data size: 20 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 3 Data size: 20 Basic stats: COMPLETE Column stats: NONE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SELECT key, value, GROUPING__ID, count(*)
+FROM T1
+GROUP BY key, value
+GROUPING SETS ((), (key))
+HAVING GROUPING__ID = 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT key, value, GROUPING__ID, count(*)
+FROM T1
+GROUP BY key, value
+GROUPING SETS ((), (key))
+HAVING GROUPING__ID = 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+#### A masked pattern was here ####
+key	value	grouping__id	_c3
+1	NULL	1	2
+2	NULL	1	1
+3	NULL	1	2
+4	NULL	1	1
+PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
+SELECT key, value, GROUPING__ID, count(*)
+FROM T1
+GROUP BY key, value
+GROUPING SETS ((), (key))
+HAVING GROUPING__ID = 1
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
+SELECT key, value, GROUPING__ID, count(*)
+FROM T1
+GROUP BY key, value
+GROUPING SETS ((), (key))
+HAVING GROUPING__ID = 1
+POSTHOOK: type: QUERY
+Explain
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: t1
+                  Statistics: Num rows: 6 Data size: 40 Basic stats: COMPLETE Column stats: NONE
+                  TableScan Vectorization:
+                      native: true
+                      projectedOutputColumns: [0, 1]
+                  Select Operator
+                    expressions: key (type: int), value (type: int)
+                    outputColumnNames: _col0, _col1
+                    Select Vectorization:
+                        className: VectorSelectOperator
+                        native: true
+                        projectedOutputColumns: [0, 1]
+                    Statistics: Num rows: 6 Data size: 40 Basic stats: COMPLETE Column stats: NONE
+                    Group By Operator
+                      aggregations: count()
+                      Group By Vectorization:
+                          aggregators: VectorUDAFCountStar(*) -> bigint
+                          className: VectorGroupByOperator
+                          vectorOutput: true
+                          keyExpressions: col 0, col 1, ConstantVectorExpression(val 0) -> 2:long
+                          native: false
+                          projectedOutputColumns: [0]
+                      keys: _col0 (type: int), _col1 (type: int), 0 (type: int)
+                      mode: hash
+                      outputColumnNames: _col0, _col1, _col2, _col3
+                      Statistics: Num rows: 12 Data size: 80 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: int), _col1 (type: int), _col2 (type: int)
+                        sort order: +++
+                        Map-reduce partition columns: _col0 (type: int), _col1 (type: int), _col2 (type: int)
+                        Reduce Sink Vectorization:
+                            className: VectorReduceSinkMultiKeyOperator
+                            native: true
+                            nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                        Statistics: Num rows: 12 Data size: 80 Basic stats: COMPLETE Column stats: NONE
+                        value expressions: _col3 (type: bigint)
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                groupByVectorOutput: true
+                inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 2
+                    includeColumns: [0, 1]
+                    dataColumns: key:int, value:int
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: bigint
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                groupByVectorOutput: true
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 4
+                    dataColumns: KEY._col0:int, KEY._col1:int, KEY._col2:int, VALUE._col0:bigint
+                    partitionColumnCount: 0
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                Group By Vectorization:
+                    aggregators: VectorUDAFCountMerge(col 3) -> bigint
+                    className: VectorGroupByOperator
+                    vectorOutput: true
+                    keyExpressions: col 0, col 1, col 2
+                    native: false
+                    projectedOutputColumns: [0]
+                keys: KEY._col0 (type: int), KEY._col1 (type: int), KEY._col2 (type: int)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2, _col3
+                Statistics: Num rows: 6 Data size: 40 Basic stats: COMPLETE Column stats: NONE
+                Filter Operator
+                  Filter Vectorization:
+                      className: VectorFilterOperator
+                      native: true
+                      predicateExpression: FilterLongColEqualLongScalar(col 2, val 1) -> boolean
+                  predicate: (_col2 = 1) (type: boolean)
+                  Statistics: Num rows: 3 Data size: 20 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: _col0 (type: int), _col1 (type: int), 1 (type: int), _col3 (type: bigint)
+                    outputColumnNames: _col0, _col1, _col2, _col3
+                    Select Vectorization:
+                        className: VectorSelectOperator
+                        native: true
+                        projectedOutputColumns: [0, 1, 4, 3]
+                        selectExpressions: ConstantVectorExpression(val 1) -> 4:long
+                    Statistics: Num rows: 3 Data size: 20 Basic stats: COMPLETE Column stats: NONE
+                    File Output Operator
+                      compressed: false
+                      File Sink Vectorization:
+                          className: VectorFileSinkOperator
+                          native: false
+                      Statistics: Num rows: 3 Data size: 20 Basic stats: COMPLETE Column stats: NONE
+                      table:
+                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SELECT key, value, GROUPING__ID, count(*)
+FROM T1
+GROUP BY key, value
+GROUPING SETS ((), (key))
+HAVING GROUPING__ID = 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT key, value, GROUPING__ID, count(*)
+FROM T1
+GROUP BY key, value
+GROUPING SETS ((), (key))
+HAVING GROUPING__ID = 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+#### A masked pattern was here ####
+key	value	grouping__id	_c3
+1	NULL	1	2
+2	NULL	1	1
+3	NULL	1	2
+4	NULL	1	1

@@ -504,6 +504,14 @@ public class Table implements Serializable {
     return null;
   }
 
+  public List<String> getPartColNames() {
+    List<String> partColNames = new ArrayList<String>();
+    for (FieldSchema key : getPartCols()) {
+      partColNames.add(key.getName());
+    }
+    return partColNames;
+  }
+
   public boolean isPartitionKey(String colName) {
     return getPartColByName(colName) == null ? false : true;
   }

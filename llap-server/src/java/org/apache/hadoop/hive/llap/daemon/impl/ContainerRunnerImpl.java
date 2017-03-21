@@ -136,7 +136,7 @@ public class ContainerRunnerImpl extends CompositeService implements ContainerRu
     String waitQueueSchedulerClassName = HiveConf.getVar(
         conf, ConfVars.LLAP_DAEMON_WAIT_QUEUE_COMPARATOR_CLASS_NAME);
     this.executorService = new TaskExecutorService(numExecutors, waitQueueSize,
-        waitQueueSchedulerClassName, enablePreemption, classLoader, metrics);
+        waitQueueSchedulerClassName, enablePreemption, classLoader, metrics, null);
     completionListener = (SchedulerFragmentCompletingListener) executorService;
 
     addIfService(executorService);
@@ -401,8 +401,7 @@ public class ContainerRunnerImpl extends CompositeService implements ContainerRu
           fragmentInfo.getFragmentIdentifierString());
         executorService.killFragment(fragmentInfo.getFragmentIdentifierString());
       }
-      LlapNodeId amNodeId = queryInfo.getAmNodeId();
-      amReporter.queryComplete(amNodeId);
+      amReporter.queryComplete(queryIdentifier);
     }
     return QueryCompleteResponseProto.getDefaultInstance();
   }
@@ -509,10 +508,10 @@ public class ContainerRunnerImpl extends CompositeService implements ContainerRu
   private class KilledTaskHandlerImpl implements KilledTaskHandler {
 
     @Override
-    public void taskKilled(String amLocation, int port, String user,
+    public void taskKilled(String amLocation, int port, String umbilicalUser,
                            Token<JobTokenIdentifier> jobToken, QueryIdentifier queryIdentifier,
                            TezTaskAttemptID taskAttemptId) {
-      amReporter.taskKilled(amLocation, port, user, jobToken, queryIdentifier, taskAttemptId);
+      amReporter.taskKilled(amLocation, port, umbilicalUser, jobToken, queryIdentifier, taskAttemptId);
     }
   }
 

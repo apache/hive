@@ -194,6 +194,11 @@ Retention:          	0
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
 #### A masked pattern was here ####
+	numFiles            	1                   
+	numRows             	0                   
+	rawDataSize         	0                   
+	totalSize           	2521                
+#### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
 SerDe Library:      	org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe	 

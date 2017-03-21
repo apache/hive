@@ -29,6 +29,7 @@ select a.key, a.value, b.value
 from srcbucket_mapjoin_part a join srcbucket_mapjoin_part_2 b
 on a.key=b.key and a.ds="2008-04-08" and b.ds="2008-04-08";
 
+set hive.cbo.enable=false;
 set hive.optimize.bucketmapjoin = true;
 
 explain

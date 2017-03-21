@@ -126,6 +126,7 @@ POSTHOOK: Input: default@a
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
 	 	 	 	 	 	 	 	 	 	 
 key                 	string              	                    	                    	0                   	205                 	2.812               	3                   	                    	                    	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}	 	 	 	 	 	 	 	 	 
 PREHOOK: query: describe formatted b key
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@b
@@ -135,6 +136,7 @@ POSTHOOK: Input: default@b
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
 	 	 	 	 	 	 	 	 	 	 
 key                 	string              	                    	                    	0                   	205                 	2.812               	3                   	                    	                    	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}	 	 	 	 	 	 	 	 	 
 PREHOOK: query: from src
 insert overwrite table a select *
 insert into table b select *
@@ -232,6 +234,7 @@ POSTHOOK: Input: default@b
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
 	 	 	 	 	 	 	 	 	 	 
 key                 	string              	                    	                    	0                   	205                 	2.812               	3                   	                    	                    	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}	 	 	 	 	 	 	 	 	 
 PREHOOK: query: describe formatted b value
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@b
@@ -241,6 +244,7 @@ POSTHOOK: Input: default@b
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
 	 	 	 	 	 	 	 	 	 	 
 value               	string              	                    	                    	0                   	214                 	6.812               	7                   	                    	                    	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}	 	 	 	 	 	 	 	 	 
 PREHOOK: query: insert into table b select NULL, NULL from src limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
@@ -260,6 +264,7 @@ POSTHOOK: Input: default@b
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
 	 	 	 	 	 	 	 	 	 	 
 key                 	string              	                    	                    	10                  	205                 	2.812               	3                   	                    	                    	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}	 	 	 	 	 	 	 	 	 
 PREHOOK: query: describe formatted b value
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@b
@@ -269,6 +274,7 @@ POSTHOOK: Input: default@b
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
 	 	 	 	 	 	 	 	 	 	 
 value               	string              	                    	                    	10                  	214                 	6.812               	7                   	                    	                    	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}	 	 	 	 	 	 	 	 	 
 PREHOOK: query: insert into table b(value) select key+100000 from src limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
@@ -288,6 +294,7 @@ POSTHOOK: Input: default@b
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
 	 	 	 	 	 	 	 	 	 	 
 key                 	string              	                    	                    	20                  	205                 	2.812               	3                   	                    	                    	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}	 	 	 	 	 	 	 	 	 
 PREHOOK: query: describe formatted b value
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@b
@@ -297,6 +304,7 @@ POSTHOOK: Input: default@b
 # col_name            	data_type           	min                 	max                 	num_nulls           	distinct_count      	avg_col_len         	max_col_len         	num_trues           	num_falses          	comment             
 	 	 	 	 	 	 	 	 	 	 
 value               	string              	                    	                    	10                  	214                 	8.0                 	8                   	                    	                    	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}	 	 	 	 	 	 	 	 	 
 PREHOOK: query: drop table src_multi2
 PREHOOK: type: DROPTABLE
 POSTHOOK: query: drop table src_multi2
@@ -1069,6 +1077,11 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	numFiles            	0                   
+	numRows             	0                   
+	rawDataSize         	0                   
+	totalSize           	0                   
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 

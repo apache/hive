@@ -1,5 +1,5 @@
 CREATE TABLE dest_j1(key STRING, value STRING) STORED AS TEXTFILE;
-
+set hive.cbo.enable=false;
 -- Mapjoin followed by mapjoin is not supported.
 -- The same query would work fine without the hint.
 -- Note that there is a positive test with the same name in clientpositive

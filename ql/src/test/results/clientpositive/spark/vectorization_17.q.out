@@ -84,7 +84,7 @@ STAGE PLANS:
                 enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
                 groupByVectorOutput: true
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
-                allNative: false
+                allNative: true
                 usesVectorUDFAdaptor: false
                 vectorized: true
         Reducer 2 

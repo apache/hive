@@ -105,7 +105,7 @@ public class RpcServer implements Closeable {
                 }
             };
             saslHandler.cancelTask = group.schedule(cancelTask,
-                RpcServer.this.config.getServerConnectTimeoutMs(),
+                RpcServer.this.config.getConnectTimeoutMs(),
                 TimeUnit.MILLISECONDS);
 
           }

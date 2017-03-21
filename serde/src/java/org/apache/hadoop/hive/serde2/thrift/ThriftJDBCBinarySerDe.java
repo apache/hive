@@ -71,7 +71,9 @@ public class ThriftJDBCBinarySerDe extends AbstractSerDe {
   @Override
   public void initialize(Configuration conf, Properties tbl) throws SerDeException {
     // Get column names
-	MAX_BUFFERED_ROWS = HiveConf.getIntVar(conf, HiveConf.ConfVars.HIVE_SERVER2_THRIFT_RESULTSET_MAX_FETCH_SIZE);
+    MAX_BUFFERED_ROWS =
+      HiveConf.getIntVar(conf, HiveConf.ConfVars.HIVE_SERVER2_THRIFT_RESULTSET_DEFAULT_FETCH_SIZE);
+    LOG.info("ThriftJDBCBinarySerDe max number of buffered columns: " + MAX_BUFFERED_ROWS);
     String columnNameProperty = tbl.getProperty(serdeConstants.LIST_COLUMNS);
     String columnTypeProperty = tbl.getProperty(serdeConstants.LIST_COLUMN_TYPES);
     final String columnNameDelimiter = tbl.containsKey(serdeConstants.COLUMN_NAME_DELIMITER) ? tbl

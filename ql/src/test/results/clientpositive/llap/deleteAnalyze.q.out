@@ -75,18 +75,22 @@ amount              	decimal(10,3)       	                    	                 
 PREHOOK: query: analyze table testdeci2 compute statistics for columns
 PREHOOK: type: QUERY
 PREHOOK: Input: default@testdeci2
+PREHOOK: Output: default@testdeci2
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table testdeci2 compute statistics for columns
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@testdeci2
+POSTHOOK: Output: default@testdeci2
 #### A masked pattern was here ####
 PREHOOK: query: analyze table testdeci2 compute statistics for columns
 PREHOOK: type: QUERY
 PREHOOK: Input: default@testdeci2
+PREHOOK: Output: default@testdeci2
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table testdeci2 compute statistics for columns
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@testdeci2
+POSTHOOK: Output: default@testdeci2
 #### A masked pattern was here ####
 PREHOOK: query: explain
 select s.id,

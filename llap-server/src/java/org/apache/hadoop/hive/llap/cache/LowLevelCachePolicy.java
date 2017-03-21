@@ -28,5 +28,5 @@ public interface LowLevelCachePolicy extends LlapOomDebugDump {
   void setEvictionListener(EvictionListener listener);
   void setParentDebugDumper(LlapOomDebugDump dumper);
   /** TODO: temporary method until we have a better allocator */
-  int tryEvictContiguousData(int allocationSize, int count);
+  long tryEvictContiguousData(int allocationSize, int count);
 }

@@ -103,6 +103,11 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	numFiles            	7                   
+	numRows             	8                   
+	rawDataSize         	0                   
+	totalSize           	3077                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -209,6 +214,12 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+#### A masked pattern was here ####
+	numFiles            	7                   
+	numRows             	8                   
+	rawDataSize         	0                   
+	totalSize           	3077                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 

@@ -64,11 +64,15 @@ PREHOOK: query: analyze table partcolstats partition (ds=date '2015-04-02', hr=2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@partcolstats
 PREHOOK: Input: default@partcolstats@ds=2015-04-02/hr=2/part=partA
+PREHOOK: Output: default@partcolstats
+PREHOOK: Output: default@partcolstats@ds=2015-04-02/hr=2/part=partA
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table partcolstats partition (ds=date '2015-04-02', hr=2, part='partA') compute statistics for columns
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@partcolstats
 POSTHOOK: Input: default@partcolstats@ds=2015-04-02/hr=2/part=partA
+POSTHOOK: Output: default@partcolstats
+POSTHOOK: Output: default@partcolstats@ds=2015-04-02/hr=2/part=partA
 #### A masked pattern was here ####
 PREHOOK: query: describe formatted partcolstats partition (ds=date '2015-04-02', hr=2, part='partA') key
 PREHOOK: type: DESCTABLE
@@ -111,12 +115,18 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@partcolstats
 PREHOOK: Input: default@partcolstats@ds=2015-04-02/hr=2/part=partA
 PREHOOK: Input: default@partcolstats@ds=2015-04-02/hr=2/part=partB
+PREHOOK: Output: default@partcolstats
+PREHOOK: Output: default@partcolstats@ds=2015-04-02/hr=2/part=partA
+PREHOOK: Output: default@partcolstats@ds=2015-04-02/hr=2/part=partB
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table partcolstats partition (ds=date '2015-04-02', hr=2, part) compute statistics for columns
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@partcolstats
 POSTHOOK: Input: default@partcolstats@ds=2015-04-02/hr=2/part=partA
 POSTHOOK: Input: default@partcolstats@ds=2015-04-02/hr=2/part=partB
+POSTHOOK: Output: default@partcolstats
+POSTHOOK: Output: default@partcolstats@ds=2015-04-02/hr=2/part=partA
+POSTHOOK: Output: default@partcolstats@ds=2015-04-02/hr=2/part=partB
 #### A masked pattern was here ####
 PREHOOK: query: describe formatted partcolstats partition (ds=date '2015-04-02', hr=2, part='partB') key
 PREHOOK: type: DESCTABLE
@@ -160,6 +170,10 @@ PREHOOK: Input: default@partcolstats
 PREHOOK: Input: default@partcolstats@ds=2015-04-02/hr=2/part=partA
 PREHOOK: Input: default@partcolstats@ds=2015-04-02/hr=2/part=partB
 PREHOOK: Input: default@partcolstats@ds=2015-04-02/hr=3/part=partA
+PREHOOK: Output: default@partcolstats
+PREHOOK: Output: default@partcolstats@ds=2015-04-02/hr=2/part=partA
+PREHOOK: Output: default@partcolstats@ds=2015-04-02/hr=2/part=partB
+PREHOOK: Output: default@partcolstats@ds=2015-04-02/hr=3/part=partA
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table partcolstats partition (ds=date '2015-04-02', hr, part) compute statistics for columns
 POSTHOOK: type: QUERY
@@ -167,6 +181,10 @@ POSTHOOK: Input: default@partcolstats
 POSTHOOK: Input: default@partcolstats@ds=2015-04-02/hr=2/part=partA
 POSTHOOK: Input: default@partcolstats@ds=2015-04-02/hr=2/part=partB
 POSTHOOK: Input: default@partcolstats@ds=2015-04-02/hr=3/part=partA
+POSTHOOK: Output: default@partcolstats
+POSTHOOK: Output: default@partcolstats@ds=2015-04-02/hr=2/part=partA
+POSTHOOK: Output: default@partcolstats@ds=2015-04-02/hr=2/part=partB
+POSTHOOK: Output: default@partcolstats@ds=2015-04-02/hr=3/part=partA
 #### A masked pattern was here ####
 PREHOOK: query: describe formatted partcolstats partition (ds=date '2015-04-02', hr=3, part='partA') key
 PREHOOK: type: DESCTABLE
@@ -230,6 +248,12 @@ PREHOOK: Input: default@partcolstats@ds=2015-04-02/hr=2/part=partB
 PREHOOK: Input: default@partcolstats@ds=2015-04-02/hr=3/part=partA
 PREHOOK: Input: default@partcolstats@ds=2015-04-03/hr=3/part=partA
 PREHOOK: Input: default@partcolstats@ds=2015-04-03/hr=3/part=partB
+PREHOOK: Output: default@partcolstats
+PREHOOK: Output: default@partcolstats@ds=2015-04-02/hr=2/part=partA
+PREHOOK: Output: default@partcolstats@ds=2015-04-02/hr=2/part=partB
+PREHOOK: Output: default@partcolstats@ds=2015-04-02/hr=3/part=partA
+PREHOOK: Output: default@partcolstats@ds=2015-04-03/hr=3/part=partA
+PREHOOK: Output: default@partcolstats@ds=2015-04-03/hr=3/part=partB
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table partcolstats partition (ds, hr, part) compute statistics for columns
 POSTHOOK: type: QUERY
@@ -239,6 +263,12 @@ POSTHOOK: Input: default@partcolstats@ds=2015-04-02/hr=2/part=partB
 POSTHOOK: Input: default@partcolstats@ds=2015-04-02/hr=3/part=partA
 POSTHOOK: Input: default@partcolstats@ds=2015-04-03/hr=3/part=partA
 POSTHOOK: Input: default@partcolstats@ds=2015-04-03/hr=3/part=partB
+POSTHOOK: Output: default@partcolstats
+POSTHOOK: Output: default@partcolstats@ds=2015-04-02/hr=2/part=partA
+POSTHOOK: Output: default@partcolstats@ds=2015-04-02/hr=2/part=partB
+POSTHOOK: Output: default@partcolstats@ds=2015-04-02/hr=3/part=partA
+POSTHOOK: Output: default@partcolstats@ds=2015-04-03/hr=3/part=partA
+POSTHOOK: Output: default@partcolstats@ds=2015-04-03/hr=3/part=partB
 #### A masked pattern was here ####
 PREHOOK: query: describe formatted partcolstats partition (ds=date '2015-04-03', hr=3, part='partA') key
 PREHOOK: type: DESCTABLE
@@ -310,11 +340,15 @@ PREHOOK: query: analyze table partcolstatsnum partition (tint=100, sint=1000, bi
 PREHOOK: type: QUERY
 PREHOOK: Input: default@partcolstatsnum
 PREHOOK: Input: default@partcolstatsnum@tint=100/sint=1000/bint=1000000
+PREHOOK: Output: default@partcolstatsnum
+PREHOOK: Output: default@partcolstatsnum@tint=100/sint=1000/bint=1000000
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table partcolstatsnum partition (tint=100, sint=1000, bint=1000000) compute statistics for columns
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@partcolstatsnum
 POSTHOOK: Input: default@partcolstatsnum@tint=100/sint=1000/bint=1000000
+POSTHOOK: Output: default@partcolstatsnum
+POSTHOOK: Output: default@partcolstatsnum@tint=100/sint=1000/bint=1000000
 #### A masked pattern was here ####
 PREHOOK: query: describe formatted partcolstatsnum partition (tint=100, sint=1000, bint=1000000) value
 PREHOOK: type: DESCTABLE
@@ -359,11 +393,15 @@ PREHOOK: query: analyze table partcolstatsdec partition (decpart='1000.0001') co
 PREHOOK: type: QUERY
 PREHOOK: Input: default@partcolstatsdec
 PREHOOK: Input: default@partcolstatsdec@decpart=1000.0001
+PREHOOK: Output: default@partcolstatsdec
+PREHOOK: Output: default@partcolstatsdec@decpart=1000.0001
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table partcolstatsdec partition (decpart='1000.0001') compute statistics for columns
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@partcolstatsdec
 POSTHOOK: Input: default@partcolstatsdec@decpart=1000.0001
+POSTHOOK: Output: default@partcolstatsdec
+POSTHOOK: Output: default@partcolstatsdec@decpart=1000.0001
 #### A masked pattern was here ####
 PREHOOK: query: describe formatted partcolstatsdec partition (decpart='1000.0001') value
 PREHOOK: type: DESCTABLE
@@ -408,11 +446,15 @@ PREHOOK: query: analyze table partcolstatschar partition (varpart='part1', charp
 PREHOOK: type: QUERY
 PREHOOK: Input: default@partcolstatschar
 PREHOOK: Input: default@partcolstatschar@varpart=part1/charpart=aaa
+PREHOOK: Output: default@partcolstatschar
+PREHOOK: Output: default@partcolstatschar@varpart=part1/charpart=aaa
 #### A masked pattern was here ####
 POSTHOOK: query: analyze table partcolstatschar partition (varpart='part1', charpart='aaa') compute statistics for columns
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@partcolstatschar
 POSTHOOK: Input: default@partcolstatschar@varpart=part1/charpart=aaa
+POSTHOOK: Output: default@partcolstatschar
+POSTHOOK: Output: default@partcolstatschar@varpart=part1/charpart=aaa
 #### A masked pattern was here ####
 PREHOOK: query: describe formatted partcolstatschar partition (varpart='part1', charpart='aaa') value
 PREHOOK: type: DESCTABLE

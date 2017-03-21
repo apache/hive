@@ -54,6 +54,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -872,5 +874,35 @@ public class TestTxnCommands {
     Assert.assertTrue("Error didn't match: " + cpr, cpr.getErrorMessage().contains(
       "No columns from target table 'trgt' found in ON clause '`sub`.`a` = `target`.`a`' of MERGE statement."));
 
+  }
+
+  /**
+   * Writing UTs that need multiple threads is challenging since Derby chokes on concurrent access.
+   * This tests that "AND WAIT" actually blocks and responds to interrupt
+   * @throws Exception
+   */
+  @Test
+  public void testCompactionBlocking() throws Exception {
+    Timer cancelCompact = new Timer("CancelCompactionTimer", false);
+    final Thread threadToInterrupt= Thread.currentThread();
+    cancelCompact.schedule(new TimerTask() {
+      @Override
+      public void run() {
+        threadToInterrupt.interrupt();
+      }
+    }, 5000);
+    long start = System.currentTimeMillis();
+    runStatementOnDriver("alter table "+ TestTxnCommands2.Table.ACIDTBL +" compact 'major' AND WAIT");
+    //no Worker so it stays in initiated state
+    //w/o AND WAIT the above alter table retunrs almost immediately, so the test here to check that
+    //> 2 seconds pass, i.e. that the command in Driver actually blocks before cancel is fired
+    Assert.assertTrue(System.currentTimeMillis() > start + 2);
+  }
+
+  @Test
+  public void testMergeCase() throws Exception {
+    runStatementOnDriver("create table merge_test (c1 integer, c2 integer, c3 integer) CLUSTERED BY (c1) into 2 buckets stored as orc tblproperties(\"transactional\"=\"true\")");
+    runStatementOnDriver("create table if not exists e011_02 (c1 float, c2 double, c3 float)");
+    runStatementOnDriver("merge into merge_test using e011_02 on (merge_test.c1 = e011_02.c1) when not matched then insert values (case when e011_02.c1 > 0 then e011_02.c1 + 1 else e011_02.c1 end, e011_02.c2 + e011_02.c3, coalesce(e011_02.c3, 1))");
   }
 }

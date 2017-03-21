@@ -1482,7 +1482,7 @@ public interface IMetaStoreClient {
                               Map<String, String> tblproperties) throws TException;
 
   /**
-   * Get a list of all current compactions.
+   * Get a list of all compactions.
    * @return List of all current compactions.  This includes compactions waiting to happen,
    * in progress, and finished but waiting to clean the existing files.
    * @throws TException

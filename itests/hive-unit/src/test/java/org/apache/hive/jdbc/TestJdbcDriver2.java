@@ -1083,6 +1083,45 @@ public class TestJdbcDriver2 {
   }
 
   @Test
+  public void testShowTablesInDb() throws SQLException {
+    Statement stmt = con.createStatement();
+    assertNotNull("Statement is null", stmt);
+
+    String tableNameInDbUnique = tableName + "_unique";
+    // create a table with a unique name in testDb
+    stmt.execute("drop table if exists " + testDbName + "." + tableNameInDbUnique);
+    stmt.execute("create table " + testDbName + "." + tableNameInDbUnique
+        + " (under_col int comment 'the under column', value string) comment '" + tableComment
+        + "'");
+
+    ResultSet res = stmt.executeQuery("show tables in " + testDbName);
+
+    boolean testTableExists = false;
+    while (res.next()) {
+      assertNotNull("table name is null in result set", res.getString(1));
+      if (tableNameInDbUnique.equalsIgnoreCase(res.getString(1))) {
+        testTableExists = true;
+      }
+    }
+    assertTrue("table name " + tableNameInDbUnique
+        + " not found in SHOW TABLES result set", testTableExists);
+    stmt.execute("drop table if exists " + testDbName + "." + tableNameInDbUnique);
+    stmt.close();
+  }
+
+  @Test
+  public void testInvalidShowTables() throws SQLException {
+    Statement stmt = con.createStatement();
+    assertNotNull("Statement is null", stmt);
+
+    //show tables <dbname> is in invalid show tables syntax. Hive does not return
+    //any tables in this case
+    ResultSet res = stmt.executeQuery("show tables " + testDbName);
+    assertFalse(res.next());
+    stmt.close();
+  }
+
+  @Test
   public void testMetaDataGetTables() throws SQLException {
     getTablesTest(ImmutableSet.of(ClassicTableTypes.TABLE.toString()),
         ClassicTableTypes.VIEW.toString());

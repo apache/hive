@@ -55,6 +55,55 @@ POSTHOOK: Lineage: table_add_int_permute_select.b SIMPLE [(values__tmp__table__1
 POSTHOOK: Lineage: table_add_int_permute_select.c EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col4, type:string, comment:), ]
 POSTHOOK: Lineage: table_add_int_permute_select.insert_num EXPRESSION [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 _col0	_col1	_col2	_col3
+PREHOOK: query: explain vectorization only detail
+select insert_num,a,b,c from table_add_int_permute_select
+PREHOOK: type: QUERY
+POSTHOOK: query: explain vectorization only detail
+select insert_num,a,b,c from table_add_int_permute_select
+POSTHOOK: type: QUERY
+Explain
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                  TableScan Vectorization:
+                      native: true
+                      projectedOutputColumns: [0, 1, 2, 3]
+                    Select Vectorization:
+                        className: VectorSelectOperator
+                        native: true
+                        projectedOutputColumns: [0, 1, 2, 3]
+                      File Sink Vectorization:
+                          className: VectorFileSinkOperator
+                          native: false
+            Execution mode: vectorized, llap
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                groupByVectorOutput: true
+                inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 4
+                    includeColumns: [0, 1, 2, 3]
+                    dataColumns: insert_num:int, a:int, b:string, c:int
+                    partitionColumnCount: 0
+
+  Stage: Stage-0
+    Fetch Operator
+
 PREHOOK: query: select insert_num,a,b from table_add_int_permute_select
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table_add_int_permute_select
@@ -148,6 +197,55 @@ POSTHOOK: Lineage: table_add_int_string_permute_select.c EXPRESSION [(values__tm
 POSTHOOK: Lineage: table_add_int_string_permute_select.d SIMPLE [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col5, type:string, comment:), ]
 POSTHOOK: Lineage: table_add_int_string_permute_select.insert_num EXPRESSION [(values__tmp__table__2)values__tmp__table__2.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 _col0	_col1	_col2	_col3	_col4
+PREHOOK: query: explain vectorization only detail
+select insert_num,a,b,c,d from table_add_int_string_permute_select
+PREHOOK: type: QUERY
+POSTHOOK: query: explain vectorization only detail
+select insert_num,a,b,c,d from table_add_int_string_permute_select
+POSTHOOK: type: QUERY
+Explain
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                  TableScan Vectorization:
+                      native: true
+                      projectedOutputColumns: [0, 1, 2, 3, 4]
+                    Select Vectorization:
+                        className: VectorSelectOperator
+                        native: true
+                        projectedOutputColumns: [0, 1, 2, 3, 4]
+                      File Sink Vectorization:
+                          className: VectorFileSinkOperator
+                          native: false
+            Execution mode: vectorized, llap
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                groupByVectorOutput: true
+                inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 5
+                    includeColumns: [0, 1, 2, 3, 4]
+                    dataColumns: insert_num:int, a:int, b:string, c:int, d:string
+                    partitionColumnCount: 0
+
+  Stage: Stage-0
+    Fetch Operator
+
 PREHOOK: query: select insert_num,a,b from table_add_int_string_permute_select
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table_add_int_string_permute_select
@@ -303,6 +401,55 @@ POSTHOOK: Lineage: table_change_string_group_double.c2 EXPRESSION [(values__tmp_
 POSTHOOK: Lineage: table_change_string_group_double.c3 EXPRESSION [(values__tmp__table__3)values__tmp__table__3.FieldSchema(name:tmp_values_col4, type:string, comment:), ]
 POSTHOOK: Lineage: table_change_string_group_double.insert_num EXPRESSION [(values__tmp__table__3)values__tmp__table__3.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 _col0	_col1	_col2	_col3	_col4
+PREHOOK: query: explain vectorization only detail
+select insert_num,c1,c2,c3,b from table_change_string_group_double
+PREHOOK: type: QUERY
+POSTHOOK: query: explain vectorization only detail
+select insert_num,c1,c2,c3,b from table_change_string_group_double
+POSTHOOK: type: QUERY
+Explain
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                  TableScan Vectorization:
+                      native: true
+                      projectedOutputColumns: [0, 1, 2, 3, 4]
+                    Select Vectorization:
+                        className: VectorSelectOperator
+                        native: true
+                        projectedOutputColumns: [0, 1, 2, 3, 4]
+                      File Sink Vectorization:
+                          className: VectorFileSinkOperator
+                          native: false
+            Execution mode: vectorized, llap
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                groupByVectorOutput: true
+                inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 5
+                    includeColumns: [0, 1, 2, 3, 4]
+                    dataColumns: insert_num:int, c1:double, c2:double, c3:double, b:string
+                    partitionColumnCount: 0
+
+  Stage: Stage-0
+    Fetch Operator
+
 PREHOOK: query: select insert_num,c1,c2,c3,b from table_change_string_group_double
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table_change_string_group_double
@@ -382,6 +529,55 @@ POSTHOOK: Lineage: table_change_date_group_string_group_date_group.c8 EXPRESSION
 POSTHOOK: Lineage: table_change_date_group_string_group_date_group.c9 EXPRESSION [(values__tmp__table__4)values__tmp__table__4.FieldSchema(name:tmp_values_col10, type:string, comment:), ]
 POSTHOOK: Lineage: table_change_date_group_string_group_date_group.insert_num EXPRESSION [(values__tmp__table__4)values__tmp__table__4.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 _col0	_col1	_col2	_col3	_col4	_col5	_col6	_col7	_col8	_col9	_col10	_col11
+PREHOOK: query: explain vectorization only detail
+select insert_num,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,b from table_change_date_group_string_group_date_group
+PREHOOK: type: QUERY
+POSTHOOK: query: explain vectorization only detail
+select insert_num,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,b from table_change_date_group_string_group_date_group
+POSTHOOK: type: QUERY
+Explain
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                  TableScan Vectorization:
+                      native: true
+                      projectedOutputColumns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
+                    Select Vectorization:
+                        className: VectorSelectOperator
+                        native: true
+                        projectedOutputColumns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
+                      File Sink Vectorization:
+                          className: VectorFileSinkOperator
+                          native: false
+            Execution mode: vectorized, llap
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                groupByVectorOutput: true
+                inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 12
+                    includeColumns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
+                    dataColumns: insert_num:int, c1:string, c2:char(50), c3:char(15), c4:varchar(50), c5:varchar(15), c6:string, c7:char(50), c8:char(15), c9:varchar(50), c10:varchar(15), b:string
+                    partitionColumnCount: 0
+
+  Stage: Stage-0
+    Fetch Operator
+
 PREHOOK: query: select insert_num,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,b from table_change_date_group_string_group_date_group
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table_change_date_group_string_group_date_group
@@ -460,6 +656,55 @@ POSTHOOK: Lineage: table_change_numeric_group_string_group_multi_ints_string_gro
 POSTHOOK: Lineage: table_change_numeric_group_string_group_multi_ints_string_group.c9 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:tinyint1, type:tinyint, comment:null), ]
 POSTHOOK: Lineage: table_change_numeric_group_string_group_multi_ints_string_group.insert_num SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:insert_num, type:int, comment:null), ]
 insert_num	tinyint1	smallint1	int1	bigint1	tinyint1	smallint1	int1	bigint1	tinyint1	smallint1	int1	bigint1	tinyint1	smallint1	int1	bigint1	tinyint1	smallint1	int1	bigint1	_c21
+PREHOOK: query: explain vectorization only detail
+select insert_num,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15,c16,c17,c18,c19,c20,b from table_change_numeric_group_string_group_multi_ints_string_group
+PREHOOK: type: QUERY
+POSTHOOK: query: explain vectorization only detail
+select insert_num,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15,c16,c17,c18,c19,c20,b from table_change_numeric_group_string_group_multi_ints_string_group
+POSTHOOK: type: QUERY
+Explain
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                  TableScan Vectorization:
+                      native: true
+                      projectedOutputColumns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21]
+                    Select Vectorization:
+                        className: VectorSelectOperator
+                        native: true
+                        projectedOutputColumns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21]
+                      File Sink Vectorization:
+                          className: VectorFileSinkOperator
+                          native: false
+            Execution mode: vectorized, llap
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                groupByVectorOutput: true
+                inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 22
+                    includeColumns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21]
+                    dataColumns: insert_num:int, c1:tinyint, c2:smallint, c3:int, c4:bigint, c5:tinyint, c6:smallint, c7:int, c8:bigint, c9:tinyint, c10:smallint, c11:int, c12:bigint, c13:tinyint, c14:smallint, c15:int, c16:bigint, c17:tinyint, c18:smallint, c19:int, c20:bigint, b:string
+                    partitionColumnCount: 0
+
+  Stage: Stage-0
+    Fetch Operator
+
 PREHOOK: query: select insert_num,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15,c16,c17,c18,c19,c20,b from table_change_numeric_group_string_group_multi_ints_string_group
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table_change_numeric_group_string_group_multi_ints_string_group
@@ -527,6 +772,55 @@ POSTHOOK: Lineage: table_change_numeric_group_string_group_multi_ints_string_gro
 POSTHOOK: Lineage: table_change_numeric_group_string_group_multi_ints_string_group.c9 EXPRESSION [(values__tmp__table__5)values__tmp__table__5.FieldSchema(name:tmp_values_col10, type:string, comment:), ]
 POSTHOOK: Lineage: table_change_numeric_group_string_group_multi_ints_string_group.insert_num EXPRESSION [(values__tmp__table__5)values__tmp__table__5.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 _col0	_col1	_col2	_col3	_col4	_col5	_col6	_col7	_col8	_col9	_col10	_col11	_col12	_col13	_col14	_col15	_col16	_col17	_col18	_col19	_col20	_col21
+PREHOOK: query: explain vectorization only detail
+select insert_num,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15,c16,c17,c18,c19,c20,b from table_change_numeric_group_string_group_multi_ints_string_group
+PREHOOK: type: QUERY
+POSTHOOK: query: explain vectorization only detail
+select insert_num,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15,c16,c17,c18,c19,c20,b from table_change_numeric_group_string_group_multi_ints_string_group
+POSTHOOK: type: QUERY
+Explain
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                  TableScan Vectorization:
+                      native: true
+                      projectedOutputColumns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21]
+                    Select Vectorization:
+                        className: VectorSelectOperator
+                        native: true
+                        projectedOutputColumns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21]
+                      File Sink Vectorization:
+                          className: VectorFileSinkOperator
+                          native: false
+            Execution mode: vectorized, llap
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                groupByVectorOutput: true
+                inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 22
+                    includeColumns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21]
+                    dataColumns: insert_num:int, c1:string, c2:string, c3:string, c4:string, c5:char(50), c6:char(50), c7:char(50), c8:char(50), c9:char(5), c10:char(5), c11:char(5), c12:char(5), c13:varchar(50), c14:varchar(50), c15:varchar(50), c16:varchar(50), c17:varchar(5), c18:varchar(5), c19:varchar(5), c20:varchar(5), b:string
+                    partitionColumnCount: 0
+
+  Stage: Stage-0
+    Fetch Operator
+
 PREHOOK: query: select insert_num,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15,c16,c17,c18,c19,c20,b from table_change_numeric_group_string_group_multi_ints_string_group
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table_change_numeric_group_string_group_multi_ints_string_group
@@ -600,6 +894,55 @@ POSTHOOK: Lineage: table_change_numeric_group_string_group_floating_string_group
 POSTHOOK: Lineage: table_change_numeric_group_string_group_floating_string_group.c9 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:double1, type:double, comment:null), ]
 POSTHOOK: Lineage: table_change_numeric_group_string_group_floating_string_group.insert_num SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:insert_num, type:int, comment:null), ]
 insert_num	decimal1	float1	double1	decimal1	float1	double1	decimal1	float1	double1	decimal1	float1	double1	decimal1	float1	double1	_c16
+PREHOOK: query: explain vectorization only detail
+select insert_num,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15,b from table_change_numeric_group_string_group_floating_string_group
+PREHOOK: type: QUERY
+POSTHOOK: query: explain vectorization only detail
+select insert_num,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15,b from table_change_numeric_group_string_group_floating_string_group
+POSTHOOK: type: QUERY
+Explain
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                  TableScan Vectorization:
+                      native: true
+                      projectedOutputColumns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]
+                    Select Vectorization:
+                        className: VectorSelectOperator
+                        native: true
+                        projectedOutputColumns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]
+                      File Sink Vectorization:
+                          className: VectorFileSinkOperator
+                          native: false
+            Execution mode: vectorized, llap
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                groupByVectorOutput: true
+                inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 17
+                    includeColumns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]
+                    dataColumns: insert_num:int, c1:decimal(38,18), c2:float, c3:double, c4:decimal(38,18), c5:float, c6:double, c7:decimal(38,18), c8:float, c9:double, c10:decimal(38,18), c11:float, c12:double, c13:decimal(38,18), c14:float, c15:double, b:string
+                    partitionColumnCount: 0
+
+  Stage: Stage-0
+    Fetch Operator
+
 PREHOOK: query: select insert_num,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15,b from table_change_numeric_group_string_group_floating_string_group
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table_change_numeric_group_string_group_floating_string_group
@@ -662,6 +1005,55 @@ POSTHOOK: Lineage: table_change_numeric_group_string_group_floating_string_group
 POSTHOOK: Lineage: table_change_numeric_group_string_group_floating_string_group.c9 EXPRESSION [(values__tmp__table__6)values__tmp__table__6.FieldSchema(name:tmp_values_col10, type:string, comment:), ]
 POSTHOOK: Lineage: table_change_numeric_group_string_group_floating_string_group.insert_num EXPRESSION [(values__tmp__table__6)values__tmp__table__6.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 _col0	_col1	_col2	_col3	_col4	_col5	_col6	_col7	_col8	_col9	_col10	_col11	_col12	_col13	_col14	_col15	_col16
+PREHOOK: query: explain vectorization only detail
+select insert_num,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15,b from table_change_numeric_group_string_group_floating_string_group
+PREHOOK: type: QUERY
+POSTHOOK: query: explain vectorization only detail
+select insert_num,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15,b from table_change_numeric_group_string_group_floating_string_group
+POSTHOOK: type: QUERY
+Explain
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                  TableScan Vectorization:
+                      native: true
+                      projectedOutputColumns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]
+                    Select Vectorization:
+                        className: VectorSelectOperator
+                        native: true
+                        projectedOutputColumns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]
+                      File Sink Vectorization:
+                          className: VectorFileSinkOperator
+                          native: false
+            Execution mode: vectorized, llap
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                groupByVectorOutput: true
+                inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 17
+                    includeColumns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]
+                    dataColumns: insert_num:int, c1:string, c2:string, c3:string, c4:char(50), c5:char(50), c6:char(50), c7:char(7), c8:char(7), c9:char(7), c10:varchar(50), c11:varchar(50), c12:varchar(50), c13:varchar(7), c14:varchar(7), c15:varchar(7), b:string
+                    partitionColumnCount: 0
+
+  Stage: Stage-0
+    Fetch Operator
+
 PREHOOK: query: select insert_num,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15,b from table_change_numeric_group_string_group_floating_string_group
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table_change_numeric_group_string_group_floating_string_group
@@ -728,6 +1120,55 @@ POSTHOOK: Lineage: table_change_string_group_string_group_string.c8 EXPRESSION [
 POSTHOOK: Lineage: table_change_string_group_string_group_string.c9 EXPRESSION [(schema_evolution_data)schema_evolution_data.FieldSchema(name:string2, type:string, comment:null), ]
 POSTHOOK: Lineage: table_change_string_group_string_group_string.insert_num SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:insert_num, type:int, comment:null), ]
 _col0	_col1	_col2	_col3	_col4	_col5	_col6	_col7	_col8	_col9	_col10	_col11
+PREHOOK: query: explain vectorization only detail
+select insert_num,c1,c2,c3,c4,b from table_change_string_group_string_group_string
+PREHOOK: type: QUERY
+POSTHOOK: query: explain vectorization only detail
+select insert_num,c1,c2,c3,c4,b from table_change_string_group_string_group_string
+POSTHOOK: type: QUERY
+Explain
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                  TableScan Vectorization:
+                      native: true
+                      projectedOutputColumns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
+                    Select Vectorization:
+                        className: VectorSelectOperator
+                        native: true
+                        projectedOutputColumns: [0, 1, 2, 3, 4, 11]
+                      File Sink Vectorization:
+                          className: VectorFileSinkOperator
+                          native: false
+            Execution mode: vectorized, llap
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                groupByVectorOutput: true
+                inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 12
+                    includeColumns: [0, 1, 2, 3, 4, 11]
+                    dataColumns: insert_num:int, c1:string, c2:string, c3:string, c4:string, c5:char(50), c6:char(50), c7:char(50), c8:varchar(50), c9:varchar(50), c10:varchar(50), b:string
+                    partitionColumnCount: 0
+
+  Stage: Stage-0
+    Fetch Operator
+
 PREHOOK: query: select insert_num,c1,c2,c3,c4,b from table_change_string_group_string_group_string
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table_change_string_group_string_group_string
@@ -783,6 +1224,55 @@ POSTHOOK: Lineage: table_change_string_group_string_group_string.c8 EXPRESSION [
 POSTHOOK: Lineage: table_change_string_group_string_group_string.c9 EXPRESSION [(values__tmp__table__7)values__tmp__table__7.FieldSchema(name:tmp_values_col10, type:string, comment:), ]
 POSTHOOK: Lineage: table_change_string_group_string_group_string.insert_num EXPRESSION [(values__tmp__table__7)values__tmp__table__7.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 _col0	_col1	_col2	_col3	_col4	_col5	_col6	_col7	_col8	_col9	_col10	_col11
+PREHOOK: query: explain vectorization only detail
+select insert_num,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,b from table_change_string_group_string_group_string
+PREHOOK: type: QUERY
+POSTHOOK: query: explain vectorization only detail
+select insert_num,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,b from table_change_string_group_string_group_string
+POSTHOOK: type: QUERY
+Explain
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                  TableScan Vectorization:
+                      native: true
+                      projectedOutputColumns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
+                    Select Vectorization:
+                        className: VectorSelectOperator
+                        native: true
+                        projectedOutputColumns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
+                      File Sink Vectorization:
+                          className: VectorFileSinkOperator
+                          native: false
+            Execution mode: vectorized, llap
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                groupByVectorOutput: true
+                inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 12
+                    includeColumns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
+                    dataColumns: insert_num:int, c1:char(50), c2:char(9), c3:varchar(50), c4:char(9), c5:varchar(50), c6:varchar(9), c7:string, c8:char(50), c9:char(9), c10:string, b:string
+                    partitionColumnCount: 0
+
+  Stage: Stage-0
+    Fetch Operator
+
 PREHOOK: query: select insert_num,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,b from table_change_string_group_string_group_string
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table_change_string_group_string_group_string
@@ -863,6 +1353,55 @@ POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_tinyint_to_bigint.
 POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_tinyint_to_bigint.c9 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:smallint1, type:smallint, comment:null), ]
 POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_tinyint_to_bigint.insert_num SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:insert_num, type:int, comment:null), ]
 insert_num	tinyint1	tinyint1	tinyint1	tinyint1	tinyint1	tinyint1	smallint1	smallint1	smallint1	smallint1	smallint1	int1	int1	int1	int1	bigint1	bigint1	bigint1	_c19
+PREHOOK: query: explain vectorization only detail
+select insert_num,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15,c16,c17,c18,b from table_change_lower_to_higher_numeric_group_tinyint_to_bigint
+PREHOOK: type: QUERY
+POSTHOOK: query: explain vectorization only detail
+select insert_num,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15,c16,c17,c18,b from table_change_lower_to_higher_numeric_group_tinyint_to_bigint
+POSTHOOK: type: QUERY
+Explain
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                  TableScan Vectorization:
+                      native: true
+                      projectedOutputColumns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
+                    Select Vectorization:
+                        className: VectorSelectOperator
+                        native: true
+                        projectedOutputColumns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
+                      File Sink Vectorization:
+                          className: VectorFileSinkOperator
+                          native: false
+            Execution mode: vectorized, llap
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                groupByVectorOutput: true
+                inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 20
+                    includeColumns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
+                    dataColumns: insert_num:int, c1:tinyint, c2:tinyint, c3:tinyint, c4:tinyint, c5:tinyint, c6:tinyint, c7:smallint, c8:smallint, c9:smallint, c10:smallint, c11:smallint, c12:int, c13:int, c14:int, c15:int, c16:bigint, c17:bigint, c18:bigint, b:string
+                    partitionColumnCount: 0
+
+  Stage: Stage-0
+    Fetch Operator
+
 PREHOOK: query: select insert_num,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15,c16,c17,c18,b from table_change_lower_to_higher_numeric_group_tinyint_to_bigint
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table_change_lower_to_higher_numeric_group_tinyint_to_bigint
@@ -932,6 +1471,55 @@ POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_tinyint_to_bigint.
 POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_tinyint_to_bigint.c9 EXPRESSION [(values__tmp__table__8)values__tmp__table__8.FieldSchema(name:tmp_values_col10, type:string, comment:), ]
 POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_tinyint_to_bigint.insert_num EXPRESSION [(values__tmp__table__8)values__tmp__table__8.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 _col0	_col1	_col2	_col3	_col4	_col5	_col6	_col7	_col8	_col9	_col10	_col11	_col12	_col13	_col14	_col15	_col16	_col17	_col18	_col19
+PREHOOK: query: explain vectorization only detail
+select insert_num,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15,c16,c17,c18,b from table_change_lower_to_higher_numeric_group_tinyint_to_bigint
+PREHOOK: type: QUERY
+POSTHOOK: query: explain vectorization only detail
+select insert_num,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15,c16,c17,c18,b from table_change_lower_to_higher_numeric_group_tinyint_to_bigint
+POSTHOOK: type: QUERY
+Explain
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                  TableScan Vectorization:
+                      native: true
+                      projectedOutputColumns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
+                    Select Vectorization:
+                        className: VectorSelectOperator
+                        native: true
+                        projectedOutputColumns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
+                      File Sink Vectorization:
+                          className: VectorFileSinkOperator
+                          native: false
+            Execution mode: vectorized, llap
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                groupByVectorOutput: true
+                inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 20
+                    includeColumns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
+                    dataColumns: insert_num:int, c1:smallint, c2:int, c3:bigint, c4:decimal(38,18), c5:float, c6:double, c7:int, c8:bigint, c9:decimal(38,18), c10:float, c11:double, c12:bigint, c13:decimal(38,18), c14:float, c15:double, c16:decimal(38,18), c17:float, c18:double, b:string
+                    partitionColumnCount: 0
+
+  Stage: Stage-0
+    Fetch Operator
+
 PREHOOK: query: select insert_num,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15,c16,c17,c18,b from table_change_lower_to_higher_numeric_group_tinyint_to_bigint
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table_change_lower_to_higher_numeric_group_tinyint_to_bigint
@@ -989,6 +1577,55 @@ POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_decimal_to_float.c
 POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_decimal_to_float.c3 SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:float1, type:float, comment:null), ]
 POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_decimal_to_float.insert_num SIMPLE [(schema_evolution_data)schema_evolution_data.FieldSchema(name:insert_num, type:int, comment:null), ]
 insert_num	decimal1	decimal1	float1	_c4
+PREHOOK: query: explain vectorization only detail
+select insert_num,c1,c2,c3,b from table_change_lower_to_higher_numeric_group_decimal_to_float
+PREHOOK: type: QUERY
+POSTHOOK: query: explain vectorization only detail
+select insert_num,c1,c2,c3,b from table_change_lower_to_higher_numeric_group_decimal_to_float
+POSTHOOK: type: QUERY
+Explain
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                  TableScan Vectorization:
+                      native: true
+                      projectedOutputColumns: [0, 1, 2, 3, 4]
+                    Select Vectorization:
+                        className: VectorSelectOperator
+                        native: true
+                        projectedOutputColumns: [0, 1, 2, 3, 4]
+                      File Sink Vectorization:
+                          className: VectorFileSinkOperator
+                          native: false
+            Execution mode: vectorized, llap
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                groupByVectorOutput: true
+                inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 5
+                    includeColumns: [0, 1, 2, 3, 4]
+                    dataColumns: insert_num:int, c1:decimal(38,18), c2:decimal(38,18), c3:float, b:string
+                    partitionColumnCount: 0
+
+  Stage: Stage-0
+    Fetch Operator
+
 PREHOOK: query: select insert_num,c1,c2,c3,b from table_change_lower_to_higher_numeric_group_decimal_to_float
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table_change_lower_to_higher_numeric_group_decimal_to_float
@@ -1023,6 +1660,55 @@ POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_decimal_to_float.c
 POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_decimal_to_float.c3 EXPRESSION [(values__tmp__table__9)values__tmp__table__9.FieldSchema(name:tmp_values_col4, type:string, comment:), ]
 POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_decimal_to_float.insert_num EXPRESSION [(values__tmp__table__9)values__tmp__table__9.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
 _col0	_col1	_col2	_col3	_col4
+PREHOOK: query: explain vectorization only detail
+select insert_num,c1,c2,c3,b from table_change_lower_to_higher_numeric_group_decimal_to_float
+PREHOOK: type: QUERY
+POSTHOOK: query: explain vectorization only detail
+select insert_num,c1,c2,c3,b from table_change_lower_to_higher_numeric_group_decimal_to_float
+POSTHOOK: type: QUERY
+Explain
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                  TableScan Vectorization:
+                      native: true
+                      projectedOutputColumns: [0, 1, 2, 3, 4]
+                    Select Vectorization:
+                        className: VectorSelectOperator
+                        native: true
+                        projectedOutputColumns: [0, 1, 2, 3, 4]
+                      File Sink Vectorization:
+                          className: VectorFileSinkOperator
+                          native: false
+            Execution mode: vectorized, llap
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                groupByVectorOutput: true
+                inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 5
+                    includeColumns: [0, 1, 2, 3, 4]
+                    dataColumns: insert_num:int, c1:float, c2:double, c3:double, b:string
+                    partitionColumnCount: 0
+
+  Stage: Stage-0
+    Fetch Operator
+
 PREHOOK: query: select insert_num,c1,c2,c3,b from table_change_lower_to_higher_numeric_group_decimal_to_float
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table_change_lower_to_higher_numeric_group_decimal_to_float

@@ -1748,7 +1748,7 @@ STAGE DEPENDENCIES:
   Stage-5 depends on stages: Stage-0
   Stage-1 depends on stages: Stage-4
   Stage-6 depends on stages: Stage-1
-  Stage-2 depends on stages: Stage-4
+  Stage-2 depends on stages: Stage-3
   Stage-7 depends on stages: Stage-2
 
 STAGE PLANS:

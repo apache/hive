@@ -483,12 +483,6 @@ public class CommonJoinTaskDispatcher extends AbstractJoinTaskDispatcher impleme
         if (!bigTableCandidates.contains(pos)) {
           continue;
         }
-        // deep copy a new mapred work from xml
-        // Once HIVE-4396 is in, it would be faster to use a cheaper method to clone the plan
-        MapredWork newWork = SerializationUtilities.clonePlan(currTask.getWork());
-
-        // create map join task and set big table as i
-        MapRedTask newTask = convertTaskToMapJoinTask(newWork, pos);
 
         Operator<?> startOp = joinOp.getParentOperators().get(pos);
         Set<String> aliases = GenMapRedUtils.findAliases(currWork, startOp);
@@ -497,6 +491,11 @@ public class CommonJoinTaskDispatcher extends AbstractJoinTaskDispatcher impleme
         if (cannotConvert(aliasKnownSize, aliasTotalKnownInputSize, ThresholdOfSmallTblSizeSum)) {
           continue;
         }
+
+        MapredWork newWork = SerializationUtilities.clonePlan(currTask.getWork());
+
+        // create map join task and set big table as i
+        MapRedTask newTask = convertTaskToMapJoinTask(newWork, pos);
 
         // add into conditional task
         listWorks.add(newTask.getWork());
@@ -513,6 +512,10 @@ public class CommonJoinTaskDispatcher extends AbstractJoinTaskDispatcher impleme
       }
     } catch (Exception e) {
       throw new SemanticException("Generate Map Join Task Error: " + e.getMessage(), e);
+    }
+
+    if (listTasks.isEmpty()) {
+      return currTask;
     }
 
     // insert current common join task to conditional task

@@ -666,9 +666,7 @@ public final class LazySimpleDeserializeRead extends DeserializeRead {
 
   //------------------------------------------------------------------------------------------------
 
-  private static byte[] maxLongBytes = ((Long) Long.MAX_VALUE).toString().getBytes();
-  private static int maxLongDigitsCount = maxLongBytes.length;
-  private static byte[] minLongNoSignBytes = ((Long) Long.MIN_VALUE).toString().substring(1).getBytes();
+  private static final byte[] maxLongBytes = ((Long) Long.MAX_VALUE).toString().getBytes();
 
   public static int byteArrayCompareRanges(byte[] arg1, int start1, byte[] arg2, int start2, int len) {
     for (int i = 0; i < len; i++) {

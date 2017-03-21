@@ -20,11 +20,15 @@ package org.apache.hadoop.hive.llap.daemon.impl;
 import static org.apache.hadoop.hive.llap.daemon.impl.TaskExecutorTestHelpers.createMockRequest;
 import static org.apache.hadoop.hive.llap.daemon.impl.TaskExecutorTestHelpers.createSubmitWorkRequestProto;
 import static org.apache.hadoop.hive.llap.daemon.impl.TaskExecutorTestHelpers.createTaskWrapper;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
+
+import org.apache.hadoop.yarn.util.SystemClock;
+
+import org.apache.hadoop.hive.llap.testhelpers.ControlledClock;
+
+import java.util.concurrent.TimeUnit;
+
+import org.apache.hadoop.yarn.util.Clock;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -303,6 +307,58 @@ public class TestTaskExecutorService {
     }
   }
 
+  @Test(timeout = 10000)
+  public void testDontKillMultiple() throws InterruptedException {
+    MockRequest victim1 = createMockRequest(1, 1, 100, 100, false, 20000l);
+    MockRequest victim2 = createMockRequest(2, 1, 100, 100, false, 20000l);
+    runPreemptionGraceTest(victim1, victim2, 200);
+    assertNotEquals(victim1.wasPreempted(), victim2.wasPreempted()); // One and only one.
+  }
+
+  @Test(timeout = 10000)
+  public void testDoKillMultiple() throws InterruptedException {
+    MockRequest victim1 = createMockRequest(1, 1, 100, 100, false, 20000l);
+    MockRequest victim2 = createMockRequest(2, 1, 100, 100, false, 20000l);
+    runPreemptionGraceTest(victim1, victim2, 1000);
+    assertTrue(victim1.wasPreempted());
+    assertTrue(victim2.wasPreempted());
+  }
+
+  private void runPreemptionGraceTest(
+      MockRequest victim1, MockRequest victim2, int time) throws InterruptedException {
+    MockRequest preemptor = createMockRequest(3, 1, 100, 100, true, 20000l);
+    victim1.setSleepAfterKill();
+    victim2.setSleepAfterKill();
+
+    ControlledClock clock = new ControlledClock(new SystemClock());
+    clock.setTime(0);
+    TaskExecutorServiceForTest taskExecutorService = new TaskExecutorServiceForTest(
+        2, 3, ShortestJobFirstComparator.class.getName(), true, clock);
+    taskExecutorService.init(new Configuration());
+    taskExecutorService.start();
+
+    try {
+      taskExecutorService.schedule(victim1);
+      awaitStartAndSchedulerRun(victim1, taskExecutorService);
+      taskExecutorService.schedule(victim2);
+      awaitStartAndSchedulerRun(victim2, taskExecutorService);
+      taskExecutorService.schedule(preemptor);
+      taskExecutorService.waitForScheduleRuns(5); // Wait for scheduling to run a few times.
+      clock.setTime(time);
+      taskExecutorService.waitForScheduleRuns(5); // Wait for scheduling to run a few times.
+      victim1.unblockKill();
+      victim2.unblockKill();
+      preemptor.complete();
+      preemptor.awaitEnd();
+      TaskExecutorServiceForTest.InternalCompletionListenerForTest icl3 =
+          taskExecutorService.getInternalCompletionListenerForTest(preemptor.getRequestId());
+      icl3.awaitCompletion();
+    } finally {
+      taskExecutorService.shutDown(false);
+    }
+  }
+
+
 
   private void awaitStartAndSchedulerRun(MockRequest mockRequest,
                                          TaskExecutorServiceForTest taskExecutorServiceForTest) throws
@@ -319,23 +375,43 @@ public class TestTaskExecutorService {
     private final Lock tryScheduleLock = new ReentrantLock();
     private final Condition tryScheduleCondition = tryScheduleLock.newCondition();
     private boolean isInTrySchedule = false;
+    private int scheduleAttempts = 0;
 
-    public TaskExecutorServiceForTest(int numExecutors, int waitQueueSize, String waitQueueComparatorClassName,
-                                      boolean enablePreemption) {
-      super(numExecutors, waitQueueSize, waitQueueComparatorClassName, enablePreemption,
-          Thread.currentThread().getContextClassLoader(), null);
+    public TaskExecutorServiceForTest(int numExecutors, int waitQueueSize,
+        String waitQueueComparatorClassName, boolean enablePreemption) {
+      this(numExecutors, waitQueueSize, waitQueueComparatorClassName, enablePreemption, null);
     }
 
-    private ConcurrentMap<String, InternalCompletionListenerForTest> completionListeners = new ConcurrentHashMap<>();
+    public TaskExecutorServiceForTest(int numExecutors, int waitQueueSize,
+        String waitQueueComparatorClassName, boolean enablePreemption, Clock clock) {
+      super(numExecutors, waitQueueSize, waitQueueComparatorClassName, enablePreemption,
+          Thread.currentThread().getContextClassLoader(), null, clock);
+    }
+
+    private ConcurrentMap<String, InternalCompletionListenerForTest> completionListeners =
+        new ConcurrentHashMap<>();
 
     @Override
-    void trySchedule(final TaskWrapper taskWrapper) throws RejectedExecutionException {
+    void tryScheduleUnderLock(final TaskWrapper taskWrapper) throws RejectedExecutionException {
       tryScheduleLock.lock();
       try {
         isInTrySchedule = true;
-        super.trySchedule(taskWrapper);
+        super.tryScheduleUnderLock(taskWrapper);
+      } finally {
         isInTrySchedule = false;
+        ++scheduleAttempts;
         tryScheduleCondition.signal();
+        tryScheduleLock.unlock();
+      }
+    }
+
+    public void waitForScheduleRuns(int n) throws InterruptedException {
+      tryScheduleLock.lock();
+      try {
+        int targetRuns = scheduleAttempts + n;
+        while (scheduleAttempts < targetRuns) {
+          tryScheduleCondition.await(100, TimeUnit.MILLISECONDS);
+        }
       } finally {
         tryScheduleLock.unlock();
       }

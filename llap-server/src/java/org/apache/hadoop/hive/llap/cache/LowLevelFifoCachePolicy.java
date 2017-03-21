@@ -116,10 +116,12 @@ public class LowLevelFifoCachePolicy implements LowLevelCachePolicy {
   }
 
   @Override
-  public int tryEvictContiguousData(int allocationSize, int count) {
+  public long tryEvictContiguousData(int allocationSize, int count) {
     long evicted = evictInternal(allocationSize * count, allocationSize);
-    // This makes granularity assumptions.
-    assert evicted % allocationSize == 0;
-    return (int)(evicted / allocationSize);
+    int remainingCount = count - (int)(evicted / allocationSize);
+    if (remainingCount > 0) {
+      evicted += evictInternal(allocationSize * remainingCount, -1);
+    }
+    return evicted;
   }
 }

@@ -117,9 +117,9 @@
     <avro.version>1.7.7</avro.version>
     <bonecp.version>0.8.0.RELEASE</bonecp.version>
     <calcite.version>1.10.0</calcite.version>
-    <datanucleus-api-jdo.version>4.2.1</datanucleus-api-jdo.version>
-    <datanucleus-core.version>4.1.6</datanucleus-core.version>
-    <datanucleus-rdbms.version>4.1.7</datanucleus-rdbms.version>
+    <datanucleus-api-jdo.version>4.2.4</datanucleus-api-jdo.version>
+    <datanucleus-core.version>4.1.17</datanucleus-core.version>
+    <datanucleus-rdbms.version>4.1.19</datanucleus-rdbms.version>
     <datanucleus-jdo.version>3.2.0-m3</datanucleus-jdo.version>
     <commons-cli.version>1.2</commons-cli.version>
     <commons-codec.version>1.4</commons-codec.version>
@@ -1266,7 +1266,7 @@
               <fork>true</fork>
               <maxHeap>2048</maxHeap>
               <jvmArgs>-Djava.awt.headless=true -Xmx2048m -Xms512m</jvmArgs>
-              <excludeFilterFile>${project.parent.basedir}/findbugs/findbugs-exclude.xml</excludeFilterFile>
+              <excludeFilterFile>${basedir}/${hive.path.to.root}/findbugs/findbugs-exclude.xml</excludeFilterFile>
             </configuration>
           </plugin>
         </plugins>

@@ -1,3 +1,5 @@
+set hive.explain.user=false;
+set hive.fetch.task.conversion=none;
 set hive.cli.print.header=true;
 set hive.support.concurrency=true;
 set hive.txn.manager=org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
@@ -6,7 +8,6 @@ SET hive.exec.schema.evolution=false;
 SET hive.vectorized.use.vectorized.input.format=true;
 SET hive.vectorized.use.vector.serde.deserialize=false;
 SET hive.vectorized.use.row.serde.deserialize=false;
-set hive.fetch.task.conversion=none;
 SET hive.vectorized.execution.enabled=true;
 set hive.exec.dynamic.partition.mode=nonstrict;
 set hive.metastore.disallow.incompatible.col.type.changes=true;
@@ -17,7 +18,8 @@ set hive.llap.io.enabled=false;
 --
 -- FILE VARIATION: ORC, ACID Vectorized, MapWork, Table
 -- *IMPORTANT NOTE* We set hive.exec.schema.evolution=false above since schema evolution is always used for ACID.
--- Also, we don't do EXPLAINs on ACID files because the transaction id causes Q file statistics differences...
+-- Also, we don't do regular EXPLAINs on ACID files because the transaction id causes Q file statistics differences...
+-- Instead explain vectorization only detail
 --
 
 CREATE TABLE schema_evolution_data(insert_num int, boolean1 boolean, tinyint1 tinyint, smallint1 smallint, int1 int, bigint1 bigint, decimal1 decimal(38,18), float1 float, double1 double, string1 string, string2 string, date1 date, timestamp1 timestamp, boolean_str string, tinyint_str string, smallint_str string, int_str string, bigint_str string, decimal_str string, float_str string, double_str string, date_str string, timestamp_str string, filler string)
@@ -40,6 +42,9 @@ alter table table_add_int_permute_select add columns(c int);
 
 insert into table table_add_int_permute_select VALUES (111, 80000, 'new', 80000);
 
+explain vectorization only detail
+select insert_num,a,b,c from table_add_int_permute_select;
+
 -- SELECT permutation columns to make sure NULL defaulting works right
 select insert_num,a,b from table_add_int_permute_select;
 select insert_num,a,b,c from table_add_int_permute_select;
@@ -59,6 +64,9 @@ insert into table table_add_int_string_permute_select SELECT insert_num, int1, '
 alter table table_add_int_string_permute_select add columns(c int, d string);
 
 insert into table table_add_int_string_permute_select VALUES (111, 80000, 'new', 80000, 'filler');
+
+explain vectorization only detail
+select insert_num,a,b,c,d from table_add_int_string_permute_select;
 
 -- SELECT permutation columns to make sure NULL defaulting works right
 select insert_num,a,b from table_add_int_string_permute_select;
@@ -89,6 +97,9 @@ alter table table_change_string_group_double replace columns (insert_num int, c1
 
 insert into table table_change_string_group_double VALUES (111, 789.321, 789.321, 789.321, 'new');
 
+explain vectorization only detail
+select insert_num,c1,c2,c3,b from table_change_string_group_double;
+
 select insert_num,c1,c2,c3,b from table_change_string_group_double;
 
 drop table table_change_string_group_double;
@@ -108,6 +119,9 @@ insert into table table_change_date_group_string_group_date_group SELECT insert_
 alter table table_change_date_group_string_group_date_group replace columns(insert_num int, c1 STRING, c2 CHAR(50), c3 CHAR(15), c4 VARCHAR(50), c5 VARCHAR(15), c6 STRING, c7 CHAR(50), c8 CHAR(15), c9 VARCHAR(50), c10 VARCHAR(15), b STRING);
 
 insert into table table_change_date_group_string_group_date_group VALUES (111, 'filler', 'filler', 'filler', 'filler', 'filler', 'filler', 'filler', 'filler', 'filler', 'filler', 'new');
+
+explain vectorization only detail
+select insert_num,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,b from table_change_date_group_string_group_date_group;
 
 select insert_num,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,b from table_change_date_group_string_group_date_group;
 
@@ -138,6 +152,9 @@ insert into table table_change_numeric_group_string_group_multi_ints_string_grou
              tinyint1, smallint1, int1, bigint1, tinyint1, smallint1, int1, bigint1,
              'original' FROM schema_evolution_data;
 
+explain vectorization only detail
+select insert_num,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15,c16,c17,c18,c19,c20,b from table_change_numeric_group_string_group_multi_ints_string_group;
+
 select insert_num,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15,c16,c17,c18,c19,c20,b from table_change_numeric_group_string_group_multi_ints_string_group;
 
 -- Table-Non-Cascade CHANGE COLUMNS ...
@@ -152,6 +169,9 @@ insert into table table_change_numeric_group_string_group_multi_ints_string_grou
             'filler', 'filler', 'filler', 'filler', 'filler', 'filler', 'filler', 'filler',
             'filler', 'filler', 'filler', 'filler', 'filler', 'filler', 'filler', 'filler',
             'new');
+
+explain vectorization only detail
+select insert_num,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15,c16,c17,c18,c19,c20,b from table_change_numeric_group_string_group_multi_ints_string_group;
 
 select insert_num,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15,c16,c17,c18,c19,c20,b from table_change_numeric_group_string_group_multi_ints_string_group;
 
@@ -178,6 +198,9 @@ insert into table table_change_numeric_group_string_group_floating_string_group 
               decimal1, float1, double1, decimal1, float1, double1,
              'original' FROM schema_evolution_data;
 
+explain vectorization only detail
+select insert_num,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15,b from table_change_numeric_group_string_group_floating_string_group;
+
 select insert_num,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15,b from table_change_numeric_group_string_group_floating_string_group;
 
 -- Table-Non-Cascade CHANGE COLUMNS ...
@@ -192,6 +215,9 @@ insert into table table_change_numeric_group_string_group_floating_string_group 
              'filler', 'filler', 'filler', 'filler', 'filler', 'filler',
              'filler', 'filler', 'filler', 'filler', 'filler', 'filler',
              'new');
+
+explain vectorization only detail
+select insert_num,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15,b from table_change_numeric_group_string_group_floating_string_group;
 
 select insert_num,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15,b from table_change_numeric_group_string_group_floating_string_group;
 
@@ -217,6 +243,9 @@ insert into table table_change_string_group_string_group_string SELECT insert_nu
            string2, string2, string2,
           'original' FROM schema_evolution_data;
 
+explain vectorization only detail
+select insert_num,c1,c2,c3,c4,b from table_change_string_group_string_group_string;
+
 select insert_num,c1,c2,c3,c4,b from table_change_string_group_string_group_string;
 
 -- Table-Non-Cascade CHANGE COLUMNS ...
@@ -230,6 +259,9 @@ insert into table table_change_string_group_string_group_string VALUES (111,
           'filler', 'filler', 'filler',
           'filler', 'filler', 'filler',
           'new');
+
+explain vectorization only detail
+select insert_num,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,b from table_change_string_group_string_group_string;
 
 select insert_num,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,b from table_change_string_group_string_group_string;
 
@@ -262,6 +294,9 @@ insert into table table_change_lower_to_higher_numeric_group_tinyint_to_bigint S
                                 bigint1, bigint1, bigint1, 
                                 'original' FROM schema_evolution_data;
 
+explain vectorization only detail
+select insert_num,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15,c16,c17,c18,b from table_change_lower_to_higher_numeric_group_tinyint_to_bigint;
+
 select insert_num,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15,c16,c17,c18,b from table_change_lower_to_higher_numeric_group_tinyint_to_bigint;
 
 -- Table-Non-Cascade CHANGE COLUMNS ...
@@ -278,6 +313,9 @@ insert into table table_change_lower_to_higher_numeric_group_tinyint_to_bigint V
             90000000, 1234.5678, 9876.543, 789.321,
             1234.5678, 9876.543, 789.321,
            'new');
+
+explain vectorization only detail
+select insert_num,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15,c16,c17,c18,b from table_change_lower_to_higher_numeric_group_tinyint_to_bigint;
 
 select insert_num,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15,c16,c17,c18,b from table_change_lower_to_higher_numeric_group_tinyint_to_bigint;
 
@@ -300,12 +338,18 @@ insert into table table_change_lower_to_higher_numeric_group_decimal_to_float SE
            float1,
           'original' FROM schema_evolution_data;
 
+explain vectorization only detail
+select insert_num,c1,c2,c3,b from table_change_lower_to_higher_numeric_group_decimal_to_float;
+
 select insert_num,c1,c2,c3,b from table_change_lower_to_higher_numeric_group_decimal_to_float;
 
 -- Table-Non-Cascade CHANGE COLUMNS ...
 alter table table_change_lower_to_higher_numeric_group_decimal_to_float replace columns (insert_num int, c1 float, c2 double, c3 DOUBLE, b STRING) ;
 
 insert into table table_change_lower_to_higher_numeric_group_decimal_to_float VALUES (111, 1234.5678, 9876.543, 1234.5678, 'new');
+
+explain vectorization only detail
+select insert_num,c1,c2,c3,b from table_change_lower_to_higher_numeric_group_decimal_to_float;
 
 select insert_num,c1,c2,c3,b from table_change_lower_to_higher_numeric_group_decimal_to_float;
 

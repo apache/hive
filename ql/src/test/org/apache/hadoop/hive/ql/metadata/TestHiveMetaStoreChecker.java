@@ -17,7 +17,6 @@
  */
 package org.apache.hadoop.hive.ql.metadata;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -25,12 +24,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.google.common.collect.Lists;
-import junit.framework.TestCase;
-
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
@@ -41,6 +38,10 @@ import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.mapred.TextInputFormat;
 import org.apache.thrift.TException;
 import org.mockito.Mockito;
+
+import com.google.common.collect.Lists;
+
+import junit.framework.TestCase;
 
 /**
  * TestHiveMetaStoreChecker.
@@ -65,7 +66,7 @@ public class TestHiveMetaStoreChecker extends TestCase {
   protected void setUp() throws Exception {
     super.setUp();
     hive = Hive.get();
-    hive.getConf().setIntVar(HiveConf.ConfVars.HIVE_MOVE_FILES_THREAD_COUNT, 15);
+    hive.getConf().setIntVar(HiveConf.ConfVars.METASTORE_FS_HANDLER_THREADS_COUNT, 15);
     hive.getConf().set(HiveConf.ConfVars.HIVE_MSCK_PATH_VALIDATION.varname, "throw");
     checker = new HiveMetaStoreChecker(hive);
 
@@ -335,7 +336,7 @@ public class TestHiveMetaStoreChecker extends TestCase {
   public void testSingleThreadedCheckMetastore()
       throws HiveException, AlreadyExistsException, IOException {
     // set num of threads to 0 so that single-threaded checkMetastore is called
-    hive.getConf().setIntVar(HiveConf.ConfVars.HIVE_MOVE_FILES_THREAD_COUNT, 0);
+    hive.getConf().setIntVar(HiveConf.ConfVars.METASTORE_FS_HANDLER_THREADS_COUNT, 0);
     Table testTable = createPartitionedTestTable(dbName, tableName, 2, 0);
     // add 10 partitions on the filesystem
     createPartitionsDirectoriesOnFS(testTable, 10);
@@ -357,12 +358,8 @@ public class TestHiveMetaStoreChecker extends TestCase {
   public void testSingleThreadedDeeplyNestedTables()
       throws HiveException, AlreadyExistsException, IOException {
     // set num of threads to 0 so that single-threaded checkMetastore is called
-    hive.getConf().setIntVar(HiveConf.ConfVars.HIVE_MOVE_FILES_THREAD_COUNT, 0);
-    // currently HiveMetastoreChecker uses a minimum pool size of 2*numOfProcs
-    // no other easy way to set it deterministically for this test case
-    checker = Mockito.spy(checker);
-    Mockito.when(checker.getMinPoolSize()).thenReturn(2);
-    int poolSize = checker.getMinPoolSize();
+    hive.getConf().setIntVar(HiveConf.ConfVars.METASTORE_FS_HANDLER_THREADS_COUNT, 0);
+    int poolSize = 2;
     // create a deeply nested table which has more partition keys than the pool size
     Table testTable = createPartitionedTestTable(dbName, tableName, poolSize + 2, 0);
     // add 10 partitions on the filesystem
@@ -384,11 +381,8 @@ public class TestHiveMetaStoreChecker extends TestCase {
    */
   public void testDeeplyNestedPartitionedTables()
       throws HiveException, AlreadyExistsException, IOException {
-    // currently HiveMetastoreChecker uses a minimum pool size of 2*numOfProcs
-    // no other easy way to set it deterministically for this test case
-    int poolSize = checker.getMinPoolSize();
-    checker = Mockito.spy(checker);
-    Mockito.when(checker.getMinPoolSize()).thenReturn(2);
+    hive.getConf().setIntVar(HiveConf.ConfVars.METASTORE_FS_HANDLER_THREADS_COUNT, 2);
+    int poolSize = 2;
     // create a deeply nested table which has more partition keys than the pool size
     Table testTable = createPartitionedTestTable(dbName, tableName, poolSize + 2, 0);
     // add 10 partitions on the filesystem
@@ -419,18 +413,22 @@ public class TestHiveMetaStoreChecker extends TestCase {
     createDirectory(sb.toString());
     //check result now
     CheckResult result = new CheckResult();
+    Exception exception = null;
     try {
       checker.checkMetastore(dbName, tableName, null, result);
     } catch (Exception e) {
-      assertTrue("Expected exception HiveException got " + e.getClass(), e instanceof HiveException);
+      exception = e;
     }
+    assertTrue("Expected HiveException", exception!=null && exception instanceof HiveException);
     createFile(sb.toString(), "dummyFile");
     result = new CheckResult();
+    exception = null;
     try {
       checker.checkMetastore(dbName, tableName, null, result);
     } catch (Exception e) {
-      assertTrue("Expected exception HiveException got " + e.getClass(), e instanceof HiveException);
+      exception = e;
     }
+    assertTrue("Expected HiveException", exception!=null && exception instanceof HiveException);
   }
 
   /*
@@ -440,7 +438,7 @@ public class TestHiveMetaStoreChecker extends TestCase {
   public void testErrorForMissingPartitionsSingleThreaded()
       throws AlreadyExistsException, HiveException, IOException {
     // set num of threads to 0 so that single-threaded checkMetastore is called
-    hive.getConf().setIntVar(HiveConf.ConfVars.HIVE_MOVE_FILES_THREAD_COUNT, 0);
+    hive.getConf().setIntVar(HiveConf.ConfVars.METASTORE_FS_HANDLER_THREADS_COUNT, 0);
     Table testTable = createPartitionedTestTable(dbName, tableName, 2, 0);
     // add 10 partitions on the filesystem
     createPartitionsDirectoriesOnFS(testTable, 10);
@@ -451,20 +449,22 @@ public class TestHiveMetaStoreChecker extends TestCase {
     createDirectory(sb.toString());
     // check result now
     CheckResult result = new CheckResult();
+    Exception exception = null;
     try {
       checker.checkMetastore(dbName, tableName, null, result);
     } catch (Exception e) {
-      assertTrue("Expected exception HiveException got " + e.getClass(),
-          e instanceof HiveException);
+      exception = e;
     }
+    assertTrue("Expected HiveException", exception!=null && exception instanceof HiveException);
     createFile(sb.toString(), "dummyFile");
     result = new CheckResult();
+    exception = null;
     try {
       checker.checkMetastore(dbName, tableName, null, result);
     } catch (Exception e) {
-      assertTrue("Expected exception HiveException got " + e.getClass(),
-          e instanceof HiveException);
+      exception = e;
     }
+    assertTrue("Expected HiveException", exception!=null && exception instanceof HiveException);
   }
   /**
    * Creates a test partitioned table with the required level of nested partitions and number of

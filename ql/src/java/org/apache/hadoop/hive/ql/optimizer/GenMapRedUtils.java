@@ -130,11 +130,7 @@ import com.google.common.collect.Interner;
  * map-reduce tasks.
  */
 public final class GenMapRedUtils {
-  private static Logger LOG;
-
-  static {
-    LOG = LoggerFactory.getLogger("org.apache.hadoop.hive.ql.optimizer.GenMapRedUtils");
-  }
+  private static final Logger LOG = LoggerFactory.getLogger("org.apache.hadoop.hive.ql.optimizer.GenMapRedUtils");
 
   public static boolean needsTagging(ReduceWork rWork) {
     return rWork != null && (rWork.getReducer().getClass() == JoinOperator.class ||

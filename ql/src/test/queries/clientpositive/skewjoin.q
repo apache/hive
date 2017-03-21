@@ -24,7 +24,7 @@ FROM src src1 JOIN src src2 ON (src1.key = src2.key)
 INSERT OVERWRITE TABLE dest_j1 SELECT src1.key, src2.value;
 
 SELECT sum(hash(key)), sum(hash(value)) FROM dest_j1;
-
+set hive.cbo.enable=false;
 EXPLAIN
 SELECT /*+ STREAMTABLE(a) */ *
 FROM T1 a JOIN T2 b ON a.key = b.key

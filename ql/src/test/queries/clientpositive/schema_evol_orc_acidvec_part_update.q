@@ -1,3 +1,5 @@
+set hive.explain.user=false;
+set hive.fetch.task.conversion=none;
 set hive.mapred.mode=nonstrict;
 set hive.cli.print.header=true;
 set hive.support.concurrency=true;
@@ -7,7 +9,6 @@ SET hive.exec.schema.evolution=false;
 SET hive.vectorized.use.vectorized.input.format=true;
 SET hive.vectorized.use.vector.serde.deserialize=false;
 SET hive.vectorized.use.row.serde.deserialize=false;
-set hive.fetch.task.conversion=none;
 SET hive.vectorized.execution.enabled=true;
 set hive.exec.dynamic.partition.mode=nonstrict;
 set hive.metastore.disallow.incompatible.col.type.changes=true;
