@@ -1,3 +1,4 @@
+drop table t;
 create table t (id int,px int,y decimal,x decimal);
 
 insert into t values (101,1,1,1);

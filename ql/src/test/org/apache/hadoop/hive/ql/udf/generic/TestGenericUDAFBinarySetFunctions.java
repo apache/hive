@@ -57,7 +57,7 @@ public class TestGenericUDAFBinarySetFunctions {
     ret.add(new Object[] { "empty", RowSetGenerator.generate(0,
         new RowSetGenerator.DoubleSequence(0), new RowSetGenerator.DoubleSequence(0)) });
     ret.add(new Object[] { "lonely", RowSetGenerator.generate(1,
-        new RowSetGenerator.DoubleSequence(0), new RowSetGenerator.DoubleSequence(0)) });
+        new RowSetGenerator.DoubleSequence(10), new RowSetGenerator.DoubleSequence(10)) });
     ret.add(new Object[] { "seq/seq+10", RowSetGenerator.generate(10,
         new RowSetGenerator.DoubleSequence(0), new RowSetGenerator.DoubleSequence(10)) });
     ret.add(new Object[] { "seq/null", RowSetGenerator.generate(10,
@@ -265,7 +265,6 @@ public class TestGenericUDAFBinarySetFunctions {
   }
 
   @Test
-  @Ignore("HIVE-16178 should fix this")
   public void corr() throws Exception {
     RegrIntermediate expected = RegrIntermediate.computeFor(rowSet);
     validateUDAF(expected.corr(), new GenericUDAFCorrelation());
@@ -278,7 +277,6 @@ public class TestGenericUDAFBinarySetFunctions {
   }
 
   @Test
-  @Ignore("HIVE-16178 should fix this")
   public void covar_samp() throws Exception {
     RegrIntermediate expected = RegrIntermediate.computeFor(rowSet);
     validateUDAF(expected.covar_samp(), new GenericUDAFCovarianceSample());
@@ -327,7 +325,7 @@ public class TestGenericUDAFBinarySetFunctions {
 
     public Double intercept() {
       double xx = n * sum_x2 - sum_x * sum_x;
-      if (n == 0)
+      if (n == 0 || xx == 0.0d)
         return null;
       return (sum_y * sum_x2 - sum_x * sum_xy) / xx;
     }

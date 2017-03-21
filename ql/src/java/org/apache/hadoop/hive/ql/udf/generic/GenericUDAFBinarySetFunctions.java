@@ -294,19 +294,16 @@ public class GenericUDAFBinarySetFunctions extends AbstractGenericUDAFResolver {
       return new Evaluator();
     }
 
-    /**
-     * NOTE: corr is declared as corr(x,y) instead corr(y,x)
-     */
     private static class Evaluator extends GenericUDAFCorrelationEvaluator {
 
       @Override
       public Object terminate(AggregationBuffer agg) throws HiveException {
         StdAgg myagg = (StdAgg) agg;
 
-        if (myagg.count < 2 || myagg.yvar == 0.0d) {
+        if (myagg.count < 2 || myagg.xvar == 0.0d) {
           return null;
         } else {
-          getResult().set(myagg.covar / myagg.yvar);
+          getResult().set(myagg.covar / myagg.xvar);
           return getResult();
         }
       }
@@ -328,23 +325,20 @@ public class GenericUDAFBinarySetFunctions extends AbstractGenericUDAFResolver {
       return new Evaluator();
     }
 
-    /**
-     * NOTE: corr is declared as corr(x,y) instead corr(y,x)
-     */
     private static class Evaluator extends GenericUDAFCorrelationEvaluator {
 
       @Override
       public Object terminate(AggregationBuffer agg) throws HiveException {
         StdAgg myagg = (StdAgg) agg;
 
-        if (myagg.count < 2 || myagg.yvar == 0.0d) {
+        if (myagg.count < 2 || myagg.xvar == 0.0d) {
           return null;
         }
         DoubleWritable result = getResult();
-        if (myagg.xvar == 0.0d) {
+        if (myagg.yvar == 0.0d) {
           result.set(1.0d);
         } else {
-          result.set(myagg.covar * myagg.covar / myagg.yvar / myagg.xvar);
+          result.set(myagg.covar * myagg.covar / myagg.xvar / myagg.yvar);
         }
         return result;
       }
@@ -365,9 +359,6 @@ public class GenericUDAFBinarySetFunctions extends AbstractGenericUDAFResolver {
       return new Evaluator();
     }
 
-    /**
-     * NOTE: corr is declared as corr(x,y) instead corr(y,x)
-     */
     private static class Evaluator extends GenericUDAFCorrelationEvaluator {
 
       @Override
@@ -398,21 +389,18 @@ public class GenericUDAFBinarySetFunctions extends AbstractGenericUDAFResolver {
       return new Evaluator();
     }
 
-    /**
-     * NOTE: corr is declared as corr(x,y) instead corr(y,x)
-     */
     private static class Evaluator extends GenericUDAFCorrelationEvaluator {
 
       @Override
       public Object terminate(AggregationBuffer agg) throws HiveException {
         StdAgg myagg = (StdAgg) agg;
 
-        if (myagg.count == 0) {
+        if (myagg.count == 0 || myagg.xvar == 0.0d) {
           return null;
         }
         DoubleWritable result = getResult();
-        double slope = myagg.covar / myagg.yvar;
-        result.set(myagg.xavg - slope * myagg.yavg);
+        double slope = myagg.covar / myagg.xvar;
+        result.set(myagg.yavg - slope * myagg.xavg);
         return result;
       }
     }

@@ -182,7 +182,7 @@ stddev(p_retailprice) over w1 as sdev,
 stddev_pop(p_retailprice) over w1 as sdev_pop, 
 collect_set(p_size) over w1 as uniq_size, 
 variance(p_retailprice) over w1 as var,
-corr(p_size, p_retailprice) over w1 as cor,
+round(corr(p_size, p_retailprice) over w1,5) as cor,
 covar_pop(p_size, p_retailprice) over w1 as covarp
 from part
 window w1 as (distribute by p_mfgr sort by p_mfgr, p_name rows between 2 preceding and 2 following);

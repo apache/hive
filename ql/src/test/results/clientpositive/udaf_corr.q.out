@@ -28,17 +28,20 @@ PREHOOK: query: DESCRIBE FUNCTION corr
 PREHOOK: type: DESCFUNCTION
 POSTHOOK: query: DESCRIBE FUNCTION corr
 POSTHOOK: type: DESCFUNCTION
-corr(x,y) - Returns the Pearson coefficient of correlation
+corr(y,x) - Returns the Pearson coefficient of correlation
 between a set of number pairs
 PREHOOK: query: DESCRIBE FUNCTION EXTENDED corr
 PREHOOK: type: DESCFUNCTION
 POSTHOOK: query: DESCRIBE FUNCTION EXTENDED corr
 POSTHOOK: type: DESCFUNCTION
-corr(x,y) - Returns the Pearson coefficient of correlation
+corr(y,x) - Returns the Pearson coefficient of correlation
 between a set of number pairs
 The function takes as arguments any pair of numeric types and returns a double.
-Any pair with a NULL is ignored. If the function is applied to an empty set or
-a singleton set, NULL will be returned. Otherwise, it computes the following:
+Any pair with a NULL is ignored.
+If applied to an empty set: NULL is returned.
+If N*SUM(x*x) = SUM(x)*SUM(x): NULL is returned.
+If N*SUM(y*y) = SUM(y)*SUM(y): NULL is returned.
+Otherwise, it computes the following:
    COVAR_POP(x,y)/(STDDEV_POP(x)*STDDEV_POP(y))
 where neither x nor y is null,
 COVAR_POP is the population covariance,
@@ -94,7 +97,7 @@ POSTHOOK: query: SELECT corr(b, c) FROM covar_tab
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@covar_tab
 #### A masked pattern was here ####
-0.6633880657639323
+0.6633880657639326
 PREHOOK: query: DROP TABLE covar_tab
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@covar_tab
