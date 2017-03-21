@@ -18,12 +18,14 @@ DROP TABLE dest1;
 CREATE TABLE dest1(name STRING) STORED AS TEXTFILE;
 LOAD DATA LOCAL INPATH '../../data/files/kv4.txt' INTO TABLE dest1;
 INSERT INTO dest1 VALUES(NULL);
+CREATE TABLE dest2 STORED AS ORC AS SELECT * FROM dest1;
 
-EXPLAIN SELECT character_length(dest1.name) FROM dest1;
+EXPLAIN SELECT character_length(dest2.name) FROM dest2;
 -- SORT_BEFORE_DIFF
-SELECT character_length(dest1.name) FROM dest1;
+SELECT character_length(dest2.name) FROM dest2;
 
-EXPLAIN SELECT char_length(dest1.name) FROM dest1;
+EXPLAIN SELECT char_length(dest2.name) FROM dest2;
 -- SORT_BEFORE_DIFF
-SELECT char_length(dest1.name) FROM dest1;
+SELECT char_length(dest2.name) FROM dest2;
 DROP TABLE dest1;
+DROP TABLE dest2;

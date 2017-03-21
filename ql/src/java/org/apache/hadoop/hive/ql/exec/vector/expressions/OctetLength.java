@@ -25,8 +25,8 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 
 public class OctetLength extends VectorExpression {
   private static final long serialVersionUID = 1L;
-  private transient int colNum;
-  private transient int outputColumn;
+  private int colNum;
+  private int outputColumn;
 
   public OctetLength(int colNum, int outputColumn) {
     this();

@@ -197,9 +197,20 @@ POSTHOOK: query: INSERT INTO dest1 VALUES(NULL)
 POSTHOOK: type: QUERY
 POSTHOOK: Output: default@dest1
 POSTHOOK: Lineage: dest1.name SIMPLE [(values__tmp__table__1)values__tmp__table__1.FieldSchema(name:tmp_values_col1, type:string, comment:), ]
-PREHOOK: query: EXPLAIN SELECT character_length(dest1.name) FROM dest1
+PREHOOK: query: CREATE TABLE dest2 STORED AS ORC AS SELECT * FROM dest1
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@dest1
+PREHOOK: Output: database:default
+PREHOOK: Output: default@dest2
+POSTHOOK: query: CREATE TABLE dest2 STORED AS ORC AS SELECT * FROM dest1
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@dest1
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@dest2
+POSTHOOK: Lineage: dest2.name SIMPLE [(dest1)dest1.FieldSchema(name:name, type:string, comment:null), ]
+PREHOOK: query: EXPLAIN SELECT character_length(dest2.name) FROM dest2
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN SELECT character_length(dest1.name) FROM dest1
+POSTHOOK: query: EXPLAIN SELECT character_length(dest2.name) FROM dest2
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -210,19 +221,20 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: dest1
-            Statistics: Num rows: 1 Data size: 9 Basic stats: COMPLETE Column stats: NONE
+            alias: dest2
+            Statistics: Num rows: 2 Data size: 90 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: character_length(name) (type: int)
               outputColumnNames: _col0
-              Statistics: Num rows: 1 Data size: 9 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 2 Data size: 90 Basic stats: COMPLETE Column stats: NONE
               File Output Operator
                 compressed: false
-                Statistics: Num rows: 1 Data size: 9 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 2 Data size: 90 Basic stats: COMPLETE Column stats: NONE
                 table:
                     input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+      Execution mode: vectorized
 
   Stage: Stage-0
     Fetch Operator
@@ -230,19 +242,19 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: SELECT character_length(dest1.name) FROM dest1
+PREHOOK: query: SELECT character_length(dest2.name) FROM dest2
 PREHOOK: type: QUERY
-PREHOOK: Input: default@dest1
+PREHOOK: Input: default@dest2
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT character_length(dest1.name) FROM dest1
+POSTHOOK: query: SELECT character_length(dest2.name) FROM dest2
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@dest1
+POSTHOOK: Input: default@dest2
 #### A masked pattern was here ####
 NULL
 2
-PREHOOK: query: EXPLAIN SELECT char_length(dest1.name) FROM dest1
+PREHOOK: query: EXPLAIN SELECT char_length(dest2.name) FROM dest2
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN SELECT char_length(dest1.name) FROM dest1
+POSTHOOK: query: EXPLAIN SELECT char_length(dest2.name) FROM dest2
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -253,19 +265,20 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
-            alias: dest1
-            Statistics: Num rows: 1 Data size: 9 Basic stats: COMPLETE Column stats: NONE
+            alias: dest2
+            Statistics: Num rows: 2 Data size: 90 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: character_length(name) (type: int)
               outputColumnNames: _col0
-              Statistics: Num rows: 1 Data size: 9 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 2 Data size: 90 Basic stats: COMPLETE Column stats: NONE
               File Output Operator
                 compressed: false
-                Statistics: Num rows: 1 Data size: 9 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 2 Data size: 90 Basic stats: COMPLETE Column stats: NONE
                 table:
                     input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+      Execution mode: vectorized
 
   Stage: Stage-0
     Fetch Operator
@@ -273,13 +286,13 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: SELECT char_length(dest1.name) FROM dest1
+PREHOOK: query: SELECT char_length(dest2.name) FROM dest2
 PREHOOK: type: QUERY
-PREHOOK: Input: default@dest1
+PREHOOK: Input: default@dest2
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT char_length(dest1.name) FROM dest1
+POSTHOOK: query: SELECT char_length(dest2.name) FROM dest2
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@dest1
+POSTHOOK: Input: default@dest2
 #### A masked pattern was here ####
 NULL
 2
@@ -291,3 +304,11 @@ POSTHOOK: query: DROP TABLE dest1
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@dest1
 POSTHOOK: Output: default@dest1
+PREHOOK: query: DROP TABLE dest2
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@dest2
+PREHOOK: Output: default@dest2
+POSTHOOK: query: DROP TABLE dest2
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@dest2
+POSTHOOK: Output: default@dest2
