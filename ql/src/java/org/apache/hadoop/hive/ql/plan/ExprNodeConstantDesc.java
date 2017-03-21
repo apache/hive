@@ -22,6 +22,7 @@ import java.io.Serializable;
 import java.util.List;
 
 import org.apache.commons.lang.builder.HashCodeBuilder;
+import org.apache.hadoop.hive.common.StringInternUtils;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.objectinspector.ConstantObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
@@ -67,7 +68,7 @@ public class ExprNodeConstantDesc extends ExprNodeDesc implements Serializable {
 
   public ExprNodeConstantDesc(TypeInfo typeInfo, Object value) {
     super(typeInfo);
-    this.value = value;
+    setValue(value);
   }
 
   public ExprNodeConstantDesc(Object value) {
@@ -77,6 +78,9 @@ public class ExprNodeConstantDesc extends ExprNodeDesc implements Serializable {
 
   public void setValue(Object value) {
     // Kryo setter
+    if (value instanceof String) {
+      value = StringInternUtils.internIfNotNull((String) value);
+    }
     this.value = value;
   }
 
