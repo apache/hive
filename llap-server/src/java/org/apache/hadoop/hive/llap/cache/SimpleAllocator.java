@@ -32,9 +32,10 @@ public final class SimpleAllocator implements Allocator, BuddyAllocatorMXBean {
   private final boolean isDirect;
   private static Field cleanerField;
   static {
-    ByteBuffer tmp = ByteBuffer.allocateDirect(1);
     try {
-      cleanerField = tmp.getClass().getDeclaredField("cleaner");
+      // TODO: To make it work for JDK9 use CleanerUtil from https://issues.apache.org/jira/browse/HADOOP-12760
+      final Class<?> dbClazz = Class.forName("java.nio.DirectByteBuffer");
+      cleanerField = dbClazz.getDeclaredField("cleaner");
       cleanerField.setAccessible(true);
     } catch (Throwable t) {
       LlapIoImpl.LOG.warn("Cannot initialize DirectByteBuffer cleaner", t);
