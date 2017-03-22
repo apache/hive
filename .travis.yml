@@ -35,7 +35,7 @@ cache:
 
 env:
   MAVEN_SKIP_RC=true
-  MAVEN_OPTS="-Xmx2g -XX:MaxPermSize=512M"
+  MAVEN_OPTS="-Xmx2g"
 
 # workaround added: https://github.com/travis-ci/travis-ci/issues/4629
 before_install:

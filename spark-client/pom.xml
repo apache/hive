@@ -184,7 +184,7 @@
           </systemPropertyVariables>
           <redirectTestOutputToFile>${test.redirectToFile}</redirectTestOutputToFile>
           <useFile>${test.redirectToFile}</useFile>
-          <argLine>-Xmx4096m -XX:MaxPermSize=512m</argLine>
+          <argLine>-Xmx4096m</argLine>
         </configuration>
       </plugin>
     </plugins>
