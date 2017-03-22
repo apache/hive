@@ -265,7 +265,11 @@ public class HivePreparedStatement extends HiveStatement implements PreparedStat
    */
 
   public void setBigDecimal(int parameterIndex, BigDecimal x) throws SQLException {
-    this.parameters.put(parameterIndex, x.toString());
+    if (x == null) {
+      setNull(parameterIndex, Types.NULL);
+    } else {
+      this.parameters.put(parameterIndex, x.toString());
+    }
   }
 
   /*
@@ -275,8 +279,12 @@ public class HivePreparedStatement extends HiveStatement implements PreparedStat
    */
 
   public void setBinaryStream(int parameterIndex, InputStream x) throws SQLException {
-    String str = new Scanner(x, "UTF-8").useDelimiter("\\A").next();
-    this.parameters.put(parameterIndex, str);
+    if (x == null) {
+      setNull(parameterIndex, Types.NULL);
+    } else {
+      String str = new Scanner(x, "UTF-8").useDelimiter("\\A").next();
+      this.parameters.put(parameterIndex, str);
+    }
   }
 
   /*
@@ -445,7 +453,11 @@ public class HivePreparedStatement extends HiveStatement implements PreparedStat
    */
 
   public void setDate(int parameterIndex, Date x) throws SQLException {
-    this.parameters.put(parameterIndex, "'" + x.toString() + "'");
+    if (x == null) {
+      setNull(parameterIndex, Types.NULL);
+    } else {
+      this.parameters.put(parameterIndex, "'" + x.toString() + "'");
+    }
   }
 
   /*
@@ -703,8 +715,12 @@ public class HivePreparedStatement extends HiveStatement implements PreparedStat
    */
 
   public void setString(int parameterIndex, String x) throws SQLException {
-     x=x.replace("'", "\\'");
-     this.parameters.put(parameterIndex,"'"+x+"'");
+    if (x == null) {
+      setNull(parameterIndex, Types.NULL);
+    } else {
+      x=x.replace("'", "\\'");
+      this.parameters.put(parameterIndex,"'"+x+"'");
+    }
   }
 
   /*
@@ -737,7 +753,11 @@ public class HivePreparedStatement extends HiveStatement implements PreparedStat
    */
 
   public void setTimestamp(int parameterIndex, Timestamp x) throws SQLException {
-    this.parameters.put(parameterIndex, "'" + x.toString() + "'");
+    if (x == null) {
+      setNull(parameterIndex, Types.NULL);
+    } else {
+      this.parameters.put(parameterIndex, "'" + x.toString() + "'");
+    }
   }
 
   /*
