@@ -95,9 +95,11 @@ STAGE PLANS:
               Statistics: Num rows: 1 Data size: 92 Basic stats: COMPLETE Column stats: NONE
               value expressions: _col0 (type: bigint), _col1 (type: int), _col2 (type: int), _col3 (type: struct<count:bigint,sum:double,input:int>)
       Map Vectorization:
-          enabled: false
-          enabledConditionsNotMet: hive.vectorized.use.vector.serde.deserialize IS false
+          enabled: true
+          enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
           inputFileFormats: org.apache.hadoop.mapred.SequenceFileInputFormat
+          notVectorizedReason: Value expression for REDUCESINK operator: Data type struct<count:bigint,sum:double,input:int> of Column[_col3] not supported
+          vectorized: false
       Reduce Vectorization:
           enabled: false
           enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true
@@ -123,15 +125,28 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
+            TableScan Vectorization:
+                native: true
+                projectedOutputColumns: [0, 1, 2, 3]
             Reduce Output Operator
               key expressions: _col0 (type: bigint)
               sort order: +
+              Reduce Sink Vectorization:
+                  className: VectorReduceSinkOperator
+                  native: false
+                  nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, No TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                  nativeConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false
               Statistics: Num rows: 1 Data size: 92 Basic stats: COMPLETE Column stats: NONE
               value expressions: _col1 (type: int), _col2 (type: int), _col3 (type: double)
+      Execution mode: vectorized
       Map Vectorization:
-          enabled: false
-          enabledConditionsNotMet: hive.vectorized.use.vector.serde.deserialize IS false
+          enabled: true
+          enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
+          groupByVectorOutput: true
           inputFileFormats: org.apache.hadoop.mapred.SequenceFileInputFormat
+          allNative: false
+          usesVectorUDFAdaptor: false
+          vectorized: true
       Reduce Vectorization:
           enabled: false
           enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true

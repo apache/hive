@@ -749,6 +749,7 @@ public class Vectorizer implements PhysicalPlanResolver {
       if (!isSchemaEvolution) {
         enabledConditionsNotMetList.add(
             "Vectorizing tables without Schema Evolution requires " + HiveConf.ConfVars.HIVE_VECTORIZATION_USE_VECTORIZED_INPUT_FILE_FORMAT.varname);
+        return false;
       }
 
       String deserializerClassName = pd.getDeserializerClassName();

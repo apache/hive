@@ -76,12 +76,16 @@ STAGE PLANS:
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: COMPLETE
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
             Map Vectorization:
-                enabled: false
-                enabledConditionsNotMet: hive.vectorized.use.vector.serde.deserialize IS false
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
+                groupByVectorOutput: true
                 inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
         Reducer 2 
             Execution mode: vectorized, llap
             Reduce Vectorization:
@@ -249,12 +253,16 @@ STAGE PLANS:
                       sort order: +
                       Map-reduce partition columns: _col0 (type: string)
                       Statistics: Num rows: 2000 Data size: 368000 Basic stats: COMPLETE Column stats: COMPLETE
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
             Map Vectorization:
-                enabled: false
-                enabledConditionsNotMet: hive.vectorized.use.vector.serde.deserialize IS false
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
+                groupByVectorOutput: true
                 inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
+                allNative: true
+                usesVectorUDFAdaptor: false
+                vectorized: true
         Map 4 
             Map Operator Tree:
                 TableScan
@@ -401,12 +409,16 @@ STAGE PLANS:
                       sort order: +
                       Map-reduce partition columns: _col0 (type: string)
                       Statistics: Num rows: 2000 Data size: 368000 Basic stats: COMPLETE Column stats: COMPLETE
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
             Map Vectorization:
-                enabled: false
-                enabledConditionsNotMet: hive.vectorized.use.vector.serde.deserialize IS false
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
+                groupByVectorOutput: true
                 inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
+                allNative: true
+                usesVectorUDFAdaptor: false
+                vectorized: true
         Map 4 
             Map Operator Tree:
                 TableScan
@@ -554,12 +566,16 @@ STAGE PLANS:
                       Map-reduce partition columns: _col0 (type: string)
                       Statistics: Num rows: 2000 Data size: 736000 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: _col1 (type: string)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
             Map Vectorization:
-                enabled: false
-                enabledConditionsNotMet: hive.vectorized.use.vector.serde.deserialize IS false
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
+                groupByVectorOutput: true
                 inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
+                allNative: true
+                usesVectorUDFAdaptor: false
+                vectorized: true
         Map 5 
             Map Operator Tree:
                 TableScan
@@ -773,12 +789,16 @@ STAGE PLANS:
                       Map-reduce partition columns: _col0 (type: string)
                       Statistics: Num rows: 2000 Data size: 736000 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: _col1 (type: string)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
             Map Vectorization:
-                enabled: false
-                enabledConditionsNotMet: hive.vectorized.use.vector.serde.deserialize IS false
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
+                groupByVectorOutput: true
                 inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
+                allNative: true
+                usesVectorUDFAdaptor: false
+                vectorized: true
         Map 5 
             Map Operator Tree:
                 TableScan
@@ -968,12 +988,16 @@ STAGE PLANS:
                       sort order: ++
                       Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
                       Statistics: Num rows: 2000 Data size: 736000 Basic stats: COMPLETE Column stats: COMPLETE
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
             Map Vectorization:
-                enabled: false
-                enabledConditionsNotMet: hive.vectorized.use.vector.serde.deserialize IS false
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
+                groupByVectorOutput: true
                 inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
+                allNative: true
+                usesVectorUDFAdaptor: false
+                vectorized: true
         Map 4 
             Map Operator Tree:
                 TableScan
@@ -1135,12 +1159,16 @@ STAGE PLANS:
                       sort order: ++
                       Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
                       Statistics: Num rows: 2000 Data size: 736000 Basic stats: COMPLETE Column stats: COMPLETE
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
             Map Vectorization:
-                enabled: false
-                enabledConditionsNotMet: hive.vectorized.use.vector.serde.deserialize IS false
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
+                groupByVectorOutput: true
                 inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
+                allNative: true
+                usesVectorUDFAdaptor: false
+                vectorized: true
         Map 4 
             Map Operator Tree:
                 TableScan
@@ -1283,12 +1311,16 @@ STAGE PLANS:
                       sort order: +
                       Map-reduce partition columns: _col0 (type: string)
                       Statistics: Num rows: 2000 Data size: 368000 Basic stats: COMPLETE Column stats: COMPLETE
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
             Map Vectorization:
-                enabled: false
-                enabledConditionsNotMet: hive.vectorized.use.vector.serde.deserialize IS false
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
+                groupByVectorOutput: true
                 inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
+                allNative: true
+                usesVectorUDFAdaptor: false
+                vectorized: true
         Map 4 
             Map Operator Tree:
                 TableScan
@@ -1435,12 +1467,16 @@ STAGE PLANS:
                       sort order: +
                       Map-reduce partition columns: _col0 (type: string)
                       Statistics: Num rows: 2000 Data size: 368000 Basic stats: COMPLETE Column stats: COMPLETE
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
             Map Vectorization:
-                enabled: false
-                enabledConditionsNotMet: hive.vectorized.use.vector.serde.deserialize IS false
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
+                groupByVectorOutput: true
                 inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
+                allNative: true
+                usesVectorUDFAdaptor: false
+                vectorized: true
         Map 4 
             Map Operator Tree:
                 TableScan
@@ -1581,12 +1617,16 @@ STAGE PLANS:
                       sort order: +
                       Map-reduce partition columns: UDFToDouble(_col0) (type: double)
                       Statistics: Num rows: 2000 Data size: 368000 Basic stats: COMPLETE Column stats: COMPLETE
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
             Map Vectorization:
-                enabled: false
-                enabledConditionsNotMet: hive.vectorized.use.vector.serde.deserialize IS false
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
+                groupByVectorOutput: true
                 inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
+                allNative: true
+                usesVectorUDFAdaptor: true
+                vectorized: true
         Map 4 
             Map Operator Tree:
                 TableScan
@@ -1733,12 +1773,16 @@ STAGE PLANS:
                       sort order: +
                       Map-reduce partition columns: (UDFToDouble(_col0) * 2.0) (type: double)
                       Statistics: Num rows: 2000 Data size: 368000 Basic stats: COMPLETE Column stats: COMPLETE
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
             Map Vectorization:
-                enabled: false
-                enabledConditionsNotMet: hive.vectorized.use.vector.serde.deserialize IS false
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
+                groupByVectorOutput: true
                 inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
+                allNative: true
+                usesVectorUDFAdaptor: true
+                vectorized: true
         Map 4 
             Map Operator Tree:
                 TableScan
@@ -1885,12 +1929,16 @@ STAGE PLANS:
                       sort order: +
                       Map-reduce partition columns: UDFToDouble(_col0) (type: double)
                       Statistics: Num rows: 2000 Data size: 368000 Basic stats: COMPLETE Column stats: COMPLETE
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
             Map Vectorization:
-                enabled: false
-                enabledConditionsNotMet: hive.vectorized.use.vector.serde.deserialize IS false
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
+                groupByVectorOutput: true
                 inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
+                allNative: true
+                usesVectorUDFAdaptor: true
+                vectorized: true
         Map 4 
             Map Operator Tree:
                 TableScan
@@ -2022,12 +2070,16 @@ STAGE PLANS:
                       sort order: +
                       Map-reduce partition columns: (UDFToDouble(_col0) * 2.0) (type: double)
                       Statistics: Num rows: 2000 Data size: 368000 Basic stats: COMPLETE Column stats: COMPLETE
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
             Map Vectorization:
-                enabled: false
-                enabledConditionsNotMet: hive.vectorized.use.vector.serde.deserialize IS false
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
+                groupByVectorOutput: true
                 inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
+                allNative: true
+                usesVectorUDFAdaptor: true
+                vectorized: true
         Map 4 
             Map Operator Tree:
                 TableScan
@@ -2172,12 +2224,16 @@ STAGE PLANS:
                       sort order: +
                       Map-reduce partition columns: UDFToString((UDFToDouble(_col0) * 2.0)) (type: string)
                       Statistics: Num rows: 2000 Data size: 368000 Basic stats: COMPLETE Column stats: COMPLETE
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
             Map Vectorization:
-                enabled: false
-                enabledConditionsNotMet: hive.vectorized.use.vector.serde.deserialize IS false
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
+                groupByVectorOutput: true
                 inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
+                allNative: true
+                usesVectorUDFAdaptor: true
+                vectorized: true
         Map 4 
             Map Operator Tree:
                 TableScan
@@ -2335,12 +2391,16 @@ STAGE PLANS:
                     Reduce Output Operator
                       sort order: 
                       Statistics: Num rows: 1000 Data size: 94000 Basic stats: COMPLETE Column stats: COMPLETE
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
             Map Vectorization:
-                enabled: false
-                enabledConditionsNotMet: hive.vectorized.use.vector.serde.deserialize IS false
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
+                groupByVectorOutput: true
                 inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
+                allNative: true
+                usesVectorUDFAdaptor: false
+                vectorized: true
         Map 4 
             Map Operator Tree:
                 TableScan
@@ -2359,12 +2419,16 @@ STAGE PLANS:
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: COMPLETE
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
             Map Vectorization:
-                enabled: false
-                enabledConditionsNotMet: hive.vectorized.use.vector.serde.deserialize IS false
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
+                groupByVectorOutput: true
                 inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
         Reducer 2 
             Execution mode: llap
             Reduce Operator Tree:
@@ -2495,12 +2559,16 @@ STAGE PLANS:
                       sort order: 
                       Statistics: Num rows: 2000 Data size: 736000 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: _col0 (type: string), _col1 (type: string)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
             Map Vectorization:
-                enabled: false
-                enabledConditionsNotMet: hive.vectorized.use.vector.serde.deserialize IS false
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
+                groupByVectorOutput: true
                 inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
+                allNative: true
+                usesVectorUDFAdaptor: false
+                vectorized: true
         Map 4 
             Map Operator Tree:
                 TableScan
@@ -2637,12 +2705,16 @@ STAGE PLANS:
                       sort order: ++
                       Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
                       Statistics: Num rows: 2000 Data size: 736000 Basic stats: COMPLETE Column stats: COMPLETE
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
             Map Vectorization:
-                enabled: false
-                enabledConditionsNotMet: hive.vectorized.use.vector.serde.deserialize IS false
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
+                groupByVectorOutput: true
                 inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
+                allNative: true
+                usesVectorUDFAdaptor: false
+                vectorized: true
         Map 4 
             Map Operator Tree:
                 TableScan
@@ -2804,12 +2876,16 @@ STAGE PLANS:
                       sort order: +
                       Map-reduce partition columns: _col0 (type: string)
                       Statistics: Num rows: 2000 Data size: 368000 Basic stats: COMPLETE Column stats: COMPLETE
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
             Map Vectorization:
-                enabled: false
-                enabledConditionsNotMet: hive.vectorized.use.vector.serde.deserialize IS false
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
+                groupByVectorOutput: true
                 inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
+                allNative: true
+                usesVectorUDFAdaptor: false
+                vectorized: true
         Map 4 
             Map Operator Tree:
                 TableScan
@@ -2979,12 +3055,16 @@ STAGE PLANS:
                       sort order: +
                       Map-reduce partition columns: _col0 (type: string)
                       Statistics: Num rows: 2000 Data size: 368000 Basic stats: COMPLETE Column stats: COMPLETE
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
             Map Vectorization:
-                enabled: false
-                enabledConditionsNotMet: hive.vectorized.use.vector.serde.deserialize IS false
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
+                groupByVectorOutput: true
                 inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
+                allNative: true
+                usesVectorUDFAdaptor: false
+                vectorized: true
         Reducer 2 
             Execution mode: llap
             Reduce Operator Tree:
@@ -3068,12 +3148,16 @@ STAGE PLANS:
                       sort order: +
                       Map-reduce partition columns: _col0 (type: string)
                       Statistics: Num rows: 2000 Data size: 368000 Basic stats: COMPLETE Column stats: COMPLETE
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
             Map Vectorization:
-                enabled: false
-                enabledConditionsNotMet: hive.vectorized.use.vector.serde.deserialize IS false
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
+                groupByVectorOutput: true
                 inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
+                allNative: true
+                usesVectorUDFAdaptor: false
+                vectorized: true
         Map 4 
             Map Operator Tree:
                 TableScan
@@ -3204,12 +3288,16 @@ STAGE PLANS:
                       Map-reduce partition columns: _col0 (type: string)
                       Statistics: Num rows: 1000 Data size: 368000 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: _col1 (type: string)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
             Map Vectorization:
-                enabled: false
-                enabledConditionsNotMet: hive.vectorized.use.vector.serde.deserialize IS false
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
+                groupByVectorOutput: true
                 inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
+                allNative: true
+                usesVectorUDFAdaptor: false
+                vectorized: true
         Map 5 
             Map Operator Tree:
                 TableScan
@@ -3638,12 +3726,16 @@ STAGE PLANS:
                       sort order: +
                       Map-reduce partition columns: _col0 (type: string)
                       Statistics: Num rows: 2000 Data size: 368000 Basic stats: COMPLETE Column stats: COMPLETE
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
             Map Vectorization:
-                enabled: false
-                enabledConditionsNotMet: hive.vectorized.use.vector.serde.deserialize IS false
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
+                groupByVectorOutput: true
                 inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
+                allNative: true
+                usesVectorUDFAdaptor: false
+                vectorized: true
         Map 4 
             Map Operator Tree:
                 TableScan
@@ -3662,12 +3754,16 @@ STAGE PLANS:
                         sort order: 
                         Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col0 (type: string)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
             Map Vectorization:
-                enabled: false
-                enabledConditionsNotMet: hive.vectorized.use.vector.serde.deserialize IS false
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
+                groupByVectorOutput: true
                 inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
         Map 8 
             Map Operator Tree:
                 TableScan
@@ -3686,12 +3782,16 @@ STAGE PLANS:
                         sort order: 
                         Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col0 (type: string)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
             Map Vectorization:
-                enabled: false
-                enabledConditionsNotMet: hive.vectorized.use.vector.serde.deserialize IS false
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
+                groupByVectorOutput: true
                 inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
         Reducer 2 
             Execution mode: llap
             Reduce Operator Tree:
@@ -3889,12 +3989,16 @@ STAGE PLANS:
                       sort order: +
                       Map-reduce partition columns: _col0 (type: string)
                       Statistics: Num rows: 2000 Data size: 368000 Basic stats: COMPLETE Column stats: COMPLETE
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
             Map Vectorization:
-                enabled: false
-                enabledConditionsNotMet: hive.vectorized.use.vector.serde.deserialize IS false
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
+                groupByVectorOutput: true
                 inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
+                allNative: true
+                usesVectorUDFAdaptor: false
+                vectorized: true
         Map 4 
             Map Operator Tree:
                 TableScan
@@ -3913,12 +4017,16 @@ STAGE PLANS:
                         sort order: 
                         Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col0 (type: string)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
             Map Vectorization:
-                enabled: false
-                enabledConditionsNotMet: hive.vectorized.use.vector.serde.deserialize IS false
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
+                groupByVectorOutput: true
                 inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
         Map 8 
             Map Operator Tree:
                 TableScan
@@ -3937,12 +4045,16 @@ STAGE PLANS:
                         sort order: 
                         Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col0 (type: string)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
             Map Vectorization:
-                enabled: false
-                enabledConditionsNotMet: hive.vectorized.use.vector.serde.deserialize IS false
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
+                groupByVectorOutput: true
                 inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
         Reducer 2 
             Execution mode: llap
             Reduce Operator Tree:
@@ -4144,12 +4256,16 @@ STAGE PLANS:
                       sort order: +
                       Map-reduce partition columns: _col0 (type: string)
                       Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: COMPLETE
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
             Map Vectorization:
-                enabled: false
-                enabledConditionsNotMet: hive.vectorized.use.vector.serde.deserialize IS false
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
+                groupByVectorOutput: true
                 inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
         Map 10 
             Map Operator Tree:
                 TableScan
@@ -4168,12 +4284,16 @@ STAGE PLANS:
                         sort order: 
                         Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col0 (type: string)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
             Map Vectorization:
-                enabled: false
-                enabledConditionsNotMet: hive.vectorized.use.vector.serde.deserialize IS false
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
+                groupByVectorOutput: true
                 inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
         Map 5 
             Map Operator Tree:
                 TableScan
@@ -4190,12 +4310,16 @@ STAGE PLANS:
                       sort order: +
                       Map-reduce partition columns: _col0 (type: string)
                       Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: COMPLETE
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
             Map Vectorization:
-                enabled: false
-                enabledConditionsNotMet: hive.vectorized.use.vector.serde.deserialize IS false
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
+                groupByVectorOutput: true
                 inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
         Map 7 
             Map Operator Tree:
                 TableScan
@@ -4214,12 +4338,16 @@ STAGE PLANS:
                         sort order: 
                         Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col0 (type: string)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
             Map Vectorization:
-                enabled: false
-                enabledConditionsNotMet: hive.vectorized.use.vector.serde.deserialize IS false
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
+                groupByVectorOutput: true
                 inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
         Reducer 11 
             Execution mode: vectorized, llap
             Reduce Vectorization:
@@ -4474,12 +4602,16 @@ STAGE PLANS:
                           sort order: 
                           Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                           value expressions: _col0 (type: bigint)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
             Map Vectorization:
-                enabled: false
-                enabledConditionsNotMet: hive.vectorized.use.vector.serde.deserialize IS false
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
+                groupByVectorOutput: true
                 inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
         Map 3 
             Map Operator Tree:
                 TableScan
@@ -4644,12 +4776,16 @@ STAGE PLANS:
                             sort order: 
                             Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                             value expressions: _col0 (type: bigint)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
             Map Vectorization:
-                enabled: false
-                enabledConditionsNotMet: hive.vectorized.use.vector.serde.deserialize IS false
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
+                groupByVectorOutput: true
                 inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
         Map 3 
             Map Operator Tree:
                 TableScan
@@ -4847,12 +4983,16 @@ STAGE PLANS:
                           sort order: 
                           Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                           value expressions: _col0 (type: bigint)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
             Map Vectorization:
-                enabled: false
-                enabledConditionsNotMet: hive.vectorized.use.vector.serde.deserialize IS false
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
+                groupByVectorOutput: true
                 inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
         Map 3 
             Map Operator Tree:
                 TableScan
@@ -5019,12 +5159,16 @@ STAGE PLANS:
                           sort order: 
                           Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                           value expressions: _col0 (type: bigint)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
             Map Vectorization:
-                enabled: false
-                enabledConditionsNotMet: hive.vectorized.use.vector.serde.deserialize IS false
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
+                groupByVectorOutput: true
                 inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
         Map 3 
             Map Operator Tree:
                 TableScan
@@ -5165,12 +5309,16 @@ STAGE PLANS:
                           sort order: 
                           Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                           value expressions: _col0 (type: bigint)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
             Map Vectorization:
-                enabled: false
-                enabledConditionsNotMet: hive.vectorized.use.vector.serde.deserialize IS false
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
+                groupByVectorOutput: true
                 inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: true
+                vectorized: true
         Map 3 
             Map Operator Tree:
                 TableScan
@@ -5311,12 +5459,16 @@ STAGE PLANS:
                           sort order: 
                           Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                           value expressions: _col0 (type: bigint)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
             Map Vectorization:
-                enabled: false
-                enabledConditionsNotMet: hive.vectorized.use.vector.serde.deserialize IS false
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
+                groupByVectorOutput: true
                 inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: true
+                vectorized: true
         Map 3 
             Map Operator Tree:
                 TableScan
@@ -5454,12 +5606,16 @@ STAGE PLANS:
                     Reduce Output Operator
                       sort order: 
                       Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
             Map Vectorization:
-                enabled: false
-                enabledConditionsNotMet: hive.vectorized.use.vector.serde.deserialize IS false
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
+                groupByVectorOutput: true
                 inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
+                allNative: true
+                usesVectorUDFAdaptor: false
+                vectorized: true
         Map 2 
             Map Operator Tree:
                 TableScan
@@ -5478,12 +5634,16 @@ STAGE PLANS:
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
             Map Vectorization:
-                enabled: false
-                enabledConditionsNotMet: hive.vectorized.use.vector.serde.deserialize IS false
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
+                groupByVectorOutput: true
                 inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
         Reducer 3 
             Execution mode: vectorized, llap
             Reduce Vectorization:
@@ -5624,12 +5784,16 @@ STAGE PLANS:
                           sort order: 
                           Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                           value expressions: _col0 (type: bigint)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
             Map Vectorization:
-                enabled: false
-                enabledConditionsNotMet: hive.vectorized.use.vector.serde.deserialize IS false
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
+                groupByVectorOutput: true
                 inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
         Map 3 
             Map Operator Tree:
                 TableScan
@@ -5778,12 +5942,16 @@ STAGE PLANS:
                       sort order: +
                       Map-reduce partition columns: _col0 (type: string)
                       Statistics: Num rows: 2000 Data size: 368000 Basic stats: COMPLETE Column stats: COMPLETE
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
             Map Vectorization:
-                enabled: false
-                enabledConditionsNotMet: hive.vectorized.use.vector.serde.deserialize IS false
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
+                groupByVectorOutput: true
                 inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
+                allNative: true
+                usesVectorUDFAdaptor: false
+                vectorized: true
         Reducer 2 
             Execution mode: vectorized, llap
             Reduce Vectorization:
@@ -5848,12 +6016,16 @@ STAGE PLANS:
                       sort order: +
                       Map-reduce partition columns: _col0 (type: string)
                       Statistics: Num rows: 2000 Data size: 368000 Basic stats: COMPLETE Column stats: COMPLETE
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
             Map Vectorization:
-                enabled: false
-                enabledConditionsNotMet: hive.vectorized.use.vector.serde.deserialize IS false
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
+                groupByVectorOutput: true
                 inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
+                allNative: true
+                usesVectorUDFAdaptor: false
+                vectorized: true
         Map 2 
             Map Operator Tree:
                 TableScan
@@ -5984,12 +6156,16 @@ STAGE PLANS:
                             sort order: 
                             Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                             value expressions: _col0 (type: bigint)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
             Map Vectorization:
-                enabled: false
-                enabledConditionsNotMet: hive.vectorized.use.vector.serde.deserialize IS false
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
+                groupByVectorOutput: true
                 inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
         Map 3 
             Map Operator Tree:
                 TableScan
@@ -6335,12 +6511,16 @@ STAGE PLANS:
                       sort order: +
                       Map-reduce partition columns: _col0 (type: string)
                       Statistics: Num rows: 2000 Data size: 368000 Basic stats: COMPLETE Column stats: COMPLETE
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
             Map Vectorization:
-                enabled: false
-                enabledConditionsNotMet: hive.vectorized.use.vector.serde.deserialize IS false
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
+                groupByVectorOutput: true
                 inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
+                allNative: true
+                usesVectorUDFAdaptor: false
+                vectorized: true
         Map 2 
             Map Operator Tree:
                 TableScan
@@ -6359,12 +6539,16 @@ STAGE PLANS:
                         sort order: 
                         Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col0 (type: string)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
             Map Vectorization:
-                enabled: false
-                enabledConditionsNotMet: hive.vectorized.use.vector.serde.deserialize IS false
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
+                groupByVectorOutput: true
                 inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
         Map 7 
             Map Operator Tree:
                 TableScan
@@ -6383,12 +6567,16 @@ STAGE PLANS:
                         sort order: 
                         Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col0 (type: string)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
             Map Vectorization:
-                enabled: false
-                enabledConditionsNotMet: hive.vectorized.use.vector.serde.deserialize IS false
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
+                groupByVectorOutput: true
                 inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
         Reducer 3 
             Execution mode: vectorized, llap
             Reduce Vectorization:

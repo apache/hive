@@ -157,15 +157,28 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
+            TableScan Vectorization:
+                native: true
+                projectedOutputColumns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]
             Reduce Output Operator
               key expressions: _col0 (type: boolean), _col1 (type: tinyint), _col2 (type: timestamp), _col3 (type: float), _col4 (type: string), _col5 (type: tinyint), _col6 (type: tinyint), _col7 (type: tinyint), _col8 (type: double), _col9 (type: double), _col10 (type: double), _col11 (type: float), _col12 (type: double), _col13 (type: double), _col14 (type: double), _col15 (type: decimal(7,3)), _col16 (type: double), _col17 (type: double), _col18 (type: float), _col19 (type: double), _col20 (type: tinyint)
               sort order: +++++++++++++++++++++
+              Reduce Sink Vectorization:
+                  className: VectorReduceSinkOperator
+                  native: false
+                  nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                  nativeConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false, No TopN IS false
               Statistics: Num rows: 1365 Data size: 293479 Basic stats: COMPLETE Column stats: NONE
               TopN Hash Memory Usage: 0.1
+      Execution mode: vectorized
       Map Vectorization:
-          enabled: false
-          enabledConditionsNotMet: hive.vectorized.use.vector.serde.deserialize IS false
+          enabled: true
+          enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
+          groupByVectorOutput: true
           inputFileFormats: org.apache.hadoop.mapred.SequenceFileInputFormat
+          allNative: false
+          usesVectorUDFAdaptor: false
+          vectorized: true
       Reduce Vectorization:
           enabled: false
           enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true
@@ -459,15 +472,28 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
+            TableScan Vectorization:
+                native: true
+                projectedOutputColumns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]
             Reduce Output Operator
               key expressions: _col0 (type: boolean), _col1 (type: tinyint), _col2 (type: timestamp), _col3 (type: float), _col4 (type: string), _col5 (type: tinyint), _col6 (type: tinyint), _col7 (type: tinyint), _col8 (type: double), _col9 (type: double), _col10 (type: double), _col11 (type: float), _col12 (type: double), _col13 (type: double), _col14 (type: double), _col15 (type: decimal(7,3)), _col16 (type: double), _col17 (type: double), _col18 (type: float), _col19 (type: double), _col20 (type: tinyint)
               sort order: +++++++++++++++++++++
+              Reduce Sink Vectorization:
+                  className: VectorReduceSinkOperator
+                  native: false
+                  nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                  nativeConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false, No TopN IS false
               Statistics: Num rows: 1365 Data size: 293479 Basic stats: COMPLETE Column stats: NONE
               TopN Hash Memory Usage: 0.1
+      Execution mode: vectorized
       Map Vectorization:
-          enabled: false
-          enabledConditionsNotMet: hive.vectorized.use.vector.serde.deserialize IS false
+          enabled: true
+          enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
+          groupByVectorOutput: true
           inputFileFormats: org.apache.hadoop.mapred.SequenceFileInputFormat
+          allNative: false
+          usesVectorUDFAdaptor: false
+          vectorized: true
       Reduce Vectorization:
           enabled: false
           enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true

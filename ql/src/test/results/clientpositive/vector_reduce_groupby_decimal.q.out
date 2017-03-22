@@ -114,16 +114,29 @@ STAGE PLANS:
     Map Reduce
       Map Operator Tree:
           TableScan
+            TableScan Vectorization:
+                native: true
+                projectedOutputColumns: [0, 1, 2, 3, 4]
             Reduce Output Operator
               key expressions: _col0 (type: int), _col1 (type: double), _col2 (type: decimal(20,10)), _col3 (type: decimal(23,14))
               sort order: ++++
+              Reduce Sink Vectorization:
+                  className: VectorReduceSinkOperator
+                  native: false
+                  nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                  nativeConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false, No TopN IS false
               Statistics: Num rows: 3051 Data size: 720036 Basic stats: COMPLETE Column stats: NONE
               TopN Hash Memory Usage: 0.1
               value expressions: _col4 (type: decimal(20,10))
+      Execution mode: vectorized
       Map Vectorization:
-          enabled: false
-          enabledConditionsNotMet: hive.vectorized.use.vector.serde.deserialize IS false
+          enabled: true
+          enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
+          groupByVectorOutput: true
           inputFileFormats: org.apache.hadoop.mapred.SequenceFileInputFormat
+          allNative: false
+          usesVectorUDFAdaptor: false
+          vectorized: true
       Reduce Vectorization:
           enabled: false
           enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true
