@@ -1375,11 +1375,6 @@ public class Driver implements CommandProcessor {
       LOG.debug("Waiting to acquire compile lock: " + command);
     }
 
-    OperationLog ol = OperationLog.getCurrentOperationLog();
-    if (ol != null) {
-      ol.writeOperationLog(LoggingLevel.EXECUTION, "Waiting to acquire compile lock.\n");
-    }
-
     if (maxCompileLockWaitTime > 0) {
       try {
         if(!compileLock.tryLock(maxCompileLockWaitTime, TimeUnit.SECONDS)) {
@@ -1399,9 +1394,6 @@ public class Driver implements CommandProcessor {
     }
 
     LOG.debug(lockAcquiredMsg);
-    if (ol != null) {
-        ol.writeOperationLog(LoggingLevel.EXECUTION, lockAcquiredMsg + "\n");
-    }
     return compileLock;
   }
 
@@ -2094,13 +2086,6 @@ public class Driver implements CommandProcessor {
     }
     String warning = HiveConf.generateMrDeprecationWarning();
     LOG.warn(warning);
-    warning = "WARNING: " + warning;
-    console.printInfo(warning);
-    // Propagate warning to beeline via operation log.
-    OperationLog ol = OperationLog.getCurrentOperationLog();
-    if (ol != null) {
-      ol.writeOperationLog(LoggingLevel.EXECUTION, warning + "\n");
-    }
   }
 
   private void setErrorMsgAndDetail(int exitVal, Throwable downstreamError, Task tsk) {
@@ -2175,7 +2160,6 @@ public class Driver implements CommandProcessor {
       if (LOG.isInfoEnabled()){
         LOG.info("Starting task [" + tsk + "] in parallel");
       }
-      tskRun.setOperationLog(OperationLog.getCurrentOperationLog());
       tskRun.start();
     } else {
       if (LOG.isInfoEnabled()){

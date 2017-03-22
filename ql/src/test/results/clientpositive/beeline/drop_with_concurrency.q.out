@@ -9,56 +9,56 @@ No rows affected
 No rows affected 
 >>>  
 >>>  drop table if exists drop_with_concurrency_1;
-Compiling commandqueryId=(!!{queryId}!!): drop table if exists drop_with_concurrency_1
-Semantic Analysis Completed
-Returning Hive schema: Schema(fieldSchemas:null, properties:null)
-Completed compiling commandqueryId=(!!{queryId}!!); Time taken: !!ELIDED!! seconds
-Executing commandqueryId=(!!{queryId}!!): drop table if exists drop_with_concurrency_1
-PREHOOK: query: drop table if exists drop_with_concurrency_1
-PREHOOK: type: DROPTABLE
-Starting task [Stage-0:DDL] in serial mode
-POSTHOOK: query: drop table if exists drop_with_concurrency_1
-POSTHOOK: type: DROPTABLE
-Completed executing commandqueryId=(!!{queryId}!!); Time taken: !!ELIDED!! seconds
-OK
-Shutting down query drop table if exists drop_with_concurrency_1
+DEBUG : INFO  : Compiling commandqueryId=(!!{queryId}!!): drop table if exists drop_with_concurrency_1
+INFO  : Semantic Analysis Completed
+INFO  : Returning Hive schema: Schema(fieldSchemas:null, properties:null)
+INFO  : Completed compiling commandqueryId=(!!{queryId}!!); Time taken: !!ELIDED!! seconds
+INFO  : Executing commandqueryId=(!!{queryId}!!): drop table if exists drop_with_concurrency_1
+ERROR : PREHOOK: query: drop table if exists drop_with_concurrency_1
+ERROR : PREHOOK: type: DROPTABLE
+INFO  : Starting task [Stage-0:DDL] in serial mode
+ERROR : POSTHOOK: query: drop table if exists drop_with_concurrency_1
+ERROR : POSTHOOK: type: DROPTABLE
+INFO  : Completed executing commandqueryId=(!!{queryId}!!); Time taken: !!ELIDED!! seconds
+INFO  : OK
+DEBUG : Shutting down query drop table if exists drop_with_concurrency_1
 No rows affected 
 >>>  create table drop_with_concurrency_1 (c1 int);
-Compiling commandqueryId=(!!{queryId}!!): create table drop_with_concurrency_1 (c1 int)
-Semantic Analysis Completed
-Returning Hive schema: Schema(fieldSchemas:null, properties:null)
-Completed compiling commandqueryId=(!!{queryId}!!); Time taken: !!ELIDED!! seconds
-Executing commandqueryId=(!!{queryId}!!): create table drop_with_concurrency_1 (c1 int)
-PREHOOK: query: create table drop_with_concurrency_1 (c1 int)
-PREHOOK: type: CREATETABLE
-PREHOOK: Output: database:drop_with_concurrency
-PREHOOK: Output: drop_with_concurrency@drop_with_concurrency_1
-Starting task [Stage-0:DDL] in serial mode
-POSTHOOK: query: create table drop_with_concurrency_1 (c1 int)
-POSTHOOK: type: CREATETABLE
-POSTHOOK: Output: database:drop_with_concurrency
-POSTHOOK: Output: drop_with_concurrency@drop_with_concurrency_1
-Completed executing commandqueryId=(!!{queryId}!!); Time taken: !!ELIDED!! seconds
-OK
-Shutting down query create table drop_with_concurrency_1 (c1 int)
+DEBUG : INFO  : Compiling commandqueryId=(!!{queryId}!!): create table drop_with_concurrency_1 (c1 int)
+INFO  : Semantic Analysis Completed
+INFO  : Returning Hive schema: Schema(fieldSchemas:null, properties:null)
+INFO  : Completed compiling commandqueryId=(!!{queryId}!!); Time taken: !!ELIDED!! seconds
+INFO  : Executing commandqueryId=(!!{queryId}!!): create table drop_with_concurrency_1 (c1 int)
+ERROR : PREHOOK: query: create table drop_with_concurrency_1 (c1 int)
+ERROR : PREHOOK: type: CREATETABLE
+ERROR : PREHOOK: Output: database:drop_with_concurrency
+ERROR : PREHOOK: Output: drop_with_concurrency@drop_with_concurrency_1
+INFO  : Starting task [Stage-0:DDL] in serial mode
+ERROR : POSTHOOK: query: create table drop_with_concurrency_1 (c1 int)
+ERROR : POSTHOOK: type: CREATETABLE
+ERROR : POSTHOOK: Output: database:drop_with_concurrency
+ERROR : POSTHOOK: Output: drop_with_concurrency@drop_with_concurrency_1
+INFO  : Completed executing commandqueryId=(!!{queryId}!!); Time taken: !!ELIDED!! seconds
+INFO  : OK
+DEBUG : Shutting down query create table drop_with_concurrency_1 (c1 int)
 No rows affected 
 >>>  drop table drop_with_concurrency_1;
-Compiling commandqueryId=(!!{queryId}!!): drop table drop_with_concurrency_1
-Semantic Analysis Completed
-Returning Hive schema: Schema(fieldSchemas:null, properties:null)
-Completed compiling commandqueryId=(!!{queryId}!!); Time taken: !!ELIDED!! seconds
-Executing commandqueryId=(!!{queryId}!!): drop table drop_with_concurrency_1
-PREHOOK: query: drop table drop_with_concurrency_1
-PREHOOK: type: DROPTABLE
-PREHOOK: Input: drop_with_concurrency@drop_with_concurrency_1
-PREHOOK: Output: drop_with_concurrency@drop_with_concurrency_1
-Starting task [Stage-0:DDL] in serial mode
-POSTHOOK: query: drop table drop_with_concurrency_1
-POSTHOOK: type: DROPTABLE
-POSTHOOK: Input: drop_with_concurrency@drop_with_concurrency_1
-POSTHOOK: Output: drop_with_concurrency@drop_with_concurrency_1
-Completed executing commandqueryId=(!!{queryId}!!); Time taken: !!ELIDED!! seconds
-OK
-Shutting down query drop table drop_with_concurrency_1
+DEBUG : INFO  : Compiling commandqueryId=(!!{queryId}!!): drop table drop_with_concurrency_1
+INFO  : Semantic Analysis Completed
+INFO  : Returning Hive schema: Schema(fieldSchemas:null, properties:null)
+INFO  : Completed compiling commandqueryId=(!!{queryId}!!); Time taken: !!ELIDED!! seconds
+INFO  : Executing commandqueryId=(!!{queryId}!!): drop table drop_with_concurrency_1
+ERROR : PREHOOK: query: drop table drop_with_concurrency_1
+ERROR : PREHOOK: type: DROPTABLE
+ERROR : PREHOOK: Input: drop_with_concurrency@drop_with_concurrency_1
+ERROR : PREHOOK: Output: drop_with_concurrency@drop_with_concurrency_1
+INFO  : Starting task [Stage-0:DDL] in serial mode
+ERROR : POSTHOOK: query: drop table drop_with_concurrency_1
+ERROR : POSTHOOK: type: DROPTABLE
+ERROR : POSTHOOK: Input: drop_with_concurrency@drop_with_concurrency_1
+ERROR : POSTHOOK: Output: drop_with_concurrency@drop_with_concurrency_1
+INFO  : Completed executing commandqueryId=(!!{queryId}!!); Time taken: !!ELIDED!! seconds
+INFO  : OK
+DEBUG : Shutting down query drop table drop_with_concurrency_1
 No rows affected 
 >>>  !record

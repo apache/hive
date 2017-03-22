@@ -68,6 +68,7 @@ import org.apache.hadoop.hive.ql.io.HiveFileFormatUtils;
 import org.apache.hadoop.hive.ql.io.HiveKey;
 import org.apache.hadoop.hive.ql.io.HiveOutputFormatImpl;
 import org.apache.hadoop.hive.ql.io.IOPrepareCache;
+import org.apache.hadoop.hive.ql.log.LogDivertAppender;
 import org.apache.hadoop.hive.ql.log.NullAppender;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.FetchWork;
@@ -632,6 +633,7 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
   private static void setupChildLog4j(Configuration conf) {
     try {
       LogUtils.initHiveExecLog4j();
+      LogDivertAppender.registerRoutingAppender(conf);
     } catch (LogInitializationException e) {
       System.err.println(e.getMessage());
     }
@@ -702,6 +704,8 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
       HiveConf.setVar(conf, HiveConf.ConfVars.HIVEQUERYID, queryId);
     }
     System.setProperty(HiveConf.ConfVars.HIVEQUERYID.toString(), queryId);
+
+    LogUtils.registerLoggingContext(conf);
 
     if (noLog) {
       // If started from main(), and noLog is on, we should not output

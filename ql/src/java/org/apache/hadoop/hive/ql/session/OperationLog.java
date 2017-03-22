@@ -39,10 +39,6 @@ public class OperationLog {
   private final LogFile logFile;
   private LoggingLevel opLoggingLevel = LoggingLevel.UNKNOWN;
 
-  public PrintStream getPrintStream() {
-    return logFile.getPrintStream();
-  }
-
   public enum LoggingLevel {
     NONE, EXECUTION, PERFORMANCE, VERBOSE, UNKNOWN
   }
@@ -76,47 +72,6 @@ public class OperationLog {
   }
 
   /**
-   * Singleton OperationLog object per thread.
-   */
-  private static final ThreadLocal<OperationLog> THREAD_LOCAL_OPERATION_LOG = new
-      ThreadLocal<OperationLog>() {
-    @Override
-    protected OperationLog initialValue() {
-      return null;
-    }
-  };
-
-  public static void setCurrentOperationLog(OperationLog operationLog) {
-    THREAD_LOCAL_OPERATION_LOG.set(operationLog);
-  }
-
-  public static OperationLog getCurrentOperationLog() {
-    return THREAD_LOCAL_OPERATION_LOG.get();
-  }
-
-  public static void removeCurrentOperationLog() {
-    THREAD_LOCAL_OPERATION_LOG.remove();
-  }
-
-  /**
-   * Write operation execution logs into log file
-   * @param operationLogMessage one line of log emitted from log4j
-   */
-  public void writeOperationLog(String operationLogMessage) {
-    logFile.write(operationLogMessage);
-  }
-
-  /**
-   * Write operation execution logs into log file
-   * @param operationLogMessage one line of log emitted from log4j
-   */
-  public void writeOperationLog(LoggingLevel level, String operationLogMessage) {
-    if (opLoggingLevel.compareTo(level) < 0) return;
-    logFile.write(operationLogMessage);
-  }
-
-
-  /**
    * Read operation execution logs from log file
    * @param isFetchFirst true if the Enum FetchOrientation value is Fetch_First
    * @param maxRows the max number of fetched lines from log
@@ -136,24 +91,16 @@ public class OperationLog {
   }
 
   /**
-   * Wrapper for read/write the operation log file
+   * Wrapper for read the operation log file
    */
   private class LogFile {
     private final File file;
     private BufferedReader in;
-    private final PrintStream out;
     private volatile boolean isRemoved;
 
     LogFile(File file) throws FileNotFoundException {
       this.file = file;
-      in = new BufferedReader(new InputStreamReader(new FileInputStream(file)));
-      out = new PrintStream(new FileOutputStream(file));
       isRemoved = false;
-    }
-
-    synchronized void write(String msg) {
-      // write log to the file
-      out.print(msg);
     }
 
     synchronized List<String> read(boolean isFetchFirst, long maxRows)
@@ -170,9 +117,6 @@ public class OperationLog {
       try {
         if (in != null) {
           in.close();
-        }
-        if (out != null) {
-          out.close();
         }
         if (!isRemoved) {
           FileUtils.forceDelete(file);
@@ -195,13 +139,7 @@ public class OperationLog {
         try {
           in = new BufferedReader(new InputStreamReader(new FileInputStream(file)));
         } catch (FileNotFoundException e) {
-          if (isRemoved) {
-            throw new SQLException("The operation has been closed and its log file " +
-                file.getAbsolutePath() + " has been removed.", e);
-          } else {
-            throw new SQLException("Operation Log file " + file.getAbsolutePath() +
-                " is not found.", e);
-          }
+          return new ArrayList<String>();
         }
       }
 
@@ -226,10 +164,6 @@ public class OperationLog {
         }
       }
       return logs;
-    }
-
-    public PrintStream getPrintStream() {
-      return out;
     }
   }
 }

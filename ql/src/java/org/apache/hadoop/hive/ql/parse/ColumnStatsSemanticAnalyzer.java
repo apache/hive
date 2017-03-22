@@ -337,11 +337,6 @@ public class ColumnStatsSemanticAnalyzer extends SemanticAnalyzer {
         + " is passed for " + colName + ".";
     warning = "WARNING: " + warning;
     console.printInfo(warning);
-    // Propagate warning to beeline via operation log.
-    OperationLog ol = OperationLog.getCurrentOperationLog();
-    if (ol != null) {
-      ol.writeOperationLog(LoggingLevel.EXECUTION, warning + "\n");
-    }
   }
 
   @Override

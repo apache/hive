@@ -24,9 +24,11 @@ import java.net.URL;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.log4j.MDC;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.core.config.Configurator;
 import org.apache.logging.log4j.core.impl.Log4jContextFactory;
+import org.apache.logging.log4j.spi.DefaultThreadContextMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -46,6 +48,13 @@ public class LogUtils {
    */
   private static final String KEY_TO_MASK_WITH = "password";
   private static final String MASKED_VALUE = "###_MASKED_###";
+
+  /**
+   * Constants of the key strings for the logging ThreadContext.
+   */
+  public static final String SESSIONID_LOG_KEY = "sessionId";
+  public static final String QUERYID_LOG_KEY = "queryId";
+  public static final String OPERATIONLOG_LEVEL_KEY = "operationLogLevel";
 
   @SuppressWarnings("serial")
   public static class LogInitializationException extends Exception {
@@ -109,6 +118,8 @@ public class LogUtils {
           System.setProperty(HiveConf.ConfVars.HIVEQUERYID.toString(), queryId);
         }
         final boolean async = checkAndSetAsyncLogging(conf);
+        // required for MDC based routing appender so that child threads can inherit the MDC context
+        System.setProperty(DefaultThreadContextMap.INHERITABLE_MAP, "true");
         Configurator.initialize(null, log4jFileName);
         logConfigLocation(conf);
         return "Logging initialized using configuration in " + log4jConfigFile + " Async: " + async;
@@ -151,6 +162,7 @@ public class LogUtils {
     }
     if (hive_l4j != null) {
       final boolean async = checkAndSetAsyncLogging(conf);
+      System.setProperty(DefaultThreadContextMap.INHERITABLE_MAP, "true");
       Configurator.initialize(null, hive_l4j.toString());
       logConfigLocation(conf);
       return (logMessage + "\n" + "Logging initialized using configuration in " + hive_l4j +
@@ -191,5 +203,23 @@ public class LogUtils {
       }
     }
     return value;
+  }
+
+  /**
+   * Register logging context so that log system can print QueryId, SessionId, etc for each message
+   */
+  public static void registerLoggingContext(Configuration conf) {
+    MDC.put(SESSIONID_LOG_KEY, HiveConf.getVar(conf, HiveConf.ConfVars.HIVESESSIONID));
+    MDC.put(QUERYID_LOG_KEY, HiveConf.getVar(conf, HiveConf.ConfVars.HIVEQUERYID));
+    if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_SERVER2_LOGGING_OPERATION_ENABLED)) {
+      MDC.put(OPERATIONLOG_LEVEL_KEY, HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_SERVER2_LOGGING_OPERATION_LEVEL));
+    }
+  }
+
+  /**
+   * Unregister logging context
+   */
+  public static void unregisterLoggingContext() {
+    MDC.clear();
   }
 }

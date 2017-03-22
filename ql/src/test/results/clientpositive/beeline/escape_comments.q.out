@@ -1,171 +1,171 @@
 >>>  !run !!{qFileDirectory}!!/escape_comments.q
 >>>  create database escape_comments_db comment 'a\nb';
-Compiling commandqueryId=(!!{queryId}!!): create database escape_comments_db comment 'a\nb'
-Semantic Analysis Completed
-Returning Hive schema: Schema(fieldSchemas:null, properties:null)
-Completed compiling commandqueryId=(!!{queryId}!!); Time taken: !!ELIDED!! seconds
-Executing commandqueryId=(!!{queryId}!!): create database escape_comments_db comment 'a\nb'
-PREHOOK: query: create database escape_comments_db comment 'a\nb'
-PREHOOK: type: CREATEDATABASE
-PREHOOK: Output: database:escape_comments_db
-Starting task [Stage-0:DDL] in serial mode
-POSTHOOK: query: create database escape_comments_db comment 'a\nb'
-POSTHOOK: type: CREATEDATABASE
-POSTHOOK: Output: database:escape_comments_db
-Completed executing commandqueryId=(!!{queryId}!!); Time taken: !!ELIDED!! seconds
-OK
-Shutting down query create database escape_comments_db comment 'a\nb'
+DEBUG : INFO  : Compiling commandqueryId=(!!{queryId}!!): create database escape_comments_db comment 'a\nb'
+INFO  : Semantic Analysis Completed
+INFO  : Returning Hive schema: Schema(fieldSchemas:null, properties:null)
+INFO  : Completed compiling commandqueryId=(!!{queryId}!!); Time taken: !!ELIDED!! seconds
+INFO  : Executing commandqueryId=(!!{queryId}!!): create database escape_comments_db comment 'a\nb'
+ERROR : PREHOOK: query: create database escape_comments_db comment 'a\nb'
+ERROR : PREHOOK: type: CREATEDATABASE
+ERROR : PREHOOK: Output: database:escape_comments_db
+INFO  : Starting task [Stage-0:DDL] in serial mode
+ERROR : POSTHOOK: query: create database escape_comments_db comment 'a\nb'
+ERROR : POSTHOOK: type: CREATEDATABASE
+ERROR : POSTHOOK: Output: database:escape_comments_db
+INFO  : Completed executing commandqueryId=(!!{queryId}!!); Time taken: !!ELIDED!! seconds
+INFO  : OK
+DEBUG : Shutting down query create database escape_comments_db comment 'a\nb'
 No rows affected 
 >>>  use escape_comments_db;
-Compiling commandqueryId=(!!{queryId}!!): use escape_comments_db
-Semantic Analysis Completed
-Returning Hive schema: Schema(fieldSchemas:null, properties:null)
-Completed compiling commandqueryId=(!!{queryId}!!); Time taken: !!ELIDED!! seconds
-Executing commandqueryId=(!!{queryId}!!): use escape_comments_db
-PREHOOK: query: use escape_comments_db
-PREHOOK: type: SWITCHDATABASE
-PREHOOK: Input: database:escape_comments_db
-Starting task [Stage-0:DDL] in serial mode
-POSTHOOK: query: use escape_comments_db
-POSTHOOK: type: SWITCHDATABASE
-POSTHOOK: Input: database:escape_comments_db
-Completed executing commandqueryId=(!!{queryId}!!); Time taken: !!ELIDED!! seconds
-OK
-Shutting down query use escape_comments_db
+DEBUG : INFO  : Compiling commandqueryId=(!!{queryId}!!): use escape_comments_db
+INFO  : Semantic Analysis Completed
+INFO  : Returning Hive schema: Schema(fieldSchemas:null, properties:null)
+INFO  : Completed compiling commandqueryId=(!!{queryId}!!); Time taken: !!ELIDED!! seconds
+INFO  : Executing commandqueryId=(!!{queryId}!!): use escape_comments_db
+ERROR : PREHOOK: query: use escape_comments_db
+ERROR : PREHOOK: type: SWITCHDATABASE
+ERROR : PREHOOK: Input: database:escape_comments_db
+INFO  : Starting task [Stage-0:DDL] in serial mode
+ERROR : POSTHOOK: query: use escape_comments_db
+ERROR : POSTHOOK: type: SWITCHDATABASE
+ERROR : POSTHOOK: Input: database:escape_comments_db
+INFO  : Completed executing commandqueryId=(!!{queryId}!!); Time taken: !!ELIDED!! seconds
+INFO  : OK
+DEBUG : Shutting down query use escape_comments_db
 No rows affected 
 >>>  create table escape_comments_tbl1 
 (col1 string comment 'a\nb\'\;') comment 'a\nb' 
 partitioned by (p1 string comment 'a\nb');
-Compiling commandqueryId=(!!{queryId}!!): create table escape_comments_tbl1 
+DEBUG : INFO  : Compiling commandqueryId=(!!{queryId}!!): create table escape_comments_tbl1 
 (col1 string comment 'a\nb\'\;') comment 'a\nb' 
 partitioned by (p1 string comment 'a\nb')
-Semantic Analysis Completed
-Returning Hive schema: Schema(fieldSchemas:null, properties:null)
-Completed compiling commandqueryId=(!!{queryId}!!); Time taken: !!ELIDED!! seconds
-Executing commandqueryId=(!!{queryId}!!): create table escape_comments_tbl1 
+INFO  : Semantic Analysis Completed
+INFO  : Returning Hive schema: Schema(fieldSchemas:null, properties:null)
+INFO  : Completed compiling commandqueryId=(!!{queryId}!!); Time taken: !!ELIDED!! seconds
+INFO  : Executing commandqueryId=(!!{queryId}!!): create table escape_comments_tbl1 
 (col1 string comment 'a\nb\'\;') comment 'a\nb' 
 partitioned by (p1 string comment 'a\nb')
-PREHOOK: query: create table escape_comments_tbl1 
+ERROR : PREHOOK: query: create table escape_comments_tbl1 
 (col1 string comment 'a\nb\'\;') comment 'a\nb' 
 partitioned by (p1 string comment 'a\nb')
-PREHOOK: type: CREATETABLE
-PREHOOK: Output: database:escape_comments_db
-PREHOOK: Output: escape_comments_db@escape_comments_tbl1
-Starting task [Stage-0:DDL] in serial mode
-POSTHOOK: query: create table escape_comments_tbl1 
+ERROR : PREHOOK: type: CREATETABLE
+ERROR : PREHOOK: Output: database:escape_comments_db
+ERROR : PREHOOK: Output: escape_comments_db@escape_comments_tbl1
+INFO  : Starting task [Stage-0:DDL] in serial mode
+ERROR : POSTHOOK: query: create table escape_comments_tbl1 
 (col1 string comment 'a\nb\'\;') comment 'a\nb' 
 partitioned by (p1 string comment 'a\nb')
-POSTHOOK: type: CREATETABLE
-POSTHOOK: Output: database:escape_comments_db
-POSTHOOK: Output: escape_comments_db@escape_comments_tbl1
-Completed executing commandqueryId=(!!{queryId}!!); Time taken: !!ELIDED!! seconds
-OK
-Shutting down query create table escape_comments_tbl1 
+ERROR : POSTHOOK: type: CREATETABLE
+ERROR : POSTHOOK: Output: database:escape_comments_db
+ERROR : POSTHOOK: Output: escape_comments_db@escape_comments_tbl1
+INFO  : Completed executing commandqueryId=(!!{queryId}!!); Time taken: !!ELIDED!! seconds
+INFO  : OK
+DEBUG : Shutting down query create table escape_comments_tbl1 
 (col1 string comment 'a\nb\'\;') comment 'a\nb' 
 partitioned by (p1 string comment 'a\nb')
 No rows affected 
 >>>  create view escape_comments_view1 (col1 comment 'a\nb') comment 'a\nb' 
 as select col1 from escape_comments_tbl1;
-Compiling commandqueryId=(!!{queryId}!!): create view escape_comments_view1 (col1 comment 'a\nb') comment 'a\nb' 
+DEBUG : INFO  : Compiling commandqueryId=(!!{queryId}!!): create view escape_comments_view1 (col1 comment 'a\nb') comment 'a\nb' 
 as select col1 from escape_comments_tbl1
-Semantic Analysis Completed
-Returning Hive schema: Schema(fieldSchemas:[FieldSchema(name:col1, type:string, comment:null)], properties:null)
-Completed compiling commandqueryId=(!!{queryId}!!); Time taken: !!ELIDED!! seconds
-Executing commandqueryId=(!!{queryId}!!): create view escape_comments_view1 (col1 comment 'a\nb') comment 'a\nb' 
+INFO  : Semantic Analysis Completed
+INFO  : Returning Hive schema: Schema(fieldSchemas:[FieldSchema(name:col1, type:string, comment:null)], properties:null)
+INFO  : Completed compiling commandqueryId=(!!{queryId}!!); Time taken: !!ELIDED!! seconds
+INFO  : Executing commandqueryId=(!!{queryId}!!): create view escape_comments_view1 (col1 comment 'a\nb') comment 'a\nb' 
 as select col1 from escape_comments_tbl1
-PREHOOK: query: create view escape_comments_view1 (col1 comment 'a\nb') comment 'a\nb' 
+ERROR : PREHOOK: query: create view escape_comments_view1 (col1 comment 'a\nb') comment 'a\nb' 
 as select col1 from escape_comments_tbl1
-PREHOOK: type: CREATEVIEW
-PREHOOK: Input: escape_comments_db@escape_comments_tbl1
-PREHOOK: Output: database:escape_comments_db
-PREHOOK: Output: escape_comments_db@escape_comments_view1
-Starting task [Stage-1:DDL] in serial mode
-POSTHOOK: query: create view escape_comments_view1 (col1 comment 'a\nb') comment 'a\nb' 
+ERROR : PREHOOK: type: CREATEVIEW
+ERROR : PREHOOK: Input: escape_comments_db@escape_comments_tbl1
+ERROR : PREHOOK: Output: database:escape_comments_db
+ERROR : PREHOOK: Output: escape_comments_db@escape_comments_view1
+INFO  : Starting task [Stage-1:DDL] in serial mode
+ERROR : POSTHOOK: query: create view escape_comments_view1 (col1 comment 'a\nb') comment 'a\nb' 
 as select col1 from escape_comments_tbl1
-POSTHOOK: type: CREATEVIEW
-POSTHOOK: Input: escape_comments_db@escape_comments_tbl1
-POSTHOOK: Output: database:escape_comments_db
-POSTHOOK: Output: escape_comments_db@escape_comments_view1
-POSTHOOK: Lineage: escape_comments_view1.col1 SIMPLE [(escape_comments_tbl1)escape_comments_tbl1.FieldSchema(name:col1, type:string, comment:a
+ERROR : POSTHOOK: type: CREATEVIEW
+ERROR : POSTHOOK: Input: escape_comments_db@escape_comments_tbl1
+ERROR : POSTHOOK: Output: database:escape_comments_db
+ERROR : POSTHOOK: Output: escape_comments_db@escape_comments_view1
+ERROR : POSTHOOK: Lineage: escape_comments_view1.col1 SIMPLE [(escape_comments_tbl1)escape_comments_tbl1.FieldSchema(name:col1, type:string, comment:a
 b';), ]
-Completed executing commandqueryId=(!!{queryId}!!); Time taken: !!ELIDED!! seconds
-OK
-Shutting down query create view escape_comments_view1 (col1 comment 'a\nb') comment 'a\nb' 
+INFO  : Completed executing commandqueryId=(!!{queryId}!!); Time taken: !!ELIDED!! seconds
+INFO  : OK
+DEBUG : Shutting down query create view escape_comments_view1 (col1 comment 'a\nb') comment 'a\nb' 
 as select col1 from escape_comments_tbl1
 No rows affected 
 >>>  create index index2 on table escape_comments_tbl1(col1) as 'COMPACT' with deferred rebuild comment 'a\nb';
-Compiling commandqueryId=(!!{queryId}!!): create index index2 on table escape_comments_tbl1(col1) as 'COMPACT' with deferred rebuild comment 'a\nb'
-Semantic Analysis Completed
-Returning Hive schema: Schema(fieldSchemas:null, properties:null)
-Completed compiling commandqueryId=(!!{queryId}!!); Time taken: !!ELIDED!! seconds
-Executing commandqueryId=(!!{queryId}!!): create index index2 on table escape_comments_tbl1(col1) as 'COMPACT' with deferred rebuild comment 'a\nb'
-PREHOOK: query: create index index2 on table escape_comments_tbl1(col1) as 'COMPACT' with deferred rebuild comment 'a\nb'
-PREHOOK: type: CREATEINDEX
-PREHOOK: Input: escape_comments_db@escape_comments_tbl1
-Starting task [Stage-0:DDL] in serial mode
-POSTHOOK: query: create index index2 on table escape_comments_tbl1(col1) as 'COMPACT' with deferred rebuild comment 'a\nb'
-POSTHOOK: type: CREATEINDEX
-POSTHOOK: Input: escape_comments_db@escape_comments_tbl1
-POSTHOOK: Output: escape_comments_db@escape_comments_db__escape_comments_tbl1_index2__
-Completed executing commandqueryId=(!!{queryId}!!); Time taken: !!ELIDED!! seconds
-OK
-Shutting down query create index index2 on table escape_comments_tbl1(col1) as 'COMPACT' with deferred rebuild comment 'a\nb'
+DEBUG : INFO  : Compiling commandqueryId=(!!{queryId}!!): create index index2 on table escape_comments_tbl1(col1) as 'COMPACT' with deferred rebuild comment 'a\nb'
+INFO  : Semantic Analysis Completed
+INFO  : Returning Hive schema: Schema(fieldSchemas:null, properties:null)
+INFO  : Completed compiling commandqueryId=(!!{queryId}!!); Time taken: !!ELIDED!! seconds
+INFO  : Executing commandqueryId=(!!{queryId}!!): create index index2 on table escape_comments_tbl1(col1) as 'COMPACT' with deferred rebuild comment 'a\nb'
+ERROR : PREHOOK: query: create index index2 on table escape_comments_tbl1(col1) as 'COMPACT' with deferred rebuild comment 'a\nb'
+ERROR : PREHOOK: type: CREATEINDEX
+ERROR : PREHOOK: Input: escape_comments_db@escape_comments_tbl1
+INFO  : Starting task [Stage-0:DDL] in serial mode
+ERROR : POSTHOOK: query: create index index2 on table escape_comments_tbl1(col1) as 'COMPACT' with deferred rebuild comment 'a\nb'
+ERROR : POSTHOOK: type: CREATEINDEX
+ERROR : POSTHOOK: Input: escape_comments_db@escape_comments_tbl1
+ERROR : POSTHOOK: Output: escape_comments_db@escape_comments_db__escape_comments_tbl1_index2__
+INFO  : Completed executing commandqueryId=(!!{queryId}!!); Time taken: !!ELIDED!! seconds
+INFO  : OK
+DEBUG : Shutting down query create index index2 on table escape_comments_tbl1(col1) as 'COMPACT' with deferred rebuild comment 'a\nb'
 No rows affected 
 >>>  
 >>>  describe database extended escape_comments_db;
-Compiling commandqueryId=(!!{queryId}!!): describe database extended escape_comments_db
-Semantic Analysis Completed
-Returning Hive schema: Schema(fieldSchemas:[FieldSchema(name:db_name, type:string, comment:from deserializer), FieldSchema(name:comment, type:string, comment:from deserializer), FieldSchema(name:location, type:string, comment:from deserializer), FieldSchema(name:owner_name, type:string, comment:from deserializer), FieldSchema(name:owner_type, type:string, comment:from deserializer), FieldSchema(name:parameters, type:string, comment:from deserializer)], properties:null)
-Completed compiling commandqueryId=(!!{queryId}!!); Time taken: !!ELIDED!! seconds
-Executing commandqueryId=(!!{queryId}!!): describe database extended escape_comments_db
-PREHOOK: query: describe database extended escape_comments_db
-PREHOOK: type: DESCDATABASE
-PREHOOK: Input: database:escape_comments_db
-Starting task [Stage-0:DDL] in serial mode
-POSTHOOK: query: describe database extended escape_comments_db
-POSTHOOK: type: DESCDATABASE
-POSTHOOK: Input: database:escape_comments_db
-Completed executing commandqueryId=(!!{queryId}!!); Time taken: !!ELIDED!! seconds
-OK
-Shutting down query describe database extended escape_comments_db
+DEBUG : INFO  : Compiling commandqueryId=(!!{queryId}!!): describe database extended escape_comments_db
+INFO  : Semantic Analysis Completed
+INFO  : Returning Hive schema: Schema(fieldSchemas:[FieldSchema(name:db_name, type:string, comment:from deserializer), FieldSchema(name:comment, type:string, comment:from deserializer), FieldSchema(name:location, type:string, comment:from deserializer), FieldSchema(name:owner_name, type:string, comment:from deserializer), FieldSchema(name:owner_type, type:string, comment:from deserializer), FieldSchema(name:parameters, type:string, comment:from deserializer)], properties:null)
+INFO  : Completed compiling commandqueryId=(!!{queryId}!!); Time taken: !!ELIDED!! seconds
+INFO  : Executing commandqueryId=(!!{queryId}!!): describe database extended escape_comments_db
+ERROR : PREHOOK: query: describe database extended escape_comments_db
+ERROR : PREHOOK: type: DESCDATABASE
+ERROR : PREHOOK: Input: database:escape_comments_db
+INFO  : Starting task [Stage-0:DDL] in serial mode
+ERROR : POSTHOOK: query: describe database extended escape_comments_db
+ERROR : POSTHOOK: type: DESCDATABASE
+ERROR : POSTHOOK: Input: database:escape_comments_db
+INFO  : Completed executing commandqueryId=(!!{queryId}!!); Time taken: !!ELIDED!! seconds
+INFO  : OK
+DEBUG : Shutting down query describe database extended escape_comments_db
 'db_name','comment','location','owner_name','owner_type','parameters'
 'escape_comments_db','a\nb','location/in/test','user','USER',''
 1 row selected 
 >>>  describe database escape_comments_db;
-Compiling commandqueryId=(!!{queryId}!!): describe database escape_comments_db
-Semantic Analysis Completed
-Returning Hive schema: Schema(fieldSchemas:[FieldSchema(name:db_name, type:string, comment:from deserializer), FieldSchema(name:comment, type:string, comment:from deserializer), FieldSchema(name:location, type:string, comment:from deserializer), FieldSchema(name:owner_name, type:string, comment:from deserializer), FieldSchema(name:owner_type, type:string, comment:from deserializer), FieldSchema(name:parameters, type:string, comment:from deserializer)], properties:null)
-Completed compiling commandqueryId=(!!{queryId}!!); Time taken: !!ELIDED!! seconds
-Executing commandqueryId=(!!{queryId}!!): describe database escape_comments_db
-PREHOOK: query: describe database escape_comments_db
-PREHOOK: type: DESCDATABASE
-PREHOOK: Input: database:escape_comments_db
-Starting task [Stage-0:DDL] in serial mode
-POSTHOOK: query: describe database escape_comments_db
-POSTHOOK: type: DESCDATABASE
-POSTHOOK: Input: database:escape_comments_db
-Completed executing commandqueryId=(!!{queryId}!!); Time taken: !!ELIDED!! seconds
-OK
-Shutting down query describe database escape_comments_db
+DEBUG : INFO  : Compiling commandqueryId=(!!{queryId}!!): describe database escape_comments_db
+INFO  : Semantic Analysis Completed
+INFO  : Returning Hive schema: Schema(fieldSchemas:[FieldSchema(name:db_name, type:string, comment:from deserializer), FieldSchema(name:comment, type:string, comment:from deserializer), FieldSchema(name:location, type:string, comment:from deserializer), FieldSchema(name:owner_name, type:string, comment:from deserializer), FieldSchema(name:owner_type, type:string, comment:from deserializer), FieldSchema(name:parameters, type:string, comment:from deserializer)], properties:null)
+INFO  : Completed compiling commandqueryId=(!!{queryId}!!); Time taken: !!ELIDED!! seconds
+INFO  : Executing commandqueryId=(!!{queryId}!!): describe database escape_comments_db
+ERROR : PREHOOK: query: describe database escape_comments_db
+ERROR : PREHOOK: type: DESCDATABASE
+ERROR : PREHOOK: Input: database:escape_comments_db
+INFO  : Starting task [Stage-0:DDL] in serial mode
+ERROR : POSTHOOK: query: describe database escape_comments_db
+ERROR : POSTHOOK: type: DESCDATABASE
+ERROR : POSTHOOK: Input: database:escape_comments_db
+INFO  : Completed executing commandqueryId=(!!{queryId}!!); Time taken: !!ELIDED!! seconds
+INFO  : OK
+DEBUG : Shutting down query describe database escape_comments_db
 'db_name','comment','location','owner_name','owner_type','parameters'
 'escape_comments_db','a\nb','location/in/test','user','USER',''
 1 row selected 
 >>>  show create table escape_comments_tbl1;
-Compiling commandqueryId=(!!{queryId}!!): show create table escape_comments_tbl1
-Semantic Analysis Completed
-Returning Hive schema: Schema(fieldSchemas:[FieldSchema(name:createtab_stmt, type:string, comment:from deserializer)], properties:null)
-Completed compiling commandqueryId=(!!{queryId}!!); Time taken: !!ELIDED!! seconds
-Executing commandqueryId=(!!{queryId}!!): show create table escape_comments_tbl1
-PREHOOK: query: show create table escape_comments_tbl1
-PREHOOK: type: SHOW_CREATETABLE
-PREHOOK: Input: escape_comments_db@escape_comments_tbl1
-Starting task [Stage-0:DDL] in serial mode
-POSTHOOK: query: show create table escape_comments_tbl1
-POSTHOOK: type: SHOW_CREATETABLE
-POSTHOOK: Input: escape_comments_db@escape_comments_tbl1
-Completed executing commandqueryId=(!!{queryId}!!); Time taken: !!ELIDED!! seconds
-OK
-Shutting down query show create table escape_comments_tbl1
+DEBUG : INFO  : Compiling commandqueryId=(!!{queryId}!!): show create table escape_comments_tbl1
+INFO  : Semantic Analysis Completed
+INFO  : Returning Hive schema: Schema(fieldSchemas:[FieldSchema(name:createtab_stmt, type:string, comment:from deserializer)], properties:null)
+INFO  : Completed compiling commandqueryId=(!!{queryId}!!); Time taken: !!ELIDED!! seconds
+INFO  : Executing commandqueryId=(!!{queryId}!!): show create table escape_comments_tbl1
+ERROR : PREHOOK: query: show create table escape_comments_tbl1
+ERROR : PREHOOK: type: SHOW_CREATETABLE
+ERROR : PREHOOK: Input: escape_comments_db@escape_comments_tbl1
+INFO  : Starting task [Stage-0:DDL] in serial mode
+ERROR : POSTHOOK: query: show create table escape_comments_tbl1
+ERROR : POSTHOOK: type: SHOW_CREATETABLE
+ERROR : POSTHOOK: Input: escape_comments_db@escape_comments_tbl1
+INFO  : Completed executing commandqueryId=(!!{queryId}!!); Time taken: !!ELIDED!! seconds
+INFO  : OK
+DEBUG : Shutting down query show create table escape_comments_tbl1
 'createtab_stmt'
 'CREATE TABLE `escape_comments_tbl1`('
 '  `col1` string COMMENT 'a\nb\'\;')'
@@ -184,21 +184,21 @@ Shutting down query show create table escape_comments_tbl1
 '  'transient_lastDdlTime'='!!UNIXTIME!!')'
 15 rows selected 
 >>>  describe formatted escape_comments_tbl1;
-Compiling commandqueryId=(!!{queryId}!!): describe formatted escape_comments_tbl1
-Semantic Analysis Completed
-Returning Hive schema: Schema(fieldSchemas:[FieldSchema(name:col_name, type:string, comment:from deserializer), FieldSchema(name:data_type, type:string, comment:from deserializer), FieldSchema(name:comment, type:string, comment:from deserializer)], properties:null)
-Completed compiling commandqueryId=(!!{queryId}!!); Time taken: !!ELIDED!! seconds
-Executing commandqueryId=(!!{queryId}!!): describe formatted escape_comments_tbl1
-PREHOOK: query: describe formatted escape_comments_tbl1
-PREHOOK: type: DESCTABLE
-PREHOOK: Input: escape_comments_db@escape_comments_tbl1
-Starting task [Stage-0:DDL] in serial mode
-POSTHOOK: query: describe formatted escape_comments_tbl1
-POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: escape_comments_db@escape_comments_tbl1
-Completed executing commandqueryId=(!!{queryId}!!); Time taken: !!ELIDED!! seconds
-OK
-Shutting down query describe formatted escape_comments_tbl1
+DEBUG : INFO  : Compiling commandqueryId=(!!{queryId}!!): describe formatted escape_comments_tbl1
+INFO  : Semantic Analysis Completed
+INFO  : Returning Hive schema: Schema(fieldSchemas:[FieldSchema(name:col_name, type:string, comment:from deserializer), FieldSchema(name:data_type, type:string, comment:from deserializer), FieldSchema(name:comment, type:string, comment:from deserializer)], properties:null)
+INFO  : Completed compiling commandqueryId=(!!{queryId}!!); Time taken: !!ELIDED!! seconds
+INFO  : Executing commandqueryId=(!!{queryId}!!): describe formatted escape_comments_tbl1
+ERROR : PREHOOK: query: describe formatted escape_comments_tbl1
+ERROR : PREHOOK: type: DESCTABLE
+ERROR : PREHOOK: Input: escape_comments_db@escape_comments_tbl1
+INFO  : Starting task [Stage-0:DDL] in serial mode
+ERROR : POSTHOOK: query: describe formatted escape_comments_tbl1
+ERROR : POSTHOOK: type: DESCTABLE
+ERROR : POSTHOOK: Input: escape_comments_db@escape_comments_tbl1
+INFO  : Completed executing commandqueryId=(!!{queryId}!!); Time taken: !!ELIDED!! seconds
+INFO  : OK
+DEBUG : Shutting down query describe formatted escape_comments_tbl1
 'col_name','data_type','comment'
 '# col_name            ','data_type           ','comment             '
 '','NULL','NULL'
@@ -239,21 +239,21 @@ Shutting down query describe formatted escape_comments_tbl1
 '','serialization.format','1                   '
 37 rows selected 
 >>>  describe pretty escape_comments_tbl1;
-Compiling commandqueryId=(!!{queryId}!!): describe pretty escape_comments_tbl1
-Semantic Analysis Completed
-Returning Hive schema: Schema(fieldSchemas:[FieldSchema(name:col_name, type:string, comment:from deserializer), FieldSchema(name:data_type, type:string, comment:from deserializer), FieldSchema(name:comment, type:string, comment:from deserializer)], properties:null)
-Completed compiling commandqueryId=(!!{queryId}!!); Time taken: !!ELIDED!! seconds
-Executing commandqueryId=(!!{queryId}!!): describe pretty escape_comments_tbl1
-PREHOOK: query: describe pretty escape_comments_tbl1
-PREHOOK: type: DESCTABLE
-PREHOOK: Input: escape_comments_db@escape_comments_tbl1
-Starting task [Stage-0:DDL] in serial mode
-POSTHOOK: query: describe pretty escape_comments_tbl1
-POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: escape_comments_db@escape_comments_tbl1
-Completed executing commandqueryId=(!!{queryId}!!); Time taken: !!ELIDED!! seconds
-OK
-Shutting down query describe pretty escape_comments_tbl1
+DEBUG : INFO  : Compiling commandqueryId=(!!{queryId}!!): describe pretty escape_comments_tbl1
+INFO  : Semantic Analysis Completed
+INFO  : Returning Hive schema: Schema(fieldSchemas:[FieldSchema(name:col_name, type:string, comment:from deserializer), FieldSchema(name:data_type, type:string, comment:from deserializer), FieldSchema(name:comment, type:string, comment:from deserializer)], properties:null)
+INFO  : Completed compiling commandqueryId=(!!{queryId}!!); Time taken: !!ELIDED!! seconds
+INFO  : Executing commandqueryId=(!!{queryId}!!): describe pretty escape_comments_tbl1
+ERROR : PREHOOK: query: describe pretty escape_comments_tbl1
+ERROR : PREHOOK: type: DESCTABLE
+ERROR : PREHOOK: Input: escape_comments_db@escape_comments_tbl1
+INFO  : Starting task [Stage-0:DDL] in serial mode
+ERROR : POSTHOOK: query: describe pretty escape_comments_tbl1
+ERROR : POSTHOOK: type: DESCTABLE
+ERROR : POSTHOOK: Input: escape_comments_db@escape_comments_tbl1
+INFO  : Completed executing commandqueryId=(!!{queryId}!!); Time taken: !!ELIDED!! seconds
+INFO  : OK
+DEBUG : Shutting down query describe pretty escape_comments_tbl1
 'col_name','data_type','comment'
 'col_name ','data_type     ','comment'
 '','',''
@@ -269,21 +269,21 @@ Shutting down query describe pretty escape_comments_tbl1
 '         ','              ','b'
 12 rows selected 
 >>>  describe escape_comments_tbl1;
-Compiling commandqueryId=(!!{queryId}!!): describe escape_comments_tbl1
-Semantic Analysis Completed
-Returning Hive schema: Schema(fieldSchemas:[FieldSchema(name:col_name, type:string, comment:from deserializer), FieldSchema(name:data_type, type:string, comment:from deserializer), FieldSchema(name:comment, type:string, comment:from deserializer)], properties:null)
-Completed compiling commandqueryId=(!!{queryId}!!); Time taken: !!ELIDED!! seconds
-Executing commandqueryId=(!!{queryId}!!): describe escape_comments_tbl1
-PREHOOK: query: describe escape_comments_tbl1
-PREHOOK: type: DESCTABLE
-PREHOOK: Input: escape_comments_db@escape_comments_tbl1
-Starting task [Stage-0:DDL] in serial mode
-POSTHOOK: query: describe escape_comments_tbl1
-POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: escape_comments_db@escape_comments_tbl1
-Completed executing commandqueryId=(!!{queryId}!!); Time taken: !!ELIDED!! seconds
-OK
-Shutting down query describe escape_comments_tbl1
+DEBUG : INFO  : Compiling commandqueryId=(!!{queryId}!!): describe escape_comments_tbl1
+INFO  : Semantic Analysis Completed
+INFO  : Returning Hive schema: Schema(fieldSchemas:[FieldSchema(name:col_name, type:string, comment:from deserializer), FieldSchema(name:data_type, type:string, comment:from deserializer), FieldSchema(name:comment, type:string, comment:from deserializer)], properties:null)
+INFO  : Completed compiling commandqueryId=(!!{queryId}!!); Time taken: !!ELIDED!! seconds
+INFO  : Executing commandqueryId=(!!{queryId}!!): describe escape_comments_tbl1
+ERROR : PREHOOK: query: describe escape_comments_tbl1
+ERROR : PREHOOK: type: DESCTABLE
+ERROR : PREHOOK: Input: escape_comments_db@escape_comments_tbl1
+INFO  : Starting task [Stage-0:DDL] in serial mode
+ERROR : POSTHOOK: query: describe escape_comments_tbl1
+ERROR : POSTHOOK: type: DESCTABLE
+ERROR : POSTHOOK: Input: escape_comments_db@escape_comments_tbl1
+INFO  : Completed executing commandqueryId=(!!{queryId}!!); Time taken: !!ELIDED!! seconds
+INFO  : OK
+DEBUG : Shutting down query describe escape_comments_tbl1
 'col_name','data_type','comment'
 'col1','string','a\nb';'
 'p1','string','a\nb'
@@ -294,40 +294,40 @@ Shutting down query describe escape_comments_tbl1
 'p1','string','a\nb'
 7 rows selected 
 >>>  show create table escape_comments_view1;
-Compiling commandqueryId=(!!{queryId}!!): show create table escape_comments_view1
-Semantic Analysis Completed
-Returning Hive schema: Schema(fieldSchemas:[FieldSchema(name:createtab_stmt, type:string, comment:from deserializer)], properties:null)
-Completed compiling commandqueryId=(!!{queryId}!!); Time taken: !!ELIDED!! seconds
-Executing commandqueryId=(!!{queryId}!!): show create table escape_comments_view1
-PREHOOK: query: show create table escape_comments_view1
-PREHOOK: type: SHOW_CREATETABLE
-PREHOOK: Input: escape_comments_db@escape_comments_view1
-Starting task [Stage-0:DDL] in serial mode
-POSTHOOK: query: show create table escape_comments_view1
-POSTHOOK: type: SHOW_CREATETABLE
-POSTHOOK: Input: escape_comments_db@escape_comments_view1
-Completed executing commandqueryId=(!!{queryId}!!); Time taken: !!ELIDED!! seconds
-OK
-Shutting down query show create table escape_comments_view1
+DEBUG : INFO  : Compiling commandqueryId=(!!{queryId}!!): show create table escape_comments_view1
+INFO  : Semantic Analysis Completed
+INFO  : Returning Hive schema: Schema(fieldSchemas:[FieldSchema(name:createtab_stmt, type:string, comment:from deserializer)], properties:null)
+INFO  : Completed compiling commandqueryId=(!!{queryId}!!); Time taken: !!ELIDED!! seconds
+INFO  : Executing commandqueryId=(!!{queryId}!!): show create table escape_comments_view1
+ERROR : PREHOOK: query: show create table escape_comments_view1
+ERROR : PREHOOK: type: SHOW_CREATETABLE
+ERROR : PREHOOK: Input: escape_comments_db@escape_comments_view1
+INFO  : Starting task [Stage-0:DDL] in serial mode
+ERROR : POSTHOOK: query: show create table escape_comments_view1
+ERROR : POSTHOOK: type: SHOW_CREATETABLE
+ERROR : POSTHOOK: Input: escape_comments_db@escape_comments_view1
+INFO  : Completed executing commandqueryId=(!!{queryId}!!); Time taken: !!ELIDED!! seconds
+INFO  : OK
+DEBUG : Shutting down query show create table escape_comments_view1
 'createtab_stmt'
 'CREATE VIEW `escape_comments_view1` AS SELECT `col1` AS `col1` FROM (select `escape_comments_tbl1`.`col1` from `escape_comments_db`.`escape_comments_tbl1`) `escape_comments_db.escape_comments_view1`'
 1 row selected 
 >>>  describe formatted escape_comments_view1;
-Compiling commandqueryId=(!!{queryId}!!): describe formatted escape_comments_view1
-Semantic Analysis Completed
-Returning Hive schema: Schema(fieldSchemas:[FieldSchema(name:col_name, type:string, comment:from deserializer), FieldSchema(name:data_type, type:string, comment:from deserializer), FieldSchema(name:comment, type:string, comment:from deserializer)], properties:null)
-Completed compiling commandqueryId=(!!{queryId}!!); Time taken: !!ELIDED!! seconds
-Executing commandqueryId=(!!{queryId}!!): describe formatted escape_comments_view1
-PREHOOK: query: describe formatted escape_comments_view1
-PREHOOK: type: DESCTABLE
-PREHOOK: Input: escape_comments_db@escape_comments_view1
-Starting task [Stage-0:DDL] in serial mode
-POSTHOOK: query: describe formatted escape_comments_view1
-POSTHOOK: type: DESCTABLE
-POSTHOOK: Input: escape_comments_db@escape_comments_view1
-Completed executing commandqueryId=(!!{queryId}!!); Time taken: !!ELIDED!! seconds
-OK
-Shutting down query describe formatted escape_comments_view1
+DEBUG : INFO  : Compiling commandqueryId=(!!{queryId}!!): describe formatted escape_comments_view1
+INFO  : Semantic Analysis Completed
+INFO  : Returning Hive schema: Schema(fieldSchemas:[FieldSchema(name:col_name, type:string, comment:from deserializer), FieldSchema(name:data_type, type:string, comment:from deserializer), FieldSchema(name:comment, type:string, comment:from deserializer)], properties:null)
+INFO  : Completed compiling commandqueryId=(!!{queryId}!!); Time taken: !!ELIDED!! seconds
+INFO  : Executing commandqueryId=(!!{queryId}!!): describe formatted escape_comments_view1
+ERROR : PREHOOK: query: describe formatted escape_comments_view1
+ERROR : PREHOOK: type: DESCTABLE
+ERROR : PREHOOK: Input: escape_comments_db@escape_comments_view1
+INFO  : Starting task [Stage-0:DDL] in serial mode
+ERROR : POSTHOOK: query: describe formatted escape_comments_view1
+ERROR : POSTHOOK: type: DESCTABLE
+ERROR : POSTHOOK: Input: escape_comments_db@escape_comments_view1
+INFO  : Completed executing commandqueryId=(!!{queryId}!!); Time taken: !!ELIDED!! seconds
+INFO  : OK
+DEBUG : Shutting down query describe formatted escape_comments_view1
 'col_name','data_type','comment'
 '# col_name            ','data_type           ','comment             '
 '','NULL','NULL'
@@ -359,19 +359,19 @@ Shutting down query describe formatted escape_comments_view1
 'View Rewrite Enabled:','No                  ','NULL'
 28 rows selected 
 >>>  show formatted index on escape_comments_tbl1;
-Compiling commandqueryId=(!!{queryId}!!): show formatted index on escape_comments_tbl1
-Semantic Analysis Completed
-Returning Hive schema: Schema(fieldSchemas:[FieldSchema(name:idx_name, type:string, comment:from deserializer), FieldSchema(name:tab_name, type:string, comment:from deserializer), FieldSchema(name:col_names, type:string, comment:from deserializer), FieldSchema(name:idx_tab_name, type:string, comment:from deserializer), FieldSchema(name:idx_type, type:string, comment:from deserializer), FieldSchema(name:comment, type:string, comment:from deserializer)], properties:null)
-Completed compiling commandqueryId=(!!{queryId}!!); Time taken: !!ELIDED!! seconds
-Executing commandqueryId=(!!{queryId}!!): show formatted index on escape_comments_tbl1
-PREHOOK: query: show formatted index on escape_comments_tbl1
-PREHOOK: type: SHOWINDEXES
-Starting task [Stage-0:DDL] in serial mode
-POSTHOOK: query: show formatted index on escape_comments_tbl1
-POSTHOOK: type: SHOWINDEXES
-Completed executing commandqueryId=(!!{queryId}!!); Time taken: !!ELIDED!! seconds
-OK
-Shutting down query show formatted index on escape_comments_tbl1
+DEBUG : INFO  : Compiling commandqueryId=(!!{queryId}!!): show formatted index on escape_comments_tbl1
+INFO  : Semantic Analysis Completed
+INFO  : Returning Hive schema: Schema(fieldSchemas:[FieldSchema(name:idx_name, type:string, comment:from deserializer), FieldSchema(name:tab_name, type:string, comment:from deserializer), FieldSchema(name:col_names, type:string, comment:from deserializer), FieldSchema(name:idx_tab_name, type:string, comment:from deserializer), FieldSchema(name:idx_type, type:string, comment:from deserializer), FieldSchema(name:comment, type:string, comment:from deserializer)], properties:null)
+INFO  : Completed compiling commandqueryId=(!!{queryId}!!); Time taken: !!ELIDED!! seconds
+INFO  : Executing commandqueryId=(!!{queryId}!!): show formatted index on escape_comments_tbl1
+ERROR : PREHOOK: query: show formatted index on escape_comments_tbl1
+ERROR : PREHOOK: type: SHOWINDEXES
+INFO  : Starting task [Stage-0:DDL] in serial mode
+ERROR : POSTHOOK: query: show formatted index on escape_comments_tbl1
+ERROR : POSTHOOK: type: SHOWINDEXES
+INFO  : Completed executing commandqueryId=(!!{queryId}!!); Time taken: !!ELIDED!! seconds
+INFO  : OK
+DEBUG : Shutting down query show formatted index on escape_comments_tbl1
 'idx_name','tab_name','col_names','idx_tab_name','idx_type','comment'
 'idx_name            ','tab_name            ','col_names           ','idx_tab_name        ','idx_type            ','comment             '
 '','NULL','NULL','NULL','NULL','NULL'
@@ -380,28 +380,28 @@ Shutting down query show formatted index on escape_comments_tbl1
 4 rows selected 
 >>>  
 >>>  drop database escape_comments_db cascade;
-Compiling commandqueryId=(!!{queryId}!!): drop database escape_comments_db cascade
-Semantic Analysis Completed
-Returning Hive schema: Schema(fieldSchemas:null, properties:null)
-Completed compiling commandqueryId=(!!{queryId}!!); Time taken: !!ELIDED!! seconds
-Executing commandqueryId=(!!{queryId}!!): drop database escape_comments_db cascade
-PREHOOK: query: drop database escape_comments_db cascade
-PREHOOK: type: DROPDATABASE
-PREHOOK: Input: database:escape_comments_db
-PREHOOK: Output: database:escape_comments_db
-PREHOOK: Output: escape_comments_db@escape_comments_db__escape_comments_tbl1_index2__
-PREHOOK: Output: escape_comments_db@escape_comments_tbl1
-PREHOOK: Output: escape_comments_db@escape_comments_view1
-Starting task [Stage-0:DDL] in serial mode
-POSTHOOK: query: drop database escape_comments_db cascade
-POSTHOOK: type: DROPDATABASE
-POSTHOOK: Input: database:escape_comments_db
-POSTHOOK: Output: database:escape_comments_db
-POSTHOOK: Output: escape_comments_db@escape_comments_db__escape_comments_tbl1_index2__
-POSTHOOK: Output: escape_comments_db@escape_comments_tbl1
-POSTHOOK: Output: escape_comments_db@escape_comments_view1
-Completed executing commandqueryId=(!!{queryId}!!); Time taken: !!ELIDED!! seconds
-OK
-Shutting down query drop database escape_comments_db cascade
+DEBUG : INFO  : Compiling commandqueryId=(!!{queryId}!!): drop database escape_comments_db cascade
+INFO  : Semantic Analysis Completed
+INFO  : Returning Hive schema: Schema(fieldSchemas:null, properties:null)
+INFO  : Completed compiling commandqueryId=(!!{queryId}!!); Time taken: !!ELIDED!! seconds
+INFO  : Executing commandqueryId=(!!{queryId}!!): drop database escape_comments_db cascade
+ERROR : PREHOOK: query: drop database escape_comments_db cascade
+ERROR : PREHOOK: type: DROPDATABASE
+ERROR : PREHOOK: Input: database:escape_comments_db
+ERROR : PREHOOK: Output: database:escape_comments_db
+ERROR : PREHOOK: Output: escape_comments_db@escape_comments_db__escape_comments_tbl1_index2__
+ERROR : PREHOOK: Output: escape_comments_db@escape_comments_tbl1
+ERROR : PREHOOK: Output: escape_comments_db@escape_comments_view1
+INFO  : Starting task [Stage-0:DDL] in serial mode
+ERROR : POSTHOOK: query: drop database escape_comments_db cascade
+ERROR : POSTHOOK: type: DROPDATABASE
+ERROR : POSTHOOK: Input: database:escape_comments_db
+ERROR : POSTHOOK: Output: database:escape_comments_db
+ERROR : POSTHOOK: Output: escape_comments_db@escape_comments_db__escape_comments_tbl1_index2__
+ERROR : POSTHOOK: Output: escape_comments_db@escape_comments_tbl1
+ERROR : POSTHOOK: Output: escape_comments_db@escape_comments_view1
+INFO  : Completed executing commandqueryId=(!!{queryId}!!); Time taken: !!ELIDED!! seconds
+INFO  : OK
+DEBUG : Shutting down query drop database escape_comments_db cascade
 No rows affected 
 >>>  !record
