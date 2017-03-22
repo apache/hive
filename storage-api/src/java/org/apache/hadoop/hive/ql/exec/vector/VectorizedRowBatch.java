@@ -59,6 +59,11 @@ public class VectorizedRowBatch implements Writable {
    */
   public static final int DEFAULT_SIZE = 1024;
 
+  /*
+   * This number is a safety limit for 32MB of writables.
+   */
+  public static final int DEFAULT_BYTES = 32 * 1024 * 1024;
+
   /**
    * Return a batch with the specified number of columns.
    * This is the standard constructor -- all batches should be the same size
