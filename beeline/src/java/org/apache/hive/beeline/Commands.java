@@ -1221,46 +1221,61 @@ public class Commands {
     if (entireLineAsCommand) {
       cmdList.add(line);
     } else {
-      StringBuffer command = new StringBuffer();
+      StringBuilder command = new StringBuilder();
 
+      // Marker to track if there is starting double quote without an ending double quote
       boolean hasUnterminatedDoubleQuote = false;
-      boolean hasUntermindatedSingleQuote = false;
 
+      // Marker to track if there is starting single quote without an ending double quote
+      boolean hasUnterminatedSingleQuote = false;
+
+      // Index of the last seen semicolon in the given line
       int lastSemiColonIndex = 0;
       char[] lineChars = line.toCharArray();
 
+      // Marker to track if the previous character was an escape character
       boolean wasPrevEscape = false;
+
       int index = 0;
+
+      // Iterate through the line and invoke the addCmdPart method whenever a semicolon is seen that is not inside a
+      // quoted string
       for (; index < lineChars.length; index++) {
         switch (lineChars[index]) {
           case '\'':
+            // If a single quote is seen and the index is not inside a double quoted string and the previous character
+            // was not an escape, then update the hasUnterminatedSingleQuote flag
             if (!hasUnterminatedDoubleQuote && !wasPrevEscape) {
-              hasUntermindatedSingleQuote = !hasUntermindatedSingleQuote;
+              hasUnterminatedSingleQuote = !hasUnterminatedSingleQuote;
             }
             wasPrevEscape = false;
             break;
           case '\"':
-            if (!hasUntermindatedSingleQuote && !wasPrevEscape) {
+            // If a double quote is seen and the index is not inside a single quoted string and the previous character
+            // was not an escape, then update the hasUnterminatedDoubleQuote flag
+            if (!hasUnterminatedSingleQuote && !wasPrevEscape) {
               hasUnterminatedDoubleQuote = !hasUnterminatedDoubleQuote;
             }
             wasPrevEscape = false;
             break;
           case ';':
-            if (!hasUnterminatedDoubleQuote && !hasUntermindatedSingleQuote) {
+            // If a semicolon is seen, and the line isn't inside a quoted string, then treat
+            // line[lastSemiColonIndex] to line[index] as a single command
+            if (!hasUnterminatedDoubleQuote && !hasUnterminatedSingleQuote) {
               addCmdPart(cmdList, command, line.substring(lastSemiColonIndex, index));
               lastSemiColonIndex = index + 1;
             }
             wasPrevEscape = false;
             break;
           case '\\':
-            wasPrevEscape = true;
+            wasPrevEscape = !wasPrevEscape;
             break;
           default:
             wasPrevEscape = false;
             break;
         }
       }
-      // if the line doesn't end with a ; or if the line is empty, add the cmd part
+      // If the line doesn't end with a ; or if the line is empty, add the cmd part
       if (lastSemiColonIndex != index || lineChars.length == 0) {
         addCmdPart(cmdList, command, line.substring(lastSemiColonIndex, index));
       }
@@ -1272,7 +1287,7 @@ public class Commands {
    * Given a cmdpart (e.g. if a command spans multiple lines), add to the current command, and if
    * applicable add that command to the {@link List} of commands
    */
-  private void addCmdPart(List<String> cmdList, StringBuffer command, String cmdpart) {
+  private void addCmdPart(List<String> cmdList, StringBuilder command, String cmdpart) {
     if (cmdpart.endsWith("\\")) {
       command.append(cmdpart.substring(0, cmdpart.length() - 1)).append(";");
       return;
