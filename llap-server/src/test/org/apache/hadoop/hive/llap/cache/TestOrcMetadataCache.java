@@ -72,9 +72,8 @@ public class TestOrcMetadataCache {
     int allocs = 0;
 
     @Override
-    public boolean reserveMemory(long memoryToReserve, boolean waitForEviction) {
+    public void reserveMemory(long memoryToReserve) {
       ++allocs;
-      return true;
     }
 
     @Override

@@ -220,8 +220,8 @@ class EncodedReaderImpl implements EncodedReader {
 
   @Override
   public void readEncodedColumns(int stripeIx, StripeInformation stripe,
-      OrcProto.RowIndex[] indexes, List<OrcProto.ColumnEncoding> encodings, List<OrcProto.Stream> streamList,
-      boolean[] included, boolean[][] colRgs,
+      OrcProto.RowIndex[] indexes, List<OrcProto.ColumnEncoding> encodings,
+      List<OrcProto.Stream> streamList, boolean[] included, boolean[][] colRgs,
       Consumer<OrcEncodedColumnBatch> consumer) throws IOException {
     // Note: for now we don't have to setError here, caller will setError if we throw.
     // We are also not supposed to call setDone, since we are only part of the operation.

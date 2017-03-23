@@ -23,7 +23,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -44,7 +43,7 @@ import org.apache.orc.OrcProto.ColumnEncoding;
 
 import com.google.common.base.Function;
 
-public class SerDeLowLevelCacheImpl implements BufferUsageManager, LlapOomDebugDump {
+public class SerDeLowLevelCacheImpl implements LlapOomDebugDump {
   private static final int DEFAULT_CLEANUP_INTERVAL = 600;
   private final Allocator allocator;
   private final AtomicInteger newEvictions = new AtomicInteger(0);
@@ -617,18 +616,6 @@ public class SerDeLowLevelCacheImpl implements BufferUsageManager, LlapOomDebugD
     } 
   }
 
-  @Override
-  public void decRefBuffer(MemoryBuffer buffer) {
-    unlockBuffer((LlapDataBuffer)buffer, true);
-  }
-
-  @Override
-  public void decRefBuffers(List<MemoryBuffer> cacheBuffers) {
-    for (MemoryBuffer b : cacheBuffers) {
-      unlockBuffer((LlapDataBuffer)b, true);
-    }
-  }
-
   private void unlockBuffer(LlapDataBuffer buffer, boolean handleLastDecRef) {
     boolean isLastDecref = (buffer.decRef() == 0);
     if (handleLastDecRef && isLastDecref) {
@@ -701,18 +688,6 @@ public class SerDeLowLevelCacheImpl implements BufferUsageManager, LlapOomDebugD
       }
       return leftToCheck - 1;
     }
-  }
-
-  @Override
-  public boolean incRefBuffer(MemoryBuffer buffer) {
-    // notifyReused implies that buffer is already locked; it's also called once for new
-    // buffers that are not cached yet. Don't notify cache policy.
-    return lockBuffer(((LlapDataBuffer)buffer), false);
-  }
-
-  @Override
-  public Allocator getAllocator() {
-    return allocator;
   }
 
   @Override

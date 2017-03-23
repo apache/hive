@@ -58,8 +58,7 @@ public class TestBuddyAllocator {
 
   private static class DummyMemoryManager implements MemoryManager {
     @Override
-    public boolean reserveMemory(long memoryToReserve, boolean waitForEviction) {
-      return true;
+    public void reserveMemory(long memoryToReserve) {
     }
 
     @Override

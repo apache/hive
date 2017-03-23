@@ -17,6 +17,8 @@
  */
 package org.apache.hadoop.hive.llap.cache;
 
+import java.util.concurrent.atomic.AtomicLong;
+
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 
@@ -48,6 +50,8 @@ public final class BuddyAllocator implements EvictionAwareAllocator, BuddyAlloca
   private final AtomicInteger allocatedArenas = new AtomicInteger(0);
 
   private final MemoryManager memoryManager;
+  private static final long MAX_DUMP_INTERVAL_NS = 300 * 1000000000L; // 5 minutes.
+  private final AtomicLong lastLog = new AtomicLong(-1);
 
   // Config settings
   private final int minAllocLog2, maxAllocLog2, arenaSizeLog2, maxArenas;
@@ -191,8 +195,7 @@ public final class BuddyAllocator implements EvictionAwareAllocator, BuddyAlloca
     int allocLog2 = freeListIx + minAllocLog2;
     int allocationSize = 1 << allocLog2;
     // TODO: reserving the entire thing is not ideal before we alloc anything. Interleave?
-    memoryManager.reserveMemory(dest.length << allocLog2, true);
-
+    memoryManager.reserveMemory(dest.length << allocLog2);
     int destAllocIx = 0;
     for (int i = 0; i < dest.length; ++i) {
       if (dest[i] != null) continue;
@@ -269,23 +272,23 @@ public final class BuddyAllocator implements EvictionAwareAllocator, BuddyAlloca
             if (destAllocIx == dest.length) return;
           }
         }
-        int numberToForce = (dest.length - destAllocIx) * attempt;
+        int numberToForce = (dest.length - destAllocIx) * (attempt + 1);
         long newReserved = memoryManager.forceReservedMemory(allocationSize, numberToForce);
         forceReserved += newReserved;
         if (newReserved == 0) {
           // Cannot force-evict anything, give up.
           String msg = "Failed to allocate " + size + "; at " + destAllocIx + " out of "
               + dest.length + " (entire cache is fragmented and locked, or an internal issue)";
-          LlapIoImpl.LOG.error(msg + "\nALLOCATOR STATE:\n" + debugDump()
-              + "\nPARENT STATE:\n" + memoryManager.debugDumpForOom());
+          logOomErrorMessage(msg);
           throw new AllocatorOutOfMemoryException(msg);
         }
         if (attempt == 0) {
           LlapIoImpl.LOG.warn("Failed to allocate despite reserved memory; will retry");
         }
+        ++attempt;
       }
     } finally {
-      if (attempt > 1) {
+      if (attempt > 4) {
         LlapIoImpl.LOG.warn("Allocation of " + dest.length + " buffers of size " + size
             + " took " + attempt + " attempts to evict enough memory");
       }
@@ -297,6 +300,25 @@ public final class BuddyAllocator implements EvictionAwareAllocator, BuddyAlloca
       }
     }
 
+  }
+
+  private void logOomErrorMessage(String msg) {
+    while (true) {
+      long time = System.nanoTime();
+      long lastTime = lastLog.get();
+      // Magic value usage is invalid with nanoTime, so once in a 1000 years we may log extra.
+      boolean shouldLog = (lastTime == -1 || (time - lastTime) > MAX_DUMP_INTERVAL_NS);
+      if (shouldLog && !lastLog.compareAndSet(lastTime, time)) {
+        continue;
+      }
+      if (shouldLog) {
+        LlapIoImpl.LOG.error(msg + "\nALLOCATOR STATE:\n" + debugDump()
+            + "\nPARENT STATE:\n" + memoryManager.debugDumpForOom());
+      } else {
+        LlapIoImpl.LOG.error(msg);
+      }
+      return;
+    }
   }
 
   @Override

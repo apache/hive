@@ -56,7 +56,17 @@ public class LowLevelCacheMemoryManager implements MemoryManager {
     }
   }
 
+
   @Override
+  public void reserveMemory(final long memoryToReserve) {
+    boolean result = reserveMemory(memoryToReserve, true);
+    if (result) return;
+    // Can only happen if there's no evictor, or if thread is interrupted.
+    throw new RuntimeException("Cannot reserve memory"
+        + (Thread.currentThread().isInterrupted() ? "; thread interrupted" : ""));
+  }
+
+  @VisibleForTesting
   public boolean reserveMemory(final long memoryToReserve, boolean waitForEviction) {
     // TODO: if this cannot evict enough, it will spin infinitely. Terminate at some point?
     int badCallCount = 0;
@@ -107,6 +117,10 @@ public class LowLevelCacheMemoryManager implements MemoryManager {
         }
         usedMem = usedMemory.get();
       }
+    }
+    if (!result) {
+      releaseMemory(reservedTotalMetric);
+      reservedTotalMetric = 0;
     }
     metrics.incrCacheCapacityUsed(reservedTotalMetric - evictedTotalMetric);
     return result;
