@@ -374,6 +374,8 @@ public class VectorGroupByOperator extends Operator<GroupByDesc> implements
             HiveConf.ConfVars.HIVEGROUPBYMAPINTERVAL.defaultIntVal;
       }
 
+      sumBatchSize = 0;
+
       mapKeysAggregationBuffers = new HashMap<KeyWrapper, VectorAggregationBufferRow>();
       computeMemoryLimits();
       LOG.debug("using hash aggregation processing mode");
