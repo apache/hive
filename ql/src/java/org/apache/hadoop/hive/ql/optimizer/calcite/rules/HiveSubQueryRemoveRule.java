@@ -164,6 +164,25 @@ public abstract class HiveSubQueryRemoveRule extends RelOptRule{
                             boolean isCorrScalarAgg) {
         switch (e.getKind()) {
             case SCALAR_QUERY:
+                builder.push(e.rel);
+                // returns single row/column
+                builder.aggregate(builder.groupKey(),
+                        builder.count(false, "cnt"));
+
+                SqlFunction countCheck = new SqlFunction("sq_count_check", SqlKind.OTHER_FUNCTION, ReturnTypes.BIGINT,
+                        InferTypes.RETURN_TYPE, OperandTypes.NUMERIC, SqlFunctionCategory.USER_DEFINED_FUNCTION);
+
+                // we create FILTER (sq_count_check(count()) <= 1) instead of PROJECT because RelFieldTrimmer
+                //  ends up getting rid of Project since it is not used further up the tree
+                builder.filter(builder.call(SqlStdOperatorTable.LESS_THAN_OR_EQUAL,
+                        builder.call(countCheck, builder.field("cnt")),
+                        builder.literal(1)));
+                if( !variablesSet.isEmpty())
+                {
+                    builder.join(JoinRelType.LEFT, builder.literal(true), variablesSet);
+                }
+                else
+                    builder.join(JoinRelType.INNER, builder.literal(true), variablesSet);
                 if(isCorrScalarAgg) {
                     // Transformation :
                     // Outer Query Left Join (inner query) on correlated predicate and preserve rows only from left side.
@@ -193,26 +212,7 @@ public abstract class HiveSubQueryRemoveRule extends RelOptRule{
 
                 //Transformation is to left join for correlated predicates and inner join otherwise,
                 // but do a count on inner side before that to make sure it generates atmost 1 row.
-                builder.push(e.rel);
-                // returns single row/column
-                builder.aggregate(builder.groupKey(),
-                        builder.count(false, "cnt"));
 
-                SqlFunction countCheck = new SqlFunction("sq_count_check", SqlKind.OTHER_FUNCTION, ReturnTypes.BIGINT,
-                        InferTypes.RETURN_TYPE, OperandTypes.NUMERIC, SqlFunctionCategory.USER_DEFINED_FUNCTION);
-
-                // we create FILTER (sq_count_check(count()) <= 1) instead of PROJECT because RelFieldTrimmer
-                //  ends up getting rid of Project since it is not used further up the tree
-                builder.filter(builder.call(SqlStdOperatorTable.LESS_THAN_OR_EQUAL,
-                        builder.call(countCheck, builder.field("cnt")),
-                        builder.literal(1)));
-
-                if( !variablesSet.isEmpty())
-                {
-                    builder.join(JoinRelType.LEFT, builder.literal(true), variablesSet);
-                }
-                else
-                    builder.join(JoinRelType.INNER, builder.literal(true), variablesSet);
                 builder.push(e.rel);
                 builder.join(JoinRelType.LEFT, builder.literal(true), variablesSet);
                 offset++;
