@@ -10,6 +10,7 @@ set hive.optimize.index.filter=true;
 set hive.stats.autogather=true;
 set hive.tez.bigtable.minsize.semijoin.reduction=1;
 set hive.tez.min.bloom.filter.entries=1;
+set hive.stats.fetch.column.stats=true;
 
 -- Create Tables
 create table alltypesorc_int ( cint int, cstring string ) stored as ORC;
@@ -27,7 +28,8 @@ alter table srcpart_small add partition (ds = "2008-04-09");
 insert overwrite table alltypesorc_int select cint, cstring1 from alltypesorc;
 insert overwrite table srcpart_date partition (ds = "2008-04-08" ) select key, value from srcpart where ds = "2008-04-08";
 insert overwrite table srcpart_date partition (ds = "2008-04-09") select key, value from srcpart where ds = "2008-04-09";
-insert overwrite table srcpart_small partition (ds = "2008-04-09") select key, value from srcpart where ds = "2008-04-09";
+insert overwrite table srcpart_small partition (ds = "2008-04-09") select key, value from srcpart where ds = "2008-04-09" limit 20;
+
 set hive.tez.dynamic.semijoin.reduction=false;
 
 analyze table alltypesorc_int compute statistics for columns;

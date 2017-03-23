@@ -75,6 +75,7 @@ import org.apache.hadoop.hive.ql.util.JavaDataModel;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.objectinspector.ConstantObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 import org.apache.hadoop.hive.serde2.objectinspector.StandardConstantListObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StandardConstantMapObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StandardConstantStructObjectInspector;
@@ -100,6 +101,8 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableShortObje
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableStringObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableTimestampObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.CharTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.hive.serde2.typeinfo.VarcharTypeInfo;
 import org.apache.hadoop.io.BytesWritable;
@@ -393,7 +396,7 @@ public class StatsUtils {
     return scaledSelectivity;
   }
 
-  private static long getRangeDelta(ColStatistics.Range range) {
+  public static long getRangeDelta(ColStatistics.Range range) {
     if (range.minValue != null && range.maxValue != null) {
       return (range.maxValue.longValue() - range.minValue.longValue());
     }
@@ -1683,5 +1686,47 @@ public class StatsUtils {
       LOG.info("Choosing 2 bit vectors..");
     }
     return numBitVectors;
+  }
+
+  public static boolean hasDiscreteRange(ColStatistics colStat) {
+    if (colStat.getRange() != null) {
+      TypeInfo colType = TypeInfoUtils.getTypeInfoFromTypeString(colStat.getColumnType());
+      if (colType.getCategory() == Category.PRIMITIVE) {
+        PrimitiveTypeInfo pti = (PrimitiveTypeInfo) colType;
+        switch (pti.getPrimitiveCategory()) {
+          case BOOLEAN:
+          case BYTE:
+          case SHORT:
+          case INT:
+          case LONG:
+            return true;
+          default:
+            break;
+        }
+      }
+    }
+    return false;
+  }
+
+  public static Range combineRange(Range range1, Range range2) {
+    if (   range1.minValue != null && range1.maxValue != null
+        && range2.minValue != null && range2.maxValue != null) {
+      long min1 = range1.minValue.longValue();
+      long max1 = range1.maxValue.longValue();
+      long min2 = range2.minValue.longValue();
+      long max2 = range2.maxValue.longValue();
+
+      if (   (min1 < min2 && max1 < max2)
+          || (min1 > min2 && max1 > max2)) {
+        // No overlap between the two ranges
+        return null;
+      } else {
+        // There is an overlap of ranges - create combined range.
+        return new ColStatistics.Range(
+            Math.min(min1, min2),
+            Math.max(max1,  max2));
+      }
+    }
+    return null;
   }
 }
