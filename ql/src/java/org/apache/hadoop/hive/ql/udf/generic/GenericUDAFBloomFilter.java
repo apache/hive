@@ -73,6 +73,8 @@ public class GenericUDAFBloomFilter implements GenericUDAFResolver2 {
     // Source operator to get the number of entries
     private SelectOperator sourceOperator;
     private long maxEntries = 0;
+    private long minEntries = 0;
+    private float factor = 1;
 
     // ObjectInspector for input data.
     private PrimitiveObjectInspector inputOI;
@@ -278,6 +280,9 @@ public class GenericUDAFBloomFilter implements GenericUDAFResolver2 {
         }
       }
 
+      // Update expectedEntries based on factor and minEntries configurations
+      expectedEntries = (long) (expectedEntries * factor);
+      expectedEntries = expectedEntries > minEntries ? expectedEntries : minEntries;
       return expectedEntries;
     }
 
@@ -293,6 +298,21 @@ public class GenericUDAFBloomFilter implements GenericUDAFResolver2 {
       this.maxEntries = maxEntries;
     }
 
+    public void setMinEntries(long minEntries) {
+      this.minEntries = minEntries;
+    }
+
+    public long getMinEntries() {
+      return minEntries;
+    }
+
+    public void setFactor(float factor) {
+      this.factor = factor;
+    }
+
+    public float getFactor() {
+      return factor;
+    }
     @Override
     public String getExprString() {
       return "expectedEntries=" + getExpectedEntries();

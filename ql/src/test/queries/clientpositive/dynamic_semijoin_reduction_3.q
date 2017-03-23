@@ -12,6 +12,8 @@ set hive.tez.dynamic.partition.pruning=true;
 set hive.tez.dynamic.semijoin.reduction=true;
 set hive.optimize.metadataonly=false;
 set hive.optimize.index.filter=true;
+set hive.tez.bigtable.minsize.semijoin.reduction=1;
+set hive.tez.min.bloom.filter.entries=1;
 
 -- Try with merge statements
 create table acidTbl(a int, b int) clustered by (a) into 2 buckets stored as orc TBLPROPERTIES ('transactional'='true');

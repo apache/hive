@@ -8,6 +8,8 @@ set hive.tez.dynamic.semijoin.reduction=true;
 set hive.optimize.metadataonly=false;
 set hive.optimize.index.filter=true;
 set hive.stats.autogather=true;
+set hive.tez.bigtable.minsize.semijoin.reduction=1;
+set hive.tez.min.bloom.filter.entries=1;
 
 -- Create Tables
 create table alltypesorc_int ( cint int, cstring string ) stored as ORC;
@@ -67,7 +69,7 @@ select count(*) from srcpart_date join srcpart_small on (srcpart_date.key = srcp
 set hive.tez.dynamic.semijoin.reduction=true;
 EXPLAIN select count(*) from srcpart_date join srcpart_small on (srcpart_date.key = srcpart_small.key1) join alltypesorc_int on (srcpart_date.value = alltypesorc_int.cstring);
 select count(*) from srcpart_date join srcpart_small on (srcpart_date.key = srcpart_small.key1) join alltypesorc_int on (srcpart_date.value = alltypesorc_int.cstring);
---set hive.tez.dynamic.semijoin.reduction=false;
+set hive.tez.dynamic.semijoin.reduction=false;
 
 -- With Mapjoins.
 set hive.auto.convert.join=true;
@@ -79,6 +81,15 @@ select count(*) from srcpart_date join srcpart_small on (srcpart_date.key = srcp
 set hive.tez.dynamic.semijoin.reduction=true;
 EXPLAIN select count(*) from srcpart_date join srcpart_small on (srcpart_date.key = srcpart_small.key1);
 select count(*) from srcpart_date join srcpart_small on (srcpart_date.key = srcpart_small.key1);
+set hive.tez.dynamic.semijoin.reduction=false;
+
+-- multiple sources, different  keys
+EXPLAIN select count(*) from srcpart_date join srcpart_small on (srcpart_date.key = srcpart_small.key1) join alltypesorc_int on (srcpart_date.value = alltypesorc_int.cstring);
+select count(*) from srcpart_date join srcpart_small on (srcpart_date.key = srcpart_small.key1) join alltypesorc_int on (srcpart_date.value = alltypesorc_int.cstring);
+set hive.tez.dynamic.semijoin.reduction=true;
+EXPLAIN select count(*) from srcpart_date join srcpart_small on (srcpart_date.key = srcpart_small.key1) join alltypesorc_int on (srcpart_date.value = alltypesorc_int.cstring);
+select count(*) from srcpart_date join srcpart_small on (srcpart_date.key = srcpart_small.key1) join alltypesorc_int on (srcpart_date.value = alltypesorc_int.cstring);
+--set hive.tez.dynamic.semijoin.reduction=false;
 
 -- With unions
 explain select * from alltypesorc_int join
