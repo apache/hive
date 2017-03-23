@@ -110,6 +110,28 @@ function start_hcat() {
   fi
 }
 
+function status_hcat() {
+
+  PID_FILE=${HCAT_PID_DIR}/hcat.pid
+  echo looking for $PID_FILE
+
+  # check if service is running
+  if [ -s "$PID_FILE" ] ; then
+    PID=`cat $PID_FILE`
+    echo -n "Found metastore server pid file $PID. "
+
+    if ps -p $PID > /dev/null ; then
+        echo "Process still running."
+        exit 0
+    else
+      echo "PID file exists, but process not running"
+      exit 1
+    fi
+  else
+    exit 3
+  fi
+}
+
 function stop_hcat() {
   SLEEP_TIME_AFTER_KILL=30
 
@@ -147,6 +169,9 @@ COMMAND=$1
 case $COMMAND in
   start)
     start_hcat
+    ;;
+  status)
+    status_hcat
     ;;
   stop)
     stop_hcat
