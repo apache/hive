@@ -256,8 +256,7 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
     this.metrics.setCacheMemoryPerInstance(ioMemoryBytes);
     this.metrics.setJvmMaxMemory(maxJvmMemory);
     this.metrics.setWaitQueueSize(waitQueueSize);
-    // TODO: Has to be reverted in HIVE-15644
-    //this.metrics.getJvmMetrics().setPauseMonitor(pauseMonitor);
+    this.metrics.getJvmMetrics().setPauseMonitor(pauseMonitor);
     this.llapDaemonInfoBean = MBeans.register("LlapDaemon", "LlapDaemonInfo", this);
     LOG.info("Started LlapMetricsSystem with displayName: " + displayName +
         " sessionId: " + sessionId);

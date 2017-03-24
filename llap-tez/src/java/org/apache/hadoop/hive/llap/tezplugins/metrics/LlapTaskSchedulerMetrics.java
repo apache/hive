@@ -31,6 +31,7 @@ import static org.apache.hadoop.hive.llap.tezplugins.metrics.LlapTaskSchedulerIn
 import static org.apache.hadoop.metrics2.impl.MsInfo.ProcessName;
 import static org.apache.hadoop.metrics2.impl.MsInfo.SessionId;
 
+import org.apache.hadoop.hive.common.JvmMetrics;
 import org.apache.hadoop.hive.llap.metrics.LlapMetricsSystem;
 import org.apache.hadoop.hive.llap.metrics.MetricsUtils;
 import org.apache.hadoop.metrics2.MetricsCollector;
@@ -43,7 +44,6 @@ import org.apache.hadoop.metrics2.lib.MetricsRegistry;
 import org.apache.hadoop.metrics2.lib.MutableCounterInt;
 import org.apache.hadoop.metrics2.lib.MutableGaugeInt;
 import org.apache.hadoop.metrics2.lib.MutableGaugeLong;
-import org.apache.hadoop.metrics2.source.JvmMetrics;
 
 /**
  * Metrics about the llap task scheduler.
