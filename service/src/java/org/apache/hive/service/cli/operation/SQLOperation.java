@@ -172,8 +172,9 @@ public class SQLOperation extends ExecuteStatementOperation {
           @Override
           public void run() {
             try {
+              String queryId = confOverlay.get(HiveConf.ConfVars.HIVEQUERYID.varname);
               LOG.info("Query timed out after: " + queryTimeout
-                  + " seconds. Cancelling the execution now.");
+                  + " seconds. Cancelling the execution now: " + queryId);
               SQLOperation.this.cancel(OperationState.TIMEDOUT);
             } catch (HiveSQLException e) {
               LOG.error("Error cancelling the query after timeout: " + queryTimeout + " seconds", e);
@@ -412,7 +413,8 @@ public class SQLOperation extends ExecuteStatementOperation {
       if (backgroundHandle != null) {
         boolean success = backgroundHandle.cancel(true);
         if (success) {
-          LOG.info("The running operation has been successfully interrupted.");
+          String queryId = confOverlay.get(HiveConf.ConfVars.HIVEQUERYID.varname);
+          LOG.info("The running operation has been successfully interrupted: " + queryId);
         }
       }
     }
