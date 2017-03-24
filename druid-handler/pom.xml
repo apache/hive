@@ -107,6 +107,10 @@
           <groupId>com.fasterxml.jackson.core</groupId>
           <artifactId>jackson-databind</artifactId>
         </exclusion>
+        <exclusion>
+          <groupId>io.druid</groupId>
+          <artifactId>druid-aws-common</artifactId>
+        </exclusion>
       </exclusions>
     </dependency>
     <dependency>
