@@ -815,6 +815,12 @@ public class VectorGroupByOperator extends Operator<GroupByDesc> implements
       if (first) {
         // Copy the group key to output batch now.  We'll copy in the aggregates at the end of the group.
         first = false;
+
+        // Evaluate the key expressions of just this first batch to get the correct key.
+        for (int i = 0; i < outputKeyLength; i++) {
+          keyExpressions[i].evaluate(batch);
+        }
+
         groupKeyHelper.copyGroupKey(batch, outputBatch, buffer);
       }
 

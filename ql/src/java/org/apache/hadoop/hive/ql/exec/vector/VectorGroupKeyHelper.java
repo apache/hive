@@ -32,6 +32,8 @@ import org.apache.hadoop.io.DataOutputBuffer;
  */
 public class VectorGroupKeyHelper extends VectorColumnSetInfo {
 
+  private int[] outputColumnNums;
+
   public VectorGroupKeyHelper(int keyCount) {
     super(keyCount);
    }
@@ -41,12 +43,14 @@ public class VectorGroupKeyHelper extends VectorColumnSetInfo {
     // NOTE: To support pruning the grouping set id dummy key by VectorGroupbyOpeator MERGE_PARTIAL
     // case, we use the keyCount passed to the constructor and not keyExpressions.length.
 
-    // Inspect the output type of each key expression.
+    // Inspect the output type of each key expression.  And, remember the output columns.
+    outputColumnNums = new int[keyCount];
     for(int i=0; i < keyCount; ++i) {
       String typeName = VectorizationContext.mapTypeNameSynonyms(keyExpressions[i].getOutputType());
       TypeInfo typeInfo = TypeInfoUtils.getTypeInfoFromTypeString(typeName);
       Type columnVectorType = VectorizationContext.getColumnVectorTypeFromTypeInfo(typeInfo);
       addKey(columnVectorType);
+      outputColumnNums[i] = keyExpressions[i].getOutputColumn();
     }
     finishAdding();
   }
@@ -61,9 +65,9 @@ public class VectorGroupKeyHelper extends VectorColumnSetInfo {
   public void copyGroupKey(VectorizedRowBatch inputBatch, VectorizedRowBatch outputBatch,
           DataOutputBuffer buffer) throws HiveException {
     for(int i = 0; i< longIndices.length; ++i) {
-      int keyIndex = longIndices[i];
-      LongColumnVector inputColumnVector = (LongColumnVector) inputBatch.cols[keyIndex];
-      LongColumnVector outputColumnVector = (LongColumnVector) outputBatch.cols[keyIndex];
+      final int columnIndex = outputColumnNums[longIndices[i]];
+      LongColumnVector inputColumnVector = (LongColumnVector) inputBatch.cols[columnIndex];
+      LongColumnVector outputColumnVector = (LongColumnVector) outputBatch.cols[columnIndex];
 
       // This vectorized code pattern says: 
       //    If the input batch has no nulls at all (noNulls is true) OR
@@ -87,9 +91,9 @@ public class VectorGroupKeyHelper extends VectorColumnSetInfo {
       }
     }
     for(int i=0;i<doubleIndices.length; ++i) {
-      int keyIndex = doubleIndices[i];
-      DoubleColumnVector inputColumnVector = (DoubleColumnVector) inputBatch.cols[keyIndex];
-      DoubleColumnVector outputColumnVector = (DoubleColumnVector) outputBatch.cols[keyIndex];
+      final int columnIndex = outputColumnNums[doubleIndices[i]];
+      DoubleColumnVector inputColumnVector = (DoubleColumnVector) inputBatch.cols[columnIndex];
+      DoubleColumnVector outputColumnVector = (DoubleColumnVector) outputBatch.cols[columnIndex];
       if (inputColumnVector.noNulls || !inputColumnVector.isNull[0]) {
         outputColumnVector.vector[outputBatch.size] = inputColumnVector.vector[0];
       } else {
@@ -98,9 +102,9 @@ public class VectorGroupKeyHelper extends VectorColumnSetInfo {
       }
     }
     for(int i=0;i<stringIndices.length; ++i) {
-      int keyIndex = stringIndices[i];
-      BytesColumnVector inputColumnVector = (BytesColumnVector) inputBatch.cols[keyIndex];
-      BytesColumnVector outputColumnVector = (BytesColumnVector) outputBatch.cols[keyIndex];
+      final int columnIndex = outputColumnNums[stringIndices[i]];
+      BytesColumnVector inputColumnVector = (BytesColumnVector) inputBatch.cols[columnIndex];
+      BytesColumnVector outputColumnVector = (BytesColumnVector) outputBatch.cols[columnIndex];
       if (inputColumnVector.noNulls || !inputColumnVector.isNull[0]) {
         // Copy bytes into scratch buffer.
         int start = buffer.getLength();
@@ -117,9 +121,9 @@ public class VectorGroupKeyHelper extends VectorColumnSetInfo {
       }
     }
     for(int i=0;i<decimalIndices.length; ++i) {
-      int keyIndex = decimalIndices[i];
-      DecimalColumnVector inputColumnVector = (DecimalColumnVector) inputBatch.cols[keyIndex];
-      DecimalColumnVector outputColumnVector = (DecimalColumnVector) outputBatch.cols[keyIndex];
+      final int columnIndex = outputColumnNums[decimalIndices[i]];
+      DecimalColumnVector inputColumnVector = (DecimalColumnVector) inputBatch.cols[columnIndex];
+      DecimalColumnVector outputColumnVector = (DecimalColumnVector) outputBatch.cols[columnIndex];
       if (inputColumnVector.noNulls || !inputColumnVector.isNull[0]) {
 
         // Since we store references to HiveDecimalWritable instances, we must use the update method instead
@@ -131,9 +135,9 @@ public class VectorGroupKeyHelper extends VectorColumnSetInfo {
       }
     }
     for(int i=0;i<timestampIndices.length; ++i) {
-      int keyIndex = timestampIndices[i];
-      TimestampColumnVector inputColumnVector = (TimestampColumnVector) inputBatch.cols[keyIndex];
-      TimestampColumnVector outputColumnVector = (TimestampColumnVector) outputBatch.cols[keyIndex];
+      final int columnIndex = outputColumnNums[timestampIndices[i]];
+      TimestampColumnVector inputColumnVector = (TimestampColumnVector) inputBatch.cols[columnIndex];
+      TimestampColumnVector outputColumnVector = (TimestampColumnVector) outputBatch.cols[columnIndex];
       if (inputColumnVector.noNulls || !inputColumnVector.isNull[0]) {
 
         outputColumnVector.setElement(outputBatch.size, 0, inputColumnVector);
@@ -143,9 +147,9 @@ public class VectorGroupKeyHelper extends VectorColumnSetInfo {
       }
     }
     for(int i=0;i<intervalDayTimeIndices.length; ++i) {
-      int keyIndex = intervalDayTimeIndices[i];
-      IntervalDayTimeColumnVector inputColumnVector = (IntervalDayTimeColumnVector) inputBatch.cols[keyIndex];
-      IntervalDayTimeColumnVector outputColumnVector = (IntervalDayTimeColumnVector) outputBatch.cols[keyIndex];
+      final int columnIndex = outputColumnNums[intervalDayTimeIndices[i]];
+      IntervalDayTimeColumnVector inputColumnVector = (IntervalDayTimeColumnVector) inputBatch.cols[columnIndex];
+      IntervalDayTimeColumnVector outputColumnVector = (IntervalDayTimeColumnVector) outputBatch.cols[columnIndex];
       if (inputColumnVector.noNulls || !inputColumnVector.isNull[0]) {
 
         outputColumnVector.setElement(outputBatch.size, 0, inputColumnVector);
