@@ -19,13 +19,15 @@
 package org.apache.hive.beeline.qfile;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.hadoop.hive.ql.QTestProcessExecResult;
 import org.apache.hadoop.util.Shell;
 import org.apache.hive.common.util.StreamPrinter;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.PrintStream;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -37,15 +39,25 @@ import java.util.regex.Pattern;
  * input and output files, and provides methods for filtering the output of the runs.
  */
 public final class QFile {
-  private static final Logger LOG = LoggerFactory.getLogger(QFile.class.getName());
+  private static final String DEBUG_HINT =
+      "The following files can help you identifying the problem:\n"
+      + " - Query file: %1\n"
+      + " - Raw output file: %2\n"
+      + " - Filtered output file: %3\n"
+      + " - Expected output file: %4\n"
+      + " - Client log file: %5\n"
+      + " - Client log files before the test: %6\n"
+      + " - Client log files after the test: %7\n"
+      + " - Hiveserver2 log file: %8\n";
 
   private String name;
   private File inputFile;
   private File rawOutputFile;
   private File outputFile;
-  private File expcetedOutputFile;
+  private File expectedOutputFile;
   private File logFile;
-  private File infraLogFile;
+  private File beforeExecuteLogFile;
+  private File afterExecuteLogFile;
   private static RegexFilterSet staticFilterSet = getStaticFilterSet();
   private RegexFilterSet specificFilterSet;
 
@@ -68,15 +80,24 @@ public final class QFile {
   }
 
   public File getExpectedOutputFile() {
-    return expcetedOutputFile;
+    return expectedOutputFile;
   }
 
   public File getLogFile() {
     return logFile;
   }
 
-  public File getInfraLogFile() {
-    return infraLogFile;
+  public File getBeforeExecuteLogFile() {
+    return beforeExecuteLogFile;
+  }
+
+  public File getAfterExecuteLogFile() {
+    return afterExecuteLogFile;
+  }
+
+  public String getDebugHint() {
+    return String.format(DEBUG_HINT, inputFile, rawOutputFile, outputFile, expectedOutputFile,
+        logFile, beforeExecuteLogFile, afterExecuteLogFile, "./itests/qtest/target/tmp/hive.log");
   }
 
   public void filterOutput() throws IOException {
@@ -85,22 +106,18 @@ public final class QFile {
     FileUtils.writeStringToFile(outputFile, filteredOutput);
   }
 
-  public boolean compareResults() throws IOException, InterruptedException {
-    if (!expcetedOutputFile.exists()) {
-      LOG.error("Expected results file does not exist: " + expcetedOutputFile);
-      return false;
+  public QTestProcessExecResult compareResults() throws IOException, InterruptedException {
+    if (!expectedOutputFile.exists()) {
+      throw new IOException("Expected results file does not exist: " + expectedOutputFile);
     }
     return executeDiff();
   }
 
   public void overwriteResults() throws IOException {
-    if (expcetedOutputFile.exists()) {
-      FileUtils.forceDelete(expcetedOutputFile);
-    }
-    FileUtils.copyFile(outputFile, expcetedOutputFile);
+    FileUtils.copyFile(outputFile, expectedOutputFile);
   }
 
-  private boolean executeDiff() throws IOException, InterruptedException {
+  private QTestProcessExecResult executeDiff() throws IOException, InterruptedException {
     List<String> diffCommandArgs = new ArrayList<String>();
     diffCommandArgs.add("diff");
 
@@ -121,7 +138,7 @@ public final class QFile {
     }
 
     // Add files to compare to the arguments list
-    diffCommandArgs.add(getQuotedString(expcetedOutputFile));
+    diffCommandArgs.add(getQuotedString(expectedOutputFile));
     diffCommandArgs.add(getQuotedString(outputFile));
 
     System.out.println("Running: " + org.apache.commons.lang.StringUtils.join(diffCommandArgs,
@@ -129,8 +146,11 @@ public final class QFile {
     Process executor = Runtime.getRuntime().exec(diffCommandArgs.toArray(
         new String[diffCommandArgs.size()]));
 
+    ByteArrayOutputStream bos = new ByteArrayOutputStream();
+    PrintStream out = new PrintStream(bos, true, "UTF-8");
+
     StreamPrinter errPrinter = new StreamPrinter(executor.getErrorStream(), null, System.err);
-    StreamPrinter outPrinter = new StreamPrinter(executor.getInputStream(), null, System.out);
+    StreamPrinter outPrinter = new StreamPrinter(executor.getInputStream(), null, System.out, out);
 
     outPrinter.start();
     errPrinter.start();
@@ -142,7 +162,8 @@ public final class QFile {
 
     executor.waitFor();
 
-    return (result == 0);
+    return QTestProcessExecResult.create(result, new String(bos.toByteArray(),
+        StandardCharsets.UTF_8));
   }
 
   private static String getQuotedString(File file) {
@@ -257,9 +278,10 @@ public final class QFile {
       result.inputFile = new File(queryDirectory, name + ".q");
       result.rawOutputFile = new File(logDirectory, name + ".q.out.raw");
       result.outputFile = new File(logDirectory, name + ".q.out");
-      result.expcetedOutputFile = new File(resultsDirectory, name + ".q.out");
+      result.expectedOutputFile = new File(resultsDirectory, name + ".q.out");
       result.logFile = new File(logDirectory, name + ".q.beeline");
-      result.infraLogFile = new File(logDirectory, name + ".q.out.infra");
+      result.beforeExecuteLogFile = new File(logDirectory, name + ".q.beforeExecute.log");
+      result.afterExecuteLogFile = new File(logDirectory, name + ".q.afterExecute.log");
       // These are the filters which are specific for the given QTest.
       // Check staticFilterSet for common filters.
       result.specificFilterSet = new RegexFilterSet()
