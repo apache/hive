@@ -188,6 +188,8 @@ public final class QFile {
 
     return new RegexFilterSet()
         .addFilter(logPattern, "")
+        .addFilter("(?s)\nWaiting to acquire compile lock:.*?Acquired the compile lock.\n",
+            "\nAcquired the compile lock.\n")
         .addFilter("Getting log thread is interrupted, since query is done!\n", "")
         .addFilter("going to print operations logs\n", "")
         .addFilter("printed operations logs\n", "")
