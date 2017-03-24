@@ -22,6 +22,7 @@ import org.apache.hadoop.hive.metastore.api.NotificationEvent;
 import org.apache.hadoop.hive.metastore.messaging.AlterTableMessage;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.EximUtil;
+import org.apache.hadoop.hive.ql.parse.SemanticException;
 
 import static org.apache.hadoop.hive.ql.parse.ReplicationSemanticAnalyzer.DUMPTYPE;
 import static org.apache.hadoop.hive.ql.parse.ReplicationSemanticAnalyzer.DumpMetaData;
@@ -29,6 +30,7 @@ import static org.apache.hadoop.hive.ql.parse.ReplicationSemanticAnalyzer.DumpMe
 public class AlterTableHandler extends AbstractHandler {
   private final org.apache.hadoop.hive.metastore.api.Table before;
   private final org.apache.hadoop.hive.metastore.api.Table after;
+  private final boolean isTruncateOp;
   private final Scenario scenario;
 
   private enum Scenario {
@@ -43,6 +45,12 @@ public class AlterTableHandler extends AbstractHandler {
       DUMPTYPE dumpType() {
         return DUMPTYPE.EVENT_RENAME_TABLE;
       }
+    },
+    TRUNCATE {
+      @Override
+      DUMPTYPE dumpType() {
+        return DUMPTYPE.EVENT_TRUNCATE_TABLE;
+      }
     };
 
     abstract DUMPTYPE dumpType();
@@ -53,15 +61,18 @@ public class AlterTableHandler extends AbstractHandler {
     AlterTableMessage atm = deserializer.getAlterTableMessage(event.getMessage());
     before = atm.getTableObjBefore();
     after = atm.getTableObjAfter();
+    isTruncateOp = atm.getIsTruncateOp();
     scenario = scenarioType(before, after);
   }
 
-  private static Scenario scenarioType(org.apache.hadoop.hive.metastore.api.Table before,
+  private Scenario scenarioType(org.apache.hadoop.hive.metastore.api.Table before,
       org.apache.hadoop.hive.metastore.api.Table after) {
-    return before.getDbName().equals(after.getDbName())
-        && before.getTableName().equals(after.getTableName())
-        ? Scenario.ALTER
-        : Scenario.RENAME;
+    if (before.getDbName().equals(after.getDbName())
+        && before.getTableName().equals(after.getTableName())) {
+      return isTruncateOp ? Scenario.TRUNCATE : Scenario.ALTER;
+    } else {
+      return Scenario.RENAME;
+    }
   }
 
   @Override

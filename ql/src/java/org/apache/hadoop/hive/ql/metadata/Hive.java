@@ -1201,6 +1201,27 @@ public class Hive {
     }
   }
 
+
+
+  /**
+   * Truncates the table/partition as per specifications. Just trash the data files
+   *
+   * @param dbDotTableName
+   *          name of the table
+   * @throws HiveException
+   */
+  public void truncateTable(String dbDotTableName, Map<String, String> partSpec) throws HiveException {
+    try {
+      Table table = getTable(dbDotTableName, true);
+
+      List<String> partNames = ((null == partSpec)
+                       ? null : getPartitionNames(table.getDbName(), table.getTableName(), partSpec, (short) -1));
+      getMSC().truncateTable(table.getDbName(), table.getTableName(), partNames);
+    } catch (Exception e) {
+      throw new HiveException(e);
+    }
+  }
+
   public HiveConf getConf() {
     return (conf);
   }

@@ -48,6 +48,7 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
   print('  void add_foreign_key(AddForeignKeyRequest req)')
   print('  void drop_table(string dbname, string name, bool deleteData)')
   print('  void drop_table_with_environment_context(string dbname, string name, bool deleteData, EnvironmentContext environment_context)')
+  print('  void truncate_table(string dbName, string tableName,  partNames)')
   print('   get_tables(string db_name, string pattern)')
   print('   get_tables_by_type(string db_name, string pattern, string tableType)')
   print('   get_table_meta(string db_patterns, string tbl_patterns,  tbl_types)')
@@ -389,6 +390,12 @@ elif cmd == 'drop_table_with_environment_context':
     print('drop_table_with_environment_context requires 4 args')
     sys.exit(1)
   pp.pprint(client.drop_table_with_environment_context(args[0],args[1],eval(args[2]),eval(args[3]),))
+
+elif cmd == 'truncate_table':
+  if len(args) != 3:
+    print('truncate_table requires 3 args')
+    sys.exit(1)
+  pp.pprint(client.truncate_table(args[0],args[1],eval(args[2]),))
 
 elif cmd == 'get_tables':
   if len(args) != 2:
