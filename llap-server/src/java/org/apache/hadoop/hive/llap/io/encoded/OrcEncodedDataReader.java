@@ -696,10 +696,7 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
       ArrayList<OrcStripeMetadata> metadata) throws IOException {
     RecordReaderImpl.SargApplier sargApp = null;
     if (sarg != null && rowIndexStride != 0) {
-      List<OrcProto.Type> types = fileMetadata.getTypes();
-      String[] colNamesForSarg = OrcInputFormat.getSargColumnNames(
-          columnNames, types, globalIncludes, fileMetadata.isOriginalFormat());
-      sargApp = new RecordReaderImpl.SargApplier(sarg, colNamesForSarg,
+      sargApp = new RecordReaderImpl.SargApplier(sarg,
           rowIndexStride, evolution,
           OrcFile.WriterVersion.from(fileMetadata.getWriterVersionNum()));
     }
@@ -714,6 +711,7 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
         OrcStripeMetadata stripeMetadata = metadata.get(stripeIxMod);
         rgsToRead = sargApp.pickRowGroups(stripe, stripeMetadata.getRowIndexes(),
             stripeMetadata.getBloomFilterKinds(),
+            stripeMetadata.getEncodings(),
             stripeMetadata.getBloomFilterIndexes(), true);
       }
       boolean isNone = rgsToRead == RecordReaderImpl.SargApplier.READ_NO_RGS,

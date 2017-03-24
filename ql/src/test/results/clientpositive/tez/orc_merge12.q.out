@@ -144,7 +144,7 @@ PREHOOK: Input: default@alltypesorc3xcols
 #### A masked pattern was here ####
 -- BEGIN ORC FILE DUMP --
 #### A masked pattern was here ####
-File Version: 0.12 with ORC_101
+File Version: 0.12 with ORC_135
 Rows: 24576
 Compression: ZLIB
 Compression size: 262144
@@ -813,7 +813,7 @@ Stripes:
       Entry 0: count: 6889 hasNull: true true: 3402 positions: 0,0,0,0,0,0,0,0
       Entry 1: count: 2284 hasNull: true true: 581 positions: 0,168,8,0,0,520,97,1
 
-File length: 3007981 bytes
+File length: 3007982 bytes
 Padding length: 0 bytes
 Padding ratio: 0%
 ________________________________________________________________________________________________________________________
