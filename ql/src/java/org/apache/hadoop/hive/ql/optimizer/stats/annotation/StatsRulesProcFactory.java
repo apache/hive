@@ -1506,7 +1506,9 @@ public class StatsRulesProcFactory {
             perAttrDVs.clear();
           }
 
-          if (numAttr > numParent) {
+          if (numAttr > 1 && conf.getBoolVar(HiveConf.ConfVars.HIVE_STATS_CORRELATED_MULTI_KEY_JOINS)) {
+            denom = Collections.max(distinctVals);
+          } else if (numAttr > numParent) {
             // To avoid denominator getting larger and aggressively reducing
             // number of rows, we will ease out denominator.
             denom = StatsUtils.addWithExpDecay(distinctVals);
