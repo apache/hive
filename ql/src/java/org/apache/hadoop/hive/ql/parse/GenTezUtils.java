@@ -95,6 +95,7 @@ public class GenTezUtils {
     ReduceSinkOperator reduceSink = (ReduceSinkOperator) context.parentOfRoot;
 
     reduceWork.setNumReduceTasks(reduceSink.getConf().getNumReducers());
+    reduceWork.setSlowStart(reduceSink.getConf().isSlowStart());
 
     if (isAutoReduceParallelism && reduceSink.getConf().getReducerTraits().contains(AUTOPARALLEL)) {
 
@@ -132,10 +133,11 @@ public class GenTezUtils {
     EdgeType edgeType = determineEdgeType(context.preceedingWork, reduceWork, reduceSink);
     if (reduceWork.isAutoReduceParallelism()) {
       edgeProp =
-          new TezEdgeProperty(context.conf, edgeType, true,
+          new TezEdgeProperty(context.conf, edgeType, true, reduceWork.isSlowStart(),
               reduceWork.getMinReduceTasks(), reduceWork.getMaxReduceTasks(), bytesPerReducer);
     } else {
       edgeProp = new TezEdgeProperty(edgeType);
+      edgeProp.setSlowStart(reduceWork.isSlowStart());
     }
 
     tezWork.connect(

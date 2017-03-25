@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.optimizer;
 
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -559,6 +560,8 @@ public class DynamicPartitionPruningOptimization implements NodeProcessor {
             rsDesc, new RowSchema(groupByOp.getSchema()), groupByOp);
     Map<String, ExprNodeDesc> columnExprMap = new HashMap<String, ExprNodeDesc>();
     rsOp.setColumnExprMap(columnExprMap);
+
+    rsOp.getConf().setReducerTraits(EnumSet.of(ReduceSinkDesc.ReducerTraits.QUICKSTART));
 
     // Create the final Group By Operator
     ArrayList<AggregationDesc> aggsFinal = new ArrayList<AggregationDesc>();

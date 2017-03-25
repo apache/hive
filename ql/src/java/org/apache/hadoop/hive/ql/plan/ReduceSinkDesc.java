@@ -109,7 +109,8 @@ public class ReduceSinkDesc extends AbstractOperatorDesc {
     UNSET(0), // unset
     FIXED(1), // distribution of keys is fixed
     AUTOPARALLEL(2), // can change reducer count (ORDER BY can concat adjacent buckets)
-    UNIFORM(3); // can redistribute into buckets uniformly (GROUP BY can)
+    UNIFORM(3), // can redistribute into buckets uniformly (GROUP BY can)
+    QUICKSTART(4); // do not wait for downstream tasks
 
     private final int trait;
 
@@ -439,6 +440,15 @@ public class ReduceSinkDesc extends AbstractOperatorDesc {
   @Explain(displayName = "auto parallelism", explainLevels = { Level.EXTENDED })
   public final boolean isAutoParallel() {
     return (this.reduceTraits.contains(ReducerTraits.AUTOPARALLEL));
+  }
+
+  public final boolean isSlowStart() {
+    return !(this.reduceTraits.contains(ReducerTraits.QUICKSTART));
+  }
+
+  @Explain(displayName = "quick start", displayOnlyOnTrue = true, explainLevels = {Explain.Level.EXTENDED })
+  public final boolean isQuickStart() {
+    return !isSlowStart();
   }
 
   public final EnumSet<ReducerTraits> getReducerTraits() {

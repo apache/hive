@@ -86,6 +86,9 @@ public class ReduceWork extends BaseWork {
   // boolean that says whether tez auto reduce parallelism should be used
   private boolean isAutoReduceParallelism;
 
+  // boolean that says whether to slow start or not
+  private boolean isSlowStart = true;
+
   // for auto reduce parallelism - minimum reducers requested
   private int minReduceTasks;
 
@@ -215,6 +218,14 @@ public class ReduceWork extends BaseWork {
 
   public boolean isAutoReduceParallelism() {
     return isAutoReduceParallelism;
+  }
+
+  public boolean isSlowStart() {
+    return isSlowStart;
+  }
+
+  public void setSlowStart(boolean isSlowStart) {
+    this.isSlowStart = isSlowStart;
   }
 
   public void setMinReduceTasks(int minReduceTasks) {

@@ -336,6 +336,11 @@ public class DagUtils {
       setupAutoReducerParallelism(edgeProp, w);
       break;
     }
+    case CUSTOM_SIMPLE_EDGE: {
+      setupQuickStart(edgeProp, w);
+      break;
+    }
+
     default:
       // nothing
     }
@@ -1259,6 +1264,20 @@ public class DagUtils {
       pluginConf.setLong(
           ShuffleVertexManager.TEZ_SHUFFLE_VERTEX_MANAGER_DESIRED_TASK_INPUT_SIZE,
           edgeProp.getInputSizePerReducer());
+      UserPayload payload = TezUtils.createUserPayloadFromConf(pluginConf);
+      desc.setUserPayload(payload);
+      v.setVertexManagerPlugin(desc);
+    }
+  }
+
+  private void setupQuickStart(TezEdgeProperty edgeProp, Vertex v)
+    throws IOException {
+    if (!edgeProp.isSlowStart()) {
+      Configuration pluginConf = new Configuration(false);
+      VertexManagerPluginDescriptor desc =
+              VertexManagerPluginDescriptor.create(ShuffleVertexManager.class.getName());
+      pluginConf.setFloat(ShuffleVertexManager.TEZ_SHUFFLE_VERTEX_MANAGER_MIN_SRC_FRACTION, 0);
+      pluginConf.setFloat(ShuffleVertexManager.TEZ_SHUFFLE_VERTEX_MANAGER_MAX_SRC_FRACTION, 0);
       UserPayload payload = TezUtils.createUserPayloadFromConf(pluginConf);
       desc.setUserPayload(payload);
       v.setVertexManagerPlugin(desc);

@@ -71,6 +71,9 @@ select count(*) from srcpart_date join srcpart_small on (srcpart_date.key = srcp
 set hive.tez.dynamic.semijoin.reduction=true;
 EXPLAIN select count(*) from srcpart_date join srcpart_small on (srcpart_date.key = srcpart_small.key1) join alltypesorc_int on (srcpart_date.value = alltypesorc_int.cstring);
 select count(*) from srcpart_date join srcpart_small on (srcpart_date.key = srcpart_small.key1) join alltypesorc_int on (srcpart_date.value = alltypesorc_int.cstring);
+
+-- Explain extended to verify fast start for Reducer in semijoin branch
+EXPLAIN extended select count(*) from srcpart_date join srcpart_small on (srcpart_date.key = srcpart_small.key1);
 set hive.tez.dynamic.semijoin.reduction=false;
 
 -- With Mapjoins.
