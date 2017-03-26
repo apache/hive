@@ -272,6 +272,7 @@ public class HiveConf extends Configuration {
       HiveConf.ConfVars.HIVE_TXN_HEARTBEAT_THREADPOOL_SIZE,
       HiveConf.ConfVars.HIVE_TXN_MAX_OPEN_BATCH,
       HiveConf.ConfVars.HIVE_TXN_RETRYABLE_SQLEX_REGEX,
+      HiveConf.ConfVars.HIVE_METASTORE_STATS_NDV_TUNER,
       HiveConf.ConfVars.HIVE_METASTORE_STATS_NDV_DENSITY_FUNCTION,
       HiveConf.ConfVars.METASTORE_AGGREGATE_STATS_CACHE_ENABLED,
       HiveConf.ConfVars.METASTORE_AGGREGATE_STATS_CACHE_SIZE,
@@ -1683,6 +1684,10 @@ public class HiveConf extends Configuration {
     HIVE_STATS_NDV_ERROR("hive.stats.ndv.error", (float)20.0,
         "Standard error expressed in percentage. Provides a tradeoff between accuracy and compute cost. \n" +
         "A lower value for error indicates higher accuracy and a higher compute cost."),
+    HIVE_METASTORE_STATS_NDV_TUNER("hive.metastore.stats.ndv.tuner", (float)0.0,
+         "Provides a tunable parameter between the lower bound and the higher bound of ndv for aggregate ndv across all the partitions. \n" +
+         "The lower bound is equal to the maximum of ndv of all the partitions. The higher bound is equal to the sum of ndv of all the partitions.\n" +
+         "Its value should be between 0.0 (i.e., choose lower bound) and 1.0 (i.e., choose higher bound)"),
     HIVE_METASTORE_STATS_NDV_DENSITY_FUNCTION("hive.metastore.stats.ndv.densityfunction", false,
         "Whether to use density function to estimate the NDV for the whole table based on the NDV of partitions"),
     HIVE_STATS_KEY_PREFIX("hive.stats.key.prefix", "", "", true), // internal usage only
