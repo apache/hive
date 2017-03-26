@@ -42,8 +42,8 @@ CREATE TABLE "CDS" (
 CREATE TABLE "COLUMNS_V2" (
     "CD_ID" bigint NOT NULL,
     "COMMENT" character varying(4000),
-    "COLUMN_NAME" character varying(1000) NOT NULL,
-    "TYPE_NAME" character varying(4000),
+    "COLUMN_NAME" character varying(767) NOT NULL,
+    "TYPE_NAME" text,
     "INTEGER_IDX" integer NOT NULL
 );
 
@@ -172,7 +172,7 @@ CREATE TABLE "PARTITION_EVENTS" (
     "EVENT_TIME" bigint NOT NULL,
     "EVENT_TYPE" integer NOT NULL,
     "PARTITION_NAME" character varying(767),
-    "TBL_NAME" character varying(128)
+    "TBL_NAME" character varying(256)
 );
 
 
@@ -217,7 +217,7 @@ CREATE TABLE "PARTITION_PARAMS" (
 
 CREATE TABLE "PART_COL_PRIVS" (
     "PART_COLUMN_GRANT_ID" bigint NOT NULL,
-    "COLUMN_NAME" character varying(1000) DEFAULT NULL::character varying,
+    "COLUMN_NAME" character varying(767) DEFAULT NULL::character varying,
     "CREATE_TIME" bigint NOT NULL,
     "GRANT_OPTION" smallint NOT NULL,
     "GRANTOR" character varying(128) DEFAULT NULL::character varying,
@@ -298,7 +298,7 @@ CREATE TABLE "SDS" (
 CREATE TABLE "SD_PARAMS" (
     "SD_ID" bigint NOT NULL,
     "PARAM_KEY" character varying(256) NOT NULL,
-    "PARAM_VALUE" character varying(4000) DEFAULT NULL::character varying
+    "PARAM_VALUE" text DEFAULT NULL
 );
 
 
@@ -330,7 +330,7 @@ CREATE TABLE "SERDES" (
 CREATE TABLE "SERDE_PARAMS" (
     "SERDE_ID" bigint NOT NULL,
     "PARAM_KEY" character varying(256) NOT NULL,
-    "PARAM_VALUE" character varying(4000) DEFAULT NULL::character varying
+    "PARAM_VALUE" text DEFAULT NULL
 );
 
 
@@ -340,7 +340,7 @@ CREATE TABLE "SERDE_PARAMS" (
 
 CREATE TABLE "SORT_COLS" (
     "SD_ID" bigint NOT NULL,
-    "COLUMN_NAME" character varying(1000) DEFAULT NULL::character varying,
+    "COLUMN_NAME" character varying(767) DEFAULT NULL::character varying,
     "ORDER" bigint NOT NULL,
     "INTEGER_IDX" bigint NOT NULL
 );
@@ -353,7 +353,7 @@ CREATE TABLE "SORT_COLS" (
 CREATE TABLE "TABLE_PARAMS" (
     "TBL_ID" bigint NOT NULL,
     "PARAM_KEY" character varying(256) NOT NULL,
-    "PARAM_VALUE" character varying(4000) DEFAULT NULL::character varying
+    "PARAM_VALUE" text DEFAULT NULL
 );
 
 
@@ -369,7 +369,7 @@ CREATE TABLE "TBLS" (
     "OWNER" character varying(767) DEFAULT NULL::character varying,
     "RETENTION" bigint NOT NULL,
     "SD_ID" bigint,
-    "TBL_NAME" character varying(128) DEFAULT NULL::character varying,
+    "TBL_NAME" character varying(256) DEFAULT NULL::character varying,
     "TBL_TYPE" character varying(128) DEFAULT NULL::character varying,
     "VIEW_EXPANDED_TEXT" text,
     "VIEW_ORIGINAL_TEXT" text,
@@ -383,7 +383,7 @@ CREATE TABLE "TBLS" (
 
 CREATE TABLE "TBL_COL_PRIVS" (
     "TBL_COLUMN_GRANT_ID" bigint NOT NULL,
-    "COLUMN_NAME" character varying(1000) DEFAULT NULL::character varying,
+    "COLUMN_NAME" character varying(767) DEFAULT NULL::character varying,
     "CREATE_TIME" bigint NOT NULL,
     "GRANT_OPTION" smallint NOT NULL,
     "GRANTOR" character varying(128) DEFAULT NULL::character varying,
@@ -486,8 +486,8 @@ CREATE TABLE  "DELEGATION_TOKENS"
 CREATE TABLE "TAB_COL_STATS" (
  "CS_ID" bigint NOT NULL,
  "DB_NAME" character varying(128) DEFAULT NULL::character varying,
- "TABLE_NAME" character varying(128) DEFAULT NULL::character varying,
- "COLUMN_NAME" character varying(1000) DEFAULT NULL::character varying,
+ "TABLE_NAME" character varying(256) DEFAULT NULL::character varying,
+ "COLUMN_NAME" character varying(767) DEFAULT NULL::character varying,
  "COLUMN_TYPE" character varying(128) DEFAULT NULL::character varying,
  "TBL_ID" bigint NOT NULL,
  "LONG_LOW_VALUE" bigint,
@@ -521,9 +521,9 @@ CREATE TABLE "VERSION" (
 CREATE TABLE "PART_COL_STATS" (
  "CS_ID" bigint NOT NULL,
  "DB_NAME" character varying(128) DEFAULT NULL::character varying,
- "TABLE_NAME" character varying(128) DEFAULT NULL::character varying,
+ "TABLE_NAME" character varying(256) DEFAULT NULL::character varying,
  "PARTITION_NAME" character varying(767) DEFAULT NULL::character varying,
- "COLUMN_NAME" character varying(1000) DEFAULT NULL::character varying,
+ "COLUMN_NAME" character varying(767) DEFAULT NULL::character varying,
  "COLUMN_TYPE" character varying(128) DEFAULT NULL::character varying,
  "PART_ID" bigint NOT NULL,
  "LONG_LOW_VALUE" bigint,
@@ -574,7 +574,7 @@ CREATE TABLE "NOTIFICATION_LOG"
     "EVENT_TIME" INTEGER NOT NULL,
     "EVENT_TYPE" VARCHAR(32) NOT NULL,
     "DB_NAME" VARCHAR(128),
-    "TBL_NAME" VARCHAR(128),
+    "TBL_NAME" VARCHAR(256),
     "MESSAGE" text,
     "MESSAGE_FORMAT" VARCHAR(16),
     PRIMARY KEY ("NL_ID")

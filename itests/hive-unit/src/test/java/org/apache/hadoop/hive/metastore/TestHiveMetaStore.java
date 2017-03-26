@@ -2502,7 +2502,7 @@ public abstract class TestHiveMetaStore extends TestCase {
       //test params
       //test_param_2 = "50"
       filter = org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.HIVE_FILTER_FIELD_PARAMS +
-          "test_param_2 = \"50\"";
+          "test_param_2 LIKE \"50\"";
 
       tableNames = client.listTableNamesByFilter(dbName, filter, (short)-1);
       assertEquals(2, tableNames.size());
@@ -2511,30 +2511,31 @@ public abstract class TestHiveMetaStore extends TestCase {
 
       //test_param_2 = "75"
       filter = org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.HIVE_FILTER_FIELD_PARAMS +
-          "test_param_2 = \"75\"";
+          "test_param_2 LIKE \"75\"";
 
       tableNames = client.listTableNamesByFilter(dbName, filter, (short)-1);
       assertEquals(0, tableNames.size());
 
       //key_dne = "50"
       filter = org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.HIVE_FILTER_FIELD_PARAMS +
-          "key_dne = \"50\"";
+          "key_dne LIKE \"50\"";
 
       tableNames = client.listTableNamesByFilter(dbName, filter, (short)-1);
       assertEquals(0, tableNames.size());
 
       //test_param_1 != "yellow"
       filter = org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.HIVE_FILTER_FIELD_PARAMS +
-          "test_param_1 <> \"yellow\"";
+          "test_param_1 NOT LIKE \"yellow\"";
 
-      tableNames = client.listTableNamesByFilter(dbName, filter, (short) 2);
-      assertEquals(2, tableNames.size());
+      // Commenting as part of HIVE-12274 != and <> are not supported for CLOBs
+      // tableNames = client.listTableNamesByFilter(dbName, filter, (short) 2);
+      // assertEquals(2, tableNames.size());
 
       filter = org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.HIVE_FILTER_FIELD_PARAMS +
-          "test_param_1 != \"yellow\"";
+          "test_param_1 NOT LIKE \"yellow\"";
 
-      tableNames = client.listTableNamesByFilter(dbName, filter, (short) 2);
-      assertEquals(2, tableNames.size());
+      // tableNames = client.listTableNamesByFilter(dbName, filter, (short) 2);
+      // assertEquals(2, tableNames.size());
 
       //owner = "testOwner1" and (lastAccessTime = 30 or test_param_1 = "hi")
       filter = org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.HIVE_FILTER_FIELD_OWNER +
@@ -2542,7 +2543,7 @@ public abstract class TestHiveMetaStore extends TestCase {
         org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.HIVE_FILTER_FIELD_LAST_ACCESS +
         " = 30 or " +
         org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.HIVE_FILTER_FIELD_PARAMS +
-        "test_param_1 = \"hi\")";
+        "test_param_1 LIKE \"hi\")";
       tableNames = client.listTableNamesByFilter(dbName, filter, (short)-1);
 
       assertEquals(2, tableNames.size());

@@ -2326,6 +2326,7 @@ public class QTestUtil {
           LOG.debug("Resultset : " +  tblName + " | " + tblId);
         }
       }
+
       for (Map.Entry<String, Integer> entry : tableNameToID.entrySet()) {
         String toReplace1 = ",_" + entry.getKey() + "_" ;
         String replacementString1 = ","+entry.getValue();
@@ -2344,10 +2345,10 @@ public class QTestUtil {
       }
 
       // Load the column stats and table params with 30 TB scale
-      String importStatement1 =  "CALL SYSCS_UTIL.SYSCS_IMPORT_TABLE_LOBS_FROM_EXTFILE(null, '" + "TAB_COL_STATS" +
+      String importStatement1 =  "CALL SYSCS_UTIL.SYSCS_IMPORT_TABLE(null, '" + "TAB_COL_STATS" +
         "', '" + tmpFileLoc1.getAbsolutePath() +
         "', ',', null, 'UTF-8', 1)";
-      String importStatement2 =  "CALL SYSCS_UTIL.SYSCS_IMPORT_TABLE_LOBS_FROM_EXTFILE(null, '" + "TABLE_PARAMS" +
+      String importStatement2 =  "CALL SYSCS_UTIL.SYSCS_IMPORT_TABLE(null, '" + "TABLE_PARAMS" +
         "', '" + tmpFileLoc2.getAbsolutePath() +
         "', '@', null, 'UTF-8', 1)";
       try {

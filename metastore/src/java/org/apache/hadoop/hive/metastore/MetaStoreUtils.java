@@ -693,8 +693,6 @@ public class MetaStoreUtils {
       TypeInfoUtils.getTypeInfoFromTypeString(newType));
   }
 
-  public static final int MAX_MS_TYPENAME_LENGTH = 2000; // 4000/2, for an unlikely unicode case
-
   public static final String TYPE_FROM_DESERIALIZER = "<derived from deserializer>";
   /**
    * validate column type
@@ -705,9 +703,6 @@ public class MetaStoreUtils {
    */
   static public String validateColumnType(String type) {
     if (type.equals(TYPE_FROM_DESERIALIZER)) return null;
-    if (type.length() > MAX_MS_TYPENAME_LENGTH) {
-      return "type name is too long: " + type;
-    }
     int last = 0;
     boolean lastAlphaDigit = isValidTypeChar(type.charAt(last));
     for (int i = 1; i <= type.length(); i++) {
