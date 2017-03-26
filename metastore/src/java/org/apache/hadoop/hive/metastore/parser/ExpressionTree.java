@@ -284,7 +284,7 @@ public class ExpressionTree {
     //can only support "=" and "!=" for now, because our JDO lib is buggy when
     // using objects from map.get()
     private static final Set<Operator> TABLE_FILTER_OPS = Sets.newHashSet(
-        Operator.EQUALS, Operator.NOTEQUALS, Operator.NOTEQUALS2);
+        Operator.EQUALS, Operator.NOTEQUALS, Operator.NOTEQUALS2, Operator.LIKE);
 
     private void generateJDOFilterOverTables(Map<String, Object> params,
         FilterBuilder filterBuilder) throws MetaException {

@@ -63,10 +63,10 @@
 
     <class name="MFieldSchema" embedded-only="true" table="TYPE_FIELDS" detachable="true">
       <field name="name">
-        <column name="FNAME" length="128" jdbc-type="VARCHAR"/>
+        <column name="FNAME" length="767" jdbc-type="VARCHAR"/>
       </field>
       <field name="type" >
-        <column name="FTYPE" length="4000" jdbc-type="VARCHAR" allows-null="false"/>
+        <column name="FTYPE" jdbc-type="CLOB" allows-null="false"/>
       </field>
       <field name="comment" >
         <column name="FCOMMENT" length="4000" jdbc-type="VARCHAR" allows-null="true"/>
@@ -118,7 +118,7 @@
         <column name="DB_ID"/>
       </index>
       <field name="tableName">
-        <column name="TBL_NAME" length="128" jdbc-type="VARCHAR"/>
+        <column name="TBL_NAME" length="256" jdbc-type="VARCHAR"/>
       </field>
       <field name="database">
         <column name="DB_ID"/>
@@ -170,7 +170,7 @@
            <column name="PARAM_KEY" length="256" jdbc-type="VARCHAR"/>
         </key>
         <value>
-           <column name="PARAM_VALUE" length="4000" jdbc-type="VARCHAR"/>
+           <column name="PARAM_VALUE" jdbc-type="CLOB"/>
         </value>
       </field>
       <field name="viewOriginalText" default-fetch-group="false">
@@ -245,14 +245,14 @@
            <column name="PARAM_KEY" length="256" jdbc-type="VARCHAR"/>
         </key>
         <value>
-           <column name="PARAM_VALUE" length="4000" jdbc-type="VARCHAR"/>
+           <column name="PARAM_VALUE" jdbc-type="CLOB"/>
         </value>
       </field>
     </class>
 
     <class name="MOrder" embedded-only="true" table="SORT_ORDER" detachable="true">
       <field name="col">
-        <column name="COL_NAME" length="128" jdbc-type="VARCHAR"/>
+        <column name="COL_NAME" length="767" jdbc-type="VARCHAR"/>
       </field>
       <field name="order">
         <column name="ORDER" jdbc-type="INTEGER"  allows-null="false"/>
@@ -274,10 +274,10 @@
         <element>
           <embedded>
             <field name="name">
-              <column name="COLUMN_NAME" length="128" jdbc-type="VARCHAR"/>
+              <column name="COLUMN_NAME" length="767" jdbc-type="VARCHAR"/>
               </field>
             <field name="type">
-              <column name="TYPE_NAME" length="4000" jdbc-type="VARCHAR"  allows-null="false"/>
+              <column name="TYPE_NAME" jdbc-type="CLOB"  allows-null="false"/>
             </field>
             <field name="comment">
               <column name="COMMENT" length="256" jdbc-type="VARCHAR" allows-null="true"/>
@@ -343,7 +343,7 @@
         <element>
           <embedded>
             <field name="col">
-              <column name="COLUMN_NAME" length="128" jdbc-type="VARCHAR"/>
+              <column name="COLUMN_NAME" length="767" jdbc-type="VARCHAR"/>
               </field>
             <field name="order">
               <column name="ORDER" jdbc-type="INTEGER"  allows-null="false"/>
@@ -360,7 +360,7 @@
            <column name="PARAM_KEY" length="256" jdbc-type="VARCHAR"/>
         </key>
         <value>
-           <column name="PARAM_VALUE" length="4000" jdbc-type="VARCHAR"/>
+           <column name="PARAM_VALUE" jdbc-type="CLOB"/>
         </value>
       </field>
       <field name="skewedColNames" table="SKEWED_COL_NAMES">
@@ -719,7 +719,7 @@
         <column name="TBL_ID" />
       </field>
       <field name="columnName">
-        <column name="COLUMN_NAME" length="128" jdbc-type="VARCHAR"/>
+        <column name="COLUMN_NAME" length="767" jdbc-type="VARCHAR"/>
       </field>
       <field name="privilege">
         <column name="TBL_COL_PRIV" length="128" jdbc-type="VARCHAR"/>
@@ -764,7 +764,7 @@
         <column name="PART_ID" />
       </field>
       <field name="columnName">
-        <column name="COLUMN_NAME" length="128" jdbc-type="VARCHAR"/>
+        <column name="COLUMN_NAME" length="767" jdbc-type="VARCHAR"/>
       </field>
       <field name="privilege">
         <column name="PART_COL_PRIV" length="128" jdbc-type="VARCHAR"/>
@@ -797,7 +797,7 @@
         <column name="DB_NAME" length="128" jdbc-type="VARCHAR"/>
       </field>
       <field name="tblName">
-        <column name="TBL_NAME" length="128" jdbc-type="VARCHAR"/>
+        <column name="TBL_NAME" length="256" jdbc-type="VARCHAR"/>
       </field>
        <field name="partName">
         <column name="PARTITION_NAME" length="767" jdbc-type="VARCHAR"/>
@@ -844,13 +844,13 @@
         <column name="DB_NAME" length="128" jdbc-type="VARCHAR" allows-null="false"/>
       </field>
       <field name="tableName">
-        <column name="TABLE_NAME" length="128" jdbc-type="VARCHAR" allows-null="false"/>
+        <column name="TABLE_NAME" length="256" jdbc-type="VARCHAR" allows-null="false"/>
       </field>
       <field name="table">
         <column name="TBL_ID"/>
       </field>
       <field name="colName">
-        <column name="COLUMN_NAME" length="128" jdbc-type="VARCHAR" allows-null="false"/>
+        <column name="COLUMN_NAME" length="767" jdbc-type="VARCHAR" allows-null="false"/>
       </field>
       <field name="colType">
         <column name="COLUMN_TYPE" length="128" jdbc-type="VARCHAR" allows-null="false"/>
@@ -905,7 +905,7 @@
         <column name="DB_NAME" length="128" jdbc-type="VARCHAR" allows-null="false"/>
       </field>
       <field name="tableName">
-        <column name="TABLE_NAME" length="128" jdbc-type="VARCHAR" allows-null="false"/>
+        <column name="TABLE_NAME" length="256" jdbc-type="VARCHAR" allows-null="false"/>
       </field>
       <field name="partitionName">
         <column name="PARTITION_NAME" length="767" jdbc-type="VARCHAR" allows-null="false"/>
@@ -914,7 +914,7 @@
         <column name="PART_ID"/>
       </field>
       <field name="colName">
-        <column name="COLUMN_NAME" length="128" jdbc-type="VARCHAR" allows-null="false"/>
+        <column name="COLUMN_NAME" length="767" jdbc-type="VARCHAR" allows-null="false"/>
       </field>
       <field name="colType">
         <column name="COLUMN_TYPE" length="128" jdbc-type="VARCHAR" allows-null="false"/>
@@ -1044,7 +1044,7 @@
         <column name="DB_NAME" length="128" jdbc-type="VARCHAR" allows-null="true"/>
       </field>
       <field name="tableName">
-        <column name="TBL_NAME" length="128" jdbc-type="VARCHAR" allows-null="true"/>
+        <column name="TBL_NAME" length="256" jdbc-type="VARCHAR" allows-null="true"/>
       </field>
       <field name="message">
         <column name="MESSAGE" jdbc-type="LONGVARCHAR"/>
