@@ -112,6 +112,14 @@ public class TestJdbcWithMiniHS2 {
     stmt.execute("drop database if exists " + testDbName + " cascade");
     stmt.execute("create database " + testDbName);
     stmt.close();
+
+    try {
+      openTestConnections();
+    } catch (Exception e) {
+      System.out.println("Unable to open default connections to MiniHS2: " + e);
+      throw e;
+    }
+
     // tables in test db
     createTestTables(conTestDb, testDbName);
   }
@@ -183,6 +191,7 @@ public class TestJdbcWithMiniHS2 {
     HiveConf conf = new HiveConf();
     startMiniHS2(conf);
     openDefaultConnections();
+    openTestConnections();
   }
 
   private static void startMiniHS2(HiveConf conf) throws Exception {
@@ -208,6 +217,9 @@ public class TestJdbcWithMiniHS2 {
 
   private static void openDefaultConnections() throws Exception {
     conDefault = getConnection();
+  }
+
+  private static void openTestConnections() throws Exception {
     conTestDb = getConnection(testDbName);
   }
 
