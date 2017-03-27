@@ -30,6 +30,7 @@ import org.apache.hadoop.hive.ql.exec.UDF;
 import org.apache.hadoop.hive.ql.processors.DfsProcessor;
 import org.apache.hive.common.util.HiveVersionInfo;
 import org.apache.hive.jdbc.Utils.JdbcConnectionParams;
+import org.apache.hive.service.cli.HiveSQLException;
 import org.apache.hive.service.cli.operation.ClassicTableTypeMapping;
 import org.apache.hive.service.cli.operation.ClassicTableTypeMapping.ClassicTableTypes;
 import org.apache.hive.service.cli.operation.HiveTableTypeMapping;
@@ -577,7 +578,7 @@ public class TestJdbcDriver2 {
 
   @Test
   public void testSetOnConnection() throws Exception {
-    Connection connection = getConnection("test?conf1=conf2;conf3=conf4#var1=var2;var3=var4");
+    Connection connection = getConnection(testDbName + "?conf1=conf2;conf3=conf4#var1=var2;var3=var4");
     try {
       verifyConfValue(connection, "conf1", "conf2");
       verifyConfValue(connection, "conf3", "conf4");
@@ -2921,5 +2922,11 @@ public class TestJdbcDriver2 {
     }
     assertEquals(rowCount, dataFileRowCount);
     stmt.execute("drop table " + tblName);
+  }
+
+  // Test that opening a JDBC connection to a non-existent database throws a HiveSQLException
+  @Test(expected = HiveSQLException.class)
+  public void testConnectInvalidDatabase() throws SQLException {
+    DriverManager.getConnection("jdbc:hive2:///databasedoesnotexist", "", "");
   }
 }
