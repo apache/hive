@@ -12,10 +12,6 @@
     <value>s3a://cloudera-dev-hive-on-s3/core-blobstore-path/</value>
   </property>
   <property>
-    <name>hive.blobstore.optimizations.enabled</name>
-    <value>false</value>
-  </property>
-  <property>
     <name>additional.plan.masks</name>
     <value>s3.*</value>
   </property>
