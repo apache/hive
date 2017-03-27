@@ -22,10 +22,13 @@ import java.util.Iterator;
 import java.util.List;
 
 import com.google.common.collect.Lists;
+import org.codehaus.jackson.annotate.JsonProperty;
 
 public class PartitionFiles {
 
+  @JsonProperty
   private String partitionName;
+  @JsonProperty
   private List<String> files;
 
   public PartitionFiles(String partitionName, Iterator<String> files) {
