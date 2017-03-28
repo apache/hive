@@ -1,5 +1,3 @@
--- JAVA_VERSION_SPECIFIC_OUTPUT
-
 DROP TABLE Employee_Part;
 
 CREATE TABLE Employee_Part(employeeID int, employeeName String) partitioned by (employeeSalary double, country string)

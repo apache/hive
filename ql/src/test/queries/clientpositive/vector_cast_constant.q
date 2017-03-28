@@ -1,6 +1,6 @@
 SET hive.vectorized.execution.enabled=true;
 
--- JAVA_VERSION_SPECIFIC_OUTPUT
+
 
 DROP TABLE over1k;
 DROP TABLE over1korc;

@@ -1,6 +1,6 @@
 set hive.fetch.task.conversion=more;
 
--- JAVA_VERSION_SPECIFIC_OUTPUT
+
 
 desc function str_to_map;
 desc function extended str_to_map;
