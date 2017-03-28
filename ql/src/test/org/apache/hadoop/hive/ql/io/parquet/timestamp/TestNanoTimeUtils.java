@@ -230,4 +230,17 @@ public class TestNanoTimeUtils {
     Assert.assertEquals(newNTUTC.getJulianDay(), depNTUTC.getJulianDay());
     Assert.assertEquals(newNTUTC.getTimeOfDayNanos(), depNTUTC.getTimeOfDayNanos());
   }
+
+  @Test
+  public void testTimeZoneValidationWithCorrectZoneId() {
+    NanoTimeUtils.validateTimeZone("GMT");
+    NanoTimeUtils.validateTimeZone("UTC");
+    NanoTimeUtils.validateTimeZone("GMT+10");
+    NanoTimeUtils.validateTimeZone("Europe/Budapest");
+  }
+
+  @Test(expected = IllegalStateException.class)
+  public void testTimeZoneValidationWithIncorrectZoneId() {
+    NanoTimeUtils.validateTimeZone("UCC");
+  }
 }
