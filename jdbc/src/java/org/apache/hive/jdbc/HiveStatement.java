@@ -315,9 +315,11 @@ public class HiveStatement implements java.sql.Statement {
       isExecuteStatementFailed = false;
     } catch (SQLException eS) {
       isExecuteStatementFailed = true;
+      isLogBeingGenerated = false;
       throw eS;
     } catch (Exception ex) {
       isExecuteStatementFailed = true;
+      isLogBeingGenerated = false;
       throw new SQLException(ex.toString(), "08S01", ex);
     }
   }
@@ -914,10 +916,6 @@ public class HiveStatement implements java.sql.Statement {
         if (isQueryClosed) {
           throw new ClosedOrCancelledStatementException("Method getQueryLog() failed. The " +
               "statement has been closed or cancelled.");
-        }
-        if (isExecuteStatementFailed) {
-          throw new SQLException("Method getQueryLog() failed. Because the stmtHandle in " +
-              "HiveStatement is null and the statement execution might fail.");
         } else {
           return logs;
         }
