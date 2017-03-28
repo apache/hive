@@ -54,9 +54,11 @@ import org.apache.hadoop.hive.ql.DriverContext;
 import org.apache.hadoop.hive.ql.exec.spark.SparkTask;
 import org.apache.hadoop.hive.ql.exec.tez.TezTask;
 import org.apache.hadoop.hive.ql.exec.vector.VectorGroupByOperator;
+import org.apache.hadoop.hive.ql.exec.vector.VectorReduceSinkOperator;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizationContext;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.VectorAggregateExpression;
+import org.apache.hadoop.hive.ql.exec.vector.reducesink.VectorReduceSinkCommonOperator;
 import org.apache.hadoop.hive.ql.plan.MapJoinDesc;
 import org.apache.hadoop.hive.ql.plan.ReduceSinkDesc;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
@@ -795,9 +797,12 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
           if (jsonOut != null && jsonOut.length() > 0) {
             ((JSONObject) jsonOut.get(JSONObject.getNames(jsonOut)[0])).put("OperatorId:",
                 operator.getOperatorId());
-            if (!this.work.isUserLevelExplain() && this.work.isFormatted()
-                && operator instanceof ReduceSinkOperator) {
-              List<String> outputOperators = ((ReduceSinkOperator) operator).getConf().getOutputOperators();
+            if (!this.work.isUserLevelExplain()
+                && this.work.isFormatted()
+                && (operator instanceof ReduceSinkOperator
+                    || operator instanceof VectorReduceSinkOperator || operator instanceof VectorReduceSinkCommonOperator)) {
+              List<String> outputOperators = ((ReduceSinkDesc) operator.getConf())
+                  .getOutputOperators();
               if (outputOperators != null) {
                 ((JSONObject) jsonOut.get(JSONObject.getNames(jsonOut)[0])).put(OUTPUT_OPERATORS,
                     Arrays.toString(outputOperators.toArray()));

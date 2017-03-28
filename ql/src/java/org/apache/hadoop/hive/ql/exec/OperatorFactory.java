@@ -38,6 +38,7 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorSelectOperator;
 import org.apache.hadoop.hive.ql.exec.vector.VectorSparkHashTableSinkOperator;
 import org.apache.hadoop.hive.ql.exec.vector.VectorSparkPartitionPruningSinkOperator;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizationContext;
+import org.apache.hadoop.hive.ql.exec.vector.reducesink.VectorReduceSinkCommonOperator;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.optimizer.spark.SparkPartitionPruningSinkDesc;
 import org.apache.hadoop.hive.ql.parse.spark.SparkPartitionPruningSinkOperator;
@@ -143,13 +144,17 @@ public final class OperatorFactory {
 
   public static <T extends OperatorDesc> Operator<T> getVectorOperator(
     Class<? extends Operator<?>> opClass, CompilationOpContext cContext, T conf,
-        VectorizationContext vContext) throws HiveException {
+        VectorizationContext vContext, Operator<? extends OperatorDesc> originalOp) throws HiveException {
     try {
       VectorDesc vectorDesc = ((AbstractOperatorDesc) conf).getVectorDesc();
       vectorDesc.setVectorOp(opClass);
-      Operator<T> op = (Operator<T>) opClass.getDeclaredConstructor(
-          CompilationOpContext.class, VectorizationContext.class, OperatorDesc.class)
-          .newInstance(cContext, vContext, conf);
+      Operator<T> op = (Operator<T>) opClass.getDeclaredConstructor(CompilationOpContext.class,
+          VectorizationContext.class, OperatorDesc.class).newInstance(cContext, vContext, conf);
+      op.setOperatorId(originalOp.getOperatorId());
+      if (op instanceof VectorReduceSinkOperator || op instanceof VectorReduceSinkCommonOperator) {
+        ((ReduceSinkDesc) op.getConf()).setOutputOperators(((ReduceSinkDesc) originalOp.getConf())
+            .getOutputOperators());
+      }
       return op;
     } catch (Exception e) {
       e.printStackTrace();
@@ -158,11 +163,12 @@ public final class OperatorFactory {
   }
 
   public static <T extends OperatorDesc> Operator<T> getVectorOperator(
-      CompilationOpContext cContext, T conf, VectorizationContext vContext) throws HiveException {
+      CompilationOpContext cContext, T conf, VectorizationContext vContext,
+      Operator<? extends OperatorDesc> originalOp) throws HiveException {
     Class<T> descClass = (Class<T>) conf.getClass();
-    Class<?> opClass = vectorOpvec.get(descClass);
+    Class<? extends Operator<? extends OperatorDesc>> opClass = vectorOpvec.get(descClass);
     if (opClass != null) {
-      return getVectorOperator(vectorOpvec.get(descClass), cContext, conf, vContext);
+      return getVectorOperator(opClass, cContext, conf, vContext, originalOp);
     }
     throw new HiveException("No vector operator for descriptor class " + descClass.getName());
   }
