@@ -1013,6 +1013,71 @@ public class TestReplicationScenarios {
   }
 
   @Test
+  public void testDumpLimit() throws IOException {
+    String testName = "dumpLimit";
+    LOG.info("Testing " + testName);
+    String dbName = testName + "_" + tid;
+
+    run("CREATE DATABASE " + dbName);
+    run("CREATE TABLE " + dbName + ".unptned(a string) STORED AS TEXTFILE");
+
+    advanceDumpDir();
+    run("REPL DUMP " + dbName);
+    String replDumpLocn = getResult(0, 0);
+    String replDumpId = getResult(0, 1, true);
+    LOG.info("Bootstrap-Dump: Dumped to {} with id {}", replDumpLocn, replDumpId);
+
+    String[] unptn_data = new String[] { "eleven", "thirteen", "twelve" };
+    String[] unptn_data_load1 = new String[] { "eleven" };
+    String[] unptn_data_load2 = new String[] { "eleven", "thirteen" };
+
+    // 3 events to insert, last repl ID: replDumpId+3
+    run("INSERT INTO TABLE " + dbName + ".unptned values('" + unptn_data[0] + "')");
+    // 3 events to insert, last repl ID: replDumpId+6
+    run("INSERT INTO TABLE " + dbName + ".unptned values('" + unptn_data[1] + "')");
+    // 3 events to insert, last repl ID: replDumpId+9
+    run("INSERT INTO TABLE " + dbName + ".unptned values('" + unptn_data[2] + "')");
+    verifyRun("SELECT a from " + dbName + ".unptned ORDER BY a", unptn_data);
+
+    run("REPL LOAD " + dbName + "_dupe FROM '" + replDumpLocn + "'");
+
+    advanceDumpDir();
+    run("REPL DUMP " + dbName + " FROM " + replDumpId + " LIMIT 3");
+    String incrementalDumpLocn = getResult(0, 0);
+    String incrementalDumpId = getResult(0, 1, true);
+    LOG.info("Incremental-Dump: Dumped to {} with id {} from {}", incrementalDumpLocn, incrementalDumpId, replDumpId);
+    replDumpId = incrementalDumpId;
+
+    run("REPL LOAD " + dbName + "_dupe FROM '" + incrementalDumpLocn + "'");
+    verifyRun("SELECT a from " + dbName + ".unptned ORDER BY a", unptn_data);
+    verifyRun("SELECT a from " + dbName + "_dupe.unptned ORDER BY a", unptn_data_load1);
+
+    advanceDumpDir();
+    Integer lastReplID = Integer.valueOf(replDumpId);
+    lastReplID += 1000;
+    String toReplID = String.valueOf(lastReplID);
+
+    run("REPL DUMP " + dbName + " FROM " + replDumpId + " TO " + toReplID + " LIMIT 3");
+    incrementalDumpLocn = getResult(0, 0);
+    incrementalDumpId = getResult(0, 1, true);
+    LOG.info("Incremental-Dump: Dumped to {} with id {} from {}", incrementalDumpLocn, incrementalDumpId, replDumpId);
+    replDumpId = incrementalDumpId;
+    run("REPL LOAD " + dbName + "_dupe FROM '" + incrementalDumpLocn + "'");
+
+    verifyRun("SELECT a from " + dbName + "_dupe.unptned ORDER BY a", unptn_data_load2);
+
+    advanceDumpDir();
+    run("REPL DUMP " + dbName + " FROM " + replDumpId);
+    incrementalDumpLocn = getResult(0, 0);
+    incrementalDumpId = getResult(0, 1, true);
+    LOG.info("Incremental-Dump: Dumped to {} with id {} from {}", incrementalDumpLocn, incrementalDumpId, replDumpId);
+    replDumpId = incrementalDumpId;
+    run("REPL LOAD " + dbName + "_dupe FROM '" + incrementalDumpLocn + "'");
+
+    verifyRun("SELECT a from " + dbName + "_dupe.unptned ORDER BY a", unptn_data);
+  }
+
+  @Test
   public void testStatus() throws IOException {
     // first test ReplStateMap functionality
     Map<String,Long> cmap = new ReplStateMap<String,Long>();
