@@ -9,7 +9,6 @@ No rows affected
 No rows affected 
 >>>  
 >>>  drop table if exists drop_with_concurrency_1;
-Acquired the compile lock.
 Compiling commandqueryId=(!!{queryId}!!): drop table if exists drop_with_concurrency_1
 Semantic Analysis Completed
 Returning Hive schema: Schema(fieldSchemas:null, properties:null)
@@ -25,7 +24,6 @@ OK
 Shutting down query drop table if exists drop_with_concurrency_1
 No rows affected 
 >>>  create table drop_with_concurrency_1 (c1 int);
-Acquired the compile lock.
 Compiling commandqueryId=(!!{queryId}!!): create table drop_with_concurrency_1 (c1 int)
 Semantic Analysis Completed
 Returning Hive schema: Schema(fieldSchemas:null, properties:null)
@@ -45,7 +43,6 @@ OK
 Shutting down query create table drop_with_concurrency_1 (c1 int)
 No rows affected 
 >>>  drop table drop_with_concurrency_1;
-Acquired the compile lock.
 Compiling commandqueryId=(!!{queryId}!!): drop table drop_with_concurrency_1
 Semantic Analysis Completed
 Returning Hive schema: Schema(fieldSchemas:null, properties:null)

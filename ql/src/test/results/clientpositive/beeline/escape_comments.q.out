@@ -1,6 +1,5 @@
 >>>  !run !!{qFileDirectory}!!/escape_comments.q
 >>>  create database escape_comments_db comment 'a\nb';
-Acquired the compile lock.
 Compiling commandqueryId=(!!{queryId}!!): create database escape_comments_db comment 'a\nb'
 Semantic Analysis Completed
 Returning Hive schema: Schema(fieldSchemas:null, properties:null)
@@ -18,7 +17,6 @@ OK
 Shutting down query create database escape_comments_db comment 'a\nb'
 No rows affected 
 >>>  use escape_comments_db;
-Acquired the compile lock.
 Compiling commandqueryId=(!!{queryId}!!): use escape_comments_db
 Semantic Analysis Completed
 Returning Hive schema: Schema(fieldSchemas:null, properties:null)
@@ -38,7 +36,6 @@ No rows affected
 >>>  create table escape_comments_tbl1 
 (col1 string comment 'a\nb\'\;') comment 'a\nb' 
 partitioned by (p1 string comment 'a\nb');
-Acquired the compile lock.
 Compiling commandqueryId=(!!{queryId}!!): create table escape_comments_tbl1 
 (col1 string comment 'a\nb\'\;') comment 'a\nb' 
 partitioned by (p1 string comment 'a\nb')
@@ -69,7 +66,6 @@ partitioned by (p1 string comment 'a\nb')
 No rows affected 
 >>>  create view escape_comments_view1 (col1 comment 'a\nb') comment 'a\nb' 
 as select col1 from escape_comments_tbl1;
-Acquired the compile lock.
 Compiling commandqueryId=(!!{queryId}!!): create view escape_comments_view1 (col1 comment 'a\nb') comment 'a\nb' 
 as select col1 from escape_comments_tbl1
 Semantic Analysis Completed
@@ -98,7 +94,6 @@ Shutting down query create view escape_comments_view1 (col1 comment 'a\nb') comm
 as select col1 from escape_comments_tbl1
 No rows affected 
 >>>  create index index2 on table escape_comments_tbl1(col1) as 'COMPACT' with deferred rebuild comment 'a\nb';
-Acquired the compile lock.
 Compiling commandqueryId=(!!{queryId}!!): create index index2 on table escape_comments_tbl1(col1) as 'COMPACT' with deferred rebuild comment 'a\nb'
 Semantic Analysis Completed
 Returning Hive schema: Schema(fieldSchemas:null, properties:null)
@@ -118,7 +113,6 @@ Shutting down query create index index2 on table escape_comments_tbl1(col1) as '
 No rows affected 
 >>>  
 >>>  describe database extended escape_comments_db;
-Acquired the compile lock.
 Compiling commandqueryId=(!!{queryId}!!): describe database extended escape_comments_db
 Semantic Analysis Completed
 Returning Hive schema: Schema(fieldSchemas:[FieldSchema(name:db_name, type:string, comment:from deserializer), FieldSchema(name:comment, type:string, comment:from deserializer), FieldSchema(name:location, type:string, comment:from deserializer), FieldSchema(name:owner_name, type:string, comment:from deserializer), FieldSchema(name:owner_type, type:string, comment:from deserializer), FieldSchema(name:parameters, type:string, comment:from deserializer)], properties:null)
@@ -138,7 +132,6 @@ Shutting down query describe database extended escape_comments_db
 'escape_comments_db','a\nb','location/in/test','user','USER',''
 1 row selected 
 >>>  describe database escape_comments_db;
-Acquired the compile lock.
 Compiling commandqueryId=(!!{queryId}!!): describe database escape_comments_db
 Semantic Analysis Completed
 Returning Hive schema: Schema(fieldSchemas:[FieldSchema(name:db_name, type:string, comment:from deserializer), FieldSchema(name:comment, type:string, comment:from deserializer), FieldSchema(name:location, type:string, comment:from deserializer), FieldSchema(name:owner_name, type:string, comment:from deserializer), FieldSchema(name:owner_type, type:string, comment:from deserializer), FieldSchema(name:parameters, type:string, comment:from deserializer)], properties:null)
@@ -158,7 +151,6 @@ Shutting down query describe database escape_comments_db
 'escape_comments_db','a\nb','location/in/test','user','USER',''
 1 row selected 
 >>>  show create table escape_comments_tbl1;
-Acquired the compile lock.
 Compiling commandqueryId=(!!{queryId}!!): show create table escape_comments_tbl1
 Semantic Analysis Completed
 Returning Hive schema: Schema(fieldSchemas:[FieldSchema(name:createtab_stmt, type:string, comment:from deserializer)], properties:null)
@@ -192,7 +184,6 @@ Shutting down query show create table escape_comments_tbl1
 '  'transient_lastDdlTime'='!!UNIXTIME!!')'
 15 rows selected 
 >>>  describe formatted escape_comments_tbl1;
-Acquired the compile lock.
 Compiling commandqueryId=(!!{queryId}!!): describe formatted escape_comments_tbl1
 Semantic Analysis Completed
 Returning Hive schema: Schema(fieldSchemas:[FieldSchema(name:col_name, type:string, comment:from deserializer), FieldSchema(name:data_type, type:string, comment:from deserializer), FieldSchema(name:comment, type:string, comment:from deserializer)], properties:null)
@@ -247,7 +238,6 @@ Shutting down query describe formatted escape_comments_tbl1
 '','serialization.format','1                   '
 36 rows selected 
 >>>  describe pretty escape_comments_tbl1;
-Acquired the compile lock.
 Compiling commandqueryId=(!!{queryId}!!): describe pretty escape_comments_tbl1
 Semantic Analysis Completed
 Returning Hive schema: Schema(fieldSchemas:[FieldSchema(name:col_name, type:string, comment:from deserializer), FieldSchema(name:data_type, type:string, comment:from deserializer), FieldSchema(name:comment, type:string, comment:from deserializer)], properties:null)
@@ -278,7 +268,6 @@ Shutting down query describe pretty escape_comments_tbl1
 '         ','              ','b'
 12 rows selected 
 >>>  describe escape_comments_tbl1;
-Acquired the compile lock.
 Compiling commandqueryId=(!!{queryId}!!): describe escape_comments_tbl1
 Semantic Analysis Completed
 Returning Hive schema: Schema(fieldSchemas:[FieldSchema(name:col_name, type:string, comment:from deserializer), FieldSchema(name:data_type, type:string, comment:from deserializer), FieldSchema(name:comment, type:string, comment:from deserializer)], properties:null)
@@ -304,7 +293,6 @@ Shutting down query describe escape_comments_tbl1
 'p1','string','a\nb'
 7 rows selected 
 >>>  show create table escape_comments_view1;
-Acquired the compile lock.
 Compiling commandqueryId=(!!{queryId}!!): show create table escape_comments_view1
 Semantic Analysis Completed
 Returning Hive schema: Schema(fieldSchemas:[FieldSchema(name:createtab_stmt, type:string, comment:from deserializer)], properties:null)
@@ -324,7 +312,6 @@ Shutting down query show create table escape_comments_view1
 'CREATE VIEW `escape_comments_view1` AS SELECT `col1` AS `col1` FROM (select `escape_comments_tbl1`.`col1` from `escape_comments_db`.`escape_comments_tbl1`) `escape_comments_db.escape_comments_view1`'
 1 row selected 
 >>>  describe formatted escape_comments_view1;
-Acquired the compile lock.
 Compiling commandqueryId=(!!{queryId}!!): describe formatted escape_comments_view1
 Semantic Analysis Completed
 Returning Hive schema: Schema(fieldSchemas:[FieldSchema(name:col_name, type:string, comment:from deserializer), FieldSchema(name:data_type, type:string, comment:from deserializer), FieldSchema(name:comment, type:string, comment:from deserializer)], properties:null)
@@ -371,7 +358,6 @@ Shutting down query describe formatted escape_comments_view1
 'View Rewrite Enabled:','No                  ','NULL'
 28 rows selected 
 >>>  show formatted index on escape_comments_tbl1;
-Acquired the compile lock.
 Compiling commandqueryId=(!!{queryId}!!): show formatted index on escape_comments_tbl1
 Semantic Analysis Completed
 Returning Hive schema: Schema(fieldSchemas:[FieldSchema(name:idx_name, type:string, comment:from deserializer), FieldSchema(name:tab_name, type:string, comment:from deserializer), FieldSchema(name:col_names, type:string, comment:from deserializer), FieldSchema(name:idx_tab_name, type:string, comment:from deserializer), FieldSchema(name:idx_type, type:string, comment:from deserializer), FieldSchema(name:comment, type:string, comment:from deserializer)], properties:null)
@@ -393,7 +379,6 @@ Shutting down query show formatted index on escape_comments_tbl1
 4 rows selected 
 >>>  
 >>>  drop database escape_comments_db cascade;
-Acquired the compile lock.
 Compiling commandqueryId=(!!{queryId}!!): drop database escape_comments_db cascade
 Semantic Analysis Completed
 Returning Hive schema: Schema(fieldSchemas:null, properties:null)

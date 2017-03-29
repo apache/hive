@@ -170,17 +170,27 @@ public final class QFile {
     return Shell.WINDOWS ? String.format("\"%s\"", file.getAbsolutePath()) : file.getAbsolutePath();
   }
 
+  private static class Filter {
+    private final Pattern pattern;
+    private final String replacement;
+
+    public Filter(Pattern pattern, String replacement) {
+      this.pattern = pattern;
+      this.replacement = replacement;
+    }
+  }
+
   private static class RegexFilterSet {
-    private final Map<Pattern, String> regexFilters = new LinkedHashMap<Pattern, String>();
+    private final List<Filter> regexFilters = new ArrayList<Filter>();
 
     public RegexFilterSet addFilter(String regex, String replacement) {
-      regexFilters.put(Pattern.compile(regex), replacement);
+      regexFilters.add(new Filter(Pattern.compile(regex), replacement));
       return this;
     }
 
     public String filter(String input) {
-      for (Pattern pattern : regexFilters.keySet()) {
-        input = pattern.matcher(input).replaceAll(regexFilters.get(pattern));
+      for (Filter filter : regexFilters) {
+        input = filter.pattern.matcher(input).replaceAll(filter.replacement);
       }
       return input;
     }
@@ -209,8 +219,9 @@ public final class QFile {
 
     return new RegexFilterSet()
         .addFilter(logPattern, "")
-        .addFilter("(?s)\nWaiting to acquire compile lock:.*?Acquired the compile lock.\n",
-            "\nAcquired the compile lock.\n")
+        .addFilter("(?s)\n[^\n]*Waiting to acquire compile lock.*?Acquired the compile lock.\n",
+            "\n")
+        .addFilter("Acquired the compile lock.\n","")
         .addFilter("Getting log thread is interrupted, since query is done!\n", "")
         .addFilter("going to print operations logs\n", "")
         .addFilter("printed operations logs\n", "")
