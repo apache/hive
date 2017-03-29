@@ -1,0 +1,183 @@
+PREHOOK: query: DROP TABLE blobstore_source
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE blobstore_source
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: CREATE TABLE blobstore_source(a STRING, b STRING, c DOUBLE)
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY ' '
+COLLECTION ITEMS TERMINATED BY '\t'
+LINES TERMINATED BY '\n'
+#### A masked pattern was here ####
+PREHOOK: type: CREATETABLE
+PREHOOK: Input: ### test.blobstore.path ###/orc_buckets/blobstore_source
+PREHOOK: Output: database:default
+PREHOOK: Output: default@blobstore_source
+POSTHOOK: query: CREATE TABLE blobstore_source(a STRING, b STRING, c DOUBLE)
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY ' '
+COLLECTION ITEMS TERMINATED BY '\t'
+LINES TERMINATED BY '\n'
+#### A masked pattern was here ####
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Input: ### test.blobstore.path ###/orc_buckets/blobstore_source
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@blobstore_source
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/3col_data.txt' INTO TABLE blobstore_source
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@blobstore_source
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/3col_data.txt' INTO TABLE blobstore_source
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@blobstore_source
+PREHOOK: query: DROP TABLE orc_buckets
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE orc_buckets
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: CREATE TABLE orc_buckets (a STRING, value DOUBLE)
+PARTITIONED BY (b STRING)
+CLUSTERED BY (a) INTO 10 BUCKETS
+STORED AS ORC
+#### A masked pattern was here ####
+PREHOOK: type: CREATETABLE
+PREHOOK: Input: ### test.blobstore.path ###/orc_buckets/orc_buckets
+PREHOOK: Output: database:default
+PREHOOK: Output: default@orc_buckets
+POSTHOOK: query: CREATE TABLE orc_buckets (a STRING, value DOUBLE)
+PARTITIONED BY (b STRING)
+CLUSTERED BY (a) INTO 10 BUCKETS
+STORED AS ORC
+#### A masked pattern was here ####
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Input: ### test.blobstore.path ###/orc_buckets/orc_buckets
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@orc_buckets
+PREHOOK: query: INSERT OVERWRITE TABLE orc_buckets
+PARTITION (b)
+SELECT a, c, b FROM blobstore_source
+PREHOOK: type: QUERY
+PREHOOK: Input: default@blobstore_source
+PREHOOK: Output: default@orc_buckets
+POSTHOOK: query: INSERT OVERWRITE TABLE orc_buckets
+PARTITION (b)
+SELECT a, c, b FROM blobstore_source
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@blobstore_source
+POSTHOOK: Output: default@orc_buckets@b=abc
+POSTHOOK: Output: default@orc_buckets@b=ajss
+POSTHOOK: Output: default@orc_buckets@b=data
+POSTHOOK: Output: default@orc_buckets@b=def
+POSTHOOK: Output: default@orc_buckets@b=djns
+POSTHOOK: Output: default@orc_buckets@b=ne
+POSTHOOK: Output: default@orc_buckets@b=random
+POSTHOOK: Lineage: orc_buckets PARTITION(b=abc).a SIMPLE [(blobstore_source)blobstore_source.FieldSchema(name:a, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_buckets PARTITION(b=abc).value SIMPLE [(blobstore_source)blobstore_source.FieldSchema(name:c, type:double, comment:null), ]
+POSTHOOK: Lineage: orc_buckets PARTITION(b=ajss).a SIMPLE [(blobstore_source)blobstore_source.FieldSchema(name:a, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_buckets PARTITION(b=ajss).value SIMPLE [(blobstore_source)blobstore_source.FieldSchema(name:c, type:double, comment:null), ]
+POSTHOOK: Lineage: orc_buckets PARTITION(b=data).a SIMPLE [(blobstore_source)blobstore_source.FieldSchema(name:a, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_buckets PARTITION(b=data).value SIMPLE [(blobstore_source)blobstore_source.FieldSchema(name:c, type:double, comment:null), ]
+POSTHOOK: Lineage: orc_buckets PARTITION(b=def).a SIMPLE [(blobstore_source)blobstore_source.FieldSchema(name:a, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_buckets PARTITION(b=def).value SIMPLE [(blobstore_source)blobstore_source.FieldSchema(name:c, type:double, comment:null), ]
+POSTHOOK: Lineage: orc_buckets PARTITION(b=djns).a SIMPLE [(blobstore_source)blobstore_source.FieldSchema(name:a, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_buckets PARTITION(b=djns).value SIMPLE [(blobstore_source)blobstore_source.FieldSchema(name:c, type:double, comment:null), ]
+POSTHOOK: Lineage: orc_buckets PARTITION(b=ne).a SIMPLE [(blobstore_source)blobstore_source.FieldSchema(name:a, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_buckets PARTITION(b=ne).value SIMPLE [(blobstore_source)blobstore_source.FieldSchema(name:c, type:double, comment:null), ]
+POSTHOOK: Lineage: orc_buckets PARTITION(b=random).a SIMPLE [(blobstore_source)blobstore_source.FieldSchema(name:a, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_buckets PARTITION(b=random).value SIMPLE [(blobstore_source)blobstore_source.FieldSchema(name:c, type:double, comment:null), ]
+PREHOOK: query: SELECT * FROM orc_buckets
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_buckets
+PREHOOK: Input: default@orc_buckets@b=abc
+PREHOOK: Input: default@orc_buckets@b=ajss
+PREHOOK: Input: default@orc_buckets@b=data
+PREHOOK: Input: default@orc_buckets@b=def
+PREHOOK: Input: default@orc_buckets@b=djns
+PREHOOK: Input: default@orc_buckets@b=ne
+PREHOOK: Input: default@orc_buckets@b=random
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM orc_buckets
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_buckets
+POSTHOOK: Input: default@orc_buckets@b=abc
+POSTHOOK: Input: default@orc_buckets@b=ajss
+POSTHOOK: Input: default@orc_buckets@b=data
+POSTHOOK: Input: default@orc_buckets@b=def
+POSTHOOK: Input: default@orc_buckets@b=djns
+POSTHOOK: Input: default@orc_buckets@b=ne
+POSTHOOK: Input: default@orc_buckets@b=random
+#### A masked pattern was here ####
+1	10.5	abc
+3	90.23232	ajss
+6	3.002	data
+2	11.5	def
+4	89.02002	djns
+7	71.9084	ne
+5	2.99	random
+PREHOOK: query: INSERT INTO TABLE orc_buckets
+PARTITION (b)
+SELECT a, c, b FROM blobstore_source
+PREHOOK: type: QUERY
+PREHOOK: Input: default@blobstore_source
+PREHOOK: Output: default@orc_buckets
+POSTHOOK: query: INSERT INTO TABLE orc_buckets
+PARTITION (b)
+SELECT a, c, b FROM blobstore_source
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@blobstore_source
+POSTHOOK: Output: default@orc_buckets@b=abc
+POSTHOOK: Output: default@orc_buckets@b=ajss
+POSTHOOK: Output: default@orc_buckets@b=data
+POSTHOOK: Output: default@orc_buckets@b=def
+POSTHOOK: Output: default@orc_buckets@b=djns
+POSTHOOK: Output: default@orc_buckets@b=ne
+POSTHOOK: Output: default@orc_buckets@b=random
+POSTHOOK: Lineage: orc_buckets PARTITION(b=abc).a SIMPLE [(blobstore_source)blobstore_source.FieldSchema(name:a, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_buckets PARTITION(b=abc).value SIMPLE [(blobstore_source)blobstore_source.FieldSchema(name:c, type:double, comment:null), ]
+POSTHOOK: Lineage: orc_buckets PARTITION(b=ajss).a SIMPLE [(blobstore_source)blobstore_source.FieldSchema(name:a, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_buckets PARTITION(b=ajss).value SIMPLE [(blobstore_source)blobstore_source.FieldSchema(name:c, type:double, comment:null), ]
+POSTHOOK: Lineage: orc_buckets PARTITION(b=data).a SIMPLE [(blobstore_source)blobstore_source.FieldSchema(name:a, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_buckets PARTITION(b=data).value SIMPLE [(blobstore_source)blobstore_source.FieldSchema(name:c, type:double, comment:null), ]
+POSTHOOK: Lineage: orc_buckets PARTITION(b=def).a SIMPLE [(blobstore_source)blobstore_source.FieldSchema(name:a, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_buckets PARTITION(b=def).value SIMPLE [(blobstore_source)blobstore_source.FieldSchema(name:c, type:double, comment:null), ]
+POSTHOOK: Lineage: orc_buckets PARTITION(b=djns).a SIMPLE [(blobstore_source)blobstore_source.FieldSchema(name:a, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_buckets PARTITION(b=djns).value SIMPLE [(blobstore_source)blobstore_source.FieldSchema(name:c, type:double, comment:null), ]
+POSTHOOK: Lineage: orc_buckets PARTITION(b=ne).a SIMPLE [(blobstore_source)blobstore_source.FieldSchema(name:a, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_buckets PARTITION(b=ne).value SIMPLE [(blobstore_source)blobstore_source.FieldSchema(name:c, type:double, comment:null), ]
+POSTHOOK: Lineage: orc_buckets PARTITION(b=random).a SIMPLE [(blobstore_source)blobstore_source.FieldSchema(name:a, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_buckets PARTITION(b=random).value SIMPLE [(blobstore_source)blobstore_source.FieldSchema(name:c, type:double, comment:null), ]
+PREHOOK: query: SELECT * FROM orc_buckets
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_buckets
+PREHOOK: Input: default@orc_buckets@b=abc
+PREHOOK: Input: default@orc_buckets@b=ajss
+PREHOOK: Input: default@orc_buckets@b=data
+PREHOOK: Input: default@orc_buckets@b=def
+PREHOOK: Input: default@orc_buckets@b=djns
+PREHOOK: Input: default@orc_buckets@b=ne
+PREHOOK: Input: default@orc_buckets@b=random
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM orc_buckets
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_buckets
+POSTHOOK: Input: default@orc_buckets@b=abc
+POSTHOOK: Input: default@orc_buckets@b=ajss
+POSTHOOK: Input: default@orc_buckets@b=data
+POSTHOOK: Input: default@orc_buckets@b=def
+POSTHOOK: Input: default@orc_buckets@b=djns
+POSTHOOK: Input: default@orc_buckets@b=ne
+POSTHOOK: Input: default@orc_buckets@b=random
+#### A masked pattern was here ####
+1	10.5	abc
+1	10.5	abc
+3	90.23232	ajss
+3	90.23232	ajss
+6	3.002	data
+6	3.002	data
+2	11.5	def
+2	11.5	def
+4	89.02002	djns
+4	89.02002	djns
+7	71.9084	ne
+7	71.9084	ne
+5	2.99	random
+5	2.99	random
