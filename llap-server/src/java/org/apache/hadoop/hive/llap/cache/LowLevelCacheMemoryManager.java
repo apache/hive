@@ -38,18 +38,11 @@ public class LowLevelCacheMemoryManager implements MemoryManager {
   private long maxSize;
 
   public LowLevelCacheMemoryManager(
-      Configuration conf, LowLevelCachePolicy evictor, LlapDaemonCacheMetrics metrics) {
-    this(HiveConf.getSizeVar(conf, ConfVars.LLAP_IO_MEMORY_MAX_SIZE), evictor, metrics);
-  }
-
-  @VisibleForTesting
-  public LowLevelCacheMemoryManager(
       long maxSize, LowLevelCachePolicy evictor, LlapDaemonCacheMetrics metrics) {
     this.maxSize = maxSize;
     this.evictor = evictor;
     this.usedMemory = new AtomicLong(0);
     this.metrics = metrics;
-    metrics.setCacheCapacityTotal(maxSize);
     if (LlapIoImpl.LOG.isInfoEnabled()) {
       LlapIoImpl.LOG.info("Memory manager initialized with max size {} and" +
           " {} ability to evict blocks", maxSize, ((evictor == null) ? "no " : ""));

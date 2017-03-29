@@ -30,6 +30,7 @@ import java.util.concurrent.TimeUnit;
 
 import javax.management.ObjectName;
 
+import org.apache.hadoop.hive.llap.daemon.impl.LlapDaemon;
 import org.apache.hadoop.hive.llap.daemon.impl.StatsRecordingThreadPool;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -121,11 +122,32 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch> {
     if (useLowLevelCache) {
       // Memory manager uses cache policy to trigger evictions, so create the policy first.
       boolean useLrfu = HiveConf.getBoolVar(conf, HiveConf.ConfVars.LLAP_USE_LRFU);
-      LowLevelCachePolicy cachePolicy =
-          useLrfu ? new LowLevelLrfuCachePolicy(conf) : new LowLevelFifoCachePolicy(conf);
+      long totalMemorySize = HiveConf.getSizeVar(conf, ConfVars.LLAP_IO_MEMORY_MAX_SIZE);
+      int minAllocSize = (int)HiveConf.getSizeVar(conf, ConfVars.LLAP_ALLOCATOR_MIN_ALLOC);
+      float metadataFraction = HiveConf.getFloatVar(conf, ConfVars.LLAP_IO_METADATA_FRACTION);
+      long metaMem = 0;
+      // TODO: this split a workaround until HIVE-15665.
+      //       Technically we don't have to do it for on-heap data cache but we'd do for testing.
+      boolean isSplitCache = metadataFraction > 0f;
+      if (isSplitCache) {
+        metaMem = (long)(LlapDaemon.getTotalHeapSize() * metadataFraction);
+      }
+      LowLevelCachePolicy cachePolicy = useLrfu ? new LowLevelLrfuCachePolicy(
+          minAllocSize, totalMemorySize, conf) : new LowLevelFifoCachePolicy();
       // Allocator uses memory manager to request memory, so create the manager next.
       LowLevelCacheMemoryManager memManager = new LowLevelCacheMemoryManager(
-          conf, cachePolicy, cacheMetrics);
+          totalMemorySize, cachePolicy, cacheMetrics);
+      LowLevelCachePolicy metaCachePolicy = null;
+      LowLevelCacheMemoryManager metaMemManager = null;
+      if (isSplitCache) {
+        metaCachePolicy = useLrfu ? new LowLevelLrfuCachePolicy(
+            minAllocSize, metaMem, conf) : new LowLevelFifoCachePolicy();
+        metaMemManager = new LowLevelCacheMemoryManager(metaMem, metaCachePolicy, cacheMetrics);
+      } else {
+        metaCachePolicy = cachePolicy;
+        metaMemManager = memManager;
+      }
+      cacheMetrics.setCacheCapacityTotal(totalMemorySize + metaMem);
       // Cache uses allocator to allocate and deallocate, create allocator and then caches.
       EvictionAwareAllocator allocator = new BuddyAllocator(conf, memManager, cacheMetrics);
       this.allocator = allocator;
@@ -138,10 +160,13 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch> {
         serdeCache = serdeCacheImpl;
       }
       boolean useGapCache = HiveConf.getBoolVar(conf, ConfVars.LLAP_CACHE_ENABLE_ORC_GAP_CACHE);
-      metadataCache = new OrcMetadataCache(memManager, cachePolicy, useGapCache);
+      metadataCache = new OrcMetadataCache(metaMemManager, metaCachePolicy, useGapCache);
       // And finally cache policy uses cache to notify it of eviction. The cycle is complete!
-      cachePolicy.setEvictionListener(new EvictionDispatcher(
-          cache, serdeCache, metadataCache, allocator));
+      EvictionDispatcher e = new EvictionDispatcher(cache, serdeCache, metadataCache, allocator);
+      if (isSplitCache) {
+        metaCachePolicy.setEvictionListener(e);
+      }
+      cachePolicy.setEvictionListener(e);
       cachePolicy.setParentDebugDumper(cacheImpl);
       cacheImpl.startThreads(); // Start the cache threads.
       bufferManager = cacheImpl; // Cache also serves as buffer manager.
