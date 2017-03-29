@@ -336,9 +336,6 @@ goto :EOF
 	set VAR%SERVICE_COUNT%=help
 
 	set /a SERVICE_COUNT = %SERVICE_COUNT% + 1
-	set VAR%SERVICE_COUNT%=hiveserver
-
-	set /a SERVICE_COUNT = %SERVICE_COUNT% + 1
 	set VAR%SERVICE_COUNT%=hiveserver2
 
 	set /a SERVICE_COUNT = %SERVICE_COUNT% + 1
