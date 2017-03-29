@@ -69,12 +69,6 @@ public class LowLevelLrfuCachePolicy implements LowLevelCachePolicy {
   private EvictionListener evictionListener;
   private LlapOomDebugDump parentDebugDump;
 
-  public LowLevelLrfuCachePolicy(Configuration conf) {
-    this((int)HiveConf.getSizeVar(conf, ConfVars.LLAP_ALLOCATOR_MIN_ALLOC),
-        HiveConf.getSizeVar(conf, ConfVars.LLAP_IO_MEMORY_MAX_SIZE), conf);
-  }
-
-  @VisibleForTesting
   public LowLevelLrfuCachePolicy(int minBufferSize, long maxSize, Configuration conf) {
     lambda = HiveConf.getFloatVar(conf, HiveConf.ConfVars.LLAP_LRFU_LAMBDA);
     int maxBuffers = (int)Math.ceil((maxSize * 1.0) / minBufferSize);
