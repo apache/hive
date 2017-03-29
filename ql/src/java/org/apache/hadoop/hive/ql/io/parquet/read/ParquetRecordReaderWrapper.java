@@ -15,7 +15,9 @@ package org.apache.hadoop.hive.ql.io.parquet.read;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.TimeZone;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -25,6 +27,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.io.IOConstants;
 import org.apache.hadoop.hive.ql.io.parquet.ProjectionPusher;
+import org.apache.hadoop.hive.ql.io.parquet.serde.ParquetTableUtils;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgumentFactory;
 import org.apache.hadoop.hive.ql.plan.TableScanDesc;
@@ -42,6 +45,7 @@ import org.apache.hadoop.mapreduce.TaskAttemptID;
 import parquet.filter2.compat.FilterCompat;
 import parquet.filter2.compat.RowGroupFilter;
 import parquet.filter2.predicate.FilterPredicate;
+import parquet.format.converter.ParquetMetadataConverter;
 import parquet.hadoop.ParquetFileReader;
 import parquet.hadoop.ParquetInputFormat;
 import parquet.hadoop.ParquetInputSplit;
@@ -67,7 +71,6 @@ public class ParquetRecordReaderWrapper  implements RecordReader<Void, ArrayWrit
   private boolean firstRecord = false;
   private boolean eof = false;
   private int schemaSize;
-  private boolean skipTimestampConversion = false;
   private JobConf jobConf;
   private final ProjectionPusher projectionPusher;
   private List<BlockMetaData> filtedBlocks;
@@ -100,13 +103,14 @@ public class ParquetRecordReaderWrapper  implements RecordReader<Void, ArrayWrit
     }
 
     // create a TaskInputOutputContext
-    Configuration conf = jobConf;
-    if (skipTimestampConversion ^ HiveConf.getBoolVar(
-        conf, HiveConf.ConfVars.HIVE_PARQUET_TIMESTAMP_SKIP_CONVERSION)) {
-      conf = new JobConf(oldJobConf);
-      HiveConf.setBoolVar(conf,
-        HiveConf.ConfVars.HIVE_PARQUET_TIMESTAMP_SKIP_CONVERSION, skipTimestampConversion);
-    }
+    // TODO: This line is left due to incorrect Predicate push down results (parquet_ppd_char,parquet_ppd_varchar).
+    // The problem is that Parquet PPD is set on getSplit() function called above, but the old code used this
+    // line to overwrite such configuration. I'm adding a fix to timestamp issues only, so we should follow up
+    // this issue in another JIRA.
+    JobConf conf = new JobConf(oldJobConf);
+
+    // Set the TimeZone conversion in case the file has timestamp columns.
+    setTimeZoneConversion(conf, ((FileSplit)oldSplit).getPath());
 
     final TaskAttemptContext taskContext = ContextUtil.newTaskAttemptContext(conf, taskAttemptID);
     if (split != null) {
@@ -131,6 +135,51 @@ public class ParquetRecordReaderWrapper  implements RecordReader<Void, ArrayWrit
     if (valueObj == null) { // Should initialize the value for createValue
       valueObj = new ArrayWritable(Writable.class, new Writable[schemaSize]);
     }
+  }
+
+  /**
+   * Sets the TimeZone conversion for Parquet timestamp columns.
+   *
+   * @param configuration Configuration object where to get and set the TimeZone conversion
+   * @param finalPath     path to the parquet file
+   */
+  protected void setTimeZoneConversion(Configuration configuration, Path finalPath) {
+    ParquetMetadata parquetMetadata;
+    String timeZoneID;
+
+    try {
+      parquetMetadata = ParquetFileReader.readFooter(configuration, finalPath,
+          ParquetMetadataConverter.NO_FILTER);
+    } catch (IOException e) {
+      // If an error occurred while reading the file, then we just skip the TimeZone setting.
+      // This error will probably occur on any other part of the code.
+      LOG.debug("Could not read parquet file footer at " + finalPath + ". Cannot determine " +
+          "parquet file timezone", e);
+      return;
+    }
+
+    boolean skipConversion = HiveConf.getBoolVar(configuration,
+        HiveConf.ConfVars.HIVE_PARQUET_TIMESTAMP_SKIP_CONVERSION);
+    FileMetaData fileMetaData = parquetMetadata.getFileMetaData();
+    if (!Strings.nullToEmpty(fileMetaData.getCreatedBy()).startsWith("parquet-mr") ||
+        skipConversion) {
+      // Impala writes timestamp values using GMT only. We should not try to convert Impala
+      // files to other type of timezones.
+      timeZoneID = ParquetTableUtils.PARQUET_INT96_NO_ADJUSTMENT_ZONE;
+    } else {
+      // TABLE_PARQUET_INT96_TIMEZONE is a table property used to detect what timezone conversion
+      // to use when reading Parquet timestamps.
+      timeZoneID = configuration.get(ParquetTableUtils.PARQUET_INT96_WRITE_ZONE_PROPERTY,
+          ParquetTableUtils.PARQUET_INT96_NO_ADJUSTMENT_ZONE);
+
+      if (!Arrays.asList(TimeZone.getAvailableIDs()).contains(timeZoneID)) {
+        throw new IllegalStateException("Unexpected timezone id found for parquet int96 conversion: " + timeZoneID);
+      }
+    }
+
+    // 'timeZoneID' should be valid, since we did not throw exception above
+    configuration.set(ParquetTableUtils.PARQUET_INT96_WRITE_ZONE_PROPERTY,
+        TimeZone.getTimeZone(timeZoneID).getID());
   }
 
   public FilterCompat.Filter setFilter(final JobConf conf, MessageType schema) {
@@ -245,6 +294,11 @@ public class ParquetRecordReaderWrapper  implements RecordReader<Void, ArrayWrit
       final JobConf conf
       ) throws IOException {
     ParquetInputSplit split;
+
+    if (oldSplit == null) {
+      return null;
+    }
+
     if (oldSplit instanceof FileSplit) {
       final Path finalPath = ((FileSplit) oldSplit).getPath();
       jobConf = projectionPusher.pushProjectionsAndFilters(conf, finalPath.getParent());
@@ -287,9 +341,6 @@ public class ParquetRecordReaderWrapper  implements RecordReader<Void, ArrayWrit
         filtedBlocks = splitGroup;
       }
 
-      if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_PARQUET_TIMESTAMP_SKIP_CONVERSION)) {
-        skipTimestampConversion = !Strings.nullToEmpty(fileMetaData.getCreatedBy()).startsWith("parquet-mr");
-      }
       split = new ParquetInputSplit(finalPath,
           splitStart,
           splitLength,

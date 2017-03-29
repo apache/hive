@@ -46,8 +46,10 @@ import parquet.schema.OriginalType;
 import parquet.schema.Type;
 
 import java.sql.Timestamp;
+import java.util.Calendar;
 import java.util.List;
 import java.util.Map;
+import java.util.TimeZone;
 
 /**
  *
@@ -59,14 +61,16 @@ public class DataWritableWriter {
   private static final Log LOG = LogFactory.getLog(DataWritableWriter.class);
   protected final RecordConsumer recordConsumer;
   private final GroupType schema;
+  private final TimeZone timeZone;
 
   /* This writer will be created when writing the first row in order to get
   information about how to inspect the record data.  */
   private DataWriter messageWriter;
 
-  public DataWritableWriter(final RecordConsumer recordConsumer, final GroupType schema) {
+  public DataWritableWriter(final RecordConsumer recordConsumer, final GroupType schema, final TimeZone timeZone) {
     this.recordConsumer = recordConsumer;
     this.schema = schema;
+    this.timeZone = timeZone;
   }
 
   /**
@@ -483,15 +487,17 @@ public class DataWritableWriter {
 
   private class TimestampDataWriter implements DataWriter {
     private TimestampObjectInspector inspector;
+    private Calendar calendar;
 
     public TimestampDataWriter(TimestampObjectInspector inspector) {
       this.inspector = inspector;
+      this.calendar = Calendar.getInstance(timeZone);
     }
 
     @Override
     public void write(Object value) {
       Timestamp ts = inspector.getPrimitiveJavaObject(value);
-      recordConsumer.addBinary(NanoTimeUtils.getNanoTime(ts, false).toBinary());
+      recordConsumer.addBinary(NanoTimeUtils.getNanoTime(ts, calendar).toBinary());
     }
   }
 
