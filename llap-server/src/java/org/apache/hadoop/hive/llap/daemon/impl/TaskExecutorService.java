@@ -277,7 +277,8 @@ public class TaskExecutorService extends AbstractService
             }
             // If the task cannot finish and if no slots are available then don't schedule it.
             // Also don't wait if we have a task and we just killed something to schedule it.
-            boolean shouldWait = numSlotsAvailable.get() == 0 && lastKillTimeMs == null;
+            // (numSlotsAvailable can go negative, if the callback after the thread completes is delayed)
+            boolean shouldWait = numSlotsAvailable.get() <= 0 && lastKillTimeMs == null;
             if (task.getTaskRunnerCallable().canFinish()) {
               if (isDebugEnabled) {
                 LOG.debug("Attempting to schedule task {}, canFinish={}. Current state: "
@@ -728,8 +729,8 @@ public class TaskExecutorService extends AbstractService
       knownTasks.remove(taskWrapper.getRequestId());
       taskWrapper.setIsInPreemptableQueue(false);
       taskWrapper.maybeUnregisterForFinishedStateNotifications();
-      taskWrapper.getTaskRunnerCallable().getCallback().onSuccess(result);
       updatePreemptionListAndNotify(result.getEndReason());
+      taskWrapper.getTaskRunnerCallable().getCallback().onSuccess(result);
     }
 
     @Override
@@ -742,8 +743,8 @@ public class TaskExecutorService extends AbstractService
       knownTasks.remove(taskWrapper.getRequestId());
       taskWrapper.setIsInPreemptableQueue(false);
       taskWrapper.maybeUnregisterForFinishedStateNotifications();
-      taskWrapper.getTaskRunnerCallable().getCallback().onFailure(t);
       updatePreemptionListAndNotify(null);
+      taskWrapper.getTaskRunnerCallable().getCallback().onFailure(t);
       LOG.error("Failed notification received: Stacktrace: " + ExceptionUtils.getStackTrace(t));
     }
 
