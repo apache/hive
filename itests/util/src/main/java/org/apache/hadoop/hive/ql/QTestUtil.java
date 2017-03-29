@@ -64,6 +64,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import com.google.common.base.Preconditions;
+import com.google.common.base.Throwables;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
@@ -1395,7 +1396,8 @@ public class QTestUtil {
 
         int rc = response.getResponseCode();
         if (rc != 0) {
-          SessionState.get().out.println(response);
+          SessionState.getConsole().printError(response.toString(), response.getException() != null ?
+                  Throwables.getStackTraceAsString(response.getException()) : "");
         }
 
         return rc;
@@ -1403,7 +1405,7 @@ public class QTestUtil {
         throw new RuntimeException("Could not get CommandProcessor for command: " + commandName);
       }
     } catch (Exception e) {
-      throw new RuntimeException("Could not execute test command: " + e.getMessage());
+      throw new RuntimeException("Could not execute test command", e);
     }
   }
 
