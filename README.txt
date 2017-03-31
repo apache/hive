@@ -1,4 +1,4 @@
-Apache Hive (TM) 1.2.1
+Apache Hive (TM) 1.2.2
 ======================
 
 The Apache Hive (TM) data warehouse software facilitates querying and
@@ -87,7 +87,7 @@ Requirements
 Upgrading from older versions of Hive
 =====================================
 
-- Hive 1.2.1 includes changes to the MetaStore schema. If you are
+- Hive 1.2.2 does not include changes to the MetaStore schema. If you are
   upgrading from an earlier version of Hive prior to Hive 1.2.0, it
   is imperative that you upgrade the MetaStore schema by running
   the appropriate schema upgrade scripts located in the
