@@ -2468,6 +2468,7 @@ Table Type:         	MANAGED_TABLE
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	numFiles            	2                   
+	numPartitions       	2                   
 	numRows             	1000                
 	rawDataSize         	10624               
 	totalSize           	11624               
@@ -2509,6 +2510,7 @@ Table Type:         	MANAGED_TABLE
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	numFiles            	2                   
+	numPartitions       	2                   
 	numRows             	1000                
 	rawDataSize         	10624               
 	totalSize           	11624               
