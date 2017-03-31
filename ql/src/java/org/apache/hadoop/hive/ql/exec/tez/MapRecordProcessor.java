@@ -154,7 +154,6 @@ public class MapRecordProcessor extends RecordProcessor {
       mapOp.setExecContext(execContext);
 
       connectOps.clear();
-      boolean fromCache = false;
       if (mergeWorkList != null) {
         MapOperator mergeMapOp = null;
         for (BaseWork mergeWork : mergeWorkList) {
@@ -198,15 +197,13 @@ public class MapRecordProcessor extends RecordProcessor {
               // based on path and partition information.
               mergeMapOp.setChildren(jconf);
             }
-            Operator<? extends OperatorDesc> finalOp = getFinalOp(mergeMapOp);
-            if (finalOp instanceof TezDummyStoreOperator) {
-              // we ensure that we don't try to read any data in case of skip read.
-              ((TezDummyStoreOperator) finalOp).setFetchDone(skipRead);
-              connectOps.put(mergeMapWork.getTag(), (DummyStoreOperator) finalOp);
-            } else {
-              // found the plan is already connected which means this is derived from the cache.
-              fromCache = true;
+
+            DummyStoreOperator dummyOp = getJoinParentOp(mergeMapOp);
+            if (dummyOp instanceof TezDummyStoreOperator) {
+              // we ensure that we don't try to read any data for this table.
+              ((TezDummyStoreOperator) dummyOp).setFetchDone(skipRead);
             }
+            connectOps.put(mergeMapWork.getTag(), dummyOp);
 
             mergeMapOp.passExecContext(new ExecMapperContext(jconf));
             mergeMapOp.initializeLocalWork(jconf);
@@ -214,9 +211,7 @@ public class MapRecordProcessor extends RecordProcessor {
         }
       }
 
-      if (!fromCache) {
-        ((TezContext) (MapredContext.get())).setDummyOpsMap(connectOps);
-      }
+      ((TezContext) (MapredContext.get())).setDummyOpsMap(connectOps);
 
       // initialize map operator
       mapOp.setConf(mapWork);
@@ -311,12 +306,12 @@ public class MapRecordProcessor extends RecordProcessor {
     return reader;
   }
 
-  private Operator<? extends OperatorDesc> getFinalOp(Operator<? extends OperatorDesc> mergeMapOp) {
+  private DummyStoreOperator getJoinParentOp(Operator<? extends OperatorDesc> mergeMapOp) {
     for (Operator<? extends OperatorDesc> childOp : mergeMapOp.getChildOperators()) {
       if ((childOp.getChildOperators() == null) || (childOp.getChildOperators().isEmpty())) {
-        return childOp;
+        return (DummyStoreOperator) childOp;
       } else {
-        return getFinalOp(childOp);
+        return getJoinParentOp(childOp);
       }
     }
     return null;
