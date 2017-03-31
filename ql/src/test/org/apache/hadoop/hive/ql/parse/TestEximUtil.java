@@ -19,6 +19,22 @@
 package org.apache.hadoop.hive.ql.parse;
 
 import junit.framework.TestCase;
+import org.apache.hadoop.fs.*;
+import org.apache.hadoop.hive.metastore.api.Partition;
+import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.thrift.TSerializer;
+import org.apache.thrift.protocol.TJSONProtocol;
+import org.json.JSONObject;
+import org.junit.Test;
+
+import java.io.ByteArrayInputStream;
+import java.io.DataInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Iterator;
+
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 /**
  * TestEximUtil.
@@ -26,12 +42,99 @@ import junit.framework.TestCase;
  */
 public class TestEximUtil extends TestCase {
 
+  private class FakeSeekableInputStream extends DataInputStream
+          implements Seekable, PositionedReadable {
+
+    public FakeSeekableInputStream(InputStream in) {
+      super(in);
+    }
+
+    @Override
+    public void seek(long l) throws IOException {
+
+    }
+
+    @Override
+    public long getPos() throws IOException {
+      return 0;
+    }
+
+    @Override
+    public boolean seekToNewSource(long l) throws IOException {
+      return false;
+    }
+
+    @Override
+    public int read(long l, byte[] bytes, int i, int i1) throws IOException {
+      return 0;
+    }
+
+    @Override
+    public void readFully(long l, byte[] bytes, int i, int i1) throws IOException {
+
+    }
+
+    @Override
+    public void readFully(long l, byte[] bytes) throws IOException {
+
+    }
+  }
+
   @Override
   protected void setUp() {
   }
 
   @Override
   protected void tearDown() {
+  }
+
+  @Test
+  public void testReadMetaData() throws Exception {
+
+    // serialize table
+    TSerializer serializer = new TSerializer(new TJSONProtocol.Factory());
+
+    Table table = new Table();
+    table.setDbName("test-db-name-table");
+    String tableJson = serializer.toString(table, "UTF-8");
+
+    Partition partition1 = new Partition();
+    partition1.setTableName("test-table-name-p1");
+    String partition1Json = serializer.toString(partition1, "UTF-8");
+
+    Partition partition2 = new Partition();
+    partition2.setTableName("test-table-name-p2");
+    String partition2Json = serializer.toString(partition2, "UTF-8");
+
+    String json = "{" +
+            "\"version\": \"0.1\"," +
+            "\"fcversion\": \"0.1\"," +
+            "\"table\": " + tableJson + "," +
+            "\"partitions\": [" + partition1Json + ", " + partition2Json + "]" +
+            "}";
+    DataInputStream is = new FakeSeekableInputStream(
+            new ByteArrayInputStream(json.getBytes("UTF-8")));
+
+    FSDataInputStream fsis = new FSDataInputStream(is);
+
+    FileSystem fs = mock(FileSystem.class);
+    Path pathMock = mock(Path.class);
+    when(fs.open(pathMock)).thenReturn(fsis);
+    EximUtil.ReadMetaData result = EximUtil.readMetaData(fs, pathMock);
+
+    assertEquals("test-db-name-table", result.getTable().getDbName());
+    Iterator<Partition> iterator = result.getPartitions().iterator();
+    assertEquals("test-table-name-p1", iterator.next().getTableName());
+    assertEquals("test-table-name-p2", iterator.next().getTableName());
+  }
+
+  @Test
+  public void testGetJSONStringEntry() throws Exception {
+    String jsonString = "{\"string-key\":\"string-value\",\"non-string-key\":1}";
+    JSONObject jsonObject = new JSONObject(jsonString);
+    assertEquals("string-value", EximUtil.getJSONStringEntry(jsonObject, "string-key"));
+    assertEquals("1", EximUtil.getJSONStringEntry(jsonObject, "non-string-key"));
+    assertNull(EximUtil.getJSONStringEntry(jsonObject, "no-such-key"));
   }
 
   public void testCheckCompatibility() throws SemanticException {

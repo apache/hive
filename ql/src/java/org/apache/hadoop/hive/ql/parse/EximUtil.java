@@ -32,6 +32,7 @@ import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.TreeMap;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Function;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
@@ -345,7 +346,8 @@ public class EximUtil {
     return new ReplicationSpec(keyFetcher);
   }
 
-  private static String getJSONStringEntry(JSONObject jsonContainer, String name) {
+  @VisibleForTesting
+  static String getJSONStringEntry(JSONObject jsonContainer, String name) {
     String retval = null;
     try {
       retval = jsonContainer.getString(name);

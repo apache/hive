@@ -25,6 +25,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.google.common.annotations.VisibleForTesting;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -54,7 +55,8 @@ public class Op {
     this.vertex = vertex;
   }
 
-  private void inlineJoinOp() throws Exception {
+  @VisibleForTesting
+  void inlineJoinOp() throws Exception {
     // inline map join operator
     if (this.name.equals("Map Join Operator")) {
       JSONObject mapjoinObj = opObject.getJSONObject("Map Join Operator");
