@@ -331,7 +331,7 @@ public class HiveMetaStoreChecker {
     // now check the table folder and see if we find anything
     // that isn't in the metastore
     Set<Path> allPartDirs = new HashSet<Path>();
-    checkPartitionDirs(tablePath, allPartDirs, table.getPartCols().size());
+    checkPartitionDirs(tablePath, allPartDirs, Collections.unmodifiableList(table.getPartColNames()));
     // don't want the table dir
     allPartDirs.remove(tablePath);
 
@@ -415,14 +415,14 @@ public class HiveMetaStoreChecker {
    *          Start directory
    * @param allDirs
    *          This set will contain the leaf paths at the end.
-   * @param maxDepth
+   * @param list
    *          Specify how deep the search goes.
    * @throws IOException
    *           Thrown if we can't get lists from the fs.
    * @throws HiveException
    */
 
-  private void checkPartitionDirs(Path basePath, Set<Path> allDirs, int maxDepth) throws IOException, HiveException {
+  private void checkPartitionDirs(Path basePath, Set<Path> allDirs, final List<String> partColNames) throws IOException, HiveException {
     // Here we just reuse the THREAD_COUNT configuration for
     // METASTORE_FS_HANDLER_THREADS_COUNT since this results in better performance
     // The number of missing partitions discovered are later added by metastore using a
@@ -440,21 +440,21 @@ public class HiveMetaStoreChecker {
           new ThreadFactoryBuilder().setDaemon(true).setNameFormat("MSCK-GetPaths-%d").build();
       executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(poolSize, threadFactory);
     }
-    checkPartitionDirs(executor, basePath, allDirs, basePath.getFileSystem(conf), maxDepth);
+    checkPartitionDirs(executor, basePath, allDirs, basePath.getFileSystem(conf), partColNames);
 
     executor.shutdown();
   }
 
   private final class PathDepthInfoCallable implements Callable<Path> {
-    private final int maxDepth;
+    private final List<String> partColNames;
     private final FileSystem fs;
     private final ConcurrentLinkedQueue<PathDepthInfo> pendingPaths;
     private final boolean throwException;
     private final PathDepthInfo pd;
 
-    private PathDepthInfoCallable(PathDepthInfo pd, int maxDepth, FileSystem fs,
+    private PathDepthInfoCallable(PathDepthInfo pd, List<String> partColNames, FileSystem fs,
         ConcurrentLinkedQueue<PathDepthInfo> basePaths) {
-      this.maxDepth = maxDepth;
+      this.partColNames = partColNames;
       this.pd = pd;
       this.fs = fs;
       this.pendingPaths = basePaths;
@@ -474,38 +474,48 @@ public class HiveMetaStoreChecker {
       FileStatus[] fileStatuses = fs.listStatus(currentPath, FileUtils.HIDDEN_FILES_PATH_FILTER);
       // found no files under a sub-directory under table base path; it is possible that the table
       // is empty and hence there are no partition sub-directories created under base path
-      if (fileStatuses.length == 0 && currentDepth > 0 && currentDepth < maxDepth) {
+      if (fileStatuses.length == 0 && currentDepth > 0 && currentDepth < partColNames.size()) {
         // since maxDepth is not yet reached, we are missing partition
         // columns in currentPath
-        if (throwException) {
-          throw new HiveException(
-              "MSCK is missing partition columns under " + currentPath.toString());
-        } else {
-          LOG.warn("MSCK is missing partition columns under " + currentPath.toString());
-        }
+        logOrThrowExceptionWithMsg(
+            "MSCK is missing partition columns under " + currentPath.toString());
       } else {
         // found files under currentPath add them to the queue if it is a directory
         for (FileStatus fileStatus : fileStatuses) {
-          if (!fileStatus.isDirectory() && currentDepth < maxDepth) {
+          if (!fileStatus.isDirectory() && currentDepth < partColNames.size()) {
             // found a file at depth which is less than number of partition keys
-            if (throwException) {
-              throw new HiveException(
-                  "MSCK finds a file rather than a directory when it searches for "
-                      + fileStatus.getPath().toString());
-            } else {
-              LOG.warn("MSCK finds a file rather than a directory when it searches for "
-                  + fileStatus.getPath().toString());
+            logOrThrowExceptionWithMsg(
+                "MSCK finds a file rather than a directory when it searches for "
+                    + fileStatus.getPath().toString());
+          } else if (fileStatus.isDirectory() && currentDepth < partColNames.size()) {
+            // found a sub-directory at a depth less than number of partition keys
+            // validate if the partition directory name matches with the corresponding
+            // partition colName at currentDepth
+            Path nextPath = fileStatus.getPath();
+            String[] parts = nextPath.getName().split("=");
+            if (parts.length != 2) {
+              logOrThrowExceptionWithMsg("Invalid partition name " + nextPath);
+            } else if (!parts[0].equalsIgnoreCase(partColNames.get(currentDepth))) {
+              logOrThrowExceptionWithMsg(
+                  "Unexpected partition key " + parts[0] + " found at " + nextPath);
             }
-          } else if (fileStatus.isDirectory() && currentDepth < maxDepth) {
             // add sub-directory to the work queue if maxDepth is not yet reached
-            pendingPaths.add(new PathDepthInfo(fileStatus.getPath(), currentDepth + 1));
+            pendingPaths.add(new PathDepthInfo(nextPath, currentDepth + 1));
           }
         }
-        if (currentDepth == maxDepth) {
+        if (currentDepth == partColNames.size()) {
           return currentPath;
         }
       }
       return null;
+    }
+
+    private void logOrThrowExceptionWithMsg(String msg) throws HiveException {
+      if(throwException) {
+        throw new HiveException(msg);
+      } else {
+        LOG.warn(msg);
+      }
     }
   }
 
@@ -520,7 +530,7 @@ public class HiveMetaStoreChecker {
 
   private void checkPartitionDirs(final ExecutorService executor,
       final Path basePath, final Set<Path> result,
-      final FileSystem fs, final int maxDepth) throws HiveException {
+      final FileSystem fs, final List<String> partColNames) throws HiveException {
     try {
       Queue<Future<Path>> futures = new LinkedList<Future<Path>>();
       ConcurrentLinkedQueue<PathDepthInfo> nextLevel = new ConcurrentLinkedQueue<>();
@@ -537,7 +547,7 @@ public class HiveMetaStoreChecker {
         //process each level in parallel
         while(!nextLevel.isEmpty()) {
           futures.add(
-              executor.submit(new PathDepthInfoCallable(nextLevel.poll(), maxDepth, fs, tempQueue)));
+              executor.submit(new PathDepthInfoCallable(nextLevel.poll(), partColNames, fs, tempQueue)));
         }
         while(!futures.isEmpty()) {
           Path p = futures.poll().get();
