@@ -132,6 +132,7 @@ Table Type:         	MANAGED_TABLE
 Table Parameters:	 	 
 #### A masked pattern was here ####
 	numFiles            	1                   
+	numPartitions       	1                   
 	numRows             	0                   
 	rawDataSize         	0                   
 	totalSize           	36                  

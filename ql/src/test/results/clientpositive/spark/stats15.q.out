@@ -147,6 +147,7 @@ Table Type:         	MANAGED_TABLE
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	numFiles            	3                   
+	numPartitions       	3                   
 	numRows             	1500                
 	rawDataSize         	15936               
 	totalSize           	17436               
@@ -288,6 +289,7 @@ Table Type:         	MANAGED_TABLE
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	numFiles            	3                   
+	numPartitions       	3                   
 	numRows             	1500                
 	rawDataSize         	15936               
 	totalSize           	17436               
