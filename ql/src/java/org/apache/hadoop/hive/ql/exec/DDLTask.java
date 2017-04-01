@@ -4662,7 +4662,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     Map<String, String> partSpec = truncateTableDesc.getPartSpec();
 
     Table table = db.getTable(tableName, true);
-
+    boolean isAutopurge = "true".equalsIgnoreCase(table.getProperty("auto.purge"));
     try {
       // this is not transactional
       for (Path location : getLocations(db, table, partSpec)) {
@@ -4673,7 +4673,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
           HdfsUtils.HadoopFileStatus status = new HdfsUtils.HadoopFileStatus(conf, fs, location);
           FileStatus targetStatus = fs.getFileStatus(location);
           String targetGroup = targetStatus == null ? null : targetStatus.getGroup();
-          FileUtils.moveToTrash(fs, location, conf);
+          FileUtils.moveToTrash(fs, location, conf, isAutopurge);
           fs.mkdirs(location);
           HdfsUtils.setFullFileStatus(conf, status, targetGroup, fs, location, false);
         } else {
@@ -4681,7 +4681,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
           if (statuses == null || statuses.length == 0) {
             continue;
           }
-          boolean success = Hive.trashFiles(fs, statuses, conf);
+          boolean success = Hive.trashFiles(fs, statuses, conf, isAutopurge);
           if (!success) {
             throw new HiveException("Error in deleting the contents of " + location.toString());
           }

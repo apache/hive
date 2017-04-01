@@ -616,15 +616,19 @@ public final class FileUtils {
    * @return true if move successful
    * @throws IOException
    */
-  public static boolean moveToTrash(FileSystem fs, Path f, Configuration conf)
+  public static boolean moveToTrash(FileSystem fs, Path f, Configuration conf, boolean purge)
       throws IOException {
     LOG.debug("deleting  " + f);
     boolean result = false;
     try {
-      result = Trash.moveToAppropriateTrash(fs, f, conf);
-      if (result) {
-        LOG.trace("Moved to trash: " + f);
-        return true;
+      if(purge) {
+        LOG.debug("purge is set to true. Not moving to Trash " + f);
+      } else {
+        result = Trash.moveToAppropriateTrash(fs, f, conf);
+        if (result) {
+          LOG.trace("Moved to trash: " + f);
+          return true;
+        }
       }
     } catch (IOException ioe) {
       // for whatever failure reason including that trash has lower encryption zone
@@ -636,7 +640,6 @@ public final class FileUtils {
     if (!result) {
       LOG.error("Failed to delete " + f);
     }
-
     return result;
   }
 
