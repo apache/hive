@@ -195,7 +195,7 @@ public class SparkMapJoinOptimizer implements NodeProcessor {
     // bigTableFound means we've encountered a table that's bigger than the
     // max. This table is either the big table or we cannot convert.
     boolean bigTableFound = false;
-    boolean useTsStats = context.getConf().getBoolean(HiveConf.ConfVars.SPARK_USE_FILE_SIZE_FOR_MAPJOIN.varname, false);
+    boolean useTsStats = context.getConf().getBoolean(HiveConf.ConfVars.SPARK_USE_TS_STATS_FOR_MAPJOIN.varname, false);
     boolean hasUpstreamSinks = false;
 
     // Check whether there's any upstream RS.
