@@ -117,10 +117,10 @@ public class PostExecutePrinter implements ExecuteWithHookContext {
     }
 
     if (query != null) {
-      console.printError("POSTHOOK: query: " + query.trim());
+      console.printInfo("POSTHOOK: query: " + query.trim(), false);
     }
     if (type != null) {
-      console.printError("POSTHOOK: type: " + type);
+      console.printInfo("POSTHOOK: type: " + type, false);
     }
 
     PreExecutePrinter.printEntities(console, inputs, "POSTHOOK: Input: ");
@@ -170,7 +170,7 @@ public class PostExecutePrinter implements ExecuteWithHookContext {
         }
         sb.append("]");
 
-        console.printError(sb.toString());
+        console.printInfo(sb.toString(), false);
       }
     }
   }

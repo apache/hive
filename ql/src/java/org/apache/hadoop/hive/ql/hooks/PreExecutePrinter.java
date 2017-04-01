@@ -65,10 +65,10 @@ public class PreExecutePrinter implements ExecuteWithHookContext {
     }
 
     if (query != null) {
-      console.printError("PREHOOK: query: " + query.trim());
+      console.printInfo("PREHOOK: query: " + query.trim(), false);
     }
     if (type != null) {
-      console.printError("PREHOOK: type: " + type);
+      console.printInfo("PREHOOK: type: " + type, false);
     }
 
     printEntities(console, inputs, "PREHOOK: Input: ");
@@ -82,7 +82,7 @@ public class PreExecutePrinter implements ExecuteWithHookContext {
     }
     Collections.sort(strings);
     for (String s : strings) {
-      console.printError(prefix + s);
+      console.printInfo(prefix + s, false);
     }
   }
 }

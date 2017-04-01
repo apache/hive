@@ -274,7 +274,7 @@ public final class QFile {
     // Pattern to remove the timestamp and other infrastructural info from the out file
     return new RegexFilterSet()
         .addFilter("Reading log file: .*\n", "")
-        .addFilter("ERROR : ", "")
+        .addFilter("INFO  : ", "")
         .addFilter(".*/tmp/.*\n", MASK_PATTERN)
         .addFilter(".*file:.*\n", MASK_PATTERN)
         .addFilter(".*file\\..*\n", MASK_PATTERN)

@@ -84,7 +84,7 @@ public class LogDivertAppenderForTest extends WriterAppender {
   private static class TestFilter extends Filter {
     @Override
     public int decide(LoggingEvent event) {
-      if (event.getLevel().equals(Level.ERROR) && "SessionState".equals(event.getLoggerName())) {
+      if (event.getLevel().equals(Level.INFO) && "SessionState".equals(event.getLoggerName())) {
         if (event.getRenderedMessage().startsWith("PREHOOK:")
             || event.getRenderedMessage().startsWith("POSTHOOK:")) {
           return Filter.ACCEPT;
