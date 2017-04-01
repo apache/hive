@@ -1096,8 +1096,16 @@ public class SessionState {
       printInfo(info, null);
     }
 
+    public void printInfo(String info, boolean isSilent) {
+      printInfo(info, null, isSilent);
+    }
+
     public void printInfo(String info, String detail) {
-      if (!getIsSilent()) {
+      printInfo(info, detail, getIsSilent());
+    }
+
+    public void printInfo(String info, String detail, boolean isSilent) {
+      if (!isSilent) {
         getInfoStream().println(info);
       }
       LOG.info(info + StringUtils.defaultString(detail));
