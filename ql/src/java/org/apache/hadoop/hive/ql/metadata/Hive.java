@@ -1646,8 +1646,9 @@ public class Hive {
       PerfLogger perfLogger = SessionState.getPerfLogger();
       perfLogger.PerfLogBegin("MoveTask", "FileMoves");
       if (replace || (oldPart == null && !isAcid)) {
+        boolean isAutoPurge = "true".equalsIgnoreCase(tbl.getProperty("auto.purge"));
         replaceFiles(tbl.getPath(), loadPath, newPartPath, oldPartPath, getConf(),
-            isSrcLocal);
+            isSrcLocal, isAutoPurge);
       } else {
         if (conf.getBoolVar(ConfVars.FIRE_EVENTS_FOR_DML) && !tbl.isTemporary() && oldPart != null) {
           newFiles = Collections.synchronizedList(new ArrayList<Path>());
@@ -2012,7 +2013,8 @@ private void constructOneLBLocationMap(FileStatus fSta,
     }
     if (replace) {
       Path tableDest = tbl.getPath();
-      replaceFiles(tableDest, loadPath, tableDest, tableDest, sessionConf, isSrcLocal);
+      boolean isAutopurge = "true".equalsIgnoreCase(tbl.getProperty("auto.purge"));
+      replaceFiles(tableDest, loadPath, tableDest, tableDest, sessionConf, isSrcLocal, isAutopurge);
     } else {
       FileSystem fs;
       try {
@@ -3398,11 +3400,13 @@ private void constructOneLBLocationMap(FileStatus fSta,
    * @param oldPath
    *          The directory where the old data location, need to be cleaned up.  Most of time, will be the same
    *          as destf, unless its across FileSystem boundaries.
+   * @param purge
+   *          When set to true files which needs to be deleted are not moved to Trash
    * @param isSrcLocal
    *          If the source directory is LOCAL
    */
   protected void replaceFiles(Path tablePath, Path srcf, Path destf, Path oldPath, HiveConf conf,
-          boolean isSrcLocal) throws HiveException {
+          boolean isSrcLocal, boolean purge) throws HiveException {
     try {
 
       FileSystem destFs = destf.getFileSystem(conf);
@@ -3435,7 +3439,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
             // existing content might result in incorrect (extra) data.
             // But not sure why we changed not to delete the oldPath in HIVE-8750 if it is
             // not the destf or its subdir?
-            oldPathDeleted = trashFiles(oldFs, statuses, conf);
+            oldPathDeleted = trashFiles(oldFs, statuses, conf, purge);
           }
         } catch (IOException e) {
           if (isOldPathUnderDestf) {
@@ -3495,7 +3499,8 @@ private void constructOneLBLocationMap(FileStatus fSta,
    * @return true if deletion successful
    * @throws IOException
    */
-  public static boolean trashFiles(final FileSystem fs, final FileStatus[] statuses, final Configuration conf)
+  public static boolean trashFiles(final FileSystem fs, final FileStatus[] statuses,
+      final Configuration conf, final boolean purge)
       throws IOException {
     boolean result = true;
 
@@ -3509,13 +3514,13 @@ private void constructOneLBLocationMap(FileStatus fSta,
     final SessionState parentSession = SessionState.get();
     for (final FileStatus status : statuses) {
       if (null == pool) {
-        result &= FileUtils.moveToTrash(fs, status.getPath(), conf);
+        result &= FileUtils.moveToTrash(fs, status.getPath(), conf, purge);
       } else {
         futures.add(pool.submit(new Callable<Boolean>() {
           @Override
           public Boolean call() throws Exception {
             SessionState.setCurrentSessionState(parentSession);
-            return FileUtils.moveToTrash(fs, status.getPath(), conf);
+            return FileUtils.moveToTrash(fs, status.getPath(), conf, purge);
           }
         }));
       }
