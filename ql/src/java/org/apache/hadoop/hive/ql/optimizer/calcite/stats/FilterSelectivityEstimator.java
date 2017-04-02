@@ -29,6 +29,7 @@ import org.apache.calcite.rel.core.Project;
 import org.apache.calcite.rel.metadata.RelMetadataQuery;
 import org.apache.calcite.rex.RexCall;
 import org.apache.calcite.rex.RexInputRef;
+import org.apache.calcite.rex.RexLiteral;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.rex.RexVisitorImpl;
 import org.apache.calcite.sql.SqlKind;
@@ -300,5 +301,16 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
     }
 
     return op;
+  }
+
+  public Double visitLiteral(RexLiteral literal) {
+    if (literal.isAlwaysFalse()) {
+      return 0.0;
+    } else if (literal.isAlwaysTrue()) {
+      return 1.0;
+    } else {
+      assert false;
+    }
+    return null;
   }
 }
