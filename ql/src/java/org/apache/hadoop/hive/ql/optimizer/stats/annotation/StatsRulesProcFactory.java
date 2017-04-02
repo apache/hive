@@ -719,7 +719,7 @@ public class StatsRulesProcFactory {
                 return 0;
               }
             } else {
-              if (minValue > value) {
+              if (minValue >= value) {
                 return numRows;
               }
               if (maxValue < value) {
@@ -738,7 +738,7 @@ public class StatsRulesProcFactory {
                 return 0;
               }
             } else {
-              if (minValue > value) {
+              if (minValue >= value) {
                 return numRows;
               }
               if (maxValue < value) {
@@ -759,7 +759,7 @@ public class StatsRulesProcFactory {
                 return 0;
               }
             } else {
-              if (minValue > value) {
+              if (minValue >= value) {
                 return numRows;
               }
               if (maxValue < value) {
@@ -778,7 +778,7 @@ public class StatsRulesProcFactory {
                 return 0;
               }
             } else {
-              if (minValue > value) {
+              if (minValue >= value) {
                 return numRows;
               }
               if (maxValue < value) {
@@ -797,7 +797,7 @@ public class StatsRulesProcFactory {
                 return 0;
               }
             } else {
-              if (minValue > value) {
+              if (minValue >= value) {
                 return numRows;
               }
               if (maxValue < value) {
@@ -816,7 +816,7 @@ public class StatsRulesProcFactory {
                 return 0;
               }
             } else {
-              if (minValue > value) {
+              if (minValue >= value) {
                 return numRows;
               }
               if (maxValue < value) {
