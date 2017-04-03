@@ -498,9 +498,10 @@ public class HiveMetaStoreChecker {
             } else if (!parts[0].equalsIgnoreCase(partColNames.get(currentDepth))) {
               logOrThrowExceptionWithMsg(
                   "Unexpected partition key " + parts[0] + " found at " + nextPath);
+            } else {
+              // add sub-directory to the work queue if maxDepth is not yet reached
+              pendingPaths.add(new PathDepthInfo(nextPath, currentDepth + 1));
             }
-            // add sub-directory to the work queue if maxDepth is not yet reached
-            pendingPaths.add(new PathDepthInfo(nextPath, currentDepth + 1));
           }
         }
         if (currentDepth == partColNames.size()) {

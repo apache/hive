@@ -235,6 +235,34 @@ public class TestHiveMetaStoreChecker {
     checker.checkMetastore(dbName, tableName, null, new CheckResult());
   }
 
+  /*
+   * skip mode should not throw exception when a invalid partition directory
+   * is found. It should just ignore it
+   */
+  @Test
+  public void testSkipInvalidPartitionKeyName()
+      throws HiveException, AlreadyExistsException, IOException {
+    hive.getConf().set(HiveConf.ConfVars.HIVE_MSCK_PATH_VALIDATION.varname, "skip");
+    checker = new HiveMetaStoreChecker(hive);
+    Table table = createTestTable();
+    List<Partition> partitions = hive.getPartitions(table);
+    assertEquals(2, partitions.size());
+    // add a fake partition dir on fs
+    fs = partitions.get(0).getDataLocation().getFileSystem(hive.getConf());
+    Path fakePart =
+        new Path(table.getDataLocation().toString(), "fakedate=2009-01-01/fakecity=sanjose");
+    fs.mkdirs(fakePart);
+    fs.deleteOnExit(fakePart);
+    createPartitionsDirectoriesOnFS(table, 2);
+    CheckResult result = new CheckResult();
+    checker.checkMetastore(dbName, tableName, null, result);
+    assertEquals(Collections.<String> emptySet(), result.getTablesNotInMs());
+    assertEquals(Collections.<String> emptySet(), result.getTablesNotOnFs());
+    assertEquals(Collections.<String> emptySet(), result.getPartitionsNotOnFs());
+    // only 2 valid partitions should be added
+    assertEquals(2, result.getPartitionsNotInMs().size());
+  }
+
   private Table createTestTable() throws AlreadyExistsException, HiveException {
     Database db = new Database();
     db.setName(dbName);
@@ -487,6 +515,30 @@ public class TestHiveMetaStoreChecker {
     CheckResult result = new CheckResult();
     checker.checkMetastore(dbName, tableName, null, result);
   }
+
+  /*
+   * In skip mode msck should ignore invalid partitions instead of
+   * throwing exception
+   */
+  @Test
+  public void testSkipInvalidOrderForPartitionKeysOnFS()
+      throws AlreadyExistsException, HiveException, IOException {
+    hive.getConf().set(HiveConf.ConfVars.HIVE_MSCK_PATH_VALIDATION.varname, "skip");
+    checker = new HiveMetaStoreChecker(hive);
+    Table testTable = createPartitionedTestTable(dbName, tableName, 2, 0);
+    // add 10 partitions on the filesystem
+    createInvalidPartitionDirsOnFS(testTable, 2);
+    // add 10 partitions on the filesystem
+    createPartitionsDirectoriesOnFS(testTable, 2);
+    CheckResult result = new CheckResult();
+    checker.checkMetastore(dbName, tableName, null, result);
+    assertEquals(Collections.<String> emptySet(), result.getTablesNotInMs());
+    assertEquals(Collections.<String> emptySet(), result.getTablesNotOnFs());
+    assertEquals(Collections.<String> emptySet(), result.getPartitionsNotOnFs());
+    // only 2 valid partitions should be added
+    assertEquals(2, result.getPartitionsNotInMs().size());
+  }
+
   /*
    * Test if single-threaded implementation checker throws HiveException when the there is a dummy
    * directory present in the nested level
