@@ -1,0 +1,67 @@
+PREHOOK: query: create table ptestfilter (a string) partitioned by (c int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ptestfilter
+POSTHOOK: query: create table ptestfilter (a string) partitioned by (c int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ptestfilter
+PREHOOK: query: INSERT OVERWRITE TABLE ptestfilter PARTITION (c) select 'Col1', null
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ptestfilter
+POSTHOOK: query: INSERT OVERWRITE TABLE ptestfilter PARTITION (c) select 'Col1', null
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ptestfilter@c=__HIVE_DEFAULT_PARTITION__
+POSTHOOK: Lineage: ptestfilter PARTITION(c=__HIVE_DEFAULT_PARTITION__).a SIMPLE []
+PREHOOK: query: INSERT OVERWRITE TABLE ptestfilter PARTITION (c) select 'Col2', 5
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ptestfilter
+POSTHOOK: query: INSERT OVERWRITE TABLE ptestfilter PARTITION (c) select 'Col2', 5
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ptestfilter@c=5
+POSTHOOK: Lineage: ptestfilter PARTITION(c=5).a SIMPLE []
+PREHOOK: query: show partitions ptestfilter
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@ptestfilter
+POSTHOOK: query: show partitions ptestfilter
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@ptestfilter
+c=5
+c=__HIVE_DEFAULT_PARTITION__
+PREHOOK: query: select * from ptestfilter
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ptestfilter
+PREHOOK: Input: default@ptestfilter@c=5
+PREHOOK: Input: default@ptestfilter@c=__HIVE_DEFAULT_PARTITION__
+#### A masked pattern was here ####
+POSTHOOK: query: select * from ptestfilter
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ptestfilter
+POSTHOOK: Input: default@ptestfilter@c=5
+POSTHOOK: Input: default@ptestfilter@c=__HIVE_DEFAULT_PARTITION__
+#### A masked pattern was here ####
+Col2	5
+Col1	NULL
+PREHOOK: query: select * from ptestfilter where c between 2 and 6
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ptestfilter
+PREHOOK: Input: default@ptestfilter@c=5
+#### A masked pattern was here ####
+POSTHOOK: query: select * from ptestfilter where c between 2 and 6
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ptestfilter
+POSTHOOK: Input: default@ptestfilter@c=5
+#### A masked pattern was here ####
+Col2	5
+PREHOOK: query: drop table ptestfilter
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@ptestfilter
+PREHOOK: Output: default@ptestfilter
+POSTHOOK: query: drop table ptestfilter
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@ptestfilter
+POSTHOOK: Output: default@ptestfilter

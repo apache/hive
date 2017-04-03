@@ -25,7 +25,6 @@ import org.apache.hadoop.hive.ql.exec.vector.expressions.LongColNotEqualLongScal
 import org.apache.hadoop.hive.ql.exec.vector.expressions.LongScalarNotEqualLongColumn;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.*;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDefaultDesc;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 
 /**
@@ -108,14 +107,6 @@ public class GenericUDFOPNotEqual extends GenericUDFBaseCompare {
     o1 = arguments[1].get();
     if (o1 == null) {
       return null;
-    }
-
-    // Handle 'default' constant which has a data type with special value
-    if (o0 instanceof ExprNodeConstantDefaultDesc || o1 instanceof ExprNodeConstantDefaultDesc) {
-      ExprNodeConstantDefaultDesc default0 = o0 instanceof ExprNodeConstantDefaultDesc ? (ExprNodeConstantDefaultDesc)o0 : null;
-      ExprNodeConstantDefaultDesc default1 = o1 instanceof ExprNodeConstantDefaultDesc ? (ExprNodeConstantDefaultDesc)o1 : null;
-      result.set(default0 == null || default1 == null || !default0.isSame(default1));
-      return result;
     }
 
     switch(compareType) {
