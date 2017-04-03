@@ -10,6 +10,10 @@ alter table ptestfilter drop partition(c = '__HIVE_DEFAULT_PARTITION__');
 alter table ptestfilter drop partition(c = 3.40);
 show partitions ptestfilter;
 
+INSERT OVERWRITE TABLE ptestfilter PARTITION (c) select 'Col1', 1, null;
+alter table ptestfilter drop partition(c != '__HIVE_DEFAULT_PARTITION__');
+show partitions ptestfilter;
+
 drop table ptestfilter;
 
 create table ptestfilter (a string, b int) partitioned by (c string, d int);
@@ -22,6 +26,12 @@ show partitions ptestfilter;
 alter table ptestfilter drop partition (c='__HIVE_DEFAULT_PARTITION__');
 alter table ptestfilter drop partition (c='Uganda', d='__HIVE_DEFAULT_PARTITION__');
 alter table ptestfilter drop partition (c='Germany', d=2);
+show partitions ptestfilter;
+
+INSERT OVERWRITE TABLE ptestfilter PARTITION (c,d) select 'Col2', 2, null, 2;
+INSERT OVERWRITE TABLE ptestfilter PARTITION (c,d) select 'Col2', 2, null, 3;
+INSERT OVERWRITE TABLE ptestfilter PARTITION (c,d) select 'Col3', 3, 'Uganda', null;
+alter table ptestfilter drop partition (d != 3);
 show partitions ptestfilter;
 
 drop table ptestfilter;

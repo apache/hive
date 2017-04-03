@@ -1489,6 +1489,20 @@ public final class FunctionRegistry {
   }
 
   /**
+   * Returns whether the fn is an exact equality comparison.
+   */
+  public static boolean isEq(GenericUDF fn) {
+    return fn instanceof GenericUDFOPEqual;
+  }
+
+  /**
+   * Returns whether the fn is an exact non-equality comparison.
+   */
+  public static boolean isNeq(GenericUDF fn) {
+    return fn instanceof GenericUDFOPNotEqual;
+  }
+
+  /**
    * Returns whether the exprNodeDesc is a node of "positive".
    */
   public static boolean isOpPositive(ExprNodeDesc desc) {

@@ -48,7 +48,6 @@ import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.PrunedPartitionList;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
-import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDefaultDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeFieldDesc;
@@ -554,7 +553,7 @@ public class PartitionPruner extends Transform {
         PrimitiveTypeInfo typeInfo = partColumnTypeInfos.get(i);
 
         if (partitionValue.equals(defaultPartitionName)) {
-          convertedValues.add(new ExprNodeConstantDefaultDesc(typeInfo, defaultPartitionName));
+          convertedValues.add(null); // Null for default partition.
         } else {
           Object o = ObjectInspectorConverters.getConverter(
               PrimitiveObjectInspectorFactory.javaStringObjectInspector,
