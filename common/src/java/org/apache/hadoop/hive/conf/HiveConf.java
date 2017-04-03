@@ -2210,19 +2210,29 @@ public class HiveConf extends Configuration {
             "org.apache.hadoop.hive.common.metrics.metrics2.CodahaleMetrics",
             "org.apache.hadoop.hive.common.metrics.LegacyMetrics"),
         "Hive metrics subsystem implementation class."),
-    HIVE_METRICS_REPORTER("hive.service.metrics.reporter", "JSON_FILE, JMX",
-        "Reporter type for metric class org.apache.hadoop.hive.common.metrics.metrics2.CodahaleMetrics, " +
-        "comma separated list of JMX, CONSOLE, JSON_FILE, HADOOP2"),
+    HIVE_CODAHALE_METRICS_REPORTER_CLASSES("hive.service.metrics.codahale.reporter.classes",
+        "org.apache.hadoop.hive.common.metrics.metrics2.JsonFileMetricsReporter, " +
+            "org.apache.hadoop.hive.common.metrics.metrics2.JmxMetricsReporter",
+            "Comma separated list of reporter implementation classes for metric class "
+                + "org.apache.hadoop.hive.common.metrics.metrics2.CodahaleMetrics. Overrides "
+                + "HIVE_METRICS_REPORTER conf if present"),
+    @Deprecated
+    HIVE_METRICS_REPORTER("hive.service.metrics.reporter", "",
+        "Reporter implementations for metric class "
+            + "org.apache.hadoop.hive.common.metrics.metrics2.CodahaleMetrics;" +
+        "Deprecated, use HIVE_CODAHALE_METRICS_REPORTER_CLASSES instead. This configuraiton will be"
+            + " overridden by HIVE_CODAHALE_METRICS_REPORTER_CLASSES if present. " +
+            "Comma separated list of JMX, CONSOLE, JSON_FILE, HADOOP2"),
     HIVE_METRICS_JSON_FILE_LOCATION("hive.service.metrics.file.location", "/tmp/report.json",
         "For metric class org.apache.hadoop.hive.common.metrics.metrics2.CodahaleMetrics JSON_FILE reporter, the location of local JSON metrics file.  " +
         "This file will get overwritten at every interval."),
-    HIVE_METRICS_JSON_FILE_INTERVAL("hive.service.metrics.file.frequency", "5s",
+    HIVE_METRICS_JSON_FILE_INTERVAL("hive.service.metrics.file.frequency", "5000ms",
         new TimeValidator(TimeUnit.MILLISECONDS),
-        "For metric class org.apache.hadoop.hive.common.metrics.metrics2.CodahaleMetrics JSON_FILE reporter, " +
+        "For metric class org.apache.hadoop.hive.common.metrics.metrics2.JsonFileMetricsReporter, " +
         "the frequency of updating JSON metrics file."),
     HIVE_METRICS_HADOOP2_INTERVAL("hive.service.metrics.hadoop2.frequency", "30s",
         new TimeValidator(TimeUnit.SECONDS),
-        "For metric class org.apache.hadoop.hive.common.metrics.metrics2.CodahaleMetrics HADOOP2 reporter, " +
+        "For metric class org.apache.hadoop.hive.common.metrics.metrics2.Metrics2Reporter, " +
         "the frequency of updating the HADOOP2 metrics system."),
     HIVE_METRICS_HADOOP2_COMPONENT_NAME("hive.service.metrics.hadoop2.component",
         "hive",
