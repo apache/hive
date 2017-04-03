@@ -16,7 +16,7 @@ POM_HADOOP_VERSION_NAME = "active.hadoop.version"
 POM_HADOOP2_VERSION_VALUE = "hadoop-23.version"
 
 # Config classes which need to be ignored in the CliConfigs class
-CLASS_NAMES_TO_IGNORE = ["PerfCliConfig", "BeeLineConfig", "DummyConfig"]
+CLASS_NAMES_TO_IGNORE = ["PerfCliConfig", "BeeLineConfig", "DummyConfig", "MiniTezCliConfig", "AccumuloCliConfig"]
 
 # A dictionary which contains the name of the test driver class for each config class
 DRIVER_FOR_CONFIG_CLASS = {}
