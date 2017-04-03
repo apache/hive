@@ -19,7 +19,6 @@
 package org.apache.hadoop.hive.ql.parse;
 
 import com.google.common.base.Function;
-
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.hive.metastore.api.Database;
@@ -34,26 +33,24 @@ import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.ql.ErrorMsg;
+import org.apache.hadoop.hive.ql.parse.repl.dump.DBSerializer;
+import org.apache.hadoop.hive.ql.parse.repl.dump.JsonWriter;
+import org.apache.hadoop.hive.ql.parse.repl.dump.ReplicationSpecSerializer;
+import org.apache.hadoop.hive.ql.parse.repl.dump.TableSerializer;
 import org.apache.thrift.TDeserializer;
 import org.apache.thrift.TException;
-import org.apache.thrift.TSerializer;
 import org.apache.thrift.protocol.TJSONProtocol;
-import org.codehaus.jackson.JsonFactory;
-import org.codehaus.jackson.JsonGenerator;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import javax.annotation.Nullable;
-
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.io.Serializable;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -240,34 +237,16 @@ public class EximUtil {
   /* If null, then the major version number should match */
   public static final String METADATA_FORMAT_FORWARD_COMPATIBLE_VERSION = null;
 
-  public static void createDbExportDump(
-      FileSystem fs, Path metadataPath, Database dbObj,
+  public static void createDbExportDump(FileSystem fs, Path metadataPath, Database dbObj,
       ReplicationSpec replicationSpec) throws IOException, SemanticException {
 
     // WARNING NOTE : at this point, createDbExportDump lives only in a world where ReplicationSpec is in replication scope
     // If we later make this work for non-repl cases, analysis of this logic might become necessary. Also, this is using
     // Replv2 semantics, i.e. with listFiles laziness (no copy at export time)
 
-    OutputStream out = fs.create(metadataPath);
-    JsonGenerator jgen = (new JsonFactory()).createJsonGenerator(out);
-    jgen.writeStartObject();
-    jgen.writeStringField("version",METADATA_FORMAT_VERSION);
-    dbObj.putToParameters(ReplicationSpec.KEY.CURR_STATE_ID.toString(), replicationSpec.getCurrentReplicationState());
-
-    if (METADATA_FORMAT_FORWARD_COMPATIBLE_VERSION != null) {
-      jgen.writeStringField("fcversion",METADATA_FORMAT_FORWARD_COMPATIBLE_VERSION);
+    try (JsonWriter jsonWriter = new JsonWriter(fs, metadataPath)) {
+      new DBSerializer(dbObj).writeTo(jsonWriter, replicationSpec);
     }
-    TSerializer serializer = new TSerializer(new TJSONProtocol.Factory());
-    try {
-      jgen.writeStringField("db", serializer.toString(dbObj, "UTF-8"));
-    } catch (TException e) {
-      throw new SemanticException(
-          ErrorMsg.ERROR_SERIALIZE_METASTORE
-              .getMsg(), e);
-    }
-
-    jgen.writeEndObject();
-    jgen.close(); // JsonGenerator owns the OutputStream, so it closes it when we call close.
   }
 
   public static void createExportDump(FileSystem fs, Path metadataPath,
@@ -283,73 +262,12 @@ public class EximUtil {
       replicationSpec.setNoop(true);
     }
 
-    OutputStream out = fs.create(metadataPath);
-    JsonGenerator jgen = (new JsonFactory()).createJsonGenerator(out);
-    jgen.writeStartObject();
-    jgen.writeStringField("version",METADATA_FORMAT_VERSION);
-    if (METADATA_FORMAT_FORWARD_COMPATIBLE_VERSION != null) {
-      jgen.writeStringField("fcversion",METADATA_FORMAT_FORWARD_COMPATIBLE_VERSION);
-    }
-
-    if (replicationSpec.isInReplicationScope()){
-      for (ReplicationSpec.KEY key : ReplicationSpec.KEY.values()){
-        String value = replicationSpec.get(key);
-        if (value != null){
-          jgen.writeStringField(key.toString(), value);
-        }
+    try (JsonWriter writer = new JsonWriter(fs, metadataPath)) {
+      if (replicationSpec.isInReplicationScope()) {
+        new ReplicationSpecSerializer().writeTo(writer, replicationSpec);
       }
-      if (tableHandle != null){
-        Table ttable = tableHandle.getTTable();
-        ttable.putToParameters(
-            ReplicationSpec.KEY.CURR_STATE_ID.toString(), replicationSpec.getCurrentReplicationState());
-        if ((ttable.getParameters().containsKey("EXTERNAL")) &&
-            (ttable.getParameters().get("EXTERNAL").equalsIgnoreCase("TRUE"))){
-          // Replication destination will not be external - override if set
-          ttable.putToParameters("EXTERNAL","FALSE");
-        }
-        if (ttable.isSetTableType() && ttable.getTableType().equalsIgnoreCase(TableType.EXTERNAL_TABLE.toString())){
-          // Replication dest will not be external - override if set
-          ttable.setTableType(TableType.MANAGED_TABLE.toString());
-        }
-      }
-    } else {
-      // ReplicationSpec.KEY scopeKey = ReplicationSpec.KEY.REPL_SCOPE;
-      // write(out, ",\""+ scopeKey.toString() +"\":\"" + replicationSpec.get(scopeKey) + "\"");
-      // TODO: if we want to be explicit about this dump not being a replication dump, we can
-      // uncomment this else section, but currently unnneeded. Will require a lot of golden file
-      // regen if we do so.
+      new TableSerializer(tableHandle, partitions).writeTo(writer, replicationSpec);
     }
-    if ((tableHandle != null) && (!replicationSpec.isNoop())){
-      TSerializer serializer = new TSerializer(new TJSONProtocol.Factory());
-      try {
-        jgen.writeStringField("table", serializer.toString(tableHandle.getTTable(), "UTF-8"));
-        jgen.writeFieldName("partitions");
-        jgen.writeStartArray();
-        if (partitions != null) {
-          for (org.apache.hadoop.hive.ql.metadata.Partition partition : partitions) {
-            Partition tptn = partition.getTPartition();
-            if (replicationSpec.isInReplicationScope()){
-              tptn.putToParameters(
-                  ReplicationSpec.KEY.CURR_STATE_ID.toString(), replicationSpec.getCurrentReplicationState());
-              if ((tptn.getParameters().containsKey("EXTERNAL")) &&
-                  (tptn.getParameters().get("EXTERNAL").equalsIgnoreCase("TRUE"))){
-                // Replication destination will not be external
-                tptn.putToParameters("EXTERNAL", "FALSE");
-              }
-            }
-            jgen.writeString(serializer.toString(tptn, "UTF-8"));
-            jgen.flush();
-          }
-        }
-        jgen.writeEndArray();
-      } catch (TException e) {
-        throw new SemanticException(
-            ErrorMsg.ERROR_SERIALIZE_METASTORE
-                .getMsg(), e);
-      }
-    }
-    jgen.writeEndObject();
-    jgen.close(); // JsonGenerator owns the OutputStream, so it closes it when we call close.
   }
 
   /**
