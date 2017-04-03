@@ -28,6 +28,7 @@ import java.util.concurrent.TimeoutException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.shims.HadoopShimsSecure;
@@ -178,8 +179,9 @@ public class LauncherDelegator extends TempletonDelegator {
                      List<String> args, TempletonControllerJob controllerJob)
     throws NotAuthorizedException, BusyException,
     IOException, QueueException {
+    UserGroupInformation ugi = null;
     try {
-      UserGroupInformation ugi = UgiFactory.getUgi(user);
+      ugi = UgiFactory.getUgi(user);
 
       final long startTime = System.nanoTime();
 
@@ -197,6 +199,10 @@ public class LauncherDelegator extends TempletonDelegator {
       return new EnqueueBean(id);
     } catch (InterruptedException e) {
       throw new QueueException("Unable to launch job " + e);
+    } finally {
+      if (ugi != null) {
+        FileSystem.closeAllForUGI(ugi);
+      }
     }
   }
 
@@ -344,24 +350,35 @@ public class LauncherDelegator extends TempletonDelegator {
    */
   private String getShimLibjars() {
     WebHCatJTShim shim = null;
+    UserGroupInformation ugi = null;
     try {
-      shim = ShimLoader.getHadoopShims().getWebHCatShim(appConf, UserGroupInformation.getCurrentUser());
+      ugi = UserGroupInformation.getCurrentUser();
+      shim = ShimLoader.getHadoopShims().getWebHCatShim(appConf, ugi);
+
+      // Besides the HiveShims jar which is Hadoop version dependent we also
+      // always need to include hive shims common jars.
+      Path shimCommonJar = new Path(
+          TempletonUtils.findContainingJar(ShimLoader.class, HIVE_SHIMS_FILENAME_PATTERN));
+      Path shimCommonSecureJar = new Path(
+          TempletonUtils.findContainingJar(HadoopShimsSecure.class, HIVE_SHIMS_FILENAME_PATTERN));
+      Path shimJar = new Path(
+          TempletonUtils.findContainingJar(shim.getClass(), HIVE_SHIMS_FILENAME_PATTERN));
+
+      return String.format(
+          "%s,%s,%s",
+          shimCommonJar.toString(), shimCommonSecureJar.toString(), shimJar.toString());
     } catch (IOException e) {
-      throw new RuntimeException("Failed to get WebHCatShim", e);
+      throw new RuntimeException("Failed to get shimLibJars", e);
+    } finally {
+      try {
+        if (ugi != null) {
+          FileSystem.closeAllForUGI(ugi);
+        }
+      } catch (IOException e) {
+        throw new RuntimeException("Failed to closeAllForUGI", e);
+      }
     }
 
-    // Besides the HiveShims jar which is Hadoop version dependent we also
-    // always need to include hive shims common jars.
-    Path shimCommonJar = new Path(
-        TempletonUtils.findContainingJar(ShimLoader.class, HIVE_SHIMS_FILENAME_PATTERN));
-    Path shimCommonSecureJar = new Path(
-        TempletonUtils.findContainingJar(HadoopShimsSecure.class, HIVE_SHIMS_FILENAME_PATTERN));
-    Path shimJar = new Path(
-        TempletonUtils.findContainingJar(shim.getClass(), HIVE_SHIMS_FILENAME_PATTERN));
-
-    return String.format(
-        "%s,%s,%s",
-        shimCommonJar.toString(), shimCommonSecureJar.toString(), shimJar.toString());
   }
 
   // Storage vars

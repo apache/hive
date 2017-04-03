@@ -362,6 +362,7 @@ public class TempletonUtils {
     if (hadoopFsIsMissing(defaultFs, p))
       throw new FileNotFoundException("File " + fname + " does not exist.");
 
+    FileSystem.closeAllForUGI(ugi);
     return p;
   }
 

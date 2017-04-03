@@ -24,6 +24,7 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.shims.HadoopShims.WebHCatJTShim;
+import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.mapred.JobID;
 import org.apache.hadoop.security.UserGroupInformation;
@@ -41,10 +42,11 @@ public class DeleteDelegator extends TempletonDelegator {
   public QueueStatusBean run(String user, String id)
     throws NotAuthorizedException, BadParam, IOException, InterruptedException
   {
-    UserGroupInformation ugi = UgiFactory.getUgi(user);
+    UserGroupInformation ugi = null;
     WebHCatJTShim tracker = null;
     JobState state = null;
     try {
+      ugi = UgiFactory.getUgi(user);
       tracker = ShimLoader.getHadoopShims().getWebHCatShim(appConf, ugi);
       JobID jobid = StatusDelegator.StringToJobID(id);
       if (jobid == null)
@@ -69,6 +71,8 @@ public class DeleteDelegator extends TempletonDelegator {
         tracker.close();
       if (state != null)
         state.close();
+      if (ugi != null)
+        FileSystem.closeAllForUGI(ugi);
     }
   }
 }

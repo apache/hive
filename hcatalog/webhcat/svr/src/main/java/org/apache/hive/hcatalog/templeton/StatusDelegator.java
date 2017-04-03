@@ -25,6 +25,7 @@ import java.util.concurrent.TimeoutException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.shims.HadoopShims.WebHCatJTShim;
+import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.mapred.JobID;
@@ -112,8 +113,9 @@ public class StatusDelegator extends TempletonDelegator {
   {
     WebHCatJTShim tracker = null;
     JobState state = null;
+    UserGroupInformation ugi = null;
     try {
-      UserGroupInformation ugi = UgiFactory.getUgi(user);
+      ugi = UgiFactory.getUgi(user);
       tracker = ShimLoader.getHadoopShims().getWebHCatShim(appConf, ugi);
       JobID jobid = StatusDelegator.StringToJobID(id);
       if (jobid == null)
@@ -127,6 +129,8 @@ public class StatusDelegator extends TempletonDelegator {
         tracker.close();
       if (state != null)
         state.close();
+      if (ugi != null)
+        FileSystem.closeAllForUGI(ugi);
     }
   }
 

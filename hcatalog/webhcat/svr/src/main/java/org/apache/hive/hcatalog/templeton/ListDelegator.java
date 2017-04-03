@@ -27,6 +27,7 @@ import java.util.concurrent.TimeoutException;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.hive.shims.HadoopShims.WebHCatJTShim;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.mapred.JobStatus;
@@ -104,11 +105,12 @@ public class ListDelegator extends TempletonDelegator {
                                     int numRecords, boolean showDetails)
     throws NotAuthorizedException, BadParam, IOException, InterruptedException {
 
-    UserGroupInformation ugi = UgiFactory.getUgi(user);
+    UserGroupInformation ugi = null;
     WebHCatJTShim tracker = null;
     ArrayList<String> ids = new ArrayList<String>();
 
     try {
+      ugi = UgiFactory.getUgi(user);
       tracker = ShimLoader.getHadoopShims().getWebHCatShim(appConf, ugi);
 
       JobStatus[] jobs = tracker.getAllJobs();
@@ -125,6 +127,8 @@ public class ListDelegator extends TempletonDelegator {
     } finally {
       if (tracker != null)
         tracker.close();
+      if (ugi != null)
+        FileSystem.closeAllForUGI(ugi);
     }
 
     return getJobStatus(ids, user, showall, jobId, numRecords, showDetails);
