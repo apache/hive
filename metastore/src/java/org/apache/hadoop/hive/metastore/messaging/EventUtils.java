@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.metastore.messaging;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.api.NotificationEvent;
+import org.apache.hadoop.hive.metastore.messaging.event.filters.DatabaseAndTableFilter;
 import org.apache.thrift.TException;
 
 import java.io.IOException;
@@ -30,88 +31,10 @@ import java.util.List;
 
 public class EventUtils {
 
-  /**
-   * Utility function that constructs a notification filter to match a given db name and/or table name.
-   * If dbName == null, fetches all warehouse events.
-   * If dnName != null, but tableName == null, fetches all events for the db
-   * If dbName != null && tableName != null, fetches all events for the specified table
-   * @param dbName
-   * @param tableName
-   * @return
-   */
-  public static IMetaStoreClient.NotificationFilter getDbTblNotificationFilter(final String dbName, final String tableName){
-    return new IMetaStoreClient.NotificationFilter() {
-      @Override
-      public boolean accept(NotificationEvent event) {
-        if (event == null){
-          return false; // get rid of trivial case first, so that we can safely assume non-null
-        }
-        if (dbName == null){
-          return true; // if our dbName is null, we're interested in all wh events
-        }
-        if (dbName.equalsIgnoreCase(event.getDbName())){
-          if ( (tableName == null)
-              // if our dbName is equal, but tableName is blank, we're interested in this db-level event
-              || (tableName.equalsIgnoreCase(event.getTableName()))
-            // table level event that matches us
-              ){
-            return true;
-          }
-        }
-        return false;
-      }
-    };
-  }
-
-  public static IMetaStoreClient.NotificationFilter restrictByMessageFormat(final String messageFormat){
-    return new IMetaStoreClient.NotificationFilter() {
-      @Override
-      public boolean accept(NotificationEvent event) {
-        if (event == null){
-          return false; // get rid of trivial case first, so that we can safely assume non-null
-        }
-        if (messageFormat == null){
-          return true; // let's say that passing null in will not do any filtering.
-        }
-        if (messageFormat.equalsIgnoreCase(event.getMessageFormat())){
-          return true;
-        }
-        return false;
-      }
-    };
-  }
-
-  public static IMetaStoreClient.NotificationFilter getEventBoundaryFilter(final Long eventFrom, final Long eventTo){
-    return new IMetaStoreClient.NotificationFilter() {
-      @Override
-      public boolean accept(NotificationEvent event) {
-        if ( (event == null) || (event.getEventId() < eventFrom) || (event.getEventId() > eventTo)) {
-          return false;
-        }
-        return true;
-      }
-    };
-  }
-
-  public static IMetaStoreClient.NotificationFilter andFilter(
-      final IMetaStoreClient.NotificationFilter... filters ) {
-    return new IMetaStoreClient.NotificationFilter() {
-      @Override
-      public boolean accept(NotificationEvent event) {
-        for (IMetaStoreClient.NotificationFilter filter : filters){
-          if (!filter.accept(event)){
-            return false;
-          }
-        }
-        return true;
-      }
-    };
-  }
-
   public interface NotificationFetcher {
-    public int getBatchSize() throws IOException;
-    public long getCurrentNotificationEventId() throws IOException;
-    public List<NotificationEvent> getNextNotificationEvents(
+    int getBatchSize() throws IOException;
+    long getCurrentNotificationEventId() throws IOException;
+    List<NotificationEvent> getNextNotificationEvents(
         long pos, IMetaStoreClient.NotificationFilter filter) throws IOException;
   }
 
@@ -177,7 +100,7 @@ public class EventUtils {
     public NotificationEventIterator(
         NotificationFetcher nfetcher, long eventFrom, int maxEvents,
         String dbName, String tableName) throws IOException {
-      init(nfetcher, eventFrom, maxEvents, EventUtils.getDbTblNotificationFilter(dbName, tableName));
+      init(nfetcher, eventFrom, maxEvents, new DatabaseAndTableFilter(dbName, tableName));
       // using init(..) instead of this(..) because the EventUtils.getDbTblNotificationFilter
       // is an operation that needs to run before delegating to the other ctor, and this messes up chaining
       // ctors

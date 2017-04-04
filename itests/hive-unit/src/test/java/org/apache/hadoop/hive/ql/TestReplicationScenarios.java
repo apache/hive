@@ -28,19 +28,20 @@ import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.NotificationEvent;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.Table;
-import org.apache.hadoop.hive.metastore.messaging.EventUtils;
+import org.apache.hadoop.hive.metastore.messaging.event.filters.AndFilter;
+import org.apache.hadoop.hive.metastore.messaging.event.filters.DatabaseAndTableFilter;
+import org.apache.hadoop.hive.metastore.messaging.event.filters.EventBoundaryFilter;
+import org.apache.hadoop.hive.metastore.messaging.event.filters.MessageFormatFilter;
 import org.apache.hadoop.hive.metastore.messaging.MessageFactory;
 import org.apache.hadoop.hive.ql.parse.ReplicationSemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.ReplicationSpec.ReplStateMap;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.session.SessionState;
-import org.apache.hadoop.util.Shell;
 import org.apache.thrift.TException;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -1177,8 +1178,8 @@ public class TestReplicationScenarios {
     // events to those that match the dbname and tblname provided to the filter.
     // If the tblname passed in to the filter is null, then it restricts itself
     // to dbname-matching alone.
-    IMetaStoreClient.NotificationFilter dbTblFilter = EventUtils.getDbTblNotificationFilter(dbname,tblname);
-    IMetaStoreClient.NotificationFilter dbFilter = EventUtils.getDbTblNotificationFilter(dbname,null);
+    IMetaStoreClient.NotificationFilter dbTblFilter = new DatabaseAndTableFilter(dbname,tblname);
+    IMetaStoreClient.NotificationFilter dbFilter = new DatabaseAndTableFilter(dbname,null);
 
     assertFalse(dbTblFilter.accept(null));
     assertTrue(dbTblFilter.accept(createDummyEvent(dbname, tblname, 0)));
@@ -1195,7 +1196,7 @@ public class TestReplicationScenarios {
     // within a range specified.
     long evBegin = 50;
     long evEnd = 75;
-    IMetaStoreClient.NotificationFilter evRangeFilter = EventUtils.getEventBoundaryFilter(evBegin,evEnd);
+    IMetaStoreClient.NotificationFilter evRangeFilter = new EventBoundaryFilter(evBegin,evEnd);
 
     assertTrue(evBegin < evEnd);
     assertFalse(evRangeFilter.accept(null));
@@ -1211,9 +1212,9 @@ public class TestReplicationScenarios {
     // that match a provided message format
 
     IMetaStoreClient.NotificationFilter restrictByDefaultMessageFormat =
-        EventUtils.restrictByMessageFormat(MessageFactory.getInstance().getMessageFormat());
+        new MessageFormatFilter(MessageFactory.getInstance().getMessageFormat());
     IMetaStoreClient.NotificationFilter restrictByArbitraryMessageFormat =
-        EventUtils.restrictByMessageFormat(MessageFactory.getInstance().getMessageFormat() + "_bogus");
+        new MessageFormatFilter(MessageFactory.getInstance().getMessageFormat() + "_bogus");
     NotificationEvent dummyEvent = createDummyEvent(dbname,tblname,0);
 
     assertEquals(MessageFactory.getInstance().getMessageFormat(),dummyEvent.getMessageFormat());
@@ -1238,19 +1239,19 @@ public class TestReplicationScenarios {
       }
     };
 
-    assertTrue(EventUtils.andFilter(yes, yes).accept(dummyEvent));
-    assertFalse(EventUtils.andFilter(yes, no).accept(dummyEvent));
-    assertFalse(EventUtils.andFilter(no, yes).accept(dummyEvent));
-    assertFalse(EventUtils.andFilter(no, no).accept(dummyEvent));
+    assertTrue(new AndFilter(yes, yes).accept(dummyEvent));
+    assertFalse(new AndFilter(yes, no).accept(dummyEvent));
+    assertFalse(new AndFilter(no, yes).accept(dummyEvent));
+    assertFalse(new AndFilter(no, no).accept(dummyEvent));
 
-    assertTrue(EventUtils.andFilter(yes, yes, yes).accept(dummyEvent));
-    assertFalse(EventUtils.andFilter(yes, yes, no).accept(dummyEvent));
-    assertFalse(EventUtils.andFilter(yes, no, yes).accept(dummyEvent));
-    assertFalse(EventUtils.andFilter(yes, no, no).accept(dummyEvent));
-    assertFalse(EventUtils.andFilter(no, yes, yes).accept(dummyEvent));
-    assertFalse(EventUtils.andFilter(no, yes, no).accept(dummyEvent));
-    assertFalse(EventUtils.andFilter(no, no, yes).accept(dummyEvent));
-    assertFalse(EventUtils.andFilter(no, no, no).accept(dummyEvent));
+    assertTrue(new AndFilter(yes, yes, yes).accept(dummyEvent));
+    assertFalse(new AndFilter(yes, yes, no).accept(dummyEvent));
+    assertFalse(new AndFilter(yes, no, yes).accept(dummyEvent));
+    assertFalse(new AndFilter(yes, no, no).accept(dummyEvent));
+    assertFalse(new AndFilter(no, yes, yes).accept(dummyEvent));
+    assertFalse(new AndFilter(no, yes, no).accept(dummyEvent));
+    assertFalse(new AndFilter(no, no, yes).accept(dummyEvent));
+    assertFalse(new AndFilter(no, no, no).accept(dummyEvent));
   }
 
   private NotificationEvent createDummyEvent(String dbname, String tblname, long evid) {

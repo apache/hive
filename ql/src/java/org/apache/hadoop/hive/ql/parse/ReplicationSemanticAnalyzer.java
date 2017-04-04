@@ -21,6 +21,8 @@ import com.google.common.base.Function;
 import com.google.common.collect.Iterables;
 import com.google.common.primitives.Ints;
 import org.antlr.runtime.tree.Tree;
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.Predicate;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -30,6 +32,10 @@ import org.apache.hadoop.hive.metastore.ReplChangeManager;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.NotificationEvent;
+import org.apache.hadoop.hive.metastore.messaging.event.filters.AndFilter;
+import org.apache.hadoop.hive.metastore.messaging.event.filters.DatabaseAndTableFilter;
+import org.apache.hadoop.hive.metastore.messaging.event.filters.EventBoundaryFilter;
+import org.apache.hadoop.hive.metastore.messaging.event.filters.MessageFormatFilter;
 import org.apache.hadoop.hive.metastore.messaging.AddPartitionMessage;
 import org.apache.hadoop.hive.metastore.messaging.AlterPartitionMessage;
 import org.apache.hadoop.hive.metastore.messaging.AlterTableMessage;
@@ -359,7 +365,7 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
         // during the bootstrap period and consolidate them with our dump.
 
         IMetaStoreClient.NotificationFilter evFilter =
-            EventUtils.getDbTblNotificationFilter(dbNameOrPattern, tblNameOrPattern);
+            new DatabaseAndTableFilter(dbNameOrPattern, tblNameOrPattern);
         EventUtils.MSClientNotificationFetcher evFetcher =
             new EventUtils.MSClientNotificationFetcher(db.getMSC());
         EventUtils.NotificationEventIterator evIter = new EventUtils.NotificationEventIterator(
@@ -402,10 +408,10 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
         // same factory, restricting by message format is effectively a guard against
         // older leftover data that would cause us problems.
 
-        IMetaStoreClient.NotificationFilter evFilter = EventUtils.andFilter(
-            EventUtils.getDbTblNotificationFilter(dbNameOrPattern, tblNameOrPattern),
-            EventUtils.getEventBoundaryFilter(eventFrom, eventTo),
-            EventUtils.restrictByMessageFormat(MessageFactory.getInstance().getMessageFormat()));
+        IMetaStoreClient.NotificationFilter evFilter = new AndFilter(
+            new DatabaseAndTableFilter(dbNameOrPattern, tblNameOrPattern),
+            new EventBoundaryFilter(eventFrom, eventTo),
+            new MessageFormatFilter(MessageFactory.getInstance().getMessageFormat()));
 
         EventUtils.MSClientNotificationFetcher evFetcher
             = new EventUtils.MSClientNotificationFetcher(db.getMSC());
@@ -1228,10 +1234,24 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
   private Iterable<? extends String> matchesTbl(String dbName, String tblPattern)
       throws HiveException {
     if (tblPattern == null) {
-      return db.getAllTables(dbName);
+      return removeValuesTemporaryTables(db.getAllTables(dbName));
     } else {
       return db.getTablesByPattern(dbName, tblPattern);
     }
+  }
+
+  private final static String TMP_TABLE_PREFIX =
+      SemanticAnalyzer.VALUES_TMP_TABLE_NAME_PREFIX.toLowerCase();
+
+  static Iterable<String> removeValuesTemporaryTables(List<String> tableNames) {
+    List<String> allTables = new ArrayList<>(tableNames);
+    CollectionUtils.filter(allTables, new Predicate() {
+      @Override
+      public boolean evaluate(Object tableName) {
+        return !tableName.toString().toLowerCase().startsWith(TMP_TABLE_PREFIX);
+      }
+    });
+    return allTables;
   }
 
   private Iterable<? extends String> matchesDb(String dbPattern) throws HiveException {
