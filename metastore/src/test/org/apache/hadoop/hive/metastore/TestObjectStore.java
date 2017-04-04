@@ -29,6 +29,7 @@ import org.apache.hadoop.hive.common.metrics.metrics2.CodahaleMetrics;
 import org.apache.hadoop.hive.common.metrics.metrics2.MetricsReporting;
 import org.apache.hadoop.hive.common.metrics.MetricsTestUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.api.CurrentNotificationEventId;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.FileMetadataExprType;
@@ -37,6 +38,9 @@ import org.apache.hadoop.hive.metastore.api.Index;
 import org.apache.hadoop.hive.metastore.api.InvalidInputException;
 import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
 import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.metastore.api.NotificationEvent;
+import org.apache.hadoop.hive.metastore.api.NotificationEventRequest;
+import org.apache.hadoop.hive.metastore.api.NotificationEventResponse;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.PrincipalType;
@@ -46,6 +50,7 @@ import org.apache.hadoop.hive.metastore.api.SQLPrimaryKey;
 import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.metastore.messaging.EventMessage;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
@@ -113,6 +118,51 @@ public class TestObjectStore {
 
   @After
   public void tearDown() {
+  }
+
+  /**
+   * Test notification operations
+   */
+  @Test
+  public void testNotificationOps() throws InterruptedException {
+    final int NO_EVENT_ID = 0;
+    final int FIRST_EVENT_ID = 1;
+    final int SECOND_EVENT_ID = 2;
+
+    NotificationEvent event =
+        new NotificationEvent(0, 0, EventMessage.EventType.CREATE_DATABASE.toString(), "");
+    NotificationEventResponse eventResponse;
+    CurrentNotificationEventId eventId;
+
+    // Verify that there is no notifications available yet
+    eventId = objectStore.getCurrentNotificationEventId();
+    Assert.assertEquals(NO_EVENT_ID, eventId.getEventId());
+
+    // Verify that addNotificationEvent() updates the NotificationEvent with the new event ID
+    objectStore.addNotificationEvent(event);
+    Assert.assertEquals(FIRST_EVENT_ID, event.getEventId());
+    objectStore.addNotificationEvent(event);
+    Assert.assertEquals(SECOND_EVENT_ID, event.getEventId());
+
+    // Verify that objectStore fetches the latest notification event ID
+    eventId = objectStore.getCurrentNotificationEventId();
+    Assert.assertEquals(SECOND_EVENT_ID, eventId.getEventId());
+
+    // Verify that getNextNotification() returns all events
+    eventResponse = objectStore.getNextNotification(new NotificationEventRequest());
+    Assert.assertEquals(2, eventResponse.getEventsSize());
+    Assert.assertEquals(FIRST_EVENT_ID, eventResponse.getEvents().get(0).getEventId());
+    Assert.assertEquals(SECOND_EVENT_ID, eventResponse.getEvents().get(1).getEventId());
+    // Verify that getNextNotification(last) returns events after a specified event
+    eventResponse = objectStore.getNextNotification(new NotificationEventRequest(FIRST_EVENT_ID));
+    Assert.assertEquals(1, eventResponse.getEventsSize());
+    Assert.assertEquals(SECOND_EVENT_ID, eventResponse.getEvents().get(0).getEventId());
+
+    // Verify that cleanNotificationEvents() cleans up all old notifications
+    Thread.sleep(1);
+    objectStore.cleanNotificationEvents(1);
+    eventResponse = objectStore.getNextNotification(new NotificationEventRequest());
+    Assert.assertEquals(0, eventResponse.getEventsSize());
   }
 
   /**
