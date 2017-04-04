@@ -49,7 +49,7 @@ POSTHOOK: Input: default@dest1
 POSTHOOK: Output: default@dest1
 POSTHOOK: Lineage: dest1.bytes1 EXPRESSION []
 POSTHOOK: Lineage: dest1.bytes2 EXPRESSION []
-POSTHOOK: Lineage: dest1.string SIMPLE []
+POSTHOOK: Lineage: dest1.string EXPRESSION []
 PREHOOK: query: SELECT
   bytes1,
   bytes2,

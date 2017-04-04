@@ -3960,50 +3960,52 @@ Stage-4
           Dependency Collection{}
             Stage-2
               Reducer 5 llap
-              File Output Operator [FS_21]
+              File Output Operator [FS_22]
                 table:{"name:":"default.dest1"}
-                Group By Operator [GBY_19] (rows=1 width=96)
-                  Output:["_col0","_col1"],aggregations:["count(DISTINCT KEY._col1:0._col0)"],keys:KEY._col0
-                <-Reducer 4 [SIMPLE_EDGE] llap
-                  SHUFFLE [RS_18]
-                    PartitionCols:_col0
-                    Group By Operator [GBY_17] (rows=1 width=280)
-                      Output:["_col0","_col1","_col2"],aggregations:["count(DISTINCT substr(_col1, 5))"],keys:_col0, substr(_col1, 5)
-                      Group By Operator [GBY_14] (rows=1 width=272)
-                        Output:["_col0","_col1"],keys:KEY._col0, KEY._col1
-                      <-Union 3 [SIMPLE_EDGE]
-                        <-Map 6 [CONTAINS] llap
-                          Reduce Output Operator [RS_13]
-                            PartitionCols:_col0, _col1
-                            Group By Operator [GBY_12] (rows=1 width=272)
-                              Output:["_col0","_col1"],keys:_col0, _col1
-                              Select Operator [SEL_8] (rows=500 width=10)
-                                Output:["_col0","_col1"]
-                                TableScan [TS_7] (rows=500 width=10)
-                                  Output:["key","value"]
-                        <-Reducer 2 [CONTAINS] llap
-                          Reduce Output Operator [RS_13]
-                            PartitionCols:_col0, _col1
-                            Group By Operator [GBY_12] (rows=1 width=272)
-                              Output:["_col0","_col1"],keys:_col0, _col1
-                              Select Operator [SEL_6] (rows=1 width=272)
-                                Output:["_col0","_col1"]
-                                Group By Operator [GBY_5] (rows=1 width=8)
-                                  Output:["_col0"],aggregations:["count(VALUE._col0)"]
-                                <-Map 1 [CUSTOM_SIMPLE_EDGE] llap
-                                  PARTITION_ONLY_SHUFFLE [RS_4]
-                                    Group By Operator [GBY_3] (rows=1 width=8)
-                                      Output:["_col0"],aggregations:["count(1)"]
-                                      Select Operator [SEL_1] (rows=500 width=10)
-                                        TableScan [TS_0] (rows=500 width=10)
-                                          default@src,s1,Tbl:COMPLETE,Col:COMPLETE
-                  File Output Operator [FS_27]
-                    table:{"name:":"default.dest2"}
-                    Select Operator [SEL_26] (rows=1 width=456)
-                      Output:["_col0","_col1","_col2"]
-                      Group By Operator [GBY_25] (rows=1 width=464)
-                        Output:["_col0","_col1","_col2"],aggregations:["count(DISTINCT substr(_col1, 5))"],keys:_col0, _col1
-                         Please refer to the previous Group By Operator [GBY_14]
+                Select Operator [SEL_20] (rows=1 width=272)
+                  Output:["_col0","_col1"]
+                  Group By Operator [GBY_19] (rows=1 width=96)
+                    Output:["_col0","_col1"],aggregations:["count(DISTINCT KEY._col1:0._col0)"],keys:KEY._col0
+                  <-Reducer 4 [SIMPLE_EDGE] llap
+                    SHUFFLE [RS_18]
+                      PartitionCols:_col0
+                      Group By Operator [GBY_17] (rows=1 width=280)
+                        Output:["_col0","_col1","_col2"],aggregations:["count(DISTINCT substr(_col1, 5))"],keys:_col0, substr(_col1, 5)
+                        Group By Operator [GBY_14] (rows=1 width=272)
+                          Output:["_col0","_col1"],keys:KEY._col0, KEY._col1
+                        <-Union 3 [SIMPLE_EDGE]
+                          <-Map 6 [CONTAINS] llap
+                            Reduce Output Operator [RS_13]
+                              PartitionCols:_col0, _col1
+                              Group By Operator [GBY_12] (rows=1 width=272)
+                                Output:["_col0","_col1"],keys:_col0, _col1
+                                Select Operator [SEL_8] (rows=500 width=10)
+                                  Output:["_col0","_col1"]
+                                  TableScan [TS_7] (rows=500 width=10)
+                                    Output:["key","value"]
+                          <-Reducer 2 [CONTAINS] llap
+                            Reduce Output Operator [RS_13]
+                              PartitionCols:_col0, _col1
+                              Group By Operator [GBY_12] (rows=1 width=272)
+                                Output:["_col0","_col1"],keys:_col0, _col1
+                                Select Operator [SEL_6] (rows=1 width=272)
+                                  Output:["_col0","_col1"]
+                                  Group By Operator [GBY_5] (rows=1 width=8)
+                                    Output:["_col0"],aggregations:["count(VALUE._col0)"]
+                                  <-Map 1 [CUSTOM_SIMPLE_EDGE] llap
+                                    PARTITION_ONLY_SHUFFLE [RS_4]
+                                      Group By Operator [GBY_3] (rows=1 width=8)
+                                        Output:["_col0"],aggregations:["count(1)"]
+                                        Select Operator [SEL_1] (rows=500 width=10)
+                                          TableScan [TS_0] (rows=500 width=10)
+                                            default@src,s1,Tbl:COMPLETE,Col:COMPLETE
+                    File Output Operator [FS_29]
+                      table:{"name:":"default.dest2"}
+                      Select Operator [SEL_27] (rows=1 width=456)
+                        Output:["_col0","_col1","_col2"]
+                        Group By Operator [GBY_26] (rows=1 width=464)
+                          Output:["_col0","_col1","_col2"],aggregations:["count(DISTINCT substr(_col1, 5))"],keys:_col0, _col1
+                           Please refer to the previous Group By Operator [GBY_14]
 Stage-5
   Stats-Aggr Operator
     Stage-1
@@ -4132,66 +4134,70 @@ Stage-4
           Dependency Collection{}
             Stage-2
               Reducer 4 llap
-              File Output Operator [FS_19]
+              File Output Operator [FS_20]
                 table:{"name:":"default.dest1"}
-                Group By Operator [GBY_17] (rows=1 width=96)
-                  Output:["_col0","_col1"],aggregations:["count(DISTINCT KEY._col1:0._col0)"],keys:KEY._col0
-                <-Union 3 [SIMPLE_EDGE]
-                  <-Map 6 [CONTAINS] llap
-                    Reduce Output Operator [RS_16]
-                      PartitionCols:_col0
-                      Group By Operator [GBY_15] (rows=1 width=280)
-                        Output:["_col0","_col1","_col2"],aggregations:["count(DISTINCT substr(_col1, 5))"],keys:_col0, substr(_col1, 5)
-                        Select Operator [SEL_8] (rows=500 width=10)
-                          Output:["_col0","_col1"]
-                          TableScan [TS_7] (rows=500 width=10)
-                            Output:["key","value"]
-                    Reduce Output Operator [RS_22]
-                      PartitionCols:_col0, _col1
-                      Group By Operator [GBY_21] (rows=1 width=464)
-                        Output:["_col0","_col1","_col2","_col3"],aggregations:["count(DISTINCT substr(_col1, 5))"],keys:_col0, _col1, substr(_col1, 5)
-                         Please refer to the previous Select Operator [SEL_8]
-                  <-Map 7 [CONTAINS] llap
-                    Reduce Output Operator [RS_16]
-                      PartitionCols:_col0
-                      Group By Operator [GBY_15] (rows=1 width=280)
-                        Output:["_col0","_col1","_col2"],aggregations:["count(DISTINCT substr(_col1, 5))"],keys:_col0, substr(_col1, 5)
-                        Select Operator [SEL_12] (rows=500 width=10)
-                          Output:["_col0","_col1"]
-                          TableScan [TS_11] (rows=500 width=10)
-                            Output:["key","value"]
-                    Reduce Output Operator [RS_22]
-                      PartitionCols:_col0, _col1
-                      Group By Operator [GBY_21] (rows=1 width=464)
-                        Output:["_col0","_col1","_col2","_col3"],aggregations:["count(DISTINCT substr(_col1, 5))"],keys:_col0, _col1, substr(_col1, 5)
-                         Please refer to the previous Select Operator [SEL_12]
-                  <-Reducer 2 [CONTAINS] llap
-                    Reduce Output Operator [RS_16]
-                      PartitionCols:_col0
-                      Group By Operator [GBY_15] (rows=1 width=280)
-                        Output:["_col0","_col1","_col2"],aggregations:["count(DISTINCT substr(_col1, 5))"],keys:_col0, substr(_col1, 5)
-                        Select Operator [SEL_6] (rows=1 width=272)
-                          Output:["_col0","_col1"]
-                          Group By Operator [GBY_5] (rows=1 width=8)
-                            Output:["_col0"],aggregations:["count(VALUE._col0)"]
-                          <-Map 1 [CUSTOM_SIMPLE_EDGE] llap
-                            PARTITION_ONLY_SHUFFLE [RS_4]
-                              Group By Operator [GBY_3] (rows=1 width=8)
-                                Output:["_col0"],aggregations:["count(1)"]
-                                Select Operator [SEL_1] (rows=500 width=10)
-                                  TableScan [TS_0] (rows=500 width=10)
-                                    default@src,s1,Tbl:COMPLETE,Col:COMPLETE
-                    Reduce Output Operator [RS_22]
-                      PartitionCols:_col0, _col1
-                      Group By Operator [GBY_21] (rows=1 width=464)
-                        Output:["_col0","_col1","_col2","_col3"],aggregations:["count(DISTINCT substr(_col1, 5))"],keys:_col0, _col1, substr(_col1, 5)
-                         Please refer to the previous Select Operator [SEL_6]
+                Select Operator [SEL_18] (rows=1 width=272)
+                  Output:["_col0","_col1"]
+                  Group By Operator [GBY_17] (rows=1 width=96)
+                    Output:["_col0","_col1"],aggregations:["count(DISTINCT KEY._col1:0._col0)"],keys:KEY._col0
+                  <-Union 3 [SIMPLE_EDGE]
+                    <-Map 6 [CONTAINS] llap
+                      Reduce Output Operator [RS_16]
+                        PartitionCols:_col0
+                        Group By Operator [GBY_15] (rows=1 width=280)
+                          Output:["_col0","_col1","_col2"],aggregations:["count(DISTINCT substr(_col1, 5))"],keys:_col0, substr(_col1, 5)
+                          Select Operator [SEL_8] (rows=500 width=10)
+                            Output:["_col0","_col1"]
+                            TableScan [TS_7] (rows=500 width=10)
+                              Output:["key","value"]
+                      Reduce Output Operator [RS_23]
+                        PartitionCols:_col0, _col1
+                        Group By Operator [GBY_22] (rows=1 width=464)
+                          Output:["_col0","_col1","_col2","_col3"],aggregations:["count(DISTINCT substr(_col1, 5))"],keys:_col0, _col1, substr(_col1, 5)
+                           Please refer to the previous Select Operator [SEL_8]
+                    <-Map 7 [CONTAINS] llap
+                      Reduce Output Operator [RS_16]
+                        PartitionCols:_col0
+                        Group By Operator [GBY_15] (rows=1 width=280)
+                          Output:["_col0","_col1","_col2"],aggregations:["count(DISTINCT substr(_col1, 5))"],keys:_col0, substr(_col1, 5)
+                          Select Operator [SEL_12] (rows=500 width=10)
+                            Output:["_col0","_col1"]
+                            TableScan [TS_11] (rows=500 width=10)
+                              Output:["key","value"]
+                      Reduce Output Operator [RS_23]
+                        PartitionCols:_col0, _col1
+                        Group By Operator [GBY_22] (rows=1 width=464)
+                          Output:["_col0","_col1","_col2","_col3"],aggregations:["count(DISTINCT substr(_col1, 5))"],keys:_col0, _col1, substr(_col1, 5)
+                           Please refer to the previous Select Operator [SEL_12]
+                    <-Reducer 2 [CONTAINS] llap
+                      Reduce Output Operator [RS_16]
+                        PartitionCols:_col0
+                        Group By Operator [GBY_15] (rows=1 width=280)
+                          Output:["_col0","_col1","_col2"],aggregations:["count(DISTINCT substr(_col1, 5))"],keys:_col0, substr(_col1, 5)
+                          Select Operator [SEL_6] (rows=1 width=272)
+                            Output:["_col0","_col1"]
+                            Group By Operator [GBY_5] (rows=1 width=8)
+                              Output:["_col0"],aggregations:["count(VALUE._col0)"]
+                            <-Map 1 [CUSTOM_SIMPLE_EDGE] llap
+                              PARTITION_ONLY_SHUFFLE [RS_4]
+                                Group By Operator [GBY_3] (rows=1 width=8)
+                                  Output:["_col0"],aggregations:["count(1)"]
+                                  Select Operator [SEL_1] (rows=500 width=10)
+                                    TableScan [TS_0] (rows=500 width=10)
+                                      default@src,s1,Tbl:COMPLETE,Col:COMPLETE
+                      Reduce Output Operator [RS_23]
+                        PartitionCols:_col0, _col1
+                        Group By Operator [GBY_22] (rows=1 width=464)
+                          Output:["_col0","_col1","_col2","_col3"],aggregations:["count(DISTINCT substr(_col1, 5))"],keys:_col0, _col1, substr(_col1, 5)
+                           Please refer to the previous Select Operator [SEL_6]
               Reducer 5 llap
-              File Output Operator [FS_25]
+              File Output Operator [FS_27]
                 table:{"name:":"default.dest2"}
-                Group By Operator [GBY_23] (rows=1 width=280)
-                  Output:["_col0","_col1","_col2"],aggregations:["count(DISTINCT KEY._col2:0._col0)"],keys:KEY._col0, KEY._col1
-                <- Please refer to the previous Union 3 [SIMPLE_EDGE]
+                Select Operator [SEL_25] (rows=1 width=456)
+                  Output:["_col0","_col1","_col2"]
+                  Group By Operator [GBY_24] (rows=1 width=280)
+                    Output:["_col0","_col1","_col2"],aggregations:["count(DISTINCT KEY._col2:0._col0)"],keys:KEY._col0, KEY._col1
+                  <- Please refer to the previous Union 3 [SIMPLE_EDGE]
 Stage-5
   Stats-Aggr Operator
     Stage-1
@@ -4236,52 +4242,56 @@ Stage-4
           Dependency Collection{}
             Stage-2
               Reducer 4 llap
-              File Output Operator [FS_16]
+              File Output Operator [FS_17]
                 table:{"name:":"default.dest1"}
-                Group By Operator [GBY_14] (rows=1 width=96)
-                  Output:["_col0","_col1"],aggregations:["count(DISTINCT KEY._col1:0._col0)"],keys:KEY._col0
-                <-Union 3 [SIMPLE_EDGE]
-                  <-Map 6 [CONTAINS] llap
-                    Reduce Output Operator [RS_13]
-                      PartitionCols:_col0
-                      Group By Operator [GBY_12] (rows=1 width=280)
-                        Output:["_col0","_col1","_col2"],aggregations:["count(DISTINCT substr(_col1, 5))"],keys:_col0, substr(_col1, 5)
-                        Select Operator [SEL_8] (rows=500 width=10)
-                          Output:["_col0","_col1"]
-                          TableScan [TS_7] (rows=500 width=10)
-                            Output:["key","value"]
-                    Reduce Output Operator [RS_19]
-                      PartitionCols:_col0, _col1
-                      Group By Operator [GBY_18] (rows=1 width=464)
-                        Output:["_col0","_col1","_col2","_col3"],aggregations:["count(DISTINCT substr(_col1, 5))"],keys:_col0, _col1, substr(_col1, 5)
-                         Please refer to the previous Select Operator [SEL_8]
-                  <-Reducer 2 [CONTAINS] llap
-                    Reduce Output Operator [RS_13]
-                      PartitionCols:_col0
-                      Group By Operator [GBY_12] (rows=1 width=280)
-                        Output:["_col0","_col1","_col2"],aggregations:["count(DISTINCT substr(_col1, 5))"],keys:_col0, substr(_col1, 5)
-                        Select Operator [SEL_6] (rows=1 width=272)
-                          Output:["_col0","_col1"]
-                          Group By Operator [GBY_5] (rows=1 width=8)
-                            Output:["_col0"],aggregations:["count(VALUE._col0)"]
-                          <-Map 1 [CUSTOM_SIMPLE_EDGE] llap
-                            PARTITION_ONLY_SHUFFLE [RS_4]
-                              Group By Operator [GBY_3] (rows=1 width=8)
-                                Output:["_col0"],aggregations:["count(1)"]
-                                Select Operator [SEL_1] (rows=500 width=10)
-                                  TableScan [TS_0] (rows=500 width=10)
-                                    default@src,s1,Tbl:COMPLETE,Col:COMPLETE
-                    Reduce Output Operator [RS_19]
-                      PartitionCols:_col0, _col1
-                      Group By Operator [GBY_18] (rows=1 width=464)
-                        Output:["_col0","_col1","_col2","_col3"],aggregations:["count(DISTINCT substr(_col1, 5))"],keys:_col0, _col1, substr(_col1, 5)
-                         Please refer to the previous Select Operator [SEL_6]
+                Select Operator [SEL_15] (rows=1 width=272)
+                  Output:["_col0","_col1"]
+                  Group By Operator [GBY_14] (rows=1 width=96)
+                    Output:["_col0","_col1"],aggregations:["count(DISTINCT KEY._col1:0._col0)"],keys:KEY._col0
+                  <-Union 3 [SIMPLE_EDGE]
+                    <-Map 6 [CONTAINS] llap
+                      Reduce Output Operator [RS_13]
+                        PartitionCols:_col0
+                        Group By Operator [GBY_12] (rows=1 width=280)
+                          Output:["_col0","_col1","_col2"],aggregations:["count(DISTINCT substr(_col1, 5))"],keys:_col0, substr(_col1, 5)
+                          Select Operator [SEL_8] (rows=500 width=10)
+                            Output:["_col0","_col1"]
+                            TableScan [TS_7] (rows=500 width=10)
+                              Output:["key","value"]
+                      Reduce Output Operator [RS_20]
+                        PartitionCols:_col0, _col1
+                        Group By Operator [GBY_19] (rows=1 width=464)
+                          Output:["_col0","_col1","_col2","_col3"],aggregations:["count(DISTINCT substr(_col1, 5))"],keys:_col0, _col1, substr(_col1, 5)
+                           Please refer to the previous Select Operator [SEL_8]
+                    <-Reducer 2 [CONTAINS] llap
+                      Reduce Output Operator [RS_13]
+                        PartitionCols:_col0
+                        Group By Operator [GBY_12] (rows=1 width=280)
+                          Output:["_col0","_col1","_col2"],aggregations:["count(DISTINCT substr(_col1, 5))"],keys:_col0, substr(_col1, 5)
+                          Select Operator [SEL_6] (rows=1 width=272)
+                            Output:["_col0","_col1"]
+                            Group By Operator [GBY_5] (rows=1 width=8)
+                              Output:["_col0"],aggregations:["count(VALUE._col0)"]
+                            <-Map 1 [CUSTOM_SIMPLE_EDGE] llap
+                              PARTITION_ONLY_SHUFFLE [RS_4]
+                                Group By Operator [GBY_3] (rows=1 width=8)
+                                  Output:["_col0"],aggregations:["count(1)"]
+                                  Select Operator [SEL_1] (rows=500 width=10)
+                                    TableScan [TS_0] (rows=500 width=10)
+                                      default@src,s1,Tbl:COMPLETE,Col:COMPLETE
+                      Reduce Output Operator [RS_20]
+                        PartitionCols:_col0, _col1
+                        Group By Operator [GBY_19] (rows=1 width=464)
+                          Output:["_col0","_col1","_col2","_col3"],aggregations:["count(DISTINCT substr(_col1, 5))"],keys:_col0, _col1, substr(_col1, 5)
+                           Please refer to the previous Select Operator [SEL_6]
               Reducer 5 llap
-              File Output Operator [FS_22]
+              File Output Operator [FS_24]
                 table:{"name:":"default.dest2"}
-                Group By Operator [GBY_20] (rows=1 width=280)
-                  Output:["_col0","_col1","_col2"],aggregations:["count(DISTINCT KEY._col2:0._col0)"],keys:KEY._col0, KEY._col1
-                <- Please refer to the previous Union 3 [SIMPLE_EDGE]
+                Select Operator [SEL_22] (rows=1 width=456)
+                  Output:["_col0","_col1","_col2"]
+                  Group By Operator [GBY_21] (rows=1 width=280)
+                    Output:["_col0","_col1","_col2"],aggregations:["count(DISTINCT KEY._col2:0._col0)"],keys:KEY._col0, KEY._col1
+                  <- Please refer to the previous Union 3 [SIMPLE_EDGE]
 Stage-5
   Stats-Aggr Operator
     Stage-1

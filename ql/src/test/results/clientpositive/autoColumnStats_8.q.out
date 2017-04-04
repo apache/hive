@@ -157,8 +157,8 @@ STAGE PLANS:
                   GatherStats: true
                   MultiFileSpray: false
                 Select Operator
-                  expressions: _col0 (type: string), _col1 (type: string), '2008-12-31' (type: string), _col2 (type: string)
-                  outputColumnNames: key, value, ds, hr
+                  expressions: _col2 (type: string), _col0 (type: string), _col1 (type: string)
+                  outputColumnNames: hr, key, value
                   Statistics: Num rows: 666 Data size: 7075 Basic stats: COMPLETE Column stats: NONE
                   Group By Operator
                     aggregations: compute_stats(key, 16), compute_stats(value, 16)
