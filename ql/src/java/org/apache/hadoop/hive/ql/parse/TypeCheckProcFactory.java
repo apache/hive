@@ -806,7 +806,7 @@ public class TypeCheckProcFactory {
         if (expr.getChildCount() == 1) {
           funcText = specialUnaryOperatorTextHashMap.get(expr.getType());
         }
-        if (funcText == null) {
+        if(funcText == null) {
           funcText = expr.getText();
         }
       } else {

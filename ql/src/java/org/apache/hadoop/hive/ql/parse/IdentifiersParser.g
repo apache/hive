@@ -585,14 +585,27 @@ precedenceSimilarExpressionPartNot[CommonTree t]
     precedenceSimilarExpressionAtom[$t]
     ;
 
+precedenceDistinctOperator
+    :
+    KW_IS KW_DISTINCT KW_FROM
+    ;
+
 precedenceEqualOperator
     :
-    EQUAL | EQUAL_NS | NOTEQUAL
+    EQUAL | EQUAL_NS | NOTEQUAL | KW_IS KW_NOT KW_DISTINCT KW_FROM -> EQUAL_NS["<=>"]
     ;
 
 precedenceEqualExpression
     :
-    precedenceSimilarExpression (precedenceEqualOperator^ precedenceSimilarExpression)*
+    (precedenceSimilarExpression -> precedenceSimilarExpression)
+    (
+        equal=precedenceEqualOperator p=precedenceSimilarExpression
+        -> ^($equal {$precedenceEqualExpression.tree} $p)
+        |
+        dist=precedenceDistinctOperator p=precedenceSimilarExpression
+        -> ^(KW_NOT["not"] ^(EQUAL_NS["<=>"] {$precedenceEqualExpression.tree} $p))
+    )*
+    -> {$precedenceEqualExpression.tree}
     ;
     
 precedenceNotOperator
