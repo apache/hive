@@ -15,17 +15,17 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@tmp
 POSTHOOK: Lineage: tmp.col0 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tmp.col1 SIMPLE []
-POSTHOOK: Lineage: tmp.col10 SIMPLE []
-POSTHOOK: Lineage: tmp.col11 SIMPLE []
-POSTHOOK: Lineage: tmp.col2 SIMPLE []
-POSTHOOK: Lineage: tmp.col3 SIMPLE []
-POSTHOOK: Lineage: tmp.col4 SIMPLE []
-POSTHOOK: Lineage: tmp.col5 SIMPLE []
-POSTHOOK: Lineage: tmp.col6 SIMPLE []
-POSTHOOK: Lineage: tmp.col7 SIMPLE []
-POSTHOOK: Lineage: tmp.col8 SIMPLE []
-POSTHOOK: Lineage: tmp.col9 SIMPLE []
+POSTHOOK: Lineage: tmp.col1 EXPRESSION []
+POSTHOOK: Lineage: tmp.col10 EXPRESSION []
+POSTHOOK: Lineage: tmp.col11 EXPRESSION []
+POSTHOOK: Lineage: tmp.col2 EXPRESSION []
+POSTHOOK: Lineage: tmp.col3 EXPRESSION []
+POSTHOOK: Lineage: tmp.col4 EXPRESSION []
+POSTHOOK: Lineage: tmp.col5 EXPRESSION []
+POSTHOOK: Lineage: tmp.col6 EXPRESSION []
+POSTHOOK: Lineage: tmp.col7 EXPRESSION []
+POSTHOOK: Lineage: tmp.col8 EXPRESSION []
+POSTHOOK: Lineage: tmp.col9 EXPRESSION []
 PREHOOK: query: select * from tmp
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tmp

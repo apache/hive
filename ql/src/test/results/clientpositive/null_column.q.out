@@ -45,7 +45,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@temp_null
 POSTHOOK: Output: default@tt
 POSTHOOK: Lineage: tt.a EXPRESSION []
-POSTHOOK: Lineage: tt.b SIMPLE []
+POSTHOOK: Lineage: tt.b EXPRESSION []
 PREHOOK: query: select * from tt
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tt
@@ -123,7 +123,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@temp_null2@ds=2010-04-01
 POSTHOOK: Lineage: temp_null2 PARTITION(ds=2010-04-01).key SIMPLE []
-POSTHOOK: Lineage: temp_null2 PARTITION(ds=2010-04-01).value SIMPLE []
+POSTHOOK: Lineage: temp_null2 PARTITION(ds=2010-04-01).value EXPRESSION []
 PREHOOK: query: select * from temp_null2 where ds is not null
 PREHOOK: type: QUERY
 PREHOOK: Input: default@temp_null2

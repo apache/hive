@@ -53,7 +53,7 @@ STAGE PLANS:
               predicate: (UDFToDouble(key) = 86.0) (type: boolean)
               Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
               Select Operator
-                expressions: true (type: boolean), false (type: boolean), true (type: boolean), true (type: boolean), true (type: boolean), false (type: boolean), false (type: boolean), false (type: boolean), true (type: boolean), true (type: boolean), false (type: boolean), true (type: boolean), true (type: boolean), 'acc' (type: string), 'abc' (type: string), 'abb' (type: string), 'hive' (type: string), 'hadoop' (type: string), 'AaAbAcA' (type: string), false (type: boolean)
+                expressions: 'TRUE' (type: string), 'FALSE' (type: string), 'TRUE' (type: string), 'TRUE' (type: string), 'TRUE' (type: string), 'FALSE' (type: string), 'FALSE' (type: string), 'FALSE' (type: string), 'TRUE' (type: string), 'TRUE' (type: string), 'FALSE' (type: string), 'TRUE' (type: string), 'TRUE' (type: string), 'acc' (type: string), 'abc' (type: string), 'abb' (type: string), 'hive' (type: string), 'hadoop' (type: string), 'AaAbAcA' (type: string), 'FALSE' (type: string)
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18, _col19
                 Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
@@ -137,26 +137,26 @@ POSTHOOK: query: FROM src INSERT OVERWRITE TABLE dest1 SELECT 'a' LIKE '%a%', 'b
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@dest1
-POSTHOOK: Lineage: dest1.c1 SIMPLE []
-POSTHOOK: Lineage: dest1.c10 SIMPLE []
-POSTHOOK: Lineage: dest1.c11 SIMPLE []
-POSTHOOK: Lineage: dest1.c12 SIMPLE []
-POSTHOOK: Lineage: dest1.c13 SIMPLE []
+POSTHOOK: Lineage: dest1.c1 EXPRESSION []
+POSTHOOK: Lineage: dest1.c10 EXPRESSION []
+POSTHOOK: Lineage: dest1.c11 EXPRESSION []
+POSTHOOK: Lineage: dest1.c12 EXPRESSION []
+POSTHOOK: Lineage: dest1.c13 EXPRESSION []
 POSTHOOK: Lineage: dest1.c14 SIMPLE []
 POSTHOOK: Lineage: dest1.c15 SIMPLE []
 POSTHOOK: Lineage: dest1.c16 SIMPLE []
 POSTHOOK: Lineage: dest1.c17 SIMPLE []
 POSTHOOK: Lineage: dest1.c18 SIMPLE []
 POSTHOOK: Lineage: dest1.c19 SIMPLE []
-POSTHOOK: Lineage: dest1.c2 SIMPLE []
-POSTHOOK: Lineage: dest1.c20 SIMPLE []
-POSTHOOK: Lineage: dest1.c3 SIMPLE []
-POSTHOOK: Lineage: dest1.c4 SIMPLE []
-POSTHOOK: Lineage: dest1.c5 SIMPLE []
-POSTHOOK: Lineage: dest1.c6 SIMPLE []
-POSTHOOK: Lineage: dest1.c7 SIMPLE []
-POSTHOOK: Lineage: dest1.c8 SIMPLE []
-POSTHOOK: Lineage: dest1.c9 SIMPLE []
+POSTHOOK: Lineage: dest1.c2 EXPRESSION []
+POSTHOOK: Lineage: dest1.c20 EXPRESSION []
+POSTHOOK: Lineage: dest1.c3 EXPRESSION []
+POSTHOOK: Lineage: dest1.c4 EXPRESSION []
+POSTHOOK: Lineage: dest1.c5 EXPRESSION []
+POSTHOOK: Lineage: dest1.c6 EXPRESSION []
+POSTHOOK: Lineage: dest1.c7 EXPRESSION []
+POSTHOOK: Lineage: dest1.c8 EXPRESSION []
+POSTHOOK: Lineage: dest1.c9 EXPRESSION []
 PREHOOK: query: SELECT dest1.* FROM dest1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest1
@@ -165,4 +165,4 @@ POSTHOOK: query: SELECT dest1.* FROM dest1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest1
 #### A masked pattern was here ####
-true	false	true	true	true	false	false	false	true	true	false	true	true	acc	abc	abb	hive	hadoop	AaAbAcA	false
+TRUE	FALSE	TRUE	TRUE	TRUE	FALSE	FALSE	FALSE	TRUE	TRUE	FALSE	TRUE	TRUE	acc	abc	abb	hive	hadoop	AaAbAcA	FALSE
