@@ -128,6 +128,7 @@ function status_hcat() {
       exit 1
     fi
   else
+    echo "PID file not found"
     exit 3
   fi
 }
