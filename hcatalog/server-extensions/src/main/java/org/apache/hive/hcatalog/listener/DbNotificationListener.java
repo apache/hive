@@ -50,6 +50,7 @@ import org.apache.hadoop.hive.metastore.events.InsertEvent;
 import org.apache.hadoop.hive.metastore.events.LoadPartitionDoneEvent;
 import org.apache.hive.hcatalog.common.HCatConstants;
 import org.apache.hive.hcatalog.messaging.MessageFactory;
+import org.apache.hadoop.hive.metastore.events.ListenerEvent;
 
 import java.util.concurrent.TimeUnit;
 
@@ -121,7 +122,7 @@ public class DbNotificationListener extends MetaStoreEventListener {
         HCatConstants.HCAT_CREATE_TABLE_EVENT, msgFactory.buildCreateTableMessage(t).toString());
     event.setDbName(t.getDbName());
     event.setTableName(t.getTableName());
-    enqueue(event);
+    enqueue(event, tableEvent);
   }
 
   /**
@@ -134,7 +135,7 @@ public class DbNotificationListener extends MetaStoreEventListener {
         HCatConstants.HCAT_DROP_TABLE_EVENT, msgFactory.buildDropTableMessage(t).toString());
     event.setDbName(t.getDbName());
     event.setTableName(t.getTableName());
-    enqueue(event);
+    enqueue(event, tableEvent);
   }
 
   /**
@@ -149,7 +150,7 @@ public class DbNotificationListener extends MetaStoreEventListener {
         msgFactory.buildAlterTableMessage(before, after).toString());
     event.setDbName(after.getDbName());
     event.setTableName(after.getTableName());
-    enqueue(event);
+    enqueue(event, tableEvent);
   }
 
   /**
@@ -164,7 +165,7 @@ public class DbNotificationListener extends MetaStoreEventListener {
         msgFactory.buildAddPartitionMessage(t, partitionEvent.getPartitions()).toString());
     event.setDbName(t.getDbName());
     event.setTableName(t.getTableName());
-    enqueue(event);
+    enqueue(event, partitionEvent);
   }
 
   /**
@@ -178,7 +179,7 @@ public class DbNotificationListener extends MetaStoreEventListener {
         msgFactory.buildDropPartitionMessage(t, partitionEvent.getPartition()).toString());
     event.setDbName(t.getDbName());
     event.setTableName(t.getTableName());
-    enqueue(event);
+    enqueue(event, partitionEvent);
   }
 
   /**
@@ -193,7 +194,7 @@ public class DbNotificationListener extends MetaStoreEventListener {
         msgFactory.buildAlterPartitionMessage(partitionEvent.getTable(),before, after).toString());
       event.setDbName(before.getDbName());
       event.setTableName(before.getTableName());
-      enqueue(event);
+      enqueue(event, partitionEvent);
   }
 
   /**
@@ -206,7 +207,7 @@ public class DbNotificationListener extends MetaStoreEventListener {
         HCatConstants.HCAT_CREATE_DATABASE_EVENT,
         msgFactory.buildCreateDatabaseMessage(db).toString());
     event.setDbName(db.getName());
-    enqueue(event);
+    enqueue(event, dbEvent);
   }
 
   /**
@@ -219,7 +220,7 @@ public class DbNotificationListener extends MetaStoreEventListener {
         HCatConstants.HCAT_DROP_DATABASE_EVENT,
         msgFactory.buildDropDatabaseMessage(db).toString());
     event.setDbName(db.getName());
-    enqueue(event);
+    enqueue(event, dbEvent);
   }
 
   /**
@@ -232,7 +233,7 @@ public class DbNotificationListener extends MetaStoreEventListener {
         HCatConstants.HCAT_CREATE_FUNCTION_EVENT,
         msgFactory.buildCreateFunctionMessage(fn).toString());
     event.setDbName(fn.getDbName());
-    enqueue(event);
+    enqueue(event, fnEvent);
   }
 
   /**
@@ -245,7 +246,7 @@ public class DbNotificationListener extends MetaStoreEventListener {
         HCatConstants.HCAT_DROP_FUNCTION_EVENT,
         msgFactory.buildDropFunctionMessage(fn).toString());
     event.setDbName(fn.getDbName());
-    enqueue(event);
+    enqueue(event, fnEvent);
   }
 
   /**
@@ -258,7 +259,7 @@ public class DbNotificationListener extends MetaStoreEventListener {
         HCatConstants.HCAT_CREATE_INDEX_EVENT,
         msgFactory.buildCreateIndexMessage(index).toString());
     event.setDbName(index.getDbName());
-    enqueue(event);
+    enqueue(event, indexEvent);
   }
 
   /**
@@ -271,7 +272,7 @@ public class DbNotificationListener extends MetaStoreEventListener {
         HCatConstants.HCAT_DROP_INDEX_EVENT,
         msgFactory.buildDropIndexMessage(index).toString());
     event.setDbName(index.getDbName());
-    enqueue(event);
+    enqueue(event, indexEvent);
   }
 
   /**
@@ -285,7 +286,7 @@ public class DbNotificationListener extends MetaStoreEventListener {
         HCatConstants.HCAT_ALTER_INDEX_EVENT,
         msgFactory.buildAlterIndexMessage(before, after).toString());
     event.setDbName(before.getDbName());
-    enqueue(event);
+    enqueue(event, indexEvent);
   }
 
   @Override
@@ -295,7 +296,7 @@ public class DbNotificationListener extends MetaStoreEventListener {
             insertEvent.getPartitionKeyValues(), insertEvent.getFiles()).toString());
     event.setDbName(insertEvent.getDb());
     event.setTableName(insertEvent.getTable());
-    enqueue(event);
+    enqueue(event, insertEvent);
   }
 
   /**
@@ -319,12 +320,26 @@ public class DbNotificationListener extends MetaStoreEventListener {
     return (int)millis;
   }
 
-  private void enqueue(NotificationEvent event) {
+  /**
+   * Process this notification by adding it to metastore DB.
+   *
+   * @param event NotificationEvent is the object written to the metastore DB.
+   * @param listenerEvent ListenerEvent (from which NotificationEvent was based) used only to set the
+   *                      DB_NOTIFICATION_EVENT_ID_KEY_NAME for future reference by other listeners.
+   */
+  private void enqueue(NotificationEvent event, ListenerEvent listenerEvent) {
     synchronized(NOTIFICATION_TBL_LOCK) {
       LOG.debug("DbNotificationListener: Processing : " + event.getEventId() +
           " : " + event.getMessage());
       HiveMetaStore.HMSHandler.getRawStore().addNotificationEvent(event);
     }
+
+      // Set the DB_NOTIFICATION_EVENT_ID for future reference by other listeners.
+      if (event.isSetEventId()) {
+        listenerEvent.putParameter(
+            MetaStoreEventListenerConstants.DB_NOTIFICATION_EVENT_ID_KEY_NAME,
+            Long.toString(event.getEventId()));
+      }
   }
 
   private static class CleanerThread extends Thread {
