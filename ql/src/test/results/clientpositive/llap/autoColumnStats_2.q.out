@@ -253,8 +253,8 @@ POSTHOOK: query: insert into table b select NULL, NULL from src limit 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@b
-POSTHOOK: Lineage: b.key SIMPLE []
-POSTHOOK: Lineage: b.value SIMPLE []
+POSTHOOK: Lineage: b.key EXPRESSION []
+POSTHOOK: Lineage: b.value EXPRESSION []
 PREHOOK: query: describe formatted b key
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@b

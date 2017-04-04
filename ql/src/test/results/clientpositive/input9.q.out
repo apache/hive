@@ -35,7 +35,7 @@ STAGE PLANS:
               predicate: false (type: boolean)
               Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
               Select Operator
-                expressions: null (type: void), UDFToInteger(key) (type: int)
+                expressions: null (type: string), UDFToInteger(key) (type: int)
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
@@ -110,7 +110,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src1
 POSTHOOK: Output: default@dest1
 POSTHOOK: Lineage: dest1.key EXPRESSION [(src1)src1.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: dest1.value SIMPLE []
+POSTHOOK: Lineage: dest1.value EXPRESSION []
 PREHOOK: query: SELECT dest1.* FROM dest1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest1
