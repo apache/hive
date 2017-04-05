@@ -345,14 +345,15 @@ public class StatsNoJobTask extends Task<StatsNoJobWork> implements Serializable
     try {
 
       // Wait a while for existing tasks to terminate
-      if (!threadPool.awaitTermination(100, TimeUnit.SECONDS)) {
-        // Cancel currently executing tasks
-        threadPool.shutdownNow();
+      while (!threadPool.awaitTermination(10, TimeUnit.SECONDS)) {
+        LOG.debug("Waiting for all stats tasks to finish...");
+      }
+      // Cancel currently executing tasks
+      threadPool.shutdownNow();
 
-        // Wait a while for tasks to respond to being cancelled
-        if (!threadPool.awaitTermination(100, TimeUnit.SECONDS)) {
-          LOG.debug("Stats collection thread pool did not terminate");
-        }
+      // Wait a while for tasks to respond to being cancelled
+      if (!threadPool.awaitTermination(100, TimeUnit.SECONDS)) {
+        LOG.debug("Stats collection thread pool did not terminate");
       }
     } catch (InterruptedException ie) {
 
