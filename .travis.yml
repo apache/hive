@@ -23,10 +23,8 @@ dist: trusty
 # that requires full git history, enable this
 # before_install: git fetch --unshallow
 
-# parallel builds on jdk7 and jdk8
 language: java
 jdk:
-  - oraclejdk7
   - oraclejdk8
 
 cache:
