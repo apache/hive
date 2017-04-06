@@ -329,6 +329,7 @@
                   <include>org.jdbi:*</include>
                   <include>net.jpountz.lz4:*</include>
                   <include>org.apache.commons:*</include>
+                  <include>org.roaringbitmap:*</include>
                 </includes>
               </artifactSet>
               <filters>

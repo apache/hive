@@ -37,8 +37,10 @@ import io.druid.granularity.QueryGranularities;
 import io.druid.query.aggregation.AggregatorFactory;
 import io.druid.query.aggregation.LongSumAggregatorFactory;
 import io.druid.query.aggregation.hyperloglog.HyperUniquesAggregatorFactory;
+import io.druid.segment.IndexSpec;
 import io.druid.segment.QueryableIndex;
 import io.druid.segment.QueryableIndexStorageAdapter;
+import io.druid.segment.data.RoaringBitmapSerdeFactory;
 import io.druid.segment.indexing.DataSchema;
 import io.druid.segment.indexing.RealtimeTuningConfig;
 import io.druid.segment.indexing.granularity.UniformGranularitySpec;
@@ -139,8 +141,10 @@ public class TestDruidRecordWriter {
             objectMapper
     );
 
-    RealtimeTuningConfig tuningConfig = RealtimeTuningConfig
-            .makeDefaultTuningConfig(temporaryFolder.newFolder());
+    IndexSpec indexSpec = new IndexSpec(new RoaringBitmapSerdeFactory(true), null, null, null);
+    RealtimeTuningConfig tuningConfig = new RealtimeTuningConfig(null, null, null,
+            temporaryFolder.newFolder(), null, null, null, null, indexSpec, null, 0, 0, null, null
+    );
     LocalFileSystem localFileSystem = FileSystem.getLocal(config);
     DataSegmentPusher dataSegmentPusher = new LocalDataSegmentPusher(
             new LocalDataSegmentPusherConfig() {
