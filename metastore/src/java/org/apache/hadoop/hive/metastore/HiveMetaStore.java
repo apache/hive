@@ -258,6 +258,8 @@ import static org.apache.hadoop.hive.metastore.MetaStoreUtils.validateName;
  */
 public class HiveMetaStore extends ThriftHiveMetastore {
   public static final Log LOG = LogFactory.getLog(HiveMetaStore.class);
+  public static final String PARTITION_NUMBER_EXCEED_LIMIT_MSG =
+      "Number of partitions scanned (=%d) on table '%s' exceeds limit (=%d). This is controlled on the metastore server by %s.";
 
   // boolean that tells if the HiveMetaStore (remote) server is being used.
   // Can be used to determine if the calls to metastore api (HMSHandler) are being made with
@@ -3418,8 +3420,8 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         int partitionRequest = (maxToFetch < 0) ? numPartitions : maxToFetch;
         if (partitionRequest > partitionLimit) {
           String configName = ConfVars.METASTORE_LIMIT_PARTITION_REQUEST.varname;
-          throw new MetaException(String.format("Number of partitions scanned (=%d) on table '%s' exceeds limit" +
-              " (=%d). This is controlled on the metastore server by %s.", partitionRequest, tblName, partitionLimit, configName));
+          throw new MetaException(String.format(PARTITION_NUMBER_EXCEED_LIMIT_MSG, partitionRequest,
+              tblName, partitionLimit, configName));
         }
       }
     }
