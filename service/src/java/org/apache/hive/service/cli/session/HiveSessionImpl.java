@@ -527,14 +527,15 @@ public class HiveSessionImpl implements HiveSession {
       operation = getOperationManager().newExecuteStatementOperation(getSession(), statement,
           confOverlay, runAsync, queryTimeout);
       opHandle = operation.getHandle();
-      operation.run();
       addOpHandle(opHandle);
+      operation.run();
       return opHandle;
     } catch (HiveSQLException e) {
       // Refering to SQLOperation.java, there is no chance that a HiveSQLException throws and the
       // async background operation submits to thread pool successfully at the same time. So, Cleanup
       // opHandle directly when got HiveSQLException
       if (opHandle != null) {
+        removeOpHandle(opHandle);
         getOperationManager().closeOperation(opHandle);
       }
       throw e;
@@ -567,10 +568,11 @@ public class HiveSessionImpl implements HiveSession {
     GetTypeInfoOperation operation = operationManager.newGetTypeInfoOperation(getSession());
     OperationHandle opHandle = operation.getHandle();
     try {
-      operation.run();
       addOpHandle(opHandle);
+      operation.run();
       return opHandle;
     } catch (HiveSQLException e) {
+      removeOpHandle(opHandle);
       operationManager.closeOperation(opHandle);
       throw e;
     } finally {
@@ -587,10 +589,11 @@ public class HiveSessionImpl implements HiveSession {
     GetCatalogsOperation operation = operationManager.newGetCatalogsOperation(getSession());
     OperationHandle opHandle = operation.getHandle();
     try {
-      operation.run();
       addOpHandle(opHandle);
+      operation.run();
       return opHandle;
     } catch (HiveSQLException e) {
+      removeOpHandle(opHandle);
       operationManager.closeOperation(opHandle);
       throw e;
     } finally {
@@ -608,10 +611,11 @@ public class HiveSessionImpl implements HiveSession {
         operationManager.newGetSchemasOperation(getSession(), catalogName, schemaName);
     OperationHandle opHandle = operation.getHandle();
     try {
-      operation.run();
       addOpHandle(opHandle);
+      operation.run();
       return opHandle;
     } catch (HiveSQLException e) {
+      removeOpHandle(opHandle);
       operationManager.closeOperation(opHandle);
       throw e;
     } finally {
@@ -630,10 +634,11 @@ public class HiveSessionImpl implements HiveSession {
         operationManager.newGetTablesOperation(getSession(), catalogName, schemaName, tableName, tableTypes);
     OperationHandle opHandle = operation.getHandle();
     try {
-      operation.run();
       addOpHandle(opHandle);
+      operation.run();
       return opHandle;
     } catch (HiveSQLException e) {
+      removeOpHandle(opHandle);
       operationManager.closeOperation(opHandle);
       throw e;
     } finally {
@@ -650,10 +655,11 @@ public class HiveSessionImpl implements HiveSession {
     GetTableTypesOperation operation = operationManager.newGetTableTypesOperation(getSession());
     OperationHandle opHandle = operation.getHandle();
     try {
-      operation.run();
       addOpHandle(opHandle);
+      operation.run();
       return opHandle;
     } catch (HiveSQLException e) {
+      removeOpHandle(opHandle);
       operationManager.closeOperation(opHandle);
       throw e;
     } finally {
@@ -675,10 +681,11 @@ public class HiveSessionImpl implements HiveSession {
         catalogName, schemaName, tableName, columnName);
     OperationHandle opHandle = operation.getHandle();
     try {
-      operation.run();
       addOpHandle(opHandle);
+      operation.run();
       return opHandle;
     } catch (HiveSQLException e) {
+      removeOpHandle(opHandle);
       operationManager.closeOperation(opHandle);
       throw e;
     } finally {
@@ -692,6 +699,12 @@ public class HiveSessionImpl implements HiveSession {
     }
   }
 
+  private void removeOpHandle(OperationHandle opHandle) {
+    synchronized (opHandleSet) {
+      opHandleSet.remove(opHandle);
+    }
+  }
+
   @Override
   public OperationHandle getFunctions(String catalogName, String schemaName, String functionName)
       throws HiveSQLException {
@@ -702,10 +715,11 @@ public class HiveSessionImpl implements HiveSession {
         .newGetFunctionsOperation(getSession(), catalogName, schemaName, functionName);
     OperationHandle opHandle = operation.getHandle();
     try {
-      operation.run();
       addOpHandle(opHandle);
+      operation.run();
       return opHandle;
     } catch (HiveSQLException e) {
+      removeOpHandle(opHandle);
       operationManager.closeOperation(opHandle);
       throw e;
     } finally {
@@ -940,10 +954,11 @@ public class HiveSessionImpl implements HiveSession {
         .newGetPrimaryKeysOperation(getSession(), catalog, schema, table);
     OperationHandle opHandle = operation.getHandle();
     try {
-      operation.run();
       addOpHandle(opHandle);
+      operation.run();
       return opHandle;
     } catch (HiveSQLException e) {
+      removeOpHandle(opHandle);
       operationManager.closeOperation(opHandle);
       throw e;
     } finally {
@@ -964,10 +979,11 @@ public class HiveSessionImpl implements HiveSession {
          foreignSchema, foreignTable);
     OperationHandle opHandle = operation.getHandle();
     try {
-      operation.run();
       addOpHandle(opHandle);
+      operation.run();
       return opHandle;
     } catch (HiveSQLException e) {
+      removeOpHandle(opHandle);
       operationManager.closeOperation(opHandle);
       throw e;
     } finally {
