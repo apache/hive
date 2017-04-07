@@ -82,8 +82,8 @@ public class PartitionDesc implements Serializable, Cloneable {
     setPartSpec(partSpec);
   }
 
-  public PartitionDesc(final Partition part) throws HiveException {
-    PartitionDescConstructorHelper(part, getTableDesc(part.getTable()), true);
+  public PartitionDesc(final Partition part, final TableDesc tableDesc) throws HiveException {
+    PartitionDescConstructorHelper(part, tableDesc, true);
     if (Utilities.isInputFileFormatSelfDescribing(this)) {
       // if IF is self describing no need to send column info per partition, since its not used anyway.
       Table tbl = part.getTable();
@@ -92,6 +92,10 @@ public class PartitionDesc implements Serializable, Cloneable {
     } else {
       setProperties(part.getMetadataFromPartitionSchema());
     }
+  }
+
+  public PartitionDesc(final Partition part) throws HiveException {
+    this(part, getTableDesc(part.getTable()));
   }
 
   /**
@@ -229,10 +233,8 @@ public class PartitionDesc implements Serializable, Cloneable {
     }
   }
 
-  private static TableDesc getTableDesc(Table table) {
-    TableDesc tableDesc = Utilities.getTableDesc(table);
-    internProperties(tableDesc.getProperties());
-    return tableDesc;
+  public static TableDesc getTableDesc(Table table) {
+    return Utilities.getTableDesc(table);
   }
 
   private static void internProperties(Properties properties) {

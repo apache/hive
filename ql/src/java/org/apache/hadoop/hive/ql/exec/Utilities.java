@@ -776,6 +776,11 @@ public final class Utilities {
         serdeConstants.SERIALIZATION_LIB,LazySimpleSerDe.class.getName())));
   }
 
+  public static PartitionDesc getPartitionDesc(Partition part, TableDesc tableDesc) throws
+      HiveException {
+    return new PartitionDesc(part, tableDesc);
+  }
+
   public static PartitionDesc getPartitionDesc(Partition part) throws HiveException {
     return new PartitionDesc(part);
   }
