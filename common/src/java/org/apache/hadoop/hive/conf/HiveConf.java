@@ -3689,6 +3689,9 @@ public class HiveConf extends Configuration {
       }
     } else if (name.startsWith("hive.spark")) { // Remote Spark Context property.
       result = true;
+    } else if (name.equals("mapreduce.job.queuename")) {
+      // a special property starting with mapreduce that we would also like to effect if it changes
+      result = true;
     }
 
     return result;
