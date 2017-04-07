@@ -21,7 +21,7 @@ public class HiveWrapperTest {
   public void replicationIdIsRequestedBeforeObjectDefinition() throws HiveException {
     new HiveWrapper.Tuple<>(specFunction, tableFunction);
     InOrder inOrder = Mockito.inOrder(specFunction, tableFunction);
-    inOrder.verify(specFunction.object());
-    inOrder.verify(tableFunction.object());
+    inOrder.verify(specFunction).object();
+    inOrder.verify(tableFunction).object();
   }
 }
