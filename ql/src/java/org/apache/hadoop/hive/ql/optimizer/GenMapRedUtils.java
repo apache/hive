@@ -514,10 +514,11 @@ public final class GenMapRedUtils {
     // pass both confirmed and unknown partitions through the map-reduce
     // framework
     Set<Partition> parts = partsList.getPartitions();
+    TableDesc tableSpec = Utilities.getTableDesc(tsOp.getConf().getTableMetadata());
     PartitionDesc aliasPartnDesc = null;
     try {
       if (!parts.isEmpty()) {
-        aliasPartnDesc = Utilities.getPartitionDesc(parts.iterator().next());
+        aliasPartnDesc = Utilities.getPartitionDesc(parts.iterator().next(), tableSpec);
       }
     } catch (HiveException e) {
       LOG.error(org.apache.hadoop.util.StringUtils.stringifyException(e));
@@ -526,8 +527,7 @@ public final class GenMapRedUtils {
 
     // The table does not have any partitions
     if (aliasPartnDesc == null) {
-      aliasPartnDesc = new PartitionDesc(Utilities.getTableDesc(tsOp
-          .getConf().getTableMetadata()), null);
+      aliasPartnDesc = new PartitionDesc(tableSpec, null);
     }
 
     Map<String, String> props = tsOp.getConf().getOpProps();
@@ -686,7 +686,7 @@ public final class GenMapRedUtils {
         partDir.add(p);
         try {
           if (part.getTable().isPartitioned()) {
-            partDesc.add(Utilities.getPartitionDesc(part));
+            partDesc.add(Utilities.getPartitionDesc(part, tblDesc));
           }
           else {
             partDesc.add(Utilities.getPartitionDescFromTableDesc(tblDesc, part, false));
