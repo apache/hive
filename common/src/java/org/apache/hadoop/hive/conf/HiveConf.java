@@ -1357,6 +1357,9 @@ public class HiveConf extends Configuration {
     HIVE_LOCK_MAPRED_ONLY("hive.lock.mapred.only.operation", false,
         "This param is to control whether or not only do lock on queries\n" +
         "that need to execute at least one mapred job."),
+    HIVE_LOCK_QUERY_STRING_MAX_LENGTH("hive.lock.query.string.max.length", 1000000,
+        "The maximum length of the query string to store in the lock.\n" +
+        "The default value is 1000000, since the data limit of a znode is 1MB"),
 
      // Zookeeper related configs
     HIVE_ZOOKEEPER_QUORUM("hive.zookeeper.quorum", "",

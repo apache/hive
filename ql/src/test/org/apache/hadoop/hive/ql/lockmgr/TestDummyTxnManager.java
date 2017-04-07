@@ -147,9 +147,9 @@ public class TestDummyTxnManager {
     String path1 = "path1";
     String path2 = "path2";
     HiveLockObjectData lockData1 = new HiveLockObjectData(
-        "query1", "1", "IMPLICIT", "drop table table1");
+        "query1", "1", "IMPLICIT", "drop table table1", conf);
     HiveLockObjectData lockData2 = new HiveLockObjectData(
-        "query1", "1", "IMPLICIT", "drop table table1");
+        "query1", "1", "IMPLICIT", "drop table table1", conf);
 
     // Start with the following locks:
     // [path1, shared]

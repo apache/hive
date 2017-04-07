@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.lockmgr;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.apache.hadoop.hive.common.StringInternUtils;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.metadata.DummyPartition;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
@@ -43,16 +44,23 @@ public class HiveLockObject {
      * Note: The parameters are used to uniquely identify a HiveLockObject. 
      * The parameters will be stripped off any ':' characters in order not 
      * to interfere with the way the data is serialized (':' delimited string).
+     * The query string might be truncated depending on HIVE_LOCK_QUERY_STRING_MAX_LENGTH
+     * @param queryId The query identifier will be added to the object without change
+     * @param lockTime The lock time  will be added to the object without change
+     * @param lockMode The lock mode  will be added to the object without change
+     * @param queryStr The query string might be truncated based on
+     *     HIVE_LOCK_QUERY_STRING_MAX_LENGTH conf variable
+     * @param conf The hive configuration based on which we decide if we should truncate the query
+     *     string or not
      */
-    public HiveLockObjectData(String queryId,
-        String lockTime,
-        String lockMode,
-        String queryStr) {
+    public HiveLockObjectData(String queryId, String lockTime, String lockMode, String queryStr,
+        HiveConf conf) {
       this.queryId = removeDelimiter(queryId);
       this.lockTime = StringInternUtils.internIfNotNull(removeDelimiter(lockTime));
       this.lockMode = removeDelimiter(lockMode);
       this.queryStr = StringInternUtils.internIfNotNull(
-          removeDelimiter(queryStr == null ? null : queryStr.trim()));
+          queryStr == null ? null : StringUtils.substring(removeDelimiter(queryStr.trim()), 0,
+              conf.getIntVar(HiveConf.ConfVars.HIVE_LOCK_QUERY_STRING_MAX_LENGTH)));
     }
 
     /**

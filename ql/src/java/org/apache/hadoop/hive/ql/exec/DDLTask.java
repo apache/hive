@@ -2700,7 +2700,8 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         new HiveLockObjectData(lockTbl.getQueryId(),
             String.valueOf(System.currentTimeMillis()),
             "EXPLICIT",
-            lockTbl.getQueryStr());
+            lockTbl.getQueryStr(),
+            conf);
 
     if (partSpec == null) {
       HiveLock lck = lockMgr.lock(new HiveLockObject(tbl, lockData), mode, true);
@@ -2753,7 +2754,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     HiveLockObjectData lockData =
         new HiveLockObjectData(lockDb.getQueryId(),
             String.valueOf(System.currentTimeMillis()),
-            "EXPLICIT", lockDb.getQueryStr());
+            "EXPLICIT", lockDb.getQueryStr(), conf);
 
     HiveLock lck = lockMgr.lock(new HiveLockObject(dbObj.getName(), lockData), mode, true);
     if (lck == null) {
