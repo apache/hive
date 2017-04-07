@@ -24,10 +24,10 @@ import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.ql.parse.EximUtil;
 import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
-import org.apache.hadoop.hive.ql.parse.repl.dump.DBSerializer;
-import org.apache.hadoop.hive.ql.parse.repl.dump.FunctionSerializer;
-import org.apache.hadoop.hive.ql.parse.repl.dump.PartitionSerializer;
-import org.apache.hadoop.hive.ql.parse.repl.dump.TableSerializer;
+import org.apache.hadoop.hive.ql.parse.repl.dump.io.DBSerializer;
+import org.apache.hadoop.hive.ql.parse.repl.dump.io.FunctionSerializer;
+import org.apache.hadoop.hive.ql.parse.repl.dump.io.PartitionSerializer;
+import org.apache.hadoop.hive.ql.parse.repl.dump.io.TableSerializer;
 import org.apache.thrift.TBase;
 import org.apache.thrift.TDeserializer;
 import org.apache.thrift.TException;
@@ -40,7 +40,7 @@ import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.apache.hadoop.hive.ql.parse.repl.dump.JsonWriter.Serializer.UTF_8;
+import static org.apache.hadoop.hive.ql.parse.repl.dump.io.JsonWriter.Serializer.UTF_8;
 
 public class MetadataJson {
   private final JSONObject json;

@@ -15,9 +15,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.hive.ql.parse.repl.dump;
+package org.apache.hadoop.hive.ql.parse.repl.dump.io;
 
-import org.apache.hadoop.hive.metastore.api.Database;
+import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
@@ -26,30 +26,40 @@ import org.apache.thrift.TSerializer;
 import org.apache.thrift.protocol.TJSONProtocol;
 
 import java.io.IOException;
+import java.util.Map;
 
-public class DBSerializer implements JsonWriter.Serializer {
-  public static final String FIELD_NAME = "db";
-  private final Database dbObject;
+public class PartitionSerializer implements JsonWriter.Serializer {
+  public static final String FIELD_NAME="partitions";
+  private Partition partition;
 
-  public DBSerializer(Database dbObject) {
-    this.dbObject = dbObject;
+  PartitionSerializer(Partition partition) {
+    this.partition = partition;
   }
 
   @Override
   public void writeTo(JsonWriter writer, ReplicationSpec additionalPropertiesProvider)
       throws SemanticException, IOException {
-    dbObject.putToParameters(
-        ReplicationSpec.KEY.CURR_STATE_ID.toString(),
-        additionalPropertiesProvider.getCurrentReplicationState()
-    );
     TSerializer serializer = new TSerializer(new TJSONProtocol.Factory());
     try {
-      String value = serializer.toString(dbObject, UTF_8);
-      writer.jsonGenerator.writeStringField(FIELD_NAME, value);
+      if (additionalPropertiesProvider.isInReplicationScope()) {
+        partition.putToParameters(
+            ReplicationSpec.KEY.CURR_STATE_ID.toString(),
+            additionalPropertiesProvider.getCurrentReplicationState());
+        if (isPartitionExternal()) {
+          // Replication destination will not be external
+          partition.putToParameters("EXTERNAL", "FALSE");
+        }
+      }
+      writer.jsonGenerator.writeString(serializer.toString(partition, UTF_8));
+      writer.jsonGenerator.flush();
     } catch (TException e) {
       throw new SemanticException(ErrorMsg.ERROR_SERIALIZE_METASTORE.getMsg(), e);
     }
   }
+
+  private boolean isPartitionExternal() {
+    Map<String, String> params = partition.getParameters();
+    return params.containsKey("EXTERNAL")
+        && params.get("EXTERNAL").equalsIgnoreCase("TRUE");
+  }
 }
-
-

@@ -15,9 +15,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.hive.ql.parse.repl.dump;
+package org.apache.hadoop.hive.ql.parse.repl.dump.io;
 
-import org.apache.hadoop.hive.metastore.api.Partition;
+import org.apache.hadoop.hive.metastore.api.Function;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
@@ -26,14 +26,13 @@ import org.apache.thrift.TSerializer;
 import org.apache.thrift.protocol.TJSONProtocol;
 
 import java.io.IOException;
-import java.util.Map;
 
-public class PartitionSerializer implements JsonWriter.Serializer {
-  public static final String FIELD_NAME="partitions";
-  private Partition partition;
+public class FunctionSerializer implements JsonWriter.Serializer {
+  public static final String FIELD_NAME="function";
+  private Function function;
 
-  PartitionSerializer(Partition partition) {
-    this.partition = partition;
+  public FunctionSerializer(Function function) {
+    this.function = function;
   }
 
   @Override
@@ -41,25 +40,10 @@ public class PartitionSerializer implements JsonWriter.Serializer {
       throws SemanticException, IOException {
     TSerializer serializer = new TSerializer(new TJSONProtocol.Factory());
     try {
-      if (additionalPropertiesProvider.isInReplicationScope()) {
-        partition.putToParameters(
-            ReplicationSpec.KEY.CURR_STATE_ID.toString(),
-            additionalPropertiesProvider.getCurrentReplicationState());
-        if (isPartitionExternal()) {
-          // Replication destination will not be external
-          partition.putToParameters("EXTERNAL", "FALSE");
-        }
-      }
-      writer.jsonGenerator.writeString(serializer.toString(partition, UTF_8));
-      writer.jsonGenerator.flush();
+      writer.jsonGenerator
+          .writeStringField(FIELD_NAME, serializer.toString(function, UTF_8));
     } catch (TException e) {
       throw new SemanticException(ErrorMsg.ERROR_SERIALIZE_METASTORE.getMsg(), e);
     }
-  }
-
-  private boolean isPartitionExternal() {
-    Map<String, String> params = partition.getParameters();
-    return params.containsKey("EXTERNAL")
-        && params.get("EXTERNAL").equalsIgnoreCase("TRUE");
   }
 }

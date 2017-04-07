@@ -54,8 +54,8 @@ import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.repl.DumpType;
 import org.apache.hadoop.hive.ql.parse.repl.dump.HiveWrapper;
 import org.apache.hadoop.hive.ql.parse.repl.load.DumpMetaData;
-import org.apache.hadoop.hive.ql.parse.repl.dump.FunctionSerializer;
-import org.apache.hadoop.hive.ql.parse.repl.dump.JsonWriter;
+import org.apache.hadoop.hive.ql.parse.repl.dump.io.FunctionSerializer;
+import org.apache.hadoop.hive.ql.parse.repl.dump.io.JsonWriter;
 import org.apache.hadoop.hive.ql.parse.repl.dump.Utils;
 import org.apache.hadoop.hive.ql.parse.repl.events.EventHandler;
 import org.apache.hadoop.hive.ql.parse.repl.events.EventHandlerFactory;
@@ -364,7 +364,15 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
       // TODO : This should ideally return the Function Objects and not Strings(function names) that should be done by the caller, Look at this separately.
       List<String> functionNames = db.getFunctions(dbName, "*");
       for (String functionName : functionNames) {
-        HiveWrapper.Tuple<Function> tuple = new HiveWrapper(db, dbName).function(functionName);
+        HiveWrapper.Tuple<Function> tuple;
+        try {
+          tuple = new HiveWrapper(db, dbName).function(functionName);
+        } catch (HiveException e) {
+          //This can happen as we are querying the getFunctions before we are getting the actual function
+          //in between there can be a drop function by a user in which case our call will fail.
+          LOG.info("Function " + functionName + " could not be found, we are ignoring it as it can be a valid state ", e);
+          continue;
+        }
         if (tuple.object.getResourceUris().isEmpty()) {
           SESSION_STATE_LOG.warn(
               "Not replicating function: " + functionName + " as it seems to have been created "

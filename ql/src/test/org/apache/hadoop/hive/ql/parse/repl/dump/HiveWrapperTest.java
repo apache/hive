@@ -13,15 +13,15 @@ import org.mockito.runners.MockitoJUnitRunner;
 @RunWith(MockitoJUnitRunner.class)
 public class HiveWrapperTest {
   @Mock
-  private HiveWrapper.Tuple.GetFromMetaStore<ReplicationSpec> specFunction;
+  private HiveWrapper.Tuple.Function<ReplicationSpec> specFunction;
   @Mock
-  private HiveWrapper.Tuple.GetFromMetaStore<Table> tableFunction;
+  private HiveWrapper.Tuple.Function<Table> tableFunction;
 
   @Test
   public void replicationIdIsRequestedBeforeObjectDefinition() throws HiveException {
     new HiveWrapper.Tuple<>(specFunction, tableFunction);
     InOrder inOrder = Mockito.inOrder(specFunction, tableFunction);
-    inOrder.verify(specFunction).object();
-    inOrder.verify(tableFunction).object();
+    inOrder.verify(specFunction).fromMetaStore();
+    inOrder.verify(tableFunction).fromMetaStore();
   }
 }

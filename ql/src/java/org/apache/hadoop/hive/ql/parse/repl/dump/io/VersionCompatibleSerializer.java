@@ -15,35 +15,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.hive.ql.parse.repl.dump;
+package org.apache.hadoop.hive.ql.parse.repl.dump.io;
 
-import org.apache.hadoop.hive.metastore.api.Function;
-import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
-import org.apache.thrift.TException;
-import org.apache.thrift.TSerializer;
-import org.apache.thrift.protocol.TJSONProtocol;
 
 import java.io.IOException;
 
-public class FunctionSerializer implements JsonWriter.Serializer {
-  public static final String FIELD_NAME="function";
-  private Function function;
+import static org.apache.hadoop.hive.ql.parse.EximUtil.METADATA_FORMAT_FORWARD_COMPATIBLE_VERSION;
 
-  public FunctionSerializer(Function function) {
-    this.function = function;
-  }
-
+/**
+ * This is not used as of now as the conditional which lead to its usage is always false
+ * hence we have removed the conditional and the usage of this class, but might be required in future.
+ */
+public class VersionCompatibleSerializer implements JsonWriter.Serializer {
   @Override
   public void writeTo(JsonWriter writer, ReplicationSpec additionalPropertiesProvider)
       throws SemanticException, IOException {
-    TSerializer serializer = new TSerializer(new TJSONProtocol.Factory());
-    try {
-      writer.jsonGenerator
-          .writeStringField(FIELD_NAME, serializer.toString(function, UTF_8));
-    } catch (TException e) {
-      throw new SemanticException(ErrorMsg.ERROR_SERIALIZE_METASTORE.getMsg(), e);
-    }
+    writer.jsonGenerator.writeStringField("fcversion", METADATA_FORMAT_FORWARD_COMPATIBLE_VERSION);
   }
 }
