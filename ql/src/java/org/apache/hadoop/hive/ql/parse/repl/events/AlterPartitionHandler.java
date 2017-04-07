@@ -29,8 +29,9 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import static org.apache.hadoop.hive.ql.parse.ReplicationSemanticAnalyzer.DUMPTYPE;
-import static org.apache.hadoop.hive.ql.parse.ReplicationSemanticAnalyzer.DumpMetaData;
+import org.apache.hadoop.hive.ql.parse.repl.DumpType;
+
+import org.apache.hadoop.hive.ql.parse.repl.load.DumpMetaData;
 
 public class AlterPartitionHandler extends AbstractHandler {
   private final org.apache.hadoop.hive.metastore.api.Partition after;
@@ -51,14 +52,14 @@ public class AlterPartitionHandler extends AbstractHandler {
   private enum Scenario {
     ALTER {
       @Override
-      DUMPTYPE dumpType() {
-        return DUMPTYPE.EVENT_ALTER_PARTITION;
+      DumpType dumpType() {
+        return DumpType.EVENT_ALTER_PARTITION;
       }
     },
     RENAME {
       @Override
-      DUMPTYPE dumpType() {
-        return DUMPTYPE.EVENT_RENAME_PARTITION;
+      DumpType dumpType() {
+        return DumpType.EVENT_RENAME_PARTITION;
       }
     },
     TRUNCATE {
@@ -68,7 +69,7 @@ public class AlterPartitionHandler extends AbstractHandler {
       }
     };
 
-    abstract DUMPTYPE dumpType();
+    abstract DumpType dumpType();
   }
 
   private Scenario scenarioType(org.apache.hadoop.hive.metastore.api.Partition before,
@@ -106,7 +107,7 @@ public class AlterPartitionHandler extends AbstractHandler {
   }
 
   @Override
-  public DUMPTYPE dumpType() {
+  public DumpType dumpType() {
     return scenario.dumpType();
   }
 }

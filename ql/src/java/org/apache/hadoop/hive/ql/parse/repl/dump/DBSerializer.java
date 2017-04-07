@@ -28,6 +28,7 @@ import org.apache.thrift.protocol.TJSONProtocol;
 import java.io.IOException;
 
 public class DBSerializer implements JsonWriter.Serializer {
+  public static final String FIELD_NAME = "db";
   private final Database dbObject;
 
   public DBSerializer(Database dbObject) {
@@ -43,8 +44,8 @@ public class DBSerializer implements JsonWriter.Serializer {
     );
     TSerializer serializer = new TSerializer(new TJSONProtocol.Factory());
     try {
-      String value = serializer.toString(dbObject, "UTF-8");
-      writer.jsonGenerator.writeStringField("db", value);
+      String value = serializer.toString(dbObject, UTF_8);
+      writer.jsonGenerator.writeStringField(FIELD_NAME, value);
     } catch (TException e) {
       throw new SemanticException(ErrorMsg.ERROR_SERIALIZE_METASTORE.getMsg(), e);
     }

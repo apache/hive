@@ -22,8 +22,8 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 
-import static org.apache.hadoop.hive.ql.parse.ReplicationSemanticAnalyzer.DumpMetaData;
-import static org.apache.hadoop.hive.ql.parse.ReplicationSemanticAnalyzer.DUMPTYPE;
+import org.apache.hadoop.hive.ql.parse.repl.load.DumpMetaData;
+import org.apache.hadoop.hive.ql.parse.repl.DumpType;
 
 public interface EventHandler {
   void handle(Context withinContext) throws Exception;
@@ -32,7 +32,7 @@ public interface EventHandler {
 
   long toEventId();
 
-  DUMPTYPE dumpType();
+  DumpType dumpType();
 
   class Context {
     final Path eventRoot, cmRoot;

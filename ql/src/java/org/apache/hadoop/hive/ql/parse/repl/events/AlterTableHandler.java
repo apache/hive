@@ -24,8 +24,9 @@ import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.EximUtil;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 
-import static org.apache.hadoop.hive.ql.parse.ReplicationSemanticAnalyzer.DUMPTYPE;
-import static org.apache.hadoop.hive.ql.parse.ReplicationSemanticAnalyzer.DumpMetaData;
+import org.apache.hadoop.hive.ql.parse.repl.DumpType;
+
+import org.apache.hadoop.hive.ql.parse.repl.load.DumpMetaData;
 
 public class AlterTableHandler extends AbstractHandler {
   private final org.apache.hadoop.hive.metastore.api.Table before;
@@ -36,14 +37,14 @@ public class AlterTableHandler extends AbstractHandler {
   private enum Scenario {
     ALTER {
       @Override
-      DUMPTYPE dumpType() {
-        return DUMPTYPE.EVENT_ALTER_TABLE;
+      DumpType dumpType() {
+        return DumpType.EVENT_ALTER_TABLE;
       }
     },
     RENAME {
       @Override
-      DUMPTYPE dumpType() {
-        return DUMPTYPE.EVENT_RENAME_TABLE;
+      DumpType dumpType() {
+        return DumpType.EVENT_RENAME_TABLE;
       }
     },
     TRUNCATE {
@@ -53,7 +54,7 @@ public class AlterTableHandler extends AbstractHandler {
       }
     };
 
-    abstract DUMPTYPE dumpType();
+    abstract DumpType dumpType();
   }
 
   AlterTableHandler(NotificationEvent event) throws Exception {
@@ -97,7 +98,7 @@ public class AlterTableHandler extends AbstractHandler {
   }
 
   @Override
-  public DUMPTYPE dumpType() {
+  public DumpType dumpType() {
     return scenario.dumpType();
   }
 }

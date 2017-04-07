@@ -28,7 +28,7 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 
-import static org.apache.hadoop.hive.ql.parse.ReplicationSemanticAnalyzer.DUMPTYPE;
+import org.apache.hadoop.hive.ql.parse.repl.DumpType;
 
 public class CreateTableHandler extends AbstractHandler {
 
@@ -80,7 +80,7 @@ public class CreateTableHandler extends AbstractHandler {
   }
 
   @Override
-  public DUMPTYPE dumpType() {
-    return DUMPTYPE.EVENT_CREATE_TABLE;
+  public DumpType dumpType() {
+    return DumpType.EVENT_CREATE_TABLE;
   }
 }

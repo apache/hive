@@ -28,7 +28,8 @@ import org.apache.thrift.protocol.TJSONProtocol;
 import java.io.IOException;
 import java.util.Map;
 
-class PartitionSerializer implements JsonWriter.Serializer {
+public class PartitionSerializer implements JsonWriter.Serializer {
+  public static final String FIELD_NAME="partitions";
   private Partition partition;
 
   PartitionSerializer(Partition partition) {
@@ -49,7 +50,7 @@ class PartitionSerializer implements JsonWriter.Serializer {
           partition.putToParameters("EXTERNAL", "FALSE");
         }
       }
-      writer.jsonGenerator.writeString(serializer.toString(partition, "UTF-8"));
+      writer.jsonGenerator.writeString(serializer.toString(partition, UTF_8));
       writer.jsonGenerator.flush();
     } catch (TException e) {
       throw new SemanticException(ErrorMsg.ERROR_SERIALIZE_METASTORE.getMsg(), e);
