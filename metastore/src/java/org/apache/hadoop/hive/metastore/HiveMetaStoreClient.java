@@ -392,6 +392,29 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
         LOG.info("Trying to connect to metastore with URI " + store);
 
         try {
+          if (useSSL) {
+            try {
+              String trustStorePath = conf.getVar(ConfVars.HIVE_METASTORE_SSL_TRUSTSTORE_PATH).trim();
+              if (trustStorePath.isEmpty()) {
+                throw new IllegalArgumentException(ConfVars.HIVE_METASTORE_SSL_TRUSTSTORE_PATH.varname
+                    + " Not configured for SSL connection");
+              }
+              String trustStorePassword = ShimLoader.getHadoopShims().getPassword(conf,
+                  HiveConf.ConfVars.HIVE_METASTORE_SSL_TRUSTSTORE_PASSWORD.varname);
+
+              // Create an SSL socket and connect
+              transport = HiveAuthUtils.getSSLSocket(store.getHost(), store.getPort(), clientSocketTimeout, trustStorePath, trustStorePassword );
+              LOG.info("Opened an SSL connection to metastore, current connections: " + connCount.incrementAndGet());
+            } catch(IOException e) {
+              throw new IllegalArgumentException(e);
+            } catch(TTransportException e) {
+              tte = e;
+              throw new MetaException(e.toString());
+            }
+          } else {
+            transport = new TSocket(store.getHost(), store.getPort(), clientSocketTimeout);
+          }
+
           if (useSasl) {
             // Wrap thrift connection with SASL for secure connection.
             try {
@@ -406,48 +429,24 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
               String tokenSig = conf.getVar(ConfVars.METASTORE_TOKEN_SIGNATURE);
               // tokenSig could be null
               tokenStrForm = Utils.getTokenStrForm(tokenSig);
-              transport = new TSocket(store.getHost(), store.getPort(), clientSocketTimeout);
 
               if(tokenStrForm != null) {
                 // authenticate using delegation tokens via the "DIGEST" mechanism
                 transport = authBridge.createClientTransport(null, store.getHost(),
                     "DIGEST", tokenStrForm, transport,
-                        MetaStoreUtils.getMetaStoreSaslProperties(conf));
+                        MetaStoreUtils.getMetaStoreSaslProperties(conf, useSSL));
               } else {
                 String principalConfig =
                     conf.getVar(HiveConf.ConfVars.METASTORE_KERBEROS_PRINCIPAL);
                 transport = authBridge.createClientTransport(
                     principalConfig, store.getHost(), "KERBEROS", null,
-                    transport, MetaStoreUtils.getMetaStoreSaslProperties(conf));
+                    transport, MetaStoreUtils.getMetaStoreSaslProperties(conf, useSSL));
               }
             } catch (IOException ioe) {
               LOG.error("Couldn't create client transport", ioe);
               throw new MetaException(ioe.toString());
             }
           } else {
-            if (useSSL) {
-              try {
-                String trustStorePath = conf.getVar(ConfVars.HIVE_METASTORE_SSL_TRUSTSTORE_PATH).trim();
-                if (trustStorePath.isEmpty()) {
-                  throw new IllegalArgumentException(ConfVars.HIVE_METASTORE_SSL_TRUSTSTORE_PATH.varname
-                      + " Not configured for SSL connection");
-                }
-                String trustStorePassword = ShimLoader.getHadoopShims().getPassword(conf,
-                    HiveConf.ConfVars.HIVE_METASTORE_SSL_TRUSTSTORE_PASSWORD.varname);
-
-                // Create an SSL socket and connect
-                transport = HiveAuthUtils.getSSLSocket(store.getHost(), store.getPort(), clientSocketTimeout, trustStorePath, trustStorePassword );
-                LOG.info("Opened an SSL connection to metastore, current connections: " + connCount.incrementAndGet());
-              } catch(IOException e) {
-                throw new IllegalArgumentException(e);
-              } catch(TTransportException e) {
-                tte = e;
-                throw new MetaException(e.toString());
-              }
-            } else {
-              transport = new TSocket(store.getHost(), store.getPort(), clientSocketTimeout);
-            }
-
             if (useFramedTransport) {
               transport = new TFramedTransport(transport);
             }

@@ -7152,10 +7152,9 @@ public class HiveMetaStore extends ThriftHiveMetastore {
             ServerMode.METASTORE);
         saslServer.setSecretManager(delegationTokenManager.getSecretManager());
         transFactory = saslServer.createTransportFactory(
-                MetaStoreUtils.getMetaStoreSaslProperties(conf));
+                MetaStoreUtils.getMetaStoreSaslProperties(conf, useSSL));
         processor = saslServer.wrapProcessor(
           new ThriftHiveMetastore.Processor<IHMSHandler>(handler));
-        serverSocket = HiveAuthUtils.getServerSocket(null, port);
 
         LOG.info("Starting DB backed MetaStore Server in Secure Mode");
       } else {
@@ -7174,25 +7173,27 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           processor = new TSetIpAddressProcessor<IHMSHandler>(handler);
           LOG.info("Starting DB backed MetaStore Server");
         }
+      }
+
+      if (!useSSL) {
+        serverSocket = HiveAuthUtils.getServerSocket(null, port);
+      } else {
+        String keyStorePath = conf.getVar(ConfVars.HIVE_METASTORE_SSL_KEYSTORE_PATH).trim();
+        if (keyStorePath.isEmpty()) {
+          throw new IllegalArgumentException(ConfVars.HIVE_METASTORE_SSL_KEYSTORE_PATH.varname
+              + " Not configured for SSL connection");
+        }
+        String keyStorePassword = ShimLoader.getHadoopShims().getPassword(conf,
+            HiveConf.ConfVars.HIVE_METASTORE_SSL_KEYSTORE_PASSWORD.varname);
 
         // enable SSL support for HMS
         List<String> sslVersionBlacklist = new ArrayList<String>();
         for (String sslVersion : conf.getVar(ConfVars.HIVE_SSL_PROTOCOL_BLACKLIST).split(",")) {
           sslVersionBlacklist.add(sslVersion);
         }
-        if (!useSSL) {
-          serverSocket = HiveAuthUtils.getServerSocket(null, port);
-        } else {
-          String keyStorePath = conf.getVar(ConfVars.HIVE_METASTORE_SSL_KEYSTORE_PATH).trim();
-          if (keyStorePath.isEmpty()) {
-            throw new IllegalArgumentException(ConfVars.HIVE_METASTORE_SSL_KEYSTORE_PASSWORD.varname
-                + " Not configured for SSL connection");
-          }
-          String keyStorePassword = ShimLoader.getHadoopShims().getPassword(conf,
-              HiveConf.ConfVars.HIVE_METASTORE_SSL_KEYSTORE_PASSWORD.varname);
-          serverSocket = HiveAuthUtils.getServerSSLSocket(null, port, keyStorePath,
-              keyStorePassword, sslVersionBlacklist);
-        }
+
+        serverSocket = HiveAuthUtils.getServerSSLSocket(null, port, keyStorePath,
+            keyStorePassword, sslVersionBlacklist);
       }
 
       if (tcpKeepAlive) {
@@ -7254,6 +7255,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       HMSHandler.LOG.info("Options.maxWorkerThreads = "
           + maxWorkerThreads);
       HMSHandler.LOG.info("TCP keepalive = " + tcpKeepAlive);
+      HMSHandler.LOG.info("Enable SSL = " + useSSL);
 
       if (startLock != null) {
         signalOtherThreadsToStart(tServer, startLock, startCondition, startedServing);
