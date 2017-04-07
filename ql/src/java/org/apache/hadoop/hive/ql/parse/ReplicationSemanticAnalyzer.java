@@ -28,6 +28,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.metastore.api.Function;
 import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
 import org.apache.hadoop.hive.metastore.api.NotificationEvent;
 import org.apache.hadoop.hive.metastore.messaging.event.filters.AndFilter;
@@ -51,6 +52,7 @@ import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.repl.DumpType;
+import org.apache.hadoop.hive.ql.parse.repl.dump.HiveWrapper;
 import org.apache.hadoop.hive.ql.parse.repl.load.DumpMetaData;
 import org.apache.hadoop.hive.ql.parse.repl.dump.FunctionSerializer;
 import org.apache.hadoop.hive.ql.parse.repl.dump.JsonWriter;
@@ -343,8 +345,8 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
       // TODO : instantiating FS objects are generally costly. Refactor
       FileSystem fs = dbRoot.getFileSystem(conf);
       Path dumpPath = new Path(dbRoot, EximUtil.METADATA_NAME);
-      Database dbObj = db.getDatabase(dbName);
-      EximUtil.createDbExportDump(fs, dumpPath, dbObj, getNewReplicationSpec());
+      HiveWrapper.Tuple<Database> database = new HiveWrapper(db, dbName).database();
+      EximUtil.createDbExportDump(fs, dumpPath, database.object, database.replicationSpec);
     } catch (Exception e) {
       // TODO : simple wrap & rethrow for now, clean up with error codes
       throw new SemanticException(e);
@@ -362,9 +364,8 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
       // TODO : This should ideally return the Function Objects and not Strings(function names) that should be done by the caller, Look at this separately.
       List<String> functionNames = db.getFunctions(dbName, "*");
       for (String functionName : functionNames) {
-        org.apache.hadoop.hive.metastore.api.Function function =
-            db.getFunction(dbName, functionName);
-        if (function.getResourceUris().isEmpty()) {
+        HiveWrapper.Tuple<Function> tuple = new HiveWrapper(db, dbName).function(functionName);
+        if (tuple.object.getResourceUris().isEmpty()) {
           SESSION_STATE_LOG.warn(
               "Not replicating function: " + functionName + " as it seems to have been created "
                   + "without USING clause");
@@ -375,7 +376,7 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
             new Path(new Path(functionsRoot, functionName), FUNCTION_METADATA_DIR_NAME);
         try (JsonWriter jsonWriter = new JsonWriter(functionMetadataRoot.getFileSystem(conf),
             functionMetadataRoot)) {
-          new FunctionSerializer(function).writeTo(jsonWriter, getNewReplicationSpec());
+          new FunctionSerializer(tuple.object).writeTo(jsonWriter, tuple.replicationSpec);
         }
       }
     } catch (Exception e) {
