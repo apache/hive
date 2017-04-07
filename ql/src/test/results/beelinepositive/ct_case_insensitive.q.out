@@ -1,9 +1,0 @@
-Saving all output to "!!{outputDirectory}!!/ct_case_insensitive.q.raw". Enter "record" with no arguments to stop it.
->>>  !run !!{qFileDirectory}!!/ct_case_insensitive.q
->>>  CREATE TABLE tmp_pyang_bucket3 (userId INT) CLUSTERED BY (userid) INTO 32 BUCKETS;
-No rows affected 
->>>  DROP TABLE tmp_pyang_bucket3;
-No rows affected 
->>>  CREATE TABLE tmp_pyang_bucket3 (userId INT) CLUSTERED BY (userid) SORTED BY (USERID) INTO 32 BUCKETS;
-No rows affected 
->>>  !record
