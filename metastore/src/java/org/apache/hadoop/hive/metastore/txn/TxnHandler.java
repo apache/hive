@@ -367,7 +367,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       try {
         /**
          * This runs at READ_COMMITTED for exactly the same reason as {@link #getOpenTxnsInfo()}
-\         */
+         */
         dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
         stmt = dbConn.createStatement();
         String s = "select ntxn_next - 1 from NEXT_TXN_ID";
