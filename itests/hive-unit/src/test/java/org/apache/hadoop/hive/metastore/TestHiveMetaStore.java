@@ -171,14 +171,6 @@ public abstract class TestHiveMetaStore extends TestCase {
       db = client.getDatabase(dbName);
       Path dbPath = new Path(db.getLocationUri());
       FileSystem fs = FileSystem.get(dbPath.toUri(), hiveConf);
-      boolean inheritPerms = hiveConf.getBoolVar(
-          HiveConf.ConfVars.HIVE_WAREHOUSE_SUBDIR_INHERIT_PERMS);
-      FsPermission dbPermission = fs.getFileStatus(dbPath).getPermission();
-      if (inheritPerms) {
-         //Set different perms for the database dir for further tests
-         dbPermission = new FsPermission((short)488);
-         fs.setPermission(dbPath, dbPermission);
-      }
 
       client.dropType(typeName);
       Type typ1 = new Type();
@@ -239,9 +231,6 @@ public abstract class TestHiveMetaStore extends TestCase {
         tbl = client.getTable(dbName, tblName);
       }
 
-      assertEquals(dbPermission, fs.getFileStatus(new Path(tbl.getSd().getLocation()))
-          .getPermission());
-
       Partition part = makePartitionObject(dbName, tblName, vals, tbl, "/part1");
       Partition part2 = makePartitionObject(dbName, tblName, vals2, tbl, "/part2");
       Partition part3 = makePartitionObject(dbName, tblName, vals3, tbl, "/part3");
@@ -259,20 +248,12 @@ public abstract class TestHiveMetaStore extends TestCase {
       assertTrue("getPartition() should have thrown NoSuchObjectException", exceptionThrown);
       Partition retp = client.add_partition(part);
       assertNotNull("Unable to create partition " + part, retp);
-      assertEquals(dbPermission, fs.getFileStatus(new Path(retp.getSd().getLocation()))
-          .getPermission());
       Partition retp2 = client.add_partition(part2);
       assertNotNull("Unable to create partition " + part2, retp2);
-      assertEquals(dbPermission, fs.getFileStatus(new Path(retp2.getSd().getLocation()))
-          .getPermission());
       Partition retp3 = client.add_partition(part3);
       assertNotNull("Unable to create partition " + part3, retp3);
-      assertEquals(dbPermission, fs.getFileStatus(new Path(retp3.getSd().getLocation()))
-          .getPermission());
       Partition retp4 = client.add_partition(part4);
       assertNotNull("Unable to create partition " + part4, retp4);
-      assertEquals(dbPermission, fs.getFileStatus(new Path(retp4.getSd().getLocation()))
-          .getPermission());
 
       Partition part_get = client.getPartition(dbName, tblName, part.getValues());
       if(isThriftClient) {
@@ -394,8 +375,6 @@ public abstract class TestHiveMetaStore extends TestCase {
       // tested
       retp = client.add_partition(part);
       assertNotNull("Unable to create partition " + part, retp);
-      assertEquals(dbPermission, fs.getFileStatus(new Path(retp.getSd().getLocation()))
-          .getPermission());
 
       // test add_partitions
 
@@ -431,9 +410,8 @@ public abstract class TestHiveMetaStore extends TestCase {
 
       // create dir for /mpart5
       Path mp5Path = new Path(mpart5.getSd().getLocation());
-      warehouse.mkdirs(mp5Path, true);
+      warehouse.mkdirs(mp5Path);
       assertTrue(fs.exists(mp5Path));
-      assertEquals(dbPermission, fs.getFileStatus(mp5Path).getPermission());
 
       // add_partitions(5,4) : err = duplicate keyvals on mpart4
       savedException = null;

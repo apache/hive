@@ -518,11 +518,11 @@ public class HiveAlterHandler implements AlterHandler {
           if (srcFs.exists(srcPath)) {
             //if destPath's parent path doesn't exist, we should mkdir it
             Path destParentPath = destPath.getParent();
-            if (!wh.mkdirs(destParentPath, true)) {
+            if (!wh.mkdirs(destParentPath)) {
                 throw new IOException("Unable to create path " + destParentPath);
             }
 
-            wh.renameDir(srcPath, destPath, true);
+            wh.renameDir(srcPath, destPath);
             LOG.info("Partition directory rename from " + srcPath + " to " + destPath + " done.");
           }
         } catch (IOException ex) {

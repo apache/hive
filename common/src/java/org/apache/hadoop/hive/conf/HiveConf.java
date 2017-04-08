@@ -2253,10 +2253,6 @@ public class HiveConf extends Configuration {
     HIVE_INSERT_INTO_MULTILEVEL_DIRS("hive.insert.into.multilevel.dirs", false,
         "Where to insert into multilevel directories like\n" +
         "\"insert directory '/HIVEFT25686/chinna/' from table\""),
-    HIVE_WAREHOUSE_SUBDIR_INHERIT_PERMS("hive.warehouse.subdir.inherit.perms", true,
-        "Set this to false if the table directories should be created\n" +
-        "with the permissions derived from dfs umask instead of\n" +
-        "inheriting the permission of the warehouse or database directory."),
     HIVE_INSERT_INTO_EXTERNAL_TABLES("hive.insert.into.external.tables", true,
         "whether insert into external tables is allowed"),
     HIVE_TEMPORARY_TABLE_STORAGE(

@@ -183,13 +183,11 @@ public class Warehouse {
     return partition.getDbName() + "." + partition.getTableName() + partition.getValues();
   }
 
-  public boolean mkdirs(Path f, boolean inheritPermCandidate) throws MetaException {
-    boolean inheritPerms = HiveConf.getBoolVar(conf,
-      HiveConf.ConfVars.HIVE_WAREHOUSE_SUBDIR_INHERIT_PERMS) && inheritPermCandidate;
+  public boolean mkdirs(Path f) throws MetaException {
     FileSystem fs = null;
     try {
       fs = getFs(f);
-      return FileUtils.mkdir(fs, f, inheritPerms, conf);
+      return FileUtils.mkdir(fs, f, conf);
     } catch (IOException e) {
       MetaStoreUtils.logAndThrowMetaException(e);
     }
@@ -197,13 +195,9 @@ public class Warehouse {
   }
 
   public boolean renameDir(Path sourcePath, Path destPath) throws MetaException {
-    return renameDir(sourcePath, destPath, false);
-  }
-
-  public boolean renameDir(Path sourcePath, Path destPath, boolean inheritPerms) throws MetaException {
     try {
       FileSystem fs = getFs(sourcePath);
-      return FileUtils.renameWithPerms(fs, sourcePath, destPath, inheritPerms, conf);
+      return FileUtils.rename(fs, sourcePath, destPath, conf);
     } catch (Exception ex) {
       MetaStoreUtils.logAndThrowMetaException(ex);
     }

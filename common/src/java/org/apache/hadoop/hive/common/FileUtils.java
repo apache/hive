@@ -511,43 +511,13 @@ public final class FileUtils {
    * Creates the directory and all necessary parent directories.
    * @param fs FileSystem to use
    * @param f path to create.
-   * @param inheritPerms whether directory inherits the permission of the last-existing parent path
    * @param conf Hive configuration
    * @return true if directory created successfully.  False otherwise, including if it exists.
    * @throws IOException exception in creating the directory
    */
-  public static boolean mkdir(FileSystem fs, Path f, boolean inheritPerms, Configuration conf) throws IOException {
+  public static boolean mkdir(FileSystem fs, Path f, Configuration conf) throws IOException {
     LOG.info("Creating directory if it doesn't exist: " + f);
-    if (!inheritPerms) {
-      //just create the directory
-      return fs.mkdirs(f);
-    } else {
-      //Check if the directory already exists. We want to change the permission
-      //to that of the parent directory only for newly created directories.
-      try {
-        return fs.getFileStatus(f).isDir();
-      } catch (FileNotFoundException ignore) {
-      }
-      //inherit perms: need to find last existing parent path, and apply its permission on entire subtree.
-      Path lastExistingParent = f;
-      Path firstNonExistentParent = null;
-      while (!fs.exists(lastExistingParent)) {
-        firstNonExistentParent = lastExistingParent;
-        lastExistingParent = lastExistingParent.getParent();
-      }
-      boolean success = fs.mkdirs(f);
-      if (!success) {
-        return false;
-      } else {
-        //set on the entire subtree
-        if (inheritPerms) {
-          HdfsUtils.setFullFileStatus(conf,
-                  new HdfsUtils.HadoopFileStatus(conf, fs, lastExistingParent), fs,
-                  firstNonExistentParent, true);
-        }
-        return true;
-      }
-    }
+    return fs.mkdirs(f);
   }
 
   public static Path makeAbsolute(FileSystem fileSystem, Path path) throws IOException {
@@ -600,11 +570,6 @@ public final class FileUtils {
     if (!triedDistcp) {
       copied = FileUtil.copy(srcFS, src, dstFS, dst, deleteSource, overwrite, conf);
     }
-
-    boolean inheritPerms = conf.getBoolVar(HiveConf.ConfVars.HIVE_WAREHOUSE_SUBDIR_INHERIT_PERMS);
-    if (copied && inheritPerms) {
-      HdfsUtils.setFullFileStatus(conf, new HdfsUtils.HadoopFileStatus(conf, dstFS, dst.getParent()), dstFS, dst, true);
-    }
     return copied;
   }
 
@@ -643,9 +608,8 @@ public final class FileUtils {
     return result;
   }
 
-  public static boolean renameWithPerms(FileSystem fs, Path sourcePath,
-                               Path destPath, boolean inheritPerms,
-                               Configuration conf) throws IOException {
+  public static boolean rename(FileSystem fs, Path sourcePath,
+                               Path destPath, Configuration conf) throws IOException {
     LOG.info("Renaming " + sourcePath + " to " + destPath);
 
     // If destPath directory exists, rename call will move the sourcePath
@@ -654,20 +618,7 @@ public final class FileUtils {
       throw new IOException("Cannot rename the source path. The destination "
           + "path already exists.");
     }
-
-    if (!inheritPerms) {
-      //just rename the directory
-      return fs.rename(sourcePath, destPath);
-    } else {
-      //rename the directory
-      if (fs.rename(sourcePath, destPath)) {
-        HdfsUtils.setFullFileStatus(conf, new HdfsUtils.HadoopFileStatus(conf, fs, destPath.getParent()), fs, destPath,
-                true);
-        return true;
-      }
-
-      return false;
-    }
+    return fs.rename(sourcePath, destPath);
   }
 
   /**

@@ -152,7 +152,7 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
         throw new HiveException("Target " + targetPath + " is not a local directory.");
       }
     } else {
-      if (!FileUtils.mkdir(dstFs, targetPath, false, conf)) {
+      if (!FileUtils.mkdir(dstFs, targetPath, conf)) {
         throw new HiveException("Failed to create local target directory " + targetPath);
       }
     }
@@ -181,9 +181,6 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
         actualPath = actualPath.getParent();
       }
       fs.mkdirs(mkDirPath);
-      if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_WAREHOUSE_SUBDIR_INHERIT_PERMS)) {
-        HdfsUtils.setFullFileStatus(conf, new HdfsUtils.HadoopFileStatus(conf, fs, actualPath), fs, mkDirPath, true);
-      }
     }
     return deletePath;
   }

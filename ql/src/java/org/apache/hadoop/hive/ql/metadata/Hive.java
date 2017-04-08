@@ -2889,8 +2889,6 @@ private void constructOneLBLocationMap(FileStatus fSta,
     if (!fullDestStatus.getFileStatus().isDirectory()) {
       throw new HiveException(destf + " is not a directory.");
     }
-    final boolean inheritPerms = HiveConf.getBoolVar(conf,
-        HiveConf.ConfVars.HIVE_WAREHOUSE_SUBDIR_INHERIT_PERMS);
     final List<Future<ObjectPair<Path, Path>>> futures = new LinkedList<>();
     final ExecutorService pool = conf.getInt(ConfVars.HIVE_MOVE_FILES_THREAD_COUNT.varname, 25) > 0 ?
         Executors.newFixedThreadPool(conf.getInt(ConfVars.HIVE_MOVE_FILES_THREAD_COUNT.varname, 25),
@@ -2938,9 +2936,6 @@ private void constructOneLBLocationMap(FileStatus fSta,
 
               Path destPath = mvFile(conf, srcFs, srcP, destFs, destf, isSrcLocal, isRenameAllowed);
 
-              if (inheritPerms) {
-                HdfsUtils.setFullFileStatus(conf, fullDestStatus, srcGroup, destFs, destPath, false);
-              }
               if (null != newFiles) {
                 newFiles.add(destPath);
               }
@@ -2950,11 +2945,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
         }
       }
     }
-    if (null == pool) {
-      if (inheritPerms) {
-        HdfsUtils.setFullFileStatus(conf, fullDestStatus, null, destFs, destf, true);
-      }
-    } else {
+    if (null != pool) {
       pool.shutdown();
       for (Future<ObjectPair<Path, Path>> future : futures) {
         try {
@@ -3104,9 +3095,6 @@ private void constructOneLBLocationMap(FileStatus fSta,
       throw new HiveException(e.getMessage(), e);
     }
 
-    //needed for perm inheritance.
-    final boolean inheritPerms = HiveConf.getBoolVar(conf,
-        HiveConf.ConfVars.HIVE_WAREHOUSE_SUBDIR_INHERIT_PERMS);
     HdfsUtils.HadoopFileStatus destStatus = null;
 
     // If source path is a subdirectory of the destination path:
@@ -3117,7 +3105,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     // (3) Move individual files from scr dir to dest dir.
     boolean destIsSubDir = isSubDir(srcf, destf, srcFs, destFs, isSrcLocal);
     try {
-      if (inheritPerms || replace) {
+      if (replace) {
         try{
           destStatus = new HdfsUtils.HadoopFileStatus(conf, destFs, destf);
           //if destf is an existing directory:
@@ -3130,10 +3118,6 @@ private void constructOneLBLocationMap(FileStatus fSta,
             LOG.debug("The path " + destf.toString() + " is deleted");
           }
         } catch (FileNotFoundException ignore) {
-          //if dest dir does not exist, any re
-          if (inheritPerms) {
-            destStatus = new HdfsUtils.HadoopFileStatus(conf, destFs, destf.getParent());
-          }
         }
       }
       final HdfsUtils.HadoopFileStatus desiredStatus = destStatus;
@@ -3141,9 +3125,6 @@ private void constructOneLBLocationMap(FileStatus fSta,
       if (isSrcLocal) {
         // For local src file, copy to hdfs
         destFs.copyFromLocalFile(srcf, destf);
-        if (inheritPerms) {
-          HdfsUtils.setFullFileStatus(conf, destStatus, destFs, destf, true);
-        }
         return true;
       } else {
         if (needToCopy(srcf, destf, srcFs, destFs)) {
@@ -3176,11 +3157,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
                   public Void call() throws Exception {
                     SessionState.setCurrentSessionState(parentSession);
                     final String group = srcStatus.getGroup();
-                    if(destFs.rename(srcStatus.getPath(), destFile)) {
-                      if (inheritPerms) {
-                        HdfsUtils.setFullFileStatus(conf, desiredStatus, group, destFs, destFile, false);
-                      }
-                    } else {
+                    if(!destFs.rename(srcStatus.getPath(), destFile)) {
                       throw new IOException("rename for src path: " + srcStatus.getPath() + " to dest path:"
                           + destFile + " returned false");
                     }
@@ -3189,11 +3166,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
                 }));
               }
             }
-            if (null == pool) {
-              if (inheritPerms) {
-                HdfsUtils.setFullFileStatus(conf, desiredStatus, null, destFs, destf, true);
-              }
-            } else {
+            if (null != pool) {
               pool.shutdown();
               for (Future<Void> future : futures) {
                 try {
@@ -3208,9 +3181,6 @@ private void constructOneLBLocationMap(FileStatus fSta,
             return true;
           } else {
             if (destFs.rename(srcf, destf)) {
-              if (inheritPerms) {
-                HdfsUtils.setFullFileStatus(conf, destStatus, destFs, destf, true);
-              }
               return true;
             }
             return false;
@@ -3261,12 +3231,10 @@ private void constructOneLBLocationMap(FileStatus fSta,
    */
   static protected void copyFiles(HiveConf conf, Path srcf, Path destf,
       FileSystem fs, boolean isSrcLocal, boolean isAcid, List<Path> newFiles) throws HiveException {
-    boolean inheritPerms = HiveConf.getBoolVar(conf,
-        HiveConf.ConfVars.HIVE_WAREHOUSE_SUBDIR_INHERIT_PERMS);
     try {
       // create the destination if it does not exist
       if (!fs.exists(destf)) {
-        FileUtils.mkdir(fs, destf, inheritPerms, conf);
+        FileUtils.mkdir(fs, destf, conf);
       }
     } catch (IOException e) {
       throw new HiveException(
@@ -3459,10 +3427,8 @@ private void constructOneLBLocationMap(FileStatus fSta,
       }
 
       // first call FileUtils.mkdir to make sure that destf directory exists, if not, it creates
-      // destf with inherited permissions
-      boolean inheritPerms = HiveConf.getBoolVar(conf, HiveConf.ConfVars
-          .HIVE_WAREHOUSE_SUBDIR_INHERIT_PERMS);
-      boolean destfExist = FileUtils.mkdir(destFs, destf, inheritPerms, conf);
+      // destf
+      boolean destfExist = FileUtils.mkdir(destFs, destf, conf);
       if(!destfExist) {
         throw new IOException("Directory " + destf.toString()
             + " does not exist and could not be created.");
