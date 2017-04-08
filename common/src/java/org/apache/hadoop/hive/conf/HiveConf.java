@@ -734,9 +734,16 @@ public class HiveConf extends Configuration {
         "Defaults to all permissions for the hiveserver2/metastore process user."),
     METASTORE_CACHE_PINOBJTYPES("hive.metastore.cache.pinobjtypes", "Table,StorageDescriptor,SerDeInfo,Partition,Database,Type,FieldSchema,Order",
         "List of comma separated metastore object types that should be pinned in the cache"),
-    METASTORE_CONNECTION_POOLING_TYPE("datanucleus.connectionPoolingType", "BONECP", new StringSet("BONECP", "DBCP",
+    METASTORE_CONNECTION_POOLING_TYPE("datanucleus.connectionPoolingType", "HikariCP", new StringSet("BONECP", "DBCP",
       "HikariCP", "NONE"),
         "Specify connection pool library for datanucleus"),
+    METASTORE_CONNECTION_POOLING_MAX_CONNECTIONS("datanucleus.connectionPool.maxPoolSize", 10,
+      "Specify the maximum number of connections in the connection pool. Note: The configured size will be used by" +
+        " 2 connection pools (TxnHandler and ObjectStore). When configuring the max connection pool size, it is " +
+        "recommended to take into account the number of metastore instances and the number of HiveServer2 instances " +
+        "configured with embedded metastore. To get optimal performance, set config to meet the following condition"+
+        "(2 * pool_size * metastore_instances + 2 * pool_size * HS2_instances_with_embedded_metastore) = " +
+        "(2 * physical_core_count + hard_disk_count)."),
     // Workaround for DN bug on Postgres:
     // http://www.datanucleus.org/servlet/forum/viewthread_thread,7985_offset
     METASTORE_DATANUCLEUS_INIT_COL_INFO("datanucleus.rdbms.initializeColumnInfo", "NONE",

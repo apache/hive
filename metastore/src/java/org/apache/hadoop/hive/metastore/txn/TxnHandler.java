@@ -3139,6 +3139,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     String passwd = getMetastoreJdbcPasswd(conf);
     String connectionPooler = conf.getVar(
       HiveConf.ConfVars.METASTORE_CONNECTION_POOLING_TYPE).toLowerCase();
+    int maxPoolSize = conf.getIntVar(HiveConf.ConfVars.METASTORE_CONNECTION_POOLING_MAX_CONNECTIONS);
 
     if ("bonecp".equals(connectionPooler)) {
       BoneCPConfig config = new BoneCPConfig();
@@ -3146,8 +3147,8 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       //if we are waiting for connection for 60s, something is really wrong
       //better raise an error than hang forever
       config.setConnectionTimeoutInMs(60000);
-      config.setMaxConnectionsPerPartition(10);
       config.setPartitionCount(1);
+      config.setMaxConnectionsPerPartition(maxPoolSize);
       config.setUser(user);
       config.setPassword(passwd);
       connPool = new BoneCPDataSource(config);
@@ -3162,6 +3163,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       connPool = new PoolingDataSource(objectPool);
     } else if ("hikaricp".equals(connectionPooler)) {
       HikariConfig config = new HikariConfig();
+      config.setMaximumPoolSize(maxPoolSize);
       config.setJdbcUrl(driverUrl);
       config.setUsername(user);
       config.setPassword(passwd);
