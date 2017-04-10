@@ -671,10 +671,11 @@ public final class ColumnPrunerProcFactory {
 
       List<FieldNode> colsAfterReplacement = new ArrayList<>();
       List<FieldNode> newCols = new ArrayList<>();
-      for (FieldNode col : cols) {
-        int index = outputCols.indexOf(col.getFieldName());
+      for (int index = 0; index < numSelColumns; index++) {
+        String colName = outputCols.get(index);
+        FieldNode col = lookupColumn(cols, colName);
         // colExprMap.size() == size of cols from SEL(*) branch
-        if (index >= 0 && index < numSelColumns) {
+        if (col != null) {
           ExprNodeDesc transformed = colExprMap.get(col.getFieldName());
           colsAfterReplacement = mergeFieldNodesWithDesc(colsAfterReplacement, transformed);
           newCols.add(col);
@@ -713,12 +714,14 @@ public final class ColumnPrunerProcFactory {
       RowSchema rs = op.getSchema();
       ArrayList<ExprNodeDesc> colList = new ArrayList<>();
       List<FieldNode> outputCols = new ArrayList<>();
-      for (FieldNode col : cols) {
-        // revert output cols of SEL(*) to ExprNodeColumnDesc
-        ColumnInfo colInfo = rs.getColumnInfo(col.getFieldName());
-        ExprNodeColumnDesc colExpr = new ExprNodeColumnDesc(colInfo);
-        colList.add(colExpr);
-        outputCols.add(col);
+      for (ColumnInfo colInfo : rs.getSignature()) {
+        FieldNode col = lookupColumn(cols, colInfo.getInternalName());
+        if (col != null) {
+          // revert output cols of SEL(*) to ExprNodeColumnDesc
+          ExprNodeColumnDesc colExpr = new ExprNodeColumnDesc(colInfo);
+          colList.add(colExpr);
+          outputCols.add(col);
+        }
       }
       // replace SEL(*) to SEL(exprs)
       ((SelectDesc)select.getConf()).setSelStarNoCompute(false);
