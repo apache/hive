@@ -15,32 +15,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.hive.ql.parse.repl.events;
+package org.apache.hadoop.hive.ql.parse.repl.dump.events;
 
 import org.apache.hadoop.hive.metastore.api.NotificationEvent;
-import org.apache.hadoop.hive.metastore.messaging.MessageDeserializer;
-import org.apache.hadoop.hive.metastore.messaging.MessageFactory;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-public abstract class AbstractHandler implements EventHandler {
-  static final Logger LOG = LoggerFactory.getLogger(AbstractHandler.class);
+import org.apache.hadoop.hive.ql.parse.repl.DumpType;
 
-  final NotificationEvent event;
-  final MessageDeserializer deserializer;
+import org.apache.hadoop.hive.ql.parse.repl.load.DumpMetaData;
 
-  AbstractHandler(NotificationEvent event) {
-    this.event = event;
-    deserializer = MessageFactory.getInstance().getDeserializer();
+class DropTableHandler extends AbstractHandler {
+
+  DropTableHandler(NotificationEvent event) {
+    super(event);
   }
 
   @Override
-  public long fromEventId() {
-    return event.getEventId();
+  public void handle(Context withinContext) throws Exception {
+    LOG.info("Processing#{} DROP_TABLE message : {}", fromEventId(), event.getMessage());
+    DumpMetaData dmd = withinContext.createDmd(this);
+    dmd.setPayload(event.getMessage());
+    dmd.write();
   }
 
   @Override
-  public long toEventId() {
-    return event.getEventId();
+  public DumpType dumpType() {
+    return DumpType.EVENT_DROP_TABLE;
   }
 }

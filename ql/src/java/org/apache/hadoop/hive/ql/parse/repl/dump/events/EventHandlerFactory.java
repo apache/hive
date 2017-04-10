@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.hive.ql.parse.repl.events;
+package org.apache.hadoop.hive.ql.parse.repl.dump.events;
 
 import org.apache.hadoop.hive.metastore.api.NotificationEvent;
 import org.apache.hadoop.hive.metastore.messaging.MessageFactory;
@@ -36,6 +36,7 @@ public class EventHandlerFactory {
     register(MessageFactory.ADD_PARTITION_EVENT, AddPartitionHandler.class);
     register(MessageFactory.ALTER_PARTITION_EVENT, AlterPartitionHandler.class);
     register(MessageFactory.ALTER_TABLE_EVENT, AlterTableHandler.class);
+    register(MessageFactory.CREATE_FUNCTION_EVENT, CreateFunctionHandler.class);
     register(MessageFactory.CREATE_TABLE_EVENT, CreateTableHandler.class);
     register(MessageFactory.DROP_PARTITION_EVENT, DropPartitionHandler.class);
     register(MessageFactory.DROP_TABLE_EVENT, DropTableHandler.class);

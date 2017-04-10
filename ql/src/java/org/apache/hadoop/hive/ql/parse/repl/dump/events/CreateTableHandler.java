@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.hive.ql.parse.repl.events;
+package org.apache.hadoop.hive.ql.parse.repl.dump.events;
 
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -30,7 +30,7 @@ import java.io.OutputStreamWriter;
 
 import org.apache.hadoop.hive.ql.parse.repl.DumpType;
 
-public class CreateTableHandler extends AbstractHandler {
+class CreateTableHandler extends AbstractHandler {
 
   CreateTableHandler(NotificationEvent event) {
     super(event);
