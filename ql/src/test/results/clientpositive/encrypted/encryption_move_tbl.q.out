@@ -49,7 +49,7 @@ PREHOOK: query: ALTER TABLE default.encrypted_table RENAME TO encrypted_db.encry
 PREHOOK: type: ALTERTABLE_RENAME
 PREHOOK: Input: default@encrypted_table
 PREHOOK: Output: default@encrypted_table
-FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. Unable to alter table. Alter Table operation for default.encrypted_table failed to move data due to: '/build/ql/test/data/warehouse/default/encrypted_table can't be moved from encryption zone /build/ql/test/data/warehouse/default/encrypted_table to encryption zone /build/ql/test/data/warehouse/encrypted_db.' See hive log file for details.
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. Unable to alter table. Alter Table operation for default.encrypted_table failed to move data due to: '/build/ql/test/data/warehouse/encrypted_table can't be moved into an encryption zone.' See hive log file for details.
 PREHOOK: query: SHOW TABLES
 PREHOOK: type: SHOWTABLES
 PREHOOK: Input: database:default
