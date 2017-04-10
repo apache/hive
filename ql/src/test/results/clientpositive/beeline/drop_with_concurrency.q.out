@@ -1,4 +1,3 @@
->>>  !run !!{qFileDirectory}!!/drop_with_concurrency.q
 >>>  set hive.lock.numretries=1;
 No rows affected 
 >>>  set hive.lock.sleep.between.retries=1;

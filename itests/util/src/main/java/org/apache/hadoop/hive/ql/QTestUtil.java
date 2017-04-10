@@ -157,7 +157,7 @@ public class QTestUtil {
   private final Set<String> qSortNHashQuerySet;
   private final Set<String> qJavaVersionSpecificOutput;
   private static final String SORT_SUFFIX = ".sorted";
-  private final HashSet<String> srcTables;
+  private final Set<String> srcTables;
   private final MiniClusterType clusterType;
   private final FsType fsType;
   private ParseDriver pd;
@@ -185,7 +185,7 @@ public class QTestUtil {
     public void addTestToSuite(TestSuite suite, Object setup, String tName);
   }
 
-  HashSet<String> getSrcTables() {
+  public static Set<String> getSrcTables() {
     HashSet<String> srcTables = new HashSet<String>();
     // FIXME: moved default value to here...for now
     // i think this features is never really used from the command line

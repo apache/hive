@@ -1649,60 +1649,10 @@ public class Commands {
       return false;
     }
 
-    List<String> cmds = new LinkedList<String>();
-
     try {
-      BufferedReader reader = new BufferedReader(new FileReader(
-          parts[1]));
-      try {
-        // ### NOTE: fix for sf.net bug 879427
-        StringBuilder cmd = null;
-        for (;;) {
-          String scriptLine = reader.readLine();
-
-          if (scriptLine == null) {
-            break;
-          }
-
-          String trimmedLine = scriptLine.trim();
-          if (beeLine.getOpts().getTrimScripts()) {
-            scriptLine = trimmedLine;
-          }
-
-          if (cmd != null) {
-            // we're continuing an existing command
-            cmd.append(" \n");
-            cmd.append(scriptLine);
-            if (trimmedLine.endsWith(";")) {
-              // this command has terminated
-              cmds.add(cmd.toString());
-              cmd = null;
-            }
-          } else {
-            // we're starting a new command
-            if (beeLine.needsContinuation(scriptLine)) {
-              // multi-line
-              cmd = new StringBuilder(scriptLine);
-            } else {
-              // single-line
-              cmds.add(scriptLine);
-            }
-          }
-        }
-
-        if (cmd != null) {
-          // ### REVIEW: oops, somebody left the last command
-          // unterminated; should we fix it for them or complain?
-          // For now be nice and fix it.
-          cmd.append(";");
-          cmds.add(cmd.toString());
-        }
-      } finally {
-        reader.close();
-      }
-
+      String[] cmds = beeLine.getCommands(new File(parts[1]));
       // success only if all the commands were successful
-      return beeLine.runCommands(cmds) == cmds.size();
+      return beeLine.runCommands(cmds) == cmds.length;
     } catch (Exception e) {
       return beeLine.error(e);
     }

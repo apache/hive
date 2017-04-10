@@ -1,4 +1,3 @@
->>>  !run !!{qFileDirectory}!!/escape_comments.q
 >>>  create database escape_comments_db comment 'a\nb';
 DEBUG : Acquire a monitor for compiling query
 INFO  : Compiling commandqueryId=(!!{queryId}!!): create database escape_comments_db comment 'a\nb'
@@ -37,19 +36,19 @@ INFO  : Completed executing commandqueryId=(!!{queryId}!!); Time taken: !!ELIDED
 INFO  : OK
 DEBUG : Shutting down query use escape_comments_db
 No rows affected 
->>>  create table escape_comments_tbl1 
-(col1 string comment 'a\nb\'\;') comment 'a\nb' 
+>>>  create table escape_comments_tbl1
+(col1 string comment 'a\nb\'\;') comment 'a\nb'
 partitioned by (p1 string comment 'a\nb');
 DEBUG : Acquire a monitor for compiling query
-INFO  : Compiling commandqueryId=(!!{queryId}!!): create table escape_comments_tbl1 
-(col1 string comment 'a\nb\';') comment 'a\nb' 
+INFO  : Compiling commandqueryId=(!!{queryId}!!): create table escape_comments_tbl1
+(col1 string comment 'a\nb\';') comment 'a\nb'
 partitioned by (p1 string comment 'a\nb')
 DEBUG : Encoding valid txns info 9223372036854775807:
 INFO  : Semantic Analysis Completed
 INFO  : Returning Hive schema: Schema(fieldSchemas:null, properties:null)
 INFO  : Completed compiling commandqueryId=(!!{queryId}!!); Time taken: !!ELIDED!! seconds
-INFO  : Executing commandqueryId=(!!{queryId}!!): create table escape_comments_tbl1 
-(col1 string comment 'a\nb\';') comment 'a\nb' 
+INFO  : Executing commandqueryId=(!!{queryId}!!): create table escape_comments_tbl1
+(col1 string comment 'a\nb\';') comment 'a\nb'
 partitioned by (p1 string comment 'a\nb')
 ERROR : PREHOOK: query: 
 ERROR : PREHOOK: type: SWITCHDATABASE
@@ -62,20 +61,20 @@ ERROR : POSTHOOK: Output: database:escape_comments_db
 ERROR : POSTHOOK: Output: escape_comments_db@escape_comments_tbl1
 INFO  : Completed executing commandqueryId=(!!{queryId}!!); Time taken: !!ELIDED!! seconds
 INFO  : OK
-DEBUG : Shutting down query create table escape_comments_tbl1 
-(col1 string comment 'a\nb\';') comment 'a\nb' 
+DEBUG : Shutting down query create table escape_comments_tbl1
+(col1 string comment 'a\nb\';') comment 'a\nb'
 partitioned by (p1 string comment 'a\nb')
 No rows affected 
->>>  create view escape_comments_view1 (col1 comment 'a\nb') comment 'a\nb' 
+>>>  create view escape_comments_view1 (col1 comment 'a\nb') comment 'a\nb'
 as select col1 from escape_comments_tbl1;
 DEBUG : Acquire a monitor for compiling query
-INFO  : Compiling commandqueryId=(!!{queryId}!!): create view escape_comments_view1 (col1 comment 'a\nb') comment 'a\nb' 
+INFO  : Compiling commandqueryId=(!!{queryId}!!): create view escape_comments_view1 (col1 comment 'a\nb') comment 'a\nb'
 as select col1 from escape_comments_tbl1
 DEBUG : Encoding valid txns info 9223372036854775807:
 INFO  : Semantic Analysis Completed
 INFO  : Returning Hive schema: Schema(fieldSchemas:[FieldSchema(name:col1, type:string, comment:null)], properties:null)
 INFO  : Completed compiling commandqueryId=(!!{queryId}!!); Time taken: !!ELIDED!! seconds
-INFO  : Executing commandqueryId=(!!{queryId}!!): create view escape_comments_view1 (col1 comment 'a\nb') comment 'a\nb' 
+INFO  : Executing commandqueryId=(!!{queryId}!!): create view escape_comments_view1 (col1 comment 'a\nb') comment 'a\nb'
 as select col1 from escape_comments_tbl1
 ERROR : PREHOOK: query: 
 ERROR : PREHOOK: type: SWITCHDATABASE
@@ -90,7 +89,7 @@ ERROR : POSTHOOK: Output: database:escape_comments_db
 ERROR : POSTHOOK: Output: escape_comments_db@escape_comments_view1
 INFO  : Completed executing commandqueryId=(!!{queryId}!!); Time taken: !!ELIDED!! seconds
 INFO  : OK
-DEBUG : Shutting down query create view escape_comments_view1 (col1 comment 'a\nb') comment 'a\nb' 
+DEBUG : Shutting down query create view escape_comments_view1 (col1 comment 'a\nb') comment 'a\nb'
 as select col1 from escape_comments_tbl1
 No rows affected 
 >>>  create index index2 on table escape_comments_tbl1(col1) as 'COMPACT' with deferred rebuild comment 'a\nb';
@@ -188,7 +187,7 @@ DEBUG : Shutting down query show create table escape_comments_tbl1
 'OUTPUTFORMAT '
 '  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat''
 'LOCATION'
-'  '!!{hive.metastore.warehouse.dir}!!/escape_comments_db.db/escape_comments_tbl1''
+'  'file:/!!ELIDED!!
 'TBLPROPERTIES ('
 '  'transient_lastDdlTime'='!!UNIXTIME!!')'
 18 rows selected 
@@ -229,7 +228,7 @@ DEBUG : Shutting down query describe formatted escape_comments_tbl1
 'LastAccessTime:     ','UNKNOWN             ','NULL'
 'Protect Mode:       ','None                ','NULL'
 'Retention:          ','0                   ','NULL'
-'Location:           ','!!{hive.metastore.warehouse.dir}!!/escape_comments_db.db/escape_comments_tbl1','NULL'
+'Location:           ','file:/!!ELIDED!!
 'Table Type:         ','MANAGED_TABLE       ','NULL'
 'Table Parameters:','NULL','NULL'
 '','comment             ','a\nb                '
