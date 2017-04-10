@@ -23,10 +23,10 @@ import com.google.common.base.Strings;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.QTestProcessExecResult;
 import org.apache.hadoop.hive.ql.hooks.PreExecutePrinter;
-import org.apache.hive.beeline.qfile.QFile;
-import org.apache.hive.beeline.qfile.QFile.QFileBuilder;
-import org.apache.hive.beeline.qfile.QFileBeeLineClient;
-import org.apache.hive.beeline.qfile.QFileBeeLineClient.QFileClientBuilder;
+import org.apache.hive.beeline.QFile;
+import org.apache.hive.beeline.QFile.QFileBuilder;
+import org.apache.hive.beeline.QFileBeeLineClient;
+import org.apache.hive.beeline.QFileBeeLineClient.QFileClientBuilder;
 import org.apache.hive.jdbc.miniHS2.MiniHS2;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -46,6 +46,7 @@ public class CoreBeeLineDriver extends CliAdapter {
   private final File testDataDirectory;
   private final File testScriptDirectory;
   private boolean overwrite = false;
+  private boolean rewriteSourceTables = true;
   private MiniHS2 miniHS2;
   private QFileClientBuilder clientBuilder;
   private QFileBuilder fileBuilder;
@@ -69,6 +70,10 @@ public class CoreBeeLineDriver extends CliAdapter {
     String testOutputOverwrite = System.getProperty("test.output.overwrite");
     if (testOutputOverwrite != null && "true".equalsIgnoreCase(testOutputOverwrite)) {
       overwrite = true;
+    }
+    String testRewriteSourceTables = System.getProperty("test.rewrite.source.tables");
+    if (testRewriteSourceTables != null && "false".equalsIgnoreCase(testRewriteSourceTables)) {
+      rewriteSourceTables = false;
     }
 
     HiveConf hiveConf = new HiveConf();
@@ -94,12 +99,10 @@ public class CoreBeeLineDriver extends CliAdapter {
         .setPassword("password");
 
     fileBuilder = new QFileBuilder()
-        .setHiveRootDirectory(hiveRootDirectory)
         .setLogDirectory(logDirectory)
         .setQueryDirectory(queryDirectory)
         .setResultsDirectory(resultsDirectory)
-        .setScratchDirectoryString(hiveConf.getVar(HiveConf.ConfVars.SCRATCHDIR))
-        .setWarehouseDirectoryString(hiveConf.getVar(HiveConf.ConfVars.METASTOREWAREHOUSE));
+        .setRewriteSourceTables(rewriteSourceTables);
 
     runInfraScript(initScript, new File(logDirectory, "init.beeline"),
         new File(logDirectory, "init.raw"));

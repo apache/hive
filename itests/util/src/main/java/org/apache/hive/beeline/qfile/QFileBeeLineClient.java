@@ -16,9 +16,7 @@
  * limitations under the License.
  */
 
-package org.apache.hive.beeline.qfile;
-
-import org.apache.hive.beeline.BeeLine;
+package org.apache.hive.beeline;
 
 import java.io.File;
 import java.io.IOException;
@@ -46,6 +44,7 @@ public class QFileBeeLineClient implements AutoCloseable {
           "!set shownestederrs true",
           "!set showwarnings true",
           "!set showelapsedtime false",
+          "!set trimscripts false",
           "!set maxwidth -1",
           "!connect " + jdbcUrl + " " + username + " " + password + " " + jdbcDriver
         });
@@ -87,13 +86,10 @@ public class QFileBeeLineClient implements AutoCloseable {
         qFile.getAfterExecuteLogFile());
   }
 
-  public void execute(QFile qFile) throws SQLException {
+  public void execute(QFile qFile) throws SQLException, IOException {
     beforeExecute(qFile);
-    execute(
-        new String[] {
-          "!run " + qFile.getInputFile().getAbsolutePath()
-        },
-        qFile.getRawOutputFile());
+    String[] commands = beeLine.getCommands(qFile.getInputFile());
+    execute(qFile.filterCommands(commands), qFile.getRawOutputFile());
     afterExecute(qFile);
   }
 

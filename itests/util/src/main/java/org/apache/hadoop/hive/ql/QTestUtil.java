@@ -170,7 +170,7 @@ public class QTestUtil {
   private final Set<String> qNoSessionReuseQuerySet;
   private final Set<String> qJavaVersionSpecificOutput;
   private static final String SORT_SUFFIX = ".sorted";
-  private final HashSet<String> srcTables;
+  private final Set<String> srcTables;
   private final Set<String> srcUDFs;
   private final MiniClusterType clusterType;
   private final FsType fsType;
@@ -203,7 +203,7 @@ public class QTestUtil {
   }
   private HBaseTestingUtility utility;
 
-  HashSet<String> getSrcTables() {
+  public static Set<String> getSrcTables() {
     HashSet<String> srcTables = new HashSet<String>();
     // FIXME: moved default value to here...for now
     // i think this features is never really used from the command line

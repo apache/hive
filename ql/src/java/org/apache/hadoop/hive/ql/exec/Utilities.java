@@ -535,7 +535,7 @@ public final class Utilities {
   public static void setMapRedWork(Configuration conf, MapredWork w, Path hiveScratchDir) {
     String useName = conf.get(INPUT_NAME);
     if (useName == null) {
-      useName = "mapreduce";
+      useName = "mapreduce:" + hiveScratchDir;
     }
     conf.set(INPUT_NAME, useName);
     setMapWork(conf, w.getMapWork(), hiveScratchDir, true);

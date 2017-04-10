@@ -22,6 +22,7 @@
  */
 package org.apache.hive.beeline;
 
+import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.Closeable;
 import java.io.EOFException;
@@ -29,6 +30,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.io.SequenceInputStream;
 import java.lang.reflect.InvocationTargetException;
@@ -59,6 +61,7 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
@@ -1378,6 +1381,55 @@ public class BeeLine implements Closeable {
     // beeline also supports shell-style "#" prefix
     String lineTrimmed = line.trim();
     return lineTrimmed.startsWith("#") || lineTrimmed.startsWith("--");
+  }
+
+  String[] getCommands(File file) throws IOException {
+    List<String> cmds = new LinkedList<String>();
+    try (BufferedReader reader =
+             new BufferedReader(new InputStreamReader(new FileInputStream(file), "UTF-8"))) {
+      StringBuilder cmd = null;
+      while (true) {
+        String scriptLine = reader.readLine();
+
+        if (scriptLine == null) {
+          break;
+        }
+
+        String trimmedLine = scriptLine.trim();
+        if (getOpts().getTrimScripts()) {
+          scriptLine = trimmedLine;
+        }
+
+        if (cmd != null) {
+          // we're continuing an existing command
+          cmd.append("\n");
+          cmd.append(scriptLine);
+          if (trimmedLine.endsWith(";")) {
+            // this command has terminated
+            cmds.add(cmd.toString());
+            cmd = null;
+          }
+        } else {
+          // we're starting a new command
+          if (needsContinuation(scriptLine)) {
+            // multi-line
+            cmd = new StringBuilder(scriptLine);
+          } else {
+            // single-line
+            cmds.add(scriptLine);
+          }
+        }
+      }
+
+      if (cmd != null) {
+        // ### REVIEW: oops, somebody left the last command
+        // unterminated; should we fix it for them or complain?
+        // For now be nice and fix it.
+        cmd.append(";");
+        cmds.add(cmd.toString());
+      }
+    }
+    return cmds.toArray(new String[0]);
   }
 
   /**

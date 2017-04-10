@@ -17,6 +17,6 @@
  */
 
 /**
- * Package for the BeeLine specific QTest file classes.
+ * Package for the BeeLine specific QTest classes.
  */
-package org.apache.hive.beeline.qfile;
+package org.apache.hive.beeline;

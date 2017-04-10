@@ -1,0 +1,822 @@
+>>>  set hive.optimize.bucketmapjoin = true;
+No rows affected 
+>>>  set hive.optimize.bucketmapjoin.sortedmerge = true;
+No rows affected 
+>>>  set hive.input.format = org.apache.hadoop.hive.ql.io.BucketizedHiveInputFormat;
+No rows affected 
+>>>  
+>>>  
+>>>  set hive.exec.reducers.max = 1;
+No rows affected 
+>>>  set hive.merge.mapfiles=false;
+No rows affected 
+>>>  set hive.merge.mapredfiles=false; 
+No rows affected 
+>>>  set hive.cbo.enable=false;
+No rows affected 
+>>>  -- This test verifies that the output of a sort merge join on 1 big partition with multiple small partitions is bucketed and sorted
+>>>  
+>>>  -- Create two bucketed and sorted tables
+>>>  CREATE TABLE test_table1 (key INT, value STRING) PARTITIONED BY (ds STRING) CLUSTERED BY (key) SORTED BY (key) INTO 16 BUCKETS;
+INFO  : Compiling commandqueryId=(!!{queryId}!!): CREATE TABLE test_table1 (key INT, value STRING) PARTITIONED BY (ds STRING) CLUSTERED BY (key) SORTED BY (key) INTO 16 BUCKETS
+INFO  : Semantic Analysis Completed
+INFO  : Returning Hive schema: Schema(fieldSchemas:null, properties:null)
+INFO  : Completed compiling commandqueryId=(!!{queryId}!!); Time taken: !!ELIDED!! seconds
+INFO  : Executing commandqueryId=(!!{queryId}!!): CREATE TABLE test_table1 (key INT, value STRING) PARTITIONED BY (ds STRING) CLUSTERED BY (key) SORTED BY (key) INTO 16 BUCKETS
+INFO  : PREHOOK: query: CREATE TABLE test_table1 (key INT, value STRING) PARTITIONED BY (ds STRING) CLUSTERED BY (key) SORTED BY (key) INTO 16 BUCKETS
+INFO  : PREHOOK: type: CREATETABLE
+INFO  : PREHOOK: Output: database:smb_mapjoin_12
+INFO  : PREHOOK: Output: smb_mapjoin_12@test_table1
+INFO  : Starting task [Stage-0:DDL] in serial mode
+INFO  : POSTHOOK: query: CREATE TABLE test_table1 (key INT, value STRING) PARTITIONED BY (ds STRING) CLUSTERED BY (key) SORTED BY (key) INTO 16 BUCKETS
+INFO  : POSTHOOK: type: CREATETABLE
+INFO  : POSTHOOK: Output: database:smb_mapjoin_12
+INFO  : POSTHOOK: Output: smb_mapjoin_12@test_table1
+INFO  : Completed executing commandqueryId=(!!{queryId}!!); Time taken: !!ELIDED!! seconds
+INFO  : OK
+DEBUG : Shutting down query CREATE TABLE test_table1 (key INT, value STRING) PARTITIONED BY (ds STRING) CLUSTERED BY (key) SORTED BY (key) INTO 16 BUCKETS
+No rows affected 
+>>>  CREATE TABLE test_table2 (key INT, value STRING) PARTITIONED BY (ds STRING) CLUSTERED BY (key) SORTED BY (key) INTO 16 BUCKETS;
+INFO  : Compiling commandqueryId=(!!{queryId}!!): CREATE TABLE test_table2 (key INT, value STRING) PARTITIONED BY (ds STRING) CLUSTERED BY (key) SORTED BY (key) INTO 16 BUCKETS
+INFO  : Semantic Analysis Completed
+INFO  : Returning Hive schema: Schema(fieldSchemas:null, properties:null)
+INFO  : Completed compiling commandqueryId=(!!{queryId}!!); Time taken: !!ELIDED!! seconds
+INFO  : Executing commandqueryId=(!!{queryId}!!): CREATE TABLE test_table2 (key INT, value STRING) PARTITIONED BY (ds STRING) CLUSTERED BY (key) SORTED BY (key) INTO 16 BUCKETS
+INFO  : PREHOOK: query: CREATE TABLE test_table2 (key INT, value STRING) PARTITIONED BY (ds STRING) CLUSTERED BY (key) SORTED BY (key) INTO 16 BUCKETS
+INFO  : PREHOOK: type: CREATETABLE
+INFO  : PREHOOK: Output: database:smb_mapjoin_12
+INFO  : PREHOOK: Output: smb_mapjoin_12@test_table2
+INFO  : Starting task [Stage-0:DDL] in serial mode
+INFO  : POSTHOOK: query: CREATE TABLE test_table2 (key INT, value STRING) PARTITIONED BY (ds STRING) CLUSTERED BY (key) SORTED BY (key) INTO 16 BUCKETS
+INFO  : POSTHOOK: type: CREATETABLE
+INFO  : POSTHOOK: Output: database:smb_mapjoin_12
+INFO  : POSTHOOK: Output: smb_mapjoin_12@test_table2
+INFO  : Completed executing commandqueryId=(!!{queryId}!!); Time taken: !!ELIDED!! seconds
+INFO  : OK
+DEBUG : Shutting down query CREATE TABLE test_table2 (key INT, value STRING) PARTITIONED BY (ds STRING) CLUSTERED BY (key) SORTED BY (key) INTO 16 BUCKETS
+No rows affected 
+>>>  
+>>>  FROM default.src
+INSERT OVERWRITE TABLE test_table1 PARTITION (ds = '1') SELECT *
+INSERT OVERWRITE TABLE test_table2 PARTITION (ds = '1') SELECT *
+INSERT OVERWRITE TABLE test_table2 PARTITION (ds = '2') SELECT *
+INSERT OVERWRITE TABLE test_table2 PARTITION (ds = '3') SELECT *;
+INFO  : Compiling commandqueryId=(!!{queryId}!!): FROM default.src
+INSERT OVERWRITE TABLE test_table1 PARTITION (ds = '1') SELECT *
+INSERT OVERWRITE TABLE test_table2 PARTITION (ds = '1') SELECT *
+INSERT OVERWRITE TABLE test_table2 PARTITION (ds = '2') SELECT *
+INSERT OVERWRITE TABLE test_table2 PARTITION (ds = '3') SELECT *
+INFO  : Semantic Analysis Completed
+INFO  : Returning Hive schema: Schema(fieldSchemas:[FieldSchema(name:_col0, type:int, comment:null), FieldSchema(name:_col1, type:string, comment:null)], properties:null)
+INFO  : Completed compiling commandqueryId=(!!{queryId}!!); Time taken: !!ELIDED!! seconds
+INFO  : Executing commandqueryId=(!!{queryId}!!): FROM default.src
+INSERT OVERWRITE TABLE test_table1 PARTITION (ds = '1') SELECT *
+INSERT OVERWRITE TABLE test_table2 PARTITION (ds = '1') SELECT *
+INSERT OVERWRITE TABLE test_table2 PARTITION (ds = '2') SELECT *
+INSERT OVERWRITE TABLE test_table2 PARTITION (ds = '3') SELECT *
+INFO  : PREHOOK: query: FROM default.src
+INSERT OVERWRITE TABLE test_table1 PARTITION (ds = '1') SELECT *
+INSERT OVERWRITE TABLE test_table2 PARTITION (ds = '1') SELECT *
+INSERT OVERWRITE TABLE test_table2 PARTITION (ds = '2') SELECT *
+INSERT OVERWRITE TABLE test_table2 PARTITION (ds = '3') SELECT *
+INFO  : PREHOOK: type: QUERY
+INFO  : PREHOOK: Input: default@src
+INFO  : PREHOOK: Output: smb_mapjoin_12@test_table1@ds=1
+INFO  : PREHOOK: Output: smb_mapjoin_12@test_table2@ds=1
+INFO  : PREHOOK: Output: smb_mapjoin_12@test_table2@ds=2
+INFO  : PREHOOK: Output: smb_mapjoin_12@test_table2@ds=3
+WARN  : Hive-on-MR is deprecated in Hive 2 and may not be available in the future versions. Consider using a different execution engine (i.e. spark, tez) or using Hive 1.X releases.
+INFO  : Query ID = !!{queryId}!!
+INFO  : Total jobs = 4
+INFO  : Launching Job 1 out of 4
+INFO  : Starting task [Stage-4:MAPRED] in serial mode
+INFO  : Number of reduce tasks determined at compile time: 1
+INFO  : In order to change the average load for a reducer (in bytes):
+INFO  :   set hive.exec.reducers.bytes.per.reducer=<number>
+INFO  : In order to limit the maximum number of reducers:
+INFO  :   set hive.exec.reducers.max=<number>
+INFO  : In order to set a constant number of reducers:
+INFO  :   set mapreduce.job.reduces=<number>
+DEBUG : Configuring job !!{jobId}}!! with file:/!!ELIDED!! as the submit dir
+DEBUG : adding the following namenodes' delegation tokens:[file:///]
+DEBUG : Creating splits at file:/!!ELIDED!!
+INFO  : number of splits:1
+INFO  : Submitting tokens for job: !!{jobId}}!!
+INFO  : The url to track the job: http://localhost:8080/
+INFO  : Job running in-process (local Hadoop)
+INFO  : Ended Job = !!{jobId}!!
+INFO  : Starting task [Stage-0:MOVE] in serial mode
+INFO  : Loading data to table smb_mapjoin_12.test_table1 partition (ds=1) from file:/!!ELIDED!!
+INFO  : Launching Job 2 out of 4
+INFO  : Starting task [Stage-6:MAPRED] in serial mode
+INFO  : Number of reduce tasks determined at compile time: 1
+INFO  : In order to change the average load for a reducer (in bytes):
+INFO  :   set hive.exec.reducers.bytes.per.reducer=<number>
+INFO  : In order to limit the maximum number of reducers:
+INFO  :   set hive.exec.reducers.max=<number>
+INFO  : In order to set a constant number of reducers:
+INFO  :   set mapreduce.job.reduces=<number>
+DEBUG : Configuring job !!{jobId}}!! with file:/!!ELIDED!! as the submit dir
+DEBUG : adding the following namenodes' delegation tokens:[file:///]
+DEBUG : Creating splits at file:/!!ELIDED!!
+INFO  : number of splits:1
+INFO  : Submitting tokens for job: !!{jobId}}!!
+INFO  : The url to track the job: http://localhost:8080/
+INFO  : Job running in-process (local Hadoop)
+INFO  : Ended Job = !!{jobId}!!
+INFO  : Launching Job 3 out of 4
+INFO  : Starting task [Stage-8:MAPRED] in serial mode
+INFO  : Number of reduce tasks determined at compile time: 1
+INFO  : In order to change the average load for a reducer (in bytes):
+INFO  :   set hive.exec.reducers.bytes.per.reducer=<number>
+INFO  : In order to limit the maximum number of reducers:
+INFO  :   set hive.exec.reducers.max=<number>
+INFO  : In order to set a constant number of reducers:
+INFO  :   set mapreduce.job.reduces=<number>
+DEBUG : Configuring job !!{jobId}}!! with file:/!!ELIDED!! as the submit dir
+DEBUG : adding the following namenodes' delegation tokens:[file:///]
+DEBUG : Creating splits at file:/!!ELIDED!!
+INFO  : number of splits:1
+INFO  : Submitting tokens for job: !!{jobId}}!!
+INFO  : The url to track the job: http://localhost:8080/
+INFO  : Job running in-process (local Hadoop)
+INFO  : Ended Job = !!{jobId}!!
+INFO  : Launching Job 4 out of 4
+INFO  : Starting task [Stage-10:MAPRED] in serial mode
+INFO  : Number of reduce tasks determined at compile time: 1
+INFO  : In order to change the average load for a reducer (in bytes):
+INFO  :   set hive.exec.reducers.bytes.per.reducer=<number>
+INFO  : In order to limit the maximum number of reducers:
+INFO  :   set hive.exec.reducers.max=<number>
+INFO  : In order to set a constant number of reducers:
+INFO  :   set mapreduce.job.reduces=<number>
+DEBUG : Configuring job !!{jobId}}!! with file:/!!ELIDED!! as the submit dir
+DEBUG : adding the following namenodes' delegation tokens:[file:///]
+DEBUG : Creating splits at file:/!!ELIDED!!
+INFO  : number of splits:1
+INFO  : Submitting tokens for job: !!{jobId}}!!
+INFO  : The url to track the job: http://localhost:8080/
+INFO  : Job running in-process (local Hadoop)
+INFO  : Ended Job = !!{jobId}!!
+INFO  : Starting task [Stage-5:STATS] in serial mode
+INFO  : Starting task [Stage-1:MOVE] in serial mode
+INFO  : Loading data to table smb_mapjoin_12.test_table2 partition (ds=1) from file:/!!ELIDED!!
+INFO  : Starting task [Stage-2:MOVE] in serial mode
+INFO  : Loading data to table smb_mapjoin_12.test_table2 partition (ds=2) from file:/!!ELIDED!!
+INFO  : Starting task [Stage-3:MOVE] in serial mode
+INFO  : Loading data to table smb_mapjoin_12.test_table2 partition (ds=3) from file:/!!ELIDED!!
+INFO  : Starting task [Stage-7:STATS] in serial mode
+INFO  : Starting task [Stage-9:STATS] in serial mode
+INFO  : Starting task [Stage-11:STATS] in serial mode
+INFO  : POSTHOOK: query: FROM default.src
+INSERT OVERWRITE TABLE test_table1 PARTITION (ds = '1') SELECT *
+INSERT OVERWRITE TABLE test_table2 PARTITION (ds = '1') SELECT *
+INSERT OVERWRITE TABLE test_table2 PARTITION (ds = '2') SELECT *
+INSERT OVERWRITE TABLE test_table2 PARTITION (ds = '3') SELECT *
+INFO  : POSTHOOK: type: QUERY
+INFO  : POSTHOOK: Input: default@src
+INFO  : POSTHOOK: Output: smb_mapjoin_12@test_table1@ds=1
+INFO  : POSTHOOK: Output: smb_mapjoin_12@test_table2@ds=1
+INFO  : POSTHOOK: Output: smb_mapjoin_12@test_table2@ds=2
+INFO  : POSTHOOK: Output: smb_mapjoin_12@test_table2@ds=3
+INFO  : POSTHOOK: Lineage: test_table1 PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+INFO  : POSTHOOK: Lineage: test_table1 PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+INFO  : POSTHOOK: Lineage: test_table2 PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+INFO  : POSTHOOK: Lineage: test_table2 PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+INFO  : POSTHOOK: Lineage: test_table2 PARTITION(ds=2).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+INFO  : POSTHOOK: Lineage: test_table2 PARTITION(ds=2).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+INFO  : POSTHOOK: Lineage: test_table2 PARTITION(ds=3).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+INFO  : POSTHOOK: Lineage: test_table2 PARTITION(ds=3).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+INFO  : MapReduce Jobs Launched: 
+INFO  : Stage-Stage-4:  HDFS Read: 0 HDFS Write: 0 SUCCESS
+INFO  : Stage-Stage-6:  HDFS Read: 0 HDFS Write: 0 SUCCESS
+INFO  : Stage-Stage-8:  HDFS Read: 0 HDFS Write: 0 SUCCESS
+INFO  : Stage-Stage-10:  HDFS Read: 0 HDFS Write: 0 SUCCESS
+INFO  : Total MapReduce CPU Time Spent: 0 msec
+INFO  : Completed executing commandqueryId=(!!{queryId}!!); Time taken: !!ELIDED!! seconds
+INFO  : OK
+DEBUG : Shutting down query FROM default.src
+INSERT OVERWRITE TABLE test_table1 PARTITION (ds = '1') SELECT *
+INSERT OVERWRITE TABLE test_table2 PARTITION (ds = '1') SELECT *
+INSERT OVERWRITE TABLE test_table2 PARTITION (ds = '2') SELECT *
+INSERT OVERWRITE TABLE test_table2 PARTITION (ds = '3') SELECT *
+No rows affected 
+>>>  
+>>>  
+>>>  
+>>>  
+>>>  -- Create a bucketed table
+>>>  CREATE TABLE test_table3 (key INT, value STRING) PARTITIONED BY (ds STRING) CLUSTERED BY (key) SORTED BY (key) INTO 16 BUCKETS;
+INFO  : Compiling commandqueryId=(!!{queryId}!!): CREATE TABLE test_table3 (key INT, value STRING) PARTITIONED BY (ds STRING) CLUSTERED BY (key) SORTED BY (key) INTO 16 BUCKETS
+INFO  : Semantic Analysis Completed
+INFO  : Returning Hive schema: Schema(fieldSchemas:null, properties:null)
+INFO  : Completed compiling commandqueryId=(!!{queryId}!!); Time taken: !!ELIDED!! seconds
+INFO  : Executing commandqueryId=(!!{queryId}!!): CREATE TABLE test_table3 (key INT, value STRING) PARTITIONED BY (ds STRING) CLUSTERED BY (key) SORTED BY (key) INTO 16 BUCKETS
+INFO  : PREHOOK: query: CREATE TABLE test_table3 (key INT, value STRING) PARTITIONED BY (ds STRING) CLUSTERED BY (key) SORTED BY (key) INTO 16 BUCKETS
+INFO  : PREHOOK: type: CREATETABLE
+INFO  : PREHOOK: Output: database:smb_mapjoin_12
+INFO  : PREHOOK: Output: smb_mapjoin_12@test_table3
+INFO  : Starting task [Stage-0:DDL] in serial mode
+INFO  : POSTHOOK: query: CREATE TABLE test_table3 (key INT, value STRING) PARTITIONED BY (ds STRING) CLUSTERED BY (key) SORTED BY (key) INTO 16 BUCKETS
+INFO  : POSTHOOK: type: CREATETABLE
+INFO  : POSTHOOK: Output: database:smb_mapjoin_12
+INFO  : POSTHOOK: Output: smb_mapjoin_12@test_table3
+INFO  : Completed executing commandqueryId=(!!{queryId}!!); Time taken: !!ELIDED!! seconds
+INFO  : OK
+DEBUG : Shutting down query CREATE TABLE test_table3 (key INT, value STRING) PARTITIONED BY (ds STRING) CLUSTERED BY (key) SORTED BY (key) INTO 16 BUCKETS
+No rows affected 
+>>>  
+>>>  -- Insert data into the bucketed table by joining the two bucketed and sorted tables, bucketing is not enforced
+>>>  EXPLAIN EXTENDED
+INSERT OVERWRITE TABLE test_table3 PARTITION (ds = '1') SELECT /*+ MAPJOIN(b) */ a.key, b.value FROM test_table1 a JOIN test_table2 b ON a.key = b.key AND a.ds = '1' AND b.ds >= '1';
+INFO  : Compiling commandqueryId=(!!{queryId}!!): EXPLAIN EXTENDED
+INSERT OVERWRITE TABLE test_table3 PARTITION (ds = '1') SELECT /*+ MAPJOIN(b) */ a.key, b.value FROM test_table1 a JOIN test_table2 b ON a.key = b.key AND a.ds = '1' AND b.ds >= '1'
+INFO  : Semantic Analysis Completed
+INFO  : Returning Hive schema: Schema(fieldSchemas:[FieldSchema(name:Explain, type:string, comment:null)], properties:null)
+INFO  : Completed compiling commandqueryId=(!!{queryId}!!); Time taken: !!ELIDED!! seconds
+INFO  : Executing commandqueryId=(!!{queryId}!!): EXPLAIN EXTENDED
+INSERT OVERWRITE TABLE test_table3 PARTITION (ds = '1') SELECT /*+ MAPJOIN(b) */ a.key, b.value FROM test_table1 a JOIN test_table2 b ON a.key = b.key AND a.ds = '1' AND b.ds >= '1'
+INFO  : PREHOOK: query: EXPLAIN EXTENDED
+INSERT OVERWRITE TABLE test_table3 PARTITION (ds = '1') SELECT /*+ MAPJOIN(b) */ a.key, b.value FROM test_table1 a JOIN test_table2 b ON a.key = b.key AND a.ds = '1' AND b.ds >= '1'
+INFO  : PREHOOK: type: QUERY
+INFO  : Starting task [Stage-4:EXPLAIN] in serial mode
+INFO  : POSTHOOK: query: EXPLAIN EXTENDED
+INSERT OVERWRITE TABLE test_table3 PARTITION (ds = '1') SELECT /*+ MAPJOIN(b) */ a.key, b.value FROM test_table1 a JOIN test_table2 b ON a.key = b.key AND a.ds = '1' AND b.ds >= '1'
+INFO  : POSTHOOK: type: QUERY
+INFO  : Completed executing commandqueryId=(!!{queryId}!!); Time taken: !!ELIDED!! seconds
+INFO  : OK
+DEBUG : Shutting down query EXPLAIN EXTENDED
+INSERT OVERWRITE TABLE test_table3 PARTITION (ds = '1') SELECT /*+ MAPJOIN(b) */ a.key, b.value FROM test_table1 a JOIN test_table2 b ON a.key = b.key AND a.ds = '1' AND b.ds >= '1'
+'Explain'
+'STAGE DEPENDENCIES:'
+'  Stage-1 is a root stage'
+'  Stage-0 depends on stages: Stage-1'
+'  Stage-2 depends on stages: Stage-0'
+''
+'STAGE PLANS:'
+'  Stage: Stage-1'
+'    Map Reduce'
+'      Map Operator Tree:'
+'          TableScan'
+'            alias: a'
+'            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE'
+'            GatherStats: false'
+'            Filter Operator'
+'              isSamplingPred: false'
+'              predicate: key is not null (type: boolean)'
+'              Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE'
+'              Sorted Merge Bucket Map Join Operator'
+'                condition map:'
+'                     Inner Join 0 to 1'
+'                keys:'
+'                  0 key (type: int)'
+'                  1 key (type: int)'
+'                outputColumnNames: _col0, _col7'
+'                Position of Big Table: 0'
+'                BucketMapJoin: true'
+'                Select Operator'
+'                  expressions: _col0 (type: int), _col7 (type: string)'
+'                  outputColumnNames: _col0, _col1'
+'                  File Output Operator'
+'                    compressed: false'
+'                    GlobalTableId: 1'
+'                    directory: file:/!!ELIDED!!
+'                    NumFilesPerFileSink: 1'
+'                    Static Partition Specification: ds=1/'
+'                    Stats Publishing Key Prefix: file:/!!ELIDED!!
+'                    table:'
+'                        input format: org.apache.hadoop.mapred.TextInputFormat'
+'                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+'                        properties:'
+'                          SORTBUCKETCOLSPREFIX TRUE'
+'                          bucket_count 16'
+'                          bucket_field_name key'
+'                          column.name.delimiter ,'
+'                          columns key,value'
+'                          columns.comments '
+'                          columns.types int:string'
+'                          file.inputformat org.apache.hadoop.mapred.TextInputFormat'
+'                          file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+'                          location file:/!!ELIDED!!
+'                          name smb_mapjoin_12.test_table3'
+'                          partition_columns ds'
+'                          partition_columns.types string'
+'                          serialization.ddl struct test_table3 { i32 key, string value}'
+'                          serialization.format 1'
+'                          serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe'
+'                          transient_lastDdlTime !!UNIXTIME!!'
+'                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe'
+'                        name: smb_mapjoin_12.test_table3'
+'                    TotalFiles: 1'
+'                    GatherStats: true'
+'                    MultiFileSpray: false'
+'      Path -> Alias:'
+'        file:/!!ELIDED!! [a]'
+'      Path -> Partition:'
+'        file:/!!ELIDED!! '
+'          Partition'
+'            base file name: ds=1'
+'            input format: org.apache.hadoop.mapred.TextInputFormat'
+'            output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+'            partition values:'
+'              ds 1'
+'            properties:'
+'              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}'
+'              bucket_count 16'
+'              bucket_field_name key'
+'              column.name.delimiter ,'
+'              columns key,value'
+'              columns.comments '
+'              columns.types int:string'
+'              file.inputformat org.apache.hadoop.mapred.TextInputFormat'
+'              file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+'              location file:/!!ELIDED!!
+'              name smb_mapjoin_12.test_table1'
+'              numFiles 16'
+'              numRows 500'
+'              partition_columns ds'
+'              partition_columns.types string'
+'              rawDataSize 5312'
+'              serialization.ddl struct test_table1 { i32 key, string value}'
+'              serialization.format 1'
+'              serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe'
+'              totalSize 5812'
+'              transient_lastDdlTime !!UNIXTIME!!'
+'            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe'
+'          '
+'              input format: org.apache.hadoop.mapred.TextInputFormat'
+'              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+'              properties:'
+'                SORTBUCKETCOLSPREFIX TRUE'
+'                bucket_count 16'
+'                bucket_field_name key'
+'                column.name.delimiter ,'
+'                columns key,value'
+'                columns.comments '
+'                columns.types int:string'
+'                file.inputformat org.apache.hadoop.mapred.TextInputFormat'
+'                file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+'                location file:/!!ELIDED!!
+'                name smb_mapjoin_12.test_table1'
+'                partition_columns ds'
+'                partition_columns.types string'
+'                serialization.ddl struct test_table1 { i32 key, string value}'
+'                serialization.format 1'
+'                serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe'
+'                transient_lastDdlTime !!UNIXTIME!!'
+'              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe'
+'              name: smb_mapjoin_12.test_table1'
+'            name: smb_mapjoin_12.test_table1'
+'      Truncated Path -> Alias:'
+'        /smb_mapjoin_12.db/test_table1/ds=1 [a]'
+''
+'  Stage: Stage-0'
+'    Move Operator'
+'      tables:'
+'          partition:'
+'            ds 1'
+'          replace: true'
+'          source: file:/!!ELIDED!!
+'          table:'
+'              input format: org.apache.hadoop.mapred.TextInputFormat'
+'              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+'              properties:'
+'                SORTBUCKETCOLSPREFIX TRUE'
+'                bucket_count 16'
+'                bucket_field_name key'
+'                column.name.delimiter ,'
+'                columns key,value'
+'                columns.comments '
+'                columns.types int:string'
+'                file.inputformat org.apache.hadoop.mapred.TextInputFormat'
+'                file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+'                location file:/!!ELIDED!!
+'                name smb_mapjoin_12.test_table3'
+'                partition_columns ds'
+'                partition_columns.types string'
+'                serialization.ddl struct test_table3 { i32 key, string value}'
+'                serialization.format 1'
+'                serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe'
+'                transient_lastDdlTime !!UNIXTIME!!'
+'              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe'
+'              name: smb_mapjoin_12.test_table3'
+''
+'  Stage: Stage-2'
+'    Stats-Aggr Operator'
+'      Stats Aggregation Key Prefix: file:/!!ELIDED!!
+''
+157 rows selected 
+>>>  
+>>>  INSERT OVERWRITE TABLE test_table3 PARTITION (ds = '1') SELECT /*+ MAPJOIN(b) */ a.key, b.value FROM test_table1 a JOIN test_table2 b ON a.key = b.key AND a.ds = '1' AND b.ds >= '1';
+INFO  : Compiling commandqueryId=(!!{queryId}!!): INSERT OVERWRITE TABLE test_table3 PARTITION (ds = '1') SELECT /*+ MAPJOIN(b) */ a.key, b.value FROM test_table1 a JOIN test_table2 b ON a.key = b.key AND a.ds = '1' AND b.ds >= '1'
+INFO  : Semantic Analysis Completed
+INFO  : Returning Hive schema: Schema(fieldSchemas:[FieldSchema(name:a.key, type:int, comment:null), FieldSchema(name:b.value, type:string, comment:null)], properties:null)
+INFO  : Completed compiling commandqueryId=(!!{queryId}!!); Time taken: !!ELIDED!! seconds
+INFO  : Executing commandqueryId=(!!{queryId}!!): INSERT OVERWRITE TABLE test_table3 PARTITION (ds = '1') SELECT /*+ MAPJOIN(b) */ a.key, b.value FROM test_table1 a JOIN test_table2 b ON a.key = b.key AND a.ds = '1' AND b.ds >= '1'
+INFO  : PREHOOK: query: INSERT OVERWRITE TABLE test_table3 PARTITION (ds = '1') SELECT /*+ MAPJOIN(b) */ a.key, b.value FROM test_table1 a JOIN test_table2 b ON a.key = b.key AND a.ds = '1' AND b.ds >= '1'
+INFO  : PREHOOK: type: QUERY
+INFO  : PREHOOK: Input: smb_mapjoin_12@test_table1
+INFO  : PREHOOK: Input: smb_mapjoin_12@test_table1@ds=1
+INFO  : PREHOOK: Input: smb_mapjoin_12@test_table2
+INFO  : PREHOOK: Input: smb_mapjoin_12@test_table2@ds=1
+INFO  : PREHOOK: Input: smb_mapjoin_12@test_table2@ds=2
+INFO  : PREHOOK: Input: smb_mapjoin_12@test_table2@ds=3
+INFO  : PREHOOK: Output: smb_mapjoin_12@test_table3@ds=1
+WARN  : Hive-on-MR is deprecated in Hive 2 and may not be available in the future versions. Consider using a different execution engine (i.e. spark, tez) or using Hive 1.X releases.
+INFO  : Query ID = !!{queryId}!!
+INFO  : Total jobs = 1
+INFO  : Launching Job 1 out of 1
+INFO  : Starting task [Stage-1:MAPRED] in serial mode
+INFO  : Number of reduce tasks is set to 0 since there's no reduce operator
+DEBUG : Configuring job !!{jobId}}!! with file:/!!ELIDED!! as the submit dir
+DEBUG : adding the following namenodes' delegation tokens:[file:///]
+DEBUG : Creating splits at file:/!!ELIDED!!
+INFO  : number of splits:16
+INFO  : Submitting tokens for job: !!{jobId}}!!
+INFO  : The url to track the job: http://localhost:8080/
+INFO  : Job running in-process (local Hadoop)
+INFO  : Ended Job = !!{jobId}!!
+INFO  : Starting task [Stage-0:MOVE] in serial mode
+INFO  : Loading data to table smb_mapjoin_12.test_table3 partition (ds=1) from file:/!!ELIDED!!
+INFO  : Starting task [Stage-2:STATS] in serial mode
+INFO  : POSTHOOK: query: INSERT OVERWRITE TABLE test_table3 PARTITION (ds = '1') SELECT /*+ MAPJOIN(b) */ a.key, b.value FROM test_table1 a JOIN test_table2 b ON a.key = b.key AND a.ds = '1' AND b.ds >= '1'
+INFO  : POSTHOOK: type: QUERY
+INFO  : POSTHOOK: Input: smb_mapjoin_12@test_table1
+INFO  : POSTHOOK: Input: smb_mapjoin_12@test_table1@ds=1
+INFO  : POSTHOOK: Input: smb_mapjoin_12@test_table2
+INFO  : POSTHOOK: Input: smb_mapjoin_12@test_table2@ds=1
+INFO  : POSTHOOK: Input: smb_mapjoin_12@test_table2@ds=2
+INFO  : POSTHOOK: Input: smb_mapjoin_12@test_table2@ds=3
+INFO  : POSTHOOK: Output: smb_mapjoin_12@test_table3@ds=1
+INFO  : POSTHOOK: Lineage: test_table3 PARTITION(ds=1).key SIMPLE [(test_table1)a.FieldSchema(name:key, type:int, comment:null), ]
+INFO  : POSTHOOK: Lineage: test_table3 PARTITION(ds=1).value SIMPLE [(test_table2)b.FieldSchema(name:value, type:string, comment:null), ]
+INFO  : MapReduce Jobs Launched: 
+INFO  : Stage-Stage-1:  HDFS Read: 0 HDFS Write: 0 SUCCESS
+INFO  : Total MapReduce CPU Time Spent: 0 msec
+INFO  : Completed executing commandqueryId=(!!{queryId}!!); Time taken: !!ELIDED!! seconds
+INFO  : OK
+DEBUG : Shutting down query INSERT OVERWRITE TABLE test_table3 PARTITION (ds = '1') SELECT /*+ MAPJOIN(b) */ a.key, b.value FROM test_table1 a JOIN test_table2 b ON a.key = b.key AND a.ds = '1' AND b.ds >= '1'
+No rows affected 
+>>>  
+>>>  -- Join data from a sampled bucket to verify the data is bucketed
+>>>  SELECT COUNT(*) FROM test_table3 TABLESAMPLE(BUCKET 2 OUT OF 16) a JOIN test_table1 TABLESAMPLE(BUCKET 2 OUT OF 16) b ON a.key = b.key AND a.ds = '1' AND b.ds='1';
+INFO  : Compiling commandqueryId=(!!{queryId}!!): SELECT COUNT(*) FROM test_table3 TABLESAMPLE(BUCKET 2 OUT OF 16) a JOIN test_table1 TABLESAMPLE(BUCKET 2 OUT OF 16) b ON a.key = b.key AND a.ds = '1' AND b.ds='1'
+INFO  : Semantic Analysis Completed
+INFO  : Returning Hive schema: Schema(fieldSchemas:[FieldSchema(name:_c0, type:bigint, comment:null)], properties:null)
+INFO  : Completed compiling commandqueryId=(!!{queryId}!!); Time taken: !!ELIDED!! seconds
+INFO  : Executing commandqueryId=(!!{queryId}!!): SELECT COUNT(*) FROM test_table3 TABLESAMPLE(BUCKET 2 OUT OF 16) a JOIN test_table1 TABLESAMPLE(BUCKET 2 OUT OF 16) b ON a.key = b.key AND a.ds = '1' AND b.ds='1'
+INFO  : PREHOOK: query: SELECT COUNT(*) FROM test_table3 TABLESAMPLE(BUCKET 2 OUT OF 16) a JOIN test_table1 TABLESAMPLE(BUCKET 2 OUT OF 16) b ON a.key = b.key AND a.ds = '1' AND b.ds='1'
+INFO  : PREHOOK: type: QUERY
+INFO  : PREHOOK: Input: smb_mapjoin_12@test_table1
+INFO  : PREHOOK: Input: smb_mapjoin_12@test_table1@ds=1
+INFO  : PREHOOK: Input: smb_mapjoin_12@test_table3
+INFO  : PREHOOK: Input: smb_mapjoin_12@test_table3@ds=1
+INFO  : PREHOOK: Output: file:/!!ELIDED!!
+WARN  : Hive-on-MR is deprecated in Hive 2 and may not be available in the future versions. Consider using a different execution engine (i.e. spark, tez) or using Hive 1.X releases.
+INFO  : Query ID = !!{queryId}!!
+INFO  : Total jobs = 2
+INFO  : Launching Job 1 out of 2
+INFO  : Starting task [Stage-1:MAPRED] in serial mode
+INFO  : Number of reduce tasks not specified. Estimated from input data size: 1
+INFO  : In order to change the average load for a reducer (in bytes):
+INFO  :   set hive.exec.reducers.bytes.per.reducer=<number>
+INFO  : In order to limit the maximum number of reducers:
+INFO  :   set hive.exec.reducers.max=<number>
+INFO  : In order to set a constant number of reducers:
+INFO  :   set mapreduce.job.reduces=<number>
+DEBUG : Configuring job !!{jobId}}!! with file:/!!ELIDED!! as the submit dir
+DEBUG : adding the following namenodes' delegation tokens:[file:///]
+DEBUG : Creating splits at file:/!!ELIDED!!
+INFO  : number of splits:2
+INFO  : Submitting tokens for job: !!{jobId}}!!
+INFO  : The url to track the job: http://localhost:8080/
+INFO  : Job running in-process (local Hadoop)
+INFO  : Ended Job = !!{jobId}!!
+INFO  : Launching Job 2 out of 2
+INFO  : Starting task [Stage-2:MAPRED] in serial mode
+INFO  : Number of reduce tasks determined at compile time: 1
+INFO  : In order to change the average load for a reducer (in bytes):
+INFO  :   set hive.exec.reducers.bytes.per.reducer=<number>
+INFO  : In order to limit the maximum number of reducers:
+INFO  :   set hive.exec.reducers.max=<number>
+INFO  : In order to set a constant number of reducers:
+INFO  :   set mapreduce.job.reduces=<number>
+DEBUG : Configuring job !!{jobId}}!! with file:/!!ELIDED!! as the submit dir
+DEBUG : adding the following namenodes' delegation tokens:[file:///]
+DEBUG : Creating splits at file:/!!ELIDED!!
+INFO  : number of splits:1
+INFO  : Submitting tokens for job: !!{jobId}}!!
+INFO  : The url to track the job: http://localhost:8080/
+INFO  : Job running in-process (local Hadoop)
+INFO  : Ended Job = !!{jobId}!!
+INFO  : POSTHOOK: query: SELECT COUNT(*) FROM test_table3 TABLESAMPLE(BUCKET 2 OUT OF 16) a JOIN test_table1 TABLESAMPLE(BUCKET 2 OUT OF 16) b ON a.key = b.key AND a.ds = '1' AND b.ds='1'
+INFO  : POSTHOOK: type: QUERY
+INFO  : POSTHOOK: Input: smb_mapjoin_12@test_table1
+INFO  : POSTHOOK: Input: smb_mapjoin_12@test_table1@ds=1
+INFO  : POSTHOOK: Input: smb_mapjoin_12@test_table3
+INFO  : POSTHOOK: Input: smb_mapjoin_12@test_table3@ds=1
+INFO  : POSTHOOK: Output: file:/!!ELIDED!!
+INFO  : MapReduce Jobs Launched: 
+INFO  : Stage-Stage-1:  HDFS Read: 0 HDFS Write: 0 SUCCESS
+INFO  : Stage-Stage-2:  HDFS Read: 0 HDFS Write: 0 SUCCESS
+INFO  : Total MapReduce CPU Time Spent: 0 msec
+INFO  : Completed executing commandqueryId=(!!{queryId}!!); Time taken: !!ELIDED!! seconds
+INFO  : OK
+DEBUG : Shutting down query SELECT COUNT(*) FROM test_table3 TABLESAMPLE(BUCKET 2 OUT OF 16) a JOIN test_table1 TABLESAMPLE(BUCKET 2 OUT OF 16) b ON a.key = b.key AND a.ds = '1' AND b.ds='1'
+'_c0'
+'879'
+1 row selected 
+>>>  
+>>>  set hive.optimize.bucketmapjoin = true;
+No rows affected 
+>>>  set hive.optimize.bucketmapjoin.sortedmerge = true;
+No rows affected 
+>>>  set hive.input.format = org.apache.hadoop.hive.ql.io.BucketizedHiveInputFormat;
+No rows affected 
+>>>  
+>>>  -- Join data from the sampled buckets of 2 tables to verify the data is bucketed and sorted
+>>>  explain extended
+INSERT OVERWRITE TABLE test_table3 PARTITION (ds = '2') 
+SELECT /*+mapjoin(b)*/ a.key, concat(a.value, b.value) FROM test_table3 a JOIN test_table1 b ON a.key = b.key AND a.ds = '1' AND b.ds='1';
+INFO  : Compiling commandqueryId=(!!{queryId}!!): explain extended
+INSERT OVERWRITE TABLE test_table3 PARTITION (ds = '2') 
+SELECT /*+mapjoin(b)*/ a.key, concat(a.value, b.value) FROM test_table3 a JOIN test_table1 b ON a.key = b.key AND a.ds = '1' AND b.ds='1'
+INFO  : Semantic Analysis Completed
+INFO  : Returning Hive schema: Schema(fieldSchemas:[FieldSchema(name:Explain, type:string, comment:null)], properties:null)
+INFO  : Completed compiling commandqueryId=(!!{queryId}!!); Time taken: !!ELIDED!! seconds
+INFO  : Executing commandqueryId=(!!{queryId}!!): explain extended
+INSERT OVERWRITE TABLE test_table3 PARTITION (ds = '2') 
+SELECT /*+mapjoin(b)*/ a.key, concat(a.value, b.value) FROM test_table3 a JOIN test_table1 b ON a.key = b.key AND a.ds = '1' AND b.ds='1'
+INFO  : PREHOOK: query: explain extended
+INSERT OVERWRITE TABLE test_table3 PARTITION (ds = '2') 
+SELECT /*+mapjoin(b)*/ a.key, concat(a.value, b.value) FROM test_table3 a JOIN test_table1 b ON a.key = b.key AND a.ds = '1' AND b.ds='1'
+INFO  : PREHOOK: type: QUERY
+INFO  : Starting task [Stage-4:EXPLAIN] in serial mode
+INFO  : POSTHOOK: query: explain extended
+INSERT OVERWRITE TABLE test_table3 PARTITION (ds = '2') 
+SELECT /*+mapjoin(b)*/ a.key, concat(a.value, b.value) FROM test_table3 a JOIN test_table1 b ON a.key = b.key AND a.ds = '1' AND b.ds='1'
+INFO  : POSTHOOK: type: QUERY
+INFO  : Completed executing commandqueryId=(!!{queryId}!!); Time taken: !!ELIDED!! seconds
+INFO  : OK
+DEBUG : Shutting down query explain extended
+INSERT OVERWRITE TABLE test_table3 PARTITION (ds = '2') 
+SELECT /*+mapjoin(b)*/ a.key, concat(a.value, b.value) FROM test_table3 a JOIN test_table1 b ON a.key = b.key AND a.ds = '1' AND b.ds='1'
+'Explain'
+'STAGE DEPENDENCIES:'
+'  Stage-1 is a root stage'
+'  Stage-0 depends on stages: Stage-1'
+'  Stage-2 depends on stages: Stage-0'
+''
+'STAGE PLANS:'
+'  Stage: Stage-1'
+'    Map Reduce'
+'      Map Operator Tree:'
+'          TableScan'
+'            alias: a'
+'            Statistics: Num rows: 3084 Data size: 32904 Basic stats: COMPLETE Column stats: NONE'
+'            GatherStats: false'
+'            Filter Operator'
+'              isSamplingPred: false'
+'              predicate: key is not null (type: boolean)'
+'              Statistics: Num rows: 3084 Data size: 32904 Basic stats: COMPLETE Column stats: NONE'
+'              Sorted Merge Bucket Map Join Operator'
+'                condition map:'
+'                     Inner Join 0 to 1'
+'                keys:'
+'                  0 key (type: int)'
+'                  1 key (type: int)'
+'                outputColumnNames: _col0, _col1, _col7'
+'                Position of Big Table: 0'
+'                BucketMapJoin: true'
+'                Select Operator'
+'                  expressions: _col0 (type: int), concat(_col1, _col7) (type: string)'
+'                  outputColumnNames: _col0, _col1'
+'                  File Output Operator'
+'                    compressed: false'
+'                    GlobalTableId: 1'
+'                    directory: file:/!!ELIDED!!
+'                    NumFilesPerFileSink: 1'
+'                    Static Partition Specification: ds=2/'
+'                    Stats Publishing Key Prefix: file:/!!ELIDED!!
+'                    table:'
+'                        input format: org.apache.hadoop.mapred.TextInputFormat'
+'                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+'                        properties:'
+'                          SORTBUCKETCOLSPREFIX TRUE'
+'                          bucket_count 16'
+'                          bucket_field_name key'
+'                          column.name.delimiter ,'
+'                          columns key,value'
+'                          columns.comments '
+'                          columns.types int:string'
+'                          file.inputformat org.apache.hadoop.mapred.TextInputFormat'
+'                          file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+'                          location file:/!!ELIDED!!
+'                          name smb_mapjoin_12.test_table3'
+'                          partition_columns ds'
+'                          partition_columns.types string'
+'                          serialization.ddl struct test_table3 { i32 key, string value}'
+'                          serialization.format 1'
+'                          serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe'
+'                          transient_lastDdlTime !!UNIXTIME!!'
+'                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe'
+'                        name: smb_mapjoin_12.test_table3'
+'                    TotalFiles: 1'
+'                    GatherStats: true'
+'                    MultiFileSpray: false'
+'      Path -> Alias:'
+'        file:/!!ELIDED!! [a]'
+'      Path -> Partition:'
+'        file:/!!ELIDED!! '
+'          Partition'
+'            base file name: ds=1'
+'            input format: org.apache.hadoop.mapred.TextInputFormat'
+'            output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+'            partition values:'
+'              ds 1'
+'            properties:'
+'              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true"}'
+'              bucket_count 16'
+'              bucket_field_name key'
+'              column.name.delimiter ,'
+'              columns key,value'
+'              columns.comments '
+'              columns.types int:string'
+'              file.inputformat org.apache.hadoop.mapred.TextInputFormat'
+'              file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+'              location file:/!!ELIDED!!
+'              name smb_mapjoin_12.test_table3'
+'              numFiles 16'
+'              numRows 3084'
+'              partition_columns ds'
+'              partition_columns.types string'
+'              rawDataSize 32904'
+'              serialization.ddl struct test_table3 { i32 key, string value}'
+'              serialization.format 1'
+'              serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe'
+'              totalSize 35988'
+'              transient_lastDdlTime !!UNIXTIME!!'
+'            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe'
+'          '
+'              input format: org.apache.hadoop.mapred.TextInputFormat'
+'              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+'              properties:'
+'                SORTBUCKETCOLSPREFIX TRUE'
+'                bucket_count 16'
+'                bucket_field_name key'
+'                column.name.delimiter ,'
+'                columns key,value'
+'                columns.comments '
+'                columns.types int:string'
+'                file.inputformat org.apache.hadoop.mapred.TextInputFormat'
+'                file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+'                location file:/!!ELIDED!!
+'                name smb_mapjoin_12.test_table3'
+'                partition_columns ds'
+'                partition_columns.types string'
+'                serialization.ddl struct test_table3 { i32 key, string value}'
+'                serialization.format 1'
+'                serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe'
+'                transient_lastDdlTime !!UNIXTIME!!'
+'              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe'
+'              name: smb_mapjoin_12.test_table3'
+'            name: smb_mapjoin_12.test_table3'
+'      Truncated Path -> Alias:'
+'        /smb_mapjoin_12.db/test_table3/ds=1 [a]'
+''
+'  Stage: Stage-0'
+'    Move Operator'
+'      tables:'
+'          partition:'
+'            ds 2'
+'          replace: true'
+'          source: file:/!!ELIDED!!
+'          table:'
+'              input format: org.apache.hadoop.mapred.TextInputFormat'
+'              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+'              properties:'
+'                SORTBUCKETCOLSPREFIX TRUE'
+'                bucket_count 16'
+'                bucket_field_name key'
+'                column.name.delimiter ,'
+'                columns key,value'
+'                columns.comments '
+'                columns.types int:string'
+'                file.inputformat org.apache.hadoop.mapred.TextInputFormat'
+'                file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+'                location file:/!!ELIDED!!
+'                name smb_mapjoin_12.test_table3'
+'                partition_columns ds'
+'                partition_columns.types string'
+'                serialization.ddl struct test_table3 { i32 key, string value}'
+'                serialization.format 1'
+'                serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe'
+'                transient_lastDdlTime !!UNIXTIME!!'
+'              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe'
+'              name: smb_mapjoin_12.test_table3'
+''
+'  Stage: Stage-2'
+'    Stats-Aggr Operator'
+'      Stats Aggregation Key Prefix: file:/!!ELIDED!!
+''
+157 rows selected 
+>>>  
+>>>  INSERT OVERWRITE TABLE test_table3 PARTITION (ds = '2') 
+SELECT /*+mapjoin(b)*/ a.key, concat(a.value, b.value) FROM test_table3 a JOIN test_table1 b ON a.key = b.key AND a.ds = '1' AND b.ds='1';
+INFO  : Compiling commandqueryId=(!!{queryId}!!): INSERT OVERWRITE TABLE test_table3 PARTITION (ds = '2') 
+SELECT /*+mapjoin(b)*/ a.key, concat(a.value, b.value) FROM test_table3 a JOIN test_table1 b ON a.key = b.key AND a.ds = '1' AND b.ds='1'
+INFO  : Semantic Analysis Completed
+INFO  : Returning Hive schema: Schema(fieldSchemas:[FieldSchema(name:a.key, type:int, comment:null), FieldSchema(name:_c2, type:string, comment:null)], properties:null)
+INFO  : Completed compiling commandqueryId=(!!{queryId}!!); Time taken: !!ELIDED!! seconds
+INFO  : Executing commandqueryId=(!!{queryId}!!): INSERT OVERWRITE TABLE test_table3 PARTITION (ds = '2') 
+SELECT /*+mapjoin(b)*/ a.key, concat(a.value, b.value) FROM test_table3 a JOIN test_table1 b ON a.key = b.key AND a.ds = '1' AND b.ds='1'
+INFO  : PREHOOK: query: INSERT OVERWRITE TABLE test_table3 PARTITION (ds = '2') 
+SELECT /*+mapjoin(b)*/ a.key, concat(a.value, b.value) FROM test_table3 a JOIN test_table1 b ON a.key = b.key AND a.ds = '1' AND b.ds='1'
+INFO  : PREHOOK: type: QUERY
+INFO  : PREHOOK: Input: smb_mapjoin_12@test_table1
+INFO  : PREHOOK: Input: smb_mapjoin_12@test_table1@ds=1
+INFO  : PREHOOK: Input: smb_mapjoin_12@test_table3
+INFO  : PREHOOK: Input: smb_mapjoin_12@test_table3@ds=1
+INFO  : PREHOOK: Output: smb_mapjoin_12@test_table3@ds=2
+WARN  : Hive-on-MR is deprecated in Hive 2 and may not be available in the future versions. Consider using a different execution engine (i.e. spark, tez) or using Hive 1.X releases.
+INFO  : Query ID = !!{queryId}!!
+INFO  : Total jobs = 1
+INFO  : Launching Job 1 out of 1
+INFO  : Starting task [Stage-1:MAPRED] in serial mode
+INFO  : Number of reduce tasks is set to 0 since there's no reduce operator
+DEBUG : Configuring job !!{jobId}}!! with file:/!!ELIDED!! as the submit dir
+DEBUG : adding the following namenodes' delegation tokens:[file:///]
+DEBUG : Creating splits at file:/!!ELIDED!!
+INFO  : number of splits:16
+INFO  : Submitting tokens for job: !!{jobId}}!!
+INFO  : The url to track the job: http://localhost:8080/
+INFO  : Job running in-process (local Hadoop)
+INFO  : Ended Job = !!{jobId}!!
+INFO  : Starting task [Stage-0:MOVE] in serial mode
+INFO  : Loading data to table smb_mapjoin_12.test_table3 partition (ds=2) from file:/!!ELIDED!!
+INFO  : Starting task [Stage-2:STATS] in serial mode
+INFO  : POSTHOOK: query: INSERT OVERWRITE TABLE test_table3 PARTITION (ds = '2') 
+SELECT /*+mapjoin(b)*/ a.key, concat(a.value, b.value) FROM test_table3 a JOIN test_table1 b ON a.key = b.key AND a.ds = '1' AND b.ds='1'
+INFO  : POSTHOOK: type: QUERY
+INFO  : POSTHOOK: Input: smb_mapjoin_12@test_table1
+INFO  : POSTHOOK: Input: smb_mapjoin_12@test_table1@ds=1
+INFO  : POSTHOOK: Input: smb_mapjoin_12@test_table3
+INFO  : POSTHOOK: Input: smb_mapjoin_12@test_table3@ds=1
+INFO  : POSTHOOK: Output: smb_mapjoin_12@test_table3@ds=2
+INFO  : POSTHOOK: Lineage: test_table3 PARTITION(ds=2).key SIMPLE [(test_table3)a.FieldSchema(name:key, type:int, comment:null), ]
+INFO  : POSTHOOK: Lineage: test_table3 PARTITION(ds=2).value EXPRESSION [(test_table3)a.FieldSchema(name:value, type:string, comment:null), (test_table1)b.FieldSchema(name:value, type:string, comment:null), ]
+INFO  : MapReduce Jobs Launched: 
+INFO  : Stage-Stage-1:  HDFS Read: 0 HDFS Write: 0 SUCCESS
+INFO  : Total MapReduce CPU Time Spent: 0 msec
+INFO  : Completed executing commandqueryId=(!!{queryId}!!); Time taken: !!ELIDED!! seconds
+INFO  : OK
+DEBUG : Shutting down query INSERT OVERWRITE TABLE test_table3 PARTITION (ds = '2') 
+SELECT /*+mapjoin(b)*/ a.key, concat(a.value, b.value) FROM test_table3 a JOIN test_table1 b ON a.key = b.key AND a.ds = '1' AND b.ds='1'
+No rows affected 
+>>>  
+>>>  SELECT count(*) from test_table3 tablesample (bucket 2 out of 16) a where ds = '2';
+INFO  : Compiling commandqueryId=(!!{queryId}!!): SELECT count(*) from test_table3 tablesample (bucket 2 out of 16) a where ds = '2'
+INFO  : Semantic Analysis Completed
+INFO  : Returning Hive schema: Schema(fieldSchemas:[FieldSchema(name:_c0, type:bigint, comment:null)], properties:null)
+INFO  : Completed compiling commandqueryId=(!!{queryId}!!); Time taken: !!ELIDED!! seconds
+INFO  : Executing commandqueryId=(!!{queryId}!!): SELECT count(*) from test_table3 tablesample (bucket 2 out of 16) a where ds = '2'
+INFO  : PREHOOK: query: SELECT count(*) from test_table3 tablesample (bucket 2 out of 16) a where ds = '2'
+INFO  : PREHOOK: type: QUERY
+INFO  : PREHOOK: Input: smb_mapjoin_12@test_table3
+INFO  : PREHOOK: Input: smb_mapjoin_12@test_table3@ds=2
+INFO  : PREHOOK: Output: file:/!!ELIDED!!
+WARN  : Hive-on-MR is deprecated in Hive 2 and may not be available in the future versions. Consider using a different execution engine (i.e. spark, tez) or using Hive 1.X releases.
+INFO  : Query ID = !!{queryId}!!
+INFO  : Total jobs = 1
+INFO  : Launching Job 1 out of 1
+INFO  : Starting task [Stage-1:MAPRED] in serial mode
+INFO  : Number of reduce tasks determined at compile time: 1
+INFO  : In order to change the average load for a reducer (in bytes):
+INFO  :   set hive.exec.reducers.bytes.per.reducer=<number>
+INFO  : In order to limit the maximum number of reducers:
+INFO  :   set hive.exec.reducers.max=<number>
+INFO  : In order to set a constant number of reducers:
+INFO  :   set mapreduce.job.reduces=<number>
+DEBUG : Configuring job !!{jobId}}!! with file:/!!ELIDED!! as the submit dir
+DEBUG : adding the following namenodes' delegation tokens:[file:///]
+DEBUG : Creating splits at file:/!!ELIDED!!
+INFO  : number of splits:1
+INFO  : Submitting tokens for job: !!{jobId}}!!
+INFO  : The url to track the job: http://localhost:8080/
+INFO  : Job running in-process (local Hadoop)
+INFO  : Ended Job = !!{jobId}!!
+INFO  : POSTHOOK: query: SELECT count(*) from test_table3 tablesample (bucket 2 out of 16) a where ds = '2'
+INFO  : POSTHOOK: type: QUERY
+INFO  : POSTHOOK: Input: smb_mapjoin_12@test_table3
+INFO  : POSTHOOK: Input: smb_mapjoin_12@test_table3@ds=2
+INFO  : POSTHOOK: Output: file:/!!ELIDED!!
+INFO  : MapReduce Jobs Launched: 
+INFO  : Stage-Stage-1:  HDFS Read: 0 HDFS Write: 0 SUCCESS
+INFO  : Total MapReduce CPU Time Spent: 0 msec
+INFO  : Completed executing commandqueryId=(!!{queryId}!!); Time taken: !!ELIDED!! seconds
+INFO  : OK
+DEBUG : Shutting down query SELECT count(*) from test_table3 tablesample (bucket 2 out of 16) a where ds = '2'
+'_c0'
+'879'
+1 row selected 
+>>>  !record
