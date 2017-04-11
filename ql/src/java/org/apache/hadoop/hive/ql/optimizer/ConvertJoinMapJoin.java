@@ -851,6 +851,11 @@ public class ConvertJoinMapJoin implements NodeProcessor {
     }
     if (semiJoinMap.size() > 0) {
       for (ReduceSinkOperator rs : semiJoinMap.keySet()) {
+        if (LOG.isDebugEnabled()) {
+          LOG.debug("Found semijoin optimization from the big table side of a map join, which will cause a task cycle. "
+              + "Removing semijoin "
+              + OperatorUtils.getOpNamePretty(rs) + " - " + OperatorUtils.getOpNamePretty(semiJoinMap.get(rs)));
+        }
         GenTezUtils.removeBranch(rs);
         GenTezUtils.removeSemiJoinOperator(parseContext, rs,
                 semiJoinMap.get(rs));
