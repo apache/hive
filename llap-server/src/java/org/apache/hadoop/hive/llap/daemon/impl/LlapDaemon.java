@@ -600,6 +600,11 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
   }
 
   @Override
+  public int getNumActive() {
+    return containerRunner.getNumActive();
+  }
+
+  @Override
   public long getExecutorMemoryPerInstance() {
     return executorMemoryPerInstance;
   }

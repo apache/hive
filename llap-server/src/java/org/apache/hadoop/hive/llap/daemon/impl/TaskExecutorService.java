@@ -201,6 +201,20 @@ public class TaskExecutorService extends AbstractService
   };
 
   @Override
+  public int getNumActive() {
+    int result = 0;
+    for (Map.Entry<String, TaskWrapper> e : knownTasks.entrySet()) {
+      TaskWrapper task = e.getValue();
+      if (task.isInWaitQueue()) continue;
+      TaskRunnerCallable c = task.getTaskRunnerCallable();
+      // Count the tasks in intermediate state as waiting.
+      if (c == null || c.getStartTime() == 0) continue;
+      ++result;
+    }
+    return result;
+  }
+
+  @Override
   public Set<String> getExecutorsStatus() {
     // TODO Change this method to make the output easier to parse (parse programmatically)
     Set<String> result = new LinkedHashSet<>();
