@@ -516,4 +516,8 @@ public class ContainerRunnerImpl extends CompositeService implements ContainerRu
   public Set<String> getExecutorStatus() {
     return executorService.getExecutorsStatus();
   }
+
+  public int getNumActive() {
+    return executorService.getNumActive();
+  }
 }
