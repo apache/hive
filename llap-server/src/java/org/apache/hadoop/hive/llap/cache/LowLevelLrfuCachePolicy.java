@@ -568,4 +568,26 @@ public class LowLevelLrfuCachePolicy implements LowLevelCachePolicy {
     }
     return result;
   }
+
+  @Override
+  public void debugDumpShort(StringBuilder sb) {
+    sb.append("\nLRFU eviction list: ");
+    LlapCacheableBuffer listHeadLocal = listHead, listTailLocal = listTail;
+    if (listHeadLocal == null) {
+      sb.append("0 items");
+    } else {
+      LlapCacheableBuffer listItem = listHeadLocal;
+      int c = 0;
+      while (listItem != null) {
+        ++c;
+        if (listItem == listTailLocal) break;
+        listItem = listItem.next;
+      }
+      sb.append(c + " items");
+    }
+    sb.append("\nLRFU eviction heap: " + heapSize + " items");
+    if (parentDebugDump != null) {
+      parentDebugDump.debugDumpShort(sb);
+    }
+  }
 }

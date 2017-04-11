@@ -45,7 +45,8 @@ import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.llap.io.api.impl.LlapIoImpl;
 import org.apache.hadoop.hive.llap.metrics.LlapDaemonCacheMetrics;
 
-public final class BuddyAllocator implements EvictionAwareAllocator, BuddyAllocatorMXBean {
+public final class BuddyAllocator
+  implements EvictionAwareAllocator, BuddyAllocatorMXBean, LlapOomDebugDump {
   private final Arena[] arenas;
   private final AtomicInteger allocatedArenas = new AtomicInteger(0);
 
@@ -299,7 +300,6 @@ public final class BuddyAllocator implements EvictionAwareAllocator, BuddyAlloca
         memoryManager.releaseMemory(forceReserved);
       }
     }
-
   }
 
   private void logOomErrorMessage(String msg) {
@@ -312,13 +312,39 @@ public final class BuddyAllocator implements EvictionAwareAllocator, BuddyAlloca
         continue;
       }
       if (shouldLog) {
-        LlapIoImpl.LOG.error(msg + "\nALLOCATOR STATE:\n" + debugDump()
-            + "\nPARENT STATE:\n" + memoryManager.debugDumpForOom());
+        LlapIoImpl.LOG.error(msg + debugDumpForOom());
       } else {
         LlapIoImpl.LOG.error(msg);
       }
       return;
     }
+  }
+
+  /**
+   * Arbitrarily, we start getting the state from Allocator. Allocator calls MM which calls
+   * the policies that call the eviction dispatcher that calls the caches. See init - these all
+   * are connected in a cycle, so we need to make sure the who-calls-whom order is definite.
+   */
+  @Override
+  public void debugDumpShort(StringBuilder sb) {
+    memoryManager.debugDumpShort(sb);
+    sb.append("\nAllocator state:");
+    int unallocCount = 0, fullCount = 0;
+    long totalFree = 0;
+    for (Arena arena : arenas) {
+      Integer result = arena.debugDumpShort(sb);
+      if (result == null) {
+        ++unallocCount;
+      } else if (result == 0) {
+        ++fullCount;
+      } else {
+        totalFree += result;
+      }
+    }
+    sb.append("\nTotal available and allocated: ").append(totalFree).append(
+        "; unallocated arenas: ").append(unallocCount).append(
+        "; full arenas ").append(fullCount);
+    sb.append("\n");
   }
 
   @Override
@@ -345,7 +371,7 @@ public final class BuddyAllocator implements EvictionAwareAllocator, BuddyAlloca
     return isDirect;
   }
 
-  public String debugDump() {
+  public String debugDumpForOomInternal() {
     StringBuilder result = new StringBuilder(
         "NOTE: with multiple threads the dump is not guaranteed to be consistent");
     for (Arena arena : arenas) {
@@ -440,6 +466,36 @@ public final class BuddyAllocator implements EvictionAwareAllocator, BuddyAlloca
         data.putInt(offset + 4, (i == maxMaxAllocs - 1) ? -1 : (headerIndex + headerStep));
         headerIndex += headerStep;
       }
+    }
+
+    public Integer debugDumpShort(StringBuilder result) {
+      if (data == null) {
+        return null;
+      }
+      int allocSize = minAllocation;
+      int total = 0;
+      for (int i = 0; i < freeLists.length; ++i, allocSize <<= 1) {
+        FreeList freeList = freeLists[i];
+        freeList.lock.lock();
+        try {
+          int nextHeaderIx = freeList.listHead;
+          int count = 0;
+          while (nextHeaderIx >= 0) {
+            ++count;
+            nextHeaderIx = getNextFreeListItem(offsetFromHeaderIndex(nextHeaderIx));
+          }
+          if (count > 0) {
+            if (total == 0) {
+              result.append("\nArena with free list lengths by size: ");
+            }
+            total += (allocSize * count);
+            result.append(allocSize).append(" => ").append(count).append(", ");
+          }
+        } finally {
+          freeList.lock.unlock();
+        }
+      }
+      return total;
     }
 
     public void debugDump(StringBuilder result) {
@@ -722,5 +778,11 @@ public final class BuddyAllocator implements EvictionAwareAllocator, BuddyAlloca
   @Override
   public MemoryBuffer createUnallocated() {
     return new LlapDataBuffer();
+  }
+
+  @Override
+  public String debugDumpForOom() {
+    return "\nALLOCATOR STATE:\n" + debugDumpForOomInternal()
+        + "\nPARENT STATE:\n" + memoryManager.debugDumpForOom();
   }
 }

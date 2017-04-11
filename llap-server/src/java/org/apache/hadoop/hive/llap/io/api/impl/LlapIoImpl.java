@@ -23,9 +23,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 import javax.management.ObjectName;
@@ -40,8 +38,8 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.llap.cache.BuddyAllocator;
 import org.apache.hadoop.hive.llap.cache.BufferUsageManager;
-import org.apache.hadoop.hive.llap.cache.EvictionAwareAllocator;
 import org.apache.hadoop.hive.llap.cache.EvictionDispatcher;
+import org.apache.hadoop.hive.llap.cache.LlapOomDebugDump;
 import org.apache.hadoop.hive.llap.cache.LowLevelCache;
 import org.apache.hadoop.hive.llap.cache.LowLevelCacheImpl;
 import org.apache.hadoop.hive.llap.cache.LowLevelCacheMemoryManager;
@@ -67,8 +65,6 @@ import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.metrics2.util.MBeans;
 
 import com.google.common.primitives.Ints;
-import com.google.common.util.concurrent.ListeningExecutorService;
-import com.google.common.util.concurrent.MoreExecutors;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
 public class LlapIoImpl implements LlapIo<VectorizedRowBatch> {
@@ -86,6 +82,7 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch> {
   private final LlapDaemonIOMetrics ioMetrics;
   private ObjectName buddyAllocatorMXBean;
   private final Allocator allocator;
+  private final LlapOomDebugDump memoryDump;
 
   private LlapIoImpl(Configuration conf) throws IOException {
     String ioMode = HiveConf.getVar(conf, HiveConf.ConfVars.LLAP_IO_MEMORY_MODE);
@@ -149,8 +146,9 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch> {
       }
       cacheMetrics.setCacheCapacityTotal(totalMemorySize + metaMem);
       // Cache uses allocator to allocate and deallocate, create allocator and then caches.
-      EvictionAwareAllocator allocator = new BuddyAllocator(conf, memManager, cacheMetrics);
+      BuddyAllocator allocator = new BuddyAllocator(conf, memManager, cacheMetrics);
       this.allocator = allocator;
+      this.memoryDump = allocator;
       LowLevelCacheImpl cacheImpl = new LowLevelCacheImpl(
           cacheMetrics, cachePolicy, allocator, true);
       cache = cacheImpl;
@@ -165,13 +163,16 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch> {
       EvictionDispatcher e = new EvictionDispatcher(cache, serdeCache, metadataCache, allocator);
       if (isSplitCache) {
         metaCachePolicy.setEvictionListener(e);
+        metaCachePolicy.setParentDebugDumper(e);
       }
       cachePolicy.setEvictionListener(e);
-      cachePolicy.setParentDebugDumper(cacheImpl);
+      cachePolicy.setParentDebugDumper(e);
+
       cacheImpl.startThreads(); // Start the cache threads.
       bufferManager = cacheImpl; // Cache also serves as buffer manager.
     } else {
       this.allocator = new SimpleAllocator(conf);
+      memoryDump = null;
       SimpleBufferManager sbm = new SimpleBufferManager(allocator, cacheMetrics);
       bufferManager = sbm;
       cache = sbm;
@@ -194,6 +195,14 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch> {
 
   private void registerMXBeans() {
     buddyAllocatorMXBean = MBeans.register("LlapDaemon", "BuddyAllocatorInfo", allocator);
+  }
+
+  @Override
+  public String getMemoryInfo() {
+    if (memoryDump == null) return "\nNot using the allocator";
+    StringBuilder sb = new StringBuilder();
+    memoryDump.debugDumpShort(sb);
+    return sb.toString();
   }
 
   @SuppressWarnings("rawtypes")

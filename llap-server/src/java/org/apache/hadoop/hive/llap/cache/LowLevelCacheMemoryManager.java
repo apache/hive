@@ -139,7 +139,13 @@ public class LowLevelCacheMemoryManager implements MemoryManager {
   @Override
   public String debugDumpForOom() {
     if (evictor == null) return null;
-    return "cache state\n" + evictor.debugDumpForOom();
+    return "\ncache state\n" + evictor.debugDumpForOom();
+  }
+
+  @Override
+  public void debugDumpShort(StringBuilder sb) {
+    if (evictor == null) return;
+    evictor.debugDumpShort(sb);
   }
 
   @Override

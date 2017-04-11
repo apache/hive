@@ -27,12 +27,13 @@ import org.apache.hadoop.hive.common.io.DiskRange;
 import org.apache.hadoop.hive.common.io.DiskRangeList;
 import org.apache.hadoop.hive.common.io.DataCache.BooleanRef;
 import org.apache.hadoop.hive.common.io.DataCache.DiskRangeListFactory;
+import org.apache.hadoop.hive.llap.cache.LlapOomDebugDump;
 import org.apache.hadoop.hive.llap.cache.LowLevelCachePolicy;
 import org.apache.hadoop.hive.llap.cache.MemoryManager;
 import org.apache.hadoop.hive.llap.cache.LowLevelCache.Priority;
 import org.apache.hadoop.hive.ql.io.orc.encoded.OrcBatchKey;
 
-public class OrcMetadataCache {
+public class OrcMetadataCache implements LlapOomDebugDump {
   private final ConcurrentHashMap<Object, OrcFileMetadata> metadata = new ConcurrentHashMap<>();
   private final ConcurrentHashMap<OrcBatchKey, OrcStripeMetadata> stripeMetadata =
       new ConcurrentHashMap<>();
@@ -144,5 +145,19 @@ public class OrcMetadataCache {
 
   public void notifyEvicted(OrcFileEstimateErrors buffer) {
     estimateErrors.remove(buffer.getFileKey());
+  }
+
+  @Override
+  public String debugDumpForOom() {
+    StringBuilder sb = new StringBuilder();
+    debugDumpShort(sb);
+    return sb.toString();
+  }
+
+  @Override
+  public void debugDumpShort(StringBuilder sb) {
+    sb.append("\nORC metadata cache state: ").append(metadata.size()).append(" files, ")
+      .append(stripeMetadata.size()).append(" stripes, ").append(estimateErrors.size())
+      .append(" files w/ORC estimate");
   }
 }

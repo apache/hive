@@ -116,6 +116,20 @@ public class LowLevelFifoCachePolicy implements LowLevelCachePolicy {
   }
 
   @Override
+  public void debugDumpShort(StringBuilder sb) {
+    sb.append("\nFIFO eviction list: ");
+    lock.lock();
+    try {
+      sb.append(buffers.size()).append(" elements)");
+    } finally {
+      lock.unlock();
+    }
+    if (parentDebugDump != null) {
+      parentDebugDump.debugDumpShort(sb);
+    }
+  }
+
+  @Override
   public long tryEvictContiguousData(int allocationSize, int count) {
     long evicted = evictInternal(allocationSize * count, allocationSize);
     int remainingCount = count - (int)(evicted / allocationSize);
