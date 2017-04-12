@@ -61,6 +61,7 @@ import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
+import org.joda.time.DateTime;
 import org.junit.Test;
 
 import com.fasterxml.jackson.core.JsonParseException;
@@ -657,7 +658,7 @@ public class TestDruidSerDe {
   };
   private static final DruidWritable DRUID_WRITABLE = new DruidWritable(
       ImmutableMap.<String, Object>builder()
-          .put("__time", 1377907200000L)
+          .put("__time", new DateTime(1377907200000L))
           .put("c0", "dim1_val")
           .put("c1", 10669.3D)
           .put("c2", 10669.45F)
@@ -666,7 +667,7 @@ public class TestDruidSerDe {
           .put("c5", 1112123)
           .put("c6", (short) 12)
           .put("c7", (byte) 0)
-          .put("__time_granularity", 1377907200000L)
+          .put("__time_granularity", new DateTime(1377907200000L))
           .build());
 
   /**
