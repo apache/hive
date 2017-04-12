@@ -32,17 +32,13 @@ STAGE PLANS:
                     Limit
                       Number of rows: 2
                       Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                      Select Operator
-                        expressions: UDFToString(_col0) (type: string)
-                        outputColumnNames: _col0
-                        Statistics: Num rows: 2 Data size: 168 Basic stats: COMPLETE Column stats: COMPLETE
-                        File Output Operator
-                          compressed: false
-                          Statistics: Num rows: 2 Data size: 168 Basic stats: COMPLETE Column stats: COMPLETE
-                          table:
-                              input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                              output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      File Output Operator
+                        compressed: false
+                        Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                        table:
+                            input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                            output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               Select Operator
                 expressions: array(1,2) (type: array<int>)
                 outputColumnNames: _col0
@@ -60,17 +56,13 @@ STAGE PLANS:
                       Limit
                         Number of rows: 2
                         Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                        Select Operator
-                          expressions: UDFToString(_col0) (type: string)
-                          outputColumnNames: _col0
-                          Statistics: Num rows: 2 Data size: 168 Basic stats: COMPLETE Column stats: COMPLETE
-                          File Output Operator
-                            compressed: false
-                            Statistics: Num rows: 2 Data size: 168 Basic stats: COMPLETE Column stats: COMPLETE
-                            table:
-                                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                        File Output Operator
+                          compressed: false
+                          Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                          table:
+                              input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                              output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator
@@ -117,17 +109,13 @@ STAGE PLANS:
                     Limit
                       Number of rows: 2
                       Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                      Select Operator
-                        expressions: UDFToString(_col0) (type: string)
-                        outputColumnNames: _col0
-                        Statistics: Num rows: 2 Data size: 168 Basic stats: COMPLETE Column stats: COMPLETE
-                        File Output Operator
-                          compressed: false
-                          Statistics: Num rows: 2 Data size: 168 Basic stats: COMPLETE Column stats: COMPLETE
-                          table:
-                              input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                              output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      File Output Operator
+                        compressed: false
+                        Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                        table:
+                            input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                            output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               Select Operator
                 expressions: array(1,2) (type: array<int>)
                 outputColumnNames: _col0
@@ -145,17 +133,13 @@ STAGE PLANS:
                       Limit
                         Number of rows: 2
                         Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                        Select Operator
-                          expressions: UDFToString(_col0) (type: string)
-                          outputColumnNames: _col0
-                          Statistics: Num rows: 2 Data size: 168 Basic stats: COMPLETE Column stats: COMPLETE
-                          File Output Operator
-                            compressed: false
-                            Statistics: Num rows: 2 Data size: 168 Basic stats: COMPLETE Column stats: COMPLETE
-                            table:
-                                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                        File Output Operator
+                          compressed: false
+                          Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                          table:
+                              input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                              output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator
