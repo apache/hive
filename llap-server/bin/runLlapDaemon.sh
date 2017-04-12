@@ -107,7 +107,7 @@ elif [ "$COMMAND" = "run" ] ; then
   CLASS='org.apache.hadoop.hive.llap.daemon.impl.LlapDaemon'
 fi
 
-JAVA_OPTS_BASE="${JAVA_OPTS_BASE} -Xloggc:${LLAP_DAEMON_LOG_DIR}/gc.log"
+JAVA_OPTS_BASE="${JAVA_OPTS_BASE} -Xloggc:${LLAP_DAEMON_LOG_DIR}/gc_$(date +%Y-%m-%d-%H).log"
 LLAP_DAEMON_OPTS="${LLAP_DAEMON_OPTS} ${JAVA_OPTS_BASE}"
 
 # Set the default GC option if none set

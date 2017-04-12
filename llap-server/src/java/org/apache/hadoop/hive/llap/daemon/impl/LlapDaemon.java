@@ -21,8 +21,10 @@ import java.lang.management.MemoryPoolMXBean;
 import java.lang.management.MemoryType;
 import java.net.InetSocketAddress;
 import java.net.URL;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
@@ -173,28 +175,33 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
         daemonConf, ConfVars.LLAP_DAEMON_TASK_SCHEDULER_WAIT_QUEUE_SIZE);
     boolean enablePreemption = HiveConf.getBoolVar(
         daemonConf, ConfVars.LLAP_DAEMON_TASK_SCHEDULER_ENABLE_PREEMPTION);
-    LOG.warn("Attempting to start LlapDaemonConf with the following configuration: " +
-        "maxJvmMemory=" + maxJvmMemory + " ("
-          + LlapUtil.humanReadableByteCount(maxJvmMemory) + ")" +
-        ", requestedExecutorMemory=" + executorMemoryBytes +
-        " (" + LlapUtil.humanReadableByteCount(executorMemoryBytes) + ")" +
-        ", llapIoCacheSize=" + ioMemoryBytes + " ("
-          + LlapUtil.humanReadableByteCount(ioMemoryBytes) + ")" +
-        ", xmxHeadRoomMemory=" + xmxHeadRoomBytes + " ("
-          + LlapUtil.humanReadableByteCount(xmxHeadRoomBytes) + ")" +
-        ", adjustedExecutorMemory=" + executorMemoryPerInstance +
-        " (" + LlapUtil.humanReadableByteCount(executorMemoryPerInstance) + ")" +
-        ", numExecutors=" + numExecutors +
-        ", llapIoEnabled=" + ioEnabled +
-        ", llapIoCacheIsDirect=" + isDirectCache +
-        ", rpcListenerPort=" + srvPort +
-        ", mngListenerPort=" + mngPort +
-        ", webPort=" + webPort +
-        ", outputFormatSvcPort=" + outputFormatServicePort +
-        ", workDirs=" + Arrays.toString(localDirs) +
-        ", shufflePort=" + shufflePort +
-        ", waitQueueSize= " + waitQueueSize +
-        ", enablePreemption= " + enablePreemption);
+    final String logMsg = "Attempting to start LlapDaemon with the following configuration: " +
+      "maxJvmMemory=" + maxJvmMemory + " ("
+      + LlapUtil.humanReadableByteCount(maxJvmMemory) + ")" +
+      ", requestedExecutorMemory=" + executorMemoryBytes +
+      " (" + LlapUtil.humanReadableByteCount(executorMemoryBytes) + ")" +
+      ", llapIoCacheSize=" + ioMemoryBytes + " ("
+      + LlapUtil.humanReadableByteCount(ioMemoryBytes) + ")" +
+      ", xmxHeadRoomMemory=" + xmxHeadRoomBytes + " ("
+      + LlapUtil.humanReadableByteCount(xmxHeadRoomBytes) + ")" +
+      ", adjustedExecutorMemory=" + executorMemoryPerInstance +
+      " (" + LlapUtil.humanReadableByteCount(executorMemoryPerInstance) + ")" +
+      ", numExecutors=" + numExecutors +
+      ", llapIoEnabled=" + ioEnabled +
+      ", llapIoCacheIsDirect=" + isDirectCache +
+      ", rpcListenerPort=" + srvPort +
+      ", mngListenerPort=" + mngPort +
+      ", webPort=" + webPort +
+      ", outputFormatSvcPort=" + outputFormatServicePort +
+      ", workDirs=" + Arrays.toString(localDirs) +
+      ", shufflePort=" + shufflePort +
+      ", waitQueueSize= " + waitQueueSize +
+      ", enablePreemption= " + enablePreemption;
+    LOG.info(logMsg);
+    final String currTSISO8601 = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ").format(new Date());
+    // Time based log retrieval may not fetch the above log line so logging to stderr for debugging purpose.
+    System.err.println(currTSISO8601 + " " + logMsg);
+
 
     long memRequired =
         executorMemoryBytes + (ioEnabled && isDirectCache == false ? ioMemoryBytes : 0);
@@ -335,7 +342,7 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
       System.setProperty("isThreadContextMapInheritable", "true");
       Configurator.initialize("LlapDaemonLog4j2", llap_l4j2.toString());
       long end = System.currentTimeMillis();
-      LOG.warn("LLAP daemon logging initialized from {} in {} ms. Async: {}",
+      LOG.debug("LLAP daemon logging initialized from {} in {} ms. Async: {}",
           llap_l4j2, (end - start), async);
     } else {
       throw new RuntimeException("Log initialization failed." +
@@ -377,7 +384,7 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
         "$$$$$$$$\\ $$$$$$$$\\ $$ |  $$ |$$ |\n" +
         "\\________|\\________|\\__|  \\__|\\__|\n" +
         "\n";
-    LOG.warn("\n\n" + asciiArt);
+    LOG.info("\n\n" + asciiArt);
   }
 
   @Override
@@ -531,7 +538,7 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
       // Relying on the RPC threads to keep the service alive.
     } catch (Throwable t) {
       // TODO Replace this with a ExceptionHandler / ShutdownHook
-      LOG.warn("Failed to start LLAP Daemon with exception", t);
+      LOG.error("Failed to start LLAP Daemon with exception", t);
       if (llapDaemon != null) {
         llapDaemon.shutdown();
       }
