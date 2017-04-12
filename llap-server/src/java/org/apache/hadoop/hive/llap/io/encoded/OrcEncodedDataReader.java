@@ -135,7 +135,7 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
   private final OrcMetadataCache metadataCache;
   private final LowLevelCache lowLevelCache;
   private final BufferUsageManager bufferManager;
-  private final Configuration conf;
+  private final Configuration daemonConf, jobConf;
   private final FileSplit split;
   private List<Integer> includedColumnIds;
   private final SearchArgument sarg;
@@ -166,13 +166,14 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
   boolean[] globalIncludes = null;
 
   public OrcEncodedDataReader(LowLevelCache lowLevelCache, BufferUsageManager bufferManager,
-      OrcMetadataCache metadataCache, Configuration conf, FileSplit split, List<Integer> columnIds,
-      SearchArgument sarg, String[] columnNames, OrcEncodedDataConsumer consumer,
-      QueryFragmentCounters counters, TypeDescription readerSchema) throws IOException {
+      OrcMetadataCache metadataCache, Configuration daemonConf, Configuration jobConf,
+      FileSplit split, List<Integer> columnIds, SearchArgument sarg, String[] columnNames,
+      OrcEncodedDataConsumer consumer, QueryFragmentCounters counters,
+      TypeDescription readerSchema) throws IOException {
     this.lowLevelCache = lowLevelCache;
     this.metadataCache = metadataCache;
     this.bufferManager = bufferManager;
-    this.conf = conf;
+    this.daemonConf = daemonConf;
     this.split = split;
     this.includedColumnIds = columnIds;
     if (this.includedColumnIds != null) {
@@ -193,15 +194,22 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
     orcReader = null;
     // 1. Get file metadata from cache, or create the reader and read it.
     // Don't cache the filesystem object for now; Tez closes it and FS cache will fix all that
-    fs = split.getPath().getFileSystem(conf);
+    fs = split.getPath().getFileSystem(jobConf);
     fileKey = determineFileId(fs, split,
-        HiveConf.getBoolVar(conf, ConfVars.LLAP_CACHE_ALLOW_SYNTHETIC_FILEID));
+        HiveConf.getBoolVar(daemonConf, ConfVars.LLAP_CACHE_ALLOW_SYNTHETIC_FILEID));
     fileMetadata = getOrReadFileMetadata();
     if (readerSchema == null) {
       readerSchema = fileMetadata.getSchema();
     }
     globalIncludes = OrcInputFormat.genIncludedColumns(readerSchema, includedColumnIds);
-    Reader.Options options = new Reader.Options(conf).include(globalIncludes);
+    // Do not allow users to override zero-copy setting. The rest can be taken from user config.
+    boolean useZeroCopy = OrcConf.USE_ZEROCOPY.getBoolean(daemonConf);
+    if (useZeroCopy != OrcConf.USE_ZEROCOPY.getBoolean(jobConf)) {
+      jobConf = new Configuration(jobConf);
+      jobConf.setBoolean(OrcConf.USE_ZEROCOPY.getAttribute(), useZeroCopy);
+    }
+    this.jobConf = jobConf;
+    Reader.Options options = new Reader.Options(jobConf).include(globalIncludes);
     evolution = new SchemaEvolution(fileMetadata.getSchema(), readerSchema, options);
     consumer.setFileMetadata(fileMetadata);
     consumer.setIncludedColumns(globalIncludes);
@@ -481,7 +489,7 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
   private void validateFileMetadata() throws IOException {
     if (fileMetadata.getCompressionKind() == CompressionKind.NONE) return;
     int bufferSize = fileMetadata.getCompressionBufferSize();
-    long minAllocSize = HiveConf.getSizeVar(conf, ConfVars.LLAP_ALLOCATOR_MIN_ALLOC);
+    long minAllocSize = HiveConf.getSizeVar(daemonConf, ConfVars.LLAP_ALLOCATOR_MIN_ALLOC);
     if (bufferSize < minAllocSize) {
       LOG.warn("ORC compression buffer size (" + bufferSize + ") is smaller than LLAP low-level "
             + "cache minimum allocation size (" + minAllocSize + "). Decrease the value for "
@@ -563,12 +571,13 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
   private void ensureOrcReader() throws IOException {
     if (orcReader != null) return;
     path = split.getPath();
-    if (fileKey instanceof Long && HiveConf.getBoolVar(conf, ConfVars.LLAP_IO_USE_FILEID_PATH)) {
+    if (fileKey instanceof Long && HiveConf.getBoolVar(
+        daemonConf, ConfVars.LLAP_IO_USE_FILEID_PATH)) {
       path = HdfsUtils.getFileIdPath(fs, path, (long)fileKey);
     }
     LlapIoImpl.ORC_LOGGER.trace("Creating reader for {} ({})", path, split.getPath());
     long startTime = counters.startTimeCounter();
-    ReaderOptions opts = OrcFile.readerOptions(conf).filesystem(fs).fileMetadata(fileMetadata);
+    ReaderOptions opts = OrcFile.readerOptions(jobConf).filesystem(fs).fileMetadata(fileMetadata);
     if (split instanceof OrcSplit) {
       OrcTail orcTail = ((OrcSplit) split).getOrcTail();
       if (orcTail != null) {
@@ -655,7 +664,7 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
     ensureOrcReader();
     if (metadataReader != null) return;
     long startTime = counters.startTimeCounter();
-    boolean useZeroCopy = (conf != null) && OrcConf.USE_ZEROCOPY.getBoolean(conf);
+    boolean useZeroCopy = (daemonConf != null) && OrcConf.USE_ZEROCOPY.getBoolean(daemonConf);
     metadataReader = RecordReaderUtils.createDefaultDataReader(
         DataReaderProperties.builder()
         .withBufferSize(orcReader.getCompressionSize())
