@@ -7154,7 +7154,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       throw new SemanticException("Unknown destination type: " + dest_type);
     }
 
-    input = genConversionSelectOperator(dest, qb, input, table_desc, dpCtx);
+    if (!(dest_type.intValue() == QBMetaData.DEST_DFS_FILE && qb.getIsQuery())) {
+      input = genConversionSelectOperator(dest, qb, input, table_desc, dpCtx);
+    }
 
     inputRR = opParseCtx.get(input).getRowResolver();
 
