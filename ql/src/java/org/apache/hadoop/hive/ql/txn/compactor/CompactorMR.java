@@ -313,6 +313,9 @@ public class CompactorMR {
     LOG.info("Submitted compaction job '" + job.getJobName() + "' with jobID=" + rj.getID() + " compaction ID=" + id);
     txnHandler.setHadoopJobId(rj.getID().toString(), id);
     rj.waitForCompletion();
+    if (!rj.isSuccessful()) {
+      throw new IOException("Job failed!");
+    }
   }
   /**
    * Set the column names and types into the job conf for the input format
