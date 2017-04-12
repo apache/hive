@@ -79,9 +79,9 @@ public class OrcColumnVectorProducer implements ColumnVectorProducer {
     cacheMetrics.incrCacheReadRequests();
     OrcEncodedDataConsumer edc = new OrcEncodedDataConsumer(consumer, columnIds.size(),
         _skipCorrupt, counters, ioMetrics);
-    // Note: we use global conf here and ignore JobConf.
-    OrcEncodedDataReader reader = new OrcEncodedDataReader(lowLevelCache, bufferManager,
-        metadataCache, conf, split, columnIds, sarg, columnNames, edc, counters, readerSchema);
+    OrcEncodedDataReader reader = new OrcEncodedDataReader(
+        lowLevelCache, bufferManager, metadataCache, conf, job, split, columnIds, sarg,
+        columnNames, edc, counters, readerSchema);
     edc.init(reader, reader);
     return edc;
   }
