@@ -39,18 +39,18 @@ import org.apache.hadoop.hive.ql.exec.vector.StructColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.TimestampColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.UnionColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
-import org.apache.orc.CompressionCodec;
+import org.apache.hive.orc.CompressionCodec;
 import org.apache.hadoop.hive.ql.io.orc.encoded.Consumer;
 import org.apache.hadoop.hive.ql.io.orc.encoded.EncodedTreeReaderFactory;
 import org.apache.hadoop.hive.ql.io.orc.encoded.EncodedTreeReaderFactory.SettableTreeReader;
 import org.apache.hadoop.hive.ql.io.orc.encoded.OrcBatchKey;
 import org.apache.hadoop.hive.ql.io.orc.encoded.Reader.OrcEncodedColumnBatch;
 import org.apache.hadoop.hive.ql.io.orc.RecordReaderImpl;
-import org.apache.orc.OrcUtils;
-import org.apache.orc.TypeDescription;
-import org.apache.orc.impl.TreeReaderFactory;
+import org.apache.hive.orc.OrcUtils;
+import org.apache.hive.orc.TypeDescription;
+import org.apache.hive.orc.impl.TreeReaderFactory;
 import org.apache.hadoop.hive.ql.io.orc.WriterImpl;
-import org.apache.orc.OrcProto;
+import org.apache.hive.orc.OrcProto;
 
 public class OrcEncodedDataConsumer
   extends EncodedDataConsumer<OrcBatchKey, OrcEncodedColumnBatch> {

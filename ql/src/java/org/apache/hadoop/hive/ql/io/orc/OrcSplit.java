@@ -34,8 +34,8 @@ import org.apache.hadoop.hive.ql.io.SyntheticFileId;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.WritableUtils;
 import org.apache.hadoop.mapred.FileSplit;
-import org.apache.orc.OrcProto;
-import org.apache.orc.impl.OrcTail;
+import org.apache.hive.orc.OrcProto;
+import org.apache.hive.orc.impl.OrcTail;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

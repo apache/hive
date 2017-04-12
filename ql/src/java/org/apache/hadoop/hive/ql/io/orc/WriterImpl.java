@@ -79,7 +79,7 @@ import org.apache.hadoop.io.Text;
  * thread as well.
  * 
  */
-public class WriterImpl extends org.apache.orc.impl.WriterImpl implements Writer {
+public class WriterImpl extends org.apache.hive.orc.impl.WriterImpl implements Writer {
 
   private final ObjectInspector inspector;
   private final VectorizedRowBatch internalBatch;

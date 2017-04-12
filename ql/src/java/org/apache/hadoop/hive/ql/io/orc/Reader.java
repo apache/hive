@@ -28,7 +28,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
  *
  * One Reader can support multiple concurrent RecordReader.
  */
-public interface Reader extends org.apache.orc.Reader {
+public interface Reader extends org.apache.hive.orc.Reader {
 
   /**
    * Get the object inspector for looking at the objects.

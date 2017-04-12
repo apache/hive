@@ -23,11 +23,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
-import org.apache.orc.OrcUtils;
-import org.apache.orc.StripeInformation;
-import org.apache.orc.TypeDescription;
-import org.apache.orc.impl.AcidStats;
-import org.apache.orc.impl.OrcAcidUtils;
+import org.apache.hive.orc.OrcUtils;
+import org.apache.hive.orc.StripeInformation;
+import org.apache.hive.orc.TypeDescription;
+import org.apache.hive.orc.impl.AcidStats;
+import org.apache.hive.orc.impl.OrcAcidUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;

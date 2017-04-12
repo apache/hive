@@ -22,11 +22,11 @@ import java.util.List;
 
 import org.apache.hadoop.hive.common.io.encoded.EncodedColumnBatch;
 import org.apache.hadoop.hive.common.io.encoded.EncodedColumnBatch.ColumnStreamData;
-import org.apache.orc.CompressionCodec;
-import org.apache.orc.impl.PositionProvider;
-import org.apache.orc.impl.SettableUncompressedStream;
-import org.apache.orc.impl.TreeReaderFactory;
-import org.apache.orc.OrcProto;
+import org.apache.hive.orc.CompressionCodec;
+import org.apache.hive.orc.impl.PositionProvider;
+import org.apache.hive.orc.impl.SettableUncompressedStream;
+import org.apache.hive.orc.impl.TreeReaderFactory;
+import org.apache.hive.orc.OrcProto;
 
 public class EncodedTreeReaderFactory extends TreeReaderFactory {
   /**
