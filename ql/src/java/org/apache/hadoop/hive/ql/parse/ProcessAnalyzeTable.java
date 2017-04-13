@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.Stack;
 
+import org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.fs.Path;
@@ -94,8 +95,9 @@ public class ProcessAnalyzeTable implements NodeProcessor {
 
       assert alias != null;
       TezWork tezWork = context.currentTask.getWork();
-      if (inputFormat.equals(OrcInputFormat.class)) {
-        // For ORC, all the following statements are the same
+      if (OrcInputFormat.class.isAssignableFrom(inputFormat) ||
+          MapredParquetInputFormat.class.isAssignableFrom(inputFormat)) {
+        // For ORC & Parquet, all the following statements are the same
         // ANALYZE TABLE T [PARTITION (...)] COMPUTE STATISTICS
         // ANALYZE TABLE T [PARTITION (...)] COMPUTE STATISTICS partialscan;
         // ANALYZE TABLE T [PARTITION (...)] COMPUTE STATISTICS noscan;

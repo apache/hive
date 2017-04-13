@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.Stack;
 
+import org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.fs.Path;
@@ -100,8 +101,8 @@ public class SparkProcessAnalyzeTable implements NodeProcessor {
       SparkWork sparkWork = context.currentTask.getWork();
       boolean partialScan = parseContext.getQueryProperties().isPartialScanAnalyzeCommand();
       boolean noScan = parseContext.getQueryProperties().isNoScanAnalyzeCommand();
-      if (inputFormat.equals(OrcInputFormat.class) && (noScan || partialScan)) {
-
+      if ((OrcInputFormat.class.isAssignableFrom(inputFormat) ||
+          MapredParquetInputFormat.class.isAssignableFrom(inputFormat)) && (noScan || partialScan)) {
         // ANALYZE TABLE T [PARTITION (...)] COMPUTE STATISTICS partialscan;
         // ANALYZE TABLE T [PARTITION (...)] COMPUTE STATISTICS noscan;
         // There will not be any Spark job above this task
