@@ -394,7 +394,9 @@ public class SQLOperation extends ExecuteStatementOperation {
   private synchronized void cleanup(OperationState state) throws HiveSQLException {
     setState(state);
 
-    if (shouldRunAsync()) {
+    //Need shut down background thread gracefully, driver.close will inform background thread
+    //a cancel request is sent.
+    if (shouldRunAsync() && state != OperationState.CANCELED && state != OperationState.TIMEDOUT) {
       Future<?> backgroundHandle = getBackgroundHandle();
       if (backgroundHandle != null) {
         boolean success = backgroundHandle.cancel(true);
