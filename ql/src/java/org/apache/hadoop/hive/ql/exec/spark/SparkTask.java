@@ -81,6 +81,8 @@ public class SparkTask extends Task<SparkWork> {
   private final PerfLogger perfLogger = SessionState.getPerfLogger();
   private static final long serialVersionUID = 1L;
   private SparkCounters sparkCounters;
+  private transient SparkJobRef jobRef = null;
+  private transient boolean isShutdown = false;
 
   @Override
   public void initialize(HiveConf conf, QueryPlan queryPlan, DriverContext driverContext) {
@@ -102,7 +104,7 @@ public class SparkTask extends Task<SparkWork> {
       sparkWork.setRequiredCounterPrefix(getCounterPrefixes());
 
       perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.SPARK_SUBMIT_JOB);
-      SparkJobRef jobRef = sparkSession.submit(driverContext, sparkWork);
+      jobRef = sparkSession.submit(driverContext, sparkWork);
       perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.SPARK_SUBMIT_JOB);
 
       addToHistory(jobRef);
@@ -330,6 +332,23 @@ public class SparkTask extends Task<SparkWork> {
     }
 
     return null;
+  }
+
+  public boolean isTaskShutdown() {
+    return isShutdown;
+  }
+
+  @Override
+  public void shutdown() {
+    super.shutdown();
+    if (jobRef != null && !isShutdown) {
+      try {
+        jobRef.cancelJob();
+      } catch (Exception e) {
+        LOG.warn("failed to kill job", e);
+      }
+    }
+    isShutdown = true;
   }
 
   private List<Map<String, String>> getPartitionSpecs(StatsWork work) throws HiveException {
