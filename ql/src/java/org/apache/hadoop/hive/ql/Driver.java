@@ -184,6 +184,25 @@ public class Driver implements CommandProcessor {
     // resource releases
     public final ReentrantLock stateLock = new ReentrantLock();
     public DriverState driverState = DriverState.INITIALIZED;
+    private static ThreadLocal<LockedDriverState> lds = new ThreadLocal<LockedDriverState>() {
+      @Override
+      protected LockedDriverState initialValue() {
+        return new LockedDriverState();
+      }
+    };
+
+    public static void setLockedDriverState(LockedDriverState lDrv) {
+      lds.set(lDrv);
+    }
+
+    public static LockedDriverState getLockedDriverState() {
+      return lds.get();
+    }
+
+    public static void removeLockedDriverState() {
+      if (lds != null)
+        lds.remove();
+    }
   }
 
   private boolean checkConcurrency() {
@@ -439,6 +458,8 @@ public class Driver implements CommandProcessor {
       TaskFactory.resetId();
     }
     saveSession(queryState);
+
+    LockedDriverState.setLockedDriverState(lDrvState);
 
     String queryId = conf.getVar(HiveConf.ConfVars.HIVEQUERYID);
 
@@ -1344,6 +1365,7 @@ public class Driver implements CommandProcessor {
     if (!validateConfVariables()) {
       return createProcessorResponse(12);
     }
+    LockedDriverState.setLockedDriverState(lDrvState);
 
     lDrvState.stateLock.lock();
     try {
@@ -2178,6 +2200,7 @@ public class Driver implements CommandProcessor {
       lDrvState.driverState = DriverState.CLOSED;
     } finally {
       lDrvState.stateLock.unlock();
+      LockedDriverState.removeLockedDriverState();
     }
     if (SessionState.get() != null) {
       SessionState.get().getLineageState().clear();

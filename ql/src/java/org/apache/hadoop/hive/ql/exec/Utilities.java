@@ -112,6 +112,8 @@ import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.ql.Context;
+import org.apache.hadoop.hive.ql.Driver.DriverState;
+import org.apache.hadoop.hive.ql.Driver.LockedDriverState;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.QueryPlan;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator.RecordWriter;
@@ -3399,6 +3401,7 @@ public final class Utilities {
 
     Set<Path> pathsProcessed = new HashSet<Path>();
     List<Path> pathsToAdd = new LinkedList<Path>();
+    LockedDriverState lDrvStat = LockedDriverState.getLockedDriverState();
     // AliasToWork contains all the aliases
     for (String alias : work.getAliasToWork().keySet()) {
       LOG.info("Processing alias " + alias);
@@ -3407,6 +3410,9 @@ public final class Utilities {
       boolean isEmptyTable = true;
       // Note: this copies the list because createDummyFileForEmptyPartition may modify the map.
       for (String fileString : new LinkedList<String>(work.getPathToAliases().keySet())) {
+        if (lDrvStat != null && lDrvStat.driverState == DriverState.INTERRUPT)
+          throw new IOException("Operation is Canceled. "); 
+
         List<String> aliases = work.getPathToAliases().get(fileString);
         if (aliases.contains(alias)) {
           if (fileString != null) {
@@ -3453,6 +3459,8 @@ public final class Utilities {
     List<Path> finalPathsToAdd = new LinkedList<>();
     List<Future<Path>> futures = new LinkedList<>();
     for (final Path path : pathsToAdd) {
+      if (lDrvStat != null && lDrvStat.driverState == DriverState.INTERRUPT)
+        throw new IOException("Operation is Canceled. ");
       if (pool == null) {
         finalPathsToAdd.add(new GetInputPathsCallable(path, job, work, hiveScratchDir, ctx, skipDummy).call());
       } else {
@@ -3462,6 +3470,8 @@ public final class Utilities {
 
     if (pool != null) {
       for (Future<Path> future : futures) {
+        if (lDrvStat != null && lDrvStat.driverState == DriverState.INTERRUPT)
+          throw new IOException("Operation is Canceled. ");
         finalPathsToAdd.add(future.get());
       }
     }
