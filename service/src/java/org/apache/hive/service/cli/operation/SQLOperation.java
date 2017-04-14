@@ -398,9 +398,11 @@ public class SQLOperation extends ExecuteStatementOperation {
       Future<?> backgroundHandle = getBackgroundHandle();
       if (backgroundHandle != null) {
         boolean success = backgroundHandle.cancel(true);
+        String queryId = confOverlay.get(HiveConf.ConfVars.HIVEQUERYID.varname);
         if (success) {
-          String queryId = confOverlay.get(HiveConf.ConfVars.HIVEQUERYID.varname);
           LOG.info("The running operation has been successfully interrupted: " + queryId);
+        } else if (state == OperationState.CANCELED) {
+          LOG.info("The running operation could not be cancelled, typically because it has already completed normally: " + queryId);
         }
       }
     }
@@ -427,8 +429,16 @@ public class SQLOperation extends ExecuteStatementOperation {
 
   @Override
   public void cancel(OperationState stateAfterCancel) throws HiveSQLException {
+    String queryId = null;
+    if (stateAfterCancel == OperationState.CANCELED) {
+      queryId = confOverlay.get(HiveConf.ConfVars.HIVEQUERYID.varname);
+      LOG.info("Cancelling the query execution: " + queryId);
+    }
     cleanup(stateAfterCancel);
     cleanupOperationLog();
+    if (stateAfterCancel == OperationState.CANCELED) {
+      LOG.info("Successfully cancelled the query: " + queryId);
+    }
   }
 
   @Override
