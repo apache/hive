@@ -1,0 +1,91 @@
+PREHOOK: query: DROP TABLE blobstore_source
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE blobstore_source
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: CREATE TABLE blobstore_source (
+    key int
+) 
+#### A masked pattern was here ####
+PREHOOK: type: CREATETABLE
+PREHOOK: Input: ### test.blobstore.path ###/zero_rows_blobstore/blobstore_source
+PREHOOK: Output: database:default
+PREHOOK: Output: default@blobstore_source
+POSTHOOK: query: CREATE TABLE blobstore_source (
+    key int
+) 
+#### A masked pattern was here ####
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Input: ### test.blobstore.path ###/zero_rows_blobstore/blobstore_source
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@blobstore_source
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv6.txt' INTO TABLE blobstore_source
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@blobstore_source
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv6.txt' INTO TABLE blobstore_source
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@blobstore_source
+PREHOOK: query: DROP TABLE blobstore_target
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE blobstore_target
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: CREATE TABLE blobstore_target (
+    key int
+) 
+#### A masked pattern was here ####
+PREHOOK: type: CREATETABLE
+PREHOOK: Input: ### test.blobstore.path ###/zero_rows_blobstore/blobstore_target
+PREHOOK: Output: database:default
+PREHOOK: Output: default@blobstore_target
+POSTHOOK: query: CREATE TABLE blobstore_target (
+    key int
+) 
+#### A masked pattern was here ####
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Input: ### test.blobstore.path ###/zero_rows_blobstore/blobstore_target
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@blobstore_target
+PREHOOK: query: SELECT COUNT(*) FROM blobstore_target
+PREHOOK: type: QUERY
+PREHOOK: Input: default@blobstore_target
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT COUNT(*) FROM blobstore_target
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@blobstore_target
+#### A masked pattern was here ####
+0
+PREHOOK: query: INSERT OVERWRITE TABLE blobstore_target SELECT key FROM blobstore_source
+PREHOOK: type: QUERY
+PREHOOK: Input: default@blobstore_source
+PREHOOK: Output: default@blobstore_target
+POSTHOOK: query: INSERT OVERWRITE TABLE blobstore_target SELECT key FROM blobstore_source
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@blobstore_source
+POSTHOOK: Output: default@blobstore_target
+PREHOOK: query: SELECT COUNT(*) FROM blobstore_target
+PREHOOK: type: QUERY
+PREHOOK: Input: default@blobstore_target
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT COUNT(*) FROM blobstore_target
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@blobstore_target
+#### A masked pattern was here ####
+100
+PREHOOK: query: INSERT OVERWRITE TABLE blobstore_target SELECT key FROM blobstore_source WHERE FALSE
+PREHOOK: type: QUERY
+PREHOOK: Input: default@blobstore_source
+PREHOOK: Output: default@blobstore_target
+POSTHOOK: query: INSERT OVERWRITE TABLE blobstore_target SELECT key FROM blobstore_source WHERE FALSE
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@blobstore_source
+POSTHOOK: Output: default@blobstore_target
+PREHOOK: query: SELECT COUNT(*) FROM blobstore_target
+PREHOOK: type: QUERY
+PREHOOK: Input: default@blobstore_target
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT COUNT(*) FROM blobstore_target
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@blobstore_target
+#### A masked pattern was here ####
+0
