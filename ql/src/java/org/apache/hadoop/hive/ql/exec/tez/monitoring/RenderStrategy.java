@@ -79,7 +79,9 @@ class RenderStrategy {
               perfLogger.PerfLogBegin(TezJobMonitor.CLASS_NAME, PerfLogger.TEZ_RUN_VERTEX + s);
             }
 
-            perfLogger.PerfLogEnd(TezJobMonitor.CLASS_NAME, PerfLogger.TEZ_RUN_VERTEX + s);
+            if (!perfLogger.endTimeHasMethod(PerfLogger.TEZ_RUN_VERTEX + s)) {
+              perfLogger.PerfLogEnd(TezJobMonitor.CLASS_NAME, PerfLogger.TEZ_RUN_VERTEX + s);
+            }
           }
           if (complete < total && (complete > 0 || running > 0 || failed > 0)) {
 
