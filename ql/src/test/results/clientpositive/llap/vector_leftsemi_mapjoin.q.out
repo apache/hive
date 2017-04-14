@@ -5991,6 +5991,8 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                reduceColumnNullOrder: aa
+                reduceColumnSortOrder: ++
                 groupByVectorOutput: true
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -6180,6 +6182,8 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                reduceColumnNullOrder: aa
+                reduceColumnSortOrder: ++
                 groupByVectorOutput: true
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -6371,6 +6375,8 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                reduceColumnNullOrder: aa
+                reduceColumnSortOrder: ++
                 groupByVectorOutput: true
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -6562,6 +6568,8 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                reduceColumnNullOrder: a
+                reduceColumnSortOrder: +
                 groupByVectorOutput: true
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -6756,6 +6764,8 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                reduceColumnNullOrder: aa
+                reduceColumnSortOrder: ++
                 groupByVectorOutput: true
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -6950,6 +6960,8 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                reduceColumnNullOrder: a
+                reduceColumnSortOrder: +
                 groupByVectorOutput: true
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -7144,6 +7156,8 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                reduceColumnNullOrder: a
+                reduceColumnSortOrder: +
                 groupByVectorOutput: true
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -7327,6 +7341,8 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                reduceColumnNullOrder: aa
+                reduceColumnSortOrder: ++
                 groupByVectorOutput: true
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -7515,6 +7531,8 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                reduceColumnNullOrder: a
+                reduceColumnSortOrder: +
                 groupByVectorOutput: true
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -7719,6 +7737,8 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                reduceColumnNullOrder: aa
+                reduceColumnSortOrder: ++
                 groupByVectorOutput: true
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -7959,6 +7979,8 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                reduceColumnNullOrder: aa
+                reduceColumnSortOrder: ++
                 groupByVectorOutput: true
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -8158,6 +8180,8 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                reduceColumnNullOrder: aa
+                reduceColumnSortOrder: ++
                 groupByVectorOutput: true
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -8416,6 +8440,8 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                reduceColumnNullOrder: a
+                reduceColumnSortOrder: +
                 groupByVectorOutput: true
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -8636,6 +8662,8 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                reduceColumnNullOrder: a
+                reduceColumnSortOrder: +
                 groupByVectorOutput: true
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -8868,6 +8896,8 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                reduceColumnNullOrder: a
+                reduceColumnSortOrder: +
                 groupByVectorOutput: true
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -9103,6 +9133,8 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                reduceColumnNullOrder: a
+                reduceColumnSortOrder: +
                 groupByVectorOutput: true
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -9338,6 +9370,8 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                reduceColumnNullOrder: a
+                reduceColumnSortOrder: +
                 groupByVectorOutput: true
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -9575,6 +9609,8 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                reduceColumnNullOrder: a
+                reduceColumnSortOrder: +
                 groupByVectorOutput: true
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -9849,6 +9885,8 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                reduceColumnNullOrder: a
+                reduceColumnSortOrder: +
                 groupByVectorOutput: true
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -10232,6 +10270,8 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                reduceColumnNullOrder: aa
+                reduceColumnSortOrder: ++
                 groupByVectorOutput: true
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -10424,6 +10464,8 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                reduceColumnNullOrder: aa
+                reduceColumnSortOrder: ++
                 groupByVectorOutput: true
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -10618,6 +10660,8 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                reduceColumnNullOrder: aa
+                reduceColumnSortOrder: ++
                 groupByVectorOutput: true
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -10812,6 +10856,8 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                reduceColumnNullOrder: a
+                reduceColumnSortOrder: +
                 groupByVectorOutput: true
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -11009,6 +11055,8 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                reduceColumnNullOrder: aa
+                reduceColumnSortOrder: ++
                 groupByVectorOutput: true
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -11206,6 +11254,8 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                reduceColumnNullOrder: a
+                reduceColumnSortOrder: +
                 groupByVectorOutput: true
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -11403,6 +11453,8 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                reduceColumnNullOrder: a
+                reduceColumnSortOrder: +
                 groupByVectorOutput: true
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -11589,6 +11641,8 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                reduceColumnNullOrder: aa
+                reduceColumnSortOrder: ++
                 groupByVectorOutput: true
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -11780,6 +11834,8 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                reduceColumnNullOrder: a
+                reduceColumnSortOrder: +
                 groupByVectorOutput: true
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -11987,6 +12043,8 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                reduceColumnNullOrder: aa
+                reduceColumnSortOrder: ++
                 groupByVectorOutput: true
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -12227,6 +12285,8 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                reduceColumnNullOrder: aa
+                reduceColumnSortOrder: ++
                 groupByVectorOutput: true
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -12429,6 +12489,8 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                reduceColumnNullOrder: aa
+                reduceColumnSortOrder: ++
                 groupByVectorOutput: true
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -12687,6 +12749,8 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                reduceColumnNullOrder: a
+                reduceColumnSortOrder: +
                 groupByVectorOutput: true
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -12907,6 +12971,8 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                reduceColumnNullOrder: a
+                reduceColumnSortOrder: +
                 groupByVectorOutput: true
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -13139,6 +13205,8 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                reduceColumnNullOrder: a
+                reduceColumnSortOrder: +
                 groupByVectorOutput: true
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -13374,6 +13442,8 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                reduceColumnNullOrder: a
+                reduceColumnSortOrder: +
                 groupByVectorOutput: true
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -13609,6 +13679,8 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                reduceColumnNullOrder: a
+                reduceColumnSortOrder: +
                 groupByVectorOutput: true
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -13846,6 +13918,8 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                reduceColumnNullOrder: a
+                reduceColumnSortOrder: +
                 groupByVectorOutput: true
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -14126,6 +14200,8 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                reduceColumnNullOrder: a
+                reduceColumnSortOrder: +
                 groupByVectorOutput: true
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -14512,6 +14588,8 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                reduceColumnNullOrder: aa
+                reduceColumnSortOrder: ++
                 groupByVectorOutput: true
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -14704,6 +14782,8 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                reduceColumnNullOrder: aa
+                reduceColumnSortOrder: ++
                 groupByVectorOutput: true
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -14898,6 +14978,8 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                reduceColumnNullOrder: aa
+                reduceColumnSortOrder: ++
                 groupByVectorOutput: true
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -15092,6 +15174,8 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                reduceColumnNullOrder: a
+                reduceColumnSortOrder: +
                 groupByVectorOutput: true
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -15289,6 +15373,8 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                reduceColumnNullOrder: aa
+                reduceColumnSortOrder: ++
                 groupByVectorOutput: true
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -15486,6 +15572,8 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                reduceColumnNullOrder: a
+                reduceColumnSortOrder: +
                 groupByVectorOutput: true
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -15683,6 +15771,8 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                reduceColumnNullOrder: a
+                reduceColumnSortOrder: +
                 groupByVectorOutput: true
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -15869,6 +15959,8 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                reduceColumnNullOrder: aa
+                reduceColumnSortOrder: ++
                 groupByVectorOutput: true
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -16060,6 +16152,8 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                reduceColumnNullOrder: a
+                reduceColumnSortOrder: +
                 groupByVectorOutput: true
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -16267,6 +16361,8 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                reduceColumnNullOrder: aa
+                reduceColumnSortOrder: ++
                 groupByVectorOutput: true
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -16507,6 +16603,8 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                reduceColumnNullOrder: aa
+                reduceColumnSortOrder: ++
                 groupByVectorOutput: true
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -16709,6 +16807,8 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                reduceColumnNullOrder: aa
+                reduceColumnSortOrder: ++
                 groupByVectorOutput: true
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -16967,6 +17067,8 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                reduceColumnNullOrder: a
+                reduceColumnSortOrder: +
                 groupByVectorOutput: true
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -17187,6 +17289,8 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                reduceColumnNullOrder: a
+                reduceColumnSortOrder: +
                 groupByVectorOutput: true
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -17419,6 +17523,8 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                reduceColumnNullOrder: a
+                reduceColumnSortOrder: +
                 groupByVectorOutput: true
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -17654,6 +17760,8 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                reduceColumnNullOrder: a
+                reduceColumnSortOrder: +
                 groupByVectorOutput: true
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -17889,6 +17997,8 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                reduceColumnNullOrder: a
+                reduceColumnSortOrder: +
                 groupByVectorOutput: true
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -18126,6 +18236,8 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                reduceColumnNullOrder: a
+                reduceColumnSortOrder: +
                 groupByVectorOutput: true
                 allNative: false
                 usesVectorUDFAdaptor: false
@@ -18406,6 +18518,8 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                reduceColumnNullOrder: a
+                reduceColumnSortOrder: +
                 groupByVectorOutput: true
                 allNative: false
                 usesVectorUDFAdaptor: false

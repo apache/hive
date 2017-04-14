@@ -192,7 +192,9 @@ public class ReduceRecordSource implements RecordSource {
                                   VectorizedBatchUtil.typeInfosFromStructObjectInspector(
                                       keyStructInspector),
                                   /* useExternalBuffer */ true,
-                                  binarySortableSerDe.getSortOrders()));
+                                  binarySortableSerDe.getSortOrders(),
+                                  binarySortableSerDe.getNullMarkers(),
+                                  binarySortableSerDe.getNotNullMarkers()));
         keyBinarySortableDeserializeToRow.init(0);
 
         final int valuesSize = valueStructInspectors.getAllStructFieldRefs().size();
