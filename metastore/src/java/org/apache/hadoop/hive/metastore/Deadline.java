@@ -86,15 +86,15 @@ public class Deadline {
    */
   public static void resetTimeout(long timeoutMs) throws MetaException {
     if (timeoutMs <= 0) {
-      throw newMetaException(new DeadlineException("The reset timeout value should be " +
+      throw MetaStoreUtils.newMetaException(new DeadlineException("The reset timeout value should be " +
           "larger than 0: " + timeoutMs));
     }
     Deadline deadline = getCurrentDeadline();
     if (deadline != null) {
       deadline.timeoutNanos = timeoutMs * 1000000L;
     } else {
-      throw newMetaException(new DeadlineException("The threadlocal Deadline is null," +
-          " please register it firstly."));
+      throw MetaStoreUtils.newMetaException(new DeadlineException("The threadlocal Deadline is null," +
+          " please register it first."));
     }
   }
 
@@ -105,8 +105,8 @@ public class Deadline {
   public static boolean startTimer(String method) throws MetaException {
     Deadline deadline = getCurrentDeadline();
     if (deadline == null) {
-      throw newMetaException(new DeadlineException("The threadlocal Deadline is null," +
-          " please register it firstly."));
+      throw MetaStoreUtils.newMetaException(new DeadlineException("The threadlocal Deadline is null," +
+          " please register it first."));
     }
     if (deadline.startTime != NO_DEADLINE) return false;
     deadline.method = method;
@@ -125,8 +125,8 @@ public class Deadline {
       deadline.startTime = NO_DEADLINE;
       deadline.method = null;
     } else {
-      throw newMetaException(new DeadlineException("The threadlocal Deadline is null," +
-          " please register it firstly."));
+      throw MetaStoreUtils.newMetaException(new DeadlineException("The threadlocal Deadline is null," +
+          " please register it first."));
     }
   }
 
@@ -146,7 +146,7 @@ public class Deadline {
     if (deadline != null) {
       deadline.check();
     } else {
-      throw newMetaException(new DeadlineException("The threadlocal Deadline is null," +
+      throw MetaStoreUtils.newMetaException(new DeadlineException("The threadlocal Deadline is null," +
           " please register it first."));
     }
   }
@@ -165,18 +165,7 @@ public class Deadline {
             + (elapsedTime / 1000000L) + "ms exceeds " + (timeoutNanos / 1000000L)  + "ms");
       }
     } catch (DeadlineException e) {
-      throw newMetaException(e);
+      throw MetaStoreUtils.newMetaException(e);
     }
-  }
-
-  /**
-   * convert DeadlineException to MetaException
-   * @param e
-   * @return
-   */
-  private static MetaException newMetaException(DeadlineException e) {
-    MetaException metaException = new MetaException(e.getMessage());
-    metaException.initCause(e);
-    return metaException;
   }
 }

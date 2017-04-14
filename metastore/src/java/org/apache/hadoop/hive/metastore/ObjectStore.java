@@ -2737,7 +2737,7 @@ public class ObjectStore implements RawStore, Configurable {
         throw ex;
       } catch (Exception ex) {
         LOG.error("", ex);
-        throw new MetaException(ex.getMessage());
+        throw MetaStoreUtils.newMetaException(ex);
       } finally {
         close();
       }
@@ -2767,7 +2767,7 @@ public class ObjectStore implements RawStore, Configurable {
         if (ex instanceof MetaException) {
           throw (MetaException)ex;
         }
-        throw new MetaException(ex.getMessage());
+        throw MetaStoreUtils.newMetaException(ex);
       }
       if (!isInTxn) {
         JDOException rollbackEx = null;
@@ -3302,12 +3302,8 @@ public class ObjectStore implements RawStore, Configurable {
     } finally {
       if (!success) {
         rollbackTransaction();
-        MetaException metaException = new MetaException(
-            "The transaction for alter partition did not commit successfully.");
-        if (e != null) {
-          metaException.initCause(e);
-        }
-        throw metaException;
+        throw MetaStoreUtils.newMetaException(
+            "The transaction for alter partition did not commit successfully.", e);
       }
     }
   }
@@ -3331,12 +3327,8 @@ public class ObjectStore implements RawStore, Configurable {
     } finally {
       if (!success) {
         rollbackTransaction();
-        MetaException metaException = new MetaException(
-            "The transaction for alter partition did not commit successfully.");
-        if (e != null) {
-          metaException.initCause(e);
-        }
-        throw metaException;
+        throw MetaStoreUtils.newMetaException(
+            "The transaction for alter partition did not commit successfully.", e);
       }
     }
   }
@@ -6782,8 +6774,10 @@ public class ObjectStore implements RawStore, Configurable {
     try {
       List<MTableColumnStatistics> stats = getMTableColumnStatistics(table,
           colNames, queryWrapper);
-      for(MTableColumnStatistics cStat : stats) {
-        statsMap.put(cStat.getColName(), cStat);
+      if (stats != null) {
+        for(MTableColumnStatistics cStat : stats) {
+          statsMap.put(cStat.getColName(), cStat);
+        }
       }
     } finally {
       queryWrapper.close();
@@ -6946,7 +6940,7 @@ public class ObjectStore implements RawStore, Configurable {
       if (ex instanceof MetaException) {
         throw (MetaException) ex;
       }
-      throw new MetaException(ex.getMessage());
+      throw MetaStoreUtils.newMetaException(ex);
     } finally {
       if (!committed) {
         rollbackTransaction();
@@ -6994,7 +6988,7 @@ public class ObjectStore implements RawStore, Configurable {
 
         try {
         List<MTableColumnStatistics> mStats = getMTableColumnStatistics(getTable(), colNames, queryWrapper);
-        if (mStats.isEmpty()) return null;
+        if (mStats == null || mStats.isEmpty()) return null;
         // LastAnalyzed is stored per column, but thrift object has it per multiple columns.
         // Luckily, nobody actually uses it, so we will set to lowest value of all columns for now.
         ColumnStatisticsDesc desc = StatObjectConverter.getTableColumnStatisticsDesc(mStats.get(0));
@@ -7184,7 +7178,7 @@ public class ObjectStore implements RawStore, Configurable {
       if (ex instanceof MetaException) {
         throw (MetaException) ex;
       }
-      throw new MetaException(ex.getMessage());
+      throw MetaStoreUtils.newMetaException(ex);
     } finally {
       if (!committed) {
         rollbackTransaction();
@@ -7662,7 +7656,7 @@ public class ObjectStore implements RawStore, Configurable {
           throw new MetaException("Version table not found. " + "The metastore is not upgraded to "
               + MetaStoreSchemaInfo.getHiveSchemaVersion());
         } else {
-          throw e;
+          throw MetaStoreUtils.newMetaException(e);
         }
       }
       committed = commitTransaction();
