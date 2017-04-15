@@ -11156,17 +11156,20 @@ class CurrentNotificationEventId:
 class InsertEventRequestData:
   """
   Attributes:
+   - replace
    - filesAdded
    - filesAddedChecksum
   """
 
   thrift_spec = (
     None, # 0
-    (1, TType.LIST, 'filesAdded', (TType.STRING,None), None, ), # 1
-    (2, TType.LIST, 'filesAddedChecksum', (TType.STRING,None), None, ), # 2
+    (1, TType.BOOL, 'replace', None, None, ), # 1
+    (2, TType.LIST, 'filesAdded', (TType.STRING,None), None, ), # 2
+    (3, TType.LIST, 'filesAddedChecksum', (TType.STRING,None), None, ), # 3
   )
 
-  def __init__(self, filesAdded=None, filesAddedChecksum=None,):
+  def __init__(self, replace=None, filesAdded=None, filesAddedChecksum=None,):
+    self.replace = replace
     self.filesAdded = filesAdded
     self.filesAddedChecksum = filesAddedChecksum
 
@@ -11180,6 +11183,11 @@ class InsertEventRequestData:
       if ftype == TType.STOP:
         break
       if fid == 1:
+        if ftype == TType.BOOL:
+          self.replace = iprot.readBool()
+        else:
+          iprot.skip(ftype)
+      elif fid == 2:
         if ftype == TType.LIST:
           self.filesAdded = []
           (_etype495, _size492) = iprot.readListBegin()
@@ -11189,7 +11197,7 @@ class InsertEventRequestData:
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
-      elif fid == 2:
+      elif fid == 3:
         if ftype == TType.LIST:
           self.filesAddedChecksum = []
           (_etype501, _size498) = iprot.readListBegin()
@@ -11209,15 +11217,19 @@ class InsertEventRequestData:
       oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
       return
     oprot.writeStructBegin('InsertEventRequestData')
+    if self.replace is not None:
+      oprot.writeFieldBegin('replace', TType.BOOL, 1)
+      oprot.writeBool(self.replace)
+      oprot.writeFieldEnd()
     if self.filesAdded is not None:
-      oprot.writeFieldBegin('filesAdded', TType.LIST, 1)
+      oprot.writeFieldBegin('filesAdded', TType.LIST, 2)
       oprot.writeListBegin(TType.STRING, len(self.filesAdded))
       for iter504 in self.filesAdded:
         oprot.writeString(iter504)
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     if self.filesAddedChecksum is not None:
-      oprot.writeFieldBegin('filesAddedChecksum', TType.LIST, 2)
+      oprot.writeFieldBegin('filesAddedChecksum', TType.LIST, 3)
       oprot.writeListBegin(TType.STRING, len(self.filesAddedChecksum))
       for iter505 in self.filesAddedChecksum:
         oprot.writeString(iter505)
@@ -11234,6 +11246,7 @@ class InsertEventRequestData:
 
   def __hash__(self):
     value = 17
+    value = (value * 31) ^ hash(self.replace)
     value = (value * 31) ^ hash(self.filesAdded)
     value = (value * 31) ^ hash(self.filesAddedChecksum)
     return value

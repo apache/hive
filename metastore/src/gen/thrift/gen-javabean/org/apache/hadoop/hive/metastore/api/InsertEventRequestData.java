@@ -38,8 +38,9 @@ import org.slf4j.LoggerFactory;
 public class InsertEventRequestData implements org.apache.thrift.TBase<InsertEventRequestData, InsertEventRequestData._Fields>, java.io.Serializable, Cloneable, Comparable<InsertEventRequestData> {
   private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("InsertEventRequestData");
 
-  private static final org.apache.thrift.protocol.TField FILES_ADDED_FIELD_DESC = new org.apache.thrift.protocol.TField("filesAdded", org.apache.thrift.protocol.TType.LIST, (short)1);
-  private static final org.apache.thrift.protocol.TField FILES_ADDED_CHECKSUM_FIELD_DESC = new org.apache.thrift.protocol.TField("filesAddedChecksum", org.apache.thrift.protocol.TType.LIST, (short)2);
+  private static final org.apache.thrift.protocol.TField REPLACE_FIELD_DESC = new org.apache.thrift.protocol.TField("replace", org.apache.thrift.protocol.TType.BOOL, (short)1);
+  private static final org.apache.thrift.protocol.TField FILES_ADDED_FIELD_DESC = new org.apache.thrift.protocol.TField("filesAdded", org.apache.thrift.protocol.TType.LIST, (short)2);
+  private static final org.apache.thrift.protocol.TField FILES_ADDED_CHECKSUM_FIELD_DESC = new org.apache.thrift.protocol.TField("filesAddedChecksum", org.apache.thrift.protocol.TType.LIST, (short)3);
 
   private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
   static {
@@ -47,13 +48,15 @@ public class InsertEventRequestData implements org.apache.thrift.TBase<InsertEve
     schemes.put(TupleScheme.class, new InsertEventRequestDataTupleSchemeFactory());
   }
 
+  private boolean replace; // optional
   private List<String> filesAdded; // required
   private List<String> filesAddedChecksum; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
-    FILES_ADDED((short)1, "filesAdded"),
-    FILES_ADDED_CHECKSUM((short)2, "filesAddedChecksum");
+    REPLACE((short)1, "replace"),
+    FILES_ADDED((short)2, "filesAdded"),
+    FILES_ADDED_CHECKSUM((short)3, "filesAddedChecksum");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -68,9 +71,11 @@ public class InsertEventRequestData implements org.apache.thrift.TBase<InsertEve
      */
     public static _Fields findByThriftId(int fieldId) {
       switch(fieldId) {
-        case 1: // FILES_ADDED
+        case 1: // REPLACE
+          return REPLACE;
+        case 2: // FILES_ADDED
           return FILES_ADDED;
-        case 2: // FILES_ADDED_CHECKSUM
+        case 3: // FILES_ADDED_CHECKSUM
           return FILES_ADDED_CHECKSUM;
         default:
           return null;
@@ -112,10 +117,14 @@ public class InsertEventRequestData implements org.apache.thrift.TBase<InsertEve
   }
 
   // isset id assignments
-  private static final _Fields optionals[] = {_Fields.FILES_ADDED_CHECKSUM};
+  private static final int __REPLACE_ISSET_ID = 0;
+  private byte __isset_bitfield = 0;
+  private static final _Fields optionals[] = {_Fields.REPLACE,_Fields.FILES_ADDED_CHECKSUM};
   public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
+    tmpMap.put(_Fields.REPLACE, new org.apache.thrift.meta_data.FieldMetaData("replace", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
     tmpMap.put(_Fields.FILES_ADDED, new org.apache.thrift.meta_data.FieldMetaData("filesAdded", org.apache.thrift.TFieldRequirementType.REQUIRED, 
         new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
             new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING))));
@@ -140,6 +149,8 @@ public class InsertEventRequestData implements org.apache.thrift.TBase<InsertEve
    * Performs a deep copy on <i>other</i>.
    */
   public InsertEventRequestData(InsertEventRequestData other) {
+    __isset_bitfield = other.__isset_bitfield;
+    this.replace = other.replace;
     if (other.isSetFilesAdded()) {
       List<String> __this__filesAdded = new ArrayList<String>(other.filesAdded);
       this.filesAdded = __this__filesAdded;
@@ -156,8 +167,32 @@ public class InsertEventRequestData implements org.apache.thrift.TBase<InsertEve
 
   @Override
   public void clear() {
+    setReplaceIsSet(false);
+    this.replace = false;
     this.filesAdded = null;
     this.filesAddedChecksum = null;
+  }
+
+  public boolean isReplace() {
+    return this.replace;
+  }
+
+  public void setReplace(boolean replace) {
+    this.replace = replace;
+    setReplaceIsSet(true);
+  }
+
+  public void unsetReplace() {
+    __isset_bitfield = EncodingUtils.clearBit(__isset_bitfield, __REPLACE_ISSET_ID);
+  }
+
+  /** Returns true if field replace is set (has been assigned a value) and false otherwise */
+  public boolean isSetReplace() {
+    return EncodingUtils.testBit(__isset_bitfield, __REPLACE_ISSET_ID);
+  }
+
+  public void setReplaceIsSet(boolean value) {
+    __isset_bitfield = EncodingUtils.setBit(__isset_bitfield, __REPLACE_ISSET_ID, value);
   }
 
   public int getFilesAddedSize() {
@@ -238,6 +273,14 @@ public class InsertEventRequestData implements org.apache.thrift.TBase<InsertEve
 
   public void setFieldValue(_Fields field, Object value) {
     switch (field) {
+    case REPLACE:
+      if (value == null) {
+        unsetReplace();
+      } else {
+        setReplace((Boolean)value);
+      }
+      break;
+
     case FILES_ADDED:
       if (value == null) {
         unsetFilesAdded();
@@ -259,6 +302,9 @@ public class InsertEventRequestData implements org.apache.thrift.TBase<InsertEve
 
   public Object getFieldValue(_Fields field) {
     switch (field) {
+    case REPLACE:
+      return isReplace();
+
     case FILES_ADDED:
       return getFilesAdded();
 
@@ -276,6 +322,8 @@ public class InsertEventRequestData implements org.apache.thrift.TBase<InsertEve
     }
 
     switch (field) {
+    case REPLACE:
+      return isSetReplace();
     case FILES_ADDED:
       return isSetFilesAdded();
     case FILES_ADDED_CHECKSUM:
@@ -296,6 +344,15 @@ public class InsertEventRequestData implements org.apache.thrift.TBase<InsertEve
   public boolean equals(InsertEventRequestData that) {
     if (that == null)
       return false;
+
+    boolean this_present_replace = true && this.isSetReplace();
+    boolean that_present_replace = true && that.isSetReplace();
+    if (this_present_replace || that_present_replace) {
+      if (!(this_present_replace && that_present_replace))
+        return false;
+      if (this.replace != that.replace)
+        return false;
+    }
 
     boolean this_present_filesAdded = true && this.isSetFilesAdded();
     boolean that_present_filesAdded = true && that.isSetFilesAdded();
@@ -322,6 +379,11 @@ public class InsertEventRequestData implements org.apache.thrift.TBase<InsertEve
   public int hashCode() {
     List<Object> list = new ArrayList<Object>();
 
+    boolean present_replace = true && (isSetReplace());
+    list.add(present_replace);
+    if (present_replace)
+      list.add(replace);
+
     boolean present_filesAdded = true && (isSetFilesAdded());
     list.add(present_filesAdded);
     if (present_filesAdded)
@@ -343,6 +405,16 @@ public class InsertEventRequestData implements org.apache.thrift.TBase<InsertEve
 
     int lastComparison = 0;
 
+    lastComparison = Boolean.valueOf(isSetReplace()).compareTo(other.isSetReplace());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetReplace()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.replace, other.replace);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
     lastComparison = Boolean.valueOf(isSetFilesAdded()).compareTo(other.isSetFilesAdded());
     if (lastComparison != 0) {
       return lastComparison;
@@ -383,6 +455,12 @@ public class InsertEventRequestData implements org.apache.thrift.TBase<InsertEve
     StringBuilder sb = new StringBuilder("InsertEventRequestData(");
     boolean first = true;
 
+    if (isSetReplace()) {
+      sb.append("replace:");
+      sb.append(this.replace);
+      first = false;
+    }
+    if (!first) sb.append(", ");
     sb.append("filesAdded:");
     if (this.filesAdded == null) {
       sb.append("null");
@@ -423,6 +501,8 @@ public class InsertEventRequestData implements org.apache.thrift.TBase<InsertEve
 
   private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, ClassNotFoundException {
     try {
+      // it doesn't seem like you should have to do this, but java serialization is wacky, and doesn't call the default constructor.
+      __isset_bitfield = 0;
       read(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(in)));
     } catch (org.apache.thrift.TException te) {
       throw new java.io.IOException(te);
@@ -447,7 +527,15 @@ public class InsertEventRequestData implements org.apache.thrift.TBase<InsertEve
           break;
         }
         switch (schemeField.id) {
-          case 1: // FILES_ADDED
+          case 1: // REPLACE
+            if (schemeField.type == org.apache.thrift.protocol.TType.BOOL) {
+              struct.replace = iprot.readBool();
+              struct.setReplaceIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
+          case 2: // FILES_ADDED
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
                 org.apache.thrift.protocol.TList _list558 = iprot.readListBegin();
@@ -465,7 +553,7 @@ public class InsertEventRequestData implements org.apache.thrift.TBase<InsertEve
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
-          case 2: // FILES_ADDED_CHECKSUM
+          case 3: // FILES_ADDED_CHECKSUM
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
                 org.apache.thrift.protocol.TList _list561 = iprot.readListBegin();
@@ -496,6 +584,11 @@ public class InsertEventRequestData implements org.apache.thrift.TBase<InsertEve
       struct.validate();
 
       oprot.writeStructBegin(STRUCT_DESC);
+      if (struct.isSetReplace()) {
+        oprot.writeFieldBegin(REPLACE_FIELD_DESC);
+        oprot.writeBool(struct.replace);
+        oprot.writeFieldEnd();
+      }
       if (struct.filesAdded != null) {
         oprot.writeFieldBegin(FILES_ADDED_FIELD_DESC);
         {
@@ -547,10 +640,16 @@ public class InsertEventRequestData implements org.apache.thrift.TBase<InsertEve
         }
       }
       BitSet optionals = new BitSet();
-      if (struct.isSetFilesAddedChecksum()) {
+      if (struct.isSetReplace()) {
         optionals.set(0);
       }
-      oprot.writeBitSet(optionals, 1);
+      if (struct.isSetFilesAddedChecksum()) {
+        optionals.set(1);
+      }
+      oprot.writeBitSet(optionals, 2);
+      if (struct.isSetReplace()) {
+        oprot.writeBool(struct.replace);
+      }
       if (struct.isSetFilesAddedChecksum()) {
         {
           oprot.writeI32(struct.filesAddedChecksum.size());
@@ -576,8 +675,12 @@ public class InsertEventRequestData implements org.apache.thrift.TBase<InsertEve
         }
       }
       struct.setFilesAddedIsSet(true);
-      BitSet incoming = iprot.readBitSet(1);
+      BitSet incoming = iprot.readBitSet(2);
       if (incoming.get(0)) {
+        struct.replace = iprot.readBool();
+        struct.setReplaceIsSet(true);
+      }
+      if (incoming.get(1)) {
         {
           org.apache.thrift.protocol.TList _list571 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
           struct.filesAddedChecksum = new ArrayList<String>(_list571.size);

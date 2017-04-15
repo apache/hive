@@ -2503,10 +2503,12 @@ end
 
 class InsertEventRequestData
   include ::Thrift::Struct, ::Thrift::Struct_Union
-  FILESADDED = 1
-  FILESADDEDCHECKSUM = 2
+  REPLACE = 1
+  FILESADDED = 2
+  FILESADDEDCHECKSUM = 3
 
   FIELDS = {
+    REPLACE => {:type => ::Thrift::Types::BOOL, :name => 'replace', :optional => true},
     FILESADDED => {:type => ::Thrift::Types::LIST, :name => 'filesAdded', :element => {:type => ::Thrift::Types::STRING}},
     FILESADDEDCHECKSUM => {:type => ::Thrift::Types::LIST, :name => 'filesAddedChecksum', :element => {:type => ::Thrift::Types::STRING}, :optional => true}
   }

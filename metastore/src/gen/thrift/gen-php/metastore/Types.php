@@ -16007,6 +16007,10 @@ class InsertEventRequestData {
   static $_TSPEC;
 
   /**
+   * @var bool
+   */
+  public $replace = null;
+  /**
    * @var string[]
    */
   public $filesAdded = null;
@@ -16019,6 +16023,10 @@ class InsertEventRequestData {
     if (!isset(self::$_TSPEC)) {
       self::$_TSPEC = array(
         1 => array(
+          'var' => 'replace',
+          'type' => TType::BOOL,
+          ),
+        2 => array(
           'var' => 'filesAdded',
           'type' => TType::LST,
           'etype' => TType::STRING,
@@ -16026,7 +16034,7 @@ class InsertEventRequestData {
             'type' => TType::STRING,
             ),
           ),
-        2 => array(
+        3 => array(
           'var' => 'filesAddedChecksum',
           'type' => TType::LST,
           'etype' => TType::STRING,
@@ -16037,6 +16045,9 @@ class InsertEventRequestData {
         );
     }
     if (is_array($vals)) {
+      if (isset($vals['replace'])) {
+        $this->replace = $vals['replace'];
+      }
       if (isset($vals['filesAdded'])) {
         $this->filesAdded = $vals['filesAdded'];
       }
@@ -16066,6 +16077,13 @@ class InsertEventRequestData {
       switch ($fid)
       {
         case 1:
+          if ($ftype == TType::BOOL) {
+            $xfer += $input->readBool($this->replace);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 2:
           if ($ftype == TType::LST) {
             $this->filesAdded = array();
             $_size495 = 0;
@@ -16082,7 +16100,7 @@ class InsertEventRequestData {
             $xfer += $input->skip($ftype);
           }
           break;
-        case 2:
+        case 3:
           if ($ftype == TType::LST) {
             $this->filesAddedChecksum = array();
             $_size501 = 0;
@@ -16112,11 +16130,16 @@ class InsertEventRequestData {
   public function write($output) {
     $xfer = 0;
     $xfer += $output->writeStructBegin('InsertEventRequestData');
+    if ($this->replace !== null) {
+      $xfer += $output->writeFieldBegin('replace', TType::BOOL, 1);
+      $xfer += $output->writeBool($this->replace);
+      $xfer += $output->writeFieldEnd();
+    }
     if ($this->filesAdded !== null) {
       if (!is_array($this->filesAdded)) {
         throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
       }
-      $xfer += $output->writeFieldBegin('filesAdded', TType::LST, 1);
+      $xfer += $output->writeFieldBegin('filesAdded', TType::LST, 2);
       {
         $output->writeListBegin(TType::STRING, count($this->filesAdded));
         {
@@ -16133,7 +16156,7 @@ class InsertEventRequestData {
       if (!is_array($this->filesAddedChecksum)) {
         throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
       }
-      $xfer += $output->writeFieldBegin('filesAddedChecksum', TType::LST, 2);
+      $xfer += $output->writeFieldBegin('filesAddedChecksum', TType::LST, 3);
       {
         $output->writeListBegin(TType::STRING, count($this->filesAddedChecksum));
         {

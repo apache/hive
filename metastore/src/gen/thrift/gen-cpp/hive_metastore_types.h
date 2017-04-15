@@ -6555,7 +6555,8 @@ inline std::ostream& operator<<(std::ostream& out, const CurrentNotificationEven
 }
 
 typedef struct _InsertEventRequestData__isset {
-  _InsertEventRequestData__isset() : filesAddedChecksum(false) {}
+  _InsertEventRequestData__isset() : replace(false), filesAddedChecksum(false) {}
+  bool replace :1;
   bool filesAddedChecksum :1;
 } _InsertEventRequestData__isset;
 
@@ -6564,14 +6565,17 @@ class InsertEventRequestData {
 
   InsertEventRequestData(const InsertEventRequestData&);
   InsertEventRequestData& operator=(const InsertEventRequestData&);
-  InsertEventRequestData() {
+  InsertEventRequestData() : replace(0) {
   }
 
   virtual ~InsertEventRequestData() throw();
+  bool replace;
   std::vector<std::string>  filesAdded;
   std::vector<std::string>  filesAddedChecksum;
 
   _InsertEventRequestData__isset __isset;
+
+  void __set_replace(const bool val);
 
   void __set_filesAdded(const std::vector<std::string> & val);
 
@@ -6579,6 +6583,10 @@ class InsertEventRequestData {
 
   bool operator == (const InsertEventRequestData & rhs) const
   {
+    if (__isset.replace != rhs.__isset.replace)
+      return false;
+    else if (__isset.replace && !(replace == rhs.replace))
+      return false;
     if (!(filesAdded == rhs.filesAdded))
       return false;
     if (__isset.filesAddedChecksum != rhs.__isset.filesAddedChecksum)

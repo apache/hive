@@ -413,7 +413,7 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
           x.getOutputs(), addPartitionDesc), x.getConf());
       LoadTableDesc loadTableWork = new LoadTableDesc(tmpPath,
           Utilities.getTableDesc(table),
-          partSpec.getPartSpec(), true);
+          partSpec.getPartSpec(), replicationSpec.isReplace());
       loadTableWork.setInheritTableSpecs(false);
       Task<?> loadPartTask = TaskFactory.get(new MoveWork(
           x.getInputs(), x.getOutputs(), loadTableWork, null, false),
@@ -921,7 +921,7 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
         }
         if (!replicationSpec.isMetadataOnly()) {
           // repl-imports are replace-into unless the event is insert-into
-          loadTable(fromURI, table, !replicationSpec.isInsert(), new Path(fromURI), replicationSpec, x);
+          loadTable(fromURI, table, replicationSpec.isReplace(), new Path(fromURI), replicationSpec, x);
         } else {
           x.getTasks().add(alterTableTask(tblDesc, x, replicationSpec));
         }
