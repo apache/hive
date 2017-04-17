@@ -26,7 +26,7 @@ ALTER TABLE rename_partition_table_2 PARTITION (part = '1') RENAME TO PARTITION 
 
 SET hive.exec.post.hooks=org.apache.hadoop.hive.ql.hooks.VerifyPartitionIsSubdirectoryOfTableHook;
 
-SELECT count(*) FROM rename_partition_table where part = '2';
+SELECT count(*) FROM rename_partition_table_2 where part = '2';
 
 SET hive.exec.post.hooks=;
 
