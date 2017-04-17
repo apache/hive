@@ -441,7 +441,7 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
       } else {
         Database parentDb = x.getHive().getDatabase(tblDesc.getDatabaseName());
         tgtPath = new Path(
-            wh.getTablePath( parentDb, tblDesc.getTableName()),
+            wh.getDefaultTablePath( parentDb, tblDesc.getTableName()),
             Warehouse.makePartPath(partSpec.getPartSpec()));
       }
     } else {
@@ -768,7 +768,7 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
           if (tblDesc.getLocation() != null) {
             tablePath = new Path(tblDesc.getLocation());
           } else {
-            tablePath = wh.getTablePath(parentDb, tblDesc.getTableName());
+            tablePath = wh.getDefaultTablePath(parentDb, tblDesc.getTableName());
           }
           FileSystem tgtFs = FileSystem.get(tablePath.toUri(), x.getConf());
           checkTargetLocationEmpty(tgtFs, tablePath, replicationSpec,x);
@@ -821,7 +821,7 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
     }
     if (tblDesc.getLocation() == null) {
       if (!waitOnPrecursor){
-        tblDesc.setLocation(wh.getTablePath(parentDb, tblDesc.getTableName()).toString());
+        tblDesc.setLocation(wh.getDefaultTablePath(parentDb, tblDesc.getTableName()).toString());
       } else {
         tblDesc.setLocation(
             wh.getDnsPath(new Path(
