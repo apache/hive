@@ -561,10 +561,8 @@ public class Driver implements CommandProcessor {
       if (conf.getBoolVar(ConfVars.HIVE_LOG_EXPLAIN_OUTPUT)) {
         String explainOutput = getExplainOutput(sem, plan, tree);
         if (explainOutput != null) {
-          if (conf.getBoolVar(ConfVars.HIVE_LOG_EXPLAIN_OUTPUT)) {
-            LOG.info("EXPLAIN output for queryid " + queryId + " : "
-              + explainOutput);
-          }
+          LOG.info("EXPLAIN output for queryid " + queryId + " : "
+            + explainOutput);
           if (conf.isWebUiQueryInfoCacheEnabled()) {
             queryDisplay.setExplainPlan(explainOutput);
           }
