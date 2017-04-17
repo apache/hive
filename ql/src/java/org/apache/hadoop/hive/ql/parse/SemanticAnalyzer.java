@@ -7262,7 +7262,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       String tName = Utilities.getDbTableName(tableDesc.getTableName())[1];
       try {
         Warehouse wh = new Warehouse(conf);
-        tlocation = wh.getTablePath(db.getDatabase(tableDesc.getDatabaseName()), tName);
+        tlocation = wh.getDefaultTablePath(db.getDatabase(tableDesc.getDatabaseName()), tName);
       } catch (MetaException|HiveException e) {
         throw new SemanticException(e);
       }
