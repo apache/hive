@@ -442,8 +442,9 @@ public class HiveAlterHandler implements AlterHandler {
         msdb.alterPartition(dbname, name, part_vals, new_part);
       } else {
         try {
-          destPath = new Path(wh.getTablePath(msdb.getDatabase(dbname), name),
-            Warehouse.makePartName(tbl.getPartitionKeys(), new_part.getValues()));
+          // if tbl location is available use it
+          // else derive the tbl location from database location
+          destPath = wh.getPartitionPath(msdb.getDatabase(dbname), tbl, new_part.getValues());
           destPath = constructRenamedPath(destPath, new Path(new_part.getSd().getLocation()));
         } catch (NoSuchObjectException e) {
           LOG.debug("Didn't find object in metastore ", e);
