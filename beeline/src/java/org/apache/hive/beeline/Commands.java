@@ -981,7 +981,8 @@ public class Commands {
           hasResults = ((CallableStatement) stmnt).execute();
         } else {
           stmnt = beeLine.createStatement();
-          if (beeLine.getOpts().isSilent()) {
+          // In test mode we want the operation logs regardless of the settings
+          if (!beeLine.isTestMode() && beeLine.getOpts().isSilent()) {
             hasResults = stmnt.execute(sql);
           } else {
             logThread = new Thread(createLogRunnable(stmnt));
@@ -1208,6 +1209,12 @@ public class Commands {
             try {
               // fetch the log periodically and output to beeline console
               for (String log : hiveStatement.getQueryLog()) {
+                if (!beeLine.isTestMode()) {
+                  beeLine.info(log);
+                } else {
+                  // In test mode print the logs to the output
+                  beeLine.output(log);
+                }
                 beeLine.info(log);
               }
               Thread.sleep(DEFAULT_QUERY_PROGRESS_INTERVAL);
@@ -1246,7 +1253,12 @@ public class Commands {
           return;
         }
         for (String log : logs) {
-          beeLine.info(log);
+          if (!beeLine.isTestMode()) {
+            beeLine.info(log);
+          } else {
+            // In test mode print the logs to the output
+            beeLine.output(log);
+          }
         }
       } while (logs.size() > 0);
     } else {

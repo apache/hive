@@ -80,6 +80,13 @@ public class OperationManager extends AbstractService {
     } else {
       LOG.debug("Operation level logging is turned off");
     }
+    if (hiveConf.getBoolean(HiveConf.ConfVars.HIVE_IN_TEST.varname,
+        HiveConf.ConfVars.HIVE_IN_TEST.defaultBoolVal)) {
+      // If in test mode, then create the test appender
+      Appender ap = new LogDivertAppenderForTest(this);
+      Logger.getRootLogger().addAppender(ap);
+    }
+
     if (hiveConf.isWebUiQueryInfoCacheEnabled()) {
       historicSqlOperations = new SQLOperationDisplayCache(
         hiveConf.getIntVar(ConfVars.HIVE_SERVER2_WEBUI_MAX_HISTORIC_QUERIES));

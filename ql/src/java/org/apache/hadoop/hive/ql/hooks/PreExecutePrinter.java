@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.hadoop.hive.common.io.FetchConverter;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.hooks.HookContext.HookType;
 import org.apache.hadoop.hive.ql.plan.HiveOperation;
 import org.apache.hadoop.hive.ql.session.SessionState;
@@ -49,10 +50,11 @@ public class PreExecutePrinter implements ExecuteWithHookContext {
     Set<ReadEntity> inputs = hookContext.getInputs();
     Set<WriteEntity> outputs = hookContext.getOutputs();
     UserGroupInformation ugi = hookContext.getUgi();
-    this.run(ss,inputs,outputs,ugi);
+    this.run(hookContext.getConf().get(HiveConf.ConfVars.HIVEQUERYSTRING.varname),
+        hookContext.getQueryPlan().getOperationName(),inputs,outputs,ugi);
   }
 
-  public void run(SessionState sess, Set<ReadEntity> inputs,
+  public void run(String query, String type, Set<ReadEntity> inputs,
       Set<WriteEntity> outputs, UserGroupInformation ugi)
     throws Exception {
 
@@ -62,9 +64,11 @@ public class PreExecutePrinter implements ExecuteWithHookContext {
       return;
     }
 
-    if (sess != null) {
-      console.printError("PREHOOK: query: " + sess.getCmd().trim());
-      console.printError("PREHOOK: type: " + sess.getCommandType());
+    if (query != null) {
+      console.printError("PREHOOK: query: " + query.trim());
+    }
+    if (type != null) {
+      console.printError("PREHOOK: type: " + type);
     }
 
     printEntities(console, inputs, "PREHOOK: Input: ");
