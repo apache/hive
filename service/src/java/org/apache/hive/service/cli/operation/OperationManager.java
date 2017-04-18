@@ -36,6 +36,7 @@ import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Schema;
 import org.apache.hadoop.hive.ql.log.LogDivertAppender;
+import org.apache.hadoop.hive.ql.log.LogDivertAppenderForTest;
 import org.apache.hadoop.hive.ql.session.OperationLog;
 import org.apache.hive.service.AbstractService;
 import org.apache.hive.service.cli.FetchOrientation;
@@ -71,6 +72,7 @@ public class OperationManager extends AbstractService {
   @Override
   public synchronized void init(HiveConf hiveConf) {
     LogDivertAppender.registerRoutingAppender(hiveConf);
+    LogDivertAppenderForTest.registerRoutingAppenderIfInTest(hiveConf);
 
     if (hiveConf.isWebUiQueryInfoCacheEnabled()) {
       historicSqlOperations = new SQLOperationDisplayCache(

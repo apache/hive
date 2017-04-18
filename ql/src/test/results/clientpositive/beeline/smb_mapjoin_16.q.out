@@ -1,254 +1,96 @@
->>>  set hive.optimize.bucketmapjoin = true;
-No rows affected 
->>>  set hive.optimize.bucketmapjoin.sortedmerge = true;
-No rows affected 
->>>  set hive.input.format = org.apache.hadoop.hive.ql.io.BucketizedHiveInputFormat;
-No rows affected 
->>>  set hive.cbo.enable=false;
-No rows affected 
->>>  
->>>  set hive.exec.reducers.max = 1;
-No rows affected 
->>>  set hive.merge.mapfiles=false;
-No rows affected 
->>>  set hive.merge.mapredfiles=false; 
-No rows affected 
->>>  
->>>  -- Create bucketed and sorted tables
->>>  CREATE TABLE test_table1 (key INT, value STRING) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS;
-INFO  : Compiling commandqueryId=(!!{queryId}!!): CREATE TABLE test_table1 (key INT, value STRING) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
-INFO  : Semantic Analysis Completed
-INFO  : Returning Hive schema: Schema(fieldSchemas:null, properties:null)
-INFO  : Completed compiling commandqueryId=(!!{queryId}!!); Time taken: !!ELIDED!! seconds
-INFO  : Executing commandqueryId=(!!{queryId}!!): CREATE TABLE test_table1 (key INT, value STRING) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
-INFO  : PREHOOK: query: CREATE TABLE test_table1 (key INT, value STRING) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
-INFO  : PREHOOK: type: CREATETABLE
-INFO  : PREHOOK: Output: database:smb_mapjoin_16
-INFO  : PREHOOK: Output: smb_mapjoin_16@test_table1
-INFO  : Starting task [Stage-0:DDL] in serial mode
-INFO  : POSTHOOK: query: CREATE TABLE test_table1 (key INT, value STRING) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
-INFO  : POSTHOOK: type: CREATETABLE
-INFO  : POSTHOOK: Output: database:smb_mapjoin_16
-INFO  : POSTHOOK: Output: smb_mapjoin_16@test_table1
-INFO  : Completed executing commandqueryId=(!!{queryId}!!); Time taken: !!ELIDED!! seconds
-INFO  : OK
-DEBUG : Shutting down query CREATE TABLE test_table1 (key INT, value STRING) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
-No rows affected 
->>>  CREATE TABLE test_table2 (key INT, value STRING) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS;
-INFO  : Compiling commandqueryId=(!!{queryId}!!): CREATE TABLE test_table2 (key INT, value STRING) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
-INFO  : Semantic Analysis Completed
-INFO  : Returning Hive schema: Schema(fieldSchemas:null, properties:null)
-INFO  : Completed compiling commandqueryId=(!!{queryId}!!); Time taken: !!ELIDED!! seconds
-INFO  : Executing commandqueryId=(!!{queryId}!!): CREATE TABLE test_table2 (key INT, value STRING) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
-INFO  : PREHOOK: query: CREATE TABLE test_table2 (key INT, value STRING) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
-INFO  : PREHOOK: type: CREATETABLE
-INFO  : PREHOOK: Output: database:smb_mapjoin_16
-INFO  : PREHOOK: Output: smb_mapjoin_16@test_table2
-INFO  : Starting task [Stage-0:DDL] in serial mode
-INFO  : POSTHOOK: query: CREATE TABLE test_table2 (key INT, value STRING) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
-INFO  : POSTHOOK: type: CREATETABLE
-INFO  : POSTHOOK: Output: database:smb_mapjoin_16
-INFO  : POSTHOOK: Output: smb_mapjoin_16@test_table2
-INFO  : Completed executing commandqueryId=(!!{queryId}!!); Time taken: !!ELIDED!! seconds
-INFO  : OK
-DEBUG : Shutting down query CREATE TABLE test_table2 (key INT, value STRING) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
-No rows affected 
->>>  
->>>  FROM default.src
-INSERT OVERWRITE TABLE test_table1 SELECT *
-INSERT OVERWRITE TABLE test_table2 SELECT *;
-INFO  : Compiling commandqueryId=(!!{queryId}!!): FROM default.src
+PREHOOK: query: CREATE TABLE test_table1 (key INT, value STRING) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test_table1
+POSTHOOK: query: CREATE TABLE test_table1 (key INT, value STRING) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test_table1
+PREHOOK: query: CREATE TABLE test_table2 (key INT, value STRING) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test_table2
+POSTHOOK: query: CREATE TABLE test_table2 (key INT, value STRING) CLUSTERED BY (key) SORTED BY (key) INTO 2 BUCKETS
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test_table2
+PREHOOK: query: FROM src
 INSERT OVERWRITE TABLE test_table1 SELECT *
 INSERT OVERWRITE TABLE test_table2 SELECT *
-INFO  : Semantic Analysis Completed
-INFO  : Returning Hive schema: Schema(fieldSchemas:[FieldSchema(name:_col0, type:int, comment:null), FieldSchema(name:_col1, type:string, comment:null)], properties:null)
-INFO  : Completed compiling commandqueryId=(!!{queryId}!!); Time taken: !!ELIDED!! seconds
-INFO  : Executing commandqueryId=(!!{queryId}!!): FROM default.src
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@test_table1
+PREHOOK: Output: default@test_table2
+POSTHOOK: query: FROM src
 INSERT OVERWRITE TABLE test_table1 SELECT *
 INSERT OVERWRITE TABLE test_table2 SELECT *
-INFO  : PREHOOK: query: FROM default.src
-INSERT OVERWRITE TABLE test_table1 SELECT *
-INSERT OVERWRITE TABLE test_table2 SELECT *
-INFO  : PREHOOK: type: QUERY
-INFO  : PREHOOK: Input: default@src
-INFO  : PREHOOK: Output: smb_mapjoin_16@test_table1
-INFO  : PREHOOK: Output: smb_mapjoin_16@test_table2
-WARN  : Hive-on-MR is deprecated in Hive 2 and may not be available in the future versions. Consider using a different execution engine (i.e. spark, tez) or using Hive 1.X releases.
-INFO  : Query ID = !!{queryId}!!
-INFO  : Total jobs = 2
-INFO  : Launching Job 1 out of 2
-INFO  : Starting task [Stage-2:MAPRED] in serial mode
-INFO  : Number of reduce tasks determined at compile time: 1
-INFO  : In order to change the average load for a reducer (in bytes):
-INFO  :   set hive.exec.reducers.bytes.per.reducer=<number>
-INFO  : In order to limit the maximum number of reducers:
-INFO  :   set hive.exec.reducers.max=<number>
-INFO  : In order to set a constant number of reducers:
-INFO  :   set mapreduce.job.reduces=<number>
-DEBUG : Configuring job !!{jobId}}!! with file:/!!ELIDED!! as the submit dir
-DEBUG : adding the following namenodes' delegation tokens:[file:///]
-DEBUG : Creating splits at file:/!!ELIDED!!
-INFO  : number of splits:1
-INFO  : Submitting tokens for job: !!{jobId}}!!
-INFO  : The url to track the job: http://localhost:8080/
-INFO  : Job running in-process (local Hadoop)
-INFO  : Ended Job = !!{jobId}!!
-INFO  : Starting task [Stage-0:MOVE] in serial mode
-INFO  : Loading data to table smb_mapjoin_16.test_table1 from file:/!!ELIDED!!
-INFO  : Launching Job 2 out of 2
-INFO  : Starting task [Stage-4:MAPRED] in serial mode
-INFO  : Number of reduce tasks determined at compile time: 1
-INFO  : In order to change the average load for a reducer (in bytes):
-INFO  :   set hive.exec.reducers.bytes.per.reducer=<number>
-INFO  : In order to limit the maximum number of reducers:
-INFO  :   set hive.exec.reducers.max=<number>
-INFO  : In order to set a constant number of reducers:
-INFO  :   set mapreduce.job.reduces=<number>
-DEBUG : Configuring job !!{jobId}}!! with file:/!!ELIDED!! as the submit dir
-DEBUG : adding the following namenodes' delegation tokens:[file:///]
-DEBUG : Creating splits at file:/!!ELIDED!!
-INFO  : number of splits:1
-INFO  : Submitting tokens for job: !!{jobId}}!!
-INFO  : The url to track the job: http://localhost:8080/
-INFO  : Job running in-process (local Hadoop)
-INFO  : Ended Job = !!{jobId}!!
-INFO  : Starting task [Stage-3:STATS] in serial mode
-INFO  : Starting task [Stage-1:MOVE] in serial mode
-INFO  : Loading data to table smb_mapjoin_16.test_table2 from file:/!!ELIDED!!
-INFO  : Starting task [Stage-5:STATS] in serial mode
-INFO  : POSTHOOK: query: FROM default.src
-INSERT OVERWRITE TABLE test_table1 SELECT *
-INSERT OVERWRITE TABLE test_table2 SELECT *
-INFO  : POSTHOOK: type: QUERY
-INFO  : POSTHOOK: Input: default@src
-INFO  : POSTHOOK: Output: smb_mapjoin_16@test_table1
-INFO  : POSTHOOK: Output: smb_mapjoin_16@test_table2
-INFO  : POSTHOOK: Lineage: test_table1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-INFO  : POSTHOOK: Lineage: test_table1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-INFO  : POSTHOOK: Lineage: test_table2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-INFO  : POSTHOOK: Lineage: test_table2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-INFO  : MapReduce Jobs Launched: 
-INFO  : Stage-Stage-2:  HDFS Read: 0 HDFS Write: 0 SUCCESS
-INFO  : Stage-Stage-4:  HDFS Read: 0 HDFS Write: 0 SUCCESS
-INFO  : Total MapReduce CPU Time Spent: 0 msec
-INFO  : Completed executing commandqueryId=(!!{queryId}!!); Time taken: !!ELIDED!! seconds
-INFO  : OK
-DEBUG : Shutting down query FROM default.src
-INSERT OVERWRITE TABLE test_table1 SELECT *
-INSERT OVERWRITE TABLE test_table2 SELECT *
-No rows affected 
->>>  
->>>  -- Mapjoin followed by a aggregation should be performed in a single MR job
->>>  EXPLAIN
-SELECT /*+mapjoin(b)*/ count(*) FROM test_table1 a JOIN test_table2 b ON a.key = b.key;
-INFO  : Compiling commandqueryId=(!!{queryId}!!): EXPLAIN
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@test_table1
+POSTHOOK: Output: default@test_table2
+POSTHOOK: Lineage: test_table1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: test_table2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: EXPLAIN
 SELECT /*+mapjoin(b)*/ count(*) FROM test_table1 a JOIN test_table2 b ON a.key = b.key
-INFO  : Semantic Analysis Completed
-INFO  : Returning Hive schema: Schema(fieldSchemas:[FieldSchema(name:Explain, type:string, comment:null)], properties:null)
-INFO  : Completed compiling commandqueryId=(!!{queryId}!!); Time taken: !!ELIDED!! seconds
-INFO  : Executing commandqueryId=(!!{queryId}!!): EXPLAIN
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
 SELECT /*+mapjoin(b)*/ count(*) FROM test_table1 a JOIN test_table2 b ON a.key = b.key
-INFO  : PREHOOK: query: EXPLAIN
-SELECT /*+mapjoin(b)*/ count(*) FROM test_table1 a JOIN test_table2 b ON a.key = b.key
-INFO  : PREHOOK: type: QUERY
-INFO  : Starting task [Stage-3:EXPLAIN] in serial mode
-INFO  : POSTHOOK: query: EXPLAIN
-SELECT /*+mapjoin(b)*/ count(*) FROM test_table1 a JOIN test_table2 b ON a.key = b.key
-INFO  : POSTHOOK: type: QUERY
-INFO  : Completed executing commandqueryId=(!!{queryId}!!); Time taken: !!ELIDED!! seconds
-INFO  : OK
-DEBUG : Shutting down query EXPLAIN
-SELECT /*+mapjoin(b)*/ count(*) FROM test_table1 a JOIN test_table2 b ON a.key = b.key
-'Explain'
-'STAGE DEPENDENCIES:'
-'  Stage-1 is a root stage'
-'  Stage-0 depends on stages: Stage-1'
-''
-'STAGE PLANS:'
-'  Stage: Stage-1'
-'    Map Reduce'
-'      Map Operator Tree:'
-'          TableScan'
-'            alias: a'
-'            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE'
-'            Filter Operator'
-'              predicate: key is not null (type: boolean)'
-'              Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE'
-'              Sorted Merge Bucket Map Join Operator'
-'                condition map:'
-'                     Inner Join 0 to 1'
-'                keys:'
-'                  0 key (type: int)'
-'                  1 key (type: int)'
-'                Group By Operator'
-'                  aggregations: count()'
-'                  mode: hash'
-'                  outputColumnNames: _col0'
-'                  Reduce Output Operator'
-'                    sort order: '
-'                    value expressions: _col0 (type: bigint)'
-'      Reduce Operator Tree:'
-'        Group By Operator'
-'          aggregations: count(VALUE._col0)'
-'          mode: mergepartial'
-'          outputColumnNames: _col0'
-'          File Output Operator'
-'            compressed: false'
-'            table:'
-'                input format: org.apache.hadoop.mapred.SequenceFileInputFormat'
-'                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat'
-'                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe'
-''
-'  Stage: Stage-0'
-'    Fetch Operator'
-'      limit: -1'
-'      Processor Tree:'
-'        ListSink'
-''
-45 rows selected 
->>>  SELECT /*+mapjoin(b)*/ count(*) FROM test_table1 a JOIN test_table2 b ON a.key = b.key;
-INFO  : Compiling commandqueryId=(!!{queryId}!!): SELECT /*+mapjoin(b)*/ count(*) FROM test_table1 a JOIN test_table2 b ON a.key = b.key
-INFO  : Semantic Analysis Completed
-INFO  : Returning Hive schema: Schema(fieldSchemas:[FieldSchema(name:_c1, type:bigint, comment:null)], properties:null)
-INFO  : Completed compiling commandqueryId=(!!{queryId}!!); Time taken: !!ELIDED!! seconds
-INFO  : Executing commandqueryId=(!!{queryId}!!): SELECT /*+mapjoin(b)*/ count(*) FROM test_table1 a JOIN test_table2 b ON a.key = b.key
-INFO  : PREHOOK: query: SELECT /*+mapjoin(b)*/ count(*) FROM test_table1 a JOIN test_table2 b ON a.key = b.key
-INFO  : PREHOOK: type: QUERY
-INFO  : PREHOOK: Input: smb_mapjoin_16@test_table1
-INFO  : PREHOOK: Input: smb_mapjoin_16@test_table2
-INFO  : PREHOOK: Output: file:/!!ELIDED!!
-WARN  : Hive-on-MR is deprecated in Hive 2 and may not be available in the future versions. Consider using a different execution engine (i.e. spark, tez) or using Hive 1.X releases.
-INFO  : Query ID = !!{queryId}!!
-INFO  : Total jobs = 1
-INFO  : Launching Job 1 out of 1
-INFO  : Starting task [Stage-1:MAPRED] in serial mode
-INFO  : Number of reduce tasks determined at compile time: 1
-INFO  : In order to change the average load for a reducer (in bytes):
-INFO  :   set hive.exec.reducers.bytes.per.reducer=<number>
-INFO  : In order to limit the maximum number of reducers:
-INFO  :   set hive.exec.reducers.max=<number>
-INFO  : In order to set a constant number of reducers:
-INFO  :   set mapreduce.job.reduces=<number>
-DEBUG : Configuring job !!{jobId}}!! with file:/!!ELIDED!! as the submit dir
-DEBUG : adding the following namenodes' delegation tokens:[file:///]
-DEBUG : Creating splits at file:/!!ELIDED!!
-INFO  : number of splits:2
-INFO  : Submitting tokens for job: !!{jobId}}!!
-INFO  : The url to track the job: http://localhost:8080/
-INFO  : Job running in-process (local Hadoop)
-INFO  : Ended Job = !!{jobId}!!
-INFO  : POSTHOOK: query: SELECT /*+mapjoin(b)*/ count(*) FROM test_table1 a JOIN test_table2 b ON a.key = b.key
-INFO  : POSTHOOK: type: QUERY
-INFO  : POSTHOOK: Input: smb_mapjoin_16@test_table1
-INFO  : POSTHOOK: Input: smb_mapjoin_16@test_table2
-INFO  : POSTHOOK: Output: file:/!!ELIDED!!
-INFO  : MapReduce Jobs Launched: 
-INFO  : Stage-Stage-1:  HDFS Read: 0 HDFS Write: 0 SUCCESS
-INFO  : Total MapReduce CPU Time Spent: 0 msec
-INFO  : Completed executing commandqueryId=(!!{queryId}!!); Time taken: !!ELIDED!! seconds
-INFO  : OK
-DEBUG : Shutting down query SELECT /*+mapjoin(b)*/ count(*) FROM test_table1 a JOIN test_table2 b ON a.key = b.key
-'_c1'
-'1028'
-1 row selected 
->>>  !record
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: a
+            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: key is not null (type: boolean)
+              Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+              Sorted Merge Bucket Map Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 key (type: int)
+                  1 key (type: int)
+                Group By Operator
+                  aggregations: count()
+                  mode: hash
+                  outputColumnNames: _col0
+                  Reduce Output Operator
+                    sort order: 
+                    value expressions: _col0 (type: bigint)
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations: count(VALUE._col0)
+          mode: mergepartial
+          outputColumnNames: _col0
+          File Output Operator
+            compressed: false
+            table:
+                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SELECT /*+mapjoin(b)*/ count(*) FROM test_table1 a JOIN test_table2 b ON a.key = b.key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_table1
+PREHOOK: Input: default@test_table2
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT /*+mapjoin(b)*/ count(*) FROM test_table1 a JOIN test_table2 b ON a.key = b.key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_table1
+POSTHOOK: Input: default@test_table2
+#### A masked pattern was here ####
+1028

@@ -1,63 +1,20 @@
->>>  set hive.lock.numretries=1;
-No rows affected 
->>>  set hive.lock.sleep.between.retries=1;
-No rows affected 
->>>  set hive.support.concurrency=true;
-No rows affected 
->>>  set hive.lock.manager=org.apache.hadoop.hive.ql.lockmgr.EmbeddedLockManager;
-No rows affected 
->>>  
->>>  drop table if exists drop_with_concurrency_1;
-INFO  : Compiling commandqueryId=(!!{queryId}!!): drop table if exists drop_with_concurrency_1
-INFO  : Semantic Analysis Completed
-INFO  : Returning Hive schema: Schema(fieldSchemas:null, properties:null)
-INFO  : Completed compiling commandqueryId=(!!{queryId}!!); Time taken: !!ELIDED!! seconds
-INFO  : Executing commandqueryId=(!!{queryId}!!): drop table if exists drop_with_concurrency_1
-INFO  : PREHOOK: query: drop table if exists drop_with_concurrency_1
-INFO  : PREHOOK: type: DROPTABLE
-INFO  : Starting task [Stage-0:DDL] in serial mode
-INFO  : POSTHOOK: query: drop table if exists drop_with_concurrency_1
-INFO  : POSTHOOK: type: DROPTABLE
-INFO  : Completed executing commandqueryId=(!!{queryId}!!); Time taken: !!ELIDED!! seconds
-INFO  : OK
-DEBUG : Shutting down query drop table if exists drop_with_concurrency_1
-No rows affected 
->>>  create table drop_with_concurrency_1 (c1 int);
-INFO  : Compiling commandqueryId=(!!{queryId}!!): create table drop_with_concurrency_1 (c1 int)
-INFO  : Semantic Analysis Completed
-INFO  : Returning Hive schema: Schema(fieldSchemas:null, properties:null)
-INFO  : Completed compiling commandqueryId=(!!{queryId}!!); Time taken: !!ELIDED!! seconds
-INFO  : Executing commandqueryId=(!!{queryId}!!): create table drop_with_concurrency_1 (c1 int)
-INFO  : PREHOOK: query: create table drop_with_concurrency_1 (c1 int)
-INFO  : PREHOOK: type: CREATETABLE
-INFO  : PREHOOK: Output: database:drop_with_concurrency
-INFO  : PREHOOK: Output: drop_with_concurrency@drop_with_concurrency_1
-INFO  : Starting task [Stage-0:DDL] in serial mode
-INFO  : POSTHOOK: query: create table drop_with_concurrency_1 (c1 int)
-INFO  : POSTHOOK: type: CREATETABLE
-INFO  : POSTHOOK: Output: database:drop_with_concurrency
-INFO  : POSTHOOK: Output: drop_with_concurrency@drop_with_concurrency_1
-INFO  : Completed executing commandqueryId=(!!{queryId}!!); Time taken: !!ELIDED!! seconds
-INFO  : OK
-DEBUG : Shutting down query create table drop_with_concurrency_1 (c1 int)
-No rows affected 
->>>  drop table drop_with_concurrency_1;
-INFO  : Compiling commandqueryId=(!!{queryId}!!): drop table drop_with_concurrency_1
-INFO  : Semantic Analysis Completed
-INFO  : Returning Hive schema: Schema(fieldSchemas:null, properties:null)
-INFO  : Completed compiling commandqueryId=(!!{queryId}!!); Time taken: !!ELIDED!! seconds
-INFO  : Executing commandqueryId=(!!{queryId}!!): drop table drop_with_concurrency_1
-INFO  : PREHOOK: query: drop table drop_with_concurrency_1
-INFO  : PREHOOK: type: DROPTABLE
-INFO  : PREHOOK: Input: drop_with_concurrency@drop_with_concurrency_1
-INFO  : PREHOOK: Output: drop_with_concurrency@drop_with_concurrency_1
-INFO  : Starting task [Stage-0:DDL] in serial mode
-INFO  : POSTHOOK: query: drop table drop_with_concurrency_1
-INFO  : POSTHOOK: type: DROPTABLE
-INFO  : POSTHOOK: Input: drop_with_concurrency@drop_with_concurrency_1
-INFO  : POSTHOOK: Output: drop_with_concurrency@drop_with_concurrency_1
-INFO  : Completed executing commandqueryId=(!!{queryId}!!); Time taken: !!ELIDED!! seconds
-INFO  : OK
-DEBUG : Shutting down query drop table drop_with_concurrency_1
-No rows affected 
->>>  !record
+PREHOOK: query: drop table if exists drop_with_concurrency_1
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table if exists drop_with_concurrency_1
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table drop_with_concurrency_1 (c1 int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@drop_with_concurrency_1
+POSTHOOK: query: create table drop_with_concurrency_1 (c1 int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@drop_with_concurrency_1
+PREHOOK: query: drop table drop_with_concurrency_1
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@drop_with_concurrency_1
+PREHOOK: Output: default@drop_with_concurrency_1
+POSTHOOK: query: drop table drop_with_concurrency_1
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@drop_with_concurrency_1
+POSTHOOK: Output: default@drop_with_concurrency_1

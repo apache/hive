@@ -977,7 +977,8 @@ public class Commands {
           hasResults = ((CallableStatement) stmnt).execute();
         } else {
           stmnt = beeLine.createStatement();
-          if (beeLine.getOpts().isSilent()) {
+          // In test mode we want the operation logs regardless of the settings
+          if (!beeLine.isTestMode() && beeLine.getOpts().isSilent()) {
             hasResults = stmnt.execute(sql);
           } else {
             InPlaceUpdateStream.EventNotifier eventNotifier =
@@ -1341,7 +1342,12 @@ public class Commands {
       try {
         List<String> queryLogs = hiveStatement.getQueryLog();
         for (String log : queryLogs) {
-          commands.beeLine.info(log);
+          if (!commands.beeLine.isTestMode()) {
+            commands.beeLine.info(log);
+          } else {
+            // In test mode print the logs to the output
+            commands.beeLine.output(log);
+          }
         }
         if (!queryLogs.isEmpty()) {
           notifier.operationLogShowedToUser();
@@ -1385,7 +1391,12 @@ public class Commands {
           return;
         }
         for (String log : logs) {
-          beeLine.info(log);
+          if (!beeLine.isTestMode()) {
+            beeLine.info(log);
+          } else {
+            // In test mode print the logs to the output
+            beeLine.output(log);
+          }
         }
       } while (logs.size() > 0);
     } else {

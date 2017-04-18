@@ -151,6 +151,10 @@ public class BeeLine implements Closeable {
   // Indicates if this instance of beeline is running in compatibility mode, or beeline mode
   private boolean isBeeLine = true;
 
+  // Indicates that we are in test mode.
+  // Print only the errors, the operation log and the query results.
+  private boolean isTestMode = false;
+
   private static final Options options = new Options();
 
   public static final String BEELINE_DEFAULT_JDBC_DRIVER = "org.apache.hive.jdbc.HiveDriver";
@@ -2437,5 +2441,20 @@ public class BeeLine implements Closeable {
 
   public void setCurrentDatabase(String currentDatabase) {
     this.currentDatabase = currentDatabase;
+  }
+
+  /**
+   * Setting the BeeLine into test mode.
+   * Print only the errors, the operation log and the query results.
+   * Should be used only by tests.
+   *
+   * @param isTestMode
+   */
+  void setIsTestMode(boolean isTestMode) {
+    this.isTestMode = isTestMode;
+  }
+
+  boolean isTestMode() {
+    return isTestMode;
   }
 }

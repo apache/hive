@@ -59,6 +59,8 @@ public final class QFile {
   private static final Pattern USE_PATTERN =
       Pattern.compile("^\\s*use\\s.*", Pattern.CASE_INSENSITIVE);
 
+  private static final String MASK_PATTERN = "#### A masked pattern was here ####\n";
+
   private String name;
   private File inputFile;
   private File rawOutputFile;
@@ -67,7 +69,8 @@ public final class QFile {
   private File logFile;
   private File beforeExecuteLogFile;
   private File afterExecuteLogFile;
-  private static RegexFilterSet filterSet = getFilterSet();
+  private static RegexFilterSet staticFilterSet = getStaticFilterSet();
+  private RegexFilterSet specificFilterSet;
   private boolean rewriteSourceTables;
 
   private QFile() {}
@@ -146,9 +149,26 @@ public final class QFile {
     return source;
   }
 
+  /**
+   * The result contains the original queries. To revert them to the original form remove the
+   * 'default' from every default.TABLE_NAME, like default.src->src, default.srcpart->srcpart.
+   * @param source The original query output
+   * @return The query output where the tablenames are replaced
+   */
+  private String revertReplaceTableNames(String source) {
+    for (String table : srcTables) {
+      source = source.replaceAll("(?is)(\\s+)default\\." + table + "([\\s;\\n\\)])", "$1" + table
+          + "$2");
+    }
+    return source;
+  }
+
   public void filterOutput() throws IOException {
     String rawOutput = FileUtils.readFileToString(rawOutputFile, "UTF-8");
-    String filteredOutput = filterSet.filter(rawOutput);
+    if (rewriteSourceTables) {
+      rawOutput = revertReplaceTableNames(rawOutput);
+    }
+    String filteredOutput = staticFilterSet.filter(specificFilterSet.filter(rawOutput));
     FileUtils.writeStringToFile(outputFile, filteredOutput);
   }
 
@@ -244,46 +264,17 @@ public final class QFile {
 
   // These are the filters which are common for every QTest.
   // Check specificFilterSet for QTest specific ones.
-  private static RegexFilterSet getFilterSet() {
-    // Extract the leading four digits from the unix time value.
-    // Use this as a prefix in order to increase the selectivity
-    // of the unix time stamp replacement regex.
-    String currentTimePrefix = Long.toString(System.currentTimeMillis()).substring(0, 4);
-
-    String userName = System.getProperty("user.name");
-
-    String timePattern = "(Mon|Tue|Wed|Thu|Fri|Sat|Sun) "
-        + "(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec) "
-        + "\\d{2} \\d{2}:\\d{2}:\\d{2} \\w+ 20\\d{2}";
-    String operatorPattern = "\"(CONDITION|COPY|DEPENDENCY_COLLECTION|DDL"
-        + "|EXPLAIN|FETCH|FIL|FS|FUNCTION|GBY|HASHTABLEDUMMY|HASTTABLESINK|JOIN"
-        + "|LATERALVIEWFORWARD|LIM|LVJ|MAP|MAPJOIN|MAPRED|MAPREDLOCAL|MOVE|OP|RS"
-        + "|SCR|SEL|STATS|TS|UDTF|UNION)_\\d+\"";
-
+  private static RegexFilterSet getStaticFilterSet() {
+    // Pattern to remove the timestamp and other infrastructural info from the out file
     return new RegexFilterSet()
-        .addFilter("(?s)\n[^\n]*Waiting to acquire compile lock.*?Acquired the compile lock.\n",
-            "\n")
-        .addFilter(".*Acquired the compile lock.\n", "")
-        .addFilter("Getting log thread is interrupted, since query is done!\n", "")
-        .addFilter("going to print operations logs\n", "")
-        .addFilter("printed operations logs\n", "")
-        .addFilter("\\(queryId=[^\\)]*\\)", "queryId=(!!{queryId}!!)")
-        .addFilter("Query ID = [\\w-]+", "Query ID = !!{queryId}!!")
-        .addFilter("file:/\\w\\S+", "file:/!!ELIDED!!")
-        .addFilter("pfile:/\\w\\S+", "pfile:/!!ELIDED!!")
-        .addFilter("hdfs:/\\w\\S+", "hdfs:/!!ELIDED!!")
-        .addFilter("last_modified_by=\\w+", "last_modified_by=!!ELIDED!!")
-        .addFilter(timePattern, "!!TIMESTAMP!!")
-        .addFilter("(\\D)" + currentTimePrefix + "\\d{6}(\\D)", "$1!!UNIXTIME!!$2")
-        .addFilter("(\\D)" + currentTimePrefix + "\\d{9}(\\D)", "$1!!UNIXTIMEMILLIS!!$2")
-        .addFilter(userName, "!!{user.name}!!")
-        .addFilter(operatorPattern, "\"$1_!!ELIDED!!\"")
-        .addFilter("(?i)Time taken: [0-9\\.]* sec", "Time taken: !!ELIDED!! sec")
-        .addFilter(" job(:?) job_\\w+([\\s\n])", " job$1 !!{jobId}}!!$2")
-        .addFilter("Ended Job = job_\\w+([\\s\n])", "Ended Job = !!{jobId}!!$1")
-        .addFilter(".*\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2},\\d{3}.* map = .*\n", "")
-        .addFilter("\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}\\s+", "")
-        .addFilter("maximum memory = \\d*", "maximum memory = !!ELIDED!!");
+        .addFilter("Reading log file: .*\n", "")
+        .addFilter("INFO  : ", "")
+        .addFilter(".*/tmp/.*\n", MASK_PATTERN)
+        .addFilter(".*file:.*\n", MASK_PATTERN)
+        .addFilter(".*file\\..*\n", MASK_PATTERN)
+        .addFilter(".*CreateTime.*\n", MASK_PATTERN)
+        .addFilter(".*transient_lastDdlTime.*\n", MASK_PATTERN)
+        .addFilter("(?s)(" + MASK_PATTERN + ")+", MASK_PATTERN);
   }
 
   /**
@@ -330,6 +321,12 @@ public final class QFile {
       result.beforeExecuteLogFile = new File(logDirectory, name + ".q.beforeExecute.log");
       result.afterExecuteLogFile = new File(logDirectory, name + ".q.afterExecute.log");
       result.rewriteSourceTables = rewriteSourceTables;
+      result.specificFilterSet = new RegexFilterSet()
+          .addFilter("(PREHOOK|POSTHOOK): (Output|Input): database:" + name + "\n",
+              "$1: $2: database:default\n")
+          .addFilter("(PREHOOK|POSTHOOK): (Output|Input): " + name + "@", "$1: $2: default@")
+          .addFilter("name(:?) " + name + "\\.(.*)\n", "name$1 default.$2\n")
+          .addFilter("/" + name + ".db/", "/");
       return result;
     }
   }

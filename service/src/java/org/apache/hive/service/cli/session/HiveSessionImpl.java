@@ -777,7 +777,8 @@ public class HiveSessionImpl implements HiveSession {
   }
 
   private void cleanupSessionLogDir() {
-    if (isOperationLogEnabled) {
+    // In case of test, if we might not want to remove the log directory
+    if (isOperationLogEnabled && sessionConf.getBoolVar(ConfVars.HIVE_IN_TEST_REMOVE_LOGS)) {
       try {
         FileUtils.forceDelete(sessionLogDir);
         LOG.info("Operation log session directory is deleted: "
