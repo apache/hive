@@ -49,6 +49,7 @@ import org.apache.hadoop.hive.ql.optimizer.metainfo.annotation.AnnotateWithOpTra
 import org.apache.hadoop.hive.ql.optimizer.physical.AnnotateRunTimeStatsOptimizer;
 import org.apache.hadoop.hive.ql.optimizer.physical.CrossProductCheck;
 import org.apache.hadoop.hive.ql.optimizer.physical.LlapDecider;
+import org.apache.hadoop.hive.ql.optimizer.physical.LlapPreVectorizationPass;
 import org.apache.hadoop.hive.ql.optimizer.physical.MemoryDecider;
 import org.apache.hadoop.hive.ql.optimizer.physical.MetadataOnlyOptimizer;
 import org.apache.hadoop.hive.ql.optimizer.physical.NullScanOptimizer;
@@ -551,6 +552,12 @@ public class TezCompiler extends TaskCompiler {
       physicalCtx = new CrossProductCheck().resolve(physicalCtx);
     } else {
       LOG.debug("Skipping cross product analysis");
+    }
+
+    if ("llap".equalsIgnoreCase(conf.getVar(HiveConf.ConfVars.HIVE_EXECUTION_MODE))) {
+      physicalCtx = new LlapPreVectorizationPass().resolve(physicalCtx);
+    } else {
+      LOG.debug("Skipping llap pre-vectorization pass");
     }
 
     if (conf.getBoolVar(HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED)
