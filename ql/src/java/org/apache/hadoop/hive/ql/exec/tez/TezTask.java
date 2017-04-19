@@ -18,6 +18,10 @@
 
 package org.apache.hadoop.hive.ql.exec.tez;
 
+import java.io.Serializable;
+import org.apache.hadoop.hive.ql.exec.ConditionalTask;
+import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
+
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
@@ -324,6 +328,14 @@ public class TezTask extends Task<TezWork> {
     }
   }
 
+  void checkOutputSpec(BaseWork work, JobConf jc) throws IOException {
+    for (Operator<?> op : work.getAllOperators()) {
+      if (op instanceof FileSinkOperator) {
+        ((FileSinkOperator) op).checkOutputSpecs(null, jc);
+      }
+    }
+  }
+
   DAG build(JobConf conf, TezWork work, Path scratchDir,
       LocalResource appJarLr, List<LocalResource> additionalLr, Context ctx)
       throws Exception {
@@ -357,7 +369,6 @@ public class TezTask extends Task<TezWork> {
     setAccessControlsForCurrentUser(dag, queryPlan.getQueryId(), conf);
 
     for (BaseWork w: ws) {
-
       boolean isFinal = work.getLeaves().contains(w);
 
       // translate work to vertex
@@ -379,6 +390,8 @@ public class TezTask extends Task<TezWork> {
             children.add(v);
           }
         }
+        JobConf parentConf = workToConf.get(unionWorkItems.get(0));
+        checkOutputSpec(w, parentConf);
 
         // create VertexGroup
         Vertex[] vertexArray = new Vertex[unionWorkItems.size()];
@@ -391,7 +404,7 @@ public class TezTask extends Task<TezWork> {
 
         // For a vertex group, all Outputs use the same Key-class, Val-class and partitioner.
         // Pick any one source vertex to figure out the Edge configuration.
-        JobConf parentConf = workToConf.get(unionWorkItems.get(0));
+       
 
         // now hook up the children
         for (BaseWork v: children) {
@@ -404,6 +417,7 @@ public class TezTask extends Task<TezWork> {
       } else {
         // Regular vertices
         JobConf wxConf = utils.initializeVertexConf(conf, ctx, w);
+        checkOutputSpec(w, wxConf);
         Vertex wx =
             utils.createVertex(wxConf, w, scratchDir, appJarLr, additionalLr, fs, ctx, !isFinal,
                 work, work.getVertexType(w));
