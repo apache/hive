@@ -1689,7 +1689,6 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           }
         }
 
-        checkTrashPurgeCombination(tblPath, dbname + "." + name, ifPurge, deleteData && !isExternal);
         // Drop the partitions and get a list of locations which need to be deleted
         partPaths = dropPartitionsAndGetLocations(ms, dbname, name, tblPath,
             tbl.getPartitionKeys(), deleteData && !isExternal);
@@ -1728,46 +1727,6 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         }
       }
       return success;
-    }
-
-    /**
-     * Will throw MetaException if combination of trash policy/purge can't be satisfied
-     * @param pathToData path to data which may potentially be moved to trash
-     * @param objectName db.table, or db.table.part
-     * @param ifPurge if PURGE options is specified
-     */
-    private void checkTrashPurgeCombination(Path pathToData, String objectName, boolean ifPurge,
-        boolean deleteData) throws MetaException {
-      // There is no need to check TrashPurgeCombination in following cases since Purge/Trash
-      // is not applicable:
-      // a) deleteData is false -- drop an external table
-      // b) pathToData is null -- a view
-      // c) ifPurge is true -- force delete without Trash
-      if (!deleteData || pathToData == null || ifPurge) {
-        return;
-      }
-
-      boolean trashEnabled = false;
-      try {
-        trashEnabled = 0 < hiveConf.getFloat("fs.trash.interval", -1);
-      } catch(NumberFormatException ex) {
-  // nothing to do
-      }
-
-      if (trashEnabled) {
-        try {
-          HadoopShims.HdfsEncryptionShim shim =
-            ShimLoader.getHadoopShims().createHdfsEncryptionShim(FileSystem.get(hiveConf), hiveConf);
-          if (shim.isPathEncrypted(pathToData)) {
-            throw new MetaException("Unable to drop " + objectName + " because it is in an encryption zone" +
-              " and trash is enabled.  Use PURGE option to skip trash.");
-          }
-        } catch (IOException ex) {
-          MetaException e = new MetaException(ex.getMessage());
-          e.initCause(ex);
-          throw e;
-        }
-      }
     }
 
     /**
@@ -3086,15 +3045,11 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         if (isArchived) {
           archiveParentDir = MetaStoreUtils.getOriginalLocation(part);
           verifyIsWritablePath(archiveParentDir);
-          checkTrashPurgeCombination(archiveParentDir, db_name + "." + tbl_name + "." + part_vals,
-              mustPurge, deleteData && !isExternalTbl);
         }
 
         if ((part.getSd() != null) && (part.getSd().getLocation() != null)) {
           partPath = new Path(part.getSd().getLocation());
           verifyIsWritablePath(partPath);
-          checkTrashPurgeCombination(partPath, db_name + "." + tbl_name + "." + part_vals,
-              mustPurge, deleteData && !isExternalTbl);
         }
 
         if (!ms.dropPartition(db_name, tbl_name, part_vals)) {
@@ -3272,15 +3227,11 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           if (MetaStoreUtils.isArchived(part)) {
             Path archiveParentDir = MetaStoreUtils.getOriginalLocation(part);
             verifyIsWritablePath(archiveParentDir);
-            checkTrashPurgeCombination(archiveParentDir, dbName + "." + tblName + "." +
-                part.getValues(), mustPurge, deleteData && !isExternalTbl);
             archToDelete.add(archiveParentDir);
           }
           if ((part.getSd() != null) && (part.getSd().getLocation() != null)) {
             Path partPath = new Path(part.getSd().getLocation());
             verifyIsWritablePath(partPath);
-            checkTrashPurgeCombination(partPath, dbName + "." + tblName + "." + part.getValues(),
-                mustPurge, deleteData && !isExternalTbl);
             dirsToDelete.add(new PathAndPartValSize(partPath, part.getValues().size()));
           }
         }
