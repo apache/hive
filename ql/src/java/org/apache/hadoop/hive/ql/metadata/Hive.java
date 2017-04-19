@@ -2916,8 +2916,6 @@ private void constructOneLBLocationMap(FileStatus fSta,
         // If we do a rename for a non-local file, we will be transfering the original
         // file permissions from source to the destination. Else, in case of mvFile() where we
         // copy from source to destination, we will inherit the destination's parent group ownership.
-        final String srcGroup = isRenameAllowed ? srcFile.getGroup() :
-          fullDestStatus.getFileStatus().getGroup();
         if (null == pool) {
           try {
             Path destPath = mvFile(conf, srcFs, srcP, destFs, destf, isSrcLocal, isRenameAllowed);
@@ -3004,10 +3002,33 @@ private void constructOneLBLocationMap(FileStatus fSta,
     return ShimLoader.getHadoopShims().getPathWithoutSchemeAndAuthority(path);
   }
 
+  /**
+   * <p>
+   *   Moves a file from one {@link Path} to another. If {@code isRenameAllowed} is true then the
+   *   {@link FileSystem#rename(Path, Path)} method is used to move the file. If its false then the data is copied, if
+   *   {@code isSrcLocal} is true then the {@link FileSystem#copyFromLocalFile(Path, Path)} method is used, else
+   *   {@link FileUtils#copy(FileSystem, Path, FileSystem, Path, boolean, boolean, HiveConf)} is used.
+   * </p>
+   *
+   * <p>
+   *   If the destination file already exists, then {@code _copy_[counter]} is appended to the file name, where counter
+   *   is an integer starting from 1.
+   * </p>
+   *
+   * @param conf the {@link HiveConf} to use if copying data
+   * @param sourceFs the {@link FileSystem} where the source file exists
+   * @param sourcePath the {@link Path} to move
+   * @param destFs the {@link FileSystem} to move the file to
+   * @param destDirPath the {@link Path} to move the file to
+   * @param isSrcLocal if the source file is on the local filesystem
+   * @param isRenameAllowed true if the data should be renamed and not copied, false otherwise
+   *
+   * @return the {@link Path} the source file was moved to
+   *
+   * @throws IOException if there was an issue moving the file
+   */
   private static Path mvFile(HiveConf conf, FileSystem sourceFs, Path sourcePath, FileSystem destFs, Path destDirPath,
                              boolean isSrcLocal, boolean isRenameAllowed) throws IOException {
-
-    boolean isBlobStoragePath = BlobStorageUtils.isBlobStoragePath(conf, destDirPath);
 
     // Strip off the file type, if any so we don't make:
     // 000000_0.gz -> 000000_0.gz_copy_1
@@ -3018,27 +3039,19 @@ private void constructOneLBLocationMap(FileStatus fSta,
     Path destFilePath = new Path(destDirPath, fullname);
 
     /*
-       * The below loop may perform bad when the destination file already exists and it has too many _copy_
-       * files as well. A desired approach was to call listFiles() and get a complete list of files from
-       * the destination, and check whether the file exists or not on that list. However, millions of files
-       * could live on the destination directory, and on concurrent situations, this can cause OOM problems.
-       *
-       * I'll leave the below loop for now until a better approach is found.
-       */
-
-    int counter = 1;
-    if (!isRenameAllowed || isBlobStoragePath) {
-      while (destFs.exists(destFilePath)) {
-        destFilePath =  new Path(destDirPath, name + ("_copy_" + counter) + (!type.isEmpty() ? "." + type : ""));
-        counter++;
-      }
+    * The below loop may perform bad when the destination file already exists and it has too many _copy_
+    * files as well. A desired approach was to call listFiles() and get a complete list of files from
+    * the destination, and check whether the file exists or not on that list. However, millions of files
+    * could live on the destination directory, and on concurrent situations, this can cause OOM problems.
+    *
+    * I'll leave the below loop for now until a better approach is found.
+    */
+    for (int counter = 1; destFs.exists(destFilePath); counter++) {
+      destFilePath =  new Path(destDirPath, name + ("_copy_" + counter) + (!type.isEmpty() ? "." + type : ""));
     }
 
     if (isRenameAllowed) {
-      while (!destFs.rename(sourcePath, destFilePath)) {
-        destFilePath =  new Path(destDirPath, name + ("_copy_" + counter) + (!type.isEmpty() ? "." + type : ""));
-        counter++;
-      }
+      destFs.rename(sourcePath, destFilePath);
     } else if (isSrcLocal) {
       destFs.copyFromLocalFile(sourcePath, destFilePath);
     } else {
@@ -3047,7 +3060,6 @@ private void constructOneLBLocationMap(FileStatus fSta,
           false,  // overwrite destination
           conf);
     }
-
     return destFilePath;
   }
 
