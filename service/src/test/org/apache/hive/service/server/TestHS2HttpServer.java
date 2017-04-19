@@ -90,7 +90,7 @@ public class TestHS2HttpServer {
 
   @Test
   public void testContextRootUrlRewrite() throws Exception {
-    String datePattern = "[a-zA-Z]{3} [a-zA-Z]{3} [0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]+\\[[0-9]+]";
+    String datePattern = "[a-zA-Z]{3} [a-zA-Z]{3} [0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}";
     String dateMask = "xxxMasked_DateTime_xxx";
     String baseURL = "http://localhost:" + webUIPort + "/";
     String contextRootContent = getURLResponseAsString(baseURL);
@@ -98,8 +98,9 @@ public class TestHS2HttpServer {
     String jspUrl = "http://localhost:" + webUIPort + "/hiveserver2.jsp";
     String jspContent = getURLResponseAsString(jspUrl);
 
-    Assert.assertEquals(contextRootContent.replaceAll(datePattern, dateMask),
-                        jspContent.replaceAll(datePattern, dateMask));
+    String expected = contextRootContent.replaceAll(datePattern, dateMask);
+    String actual = jspContent.replaceAll(datePattern, dateMask);
+    Assert.assertEquals(expected, actual);
   }
 
   @Test
