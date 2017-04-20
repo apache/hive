@@ -1313,9 +1313,11 @@ public class Driver implements CommandProcessor {
       metrics.incrementCounter(MetricsConstant.WAITING_COMPILE_OPS, 1);
     }
 
+    PerfLogger perfLogger = SessionState.getPerfLogger();
+    perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.WAIT_COMPILE);
     final ReentrantLock compileLock = tryAcquireCompileLock(isParallelEnabled,
       command);
-
+    perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.WAIT_COMPILE);
     if (metrics != null) {
       metrics.decrementCounter(MetricsConstant.WAITING_COMPILE_OPS, 1);
     }
@@ -1342,7 +1344,6 @@ public class Driver implements CommandProcessor {
     //Save compile-time PerfLogging for WebUI.
     //Execution-time Perf logs are done by either another thread's PerfLogger
     //or a reset PerfLogger.
-    PerfLogger perfLogger = SessionState.getPerfLogger();
     queryDisplay.setPerfLogStarts(QueryDisplay.Phase.COMPILATION, perfLogger.getStartTimes());
     queryDisplay.setPerfLogEnds(QueryDisplay.Phase.COMPILATION, perfLogger.getEndTimes());
     return ret;
