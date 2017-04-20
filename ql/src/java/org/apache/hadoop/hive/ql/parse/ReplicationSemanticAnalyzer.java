@@ -31,6 +31,7 @@ import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.ReplChangeManager;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
 import org.apache.hadoop.hive.metastore.api.NotificationEvent;
 import org.apache.hadoop.hive.metastore.messaging.event.filters.AndFilter;
 import org.apache.hadoop.hive.metastore.messaging.event.filters.DatabaseAndTableFilter;
@@ -53,6 +54,7 @@ import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
+import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
@@ -1087,6 +1089,27 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
     return partSpecs;
   }
 
+  private boolean existEmptyDb(String dbName) throws InvalidOperationException, HiveException {
+    Hive hiveDb = Hive.get();
+    Database db = hiveDb.getDatabase(dbName);
+    if (null != db) {
+      List<String> allTables = hiveDb.getAllTables(dbName);
+      List<String> allFunctions = hiveDb.getFunctions(dbName, "*");
+      if (!allTables.isEmpty()) {
+        throw new InvalidOperationException(
+                "Database " + db.getName() + " is not empty. One or more tables exist.");
+      }
+      if (!allFunctions.isEmpty()) {
+        throw new InvalidOperationException(
+                "Database " + db.getName() + " is not empty. One or more functions exist.");
+      }
+
+      return true;
+    }
+
+    return false;
+  }
+
   private void analyzeDatabaseLoad(String dbName, FileSystem fs, FileStatus dir)
       throws SemanticException {
     try {
@@ -1119,24 +1142,30 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
         dbName = dbObj.getName();
       }
 
-      CreateDatabaseDesc createDbDesc = new CreateDatabaseDesc();
-      createDbDesc.setName(dbName);
-      createDbDesc.setComment(dbObj.getDescription());
-      createDbDesc.setDatabaseProperties(dbObj.getParameters());
-      // note that we do not set location - for repl load, we want that auto-created.
+      Task<? extends Serializable> dbRootTask = null;
+      if (existEmptyDb(dbName)) {
+        AlterDatabaseDesc alterDbDesc = new AlterDatabaseDesc(dbName, dbObj.getParameters());
+        dbRootTask = TaskFactory.get(new DDLWork(inputs, outputs, alterDbDesc), conf);
+      } else {
+        CreateDatabaseDesc createDbDesc = new CreateDatabaseDesc();
+        createDbDesc.setName(dbName);
+        createDbDesc.setComment(dbObj.getDescription());
+        createDbDesc.setDatabaseProperties(dbObj.getParameters());
+        // note that we do not set location - for repl load, we want that auto-created.
 
-      createDbDesc.setIfNotExists(false);
-      // If it exists, we want this to be an error condition. Repl Load is not intended to replace a
-      // db.
-      // TODO: we might revisit this in create-drop-recreate cases, needs some thinking on.
-      Task<? extends Serializable> createDbTask = TaskFactory.get(new DDLWork(inputs, outputs, createDbDesc), conf);
-      rootTasks.add(createDbTask);
+        createDbDesc.setIfNotExists(false);
+        // If it exists, we want this to be an error condition. Repl Load is not intended to replace a
+        // db.
+        // TODO: we might revisit this in create-drop-recreate cases, needs some thinking on.
+        dbRootTask = TaskFactory.get(new DDLWork(inputs, outputs, createDbDesc), conf);
+      }
 
+      rootTasks.add(dbRootTask);
       FileStatus[] dirsInDbPath = fs.listStatus(dir.getPath(), EximUtil.getDirectoryFilter(fs));
 
       for (FileStatus tableDir : dirsInDbPath) {
         analyzeTableLoad(
-            dbName, null, tableDir.getPath().toUri().toString(), createDbTask, null, null);
+            dbName, null, tableDir.getPath().toUri().toString(), dbRootTask, null, null);
       }
     } catch (Exception e) {
       throw new SemanticException(e);
