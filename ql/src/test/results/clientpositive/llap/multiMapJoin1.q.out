@@ -659,12 +659,12 @@ POSTHOOK: Input: default@smalltbl1
 POSTHOOK: Input: default@smalltbl2
 #### A masked pattern was here ####
 RUN: Stage-1:MAPRED
-270
+10
+10
 10
 10
 270
-10
-10
+270
 PREHOOK: query: drop table bigTbl
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@bigtbl

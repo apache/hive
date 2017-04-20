@@ -41,6 +41,7 @@ import org.apache.hadoop.hive.ql.stats.StatsUtils;
 
 import static org.apache.hadoop.hive.ql.plan.ReduceSinkDesc.ReducerTraits.AUTOPARALLEL;
 import static org.apache.hadoop.hive.ql.plan.ReduceSinkDesc.ReducerTraits.UNIFORM;
+import static org.apache.hadoop.hive.ql.plan.ReduceSinkDesc.ReducerTraits.FIXED;
 
 /**
  * SetReducerParallelism determines how many reducers should
@@ -106,6 +107,7 @@ public class SetReducerParallelism implements NodeProcessor {
       }
     } else {
       LOG.info("Number of reducers determined to be: "+desc.getNumReducers());
+      desc.setReducerTraits(EnumSet.of(FIXED)); // usually controlled by bucketing
     }
 
     return false;

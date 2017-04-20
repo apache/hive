@@ -29,10 +29,10 @@ POSTHOOK: Lineage: t1.b SIMPLE [(t1_text)t1_text.FieldSchema(name:b, type:string
 POSTHOOK: Lineage: t1.c SIMPLE [(t1_text)t1_text.FieldSchema(name:c, type:string, comment:null), ]
 t1_text.a	t1_text.b	t1_text.c
 PREHOOK: query: EXPLAIN
-SELECT a, b, count(*) from T1 group by a, b with cube LIMIT 10
+SELECT a, b, count(*) from T1 group by a, b with cube order by a, b LIMIT 10
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
-SELECT a, b, count(*) from T1 group by a, b with cube LIMIT 10
+SELECT a, b, count(*) from T1 group by a, b with cube order by a, b LIMIT 10
 POSTHOOK: type: QUERY
 Explain
 STAGE DEPENDENCIES:
@@ -45,6 +45,7 @@ STAGE PLANS:
 #### A masked pattern was here ####
       Edges:
         Reducer 2 <- Map 1 (SIMPLE_EDGE)
+        Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -85,16 +86,29 @@ STAGE PLANS:
                   expressions: _col0 (type: string), _col1 (type: string), _col3 (type: bigint)
                   outputColumnNames: _col0, _col1, _col2
                   Statistics: Num rows: 12 Data size: 3060 Basic stats: COMPLETE Column stats: NONE
-                  Limit
-                    Number of rows: 10
+                  Reduce Output Operator
+                    key expressions: _col0 (type: string), _col1 (type: string)
+                    sort order: ++
+                    Statistics: Num rows: 12 Data size: 3060 Basic stats: COMPLETE Column stats: NONE
+                    TopN Hash Memory Usage: 0.1
+                    value expressions: _col2 (type: bigint)
+        Reducer 3 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Select Operator
+                expressions: KEY.reducesinkkey0 (type: string), KEY.reducesinkkey1 (type: string), VALUE._col0 (type: bigint)
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 12 Data size: 3060 Basic stats: COMPLETE Column stats: NONE
+                Limit
+                  Number of rows: 10
+                  Statistics: Num rows: 10 Data size: 2550 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
                     Statistics: Num rows: 10 Data size: 2550 Basic stats: COMPLETE Column stats: NONE
-                    File Output Operator
-                      compressed: false
-                      Statistics: Num rows: 10 Data size: 2550 Basic stats: COMPLETE Column stats: NONE
-                      table:
-                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator
@@ -102,11 +116,11 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: SELECT a, b, count(*) from T1 group by a, b with cube LIMIT 10
+PREHOOK: query: SELECT a, b, count(*) from T1 group by a, b with cube order by a, b LIMIT 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT a, b, count(*) from T1 group by a, b with cube LIMIT 10
+POSTHOOK: query: SELECT a, b, count(*) from T1 group by a, b with cube order by a, b LIMIT 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 #### A masked pattern was here ####
@@ -122,10 +136,10 @@ NULL	2	3
 NULL	3	1
 NULL	NULL	6
 PREHOOK: query: EXPLAIN
-SELECT a, b, count(*) FROM T1 GROUP BY a, b  GROUPING SETS (a, (a, b), b, ()) LIMIT 10
+SELECT a, b, count(*) FROM T1 GROUP BY a, b  GROUPING SETS (a, (a, b), b, ()) order by a, b LIMIT 10
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
-SELECT a, b, count(*) FROM T1 GROUP BY a, b  GROUPING SETS (a, (a, b), b, ()) LIMIT 10
+SELECT a, b, count(*) FROM T1 GROUP BY a, b  GROUPING SETS (a, (a, b), b, ()) order by a, b LIMIT 10
 POSTHOOK: type: QUERY
 Explain
 STAGE DEPENDENCIES:
@@ -138,6 +152,7 @@ STAGE PLANS:
 #### A masked pattern was here ####
       Edges:
         Reducer 2 <- Map 1 (SIMPLE_EDGE)
+        Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -178,16 +193,29 @@ STAGE PLANS:
                   expressions: _col0 (type: string), _col1 (type: string), _col3 (type: bigint)
                   outputColumnNames: _col0, _col1, _col2
                   Statistics: Num rows: 12 Data size: 3060 Basic stats: COMPLETE Column stats: NONE
-                  Limit
-                    Number of rows: 10
+                  Reduce Output Operator
+                    key expressions: _col0 (type: string), _col1 (type: string)
+                    sort order: ++
+                    Statistics: Num rows: 12 Data size: 3060 Basic stats: COMPLETE Column stats: NONE
+                    TopN Hash Memory Usage: 0.1
+                    value expressions: _col2 (type: bigint)
+        Reducer 3 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Select Operator
+                expressions: KEY.reducesinkkey0 (type: string), KEY.reducesinkkey1 (type: string), VALUE._col0 (type: bigint)
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 12 Data size: 3060 Basic stats: COMPLETE Column stats: NONE
+                Limit
+                  Number of rows: 10
+                  Statistics: Num rows: 10 Data size: 2550 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
                     Statistics: Num rows: 10 Data size: 2550 Basic stats: COMPLETE Column stats: NONE
-                    File Output Operator
-                      compressed: false
-                      Statistics: Num rows: 10 Data size: 2550 Basic stats: COMPLETE Column stats: NONE
-                      table:
-                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator
@@ -195,11 +223,11 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: SELECT a, b, count(*) FROM T1 GROUP BY a, b  GROUPING SETS (a, (a, b), b, ()) LIMIT 10
+PREHOOK: query: SELECT a, b, count(*) FROM T1 GROUP BY a, b  GROUPING SETS (a, (a, b), b, ()) order by a, b LIMIT 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT a, b, count(*) FROM T1 GROUP BY a, b  GROUPING SETS (a, (a, b), b, ()) LIMIT 10
+POSTHOOK: query: SELECT a, b, count(*) FROM T1 GROUP BY a, b  GROUPING SETS (a, (a, b), b, ()) order by a, b LIMIT 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 #### A masked pattern was here ####
@@ -215,10 +243,10 @@ NULL	2	3
 NULL	3	1
 NULL	NULL	6
 PREHOOK: query: EXPLAIN
-SELECT a, b, count(*) FROM T1 GROUP BY a, b GROUPING SETS (a, (a, b)) LIMIT 10
+SELECT a, b, count(*) FROM T1 GROUP BY a, b GROUPING SETS (a, (a, b)) order by a, b LIMIT 10
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
-SELECT a, b, count(*) FROM T1 GROUP BY a, b GROUPING SETS (a, (a, b)) LIMIT 10
+SELECT a, b, count(*) FROM T1 GROUP BY a, b GROUPING SETS (a, (a, b)) order by a, b LIMIT 10
 POSTHOOK: type: QUERY
 Explain
 STAGE DEPENDENCIES:
@@ -231,6 +259,7 @@ STAGE PLANS:
 #### A masked pattern was here ####
       Edges:
         Reducer 2 <- Map 1 (SIMPLE_EDGE)
+        Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -271,16 +300,29 @@ STAGE PLANS:
                   expressions: _col0 (type: string), _col1 (type: string), _col3 (type: bigint)
                   outputColumnNames: _col0, _col1, _col2
                   Statistics: Num rows: 6 Data size: 1530 Basic stats: COMPLETE Column stats: NONE
-                  Limit
-                    Number of rows: 10
+                  Reduce Output Operator
+                    key expressions: _col0 (type: string), _col1 (type: string)
+                    sort order: ++
                     Statistics: Num rows: 6 Data size: 1530 Basic stats: COMPLETE Column stats: NONE
-                    File Output Operator
-                      compressed: false
-                      Statistics: Num rows: 6 Data size: 1530 Basic stats: COMPLETE Column stats: NONE
-                      table:
-                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    TopN Hash Memory Usage: 0.1
+                    value expressions: _col2 (type: bigint)
+        Reducer 3 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Select Operator
+                expressions: KEY.reducesinkkey0 (type: string), KEY.reducesinkkey1 (type: string), VALUE._col0 (type: bigint)
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 6 Data size: 1530 Basic stats: COMPLETE Column stats: NONE
+                Limit
+                  Number of rows: 10
+                  Statistics: Num rows: 6 Data size: 1530 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 6 Data size: 1530 Basic stats: COMPLETE Column stats: NONE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator
@@ -288,11 +330,11 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: SELECT a, b, count(*) FROM T1 GROUP BY a, b GROUPING SETS (a, (a, b)) LIMIT 10
+PREHOOK: query: SELECT a, b, count(*) FROM T1 GROUP BY a, b GROUPING SETS (a, (a, b)) order by a, b LIMIT 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT a, b, count(*) FROM T1 GROUP BY a, b GROUPING SETS (a, (a, b)) LIMIT 10
+POSTHOOK: query: SELECT a, b, count(*) FROM T1 GROUP BY a, b GROUPING SETS (a, (a, b)) order by a, b LIMIT 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 #### A masked pattern was here ####
@@ -308,10 +350,10 @@ a	b	_c2
 5	NULL	1
 8	NULL	1
 PREHOOK: query: EXPLAIN
-SELECT a FROM T1 GROUP BY a, b, c GROUPING SETS (a, b, c) LIMIT 10
+SELECT a FROM T1 GROUP BY a, b, c GROUPING SETS (a, b, c) order by a LIMIT 10
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
-SELECT a FROM T1 GROUP BY a, b, c GROUPING SETS (a, b, c) LIMIT 10
+SELECT a FROM T1 GROUP BY a, b, c GROUPING SETS (a, b, c) order by a LIMIT 10
 POSTHOOK: type: QUERY
 Explain
 STAGE DEPENDENCIES:
@@ -324,6 +366,7 @@ STAGE PLANS:
 #### A masked pattern was here ####
       Edges:
         Reducer 2 <- Map 1 (SIMPLE_EDGE)
+        Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -361,16 +404,28 @@ STAGE PLANS:
                   expressions: _col0 (type: string)
                   outputColumnNames: _col0
                   Statistics: Num rows: 9 Data size: 2295 Basic stats: COMPLETE Column stats: NONE
-                  Limit
-                    Number of rows: 10
+                  Reduce Output Operator
+                    key expressions: _col0 (type: string)
+                    sort order: +
                     Statistics: Num rows: 9 Data size: 2295 Basic stats: COMPLETE Column stats: NONE
-                    File Output Operator
-                      compressed: false
-                      Statistics: Num rows: 9 Data size: 2295 Basic stats: COMPLETE Column stats: NONE
-                      table:
-                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    TopN Hash Memory Usage: 0.1
+        Reducer 3 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Select Operator
+                expressions: KEY.reducesinkkey0 (type: string)
+                outputColumnNames: _col0
+                Statistics: Num rows: 9 Data size: 2295 Basic stats: COMPLETE Column stats: NONE
+                Limit
+                  Number of rows: 10
+                  Statistics: Num rows: 9 Data size: 2295 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 9 Data size: 2295 Basic stats: COMPLETE Column stats: NONE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator
@@ -378,11 +433,11 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: SELECT a FROM T1 GROUP BY a, b, c GROUPING SETS (a, b, c) LIMIT 10
+PREHOOK: query: SELECT a FROM T1 GROUP BY a, b, c GROUPING SETS (a, b, c) order by a LIMIT 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT a FROM T1 GROUP BY a, b, c GROUPING SETS (a, b, c) LIMIT 10
+POSTHOOK: query: SELECT a FROM T1 GROUP BY a, b, c GROUPING SETS (a, b, c) order by a LIMIT 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 #### A masked pattern was here ####
@@ -398,10 +453,10 @@ NULL
 NULL
 NULL
 PREHOOK: query: EXPLAIN
-SELECT a FROM T1 GROUP BY a GROUPING SETS ((a), (a)) LIMIT 10
+SELECT a FROM T1 GROUP BY a GROUPING SETS ((a), (a)) order by a LIMIT 10
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
-SELECT a FROM T1 GROUP BY a GROUPING SETS ((a), (a)) LIMIT 10
+SELECT a FROM T1 GROUP BY a GROUPING SETS ((a), (a)) order by a LIMIT 10
 POSTHOOK: type: QUERY
 Explain
 STAGE DEPENDENCIES:
@@ -414,6 +469,7 @@ STAGE PLANS:
 #### A masked pattern was here ####
       Edges:
         Reducer 2 <- Map 1 (SIMPLE_EDGE)
+        Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -447,6 +503,18 @@ STAGE PLANS:
                 outputColumnNames: _col0
                 Statistics: Num rows: 3 Data size: 765 Basic stats: COMPLETE Column stats: NONE
                 pruneGroupingSetId: true
+                Reduce Output Operator
+                  key expressions: _col0 (type: string)
+                  sort order: +
+                  Statistics: Num rows: 3 Data size: 765 Basic stats: COMPLETE Column stats: NONE
+                  TopN Hash Memory Usage: 0.1
+        Reducer 3 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Select Operator
+                expressions: KEY.reducesinkkey0 (type: string)
+                outputColumnNames: _col0
+                Statistics: Num rows: 3 Data size: 765 Basic stats: COMPLETE Column stats: NONE
                 Limit
                   Number of rows: 10
                   Statistics: Num rows: 3 Data size: 765 Basic stats: COMPLETE Column stats: NONE
@@ -464,11 +532,11 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: SELECT a FROM T1 GROUP BY a GROUPING SETS ((a), (a)) LIMIT 10
+PREHOOK: query: SELECT a FROM T1 GROUP BY a GROUPING SETS ((a), (a)) order by a LIMIT 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT a FROM T1 GROUP BY a GROUPING SETS ((a), (a)) LIMIT 10
+POSTHOOK: query: SELECT a FROM T1 GROUP BY a GROUPING SETS ((a), (a)) order by a LIMIT 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 #### A masked pattern was here ####
@@ -479,10 +547,10 @@ a
 5
 8
 PREHOOK: query: EXPLAIN
-SELECT a + b, count(*) FROM T1 GROUP BY a + b GROUPING SETS (a+b) LIMIT 10
+SELECT a + b ab, count(*) FROM T1 GROUP BY a + b GROUPING SETS (a+b) order by ab LIMIT 10
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
-SELECT a + b, count(*) FROM T1 GROUP BY a + b GROUPING SETS (a+b) LIMIT 10
+SELECT a + b ab, count(*) FROM T1 GROUP BY a + b GROUPING SETS (a+b) order by ab LIMIT 10
 POSTHOOK: type: QUERY
 Explain
 STAGE DEPENDENCIES:
@@ -495,6 +563,7 @@ STAGE PLANS:
 #### A masked pattern was here ####
       Edges:
         Reducer 2 <- Map 1 (SIMPLE_EDGE)
+        Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -535,16 +604,29 @@ STAGE PLANS:
                   expressions: _col0 (type: double), _col2 (type: bigint)
                   outputColumnNames: _col0, _col1
                   Statistics: Num rows: 3 Data size: 765 Basic stats: COMPLETE Column stats: NONE
-                  Limit
-                    Number of rows: 10
+                  Reduce Output Operator
+                    key expressions: _col0 (type: double)
+                    sort order: +
                     Statistics: Num rows: 3 Data size: 765 Basic stats: COMPLETE Column stats: NONE
-                    File Output Operator
-                      compressed: false
-                      Statistics: Num rows: 3 Data size: 765 Basic stats: COMPLETE Column stats: NONE
-                      table:
-                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    TopN Hash Memory Usage: 0.1
+                    value expressions: _col1 (type: bigint)
+        Reducer 3 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Select Operator
+                expressions: KEY.reducesinkkey0 (type: double), VALUE._col0 (type: bigint)
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 3 Data size: 765 Basic stats: COMPLETE Column stats: NONE
+                Limit
+                  Number of rows: 10
+                  Statistics: Num rows: 3 Data size: 765 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 3 Data size: 765 Basic stats: COMPLETE Column stats: NONE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator
@@ -552,15 +634,15 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: SELECT a + b, count(*) FROM T1 GROUP BY a + b GROUPING SETS (a+b) LIMIT 10
+PREHOOK: query: SELECT a + b ab, count(*) FROM T1 GROUP BY a + b GROUPING SETS (a+b) order by ab LIMIT 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT a + b, count(*) FROM T1 GROUP BY a + b GROUPING SETS (a+b) LIMIT 10
+POSTHOOK: query: SELECT a + b ab, count(*) FROM T1 GROUP BY a + b GROUPING SETS (a+b) order by ab LIMIT 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 #### A masked pattern was here ####
-_c0	_c1
+ab	_c1
 2.0	1
 4.0	1
 5.0	2

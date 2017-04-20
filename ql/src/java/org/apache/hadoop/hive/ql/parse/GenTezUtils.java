@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.parse;
 
 import static org.apache.hadoop.hive.ql.plan.ReduceSinkDesc.ReducerTraits.AUTOPARALLEL;
+import static org.apache.hadoop.hive.ql.plan.ReduceSinkDesc.ReducerTraits.UNIFORM;
 
 import java.util.*;
 
@@ -96,6 +97,7 @@ public class GenTezUtils {
 
     reduceWork.setNumReduceTasks(reduceSink.getConf().getNumReducers());
     reduceWork.setSlowStart(reduceSink.getConf().isSlowStart());
+    reduceWork.setUniformDistribution(reduceSink.getConf().getReducerTraits().contains(UNIFORM));
 
     if (isAutoReduceParallelism && reduceSink.getConf().getReducerTraits().contains(AUTOPARALLEL)) {
 
@@ -103,6 +105,7 @@ public class GenTezUtils {
       final int maxReducers = context.conf.getIntVar(HiveConf.ConfVars.MAXREDUCERS);
       // estimated number of reducers
       final int nReducers = reduceSink.getConf().getNumReducers();
+      // TODO# HERE
 
       // min we allow tez to pick
       int minPartition = Math.max(1, (int) (nReducers * minPartitionFactor));
@@ -139,6 +142,7 @@ public class GenTezUtils {
       edgeProp = new TezEdgeProperty(edgeType);
       edgeProp.setSlowStart(reduceWork.isSlowStart());
     }
+    reduceWork.setEdgePropRef(edgeProp);
 
     tezWork.connect(
         context.preceedingWork,

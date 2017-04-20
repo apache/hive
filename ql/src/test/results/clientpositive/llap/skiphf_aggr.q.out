@@ -87,9 +87,9 @@ POSTHOOK: Input: default@skiphtbl
 POSTHOOK: Input: default@skiphtbl@b=1
 POSTHOOK: Input: default@skiphtbl@b=2
 #### A masked pattern was here ####
+4
 2
 3
-4
 PREHOOK: query: INSERT OVERWRITE TABLE skipHTbl PARTITION (b = 1) VALUES (1)
 PREHOOK: type: QUERY
 PREHOOK: Output: default@skiphtbl@b=1
@@ -142,9 +142,9 @@ POSTHOOK: Input: default@skiphtbl
 POSTHOOK: Input: default@skiphtbl@b=1
 POSTHOOK: Input: default@skiphtbl@b=2
 #### A masked pattern was here ####
+4
 2
 3
-4
 PREHOOK: query: DROP TABLE IF EXISTS skipFTbl
 PREHOOK: type: DROPTABLE
 POSTHOOK: query: DROP TABLE IF EXISTS skipFTbl

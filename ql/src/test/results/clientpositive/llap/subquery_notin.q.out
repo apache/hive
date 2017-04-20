@@ -1329,22 +1329,22 @@ group by li.l_partkey
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@lineitem
 #### A masked pattern was here ####
-450	1
-7068	1
-21636	1
 22630	1
 59694	1
-61931	1
-85951	1
-88035	1
-88362	1
 106170	1
-119477	1
-119767	1
 123076	1
 139636	1
+450	1
+61931	1
+119767	1
 175839	1
+7068	1
+88362	1
 182052	1
+21636	1
+85951	1
+88035	1
+119477	1
 Warning: Shuffle Join MERGEJOIN[30][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: select * 
 from src 
@@ -4042,37 +4042,37 @@ POSTHOOK: query: select key, count(*) from src where value NOT IN (select key fr
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
-409	3
-187	3
-403	3
-396	3
-384	3
-369	3
-498	3
-5	3
-35	3
-327	3
-167	3
-318	3
-316	3
-311	3
-298	3
-70	3
-90	3
+430	3
 128	3
-273	3
-208	3
+369	3
+316	3
 199	3
-193	3
-0	3
-119	3
+454	3
+384	3
+311	3
+208	3
+298	3
+187	3
+273	3
+417	3
+396	3
+409	3
+403	3
+35	3
+90	3
+438	3
+327	3
 480	3
 466	3
-454	3
-438	3
+318	3
+193	3
+498	3
+5	3
+0	3
+167	3
+119	3
 431	3
-430	3
-417	3
+70	3
 PREHOOK: query: explain select key, count(*) from src where value NOT IN (select concat('v', value) from src sc where sc.key = src.key ) group by key having count(*) in (select count(*) from src s1 where s1.key = '90' group by s1.key )
 PREHOOK: type: QUERY
 POSTHOOK: query: explain select key, count(*) from src where value NOT IN (select concat('v', value) from src sc where sc.key = src.key ) group by key having count(*) in (select count(*) from src s1 where s1.key = '90' group by s1.key )
@@ -4354,37 +4354,37 @@ POSTHOOK: query: select key, count(*) from src where value NOT IN (select concat
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
-409	3
-187	3
-403	3
-396	3
-384	3
-369	3
-498	3
-5	3
-35	3
-327	3
-167	3
-318	3
-316	3
-311	3
-298	3
-70	3
-90	3
+430	3
 128	3
-273	3
-208	3
+369	3
+316	3
 199	3
-193	3
-0	3
-119	3
+454	3
+384	3
+311	3
+208	3
+298	3
+187	3
+273	3
+417	3
+396	3
+409	3
+403	3
+35	3
+90	3
+438	3
+327	3
 480	3
 466	3
-454	3
-438	3
+318	3
+193	3
+498	3
+5	3
+0	3
+167	3
+119	3
 431	3
-430	3
-417	3
+70	3
 Warning: Shuffle Join MERGEJOIN[38][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: explain select * from part  where (p_size-1) NOT IN (select min(p_size) from part group by p_type) order by p_brand
 PREHOOK: type: QUERY

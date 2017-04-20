@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -378,6 +379,9 @@ public class FetchOperator implements Serializable {
         inputSplits = splitSampling(work.getSplitSample(), inputSplits);
       }
       if (inputSplits.length > 0) {
+        if (HiveConf.getBoolVar(job, HiveConf.ConfVars.HIVE_IN_TEST)) {
+          Arrays.sort(inputSplits, new FetchInputFormatSplitComparator());
+        }
         return inputSplits;
       }
     }
@@ -693,6 +697,18 @@ public class FetchOperator implements Serializable {
 
     public RecordReader<WritableComparable, Writable> getRecordReader(JobConf job) throws IOException {
       return inputFormat.getRecordReader(getInputSplit(), job, Reporter.NULL);
+    }
+  }
+  
+  private static class FetchInputFormatSplitComparator implements Comparator<FetchInputFormatSplit> {
+    @Override
+    public int compare(FetchInputFormatSplit a, FetchInputFormatSplit b) {
+      final Path ap = a.getPath();
+      final Path bp = b.getPath();
+      if (ap != null) {
+        return (ap.compareTo(bp));
+      }
+      return Long.signum(a.getLength() - b.getLength());
     }
   }
 }

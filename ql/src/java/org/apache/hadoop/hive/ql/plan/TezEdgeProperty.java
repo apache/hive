@@ -50,6 +50,12 @@ public class TezEdgeProperty {
   public TezEdgeProperty(HiveConf hiveConf, EdgeType edgeType, boolean isAutoReduce,
       boolean isSlowStart, int minReducer, int maxReducer, long bytesPerReducer) {
     this(hiveConf, edgeType, -1);
+    setAutoReduce(hiveConf, isAutoReduce, minReducer, maxReducer, bytesPerReducer);
+  }
+
+  public void setAutoReduce(HiveConf hiveConf, boolean isAutoReduce, int minReducer,
+      int maxReducer, long bytesPerReducer) {
+    this.hiveConf = hiveConf;
     this.minReducer = minReducer;
     this.maxReducer = maxReducer;
     this.isAutoReduce = isAutoReduce;

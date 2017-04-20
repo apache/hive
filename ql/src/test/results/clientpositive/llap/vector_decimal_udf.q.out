@@ -2368,23 +2368,23 @@ POSTHOOK: query: SELECT value, stddev(key), variance(key) FROM DECIMAL_UDF GROUP
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_udf
 #### A masked pattern was here ####
+4	0.0	0.0
 -1234567890	0.0	0.0
--1255	0.0	0.0
--11	0.0	0.0
--1	0.0	0.0
 0	0.22561046704494161	0.050900082840236685
 1	0.05928102563215321	0.0035142400000000066
 2	0.0	0.0
 3	0.0	0.0
-4	0.0	0.0
-10	0.0	0.0
-20	0.0	0.0
-100	0.0	0.0
 124	0.0	0.0
-125	0.0	0.0
 200	0.0	0.0
 4400	0.0	0.0
 1234567890	0.0	0.0
+10	0.0	0.0
+125	0.0	0.0
+-1255	0.0	0.0
+-11	0.0	0.0
+-1	0.0	0.0
+20	0.0	0.0
+100	0.0	0.0
 PREHOOK: query: EXPLAIN SELECT value, stddev_samp(key), var_samp(key) FROM DECIMAL_UDF GROUP BY value
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN SELECT value, stddev_samp(key), var_samp(key) FROM DECIMAL_UDF GROUP BY value
@@ -2455,23 +2455,23 @@ POSTHOOK: query: SELECT value, stddev_samp(key), var_samp(key) FROM DECIMAL_UDF 
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_udf
 #### A masked pattern was here ####
+4	0.0	0.0
 -1234567890	0.0	0.0
--1255	0.0	0.0
--11	0.0	0.0
--1	0.0	0.0
 0	0.2348228191855647	0.055141756410256405
 1	0.06627820154470102	0.004392800000000008
 2	0.0	0.0
 3	0.0	0.0
-4	0.0	0.0
-10	0.0	0.0
-20	0.0	0.0
-100	0.0	0.0
 124	0.0	0.0
-125	0.0	0.0
 200	0.0	0.0
 4400	0.0	0.0
 1234567890	0.0	0.0
+10	0.0	0.0
+125	0.0	0.0
+-1255	0.0	0.0
+-11	0.0	0.0
+-1	0.0	0.0
+20	0.0	0.0
+100	0.0	0.0
 PREHOOK: query: EXPLAIN SELECT histogram_numeric(key, 3) FROM DECIMAL_UDF
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN SELECT histogram_numeric(key, 3) FROM DECIMAL_UDF

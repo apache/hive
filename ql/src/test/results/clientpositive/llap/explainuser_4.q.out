@@ -232,10 +232,10 @@ order by c1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
--13036	1
 -8915	1
 -3799	1
 10782	1
+-13036	1
 NULL	6
 PREHOOK: query: explain
 select
@@ -471,10 +471,10 @@ order by c1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
--13036	1
 -8915	1
 -3799	1
 10782	1
+-13036	1
 NULL	6
 Warning: Shuffle Join MERGEJOIN[9][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: explain

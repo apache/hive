@@ -141,87 +141,87 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@dest1
 #### A masked pattern was here ####
 {"version":"1.0","engine":"tez","database":"default","hash":"3901b5e3a164064736b3234355046340","queryText":"select key, count(1) a from dest1 group by key","edges":[],"vertices":[]}
-	20
 128	2
-146	2
-150	2
 213	2
-224	2
+278	2
+369	2
+	20
+150	2
 238	2
+66	2
+146	2
+224	2
 255	2
 273	2
-278	2
 311	2
-369	2
 401	2
 406	2
-66	2
 98	2
 PREHOOK: query: select key k, count(*) from dest1 group by key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest1
 #### A masked pattern was here ####
 {"version":"1.0","engine":"tez","database":"default","hash":"0d5a212f10847aeaab31e8c31121e6d4","queryText":"select key k, count(*) from dest1 group by key","edges":[],"vertices":[]}
-	20
 128	2
-146	2
-150	2
 213	2
-224	2
+278	2
+369	2
+	20
+150	2
 238	2
+66	2
+146	2
+224	2
 255	2
 273	2
-278	2
 311	2
-369	2
 401	2
 406	2
-66	2
 98	2
 PREHOOK: query: select key k, count(value) from dest1 group by key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest1
 #### A masked pattern was here ####
 {"version":"1.0","engine":"tez","database":"default","hash":"56429eccb04ded722f5bd9d9d8cf7260","queryText":"select key k, count(value) from dest1 group by key","edges":[],"vertices":[]}
-	20
 128	2
-146	2
-150	2
 213	2
-224	2
+278	2
+369	2
+	20
+150	2
 238	2
+66	2
+146	2
+224	2
 255	2
 273	2
-278	2
 311	2
-369	2
 401	2
 406	2
-66	2
 98	2
 PREHOOK: query: select value, max(length(key)) from dest1 group by value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest1
 #### A masked pattern was here ####
 {"version":"1.0","engine":"tez","database":"default","hash":"7e1cfc3dece85b41b6f7c46365580cde","queryText":"select value, max(length(key)) from dest1 group by value","edges":[],"vertices":[]}
-	3
 val_146	3
-val_150	3
-val_165	0
-val_193	0
-val_213	3
-val_238	3
-val_255	3
-val_265	0
 val_27	0
-val_273	3
-val_278	3
-val_311	3
-val_401	3
-val_406	3
 val_409	0
 val_484	0
 val_66	2
+	3
+val_165	0
+val_238	3
+val_193	0
+val_213	3
+val_255	3
+val_265	0
+val_273	3
+val_278	3
+val_401	3
+val_150	3
+val_311	3
+val_406	3
 val_98	2
 PREHOOK: query: select value, max(length(key)) from dest1 group by value order by value limit 5
 PREHOOK: type: QUERY

@@ -217,6 +217,7 @@ select
 from
   store_sales
 group by ss_ticket_number
+order by ss_ticket_number
 limit 20
 PREHOOK: type: QUERY
 POSTHOOK: query: explain vectorization expression
@@ -225,6 +226,7 @@ select
 from
   store_sales
 group by ss_ticket_number
+order by ss_ticket_number
 limit 20
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
@@ -233,7 +235,8 @@ PLAN VECTORIZATION:
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-0 depends on stages: Stage-1
+  Stage-2 depends on stages: Stage-1
+  Stage-0 depends on stages: Stage-2
 
 STAGE PLANS:
   Stage: Stage-1
@@ -298,6 +301,48 @@ STAGE PLANS:
           mode: mergepartial
           outputColumnNames: _col0
           Statistics: Num rows: 500 Data size: 44138 Basic stats: COMPLETE Column stats: NONE
+          File Output Operator
+            compressed: false
+            table:
+                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+
+  Stage: Stage-2
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            TableScan Vectorization:
+                native: true
+                projectedOutputColumns: [0]
+            Reduce Output Operator
+              key expressions: _col0 (type: int)
+              sort order: +
+              Reduce Sink Vectorization:
+                  className: VectorReduceSinkOperator
+                  native: false
+                  nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                  nativeConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false, No TopN IS false
+              Statistics: Num rows: 500 Data size: 44138 Basic stats: COMPLETE Column stats: NONE
+              TopN Hash Memory Usage: 0.1
+      Execution mode: vectorized
+      Map Vectorization:
+          enabled: true
+          enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
+          groupByVectorOutput: true
+          inputFileFormats: org.apache.hadoop.mapred.SequenceFileInputFormat
+          allNative: false
+          usesVectorUDFAdaptor: false
+          vectorized: true
+      Reduce Vectorization:
+          enabled: false
+          enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true
+          enableConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false
+      Reduce Operator Tree:
+        Select Operator
+          expressions: KEY.reducesinkkey0 (type: int)
+          outputColumnNames: _col0
+          Statistics: Num rows: 500 Data size: 44138 Basic stats: COMPLETE Column stats: NONE
           Limit
             Number of rows: 20
             Statistics: Num rows: 20 Data size: 1760 Basic stats: COMPLETE Column stats: NONE
@@ -320,6 +365,7 @@ PREHOOK: query: select
 from
   store_sales
 group by ss_ticket_number
+order by ss_ticket_number
 limit 20
 PREHOOK: type: QUERY
 PREHOOK: Input: default@store_sales
@@ -329,6 +375,7 @@ POSTHOOK: query: select
 from
   store_sales
 group by ss_ticket_number
+order by ss_ticket_number
 limit 20
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@store_sales

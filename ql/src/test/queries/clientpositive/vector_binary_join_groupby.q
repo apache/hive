@@ -42,20 +42,24 @@ STORED AS ORC;
 INSERT INTO TABLE hundredorc SELECT * FROM over1k LIMIT 100;
 
 EXPLAIN VECTORIZATION EXPRESSION
-SELECT sum(hash(*))
-FROM hundredorc t1 JOIN hundredorc t2 ON t1.bin = t2.bin;
+SELECT sum(hash(*)) k
+FROM hundredorc t1 JOIN hundredorc t2 ON t1.bin = t2.bin
+order by k;
 
-SELECT sum(hash(*))
-FROM hundredorc t1 JOIN hundredorc t2 ON t1.bin = t2.bin;
+SELECT sum(hash(*)) k
+FROM hundredorc t1 JOIN hundredorc t2 ON t1.bin = t2.bin
+order by k;
 
 EXPLAIN VECTORIZATION EXPRESSION
 SELECT count(*), bin
 FROM hundredorc
-GROUP BY bin;
+GROUP BY bin
+order by bin;
 
 SELECT count(*), bin
 FROM hundredorc
-GROUP BY bin;
+GROUP BY bin
+order by bin;
 
 -- HIVE-14045: Involve a binary vector scratch column for small table result (Native Vector MapJoin).
 

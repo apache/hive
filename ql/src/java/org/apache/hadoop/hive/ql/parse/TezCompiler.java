@@ -17,6 +17,8 @@
  */
 package org.apache.hadoop.hive.ql.parse;
 
+import org.apache.hadoop.hive.ql.optimizer.physical.LlapClusterStateForCompile;
+
 import com.google.common.base.Preconditions;
 import java.io.Serializable;
 import java.util.*;
@@ -597,7 +599,8 @@ public class TezCompiler extends TaskCompiler {
     }
 
     if ("llap".equalsIgnoreCase(conf.getVar(HiveConf.ConfVars.HIVE_EXECUTION_MODE))) {
-      physicalCtx = new LlapDecider().resolve(physicalCtx);
+      LlapClusterStateForCompile llapInfo = LlapClusterStateForCompile.getClusterInfo(conf);
+      physicalCtx = new LlapDecider(llapInfo).resolve(physicalCtx);
     } else {
       LOG.debug("Skipping llap decider");
     }

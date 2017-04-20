@@ -217,6 +217,7 @@ select
 from
   store_sales
 group by ss_ticket_number
+order by ss_ticket_number
 limit 20
 PREHOOK: type: QUERY
 POSTHOOK: query: explain vectorization expression
@@ -225,6 +226,7 @@ select
 from
   store_sales
 group by ss_ticket_number
+order by ss_ticket_number
 limit 20
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
@@ -241,6 +243,7 @@ STAGE PLANS:
 #### A masked pattern was here ####
       Edges:
         Reducer 2 <- Map 1 (SIMPLE_EDGE)
+        Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -312,6 +315,34 @@ STAGE PLANS:
                 mode: mergepartial
                 outputColumnNames: _col0
                 Statistics: Num rows: 500 Data size: 44138 Basic stats: COMPLETE Column stats: NONE
+                Reduce Output Operator
+                  key expressions: _col0 (type: int)
+                  sort order: +
+                  Reduce Sink Vectorization:
+                      className: VectorReduceSinkOperator
+                      native: false
+                      nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                      nativeConditionsNotMet: No TopN IS false
+                  Statistics: Num rows: 500 Data size: 44138 Basic stats: COMPLETE Column stats: NONE
+                  TopN Hash Memory Usage: 0.1
+        Reducer 3 
+            Execution mode: vectorized, llap
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                groupByVectorOutput: true
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+            Reduce Operator Tree:
+              Select Operator
+                expressions: KEY.reducesinkkey0 (type: int)
+                outputColumnNames: _col0
+                Select Vectorization:
+                    className: VectorSelectOperator
+                    native: true
+                    projectedOutputColumns: [0]
+                Statistics: Num rows: 500 Data size: 44138 Basic stats: COMPLETE Column stats: NONE
                 Limit
                   Number of rows: 20
                   Limit Vectorization:
@@ -340,6 +371,7 @@ PREHOOK: query: select
 from
   store_sales
 group by ss_ticket_number
+order by ss_ticket_number
 limit 20
 PREHOOK: type: QUERY
 PREHOOK: Input: default@store_sales
@@ -349,6 +381,7 @@ POSTHOOK: query: select
 from
   store_sales
 group by ss_ticket_number
+order by ss_ticket_number
 limit 20
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@store_sales
