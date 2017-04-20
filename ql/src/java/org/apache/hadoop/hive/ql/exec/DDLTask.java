@@ -134,6 +134,7 @@ import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.HiveMaterializedViewsRegistry;
 import org.apache.hadoop.hive.ql.metadata.HiveMetaStoreChecker;
+import org.apache.hadoop.hive.ql.metadata.HiveStorageHandler;
 import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.metadata.InvalidTableException;
 import org.apache.hadoop.hive.ql.metadata.NotNullConstraint;
@@ -186,6 +187,7 @@ import org.apache.hadoop.hive.ql.plan.LockTableDesc;
 import org.apache.hadoop.hive.ql.plan.MsckDesc;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.OrcFileMergeDesc;
+import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.ql.plan.PrincipalDesc;
 import org.apache.hadoop.hive.ql.plan.PrivilegeDesc;
 import org.apache.hadoop.hive.ql.plan.PrivilegeObjectDesc;
@@ -4692,11 +4694,11 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       // create new view
       Table tbl = db.newTable(crtView.getViewName());
       tbl.setViewOriginalText(crtView.getViewOriginalText());
+      tbl.setViewExpandedText(crtView.getViewExpandedText());
       if (crtView.isMaterialized()) {
         tbl.setRewriteEnabled(crtView.isRewriteEnabled());
         tbl.setTableType(TableType.MATERIALIZED_VIEW);
       } else {
-        tbl.setViewExpandedText(crtView.getViewExpandedText());
         tbl.setTableType(TableType.VIRTUAL_VIEW);
       }
       tbl.setSerializationLib(null);
@@ -4725,12 +4727,45 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         if (crtView.getLocation() != null) {
           tbl.setDataLocation(new Path(crtView.getLocation()));
         }
-        // Short circuit the checks that the input format is valid, this is configured for all
-        // materialized views and doesn't change so we don't need to check it constantly.
-        tbl.getSd().setInputFormat(crtView.getInputFormat());
-        tbl.getSd().setOutputFormat(crtView.getOutputFormat());
-        tbl.getSd().setSerdeInfo(new SerDeInfo(crtView.getSerde(), crtView.getSerde(),
-                crtView.getSerdeProps()));
+
+        if (crtView.getStorageHandler() != null) {
+          tbl.setProperty(
+                  org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_STORAGE,
+                  crtView.getStorageHandler());
+        }
+        HiveStorageHandler storageHandler = tbl.getStorageHandler();
+
+        /*
+         * If the user didn't specify a SerDe, we use the default.
+         */
+        String serDeClassName;
+        if (crtView.getSerde() == null) {
+          if (storageHandler == null) {
+            serDeClassName = PlanUtils.getDefaultSerDe().getName();
+            LOG.info("Default to " + serDeClassName
+                    + " for materialized view " + crtView.getViewName());
+          } else {
+            serDeClassName = storageHandler.getSerDeClass().getName();
+            LOG.info("Use StorageHandler-supplied " + serDeClassName
+                    + " for materialized view " + crtView.getViewName());
+          }
+        } else {
+          // let's validate that the serde exists
+          serDeClassName = crtView.getSerde();
+          DDLTask.validateSerDe(serDeClassName, conf);
+        }
+        tbl.setSerializationLib(serDeClassName);
+
+        // To remain consistent, we need to set input and output formats both
+        // at the table level and the storage handler level.
+        tbl.setInputFormatClass(crtView.getInputFormat());
+        tbl.setOutputFormatClass(crtView.getOutputFormat());
+        if (crtView.getInputFormat() != null && !crtView.getInputFormat().isEmpty()) {
+          tbl.getSd().setInputFormat(tbl.getInputFormatClass().getName());
+        }
+        if (crtView.getOutputFormat() != null && !crtView.getOutputFormat().isEmpty()) {
+          tbl.getSd().setOutputFormat(tbl.getOutputFormatClass().getName());
+        }
       }
 
       db.createTable(tbl, crtView.getIfNotExists());

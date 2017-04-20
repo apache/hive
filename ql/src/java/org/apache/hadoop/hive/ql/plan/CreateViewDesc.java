@@ -76,6 +76,7 @@ public class CreateViewDesc extends DDLDesc implements Serializable {
    * @param inputFormat
    * @param outputFormat
    * @param location
+   * @param serName
    * @param serde
    * @param storageHandler
    * @param serdeProps

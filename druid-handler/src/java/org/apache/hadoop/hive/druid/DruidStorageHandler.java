@@ -95,7 +95,7 @@ import javax.annotation.Nullable;
 /**
  * DruidStorageHandler provides a HiveStorageHandler implementation for Druid.
  */
-@SuppressWarnings({ "deprecation", "rawtypes" })
+@SuppressWarnings({ "rawtypes" })
 public class DruidStorageHandler extends DefaultHiveMetaHook implements HiveStorageHandler {
 
   protected static final Logger LOG = LoggerFactory.getLogger(DruidStorageHandler.class);
@@ -527,8 +527,7 @@ public class DruidStorageHandler extends DefaultHiveMetaHook implements HiveStor
   }
 
   @Override
-  public void configureOutputJobProperties(TableDesc tableDesc, Map<String, String> jobProperties
-  ) {
+  public void configureOutputJobProperties(TableDesc tableDesc, Map<String, String> jobProperties) {
     jobProperties.put(Constants.DRUID_SEGMENT_VERSION, new DateTime().toString());
     jobProperties.put(Constants.DRUID_JOB_WORKING_DIRECTORY, getStagingWorkingDir().toString());
     // DruidOutputFormat will write segments in an intermediate directory
@@ -537,8 +536,7 @@ public class DruidStorageHandler extends DefaultHiveMetaHook implements HiveStor
   }
 
   @Override
-  public void configureTableJobProperties(TableDesc tableDesc, Map<String, String> jobProperties
-  ) {
+  public void configureTableJobProperties(TableDesc tableDesc, Map<String, String> jobProperties) {
 
   }
 

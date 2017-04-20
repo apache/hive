@@ -49,6 +49,7 @@ import org.apache.calcite.rex.RexLocalRef;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.rex.RexOver;
 import org.apache.calcite.rex.RexPatternFieldRef;
+import org.apache.calcite.rex.RexTableInputRef;
 import org.apache.calcite.rex.RexRangeRef;
 import org.apache.calcite.rex.RexSubQuery;
 import org.apache.calcite.rex.RexUtil;
@@ -89,7 +90,6 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
-import org.apache.calcite.rex.RexTableInputRef;
 
 /**
  * Generic utility functions needed for Calcite based Hive CBO.
@@ -1034,6 +1034,11 @@ public class HiveCalciteUtil {
     }
 
     @Override
+    public Boolean visitTableInputRef(RexTableInputRef inputRef) {
+      return false;
+    }
+
+    @Override
     public Boolean visitLocalRef(RexLocalRef localRef) {
       throw new RuntimeException("Not expected to be called.");
     }
@@ -1080,11 +1085,6 @@ public class HiveCalciteUtil {
 
     @Override
     public Boolean visitPatternFieldRef(RexPatternFieldRef fieldRef) {
-      return false;
-    }
-
-    @Override
-    public Boolean visitTableInputRef(RexTableInputRef fieldRef) {
       return false;
     }
   }
