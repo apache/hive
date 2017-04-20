@@ -1706,7 +1706,10 @@ public class HiveConf extends Configuration {
         "whether insert into external tables is allowed"),
     HIVE_QUERY_LIFETIME_HOOKS("hive.query.lifetime.hooks", "",
         "A comma separated list of hooks which implement QueryLifeTimeHook. These will be triggered" +
-            " before/after query compilation and before/after query execution, in the order specified"),
+            " before/after query compilation and before/after query execution, in the order specified." +
+        "Implementations of QueryLifeTimeHookWithParseHooks can also be specified in this list. If they are" +
+        "specified then they will be invoked in the same places as QueryLifeTimeHooks and will be invoked during pre " +
+         "and post query parsing"),
     HIVE_DRIVER_RUN_HOOKS("hive.exec.driver.run.hooks", "",
         "A comma separated list of hooks which implement HiveDriverRunHook. Will be run at the beginning " +
         "and end of Driver.run, these will be run in the order specified."),

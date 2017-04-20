@@ -68,11 +68,10 @@ import org.apache.hadoop.hive.ql.hooks.ExecuteWithHookContext;
 import org.apache.hadoop.hive.ql.hooks.Hook;
 import org.apache.hadoop.hive.ql.hooks.HookContext;
 import org.apache.hadoop.hive.ql.hooks.HookUtils;
+import org.apache.hadoop.hive.ql.hooks.HooksLoader;
 import org.apache.hadoop.hive.ql.hooks.PostExecute;
 import org.apache.hadoop.hive.ql.hooks.PreExecute;
 import org.apache.hadoop.hive.ql.hooks.QueryLifeTimeHook;
-import org.apache.hadoop.hive.ql.hooks.QueryLifeTimeHookContext;
-import org.apache.hadoop.hive.ql.hooks.QueryLifeTimeHookContextImpl;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.lockmgr.HiveLock;
@@ -102,6 +101,7 @@ import org.apache.hadoop.hive.ql.parse.HiveSemanticAnalyzerHookContextImpl;
 import org.apache.hadoop.hive.ql.parse.ImportSemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.ParseDriver;
+import org.apache.hadoop.hive.ql.parse.ParseException;
 import org.apache.hadoop.hive.ql.parse.ParseUtils;
 import org.apache.hadoop.hive.ql.parse.PrunedPartitionList;
 import org.apache.hadoop.hive.ql.parse.SemanticAnalyzer;
@@ -129,6 +129,7 @@ import org.apache.hadoop.hive.shims.Utils;
 import org.apache.hadoop.mapred.ClusterStatus;
 import org.apache.hadoop.mapred.JobClient;
 import org.apache.hadoop.mapred.JobConf;
+
 
 public class Driver implements CommandProcessor {
 
@@ -164,6 +165,10 @@ public class Driver implements CommandProcessor {
   // For WebUI.  Kept alive after queryPlan is freed.
   private final QueryDisplay queryDisplay = new QueryDisplay();
   private LockedDriverState lDrvState = new LockedDriverState();
+
+  // Query hooks that execute before compilation and after execution
+  private QueryLifeTimeHookRunner queryLifeTimeHookRunner;
+  private final HooksLoader hooksLoader;
 
   public enum DriverState {
     INITIALIZED,
@@ -340,16 +345,26 @@ public class Driver implements CommandProcessor {
    * for backwards compatibility with current tests
    */
   public Driver(HiveConf conf) {
-    this.conf = conf;
+    this(conf, null, new HooksLoader(conf));
   }
 
   public Driver(HiveConf conf, String userName) {
-    this(conf);
-    this.userName = userName;
+    this(conf, userName, new HooksLoader(conf));
   }
 
   public Driver() {
     this((SessionState.get() != null) ? SessionState.get().getConf() : null);
+  }
+
+  public Driver(HiveConf conf, HooksLoader hooksLoader) {
+    this(conf, null, hooksLoader);
+  }
+
+  private Driver(HiveConf conf, String userName, HooksLoader hooksLoader) {
+    this.conf = conf;
+    this.userName = userName;
+    this.hooksLoader = hooksLoader;
+    this.queryLifeTimeHookRunner = new QueryLifeTimeHookRunner(conf, hooksLoader, console);
   }
 
   /**
@@ -479,6 +494,7 @@ public class Driver implements CommandProcessor {
 
     // Whether any error occurred during query compilation. Used for query lifetime hook.
     boolean compileError = false;
+    boolean parseError = false;
 
     try {
       if (isInterrupted()) {
@@ -491,9 +507,20 @@ public class Driver implements CommandProcessor {
       ctx.setHDFSCleanup(true);
 
       perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.PARSE);
-      ParseDriver pd = new ParseDriver();
-      ASTNode tree = pd.parse(command, ctx);
-      tree = ParseUtils.findRootNonNullToken(tree);
+
+      queryLifeTimeHookRunner.runBeforeParseHook(command);
+
+      ASTNode tree;
+      try {
+        ParseDriver pd = new ParseDriver();
+        tree = pd.parse(command, ctx);
+        tree = ParseUtils.findRootNonNullToken(tree);
+      } catch (ParseException e) {
+        parseError = true;
+        throw e;
+      } finally {
+        queryLifeTimeHookRunner.runAfterParseHook(command, parseError);
+      }
       perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.PARSE);
 
       // Initialize the transaction manager.  This must be done before analyze is called.  Also
@@ -505,22 +532,12 @@ public class Driver implements CommandProcessor {
       recordValidTxns();
 
       // Trigger query hook before compilation
-      queryHooks = getHooks(ConfVars.HIVE_QUERY_LIFETIME_HOOKS, QueryLifeTimeHook.class);
-      if (queryHooks != null && !queryHooks.isEmpty()) {
-        QueryLifeTimeHookContext qhc = new QueryLifeTimeHookContextImpl();
-        qhc.setHiveConf(conf);
-        qhc.setCommand(command);
-
-        for (QueryLifeTimeHook hook : queryHooks) {
-          hook.beforeCompile(qhc);
-        }
-      }
+      queryLifeTimeHookRunner.runBeforeCompileHook(command);
 
       perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.ANALYZE);
       BaseSemanticAnalyzer sem = SemanticAnalyzerFactory.get(conf, tree);
       List<HiveSemanticAnalyzerHook> saHooks =
-          getHooks(HiveConf.ConfVars.SEMANTIC_ANALYZER_HOOK,
-              HiveSemanticAnalyzerHook.class);
+          hooksLoader.getHooks(HiveConf.ConfVars.SEMANTIC_ANALYZER_HOOK, console);
 
       // Do semantic analysis and plan generation
       if (saHooks != null) {
@@ -632,13 +649,11 @@ public class Driver implements CommandProcessor {
 
       // Trigger post compilation hook. Note that if the compilation fails here then
       // before/after execution hook will never be executed.
-      if (queryHooks != null && !queryHooks.isEmpty()) {
-        QueryLifeTimeHookContext qhc = new QueryLifeTimeHookContextImpl();
-        qhc.setHiveConf(conf);
-        qhc.setCommand(command);
-
-        for (QueryLifeTimeHook hook : queryHooks) {
-          hook.afterCompile(qhc, compileError);
+      if (!parseError) {
+        try {
+          queryLifeTimeHookRunner.runAfterCompilationHook(command, compileError);
+        } catch (Exception e) {
+          LOG.warn("Failed when invoking query after-compilation hook.", e);
         }
       }
 
@@ -1428,8 +1443,7 @@ public class Driver implements CommandProcessor {
       // Get all the driver run hooks and pre-execute them.
       List<HiveDriverRunHook> driverRunHooks;
       try {
-        driverRunHooks = getHooks(HiveConf.ConfVars.HIVE_DRIVER_RUN_HOOKS,
-            HiveDriverRunHook.class);
+        driverRunHooks = hooksLoader.getHooks(HiveConf.ConfVars.HIVE_DRIVER_RUN_HOOKS, console);
         for (HiveDriverRunHook driverRunHook : driverRunHooks) {
             driverRunHook.preDriverRun(hookContext);
         }
@@ -1592,34 +1606,6 @@ public class Driver implements CommandProcessor {
     return valid;
   }
 
-  /**
-   * Returns a set of hooks specified in a configuration variable.
-   * See getHooks(HiveConf.ConfVars hookConfVar, Class<T> clazz)
-   */
-  private List<Hook> getHooks(HiveConf.ConfVars hookConfVar) throws Exception {
-    return getHooks(hookConfVar, Hook.class);
-  }
-
-  /**
-   * Returns the hooks specified in a configuration variable.
-   *
-   * @param hookConfVar The configuration variable specifying a comma separated list of the hook
-   *                    class names.
-   * @param clazz       The super type of the hooks.
-   * @return            A list of the hooks cast as the type specified in clazz, in the order
-   *                    they are listed in the value of hookConfVar
-   * @throws Exception
-   */
-  private <T extends Hook> List<T> getHooks(ConfVars hookConfVar,
-      Class<T> clazz) throws Exception {
-    try {
-      return HookUtils.getHooks(conf, hookConfVar, clazz);
-    } catch (ClassNotFoundException e) {
-      console.printError(hookConfVar.varname + " Class not found:" + e.getMessage());
-      throw e;
-    }
-  }
-
   public int execute() throws CommandNeedRetryException {
     return execute(false);
   }
@@ -1679,7 +1665,7 @@ public class Driver implements CommandProcessor {
       hookContext = new HookContext(plan, conf, ctx.getPathToCS(), ss.getUserName(), ss.getUserIpAddress());
       hookContext.setHookType(HookContext.HookType.PRE_EXEC_HOOK);
 
-      for (Hook peh : getHooks(HiveConf.ConfVars.PREEXECHOOKS)) {
+      for (Hook peh : hooksLoader.getHooks(HiveConf.ConfVars.PREEXECHOOKS, console)) {
         if (peh instanceof ExecuteWithHookContext) {
           perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.PRE_HOOK + peh.getClass().getName());
 
@@ -1697,16 +1683,7 @@ public class Driver implements CommandProcessor {
       }
 
       // Trigger query hooks before query execution.
-      if (queryHooks != null && !queryHooks.isEmpty()) {
-        QueryLifeTimeHookContext qhc = new QueryLifeTimeHookContextImpl();
-        qhc.setHiveConf(conf);
-        qhc.setCommand(ctx.getCmd());
-        qhc.setHookContext(hookContext);
-
-        for (QueryLifeTimeHook hook : queryHooks) {
-          hook.beforeExecution(qhc);
-        }
-      }
+      queryLifeTimeHookRunner.runBeforeExecutionHook(queryStr, hookContext);
 
       int jobs = Utilities.getMRTasks(plan.getRootTasks()).size()
         + Utilities.getTezTasks(plan.getRootTasks()).size()
@@ -1807,7 +1784,7 @@ public class Driver implements CommandProcessor {
           } else {
             hookContext.setHookType(HookContext.HookType.ON_FAILURE_HOOK);
             // Get all the failure execution hooks and execute them.
-            for (Hook ofh : getHooks(HiveConf.ConfVars.ONFAILUREHOOKS)) {
+            for (Hook ofh : hooksLoader.getHooks(HiveConf.ConfVars.ONFAILUREHOOKS)) {
               perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.FAILURE_HOOK + ofh.getClass().getName());
 
               ((ExecuteWithHookContext) ofh).run(hookContext);
@@ -1870,7 +1847,7 @@ public class Driver implements CommandProcessor {
 
       hookContext.setHookType(HookContext.HookType.POST_EXEC_HOOK);
       // Get all the post execution hooks and execute them.
-      for (Hook peh : getHooks(HiveConf.ConfVars.POSTEXECHOOKS)) {
+      for (Hook peh : hooksLoader.getHooks(HiveConf.ConfVars.POSTEXECHOOKS, console)) {
         if (peh instanceof ExecuteWithHookContext) {
           perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.POST_HOOK + peh.getClass().getName());
 
@@ -1916,15 +1893,10 @@ public class Driver implements CommandProcessor {
       return (12);
     } finally {
       // Trigger query hooks after query completes its execution.
-      if (queryHooks != null && !queryHooks.isEmpty()) {
-        QueryLifeTimeHookContext qhc = new QueryLifeTimeHookContextImpl();
-        qhc.setHiveConf(conf);
-        qhc.setCommand(ctx.getCmd());
-        qhc.setHookContext(hookContext);
-
-        for (QueryLifeTimeHook hook : queryHooks) {
-          hook.afterExecution(qhc, executionError);
-        }
+      try {
+        queryLifeTimeHookRunner.runAfterExecutionHook(queryStr, hookContext, executionError);
+      } catch (Exception e) {
+        LOG.warn("Failed when invoking query after execution hook", e);
       }
 
       if (SessionState.get() != null) {
@@ -2012,6 +1984,7 @@ public class Driver implements CommandProcessor {
       }
     }
   }
+
   /**
    * Launches a new task
    *
