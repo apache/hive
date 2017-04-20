@@ -62,6 +62,16 @@
       <groupId>org.apache.hive</groupId>
       <artifactId>hive-common</artifactId>
       <version>${project.version}</version>
+        <exclusions>
+            <exclusion>
+                <groupId>org.eclipse.jetty.aggregate</groupId>
+                <artifactId>jetty-all</artifactId>
+            </exclusion>
+            <exclusion>
+                <groupId>org.eclipse.jetty.orbit</groupId>
+                <artifactId>javax.servlet</artifactId>
+            </exclusion>
+        </exclusions>
     </dependency>
     <dependency>
       <groupId>org.apache.hive</groupId>
@@ -77,6 +87,16 @@
       <groupId>org.apache.hive</groupId>
       <artifactId>hive-service</artifactId>
       <version>${project.version}</version>
+        <exclusions>
+            <exclusion>
+                <groupId>org.eclipse.jetty.aggregate</groupId>
+                <artifactId>jetty-all</artifactId>
+            </exclusion>
+            <exclusion>
+                <groupId>org.eclipse.jetty.orbit</groupId>
+                <artifactId>javax.servlet</artifactId>
+            </exclusion>
+        </exclusions>
     </dependency>
     <dependency>
       <groupId>org.apache.hive</groupId>
