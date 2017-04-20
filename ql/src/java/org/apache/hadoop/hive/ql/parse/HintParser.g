@@ -31,6 +31,7 @@ tokens {
   TOK_MAPJOIN;
   TOK_STREAMTABLE;
   TOK_HINTARGLIST;
+  TOK_LEFTSEMIJOIN;
 }
 
 @header {
@@ -69,6 +70,7 @@ hintItem
 hintName
     :
     KW_MAPJOIN -> TOK_MAPJOIN
+    | KW_SEMI -> TOK_LEFTSEMIJOIN
     | KW_STREAMTABLE -> TOK_STREAMTABLE
     ;
 
@@ -80,4 +82,5 @@ hintArgs
 hintArgName
     :
     Identifier
+    | Number
     ;

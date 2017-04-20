@@ -794,7 +794,7 @@ public class ConvertJoinMapJoin implements NodeProcessor {
       // The semijoin branch can potentially create a task level cycle
       // with the hashjoin except when it is dynamically partitioned hash
       // join which takes place in a separate task.
-      if (context.parseContext.getRsOpToTsOpMap().size() > 0
+      if (context.parseContext.getRsToSemiJoinBranchInfo().size() > 0
               && removeReduceSink) {
         removeCycleCreatingSemiJoinOps(mapJoinOp, parentSelectOpOfBigTableOp,
                 context.parseContext);
@@ -826,7 +826,7 @@ public class ConvertJoinMapJoin implements NodeProcessor {
       }
 
       ReduceSinkOperator rs = (ReduceSinkOperator) op;
-      TableScanOperator ts = parseContext.getRsOpToTsOpMap().get(rs);
+      TableScanOperator ts = parseContext.getRsToSemiJoinBranchInfo().get(rs).getTsOp();
       if (ts == null) {
         // skip, no semijoin branch
         continue;

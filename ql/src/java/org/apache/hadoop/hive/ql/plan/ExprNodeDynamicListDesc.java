@@ -18,7 +18,10 @@
 
 package org.apache.hadoop.hive.ql.plan;
 
+import java.util.Map;
+
 import org.apache.hadoop.hive.ql.exec.Operator;
+import org.apache.hadoop.hive.ql.parse.SemiJoinHint;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 
 /**
@@ -29,14 +32,17 @@ public class ExprNodeDynamicListDesc extends ExprNodeDesc {
 
   Operator<? extends OperatorDesc> source;
   int keyIndex;
+  Map<String, SemiJoinHint> hints;
 
   public ExprNodeDynamicListDesc() {
   }
 
-  public ExprNodeDynamicListDesc(TypeInfo typeInfo, Operator<? extends OperatorDesc> source, int keyIndex) {
+  public ExprNodeDynamicListDesc(TypeInfo typeInfo, Operator<? extends OperatorDesc> source,
+      int keyIndex, Map<String, SemiJoinHint> hints) {
     super(typeInfo);
     this.source = source;
     this.keyIndex = keyIndex;
+    this.hints = hints;
   }
 
   public void setSource(Operator<? extends OperatorDesc> source) {
@@ -57,8 +63,7 @@ public class ExprNodeDynamicListDesc extends ExprNodeDesc {
 
   @Override
   public ExprNodeDesc clone() {
-    ExprNodeDynamicListDesc clone = new ExprNodeDynamicListDesc(typeInfo, source, keyIndex);
-    return clone;
+    return new ExprNodeDynamicListDesc(typeInfo, source, keyIndex, hints);
   }
 
   @Override
@@ -77,5 +82,9 @@ public class ExprNodeDynamicListDesc extends ExprNodeDesc {
   @Override
   public String toString() {
     return source.toString();
+  }
+
+  public Map<String, SemiJoinHint> getHints() {
+    return hints;
   }
 }

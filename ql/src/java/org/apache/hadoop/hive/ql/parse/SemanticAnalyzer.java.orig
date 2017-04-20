@@ -8122,7 +8122,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     JoinDesc desc = new JoinDesc(exprMap, outputColumnNames,
         join.getNoOuterJoin(), joinCondns, filterMap, joinKeys);
-    desc.setSemiJoinHints(join.getSemiJoinHint());
     desc.setReversedExprs(reversedExprs);
     desc.setFilterMap(join.getFilterMap());
     // For outer joins, add filters that apply to more than one input
@@ -8670,10 +8669,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       parseStreamTables(joinTree, qb);
     }
 
-    if (qb.getParseInfo().getHints() != null) {
-      // TODO: do we need this for unique join?
-      joinTree.setSemiJoinHint(parseSemiJoinHint(qb.getParseInfo().getHints()));
-    }
     return joinTree;
   }
 
@@ -8972,8 +8967,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       if ((conf.getVar(HiveConf.ConfVars.HIVE_EXECUTION_ENGINE).equals("tez")) == false) {
         parseStreamTables(joinTree, qb);
       }
-
-      joinTree.setSemiJoinHint(parseSemiJoinHint(qb.getParseInfo().getHints()));
     }
 
     return joinTree;
@@ -9019,62 +9012,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
 
     joinTree.setStreamAliases(streamAliases);
-  }
-
-  /** Parses semjoin hints in the query and returns the table names mapped to filter size, or -1 if not specified.
-   *  Hints can be in 3 formats
-   *  1. TableName, ColumnName, bloom filter entries
-   *  2. TableName, bloom filter entries, and
-   *  3. TableName, ColumnName
-   *  */
-  public Map<String, SemiJoinHint> parseSemiJoinHint(ASTNode hints) throws SemanticException {
-    if (hints == null) return null;
-    Map<String, SemiJoinHint> result = null;
-    for (Node hintNode : hints.getChildren()) {
-      ASTNode hint = (ASTNode) hintNode;
-      if (hint.getChild(0).getType() != HintParser.TOK_LEFTSEMIJOIN) continue;
-      if (result == null) {
-        result = new HashMap<>();
-      }
-      String alias = null;
-      String colName = null;
-      Tree args = hint.getChild(1);
-      for (int i = 0; i < args.getChildCount(); i++) {
-        // We can have table names, column names or sizes here (or incorrect hint if the user is so inclined).
-        String text = args.getChild(i).getText();
-        Integer number = null;
-        try {
-          number = Integer.parseInt(text);
-        } catch (NumberFormatException ex) { // Ignore.
-        }
-        if (number != null) {
-          if (alias == null) {
-            throw new SemanticException("Invalid semijoin hint - arg " + i + " ("
-                + text + ") is a number but the previous one is not an alias");
-          }
-          SemiJoinHint sjHint = new SemiJoinHint(alias, colName, number);
-          result.put(alias, sjHint);
-          alias = null;
-          colName = null;
-        } else {
-          if (alias == null) {
-            alias = text;
-          } else if (colName == null ){
-            colName = text;
-          } else {
-            // No bloom filter entries provided.
-            SemiJoinHint sjHint = new SemiJoinHint(alias, colName, null);
-            result.put(alias, sjHint);
-            alias = text;
-            colName = null;
-          }
-        }
-      }
-    }
-    if (LOG.isDebugEnabled()) {
-      LOG.debug("Semijoin hint parsed: " + result);
-    }
-    return result;
   }
 
   /**

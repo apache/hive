@@ -266,11 +266,14 @@ public class GenTezUtils {
             }
           }
           // This TableScanOperator could be part of semijoin optimization.
-          Map<ReduceSinkOperator, TableScanOperator> rsOpToTsOpMap =
-                  context.parseContext.getRsOpToTsOpMap();
-          for (ReduceSinkOperator rs : rsOpToTsOpMap.keySet()) {
-            if (rsOpToTsOpMap.get(rs) == orig) {
-              rsOpToTsOpMap.put(rs, (TableScanOperator) newRoot);
+          Map<ReduceSinkOperator, SemiJoinBranchInfo> rsToSemiJoinBranchInfo =
+                  context.parseContext.getRsToSemiJoinBranchInfo();
+          for (ReduceSinkOperator rs : rsToSemiJoinBranchInfo.keySet()) {
+            SemiJoinBranchInfo sjInfo = rsToSemiJoinBranchInfo.get(rs);
+            if (sjInfo.getTsOp() == orig) {
+              SemiJoinBranchInfo newSJInfo = new SemiJoinBranchInfo(
+                      (TableScanOperator)newRoot, sjInfo.getIsHint());
+              rsToSemiJoinBranchInfo.put(rs, newSJInfo);
             }
           }
         }
@@ -516,19 +519,18 @@ public class GenTezUtils {
     return EdgeType.SIMPLE_EDGE;
   }
 
-  public static void processDynamicMinMaxPushDownOperator(
+  public static void processDynamicSemiJoinPushDownOperator(
           GenTezProcContext procCtx, RuntimeValuesInfo runtimeValuesInfo,
           ReduceSinkOperator rs)
           throws SemanticException {
-    TableScanOperator ts = procCtx.parseContext.getRsOpToTsOpMap().get(rs);
+    SemiJoinBranchInfo sjInfo = procCtx.parseContext.getRsToSemiJoinBranchInfo().get(rs);
 
     List<BaseWork> rsWorkList = procCtx.childToWorkMap.get(rs);
-    if (ts == null || rsWorkList == null) {
+    if (sjInfo == null || rsWorkList == null) {
       // This happens when the ReduceSink's edge has been removed by cycle
       // detection logic. Nothing to do here.
       return;
     }
-    LOG.debug("ResduceSink " + rs + " to TableScan " + ts);
 
     if (rsWorkList.size() != 1) {
       StringBuilder sb = new StringBuilder();
@@ -540,6 +542,9 @@ public class GenTezUtils {
       }
       throw new SemanticException(rs + " belongs to multiple BaseWorks: " + sb.toString());
     }
+
+    TableScanOperator ts = sjInfo.getTsOp();
+    LOG.debug("ResduceSink " + rs + " to TableScan " + ts);
 
     BaseWork parentWork = rsWorkList.get(0);
     BaseWork childWork = procCtx.rootToWorkMap.get(ts);
@@ -611,7 +616,7 @@ public class GenTezUtils {
         skip = true;
       }
     }
-    context.getRsOpToTsOpMap().remove(rs);
+    context.getRsToSemiJoinBranchInfo().remove(rs);
   }
 
   private static class DynamicValuePredicateContext implements NodeProcessorCtx {

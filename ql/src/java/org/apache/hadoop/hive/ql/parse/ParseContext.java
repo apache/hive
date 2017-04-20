@@ -33,17 +33,7 @@ import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.QueryProperties;
 import org.apache.hadoop.hive.ql.QueryState;
-import org.apache.hadoop.hive.ql.exec.AbstractMapJoinOperator;
-import org.apache.hadoop.hive.ql.exec.FetchTask;
-import org.apache.hadoop.hive.ql.exec.JoinOperator;
-import org.apache.hadoop.hive.ql.exec.ListSinkOperator;
-import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
-import org.apache.hadoop.hive.ql.exec.Operator;
-import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
-import org.apache.hadoop.hive.ql.exec.SMBMapJoinOperator;
-import org.apache.hadoop.hive.ql.exec.SelectOperator;
-import org.apache.hadoop.hive.ql.exec.TableScanOperator;
-import org.apache.hadoop.hive.ql.exec.Task;
+import org.apache.hadoop.hive.ql.exec.*;
 import org.apache.hadoop.hive.ql.hooks.LineageInfo;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.metadata.Table;
@@ -126,11 +116,10 @@ public class ParseContext {
   private boolean needViewColumnAuthorization;
   private Set<FileSinkDesc> acidFileSinks = Collections.emptySet();
 
-  // Map to store mapping between reduce sink Operator and TS Operator for semijoin
-  private Map<ReduceSinkOperator, TableScanOperator> rsOpToTsOpMap =
-          new HashMap<ReduceSinkOperator, TableScanOperator>();
   private Map<ReduceSinkOperator, RuntimeValuesInfo> rsToRuntimeValuesInfo =
           new HashMap<ReduceSinkOperator, RuntimeValuesInfo>();
+  private Map<ReduceSinkOperator, SemiJoinBranchInfo> rsToSemiJoinBranchInfo =
+          new HashMap<>();
 
   public ParseContext() {
   }
@@ -666,11 +655,11 @@ public class ParseContext {
     return rsToRuntimeValuesInfo;
   }
 
-  public void setRsOpToTsOpMap(Map<ReduceSinkOperator, TableScanOperator> rsOpToTsOpMap) {
-    this.rsOpToTsOpMap = rsOpToTsOpMap;
+  public void setRsToSemiJoinBranchInfo(Map<ReduceSinkOperator, SemiJoinBranchInfo> rsToSemiJoinBranchInfo) {
+    this.rsToSemiJoinBranchInfo = rsToSemiJoinBranchInfo;
   }
 
-  public Map<ReduceSinkOperator, TableScanOperator> getRsOpToTsOpMap() {
-    return rsOpToTsOpMap;
+  public Map<ReduceSinkOperator, SemiJoinBranchInfo> getRsToSemiJoinBranchInfo() {
+    return rsToSemiJoinBranchInfo;
   }
 }

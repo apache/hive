@@ -19,6 +19,8 @@
 package org.apache.hadoop.hive.ql.optimizer.calcite.translator;
 
 
+import org.apache.hadoop.hive.ql.parse.*;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -72,19 +74,8 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSortExchange
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSortLimit;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveUnion;
-import org.apache.hadoop.hive.ql.parse.JoinCond;
-import org.apache.hadoop.hive.ql.parse.JoinType;
-import org.apache.hadoop.hive.ql.parse.PTFInvocationSpec;
 import org.apache.hadoop.hive.ql.parse.PTFInvocationSpec.OrderExpression;
 import org.apache.hadoop.hive.ql.parse.PTFInvocationSpec.PartitionExpression;
-import org.apache.hadoop.hive.ql.parse.PTFTranslator;
-import org.apache.hadoop.hive.ql.parse.ParseUtils;
-import org.apache.hadoop.hive.ql.parse.RowResolver;
-import org.apache.hadoop.hive.ql.parse.SemanticAnalyzer;
-import org.apache.hadoop.hive.ql.parse.SemanticException;
-import org.apache.hadoop.hive.ql.parse.UnparseTranslator;
-import org.apache.hadoop.hive.ql.parse.WindowingComponentizer;
-import org.apache.hadoop.hive.ql.parse.WindowingSpec;
 import org.apache.hadoop.hive.ql.parse.WindowingSpec.WindowFunctionSpec;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
@@ -348,6 +339,9 @@ public class HiveOpConverter {
     // through Hive
     String[] baseSrc = new String[joinRel.getInputs().size()];
     String tabAlias = getHiveDerivedTableAlias();
+    Map<String, SemiJoinHint> semiJoinHints = semanticAnalyzer.parseSemiJoinHint(
+        semanticAnalyzer.getQB().getParseInfo().getHints());
+
     // 1. Convert inputs
     OpAttr[] inputs = new OpAttr[joinRel.getInputs().size()];
     List<Operator<?>> children = new ArrayList<Operator<?>>(joinRel.getInputs().size());
@@ -413,7 +407,7 @@ public class HiveOpConverter {
 
     // 6. Generate Join operator
     JoinOperator joinOp = genJoin(joinRel, joinExpressions, filterExpressions, children,
-            baseSrc, tabAlias);
+            baseSrc, tabAlias, semiJoinHints);
 
     // 7. Return result
     return new OpAttr(tabAlias, newVcolsInCalcite, joinOp);
@@ -726,7 +720,7 @@ public class HiveOpConverter {
       List<String> keepColNames) throws SemanticException {
     // 1. Generate RS operator
     // 1.1 Prune the tableNames, only count the tableNames that are not empty strings
-	// as empty string in table aliases is only allowed for virtual columns.
+  // as empty string in table aliases is only allowed for virtual columns.
     String tableAlias = null;
     Set<String> tableNames = input.getSchema().getTableNames();
     for (String tableName : tableNames) {
@@ -885,7 +879,8 @@ public class HiveOpConverter {
 
   private static JoinOperator genJoin(RelNode join, ExprNodeDesc[][] joinExpressions,
       List<List<ExprNodeDesc>> filterExpressions, List<Operator<?>> children,
-      String[] baseSrc, String tabAlias) throws SemanticException {
+      String[] baseSrc, String tabAlias, Map<String, SemiJoinHint> semiJoinHints)
+          throws SemanticException {
 
     // 1. Extract join type
     JoinCondDesc[] joinCondns;
@@ -1011,6 +1006,7 @@ public class HiveOpConverter {
     // 4. We create the join operator with its descriptor
     JoinDesc desc = new JoinDesc(exprMap, outputColumnNames, noOuterJoin, joinCondns,
             filters, joinExpressions);
+    desc.setSemiJoinHints(semiJoinHints);
     desc.setReversedExprs(reversedExprs);
     desc.setFilterMap(filterMap);
 

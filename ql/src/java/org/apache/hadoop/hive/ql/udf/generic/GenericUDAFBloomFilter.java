@@ -72,6 +72,7 @@ public class GenericUDAFBloomFilter implements GenericUDAFResolver2 {
   public static class GenericUDAFBloomFilterEvaluator extends GenericUDAFEvaluator {
     // Source operator to get the number of entries
     private SelectOperator sourceOperator;
+    private long hintEntries = -1;
     private long maxEntries = 0;
     private long minEntries = 0;
     private float factor = 1;
@@ -254,6 +255,10 @@ public class GenericUDAFBloomFilter implements GenericUDAFResolver2 {
     }
 
     public long getExpectedEntries() {
+      // If hint is provided use that size.
+      if (hintEntries > 0 )
+        return hintEntries;
+
       long expectedEntries = -1;
       if (sourceOperator != null && sourceOperator.getStatistics() != null) {
         Statistics stats = sourceOperator.getStatistics();
@@ -292,6 +297,14 @@ public class GenericUDAFBloomFilter implements GenericUDAFResolver2 {
 
     public void setSourceOperator(SelectOperator sourceOperator) {
       this.sourceOperator = sourceOperator;
+    }
+
+    public void setHintEntries(long hintEntries) {
+      this.hintEntries = hintEntries;
+    }
+
+    public boolean hasHintEntries() {
+      return hintEntries != -1;
     }
 
     public void setMaxEntries(long maxEntries) {

@@ -43,12 +43,7 @@ import org.apache.hadoop.hive.ql.lib.RuleRegExp;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.optimizer.spark.SparkPartitionPruningSinkDesc;
-import org.apache.hadoop.hive.ql.parse.OptimizeTezProcContext;
-import org.apache.hadoop.hive.ql.parse.ParseContext;
-import org.apache.hadoop.hive.ql.parse.PrunedPartitionList;
-import org.apache.hadoop.hive.ql.parse.RuntimeValuesInfo;
-import org.apache.hadoop.hive.ql.parse.SemanticAnalyzer;
-import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hadoop.hive.ql.parse.*;
 import org.apache.hadoop.hive.ql.parse.spark.OptimizeSparkProcContext;
 import org.apache.hadoop.hive.ql.plan.*;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFBloomFilter.GenericUDAFBloomFilterEvaluator;
@@ -215,16 +210,25 @@ public class DynamicPartitionPruningOptimization implements NodeProcessor {
         } else {
           LOG.debug("Column " + column + " is not a partition column");
           if (semiJoin && ts.getConf().getFilterExpr() != null) {
-            LOG.debug("Initiate semijoin reduction for " + column);
-            // Get the table name from which the min-max values will come.
+            LOG.debug("Initiate semijoin reduction for " + column + " ("
+                + ts.getConf().getFilterExpr().getExprString());
+            // Get the table name from which the min-max values and bloom filter will come.
             Operator<?> op = ctx.generator;
+
             while (!(op == null || op instanceof TableScanOperator)) {
               op = op.getParentOperators().get(0);
             }
             String tableAlias = (op == null ? "" : ((TableScanOperator) op).getConf().getAlias());
+
+            Map<String, SemiJoinHint> hints = ctx.desc.getHints();
+            SemiJoinHint sjHint = (hints != null) ? hints.get(tableAlias) : null;
             keyBaseAlias = ctx.generator.getOperatorId() + "_" + tableAlias + "_" + column;
 
-            semiJoinAttempted = generateSemiJoinOperatorPlan(ctx, parseContext, ts, keyBaseAlias);
+            semiJoinAttempted = generateSemiJoinOperatorPlan(
+                ctx, parseContext, ts, keyBaseAlias, sjHint);
+            if (!semiJoinAttempted && sjHint != null) {
+              throw new SemanticException("The user hint to enforce semijoin failed required conditions");
+            }
           }
         }
 
@@ -387,7 +391,13 @@ public class DynamicPartitionPruningOptimization implements NodeProcessor {
 
   // Generates plan for min/max when dynamic partition pruning is ruled out.
   private boolean generateSemiJoinOperatorPlan(DynamicListContext ctx, ParseContext parseContext,
-      TableScanOperator ts, String keyBaseAlias) throws SemanticException {
+      TableScanOperator ts, String keyBaseAlias, SemiJoinHint sjHint) throws SemanticException {
+
+    // If semijoin hint is enforced, make sure hint is provided
+    if (parseContext.getConf().getBoolVar(ConfVars.TEZ_DYNAMIC_SEMIJOIN_REDUCTION_HINT_ONLY)
+            && sjHint == null) {
+        return false;
+    }
 
     // we will put a fork in the plan at the source of the reduce sink
     Operator<? extends OperatorDesc> parentOfRS = ctx.generator.getParentOperators().get(0);
@@ -441,6 +451,14 @@ public class DynamicPartitionPruningOptimization implements NodeProcessor {
       }
     }
 
+    // If hint is provided and only hinted semijoin optimizations should be
+    // created, then skip other columns on the table
+    if (parseContext.getConf().getBoolVar(ConfVars.TEZ_DYNAMIC_SEMIJOIN_REDUCTION_HINT_ONLY)
+            && sjHint.getColName() != null &&
+            !internalColName.equals(sjHint.getColName())) {
+      return false;
+    }
+
     List<ExprNodeDesc> keyExprs = new ArrayList<ExprNodeDesc>();
     keyExprs.add(key);
 
@@ -484,8 +502,6 @@ public class DynamicPartitionPruningOptimization implements NodeProcessor {
             HiveConf.getFloatVar(parseContext.getConf(),
                     HiveConf.ConfVars.HIVEMAPAGGRMEMORYTHRESHOLD);
 
-    ArrayList<ExprNodeDesc> groupByExprs = new ArrayList<ExprNodeDesc>();
-
     // Add min/max and bloom filter aggregations
     List<ObjectInspector> aggFnOIs = new ArrayList<ObjectInspector>();
     aggFnOIs.add(key.getWritableObjectInspector());
@@ -505,8 +521,14 @@ public class DynamicPartitionPruningOptimization implements NodeProcessor {
       AggregationDesc bloomFilter = new AggregationDesc("bloom_filter",
               FunctionRegistry.getGenericUDAFEvaluator("bloom_filter", aggFnOIs, false, false),
               params, false, Mode.PARTIAL1);
-      GenericUDAFBloomFilterEvaluator bloomFilterEval = (GenericUDAFBloomFilterEvaluator) bloomFilter.getGenericUDAFEvaluator();
+      GenericUDAFBloomFilterEvaluator bloomFilterEval =
+          (GenericUDAFBloomFilterEvaluator) bloomFilter.getGenericUDAFEvaluator();
       bloomFilterEval.setSourceOperator(selectOp);
+
+      if (sjHint != null && sjHint.getNumEntries() > 0) {
+        LOG.debug("Setting size for " + keyBaseAlias + " to " + sjHint.getNumEntries() + " based on the hint");
+        bloomFilterEval.setHintEntries(sjHint.getNumEntries());
+      }
       bloomFilterEval.setMaxEntries(parseContext.getConf().getLongVar(ConfVars.TEZ_MAX_BLOOM_FILTER_ENTRIES));
       bloomFilterEval.setMinEntries(parseContext.getConf().getLongVar(ConfVars.TEZ_MIN_BLOOM_FILTER_ENTRIES));
       bloomFilterEval.setFactor(parseContext.getConf().getFloatVar(ConfVars.TEZ_BLOOM_FILTER_FACTOR));
@@ -607,6 +629,9 @@ public class DynamicPartitionPruningOptimization implements NodeProcessor {
               bloomFilterFinalParams, false, Mode.FINAL);
       GenericUDAFBloomFilterEvaluator bloomFilterEval = (GenericUDAFBloomFilterEvaluator) bloomFilter.getGenericUDAFEvaluator();
       bloomFilterEval.setSourceOperator(selectOp);
+      if (sjHint != null && sjHint.getNumEntries() > 0) {
+        bloomFilterEval.setHintEntries(sjHint.getNumEntries());
+      }
       bloomFilterEval.setMaxEntries(parseContext.getConf().getLongVar(ConfVars.TEZ_MAX_BLOOM_FILTER_ENTRIES));
       bloomFilterEval.setMinEntries(parseContext.getConf().getLongVar(ConfVars.TEZ_MIN_BLOOM_FILTER_ENTRIES));
       bloomFilterEval.setFactor(parseContext.getConf().getFloatVar(ConfVars.TEZ_BLOOM_FILTER_FACTOR));
@@ -635,23 +660,56 @@ public class DynamicPartitionPruningOptimization implements NodeProcessor {
       rsOp.getConf().setOutputOperators(outputOperators);
     }
 
+    createFinalRsForSemiJoinOp(parseContext, ts, groupByOpFinal, key,
+            keyBaseAlias, ctx.parent.getChildren().get(0), sjHint != null);
+
+    return true;
+  }
+
+  private void createFinalRsForSemiJoinOp(
+          ParseContext parseContext, TableScanOperator ts, GroupByOperator gb,
+          ExprNodeDesc key, String keyBaseAlias, ExprNodeDesc colExpr,
+          boolean isHint) throws SemanticException {
+    ArrayList<String> gbOutputNames = new ArrayList<>();
+    // One each for min, max and bloom filter
+    gbOutputNames.add(SemanticAnalyzer.getColumnInternalName(0));
+    gbOutputNames.add(SemanticAnalyzer.getColumnInternalName(1));
+    gbOutputNames.add(SemanticAnalyzer.getColumnInternalName(2));
+
+    int colPos = 0;
+    ArrayList<ExprNodeDesc> rsValueCols = new ArrayList<ExprNodeDesc>();
+    for (int i = 0; i < gbOutputNames.size() - 1; i++) {
+      ExprNodeColumnDesc expr = new ExprNodeColumnDesc(key.getTypeInfo(),
+              gbOutputNames.get(colPos++), "", false);
+      rsValueCols.add(expr);
+    }
+
+    // Bloom Filter uses binary
+    ExprNodeColumnDesc colBFExpr = new ExprNodeColumnDesc(TypeInfoFactory.binaryTypeInfo,
+            gbOutputNames.get(colPos++), "", false);
+    rsValueCols.add(colBFExpr);
+
     // Create the final Reduce Sink Operator
     ReduceSinkDesc rsDescFinal = PlanUtils.getReduceSinkDesc(
             new ArrayList<ExprNodeDesc>(), rsValueCols, gbOutputNames, false,
             -1, 0, 1, Operation.NOT_ACID);
     ReduceSinkOperator rsOpFinal = (ReduceSinkOperator)OperatorFactory.getAndMakeChild(
-            rsDescFinal, new RowSchema(groupByOpFinal.getSchema()), groupByOpFinal);
+            rsDescFinal, new RowSchema(gb.getSchema()), gb);
+    Map<String, ExprNodeDesc> columnExprMap = new HashMap<>();
     rsOpFinal.setColumnExprMap(columnExprMap);
 
-    LOG.debug("DynamicMinMaxPushdown: Saving RS to TS mapping: " + rsOpFinal + ": " + ts);
-    parseContext.getRsOpToTsOpMap().put(rsOpFinal, ts);
+    LOG.debug("DynamicSemiJoinPushdown: Saving RS to TS mapping: " + rsOpFinal + ": " + ts);
+    SemiJoinBranchInfo sjInfo = new SemiJoinBranchInfo(ts, isHint);
+    parseContext.getRsToSemiJoinBranchInfo().put(rsOpFinal, sjInfo);
 
     // for explain purpose
-    if (parseContext.getContext().getExplainConfig() != null
-        && parseContext.getContext().getExplainConfig().isFormatted()) {
-      List<String> outputOperators = new ArrayList<>();
+    if (parseContext.getContext().getExplainConfig() != null &&
+            parseContext.getContext().getExplainConfig().isFormatted()) {
+      List<String> outputOperators = rsOpFinal.getConf().getOutputOperators();
+      if (outputOperators == null) {
+        outputOperators = new ArrayList<>();
+      }
       outputOperators.add(ts.getOperatorId());
-      rsOpFinal.getConf().setOutputOperators(outputOperators);
     }
 
     // Save the info that is required at query time to resolve dynamic/runtime values.
@@ -666,10 +724,8 @@ public class DynamicPartitionPruningOptimization implements NodeProcessor {
     runtimeValuesInfo.setTableDesc(rsFinalTableDesc);
     runtimeValuesInfo.setDynamicValueIDs(dynamicValueIDs);
     runtimeValuesInfo.setColExprs(rsValueCols);
-    runtimeValuesInfo.setTsColExpr(ctx.parent.getChildren().get(0));
+    runtimeValuesInfo.setTsColExpr(colExpr);
     parseContext.getRsToRuntimeValuesInfoMap().put(rsOpFinal, runtimeValuesInfo);
-
-    return true;
   }
 
   private Map<Node, Object> collectDynamicPruningConditions(ExprNodeDesc pred, NodeProcessorCtx ctx)
