@@ -24,11 +24,11 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.net.URISyntaxException;
 import java.text.DecimalFormat;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.EnumSet;
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -41,20 +41,28 @@ import org.apache.hadoop.fs.CommonConfigurationKeysPublic;
 import org.apache.hadoop.hive.common.classification.InterfaceAudience;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.llap.cli.LlapStatusOptionsProcessor.LlapStatusOptions;
+import org.apache.hadoop.hive.llap.cli.status.LlapStatusHelpers;
+import org.apache.hadoop.hive.llap.cli.status.LlapStatusHelpers.AppStatusBuilder;
+import org.apache.hadoop.hive.llap.cli.status.LlapStatusHelpers.LlapInstance;
 import org.apache.hadoop.hive.llap.configuration.LlapDaemonConfiguration;
 import org.apache.hadoop.hive.llap.registry.ServiceInstance;
 import org.apache.hadoop.hive.llap.registry.impl.LlapRegistryService;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.yarn.api.records.ApplicationReport;
+import org.apache.hadoop.yarn.api.records.ContainerExitStatus;
 import org.apache.hadoop.yarn.conf.YarnConfiguration;
+import org.apache.hadoop.yarn.exceptions.YarnException;
 import org.apache.hadoop.yarn.util.Clock;
 import org.apache.hadoop.yarn.util.SystemClock;
 import org.apache.slider.api.ClusterDescription;
 import org.apache.slider.api.ClusterDescriptionKeys;
+import org.apache.slider.api.StateValues;
 import org.apache.slider.api.StatusKeys;
+import org.apache.slider.api.types.ApplicationDiagnostics;
+import org.apache.slider.api.types.ContainerInformation;
 import org.apache.slider.client.SliderClient;
+import org.apache.slider.common.params.ActionDiagnosticArgs;
 import org.apache.slider.core.exceptions.SliderException;
-import org.codehaus.jackson.annotate.JsonIgnore;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.map.SerializationConfig;
 import org.codehaus.jackson.map.annotate.JsonSerialize;
@@ -64,6 +72,7 @@ import org.slf4j.LoggerFactory;
 public class LlapStatusServiceDriver {
 
   private static final Logger LOG = LoggerFactory.getLogger(LlapStatusServiceDriver.class);
+  private static final Logger CONSOLE_LOGGER = LoggerFactory.getLogger("LlapStatusServiceDriverConsole");
 
   // Defining a bunch of configs here instead of in HiveConf. These are experimental, and mainly
   // for use when retry handling is fixed in Yarn/Hadoop
@@ -103,6 +112,8 @@ public class LlapStatusServiceDriver {
   private static final String CONFIG_LLAP_ZK_REGISTRY_TIMEOUT_MS =
       CONF_PREFIX + "zk-registry.timeout-ms";
   private static final long CONFIG_LLAP_ZK_REGISTRY_TIMEOUT_MS_DEFAULT = 20000l;
+
+  private static final long LOG_SUMMARY_INTERVAL = 15000L; // Log summary every ~15 seconds.
 
   private static final String LLAP_KEY = "LLAP";
   private final Configuration conf;
@@ -161,7 +172,8 @@ public class LlapStatusServiceDriver {
    * @param args
    * @return command line options.
    */
-  public LlapStatusOptions parseOptions(String[] args) throws LlapStatusCliException {
+  public LlapStatusOptions parseOptions(String[] args) throws
+      LlapStatusCliException {
 
     LlapStatusOptionsProcessor optionsProcessor = new LlapStatusOptionsProcessor();
     LlapStatusOptions options;
@@ -209,16 +221,21 @@ public class LlapStatusServiceDriver {
       }
 
       try {
-        sliderClient = createSliderClient();
-      } catch (LlapStatusCliException e) {
-        logError(e);
-        return e.getExitCode().getInt();
+        if (sliderClient == null) {
+          sliderClient = LlapSliderUtils.createSliderClient(conf);
+        }
+      } catch (Exception e) {
+        LlapStatusCliException le = new LlapStatusCliException(
+            LlapStatusServiceDriver.ExitCode.SLIDER_CLIENT_ERROR_CREATE_FAILED,
+            "Failed to create slider client", e);
+        logError(le);
+        return le.getExitCode().getInt();
       }
 
       // Get the App report from YARN
       ApplicationReport appReport;
       try {
-        appReport = getAppReport(appName, sliderClient, options.getFindAppTimeoutMs());
+        appReport = LlapSliderUtils.getAppReport(appName, sliderClient, options.getFindAppTimeoutMs());
       } catch (LlapStatusCliException e) {
         logError(e);
         return e.getExitCode().getInt();
@@ -235,15 +252,27 @@ public class LlapStatusServiceDriver {
 
       if (ret != ExitCode.SUCCESS) {
         return ret.getInt();
-      } else if (EnumSet.of(State.APP_NOT_FOUND, State.COMPLETE, State.LAUNCHING)
+      } else if (EnumSet.of(LlapStatusHelpers.State.APP_NOT_FOUND, LlapStatusHelpers.State.COMPLETE, LlapStatusHelpers.State.LAUNCHING)
         .contains(appStatusBuilder.getState())) {
         return ExitCode.SUCCESS.getInt();
       } else {
         // Get information from slider.
         try {
-          ret = populateAppStatusFromSlider(appName, sliderClient, appStatusBuilder);
+          ret = populateAppStatusFromSliderStatus(appName, sliderClient, appStatusBuilder);
         } catch (LlapStatusCliException e) {
           // In case of failure, send back whatever is constructed sop far - which wouldbe from the AppReport
+          logError(e);
+          return e.getExitCode().getInt();
+        }
+      }
+
+
+      if (ret != ExitCode.SUCCESS) {
+        return ret.getInt();
+      } else {
+        try {
+          ret = populateAppStatusFromSliderDiagnostics(appName, sliderClient, appStatusBuilder);
+        } catch (LlapStatusCliException e) {
           logError(e);
           return e.getExitCode().getInt();
         }
@@ -268,7 +297,8 @@ public class LlapStatusServiceDriver {
     }
   }
 
-  public void outputJson(PrintWriter writer) throws LlapStatusCliException {
+  public void outputJson(PrintWriter writer) throws
+      LlapStatusCliException {
     ObjectMapper mapper = new ObjectMapper();
     mapper.configure(SerializationConfig.Feature.FAIL_ON_EMPTY_BEANS, false);
     mapper.setSerializationInclusion(JsonSerialize.Inclusion.NON_NULL);
@@ -342,25 +372,27 @@ public class LlapStatusServiceDriver {
    * @throws LlapStatusCliException
    */
   private ExitCode processAppReport(ApplicationReport appReport,
-                               AppStatusBuilder appStatusBuilder) throws LlapStatusCliException {
+                               AppStatusBuilder appStatusBuilder) throws
+      LlapStatusCliException {
     if (appReport == null) {
-      appStatusBuilder.setState(State.APP_NOT_FOUND);
+      appStatusBuilder.setState(LlapStatusHelpers.State.APP_NOT_FOUND);
       LOG.info("No Application Found");
       return ExitCode.SUCCESS;
     }
 
+    // TODO Maybe add the YARN URL for the app.
     appStatusBuilder.setAmInfo(
-        new AmInfo().setAppName(appReport.getName()).setAppType(appReport.getApplicationType()));
+        new LlapStatusHelpers.AmInfo().setAppName(appReport.getName()).setAppType(appReport.getApplicationType()));
     appStatusBuilder.setAppStartTime(appReport.getStartTime());
     switch (appReport.getYarnApplicationState()) {
       case NEW:
       case NEW_SAVING:
       case SUBMITTED:
-        appStatusBuilder.setState(State.LAUNCHING);
+        appStatusBuilder.setState(LlapStatusHelpers.State.LAUNCHING);
         return ExitCode.SUCCESS;
       case ACCEPTED:
         appStatusBuilder.maybeCreateAndGetAmInfo().setAppId(appReport.getApplicationId().toString());
-        appStatusBuilder.setState(State.LAUNCHING);
+        appStatusBuilder.setState(LlapStatusHelpers.State.LAUNCHING);
         return ExitCode.SUCCESS;
       case RUNNING:
         appStatusBuilder.maybeCreateAndGetAmInfo().setAppId(appReport.getApplicationId().toString());
@@ -371,7 +403,13 @@ public class LlapStatusServiceDriver {
       case KILLED:
         appStatusBuilder.maybeCreateAndGetAmInfo().setAppId(appReport.getApplicationId().toString());
         appStatusBuilder.setAppFinishTime(appReport.getFinishTime());
-        appStatusBuilder.setState(State.COMPLETE);
+        appStatusBuilder.setState(LlapStatusHelpers.State.COMPLETE);
+        ApplicationDiagnostics appDiagnostics = LlapSliderUtils.getApplicationDiagnosticsFromYarnDiagnostics(appReport, LOG);
+        if (appDiagnostics == null) {
+          LOG.warn("AppDiagnostics not available for YARN application report");
+        } else {
+          processAppDiagnostics(appStatusBuilder, appDiagnostics, true);
+        }
         return ExitCode.SUCCESS;
       default:
         throw new LlapStatusCliException(ExitCode.INTERNAL_ERROR,
@@ -380,7 +418,11 @@ public class LlapStatusServiceDriver {
   }
 
 
+
+
+
   /**
+   * Populates information from SliderStatus.
    *
    * @param appName
    * @param sliderClient
@@ -388,7 +430,7 @@ public class LlapStatusServiceDriver {
    * @return an ExitCode. An ExitCode other than ExitCode.SUCCESS implies future progress not possible
    * @throws LlapStatusCliException
    */
-  private ExitCode populateAppStatusFromSlider(String appName, SliderClient sliderClient, AppStatusBuilder appStatusBuilder) throws
+  private ExitCode populateAppStatusFromSliderStatus(String appName, SliderClient sliderClient, AppStatusBuilder appStatusBuilder) throws
       LlapStatusCliException {
 
     ClusterDescription clusterDescription;
@@ -450,9 +492,10 @@ public class LlapStatusServiceDriver {
 
               String host = (String) containerParams.get("host");
 
-              LlapInstance llapInstance = new LlapInstance(host, containerIdString);
+              LlapInstance
+                  llapInstance = new LlapInstance(host, containerIdString);
 
-              appStatusBuilder.addNewLlapInstance(llapInstance);
+              appStatusBuilder.addNewRunningLlapInstance(llapInstance);
             }
           }
 
@@ -464,8 +507,45 @@ public class LlapStatusServiceDriver {
     }
   }
 
+  /**
+   * Populates information based on the slider diagnostics call. Must be invoked
+   * after populating status from slider status.
+   * @param appName
+   * @param sliderClient
+   * @param appStatusBuilder
+   * @return
+   * @throws LlapStatusCliException
+   */
+  private ExitCode populateAppStatusFromSliderDiagnostics(String appName,
+                                                          SliderClient sliderClient,
+                                                          AppStatusBuilder appStatusBuilder) throws
+      LlapStatusCliException {
+
+    ApplicationDiagnostics appDiagnostics;
+    try {
+      ActionDiagnosticArgs args = new ActionDiagnosticArgs();
+      args.containers = true;
+      args.name = appName;
+      appDiagnostics =
+          sliderClient.actionDiagnosticContainers(args);
+    } catch (YarnException | IOException | URISyntaxException e) {
+      throw new LlapStatusCliException(
+          ExitCode.SLIDER_CLIENT_ERROR_OTHER,
+          "Failed to get container diagnostics from slider", e);
+    }
+    if (appDiagnostics == null) {
+      LOG.info("Slider container diagnostics not available");
+      return ExitCode.SLIDER_CLIENT_ERROR_OTHER;
+    }
+
+    processAppDiagnostics(appStatusBuilder, appDiagnostics, false);
+
+    return ExitCode.SUCCESS;
+  }
 
   /**
+   * Populate additional information for containers from the LLAP registry. Must be invoked
+   * after Slider status. Also after slider-diagnostics.
    * @param appStatusBuilder
    * @return an ExitCode. An ExitCode other than ExitCode.SUCCESS implies future progress not possible
    * @throws LlapStatusCliException
@@ -491,10 +571,12 @@ public class LlapStatusServiceDriver {
     }
 
     if (serviceInstances == null || serviceInstances.isEmpty()) {
-      LOG.info("No information found in the LLAP registry");
+      if (LOG.isDebugEnabled()) {
+        LOG.debug("No information found in the LLAP registry");
+      }
       appStatusBuilder.setLiveInstances(0);
-      appStatusBuilder.setState(State.LAUNCHING);
-      appStatusBuilder.clearLlapInstances();
+      appStatusBuilder.setState(LlapStatusHelpers.State.LAUNCHING);
+      appStatusBuilder.clearRunningLlapInstances();
       return ExitCode.SUCCESS;
     } else {
       // Tracks instances known by both slider and llap.
@@ -505,7 +587,7 @@ public class LlapStatusServiceDriver {
         String containerIdString = serviceInstance.getProperties().get(
           HiveConf.ConfVars.LLAP_DAEMON_CONTAINER_ID.varname);
 
-        LlapInstance llapInstance = appStatusBuilder.removeAndgetLlapInstanceForContainer(
+        LlapInstance llapInstance = appStatusBuilder.removeAndGetRunningLlapInstanceForContainer(
           containerIdString);
         if (llapInstance != null) {
           llapInstance.setMgmtPort(serviceInstance.getManagementPort());
@@ -524,375 +606,185 @@ public class LlapStatusServiceDriver {
       }
 
       appStatusBuilder.setLiveInstances(validatedInstances.size());
+      appStatusBuilder.setLaunchingInstances(llapExtraInstances.size());
       if (validatedInstances.size() >= appStatusBuilder.getDesiredInstances()) {
-        appStatusBuilder.setState(State.RUNNING_ALL);
+        appStatusBuilder.setState(LlapStatusHelpers.State.RUNNING_ALL);
         if (validatedInstances.size() > appStatusBuilder.getDesiredInstances()) {
           LOG.warn("Found more entries in LLAP registry, as compared to desired entries");
         }
       } else {
         if (validatedInstances.size() > 0) {
-          appStatusBuilder.setState(State.RUNNING_PARTIAL);
+          appStatusBuilder.setState(LlapStatusHelpers.State.RUNNING_PARTIAL);
         } else {
-          appStatusBuilder.setState(State.LAUNCHING);
+          appStatusBuilder.setState(LlapStatusHelpers.State.LAUNCHING);
         }
       }
 
       // At this point, everything that can be consumed from AppStatusBuilder has been consumed.
       // Debug only
-      if (appStatusBuilder.allInstances().size() > 0) {
+      if (appStatusBuilder.allRunningInstances().size() > 0) {
         // Containers likely to come up soon.
-        LOG.debug("Potential instances starting up: {}", appStatusBuilder.allInstances());
+        LOG.debug("Potential instances starting up: {}", appStatusBuilder.allRunningInstances());
       }
       if (llapExtraInstances.size() > 0) {
-        // Old containers which are likely shutting down
+        // Old containers which are likely shutting down, or new containers which
+        // launched between slider-status/slider-diagnostics. Skip for this iteration.
         LOG.debug("Instances likely to shutdown soon: {}", llapExtraInstances);
       }
 
-      appStatusBuilder.clearAndAddPreviouslyKnownInstances(validatedInstances);
+      appStatusBuilder.clearAndAddPreviouslyKnownRunningInstances(validatedInstances);
 
     }
     return ExitCode.SUCCESS;
   }
 
 
-  static final class AppStatusBuilder {
-
-    private AmInfo amInfo;
-    private State state = State.UNKNOWN;
-    private String originalConfigurationPath;
-    private String generatedConfigurationPath;
-
-    private int desiredInstances = -1;
-    private int liveInstances = -1;
-
-    private Long appStartTime;
-    private Long appFinishTime;
-
-    private boolean runningThresholdAchieved = false;
-
-    private final List<LlapInstance> llapInstances = new LinkedList<>();
-
-    private transient Map<String, LlapInstance> containerToInstanceMap = new HashMap<>();
-
-    public void setAmInfo(AmInfo amInfo) {
-      this.amInfo = amInfo;
-    }
-
-    public AppStatusBuilder setState(
-        State state) {
-      this.state = state;
-      return this;
-    }
-
-    public AppStatusBuilder setOriginalConfigurationPath(String originalConfigurationPath) {
-      this.originalConfigurationPath = originalConfigurationPath;
-      return this;
-    }
-
-    public AppStatusBuilder setGeneratedConfigurationPath(String generatedConfigurationPath) {
-      this.generatedConfigurationPath = generatedConfigurationPath;
-      return this;
-    }
-
-    public AppStatusBuilder setAppStartTime(long appStartTime) {
-      this.appStartTime = appStartTime;
-      return this;
-    }
-
-    public AppStatusBuilder setAppFinishTime(long finishTime) {
-      this.appFinishTime = finishTime;
-      return this;
-    }
-
-    public AppStatusBuilder setDesiredInstances(int desiredInstances) {
-      this.desiredInstances = desiredInstances;
-      return this;
-    }
-
-    public AppStatusBuilder setLiveInstances(int liveInstances) {
-      this.liveInstances = liveInstances;
-      return this;
-    }
-
-    public AppStatusBuilder addNewLlapInstance(LlapInstance llapInstance) {
-      this.llapInstances.add(llapInstance);
-      this.containerToInstanceMap.put(llapInstance.getContainerId(), llapInstance);
-      return this;
-    }
-
-    public AppStatusBuilder setRunningThresholdAchieved(boolean thresholdAchieved) {
-      this.runningThresholdAchieved = thresholdAchieved;
-      return this;
-    }
-
-    public LlapInstance removeAndgetLlapInstanceForContainer(String containerIdString) {
-      return containerToInstanceMap.remove(containerIdString);
-    }
-
-    public void clearLlapInstances() {
-      this.llapInstances.clear();
-      this.containerToInstanceMap.clear();
-    }
-
-    public AppStatusBuilder clearAndAddPreviouslyKnownInstances(List<LlapInstance> llapInstances) {
-      clearLlapInstances();
-      for (LlapInstance llapInstance : llapInstances) {
-        addNewLlapInstance(llapInstance);
+  private static void processAppDiagnostics(AppStatusBuilder appStatusBuilder,
+                                            ApplicationDiagnostics appDiagnostics, boolean appComplete) {
+    // For a running app this should be empty.
+    String finalMessage = appDiagnostics.getFinalMessage();
+    Collection<ContainerInformation> containerInfos =
+        appDiagnostics.getContainers();
+    appStatusBuilder.setDiagnostics(finalMessage);
+    if (containerInfos != null) {
+      for (ContainerInformation containerInformation : containerInfos) {
+        if (containerInformation.getState() == StateValues.STATE_LIVE && !appComplete) {
+          LlapInstance instance = appStatusBuilder
+              .removeAndGetCompletedLlapInstanceForContainer(
+                  containerInformation.getContainerId());
+          if (instance ==
+              null) { // New launch. Not available during slider status, but available now.
+            instance = new LlapInstance(containerInformation.getHost(),
+                containerInformation.getContainerId());
+          }
+          instance.setLogUrl(containerInformation.getLogLink());
+          appStatusBuilder.addNewRunningLlapInstance(instance);
+        } else if (containerInformation.getState() ==
+            StateValues.STATE_STOPPED || appComplete) {
+          LlapInstance instance =
+              new LlapInstance(containerInformation.getHost(),
+                  containerInformation.getContainerId());
+          instance.setLogUrl(containerInformation.getLogLink());
+          if (appComplete && containerInformation.getExitCode() !=
+              ContainerExitStatus.INVALID) {
+            instance
+                .setYarnContainerExitStatus(containerInformation.getExitCode());
+          }
+          instance.setDiagnostics(containerInformation.getDiagnostics());
+          appStatusBuilder.addNewCompleteLlapInstance(instance);
+        } else {
+          LOG.warn("Unexpected containerstate={}, for container={}",
+              containerInformation.getState(), containerInformation);
+        }
       }
-      return this;
-    }
-
-    @JsonIgnore
-    public List<LlapInstance> allInstances() {
-      return this.llapInstances;
-    }
-
-    public AmInfo getAmInfo() {
-      return amInfo;
-    }
-
-    public State getState() {
-      return state;
-    }
-
-    public String getOriginalConfigurationPath() {
-      return originalConfigurationPath;
-    }
-
-    public String getGeneratedConfigurationPath() {
-      return generatedConfigurationPath;
-    }
-
-    public int getDesiredInstances() {
-      return desiredInstances;
-    }
-
-    public int getLiveInstances() {
-      return liveInstances;
-    }
-
-    public Long getAppStartTime() {
-      return appStartTime;
-    }
-
-    public Long getAppFinishTime() {
-      return appFinishTime;
-    }
-
-    public List<LlapInstance> getLlapInstances() {
-      return llapInstances;
-    }
-
-    public boolean isRunningThresholdAchieved() {
-      return runningThresholdAchieved;
-    }
-
-    @JsonIgnore
-    public AmInfo maybeCreateAndGetAmInfo() {
-      if (amInfo == null) {
-        amInfo = new AmInfo();
+    } else {
+      if (LOG.isDebugEnabled()) {
+        LOG.debug("ContainerInfos is null");
       }
-      return amInfo;
-    }
-
-    @Override
-    public String toString() {
-      return "AppStatusBuilder{" +
-          "amInfo=" + amInfo +
-          ", state=" + state +
-          ", originalConfigurationPath='" + originalConfigurationPath + '\'' +
-          ", generatedConfigurationPath='" + generatedConfigurationPath + '\'' +
-          ", desiredInstances=" + desiredInstances +
-          ", liveInstances=" + liveInstances +
-          ", appStartTime=" + appStartTime +
-          ", appFinishTime=" + appFinishTime +
-          ", llapInstances=" + llapInstances +
-          ", containerToInstanceMap=" + containerToInstanceMap +
-          '}';
     }
   }
 
-  static class AmInfo {
-    private String appName;
-    private String appType;
-    private String appId;
-    private String containerId;
-    private String hostname;
-    private String amWebUrl;
+  private static String constructCompletedContainerDiagnostics(List<LlapInstance> completedInstances) {
+    StringBuilder sb = new StringBuilder();
+    if (completedInstances == null || completedInstances.size() == 0) {
+      return "";
+    } else {
+      // TODO HIVE-15865 Ideally sort these by completion time, once that is available.
+      boolean isFirst = true;
+      for (LlapInstance instance : completedInstances) {
+        if (!isFirst) {
+          sb.append("\n");
+        } else {
+          isFirst = false;
+        }
 
-    public AmInfo setAppName(String appName) {
-      this.appName = appName;
-      return this;
+        if (instance.getYarnContainerExitStatus() ==
+            ContainerExitStatus.KILLED_EXCEEDED_PMEM ||
+            instance.getYarnContainerExitStatus() ==
+                ContainerExitStatus.KILLED_EXCEEDED_VMEM) {
+          sb.append("\tKILLED container (by YARN for exceeding memory limits): ");
+        } else {
+          // TODO HIVE-15865 Handle additional reasons like OS launch failed (Slider needs to give this info)
+          sb.append("\tFAILED container: ");
+        }
+        sb.append(" ").append(instance.getContainerId());
+        sb.append(", Logs at: ").append(instance.getLogUrl());
+      }
     }
-
-    public AmInfo setAppType(String appType) {
-      this.appType = appType;
-      return this;
-    }
-
-    public AmInfo setAppId(String appId) {
-      this.appId = appId;
-      return this;
-    }
-
-    public AmInfo setContainerId(String containerId) {
-      this.containerId = containerId;
-      return this;
-    }
-
-    public AmInfo setHostname(String hostname) {
-      this.hostname = hostname;
-      return this;
-    }
-
-    public AmInfo setAmWebUrl(String amWebUrl) {
-      this.amWebUrl = amWebUrl;
-      return this;
-    }
-
-    public String getAppName() {
-      return appName;
-    }
-
-    public String getAppType() {
-      return appType;
-    }
-
-    public String getAppId() {
-      return appId;
-    }
-
-    public String getContainerId() {
-      return containerId;
-    }
-
-    public String getHostname() {
-      return hostname;
-    }
-
-    public String getAmWebUrl() {
-      return amWebUrl;
-    }
-
-    @Override
-    public String toString() {
-      return "AmInfo{" +
-          "appName='" + appName + '\'' +
-          ", appType='" + appType + '\'' +
-          ", appId='" + appId + '\'' +
-          ", containerId='" + containerId + '\'' +
-          ", hostname='" + hostname + '\'' +
-          ", amWebUrl='" + amWebUrl + '\'' +
-          '}';
-    }
+    return sb.toString();
   }
 
-  static class LlapInstance {
-    private final String hostname;
-    private final String containerId;
-    private String statusUrl;
-    private String webUrl;
-    private Integer rpcPort;
-    private Integer mgmtPort;
-    private Integer  shufflePort;
+  /**
+   * Helper method to construct a diagnostic message from a complete
+   * AppStatusBuilder.
+   *
+   * @return
+   */
+  private static String constructDiagnostics(
+      AppStatusBuilder appStatusBuilder) {
+    StringBuilder sb = new StringBuilder();
 
-    // TODO HIVE-13454 Add additional information such as #executors, container size, etc
+    switch (appStatusBuilder.getState()) {
+      case APP_NOT_FOUND:
+        sb.append("LLAP status unknown. Awaiting app launch");
+        break;
+      case LAUNCHING:
+        // This is a catch all state - when containers have not started yet, or LLAP has not started yet.
+        if (StringUtils.isNotBlank(appStatusBuilder.getAmInfo().getAppId())) {
+          sb.append("LLAP Starting up with AppId=")
+              .append(appStatusBuilder.getAmInfo().getAppId()).append(".");
+          if (appStatusBuilder.getDesiredInstances() != null) {
+            sb.append(" Started 0/").append(appStatusBuilder.getDesiredInstances()).append(" instances");
+          }
 
-    public LlapInstance(String hostname, String containerId) {
-      this.hostname = hostname;
-      this.containerId = containerId;
+          String containerDiagnostics = constructCompletedContainerDiagnostics(
+              appStatusBuilder.getCompletedInstances());
+          if (StringUtils.isNotEmpty(containerDiagnostics)) {
+            sb.append("\n").append(containerDiagnostics);
+          }
+        } else {
+          sb.append("Awaiting LLAP startup");
+        }
+        break;
+      case RUNNING_PARTIAL:
+        sb.append("LLAP Starting up with ApplicationId=")
+            .append(appStatusBuilder.getAmInfo().getAppId());
+        sb.append(" Started").append(appStatusBuilder.getLiveInstances())
+            .append("/").append(appStatusBuilder.getDesiredInstances())
+            .append(" instances");
+        String containerDiagnostics = constructCompletedContainerDiagnostics(
+            appStatusBuilder.getCompletedInstances());
+        if (StringUtils.isNotEmpty(containerDiagnostics)) {
+          sb.append("\n").append(containerDiagnostics);
+        }
+
+        // TODO HIVE-15865: Include information about pending requests, and last allocation time
+        // once Slider provides this information.
+        break;
+      case RUNNING_ALL:
+        sb.append("LLAP Application running with ApplicationId=")
+            .append(appStatusBuilder.getAmInfo().getAppId());
+        break;
+      case COMPLETE:
+
+        sb.append("LLAP Application already complete. ApplicationId=")
+            .append(appStatusBuilder.getAmInfo().getAppId());
+        containerDiagnostics = constructCompletedContainerDiagnostics(
+            appStatusBuilder.getCompletedInstances());
+        if (StringUtils.isNotEmpty(containerDiagnostics)) {
+          sb.append("\n").append(containerDiagnostics);
+        }
+
+        break;
+      case UNKNOWN:
+        sb.append("LLAP status unknown");
+        break;
+    }
+    if (StringUtils.isNotBlank(appStatusBuilder.getDiagnostics())) {
+      sb.append("\n").append(appStatusBuilder.getDiagnostics());
     }
 
-    public LlapInstance setWebUrl(String webUrl) {
-      this.webUrl = webUrl;
-      return this;
-    }
-
-    public LlapInstance setStatusUrl(String statusUrl) {
-      this.statusUrl = statusUrl;
-      return this;
-    }
-
-    public LlapInstance setRpcPort(int rpcPort) {
-      this.rpcPort = rpcPort;
-      return this;
-    }
-
-    public LlapInstance setMgmtPort(int mgmtPort) {
-      this.mgmtPort = mgmtPort;
-      return this;
-    }
-
-    public LlapInstance setShufflePort(int shufflePort) {
-      this.shufflePort = shufflePort;
-      return this;
-    }
-
-    public String getHostname() {
-      return hostname;
-    }
-
-    public String getStatusUrl() {
-      return statusUrl;
-    }
-
-    public String getContainerId() {
-      return containerId;
-    }
-
-    public String getWebUrl() {
-      return webUrl;
-    }
-
-    public Integer getRpcPort() {
-      return rpcPort;
-    }
-
-    public Integer getMgmtPort() {
-      return mgmtPort;
-    }
-
-    public Integer getShufflePort() {
-      return shufflePort;
-    }
-
-    @Override
-    public String toString() {
-      return "LlapInstance{" +
-          "hostname='" + hostname + '\'' +
-          ", containerId='" + containerId + '\'' +
-          ", statusUrl='" + statusUrl + '\'' +
-          ", webUrl='" + webUrl + '\'' +
-          ", rpcPort=" + rpcPort +
-          ", mgmtPort=" + mgmtPort +
-          ", shufflePort=" + shufflePort +
-          '}';
-    }
-  }
-
-  static class LlapStatusCliException extends Exception {
-    final ExitCode exitCode;
-
-
-    public LlapStatusCliException(ExitCode exitCode, String message) {
-      super(exitCode.getInt() +": " + message);
-      this.exitCode = exitCode;
-    }
-
-    public LlapStatusCliException(ExitCode exitCode, String message, Throwable cause) {
-      super(message, cause);
-      this.exitCode = exitCode;
-    }
-
-    public ExitCode getExitCode() {
-      return exitCode;
-    }
-  }
-
-  enum State {
-    APP_NOT_FOUND, LAUNCHING,
-    RUNNING_PARTIAL,
-    RUNNING_ALL, COMPLETE, UNKNOWN
+    return sb.toString();
   }
 
   public enum ExitCode {
@@ -918,6 +810,26 @@ public class LlapStatusServiceDriver {
   }
 
 
+  public static class LlapStatusCliException extends Exception {
+    final LlapStatusServiceDriver.ExitCode exitCode;
+
+
+    public LlapStatusCliException(LlapStatusServiceDriver.ExitCode exitCode, String message) {
+      super(exitCode.getInt() +": " + message);
+      this.exitCode = exitCode;
+    }
+
+    public LlapStatusCliException(LlapStatusServiceDriver.ExitCode exitCode, String message, Throwable cause) {
+      super(message, cause);
+      this.exitCode = exitCode;
+    }
+
+    public LlapStatusServiceDriver.ExitCode getExitCode() {
+      return exitCode;
+    }
+  }
+
+
   private static void logError(Throwable t) {
     LOG.error("FAILED: " + t.getMessage(), t);
     System.err.println("FAILED: " + t.getMessage());
@@ -927,6 +839,9 @@ public class LlapStatusServiceDriver {
   public static void main(String[] args) {
     LOG.info("LLAP status invoked with arguments = {}", Arrays.toString(args));
     int ret = ExitCode.SUCCESS.getInt();
+    Clock clock = new SystemClock();
+    long startTime = clock.getTime();
+    long lastSummaryLogTime = -1;
 
     LlapStatusServiceDriver statusServiceDriver = null;
     LlapStatusOptions options = null;
@@ -937,7 +852,8 @@ public class LlapStatusServiceDriver {
       statusServiceDriver.close();
       logError(t);
       if (t instanceof LlapStatusCliException) {
-        LlapStatusCliException ce = (LlapStatusCliException) t;
+        LlapStatusCliException
+            ce = (LlapStatusCliException) t;
         ret = ce.getExitCode().getInt();
       } else {
         ret = ExitCode.INTERNAL_ERROR.getInt();
@@ -950,12 +866,14 @@ public class LlapStatusServiceDriver {
       System.exit(ret);
     }
 
+    boolean firstAttempt = true;
     final long refreshInterval = options.getRefreshIntervalMs();
     final boolean watchMode = options.isWatchMode();
     final long watchTimeout = options.getWatchTimeoutMs();
     long numAttempts = watchTimeout / refreshInterval;
-    State launchingState = null;
-    State currentState = null;
+    numAttempts = watchMode ? numAttempts : 1; // Break out of the loop fast if watchMode is disabled.
+    LlapStatusHelpers.State launchingState = null;
+    LlapStatusHelpers.State currentState = null;
     boolean desiredStateAttained = false;
     final float runningNodesThreshold = options.getRunningNodesThreshold();
     try (OutputStream os = options.getOutputFile() == null ? System.out :
@@ -969,28 +887,62 @@ public class LlapStatusServiceDriver {
         numAttempts, watchMode, new DecimalFormat("#.###").format(runningNodesThreshold));
       while (numAttempts > 0) {
         try {
+          if (!firstAttempt) {
+            if (watchMode) {
+              try {
+                Thread.sleep(refreshInterval);
+              } catch (InterruptedException e) {
+                // ignore
+              }
+            } else {
+              // reported once, so break
+              break;
+            }
+          } else {
+            firstAttempt = false;
+          }
           ret = statusServiceDriver.run(options, watchMode ? watchTimeout : 0);
+          currentState = statusServiceDriver.appStatusBuilder.getState();
+          try {
+            lastSummaryLogTime = LlapStatusServiceDriver
+                .maybeLogSummary(clock, lastSummaryLogTime, statusServiceDriver,
+                    watchMode, watchTimeout, launchingState);
+          } catch (Exception e) {
+            LOG.warn("Failed to log summary", e);
+          }
+
           if (ret == ExitCode.SUCCESS.getInt()) {
             if (watchMode) {
-              currentState = statusServiceDriver.appStatusBuilder.state;
 
               // slider has started llap application, now if for some reason state changes to COMPLETE then fail fast
               if (launchingState == null &&
-                (currentState.equals(State.LAUNCHING) || currentState.equals(State.RUNNING_PARTIAL))) {
+                  (EnumSet.of(LlapStatusHelpers.State.LAUNCHING,
+                      LlapStatusHelpers.State.RUNNING_PARTIAL,
+                      LlapStatusHelpers.State.RUNNING_ALL)
+                      .contains(currentState))) {
                 launchingState = currentState;
               }
 
-              if (launchingState != null && currentState.equals(State.COMPLETE)) {
+              if (launchingState != null && currentState.equals(
+                  LlapStatusHelpers.State.COMPLETE)) {
                 LOG.warn("Application stopped while launching. COMPLETE state reached while waiting for RUNNING state."
                   + " Failing " + "fast..");
                 break;
               }
 
-              if (!(currentState.equals(State.RUNNING_PARTIAL) || currentState.equals(State.RUNNING_ALL))) {
-                LOG.warn("Current state: {}. Desired state: {}. {}/{} instances.", currentState,
-                  runningNodesThreshold == 1.0f ? State.RUNNING_ALL : State.RUNNING_PARTIAL,
-                  statusServiceDriver.appStatusBuilder.getLiveInstances(),
-                  statusServiceDriver.appStatusBuilder.getDesiredInstances());
+              if (!(currentState.equals(LlapStatusHelpers.State.RUNNING_PARTIAL) || currentState.equals(
+                  LlapStatusHelpers.State.RUNNING_ALL))) {
+                if (LOG.isDebugEnabled()) {
+                  LOG.debug(
+                      "Current state: {}. Desired state: {}. {}/{} instances.",
+                      currentState,
+                      runningNodesThreshold == 1.0f ?
+                          LlapStatusHelpers.State.RUNNING_ALL :
+                          LlapStatusHelpers.State.RUNNING_PARTIAL,
+                      statusServiceDriver.appStatusBuilder.getLiveInstances(),
+                      statusServiceDriver.appStatusBuilder
+                          .getDesiredInstances());
+                }
                 numAttempts--;
                 continue;
               }
@@ -1001,11 +953,17 @@ public class LlapStatusServiceDriver {
               if (desiredInstances > 0) {
                 final float ratio = (float) liveInstances / (float) desiredInstances;
                 if (ratio < runningNodesThreshold) {
-                  LOG.warn("Waiting until running nodes threshold is reached. Current: {} Desired: {}." +
-                      " {}/{} instances.", new DecimalFormat("#.###").format(ratio),
-                    new DecimalFormat("#.###").format(runningNodesThreshold),
-                    statusServiceDriver.appStatusBuilder.getLiveInstances(),
-                    statusServiceDriver.appStatusBuilder.getDesiredInstances());
+                  if (LOG.isDebugEnabled()) {
+                    LOG.debug(
+                        "Waiting until running nodes threshold is reached. Current: {} Desired: {}." +
+                            " {}/{} instances.",
+                        new DecimalFormat("#.###").format(ratio),
+                        new DecimalFormat("#.###")
+                            .format(runningNodesThreshold),
+                        statusServiceDriver.appStatusBuilder.getLiveInstances(),
+                        statusServiceDriver.appStatusBuilder
+                            .getDesiredInstances());
+                  }
                   numAttempts--;
                   continue;
                 } else {
@@ -1036,18 +994,14 @@ public class LlapStatusServiceDriver {
           }
           break;
         } finally {
-          if (watchMode) {
-            try {
-              Thread.sleep(refreshInterval);
-            } catch (InterruptedException e) {
-              // ignore
-            }
-          } else {
-            // reported once, so break
-            break;
-          }
+          // TODO Remove this before commit.
         }
       }
+      // Log final state to CONSOLE_LOGGER
+      LlapStatusServiceDriver
+          .maybeLogSummary(clock, 0L, statusServiceDriver,
+              watchMode, watchTimeout, launchingState);
+      CONSOLE_LOGGER.info("\n\n\n");
       // print current state before exiting
       statusServiceDriver.outputJson(pw);
       os.flush();
@@ -1059,7 +1013,8 @@ public class LlapStatusServiceDriver {
     } catch (Throwable t) {
       logError(t);
       if (t instanceof LlapStatusCliException) {
-        LlapStatusCliException ce = (LlapStatusCliException) t;
+        LlapStatusCliException
+            ce = (LlapStatusCliException) t;
         ret = ce.getExitCode().getInt();
       } else {
         ret = ExitCode.INTERNAL_ERROR.getInt();
@@ -1072,6 +1027,40 @@ public class LlapStatusServiceDriver {
       LOG.debug("Completed processing - exiting with " + ret);
     }
     System.exit(ret);
+  }
+
+  private static long maybeLogSummary(Clock clock, long lastSummaryLogTime,
+                                      LlapStatusServiceDriver statusServiceDriver,
+                                      boolean watchMode, long watchTimeout, LlapStatusHelpers.State launchingState) {
+    long currentTime = clock.getTime();
+    if (lastSummaryLogTime < currentTime - LOG_SUMMARY_INTERVAL) {
+      String diagString = null;
+      if (launchingState == null && statusServiceDriver.appStatusBuilder.getState() ==
+          LlapStatusHelpers.State.COMPLETE && watchMode) {
+        // First known state was COMPLETED. Wait for the app launch to start.
+        diagString = "Awaiting LLAP launch";
+        // Clear completed instances in this case. Don't want to provide information from the previous run.
+        statusServiceDriver.appStatusBuilder.clearCompletedLlapInstances();
+      } else {
+        diagString = constructDiagnostics(statusServiceDriver.appStatusBuilder);
+      }
+
+      if (lastSummaryLogTime == -1) {
+        if (watchMode) {
+          CONSOLE_LOGGER.info("\nLLAPSTATUS WatchMode with timeout={} s",
+              TimeUnit.SECONDS.convert(watchTimeout, TimeUnit.MILLISECONDS));
+        } else {
+          CONSOLE_LOGGER.info("\nLLAPSTATUS");
+        }
+        CONSOLE_LOGGER.info(
+            "--------------------------------------------------------------------------------");
+      }
+      CONSOLE_LOGGER.info(diagString);
+      CONSOLE_LOGGER.info(
+          "--------------------------------------------------------------------------------");
+      lastSummaryLogTime = currentTime;
+    }
+    return lastSummaryLogTime;
   }
 
   private void close() {

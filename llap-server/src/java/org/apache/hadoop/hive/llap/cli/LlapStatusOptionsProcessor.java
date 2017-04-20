@@ -38,6 +38,7 @@ public class LlapStatusOptionsProcessor {
   private static final long DEFAULT_STATUS_REFRESH_INTERVAL_MS = 1 * 1000l; // 1 seconds wait until subsequent status
   private static final long DEFAULT_WATCH_MODE_TIMEOUT_MS = 5 * 60 * 1000l; // 5 minutes timeout for watch mode
   private static final float DEFAULT_RUNNING_NODES_THRESHOLD = 1.0f;
+
   enum OptionConstants {
 
     NAME("name", 'n', "LLAP cluster name", true),
