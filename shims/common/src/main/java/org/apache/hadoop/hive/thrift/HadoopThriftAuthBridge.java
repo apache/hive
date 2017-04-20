@@ -24,6 +24,7 @@ import java.net.InetAddress;
 import java.net.Socket;
 import java.security.PrivilegedAction;
 import java.security.PrivilegedExceptionAction;
+import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 
@@ -32,6 +33,7 @@ import javax.security.auth.callback.CallbackHandler;
 import javax.security.auth.callback.NameCallback;
 import javax.security.auth.callback.PasswordCallback;
 import javax.security.auth.callback.UnsupportedCallbackException;
+import javax.security.sasl.AuthenticationException;
 import javax.security.sasl.AuthorizeCallback;
 import javax.security.sasl.RealmCallback;
 import javax.security.sasl.RealmChoiceCallback;
@@ -54,6 +56,7 @@ import org.apache.hadoop.security.UserGroupInformation.AuthenticationMethod;
 import org.apache.hadoop.security.token.SecretManager.InvalidToken;
 import org.apache.hadoop.security.token.Token;
 import org.apache.hadoop.security.token.TokenIdentifier;
+import org.apache.hadoop.util.ReflectionUtils;
 import org.apache.thrift.TException;
 import org.apache.thrift.TProcessor;
 import org.apache.thrift.protocol.TProtocol;
@@ -286,8 +289,13 @@ public abstract class HadoopThriftAuthBridge {
       HIVESERVER2, METASTORE
     };
 
+    public static final String HIVE_SERVER2_KERBEROS_CUSTOM_AUTH_CLASS =
+        "hive.server2.kerberos.custom.authentication.class";
+
     protected final UserGroupInformation realUgi;
     protected DelegationTokenSecretManager secretManager;
+    //protected Configuration thriftConf;
+    protected String customClassName;
 
     public Server() throws TTransportException {
       try {
@@ -324,6 +332,15 @@ public abstract class HadoopThriftAuthBridge {
 
     public void setSecretManager(DelegationTokenSecretManager secretManager) {
       this.secretManager = secretManager;
+    }
+
+    /*
+    public void setConf(Configuration conf) {
+      this.thriftConf = conf;
+    }
+    */
+    public void setClassName(String customClassName) {
+      this.customClassName = customClassName;
     }
 
     /**
@@ -367,6 +384,46 @@ public abstract class HadoopThriftAuthBridge {
       transFactory.addServerDefinition(AuthMethod.DIGEST.getMechanismName(),
           null, SaslRpcServer.SASL_DEFAULT_REALM,
           saslProps, new SaslDigestCallbackHandler(secretManager));
+
+      return transFactory;
+    }
+
+    /**
+     * Create a TTransportFactory that, upon connection of a client socket,
+     * negotiates a Kerberized SASL transport with PLAIN mechanism.
+     * The resulting TTransportFactory can be passed as both the input and output
+     * transport factory when instantiating a TThreadPoolServer, for example.
+     *
+     * @param saslProps Map of SASL properties
+     */
+    public TTransportFactory createPlainTransportFactory(Map<String, String> saslProps)
+        throws TTransportException {
+
+      TSaslServerTransport.Factory transFactory = createSaslPlainServerTransportFactory(saslProps);
+
+      return new TUGIAssumingTransportFactory(transFactory, realUgi);
+    }
+
+    /**
+     * Create a TSaslServerTransport.Factory that, upon connection of a client
+     * socket, negotiates a Kerberized SASL transport.
+     *
+     * @param saslProps Map of SASL properties
+     */
+    public TSaslServerTransport.Factory createSaslPlainServerTransportFactory(
+        Map<String, String> saslProps) throws TTransportException {
+      // Parse out the kerberos principal, host, realm.
+      String kerberosName = realUgi.getUserName();
+      final String names[] = SaslRpcServer.splitKerberosName(kerberosName);
+      if (names.length != 3) {
+        throw new TTransportException("Kerberos principal should have 3 parts: " + kerberosName);
+      }
+
+      TSaslServerTransport.Factory transFactory = new TSaslServerTransport.Factory();
+      // Add for custom class on kerberized cluster
+      transFactory.addServerDefinition("PLAIN",
+          "NONE", null, new HashMap<String, String>(),
+          new SaslCustomServerCallbackHandler(customClassName));
 
       return transFactory;
     }
@@ -445,6 +502,68 @@ public abstract class HadoopThriftAuthBridge {
     public String getUserAuthMechanism() {
       return userAuthMechanism.get();
     }
+
+    /** CallbackHandler for Server Custom authentication class with Kerberos */
+    // The client mechanism uses PLAIN on SASL API with Kerberos.
+    // Therefore, it has the similar format with PlainServerCallbackHandler.
+    static class SaslCustomServerCallbackHandler implements CallbackHandler {
+      private KrbCustomAuthenticationProvider customProvider;
+
+      public SaslCustomServerCallbackHandler(String customClassName) {
+        // Default custom class : It only allows CUSTOM authentication with Kerberos cluster
+        /*
+        String customClassName = conf.get(
+          HIVE_SERVER2_KERBEROS_CUSTOM_AUTH_CLASS,
+          "org.apache.hadoop.hive.thrift.DefaultKrbCustomAuthenticationProviderImpl");
+        */
+
+        try {
+          Class<? extends KrbCustomAuthenticationProvider> customHandlerClass =
+            Class.forName(customClassName).asSubclass(
+              KrbCustomAuthenticationProvider.class);
+          //this.customProvider = ReflectionUtils.newInstance(customHandlerClass, conf);
+          this.customProvider = ReflectionUtils.newInstance(customHandlerClass, null);
+        } catch (ClassNotFoundException e) {
+          LOG.debug("Cannot find the custom authentication class: "
+            + customClassName);
+        }
+      }
+
+      @Override
+      public void handle(Callback[] callbacks) throws InvalidToken,
+      UnsupportedCallbackException {
+        String userName = null;
+        String userPassword = null;
+        AuthorizeCallback ac = null;
+
+        for (Callback callback : callbacks) {
+          if (callback instanceof AuthorizeCallback) {
+            ac = (AuthorizeCallback) callback;
+          } else if (callback instanceof NameCallback) {
+            NameCallback nc = (NameCallback) callback;
+            userName = nc.getName();
+          } else if (callback instanceof PasswordCallback) {
+            PasswordCallback pc = (PasswordCallback) callback;
+            userPassword = new String(pc.getPassword());
+          } else {
+            throw new UnsupportedCallbackException(callback,
+                "Unrecognized CUSTOM PLAIN Callback");
+          }
+        }
+
+        try {
+          // It calls custom Authentication module
+          this.customProvider.authenticate(userName, userPassword);
+        } catch (AuthenticationException e) {
+          throw new InvalidToken("ERROR: ugi="+userName+" is not allowed");
+        }
+
+        if (ac != null) {
+          ac.setAuthorized(true);
+        }
+      }
+    }
+
     /** CallbackHandler for SASL DIGEST-MD5 mechanism */
     // This code is pretty much completely based on Hadoop's
     // SaslRpcServer.SaslDigestCallbackHandler - the only reason we could not
@@ -557,19 +676,18 @@ public abstract class HadoopThriftAuthBridge {
         String mechanismName = saslServer.getMechanismName();
         userAuthMechanism.set(mechanismName);
         if (AuthMethod.PLAIN.getMechanismName().equalsIgnoreCase(mechanismName)) {
-          remoteUser.set(endUser);
-          return wrapped.process(inProt, outProt);
-        }
-
-        authenticationMethod.set(AuthenticationMethod.KERBEROS);
-        if(AuthMethod.TOKEN.getMechanismName().equalsIgnoreCase(mechanismName)) {
-          try {
-            TokenIdentifier tokenId = SaslRpcServer.getIdentifier(authId,
-                secretManager);
-            endUser = tokenId.getUser().getUserName();
-            authenticationMethod.set(AuthenticationMethod.TOKEN);
-          } catch (InvalidToken e) {
-            throw new TException(e.getMessage());
+          LOG.debug("INFO: Request custom authentication module");
+        } else {
+          authenticationMethod.set(AuthenticationMethod.KERBEROS);
+          if(AuthMethod.TOKEN.getMechanismName().equalsIgnoreCase(mechanismName)) {
+            try {
+              TokenIdentifier tokenId = SaslRpcServer.getIdentifier(authId,
+                  secretManager);
+              endUser = tokenId.getUser().getUserName();
+              authenticationMethod.set(AuthenticationMethod.TOKEN);
+            } catch (InvalidToken e) {
+              throw new TException(e.getMessage());
+            }
           }
         }
 
