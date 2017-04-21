@@ -17,4 +17,18 @@ SELECT count(*) FROM rename_partition_table where part = '2';
 
 SET hive.exec.post.hooks=;
 
+CREATE TABLE rename_partition_table_2 (key STRING, value STRING) PARTITIONED BY (part STRING)
+LOCATION '${system:test.tmp.dir}/rename_partition_table_2';
+
+INSERT OVERWRITE TABLE rename_partition_table_2 PARTITION (part = '1') SELECT * FROM src;
+
+ALTER TABLE rename_partition_table_2 PARTITION (part = '1') RENAME TO PARTITION (part = '2');
+
+SET hive.exec.post.hooks=org.apache.hadoop.hive.ql.hooks.VerifyPartitionIsSubdirectoryOfTableHook;
+
+SELECT count(*) FROM rename_partition_table_2 where part = '2';
+
+SET hive.exec.post.hooks=;
+
 DROP TABLE rename_partition_table;
+DROP TABLE rename_partition_table_2;

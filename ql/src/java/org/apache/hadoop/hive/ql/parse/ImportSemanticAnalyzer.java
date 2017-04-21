@@ -423,7 +423,7 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
       } else {
         Database parentDb = db.getDatabase(tblDesc.getDatabaseName());
         tgtPath = new Path(
-            wh.getTablePath( parentDb, tblDesc.getTableName()),
+            wh.getDefaultTablePath( parentDb, tblDesc.getTableName()),
             Warehouse.makePartPath(partSpec.getPartSpec()));
       }
     } else {
@@ -738,7 +738,7 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
           if (tblDesc.getLocation() != null) {
             tablePath = new Path(tblDesc.getLocation());
           } else {
-            tablePath = wh.getTablePath(parentDb, tblDesc.getTableName());
+            tablePath = wh.getDefaultTablePath(parentDb, tblDesc.getTableName());
           }
           checkTargetLocationEmpty(fs, tablePath, replicationSpec);
           t.addDependentTask(loadTable(fromURI, table, false));
@@ -781,7 +781,7 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
       throw new SemanticException(ErrorMsg.DATABASE_NOT_EXISTS.getMsg(tblDesc.getDatabaseName()));
     }
     if (tblDesc.getLocation() == null) {
-      tblDesc.setLocation(wh.getTablePath(parentDb, tblDesc.getTableName()).toString());
+      tblDesc.setLocation(wh.getDefaultTablePath(parentDb, tblDesc.getTableName()).toString());
     }
 
      /* Note: In the following section, Metadata-only import handling logic is

@@ -183,7 +183,7 @@ public abstract class TaskCompiler {
                     + " does not exist.");
               }
               Warehouse wh = new Warehouse(conf);
-              targetPath = wh.getTablePath(db.getDatabase(names[0]), names[1]);
+              targetPath = wh.getDefaultTablePath(db.getDatabase(names[0]), names[1]);
             } catch (HiveException e) {
               throw new SemanticException(e);
             } catch (MetaException e) {
