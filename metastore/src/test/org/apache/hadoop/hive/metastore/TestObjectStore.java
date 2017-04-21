@@ -153,10 +153,15 @@ public class TestObjectStore {
     Assert.assertEquals(2, eventResponse.getEventsSize());
     Assert.assertEquals(FIRST_EVENT_ID, eventResponse.getEvents().get(0).getEventId());
     Assert.assertEquals(SECOND_EVENT_ID, eventResponse.getEvents().get(1).getEventId());
+
     // Verify that getNextNotification(last) returns events after a specified event
     eventResponse = objectStore.getNextNotification(new NotificationEventRequest(FIRST_EVENT_ID));
     Assert.assertEquals(1, eventResponse.getEventsSize());
     Assert.assertEquals(SECOND_EVENT_ID, eventResponse.getEvents().get(0).getEventId());
+
+    // Verify that getNextNotification(last) returns zero events if there are no more notifications available
+    eventResponse = objectStore.getNextNotification(new NotificationEventRequest(SECOND_EVENT_ID));
+    Assert.assertEquals(0, eventResponse.getEventsSize());
 
     // Verify that cleanNotificationEvents() cleans up all old notifications
     Thread.sleep(1);
