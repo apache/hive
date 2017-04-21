@@ -841,37 +841,34 @@ public class FastHiveDecimalImpl extends FastHiveDecimal {
         // For some strange reason BigDecimal 0 can have a scale.  We do not support that.
         bigDecimal = BigDecimal.ZERO;
       }
-    } else {
-      BigDecimal bigDecimalStripped = bigDecimal.stripTrailingZeros();
-      int stripTrailingZerosScale = bigDecimalStripped.scale();
-      // System.out.println("FAST_SET_FROM_BIG_DECIMAL bigDecimal " + bigDecimal);
-      // System.out.println("FAST_SET_FROM_BIG_DECIMAL bigDecimalStripped " + bigDecimalStripped);
-      // System.out.println("FAST_SET_FROM_BIG_DECIMAL stripTrailingZerosScale " + stripTrailingZerosScale);
-      if (stripTrailingZerosScale < 0) {
-
-        // The trailing zeroes extend into the integer part -- we only want to eliminate the
-        // fractional zero digits.
-
-        bigDecimal = bigDecimal.setScale(0);
-      } else {
-
-        // Ok, use result with some or all fractional digits stripped.
-
-        bigDecimal = bigDecimalStripped;
-      }
     }
-    // System.out.println("FAST_SET_FROM_BIG_DECIMAL adjusted for zeroes/scale " + bigDecimal + " scale " + bigDecimal.scale());
 
-    BigInteger unscaledValue = bigDecimal.unscaledValue();
-    // System.out.println("FAST_SET_FROM_BIG_DECIMAL unscaledValue " + unscaledValue + " length " + unscaledValue.toString().length());
-
-    final int scale = bigDecimal.scale();
     if (!allowRounding) {
+      if (bigDecimal.signum() != 0) {
+        BigDecimal bigDecimalStripped = bigDecimal.stripTrailingZeros();
+        int stripTrailingZerosScale = bigDecimalStripped.scale();
+        // System.out.println("FAST_SET_FROM_BIG_DECIMAL bigDecimal " + bigDecimal);
+        // System.out.println("FAST_SET_FROM_BIG_DECIMAL bigDecimalStripped " + bigDecimalStripped);
+        // System.out.println("FAST_SET_FROM_BIG_DECIMAL stripTrailingZerosScale " + stripTrailingZerosScale);
+        if (stripTrailingZerosScale < 0) {
+
+          // The trailing zeroes extend into the integer part -- we only want to eliminate the
+          // fractional zero digits.
+
+          bigDecimal = bigDecimal.setScale(0);
+        } else {
+
+          // Ok, use result with some or all fractional digits stripped.
+
+          bigDecimal = bigDecimalStripped;
+        }
+      }
+      int scale = bigDecimal.scale();
       if (scale < 0 || scale > HiveDecimal.MAX_SCALE) {
         return false;
       }
       // The digits must fit without rounding.
-      if (!fastSetFromBigInteger(unscaledValue, fastResult)) {
+      if (!fastSetFromBigInteger(bigDecimal.unscaledValue(), fastResult)) {
         return false;
       }
       if (fastResult.fastSignum != 0) {
@@ -881,7 +878,8 @@ public class FastHiveDecimalImpl extends FastHiveDecimal {
       return true;
     }
     // This method will scale down and round to fit, if necessary.
-    if (!fastSetFromBigInteger(unscaledValue, scale, fastResult)) {
+    if (!fastSetFromBigInteger(bigDecimal.unscaledValue(), bigDecimal.scale(),
+        bigDecimal.precision(), fastResult)) {
       return false;
     }
     return true;
@@ -1128,6 +1126,24 @@ public class FastHiveDecimalImpl extends FastHiveDecimal {
    */
   public static boolean fastSetFromBigInteger(
       BigInteger bigInteger, int scale, FastHiveDecimal fastResult) {
+    // Poor performance, because the precision will be calculated by bigInteger.toString()
+    return fastSetFromBigInteger(bigInteger, scale, -1, fastResult);
+  }
+
+  /**
+   * Creates a fast decimal from a BigInteger with a specified scale.
+   *
+   * NOTE: The fastSetFromBigInteger method requires the caller to pass a fastResult
+   * parameter has been reset for better performance.
+   *
+   * @param bigInteger the value to set as an integer
+   * @param scale the scale to use
+   * @param precision the precision to use
+   * @param fastResult an object to reuse
+   * @return True if the BigInteger and scale were successfully converted to a decimal.
+   */
+  public static boolean fastSetFromBigInteger(
+      BigInteger bigInteger, int scale, int precision, FastHiveDecimal fastResult) {
 
     if (scale < 0) {
 
@@ -1150,8 +1166,10 @@ public class FastHiveDecimalImpl extends FastHiveDecimal {
       bigInteger = bigInteger.negate();
     }
 
-    // A slow way to get the number of decimal digits.
-    int precision = bigInteger.toString().length();
+    if (precision < 0) {
+      // A slow way to get the number of decimal digits.
+      precision = bigInteger.toString().length();
+    }
 
     // System.out.println("FAST_SET_FROM_BIG_INTEGER adjusted bigInteger " + bigInteger + " precision " + precision);
 
