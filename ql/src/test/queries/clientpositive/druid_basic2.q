@@ -58,6 +58,30 @@ GROUP BY robot, language, floor_day(`__time`)
 ORDER BY CAST(robot AS INTEGER) ASC, m DESC
 LIMIT 10;
 
+EXPLAIN
+SELECT robot, floor_day(`__time`)
+FROM druid_table_1
+WHERE floor_day(`__time`) BETWEEN '1999-11-01 00:00:00' AND '1999-11-10 00:00:00'
+GROUP BY robot, floor_day(`__time`)
+ORDER BY robot
+LIMIT 10;
+
+EXPLAIN
+SELECT robot, `__time`
+FROM druid_table_1
+WHERE floor_day(`__time`) BETWEEN '1999-11-01 00:00:00' AND '1999-11-10 00:00:00'
+GROUP BY robot, `__time`
+ORDER BY robot
+LIMIT 10;
+
+EXPLAIN
+SELECT robot, floor_day(`__time`)
+FROM druid_table_1
+WHERE `__time` BETWEEN '1999-11-01 00:00:00' AND '1999-11-10 00:00:00'
+GROUP BY robot, floor_day(`__time`)
+ORDER BY robot
+LIMIT 10;
+
 -- No CBO test: it should work
 set hive.cbo.enable=false;
 EXPLAIN EXTENDED
