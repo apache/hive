@@ -192,11 +192,7 @@
               <artifactSet>
                 <excludes>
                   <exclude>org.apache.commons:commons-compress</exclude>
-                  <exclude>org.apache.hadoop:hadoop-yarn*</exclude>
-                  <exclude>org.apache.hadoop:hadoop-mapreduce*</exclude>
-                  <exclude>org.apache.hadoop:hadoop-hdfs</exclude>
-                  <exclude>org.apache.hadoop:hadoop-client</exclude>
-                  <exclude>org.apache.hadoop:hadoop-annotations</exclude>
+                  <exclude>org.apache.hadoop:*</exclude>
                   <exclude>org.apache.hive:hive-vector-code-gen</exclude>
                   <exclude>org.apache.ant:*</exclude>
                   <exclude>junit:*</exclude>
@@ -303,13 +299,6 @@
                 <relocation>
                   <pattern>com.facebook</pattern>
                   <shadedPattern>org.apache.hive.com.facebook</shadedPattern>
-                </relocation>
-                <relocation>
-                  <pattern>org.apache.hadoop</pattern>
-                  <shadedPattern>org.apache.hive.org.apache.hadoop</shadedPattern>
-                  <excludes>
-                    <exclude>org.apache.hadoop.security.*</exclude>
-                  </excludes>
                 </relocation>
                 <relocation>
                   <pattern>org.apache.zookeeper</pattern>
