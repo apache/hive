@@ -481,6 +481,7 @@ public final class FunctionRegistry {
     system.registerGenericUDF("greatest", GenericUDFGreatest.class);
     system.registerGenericUDF("least", GenericUDFLeast.class);
     system.registerGenericUDF("cardinality_violation", GenericUDFCardinalityViolation.class);
+    system.registerGenericUDF("width_bucket", GenericUDFWidthBucket.class);
 
     system.registerGenericUDF("from_utc_timestamp", GenericUDFFromUtcTimestamp.class);
     system.registerGenericUDF("to_utc_timestamp", GenericUDFToUtcTimestamp.class);

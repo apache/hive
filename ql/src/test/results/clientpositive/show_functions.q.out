@@ -261,6 +261,7 @@ variance
 version
 weekofyear
 when
+width_bucket
 windowingtablefunction
 xpath
 xpath_boolean
