@@ -8263,6 +8263,9 @@ public class ObjectStore implements RawStore, Configurable {
   public NotificationEventResponse getNextNotification(NotificationEventRequest rqst) {
     boolean commited = false;
     Query query = null;
+
+    NotificationEventResponse result = new NotificationEventResponse();
+    result.setEvents(new ArrayList<NotificationEvent>());
     try {
       openTransaction();
       long lastEvent = rqst.getLastEvent();
@@ -8272,11 +8275,9 @@ public class ObjectStore implements RawStore, Configurable {
       Collection<MNotificationLog> events = (Collection) query.execute(lastEvent);
       commited = commitTransaction();
       if (events == null) {
-        return null;
+        return result;
       }
       Iterator<MNotificationLog> i = events.iterator();
-      NotificationEventResponse result = new NotificationEventResponse();
-      result.setEvents(new ArrayList<NotificationEvent>());
       int maxEvents = rqst.getMaxEvents() > 0 ? rqst.getMaxEvents() : Integer.MAX_VALUE;
       int numEvents = 0;
       while (i.hasNext() && numEvents++ < maxEvents) {
