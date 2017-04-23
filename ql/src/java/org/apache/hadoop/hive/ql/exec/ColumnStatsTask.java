@@ -386,7 +386,9 @@ public class ColumnStatsTask extends Task<ColumnStatsWork> implements Serializab
       ColumnStatistics colStats = new ColumnStatistics();
       colStats.setStatsDesc(statsDesc);
       colStats.setStatsObj(statsObjs);
-      stats.add(colStats);
+      if (!statsObjs.isEmpty()) {
+        stats.add(colStats);
+      }
     }
     ftOp.clearFetchContext();
     return stats;
@@ -413,6 +415,9 @@ public class ColumnStatsTask extends Task<ColumnStatsWork> implements Serializab
     List<ColumnStatistics> colStats = constructColumnStatsFromPackedRows(db);
     // Persist the column statistics object to the metastore
     // Note, this function is shared for both table and partition column stats.
+    if (colStats.isEmpty()) {
+      return 0;
+    }
     SetPartitionsStatsRequest request = new SetPartitionsStatsRequest(colStats);
     if (work.getColStats() != null && work.getColStats().getNumBitVector() > 0) {
       request.setNeedMerge(true);
