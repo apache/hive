@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.common.jsonexplain.tez;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -120,19 +121,18 @@ public final class Op {
         for (String key : JSONObject.getNames(keys)) {
           // first search from the posToVertex
           if (posToVertex.containsKey(key)) {
-            Vertex vertex = posToVertex.get(key);
-            if (vertex.rootOps.size() == 1) {
-              posToOpId.put(key, vertex.rootOps.get(0).operatorId);
-            } else if ((vertex.rootOps.size() == 0 && vertex.vertexType == VertexType.UNION)) {
-              posToOpId.put(key, vertex.name);
+            Vertex v = posToVertex.get(key);
+            if (v.rootOps.size() == 1) {
+              posToOpId.put(key, v.rootOps.get(0).operatorId);
+            } else if ((v.rootOps.size() == 0 && v.vertexType == VertexType.UNION)) {
+              posToOpId.put(key, v.name);
             } else {
-              Op singleRSOp = vertex.getSingleRSOp();
-              if (singleRSOp != null) {
-                posToOpId.put(key, singleRSOp.operatorId);
+              Op joinRSOp = v.getJoinRSOp(vertex);
+              if (joinRSOp != null) {
+                posToOpId.put(key, joinRSOp.operatorId);
               } else {
                 throw new Exception(
-                    "There are none or more than one root operators in a single vertex "
-                        + vertex.name
+                    "Can not find join reduceSinkOp for " + v.name + " to join " + vertex.name
                         + " when hive explain user is trying to identify the operator id.");
               }
             }
@@ -143,20 +143,19 @@ public final class Op {
           }
           // then assume it is from its own vertex
           else if (parentVertexes.size() == 1) {
-            Vertex vertex = parentVertexes.iterator().next();
+            Vertex v = parentVertexes.iterator().next();
             parentVertexes.clear();
-            if (vertex.rootOps.size() == 1) {
-              posToOpId.put(key, vertex.rootOps.get(0).operatorId);
-            } else if ((vertex.rootOps.size() == 0 && vertex.vertexType == VertexType.UNION)) {
-              posToOpId.put(key, vertex.name);
+            if (v.rootOps.size() == 1) {
+              posToOpId.put(key, v.rootOps.get(0).operatorId);
+            } else if ((v.rootOps.size() == 0 && v.vertexType == VertexType.UNION)) {
+              posToOpId.put(key, v.name);
             } else {
-              Op singleRSOp = vertex.getSingleRSOp();
-              if (singleRSOp != null) {
-                posToOpId.put(key, singleRSOp.operatorId);
+              Op joinRSOp = v.getJoinRSOp(vertex);
+              if (joinRSOp != null) {
+                posToOpId.put(key, joinRSOp.operatorId);
               } else {
                 throw new Exception(
-                    "There are none or more than one root operators in a single vertex "
-                        + vertex.name
+                    "Can not find join reduceSinkOp for " + v.name + " to join " + vertex.name
                         + " when hive explain user is trying to identify the operator id.");
               }
             }
@@ -207,12 +206,12 @@ public final class Op {
               } else if ((v.rootOps.size() == 0 && v.vertexType == VertexType.UNION)) {
                 posToOpId.put(entry.getKey(), v.name);
               } else {
-                Op singleRSOp = v.getSingleRSOp();
-                if (singleRSOp != null) {
-                  posToOpId.put(entry.getKey(), singleRSOp.operatorId);
+                Op joinRSOp = v.getJoinRSOp(vertex);
+                if (joinRSOp != null) {
+                  posToOpId.put(entry.getKey(), joinRSOp.operatorId);
                 } else {
                   throw new Exception(
-                      "There are none or more than one root operators in a single vertex " + v.name
+                      "Can not find join reduceSinkOp for " + v.name + " to join " + vertex.name
                           + " when hive explain user is trying to identify the operator id.");
                 }
               }
@@ -336,8 +335,9 @@ public final class Op {
     }
     // print inline vertex
     if (parser.inlineMap.containsKey(this)) {
-      for (int index = 0; index < parser.inlineMap.get(this).size(); index++) {
-        Connection connection = parser.inlineMap.get(this).get(index);
+      List<Connection> connections = parser.inlineMap.get(this);
+      Collections.sort(connections);
+      for (Connection connection : connections) {
         connection.from.print(printer, indentFlag, connection.type, this.vertex);
       }
     }
@@ -347,9 +347,9 @@ public final class Op {
     }
     // print next vertex
     else {
-      for (int index = 0; index < noninlined.size(); index++) {
-        Vertex v = noninlined.get(index).from;
-        v.print(printer, indentFlag, noninlined.get(index).type, this.vertex);
+      Collections.sort(noninlined);
+      for (Connection connection : noninlined) {
+        connection.from.print(printer, indentFlag, connection.type, this.vertex);
       }
     }
   }

@@ -18,7 +18,7 @@
 
 package org.apache.hadoop.hive.common.jsonexplain.tez;
 
-public final class Connection {
+public final class Connection implements Comparable<Connection>{
   public final String type;
   public final Vertex from;
 
@@ -26,5 +26,10 @@ public final class Connection {
     super();
     this.type = type;
     this.from = from;
+  }
+
+  @Override
+  public int compareTo(Connection o) {
+    return from.compareTo(o.from);
   }
 }

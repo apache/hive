@@ -20,15 +20,12 @@ package org.apache.hadoop.hive.common.jsonexplain.tez;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.TreeMap;
 
 import org.apache.hadoop.hive.common.jsonexplain.tez.Op.OpType;
-import org.apache.hadoop.util.hash.Hash;
 import org.codehaus.jackson.JsonParseException;
 import org.codehaus.jackson.map.JsonMappingException;
 import org.json.JSONArray;
@@ -53,8 +50,8 @@ public final class Vertex implements Comparable<Vertex>{
   // we create a dummy vertex for a mergejoin branch for a self join if this
   // vertex is a mergejoin
   public final List<Vertex> mergeJoinDummyVertexs = new ArrayList<>();
-  // whether this vertex has multiple reduce operators
-  public boolean hasMultiReduceOp = false;
+  // this vertex has multiple reduce operators
+  public int numReduceOp = 0;
   // execution mode
   public String executionMode = "";
   // tagToInput for reduce work
@@ -217,7 +214,7 @@ public final class Vertex implements Comparable<Vertex>{
   public void print(Printer printer, int indentFlag, String type, Vertex callingVertex)
       throws JSONException, Exception {
     // print vertexname
-    if (parser.printSet.contains(this) && !hasMultiReduceOp) {
+    if (parser.printSet.contains(this) && numReduceOp <= 1) {
       if (type != null) {
         printer.println(TezJsonParser.prefixString(indentFlag, "<-")
             + " Please refer to the previous " + this.name + " [" + type + "]");
@@ -235,7 +232,7 @@ public final class Vertex implements Comparable<Vertex>{
       printer.println(TezJsonParser.prefixString(indentFlag) + this.name + this.executionMode);
     }
     // print operators
-    if (hasMultiReduceOp && !(callingVertex.vertexType == VertexType.UNION)) {
+    if (numReduceOp > 1 && !(callingVertex.vertexType == VertexType.UNION)) {
       // find the right op
       Op choose = null;
       for (Op op : this.rootOps) {
@@ -273,16 +270,15 @@ public final class Vertex implements Comparable<Vertex>{
    */
   public void checkMultiReduceOperator() {
     // check if it is a reduce vertex and its children is more than 1;
-    if (!this.name.contains("Reduce") || this.rootOps.size() < 2) {
+    if (this.rootOps.size() < 2) {
       return;
     }
     // check if all the child ops are reduce output operators
     for (Op op : this.rootOps) {
-      if (op.type != OpType.RS) {
-        return;
+      if (op.type == OpType.RS) {
+        numReduceOp++;
       }
     }
-    this.hasMultiReduceOp = true;
   }
 
   public void setType(String type) {
@@ -304,28 +300,35 @@ public final class Vertex implements Comparable<Vertex>{
     }
   }
 
-  //The following code should be gone after HIVE-11075 using topological order
+  // The following code should be gone after HIVE-11075 using topological order
   @Override
   public int compareTo(Vertex o) {
-    return this.name.compareTo(o.name);
+    // we print the vertex that has more rs before the vertex that has fewer rs.
+    if (numReduceOp != o.numReduceOp) {
+      return -(numReduceOp - o.numReduceOp);
+    } else {
+      return this.name.compareTo(o.name);
+    }
   }
 
-  public Op getSingleRSOp() {
+  public Op getJoinRSOp(Vertex joinVertex) {
     if (rootOps.size() == 0) {
       return null;
+    } else if (rootOps.size() == 1) {
+      if (rootOps.get(0).type == OpType.RS) {
+        return rootOps.get(0);
+      } else {
+        return null;
+      }
     } else {
-      Op ret = null;
       for (Op op : rootOps) {
         if (op.type == OpType.RS) {
-          if (ret == null) {
-            ret = op;
-          } else {
-            // find more than one RS Op
-            return null;
+          if (op.outputVertexName.equals(joinVertex.name)) {
+            return op;
           }
         }
       }
-      return ret;
+      return null;
     }
   }
 }
