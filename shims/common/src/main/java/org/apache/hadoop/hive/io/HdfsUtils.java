@@ -40,6 +40,7 @@ import org.apache.hadoop.fs.permission.FsAction;
 import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.hdfs.DistributedFileSystem;
 
+import org.apache.hadoop.hive.common.StorageUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -49,6 +50,7 @@ import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
 
 public class HdfsUtils {
+
   private static final Logger LOG = LoggerFactory.getLogger("shims.HdfsUtils");
 
   // TODO: this relies on HDFS not changing the format; we assume if we could get inode ID, this
@@ -74,7 +76,9 @@ public class HdfsUtils {
    */
   public static void setFullFileStatus(Configuration conf, HdfsUtils.HadoopFileStatus sourceStatus,
       FileSystem fs, Path target, boolean recursion) {
-    setFullFileStatus(conf, sourceStatus, null, fs, target, recursion);
+    if (StorageUtils.shouldSetPerms(conf, fs)) {
+      setFullFileStatus(conf, sourceStatus, null, fs, target, recursion);
+    }
   }
 
   /**
@@ -91,7 +95,9 @@ public class HdfsUtils {
    */
   public static void setFullFileStatus(Configuration conf, HdfsUtils.HadoopFileStatus sourceStatus,
       String targetGroup, FileSystem fs, Path target, boolean recursion) {
-    setFullFileStatus(conf, sourceStatus, targetGroup, fs, target, recursion, recursion ? new FsShell() : null);
+    if (StorageUtils.shouldSetPerms(conf, fs)) {
+      setFullFileStatus(conf, sourceStatus, targetGroup, fs, target, recursion, recursion ? new FsShell() : null);
+    }
   }
 
   @VisibleForTesting
@@ -180,6 +186,7 @@ public class HdfsUtils {
     return new AclEntry.Builder().setScope(scope).setType(type)
         .setPermission(permission).build();
   }
+
   /**
    * Removes basic permission acls (unamed acls) from the list of acl entries
    * @param entries acl entries to remove from.
@@ -201,39 +208,41 @@ public class HdfsUtils {
     int retval = shell.run(command);
     LOG.debug("Return value is :" + retval);
   }
-public static class HadoopFileStatus {
 
-  private final FileStatus fileStatus;
-  private final AclStatus aclStatus;
+  public static class HadoopFileStatus {
 
-  public HadoopFileStatus(Configuration conf, FileSystem fs, Path file) throws IOException {
+    private final FileStatus fileStatus;
+    private final AclStatus aclStatus;
 
-    FileStatus fileStatus = fs.getFileStatus(file);
-    AclStatus aclStatus = null;
-    if (Objects.equal(conf.get("dfs.namenode.acls.enabled"), "true")) {
-      //Attempt extended Acl operations only if its enabled, but don't fail the operation regardless.
-      try {
-        aclStatus = fs.getAclStatus(file);
-      } catch (Exception e) {
-        LOG.info("Skipping ACL inheritance: File system for path " + file + " " +
-                "does not support ACLs but dfs.namenode.acls.enabled is set to true. ");
-        LOG.debug("The details are: " + e, e);
+    public HadoopFileStatus(Configuration conf, FileSystem fs, Path file) throws IOException {
+
+      FileStatus fileStatus = fs.getFileStatus(file);
+      AclStatus aclStatus = null;
+      if (Objects.equal(conf.get("dfs.namenode.acls.enabled"), "true")) {
+        //Attempt extended Acl operations only if its enabled, but don't fail the operation regardless.
+        try {
+          aclStatus = fs.getAclStatus(file);
+        } catch (Exception e) {
+          LOG.info("Skipping ACL inheritance: File system for path " + file + " " +
+                  "does not support ACLs but dfs.namenode.acls.enabled is set to true. ");
+          LOG.debug("The details are: " + e, e);
+        }
       }
-    }this.fileStatus = fileStatus;
-    this.aclStatus = aclStatus;
-  }
+      this.fileStatus = fileStatus;
+      this.aclStatus = aclStatus;
+    }
 
-  public FileStatus getFileStatus() {
-    return fileStatus;
-  }
+    public FileStatus getFileStatus() {
+      return fileStatus;
+    }
 
-  public List<AclEntry> getAclEntries() {
-    return aclStatus == null ? null : Collections.unmodifiableList(aclStatus.getEntries());
-  }
+    public List<AclEntry> getAclEntries() {
+      return aclStatus == null ? null : Collections.unmodifiableList(aclStatus.getEntries());
+    }
 
-  @VisibleForTesting
-  AclStatus getAclStatus() {
-    return this.aclStatus;
+    @VisibleForTesting
+    AclStatus getAclStatus() {
+      return this.aclStatus;
+    }
   }
-}
 }
