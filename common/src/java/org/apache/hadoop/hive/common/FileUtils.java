@@ -390,6 +390,7 @@ public final class FileUtils {
     if (user == null || currentUser.equals(user)) {
       // No need to impersonate user, do the checks as the currently configured user.
       ShimLoader.getHadoopShims().checkFileAccess(fs, stat, action);
+      addChildren(fs, stat.getPath(), children);
       return;
     }
 
@@ -402,20 +403,26 @@ public final class FileUtils {
         public Object run() throws Exception {
           FileSystem fsAsUser = FileSystem.get(fs.getUri(), fs.getConf());
           ShimLoader.getHadoopShims().checkFileAccess(fsAsUser, stat, action);
-          if(children != null) {
-            try {
-              FileStatus[] listStatus = fsAsUser.listStatus(stat.getPath());
-              children.addAll(Arrays.asList(listStatus));
-            } catch (Exception e) {
-              LOG.warn("Unable to list files under " + stat.getPath() + " : " + e);
-              throw e;
-            }
-          }
+          addChildren(fsAsUser, stat.getPath(), children);
           return null;
         }
       });
     } finally {
       FileSystem.closeAllForUGI(proxyUser);
+    }
+  }
+
+  private static void addChildren(FileSystem fsAsUser, Path path, List<FileStatus> children)
+      throws IOException {
+    if (children != null) {
+      FileStatus[] listStatus;
+      try {
+        listStatus = fsAsUser.listStatus(path);
+      } catch (IOException e) {
+        LOG.warn("Unable to list files under " + path + " : " + e);
+        throw e;
+      }
+      children.addAll(Arrays.asList(listStatus));
     }
   }
 
