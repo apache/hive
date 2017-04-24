@@ -459,6 +459,16 @@ public class DynamicPartitionPruningOptimization implements NodeProcessor {
       return false;
     }
 
+    // Check if there already exists a semijoin branch
+    GroupByOperator gb = parseContext.getColExprToGBMap().get(key);
+    if (gb != null) {
+      // Already an existing semijoin branch, reuse it
+      createFinalRsForSemiJoinOp(parseContext, ts, gb, key, keyBaseAlias,
+              ctx.parent.getChildren().get(0), sjHint != null);
+      // done!
+      return true;
+    }
+
     List<ExprNodeDesc> keyExprs = new ArrayList<ExprNodeDesc>();
     keyExprs.add(key);
 
@@ -726,6 +736,7 @@ public class DynamicPartitionPruningOptimization implements NodeProcessor {
     runtimeValuesInfo.setColExprs(rsValueCols);
     runtimeValuesInfo.setTsColExpr(colExpr);
     parseContext.getRsToRuntimeValuesInfoMap().put(rsOpFinal, runtimeValuesInfo);
+    parseContext.getColExprToGBMap().put(key, gb);
   }
 
   private Map<Node, Object> collectDynamicPruningConditions(ExprNodeDesc pred, NodeProcessorCtx ctx)

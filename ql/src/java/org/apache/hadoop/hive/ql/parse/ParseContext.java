@@ -120,6 +120,8 @@ public class ParseContext {
           new HashMap<ReduceSinkOperator, RuntimeValuesInfo>();
   private Map<ReduceSinkOperator, SemiJoinBranchInfo> rsToSemiJoinBranchInfo =
           new HashMap<>();
+  private Map<ExprNodeDesc, GroupByOperator> colExprToGBMap =
+          new HashMap<>();
 
   public ParseContext() {
   }
@@ -661,5 +663,13 @@ public class ParseContext {
 
   public Map<ReduceSinkOperator, SemiJoinBranchInfo> getRsToSemiJoinBranchInfo() {
     return rsToSemiJoinBranchInfo;
+  }
+
+  public void setColExprToGBMap(Map<ExprNodeDesc, GroupByOperator> colExprToGBMap) {
+    this.colExprToGBMap = colExprToGBMap;
+  }
+
+  public Map<ExprNodeDesc, GroupByOperator> getColExprToGBMap() {
+    return colExprToGBMap;
   }
 }

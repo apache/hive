@@ -829,8 +829,6 @@ public class TezCompiler extends TaskCompiler {
       GroupByOperator gbOp = (GroupByOperator) (stack.get(stack.size() - 2));
       GroupByDesc gbDesc = gbOp.getConf();
       ArrayList<AggregationDesc> aggregationDescs = gbDesc.getAggregators();
-      boolean removeSemiJoin = false;
-      TableScanOperator ts = sjInfo.getTsOp();
       for (AggregationDesc agg : aggregationDescs) {
         if (agg.getGenericUDAFName() != "bloom_filter") {
           continue;
@@ -844,36 +842,40 @@ public class TezCompiler extends TaskCompiler {
         long expectedEntries = udafBloomFilterEvaluator.getExpectedEntries();
         if (expectedEntries == -1 || expectedEntries >
                 pCtx.getConf().getLongVar(ConfVars.TEZ_MAX_BLOOM_FILTER_ENTRIES)) {
-          removeSemiJoin = true;
-          if (LOG.isDebugEnabled()) {
-            LOG.debug("expectedEntries=" + expectedEntries + ". "
-                    + "Either stats unavailable or expectedEntries exceeded max allowable bloomfilter size. "
-                    + "Removing semijoin "
-                    + OperatorUtils.getOpNamePretty(rs) + " - " + OperatorUtils.getOpNamePretty(ts));
+          // Remove the semijoin optimization branch along with ALL the mappings
+          // The parent GB2 has all the branches. Collect them and remove them.
+          for (Operator<?> op : gbOp.getChildOperators()) {
+            ReduceSinkOperator rsFinal = (ReduceSinkOperator) op;
+            TableScanOperator ts = pCtx.getRsToSemiJoinBranchInfo().
+                    get(rsFinal).getTsOp();
+            if (LOG.isDebugEnabled()) {
+              LOG.debug("expectedEntries=" + expectedEntries + ". "
+                      + "Either stats unavailable or expectedEntries exceeded max allowable bloomfilter size. "
+                      + "Removing semijoin "
+                      + OperatorUtils.getOpNamePretty(rs) + " - " + OperatorUtils.getOpNamePretty(ts));
+            }
+            GenTezUtils.removeBranch(rsFinal);
+            GenTezUtils.removeSemiJoinOperator(pCtx, rsFinal, ts);
           }
-          break;
+          return null;
         }
       }
 
       // At this point, hinted semijoin case has been handled already
       // Check if big table is big enough that runtime filtering is
       // worth it.
+      TableScanOperator ts = sjInfo.getTsOp();
       if (ts.getStatistics() != null) {
         long numRows = ts.getStatistics().getNumRows();
         if (numRows < pCtx.getConf().getLongVar(ConfVars.TEZ_BIGTABLE_MIN_SIZE_SEMIJOIN_REDUCTION)) {
-          removeSemiJoin = true;
           if (LOG.isDebugEnabled()) {
             LOG.debug("Insufficient rows (" + numRows + ") to justify semijoin optimization. Removing semijoin "
                     + OperatorUtils.getOpNamePretty(rs) + " - " + OperatorUtils.getOpNamePretty(ts));
           }
+          GenTezUtils.removeBranch(rs);
+          GenTezUtils.removeSemiJoinOperator(pCtx, rs, ts);
         }
       }
-      if (removeSemiJoin) {
-        // The stats are not annotated, remove the semijoin operator
-        GenTezUtils.removeBranch(rs);
-        GenTezUtils.removeSemiJoinOperator(pCtx, rs, ts);
-      }
-
       return null;
     }
   }
