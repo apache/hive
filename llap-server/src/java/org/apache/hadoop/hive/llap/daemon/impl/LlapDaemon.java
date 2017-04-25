@@ -15,6 +15,7 @@
 package org.apache.hadoop.hive.llap.daemon.impl;
 
 import org.apache.hadoop.hive.llap.LlapOutputFormatService;
+
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryPoolMXBean;
@@ -40,6 +41,7 @@ import org.apache.hadoop.hive.common.UgiFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.llap.DaemonId;
+import org.apache.hadoop.hive.llap.LlapDaemonInfo;
 import org.apache.hadoop.hive.llap.LlapUtil;
 import org.apache.hadoop.hive.llap.configuration.LlapDaemonConfiguration;
 import org.apache.hadoop.hive.llap.daemon.ContainerRunner;
@@ -506,8 +508,6 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
             nmHost, nmPort);
       }
 
-      int numExecutors = HiveConf.getIntVar(daemonConf, ConfVars.LLAP_DAEMON_NUM_EXECUTORS);
-
       String workDirsString = System.getenv(ApplicationConstants.Environment.LOCAL_DIRS.name());
 
       String localDirList = LlapUtil.getDaemonLocalDirString(daemonConf, workDirsString);
@@ -518,16 +518,19 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
       int shufflePort = daemonConf
           .getInt(ShuffleHandler.SHUFFLE_PORT_CONFIG_KEY, ShuffleHandler.DEFAULT_SHUFFLE_PORT);
       int webPort = HiveConf.getIntVar(daemonConf, ConfVars.LLAP_DAEMON_WEB_PORT);
-      long executorMemoryBytes = HiveConf.getIntVar(
-          daemonConf, ConfVars.LLAP_DAEMON_MEMORY_PER_INSTANCE_MB) * 1024l * 1024l;
-      long ioMemoryBytes = HiveConf.getSizeVar(daemonConf, ConfVars.LLAP_IO_MEMORY_MAX_SIZE);
-      boolean isDirectCache = HiveConf.getBoolVar(daemonConf, ConfVars.LLAP_ALLOCATOR_DIRECT);
-      boolean isLlapIo = HiveConf.getBoolVar(daemonConf, HiveConf.ConfVars.LLAP_IO_ENABLED, true);
+
+      LlapDaemonInfo.initialize(appName, daemonConf);
+
+      int numExecutors = LlapDaemonInfo.INSTANCE.getNumExecutors();
+      long executorMemoryBytes = LlapDaemonInfo.INSTANCE.getExecutorMemory();
+      long ioMemoryBytes = LlapDaemonInfo.INSTANCE.getCacheSize();
+      boolean isDirectCache = LlapDaemonInfo.INSTANCE.isDirectCache();
+      boolean isLlapIo = LlapDaemonInfo.INSTANCE.isLlapIo();
 
       LlapDaemon.initializeLogging(daemonConf);
-      llapDaemon = new LlapDaemon(daemonConf, numExecutors, executorMemoryBytes, isLlapIo,
-          isDirectCache, ioMemoryBytes, localDirs, rpcPort, mngPort, shufflePort, webPort,
-          appName);
+      llapDaemon =
+          new LlapDaemon(daemonConf, numExecutors, executorMemoryBytes, isLlapIo, isDirectCache,
+              ioMemoryBytes, localDirs, rpcPort, mngPort, shufflePort, webPort, appName);
 
       LOG.info("Adding shutdown hook for LlapDaemon");
       ShutdownHookManager.addShutdownHook(new CompositeServiceShutdownHook(llapDaemon), 1);
