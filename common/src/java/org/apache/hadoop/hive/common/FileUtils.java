@@ -25,6 +25,8 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.security.AccessControlException;
 import java.security.PrivilegedExceptionAction;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Collection;
 import java.util.HashSet;
@@ -352,6 +354,12 @@ public final class FileUtils {
     return getPathOrParentThatExists(fs, parentPath);
   }
 
+  public static void checkFileAccessWithImpersonation(final FileSystem fs, final FileStatus stat,
+      final FsAction action, final String user)
+      throws IOException, AccessControlException, InterruptedException, Exception {
+    checkFileAccessWithImpersonation(fs, stat, action, user, null);
+  }
+
   /**
    * Perform a check to determine if the user is able to access the file passed in.
    * If the user name passed in is different from the current user, this method will
@@ -366,13 +374,15 @@ public final class FileUtils {
    *             check will be performed within a doAs() block to use the access privileges
    *             of this user. In this case the user must be configured to impersonate other
    *             users, otherwise this check will fail with error.
+   * @param children List of children to be collected. If this is null, no children are collected.
+   *        To be set only if this is a directory
    * @throws IOException
    * @throws AccessControlException
    * @throws InterruptedException
    * @throws Exception
    */
   public static void checkFileAccessWithImpersonation(final FileSystem fs,
-      final FileStatus stat, final FsAction action, final String user)
+      final FileStatus stat, final FsAction action, final String user, final List<FileStatus> children)
           throws IOException, AccessControlException, InterruptedException, Exception {
     UserGroupInformation ugi = Utils.getUGI();
     String currentUser = ugi.getShortUserName();
@@ -380,6 +390,7 @@ public final class FileUtils {
     if (user == null || currentUser.equals(user)) {
       // No need to impersonate user, do the checks as the currently configured user.
       ShimLoader.getHadoopShims().checkFileAccess(fs, stat, action);
+      addChildren(fs, stat.getPath(), children);
       return;
     }
 
@@ -392,11 +403,26 @@ public final class FileUtils {
         public Object run() throws Exception {
           FileSystem fsAsUser = FileSystem.get(fs.getUri(), fs.getConf());
           ShimLoader.getHadoopShims().checkFileAccess(fsAsUser, stat, action);
+          addChildren(fsAsUser, stat.getPath(), children);
           return null;
         }
       });
     } finally {
       FileSystem.closeAllForUGI(proxyUser);
+    }
+  }
+
+  private static void addChildren(FileSystem fsAsUser, Path path, List<FileStatus> children)
+      throws IOException {
+    if (children != null) {
+      FileStatus[] listStatus;
+      try {
+        listStatus = fsAsUser.listStatus(path);
+      } catch (IOException e) {
+        LOG.warn("Unable to list files under " + path + " : " + e);
+        throw e;
+      }
+      children.addAll(Arrays.asList(listStatus));
     }
   }
 
@@ -426,20 +452,26 @@ public final class FileUtils {
       dirActionNeeded.and(FsAction.EXECUTE);
     }
 
+    List<FileStatus> subDirsToCheck = null;
+    if (isDir && recurse) {
+      subDirsToCheck = new ArrayList<FileStatus>();
+    }
+
     try {
-      checkFileAccessWithImpersonation(fs, fileStatus, action, userName);
+      checkFileAccessWithImpersonation(fs, fileStatus, action, userName, subDirsToCheck);
     } catch (AccessControlException err) {
       // Action not permitted for user
+      LOG.warn("Action " + action + " denied on " + fileStatus.getPath() + " for user " + userName);
       return false;
     }
 
-    if ((!isDir) || (!recurse)) {
+    if (subDirsToCheck == null || subDirsToCheck.isEmpty()) {
       // no sub dirs to be checked
       return true;
     }
+
     // check all children
-    FileStatus[] childStatuses = fs.listStatus(fileStatus.getPath());
-    for (FileStatus childStatus : childStatuses) {
+    for (FileStatus childStatus : subDirsToCheck) {
       // check children recursively - recurse is true if we're here.
       if (!isActionPermittedForFileHierarchy(fs, childStatus, userName, action, true)) {
         return false;
@@ -481,11 +513,30 @@ public final class FileUtils {
     return false;
   }
   public static boolean isOwnerOfFileHierarchy(FileSystem fs, FileStatus fileStatus, String userName)
-      throws IOException {
+      throws IOException, InterruptedException {
     return isOwnerOfFileHierarchy(fs, fileStatus, userName, true);
   }
 
-  public static boolean isOwnerOfFileHierarchy(FileSystem fs, FileStatus fileStatus,
+  public static boolean isOwnerOfFileHierarchy(final FileSystem fs,
+      final FileStatus fileStatus, final String userName, final boolean recurse)
+      throws IOException, InterruptedException {
+    UserGroupInformation proxyUser = UserGroupInformation.createProxyUser(userName,
+        UserGroupInformation.getLoginUser());
+    try {
+      boolean isOwner = proxyUser.doAs(new PrivilegedExceptionAction<Boolean>() {
+        @Override
+        public Boolean run() throws Exception {
+          FileSystem fsAsUser = FileSystem.get(fs.getUri(), fs.getConf());
+          return checkIsOwnerOfFileHierarchy(fsAsUser, fileStatus, userName, recurse);
+        }
+      });
+      return isOwner;
+    } finally {
+      FileSystem.closeAllForUGI(proxyUser);
+    }
+  }
+
+  public static boolean checkIsOwnerOfFileHierarchy(FileSystem fs, FileStatus fileStatus,
       String userName, boolean recurse)
       throws IOException {
     if (!fileStatus.getOwner().equals(userName)) {
@@ -500,7 +551,7 @@ public final class FileUtils {
     FileStatus[] childStatuses = fs.listStatus(fileStatus.getPath());
     for (FileStatus childStatus : childStatuses) {
       // check children recursively - recurse is true if we're here.
-      if (!isOwnerOfFileHierarchy(fs, childStatus, userName, true)) {
+      if (!checkIsOwnerOfFileHierarchy(fs, childStatus, userName, true)) {
         return false;
       }
     }
