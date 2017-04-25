@@ -29,3 +29,5 @@ hcatalog/webhcat/svr/target
 conf/hive-default.xml.template
 itests/hive-blobstore/src/test/resources/blobstore-conf.xml
 .DS_Store
+*.rej
+*.orig
