@@ -241,6 +241,6 @@ public class DruidOutputFormat<K, V> implements HiveOutputFormat<K, DruidWritabl
 
   @Override
   public void checkOutputSpecs(FileSystem ignored, JobConf job) throws IOException {
-    throw new UnsupportedOperationException("not implemented yet");
+    // NOOP
   }
 }
