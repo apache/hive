@@ -34,6 +34,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.io.IOContextMap;
+import org.apache.hadoop.hive.ql.optimizer.ConvertJoinMapJoin;
 import org.apache.hadoop.hive.ql.parse.TypeCheckProcFactory;
 import org.apache.hadoop.hive.ql.plan.CollectDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
@@ -434,5 +435,67 @@ public class TestOperators extends TestCase {
     driver.getResults(result);
     assertEquals(20, result.size());
     driver.close();
+  }
+
+  @Test
+  public void testNoConditionalTaskSizeForLlap() {
+    ConvertJoinMapJoin convertJoinMapJoin = new ConvertJoinMapJoin();
+    long defaultNoConditionalTaskSize = 1024L * 1024L * 1024L;
+    HiveConf hiveConf = new HiveConf();
+
+    // execution mode not set, default is returned
+    long gotSize = convertJoinMapJoin.getNoConditionalTaskSizeForLlap(defaultNoConditionalTaskSize, hiveConf);
+    assertEquals(defaultNoConditionalTaskSize, gotSize);
+    hiveConf.set(HiveConf.ConfVars.HIVE_EXECUTION_MODE.varname, "llap");
+
+    // default executors is 4, max slots is 3. so 3 * 20% of noconditional task size will be oversubscribed
+    hiveConf.set(HiveConf.ConfVars.LLAP_MAPJOIN_MEMORY_OVERSUBSCRIBE_FACTOR.varname, "0.2");
+    double fraction = hiveConf.getFloatVar(HiveConf.ConfVars.LLAP_MAPJOIN_MEMORY_OVERSUBSCRIBE_FACTOR);
+    int maxSlots = 3;
+    long expectedSize = (long) (defaultNoConditionalTaskSize + (defaultNoConditionalTaskSize * fraction * maxSlots));
+    assertEquals(expectedSize,
+      convertJoinMapJoin.getNoConditionalTaskSizeForLlap(defaultNoConditionalTaskSize, hiveConf));
+
+    // num executors is less than max executors per query (which is not expected case), default executors will be
+    // chosen. 4 * 20% of noconditional task size will be oversubscribed
+    int chosenSlots = hiveConf.getIntVar(HiveConf.ConfVars.LLAP_DAEMON_NUM_EXECUTORS);
+    hiveConf.set(HiveConf.ConfVars.LLAP_MEMORY_OVERSUBSCRIPTION_MAX_EXECUTORS_PER_QUERY.varname, "5");
+    expectedSize = (long) (defaultNoConditionalTaskSize + (defaultNoConditionalTaskSize * fraction * chosenSlots));
+    assertEquals(expectedSize,
+      convertJoinMapJoin.getNoConditionalTaskSizeForLlap(defaultNoConditionalTaskSize, hiveConf));
+
+    // 2 concurrent sessions, 4 executors. 2 * 20% of noconditional task size will be oversubscribed
+    hiveConf.unset(HiveConf.ConfVars.LLAP_MEMORY_OVERSUBSCRIPTION_MAX_EXECUTORS_PER_QUERY.varname);
+    hiveConf.set(HiveConf.ConfVars.HIVE_SERVER2_TEZ_SESSIONS_PER_DEFAULT_QUEUE.varname, "2");
+    expectedSize = (long) (defaultNoConditionalTaskSize + (defaultNoConditionalTaskSize * fraction * 2));
+    assertEquals(expectedSize,
+      convertJoinMapJoin.getNoConditionalTaskSizeForLlap(defaultNoConditionalTaskSize, hiveConf));
+
+    // 4 concurrent sessions, 4 executors. 1 * 20% of noconditional task size will be oversubscribed
+    hiveConf.unset(HiveConf.ConfVars.LLAP_MEMORY_OVERSUBSCRIPTION_MAX_EXECUTORS_PER_QUERY.varname);
+    hiveConf.set(HiveConf.ConfVars.HIVE_SERVER2_TEZ_SESSIONS_PER_DEFAULT_QUEUE.varname, "4");
+    expectedSize = (long) (defaultNoConditionalTaskSize + (defaultNoConditionalTaskSize * fraction * 1));
+    assertEquals(expectedSize,
+      convertJoinMapJoin.getNoConditionalTaskSizeForLlap(defaultNoConditionalTaskSize, hiveConf));
+
+    // 8 concurrent sessions, 4 executors. default noconditioanl task will be used (no oversubscription)
+    hiveConf.unset(HiveConf.ConfVars.LLAP_MEMORY_OVERSUBSCRIPTION_MAX_EXECUTORS_PER_QUERY.varname);
+    hiveConf.set(HiveConf.ConfVars.HIVE_SERVER2_TEZ_SESSIONS_PER_DEFAULT_QUEUE.varname, "8");
+    assertEquals(defaultNoConditionalTaskSize,
+      convertJoinMapJoin.getNoConditionalTaskSizeForLlap(defaultNoConditionalTaskSize, hiveConf));
+
+    // 2 * 120% of noconditional task size will be oversubscribed
+    hiveConf.unset(HiveConf.ConfVars.LLAP_MEMORY_OVERSUBSCRIPTION_MAX_EXECUTORS_PER_QUERY.varname);
+    hiveConf.set(HiveConf.ConfVars.HIVE_SERVER2_TEZ_SESSIONS_PER_DEFAULT_QUEUE.varname, "2");
+    hiveConf.set(HiveConf.ConfVars.LLAP_MAPJOIN_MEMORY_OVERSUBSCRIBE_FACTOR.varname, "1.2");
+    fraction = hiveConf.getFloatVar(HiveConf.ConfVars.LLAP_MAPJOIN_MEMORY_OVERSUBSCRIBE_FACTOR);
+    expectedSize = (long) (defaultNoConditionalTaskSize + (defaultNoConditionalTaskSize * fraction * 2));
+    assertEquals(expectedSize,
+      convertJoinMapJoin.getNoConditionalTaskSizeForLlap(defaultNoConditionalTaskSize, hiveConf));
+
+    // 0 value for number of sessions
+    hiveConf.set(HiveConf.ConfVars.HIVE_SERVER2_TEZ_SESSIONS_PER_DEFAULT_QUEUE.varname, "0");
+    assertEquals(defaultNoConditionalTaskSize,
+      convertJoinMapJoin.getNoConditionalTaskSizeForLlap(defaultNoConditionalTaskSize, hiveConf));
   }
 }

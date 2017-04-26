@@ -11,6 +11,7 @@ set hive.stats.autogather=true;
 set hive.tez.bigtable.minsize.semijoin.reduction=1;
 set hive.tez.min.bloom.filter.entries=1;
 set hive.stats.fetch.column.stats=true;
+set hive.llap.memory.oversubscription.max.executors.per.query=0;
 
 -- Create Tables
 create table alltypesorc_int ( cint int, cstring string ) stored as ORC;

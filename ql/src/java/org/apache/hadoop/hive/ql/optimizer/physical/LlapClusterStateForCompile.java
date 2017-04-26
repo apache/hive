@@ -41,6 +41,7 @@ public class LlapClusterStateForCompile {
   private static final long CLUSTER_UPDATE_INTERVAL_NS = 120 * 1000000000L; // 2 minutes.
   private Long lastClusterUpdateNs;
   private Integer noConfigNodeCount, executorCount;
+  private int numExecutorsPerNode = -1;
   private LlapRegistryService svc;
   private final Configuration conf;
 
@@ -82,6 +83,10 @@ public class LlapClusterStateForCompile {
     return noConfigNodeCount;
   }
 
+  public int getNumExecutorsPerNode() {
+    return numExecutorsPerNode;
+  }
+
   public synchronized void initClusterInfo() {
     if (lastClusterUpdateNs != null) {
       long elapsed = System.nanoTime() - lastClusterUpdateNs;
@@ -111,7 +116,11 @@ public class LlapClusterStateForCompile {
         continue;
       }
       try {
-        executorsLocal += Integer.parseInt(props.get(ConfVars.LLAP_DAEMON_NUM_EXECUTORS.varname));
+        int numExecutors = Integer.parseInt(props.get(ConfVars.LLAP_DAEMON_NUM_EXECUTORS.varname));
+        executorsLocal += numExecutors;
+        if (numExecutorsPerNode == -1) {
+          numExecutorsPerNode = numExecutors;
+        }
       } catch (NumberFormatException e) {
         ++noConfigNodesLocal;
       }

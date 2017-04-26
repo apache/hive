@@ -70,9 +70,15 @@ from tab a join tab_part b on a.key = b.key;
 set hive.auto.convert.join.noconditionaltask.size=500;
 set hive.mapjoin.hybridgrace.minwbsize=125;
 set hive.mapjoin.hybridgrace.minnumpartitions=4;
+set hive.llap.memory.oversubscription.max.executors.per.query=0;
+explain select count(*) from tab a join tab_part b on a.key = b.key join src1 c on a.value = c.value;
+set hive.llap.memory.oversubscription.max.executors.per.query=3;
 explain select count(*) from tab a join tab_part b on a.key = b.key join src1 c on a.value = c.value;
 select count(*) from tab a join tab_part b on a.key = b.key join src1 c on a.value = c.value;
 
+set hive.llap.memory.oversubscription.max.executors.per.query=0;
+explain select count(*) from tab a join tab_part b on a.value = b.value;
+set hive.llap.memory.oversubscription.max.executors.per.query=3;
 explain select count(*) from tab a join tab_part b on a.value = b.value;
 select count(*) from tab a join tab_part b on a.value = b.value;
 
@@ -84,10 +90,15 @@ select s2.key as key, s2.value as value from tab s2
 
 set hive.auto.convert.join.noconditionaltask.size=10000;
 
+set hive.llap.memory.oversubscription.max.executors.per.query=0;
+explain select count(*) from tab a join tab_part b on a.value = b.value;
+set hive.llap.memory.oversubscription.max.executors.per.query=2;
 explain select count(*) from tab a join tab_part b on a.value = b.value;
 select count(*) from tab a join tab_part b on a.value = b.value;
 
-
+set hive.llap.memory.oversubscription.max.executors.per.query=0;
+explain select count(*) from tab a join tab_part b on a.key = b.key join src1 c on a.value = c.value;
+set hive.llap.memory.oversubscription.max.executors.per.query=2;
 explain select count(*) from tab a join tab_part b on a.key = b.key join src1 c on a.value = c.value;
 select count(*) from tab a join tab_part b on a.key = b.key join src1 c on a.value = c.value;
 set hive.stats.fetch.column.stats=true;

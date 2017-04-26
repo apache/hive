@@ -3143,6 +3143,15 @@ public class HiveConf extends Configuration {
     LLAP_DAEMON_NUM_EXECUTORS("hive.llap.daemon.num.executors", 4,
       "Number of executors to use in LLAP daemon; essentially, the number of tasks that can be\n" +
       "executed in parallel.", "llap.daemon.num.executors"),
+    LLAP_MAPJOIN_MEMORY_OVERSUBSCRIBE_FACTOR("hive.llap.mapjoin.memory.oversubscribe.factor", 0.2f,
+      "Fraction of memory from hive.auto.convert.join.noconditionaltask.size that can be over subscribed\n" +
+        "by queries running in LLAP mode. This factor has to be from 0.0 to 1.0. Default is 20% over subscription.\n"),
+    LLAP_MEMORY_OVERSUBSCRIPTION_MAX_EXECUTORS_PER_QUERY("hive.llap.memory.oversubscription.max.executors.per.query", 3,
+      "Used along with hive.llap.mapjoin.memory.oversubscribe.factor to limit the number of executors from\n" +
+        "which memory for mapjoin can be borrowed. Default 3 (from 3 other executors\n" +
+        "hive.llap.mapjoin.memory.oversubscribe.factor amount of memory can be borrowed based on which mapjoin\n" +
+        "conversion decision will be made). This is only an upper bound. Lower bound is determined by number of\n" +
+        "executors and configured max concurrency."),
     LLAP_DAEMON_AM_REPORTER_MAX_THREADS("hive.llap.daemon.am-reporter.max.threads", 4,
         "Maximum number of threads to be used for AM reporter. If this is lower than number of\n" +
         "executors in llap daemon, it would be set to number of executors at runtime.",
