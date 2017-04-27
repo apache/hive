@@ -46,7 +46,8 @@ public class QFileBeeLineClient implements AutoCloseable {
           "!set showelapsedtime false",
           "!set trimscripts false",
           "!set maxwidth -1",
-          "!connect " + jdbcUrl + " " + username + " " + password + " " + jdbcDriver
+          "!connect " + jdbcUrl + " " + username + " " + password + " " + jdbcDriver,
+          "set hive.stats.dbclass=fs"
         });
   }
 
