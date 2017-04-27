@@ -124,7 +124,8 @@ public final class BuddyAllocator
     } else {
       cacheDir = null;
     }
-    int arenaSizeVal = (arenaCount == 0) ? MAX_ARENA_SIZE : (int)(maxSizeVal / arenaCount);
+    long arenaSizeVal = (arenaCount == 0) ? MAX_ARENA_SIZE : maxSizeVal / arenaCount;
+    // The math.min, and the fact that maxAllocation is an int, ensures we don't overflow.
     arenaSizeVal = Math.max(maxAllocation, Math.min(arenaSizeVal, MAX_ARENA_SIZE));
     if (LlapIoImpl.LOG.isInfoEnabled()) {
       LlapIoImpl.LOG.info("Buddy allocator with " + (isDirect ? "direct" : "byte") + " buffers; "
@@ -153,7 +154,7 @@ public final class BuddyAllocator
       LlapIoImpl.LOG.warn("Rounding arena size to " + arenaSizeVal + " from " + oldArenaSize
           + " to be divisible by allocation size " + maxAllocation);
     }
-    arenaSize = arenaSizeVal;
+    arenaSize = (int)arenaSizeVal;
     if ((maxSizeVal % arenaSize) > 0) {
       long oldMaxSize = maxSizeVal;
       maxSizeVal = (maxSizeVal / arenaSize) * arenaSize;
