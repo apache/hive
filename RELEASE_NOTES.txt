@@ -53,6 +53,8 @@ Release Notes - Hive - Version 2.3.0
     * [HIVE-16465] - NullPointer Exception when enable vectorization for Parquet file format
     * [HIVE-16473] - Hive-on-Tez may fail to write to an HBase table
     * [HIVE-16519] - Fix exception thrown by checkOutputSpecs
+    * [HIVE-16545] - LLAP: bug in arena size determination logic
+    * [HIVE-16547] - LLAP: may not unlock buffers in some cases
 
 
 
@@ -93,7 +95,6 @@ Release Notes - Hive - Version 2.3.0
     * [HIVE-16288] - Add blobstore tests for ORC and RCFILE file formats
     * [HIVE-16415] - Add tests covering single inserts of zero rows
     * [HIVE-16454] - Add blobstore tests for inserting empty into dynamic partition/list bucket tables & inserting cross blobstore tables
-
 
 
 
