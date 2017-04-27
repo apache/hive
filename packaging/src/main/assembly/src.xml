@@ -96,6 +96,7 @@
         <include>spark-client/**/*</include>
         <include>storage-api/**/*</include>
         <include>testutils/**/*</include>
+        <include>vector-code-gen/**/*</include>
       </includes>
       <outputDirectory>/</outputDirectory>
     </fileSet>
