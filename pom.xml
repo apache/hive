@@ -1146,6 +1146,7 @@
 	<version>0.10</version>
 	<configuration>
 	  <excludes>
+	    <exclude>binary-package-licenses/**</exclude>
 	    <exclude>data/**</exclude>
 	    <exclude>conf/**</exclude>
 	    <exclude>checkstyle/**</exclude>
