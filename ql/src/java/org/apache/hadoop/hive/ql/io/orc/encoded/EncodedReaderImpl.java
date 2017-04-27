@@ -416,8 +416,8 @@ class EncodedReaderImpl implements EncodedReader {
               if (sctx.stripeLevelStream == null) {
                 sctx.stripeLevelStream = POOLS.csdPool.take();
                 // We will be using this for each RG while also sending RGs to processing.
-                // To avoid buffers being unlocked, run refcount one ahead; we will not increase
-                // it when building the last RG, so each RG processing will decref once, and the
+                // To avoid buffers being unlocked, run refcount one ahead; so each RG 
+                 // processing will decref once, and the
                 // last one will unlock the buffers.
                 sctx.stripeLevelStream.incRef();
                 // For stripe-level streams we don't need the extra refcount on the block.
@@ -430,9 +430,7 @@ class EncodedReaderImpl implements EncodedReader {
                   iter = lastCached;
                 }
               }
-              if (!isLastRg) {
-                sctx.stripeLevelStream.incRef();
-              }
+              sctx.stripeLevelStream.incRef();
               cb = sctx.stripeLevelStream;
             } else {
               // This stream can be separated by RG using index. Let's do that.
@@ -479,6 +477,22 @@ class EncodedReaderImpl implements EncodedReader {
     }
 
     // Release the unreleased buffers. See class comment about refcounts.
+    for (int colIx = 0; colIx < colCtxs.length; ++colIx) {
+      ColumnReadContext ctx = colCtxs[colIx];
+      if (ctx == null) continue; // This column is not included.
+      for (int streamIx = 0; streamIx < ctx.streamCount; ++streamIx) {
+        StreamContext sctx = ctx.streams[streamIx];
+        if (sctx == null || sctx.stripeLevelStream == null) continue;
+        if (0 != sctx.stripeLevelStream.decRef()) continue;
+        for (MemoryBuffer buf : sctx.stripeLevelStream.getCacheBuffers()) {
+          if (LOG.isTraceEnabled()) {
+            LOG.trace("Unlocking {} at the end of processing", buf);
+          }
+          cacheWrapper.releaseBuffer(buf);
+        }
+      }
+    }
+
     releaseInitialRefcounts(toRead.next);
     // Release buffers as we are done with all the streams... also see toRelease comment.
     if (toRelease != null) {
