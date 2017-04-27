@@ -40,6 +40,9 @@ import java.io.Serializable;
 import java.io.StringWriter;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.FileSystems;
+import java.nio.file.Files;
+import java.nio.file.StandardOpenOption;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -52,6 +55,7 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.Deque;
 import java.util.EnumSet;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -60,13 +64,16 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Stream;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
 
+import org.apache.commons.compress.compressors.bzip2.BZip2CompressorInputStream;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.output.ByteArrayOutputStream;
@@ -121,7 +128,6 @@ import org.apache.hadoop.hive.ql.processors.HiveCommand;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.shims.HadoopShims;
 import org.apache.hadoop.hive.shims.ShimLoader;
-import org.apache.hadoop.util.Shell;
 import org.apache.hive.common.util.StreamPrinter;
 import org.apache.logging.log4j.util.Strings;
 import org.apache.tools.ant.BuildException;
@@ -1702,7 +1708,7 @@ public class QTestUtil {
   });
 
   /* This list may be modified by specific cli drivers to mask strings that change on every test */
-  private List<Pair<Pattern, String>> patternsWithMaskComments = new ArrayList<Pair<Pattern, String>>() {{
+  private final List<Pair<Pattern, String>> patternsWithMaskComments = new ArrayList<Pair<Pattern, String>>() {{
     add(toPatternPair("(pblob|s3.?|swift|wasb.?).*hive-staging.*","### BLOBSTORE_STAGING_PATH ###"));
   }};
 
@@ -2318,15 +2324,13 @@ public class QTestUtil {
       }
       br.close();
 
-      File tabColStatsCsv = new File(mdbPath+"csv/TAB_COL_STATS.txt");
-      File tabParamsCsv = new File(mdbPath+"csv/TABLE_PARAMS.txt");
+      java.nio.file.Path tabColStatsCsv = FileSystems.getDefault().getPath(mdbPath, "csv" ,"TAB_COL_STATS.txt.bz2");
+      java.nio.file.Path tabParamsCsv = FileSystems.getDefault().getPath(mdbPath, "csv", "TABLE_PARAMS.txt.bz2");
 
       // Set up the foreign key constraints properly in the TAB_COL_STATS data
       String tmpBaseDir =  System.getProperty(TEST_TMP_DIR_PROPERTY);
-      File tmpFileLoc1 = new File(tmpBaseDir+"/TAB_COL_STATS.txt");
-      File tmpFileLoc2 = new File(tmpBaseDir+"/TABLE_PARAMS.txt");
-      FileUtils.copyFile(tabColStatsCsv, tmpFileLoc1);
-      FileUtils.copyFile(tabParamsCsv, tmpFileLoc2);
+      java.nio.file.Path tmpFileLoc1 = FileSystems.getDefault().getPath(tmpBaseDir, "TAB_COL_STATS.txt");
+      java.nio.file.Path tmpFileLoc2 = FileSystems.getDefault().getPath(tmpBaseDir, "TABLE_PARAMS.txt");
 
       class MyComp implements Comparator<String> {
         @Override
@@ -2338,7 +2342,7 @@ public class QTestUtil {
         }
       }
 
-      SortedMap<String, Integer> tableNameToID = new TreeMap<String, Integer>(new MyComp());
+      final SortedMap<String, Integer> tableNameToID = new TreeMap<String, Integer>(new MyComp());
 
      rs = s.executeQuery("SELECT * FROM APP.TBLS");
       while(rs.next()) {
@@ -2351,29 +2355,72 @@ public class QTestUtil {
         }
       }
 
-      for (Map.Entry<String, Integer> entry : tableNameToID.entrySet()) {
-        String toReplace1 = ",_" + entry.getKey() + "_" ;
-        String replacementString1 = ","+entry.getValue();
-        String toReplace2 = "_" + entry.getKey() + "_@" ;
-        String replacementString2 = ""+entry.getValue()+"@";
-        try {
-          String content1 = FileUtils.readFileToString(tmpFileLoc1, "UTF-8");
-          content1 = content1.replaceAll(toReplace1, replacementString1);
-          FileUtils.writeStringToFile(tmpFileLoc1, content1, "UTF-8");
-          String content2 = FileUtils.readFileToString(tmpFileLoc2, "UTF-8");
-          content2 = content2.replaceAll(toReplace2, replacementString2);
-          FileUtils.writeStringToFile(tmpFileLoc2, content2, "UTF-8");
-        } catch (IOException e) {
-          LOG.info("Generating file failed", e);
+      final Map<String, Map<String, String>> data = new HashMap<>();
+      rs = s.executeQuery("select TBLS.TBL_NAME, a.COLUMN_NAME, a.TYPE_NAME from  "
+          + "(select COLUMN_NAME, TYPE_NAME, SDS.SD_ID from APP.COLUMNS_V2 join APP.SDS on SDS.CD_ID = COLUMNS_V2.CD_ID) a"
+          + " join APP.TBLS on  TBLS.SD_ID = a.SD_ID");
+      while (rs.next()) {
+        String tblName = rs.getString(1);
+        String colName = rs.getString(2);
+        String typeName = rs.getString(3);
+        Map<String, String> cols = data.get(tblName);
+        if (null == cols) {
+          cols = new HashMap<>();
         }
+        cols.put(colName, typeName);
+        data.put(tblName, cols);
       }
 
+      BufferedReader reader = new BufferedReader(new InputStreamReader(
+        new BZip2CompressorInputStream(Files.newInputStream(tabColStatsCsv, StandardOpenOption.READ))));
+
+      Stream<String> replaced = reader.lines().parallel().map(str-> {
+        String[] splits = str.split(",");
+        String tblName = splits[0];
+        String colName = splits[1];
+        Integer tblID = tableNameToID.get(tblName);
+        StringBuilder sb = new StringBuilder("default@"+tblName + "@" + colName + "@" + data.get(tblName).get(colName)+"@");
+        for (int i = 2; i < splits.length; i++) {
+          sb.append(splits[i]+"@");
+        }
+        return sb.append(tblID).toString();
+        });
+
+      Files.write(tmpFileLoc1, (Iterable<String>)replaced::iterator);
+      replaced.close();
+      reader.close();
+
+      BufferedReader reader2 = new BufferedReader(new InputStreamReader(
+          new BZip2CompressorInputStream(Files.newInputStream(tabParamsCsv, StandardOpenOption.READ))));
+      final Map<String,String> colStats = new ConcurrentHashMap<>();
+      Stream<String> replacedStream = reader2.lines().parallel().map(str-> {
+        String[] splits = str.split("_@");
+        String tblName = splits[0];
+        Integer tblId = tableNameToID.get(tblName);
+        Map<String,String> cols = data.get(tblName);
+        StringBuilder sb = new StringBuilder();
+        sb.append("{\"COLUMN_STATS\":{");
+        for (String colName : cols.keySet()) {
+          sb.append("\""+colName+"\":\"true\",");
+        }
+        sb.append("},\"BASIC_STATS\":\"true\"}");
+        colStats.put(tblId.toString(), sb.toString());
+
+        return  tblId.toString() + "@" + splits[1];
+      });
+
+      Files.write(tmpFileLoc2, (Iterable<String>)replacedStream::iterator);
+      Files.write(tmpFileLoc2, (Iterable<String>)colStats.entrySet().stream()
+        .map(map->map.getKey()+"@COLUMN_STATS_ACCURATE@"+map.getValue())::iterator, StandardOpenOption.APPEND);
+
+      replacedStream.close();
+      reader2.close();
       // Load the column stats and table params with 30 TB scale
       String importStatement1 =  "CALL SYSCS_UTIL.SYSCS_IMPORT_TABLE(null, '" + "TAB_COL_STATS" +
-        "', '" + tmpFileLoc1.getAbsolutePath() +
-        "', ',', null, 'UTF-8', 1)";
+        "', '" + tmpFileLoc1.toAbsolutePath().toString() +
+        "', '@', null, 'UTF-8', 1)";
       String importStatement2 =  "CALL SYSCS_UTIL.SYSCS_IMPORT_TABLE(null, '" + "TABLE_PARAMS" +
-        "', '" + tmpFileLoc2.getAbsolutePath() +
+        "', '" + tmpFileLoc2.toAbsolutePath().toString() +
         "', '@', null, 'UTF-8', 1)";
       try {
         PreparedStatement psImport1 = conn.prepareStatement(importStatement1);
