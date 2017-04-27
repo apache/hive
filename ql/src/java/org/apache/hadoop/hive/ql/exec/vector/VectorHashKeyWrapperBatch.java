@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.exec.vector;
 
+import org.apache.hadoop.hive.ql.exec.vector.VectorHashKeyWrapper.EmptyVectorHashKeyWrapper;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpressionWriter;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -88,6 +89,11 @@ public class VectorHashKeyWrapperBatch extends VectorColumnSetInfo {
    * @throws HiveException
    */
   public void evaluateBatch(VectorizedRowBatch batch) throws HiveException {
+
+    if (keyCount == 0) {
+      // all keywrappers must be EmptyVectorHashKeyWrapper
+      return;
+    }
 
     for(int i=0;i<batch.size;++i) {
       vectorHashKeyWrappers[i].clearIsNull();

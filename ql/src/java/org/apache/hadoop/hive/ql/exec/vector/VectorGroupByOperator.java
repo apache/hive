@@ -458,10 +458,18 @@ public class VectorGroupByOperator extends Operator<GroupByDesc> implements
       // to bump its internal version.
       aggregationBatchInfo.startBatch();
 
+      if (batch.size == 0) {
+        return;
+      }
+
       // We now have to probe the global hash and find-or-allocate
       // the aggregation buffers to use for each key present in the batch
       VectorHashKeyWrapper[] keyWrappers = keyWrappersBatch.getVectorHashKeyWrappers();
-      for (int i=0; i < batch.size; ++i) {
+
+      final int n = keyExpressions.length == 0 ? 1 : batch.size;
+      // note - the row mapping is not relevant when aggregationBatchInfo::getDistinctBufferSetCount() == 1
+
+      for (int i=0; i < n; ++i) {
         VectorHashKeyWrapper kw = keyWrappers[i];
         VectorAggregationBufferRow aggregationBuffer = mapKeysAggregationBuffers.get(kw);
         if (null == aggregationBuffer) {
