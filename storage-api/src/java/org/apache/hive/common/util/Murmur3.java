@@ -332,4 +332,100 @@ public class Murmur3 {
     h ^= (h >>> 33);
     return h;
   }
+
+  public static class IncrementalHash32 {
+    byte[] tail = new byte[3];
+    int tailLen;
+    int totalLen;
+    int hash;
+
+    public final void start(int hash) {
+      tailLen = totalLen = 0;
+      this.hash = hash;
+    }
+
+    public final void add(byte[] data, int offset, int length) {
+      if (length == 0) return;
+      totalLen += length;
+      if (tailLen + length < 4) {
+        System.arraycopy(data, offset, tail, tailLen, length);
+        tailLen += length;
+        return;
+      }
+      int offset2 = 0;
+      if (tailLen > 0) {
+        offset2 = (4 - tailLen);
+        int k = -1;
+        switch (tailLen) {
+        case 1:
+          k = orBytes(tail[0], data[0], data[1], data[2]);
+          break;
+        case 2:
+          k = orBytes(tail[0], tail[1], data[0], data[1]);
+          break;
+        case 3:
+          k = orBytes(tail[0], tail[1], tail[2], data[0]);
+          break;
+        default: throw new AssertionError(tailLen);
+        }
+        // mix functions
+        k *= C1_32;
+        k = Integer.rotateLeft(k, R1_32);
+        k *= C2_32;
+        hash ^= k;
+        hash = Integer.rotateLeft(hash, R2_32) * M_32 + N_32;
+      }
+      int length2 = length - offset2;
+      offset += offset2;
+      final int nblocks = length2 >> 2;
+
+      for (int i = 0; i < nblocks; i++) {
+        int i_4 = (i << 2) + offset;
+        int k = orBytes(data[i_4], data[i_4 + 1], data[i_4 + 2], data[i_4 + 3]);
+
+        // mix functions
+        k *= C1_32;
+        k = Integer.rotateLeft(k, R1_32);
+        k *= C2_32;
+        hash ^= k;
+        hash = Integer.rotateLeft(hash, R2_32) * M_32 + N_32;
+      }
+
+      int consumed = (nblocks << 2);
+      tailLen = length2 - consumed;
+      if (consumed == length2) return;
+      System.arraycopy(data, offset + consumed, tail, 0, tailLen);
+    }
+
+    public final int end() {
+      int k1 = 0;
+      switch (tailLen) {
+        case 3:
+          k1 ^= tail[2] << 16;
+        case 2:
+          k1 ^= tail[1] << 8;
+        case 1:
+          k1 ^= tail[0];
+
+          // mix functions
+          k1 *= C1_32;
+          k1 = Integer.rotateLeft(k1, R1_32);
+          k1 *= C2_32;
+          hash ^= k1;
+      }
+
+      // finalization
+      hash ^= totalLen;
+      hash ^= (hash >>> 16);
+      hash *= 0x85ebca6b;
+      hash ^= (hash >>> 13);
+      hash *= 0xc2b2ae35;
+      hash ^= (hash >>> 16);
+      return hash;
+    }
+  }
+
+  private static int orBytes(byte b1, byte b2, byte b3, byte b4) {
+    return (b1 & 0xff) | ((b2 & 0xff) << 8) | ((b3 & 0xff) << 16) | ((b4 & 0xff) << 24);
+  }
 }
