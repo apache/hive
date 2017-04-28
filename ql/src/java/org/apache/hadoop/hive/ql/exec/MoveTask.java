@@ -181,8 +181,8 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
         actualPath = actualPath.getParent();
       }
       fs.mkdirs(mkDirPath);
-      if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_WAREHOUSE_SUBDIR_INHERIT_PERMS)) {
-        HdfsUtils.setFullFileStatus(conf, new HdfsUtils.HadoopFileStatus(conf, fs, actualPath), fs, mkDirPath, true);
+      if (FileUtils.shouldInheritPerms(conf, fs)) {
+        FileUtils.inheritPerms(conf, new HdfsUtils.HadoopFileStatus(conf, fs, actualPath), fs, mkDirPath, true);
       }
     }
     return deletePath;

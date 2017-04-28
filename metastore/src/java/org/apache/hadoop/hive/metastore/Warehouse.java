@@ -33,8 +33,10 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.lang.StringUtils;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.ContentSummary;
 import org.apache.hadoop.fs.FileStatus;
@@ -186,11 +188,10 @@ public class Warehouse {
   }
 
   public boolean mkdirs(Path f, boolean inheritPermCandidate) throws MetaException {
-    boolean inheritPerms = HiveConf.getBoolVar(conf,
-      HiveConf.ConfVars.HIVE_WAREHOUSE_SUBDIR_INHERIT_PERMS) && inheritPermCandidate;
     FileSystem fs = null;
     try {
       fs = getFs(f);
+      boolean inheritPerms = FileUtils.shouldInheritPerms(conf, fs) && inheritPermCandidate;
       return FileUtils.mkdir(fs, f, inheritPerms, conf);
     } catch (IOException e) {
       MetaStoreUtils.logAndThrowMetaException(e);

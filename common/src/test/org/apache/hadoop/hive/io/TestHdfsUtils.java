@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.io;
 
 import java.io.IOException;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -31,11 +32,14 @@ import org.apache.hadoop.fs.permission.AclEntry;
 import org.apache.hadoop.fs.permission.AclStatus;
 import org.apache.hadoop.fs.permission.FsPermission;
 
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.junit.Test;
 
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyList;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -180,5 +184,20 @@ public class TestHdfsUtils {
     HdfsUtils.setFullFileStatus(conf, mockHadoopFileStatus, "", mock(FileSystem.class), fakeTarget,
             true, mockFsShell);
     verify(mockFsShell).run(new String[]{"-chmod", "-R", any(String.class), fakeTarget.toString()});
+  }
+
+  @Test
+  public void testSkipSetFullFileStatusIfBlobStore() throws IOException {
+    Configuration conf = new Configuration();
+    conf.set(HiveConf.ConfVars.HIVE_BLOBSTORE_SUPPORTED_SCHEMES.varname, "s3a");
+    FileSystem fs = mock(FileSystem.class);
+    when(fs.getUri()).thenReturn(URI.create("s3a:///"));
+    HdfsUtils.setFullFileStatus(conf, null, null, fs, null, false);
+
+    verify(fs, never()).getFileStatus(any(Path.class));
+    verify(fs, never()).listStatus(any(Path[].class));
+    verify(fs, never()).setPermission(any(Path.class), any(FsPermission.class));
+    verify(fs, never()).setAcl(any(Path.class), anyList());
+    verify(fs, never()).setOwner(any(Path.class), any(String.class), any(String.class));
   }
 }
