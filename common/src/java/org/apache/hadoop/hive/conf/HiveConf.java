@@ -2894,7 +2894,7 @@ public class HiveConf extends Configuration {
             "Bloom filter should be of at max certain size to be effective"),
     TEZ_BLOOM_FILTER_FACTOR("hive.tez.bloom.filter.factor", (float) 2.0,
             "Bloom filter should be a multiple of this factor with nDV"),
-    TEZ_BIGTABLE_MIN_SIZE_SEMIJOIN_REDUCTION("hive.tez.bigtable.minsize.semijoin.reduction", 1000000L,
+    TEZ_BIGTABLE_MIN_SIZE_SEMIJOIN_REDUCTION("hive.tez.bigtable.minsize.semijoin.reduction", 100000000L,
             "Big table for runtime filteting should be of atleast this size"),
     TEZ_DYNAMIC_SEMIJOIN_REDUCTION_THRESHOLD("hive.tez.dynamic.semijoin.reduction.threshold", (float) 0.50,
             "Only perform semijoin optimization if the estimated benefit at or above this fraction of the target table"),
