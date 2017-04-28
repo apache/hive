@@ -18,6 +18,8 @@
 
 package org.apache.hadoop.hive.ql.exec.vector;
 
+import org.apache.hive.common.util.Murmur3;
+
 import java.sql.Timestamp;
 import java.util.Arrays;
 
@@ -40,6 +42,17 @@ import com.google.common.base.Preconditions;
  * to hash vectorized processing units (batches).
  */
 public class VectorHashKeyWrapper extends KeyWrapper {
+
+  public static final class HashContext {
+    private final Murmur3.IncrementalHash32 bytesHash = new Murmur3.IncrementalHash32();
+
+    public static Murmur3.IncrementalHash32 getBytesHash(HashContext ctx) {
+      if (ctx == null) {
+        return new Murmur3.IncrementalHash32();
+      }
+      return ctx.bytesHash;
+    }
+  }
 
   private static final int[] EMPTY_INT_ARRAY = new int[0];
   private static final long[] EMPTY_LONG_ARRAY = new long[0];
@@ -73,10 +86,13 @@ public class VectorHashKeyWrapper extends KeyWrapper {
 
   private int hashcode;
 
-  private VectorHashKeyWrapper(int longValuesCount, int doubleValuesCount,
+  private HashContext hashCtx;
+
+  private VectorHashKeyWrapper(HashContext ctx, int longValuesCount, int doubleValuesCount,
           int byteValuesCount, int decimalValuesCount, int timestampValuesCount,
           int intervalDayTimeValuesCount,
           int keyCount) {
+    hashCtx = ctx;
     longValues = longValuesCount > 0 ? new long[longValuesCount] : EMPTY_LONG_ARRAY;
     doubleValues = doubleValuesCount > 0 ? new double[doubleValuesCount] : EMPTY_DOUBLE_ARRAY;
     decimalValues = decimalValuesCount > 0 ? new HiveDecimalWritable[decimalValuesCount] : EMPTY_DECIMAL_ARRAY;
@@ -107,14 +123,14 @@ public class VectorHashKeyWrapper extends KeyWrapper {
   private VectorHashKeyWrapper() {
   }
 
-  public static VectorHashKeyWrapper allocate(int longValuesCount, int doubleValuesCount,
+  public static VectorHashKeyWrapper allocate(HashContext ctx, int longValuesCount, int doubleValuesCount,
       int byteValuesCount, int decimalValuesCount, int timestampValuesCount,
       int intervalDayTimeValuesCount, int keyCount) {
     if ((longValuesCount + doubleValuesCount + byteValuesCount + decimalValuesCount
         + timestampValuesCount + intervalDayTimeValuesCount) == 0) {
       return EMPTY_KEY_WRAPPER;
     }
-    return new VectorHashKeyWrapper(longValuesCount, doubleValuesCount, byteValuesCount,
+    return new VectorHashKeyWrapper(ctx, longValuesCount, doubleValuesCount, byteValuesCount,
         decimalValuesCount, timestampValuesCount, intervalDayTimeValuesCount,
         keyCount);
   }
@@ -126,40 +142,44 @@ public class VectorHashKeyWrapper extends KeyWrapper {
 
   @Override
   public void setHashKey() {
-    hashcode = Arrays.hashCode(longValues) ^
+    // compute locally and assign
+    int hash = Arrays.hashCode(longValues) ^
         Arrays.hashCode(doubleValues) ^
         Arrays.hashCode(isNull);
 
     for (int i = 0; i < decimalValues.length; i++) {
       // Use the new faster hash code since we are hashing memory objects.
-      hashcode ^= decimalValues[i].newFasterHashCode();
+      hash ^= decimalValues[i].newFasterHashCode();
     }
 
     for (int i = 0; i < timestampValues.length; i++) {
-      hashcode ^= timestampValues[i].hashCode();
+      hash ^= timestampValues[i].hashCode();
     }
 
     for (int i = 0; i < intervalDayTimeValues.length; i++) {
-      hashcode ^= intervalDayTimeValues[i].hashCode();
+      hash ^= intervalDayTimeValues[i].hashCode();
     }
 
     // This code, with branches and all, is not executed if there are no string keys
+    Murmur3.IncrementalHash32 bytesHash = null;
     for (int i = 0; i < byteValues.length; ++i) {
       /*
        *  Hashing the string is potentially expensive so is better to branch.
        *  Additionally not looking at values for nulls allows us not reset the values.
        */
-      if (byteLengths[i] != -1) {
-        byte[] bytes = byteValues[i];
-        int start = byteStarts[i];
-        int length = byteLengths[i];
-        // Unfortunately there is no Arrays.hashCode(byte[], start, length)
-        for(int j = start; j < start + length; ++j) {
-          // use 461 as is a (sexy!) prime.
-          hashcode ^= 461 * bytes[j];
-        }
+      if (byteLengths[i] == -1) {
+        continue;
       }
+      if (bytesHash == null) {
+        bytesHash = HashContext.getBytesHash(hashCtx);
+        bytesHash.start(hash);
+      }
+      bytesHash.add(byteValues[i], byteStarts[i], byteLengths[i]);
     }
+    if (bytesHash != null) {
+      hash = bytesHash.end();
+    }
+    this.hashcode = hash;
   }
 
   @Override
@@ -171,6 +191,7 @@ public class VectorHashKeyWrapper extends KeyWrapper {
   public boolean equals(Object that) {
     if (that instanceof VectorHashKeyWrapper) {
       VectorHashKeyWrapper keyThat = (VectorHashKeyWrapper)that;
+      // not comparing hashCtx - irrelevant
       return hashcode == keyThat.hashcode &&
           Arrays.equals(longValues, keyThat.longValues) &&
           Arrays.equals(doubleValues, keyThat.doubleValues) &&
@@ -211,6 +232,7 @@ public class VectorHashKeyWrapper extends KeyWrapper {
   }
 
   public void duplicateTo(VectorHashKeyWrapper clone) {
+    clone.hashCtx = hashCtx;
     clone.longValues = (longValues.length > 0) ? longValues.clone() : EMPTY_LONG_ARRAY;
     clone.doubleValues = (doubleValues.length > 0) ? doubleValues.clone() : EMPTY_DOUBLE_ARRAY;
     clone.isNull = isNull.clone();
@@ -464,7 +486,7 @@ public class VectorHashKeyWrapper extends KeyWrapper {
 
   public static final class EmptyVectorHashKeyWrapper extends VectorHashKeyWrapper {
     private EmptyVectorHashKeyWrapper() {
-      super(0, 0, 0, 0, 0, 0, /* keyCount */ 0);
+      super(null, 0, 0, 0, 0, 0, 0, /* keyCount */ 0);
       // no need to override assigns - all assign ops will fail due to 0 size
     }
 
