@@ -166,7 +166,7 @@ public class DbNotificationListener extends MetaStoreEventListener {
     Table after = tableEvent.getNewTable();
     NotificationEvent event =
         new NotificationEvent(0, now(), EventType.ALTER_TABLE.toString(), msgFactory
-            .buildAlterTableMessage(before, after).toString());
+            .buildAlterTableMessage(before, after, tableEvent.getIsTruncateOp()).toString());
     event.setDbName(after.getDbName());
     event.setTableName(after.getTableName());
     process(event, tableEvent);
@@ -305,7 +305,7 @@ public class DbNotificationListener extends MetaStoreEventListener {
     Partition after = partitionEvent.getNewPartition();
     NotificationEvent event =
         new NotificationEvent(0, now(), EventType.ALTER_PARTITION.toString(), msgFactory
-            .buildAlterPartitionMessage(partitionEvent.getTable(), before, after).toString());
+            .buildAlterPartitionMessage(partitionEvent.getTable(), before, after, partitionEvent.getIsTruncateOp()).toString());
     event.setDbName(before.getDbName());
     event.setTableName(before.getTableName());
     process(event, partitionEvent);

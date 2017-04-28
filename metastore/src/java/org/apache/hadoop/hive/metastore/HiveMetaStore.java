@@ -63,6 +63,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Multimaps;
 import org.apache.commons.cli.OptionBuilder;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.FileUtils;
@@ -80,6 +81,7 @@ import org.apache.hadoop.hive.common.metrics.common.MetricsFactory;
 import org.apache.hadoop.hive.common.metrics.common.MetricsVariable;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.hive.io.HdfsUtils;
 import org.apache.hadoop.hive.metastore.api.*;
 import org.apache.hadoop.hive.metastore.events.AddIndexEvent;
 import org.apache.hadoop.hive.metastore.events.AddPartitionEvent;
@@ -1896,6 +1898,151 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         endFunction("drop_table", success, ex, name);
       }
 
+    }
+
+    private void updateStatsForTruncate(Map<String,String> props, EnvironmentContext environmentContext) {
+      if (null == props) {
+        return;
+      }
+      for (String stat : StatsSetupConst.supportedStats) {
+        String statVal = props.get(stat);
+        if (statVal != null) {
+          //In the case of truncate table, we set the stats to be 0.
+          props.put(stat, "0");
+        }
+      }
+      //first set basic stats to true
+      StatsSetupConst.setBasicStatsState(props, StatsSetupConst.TRUE);
+      environmentContext.putToProperties(StatsSetupConst.STATS_GENERATED, StatsSetupConst.TASK);
+      //then invalidate column stats
+      StatsSetupConst.clearColumnStatsState(props);
+      return;
+    }
+
+    private void alterPartitionForTruncate(final RawStore ms,
+                                           final String dbName,
+                                           final String tableName,
+                                           final Table table,
+                                           final Partition partition) throws Exception {
+      EnvironmentContext environmentContext = new EnvironmentContext();
+      updateStatsForTruncate(partition.getParameters(), environmentContext);
+
+      if (!transactionalListeners.isEmpty()) {
+        MetaStoreListenerNotifier.notifyEvent(transactionalListeners,
+                EventType.ALTER_PARTITION,
+                new AlterPartitionEvent(partition, partition, table, true, true, this));
+      }
+
+      if (!listeners.isEmpty()) {
+        MetaStoreListenerNotifier.notifyEvent(listeners,
+                EventType.ALTER_PARTITION,
+                new AlterPartitionEvent(partition, partition, table, true, true, this));
+      }
+
+      alterHandler.alterPartition(ms, wh, dbName, tableName, null, partition, environmentContext, this);
+    }
+
+    private void alterTableStatsForTruncate(final RawStore ms,
+                                            final String dbName,
+                                            final String tableName,
+                                            final Table table,
+                                            final List<String> partNames) throws Exception {
+      if (partNames == null) {
+        if (0 != table.getPartitionKeysSize()) {
+          for (Partition partition : ms.getPartitions(dbName, tableName, Integer.MAX_VALUE)) {
+            alterPartitionForTruncate(ms, dbName, tableName, table, partition);
+          }
+        } else {
+          EnvironmentContext environmentContext = new EnvironmentContext();
+          updateStatsForTruncate(table.getParameters(), environmentContext);
+
+          if (!transactionalListeners.isEmpty()) {
+            MetaStoreListenerNotifier.notifyEvent(transactionalListeners,
+                    EventType.ALTER_TABLE,
+                    new AlterTableEvent(table, table, true, true, this));
+          }
+
+          if (!listeners.isEmpty()) {
+            MetaStoreListenerNotifier.notifyEvent(listeners,
+                    EventType.ALTER_TABLE,
+                    new AlterTableEvent(table, table, true, true, this));
+          }
+
+          alterHandler.alterTable(ms, wh, dbName, tableName, table, environmentContext, this);
+        }
+      } else {
+        for (Partition partition : ms.getPartitionsByNames(dbName, tableName, partNames)) {
+          alterPartitionForTruncate(ms, dbName, tableName, table, partition);
+        }
+      }
+      return;
+    }
+
+    private List<Path> getLocationsForTruncate(final RawStore ms,
+                                               final String dbName,
+                                               final String tableName,
+                                               final Table table,
+                                               final List<String> partNames) throws Exception {
+      List<Path> locations = new ArrayList<Path>();
+      if (partNames == null) {
+        if (0 != table.getPartitionKeysSize()) {
+          for (Partition partition : ms.getPartitions(dbName, tableName, Integer.MAX_VALUE)) {
+            locations.add(new Path(partition.getSd().getLocation()));
+          }
+        } else {
+          locations.add(new Path(table.getSd().getLocation()));
+        }
+      } else {
+        for (Partition partition : ms.getPartitionsByNames(dbName, tableName, partNames)) {
+          locations.add(new Path(partition.getSd().getLocation()));
+        }
+      }
+      return locations;
+    }
+
+    @Override
+    public void truncate_table(final String dbName, final String tableName, List<String> partNames)
+      throws NoSuchObjectException, MetaException {
+      try {
+        Table tbl = get_table_core(dbName, tableName);
+        boolean isAutopurge = (tbl.isSetParameters() && "true".equalsIgnoreCase(tbl.getParameters().get("auto.purge")));
+
+        // This is not transactional
+        for (Path location : getLocationsForTruncate(getMS(), dbName, tableName, tbl, partNames)) {
+          FileSystem fs = location.getFileSystem(getHiveConf());
+          HadoopShims.HdfsEncryptionShim shim
+                  = ShimLoader.getHadoopShims().createHdfsEncryptionShim(fs, getHiveConf());
+          if (!shim.isPathEncrypted(location)) {
+            HdfsUtils.HadoopFileStatus status = new HdfsUtils.HadoopFileStatus(getHiveConf(), fs, location);
+            FileStatus targetStatus = fs.getFileStatus(location);
+            String targetGroup = targetStatus == null ? null : targetStatus.getGroup();
+            wh.deleteDir(location, true, isAutopurge);
+            fs.mkdirs(location);
+            HdfsUtils.setFullFileStatus(getHiveConf(), status, targetGroup, fs, location, false);
+          } else {
+            FileStatus[] statuses = fs.listStatus(location, FileUtils.HIDDEN_FILES_PATH_FILTER);
+            if (statuses == null || statuses.length == 0) {
+              continue;
+            }
+            for (final FileStatus status : statuses) {
+              wh.deleteDir(status.getPath(), true, isAutopurge);
+            }
+          }
+        }
+
+        // Alter the table/partition stats and also notify truncate table event
+        alterTableStatsForTruncate(getMS(), dbName, tableName, tbl, partNames);
+      } catch (IOException e) {
+        throw new MetaException(e.getMessage());
+      } catch (Exception e) {
+        if (e instanceof MetaException) {
+          throw (MetaException) e;
+        } else if (e instanceof NoSuchObjectException) {
+          throw (NoSuchObjectException) e;
+        } else {
+          throw newMetaException(e);
+        }
+      }
     }
 
     /**
@@ -3731,7 +3878,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
 
           MetaStoreListenerNotifier.notifyEvent(listeners,
                                                 EventType.ALTER_PARTITION,
-                                                new AlterPartitionEvent(oldPart, new_part, table, true, this),
+                                                new AlterPartitionEvent(oldPart, new_part, table, false, true, this),
                                                 envContext);
         }
       } catch (InvalidObjectException e) {
@@ -3804,7 +3951,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           if (!listeners.isEmpty()) {
             MetaStoreListenerNotifier.notifyEvent(listeners,
                                                   EventType.ALTER_PARTITION,
-                                                  new AlterPartitionEvent(oldTmpPart, tmpPart, table, true, this));
+                                                  new AlterPartitionEvent(oldTmpPart, tmpPart, table, false, true, this));
           }
         }
       } catch (InvalidObjectException e) {
@@ -3950,7 +4097,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         if (!listeners.isEmpty()) {
           MetaStoreListenerNotifier.notifyEvent(listeners,
                                                 EventType.ALTER_TABLE,
-                                                new AlterTableEvent(oldt, newTable, true, this),
+                                                new AlterTableEvent(oldt, newTable, false, true, this),
                                                 envContext);
         }
       } catch (NoSuchObjectException e) {

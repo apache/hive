@@ -1072,6 +1072,8 @@ service ThriftHiveMetastore extends fb303.FacebookService
   void drop_table_with_environment_context(1:string dbname, 2:string name, 3:bool deleteData,
       4:EnvironmentContext environment_context)
                        throws(1:NoSuchObjectException o1, 2:MetaException o3)
+  void truncate_table(1:string dbName, 2:string tableName, 3:list<string> partNames)
+                          throws(1:MetaException o1)
   list<string> get_tables(1: string db_name, 2: string pattern) throws (1: MetaException o1)
   list<string> get_tables_by_type(1: string db_name, 2: string pattern, 3: string tableType) throws (1: MetaException o1)
   list<TableMeta> get_table_meta(1: string db_patterns, 2: string tbl_patterns, 3: list<string> tbl_types)

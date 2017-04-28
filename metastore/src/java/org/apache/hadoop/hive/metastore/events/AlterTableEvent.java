@@ -26,10 +26,13 @@ public class AlterTableEvent extends ListenerEvent {
 
   private final Table newTable;
   private final Table oldTable;
-  public AlterTableEvent (Table oldTable, Table newTable, boolean status, HMSHandler handler) {
+  private final boolean isTruncateOp;
+
+  public AlterTableEvent (Table oldTable, Table newTable, boolean isTruncateOp, boolean status, HMSHandler handler) {
     super (status, handler);
     this.oldTable = oldTable;
     this.newTable = newTable;
+    this.isTruncateOp = isTruncateOp;
   }
 
   /**
@@ -44,5 +47,12 @@ public class AlterTableEvent extends ListenerEvent {
    */
   public Table getNewTable() {
     return newTable;
+  }
+
+  /**
+   * @return the flag for truncate
+   */
+  public boolean getIsTruncateOp() {
+    return isTruncateOp;
   }
 }

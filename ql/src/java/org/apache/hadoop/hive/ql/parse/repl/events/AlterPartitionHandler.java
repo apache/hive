@@ -23,6 +23,7 @@ import org.apache.hadoop.hive.metastore.messaging.AlterPartitionMessage;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.EximUtil;
+import org.apache.hadoop.hive.ql.parse.SemanticException;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -34,6 +35,7 @@ import static org.apache.hadoop.hive.ql.parse.ReplicationSemanticAnalyzer.DumpMe
 public class AlterPartitionHandler extends AbstractHandler {
   private final org.apache.hadoop.hive.metastore.api.Partition after;
   private final org.apache.hadoop.hive.metastore.api.Table tableObject;
+  private final boolean isTruncateOp;
   private final Scenario scenario;
 
   AlterPartitionHandler(NotificationEvent event) throws Exception {
@@ -42,6 +44,7 @@ public class AlterPartitionHandler extends AbstractHandler {
     tableObject = apm.getTableObj();
     org.apache.hadoop.hive.metastore.api.Partition before = apm.getPtnObjBefore();
     after = apm.getPtnObjAfter();
+    isTruncateOp = apm.getIsTruncateOp();
     scenario = scenarioType(before, after);
   }
 
@@ -57,12 +60,18 @@ public class AlterPartitionHandler extends AbstractHandler {
       DUMPTYPE dumpType() {
         return DUMPTYPE.EVENT_RENAME_PARTITION;
       }
+    },
+    TRUNCATE {
+      @Override
+      DUMPTYPE dumpType() {
+        return DUMPTYPE.EVENT_TRUNCATE_PARTITION;
+      }
     };
 
     abstract DUMPTYPE dumpType();
   }
 
-  private static Scenario scenarioType(org.apache.hadoop.hive.metastore.api.Partition before,
+  private Scenario scenarioType(org.apache.hadoop.hive.metastore.api.Partition before,
       org.apache.hadoop.hive.metastore.api.Partition after) {
     Iterator<String> beforeValIter = before.getValuesIterator();
     Iterator<String> afterValIter = after.getValuesIterator();
@@ -71,7 +80,7 @@ public class AlterPartitionHandler extends AbstractHandler {
         return Scenario.RENAME;
       }
     }
-    return Scenario.ALTER;
+    return isTruncateOp ? Scenario.TRUNCATE : Scenario.ALTER;
   }
 
   @Override

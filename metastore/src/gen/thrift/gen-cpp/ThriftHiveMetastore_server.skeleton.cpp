@@ -142,6 +142,11 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
     printf("drop_table_with_environment_context\n");
   }
 
+  void truncate_table(const std::string& dbName, const std::string& tableName, const std::vector<std::string> & partNames) {
+    // Your implementation goes here
+    printf("truncate_table\n");
+  }
+
   void get_tables(std::vector<std::string> & _return, const std::string& db_name, const std::string& pattern) {
     // Your implementation goes here
     printf("get_tables\n");

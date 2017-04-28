@@ -505,7 +505,7 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
       }
     }
 
-    // Next, we verify that the destination table is not offline, a view, or a non-native table
+    // Next, we verify that the destination table is not offline, or a non-native table
     EximUtil.validateTable(table);
 
     // If the import statement specified that we're importing to an external

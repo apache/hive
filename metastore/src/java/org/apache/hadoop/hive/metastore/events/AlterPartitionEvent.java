@@ -27,13 +27,15 @@ public class AlterPartitionEvent extends ListenerEvent {
   private final Partition oldPart;
   private final Partition newPart;
   private final Table table;
+  private final boolean isTruncateOp;
 
-  public AlterPartitionEvent(Partition oldPart, Partition newPart, Table table,
-      boolean status, HMSHandler handler) {
+  public AlterPartitionEvent(Partition oldPart, Partition newPart, Table table, boolean isTruncateOp,
+                             boolean status, HMSHandler handler) {
     super(status, handler);
     this.oldPart = oldPart;
     this.newPart = newPart;
     this.table = table;
+    this.isTruncateOp = isTruncateOp;
   }
 
   /**
@@ -57,5 +59,13 @@ public class AlterPartitionEvent extends ListenerEvent {
    */
   public Table getTable() {
     return table;
+  }
+
+  /**
+   * Get the truncate table flag
+   * @return
+   */
+  public boolean getIsTruncateOp() {
+    return isTruncateOp;
   }
 }
