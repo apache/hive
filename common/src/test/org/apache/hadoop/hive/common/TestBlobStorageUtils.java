@@ -64,18 +64,18 @@ public class TestBlobStorageUtils {
 
     /* Valid FileSystem schemes */
 
-    doReturn(URI.create("s3a:///")).when(fs).getUri();
+    doReturn("s3a").when(fs).getScheme();
     assertTrue(isBlobStorageFileSystem(conf, fs));
 
-    doReturn(URI.create("swift:///")).when(fs).getUri();
+    doReturn("swift").when(fs).getScheme();
     assertTrue(isBlobStorageFileSystem(conf, fs));
 
     /* Invalid FileSystem schemes */
 
-    doReturn(URI.create("hdfs:///")).when(fs).getUri();
+    doReturn("hdfs").when(fs).getScheme();
     assertFalse(isBlobStorageFileSystem(conf, fs));
 
-    doReturn(URI.create("")).when(fs).getUri();
+    doReturn("").when(fs).getScheme();
     assertFalse(isBlobStorageFileSystem(conf, fs));
 
     assertFalse(isBlobStorageFileSystem(conf, null));

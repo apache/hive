@@ -355,7 +355,9 @@ public class Context {
 
       if (mkdir) {
         try {
-          if (!FileUtils.mkdir(fs, dir, conf)) {
+          boolean inheritPerms = HiveConf.getBoolVar(conf,
+              HiveConf.ConfVars.HIVE_WAREHOUSE_SUBDIR_INHERIT_PERMS);
+          if (!FileUtils.mkdir(fs, dir, inheritPerms, conf)) {
             throw new IllegalStateException("Cannot create staging directory  '" + dir.toString() + "'");
           }
 
