@@ -553,7 +553,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           function.getType() == HiveParser.TOK_SUBQUERY_EXPR) {
         function = (ASTNode)function.getChild(0);
       }
-      doPhase1GetAllAggregations(function, aggregationTrees, wdwFns);
+      doPhase1GetAllAggregations(function, aggregationTrees, wdwFns, null);
     }
 
     // window based aggregations are handled differently
@@ -604,13 +604,16 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
    * @throws SemanticException
    */
   private void doPhase1GetAllAggregations(ASTNode expressionTree,
-      HashMap<String, ASTNode> aggregations, List<ASTNode> wdwFns) throws SemanticException {
+      HashMap<String, ASTNode> aggregations, List<ASTNode> wdwFns,
+      ASTNode wndParent) throws SemanticException {
     int exprTokenType = expressionTree.getToken().getType();
     if(exprTokenType == HiveParser.TOK_SUBQUERY_EXPR) {
       //since now we have scalar subqueries we can get subquery expression in having
       // we don't want to include aggregate from within subquery
       return;
     }
+
+    boolean parentIsWindowSpec = wndParent != null;
 
     if (exprTokenType == HiveParser.TOK_FUNCTION
         || exprTokenType == HiveParser.TOK_FUNCTIONDI
@@ -622,8 +625,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         // Further, we will examine its children AST nodes to check whether
         // there are aggregation functions within
         wdwFns.add(expressionTree);
-        doPhase1GetAllAggregations((ASTNode) expressionTree.getChild(expressionTree.getChildCount()-1),
-                aggregations, wdwFns);
+        for(Node child : expressionTree.getChildren()) {
+          doPhase1GetAllAggregations((ASTNode) child, aggregations, wdwFns, expressionTree);
+        }
         return;
       }
       if (expressionTree.getChild(0).getType() == HiveParser.Identifier) {
@@ -633,11 +637,11 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         if (FunctionRegistry.getFunctionInfo(functionName) == null) {
           throw new SemanticException(ErrorMsg.INVALID_FUNCTION.getMsg(functionName));
         }
-        if(FunctionRegistry.impliesOrder(functionName)) {
+        if(FunctionRegistry.impliesOrder(functionName) && !parentIsWindowSpec) {
           throw new SemanticException(ErrorMsg.MISSING_OVER_CLAUSE.getMsg(functionName));
         }
         if (FunctionRegistry.getGenericUDAFResolver(functionName) != null) {
-          if(containsLeadLagUDF(expressionTree)) {
+          if(containsLeadLagUDF(expressionTree) && !parentIsWindowSpec) {
             throw new SemanticException(ErrorMsg.MISSING_OVER_CLAUSE.getMsg(functionName));
           }
           aggregations.put(expressionTree.toStringTree(), expressionTree);
@@ -652,7 +656,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
     for (int i = 0; i < expressionTree.getChildCount(); i++) {
       doPhase1GetAllAggregations((ASTNode) expressionTree.getChild(i),
-          aggregations, wdwFns);
+          aggregations, wdwFns, wndParent);
     }
   }
 
