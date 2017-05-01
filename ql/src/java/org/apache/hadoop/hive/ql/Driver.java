@@ -37,9 +37,12 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
 
+import com.google.common.annotations.VisibleForTesting;
 import org.apache.commons.lang.StringUtils;
 
 import org.apache.hadoop.fs.FSDataInputStream;
+import org.apache.hadoop.hive.common.JavaUtils;
+import org.apache.hadoop.hive.common.ValidReadTxnList;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.metrics.common.Metrics;
 import org.apache.hadoop.hive.common.metrics.common.MetricsConstant;
@@ -153,11 +156,6 @@ public class Driver implements CommandProcessor {
 
   private FetchTask fetchTask;
   List<HiveLock> hiveLocks = new ArrayList<HiveLock>();
-
-  // A list of FileSinkOperators writing in an ACID compliant manner
-  private Set<FileSinkDesc> acidSinks;
-  // whether any ACID table is involved in a query
-  private boolean acidInQuery;
 
   // A limit on the number of threads that can be launched
   private int maxthreads;
@@ -408,7 +406,7 @@ public class Driver implements CommandProcessor {
   // deferClose indicates if the close/destroy should be deferred when the process has been
   // interrupted, it should be set to true if the compile is called within another method like
   // runInternal, which defers the close to the called in that method.
-  public int compile(String command, boolean resetTaskIds, boolean deferClose) {
+  private int compile(String command, boolean resetTaskIds, boolean deferClose) {
     PerfLogger perfLogger = SessionState.getPerfLogger(true);
     perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.DRIVER_RUN);
     perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.COMPILE);
@@ -525,6 +523,15 @@ public class Driver implements CommandProcessor {
       // because at that point we need access to the objects.
       Hive.get().getMSC().flushCache();
 
+      if(checkConcurrency() && startImplicitTxn(txnManager)) {
+        String userFromUGI = getUserFromUGI();
+        if (!txnManager.isTxnOpen()) {
+          if(userFromUGI == null) {
+            return 10;
+          }
+          long txnid = txnManager.openTxn(ctx, userFromUGI);
+        }
+      }
       // Do semantic analysis and plan generation
       if (saHooks != null && !saHooks.isEmpty()) {
         HiveSemanticAnalyzerHookContext hookCtx = new HiveSemanticAnalyzerHookContextImpl();
@@ -543,15 +550,10 @@ public class Driver implements CommandProcessor {
       } else {
         sem.analyze(tree, ctx);
       }
-      // Record any ACID compliant FileSinkOperators we saw so we can add our transaction ID to
-      // them later.
-      acidSinks = sem.getAcidFileSinks();
-
       LOG.info("Semantic Analysis Completed");
 
       // validate the plan
       sem.validate();
-      acidInQuery = sem.hasAcidInQuery();
       perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.ANALYZE);
 
       if (isInterrupted()) {
@@ -669,7 +671,39 @@ public class Driver implements CommandProcessor {
     }
   }
 
-
+  private boolean startImplicitTxn(HiveTxnManager txnManager) throws LockException {
+    boolean shouldOpenImplicitTxn = !ctx.isExplainPlan();
+    //this is dumb. HiveOperation is not always set. see HIVE-16447/HIVE-16443
+    switch (queryState.getHiveOperation() == null ? HiveOperation.QUERY : queryState.getHiveOperation()) {
+      case COMMIT:
+      case ROLLBACK:
+        if(!txnManager.isTxnOpen()) {
+          throw new LockException(null, ErrorMsg.OP_NOT_ALLOWED_WITHOUT_TXN, queryState.getHiveOperation().getOperationName());
+        }
+      case SWITCHDATABASE:
+      case SET_AUTOCOMMIT:
+        /**
+         * autocommit is here for completeness.  TM doesn't use it.  If we want to support JDBC
+         * semantics (or any other definition of autocommit) it should be done at session level.
+         */
+      case SHOWDATABASES:
+      case SHOWTABLES:
+      case SHOWCOLUMNS:
+      case SHOWFUNCTIONS:
+      case SHOWINDEXES:
+      case SHOWPARTITIONS:
+      case SHOWLOCKS:
+      case SHOWVIEWS:
+      case SHOW_ROLES:
+      case SHOW_ROLE_PRINCIPALS:
+      case SHOW_COMPACTIONS:
+      case SHOW_TRANSACTIONS:
+      case ABORT_TRANSACTIONS:
+        shouldOpenImplicitTxn = false;
+        //this implies that no locks are needed for such a command
+    }
+    return shouldOpenImplicitTxn;
+  }
   private int handleInterruption(String msg) {
     return handleInterruptionWithHook(msg, null, null);
   }
@@ -1083,8 +1117,17 @@ public class Driver implements CommandProcessor {
   // Write the current set of valid transactions into the conf file so that it can be read by
   // the input format.
   private void recordValidTxns() throws LockException {
+    ValidTxnList oldList = null;
+    String s = conf.get(ValidTxnList.VALID_TXNS_KEY);
+    if(s != null && s.length() > 0) {
+      oldList = new ValidReadTxnList(s);
+    }
     HiveTxnManager txnMgr = SessionState.get().getTxnMgr();
     ValidTxnList txns = txnMgr.getValidTxns();
+    if(oldList != null) {
+      throw new IllegalStateException("calling recordValidTxn() more than once in the same " +
+        JavaUtils.txnIdToString(txnMgr.getCurrentTxnId()));
+    }
     String txnStr = txns.toString();
     conf.set(ValidTxnList.VALID_TXNS_KEY, txnStr);
     if(plan.getFetchTask() != null) {
@@ -1098,79 +1141,61 @@ public class Driver implements CommandProcessor {
     LOG.debug("Encoding valid txns info " + txnStr + " txnid:" + txnMgr.getCurrentTxnId());
   }
 
+  private String getUserFromUGI() {
+    // Don't use the userName member, as it may or may not have been set.  Get the value from
+    // conf, which calls into getUGI to figure out who the process is running as.
+    try {
+      return conf.getUser();
+    } catch (IOException e) {
+      errorMessage = "FAILED: Error in determining user while acquiring locks: " + e.getMessage();
+      SQLState = ErrorMsg.findSQLState(e.getMessage());
+      downstreamError = e;
+      console.printError(errorMessage,
+        "\n" + org.apache.hadoop.util.StringUtils.stringifyException(e));
+    }
+    return null;
+  }
   /**
    * Acquire read and write locks needed by the statement. The list of objects to be locked are
-   * obtained from the inputs and outputs populated by the compiler. The lock acquisition scheme is
-   * pretty simple. If all the locks cannot be obtained, error out. Deadlock is avoided by making
-   * sure that the locks are lexicographically sorted.
+   * obtained from the inputs and outputs populated by the compiler.  Locking strategy depends on
+   * HiveTxnManager and HiveLockManager configured
    *
    * This method also records the list of valid transactions.  This must be done after any
-   * transactions have been opened and locks acquired.
-   * @param startTxnImplicitly in AC=false, the 1st DML starts a txn
+   * transactions have been opened.
    **/
-  private int acquireLocksAndOpenTxn(boolean startTxnImplicitly) {
+  private int acquireLocks() {
     PerfLogger perfLogger = SessionState.getPerfLogger();
     perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.ACQUIRE_READ_WRITE_LOCKS);
 
     SessionState ss = SessionState.get();
     HiveTxnManager txnMgr = ss.getTxnMgr();
-    if(startTxnImplicitly) {
-      assert !txnMgr.getAutoCommit();
+    if(!txnMgr.isTxnOpen() && txnMgr.supportsAcid()) {
+      /*non acid txn managers don't support txns but fwd lock requests to lock managers
+        acid txn manager requires all locks to be associated with a txn so if we
+        end up here w/o an open txn it's because we are processing something like "use <database>
+        which by definition needs no locks*/
+      return 0;
     }
-
     try {
-      // Don't use the userName member, as it may or may not have been set.  Get the value from
-      // conf, which calls into getUGI to figure out who the process is running as.
-      String userFromUGI;
-      try {
-        userFromUGI = conf.getUser();
-      } catch (IOException e) {
-        errorMessage = "FAILED: Error in determining user while acquiring locks: " + e.getMessage();
-        SQLState = ErrorMsg.findSQLState(e.getMessage());
-        downstreamError = e;
-        console.printError(errorMessage,
-            "\n" + org.apache.hadoop.util.StringUtils.stringifyException(e));
+      String userFromUGI = getUserFromUGI();
+      if(userFromUGI == null) {
         return 10;
-      }
-
-      boolean initiatingTransaction = false;
-      boolean readOnlyQueryInAutoCommit = false;
-      if((txnMgr.getAutoCommit() && haveAcidWrite()) || plan.getOperation() == HiveOperation.START_TRANSACTION ||
-        (!txnMgr.getAutoCommit() && startTxnImplicitly)) {
-        if(txnMgr.isTxnOpen()) {
-          throw new RuntimeException("Already have an open transaction txnid:" + txnMgr.getCurrentTxnId());
-        }
-        // We are writing to tables in an ACID compliant way, so we need to open a transaction
-        txnMgr.openTxn(ctx, userFromUGI);
-        initiatingTransaction = true;
-      }
-      else {
-        readOnlyQueryInAutoCommit = txnMgr.getAutoCommit() && plan.getOperation() == HiveOperation.QUERY && !haveAcidWrite();
       }
       // Set the transaction id in all of the acid file sinks
       if (haveAcidWrite()) {
-        for (FileSinkDesc desc : acidSinks) {
+        for (FileSinkDesc desc : plan.getAcidSinks()) {
           desc.setTransactionId(txnMgr.getCurrentTxnId());
           //it's possible to have > 1 FileSink writing to the same table/partition
           //e.g. Merge stmt, multi-insert stmt when mixing DP and SP writes
           desc.setStatementId(txnMgr.getWriteIdAndIncrement());
         }
       }
-      /*Note, we have to record snapshot after lock acquisition to prevent lost update problem
-      consider 2 concurrent "update table T set x = x + 1".  1st will get the locks and the
-      2nd will block until 1st one commits and only then lock in the snapshot, i.e. it will
-      see the changes made by 1st one.  This takes care of autoCommit=true case.
-      For multi-stmt txns this is not sufficient and will be managed via WriteSet tracking
-      in the lock manager.*/
+      /*It's imperative that {@code acquireLocks()} is called for all commands so that 
+      HiveTxnManager can transition its state machine correctly*/
       txnMgr.acquireLocks(plan, ctx, userFromUGI, lDrvState);
-      if(initiatingTransaction || (readOnlyQueryInAutoCommit && acidInQuery)) {
-        //For multi-stmt txns we should record the snapshot when txn starts but
-        // don't update it after that until txn completes.  Thus the check for {@code initiatingTransaction}
-        //For autoCommit=true, Read-only statements, txn is implicit, i.e. lock in the snapshot
-        //for each statement.
+      if(txnMgr.recordSnapshot(plan)) {
         recordValidTxns();
       }
-
       return 0;
     } catch (Exception e) {
       errorMessage = "FAILED: Error in acquiring locks: " + e.getMessage();
@@ -1185,7 +1210,7 @@ public class Driver implements CommandProcessor {
   }
 
   private boolean haveAcidWrite() {
-    return acidSinks != null && !acidSinks.isEmpty();
+    return !plan.getAcidSinks().isEmpty();
   }
   /**
    * @param commit if there is an open transaction and if true, commit,
@@ -1193,11 +1218,11 @@ public class Driver implements CommandProcessor {
    * @param txnManager an optional existing transaction manager retrieved earlier from the session
    *
    **/
-  private void releaseLocksAndCommitOrRollback(boolean commit, HiveTxnManager txnManager)
+  @VisibleForTesting
+  public void releaseLocksAndCommitOrRollback(boolean commit, HiveTxnManager txnManager)
       throws LockException {
     PerfLogger perfLogger = SessionState.getPerfLogger();
     perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.RELEASE_LOCKS);
-
     HiveTxnManager txnMgr;
     if (txnManager == null) {
       SessionState ss = SessionState.get();
@@ -1207,6 +1232,7 @@ public class Driver implements CommandProcessor {
     }
     // If we've opened a transaction we need to commit or rollback rather than explicitly
     // releasing the locks.
+    conf.unset(ValidTxnList.VALID_TXNS_KEY);
     if (txnMgr.isTxnOpen()) {
       if (commit) {
         if(conf.getBoolVar(ConfVars.HIVE_IN_TEST) && conf.getBoolVar(ConfVars.HIVETESTMODEROLLBACKTXN)) {
@@ -1492,52 +1518,12 @@ public class Driver implements CommandProcessor {
       HiveTxnManager txnManager = SessionState.get().getTxnMgr();
       ctx.setHiveTxnManager(txnManager);
 
-      boolean startTxnImplicitly = false;
-      {
-        //this block ensures op makes sense in given context, e.g. COMMIT is valid only if txn is open
-        //DDL is not allowed in a txn, etc.
-        //an error in an open txn does a rollback of the txn
-        if (txnManager.isTxnOpen() && !plan.getOperation().isAllowedInTransaction()) {
-          assert !txnManager.getAutoCommit() : "didn't expect AC=true";
-          return rollback(new CommandProcessorResponse(12, ErrorMsg.OP_NOT_ALLOWED_IN_TXN, null,
-            plan.getOperationName(), Long.toString(txnManager.getCurrentTxnId())));
-        }
-        if(!txnManager.isTxnOpen() && plan.getOperation().isRequiresOpenTransaction()) {
-          return rollback(new CommandProcessorResponse(12, ErrorMsg.OP_NOT_ALLOWED_WITHOUT_TXN, null, plan.getOperationName()));
-        }
-        if(!txnManager.isTxnOpen() && plan.getOperation() == HiveOperation.QUERY && !txnManager.getAutoCommit()) {
-          //this effectively makes START TRANSACTION optional and supports JDBC setAutoCommit(false) semantics
-          //also, indirectly allows DDL to be executed outside a txn context
-          startTxnImplicitly = true;
-        }
-        if(txnManager.getAutoCommit() && plan.getOperation() == HiveOperation.START_TRANSACTION) {
-          return rollback(new CommandProcessorResponse(12, ErrorMsg.OP_NOT_ALLOWED_IN_AUTOCOMMIT, null, plan.getOperationName()));
-        }
-      }
-      if(plan.getOperation() == HiveOperation.SET_AUTOCOMMIT) {
-        try {
-          if(plan.getAutoCommitValue() && !txnManager.getAutoCommit()) {
-            /*here, if there is an open txn, we want to commit it; this behavior matches
-            * https://docs.oracle.com/javase/6/docs/api/java/sql/Connection.html#setAutoCommit(boolean)*/
-            releaseLocksAndCommitOrRollback(true, null);
-            txnManager.setAutoCommit(true);
-          }
-          else if(!plan.getAutoCommitValue() && txnManager.getAutoCommit()) {
-            txnManager.setAutoCommit(false);
-          }
-          else {/*didn't change autoCommit value - no-op*/}
-        }
-        catch(LockException e) {
-          return handleHiveException(e, 12);
-        }
-      }
-
       if (requiresLock()) {
         // a checkpoint to see if the thread is interrupted or not before an expensive operation
         if (isInterrupted()) {
           ret = handleInterruption("at acquiring the lock.");
         } else {
-          ret = acquireLocksAndOpenTxn(startTxnImplicitly);
+          ret = acquireLocks();
         }
         if (ret != 0) {
           return rollback(createProcessorResponse(ret));
@@ -1551,7 +1537,8 @@ public class Driver implements CommandProcessor {
 
       //if needRequireLock is false, the release here will do nothing because there is no lock
       try {
-        if(txnManager.getAutoCommit() || plan.getOperation() == HiveOperation.COMMIT) {
+        //since set autocommit starts an implicit txn, close it
+        if(txnManager.isImplicitTransactionOpen() || plan.getOperation() == HiveOperation.COMMIT) {
           releaseLocksAndCommitOrRollback(true, null);
         }
         else if(plan.getOperation() == HiveOperation.ROLLBACK) {
@@ -1678,6 +1665,13 @@ public class Driver implements CommandProcessor {
   private CommandProcessorResponse createProcessorResponse(int ret) {
     SessionState.getPerfLogger().cleanupPerfLogMetrics();
     queryDisplay.setErrorMessage(errorMessage);
+    if(downstreamError != null && downstreamError instanceof HiveException) {
+      ErrorMsg em = ((HiveException)downstreamError).getCanonicalErrorMsg();
+      if(em != null) {
+        return new CommandProcessorResponse(ret, errorMessage, SQLState,
+          schema, downstreamError, em.getErrorCode(), null);
+      }
+    }
     return new CommandProcessorResponse(ret, errorMessage, SQLState, downstreamError);
   }
 

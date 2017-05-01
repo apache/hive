@@ -459,6 +459,21 @@ public class SessionState {
     return txnMgr;
   }
 
+  /**
+   * This only for testing.  It allows to switch the manager before the (test) operation so that
+   * it's not coupled to the executing thread.  Since tests run against Derby which often wedges
+   * under concurrent access, tests must use a single thead and simulate concurrent access.
+   * For example, {@code TestDbTxnManager2}
+   */
+  @VisibleForTesting
+  public HiveTxnManager setTxnMgr(HiveTxnManager mgr) {
+    if(!(sessionConf.getBoolVar(ConfVars.HIVE_IN_TEST) || sessionConf.getBoolVar(ConfVars.HIVE_IN_TEZ_TEST))) {
+      throw new IllegalStateException("Only for testing!");
+    }
+    HiveTxnManager tmp = txnMgr;
+    txnMgr = mgr;
+    return tmp;
+  }
   public HadoopShims.HdfsEncryptionShim getHdfsEncryptionShim() throws HiveException {
     try {
       return getHdfsEncryptionShim(FileSystem.get(sessionConf));

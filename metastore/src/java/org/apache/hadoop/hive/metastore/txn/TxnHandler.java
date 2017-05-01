@@ -855,7 +855,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
   /**
    * As much as possible (i.e. in absence of retries) we want both operations to be done on the same
    * connection (but separate transactions).  This avoid some flakiness in BONECP where if you
-   * perform an operation on 1 connection and immediately get another fron the pool, the 2nd one
+   * perform an operation on 1 connection and immediately get another from the pool, the 2nd one
    * doesn't see results of the first.
    * 
    * Retry-by-caller note: If the call to lock is from a transaction, then in the worst case
@@ -992,6 +992,13 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
                   }
                   break;
                 case SELECT:
+                  updateTxnComponents = false;
+                  break;
+                case NO_TXN:
+                  /*this constant is a bit of a misnomer since we now always have a txn context.  It
+                   just means the operation is such that we don't care what tables/partitions it
+                   affected as it doesn't trigger a compaction or conflict detection.  A better name
+                   would be NON_TRANSACTIONAL.*/
                   updateTxnComponents = false;
                   break;
                 default:
@@ -2471,14 +2478,14 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       response.setLockid(extLockId);
 
       LOG.debug("checkLock(): Setting savepoint. extLockId=" + JavaUtils.lockIdToString(extLockId));
-      Savepoint save = dbConn.setSavepoint();//todo: get rid of this
+      Savepoint save = dbConn.setSavepoint();
       StringBuilder query = new StringBuilder("select hl_lock_ext_id, " +
         "hl_lock_int_id, hl_db, hl_table, hl_partition, hl_lock_state, " +
         "hl_lock_type, hl_txnid from HIVE_LOCKS where hl_db in (");
 
       Set<String> strings = new HashSet<String>(locksBeingChecked.size());
 
-      //This the set of entities that the statement represnted by extLockId wants to update
+      //This the set of entities that the statement represented by extLockId wants to update
       List<LockInfo> writeSet = new ArrayList<>();
 
       for (LockInfo info : locksBeingChecked) {

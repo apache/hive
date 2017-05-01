@@ -50,6 +50,10 @@ public class TxnUtils {
    * @return a valid txn list.
    */
   public static ValidTxnList createValidReadTxnList(GetOpenTxnsResponse txns, long currentTxn) {
+    /*todo: should highWater be min(currentTxn,txns.getTxn_high_water_mark()) assuming currentTxn>0
+     * otherwise if currentTxn=7 and 8 commits before 7, then 7 will see result of 8 which
+     * doesn't make sense for Snapshot Isolation.  Of course for Read Committed, the list should
+     * inlude the latest committed set.*/
     long highWater = txns.getTxn_high_water_mark();
     Set<Long> open = txns.getOpen_txns();
     long[] exceptions = new long[open.size() - (currentTxn > 0 ? 1 : 0)];

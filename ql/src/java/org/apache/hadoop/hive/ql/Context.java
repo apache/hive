@@ -948,6 +948,13 @@ public class Context {
   public ExplainConfiguration getExplainConfig() {
     return explainConfig;
   }
+  private boolean isExplainPlan = false;
+  public boolean isExplainPlan() {
+    return isExplainPlan;
+  }
+  public void setExplainPlan(boolean t) {
+    this.isExplainPlan = t;
+  }
 
   public void setExplainConfig(ExplainConfiguration explainConfig) {
     this.explainConfig = explainConfig;

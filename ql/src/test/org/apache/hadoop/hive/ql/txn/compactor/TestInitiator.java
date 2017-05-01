@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.ql.txn.compactor;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.AbortTxnRequest;
+import org.apache.hadoop.hive.metastore.api.AbortTxnsRequest;
 import org.apache.hadoop.hive.metastore.api.CommitTxnRequest;
 import org.apache.hadoop.hive.metastore.api.CompactionRequest;
 import org.apache.hadoop.hive.metastore.api.CompactionType;
@@ -29,6 +30,8 @@ import org.apache.hadoop.hive.metastore.api.LockLevel;
 import org.apache.hadoop.hive.metastore.api.LockRequest;
 import org.apache.hadoop.hive.metastore.api.LockResponse;
 import org.apache.hadoop.hive.metastore.api.LockType;
+import org.apache.hadoop.hive.metastore.api.OpenTxnRequest;
+import org.apache.hadoop.hive.metastore.api.OpenTxnsResponse;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.ShowCompactRequest;
 import org.apache.hadoop.hive.metastore.api.ShowCompactResponse;
@@ -223,10 +226,10 @@ public class TestInitiator extends CompactorTest {
     LockResponse res = txnHandler.lock(req);
     txnHandler.abortTxn(new AbortTxnRequest(txnid));
 
-    for (int i = 0; i < TxnStore.TIMED_OUT_TXN_ABORT_BATCH_SIZE  + 50; i++) {
-      txnid = openTxn();
-      txnHandler.abortTxn(new AbortTxnRequest(txnid));
-    }
+    conf.setIntVar(HiveConf.ConfVars.HIVE_TXN_MAX_OPEN_BATCH, TxnStore.TIMED_OUT_TXN_ABORT_BATCH_SIZE + 50);
+    OpenTxnsResponse resp = txnHandler.openTxns(new OpenTxnRequest(
+      TxnStore.TIMED_OUT_TXN_ABORT_BATCH_SIZE + 50, "user", "hostname"));
+    txnHandler.abortTxns(new AbortTxnsRequest(resp.getTxn_ids()));
     GetOpenTxnsResponse openTxns = txnHandler.getOpenTxns();
     Assert.assertEquals(TxnStore.TIMED_OUT_TXN_ABORT_BATCH_SIZE + 50 + 1, openTxns.getOpen_txnsSize());
 

@@ -43,7 +43,7 @@ STAGE PLANS:
                   alias: acidtbldefault
                   filterExpr: (a = 1) (type: boolean)
                   buckets included: [1,] of 16
-                  Statistics: Num rows: 7972 Data size: 31889 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 7972 Data size: 31888 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
@@ -100,7 +100,7 @@ STAGE PLANS:
                     serialization.ddl struct acidtbldefault { i32 a}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                    totalSize 31889
+                    totalSize 31888
                     transactional true
                     transactional_properties default
 #### A masked pattern was here ####
@@ -123,7 +123,7 @@ STAGE PLANS:
                       serialization.ddl struct acidtbldefault { i32 a}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                      totalSize 31889
+                      totalSize 31888
                       transactional true
                       transactional_properties default
 #### A masked pattern was here ####
