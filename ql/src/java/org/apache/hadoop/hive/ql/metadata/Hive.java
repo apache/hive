@@ -690,6 +690,11 @@ public class Hive {
       throws InvalidOperationException, HiveException {
     try {
       validatePartition(newPart);
+      String location = newPart.getLocation();
+      if (location != null && !Utilities.isDefaultNameNode(conf)) {
+        location = Utilities.getQualifiedPath(conf, new Path(location));
+        newPart.setLocation(location);
+      }
       getMSC().alter_partition(dbName, tblName, newPart.getTPartition(), environmentContext);
 
     } catch (MetaException e) {
@@ -728,6 +733,11 @@ public class Hive {
       for (Partition tmpPart: newParts) {
         if (tmpPart.getParameters() != null) {
           tmpPart.getParameters().remove(hive_metastoreConstants.DDL_TIME);
+        }
+        String location = tmpPart.getLocation();
+        if (location != null && !Utilities.isDefaultNameNode(conf)) {
+          location = Utilities.getQualifiedPath(conf, new Path(location));
+          tmpPart.setLocation(location);
         }
         newTParts.add(tmpPart.getTPartition());
       }
