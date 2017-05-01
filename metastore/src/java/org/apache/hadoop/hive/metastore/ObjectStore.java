@@ -7370,6 +7370,38 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   @Override
+  public Map<String, ColumnStatisticsObj> getAggrColStatsForTablePartitions(String dbName,
+      String tableName) throws MetaException, NoSuchObjectException {
+    final boolean useDensityFunctionForNDVEstimation = HiveConf.getBoolVar(getConf(),
+        HiveConf.ConfVars.HIVE_METASTORE_STATS_NDV_DENSITY_FUNCTION);
+    final double ndvTuner = HiveConf.getFloatVar(getConf(),
+        HiveConf.ConfVars.HIVE_METASTORE_STATS_NDV_TUNER);
+    return new GetHelper<Map<String, ColumnStatisticsObj>>(dbName, tableName, true, false) {
+      @Override
+      protected Map<String, ColumnStatisticsObj> getSqlResult(
+          GetHelper<Map<String, ColumnStatisticsObj>> ctx) throws MetaException {
+        return directSql.getAggrColStatsForTablePartitions(dbName, tblName,
+            useDensityFunctionForNDVEstimation, ndvTuner);
+      }
+
+      @Override
+      protected Map<String, ColumnStatisticsObj> getJdoResult(
+          GetHelper<Map<String, ColumnStatisticsObj>> ctx) throws MetaException,
+          NoSuchObjectException {
+        // This is fast path for query optimizations, if we can find this info
+        // quickly using directSql, do it. No point in failing back to slow path
+        // here.
+        throw new MetaException("Jdo path is not implemented for stats aggr.");
+      }
+
+      @Override
+      protected String describeResult() {
+        return null;
+      }
+    }.run(true);
+  }
+
+  @Override
   public void flushCache() {
     // NOP as there's no caching
   }
@@ -8787,5 +8819,4 @@ public class ObjectStore implements RawStore, Configurable {
       }
     }
   }
-
 }

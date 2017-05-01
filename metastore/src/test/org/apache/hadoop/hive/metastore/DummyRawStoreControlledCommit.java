@@ -29,6 +29,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.api.AggrStats;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
+import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.CurrentNotificationEventId;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FileMetadataExprType;
@@ -868,5 +869,12 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
   public void addForeignKeys(List<SQLForeignKey> fks)
     throws InvalidObjectException, MetaException {
     // TODO Auto-generated method stub
+  }
+
+  @Override
+  public Map<String, ColumnStatisticsObj> getAggrColStatsForTablePartitions(String dbName,
+      String tableName) throws MetaException, NoSuchObjectException {
+    // TODO Auto-generated method stub
+    return null;
   }
 }
