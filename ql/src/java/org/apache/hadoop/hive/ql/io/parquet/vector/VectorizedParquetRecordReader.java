@@ -121,8 +121,9 @@ public class VectorizedParquetRecordReader extends ParquetRecordReaderBase
     try {
       serDeStats = new SerDeStats();
       projectionPusher = new ProjectionPusher();
-      if (oldInputSplit != null) {
-        initialize(getSplit(oldInputSplit, conf), conf);
+      ParquetInputSplit inputSplit = getSplit(oldInputSplit, conf);
+      if (inputSplit != null) {
+        initialize(inputSplit, conf);
         setTimeZoneConversion(jobConf, ((FileSplit) oldInputSplit).getPath());
       }
       colsToInclude = ColumnProjectionUtils.getReadColumnIDs(conf);
