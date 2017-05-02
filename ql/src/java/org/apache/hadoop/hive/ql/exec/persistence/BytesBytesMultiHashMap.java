@@ -24,6 +24,8 @@ import java.util.Map;
 import java.util.TreeMap;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.hadoop.hive.common.MemoryEstimate;
+import org.apache.hadoop.hive.ql.util.JavaDataModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
@@ -46,7 +48,7 @@ import com.google.common.annotations.VisibleForTesting;
  * Initially inspired by HPPC LongLongOpenHashMap; however, the code is almost completely reworked
  * and there's very little in common left save for quadratic probing (and that with some changes).
  */
-public final class BytesBytesMultiHashMap {
+public final class BytesBytesMultiHashMap implements MemoryEstimate {
   public static final Logger LOG = LoggerFactory.getLogger(BytesBytesMultiHashMap.class);
 
   /*
@@ -521,7 +523,18 @@ public final class BytesBytesMultiHashMap {
    * @return number of bytes
    */
   public long memorySize() {
-    return writeBuffers.size() + refs.length * 8 + 100;
+    return getEstimatedMemorySize();
+  }
+
+  @Override
+  public long getEstimatedMemorySize() {
+    JavaDataModel jdm = JavaDataModel.get();
+    long size = 0;
+    size += writeBuffers.getEstimatedMemorySize();
+    size += jdm.lengthForLongArrayOfSize(refs.length);
+    // 11 primitive1 fields, 2 refs above with alignment
+    size += JavaDataModel.alignUp(15 * jdm.primitive1(), jdm.memoryAlign());
+    return size;
   }
 
   public void seal() {

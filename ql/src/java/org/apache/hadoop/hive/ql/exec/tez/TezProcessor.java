@@ -23,6 +23,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.apache.hadoop.hive.ql.exec.mapjoin.MapJoinMemoryExhaustionError;
+import org.apache.tez.runtime.api.TaskFailureType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -40,6 +42,8 @@ import org.apache.tez.runtime.api.LogicalInput;
 import org.apache.tez.runtime.api.LogicalOutput;
 import org.apache.tez.runtime.api.ProcessorContext;
 import org.apache.tez.runtime.library.api.KeyValueWriter;
+
+import com.google.common.base.Throwables;
 
 /**
  * Hive processor for Tez that forms the vertices in Tez and processes the data.
@@ -189,8 +193,11 @@ public class TezProcessor extends AbstractLogicalIOProcessor {
     } catch (Throwable t) {
       originalThrowable = t;
     } finally {
-      if (originalThrowable != null && originalThrowable instanceof Error) {
-        LOG.error(StringUtils.stringifyException(originalThrowable));
+      if (originalThrowable != null && (originalThrowable instanceof Error ||
+        Throwables.getRootCause(originalThrowable) instanceof Error)) {
+        LOG.error("Cannot recover from this FATAL error", StringUtils.stringifyException(originalThrowable));
+        getContext().reportFailure(TaskFailureType.FATAL, originalThrowable,
+                      "Cannot recover from this error");
         throw new RuntimeException(originalThrowable);
       }
 

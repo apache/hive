@@ -191,7 +191,7 @@ public class GenericUDAFComputeStats extends AbstractGenericUDAFResolver {
       @Override
       public int estimate() {
         JavaDataModel model = JavaDataModel.get();
-        return model.primitive2() * 3 + model.lengthFor(columnType);
+        return (int) (model.primitive2() * 3 + model.lengthFor(columnType));
       }
     };
 
@@ -433,11 +433,11 @@ public class GenericUDAFComputeStats extends AbstractGenericUDAFResolver {
       @Override
       public int estimate() {
         JavaDataModel model = JavaDataModel.get();
-        return model.lengthFor(columnType)
-            + model.primitive1()
-            + model.primitive2()
-            + ((numDV == null) ? NumDistinctValueEstimator.lengthFor(model, null) :
-                                 numDV.lengthFor(model));
+        return (int) (model.lengthFor(columnType)
+                    + model.primitive1()
+                    + model.primitive2()
+                    + ((numDV == null) ? NumDistinctValueEstimator.lengthFor(model, null) :
+                                         numDV.lengthFor(model)));
       }
 
       protected void initNDVEstimator(int numBitVectors) {
@@ -853,10 +853,10 @@ public class GenericUDAFComputeStats extends AbstractGenericUDAFResolver {
       @Override
       public int estimate() {
         JavaDataModel model = JavaDataModel.get();
-        return model.primitive1() * 2 + model.primitive2() * 4 +
-            model.lengthFor(columnType) +
-            ((numDV == null) ? NumDistinctValueEstimator.lengthFor(model, null) :
-                               numDV.lengthFor(model));
+        return (int) (model.primitive1() * 2 + model.primitive2() * 4 +
+                    model.lengthFor(columnType) +
+                    ((numDV == null) ? NumDistinctValueEstimator.lengthFor(model, null) :
+                                       numDV.lengthFor(model)));
 
       }
     };
@@ -1160,7 +1160,7 @@ public class GenericUDAFComputeStats extends AbstractGenericUDAFResolver {
       @Override
       public int estimate() {
         JavaDataModel model = JavaDataModel.get();
-        return model.primitive2() * 4 + model.lengthFor(columnType);
+        return (int) (model.primitive2() * 4 + model.lengthFor(columnType));
       }
     };
 

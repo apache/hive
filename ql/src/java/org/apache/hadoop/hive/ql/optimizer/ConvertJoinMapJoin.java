@@ -100,6 +100,7 @@ public class ConvertJoinMapJoin implements NodeProcessor {
 
     // adjust noconditional task size threshold for LLAP
     maxSize = getNoConditionalTaskSizeForLlap(maxSize, context.conf);
+    joinOp.getConf().setNoConditionalTaskSize(maxSize);
 
     TezBucketJoinProcCtx tezBucketJoinProcCtx = new TezBucketJoinProcCtx(context.conf);
     if (!context.conf.getBoolVar(HiveConf.ConfVars.HIVECONVERTJOIN)) {
@@ -280,7 +281,7 @@ public class ConvertJoinMapJoin implements NodeProcessor {
                   joinOp.getConf().getBaseSrc(), joinOp).getSecond(),
                   null, joinDesc.getExprs(), null, null,
                   joinDesc.getOutputColumnNames(), mapJoinConversionPos, joinDesc.getConds(),
-                  joinDesc.getFilters(), joinDesc.getNoOuterJoin(), null);
+                  joinDesc.getFilters(), joinDesc.getNoOuterJoin(), null, joinDesc.getNoConditionalTaskSize());
       mapJoinDesc.setNullSafes(joinDesc.getNullSafes());
       mapJoinDesc.setFilterMap(joinDesc.getFilterMap());
       mapJoinDesc.setResidualFilterExprs(joinDesc.getResidualFilterExprs());

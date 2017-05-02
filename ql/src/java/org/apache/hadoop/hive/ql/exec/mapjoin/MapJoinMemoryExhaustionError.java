@@ -15,34 +15,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.hadoop.hive.ql.exec.mapjoin;
 
-package org.apache.hadoop.hive.ql.exec.vector.mapjoin.hashtable;
-
-import java.io.IOException;
-
-import org.apache.hadoop.hive.common.MemoryEstimate;
-import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.serde2.SerDeException;
-import org.apache.hadoop.io.BytesWritable;
-
-/*
- * Root interface for a vector map join hash table (which could be a hash map, hash multi-set, or
- * hash set).
+/**
+ * When this Error is thrown, better not retry.
  */
-public interface VectorMapJoinHashTable extends MemoryEstimate {
-
-
-  /*
-   * @param currentKey
-   *          The current key.
-   * @param currentValue
-   *          The current value.
-   */
-  void putRow(BytesWritable currentKey, BytesWritable currentValue)
-      throws SerDeException, HiveException, IOException;
-
-  /**
-   * Get hash table size
-   */
-  int size();
+public class MapJoinMemoryExhaustionError extends Error {
+  private static final long serialVersionUID = 3678353959830506881L;
+  public MapJoinMemoryExhaustionError(String msg) {
+    super(msg);
+  }
 }

@@ -112,20 +112,23 @@ public class JoinDesc extends AbstractOperatorDesc {
   //       Everything else in this desc that says "semi-join" is for the former.
   private transient Map<String, SemiJoinHint> semiJoinHints;
 
+  // non-transient field, used at runtime to kill a task if it exceeded memory limits when running in LLAP
+  protected long noConditionalTaskSize;
+
   public JoinDesc() {
   }
 
   public JoinDesc(final Map<Byte, List<ExprNodeDesc>> exprs,
       List<String> outputColumnNames, final boolean noOuterJoin,
       final JoinCondDesc[] conds, final Map<Byte, List<ExprNodeDesc>> filters,
-      ExprNodeDesc[][] joinKeys) {
+      ExprNodeDesc[][] joinKeys, final long noConditionalTaskSize) {
     this.exprs = exprs;
     this.outputColumnNames = outputColumnNames;
     this.noOuterJoin = noOuterJoin;
     this.conds = conds;
     this.filters = filters;
     this.joinKeys = joinKeys;
-
+    this.noConditionalTaskSize = noConditionalTaskSize;
     resetOrder();
   }
 
@@ -152,6 +155,7 @@ public class JoinDesc extends AbstractOperatorDesc {
     ret.setHandleSkewJoin(handleSkewJoin);
     ret.setSkewKeyDefinition(getSkewKeyDefinition());
     ret.setTagOrder(getTagOrder().clone());
+    ret.setNoConditionalTaskSize(getNoConditionalTaskSize());
     if (getKeyTableDesc() != null) {
       ret.setKeyTableDesc((TableDesc) getKeyTableDesc().clone());
     }
@@ -203,6 +207,7 @@ public class JoinDesc extends AbstractOperatorDesc {
     this.residualFilterExprs = clone.residualFilterExprs;
     this.statistics = clone.statistics;
     this.semiJoinHints = clone.semiJoinHints;
+    this.noConditionalTaskSize = clone.noConditionalTaskSize;
   }
 
   public Map<Byte, List<ExprNodeDesc>> getExprs() {
@@ -700,4 +705,12 @@ public class JoinDesc extends AbstractOperatorDesc {
     return semiJoinHints;
   }
 
+
+  public long getNoConditionalTaskSize() {
+    return noConditionalTaskSize;
+  }
+
+  public void setNoConditionalTaskSize(final long noConditionalTaskSize) {
+    this.noConditionalTaskSize = noConditionalTaskSize;
+  }
 }

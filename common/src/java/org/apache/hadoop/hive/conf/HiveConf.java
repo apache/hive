@@ -3161,6 +3161,10 @@ public class HiveConf extends Configuration {
         "hive.llap.mapjoin.memory.oversubscribe.factor amount of memory can be borrowed based on which mapjoin\n" +
         "conversion decision will be made). This is only an upper bound. Lower bound is determined by number of\n" +
         "executors and configured max concurrency."),
+    LLAP_MAPJOIN_MEMORY_MONITOR_CHECK_INTERVAL("hive.llap.mapjoin.memory.monitor.check.interval", 100000L,
+      "Check memory usage of mapjoin hash tables after every interval of this many rows. If map join hash table\n" +
+        "memory usage exceeds (hive.auto.convert.join.noconditionaltask.size * hive.hash.table.inflation.factor)\n" +
+        "when running in LLAP, tasks will get killed and not retried. Set the value to 0 to disable this feature."),
     LLAP_DAEMON_AM_REPORTER_MAX_THREADS("hive.llap.daemon.am-reporter.max.threads", 4,
         "Maximum number of threads to be used for AM reporter. If this is lower than number of\n" +
         "executors in llap daemon, it would be set to number of executors at runtime.",

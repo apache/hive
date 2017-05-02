@@ -118,6 +118,11 @@ public class HybridHashTableContainer
 
   private final String spillLocalDirs;
 
+  @Override
+  public long getEstimatedMemorySize() {
+    return memoryUsed;
+  }
+
   /**
    * This class encapsulates the triplet together since they are closely related to each other
    * The triplet: hashmap (either in memory or on disk), small table container, big table container

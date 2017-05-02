@@ -18,13 +18,14 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.mapjoin.fast;
 
+import org.apache.hadoop.hive.common.MemoryEstimate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.serde2.WriteBuffers;
 
 // Optimized for sequential key lookup.
 
-public class VectorMapJoinFastKeyStore {
+public class VectorMapJoinFastKeyStore implements MemoryEstimate {
 
   private static final Logger LOG = LoggerFactory.getLogger(VectorMapJoinFastKeyStore.class.getName());
 
@@ -164,5 +165,13 @@ public class VectorMapJoinFastKeyStore {
     // TODO: Check if maximum size compatible with AbsoluteKeyOffset.maxSize.
     this.writeBuffers = writeBuffers;
     unsafeReadPos = new WriteBuffers.Position();
+  }
+
+  @Override
+  public long getEstimatedMemorySize() {
+    long size = 0;
+    size += writeBuffers == null ? 0 : writeBuffers.getEstimatedMemorySize();
+    size += unsafeReadPos == null ? 0 : unsafeReadPos.getEstimatedMemorySize();
+    return size;
   }
 }

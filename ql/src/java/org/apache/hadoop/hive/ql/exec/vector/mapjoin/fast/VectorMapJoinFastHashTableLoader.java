@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.Map;
 
+import org.apache.hadoop.hive.ql.exec.mapjoin.MapJoinMemoryExhaustionError;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -28,7 +29,6 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.MapredContext;
 import org.apache.hadoop.hive.ql.exec.mr.ExecMapperContext;
-import org.apache.hadoop.hive.ql.exec.persistence.HashMapWrapper;
 import org.apache.hadoop.hive.ql.exec.persistence.MapJoinTableContainer;
 import org.apache.hadoop.hive.ql.exec.persistence.MapJoinTableContainerSerDe;
 import org.apache.hadoop.hive.ql.exec.tez.TezContext;
@@ -68,6 +68,21 @@ public class VectorMapJoinFastHashTableLoader implements org.apache.hadoop.hive.
     Map<Integer, String> parentToInput = desc.getParentToInput();
     Map<Integer, Long> parentKeyCounts = desc.getParentKeyCounts();
 
+    final float inflationFactor = HiveConf.getFloatVar(hconf, HiveConf.ConfVars.HIVE_HASH_TABLE_INFLATION_FACTOR);
+    final long memoryCheckInterval = HiveConf.getLongVar(hconf,
+      HiveConf.ConfVars.LLAP_MAPJOIN_MEMORY_MONITOR_CHECK_INTERVAL);
+    final boolean isLlap = "llap".equals(HiveConf.getVar(hconf, HiveConf.ConfVars.HIVE_EXECUTION_MODE));
+    long numEntries = 0;
+    long noCondTaskSize = desc.getNoConditionalTaskSize();
+    boolean doMemCheck = isLlap && inflationFactor > 0.0f && noCondTaskSize > 0 && memoryCheckInterval > 0;
+    if (!doMemCheck) {
+      LOG.info("Not doing hash table memory monitoring. isLlap: {} inflationFactor: {} noConditionalTaskSize: {} " +
+          "memoryCheckInterval: {}", isLlap, inflationFactor, noCondTaskSize, memoryCheckInterval);
+    } else {
+      LOG.info("Memory monitoring for hash table loader enabled. noconditionalTaskSize: {} inflationFactor: {} ",
+        noCondTaskSize, inflationFactor);
+    }
+
     for (int pos = 0; pos < mapJoinTables.length; pos++) {
       if (pos == desc.getPosBigTable()) {
         continue;
@@ -93,15 +108,41 @@ public class VectorMapJoinFastHashTableLoader implements org.apache.hadoop.hive.
         VectorMapJoinFastTableContainer vectorMapJoinFastTableContainer =
                 new VectorMapJoinFastTableContainer(desc, hconf, keyCount);
 
+        LOG.info("Using vectorMapJoinFastTableContainer: " + vectorMapJoinFastTableContainer.getClass().getSimpleName());
+
         vectorMapJoinFastTableContainer.setSerde(null, null); // No SerDes here.
         while (kvReader.next()) {
           vectorMapJoinFastTableContainer.putRow((BytesWritable)kvReader.getCurrentKey(),
               (BytesWritable)kvReader.getCurrentValue());
+          numEntries++;
+          if (doMemCheck && numEntries >= memoryCheckInterval) {
+            if (doMemCheck && ((numEntries % memoryCheckInterval) == 0)) {
+              final long estMemUsage = vectorMapJoinFastTableContainer.getEstimatedMemorySize();
+              final long threshold = (long) (inflationFactor * noCondTaskSize);
+              // guard against poor configuration of noconditional task size. We let hash table grow till 2/3'rd memory
+              // available for container/executor
+              final long effectiveThreshold = (long) Math.max(threshold, (2.0/3.0) * desc.getMaxMemoryAvailable());
+              if (estMemUsage > effectiveThreshold) {
+                String msg = "VectorMapJoin Hash table loading exceeded memory limits." +
+                  " estimatedMemoryUsage: " + estMemUsage + " noconditionalTaskSize: " + noCondTaskSize +
+                  " inflationFactor: " + inflationFactor + " threshold: " + threshold +
+                  " effectiveThreshold: " + effectiveThreshold;
+                LOG.error(msg);
+                throw new MapJoinMemoryExhaustionError(msg);
+              } else {
+                if (LOG.isInfoEnabled()) {
+                  LOG.info("Checking vector mapjoin hash table loader memory usage.. numEntries: {} " +
+                    "estimatedMemoryUsage: {} effectiveThreshold: {}", numEntries, estMemUsage, effectiveThreshold);
+                }
+              }
+            }
+          }
         }
 
         vectorMapJoinFastTableContainer.seal();
-        mapJoinTables[pos] = (MapJoinTableContainer) vectorMapJoinFastTableContainer;
-
+        mapJoinTables[pos] = vectorMapJoinFastTableContainer;
+        LOG.info("Finished loading hashtable using " + vectorMapJoinFastTableContainer.getClass() +
+          ". Small table position: " + pos);
       } catch (IOException e) {
         throw new HiveException(e);
       } catch (SerDeException e) {

@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.exec.vector.mapjoin.optimized;
 
 import java.io.IOException;
 
+import org.apache.hadoop.hive.ql.util.JavaDataModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.ql.exec.JoinUtil;
@@ -95,5 +96,13 @@ public abstract class VectorMapJoinOptimizedHashTable implements VectorMapJoinHa
   @Override
   public int size() {
     return originalTableContainer.size();
+  }
+
+  @Override
+  public long getEstimatedMemorySize() {
+    long size = 0;
+    size += originalTableContainer == null ? 0 : originalTableContainer.getEstimatedMemorySize();
+    size += (2 * JavaDataModel.get().object());
+    return size;
   }
 }

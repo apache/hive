@@ -86,17 +86,17 @@ public class MapJoinMemoryExhaustionHandler {
    *
    * @param tableContainerSize currently table container size
    * @param numRows number of rows processed
-   * @throws MapJoinMemoryExhaustionException
+   * @throws MapJoinMemoryExhaustionError
    */
   public void checkMemoryStatus(long tableContainerSize, long numRows)
-  throws MapJoinMemoryExhaustionException {
+  throws MapJoinMemoryExhaustionError {
     long usedMemory = memoryMXBean.getHeapMemoryUsage().getUsed();
     double percentage = (double) usedMemory / (double) maxHeapSize;
     String msg = Utilities.now() + "\tProcessing rows:\t" + numRows + "\tHashtable size:\t"
         + tableContainerSize + "\tMemory usage:\t" + usedMemory + "\tpercentage:\t" + percentageNumberFormat.format(percentage);
     console.printInfo(msg);
     if(percentage > maxMemoryUsage) {
-      throw new MapJoinMemoryExhaustionException(msg);
+      throw new MapJoinMemoryExhaustionError(msg);
     }
    }
 }

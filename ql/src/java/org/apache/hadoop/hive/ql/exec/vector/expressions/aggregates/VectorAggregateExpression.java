@@ -52,7 +52,7 @@ public abstract class VectorAggregateExpression  implements Serializable {
   public abstract Object evaluateOutput(AggregationBuffer agg) throws HiveException;
 
   public abstract ObjectInspector getOutputObjectInspector();
-  public abstract int getAggregationBufferFixedSize();
+  public abstract long getAggregationBufferFixedSize();
   public boolean hasVariableSize() {
     return false;
   }
