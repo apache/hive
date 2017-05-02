@@ -897,6 +897,7 @@ public class TestReplicationScenarios {
     run("REPL LOAD " + dbName + "_dupe FROM '" + incrementalDumpLocn + "'");
     verifyRun("SELECT * from " + dbName + "_dupe.unptned_late", unptn_data);
 
+    run("ALTER TABLE " + dbName + ".ptned ADD PARTITION (b=1)");
     run("LOAD DATA LOCAL INPATH '" + ptn_locn_1 + "' OVERWRITE INTO TABLE " + dbName
         + ".ptned PARTITION(b=1)");
     verifySetup("SELECT a from " + dbName + ".ptned WHERE b=1", ptn_data_1);
@@ -926,6 +927,8 @@ public class TestReplicationScenarios {
 
     verifyRun("SELECT a from " + dbName + "_dupe.ptned_late WHERE b=1", ptn_data_1);
     verifyRun("SELECT a from " + dbName + "_dupe.ptned_late WHERE b=2", ptn_data_2);
+    verifyRun("SELECT a from " + dbName + "_dupe.ptned WHERE b=1", ptn_data_1);
+    verifyRun("SELECT a from " + dbName + "_dupe.ptned WHERE b=2", ptn_data_2);
   }
 
   @Test
@@ -987,8 +990,7 @@ public class TestReplicationScenarios {
 
     verifyRun("SELECT a from " + dbName + "_dupe.unptned_late ORDER BY a", unptn_data_after_ins);
 
-    // Commenting the below verifications for the replication of insert overwrites until HIVE-15642 patch is in
-    //verifyRun("SELECT a from " + dbName + "_dupe.unptned", data_after_ovwrite);
+    verifyRun("SELECT a from " + dbName + "_dupe.unptned", data_after_ovwrite);
   }
 
   @Test
@@ -1036,8 +1038,12 @@ public class TestReplicationScenarios {
     verifyRun("SELECT a from " + dbName + "_dupe.ptned where (b=2) ORDER BY a", ptn_data_2);
 
     String[] data_after_ovwrite = new String[] { "hundred" };
+    // Insert overwrite on existing partition
     run("INSERT OVERWRITE TABLE " + dbName + ".ptned partition(b=2) values('" + data_after_ovwrite[0] + "')");
     verifySetup("SELECT a from " + dbName + ".ptned where (b=2)", data_after_ovwrite);
+    // Insert overwrite on dynamic partition
+    run("INSERT OVERWRITE TABLE " + dbName + ".ptned partition(b=3) values('" + data_after_ovwrite[0] + "')");
+    verifySetup("SELECT a from " + dbName + ".ptned where (b=3)", data_after_ovwrite);
 
     advanceDumpDir();
     run("REPL DUMP " + dbName + " FROM " + replDumpId);
@@ -1049,8 +1055,8 @@ public class TestReplicationScenarios {
     printOutput();
     run("REPL LOAD " + dbName + "_dupe FROM '" + incrementalDumpLocn + "'");
 
-    // Commenting the below verifications for the replication of insert overwrites until HIVE-15642 patch is in
-    //verifyRun("SELECT a from " + dbName + "_dupe.ptned where (b=2)", data_after_ovwrite);
+    verifyRun("SELECT a from " + dbName + "_dupe.ptned where (b=2)", data_after_ovwrite);
+    verifyRun("SELECT a from " + dbName + "_dupe.ptned where (b=3)", data_after_ovwrite);
   }
 
   @Test
