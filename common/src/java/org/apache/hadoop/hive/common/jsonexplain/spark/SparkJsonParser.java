@@ -16,31 +16,20 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.common.jsonexplain.tez;
+package org.apache.hadoop.hive.common.jsonexplain.spark;
 
 import org.apache.hadoop.hive.common.jsonexplain.DagJsonParser;
 
 
-public class TezJsonParser extends DagJsonParser {
+public class SparkJsonParser extends DagJsonParser {
 
   @Override
   public String mapEdgeType(String edgeName) {
-    switch (edgeName) {
-      case "BROADCAST_EDGE":
-        return "BROADCAST";
-      case "SIMPLE_EDGE":
-        return "SHUFFLE";
-      case "CUSTOM_SIMPLE_EDGE":
-        return "PARTITION_ONLY_SHUFFLE";
-      case "CUSTOM_EDGE":
-        return "MULTICAST";
-      default:
-        return "UNKNOWN";
-    }
+    return edgeName;
   }
 
   @Override
   public String getFrameworkName() {
-    return "Tez";
+    return "Spark";
   }
 }
