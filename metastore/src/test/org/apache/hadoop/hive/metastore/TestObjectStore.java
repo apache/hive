@@ -59,8 +59,11 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.jdo.Query;
 
 public class TestObjectStore {
   private ObjectStore objectStore = null;
@@ -409,5 +412,16 @@ public class TestObjectStore {
       }
     } catch (NoSuchObjectException e) {
     }
+  }
+
+  @Test
+  public void testQueryCloseOnError() throws Exception {
+    ObjectStore spy = Mockito.spy(objectStore);
+    spy.getAllDatabases();
+    spy.getAllFunctions();
+    spy.getAllTables(DB1);
+    spy.getPartitionCount();
+    Mockito.verify(spy, Mockito.times(3))
+        .rollbackAndCleanup(Mockito.anyBoolean(), Mockito.<Query>anyObject());
   }
 }
