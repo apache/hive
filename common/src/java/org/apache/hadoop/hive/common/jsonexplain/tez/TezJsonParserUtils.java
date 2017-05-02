@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.common.jsonexplain;
+package org.apache.hadoop.hive.common.jsonexplain.tez;
 
 import java.util.Arrays;
 import java.util.List;
@@ -24,14 +24,14 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 
-public class DagJsonParserUtils {
+public class TezJsonParserUtils {
 
   public static List<String> OperatorNoStats = Arrays.asList(new String[] { "File Output Operator",
       "Reduce Output Operator" });
 
   public static String renameReduceOutputOperator(String operatorName, Vertex vertex) {
     if (operatorName.equals("Reduce Output Operator") && vertex.edgeType != null) {
-      return vertex.edgeType;
+      return vertex.edgeType.name();
     } else {
       return operatorName;
     }

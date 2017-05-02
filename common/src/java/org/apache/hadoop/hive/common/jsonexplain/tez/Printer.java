@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.common.jsonexplain;
+package org.apache.hadoop.hive.common.jsonexplain.tez;
 
 public final class Printer {
   public static final String lineSeparator = System.getProperty("line.separator");;

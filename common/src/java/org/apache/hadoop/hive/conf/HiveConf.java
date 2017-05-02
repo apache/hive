@@ -2218,10 +2218,7 @@ public class HiveConf extends Configuration {
         "When enabled, will log EXPLAIN EXTENDED output for the query at INFO log4j log level."),
     HIVE_EXPLAIN_USER("hive.explain.user", true,
         "Whether to show explain result at user level.\n" +
-        "When enabled, will log EXPLAIN output for the query at user level. Tez only."),
-    HIVE_SPARK_EXPLAIN_USER("hive.spark.explain.user", false,
-        "Whether to show explain result at user level.\n" +
-        "When enabled, will log EXPLAIN output for the query at user level. Spark only."),
+        "When enabled, will log EXPLAIN output for the query at user level."),
 
     // prefix used to auto generated column aliases (this should be started with '_')
     HIVE_AUTOGEN_COLUMNALIAS_PREFIX_LABEL("hive.autogen.columnalias.prefix.label", "_c",

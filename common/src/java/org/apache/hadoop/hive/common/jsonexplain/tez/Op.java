@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.common.jsonexplain;
+package org.apache.hadoop.hive.common.jsonexplain.tez;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -27,7 +27,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import org.apache.hadoop.hive.common.jsonexplain.Vertex.VertexType;
+import org.apache.hadoop.hive.common.jsonexplain.tez.Vertex.VertexType;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -35,7 +35,7 @@ import org.json.JSONObject;
 public final class Op {
   public final String name;
   // tezJsonParser
-  public final DagJsonParser parser;
+  public final TezJsonParser parser;
   public final String operatorId;
   public Op parent;
   public final List<Op> children;
@@ -54,7 +54,7 @@ public final class Op {
   };
 
   public Op(String name, String id, String outputVertexName, List<Op> children,
-      Map<String, String> attrs, JSONObject opObject, Vertex vertex, DagJsonParser tezJsonParser)
+      Map<String, String> attrs, JSONObject opObject, Vertex vertex, TezJsonParser tezJsonParser)
       throws JSONException {
     super();
     this.name = name;
@@ -89,27 +89,25 @@ public final class Op {
     if (this.type == OpType.MAPJOIN) {
       JSONObject joinObj = opObject.getJSONObject(this.name);
       // get the map for posToVertex
+      JSONObject verticeObj = joinObj.getJSONObject("input vertices:");
       Map<String, Vertex> posToVertex = new LinkedHashMap<>();
-      if (joinObj.has("input vertices:")) {
-        JSONObject verticeObj = joinObj.getJSONObject("input vertices:");
-        for (String pos : JSONObject.getNames(verticeObj)) {
-          String vertexName = verticeObj.getString(pos);
-          // update the connection
-          Connection c = null;
-          for (Connection connection : vertex.parentConnections) {
-            if (connection.from.name.equals(vertexName)) {
-              posToVertex.put(pos, connection.from);
-              c = connection;
-              break;
-            }
-          }
-          if (c != null) {
-            parser.addInline(this, c);
+      for (String pos : JSONObject.getNames(verticeObj)) {
+        String vertexName = verticeObj.getString(pos);
+        // update the connection
+        Connection c = null;
+        for (Connection connection : vertex.parentConnections) {
+          if (connection.from.name.equals(vertexName)) {
+            posToVertex.put(pos, connection.from);
+            c = connection;
+            break;
           }
         }
-        // update the attrs
-        this.attrs.remove("input vertices:");
+        if (c != null) {
+          parser.addInline(this, c);
+        }
       }
+      // update the attrs
+      this.attrs.remove("input vertices:");
       // update the keys to use operator name
       JSONObject keys = joinObj.getJSONObject("keys:");
       // find out the vertex for the big table
@@ -279,11 +277,11 @@ public final class Op {
 
   private String getNameWithOpIdStats() {
     StringBuffer sb = new StringBuffer();
-    sb.append(DagJsonParserUtils.renameReduceOutputOperator(name, vertex));
+    sb.append(TezJsonParserUtils.renameReduceOutputOperator(name, vertex));
     if (operatorId != null) {
       sb.append(" [" + operatorId + "]");
     }
-    if (!DagJsonParserUtils.OperatorNoStats.contains(name) && attrs.containsKey("Statistics:")) {
+    if (!TezJsonParserUtils.OperatorNoStats.contains(name) && attrs.containsKey("Statistics:")) {
       sb.append(" (" + attrs.get("Statistics:") + ")");
     }
     attrs.remove("Statistics:");
@@ -301,15 +299,15 @@ public final class Op {
   public void print(Printer printer, int indentFlag, boolean branchOfJoinOp) throws Exception {
     // print name
     if (parser.printSet.contains(this)) {
-      printer.println(DagJsonParser.prefixString(indentFlag) + " Please refer to the previous "
+      printer.println(TezJsonParser.prefixString(indentFlag) + " Please refer to the previous "
           + this.getNameWithOpIdStats());
       return;
     }
     parser.printSet.add(this);
     if (!branchOfJoinOp) {
-      printer.println(DagJsonParser.prefixString(indentFlag) + this.getNameWithOpIdStats());
+      printer.println(TezJsonParser.prefixString(indentFlag) + this.getNameWithOpIdStats());
     } else {
-      printer.println(DagJsonParser.prefixString(indentFlag, "<-") + this.getNameWithOpIdStats());
+      printer.println(TezJsonParser.prefixString(indentFlag, "<-") + this.getNameWithOpIdStats());
     }
     branchOfJoinOp = false;
     // if this operator is a Map Join Operator or a Merge Join Operator
@@ -332,8 +330,8 @@ public final class Op {
     // print attr
     indentFlag++;
     if (!attrs.isEmpty()) {
-      printer.println(DagJsonParser.prefixString(indentFlag)
-          + DagJsonParserUtils.attrsToString(attrs));
+      printer.println(TezJsonParser.prefixString(indentFlag)
+          + TezJsonParserUtils.attrsToString(attrs));
     }
     // print inline vertex
     if (parser.inlineMap.containsKey(this)) {

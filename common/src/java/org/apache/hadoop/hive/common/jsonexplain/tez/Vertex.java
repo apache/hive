@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.common.jsonexplain;
+package org.apache.hadoop.hive.common.jsonexplain.tez;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -25,7 +25,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
-import org.apache.hadoop.hive.common.jsonexplain.Op.OpType;
+import org.apache.hadoop.hive.common.jsonexplain.tez.Op.OpType;
 import org.codehaus.jackson.JsonParseException;
 import org.codehaus.jackson.map.JsonMappingException;
 import org.json.JSONArray;
@@ -35,7 +35,7 @@ import org.json.JSONObject;
 public final class Vertex implements Comparable<Vertex>{
   public final String name;
   //tezJsonParser
-  public final DagJsonParser parser;
+  public final TezJsonParser parser;
   // vertex's parent connections.
   public final List<Connection> parentConnections = new ArrayList<>();
   // vertex's children vertex.
@@ -67,9 +67,9 @@ public final class Vertex implements Comparable<Vertex>{
   public static enum EdgeType {
     BROADCAST, SHUFFLE, MULTICAST, PARTITION_ONLY_SHUFFLE, UNKNOWN
   };
-  public String edgeType;
+  public EdgeType edgeType;
 
-  public Vertex(String name, JSONObject vertexObject, DagJsonParser dagJsonParser) {
+  public Vertex(String name, JSONObject vertexObject, TezJsonParser tezJsonParser) {
     super();
     this.name = name;
     if (this.name != null) {
@@ -87,7 +87,7 @@ public final class Vertex implements Comparable<Vertex>{
     }
     this.dummy = false;
     this.vertexObject = vertexObject;
-    parser = dagJsonParser;
+    parser = tezJsonParser;
   }
 
   public void addDependency(Connection connection) throws JSONException {
@@ -138,8 +138,6 @@ public final class Vertex implements Comparable<Vertex>{
           }
         } else if (key.equals("tag:")) {
           this.tag = vertexObject.getString(key);
-        } else if (key.equals("Local Work:")) {
-          extractOp(vertexObject.getJSONObject(key));
         } else {
           throw new Exception("Unsupported operator tree in vertex " + this.name);
         }
@@ -171,34 +169,32 @@ public final class Vertex implements Comparable<Vertex>{
       List<Op> children = new ArrayList<>();
       String id = null;
       String outputVertexName = null;
-      if (JSONObject.getNames(attrObj) != null) {
-        for (String attrName : JSONObject.getNames(attrObj)) {
-          if (attrName.equals("children")) {
-            Object childrenObj = attrObj.get(attrName);
-            if (childrenObj instanceof JSONObject) {
-              if (((JSONObject) childrenObj).length() != 0) {
-                children.add(extractOp((JSONObject) childrenObj));
+      for (String attrName : JSONObject.getNames(attrObj)) {
+        if (attrName.equals("children")) {
+          Object childrenObj = attrObj.get(attrName);
+          if (childrenObj instanceof JSONObject) {
+            if (((JSONObject) childrenObj).length() != 0) {
+              children.add(extractOp((JSONObject) childrenObj));
+            }
+          } else if (childrenObj instanceof JSONArray) {
+            if (((JSONArray) childrenObj).length() != 0) {
+              JSONArray array = ((JSONArray) childrenObj);
+              for (int index = 0; index < array.length(); index++) {
+                children.add(extractOp(array.getJSONObject(index)));
               }
-            } else if (childrenObj instanceof JSONArray) {
-              if (((JSONArray) childrenObj).length() != 0) {
-                JSONArray array = ((JSONArray) childrenObj);
-                for (int index = 0; index < array.length(); index++) {
-                  children.add(extractOp(array.getJSONObject(index)));
-                }
-              }
-            } else {
-              throw new Exception("Unsupported operator " + this.name
-                      + "'s children operator is neither a jsonobject nor a jsonarray");
             }
           } else {
-            if (attrName.equals("OperatorId:")) {
-              id = attrObj.get(attrName).toString();
-            } else if (attrName.equals("outputname:")) {
-              outputVertexName = attrObj.get(attrName).toString();
-            } else {
-              if (!attrObj.get(attrName).toString().isEmpty()) {
-                attrs.put(attrName, attrObj.get(attrName).toString());
-              }
+            throw new Exception("Unsupported operator " + this.name
+                + "'s children operator is neither a jsonobject nor a jsonarray");
+          }
+        } else {
+          if (attrName.equals("OperatorId:")) {
+            id = attrObj.get(attrName).toString();
+          } else if (attrName.equals("outputname:")) {
+            outputVertexName = attrObj.get(attrName).toString();
+          } else {
+            if (!attrObj.get(attrName).toString().isEmpty()) {
+              attrs.put(attrName, attrObj.get(attrName).toString());
             }
           }
         }
@@ -220,20 +216,20 @@ public final class Vertex implements Comparable<Vertex>{
     // print vertexname
     if (parser.printSet.contains(this) && numReduceOp <= 1) {
       if (type != null) {
-        printer.println(DagJsonParser.prefixString(indentFlag, "<-")
+        printer.println(TezJsonParser.prefixString(indentFlag, "<-")
             + " Please refer to the previous " + this.name + " [" + type + "]");
       } else {
-        printer.println(DagJsonParser.prefixString(indentFlag, "<-")
+        printer.println(TezJsonParser.prefixString(indentFlag, "<-")
             + " Please refer to the previous " + this.name);
       }
       return;
     }
     parser.printSet.add(this);
     if (type != null) {
-      printer.println(DagJsonParser.prefixString(indentFlag, "<-") + this.name + " [" + type + "]"
+      printer.println(TezJsonParser.prefixString(indentFlag, "<-") + this.name + " [" + type + "]"
           + this.executionMode);
     } else if (this.name != null) {
-      printer.println(DagJsonParser.prefixString(indentFlag) + this.name + this.executionMode);
+      printer.println(TezJsonParser.prefixString(indentFlag) + this.name + this.executionMode);
     }
     // print operators
     if (numReduceOp > 1 && !(callingVertex.vertexType == VertexType.UNION)) {
@@ -286,7 +282,22 @@ public final class Vertex implements Comparable<Vertex>{
   }
 
   public void setType(String type) {
-    this.edgeType = this.parser.mapEdgeType(type);
+    switch (type) {
+    case "BROADCAST_EDGE":
+      this.edgeType = EdgeType.BROADCAST;
+      break;
+    case "SIMPLE_EDGE":
+      this.edgeType = EdgeType.SHUFFLE;
+      break;
+    case "CUSTOM_SIMPLE_EDGE":
+      this.edgeType = EdgeType.PARTITION_ONLY_SHUFFLE;
+      break;
+    case "CUSTOM_EDGE":
+      this.edgeType = EdgeType.MULTICAST;
+      break;
+    default:
+      this.edgeType = EdgeType.UNKNOWN;
+    }
   }
 
   // The following code should be gone after HIVE-11075 using topological order
