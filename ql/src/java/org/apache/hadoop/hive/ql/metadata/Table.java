@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.metadata;
 
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -29,6 +30,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
+import com.google.common.base.Preconditions;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
@@ -943,6 +945,16 @@ public class Table implements Serializable {
       return srcs;
     } catch (Exception e) {
       throw new RuntimeException("Cannot get path ", e);
+    }
+  }
+
+  public boolean isEmpty() throws HiveException {
+    Preconditions.checkNotNull(getPath());
+    try {
+      FileSystem fs = FileSystem.get(getPath().toUri(), SessionState.getSessionConf());
+      return !fs.exists(getPath()) || fs.listStatus(getPath(), FileUtils.HIDDEN_FILES_PATH_FILTER).length == 0;
+    } catch (IOException e) {
+      throw new HiveException(e);
     }
   }
 

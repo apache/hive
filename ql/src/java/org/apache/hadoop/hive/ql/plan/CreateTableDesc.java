@@ -834,7 +834,8 @@ public class CreateTableDesc extends DDLDesc implements Serializable {
         }
       }
     }
-    if (getLocation() == null && !this.isCTAS) {
+
+    if (!this.isCTAS && (tbl.getPath() == null || (tbl.isEmpty() && !isExternal()))) {
       if (!tbl.isPartitioned() && conf.getBoolVar(HiveConf.ConfVars.HIVESTATSAUTOGATHER)) {
         StatsSetupConst.setBasicStatsStateForCreateTable(tbl.getTTable().getParameters(),
             StatsSetupConst.TRUE);
