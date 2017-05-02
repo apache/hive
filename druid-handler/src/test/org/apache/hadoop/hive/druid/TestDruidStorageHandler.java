@@ -18,10 +18,13 @@
 
 package org.apache.hadoop.hive.druid;
 
+import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import io.druid.indexer.JobHelper;
 import io.druid.indexer.SQLMetadataStorageUpdaterJobHandler;
+import io.druid.metadata.MetadataStorageTablesConfig;
+import io.druid.metadata.SQLMetadataSegmentManager;
 import io.druid.segment.loading.SegmentLoadingException;
 import io.druid.timeline.DataSegment;
 import io.druid.timeline.partition.NoneShardSpec;
@@ -42,10 +45,16 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.mockito.Mockito;
 import org.skife.jdbi.v2.Handle;
+import org.skife.jdbi.v2.StatementContext;
+import org.skife.jdbi.v2.tweak.HandleCallback;
+import org.skife.jdbi.v2.tweak.ResultSetMapper;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -85,7 +94,6 @@ public class TestDruidStorageHandler {
   public void testPreCreateTableWillCreateSegmentsTable() throws MetaException {
     DruidStorageHandler druidStorageHandler = new DruidStorageHandler(
             derbyConnectorRule.getConnector(),
-            new SQLMetadataStorageUpdaterJobHandler(derbyConnectorRule.getConnector()),
             derbyConnectorRule.metadataTablesConfigSupplier().get(),
             null
     );
@@ -114,7 +122,6 @@ public class TestDruidStorageHandler {
     );
     DruidStorageHandler druidStorageHandler = new DruidStorageHandler(
             derbyConnectorRule.getConnector(),
-            new SQLMetadataStorageUpdaterJobHandler(derbyConnectorRule.getConnector()),
             derbyConnectorRule.metadataTablesConfigSupplier().get(),
             null
     );
@@ -126,7 +133,6 @@ public class TestDruidStorageHandler {
           throws MetaException, IOException {
     DruidStorageHandler druidStorageHandler = new DruidStorageHandler(
             derbyConnectorRule.getConnector(),
-            new SQLMetadataStorageUpdaterJobHandler(derbyConnectorRule.getConnector()),
             derbyConnectorRule.metadataTablesConfigSupplier().get(),
             null
     );
@@ -158,7 +164,6 @@ public class TestDruidStorageHandler {
   public void testCommitInsertTable() throws MetaException, IOException {
     DruidStorageHandler druidStorageHandler = new DruidStorageHandler(
             derbyConnectorRule.getConnector(),
-            new SQLMetadataStorageUpdaterJobHandler(derbyConnectorRule.getConnector()),
             derbyConnectorRule.metadataTablesConfigSupplier().get(),
             null
     );
@@ -184,7 +189,6 @@ public class TestDruidStorageHandler {
   public void testDeleteSegment() throws IOException, SegmentLoadingException {
     DruidStorageHandler druidStorageHandler = new DruidStorageHandler(
             derbyConnectorRule.getConnector(),
-            new SQLMetadataStorageUpdaterJobHandler(derbyConnectorRule.getConnector()),
             derbyConnectorRule.metadataTablesConfigSupplier().get(),
             null
     );
@@ -220,5 +224,69 @@ public class TestDruidStorageHandler {
     Assert.assertFalse("Data source directory still there ??",
             localFileSystem.exists(segmentOutputPath.getParent().getParent().getParent())
     );
+  }
+
+  @Test
+  public void testCommitInsertOverwriteTable() throws MetaException, IOException {
+    DerbyConnectorTestUtility connector = derbyConnectorRule.getConnector();
+    MetadataStorageTablesConfig metadataStorageTablesConfig = derbyConnectorRule
+        .metadataTablesConfigSupplier().get();
+
+    DruidStorageHandler druidStorageHandler = new DruidStorageHandler(
+        connector,
+        metadataStorageTablesConfig,
+        null
+    );
+    druidStorageHandler.preCreateTable(tableMock);
+    Configuration config = new Configuration();
+    config.set(String.valueOf(HiveConf.ConfVars.HIVEQUERYID), UUID.randomUUID().toString());
+    config.set(String.valueOf(HiveConf.ConfVars.DRUID_WORKING_DIR), tableWorkingPath);
+    druidStorageHandler.setConf(config);
+    LocalFileSystem localFileSystem = FileSystem.getLocal(config);
+    Path taskDirPath = new Path(tableWorkingPath, druidStorageHandler.makeStagingName());
+    Path descriptorPath = DruidStorageHandlerUtils.makeSegmentDescriptorOutputPath(dataSegment,
+        new Path(taskDirPath, DruidStorageHandler.SEGMENTS_DESCRIPTOR_DIR_NAME)
+    );
+    List<DataSegment> existingSegments = Arrays.asList(DataSegment.builder().dataSource(DATA_SOURCE_NAME).version("v0")
+        .interval(new Interval(1, 10)).shardSpec(NoneShardSpec.instance()).build());
+    DruidStorageHandlerUtils.publishSegments(connector, metadataStorageTablesConfig, DATA_SOURCE_NAME,
+        existingSegments,
+        DruidStorageHandlerUtils.JSON_MAPPER,
+        true
+        );
+    DruidStorageHandlerUtils.writeSegmentDescriptor(localFileSystem, dataSegment, descriptorPath);
+    druidStorageHandler.commitInsertTable(tableMock, true);
+    Assert.assertArrayEquals(Lists.newArrayList(DATA_SOURCE_NAME).toArray(), Lists.newArrayList(
+        DruidStorageHandlerUtils.getAllDataSourceNames(connector,
+            metadataStorageTablesConfig
+        )).toArray());
+
+    final List<DataSegment> dataSegmentList = connector.getDBI()
+        .withHandle(new HandleCallback<List<DataSegment>>() {
+          @Override
+          public List<DataSegment> withHandle(Handle handle) throws Exception {
+            return handle
+                .createQuery(String.format("SELECT payload FROM %s WHERE used=true",
+                    metadataStorageTablesConfig.getSegmentsTable()))
+                .map(new ResultSetMapper<DataSegment>() {
+
+                  @Override
+                  public DataSegment map(int i, ResultSet resultSet,
+                      StatementContext statementContext)
+                      throws SQLException {
+                    try {
+                      return DruidStorageHandlerUtils.JSON_MAPPER.readValue(
+                          resultSet.getBytes("payload"),
+                          DataSegment.class
+                      );
+                    } catch (IOException e) {
+                      throw Throwables.propagate(e);
+                    }
+                  }
+                }).list();
+          }
+        });
+    Assert.assertEquals(1, dataSegmentList.size());
+
   }
 }

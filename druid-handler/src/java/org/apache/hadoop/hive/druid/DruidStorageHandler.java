@@ -33,7 +33,6 @@ import com.metamx.common.lifecycle.Lifecycle;
 import com.metamx.http.client.HttpClient;
 import com.metamx.http.client.HttpClientConfig;
 import com.metamx.http.client.HttpClientInit;
-import io.druid.indexer.SQLMetadataStorageUpdaterJobHandler;
 import io.druid.metadata.MetadataStorageConnectorConfig;
 import io.druid.metadata.MetadataStorageTablesConfig;
 import io.druid.metadata.SQLMetadataConnector;
@@ -56,7 +55,6 @@ import org.apache.hadoop.hive.metastore.HiveMetaHook;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Table;
-import org.apache.hadoop.hive.ql.metadata.DefaultStorageHandler;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.HiveStorageHandler;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
@@ -95,8 +93,6 @@ public class DruidStorageHandler extends DefaultHiveMetaHook implements HiveStor
   public static final String SEGMENTS_DESCRIPTOR_DIR_NAME = "segmentsDescriptorDir";
 
   private final SQLMetadataConnector connector;
-
-  private final SQLMetadataStorageUpdaterJobHandler druidSqlMetadataStorageUpdaterJobHandler;
 
   private final MetadataStorageTablesConfig druidMetadataStorageTablesConfig;
 
@@ -151,17 +147,14 @@ public class DruidStorageHandler extends DefaultHiveMetaHook implements HiveStor
     } else {
       throw new IllegalStateException(String.format("Unknown metadata storage type [%s]", dbType));
     }
-    druidSqlMetadataStorageUpdaterJobHandler = new SQLMetadataStorageUpdaterJobHandler(connector);
   }
 
   @VisibleForTesting
   public DruidStorageHandler(SQLMetadataConnector connector,
-          SQLMetadataStorageUpdaterJobHandler druidSqlMetadataStorageUpdaterJobHandler,
           MetadataStorageTablesConfig druidMetadataStorageTablesConfig,
           HttpClient httpClient
   ) {
     this.connector = connector;
-    this.druidSqlMetadataStorageUpdaterJobHandler = druidSqlMetadataStorageUpdaterJobHandler;
     this.druidMetadataStorageTablesConfig = druidMetadataStorageTablesConfig;
     this.httpClient = httpClient;
   }
@@ -256,6 +249,12 @@ public class DruidStorageHandler extends DefaultHiveMetaHook implements HiveStor
 
   @Override
   public void commitCreateTable(Table table) throws MetaException {
+    LOG.debug(String.format("commit create table [%s]", table.getTableName()));
+    publishSegments(table, true);
+  }
+
+
+  public void publishSegments(Table table, boolean overwrite) throws MetaException {
     if (MetaStoreUtils.isExternalTable(table)) {
       return;
     }
@@ -266,15 +265,19 @@ public class DruidStorageHandler extends DefaultHiveMetaHook implements HiveStor
       List<DataSegment> segmentList = DruidStorageHandlerUtils
               .getPublishedSegments(tableDir, getConf());
       LOG.info(String.format("Found [%d] segments under path [%s]", segmentList.size(), tableDir));
-      druidSqlMetadataStorageUpdaterJobHandler.publishSegments(
-              druidMetadataStorageTablesConfig.getSegmentsTable(),
+      final String dataSourceName = table.getParameters().get(Constants.DRUID_DATA_SOURCE);
+
+      DruidStorageHandlerUtils.publishSegments(
+              connector,
+              druidMetadataStorageTablesConfig,
+              dataSourceName,
               segmentList,
-              DruidStorageHandlerUtils.JSON_MAPPER
+              DruidStorageHandlerUtils.JSON_MAPPER,
+              overwrite
       );
       final String coordinatorAddress = HiveConf
               .getVar(getConf(), HiveConf.ConfVars.HIVE_DRUID_COORDINATOR_DEFAULT_ADDRESS);
       int maxTries = HiveConf.getIntVar(getConf(), HiveConf.ConfVars.HIVE_DRUID_MAX_TRIES);
-      final String dataSourceName = table.getParameters().get(Constants.DRUID_DATA_SOURCE);
       LOG.info(String.format("checking load status from coordinator [%s]", coordinatorAddress));
 
       // check if the coordinator is up
@@ -488,7 +491,7 @@ public class DruidStorageHandler extends DefaultHiveMetaHook implements HiveStor
   public void commitInsertTable(Table table, boolean overwrite) throws MetaException {
     if (overwrite) {
       LOG.debug(String.format("commit insert overwrite into table [%s]", table.getTableName()));
-      this.commitCreateTable(table);
+      this.publishSegments(table, overwrite);
     } else {
       throw new MetaException("Insert into is not supported yet");
     }
