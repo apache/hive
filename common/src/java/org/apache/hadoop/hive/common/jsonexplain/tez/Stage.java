@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.common.jsonexplain.tez;
+package org.apache.hadoop.hive.common.jsonexplain;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -26,7 +26,7 @@ import java.util.Map;
 import java.util.TreeMap;
 
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.common.jsonexplain.tez.Vertex.VertexType;
+import org.apache.hadoop.hive.common.jsonexplain.Vertex.VertexType;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -37,7 +37,7 @@ public final class Stage {
   //internal name is used to track the stages
   public final String internalName;
   //tezJsonParser
-  public final TezJsonParser parser;
+  public final DagJsonParser parser;
   // upstream stages, e.g., root stage
   public final List<Stage> parentStages = new ArrayList<>();
   // downstream stages.
@@ -49,7 +49,7 @@ public final class Stage {
   // fetch operator.
   Op op;
 
-  public Stage(String name, TezJsonParser tezJsonParser) {
+  public Stage(String name, DagJsonParser tezJsonParser) {
     super();
     internalName = name;
     externalName = name;
@@ -85,9 +85,9 @@ public final class Stage {
    *           and/or attributes.
    */
   public void extractVertex(JSONObject object) throws Exception {
-    if (object.has("Tez")) {
+    if (object.has(this.parser.getFrameworkName())) {
       this.tezStageDependency = new TreeMap<>();
-      JSONObject tez = (JSONObject) object.get("Tez");
+      JSONObject tez = (JSONObject) object.get(this.parser.getFrameworkName());
       JSONObject vertices = tez.getJSONObject("Vertices:");
       if (tez.has("Edges:")) {
         JSONObject edges = tez.getJSONObject("Edges:");
@@ -233,12 +233,12 @@ public final class Stage {
   public void print(Printer printer, int indentFlag) throws Exception {
     // print stagename
     if (parser.printSet.contains(this)) {
-      printer.println(TezJsonParser.prefixString(indentFlag) + " Please refer to the previous "
+      printer.println(DagJsonParser.prefixString(indentFlag) + " Please refer to the previous "
           + externalName);
       return;
     }
     parser.printSet.add(this);
-    printer.println(TezJsonParser.prefixString(indentFlag) + externalName);
+    printer.println(DagJsonParser.prefixString(indentFlag) + externalName);
     // print vertexes
     indentFlag++;
     for (Vertex candidate : this.vertexs.values()) {
@@ -247,8 +247,8 @@ public final class Stage {
       }
     }
     if (!attrs.isEmpty()) {
-      printer.println(TezJsonParser.prefixString(indentFlag)
-          + TezJsonParserUtils.attrsToString(attrs));
+      printer.println(DagJsonParser.prefixString(indentFlag)
+          + DagJsonParserUtils.attrsToString(attrs));
     }
     if (op != null) {
       op.print(printer, indentFlag, false);

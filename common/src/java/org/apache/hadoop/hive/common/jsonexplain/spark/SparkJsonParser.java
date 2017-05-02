@@ -16,20 +16,20 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.common.jsonexplain;
+package org.apache.hadoop.hive.common.jsonexplain.spark;
 
-public final class Connection implements Comparable<Connection>{
-  public final String type;
-  public final Vertex from;
+import org.apache.hadoop.hive.common.jsonexplain.DagJsonParser;
 
-  public Connection(String type, Vertex from) {
-    super();
-    this.type = type;
-    this.from = from;
+
+public class SparkJsonParser extends DagJsonParser {
+
+  @Override
+  public String mapEdgeType(String edgeName) {
+    return edgeName;
   }
 
   @Override
-  public int compareTo(Connection o) {
-    return from.compareTo(o.from);
+  public String getFrameworkName() {
+    return "Spark";
   }
 }
