@@ -52,6 +52,7 @@ import javax.sql.DataSource;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.nio.ByteBuffer;
 import java.sql.*;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -394,23 +395,27 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
             "initialized, null record found in next_txn_id");
         }
         close(rs);
-        Set<Long> openList = new HashSet<Long>();
+        List<Long> openList = new ArrayList<Long>();
         //need the WHERE clause below to ensure consistent results with READ_COMMITTED
-        s = "select txn_id, txn_state from TXNS where txn_id <= " + hwm;
+        s = "select txn_id, txn_state from TXNS where txn_id <= " + hwm + " order by txn_id";
         LOG.debug("Going to execute query<" + s + ">");
         rs = stmt.executeQuery(s);
         long minOpenTxn = Long.MAX_VALUE;
+        BitSet abortedBits = new BitSet();
         while (rs.next()) {
           long txnId = rs.getLong(1);
           openList.add(txnId);
           char c = rs.getString(2).charAt(0);
           if(c == TXN_OPEN) {
             minOpenTxn = Math.min(minOpenTxn, txnId);
+          } else if (c == TXN_ABORTED) {
+            abortedBits.set(openList.size() - 1);
           }
         }
         LOG.debug("Going to rollback");
         dbConn.rollback();
-        GetOpenTxnsResponse otr = new GetOpenTxnsResponse(hwm, openList);
+        ByteBuffer byteBuffer = ByteBuffer.wrap(abortedBits.toByteArray());
+        GetOpenTxnsResponse otr = new GetOpenTxnsResponse(hwm, openList, byteBuffer);
         if(minOpenTxn < Long.MAX_VALUE) {
           otr.setMin_open_txn(minOpenTxn);
         }

@@ -1332,6 +1332,16 @@ public class TestCompactor {
       public boolean isValidBase(long txnid) {
         return true;
       }
+
+      @Override
+      public boolean isTxnAborted(long txnid) {
+        return true;
+      }
+
+      @Override
+      public RangeResponse isTxnRangeAborted(long minTxnId, long maxTxnId) {
+        return RangeResponse.ALL;
+      }
     };
 
     OrcInputFormat aif = new OrcInputFormat();

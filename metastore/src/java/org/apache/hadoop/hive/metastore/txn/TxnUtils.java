@@ -32,9 +32,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Arrays;
+import java.util.BitSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 public class TxnUtils {
   private static final Logger LOG = LoggerFactory.getLogger(TxnUtils.class);
@@ -55,7 +55,8 @@ public class TxnUtils {
      * doesn't make sense for Snapshot Isolation.  Of course for Read Committed, the list should
      * inlude the latest committed set.*/
     long highWater = txns.getTxn_high_water_mark();
-    Set<Long> open = txns.getOpen_txns();
+    List<Long> open = txns.getOpen_txns();
+    BitSet abortedBits = BitSet.valueOf(txns.getAbortedBits());
     long[] exceptions = new long[open.size() - (currentTxn > 0 ? 1 : 0)];
     int i = 0;
     for(long txn: open) {
@@ -63,10 +64,10 @@ public class TxnUtils {
       exceptions[i++] = txn;
     }
     if(txns.isSetMin_open_txn()) {
-      return new ValidReadTxnList(exceptions, highWater, txns.getMin_open_txn());
+      return new ValidReadTxnList(exceptions, abortedBits, highWater, txns.getMin_open_txn());
     }
     else {
-      return new ValidReadTxnList(exceptions, highWater);
+      return new ValidReadTxnList(exceptions, abortedBits, highWater);
     }
   }
 
@@ -97,7 +98,9 @@ public class TxnUtils {
       exceptions = Arrays.copyOf(exceptions, i);
     }
     highWater = minOpenTxn == Long.MAX_VALUE ? highWater : minOpenTxn - 1;
-    return new ValidCompactorTxnList(exceptions, highWater);
+    BitSet bitSet = new BitSet(exceptions.length);
+    bitSet.set(0, bitSet.length()); // for ValidCompactorTxnList, everything in exceptions are aborted
+    return new ValidCompactorTxnList(exceptions, bitSet, highWater);
   }
 
   /**

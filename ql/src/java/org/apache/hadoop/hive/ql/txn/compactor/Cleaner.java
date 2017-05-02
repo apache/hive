@@ -41,6 +41,7 @@ import org.apache.hadoop.util.StringUtils;
 import java.io.IOException;
 import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
+import java.util.BitSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -257,7 +258,7 @@ public class Cleaner extends CompactorThread {
        * unless ValidTxnList is "capped" at highestTxnId.
        */
       final ValidTxnList txnList = ci.highestTxnId > 0 ? 
-        new ValidReadTxnList(new long[0], ci.highestTxnId) : new ValidReadTxnList();
+        new ValidReadTxnList(new long[0], new BitSet(), ci.highestTxnId) : new ValidReadTxnList();
 
       if (runJobAsSelf(ci.runAs)) {
         removeFiles(location, txnList);

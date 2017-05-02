@@ -39,8 +39,9 @@ public class GetOpenTxnsResponse implements org.apache.thrift.TBase<GetOpenTxnsR
   private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("GetOpenTxnsResponse");
 
   private static final org.apache.thrift.protocol.TField TXN_HIGH_WATER_MARK_FIELD_DESC = new org.apache.thrift.protocol.TField("txn_high_water_mark", org.apache.thrift.protocol.TType.I64, (short)1);
-  private static final org.apache.thrift.protocol.TField OPEN_TXNS_FIELD_DESC = new org.apache.thrift.protocol.TField("open_txns", org.apache.thrift.protocol.TType.SET, (short)2);
+  private static final org.apache.thrift.protocol.TField OPEN_TXNS_FIELD_DESC = new org.apache.thrift.protocol.TField("open_txns", org.apache.thrift.protocol.TType.LIST, (short)2);
   private static final org.apache.thrift.protocol.TField MIN_OPEN_TXN_FIELD_DESC = new org.apache.thrift.protocol.TField("min_open_txn", org.apache.thrift.protocol.TType.I64, (short)3);
+  private static final org.apache.thrift.protocol.TField ABORTED_BITS_FIELD_DESC = new org.apache.thrift.protocol.TField("abortedBits", org.apache.thrift.protocol.TType.STRING, (short)4);
 
   private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
   static {
@@ -49,14 +50,16 @@ public class GetOpenTxnsResponse implements org.apache.thrift.TBase<GetOpenTxnsR
   }
 
   private long txn_high_water_mark; // required
-  private Set<Long> open_txns; // required
+  private List<Long> open_txns; // required
   private long min_open_txn; // optional
+  private ByteBuffer abortedBits; // required
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
     TXN_HIGH_WATER_MARK((short)1, "txn_high_water_mark"),
     OPEN_TXNS((short)2, "open_txns"),
-    MIN_OPEN_TXN((short)3, "min_open_txn");
+    MIN_OPEN_TXN((short)3, "min_open_txn"),
+    ABORTED_BITS((short)4, "abortedBits");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -77,6 +80,8 @@ public class GetOpenTxnsResponse implements org.apache.thrift.TBase<GetOpenTxnsR
           return OPEN_TXNS;
         case 3: // MIN_OPEN_TXN
           return MIN_OPEN_TXN;
+        case 4: // ABORTED_BITS
+          return ABORTED_BITS;
         default:
           return null;
       }
@@ -127,10 +132,12 @@ public class GetOpenTxnsResponse implements org.apache.thrift.TBase<GetOpenTxnsR
     tmpMap.put(_Fields.TXN_HIGH_WATER_MARK, new org.apache.thrift.meta_data.FieldMetaData("txn_high_water_mark", org.apache.thrift.TFieldRequirementType.REQUIRED, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64)));
     tmpMap.put(_Fields.OPEN_TXNS, new org.apache.thrift.meta_data.FieldMetaData("open_txns", org.apache.thrift.TFieldRequirementType.REQUIRED, 
-        new org.apache.thrift.meta_data.SetMetaData(org.apache.thrift.protocol.TType.SET, 
+        new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
             new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64))));
     tmpMap.put(_Fields.MIN_OPEN_TXN, new org.apache.thrift.meta_data.FieldMetaData("min_open_txn", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64)));
+    tmpMap.put(_Fields.ABORTED_BITS, new org.apache.thrift.meta_data.FieldMetaData("abortedBits", org.apache.thrift.TFieldRequirementType.REQUIRED, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING        , true)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(GetOpenTxnsResponse.class, metaDataMap);
   }
@@ -140,12 +147,14 @@ public class GetOpenTxnsResponse implements org.apache.thrift.TBase<GetOpenTxnsR
 
   public GetOpenTxnsResponse(
     long txn_high_water_mark,
-    Set<Long> open_txns)
+    List<Long> open_txns,
+    ByteBuffer abortedBits)
   {
     this();
     this.txn_high_water_mark = txn_high_water_mark;
     setTxn_high_water_markIsSet(true);
     this.open_txns = open_txns;
+    this.abortedBits = org.apache.thrift.TBaseHelper.copyBinary(abortedBits);
   }
 
   /**
@@ -155,10 +164,13 @@ public class GetOpenTxnsResponse implements org.apache.thrift.TBase<GetOpenTxnsR
     __isset_bitfield = other.__isset_bitfield;
     this.txn_high_water_mark = other.txn_high_water_mark;
     if (other.isSetOpen_txns()) {
-      Set<Long> __this__open_txns = new HashSet<Long>(other.open_txns);
+      List<Long> __this__open_txns = new ArrayList<Long>(other.open_txns);
       this.open_txns = __this__open_txns;
     }
     this.min_open_txn = other.min_open_txn;
+    if (other.isSetAbortedBits()) {
+      this.abortedBits = org.apache.thrift.TBaseHelper.copyBinary(other.abortedBits);
+    }
   }
 
   public GetOpenTxnsResponse deepCopy() {
@@ -172,6 +184,7 @@ public class GetOpenTxnsResponse implements org.apache.thrift.TBase<GetOpenTxnsR
     this.open_txns = null;
     setMin_open_txnIsSet(false);
     this.min_open_txn = 0;
+    this.abortedBits = null;
   }
 
   public long getTxn_high_water_mark() {
@@ -206,16 +219,16 @@ public class GetOpenTxnsResponse implements org.apache.thrift.TBase<GetOpenTxnsR
 
   public void addToOpen_txns(long elem) {
     if (this.open_txns == null) {
-      this.open_txns = new HashSet<Long>();
+      this.open_txns = new ArrayList<Long>();
     }
     this.open_txns.add(elem);
   }
 
-  public Set<Long> getOpen_txns() {
+  public List<Long> getOpen_txns() {
     return this.open_txns;
   }
 
-  public void setOpen_txns(Set<Long> open_txns) {
+  public void setOpen_txns(List<Long> open_txns) {
     this.open_txns = open_txns;
   }
 
@@ -256,6 +269,38 @@ public class GetOpenTxnsResponse implements org.apache.thrift.TBase<GetOpenTxnsR
     __isset_bitfield = EncodingUtils.setBit(__isset_bitfield, __MIN_OPEN_TXN_ISSET_ID, value);
   }
 
+  public byte[] getAbortedBits() {
+    setAbortedBits(org.apache.thrift.TBaseHelper.rightSize(abortedBits));
+    return abortedBits == null ? null : abortedBits.array();
+  }
+
+  public ByteBuffer bufferForAbortedBits() {
+    return org.apache.thrift.TBaseHelper.copyBinary(abortedBits);
+  }
+
+  public void setAbortedBits(byte[] abortedBits) {
+    this.abortedBits = abortedBits == null ? (ByteBuffer)null : ByteBuffer.wrap(Arrays.copyOf(abortedBits, abortedBits.length));
+  }
+
+  public void setAbortedBits(ByteBuffer abortedBits) {
+    this.abortedBits = org.apache.thrift.TBaseHelper.copyBinary(abortedBits);
+  }
+
+  public void unsetAbortedBits() {
+    this.abortedBits = null;
+  }
+
+  /** Returns true if field abortedBits is set (has been assigned a value) and false otherwise */
+  public boolean isSetAbortedBits() {
+    return this.abortedBits != null;
+  }
+
+  public void setAbortedBitsIsSet(boolean value) {
+    if (!value) {
+      this.abortedBits = null;
+    }
+  }
+
   public void setFieldValue(_Fields field, Object value) {
     switch (field) {
     case TXN_HIGH_WATER_MARK:
@@ -270,7 +315,7 @@ public class GetOpenTxnsResponse implements org.apache.thrift.TBase<GetOpenTxnsR
       if (value == null) {
         unsetOpen_txns();
       } else {
-        setOpen_txns((Set<Long>)value);
+        setOpen_txns((List<Long>)value);
       }
       break;
 
@@ -279,6 +324,14 @@ public class GetOpenTxnsResponse implements org.apache.thrift.TBase<GetOpenTxnsR
         unsetMin_open_txn();
       } else {
         setMin_open_txn((Long)value);
+      }
+      break;
+
+    case ABORTED_BITS:
+      if (value == null) {
+        unsetAbortedBits();
+      } else {
+        setAbortedBits((ByteBuffer)value);
       }
       break;
 
@@ -295,6 +348,9 @@ public class GetOpenTxnsResponse implements org.apache.thrift.TBase<GetOpenTxnsR
 
     case MIN_OPEN_TXN:
       return getMin_open_txn();
+
+    case ABORTED_BITS:
+      return getAbortedBits();
 
     }
     throw new IllegalStateException();
@@ -313,6 +369,8 @@ public class GetOpenTxnsResponse implements org.apache.thrift.TBase<GetOpenTxnsR
       return isSetOpen_txns();
     case MIN_OPEN_TXN:
       return isSetMin_open_txn();
+    case ABORTED_BITS:
+      return isSetAbortedBits();
     }
     throw new IllegalStateException();
   }
@@ -357,6 +415,15 @@ public class GetOpenTxnsResponse implements org.apache.thrift.TBase<GetOpenTxnsR
         return false;
     }
 
+    boolean this_present_abortedBits = true && this.isSetAbortedBits();
+    boolean that_present_abortedBits = true && that.isSetAbortedBits();
+    if (this_present_abortedBits || that_present_abortedBits) {
+      if (!(this_present_abortedBits && that_present_abortedBits))
+        return false;
+      if (!this.abortedBits.equals(that.abortedBits))
+        return false;
+    }
+
     return true;
   }
 
@@ -378,6 +445,11 @@ public class GetOpenTxnsResponse implements org.apache.thrift.TBase<GetOpenTxnsR
     list.add(present_min_open_txn);
     if (present_min_open_txn)
       list.add(min_open_txn);
+
+    boolean present_abortedBits = true && (isSetAbortedBits());
+    list.add(present_abortedBits);
+    if (present_abortedBits)
+      list.add(abortedBits);
 
     return list.hashCode();
   }
@@ -420,6 +492,16 @@ public class GetOpenTxnsResponse implements org.apache.thrift.TBase<GetOpenTxnsR
         return lastComparison;
       }
     }
+    lastComparison = Boolean.valueOf(isSetAbortedBits()).compareTo(other.isSetAbortedBits());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetAbortedBits()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.abortedBits, other.abortedBits);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
     return 0;
   }
 
@@ -457,6 +539,14 @@ public class GetOpenTxnsResponse implements org.apache.thrift.TBase<GetOpenTxnsR
       sb.append(this.min_open_txn);
       first = false;
     }
+    if (!first) sb.append(", ");
+    sb.append("abortedBits:");
+    if (this.abortedBits == null) {
+      sb.append("null");
+    } else {
+      org.apache.thrift.TBaseHelper.toString(this.abortedBits, sb);
+    }
+    first = false;
     sb.append(")");
     return sb.toString();
   }
@@ -469,6 +559,10 @@ public class GetOpenTxnsResponse implements org.apache.thrift.TBase<GetOpenTxnsR
 
     if (!isSetOpen_txns()) {
       throw new org.apache.thrift.protocol.TProtocolException("Required field 'open_txns' is unset! Struct:" + toString());
+    }
+
+    if (!isSetAbortedBits()) {
+      throw new org.apache.thrift.protocol.TProtocolException("Required field 'abortedBits' is unset! Struct:" + toString());
     }
 
     // check for sub-struct validity
@@ -519,17 +613,17 @@ public class GetOpenTxnsResponse implements org.apache.thrift.TBase<GetOpenTxnsR
             }
             break;
           case 2: // OPEN_TXNS
-            if (schemeField.type == org.apache.thrift.protocol.TType.SET) {
+            if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TSet _set468 = iprot.readSetBegin();
-                struct.open_txns = new HashSet<Long>(2*_set468.size);
+                org.apache.thrift.protocol.TList _list468 = iprot.readListBegin();
+                struct.open_txns = new ArrayList<Long>(_list468.size);
                 long _elem469;
-                for (int _i470 = 0; _i470 < _set468.size; ++_i470)
+                for (int _i470 = 0; _i470 < _list468.size; ++_i470)
                 {
                   _elem469 = iprot.readI64();
                   struct.open_txns.add(_elem469);
                 }
-                iprot.readSetEnd();
+                iprot.readListEnd();
               }
               struct.setOpen_txnsIsSet(true);
             } else { 
@@ -540,6 +634,14 @@ public class GetOpenTxnsResponse implements org.apache.thrift.TBase<GetOpenTxnsR
             if (schemeField.type == org.apache.thrift.protocol.TType.I64) {
               struct.min_open_txn = iprot.readI64();
               struct.setMin_open_txnIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
+          case 4: // ABORTED_BITS
+            if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
+              struct.abortedBits = iprot.readBinary();
+              struct.setAbortedBitsIsSet(true);
             } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
@@ -563,18 +665,23 @@ public class GetOpenTxnsResponse implements org.apache.thrift.TBase<GetOpenTxnsR
       if (struct.open_txns != null) {
         oprot.writeFieldBegin(OPEN_TXNS_FIELD_DESC);
         {
-          oprot.writeSetBegin(new org.apache.thrift.protocol.TSet(org.apache.thrift.protocol.TType.I64, struct.open_txns.size()));
+          oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.I64, struct.open_txns.size()));
           for (long _iter471 : struct.open_txns)
           {
             oprot.writeI64(_iter471);
           }
-          oprot.writeSetEnd();
+          oprot.writeListEnd();
         }
         oprot.writeFieldEnd();
       }
       if (struct.isSetMin_open_txn()) {
         oprot.writeFieldBegin(MIN_OPEN_TXN_FIELD_DESC);
         oprot.writeI64(struct.min_open_txn);
+        oprot.writeFieldEnd();
+      }
+      if (struct.abortedBits != null) {
+        oprot.writeFieldBegin(ABORTED_BITS_FIELD_DESC);
+        oprot.writeBinary(struct.abortedBits);
         oprot.writeFieldEnd();
       }
       oprot.writeFieldStop();
@@ -602,6 +709,7 @@ public class GetOpenTxnsResponse implements org.apache.thrift.TBase<GetOpenTxnsR
           oprot.writeI64(_iter472);
         }
       }
+      oprot.writeBinary(struct.abortedBits);
       BitSet optionals = new BitSet();
       if (struct.isSetMin_open_txn()) {
         optionals.set(0);
@@ -618,16 +726,18 @@ public class GetOpenTxnsResponse implements org.apache.thrift.TBase<GetOpenTxnsR
       struct.txn_high_water_mark = iprot.readI64();
       struct.setTxn_high_water_markIsSet(true);
       {
-        org.apache.thrift.protocol.TSet _set473 = new org.apache.thrift.protocol.TSet(org.apache.thrift.protocol.TType.I64, iprot.readI32());
-        struct.open_txns = new HashSet<Long>(2*_set473.size);
+        org.apache.thrift.protocol.TList _list473 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.I64, iprot.readI32());
+        struct.open_txns = new ArrayList<Long>(_list473.size);
         long _elem474;
-        for (int _i475 = 0; _i475 < _set473.size; ++_i475)
+        for (int _i475 = 0; _i475 < _list473.size; ++_i475)
         {
           _elem474 = iprot.readI64();
           struct.open_txns.add(_elem474);
         }
       }
       struct.setOpen_txnsIsSet(true);
+      struct.abortedBits = iprot.readBinary();
+      struct.setAbortedBitsIsSet(true);
       BitSet incoming = iprot.readBitSet(1);
       if (incoming.get(0)) {
         struct.min_open_txn = iprot.readI64();

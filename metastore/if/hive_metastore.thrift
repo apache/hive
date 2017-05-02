@@ -636,8 +636,9 @@ struct GetOpenTxnsInfoResponse {
 
 struct GetOpenTxnsResponse {
     1: required i64 txn_high_water_mark,
-    2: required set<i64> open_txns,
+    2: required list<i64> open_txns,  // set<i64> changed to list<i64> since 3.0
     3: optional i64 min_open_txn, //since 1.3,2.2
+    4: required binary abortedBits,   // since 3.0
 }
 
 struct OpenTxnRequest {
