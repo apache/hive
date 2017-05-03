@@ -35,20 +35,55 @@ analyze table alltypesorc_int compute statistics for columns;
 analyze table srcpart_date compute statistics for columns;
 analyze table srcpart_small compute statistics for columns;
 
-set hive.cbo.returnpath.hiveop=true;
-
 create table srccc as select * from src;
 
-EXPLAIN select  /*+ semi(k, str, 5000)*/ count(*) from srcpart_date k join srcpart_small v on (k.str = v.key1) join alltypesorc_int i on (k.value = i.cstring);
+set hive.cbo.returnpath.hiveop=true;
+
+-- disabling this test case for returnpath true as the aliases in case of union are mangled due to which hints are not excercised.
+--explain select /*+ semi(k, str, 5000)*/ count(*) from srcpart_date k join srcpart_small s on (k.str = s.key1)
+--        union all
+--        select /*+ semi(v, 5000)*/ count(*) from srcpart_date d join srcpart_small v on (d.str = v.key1);
+
+-- Query which creates semijoin
+explain select count(*) from srcpart_date k join srcpart_small v on (k.str = v.key1);
+-- Skip semijoin by using keyword "None" as argument
+explain select /*+ semi(None)*/ count(*) from srcpart_date k join srcpart_small v on (k.str = v.key1);
+
+EXPLAIN select  /*+ semi(srcpart_date, str, 5000)*/ count(*) from srcpart_date join srcpart_small v on (srcpart_date.str = v.key1) join alltypesorc_int i on (srcpart_date.value = i.cstring);
 EXPLAIN select  /*+ semi(i, 3000)*/ count(*) from srcpart_date k join srcpart_small v on (k.str = v.key1) join alltypesorc_int i on (v.key1 = i.cstring);
 
-explain select /*+ semi(k, str, 1000)*/ count(*) from srcpart_date k join srcpart_small v on (k.str = v.key1);
+explain select /*+ semi(k, str, 5000)*/ count(*) from srcpart_date k join srcpart_small v on (k.str = v.key1);
 
 set hive.cbo.returnpath.hiveop=false;
 
-explain select /*+ semi(k, 1000)*/ count(*) from srcpart_date k join srcpart_small v on (k.str = v.key1);
+explain select /*+ semi(k, str, 5000)*/ count(*) from srcpart_date k join srcpart_small s on (k.str = s.key1)
+        union all
+        select /*+ semi(v, 5000)*/ count(*) from srcpart_date d join srcpart_small v on (d.str = v.key1);
+
+-- Query which creates semijoin
+explain select count(*) from srcpart_date k join srcpart_small v on (k.str = v.key1);
+-- Skip semijoin by using keyword "None" as argument
+explain select /*+ semi(None)*/ count(*) from srcpart_date k join srcpart_small v on (k.str = v.key1);
+
+EXPLAIN select  /*+ semi(srcpart_date, str, 5000)*/ count(*) from srcpart_date join srcpart_small v on (srcpart_date.str = v.key1) join alltypesorc_int i on (srcpart_date.value = i.cstring);
+EXPLAIN select  /*+ semi(i, 3000)*/ count(*) from srcpart_date k join srcpart_small v on (k.str = v.key1) join alltypesorc_int i on (v.key1 = i.cstring);
+
+explain select /*+ semi(k, str, 5000)*/ count(*) from srcpart_date k join srcpart_small v on (k.str = v.key1);
 
 set hive.cbo.enable=false;
 
-explain select /*+ semi(k, str, 1000)*/ count(*) from srcpart_date k join srcpart_small v on (k.str = v.key1);
+explain select /*+ semi(k, str, 5000)*/ count(*) from srcpart_date k join srcpart_small s on (k.str = s.key1)
+        union all
+        select /*+ semi(v, 5000)*/ count(*) from srcpart_date d join srcpart_small v on (d.str = v.key1);
+
+-- Query which creates semijoin
+explain select count(*) from srcpart_date k join srcpart_small v on (k.str = v.key1);
+-- Skip semijoin by using keyword "None" as argument
+explain select /*+ semi(None)*/ count(*) from srcpart_date k join srcpart_small v on (k.str = v.key1);
+
+EXPLAIN select  /*+ semi(srcpart_date, str, 5000)*/ count(*) from srcpart_date join srcpart_small v on (srcpart_date.str = v.key1) join alltypesorc_int i on (srcpart_date.value = i.cstring);
+EXPLAIN select  /*+ semi(i, 3000)*/ count(*) from srcpart_date k join srcpart_small v on (k.str = v.key1) join alltypesorc_int i on (v.key1 = i.cstring);
+
+explain select /*+ semi(k, str, 5000)*/ count(*) from srcpart_date k join srcpart_small v on (k.str = v.key1);
+
 

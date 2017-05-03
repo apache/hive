@@ -26,7 +26,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
 
-import org.apache.hadoop.hive.ql.parse.SemiJoinHint;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
@@ -140,7 +139,6 @@ public class SyntheticJoinPredicate extends Transform {
 
       ReduceSinkOperator source = (ReduceSinkOperator) stack.get(stack.size() - 2);
       int srcPos = join.getParentOperators().indexOf(source);
-      Map<String, SemiJoinHint> hints = join.getConf().getSemiJoinHints();
 
       List<Operator<? extends OperatorDesc>> parents = join.getParentOperators();
 
@@ -181,7 +179,7 @@ public class SyntheticJoinPredicate extends Transform {
           inArgs.add(sourceKeys.get(i));
 
           ExprNodeDynamicListDesc dynamicExpr =
-              new ExprNodeDynamicListDesc(targetKeys.get(i).getTypeInfo(), target, i, hints);
+              new ExprNodeDynamicListDesc(targetKeys.get(i).getTypeInfo(), target, i);
 
           inArgs.add(dynamicExpr);
 

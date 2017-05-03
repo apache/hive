@@ -83,4 +83,5 @@ hintArgName
     :
     Identifier
     | Number
+    | KW_NONE
     ;

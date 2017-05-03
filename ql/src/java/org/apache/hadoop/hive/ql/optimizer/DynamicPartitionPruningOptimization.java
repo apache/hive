@@ -220,14 +220,23 @@ public class DynamicPartitionPruningOptimization implements NodeProcessor {
             }
             String tableAlias = (op == null ? "" : ((TableScanOperator) op).getConf().getAlias());
 
-            Map<String, SemiJoinHint> hints = ctx.desc.getHints();
-            SemiJoinHint sjHint = (hints != null) ? hints.get(tableAlias) : null;
             keyBaseAlias = ctx.generator.getOperatorId() + "_" + tableAlias + "_" + column;
 
-            semiJoinAttempted = generateSemiJoinOperatorPlan(
-                ctx, parseContext, ts, keyBaseAlias, sjHint);
-            if (!semiJoinAttempted && sjHint != null) {
-              throw new SemanticException("The user hint to enforce semijoin failed required conditions");
+            Map<String, SemiJoinHint> hints = parseContext.getSemiJoinHints();
+            if (hints != null) {
+              // If hints map has no entry that would imply that user enforced
+              // no runtime filtering.
+              if (hints.size() > 0) {
+                SemiJoinHint sjHint = hints.get(tableAlias);
+                semiJoinAttempted = generateSemiJoinOperatorPlan(
+                        ctx, parseContext, ts, keyBaseAlias, sjHint);
+                if (!semiJoinAttempted && sjHint != null) {
+                  throw new SemanticException("The user hint to enforce semijoin failed required conditions");
+                }
+              }
+            } else {
+              semiJoinAttempted = generateSemiJoinOperatorPlan(
+                      ctx, parseContext, ts, keyBaseAlias, null);
             }
           }
         }

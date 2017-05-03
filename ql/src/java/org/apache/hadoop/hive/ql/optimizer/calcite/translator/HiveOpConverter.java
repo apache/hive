@@ -339,8 +339,6 @@ public class HiveOpConverter {
     // through Hive
     String[] baseSrc = new String[joinRel.getInputs().size()];
     String tabAlias = getHiveDerivedTableAlias();
-    Map<String, SemiJoinHint> semiJoinHints = semanticAnalyzer.parseSemiJoinHint(
-        semanticAnalyzer.getQB().getParseInfo().getHints());
 
     // 1. Convert inputs
     OpAttr[] inputs = new OpAttr[joinRel.getInputs().size()];
@@ -407,7 +405,7 @@ public class HiveOpConverter {
 
     // 6. Generate Join operator
     JoinOperator joinOp = genJoin(joinRel, joinExpressions, filterExpressions, children,
-            baseSrc, tabAlias, semiJoinHints);
+            baseSrc, tabAlias);
 
     // 7. Return result
     return new OpAttr(tabAlias, newVcolsInCalcite, joinOp);
@@ -879,7 +877,7 @@ public class HiveOpConverter {
 
   private static JoinOperator genJoin(RelNode join, ExprNodeDesc[][] joinExpressions,
       List<List<ExprNodeDesc>> filterExpressions, List<Operator<?>> children,
-      String[] baseSrc, String tabAlias, Map<String, SemiJoinHint> semiJoinHints)
+      String[] baseSrc, String tabAlias)
           throws SemanticException {
 
     // 1. Extract join type
@@ -1006,7 +1004,6 @@ public class HiveOpConverter {
     // 4. We create the join operator with its descriptor
     JoinDesc desc = new JoinDesc(exprMap, outputColumnNames, noOuterJoin, joinCondns,
             filters, joinExpressions, 0);
-    desc.setSemiJoinHints(semiJoinHints);
     desc.setReversedExprs(reversedExprs);
     desc.setFilterMap(filterMap);
 

@@ -8126,7 +8126,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     JoinDesc desc = new JoinDesc(exprMap, outputColumnNames,
         join.getNoOuterJoin(), joinCondns, filterMap, joinKeys, 0);
-    desc.setSemiJoinHints(join.getSemiJoinHint());
     desc.setReversedExprs(reversedExprs);
     desc.setFilterMap(join.getFilterMap());
     // For outer joins, add filters that apply to more than one input
@@ -8673,11 +8672,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       LOG.info("STREAMTABLE hint honored.");
       parseStreamTables(joinTree, qb);
     }
-
-    if (qb.getParseInfo().getHints() != null) {
-      // TODO: do we need this for unique join?
-      joinTree.setSemiJoinHint(parseSemiJoinHint(qb.getParseInfo().getHints()));
-    }
     return joinTree;
   }
 
@@ -8976,8 +8970,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       if ((conf.getVar(HiveConf.ConfVars.HIVE_EXECUTION_ENGINE).equals("tez")) == false) {
         parseStreamTables(joinTree, qb);
       }
-
-      joinTree.setSemiJoinHint(parseSemiJoinHint(qb.getParseInfo().getHints()));
     }
 
     return joinTree;
@@ -9031,46 +9023,65 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
    *  2. TableName, bloom filter entries, and
    *  3. TableName, ColumnName
    *  */
-  public Map<String, SemiJoinHint> parseSemiJoinHint(ASTNode hints) throws SemanticException {
-    if (hints == null) return null;
+  private Map<String, SemiJoinHint> parseSemiJoinHint(List<ASTNode> hints) throws SemanticException {
+    if (hints == null || hints.size() == 0) return null;
     Map<String, SemiJoinHint> result = null;
-    for (Node hintNode : hints.getChildren()) {
-      ASTNode hint = (ASTNode) hintNode;
-      if (hint.getChild(0).getType() != HintParser.TOK_LEFTSEMIJOIN) continue;
-      if (result == null) {
-        result = new HashMap<>();
-      }
-      String alias = null;
-      String colName = null;
-      Tree args = hint.getChild(1);
-      for (int i = 0; i < args.getChildCount(); i++) {
-        // We can have table names, column names or sizes here (or incorrect hint if the user is so inclined).
-        String text = args.getChild(i).getText();
-        Integer number = null;
-        try {
-          number = Integer.parseInt(text);
-        } catch (NumberFormatException ex) { // Ignore.
+    for (ASTNode hintNode : hints) {
+      for (Node node : hintNode.getChildren()) {
+        ASTNode hint = (ASTNode) node;
+        if (hint.getChild(0).getType() != HintParser.TOK_LEFTSEMIJOIN) continue;
+        if (result == null) {
+          result = new HashMap<>();
         }
-        if (number != null) {
-          if (alias == null) {
-            throw new SemanticException("Invalid semijoin hint - arg " + i + " ("
-                + text + ") is a number but the previous one is not an alias");
+        String alias = null;
+        String colName = null;
+        Tree args = hint.getChild(1);
+        if (args.getChildCount() == 1) {
+          String text = args.getChild(0).getText();
+          if (text.equalsIgnoreCase("None")) {
+            // Hint to disable runtime filtering.
+            return result;
           }
-          SemiJoinHint sjHint = new SemiJoinHint(alias, colName, number);
-          result.put(alias, sjHint);
-          alias = null;
-          colName = null;
-        } else {
-          if (alias == null) {
-            alias = text;
-          } else if (colName == null ){
-            colName = text;
-          } else {
-            // No bloom filter entries provided.
-            SemiJoinHint sjHint = new SemiJoinHint(alias, colName, null);
+        }
+        for (int i = 0; i < args.getChildCount(); i++) {
+          // We can have table names, column names or sizes here (or incorrect hint if the user is so inclined).
+          String text = args.getChild(i).getText();
+          Integer number = null;
+          try {
+            number = Integer.parseInt(text);
+          } catch (NumberFormatException ex) { // Ignore.
+          }
+          if (number != null) {
+            if (alias == null) {
+              throw new SemanticException("Invalid semijoin hint - arg " + i + " ("
+                      + text + ") is a number but the previous one is not an alias");
+            }
+            if (result.get(alias) != null) {
+              // A hint with same alias already present, throw
+              throw new SemanticException("A hint with alias " + alias +
+                      " already present. Please use unique aliases");
+            }
+            SemiJoinHint sjHint = new SemiJoinHint(alias, colName, number);
             result.put(alias, sjHint);
-            alias = text;
+            alias = null;
             colName = null;
+          } else {
+            if (alias == null) {
+              alias = text;
+            } else if (colName == null) {
+              colName = text;
+            } else {
+              // No bloom filter entries provided.
+              if (result.get(alias) != null) {
+                // A hint with same alias already present, throw
+                throw new SemanticException("A hint with alias " + alias +
+                        " already present. Please use unique aliases");
+              }
+              SemiJoinHint sjHint = new SemiJoinHint(alias, colName, null);
+              result.put(alias, sjHint);
+              alias = text;
+              colName = null;
+            }
           }
         }
       }
@@ -11184,7 +11195,40 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       throw new SemanticException(ex);
     }
   }
+
+  public void getHintsFromQB(QB qb, List<ASTNode> hints) {
+    if (qb.getParseInfo().getHints() != null) {
+      hints.add(qb.getParseInfo().getHints());
+    }
+
+    Set<String> aliases = qb.getSubqAliases();
+
+    for (String alias : aliases) {
+      getHintsFromQB(qb.getSubqForAlias(alias), hints);
+    }
+  }
+
+  public void getHintsFromQB(QBExpr qbExpr, List<ASTNode> hints) {
+    QBExpr qbExpr1 = qbExpr.getQBExpr1();
+    QBExpr qbExpr2 = qbExpr.getQBExpr2();
+    QB qb = qbExpr.getQB();
+
+    if (qbExpr1 != null) {
+      getHintsFromQB(qbExpr1, hints);
+    }
+    if (qbExpr2 != null) {
+      getHintsFromQB(qbExpr2, hints);
+    }
+    if (qb != null) {
+      getHintsFromQB(qb, hints);
+    }
+  }
+
   Operator genOPTree(ASTNode ast, PlannerContext plannerCtx) throws SemanticException {
+    // fetch all the hints in qb
+    List<ASTNode> hintsList = new ArrayList<>();
+    getHintsFromQB(qb, hintsList);
+    getQB().getParseInfo().setHintList(hintsList);
     return genPlan(qb);
   }
 
@@ -11242,6 +11286,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         globalLimitCtx, nameToSplitSample, inputs, rootTasks, opToPartToSkewedPruner,
         viewAliasToInput, reduceSinkOperatorsAddedByEnforceBucketingSorting,
         analyzeRewrite, tableDesc, createVwDesc, queryProperties, viewProjectToTableSchema, acidFileSinks);
+
+    // Set the semijoin hints in parse context
+    pCtx.setSemiJoinHints(parseSemiJoinHint(getQB().getParseInfo().getHintList()));
 
     // 5. Take care of view creation
     if (createVwDesc != null) {

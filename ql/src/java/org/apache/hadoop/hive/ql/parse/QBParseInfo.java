@@ -44,6 +44,7 @@ public class QBParseInfo {
   private String alias;
   private ASTNode joinExpr;
   private ASTNode hints;
+  private List<ASTNode> hintList;
   private final HashMap<String, ASTNode> aliasToSrc;
   /**
    * insclause-0 -> TOK_TAB ASTNode
@@ -550,6 +551,14 @@ public class QBParseInfo {
 
   public void setHints(ASTNode hint) {
     hints = hint;
+  }
+
+  public void setHintList(List<ASTNode> hintList) {
+    this.hintList = hintList;
+  }
+
+  public List<ASTNode> getHintList() {
+    return hintList;
   }
 
   public ASTNode getHints() {

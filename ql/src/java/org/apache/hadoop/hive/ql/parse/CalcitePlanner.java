@@ -335,7 +335,10 @@ public class CalcitePlanner extends SemanticAnalyzer {
       skipCalcitePlan = true;
     } else {
       PreCboCtx cboCtx = (PreCboCtx) plannerCtx;
-      ASTNode oldHints = getQB().getParseInfo().getHints();
+      List<ASTNode> oldHints = new ArrayList<>();
+      // Cache the hints before CBO runs and removes them.
+      // Use the hints later in top level QB.
+        getHintsFromQB(getQB(), oldHints);
 
       // Note: for now, we don't actually pass the queryForCbo to CBO, because
       // it accepts qb, not AST, and can also access all the private stuff in
@@ -364,6 +367,10 @@ public class CalcitePlanner extends SemanticAnalyzer {
               throw new SemanticException("Create view is not supported in cbo return path.");
             }
             sinkOp = getOptimizedHiveOPDag();
+            if (oldHints.size() > 0) {
+              LOG.debug("Propagating hints to QB: " + oldHints);
+              getQB().getParseInfo().setHintList(oldHints);
+            }
             LOG.info("CBO Succeeded; optimized logical plan.");
             this.ctx.setCboInfo("Plan optimized by CBO.");
             this.ctx.setCboSucceeded(true);
@@ -403,13 +410,13 @@ public class CalcitePlanner extends SemanticAnalyzer {
                 newAST = reAnalyzeCTASAfterCbo(newAST);
               }
             }
-            if (oldHints != null) {
+            if (oldHints.size() > 0) {
               if (getQB().getParseInfo().getHints() != null) {
-                LOG.warn("Hints are not null in the optimized tree; before CBO " + oldHints.dump()
-                    + "; after CBO " + getQB().getParseInfo().getHints().dump());
+                LOG.warn("Hints are not null in the optimized tree; "
+                    + "after CBO " + getQB().getParseInfo().getHints().dump());
               } else {
                 LOG.debug("Propagating hints to QB: " + oldHints);
-                getQB().getParseInfo().setHints(oldHints);
+                getQB().getParseInfo().setHintList(oldHints);
               }
             }
             Phase1Ctx ctx_1 = initPhase1Ctx();
