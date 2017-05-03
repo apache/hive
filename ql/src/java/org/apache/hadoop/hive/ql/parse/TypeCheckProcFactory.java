@@ -198,6 +198,7 @@ public class TypeCheckProcFactory {
         + HiveParser.KW_WHEN + "%|" + HiveParser.KW_IN + "%|"
         + HiveParser.KW_ARRAY + "%|" + HiveParser.KW_MAP + "%|"
         + HiveParser.KW_STRUCT + "%|" + HiveParser.KW_EXISTS + "%|"
+        + HiveParser.TOK_LIKEALL + "%|" + HiveParser.TOK_LIKEANY + "%|"
         + HiveParser.TOK_SUBQUERY_OP_NOTIN + "%"),
         tf.getStrExprProcessor());
     opRules.put(new RuleRegExp("R4", HiveParser.KW_TRUE + "%|"
@@ -724,6 +725,8 @@ public class TypeCheckProcFactory {
       specialFunctionTextHashMap = new HashMap<Integer, String>();
       specialFunctionTextHashMap.put(HiveParser.TOK_ISNULL, "isnull");
       specialFunctionTextHashMap.put(HiveParser.TOK_ISNOTNULL, "isnotnull");
+      specialFunctionTextHashMap.put(HiveParser.TOK_LIKEANY, "likeany");
+      specialFunctionTextHashMap.put(HiveParser.TOK_LIKEALL, "likeall");
       conversionFunctionTextHashMap = new HashMap<Integer, String>();
       conversionFunctionTextHashMap.put(HiveParser.TOK_BOOLEAN,
           serdeConstants.BOOLEAN_TYPE_NAME);

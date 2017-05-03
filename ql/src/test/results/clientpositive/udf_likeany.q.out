@@ -1,0 +1,187 @@
+PREHOOK: query: SELECT 'abc' like any ('a%','%d','%cd%')
+FROM src WHERE src.key = 86
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT 'abc' like any ('a%','%d','%cd%')
+FROM src WHERE src.key = 86
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+true
+PREHOOK: query: SELECT 'abc' LIKE ANY ('z%','%y','%dx%')
+FROM src WHERE src.key = 86
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT 'abc' LIKE ANY ('z%','%y','%dx%')
+FROM src WHERE src.key = 86
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+false
+PREHOOK: query: SELECT 'abc' like any ('abc')
+FROM src WHERE src.key = 86
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT 'abc' like any ('abc')
+FROM src WHERE src.key = 86
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+true
+PREHOOK: query: DESCRIBE FUNCTION likeany
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION likeany
+POSTHOOK: type: DESCFUNCTION
+test likeany(pattern1, pattern2...) - returns true if test matches any patterns patternN. Returns NULL if the expression on the left hand side is NULL or if one of the patterns in the list is NULL. 
+PREHOOK: query: DESCRIBE FUNCTION EXTENDED likeany
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION EXTENDED likeany
+POSTHOOK: type: DESCFUNCTION
+test likeany(pattern1, pattern2...) - returns true if test matches any patterns patternN. Returns NULL if the expression on the left hand side is NULL or if one of the patterns in the list is NULL. 
+Function class:org.apache.hadoop.hive.ql.udf.generic.GenericUDFLikeAny
+Function type:BUILTIN
+PREHOOK: query: DROP TABLE IF EXISTS like_any_table
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE IF EXISTS like_any_table
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: CREATE TABLE like_any_table
+STORED AS TEXTFILE
+AS
+SELECT "google" as company,"%oo%" as pat
+UNION ALL
+SELECT "facebook" as company,"%oo%" as pat
+UNION ALL
+SELECT "linkedin" as company,"%in" as pat
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: database:default
+PREHOOK: Output: default@like_any_table
+POSTHOOK: query: CREATE TABLE like_any_table
+STORED AS TEXTFILE
+AS
+SELECT "google" as company,"%oo%" as pat
+UNION ALL
+SELECT "facebook" as company,"%oo%" as pat
+UNION ALL
+SELECT "linkedin" as company,"%in" as pat
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@like_any_table
+POSTHOOK: Lineage: like_any_table.company EXPRESSION []
+POSTHOOK: Lineage: like_any_table.pat EXPRESSION []
+PREHOOK: query: select company from like_any_table where company like any ('%oo%','%in','fa%')
+PREHOOK: type: QUERY
+PREHOOK: Input: default@like_any_table
+#### A masked pattern was here ####
+POSTHOOK: query: select company from like_any_table where company like any ('%oo%','%in','fa%')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@like_any_table
+#### A masked pattern was here ####
+google
+facebook
+linkedin
+PREHOOK: query: select company from like_any_table where company like any ('microsoft','%yoo%')
+PREHOOK: type: QUERY
+PREHOOK: Input: default@like_any_table
+#### A masked pattern was here ####
+POSTHOOK: query: select company from like_any_table where company like any ('microsoft','%yoo%')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@like_any_table
+#### A masked pattern was here ####
+PREHOOK: query: select
+    company,
+    CASE
+        WHEN company like any ('%oo%','%in','fa%') THEN 'Y'
+        ELSE 'N'
+    END AS is_available,
+    CASE
+        WHEN company like any ('%oo%','fa%') OR company like any ('%in','ms%') THEN 'Y'
+        ELSE 'N'
+    END AS mix
+From like_any_table
+PREHOOK: type: QUERY
+PREHOOK: Input: default@like_any_table
+#### A masked pattern was here ####
+POSTHOOK: query: select
+    company,
+    CASE
+        WHEN company like any ('%oo%','%in','fa%') THEN 'Y'
+        ELSE 'N'
+    END AS is_available,
+    CASE
+        WHEN company like any ('%oo%','fa%') OR company like any ('%in','ms%') THEN 'Y'
+        ELSE 'N'
+    END AS mix
+From like_any_table
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@like_any_table
+#### A masked pattern was here ####
+google	Y	Y
+facebook	Y	Y
+linkedin	Y	Y
+PREHOOK: query: select company from like_any_table where company like any ('%zz%',pat)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@like_any_table
+#### A masked pattern was here ####
+POSTHOOK: query: select company from like_any_table where company like any ('%zz%',pat)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@like_any_table
+#### A masked pattern was here ####
+google
+facebook
+linkedin
+PREHOOK: query: select company from like_any_table where company not like any ('%oo%','%in','fa%')
+PREHOOK: type: QUERY
+PREHOOK: Input: default@like_any_table
+#### A masked pattern was here ####
+POSTHOOK: query: select company from like_any_table where company not like any ('%oo%','%in','fa%')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@like_any_table
+#### A masked pattern was here ####
+PREHOOK: query: select company from like_any_table where company not like any ('microsoft','%yoo%')
+PREHOOK: type: QUERY
+PREHOOK: Input: default@like_any_table
+#### A masked pattern was here ####
+POSTHOOK: query: select company from like_any_table where company not like any ('microsoft','%yoo%')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@like_any_table
+#### A masked pattern was here ####
+google
+facebook
+linkedin
+PREHOOK: query: select company from like_any_table where company like any ('%oo%',null)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@like_any_table
+#### A masked pattern was here ####
+POSTHOOK: query: select company from like_any_table where company like any ('%oo%',null)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@like_any_table
+#### A masked pattern was here ####
+PREHOOK: query: select company from like_any_table where company not like any ('%oo%',null)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@like_any_table
+#### A masked pattern was here ####
+POSTHOOK: query: select company from like_any_table where company not like any ('%oo%',null)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@like_any_table
+#### A masked pattern was here ####
+PREHOOK: query: select company from like_any_table where company like any (null,null)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@like_any_table
+#### A masked pattern was here ####
+POSTHOOK: query: select company from like_any_table where company like any (null,null)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@like_any_table
+#### A masked pattern was here ####
+PREHOOK: query: select company from like_any_table where company not like any (null,null)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@like_any_table
+#### A masked pattern was here ####
+POSTHOOK: query: select company from like_any_table where company not like any (null,null)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@like_any_table
+#### A masked pattern was here ####

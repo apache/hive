@@ -49,6 +49,7 @@ KW_AND : 'AND';
 KW_OR : 'OR';
 KW_NOT : 'NOT' | '!';
 KW_LIKE : 'LIKE';
+KW_ANY : 'ANY';
 
 KW_IF : 'IF';
 KW_EXISTS : 'EXISTS';

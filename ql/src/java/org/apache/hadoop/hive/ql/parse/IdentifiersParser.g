@@ -567,6 +567,12 @@ precedenceSimilarExpressionAtom[CommonTree t]
     |
     KW_BETWEEN (min=precedenceBitwiseOrExpression) KW_AND (max=precedenceBitwiseOrExpression)
     -> ^(TOK_FUNCTION Identifier["between"] KW_FALSE {$t} $min $max)
+    |
+    KW_LIKE KW_ANY (expr=expressionsInParenthesis[false])
+    -> ^(TOK_FUNCTION TOK_LIKEANY {$t} {$expr.tree})
+    |
+    KW_LIKE KW_ALL (expr=expressionsInParenthesis[false])
+    -> ^(TOK_FUNCTION TOK_LIKEALL {$t} {$expr.tree})
     ;
 
 precedenceSimilarExpressionIn[CommonTree t]

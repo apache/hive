@@ -134,6 +134,8 @@ least
 length
 levenshtein
 like
+likeall
+likeany
 ln
 locate
 log
