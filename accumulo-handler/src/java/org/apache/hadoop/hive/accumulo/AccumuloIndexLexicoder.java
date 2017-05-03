@@ -73,9 +73,9 @@ public final class AccumuloIndexLexicoder {
       case serdeConstants.DOUBLE_TYPE_NAME :
         return DOUBLE_LEXICODER.encode(Double.valueOf(new String(value)));
       case serdeConstants.BIGINT_TYPE_NAME :
-        return LONG_LEXICODER.encode(Long.valueOf(new String(value)));
-      case serdeConstants.DECIMAL_TYPE_NAME :
         return BIG_INTEGER_LEXICODER.encode(new BigInteger(new String(value), 10));
+      case serdeConstants.DECIMAL_TYPE_NAME :
+        return new String(value).getBytes(UTF_8);
       default :
         // return the passed in string value
         return value;
@@ -99,9 +99,9 @@ public final class AccumuloIndexLexicoder {
       case serdeConstants.DOUBLE_TYPE_NAME :
         return DOUBLE_LEXICODER.encode(ByteBuffer.wrap(value).asDoubleBuffer().get());
       case serdeConstants.BIGINT_TYPE_NAME :
-        return LONG_LEXICODER.encode(ByteBuffer.wrap(value).asLongBuffer().get());
-      case serdeConstants.DECIMAL_TYPE_NAME :
         return BIG_INTEGER_LEXICODER.encode(new BigInteger(value));
+      case serdeConstants.DECIMAL_TYPE_NAME :
+        return new String(value).getBytes(UTF_8);
       default :
         return value;
     }

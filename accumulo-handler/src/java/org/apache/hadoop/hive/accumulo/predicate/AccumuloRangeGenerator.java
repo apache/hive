@@ -347,7 +347,7 @@ public class AccumuloRangeGenerator implements NodeProcessor {
       throws SemanticException {
     Text constText = getConstantText(objInspector);
     byte[] value = constText.toString().getBytes(UTF_8);
-    byte[] encoded = AccumuloIndexLexicoder.encodeValue(value, objInspector.getTypeName(), true);
+    byte[] encoded = AccumuloIndexLexicoder.encodeValue(value, leftHandNode.getTypeString(), true);
     Range range = getRange(genericUdf, leftHandNode, new Text(encoded));
     if (indexScanner != null) {
       return indexScanner.getIndexRowRanges(columnName, range);
